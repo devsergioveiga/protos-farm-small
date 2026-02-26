@@ -1,0 +1,34 @@
+name: CD Staging
+
+on:
+  push:
+    branches: [develop]
+
+concurrency:
+  group: cd-staging
+  cancel-in-progress: true
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build:backend
+      - run: pnpm build:frontend
+
+      # TODO: Substituir pelo deploy real quando a infraestrutura (US-003) estiver pronta.
+      # O deploy usará secrets configurados no GitHub (ex: ${{ secrets.STAGING_DEPLOY_KEY }}).
+      - name: Deploy (placeholder)
+        run: echo "Deploy to staging environment — placeholder for US-003"
