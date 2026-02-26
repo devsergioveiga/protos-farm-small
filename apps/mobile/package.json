@@ -10,7 +10,7 @@
     "ios": "expo start --ios",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "clean": "rimraf .expo dist"
   },
   "dependencies": {
