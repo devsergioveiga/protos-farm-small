@@ -20,6 +20,9 @@
     "format:check": "prettier --check .",
     "test": "pnpm -r test",
     "clean": "pnpm -r clean",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "infra:reset": "docker compose down -v && docker compose up -d",
     "prepare": "husky"
   },
   "lint-staged": {

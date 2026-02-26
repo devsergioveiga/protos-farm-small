@@ -1,0 +1,42 @@
+# ---- Build stage ----
+FROM node:20-alpine AS build
+
+RUN corepack enable && corepack prepare pnpm@10.27.0 --activate
+
+WORKDIR /app
+
+# Copy workspace config
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY packages/shared/package.json ./packages/shared/
+COPY apps/backend/package.json ./apps/backend/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source
+COPY packages/shared ./packages/shared
+COPY apps/backend ./apps/backend
+
+# Build shared first, then backend
+RUN pnpm --filter @protos-farm/shared build && \
+    pnpm --filter @protos-farm/backend build
+
+# ---- Production stage ----
+FROM node:20-alpine AS production
+
+RUN corepack enable && corepack prepare pnpm@10.27.0 --activate
+
+WORKDIR /app
+
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY packages/shared/package.json ./packages/shared/
+COPY apps/backend/package.json ./apps/backend/
+
+RUN pnpm install --frozen-lockfile --prod
+
+COPY --from=build /app/packages/shared/dist ./packages/shared/dist
+COPY --from=build /app/apps/backend/dist ./apps/backend/dist
+
+EXPOSE 3000
+
+CMD ["node", "apps/backend/dist/main.js"]
