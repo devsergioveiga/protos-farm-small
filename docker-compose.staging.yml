@@ -1,0 +1,12 @@
+# Override para staging — usar com:
+#   docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d
+services:
+  postgres:
+    ports: !reset []
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-protos_staging}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-staging_password}
+      POSTGRES_DB: ${POSTGRES_DB:-protos_farm_staging}
+
+  redis:
+    ports: !reset []
