@@ -11,6 +11,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-protos_farm}
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init-postgis.sql:/docker-entrypoint-initdb.d/init-postgis.sql:ro
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-protos} -d ${POSTGRES_DB:-protos_farm}']
       interval: 10s
@@ -40,7 +41,10 @@ services:
       - '9090:9090'
     volumes:
       - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
       - prometheusdata:/prometheus
+    depends_on:
+      - alertmanager
     extra_hosts:
       - 'host.docker.internal:host-gateway'
 
@@ -62,6 +66,29 @@ services:
     depends_on:
       - prometheus
       - loki
+      - alertmanager
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: protos-farm-alertmanager
+    restart: unless-stopped
+    ports:
+      - '9093:9093'
+    volumes:
+      - ./infra/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget --no-verbose --tries=1 --spider http://localhost:9093/-/healthy || exit 1',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   loki:
     image: grafana/loki:3.4.2
