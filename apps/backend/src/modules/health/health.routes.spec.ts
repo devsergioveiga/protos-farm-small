@@ -6,7 +6,11 @@ jest.mock('./health.service');
 
 const mockedService = jest.mocked(healthService);
 
-const healthyCheck: healthService.CheckResult = { status: 'healthy', responseTime: 5 };
+const healthyCheck: healthService.CheckResult = {
+  status: 'healthy',
+  responseTime: 5,
+  postgisVersion: '3.4.0',
+};
 const unhealthyCheck: healthService.CheckResult = {
   status: 'unhealthy',
   responseTime: 3000,

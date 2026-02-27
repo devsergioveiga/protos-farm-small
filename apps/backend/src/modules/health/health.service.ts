@@ -1,10 +1,12 @@
 import net from 'node:net';
+import { prisma } from '../../database/prisma';
 import { loadEnv } from '../../config/env';
 
 export interface CheckResult {
   status: 'healthy' | 'unhealthy';
   responseTime: number;
   error?: string;
+  postgisVersion?: string;
 }
 
 export interface HealthStatus {
@@ -54,8 +56,24 @@ function checkTcp(host: string, port: number, timeout = 3000): Promise<CheckResu
 }
 
 export async function checkPostgres(): Promise<CheckResult> {
-  const env = loadEnv();
-  return checkTcp(env.POSTGRES_HOST, env.POSTGRES_PORT);
+  const start = Date.now();
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    const postgisResult = await prisma.$queryRaw<
+      [{ postgis_version: string }]
+    >`SELECT PostGIS_Version() as postgis_version`;
+    return {
+      status: 'healthy',
+      responseTime: Date.now() - start,
+      postgisVersion: postgisResult[0].postgis_version,
+    };
+  } catch (err) {
+    return {
+      status: 'unhealthy',
+      responseTime: Date.now() - start,
+      error: err instanceof Error ? err.message : 'Unknown database error',
+    };
+  }
 }
 
 export async function checkRedis(): Promise<CheckResult> {
