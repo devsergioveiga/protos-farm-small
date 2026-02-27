@@ -5,6 +5,8 @@ import { UserRole } from '@prisma/client';
 import { prisma } from '../../database/prisma';
 import { redis } from '../../database/redis';
 import { loadEnv } from '../../config/env';
+import { sendMail } from '../../shared/mail/mail.service';
+import { logger } from '../../shared/utils/logger';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -62,6 +64,7 @@ export function verifyAccessToken(token: string): TokenPayload {
 }
 
 const REFRESH_PREFIX = 'refresh_token:';
+const PASSWORD_RESET_PREFIX = 'password_reset:';
 
 async function saveRefreshToken(token: string, userId: string): Promise<void> {
   const env = loadEnv();
@@ -138,4 +141,53 @@ export async function refreshTokens(token: string): Promise<AuthTokens> {
   await saveRefreshToken(newRefreshToken, user.id);
 
   return { accessToken, refreshToken: newRefreshToken };
+}
+
+// ─── Password reset ────────────────────────────────────────────────
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user || user.status !== 'ACTIVE') {
+    logger.info({ email }, 'Password reset requested for unknown or inactive email');
+    return;
+  }
+
+  const env = loadEnv();
+  const token = crypto.randomUUID();
+
+  await redis.set(`${PASSWORD_RESET_PREFIX}${token}`, user.id, 'EX', env.PASSWORD_RESET_EXPIRES_IN);
+
+  const resetUrl = `${env.FRONTEND_URL}/reset-password?token=${token}`;
+
+  await sendMail({
+    to: user.email,
+    subject: 'Protos Farm — Redefinição de senha',
+    text: `Olá ${user.name},\n\nVocê solicitou a redefinição de sua senha.\n\nClique no link abaixo para criar uma nova senha:\n${resetUrl}\n\nEste link expira em 1 hora.\n\nSe você não solicitou esta alteração, ignore este email.\n\nEquipe Protos Farm`,
+    html: `<p>Olá <strong>${user.name}</strong>,</p><p>Você solicitou a redefinição de sua senha.</p><p><a href="${resetUrl}">Clique aqui para criar uma nova senha</a></p><p>Este link expira em 1 hora.</p><p>Se você não solicitou esta alteração, ignore este email.</p><p>Equipe Protos Farm</p>`,
+  });
+
+  logger.info({ userId: user.id, email }, 'Password reset email sent');
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  const key = `${PASSWORD_RESET_PREFIX}${token}`;
+  const userId = await redis.get(key);
+
+  if (!userId) {
+    throw new AuthError('Token inválido ou expirado', 401);
+  }
+
+  await redis.del(key);
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+
+  if (!user || user.status !== 'ACTIVE') {
+    throw new AuthError('Conta inativa', 403);
+  }
+
+  const passwordHash = await hashPassword(newPassword);
+  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+
+  logger.info({ userId }, 'Password reset completed');
 }
