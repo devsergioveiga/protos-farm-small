@@ -93,6 +93,13 @@ export async function login(input: LoginInput): Promise<AuthTokens> {
     throw new AuthError('Conta inativa', 403);
   }
 
+  if (user.role !== 'SUPER_ADMIN') {
+    const org = await prisma.organization.findUnique({ where: { id: user.organizationId } });
+    if (!org || org.status !== 'ACTIVE') {
+      throw new AuthError('Organização suspensa ou cancelada', 403);
+    }
+  }
+
   const passwordValid = await verifyPassword(input.password, user.passwordHash);
   if (!passwordValid) {
     throw new AuthError('Credenciais inválidas', 401);
@@ -127,6 +134,13 @@ export async function refreshTokens(token: string): Promise<AuthTokens> {
 
   if (user.status !== 'ACTIVE') {
     throw new AuthError('Conta inativa', 403);
+  }
+
+  if (user.role !== 'SUPER_ADMIN') {
+    const org = await prisma.organization.findUnique({ where: { id: user.organizationId } });
+    if (!org || org.status !== 'ACTIVE') {
+      throw new AuthError('Organização suspensa ou cancelada', 403);
+    }
   }
 
   const payload: TokenPayload = {
