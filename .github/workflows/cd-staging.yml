@@ -25,6 +25,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma Client
+        run: pnpm --filter @protos-farm/backend prisma:generate
+
       - run: pnpm build:backend
       - run: pnpm build:frontend
 
