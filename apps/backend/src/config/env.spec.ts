@@ -27,7 +27,7 @@ describe('loadEnv', () => {
 
   it('should throw when required vars are missing in staging', () => {
     expect(() => loadEnv({ NODE_ENV: 'staging' })).toThrow(
-      'Missing required environment variables for staging: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB',
+      'Missing required environment variables for staging: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, JWT_SECRET',
     );
   });
 
@@ -43,6 +43,7 @@ describe('loadEnv', () => {
       POSTGRES_USER: 'staging_user',
       POSTGRES_PASSWORD: 'staging_pass',
       POSTGRES_DB: 'staging_db',
+      JWT_SECRET: 'staging-secret',
     });
 
     expect(env.NODE_ENV).toBe('staging');
@@ -56,6 +57,7 @@ describe('loadEnv', () => {
       POSTGRES_USER: 'prod_user',
       POSTGRES_PASSWORD: 'prod_pass',
       POSTGRES_DB: 'prod_db',
+      JWT_SECRET: 'prod-secret',
     });
 
     expect(env.POSTGRES_HOST).toBe('postgres');

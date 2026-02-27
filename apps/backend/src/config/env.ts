@@ -11,6 +11,9 @@ interface Env {
   DATABASE_URL: string;
   REDIS_HOST: string;
   REDIS_PORT: number;
+  JWT_SECRET: string;
+  JWT_EXPIRES_IN: string;
+  REFRESH_TOKEN_EXPIRES_IN: number;
 }
 
 const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
@@ -23,6 +26,9 @@ const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
     POSTGRES_DB: 'protos_farm',
     REDIS_HOST: 'localhost',
     REDIS_PORT: 6379,
+    JWT_SECRET: 'dev-jwt-secret-do-not-use-in-production',
+    JWT_EXPIRES_IN: '15m',
+    REFRESH_TOKEN_EXPIRES_IN: 604800,
   },
   test: {
     PORT: 3000,
@@ -33,6 +39,9 @@ const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
     POSTGRES_DB: 'protos_farm',
     REDIS_HOST: 'localhost',
     REDIS_PORT: 6379,
+    JWT_SECRET: 'test-jwt-secret-do-not-use-in-production',
+    JWT_EXPIRES_IN: '15m',
+    REFRESH_TOKEN_EXPIRES_IN: 604800,
   },
   staging: {
     PORT: 3000,
@@ -50,7 +59,12 @@ const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
   },
 };
 
-const REQUIRED_IN_NON_DEV: (keyof Env)[] = ['POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB'];
+const REQUIRED_IN_NON_DEV: (keyof Env)[] = [
+  'POSTGRES_USER',
+  'POSTGRES_PASSWORD',
+  'POSTGRES_DB',
+  'JWT_SECRET',
+];
 
 function loadEnv(processEnv: Record<string, string | undefined> = process.env): Env {
   const nodeEnv = (processEnv.NODE_ENV ?? 'development') as NodeEnv;
@@ -84,6 +98,10 @@ function loadEnv(processEnv: Record<string, string | undefined> = process.env): 
     DATABASE_URL: databaseUrl,
     REDIS_HOST: processEnv.REDIS_HOST ?? defaults.REDIS_HOST ?? 'localhost',
     REDIS_PORT: toNumber(processEnv.REDIS_PORT) ?? defaults.REDIS_PORT ?? 6379,
+    JWT_SECRET: processEnv.JWT_SECRET ?? (defaults.JWT_SECRET as string),
+    JWT_EXPIRES_IN: processEnv.JWT_EXPIRES_IN ?? defaults.JWT_EXPIRES_IN ?? '15m',
+    REFRESH_TOKEN_EXPIRES_IN:
+      toNumber(processEnv.REFRESH_TOKEN_EXPIRES_IN) ?? defaults.REFRESH_TOKEN_EXPIRES_IN ?? 604800,
   };
 
   if (nodeEnv !== 'development' && nodeEnv !== 'test') {

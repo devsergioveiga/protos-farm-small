@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { metricsMiddleware, metricsHandler } from './middleware/metrics';
 import { requestLoggerMiddleware } from './middleware/request-logger';
 import { healthRouter } from './modules/health/health.routes';
+import { authRouter } from './modules/auth/auth.routes';
 
 const app = express();
 
@@ -15,5 +16,6 @@ app.use(requestLoggerMiddleware);
 
 app.get('/metrics', metricsHandler);
 app.use('/api', healthRouter);
+app.use('/api', authRouter);
 
 export { app };

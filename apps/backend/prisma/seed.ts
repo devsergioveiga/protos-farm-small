@@ -1,6 +1,9 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
+
+const DEFAULT_PASSWORD_HASH = bcrypt.hashSync('Test@1234', 12);
 
 // ─── Dados das Organizações ──────────────────────────────────────────
 
@@ -233,10 +236,11 @@ async function main() {
         role: user.role,
         phone: user.phone,
         organizationId: user.organizationId,
+        passwordHash: DEFAULT_PASSWORD_HASH,
       },
       create: {
         ...user,
-        passwordHash: null,
+        passwordHash: DEFAULT_PASSWORD_HASH,
       },
     });
     console.log(`  ✓ Usuário: ${user.name} (${user.role})`);
