@@ -84,6 +84,32 @@ describe('Auth endpoints', () => {
       expect(response.body.error).toBe('Conta inativa');
     });
 
+    it('should return 403 when organization is suspended', async () => {
+      mockedService.login.mockRejectedValue(
+        new authService.AuthError('Organização suspensa ou cancelada', 403),
+      );
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'user@suspended-org.com', password: 'Test@1234' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.error).toBe('Organização suspensa ou cancelada');
+    });
+
+    it('should return 403 when organization is cancelled', async () => {
+      mockedService.login.mockRejectedValue(
+        new authService.AuthError('Organização suspensa ou cancelada', 403),
+      );
+
+      const response = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'user@cancelled-org.com', password: 'Test@1234' });
+
+      expect(response.status).toBe(403);
+      expect(response.body.error).toBe('Organização suspensa ou cancelada');
+    });
+
     it('should return 500 on unexpected error', async () => {
       mockedService.login.mockRejectedValue(new Error('DB down'));
 
