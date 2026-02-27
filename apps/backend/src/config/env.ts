@@ -1,4 +1,4 @@
-type NodeEnv = 'development' | 'staging' | 'production';
+type NodeEnv = 'development' | 'test' | 'staging' | 'production';
 
 interface Env {
   NODE_ENV: NodeEnv;
@@ -8,12 +8,23 @@ interface Env {
   POSTGRES_USER: string;
   POSTGRES_PASSWORD: string;
   POSTGRES_DB: string;
+  DATABASE_URL: string;
   REDIS_HOST: string;
   REDIS_PORT: number;
 }
 
 const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
   development: {
+    PORT: 3000,
+    POSTGRES_HOST: 'localhost',
+    POSTGRES_PORT: 5432,
+    POSTGRES_USER: 'protos',
+    POSTGRES_PASSWORD: 'protos',
+    POSTGRES_DB: 'protos_farm',
+    REDIS_HOST: 'localhost',
+    REDIS_PORT: 6379,
+  },
+  test: {
     PORT: 3000,
     POSTGRES_HOST: 'localhost',
     POSTGRES_PORT: 5432,
@@ -44,25 +55,38 @@ const REQUIRED_IN_NON_DEV: (keyof Env)[] = ['POSTGRES_USER', 'POSTGRES_PASSWORD'
 function loadEnv(processEnv: Record<string, string | undefined> = process.env): Env {
   const nodeEnv = (processEnv.NODE_ENV ?? 'development') as NodeEnv;
 
-  if (!['development', 'staging', 'production'].includes(nodeEnv)) {
-    throw new Error(`Invalid NODE_ENV: "${nodeEnv}". Must be development, staging, or production.`);
+  if (!['development', 'test', 'staging', 'production'].includes(nodeEnv)) {
+    throw new Error(
+      `Invalid NODE_ENV: "${nodeEnv}". Must be development, test, staging, or production.`,
+    );
   }
 
   const defaults = DEFAULTS[nodeEnv];
 
+  const pgHost = processEnv.POSTGRES_HOST ?? defaults.POSTGRES_HOST ?? 'localhost';
+  const pgPort = toNumber(processEnv.POSTGRES_PORT) ?? defaults.POSTGRES_PORT ?? 5432;
+  const pgUser = processEnv.POSTGRES_USER ?? (defaults.POSTGRES_USER as string);
+  const pgPassword = processEnv.POSTGRES_PASSWORD ?? (defaults.POSTGRES_PASSWORD as string);
+  const pgDb = processEnv.POSTGRES_DB ?? (defaults.POSTGRES_DB as string);
+
+  const databaseUrl =
+    processEnv.DATABASE_URL ??
+    `postgresql://${pgUser}:${pgPassword}@${pgHost}:${pgPort}/${pgDb}?schema=public`;
+
   const env: Env = {
     NODE_ENV: nodeEnv,
     PORT: toNumber(processEnv.PORT) ?? defaults.PORT ?? 3000,
-    POSTGRES_HOST: processEnv.POSTGRES_HOST ?? defaults.POSTGRES_HOST ?? 'localhost',
-    POSTGRES_PORT: toNumber(processEnv.POSTGRES_PORT) ?? defaults.POSTGRES_PORT ?? 5432,
-    POSTGRES_USER: processEnv.POSTGRES_USER ?? (defaults.POSTGRES_USER as string),
-    POSTGRES_PASSWORD: processEnv.POSTGRES_PASSWORD ?? (defaults.POSTGRES_PASSWORD as string),
-    POSTGRES_DB: processEnv.POSTGRES_DB ?? (defaults.POSTGRES_DB as string),
+    POSTGRES_HOST: pgHost,
+    POSTGRES_PORT: pgPort,
+    POSTGRES_USER: pgUser,
+    POSTGRES_PASSWORD: pgPassword,
+    POSTGRES_DB: pgDb,
+    DATABASE_URL: databaseUrl,
     REDIS_HOST: processEnv.REDIS_HOST ?? defaults.REDIS_HOST ?? 'localhost',
     REDIS_PORT: toNumber(processEnv.REDIS_PORT) ?? defaults.REDIS_PORT ?? 6379,
   };
 
-  if (nodeEnv !== 'development') {
+  if (nodeEnv !== 'development' && nodeEnv !== 'test') {
     const missing = REQUIRED_IN_NON_DEV.filter((key) => !env[key]);
     if (missing.length > 0) {
       throw new Error(

@@ -1,0 +1,119 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [postgis]
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────
+
+enum OrganizationType {
+  PF
+  PJ
+}
+
+enum OrgStatus {
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  AGRONOMIST
+  FINANCIAL
+  OPERATOR
+  COWBOY
+  CONSULTANT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum FarmStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// ─── Core Models ─────────────────────────────────────────────────────
+
+model Organization {
+  id        String           @id @default(uuid())
+  name      String
+  type      OrganizationType
+  document  String           @unique
+  plan      String           @default("basic")
+  status    OrgStatus        @default(ACTIVE)
+  maxUsers  Int              @default(10)
+  maxFarms  Int              @default(5)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  users User[]
+  farms Farm[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String     @id @default(uuid())
+  email          String     @unique
+  name           String
+  passwordHash   String?
+  phone          String?
+  role           UserRole   @default(OPERATOR)
+  status         UserStatus @default(ACTIVE)
+  lastLoginAt    DateTime?
+  organizationId String
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  organization Organization     @relation(fields: [organizationId], references: [id])
+  farmAccess   UserFarmAccess[]
+
+  @@map("users")
+}
+
+model Farm {
+  id             String                                @id @default(uuid())
+  name           String
+  nickname       String?
+  address        String?
+  city           String?
+  state          String
+  zipCode        String?
+  totalAreaHa    Decimal                               @db.Decimal(12, 4)
+  cib            String?
+  incraCode      String?
+  carCode        String?
+  status         FarmStatus                            @default(ACTIVE)
+  organizationId String
+  location       Unsupported("geometry(Point, 4326)")?
+  boundary       Unsupported("geometry(Polygon, 4326)")?
+  createdAt      DateTime                              @default(now())
+  updatedAt      DateTime                              @updatedAt
+
+  organization Organization     @relation(fields: [organizationId], references: [id])
+  userAccess   UserFarmAccess[]
+
+  @@map("farms")
+}
+
+model UserFarmAccess {
+  id     String @id @default(uuid())
+  userId String
+  farmId String
+
+  user User @relation(fields: [userId], references: [id])
+  farm Farm @relation(fields: [farmId], references: [id])
+
+  @@unique([userId, farmId])
+  @@map("user_farm_access")
+}
