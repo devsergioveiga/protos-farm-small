@@ -1,0 +1,34 @@
+groups:
+  - name: protos-farm
+    rules:
+      - alert: ServiceDown
+        expr: up{job="protos-farm-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Backend service is down'
+          description: 'The protos-farm-backend target has been unreachable for more than 1 minute.'
+
+      - alert: HighLatencyP95
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="protos-farm-backend"}[5m])) > 2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High p95 latency (> 2s)'
+          description: 'The 95th percentile request latency has exceeded 2 seconds for more than 2 minutes.'
+
+      - alert: HighErrorRate5xx
+        expr: >
+          (
+            rate(http_request_duration_seconds_count{job="protos-farm-backend", status_code=~"5.."}[5m])
+            /
+            rate(http_request_duration_seconds_count{job="protos-farm-backend"}[5m])
+          ) > 0.01
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High 5xx error rate (> 1%)'
+          description: 'More than 1% of requests are returning 5xx status codes for over 2 minutes.'

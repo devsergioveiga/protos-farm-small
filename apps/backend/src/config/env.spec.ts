@@ -12,6 +12,11 @@ describe('loadEnv', () => {
     expect(env.POSTGRES_DB).toBe('protos_farm');
     expect(env.REDIS_HOST).toBe('localhost');
     expect(env.REDIS_PORT).toBe(6379);
+    expect(env.SMTP_HOST).toBe('localhost');
+    expect(env.SMTP_PORT).toBe(1025);
+    expect(env.SMTP_FROM).toBe('noreply@protosfarm.dev');
+    expect(env.PASSWORD_RESET_EXPIRES_IN).toBe(3600);
+    expect(env.FRONTEND_URL).toBe('http://localhost:5173');
   });
 
   it('should override defaults with provided env values', () => {
@@ -27,7 +32,7 @@ describe('loadEnv', () => {
 
   it('should throw when required vars are missing in staging', () => {
     expect(() => loadEnv({ NODE_ENV: 'staging' })).toThrow(
-      'Missing required environment variables for staging: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB',
+      'Missing required environment variables for staging: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, JWT_SECRET, SMTP_HOST, FRONTEND_URL',
     );
   });
 
@@ -43,6 +48,9 @@ describe('loadEnv', () => {
       POSTGRES_USER: 'staging_user',
       POSTGRES_PASSWORD: 'staging_pass',
       POSTGRES_DB: 'staging_db',
+      JWT_SECRET: 'staging-secret',
+      SMTP_HOST: 'smtp.staging.example.com',
+      FRONTEND_URL: 'https://staging.protosfarm.dev',
     });
 
     expect(env.NODE_ENV).toBe('staging');
@@ -56,6 +64,9 @@ describe('loadEnv', () => {
       POSTGRES_USER: 'prod_user',
       POSTGRES_PASSWORD: 'prod_pass',
       POSTGRES_DB: 'prod_db',
+      JWT_SECRET: 'prod-secret',
+      SMTP_HOST: 'smtp.prod.example.com',
+      FRONTEND_URL: 'https://protosfarm.dev',
     });
 
     expect(env.POSTGRES_HOST).toBe('postgres');

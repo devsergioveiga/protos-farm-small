@@ -11,6 +11,17 @@ interface Env {
   DATABASE_URL: string;
   REDIS_HOST: string;
   REDIS_PORT: number;
+  JWT_SECRET: string;
+  JWT_EXPIRES_IN: string;
+  REFRESH_TOKEN_EXPIRES_IN: number;
+  SMTP_HOST: string;
+  SMTP_PORT: number;
+  SMTP_USER: string;
+  SMTP_PASSWORD: string;
+  SMTP_FROM: string;
+  PASSWORD_RESET_EXPIRES_IN: number;
+  INVITE_TOKEN_EXPIRES_IN: number;
+  FRONTEND_URL: string;
 }
 
 const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
@@ -23,6 +34,17 @@ const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
     POSTGRES_DB: 'protos_farm',
     REDIS_HOST: 'localhost',
     REDIS_PORT: 6379,
+    JWT_SECRET: 'dev-jwt-secret-do-not-use-in-production',
+    JWT_EXPIRES_IN: '15m',
+    REFRESH_TOKEN_EXPIRES_IN: 604800,
+    SMTP_HOST: 'localhost',
+    SMTP_PORT: 1025,
+    SMTP_USER: '',
+    SMTP_PASSWORD: '',
+    SMTP_FROM: 'noreply@protosfarm.dev',
+    PASSWORD_RESET_EXPIRES_IN: 3600,
+    INVITE_TOKEN_EXPIRES_IN: 172800,
+    FRONTEND_URL: 'http://localhost:5173',
   },
   test: {
     PORT: 3000,
@@ -33,6 +55,17 @@ const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
     POSTGRES_DB: 'protos_farm',
     REDIS_HOST: 'localhost',
     REDIS_PORT: 6379,
+    JWT_SECRET: 'test-jwt-secret-do-not-use-in-production',
+    JWT_EXPIRES_IN: '15m',
+    REFRESH_TOKEN_EXPIRES_IN: 604800,
+    SMTP_HOST: 'localhost',
+    SMTP_PORT: 1025,
+    SMTP_USER: '',
+    SMTP_PASSWORD: '',
+    SMTP_FROM: 'noreply@protosfarm.dev',
+    PASSWORD_RESET_EXPIRES_IN: 3600,
+    INVITE_TOKEN_EXPIRES_IN: 172800,
+    FRONTEND_URL: 'http://localhost:5173',
   },
   staging: {
     PORT: 3000,
@@ -50,7 +83,14 @@ const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
   },
 };
 
-const REQUIRED_IN_NON_DEV: (keyof Env)[] = ['POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB'];
+const REQUIRED_IN_NON_DEV: (keyof Env)[] = [
+  'POSTGRES_USER',
+  'POSTGRES_PASSWORD',
+  'POSTGRES_DB',
+  'JWT_SECRET',
+  'SMTP_HOST',
+  'FRONTEND_URL',
+];
 
 function loadEnv(processEnv: Record<string, string | undefined> = process.env): Env {
   const nodeEnv = (processEnv.NODE_ENV ?? 'development') as NodeEnv;
@@ -84,6 +124,20 @@ function loadEnv(processEnv: Record<string, string | undefined> = process.env): 
     DATABASE_URL: databaseUrl,
     REDIS_HOST: processEnv.REDIS_HOST ?? defaults.REDIS_HOST ?? 'localhost',
     REDIS_PORT: toNumber(processEnv.REDIS_PORT) ?? defaults.REDIS_PORT ?? 6379,
+    JWT_SECRET: processEnv.JWT_SECRET ?? (defaults.JWT_SECRET as string),
+    JWT_EXPIRES_IN: processEnv.JWT_EXPIRES_IN ?? defaults.JWT_EXPIRES_IN ?? '15m',
+    REFRESH_TOKEN_EXPIRES_IN:
+      toNumber(processEnv.REFRESH_TOKEN_EXPIRES_IN) ?? defaults.REFRESH_TOKEN_EXPIRES_IN ?? 604800,
+    SMTP_HOST: processEnv.SMTP_HOST ?? (defaults.SMTP_HOST as string),
+    SMTP_PORT: toNumber(processEnv.SMTP_PORT) ?? defaults.SMTP_PORT ?? 1025,
+    SMTP_USER: processEnv.SMTP_USER ?? defaults.SMTP_USER ?? '',
+    SMTP_PASSWORD: processEnv.SMTP_PASSWORD ?? defaults.SMTP_PASSWORD ?? '',
+    SMTP_FROM: processEnv.SMTP_FROM ?? defaults.SMTP_FROM ?? 'noreply@protosfarm.dev',
+    PASSWORD_RESET_EXPIRES_IN:
+      toNumber(processEnv.PASSWORD_RESET_EXPIRES_IN) ?? defaults.PASSWORD_RESET_EXPIRES_IN ?? 3600,
+    INVITE_TOKEN_EXPIRES_IN:
+      toNumber(processEnv.INVITE_TOKEN_EXPIRES_IN) ?? defaults.INVITE_TOKEN_EXPIRES_IN ?? 172800,
+    FRONTEND_URL: processEnv.FRONTEND_URL ?? (defaults.FRONTEND_URL as string),
   };
 
   if (nodeEnv !== 'development' && nodeEnv !== 'test') {

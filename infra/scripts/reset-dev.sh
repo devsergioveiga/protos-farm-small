@@ -89,7 +89,14 @@ if [ "$ELAPSED" -ge "$HEALTH_TIMEOUT" ]; then
   exit 1
 fi
 
-# ── 6. Status final ──────────────────────────
+# ── 6. Migrations e Seed ──────────────────────
+info "Aplicando migrations e seed..."
+cd "$PROJECT_ROOT/apps/backend"
+npx prisma migrate deploy 2>&1 | while IFS= read -r line; do echo "  $line"; done
+npx prisma db seed 2>&1 | while IFS= read -r line; do echo "  $line"; done
+cd "$PROJECT_ROOT"
+
+# ── 7. Status final ──────────────────────────
 END_TIME=$(date +%s)
 TOTAL=$((END_TIME - START_TIME))
 MINUTES=$((TOTAL / 60))
