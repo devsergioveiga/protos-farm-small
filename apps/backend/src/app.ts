@@ -7,6 +7,7 @@ import { healthRouter } from './modules/health/health.routes';
 import { authRouter } from './modules/auth/auth.routes';
 import { organizationsRouter } from './modules/organizations/organizations.routes';
 import { adminRouter } from './modules/admin/admin.routes';
+import { orgUsersRouter } from './modules/org-users/org-users.routes';
 
 const app = express();
 
@@ -21,5 +22,6 @@ app.use('/api', healthRouter);
 app.use('/api', authRouter);
 app.use('/api', organizationsRouter);
 app.use('/api', adminRouter);
+app.use('/api', orgUsersRouter);
 
 export { app };
