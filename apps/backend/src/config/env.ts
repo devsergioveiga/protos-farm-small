@@ -22,6 +22,9 @@ interface Env {
   PASSWORD_RESET_EXPIRES_IN: number;
   INVITE_TOKEN_EXPIRES_IN: number;
   FRONTEND_URL: string;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+  GOOGLE_REDIRECT_URI: string;
 }
 
 const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
@@ -45,6 +48,9 @@ const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
     PASSWORD_RESET_EXPIRES_IN: 3600,
     INVITE_TOKEN_EXPIRES_IN: 172800,
     FRONTEND_URL: 'http://localhost:5173',
+    GOOGLE_CLIENT_ID: '',
+    GOOGLE_CLIENT_SECRET: '',
+    GOOGLE_REDIRECT_URI: '',
   },
   test: {
     PORT: 3000,
@@ -66,6 +72,9 @@ const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
     PASSWORD_RESET_EXPIRES_IN: 3600,
     INVITE_TOKEN_EXPIRES_IN: 172800,
     FRONTEND_URL: 'http://localhost:5173',
+    GOOGLE_CLIENT_ID: '',
+    GOOGLE_CLIENT_SECRET: '',
+    GOOGLE_REDIRECT_URI: '',
   },
   staging: {
     PORT: 3000,
@@ -138,6 +147,9 @@ function loadEnv(processEnv: Record<string, string | undefined> = process.env): 
     INVITE_TOKEN_EXPIRES_IN:
       toNumber(processEnv.INVITE_TOKEN_EXPIRES_IN) ?? defaults.INVITE_TOKEN_EXPIRES_IN ?? 172800,
     FRONTEND_URL: processEnv.FRONTEND_URL ?? (defaults.FRONTEND_URL as string),
+    GOOGLE_CLIENT_ID: processEnv.GOOGLE_CLIENT_ID ?? defaults.GOOGLE_CLIENT_ID ?? '',
+    GOOGLE_CLIENT_SECRET: processEnv.GOOGLE_CLIENT_SECRET ?? defaults.GOOGLE_CLIENT_SECRET ?? '',
+    GOOGLE_REDIRECT_URI: processEnv.GOOGLE_REDIRECT_URI ?? defaults.GOOGLE_REDIRECT_URI ?? '',
   };
 
   if (nodeEnv !== 'development' && nodeEnv !== 'test') {
