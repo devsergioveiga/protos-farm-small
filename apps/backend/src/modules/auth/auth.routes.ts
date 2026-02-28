@@ -195,10 +195,12 @@ authRouter.get('/auth/google/callback', async (req, res) => {
     res.redirect(`${frontendUrl}/auth/callback?code=${exchangeCode}`);
   } catch (err) {
     if (err instanceof AuthError) {
-      const errorCode =
-        err.message === 'Email não cadastrado no sistema'
-          ? 'google_email_not_found'
-          : 'google_error';
+      let errorCode = 'google_error';
+      if (err.message === 'Email não cadastrado no sistema') {
+        errorCode = 'google_email_not_found';
+      } else if (err.message === 'Esta conta está vinculada a outra conta Google') {
+        errorCode = 'google_account_mismatch';
+      }
       res.redirect(`${frontendUrl}/login?error=${errorCode}`);
       return;
     }

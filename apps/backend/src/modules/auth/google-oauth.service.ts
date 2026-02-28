@@ -80,6 +80,11 @@ export async function handleGoogleCallback(code: string, state: string): Promise
     throw new AuthError('Não foi possível obter o email do Google', 400);
   }
 
+  const googleSub = payload.sub;
+  if (!googleSub) {
+    throw new AuthError('Não foi possível obter o identificador do Google', 400);
+  }
+
   // Look up user by email (no auto-registration — CA2 constraint)
   const user = await prisma.user.findUnique({ where: { email: payload.email } });
   if (!user) {
@@ -88,6 +93,19 @@ export async function handleGoogleCallback(code: string, state: string): Promise
 
   if (user.status !== 'ACTIVE') {
     throw new AuthError('Conta inativa', 403);
+  }
+
+  // CA3: Link Google account on first social login, verify on subsequent logins
+  if (!user.googleId) {
+    // First Google login — link the account
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { googleId: googleSub },
+    });
+    logger.info({ userId: user.id, googleSub }, 'Google account linked to user');
+  } else if (user.googleId !== googleSub) {
+    // Different Google account trying to use same email
+    throw new AuthError('Esta conta está vinculada a outra conta Google', 403);
   }
 
   // Create session

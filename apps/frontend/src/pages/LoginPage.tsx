@@ -8,6 +8,8 @@ const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
   google_access_denied: 'Acesso negado pelo Google. Tente novamente.',
   google_email_not_found:
     'Este email não está cadastrado no sistema. Entre em contato com o administrador.',
+  google_account_mismatch:
+    'Esta conta já está vinculada a outra conta Google. Entre em contato com o administrador.',
   google_invalid_request: 'Requisição inválida. Tente novamente.',
   google_error: 'Não foi possível entrar com Google. Tente novamente.',
 };

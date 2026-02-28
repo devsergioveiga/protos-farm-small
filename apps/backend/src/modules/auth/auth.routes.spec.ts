@@ -532,6 +532,21 @@ describe('Auth endpoints', () => {
       );
     });
 
+    it('should redirect to login with google_account_mismatch when Google sub does not match', async () => {
+      mockedGoogleService.handleGoogleCallback.mockRejectedValue(
+        new authService.AuthError('Esta conta está vinculada a outra conta Google', 403),
+      );
+
+      const response = await request(app)
+        .get('/api/auth/google/callback')
+        .query({ code: 'google-code', state: 'csrf-state' });
+
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe(
+        'http://localhost:5173/login?error=google_account_mismatch',
+      );
+    });
+
     it('should redirect to login with google_error on unexpected error', async () => {
       mockedGoogleService.handleGoogleCallback.mockRejectedValue(new Error('unexpected'));
 
