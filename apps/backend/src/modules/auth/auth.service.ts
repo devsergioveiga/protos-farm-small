@@ -158,6 +158,13 @@ export async function refreshTokens(token: string): Promise<AuthTokens> {
   return { accessToken, refreshToken: newRefreshToken };
 }
 
+// ─── Logout ─────────────────────────────────────────────────────────
+
+export async function logout(refreshToken: string): Promise<void> {
+  await redis.del(`${REFRESH_PREFIX}${refreshToken}`);
+  logger.info('Refresh token invalidated (logout)');
+}
+
 // ─── Password reset ────────────────────────────────────────────────
 
 export async function requestPasswordReset(email: string): Promise<void> {

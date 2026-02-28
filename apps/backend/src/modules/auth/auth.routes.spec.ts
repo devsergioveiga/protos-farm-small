@@ -11,10 +11,27 @@ jest.mock('./auth.service', () => {
     requestPasswordReset: jest.fn(),
     resetPassword: jest.fn(),
     acceptInvite: jest.fn(),
+    logout: jest.fn(),
+    verifyAccessToken: jest.fn(),
   };
 });
 
+jest.mock('../../middleware/rate-limit', () => ({
+  loginRateLimit: () => (_req: unknown, _res: unknown, next: () => void) => next(),
+  incrementLoginFailures: jest.fn().mockResolvedValue(undefined),
+  clearLoginFailures: jest.fn().mockResolvedValue(undefined),
+}));
+
 const mockedService = jest.mocked(authService);
+
+function withAuth() {
+  mockedService.verifyAccessToken.mockReturnValue({
+    userId: 'user-1',
+    email: 'user@test.com',
+    role: 'ORG_ADMIN' as authService.TokenPayload['role'],
+    organizationId: 'org-1',
+  });
+}
 
 describe('Auth endpoints', () => {
   beforeEach(() => {
@@ -345,6 +362,83 @@ describe('Auth endpoints', () => {
       const response = await request(app)
         .post('/api/auth/accept-invite')
         .send({ token: 'some-token', password: 'Senha@123' });
+
+      expect(response.status).toBe(500);
+      expect(response.body.error).toBe('Erro interno do servidor');
+    });
+
+    it('should return 400 when password is too weak', async () => {
+      const response = await request(app)
+        .post('/api/auth/accept-invite')
+        .send({ token: 'valid-token', password: 'weak' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Senha não atende aos requisitos');
+      expect(response.body.details).toBeDefined();
+      expect(mockedService.acceptInvite).not.toHaveBeenCalled();
+    });
+  });
+
+  // ─── Password strength validation ──────────────────────────────────
+
+  describe('POST /api/auth/reset-password — password strength', () => {
+    it('should return 400 when password is too weak', async () => {
+      const response = await request(app)
+        .post('/api/auth/reset-password')
+        .send({ token: 'valid-token', password: 'weak' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Senha não atende aos requisitos');
+      expect(response.body.details).toEqual(expect.arrayContaining([expect.any(String)]));
+      expect(mockedService.resetPassword).not.toHaveBeenCalled();
+    });
+  });
+
+  // ─── POST /api/auth/logout ────────────────────────────────────────
+
+  describe('POST /api/auth/logout', () => {
+    it('should return 200 on successful logout', async () => {
+      withAuth();
+      mockedService.logout.mockResolvedValue(undefined);
+
+      const response = await request(app)
+        .post('/api/auth/logout')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ refreshToken: 'refresh-token-123' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Sessão encerrada com sucesso');
+      expect(mockedService.logout).toHaveBeenCalledWith('refresh-token-123');
+    });
+
+    it('should return 400 when refreshToken is missing', async () => {
+      withAuth();
+
+      const response = await request(app)
+        .post('/api/auth/logout')
+        .set('Authorization', 'Bearer valid-token')
+        .send({});
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Refresh token é obrigatório');
+    });
+
+    it('should return 401 without authentication', async () => {
+      const response = await request(app)
+        .post('/api/auth/logout')
+        .send({ refreshToken: 'refresh-token-123' });
+
+      expect(response.status).toBe(401);
+    });
+
+    it('should return 500 on unexpected error', async () => {
+      withAuth();
+      mockedService.logout.mockRejectedValue(new Error('Redis down'));
+
+      const response = await request(app)
+        .post('/api/auth/logout')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ refreshToken: 'refresh-token-123' });
 
       expect(response.status).toBe(500);
       expect(response.body.error).toBe('Erro interno do servidor');

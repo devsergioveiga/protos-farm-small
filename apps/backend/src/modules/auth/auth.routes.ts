@@ -5,12 +5,20 @@ import {
   requestPasswordReset,
   resetPassword,
   acceptInvite,
+  logout,
   AuthError,
 } from './auth.service';
+import { authenticate } from '../../middleware/auth';
+import { validatePasswordStrength } from '../../shared/utils/password-validator';
+import {
+  loginRateLimit,
+  incrementLoginFailures,
+  clearLoginFailures,
+} from '../../middleware/rate-limit';
 
 export const authRouter = Router();
 
-authRouter.post('/auth/login', async (req, res) => {
+authRouter.post('/auth/login', loginRateLimit(), async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -20,9 +28,14 @@ authRouter.post('/auth/login', async (req, res) => {
     }
 
     const tokens = await login({ email, password });
+    await clearLoginFailures(email);
     res.json(tokens);
   } catch (err) {
     if (err instanceof AuthError) {
+      const email = req.body?.email;
+      if (err.statusCode === 401 && email) {
+        await incrementLoginFailures(email);
+      }
       res.status(err.statusCode).json({ error: err.message });
       return;
     }
@@ -82,6 +95,14 @@ authRouter.post('/auth/reset-password', async (req, res) => {
       return;
     }
 
+    const validation = validatePasswordStrength(password);
+    if (!validation.valid) {
+      res
+        .status(400)
+        .json({ error: 'Senha não atende aos requisitos', details: validation.errors });
+      return;
+    }
+
     await resetPassword(token, password);
     res.json({ message: 'Senha redefinida com sucesso' });
   } catch (err) {
@@ -107,6 +128,14 @@ authRouter.post('/auth/accept-invite', async (req, res) => {
       return;
     }
 
+    const validation = validatePasswordStrength(password);
+    if (!validation.valid) {
+      res
+        .status(400)
+        .json({ error: 'Senha não atende aos requisitos', details: validation.errors });
+      return;
+    }
+
     const tokens = await acceptInvite(token, password);
     res.json(tokens);
   } catch (err) {
@@ -114,6 +143,22 @@ authRouter.post('/auth/accept-invite', async (req, res) => {
       res.status(err.statusCode).json({ error: err.message });
       return;
     }
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+authRouter.post('/auth/logout', authenticate, async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      res.status(400).json({ error: 'Refresh token é obrigatório' });
+      return;
+    }
+
+    await logout(refreshToken);
+    res.json({ message: 'Sessão encerrada com sucesso' });
+  } catch {
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
