@@ -17,6 +17,7 @@ jest.mock('./organizations.service', () => {
     getOrganizationById: jest.fn(),
     updateOrganizationStatus: jest.fn(),
     updateOrganizationPlan: jest.fn(),
+    updateSessionPolicy: jest.fn(),
     createOrgAdmin: jest.fn(),
     resetOrgUserPassword: jest.fn(),
     unlockOrgUser: jest.fn(),
@@ -432,6 +433,81 @@ describe('Organizations endpoints', () => {
         .send({ plan: 'professional' });
 
       expect(response.status).toBe(500);
+    });
+  });
+
+  // ─── PATCH /api/admin/organizations/:id/session-policy ───────────
+
+  describe('PATCH /api/admin/organizations/:id/session-policy', () => {
+    beforeEach(() => authAs(SUPER_ADMIN_PAYLOAD));
+
+    it('should return 200 on successful update', async () => {
+      const updated = { id: 'org-1', allowMultipleSessions: false };
+      mockedService.updateSessionPolicy.mockResolvedValue(updated as never);
+
+      const response = await request(app)
+        .patch('/api/admin/organizations/org-1/session-policy')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ allowMultipleSessions: false });
+
+      expect(response.status).toBe(200);
+      expect(response.body.allowMultipleSessions).toBe(false);
+      expect(mockedService.updateSessionPolicy).toHaveBeenCalledWith('org-1', false);
+      expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actorId: 'admin-1',
+          action: 'UPDATE_SESSION_POLICY',
+          targetType: 'organization',
+          targetId: 'org-1',
+          metadata: { allowMultipleSessions: false },
+        }),
+      );
+    });
+
+    it('should return 400 when allowMultipleSessions is missing', async () => {
+      const response = await request(app)
+        .patch('/api/admin/organizations/org-1/session-policy')
+        .set('Authorization', 'Bearer valid-token')
+        .send({});
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBeDefined();
+      expect(mockedService.updateSessionPolicy).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 when allowMultipleSessions is not boolean', async () => {
+      const response = await request(app)
+        .patch('/api/admin/organizations/org-1/session-policy')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ allowMultipleSessions: 'yes' });
+
+      expect(response.status).toBe(400);
+      expect(mockedService.updateSessionPolicy).not.toHaveBeenCalled();
+    });
+
+    it('should return 404 when org not found', async () => {
+      mockedService.updateSessionPolicy.mockRejectedValue(
+        new orgService.OrgError('Organização não encontrada', 404),
+      );
+
+      const response = await request(app)
+        .patch('/api/admin/organizations/non-existent/session-policy')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ allowMultipleSessions: true });
+
+      expect(response.status).toBe(404);
+    });
+
+    it('should return 500 on unexpected error', async () => {
+      mockedService.updateSessionPolicy.mockRejectedValue(new Error('DB down'));
+
+      const response = await request(app)
+        .patch('/api/admin/organizations/org-1/session-policy')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ allowMultipleSessions: false });
+
+      expect(response.status).toBe(500);
+      expect(response.body.error).toBe('Erro interno do servidor');
     });
   });
 

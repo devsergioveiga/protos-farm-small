@@ -64,12 +64,14 @@ export function verifyAccessToken(token: string): TokenPayload {
 }
 
 const REFRESH_PREFIX = 'refresh_token:';
+const USER_SESSIONS_PREFIX = 'user_sessions:';
 const PASSWORD_RESET_PREFIX = 'password_reset:';
 const INVITE_PREFIX = 'invite_token:';
 
 async function saveRefreshToken(token: string, userId: string): Promise<void> {
   const env = loadEnv();
   await redis.set(`${REFRESH_PREFIX}${token}`, userId, 'EX', env.REFRESH_TOKEN_EXPIRES_IN);
+  await redis.sadd(`${USER_SESSIONS_PREFIX}${userId}`, token);
 }
 
 async function consumeRefreshToken(token: string): Promise<string | null> {
@@ -77,8 +79,19 @@ async function consumeRefreshToken(token: string): Promise<string | null> {
   const userId = await redis.get(key);
   if (userId) {
     await redis.del(key);
+    await redis.srem(`${USER_SESSIONS_PREFIX}${userId}`, token);
   }
   return userId;
+}
+
+export async function invalidateAllUserSessions(userId: string): Promise<void> {
+  const sessionsKey = `${USER_SESSIONS_PREFIX}${userId}`;
+  const tokens = await redis.smembers(sessionsKey);
+  if (tokens.length > 0) {
+    const keys = tokens.map((t) => `${REFRESH_PREFIX}${t}`);
+    await redis.del(...keys);
+    await redis.del(sessionsKey);
+  }
 }
 
 // ─── Core flows ─────────────────────────────────────────────────────
@@ -94,16 +107,23 @@ export async function login(input: LoginInput): Promise<AuthTokens> {
     throw new AuthError('Conta inativa', 403);
   }
 
+  let allowMultipleSessions = true;
+
   if (user.role !== 'SUPER_ADMIN') {
     const org = await prisma.organization.findUnique({ where: { id: user.organizationId } });
     if (!org || org.status !== 'ACTIVE') {
       throw new AuthError('Organização suspensa ou cancelada', 403);
     }
+    allowMultipleSessions = org.allowMultipleSessions;
   }
 
   const passwordValid = await verifyPassword(input.password, user.passwordHash);
   if (!passwordValid) {
     throw new AuthError('Credenciais inválidas', 401);
+  }
+
+  if (!allowMultipleSessions) {
+    await invalidateAllUserSessions(user.id);
   }
 
   const payload: TokenPayload = {
@@ -161,7 +181,12 @@ export async function refreshTokens(token: string): Promise<AuthTokens> {
 // ─── Logout ─────────────────────────────────────────────────────────
 
 export async function logout(refreshToken: string): Promise<void> {
-  await redis.del(`${REFRESH_PREFIX}${refreshToken}`);
+  const key = `${REFRESH_PREFIX}${refreshToken}`;
+  const userId = await redis.get(key);
+  await redis.del(key);
+  if (userId) {
+    await redis.srem(`${USER_SESSIONS_PREFIX}${userId}`, refreshToken);
+  }
   logger.info('Refresh token invalidated (logout)');
 }
 

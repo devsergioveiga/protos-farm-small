@@ -210,6 +210,22 @@ export async function updateOrganizationPlan(
   return updated;
 }
 
+// ─── Session policy ────────────────────────────────────────────────
+
+export async function updateSessionPolicy(id: string, allowMultipleSessions: boolean) {
+  const org = await prisma.organization.findUnique({ where: { id } });
+  if (!org) {
+    throw new OrgError('Organização não encontrada', 404);
+  }
+
+  const updated = await prisma.organization.update({
+    where: { id },
+    data: { allowMultipleSessions },
+  });
+
+  return updated;
+}
+
 // ─── Org admin management ──────────────────────────────────────────
 
 const INVITE_PREFIX = 'invite_token:';

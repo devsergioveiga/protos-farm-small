@@ -8,6 +8,7 @@ import {
   getOrganizationById,
   updateOrganizationStatus,
   updateOrganizationPlan,
+  updateSessionPolicy,
   createOrgAdmin,
   resetOrgUserPassword,
   unlockOrgUser,
@@ -170,6 +171,45 @@ organizationsRouter.patch('/admin/organizations/:id/plan', ...adminOnly, async (
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
+
+// PATCH /admin/organizations/:id/session-policy
+organizationsRouter.patch(
+  '/admin/organizations/:id/session-policy',
+  ...adminOnly,
+  async (req, res) => {
+    try {
+      const { allowMultipleSessions } = req.body;
+
+      if (typeof allowMultipleSessions !== 'boolean') {
+        res
+          .status(400)
+          .json({ error: 'allowMultipleSessions é obrigatório e deve ser um booleano' });
+        return;
+      }
+
+      const org = await updateSessionPolicy(req.params.id as string, allowMultipleSessions);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'UPDATE_SESSION_POLICY',
+        targetType: 'organization',
+        targetId: req.params.id as string,
+        metadata: { allowMultipleSessions },
+        ipAddress: getClientIp(req),
+      });
+
+      res.json(org);
+    } catch (err) {
+      if (err instanceof OrgError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
 
 // POST /admin/organizations/:id/users
 organizationsRouter.post('/admin/organizations/:id/users', ...adminOnly, async (req, res) => {
