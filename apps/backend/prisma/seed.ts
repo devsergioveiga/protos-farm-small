@@ -27,6 +27,7 @@ const organizations = [
     status: 'ACTIVE' as const,
     maxUsers: 10,
     maxFarms: 5,
+    allowMultipleSessions: false,
   },
 ];
 
