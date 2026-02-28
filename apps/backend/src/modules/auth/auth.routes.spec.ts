@@ -10,6 +10,7 @@ jest.mock('./auth.service', () => {
     refreshTokens: jest.fn(),
     requestPasswordReset: jest.fn(),
     resetPassword: jest.fn(),
+    acceptInvite: jest.fn(),
   };
 });
 
@@ -278,6 +279,72 @@ describe('Auth endpoints', () => {
       const response = await request(app)
         .post('/api/auth/reset-password')
         .send({ token: 'some-token', password: 'NewPass@1234' });
+
+      expect(response.status).toBe(500);
+      expect(response.body.error).toBe('Erro interno do servidor');
+    });
+  });
+
+  // ─── POST /api/auth/accept-invite ─────────────────────────────────
+
+  describe('POST /api/auth/accept-invite', () => {
+    it('should return 200 with tokens on valid invite', async () => {
+      mockedService.acceptInvite.mockResolvedValue({
+        accessToken: 'access-token-123',
+        refreshToken: 'refresh-token-456',
+      });
+
+      const response = await request(app)
+        .post('/api/auth/accept-invite')
+        .send({ token: 'valid-invite-token', password: 'Senha@123' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        accessToken: 'access-token-123',
+        refreshToken: 'refresh-token-456',
+      });
+      expect(mockedService.acceptInvite).toHaveBeenCalledWith('valid-invite-token', 'Senha@123');
+    });
+
+    it('should return 400 when token is missing', async () => {
+      const response = await request(app)
+        .post('/api/auth/accept-invite')
+        .send({ password: 'Senha@123' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBeDefined();
+      expect(mockedService.acceptInvite).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 when password is missing', async () => {
+      const response = await request(app)
+        .post('/api/auth/accept-invite')
+        .send({ token: 'valid-invite-token' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBeDefined();
+      expect(mockedService.acceptInvite).not.toHaveBeenCalled();
+    });
+
+    it('should return 401 on invalid token', async () => {
+      mockedService.acceptInvite.mockRejectedValue(
+        new authService.AuthError('Token inválido ou expirado', 401),
+      );
+
+      const response = await request(app)
+        .post('/api/auth/accept-invite')
+        .send({ token: 'expired-token', password: 'Senha@123' });
+
+      expect(response.status).toBe(401);
+      expect(response.body.error).toBe('Token inválido ou expirado');
+    });
+
+    it('should return 500 on unexpected error', async () => {
+      mockedService.acceptInvite.mockRejectedValue(new Error('DB down'));
+
+      const response = await request(app)
+        .post('/api/auth/accept-invite')
+        .send({ token: 'some-token', password: 'Senha@123' });
 
       expect(response.status).toBe(500);
       expect(response.body.error).toBe('Erro interno do servidor');

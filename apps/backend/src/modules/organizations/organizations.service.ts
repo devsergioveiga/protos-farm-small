@@ -1,5 +1,10 @@
+import crypto from 'node:crypto';
 import { OrgStatus } from '@prisma/client';
 import { prisma } from '../../database/prisma';
+import { redis } from '../../database/redis';
+import { loadEnv } from '../../config/env';
+import { sendMail } from '../../shared/mail/mail.service';
+import { logger } from '../../shared/utils/logger';
 import { cleanDocument, validateDocument } from '../../shared/utils/document-validator';
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -201,6 +206,124 @@ export async function updateOrganizationPlan(
       ...(input.maxFarms !== undefined && { maxFarms: input.maxFarms }),
     },
   });
+
+  return updated;
+}
+
+// ─── Org admin management ──────────────────────────────────────────
+
+const INVITE_PREFIX = 'invite_token:';
+const PASSWORD_RESET_PREFIX = 'password_reset:';
+
+export interface CreateOrgAdminInput {
+  name: string;
+  email: string;
+  phone?: string;
+}
+
+export async function createOrgAdmin(orgId: string, input: CreateOrgAdminInput) {
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    include: { _count: { select: { users: true } } },
+  });
+
+  if (!org) {
+    throw new OrgError('Organização não encontrada', 404);
+  }
+
+  if (org.status !== 'ACTIVE') {
+    throw new OrgError('Organização não está ativa', 422);
+  }
+
+  if (org._count.users >= org.maxUsers) {
+    throw new OrgError('Limite de usuários atingido', 422);
+  }
+
+  const existingUser = await prisma.user.findUnique({ where: { email: input.email } });
+  if (existingUser) {
+    throw new OrgError('Email já cadastrado', 409);
+  }
+
+  const user = await prisma.user.create({
+    data: {
+      name: input.name,
+      email: input.email,
+      phone: input.phone ?? null,
+      role: 'ADMIN',
+      passwordHash: null,
+      status: 'ACTIVE',
+      organizationId: orgId,
+    },
+  });
+
+  const env = loadEnv();
+  const token = crypto.randomUUID();
+  await redis.set(`${INVITE_PREFIX}${token}`, user.id, 'EX', env.INVITE_TOKEN_EXPIRES_IN);
+
+  const inviteUrl = `${env.FRONTEND_URL}/accept-invite?token=${token}`;
+
+  await sendMail({
+    to: user.email,
+    subject: 'Protos Farm — Convite para definir sua senha',
+    text: `Olá ${user.name},\n\nVocê foi convidado(a) como administrador(a) da organização ${org.name} no Protos Farm.\n\nClique no link abaixo para definir sua senha:\n${inviteUrl}\n\nEste link expira em 48 horas.\n\nEquipe Protos Farm`,
+    html: `<p>Olá <strong>${user.name}</strong>,</p><p>Você foi convidado(a) como administrador(a) da organização <strong>${org.name}</strong> no Protos Farm.</p><p><a href="${inviteUrl}">Clique aqui para definir sua senha</a></p><p>Este link expira em 48 horas.</p><p>Equipe Protos Farm</p>`,
+  });
+
+  logger.info({ userId: user.id, orgId, email: user.email }, 'Org admin invite sent');
+
+  return user;
+}
+
+export async function resetOrgUserPassword(orgId: string, userId: string) {
+  const org = await prisma.organization.findUnique({ where: { id: orgId } });
+  if (!org) {
+    throw new OrgError('Organização não encontrada', 404);
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user || user.organizationId !== orgId) {
+    throw new OrgError('Usuário não encontrado nesta organização', 404);
+  }
+
+  const env = loadEnv();
+  const token = crypto.randomUUID();
+  await redis.set(`${PASSWORD_RESET_PREFIX}${token}`, userId, 'EX', env.PASSWORD_RESET_EXPIRES_IN);
+
+  const resetUrl = `${env.FRONTEND_URL}/reset-password?token=${token}`;
+
+  await sendMail({
+    to: user.email,
+    subject: 'Protos Farm — Redefinição de senha',
+    text: `Olá ${user.name},\n\nUma redefinição de senha foi solicitada para sua conta.\n\nClique no link abaixo para criar uma nova senha:\n${resetUrl}\n\nEste link expira em 1 hora.\n\nSe você não solicitou esta alteração, entre em contato com o suporte.\n\nEquipe Protos Farm`,
+    html: `<p>Olá <strong>${user.name}</strong>,</p><p>Uma redefinição de senha foi solicitada para sua conta.</p><p><a href="${resetUrl}">Clique aqui para criar uma nova senha</a></p><p>Este link expira em 1 hora.</p><p>Se você não solicitou esta alteração, entre em contato com o suporte.</p><p>Equipe Protos Farm</p>`,
+  });
+
+  logger.info({ userId, orgId }, 'Org user password reset email sent');
+
+  return { message: 'Email de redefinição de senha enviado' };
+}
+
+export async function unlockOrgUser(orgId: string, userId: string) {
+  const org = await prisma.organization.findUnique({ where: { id: orgId } });
+  if (!org) {
+    throw new OrgError('Organização não encontrada', 404);
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user || user.organizationId !== orgId) {
+    throw new OrgError('Usuário não encontrado nesta organização', 404);
+  }
+
+  if (user.status === 'ACTIVE') {
+    throw new OrgError('Usuário já está ativo', 422);
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { status: 'ACTIVE' },
+  });
+
+  logger.info({ userId, orgId }, 'Org user unlocked');
 
   return updated;
 }

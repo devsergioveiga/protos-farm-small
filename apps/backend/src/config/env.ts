@@ -20,6 +20,7 @@ interface Env {
   SMTP_PASSWORD: string;
   SMTP_FROM: string;
   PASSWORD_RESET_EXPIRES_IN: number;
+  INVITE_TOKEN_EXPIRES_IN: number;
   FRONTEND_URL: string;
 }
 
@@ -42,6 +43,7 @@ const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
     SMTP_PASSWORD: '',
     SMTP_FROM: 'noreply@protosfarm.dev',
     PASSWORD_RESET_EXPIRES_IN: 3600,
+    INVITE_TOKEN_EXPIRES_IN: 172800,
     FRONTEND_URL: 'http://localhost:5173',
   },
   test: {
@@ -62,6 +64,7 @@ const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
     SMTP_PASSWORD: '',
     SMTP_FROM: 'noreply@protosfarm.dev',
     PASSWORD_RESET_EXPIRES_IN: 3600,
+    INVITE_TOKEN_EXPIRES_IN: 172800,
     FRONTEND_URL: 'http://localhost:5173',
   },
   staging: {
@@ -132,6 +135,8 @@ function loadEnv(processEnv: Record<string, string | undefined> = process.env): 
     SMTP_FROM: processEnv.SMTP_FROM ?? defaults.SMTP_FROM ?? 'noreply@protosfarm.dev',
     PASSWORD_RESET_EXPIRES_IN:
       toNumber(processEnv.PASSWORD_RESET_EXPIRES_IN) ?? defaults.PASSWORD_RESET_EXPIRES_IN ?? 3600,
+    INVITE_TOKEN_EXPIRES_IN:
+      toNumber(processEnv.INVITE_TOKEN_EXPIRES_IN) ?? defaults.INVITE_TOKEN_EXPIRES_IN ?? 172800,
     FRONTEND_URL: processEnv.FRONTEND_URL ?? (defaults.FRONTEND_URL as string),
   };
 

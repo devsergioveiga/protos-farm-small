@@ -65,6 +65,7 @@ export function verifyAccessToken(token: string): TokenPayload {
 
 const REFRESH_PREFIX = 'refresh_token:';
 const PASSWORD_RESET_PREFIX = 'password_reset:';
+const INVITE_PREFIX = 'invite_token:';
 
 async function saveRefreshToken(token: string, userId: string): Promise<void> {
   const env = loadEnv();
@@ -204,4 +205,41 @@ export async function resetPassword(token: string, newPassword: string): Promise
   await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
 
   logger.info({ userId }, 'Password reset completed');
+}
+
+// ─── Accept invite ──────────────────────────────────────────────────
+
+export async function acceptInvite(token: string, password: string): Promise<AuthTokens> {
+  const key = `${INVITE_PREFIX}${token}`;
+  const userId = await redis.get(key);
+
+  if (!userId) {
+    throw new AuthError('Token inválido ou expirado', 401);
+  }
+
+  await redis.del(key);
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+
+  if (!user) {
+    throw new AuthError('Usuário não encontrado', 401);
+  }
+
+  const passwordHash = await hashPassword(password);
+  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+
+  const payload: TokenPayload = {
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+    organizationId: user.organizationId,
+  };
+
+  const accessToken = generateAccessToken(payload);
+  const refreshToken = crypto.randomUUID();
+  await saveRefreshToken(refreshToken, user.id);
+
+  logger.info({ userId }, 'Invite accepted, password set');
+
+  return { accessToken, refreshToken };
 }

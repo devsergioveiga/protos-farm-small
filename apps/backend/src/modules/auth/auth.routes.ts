@@ -4,6 +4,7 @@ import {
   refreshTokens,
   requestPasswordReset,
   resetPassword,
+  acceptInvite,
   AuthError,
 } from './auth.service';
 
@@ -83,6 +84,31 @@ authRouter.post('/auth/reset-password', async (req, res) => {
 
     await resetPassword(token, password);
     res.json({ message: 'Senha redefinida com sucesso' });
+  } catch (err) {
+    if (err instanceof AuthError) {
+      res.status(err.statusCode).json({ error: err.message });
+      return;
+    }
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+authRouter.post('/auth/accept-invite', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token) {
+      res.status(400).json({ error: 'Token é obrigatório' });
+      return;
+    }
+
+    if (!password) {
+      res.status(400).json({ error: 'Senha é obrigatória' });
+      return;
+    }
+
+    const tokens = await acceptInvite(token, password);
+    res.json(tokens);
   } catch (err) {
     if (err instanceof AuthError) {
       res.status(err.statusCode).json({ error: err.message });
