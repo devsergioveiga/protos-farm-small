@@ -299,6 +299,57 @@ async function main() {
   }
   console.log(`  ✓ ${userFarmAccess.length} vínculos usuário-fazenda criados`);
 
+  // Audit Logs de exemplo
+  console.log('');
+  const auditLogs = [
+    {
+      actorId: users[0].id,
+      actorEmail: users[0].email,
+      actorRole: 'SUPER_ADMIN' as const,
+      action: 'CREATE_ORGANIZATION',
+      targetType: 'organization',
+      targetId: organizations[0].id,
+      metadata: { name: organizations[0].name, type: organizations[0].type },
+      ipAddress: '192.168.1.10',
+    },
+    {
+      actorId: users[0].id,
+      actorEmail: users[0].email,
+      actorRole: 'SUPER_ADMIN' as const,
+      action: 'CREATE_ORGANIZATION',
+      targetType: 'organization',
+      targetId: organizations[1].id,
+      metadata: { name: organizations[1].name, type: organizations[1].type },
+      ipAddress: '192.168.1.10',
+    },
+    {
+      actorId: users[0].id,
+      actorEmail: users[0].email,
+      actorRole: 'SUPER_ADMIN' as const,
+      action: 'CREATE_ORG_ADMIN',
+      targetType: 'user',
+      targetId: users[1].id,
+      metadata: { organizationId: organizations[0].id, email: users[1].email },
+      ipAddress: '192.168.1.10',
+    },
+    {
+      actorId: users[0].id,
+      actorEmail: users[0].email,
+      actorRole: 'SUPER_ADMIN' as const,
+      action: 'UPDATE_ORGANIZATION_PLAN',
+      targetType: 'organization',
+      targetId: organizations[0].id,
+      metadata: { plan: 'premium', maxUsers: 20 },
+      ipAddress: '10.0.0.5',
+    },
+  ];
+
+  await prisma.auditLog.deleteMany();
+  for (const log of auditLogs) {
+    await prisma.auditLog.create({ data: log });
+  }
+  console.log(`  ✓ ${auditLogs.length} registros de auditoria criados`);
+
   console.log('\n🌱 Seed concluído com sucesso!\n');
 }
 

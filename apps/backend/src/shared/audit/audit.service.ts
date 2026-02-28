@@ -1,0 +1,22 @@
+import { Prisma, UserRole } from '@prisma/client';
+import { prisma } from '../../database/prisma';
+import { logger } from '../utils/logger';
+
+export interface AuditEntry {
+  actorId: string;
+  actorEmail: string;
+  actorRole: UserRole;
+  action: string;
+  targetType?: string;
+  targetId?: string;
+  metadata?: Prisma.InputJsonValue;
+  ipAddress?: string;
+}
+
+export async function logAudit(entry: AuditEntry): Promise<void> {
+  try {
+    await prisma.auditLog.create({ data: entry });
+  } catch (err) {
+    logger.error({ err, entry }, 'Failed to write audit log');
+  }
+}

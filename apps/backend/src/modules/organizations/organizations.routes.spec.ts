@@ -2,6 +2,11 @@ import request from 'supertest';
 import { app } from '../../app';
 import * as orgService from './organizations.service';
 import * as authService from '../auth/auth.service';
+import * as auditService from '../../shared/audit/audit.service';
+
+jest.mock('../../shared/audit/audit.service', () => ({
+  logAudit: jest.fn().mockResolvedValue(undefined),
+}));
 
 jest.mock('./organizations.service', () => {
   const actual = jest.requireActual('./organizations.service');
@@ -12,6 +17,9 @@ jest.mock('./organizations.service', () => {
     getOrganizationById: jest.fn(),
     updateOrganizationStatus: jest.fn(),
     updateOrganizationPlan: jest.fn(),
+    createOrgAdmin: jest.fn(),
+    resetOrgUserPassword: jest.fn(),
+    unlockOrgUser: jest.fn(),
   };
 });
 
@@ -25,6 +33,7 @@ jest.mock('../auth/auth.service', () => {
 
 const mockedService = jest.mocked(orgService);
 const mockedAuth = jest.mocked(authService);
+const mockedAudit = jest.mocked(auditService);
 
 const SUPER_ADMIN_PAYLOAD = {
   userId: 'admin-1',
@@ -99,6 +108,14 @@ describe('Organizations endpoints', () => {
         maxUsers: undefined,
         maxFarms: undefined,
       });
+      expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actorId: 'admin-1',
+          action: 'CREATE_ORGANIZATION',
+          targetType: 'organization',
+          targetId: 'org-new',
+        }),
+      );
     });
 
     it('should return 400 when name is missing', async () => {
@@ -413,6 +430,202 @@ describe('Organizations endpoints', () => {
         .patch('/api/admin/organizations/org-1/plan')
         .set('Authorization', 'Bearer valid-token')
         .send({ plan: 'professional' });
+
+      expect(response.status).toBe(500);
+    });
+  });
+
+  // ─── POST /api/admin/organizations/:id/users ─────────────────────
+
+  describe('POST /api/admin/organizations/:id/users', () => {
+    const validBody = { name: 'Novo Admin', email: 'novo@org.com' };
+
+    beforeEach(() => authAs(SUPER_ADMIN_PAYLOAD));
+
+    it('should return 201 on success', async () => {
+      const created = { id: 'user-new', ...validBody, role: 'ADMIN', status: 'ACTIVE' };
+      mockedService.createOrgAdmin.mockResolvedValue(created as never);
+
+      const response = await request(app)
+        .post('/api/admin/organizations/org-1/users')
+        .set('Authorization', 'Bearer valid-token')
+        .send(validBody);
+
+      expect(response.status).toBe(201);
+      expect(response.body.id).toBe('user-new');
+      expect(mockedService.createOrgAdmin).toHaveBeenCalledWith('org-1', {
+        name: 'Novo Admin',
+        email: 'novo@org.com',
+        phone: undefined,
+      });
+    });
+
+    it('should return 400 when name is missing', async () => {
+      const response = await request(app)
+        .post('/api/admin/organizations/org-1/users')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ email: 'novo@org.com' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBeDefined();
+      expect(mockedService.createOrgAdmin).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 when email is missing', async () => {
+      const response = await request(app)
+        .post('/api/admin/organizations/org-1/users')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ name: 'Novo Admin' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBeDefined();
+      expect(mockedService.createOrgAdmin).not.toHaveBeenCalled();
+    });
+
+    it('should return 404 when org not found', async () => {
+      mockedService.createOrgAdmin.mockRejectedValue(
+        new orgService.OrgError('Organização não encontrada', 404),
+      );
+
+      const response = await request(app)
+        .post('/api/admin/organizations/non-existent/users')
+        .set('Authorization', 'Bearer valid-token')
+        .send(validBody);
+
+      expect(response.status).toBe(404);
+    });
+
+    it('should return 409 on duplicate email', async () => {
+      mockedService.createOrgAdmin.mockRejectedValue(
+        new orgService.OrgError('Email já cadastrado', 409),
+      );
+
+      const response = await request(app)
+        .post('/api/admin/organizations/org-1/users')
+        .set('Authorization', 'Bearer valid-token')
+        .send(validBody);
+
+      expect(response.status).toBe(409);
+      expect(response.body.error).toBe('Email já cadastrado');
+    });
+
+    it('should return 422 when org not active', async () => {
+      mockedService.createOrgAdmin.mockRejectedValue(
+        new orgService.OrgError('Organização não está ativa', 422),
+      );
+
+      const response = await request(app)
+        .post('/api/admin/organizations/org-1/users')
+        .set('Authorization', 'Bearer valid-token')
+        .send(validBody);
+
+      expect(response.status).toBe(422);
+      expect(response.body.error).toBe('Organização não está ativa');
+    });
+
+    it('should return 500 on unexpected error', async () => {
+      mockedService.createOrgAdmin.mockRejectedValue(new Error('DB down'));
+
+      const response = await request(app)
+        .post('/api/admin/organizations/org-1/users')
+        .set('Authorization', 'Bearer valid-token')
+        .send(validBody);
+
+      expect(response.status).toBe(500);
+    });
+  });
+
+  // ─── POST /api/admin/organizations/:id/users/:userId/reset-password
+
+  describe('POST /api/admin/organizations/:id/users/:userId/reset-password', () => {
+    beforeEach(() => authAs(SUPER_ADMIN_PAYLOAD));
+
+    it('should return 200 on success', async () => {
+      mockedService.resetOrgUserPassword.mockResolvedValue({
+        message: 'Email de redefinição de senha enviado',
+      } as never);
+
+      const response = await request(app)
+        .post('/api/admin/organizations/org-1/users/user-1/reset-password')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Email de redefinição de senha enviado');
+      expect(mockedService.resetOrgUserPassword).toHaveBeenCalledWith('org-1', 'user-1');
+    });
+
+    it('should return 404 when not found', async () => {
+      mockedService.resetOrgUserPassword.mockRejectedValue(
+        new orgService.OrgError('Usuário não encontrado nesta organização', 404),
+      );
+
+      const response = await request(app)
+        .post('/api/admin/organizations/org-1/users/non-existent/reset-password')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(404);
+    });
+
+    it('should return 500 on unexpected error', async () => {
+      mockedService.resetOrgUserPassword.mockRejectedValue(new Error('DB down'));
+
+      const response = await request(app)
+        .post('/api/admin/organizations/org-1/users/user-1/reset-password')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(500);
+    });
+  });
+
+  // ─── PATCH /api/admin/organizations/:id/users/:userId/unlock ─────
+
+  describe('PATCH /api/admin/organizations/:id/users/:userId/unlock', () => {
+    beforeEach(() => authAs(SUPER_ADMIN_PAYLOAD));
+
+    it('should return 200 on success', async () => {
+      const updated = { id: 'user-1', status: 'ACTIVE' };
+      mockedService.unlockOrgUser.mockResolvedValue(updated as never);
+
+      const response = await request(app)
+        .patch('/api/admin/organizations/org-1/users/user-1/unlock')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.status).toBe('ACTIVE');
+      expect(mockedService.unlockOrgUser).toHaveBeenCalledWith('org-1', 'user-1');
+    });
+
+    it('should return 404 when not found', async () => {
+      mockedService.unlockOrgUser.mockRejectedValue(
+        new orgService.OrgError('Usuário não encontrado nesta organização', 404),
+      );
+
+      const response = await request(app)
+        .patch('/api/admin/organizations/org-1/users/non-existent/unlock')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(404);
+    });
+
+    it('should return 422 when already active', async () => {
+      mockedService.unlockOrgUser.mockRejectedValue(
+        new orgService.OrgError('Usuário já está ativo', 422),
+      );
+
+      const response = await request(app)
+        .patch('/api/admin/organizations/org-1/users/user-1/unlock')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(422);
+      expect(response.body.error).toBe('Usuário já está ativo');
+    });
+
+    it('should return 500 on unexpected error', async () => {
+      mockedService.unlockOrgUser.mockRejectedValue(new Error('DB down'));
+
+      const response = await request(app)
+        .patch('/api/admin/organizations/org-1/users/user-1/unlock')
+        .set('Authorization', 'Bearer valid-token');
 
       expect(response.status).toBe(500);
     });
