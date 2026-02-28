@@ -547,6 +547,21 @@ describe('Auth endpoints', () => {
       );
     });
 
+    it('should redirect to login with google_social_disabled when org disables social login', async () => {
+      mockedGoogleService.handleGoogleCallback.mockRejectedValue(
+        new authService.AuthError('Login social desabilitado para esta organização', 403),
+      );
+
+      const response = await request(app)
+        .get('/api/auth/google/callback')
+        .query({ code: 'google-code', state: 'csrf-state' });
+
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe(
+        'http://localhost:5173/login?error=google_social_disabled',
+      );
+    });
+
     it('should redirect to login with google_error on unexpected error', async () => {
       mockedGoogleService.handleGoogleCallback.mockRejectedValue(new Error('unexpected'));
 

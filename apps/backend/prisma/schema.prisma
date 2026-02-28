@@ -54,6 +54,7 @@ model Organization {
   maxUsers  Int              @default(10)
   maxFarms  Int              @default(5)
   allowMultipleSessions Boolean @default(true)
+  allowSocialLogin     Boolean @default(true)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 

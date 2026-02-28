@@ -200,6 +200,8 @@ authRouter.get('/auth/google/callback', async (req, res) => {
         errorCode = 'google_email_not_found';
       } else if (err.message === 'Esta conta está vinculada a outra conta Google') {
         errorCode = 'google_account_mismatch';
+      } else if (err.message === 'Login social desabilitado para esta organização') {
+        errorCode = 'google_social_disabled';
       }
       res.redirect(`${frontendUrl}/login?error=${errorCode}`);
       return;

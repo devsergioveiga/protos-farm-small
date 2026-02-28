@@ -10,6 +10,8 @@ const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
     'Este email não está cadastrado no sistema. Entre em contato com o administrador.',
   google_account_mismatch:
     'Esta conta já está vinculada a outra conta Google. Entre em contato com o administrador.',
+  google_social_disabled:
+    'Login com Google está desabilitado para sua organização. Use email e senha.',
   google_invalid_request: 'Requisição inválida. Tente novamente.',
   google_error: 'Não foi possível entrar com Google. Tente novamente.',
 };

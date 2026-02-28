@@ -18,6 +18,7 @@ jest.mock('./organizations.service', () => {
     updateOrganizationStatus: jest.fn(),
     updateOrganizationPlan: jest.fn(),
     updateSessionPolicy: jest.fn(),
+    updateSocialLoginPolicy: jest.fn(),
     createOrgAdmin: jest.fn(),
     resetOrgUserPassword: jest.fn(),
     unlockOrgUser: jest.fn(),
@@ -702,6 +703,89 @@ describe('Organizations endpoints', () => {
       const response = await request(app)
         .patch('/api/admin/organizations/org-1/users/user-1/unlock')
         .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(500);
+    });
+  });
+
+  // ─── PATCH /admin/organizations/:id/social-login-policy ──────────
+
+  describe('PATCH /api/admin/organizations/:id/social-login-policy', () => {
+    beforeEach(() => authAs(SUPER_ADMIN_PAYLOAD));
+
+    it('should return 200 on successful update', async () => {
+      mockedService.updateSocialLoginPolicy.mockResolvedValue({
+        id: 'org-1',
+        name: 'Test Org',
+        allowSocialLogin: false,
+      } as never);
+
+      const response = await request(app)
+        .patch('/api/admin/organizations/org-1/social-login-policy')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ allowSocialLogin: false });
+
+      expect(response.status).toBe(200);
+      expect(response.body.allowSocialLogin).toBe(false);
+      expect(mockedService.updateSocialLoginPolicy).toHaveBeenCalledWith('org-1', false);
+      expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'UPDATE_SOCIAL_LOGIN_POLICY',
+          targetId: 'org-1',
+          metadata: { allowSocialLogin: false },
+        }),
+      );
+    });
+
+    it('should return 400 when allowSocialLogin is not a boolean', async () => {
+      const response = await request(app)
+        .patch('/api/admin/organizations/org-1/social-login-policy')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ allowSocialLogin: 'yes' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('allowSocialLogin é obrigatório e deve ser um booleano');
+    });
+
+    it('should return 404 when org not found', async () => {
+      mockedService.updateSocialLoginPolicy.mockRejectedValue(
+        new orgService.OrgError('Organização não encontrada', 404),
+      );
+
+      const response = await request(app)
+        .patch('/api/admin/organizations/non-existent/social-login-policy')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ allowSocialLogin: true });
+
+      expect(response.status).toBe(404);
+    });
+
+    it('should return 401 without authentication', async () => {
+      const response = await request(app)
+        .patch('/api/admin/organizations/org-1/social-login-policy')
+        .send({ allowSocialLogin: false });
+
+      expect(response.status).toBe(401);
+    });
+
+    it('should return 403 for non-SUPER_ADMIN', async () => {
+      authAs(OPERATOR_PAYLOAD);
+
+      const response = await request(app)
+        .patch('/api/admin/organizations/org-1/social-login-policy')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ allowSocialLogin: false });
+
+      expect(response.status).toBe(403);
+    });
+
+    it('should return 500 on unexpected error', async () => {
+      mockedService.updateSocialLoginPolicy.mockRejectedValue(new Error('DB down'));
+
+      const response = await request(app)
+        .patch('/api/admin/organizations/org-1/social-login-policy')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ allowSocialLogin: true });
 
       expect(response.status).toBe(500);
     });

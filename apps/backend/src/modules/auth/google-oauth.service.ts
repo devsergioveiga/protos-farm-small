@@ -95,6 +95,14 @@ export async function handleGoogleCallback(code: string, state: string): Promise
     throw new AuthError('Conta inativa', 403);
   }
 
+  // CA5: Check if organization allows social login
+  if (user.role !== 'SUPER_ADMIN') {
+    const org = await prisma.organization.findUnique({ where: { id: user.organizationId } });
+    if (org && !org.allowSocialLogin) {
+      throw new AuthError('Login social desabilitado para esta organização', 403);
+    }
+  }
+
   // CA3: Link Google account on first social login, verify on subsequent logins
   if (!user.googleId) {
     // First Google login — link the account
