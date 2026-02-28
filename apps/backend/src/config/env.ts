@@ -21,6 +21,7 @@ interface Env {
   SMTP_FROM: string;
   PASSWORD_RESET_EXPIRES_IN: number;
   INVITE_TOKEN_EXPIRES_IN: number;
+  ORG_INVITE_TOKEN_EXPIRES_IN: number;
   FRONTEND_URL: string;
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
@@ -47,6 +48,7 @@ const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
     SMTP_FROM: 'noreply@protosfarm.dev',
     PASSWORD_RESET_EXPIRES_IN: 3600,
     INVITE_TOKEN_EXPIRES_IN: 172800,
+    ORG_INVITE_TOKEN_EXPIRES_IN: 604800,
     FRONTEND_URL: 'http://localhost:5173',
     GOOGLE_CLIENT_ID: '',
     GOOGLE_CLIENT_SECRET: '',
@@ -71,6 +73,7 @@ const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
     SMTP_FROM: 'noreply@protosfarm.dev',
     PASSWORD_RESET_EXPIRES_IN: 3600,
     INVITE_TOKEN_EXPIRES_IN: 172800,
+    ORG_INVITE_TOKEN_EXPIRES_IN: 604800,
     FRONTEND_URL: 'http://localhost:5173',
     GOOGLE_CLIENT_ID: '',
     GOOGLE_CLIENT_SECRET: '',
@@ -146,6 +149,10 @@ function loadEnv(processEnv: Record<string, string | undefined> = process.env): 
       toNumber(processEnv.PASSWORD_RESET_EXPIRES_IN) ?? defaults.PASSWORD_RESET_EXPIRES_IN ?? 3600,
     INVITE_TOKEN_EXPIRES_IN:
       toNumber(processEnv.INVITE_TOKEN_EXPIRES_IN) ?? defaults.INVITE_TOKEN_EXPIRES_IN ?? 172800,
+    ORG_INVITE_TOKEN_EXPIRES_IN:
+      toNumber(processEnv.ORG_INVITE_TOKEN_EXPIRES_IN) ??
+      defaults.ORG_INVITE_TOKEN_EXPIRES_IN ??
+      604800,
     FRONTEND_URL: processEnv.FRONTEND_URL ?? (defaults.FRONTEND_URL as string),
     GOOGLE_CLIENT_ID: processEnv.GOOGLE_CLIENT_ID ?? defaults.GOOGLE_CLIENT_ID ?? '',
     GOOGLE_CLIENT_SECRET: processEnv.GOOGLE_CLIENT_SECRET ?? defaults.GOOGLE_CLIENT_SECRET ?? '',

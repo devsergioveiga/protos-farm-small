@@ -67,6 +67,7 @@ const REFRESH_PREFIX = 'refresh_token:';
 const USER_SESSIONS_PREFIX = 'user_sessions:';
 const PASSWORD_RESET_PREFIX = 'password_reset:';
 const INVITE_PREFIX = 'invite_token:';
+const ORG_INVITE_PREFIX = 'org_invite_token:';
 
 async function saveRefreshToken(token: string, userId: string): Promise<void> {
   const env = loadEnv();
@@ -255,8 +256,13 @@ export async function resetPassword(token: string, newPassword: string): Promise
 // ─── Accept invite ──────────────────────────────────────────────────
 
 export async function acceptInvite(token: string, password: string): Promise<AuthTokens> {
-  const key = `${INVITE_PREFIX}${token}`;
-  const userId = await redis.get(key);
+  let key = `${INVITE_PREFIX}${token}`;
+  let userId = await redis.get(key);
+
+  if (!userId) {
+    key = `${ORG_INVITE_PREFIX}${token}`;
+    userId = await redis.get(key);
+  }
 
   if (!userId) {
     throw new AuthError('Token inválido ou expirado', 401);
