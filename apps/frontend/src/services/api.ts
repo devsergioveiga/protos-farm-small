@@ -8,6 +8,11 @@ interface ApiError {
 
 class ApiClient {
   private baseUrl = '/api';
+  private onUnauthorized: (() => void) | null = null;
+
+  setOnUnauthorized(callback: () => void): void {
+    this.onUnauthorized = callback;
+  }
 
   private getAccessToken(): string | null {
     return localStorage.getItem(TOKEN_KEY);
@@ -43,13 +48,19 @@ class ApiClient {
       body: body ? JSON.stringify(body) : undefined,
     });
 
-    if (response.status === 401 && retry) {
+    const isAuthRoute = path.startsWith('/auth/');
+
+    if (response.status === 401 && retry && !isAuthRoute) {
       const refreshed = await this.tryRefresh();
       if (refreshed) {
         return this.request<T>(method, path, body, false);
       }
       this.clearTokens();
-      window.location.href = '/login';
+      if (this.onUnauthorized) {
+        this.onUnauthorized();
+      } else {
+        window.location.href = '/login';
+      }
       throw new Error('Sessão expirada');
     }
 
