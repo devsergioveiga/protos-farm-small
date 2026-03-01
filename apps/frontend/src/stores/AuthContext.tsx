@@ -24,7 +24,10 @@ function decodeJwtPayload(token: string): User | null {
   try {
     const base64 = token.split('.')[1];
     const json = atob(base64);
-    const payload = JSON.parse(json) as User;
+    const payload = JSON.parse(json) as User & { exp?: number };
+    if (payload.exp && Date.now() >= payload.exp * 1000) {
+      return null;
+    }
     return payload;
   } catch {
     return null;
@@ -46,11 +49,20 @@ function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    api.setOnUnauthorized(() => {
+      setUser(null);
+      setPermissions([]);
+    });
+
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
       const decoded = decodeJwtPayload(token);
-      setUser(decoded);
-      void fetchPermissions();
+      if (decoded) {
+        setUser(decoded);
+        void fetchPermissions();
+      } else {
+        api.clearTokens();
+      }
     }
     setIsLoading(false);
   }, [fetchPermissions]);
