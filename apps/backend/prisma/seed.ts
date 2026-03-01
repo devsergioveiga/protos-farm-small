@@ -394,6 +394,247 @@ async function main() {
   }
   console.log(`  ✓ ${userFarmAccess.length} vínculos usuário-fazenda criados`);
 
+  // ─── Produtores ──────────────────────────────────────────────────────
+  console.log('\n  Criando produtores...');
+
+  const producers = [
+    // Org 1 — Carlos Eduardo Silva (PF, produtor proprietário)
+    {
+      id: 'e1b2c3d4-0001-4000-8000-000000000001',
+      organizationId: organizations[0].id,
+      type: 'PF' as const,
+      name: 'Carlos Eduardo Silva',
+      document: '529.982.247-25',
+      birthDate: new Date('1975-06-15'),
+      address: 'Rua das Palmeiras, 120',
+      city: 'Sorriso',
+      state: 'MT',
+      zipCode: '78890-000',
+      taxRegime: 'REAL' as const,
+      ruralActivityType: 'Agricultura e Pecuária',
+      status: 'ACTIVE' as const,
+    },
+    // Org 1 — Agropecuária Bom Futuro (PJ)
+    {
+      id: 'e1b2c3d4-0002-4000-8000-000000000002',
+      organizationId: organizations[0].id,
+      type: 'PJ' as const,
+      name: 'Agropecuária Bom Futuro Ltda',
+      tradeName: 'Bom Futuro',
+      document: '12.345.678/0001-90',
+      legalRepresentative: 'Carlos Eduardo Silva',
+      legalRepCpf: '529.982.247-25',
+      address: 'Rod. BR-163, Km 245',
+      city: 'Sorriso',
+      state: 'MT',
+      zipCode: '78890-000',
+      taxRegime: 'PRESUMIDO' as const,
+      mainCnae: '0111-3/01',
+      ruralActivityType: 'Cultivo de soja',
+      status: 'ACTIVE' as const,
+    },
+    // Org 1 — Sociedade Irmãos Silva (SC)
+    {
+      id: 'e1b2c3d4-0003-4000-8000-000000000003',
+      organizationId: organizations[0].id,
+      type: 'SOCIEDADE_EM_COMUM' as const,
+      name: 'Sociedade Irmãos Silva',
+      address: 'Rod. MT-242, Km 30',
+      city: 'Lucas do Rio Verde',
+      state: 'MT',
+      zipCode: '78455-000',
+      taxRegime: 'SIMPLES' as const,
+      ruralActivityType: 'Pecuária de corte',
+      status: 'ACTIVE' as const,
+    },
+    // Org 2 — João Carlos Mendes (PF)
+    {
+      id: 'e1b2c3d4-0004-4000-8000-000000000004',
+      organizationId: organizations[1].id,
+      type: 'PF' as const,
+      name: 'João Carlos Mendes',
+      document: '123.456.789-09',
+      birthDate: new Date('1982-03-22'),
+      address: 'Estrada Municipal SP-225, Km 15',
+      city: 'Jaú',
+      state: 'SP',
+      zipCode: '17201-000',
+      taxRegime: 'ISENTO' as const,
+      ruralActivityType: 'Citricultura',
+      status: 'ACTIVE' as const,
+    },
+  ];
+
+  for (const producer of producers) {
+    await prisma.producer.upsert({
+      where: { id: producer.id },
+      update: { name: producer.name, status: producer.status },
+      create: producer,
+    });
+    console.log(`  ✓ Produtor: ${producer.name} (${producer.type})`);
+  }
+
+  // ─── Participantes da Sociedade ────────────────────────────────────
+  console.log('\n  Criando participantes da sociedade...');
+
+  const participants = [
+    {
+      id: 'f1b2c3d4-0001-4000-8000-000000000001',
+      producerId: producers[2].id, // Sociedade Irmãos Silva
+      name: 'José Roberto Silva',
+      cpf: '987.654.321-00',
+      participationPct: 40,
+      isMainResponsible: true,
+    },
+    {
+      id: 'f1b2c3d4-0002-4000-8000-000000000002',
+      producerId: producers[2].id,
+      name: 'Marcos Antônio Silva',
+      cpf: '456.789.123-00',
+      participationPct: 35,
+      isMainResponsible: false,
+    },
+    {
+      id: 'f1b2c3d4-0003-4000-8000-000000000003',
+      producerId: producers[2].id,
+      name: 'Ana Paula Silva',
+      cpf: '321.654.987-00',
+      participationPct: 25,
+      isMainResponsible: false,
+    },
+  ];
+
+  for (const p of participants) {
+    await prisma.societyParticipant.upsert({
+      where: { id: p.id },
+      update: { name: p.name, participationPct: p.participationPct },
+      create: p,
+    });
+    console.log(`  ✓ Participante: ${p.name} (${p.participationPct}%)`);
+  }
+
+  // ─── Inscrições Estaduais (IEs) ───────────────────────────────────
+  console.log('\n  Criando inscrições estaduais...');
+
+  const stateRegistrations = [
+    {
+      id: 'g1b2c3d4-0001-4000-8000-000000000001',
+      producerId: producers[0].id, // Carlos Eduardo
+      farmId: farms[0].id, // Santa Helena
+      number: '131234567',
+      state: 'MT',
+      situation: 'ACTIVE' as const,
+      isDefaultForFarm: true,
+      milkProgramOptIn: false,
+    },
+    {
+      id: 'g1b2c3d4-0002-4000-8000-000000000002',
+      producerId: producers[1].id, // Agropecuária Bom Futuro
+      farmId: farms[1].id, // Três Irmãos
+      number: '521234567890',
+      state: 'GO',
+      cnaeActivity: '0111-3/01 - Cultivo de arroz',
+      situation: 'ACTIVE' as const,
+      isDefaultForFarm: true,
+      milkProgramOptIn: false,
+    },
+    {
+      id: 'g1b2c3d4-0003-4000-8000-000000000003',
+      producerId: producers[1].id, // Agropecuária Bom Futuro
+      farmId: farms[2].id, // Lagoa Dourada
+      number: '062345678901',
+      state: 'MG',
+      situation: 'ACTIVE' as const,
+      isDefaultForFarm: true,
+      milkProgramOptIn: true,
+    },
+    {
+      id: 'g1b2c3d4-0004-4000-8000-000000000004',
+      producerId: producers[2].id, // Sociedade Irmãos Silva
+      number: '131234999',
+      state: 'MT',
+      situation: 'ACTIVE' as const,
+      isDefaultForFarm: false,
+      milkProgramOptIn: false,
+    },
+    {
+      id: 'g1b2c3d4-0005-4000-8000-000000000005',
+      producerId: producers[3].id, // João Carlos Mendes
+      farmId: farms[3].id, // Recanto do Sol
+      number: '35123456789',
+      state: 'SP',
+      situation: 'ACTIVE' as const,
+      isDefaultForFarm: true,
+      milkProgramOptIn: false,
+    },
+  ];
+
+  for (const ie of stateRegistrations) {
+    await prisma.producerStateRegistration.upsert({
+      where: { id: ie.id },
+      update: { number: ie.number, situation: ie.situation },
+      create: ie,
+    });
+    console.log(`  ✓ IE: ${ie.number} (${ie.state})`);
+  }
+
+  // ─── Vínculos Produtor-Fazenda ─────────────────────────────────────
+  console.log('\n  Criando vínculos produtor-fazenda...');
+
+  const producerFarmLinks = [
+    {
+      id: 'h1b2c3d4-0001-4000-8000-000000000001',
+      producerId: producers[0].id, // Carlos Eduardo → Santa Helena
+      farmId: farms[0].id,
+      bondType: 'PROPRIETARIO' as const,
+      participationPct: 100,
+    },
+    {
+      id: 'h1b2c3d4-0002-4000-8000-000000000002',
+      producerId: producers[1].id, // Agropecuária Bom Futuro → Três Irmãos
+      farmId: farms[1].id,
+      bondType: 'PROPRIETARIO' as const,
+      participationPct: 100,
+    },
+    {
+      id: 'h1b2c3d4-0003-4000-8000-000000000003',
+      producerId: producers[1].id, // Agropecuária Bom Futuro → Lagoa Dourada
+      farmId: farms[2].id,
+      bondType: 'ARRENDATARIO' as const,
+      participationPct: 80,
+    },
+    {
+      id: 'h1b2c3d4-0004-4000-8000-000000000004',
+      producerId: producers[2].id, // Sociedade Irmãos Silva → Santa Helena
+      farmId: farms[0].id,
+      bondType: 'PARCEIRO' as const,
+      participationPct: 30,
+    },
+    {
+      id: 'h1b2c3d4-0005-4000-8000-000000000005',
+      producerId: producers[2].id, // Sociedade Irmãos Silva → Três Irmãos
+      farmId: farms[1].id,
+      bondType: 'MEEIRO' as const,
+      participationPct: 50,
+    },
+    {
+      id: 'h1b2c3d4-0006-4000-8000-000000000006',
+      producerId: producers[3].id, // João Carlos Mendes → Recanto do Sol
+      farmId: farms[3].id,
+      bondType: 'PROPRIETARIO' as const,
+      participationPct: 100,
+    },
+  ];
+
+  for (const link of producerFarmLinks) {
+    await prisma.producerFarmLink.upsert({
+      where: { id: link.id },
+      update: { bondType: link.bondType },
+      create: link,
+    });
+  }
+  console.log(`  ✓ ${producerFarmLinks.length} vínculos produtor-fazenda criados`);
+
   // Audit Logs de exemplo
   console.log('');
   const auditLogs = [

@@ -42,6 +42,46 @@ enum FarmStatus {
   INACTIVE
 }
 
+enum ProducerType {
+  PF
+  PJ
+  SOCIEDADE_EM_COMUM
+}
+
+enum ProducerStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ProducerFarmBondType {
+  PROPRIETARIO
+  ARRENDATARIO
+  COMODATARIO
+  PARCEIRO
+  MEEIRO
+  USUFRUTUARIO
+  CONDOMINO
+}
+
+enum TaxRegime {
+  REAL
+  PRESUMIDO
+  SIMPLES
+  ISENTO
+}
+
+enum IeSituation {
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+}
+
+enum IeCategory {
+  PRIMEIRO_ESTABELECIMENTO
+  DEMAIS
+  UNICO
+}
+
 // ─── Core Models ─────────────────────────────────────────────────────
 
 model Organization {
@@ -61,6 +101,7 @@ model Organization {
   users       User[]
   farms       Farm[]
   customRoles CustomRole[]
+  producers   Producer[]
 
   @@map("organizations")
 }
@@ -117,10 +158,12 @@ model Farm {
   createdAt            DateTime                              @default(now())
   updatedAt            DateTime                              @updatedAt
 
-  organization  Organization       @relation(fields: [organizationId], references: [id])
-  userAccess    UserFarmAccess[]
-  registrations FarmRegistration[]
-  documents     FarmDocument[]
+  organization            Organization              @relation(fields: [organizationId], references: [id])
+  userAccess              UserFarmAccess[]
+  registrations           FarmRegistration[]
+  documents               FarmDocument[]
+  producerFarmLinks       ProducerFarmLink[]
+  producerStateRegistrations ProducerStateRegistration[]
 
   @@map("farms")
 }
@@ -224,4 +267,115 @@ model AuditLog {
   @@index([farmId])
   @@index([organizationId])
   @@map("audit_logs")
+}
+
+// ─── Producer Models ────────────────────────────────────────────────
+
+model Producer {
+  id                  String         @id @default(uuid())
+  organizationId      String
+  type                ProducerType
+  name                String
+  tradeName           String?
+  document            String?
+  birthDate           DateTime?
+  spouseCpf           String?
+  incraRegistration   String?
+  legalRepresentative String?
+  legalRepCpf         String?
+  address             String?
+  city                String?
+  state               String?
+  zipCode             String?
+  taxRegime           TaxRegime?
+  mainCnae            String?
+  ruralActivityType   String?
+  status              ProducerStatus @default(ACTIVE)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  organization       Organization              @relation(fields: [organizationId], references: [id])
+  participants       SocietyParticipant[]
+  stateRegistrations ProducerStateRegistration[]
+  farmLinks          ProducerFarmLink[]
+  documents          ProducerDocument[]
+
+  @@unique([document, organizationId])
+  @@index([organizationId])
+  @@map("producers")
+}
+
+model SocietyParticipant {
+  id               String   @id @default(uuid())
+  producerId       String
+  name             String
+  cpf              String
+  participationPct Decimal  @db.Decimal(5, 2)
+  isMainResponsible Boolean @default(false)
+  createdAt        DateTime @default(now())
+
+  producer Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+
+  @@unique([producerId, cpf])
+  @@index([producerId])
+  @@map("society_participants")
+}
+
+model ProducerStateRegistration {
+  id               String       @id @default(uuid())
+  producerId       String
+  farmId           String?
+  number           String
+  state            String       @db.VarChar(2)
+  cnaeActivity     String?
+  assessmentRegime String?
+  category         IeCategory?
+  inscriptionDate  DateTime?
+  situation        IeSituation  @default(ACTIVE)
+  contractEndDate  DateTime?
+  milkProgramOptIn Boolean      @default(false)
+  isDefaultForFarm Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  producer Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  farm     Farm?    @relation(fields: [farmId], references: [id], onDelete: SetNull)
+
+  @@unique([producerId, number, state])
+  @@index([producerId])
+  @@index([farmId])
+  @@map("producer_state_registrations")
+}
+
+model ProducerFarmLink {
+  id               String              @id @default(uuid())
+  producerId       String
+  farmId           String
+  bondType         ProducerFarmBondType
+  participationPct Decimal?            @db.Decimal(5, 2)
+  createdAt        DateTime            @default(now())
+
+  producer Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  farm     Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+
+  @@unique([producerId, farmId, bondType])
+  @@index([producerId])
+  @@index([farmId])
+  @@map("producer_farm_links")
+}
+
+model ProducerDocument {
+  id         String   @id @default(uuid())
+  producerId String
+  type       String
+  filename   String
+  url        String
+  mimeType   String?
+  sizeBytes  Int?
+  createdAt  DateTime @default(now())
+
+  producer Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+
+  @@index([producerId])
+  @@map("producer_documents")
 }
