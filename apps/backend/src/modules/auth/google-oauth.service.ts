@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { OAuth2Client } from 'google-auth-library';
-import { prisma } from '../../database/prisma';
+import { withRlsBypass } from '../../database/rls';
 import { redis } from '../../database/redis';
 import { loadEnv } from '../../config/env';
 import { logger } from '../../shared/utils/logger';
@@ -86,35 +86,37 @@ export async function handleGoogleCallback(code: string, state: string): Promise
   }
 
   // Look up user by email (no auto-registration — CA2 constraint)
-  const user = await prisma.user.findUnique({ where: { email: payload.email } });
-  if (!user) {
-    throw new AuthError('Email não cadastrado no sistema', 403);
-  }
-
-  if (user.status !== 'ACTIVE') {
-    throw new AuthError('Conta inativa', 403);
-  }
-
-  // CA5: Check if organization allows social login
-  if (user.role !== 'SUPER_ADMIN') {
-    const org = await prisma.organization.findUnique({ where: { id: user.organizationId } });
-    if (org && !org.allowSocialLogin) {
-      throw new AuthError('Login social desabilitado para esta organização', 403);
+  const user = await withRlsBypass(async (tx) => {
+    const u = await tx.user.findUnique({ where: { email: payload.email } });
+    if (!u) {
+      throw new AuthError('Email não cadastrado no sistema', 403);
     }
-  }
 
-  // CA3: Link Google account on first social login, verify on subsequent logins
-  if (!user.googleId) {
-    // First Google login — link the account
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { googleId: googleSub },
-    });
-    logger.info({ userId: user.id, googleSub }, 'Google account linked to user');
-  } else if (user.googleId !== googleSub) {
-    // Different Google account trying to use same email
-    throw new AuthError('Esta conta está vinculada a outra conta Google', 403);
-  }
+    if (u.status !== 'ACTIVE') {
+      throw new AuthError('Conta inativa', 403);
+    }
+
+    // CA5: Check if organization allows social login
+    if (u.role !== 'SUPER_ADMIN') {
+      const org = await tx.organization.findUnique({ where: { id: u.organizationId } });
+      if (org && !org.allowSocialLogin) {
+        throw new AuthError('Login social desabilitado para esta organização', 403);
+      }
+    }
+
+    // CA3: Link Google account on first social login, verify on subsequent logins
+    if (!u.googleId) {
+      await tx.user.update({
+        where: { id: u.id },
+        data: { googleId: googleSub },
+      });
+      logger.info({ userId: u.id, googleSub }, 'Google account linked to user');
+    } else if (u.googleId !== googleSub) {
+      throw new AuthError('Esta conta está vinculada a outra conta Google', 403);
+    }
+
+    return u;
+  });
 
   // Create session
   const authTokens = await createSessionForUser(user);

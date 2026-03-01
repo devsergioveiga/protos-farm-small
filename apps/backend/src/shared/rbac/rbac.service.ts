@@ -1,4 +1,4 @@
-import { prisma } from '../../database/prisma';
+import { withRlsBypass } from '../../database/rls';
 import { redis } from '../../database/redis';
 import { DEFAULT_ROLE_PERMISSIONS, Permission, ROLE_HIERARCHY } from './permissions';
 
@@ -12,20 +12,22 @@ export async function getUserPermissions(userId: string): Promise<Permission[]> 
     return JSON.parse(cached) as Permission[];
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      role: true,
-      customRoleId: true,
-      customRole: {
-        select: {
-          isActive: true,
-          permissions: {
-            select: { module: true, action: true, allowed: true },
+  const user = await withRlsBypass(async (tx) => {
+    return tx.user.findUnique({
+      where: { id: userId },
+      select: {
+        role: true,
+        customRoleId: true,
+        customRole: {
+          select: {
+            isActive: true,
+            permissions: {
+              select: { module: true, action: true, allowed: true },
+            },
           },
         },
       },
-    },
+    });
   });
 
   if (!user) {
@@ -51,9 +53,11 @@ export async function getUserPermissions(userId: string): Promise<Permission[]> 
 }
 
 export async function hasPermission(userId: string, permission: Permission): Promise<boolean> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { role: true },
+  const user = await withRlsBypass(async (tx) => {
+    return tx.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
   });
 
   // SUPER_ADMIN bypasses all permission checks
@@ -70,9 +74,11 @@ export async function invalidatePermissionsCache(userId: string): Promise<void> 
 }
 
 export async function invalidatePermissionsCacheForRole(customRoleId: string): Promise<void> {
-  const users = await prisma.user.findMany({
-    where: { customRoleId },
-    select: { id: true },
+  const users = await withRlsBypass(async (tx) => {
+    return tx.user.findMany({
+      where: { customRoleId },
+      select: { id: true },
+    });
   });
 
   if (users.length > 0) {

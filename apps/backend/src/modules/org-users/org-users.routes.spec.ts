@@ -113,13 +113,16 @@ describe('Org Users endpoints', () => {
 
       expect(response.status).toBe(201);
       expect(response.body.id).toBe('user-new');
-      expect(mockedService.createOrgUser).toHaveBeenCalledWith('org-1', {
-        name: 'Novo Usuário',
-        email: 'novo@org.com',
-        phone: undefined,
-        role: 'OPERATOR',
-        farmIds: undefined,
-      });
+      expect(mockedService.createOrgUser).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        {
+          name: 'Novo Usuário',
+          email: 'novo@org.com',
+          phone: undefined,
+          role: 'OPERATOR',
+          farmIds: undefined,
+        },
+      );
       expect(mockedAudit.logAudit).toHaveBeenCalledWith(
         expect.objectContaining({
           actorId: 'admin-1',
@@ -142,7 +145,7 @@ describe('Org Users endpoints', () => {
 
       expect(response.status).toBe(201);
       expect(mockedService.createOrgUser).toHaveBeenCalledWith(
-        'org-1',
+        { organizationId: 'org-1' },
         expect.objectContaining({
           farmIds: ['farm-1', 'farm-2'],
         }),
@@ -284,14 +287,17 @@ describe('Org Users endpoints', () => {
       expect(response.status).toBe(200);
       expect(response.body.data).toHaveLength(1);
       expect(response.body.meta.total).toBe(1);
-      expect(mockedService.listOrgUsers).toHaveBeenCalledWith('org-1', {
-        page: undefined,
-        limit: undefined,
-        search: undefined,
-        role: undefined,
-        farmId: undefined,
-        status: undefined,
-      });
+      expect(mockedService.listOrgUsers).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        {
+          page: undefined,
+          limit: undefined,
+          search: undefined,
+          role: undefined,
+          farmId: undefined,
+          status: undefined,
+        },
+      );
     });
 
     it('should pass query params to service', async () => {
@@ -304,14 +310,17 @@ describe('Org Users endpoints', () => {
         .get('/api/org/users?page=2&limit=10&role=OPERATOR&status=ACTIVE&search=john&farmId=farm-1')
         .set('Authorization', 'Bearer valid-token');
 
-      expect(mockedService.listOrgUsers).toHaveBeenCalledWith('org-1', {
-        page: 2,
-        limit: 10,
-        search: 'john',
-        role: 'OPERATOR',
-        farmId: 'farm-1',
-        status: 'ACTIVE',
-      });
+      expect(mockedService.listOrgUsers).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        {
+          page: 2,
+          limit: 10,
+          search: 'john',
+          role: 'OPERATOR',
+          farmId: 'farm-1',
+          status: 'ACTIVE',
+        },
+      );
     });
 
     it('should return 500 on unexpected error', async () => {
@@ -340,7 +349,7 @@ describe('Org Users endpoints', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.id).toBe('user-1');
-      expect(mockedService.getOrgUser).toHaveBeenCalledWith('org-1', 'user-1');
+      expect(mockedService.getOrgUser).toHaveBeenCalledWith({ organizationId: 'org-1' }, 'user-1');
     });
 
     it('should return 404 when user not found', async () => {
@@ -382,12 +391,17 @@ describe('Org Users endpoints', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.name).toBe('Updated');
-      expect(mockedService.updateOrgUser).toHaveBeenCalledWith('org-1', 'user-1', 'admin-1', {
-        name: 'Updated',
-        phone: undefined,
-        role: 'MANAGER',
-        farmIds: undefined,
-      });
+      expect(mockedService.updateOrgUser).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        'user-1',
+        'admin-1',
+        {
+          name: 'Updated',
+          phone: undefined,
+          role: 'MANAGER',
+          farmIds: undefined,
+        },
+      );
       expect(mockedAudit.logAudit).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'UPDATE_ORG_USER',
@@ -492,7 +506,7 @@ describe('Org Users endpoints', () => {
       expect(response.status).toBe(200);
       expect(response.body.status).toBe('INACTIVE');
       expect(mockedService.toggleOrgUserStatus).toHaveBeenCalledWith(
-        'org-1',
+        { organizationId: 'org-1' },
         'user-1',
         'admin-1',
         'INACTIVE',
@@ -594,7 +608,10 @@ describe('Org Users endpoints', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Email de redefinição de senha enviado');
-      expect(mockedService.resetOrgUserPasswordByAdmin).toHaveBeenCalledWith('org-1', 'user-1');
+      expect(mockedService.resetOrgUserPasswordByAdmin).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        'user-1',
+      );
       expect(mockedAudit.logAudit).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'RESET_ORG_USER_PASSWORD',

@@ -221,6 +221,9 @@ const userFarmAccess = [
 async function main() {
   console.log('🌱 Iniciando seed do banco de dados...\n');
 
+  // Bypass RLS para o seed poder inserir dados em todas as organizações
+  await prisma.$executeRawUnsafe(`SELECT set_config('app.bypass_rls', 'true', false)`);
+
   // Organizações
   for (const org of organizations) {
     await prisma.organization.upsert({

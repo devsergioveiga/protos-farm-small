@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { UserRole } from '@prisma/client';
-import { prisma } from '../../database/prisma';
+import { withRlsBypass } from '../../database/rls';
 import { redis } from '../../database/redis';
 import { loadEnv } from '../../config/env';
 import { sendMail } from '../../shared/mail/mail.service';
@@ -105,55 +105,60 @@ interface UserForSession {
 }
 
 export async function createSessionForUser(user: UserForSession): Promise<AuthTokens> {
-  let allowMultipleSessions = true;
+  return withRlsBypass(async (tx) => {
+    let allowMultipleSessions = true;
 
-  if (user.role !== 'SUPER_ADMIN') {
-    const org = await prisma.organization.findUnique({ where: { id: user.organizationId } });
-    if (!org || org.status !== 'ACTIVE') {
-      throw new AuthError('Organização suspensa ou cancelada', 403);
+    if (user.role !== 'SUPER_ADMIN') {
+      const org = await tx.organization.findUnique({ where: { id: user.organizationId } });
+      if (!org || org.status !== 'ACTIVE') {
+        throw new AuthError('Organização suspensa ou cancelada', 403);
+      }
+      allowMultipleSessions = org.allowMultipleSessions;
     }
-    allowMultipleSessions = org.allowMultipleSessions;
-  }
 
-  if (!allowMultipleSessions) {
-    await invalidateAllUserSessions(user.id);
-  }
+    if (!allowMultipleSessions) {
+      await invalidateAllUserSessions(user.id);
+    }
 
-  const payload: TokenPayload = {
-    userId: user.id,
-    email: user.email,
-    role: user.role,
-    organizationId: user.organizationId,
-  };
+    const payload: TokenPayload = {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      organizationId: user.organizationId,
+    };
 
-  const accessToken = generateAccessToken(payload);
-  const refreshToken = crypto.randomUUID();
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = crypto.randomUUID();
 
-  await saveRefreshToken(refreshToken, user.id);
-  await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+    await saveRefreshToken(refreshToken, user.id);
+    await tx.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
 
-  return { accessToken, refreshToken };
+    return { accessToken, refreshToken };
+  });
 }
 
 // ─── Core flows ─────────────────────────────────────────────────────
 
 export async function login(input: LoginInput): Promise<AuthTokens> {
-  const user = await prisma.user.findUnique({ where: { email: input.email } });
+  return withRlsBypass(async (tx) => {
+    const user = await tx.user.findUnique({ where: { email: input.email } });
 
-  if (!user || !user.passwordHash) {
-    throw new AuthError('Credenciais inválidas', 401);
-  }
+    if (!user || !user.passwordHash) {
+      throw new AuthError('Credenciais inválidas', 401);
+    }
 
-  if (user.status !== 'ACTIVE') {
-    throw new AuthError('Conta inativa', 403);
-  }
+    if (user.status !== 'ACTIVE') {
+      throw new AuthError('Conta inativa', 403);
+    }
 
-  const passwordValid = await verifyPassword(input.password, user.passwordHash);
-  if (!passwordValid) {
-    throw new AuthError('Credenciais inválidas', 401);
-  }
+    const passwordValid = await verifyPassword(input.password, user.passwordHash);
+    if (!passwordValid) {
+      throw new AuthError('Credenciais inválidas', 401);
+    }
 
-  return createSessionForUser(user);
+    // createSessionForUser opens its own bypass transaction, so we call it outside
+    return user;
+  }).then((user) => createSessionForUser(user));
 }
 
 export async function refreshTokens(token: string): Promise<AuthTokens> {
@@ -162,34 +167,36 @@ export async function refreshTokens(token: string): Promise<AuthTokens> {
     throw new AuthError('Refresh token inválido ou expirado', 401);
   }
 
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) {
-    throw new AuthError('Usuário não encontrado', 401);
-  }
-
-  if (user.status !== 'ACTIVE') {
-    throw new AuthError('Conta inativa', 403);
-  }
-
-  if (user.role !== 'SUPER_ADMIN') {
-    const org = await prisma.organization.findUnique({ where: { id: user.organizationId } });
-    if (!org || org.status !== 'ACTIVE') {
-      throw new AuthError('Organização suspensa ou cancelada', 403);
+  return withRlsBypass(async (tx) => {
+    const user = await tx.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new AuthError('Usuário não encontrado', 401);
     }
-  }
 
-  const payload: TokenPayload = {
-    userId: user.id,
-    email: user.email,
-    role: user.role,
-    organizationId: user.organizationId,
-  };
+    if (user.status !== 'ACTIVE') {
+      throw new AuthError('Conta inativa', 403);
+    }
 
-  const accessToken = generateAccessToken(payload);
-  const newRefreshToken = crypto.randomUUID();
-  await saveRefreshToken(newRefreshToken, user.id);
+    if (user.role !== 'SUPER_ADMIN') {
+      const org = await tx.organization.findUnique({ where: { id: user.organizationId } });
+      if (!org || org.status !== 'ACTIVE') {
+        throw new AuthError('Organização suspensa ou cancelada', 403);
+      }
+    }
 
-  return { accessToken, refreshToken: newRefreshToken };
+    const payload: TokenPayload = {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      organizationId: user.organizationId,
+    };
+
+    const accessToken = generateAccessToken(payload);
+    const newRefreshToken = crypto.randomUUID();
+    await saveRefreshToken(newRefreshToken, user.id);
+
+    return { accessToken, refreshToken: newRefreshToken };
+  });
 }
 
 // ─── Logout ─────────────────────────────────────────────────────────
@@ -207,7 +214,9 @@ export async function logout(refreshToken: string): Promise<void> {
 // ─── Password reset ────────────────────────────────────────────────
 
 export async function requestPasswordReset(email: string): Promise<void> {
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await withRlsBypass(async (tx) => {
+    return tx.user.findUnique({ where: { email } });
+  });
 
   if (!user || user.status !== 'ACTIVE') {
     logger.info({ email }, 'Password reset requested for unknown or inactive email');
@@ -241,14 +250,16 @@ export async function resetPassword(token: string, newPassword: string): Promise
 
   await redis.del(key);
 
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  await withRlsBypass(async (tx) => {
+    const user = await tx.user.findUnique({ where: { id: userId } });
 
-  if (!user || user.status !== 'ACTIVE') {
-    throw new AuthError('Conta inativa', 403);
-  }
+    if (!user || user.status !== 'ACTIVE') {
+      throw new AuthError('Conta inativa', 403);
+    }
 
-  const passwordHash = await hashPassword(newPassword);
-  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+    const passwordHash = await hashPassword(newPassword);
+    await tx.user.update({ where: { id: userId }, data: { passwordHash } });
+  });
 
   logger.info({ userId }, 'Password reset completed');
 }
@@ -270,16 +281,20 @@ export async function acceptInvite(token: string, password: string): Promise<Aut
 
   await redis.del(key);
 
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await withRlsBypass(async (tx) => {
+    const u = await tx.user.findUnique({ where: { id: userId } });
 
-  if (!user) {
-    throw new AuthError('Usuário não encontrado', 401);
-  }
+    if (!u) {
+      throw new AuthError('Usuário não encontrado', 401);
+    }
 
-  const passwordHash = await hashPassword(password);
-  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+    const passwordHash = await hashPassword(password);
+    await tx.user.update({ where: { id: userId }, data: { passwordHash } });
 
-  logger.info({ userId }, 'Invite accepted, password set');
+    logger.info({ userId }, 'Invite accepted, password set');
+
+    return u;
+  });
 
   return createSessionForUser(user);
 }

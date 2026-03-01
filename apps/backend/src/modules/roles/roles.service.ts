@@ -1,4 +1,4 @@
-import { prisma } from '../../database/prisma';
+import { withRlsContext, type RlsContext } from '../../database/rls';
 import {
   ASSIGNABLE_BASE_ROLES,
   DEFAULT_ROLE_PERMISSIONS,
@@ -9,7 +9,7 @@ import {
 import { invalidatePermissionsCacheForRole } from '../../shared/rbac/rbac.service';
 import { RoleError, CreateCustomRoleInput, UpdateCustomRoleInput } from './roles.types';
 
-export async function createCustomRole(organizationId: string, input: CreateCustomRoleInput) {
+export async function createCustomRole(ctx: RlsContext, input: CreateCustomRoleInput) {
   if (!ASSIGNABLE_BASE_ROLES.includes(input.baseRole)) {
     throw new RoleError(
       `Não é possível clonar o papel ${input.baseRole}. Papéis permitidos: ${ASSIGNABLE_BASE_ROLES.join(', ')}`,
@@ -17,176 +17,172 @@ export async function createCustomRole(organizationId: string, input: CreateCust
     );
   }
 
-  // Check uniqueness
-  const existing = await prisma.customRole.findUnique({
-    where: { name_organizationId: { name: input.name, organizationId } },
-  });
-  if (existing) {
-    throw new RoleError('Já existe um papel customizado com esse nome nesta organização', 409);
-  }
-
-  // Get default permissions for the base role
-  const basePermissions = DEFAULT_ROLE_PERMISSIONS[input.baseRole];
-
-  // Build permission rows — start with all module×action combos
-  const permissionRows = ALL_MODULES.flatMap((mod) =>
-    ALL_ACTIONS.map((action) => {
-      const perm = `${mod}:${action}` as Permission;
-      let allowed = basePermissions.includes(perm);
-
-      // Apply overrides (can only remove, not escalate)
-      if (input.overrides) {
-        const override = input.overrides.find((o) => o.permission === perm);
-        if (override) {
-          // Can only remove permissions that the base role has, not add new ones
-          if (override.allowed && !basePermissions.includes(perm)) {
-            // Attempted escalation — ignore this override
-          } else {
-            allowed = override.allowed;
-          }
-        }
-      }
-
-      return { module: mod, action, allowed };
-    }),
-  );
-
-  const customRole = await prisma.customRole.create({
-    data: {
-      name: input.name,
-      description: input.description,
-      baseRole: input.baseRole,
-      organizationId,
-      permissions: {
-        create: permissionRows,
-      },
-    },
-    include: {
-      permissions: true,
-    },
-  });
-
-  return customRole;
-}
-
-export async function listCustomRoles(organizationId: string) {
-  return prisma.customRole.findMany({
-    where: { organizationId, isActive: true },
-    include: {
-      permissions: { where: { allowed: true } },
-      _count: { select: { users: true } },
-    },
-    orderBy: { name: 'asc' },
-  });
-}
-
-export async function getCustomRole(organizationId: string, roleId: string) {
-  const role = await prisma.customRole.findFirst({
-    where: { id: roleId, organizationId },
-    include: {
-      permissions: true,
-      _count: { select: { users: true } },
-    },
-  });
-
-  if (!role) {
-    throw new RoleError('Papel customizado não encontrado', 404);
-  }
-
-  return role;
-}
-
-export async function updateCustomRole(
-  organizationId: string,
-  roleId: string,
-  input: UpdateCustomRoleInput,
-) {
-  const role = await prisma.customRole.findFirst({
-    where: { id: roleId, organizationId },
-  });
-
-  if (!role) {
-    throw new RoleError('Papel customizado não encontrado', 404);
-  }
-
-  // Check name uniqueness if changing name
-  if (input.name && input.name !== role.name) {
-    const existing = await prisma.customRole.findUnique({
-      where: { name_organizationId: { name: input.name, organizationId } },
+  return withRlsContext(ctx, async (tx) => {
+    const existing = await tx.customRole.findUnique({
+      where: { name_organizationId: { name: input.name, organizationId: ctx.organizationId } },
     });
     if (existing) {
       throw new RoleError('Já existe um papel customizado com esse nome nesta organização', 409);
     }
-  }
 
-  // Update basic fields
-  await prisma.customRole.update({
-    where: { id: roleId },
-    data: {
-      ...(input.name !== undefined && { name: input.name }),
-      ...(input.description !== undefined && { description: input.description }),
-    },
-  });
+    const basePermissions = DEFAULT_ROLE_PERMISSIONS[input.baseRole];
 
-  // Update permissions if provided
-  if (input.permissions) {
-    const basePermissions = DEFAULT_ROLE_PERMISSIONS[role.baseRole];
+    const permissionRows = ALL_MODULES.flatMap((mod) =>
+      ALL_ACTIONS.map((action) => {
+        const perm = `${mod}:${action}` as Permission;
+        let allowed = basePermissions.includes(perm);
 
-    for (const { permission, allowed } of input.permissions) {
-      const [mod, action] = permission.split(':');
+        if (input.overrides) {
+          const override = input.overrides.find((o) => o.permission === perm);
+          if (override) {
+            if (override.allowed && !basePermissions.includes(perm)) {
+              // Attempted escalation — ignore
+            } else {
+              allowed = override.allowed;
+            }
+          }
+        }
 
-      // Prevent escalation beyond base role
-      if (allowed && !basePermissions.includes(permission)) {
-        continue;
-      }
+        return { module: mod, action, allowed };
+      }),
+    );
 
-      await prisma.rolePermission.upsert({
-        where: {
-          customRoleId_module_action: {
-            customRoleId: roleId,
-            module: mod,
-            action,
-          },
+    const customRole = await tx.customRole.create({
+      data: {
+        name: input.name,
+        description: input.description,
+        baseRole: input.baseRole,
+        organizationId: ctx.organizationId,
+        permissions: {
+          create: permissionRows,
         },
-        create: { customRoleId: roleId, module: mod, action, allowed },
-        update: { allowed },
-      });
-    }
+      },
+      include: {
+        permissions: true,
+      },
+    });
 
-    // Invalidate cache for all users with this custom role
-    await invalidatePermissionsCacheForRole(roleId);
-  }
-
-  // Re-fetch with updated permissions
-  return prisma.customRole.findUnique({
-    where: { id: roleId },
-    include: { permissions: true, _count: { select: { users: true } } },
+    return customRole;
   });
 }
 
-export async function deleteCustomRole(organizationId: string, roleId: string) {
-  const role = await prisma.customRole.findFirst({
-    where: { id: roleId, organizationId },
+export async function listCustomRoles(ctx: RlsContext) {
+  return withRlsContext(ctx, async (tx) => {
+    return tx.customRole.findMany({
+      where: { organizationId: ctx.organizationId, isActive: true },
+      include: {
+        permissions: { where: { allowed: true } },
+        _count: { select: { users: true } },
+      },
+      orderBy: { name: 'asc' },
+    });
   });
+}
 
-  if (!role) {
-    throw new RoleError('Papel customizado não encontrado', 404);
-  }
+export async function getCustomRole(ctx: RlsContext, roleId: string) {
+  return withRlsContext(ctx, async (tx) => {
+    const role = await tx.customRole.findFirst({
+      where: { id: roleId, organizationId: ctx.organizationId },
+      include: {
+        permissions: true,
+        _count: { select: { users: true } },
+      },
+    });
 
-  // Soft-delete: set isActive to false
-  await prisma.customRole.update({
-    where: { id: roleId },
-    data: { isActive: false },
+    if (!role) {
+      throw new RoleError('Papel customizado não encontrado', 404);
+    }
+
+    return role;
   });
+}
 
-  // Clear customRoleId from users — they fall back to default role permissions
-  await prisma.user.updateMany({
-    where: { customRoleId: roleId },
-    data: { customRoleId: null },
+export async function updateCustomRole(
+  ctx: RlsContext,
+  roleId: string,
+  input: UpdateCustomRoleInput,
+) {
+  return withRlsContext(ctx, async (tx) => {
+    const role = await tx.customRole.findFirst({
+      where: { id: roleId, organizationId: ctx.organizationId },
+    });
+
+    if (!role) {
+      throw new RoleError('Papel customizado não encontrado', 404);
+    }
+
+    if (input.name && input.name !== role.name) {
+      const existing = await tx.customRole.findUnique({
+        where: { name_organizationId: { name: input.name, organizationId: ctx.organizationId } },
+      });
+      if (existing) {
+        throw new RoleError('Já existe um papel customizado com esse nome nesta organização', 409);
+      }
+    }
+
+    await tx.customRole.update({
+      where: { id: roleId },
+      data: {
+        ...(input.name !== undefined && { name: input.name }),
+        ...(input.description !== undefined && { description: input.description }),
+      },
+    });
+
+    if (input.permissions) {
+      const basePermissions = DEFAULT_ROLE_PERMISSIONS[role.baseRole];
+
+      for (const { permission, allowed } of input.permissions) {
+        const [mod, action] = permission.split(':');
+
+        if (allowed && !basePermissions.includes(permission)) {
+          continue;
+        }
+
+        await tx.rolePermission.upsert({
+          where: {
+            customRoleId_module_action: {
+              customRoleId: roleId,
+              module: mod,
+              action,
+            },
+          },
+          create: { customRoleId: roleId, module: mod, action, allowed },
+          update: { allowed },
+        });
+      }
+
+      await invalidatePermissionsCacheForRole(roleId);
+    }
+
+    return tx.customRole.findUnique({
+      where: { id: roleId },
+      include: { permissions: true, _count: { select: { users: true } } },
+    });
   });
+}
 
-  // Invalidate cache for affected users
-  await invalidatePermissionsCacheForRole(roleId);
+export async function deleteCustomRole(ctx: RlsContext, roleId: string) {
+  return withRlsContext(ctx, async (tx) => {
+    const role = await tx.customRole.findFirst({
+      where: { id: roleId, organizationId: ctx.organizationId },
+    });
 
-  return { message: 'Papel customizado desativado com sucesso' };
+    if (!role) {
+      throw new RoleError('Papel customizado não encontrado', 404);
+    }
+
+    await tx.customRole.update({
+      where: { id: roleId },
+      data: { isActive: false },
+    });
+
+    await tx.user.updateMany({
+      where: { customRoleId: roleId },
+      data: { customRoleId: null },
+    });
+
+    await invalidatePermissionsCacheForRole(roleId);
+
+    return { message: 'Papel customizado desativado com sucesso' };
+  });
 }
