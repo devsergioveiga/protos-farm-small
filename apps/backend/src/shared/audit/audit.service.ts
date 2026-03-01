@@ -1,5 +1,5 @@
 import { Prisma, UserRole } from '@prisma/client';
-import { prisma } from '../../database/prisma';
+import { withRlsBypass } from '../../database/rls';
 import { logger } from '../utils/logger';
 
 export interface AuditEntry {
@@ -17,7 +17,9 @@ export interface AuditEntry {
 
 export async function logAudit(entry: AuditEntry): Promise<void> {
   try {
-    await prisma.auditLog.create({ data: entry });
+    await withRlsBypass(async (tx) => {
+      await tx.auditLog.create({ data: entry });
+    });
   } catch (err) {
     logger.error({ err, entry }, 'Failed to write audit log');
   }

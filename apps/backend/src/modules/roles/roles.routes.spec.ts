@@ -123,12 +123,15 @@ describe('Roles endpoints', () => {
 
       expect(res.status).toBe(201);
       expect(res.body.name).toBe('Custom Manager');
-      expect(mockedService.createCustomRole).toHaveBeenCalledWith('org-1', {
-        name: 'Custom Manager',
-        baseRole: 'MANAGER',
-        description: undefined,
-        overrides: undefined,
-      });
+      expect(mockedService.createCustomRole).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        {
+          name: 'Custom Manager',
+          baseRole: 'MANAGER',
+          description: undefined,
+          overrides: undefined,
+        },
+      );
     });
 
     it('should return 409 on duplicate name', async () => {
