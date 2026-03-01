@@ -9,6 +9,18 @@ jest.mock('../../shared/audit/audit.service', () => ({
   logAudit: jest.fn().mockResolvedValue(undefined),
 }));
 
+jest.mock('../../shared/rbac/rbac.service', () => ({
+  getUserPermissions: jest.fn(),
+  hasPermission: jest.fn(),
+  invalidatePermissionsCache: jest.fn(),
+  invalidatePermissionsCacheForRole: jest.fn(),
+}));
+
+import { getUserPermissions } from '../../shared/rbac/rbac.service';
+import { DEFAULT_ROLE_PERMISSIONS } from '../../shared/rbac/permissions';
+
+const mockGetUserPermissions = getUserPermissions as jest.MockedFunction<typeof getUserPermissions>;
+
 jest.mock('./org-users.service', () => ({
   createOrgUser: jest.fn(),
   listOrgUsers: jest.fn(),
@@ -49,6 +61,10 @@ const OPERATOR_PAYLOAD = {
 
 function authAs(payload: authService.TokenPayload) {
   mockedAuth.verifyAccessToken.mockReturnValue(payload);
+  // Set up RBAC permissions for checkPermission middleware
+  const rolePerms =
+    DEFAULT_ROLE_PERMISSIONS[payload.role as keyof typeof DEFAULT_ROLE_PERMISSIONS] ?? [];
+  mockGetUserPermissions.mockResolvedValue(rolePerms);
 }
 
 describe('Org Users endpoints', () => {
