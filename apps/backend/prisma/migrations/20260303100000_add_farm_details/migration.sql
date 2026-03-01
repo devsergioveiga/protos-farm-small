@@ -22,8 +22,8 @@ ALTER TABLE farms ADD COLUMN IF NOT EXISTS "utilizationDegree" DECIMAL(5,2);
 -- ─── Tabela farm_registrations (matriculas de cartorio) ─────────────────────
 
 CREATE TABLE farm_registrations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  "farmId" UUID NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "farmId" TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
   "number" TEXT NOT NULL,
   "cnsCode" TEXT,
   "cartorioName" TEXT NOT NULL,
@@ -41,8 +41,8 @@ CREATE INDEX idx_farm_registrations_farm_id ON farm_registrations("farmId");
 -- ─── Tabela farm_documents (esqueleto para CA10 futuro) ─────────────────────
 
 CREATE TABLE farm_documents (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  "farmId" UUID NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "farmId" TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
   type TEXT NOT NULL,
   filename TEXT NOT NULL,
   url TEXT NOT NULL,
