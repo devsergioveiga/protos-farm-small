@@ -10,6 +10,7 @@ import { adminRouter } from './modules/admin/admin.routes';
 import { orgUsersRouter } from './modules/org-users/org-users.routes';
 import { rolesRouter } from './modules/roles/roles.routes';
 import { farmsRouter } from './modules/farms/farms.routes';
+import { producersRouter } from './modules/producers/producers.routes';
 
 const app = express();
 
@@ -27,5 +28,6 @@ app.use('/api', adminRouter);
 app.use('/api', orgUsersRouter);
 app.use('/api', rolesRouter);
 app.use('/api', farmsRouter);
+app.use('/api', producersRouter);
 
 export { app };
