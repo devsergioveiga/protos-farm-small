@@ -2,11 +2,14 @@ import { logAudit } from './audit.service';
 
 const mockCreate = jest.fn();
 
-jest.mock('../../database/prisma', () => ({
-  prisma: {
-    auditLog: {
-      create: (...args: unknown[]) => mockCreate(...args),
-    },
+jest.mock('../../database/rls', () => ({
+  withRlsBypass: (fn: (tx: unknown) => Promise<unknown>) => {
+    const txClient = {
+      auditLog: {
+        create: (...args: unknown[]) => mockCreate(...args),
+      },
+    };
+    return fn(txClient);
   },
 }));
 
@@ -31,7 +34,8 @@ const SAMPLE_ENTRY = {
 
 describe('logAudit', () => {
   beforeEach(() => {
-    jest.resetAllMocks();
+    mockCreate.mockReset();
+    mockLoggerError.mockReset();
   });
 
   it('should create an audit log entry', async () => {

@@ -4,6 +4,7 @@ import { checkPermission } from '../../middleware/check-permission';
 import { logAudit } from '../../shared/audit/audit.service';
 import { ALL_MODULES, ALL_ACTIONS, DEFAULT_ROLE_PERMISSIONS } from '../../shared/rbac/permissions';
 import { getUserPermissions } from '../../shared/rbac/rbac.service';
+import type { RlsContext } from '../../database/rls';
 import {
   createCustomRole,
   listCustomRoles,
@@ -23,6 +24,10 @@ function getClientIp(req: import('express').Request): string {
   return req.ip ?? 'unknown';
 }
 
+function buildRlsContext(req: import('express').Request): RlsContext {
+  return { organizationId: req.user!.organizationId };
+}
+
 // POST /org/roles — Create custom role
 rolesRouter.post('/org/roles', ...orgAdminOnly, async (req, res) => {
   try {
@@ -38,8 +43,8 @@ rolesRouter.post('/org/roles', ...orgAdminOnly, async (req, res) => {
       return;
     }
 
-    const orgId = req.user!.organizationId;
-    const role = await createCustomRole(orgId, { name, baseRole, description, overrides });
+    const ctx = buildRlsContext(req);
+    const role = await createCustomRole(ctx, { name, baseRole, description, overrides });
 
     void logAudit({
       actorId: req.user!.userId,
@@ -50,7 +55,7 @@ rolesRouter.post('/org/roles', ...orgAdminOnly, async (req, res) => {
       targetId: role.id,
       metadata: { name, baseRole },
       ipAddress: getClientIp(req),
-      organizationId: orgId,
+      organizationId: ctx.organizationId,
     });
 
     res.status(201).json(role);
@@ -66,8 +71,8 @@ rolesRouter.post('/org/roles', ...orgAdminOnly, async (req, res) => {
 // GET /org/roles — List custom roles
 rolesRouter.get('/org/roles', ...orgAdminOnly, async (req, res) => {
   try {
-    const orgId = req.user!.organizationId;
-    const roles = await listCustomRoles(orgId);
+    const ctx = buildRlsContext(req);
+    const roles = await listCustomRoles(ctx);
     res.json(roles);
   } catch (err) {
     if (err instanceof RoleError) {
@@ -81,8 +86,8 @@ rolesRouter.get('/org/roles', ...orgAdminOnly, async (req, res) => {
 // GET /org/roles/:roleId — Get custom role detail
 rolesRouter.get('/org/roles/:roleId', ...orgAdminOnly, async (req, res) => {
   try {
-    const orgId = req.user!.organizationId;
-    const role = await getCustomRole(orgId, req.params.roleId as string);
+    const ctx = buildRlsContext(req);
+    const role = await getCustomRole(ctx, req.params.roleId as string);
     res.json(role);
   } catch (err) {
     if (err instanceof RoleError) {
@@ -96,9 +101,9 @@ rolesRouter.get('/org/roles/:roleId', ...orgAdminOnly, async (req, res) => {
 // PATCH /org/roles/:roleId — Update custom role
 rolesRouter.patch('/org/roles/:roleId', ...orgAdminOnly, async (req, res) => {
   try {
-    const orgId = req.user!.organizationId;
+    const ctx = buildRlsContext(req);
     const { name, description, permissions } = req.body;
-    const role = await updateCustomRole(orgId, req.params.roleId as string, {
+    const role = await updateCustomRole(ctx, req.params.roleId as string, {
       name,
       description,
       permissions,
@@ -113,7 +118,7 @@ rolesRouter.patch('/org/roles/:roleId', ...orgAdminOnly, async (req, res) => {
       targetId: req.params.roleId as string,
       metadata: { name, description },
       ipAddress: getClientIp(req),
-      organizationId: orgId,
+      organizationId: ctx.organizationId,
     });
 
     res.json(role);
@@ -129,8 +134,8 @@ rolesRouter.patch('/org/roles/:roleId', ...orgAdminOnly, async (req, res) => {
 // DELETE /org/roles/:roleId — Soft-delete custom role
 rolesRouter.delete('/org/roles/:roleId', ...orgAdminOnly, async (req, res) => {
   try {
-    const orgId = req.user!.organizationId;
-    const result = await deleteCustomRole(orgId, req.params.roleId as string);
+    const ctx = buildRlsContext(req);
+    const result = await deleteCustomRole(ctx, req.params.roleId as string);
 
     void logAudit({
       actorId: req.user!.userId,
@@ -141,7 +146,7 @@ rolesRouter.delete('/org/roles/:roleId', ...orgAdminOnly, async (req, res) => {
       targetId: req.params.roleId as string,
       metadata: {},
       ipAddress: getClientIp(req),
-      organizationId: orgId,
+      organizationId: ctx.organizationId,
     });
 
     res.json(result);
@@ -159,8 +164,8 @@ rolesRouter.delete('/org/roles/:roleId', ...orgAdminOnly, async (req, res) => {
 // GET /org/permissions/matrix — Default permission matrix + custom roles
 rolesRouter.get('/org/permissions/matrix', ...orgAdminOnly, async (req, res) => {
   try {
-    const orgId = req.user!.organizationId;
-    const customRoles = await listCustomRoles(orgId);
+    const ctx = buildRlsContext(req);
+    const customRoles = await listCustomRoles(ctx);
 
     const matrix = {
       modules: ALL_MODULES,

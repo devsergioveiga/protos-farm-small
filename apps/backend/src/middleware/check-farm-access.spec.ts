@@ -1,20 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 import { checkFarmAccess } from './check-farm-access';
 
-// Mock prisma
-jest.mock('../database/prisma', () => ({
-  prisma: {
-    userFarmAccess: {
-      findUnique: jest.fn(),
-    },
-  },
+// Mock RLS bypass — executes callback with a mock tx client
+const mockFindUnique = jest.fn();
+
+jest.mock('../database/rls', () => ({
+  withRlsBypass: jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => {
+    const txClient = {
+      userFarmAccess: {
+        findUnique: mockFindUnique,
+      },
+    };
+    return fn(txClient);
+  }),
 }));
-
-import { prisma } from '../database/prisma';
-
-const mockFindUnique = prisma.userFarmAccess.findUnique as jest.MockedFunction<
-  typeof prisma.userFarmAccess.findUnique
->;
 
 function mockReq(
   user?: Record<string, unknown>,
@@ -92,7 +91,7 @@ describe('checkFarmAccess middleware', () => {
   });
 
   it('should allow OPERATOR with farm access', async () => {
-    mockFindUnique.mockResolvedValue({ id: 'access-1', userId: 'u1', farmId: 'f1' } as never);
+    mockFindUnique.mockResolvedValue({ id: 'access-1', userId: 'u1', farmId: 'f1' });
 
     const req = mockReq(
       { userId: 'u1', email: 'op@test.com', role: 'OPERATOR', organizationId: 'o1' },

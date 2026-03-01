@@ -1,4 +1,4 @@
-import { prisma } from '../../database/prisma';
+import { withRlsBypass } from '../../database/rls';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -28,28 +28,37 @@ export interface AuditLogQuery {
 // ─── Service functions ──────────────────────────────────────────────
 
 export async function getDashboardStats(): Promise<DashboardStats> {
-  const [totalOrgs, activeOrgs, suspendedOrgs, cancelledOrgs, planGroups, totalUsers, totalFarms] =
-    await Promise.all([
-      prisma.organization.count(),
-      prisma.organization.count({ where: { status: 'ACTIVE' } }),
-      prisma.organization.count({ where: { status: 'SUSPENDED' } }),
-      prisma.organization.count({ where: { status: 'CANCELLED' } }),
-      prisma.organization.groupBy({ by: ['plan'], _count: { plan: true } }),
-      prisma.user.count(),
-      prisma.farm.count(),
+  return withRlsBypass(async (tx) => {
+    const [
+      totalOrgs,
+      activeOrgs,
+      suspendedOrgs,
+      cancelledOrgs,
+      planGroups,
+      totalUsers,
+      totalFarms,
+    ] = await Promise.all([
+      tx.organization.count(),
+      tx.organization.count({ where: { status: 'ACTIVE' } }),
+      tx.organization.count({ where: { status: 'SUSPENDED' } }),
+      tx.organization.count({ where: { status: 'CANCELLED' } }),
+      tx.organization.groupBy({ by: ['plan'], _count: { plan: true } }),
+      tx.user.count(),
+      tx.farm.count(),
     ]);
 
-  return {
-    organizations: {
-      total: totalOrgs,
-      active: activeOrgs,
-      suspended: suspendedOrgs,
-      cancelled: cancelledOrgs,
-      byPlan: planGroups.map((g) => ({ plan: g.plan, count: g._count.plan })),
-    },
-    users: { total: totalUsers },
-    farms: { total: totalFarms },
-  };
+    return {
+      organizations: {
+        total: totalOrgs,
+        active: activeOrgs,
+        suspended: suspendedOrgs,
+        cancelled: cancelledOrgs,
+        byPlan: planGroups.map((g) => ({ plan: g.plan, count: g._count.plan })),
+      },
+      users: { total: totalUsers },
+      farms: { total: totalFarms },
+    };
+  });
 }
 
 export async function listAuditLogs(query: AuditLogQuery) {
@@ -82,23 +91,25 @@ export async function listAuditLogs(query: AuditLogQuery) {
     where.organizationId = query.organizationId;
   }
 
-  const [data, total] = await Promise.all([
-    prisma.auditLog.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-    }),
-    prisma.auditLog.count({ where }),
-  ]);
+  return withRlsBypass(async (tx) => {
+    const [data, total] = await Promise.all([
+      tx.auditLog.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      tx.auditLog.count({ where }),
+    ]);
 
-  return {
-    data,
-    meta: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  });
 }

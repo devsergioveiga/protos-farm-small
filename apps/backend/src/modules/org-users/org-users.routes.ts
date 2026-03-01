@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../../middleware/auth';
 import { checkPermission } from '../../middleware/check-permission';
 import { logAudit } from '../../shared/audit/audit.service';
+import type { RlsContext } from '../../database/rls';
 import {
   createOrgUser,
   listOrgUsers,
@@ -21,6 +22,10 @@ function getClientIp(req: import('express').Request): string {
   const forwarded = req.headers['x-forwarded-for'];
   if (typeof forwarded === 'string') return forwarded.split(',')[0].trim();
   return req.ip ?? 'unknown';
+}
+
+function buildRlsContext(req: import('express').Request): RlsContext {
+  return { organizationId: req.user!.organizationId };
 }
 
 // POST /org/users — CA1
@@ -54,8 +59,8 @@ orgUsersRouter.post(
         return;
       }
 
-      const orgId = req.user!.organizationId;
-      const user = await createOrgUser(orgId, { name, email, phone, role, farmIds });
+      const ctx = buildRlsContext(req);
+      const user = await createOrgUser(ctx, { name, email, phone, role, farmIds });
 
       void logAudit({
         actorId: req.user!.userId,
@@ -66,7 +71,7 @@ orgUsersRouter.post(
         targetId: user.id,
         metadata: { email, role, farmIds },
         ipAddress: getClientIp(req),
-        organizationId: orgId,
+        organizationId: ctx.organizationId,
       });
 
       res.status(201).json(user);
@@ -87,8 +92,8 @@ orgUsersRouter.get(
   checkPermission('users:read'),
   async (req, res) => {
     try {
-      const orgId = req.user!.organizationId;
-      const result = await getOrgUserLimit(orgId);
+      const ctx = buildRlsContext(req);
+      const result = await getOrgUserLimit(ctx);
       res.json(result);
     } catch (err) {
       if (err instanceof OrgUserError) {
@@ -103,7 +108,7 @@ orgUsersRouter.get(
 // GET /org/users — CA2
 orgUsersRouter.get('/org/users', authenticate, checkPermission('users:read'), async (req, res) => {
   try {
-    const orgId = req.user!.organizationId;
+    const ctx = buildRlsContext(req);
     const page = req.query.page ? Number(req.query.page as string) : undefined;
     const limit = req.query.limit ? Number(req.query.limit as string) : undefined;
     const search = req.query.search as string | undefined;
@@ -111,7 +116,7 @@ orgUsersRouter.get('/org/users', authenticate, checkPermission('users:read'), as
     const farmId = req.query.farmId as string | undefined;
     const status = req.query.status as string | undefined;
 
-    const result = await listOrgUsers(orgId, { page, limit, search, role, farmId, status });
+    const result = await listOrgUsers(ctx, { page, limit, search, role, farmId, status });
     res.json(result);
   } catch (err) {
     if (err instanceof OrgUserError) {
@@ -129,8 +134,8 @@ orgUsersRouter.get(
   checkPermission('users:read'),
   async (req, res) => {
     try {
-      const orgId = req.user!.organizationId;
-      const user = await getOrgUser(orgId, req.params.userId as string);
+      const ctx = buildRlsContext(req);
+      const user = await getOrgUser(ctx, req.params.userId as string);
       res.json(user);
     } catch (err) {
       if (err instanceof OrgUserError) {
@@ -149,11 +154,11 @@ orgUsersRouter.patch(
   checkPermission('users:update'),
   async (req, res) => {
     try {
-      const orgId = req.user!.organizationId;
+      const ctx = buildRlsContext(req);
       const actorId = req.user!.userId;
       const { name, phone, role, farmIds } = req.body;
 
-      const user = await updateOrgUser(orgId, req.params.userId as string, actorId, {
+      const user = await updateOrgUser(ctx, req.params.userId as string, actorId, {
         name,
         phone,
         role,
@@ -169,7 +174,7 @@ orgUsersRouter.patch(
         targetId: req.params.userId as string,
         metadata: { name, phone, role, farmIds },
         ipAddress: getClientIp(req),
-        organizationId: orgId,
+        organizationId: ctx.organizationId,
       });
 
       res.json(user);
@@ -190,7 +195,7 @@ orgUsersRouter.patch(
   checkPermission('users:update'),
   async (req, res) => {
     try {
-      const orgId = req.user!.organizationId;
+      const ctx = buildRlsContext(req);
       const actorId = req.user!.userId;
       const { status } = req.body;
 
@@ -199,7 +204,7 @@ orgUsersRouter.patch(
         return;
       }
 
-      const user = await toggleOrgUserStatus(orgId, req.params.userId as string, actorId, status);
+      const user = await toggleOrgUserStatus(ctx, req.params.userId as string, actorId, status);
 
       void logAudit({
         actorId: req.user!.userId,
@@ -210,7 +215,7 @@ orgUsersRouter.patch(
         targetId: req.params.userId as string,
         metadata: { status },
         ipAddress: getClientIp(req),
-        organizationId: orgId,
+        organizationId: ctx.organizationId,
       });
 
       res.json(user);
@@ -231,8 +236,8 @@ orgUsersRouter.post(
   checkPermission('users:update'),
   async (req, res) => {
     try {
-      const orgId = req.user!.organizationId;
-      const result = await resetOrgUserPasswordByAdmin(orgId, req.params.userId as string);
+      const ctx = buildRlsContext(req);
+      const result = await resetOrgUserPasswordByAdmin(ctx, req.params.userId as string);
 
       void logAudit({
         actorId: req.user!.userId,
@@ -243,7 +248,7 @@ orgUsersRouter.post(
         targetId: req.params.userId as string,
         metadata: {},
         ipAddress: getClientIp(req),
-        organizationId: orgId,
+        organizationId: ctx.organizationId,
       });
 
       res.json(result);
@@ -264,8 +269,8 @@ orgUsersRouter.post(
   checkPermission('users:update'),
   async (req, res) => {
     try {
-      const orgId = req.user!.organizationId;
-      const result = await resendInvite(orgId, req.params.userId as string);
+      const ctx = buildRlsContext(req);
+      const result = await resendInvite(ctx, req.params.userId as string);
 
       void logAudit({
         actorId: req.user!.userId,
@@ -276,7 +281,7 @@ orgUsersRouter.post(
         targetId: req.params.userId as string,
         metadata: {},
         ipAddress: getClientIp(req),
-        organizationId: orgId,
+        organizationId: ctx.organizationId,
       });
 
       res.json(result);
@@ -297,8 +302,8 @@ orgUsersRouter.post(
   checkPermission('users:read'),
   async (req, res) => {
     try {
-      const orgId = req.user!.organizationId;
-      const result = await generateInviteLink(orgId, req.params.userId as string);
+      const ctx = buildRlsContext(req);
+      const result = await generateInviteLink(ctx, req.params.userId as string);
       res.json(result);
     } catch (err) {
       if (err instanceof OrgUserError) {

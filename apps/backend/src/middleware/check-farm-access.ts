@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { prisma } from '../database/prisma';
+import { withRlsBypass } from '../database/rls';
 import { ROLE_HIERARCHY } from '../shared/rbac/permissions';
 
 export function checkFarmAccess(farmIdParam = 'farmId') {
@@ -25,13 +25,15 @@ export function checkFarmAccess(farmIdParam = 'farmId') {
       return;
     }
 
-    const access = await prisma.userFarmAccess.findUnique({
-      where: {
-        userId_farmId: {
-          userId: req.user.userId,
-          farmId,
+    const access = await withRlsBypass(async (tx) => {
+      return tx.userFarmAccess.findUnique({
+        where: {
+          userId_farmId: {
+            userId: req.user!.userId,
+            farmId,
+          },
         },
-      },
+      });
     });
 
     if (!access) {
