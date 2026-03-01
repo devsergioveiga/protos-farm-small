@@ -2,9 +2,10 @@ import { render, screen } from '@testing-library/react';
 import { App } from './App';
 
 describe('App', () => {
-  it('should render Protos Farm heading', () => {
+  it('should render login page by default', async () => {
     render(<App />);
 
-    expect(screen.getByText('Protos Farm')).toBeDefined();
+    const heading = await screen.findByText('Protos Farm');
+    expect(heading).toBeDefined();
   });
 });

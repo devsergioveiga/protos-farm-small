@@ -226,6 +226,22 @@ export async function updateSessionPolicy(id: string, allowMultipleSessions: boo
   return updated;
 }
 
+// ─── Social login policy ──────────────────────────────────────────
+
+export async function updateSocialLoginPolicy(id: string, allowSocialLogin: boolean) {
+  const org = await prisma.organization.findUnique({ where: { id } });
+  if (!org) {
+    throw new OrgError('Organização não encontrada', 404);
+  }
+
+  const updated = await prisma.organization.update({
+    where: { id },
+    data: { allowSocialLogin },
+  });
+
+  return updated;
+}
+
 // ─── Org admin management ──────────────────────────────────────────
 
 const INVITE_PREFIX = 'invite_token:';

@@ -26,8 +26,19 @@ adminRouter.get('/admin/audit-logs', ...adminOnly, async (req, res) => {
     const actorId = req.query.actorId as string | undefined;
     const dateFrom = req.query.dateFrom as string | undefined;
     const dateTo = req.query.dateTo as string | undefined;
+    const farmId = req.query.farmId as string | undefined;
+    const organizationId = req.query.organizationId as string | undefined;
 
-    const result = await listAuditLogs({ page, limit, action, actorId, dateFrom, dateTo });
+    const result = await listAuditLogs({
+      page,
+      limit,
+      action,
+      actorId,
+      dateFrom,
+      dateTo,
+      farmId,
+      organizationId,
+    });
     res.json(result);
   } catch {
     res.status(500).json({ error: 'Erro interno do servidor' });

@@ -67,6 +67,7 @@ const REFRESH_PREFIX = 'refresh_token:';
 const USER_SESSIONS_PREFIX = 'user_sessions:';
 const PASSWORD_RESET_PREFIX = 'password_reset:';
 const INVITE_PREFIX = 'invite_token:';
+const ORG_INVITE_PREFIX = 'org_invite_token:';
 
 async function saveRefreshToken(token: string, userId: string): Promise<void> {
   const env = loadEnv();
@@ -94,19 +95,16 @@ export async function invalidateAllUserSessions(userId: string): Promise<void> {
   }
 }
 
-// ─── Core flows ─────────────────────────────────────────────────────
+// ─── Session helper ──────────────────────────────────────────────────
 
-export async function login(input: LoginInput): Promise<AuthTokens> {
-  const user = await prisma.user.findUnique({ where: { email: input.email } });
+interface UserForSession {
+  id: string;
+  email: string;
+  role: UserRole;
+  organizationId: string;
+}
 
-  if (!user || !user.passwordHash) {
-    throw new AuthError('Credenciais inválidas', 401);
-  }
-
-  if (user.status !== 'ACTIVE') {
-    throw new AuthError('Conta inativa', 403);
-  }
-
+export async function createSessionForUser(user: UserForSession): Promise<AuthTokens> {
   let allowMultipleSessions = true;
 
   if (user.role !== 'SUPER_ADMIN') {
@@ -115,11 +113,6 @@ export async function login(input: LoginInput): Promise<AuthTokens> {
       throw new AuthError('Organização suspensa ou cancelada', 403);
     }
     allowMultipleSessions = org.allowMultipleSessions;
-  }
-
-  const passwordValid = await verifyPassword(input.password, user.passwordHash);
-  if (!passwordValid) {
-    throw new AuthError('Credenciais inválidas', 401);
   }
 
   if (!allowMultipleSessions) {
@@ -140,6 +133,27 @@ export async function login(input: LoginInput): Promise<AuthTokens> {
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
 
   return { accessToken, refreshToken };
+}
+
+// ─── Core flows ─────────────────────────────────────────────────────
+
+export async function login(input: LoginInput): Promise<AuthTokens> {
+  const user = await prisma.user.findUnique({ where: { email: input.email } });
+
+  if (!user || !user.passwordHash) {
+    throw new AuthError('Credenciais inválidas', 401);
+  }
+
+  if (user.status !== 'ACTIVE') {
+    throw new AuthError('Conta inativa', 403);
+  }
+
+  const passwordValid = await verifyPassword(input.password, user.passwordHash);
+  if (!passwordValid) {
+    throw new AuthError('Credenciais inválidas', 401);
+  }
+
+  return createSessionForUser(user);
 }
 
 export async function refreshTokens(token: string): Promise<AuthTokens> {
@@ -242,8 +256,13 @@ export async function resetPassword(token: string, newPassword: string): Promise
 // ─── Accept invite ──────────────────────────────────────────────────
 
 export async function acceptInvite(token: string, password: string): Promise<AuthTokens> {
-  const key = `${INVITE_PREFIX}${token}`;
-  const userId = await redis.get(key);
+  let key = `${INVITE_PREFIX}${token}`;
+  let userId = await redis.get(key);
+
+  if (!userId) {
+    key = `${ORG_INVITE_PREFIX}${token}`;
+    userId = await redis.get(key);
+  }
 
   if (!userId) {
     throw new AuthError('Token inválido ou expirado', 401);
@@ -260,18 +279,7 @@ export async function acceptInvite(token: string, password: string): Promise<Aut
   const passwordHash = await hashPassword(password);
   await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
 
-  const payload: TokenPayload = {
-    userId: user.id,
-    email: user.email,
-    role: user.role,
-    organizationId: user.organizationId,
-  };
-
-  const accessToken = generateAccessToken(payload);
-  const refreshToken = crypto.randomUUID();
-  await saveRefreshToken(refreshToken, user.id);
-
   logger.info({ userId }, 'Invite accepted, password set');
 
-  return { accessToken, refreshToken };
+  return createSessionForUser(user);
 }

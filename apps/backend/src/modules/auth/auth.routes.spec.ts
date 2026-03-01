@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { app } from '../../app';
 import * as authService from './auth.service';
+import * as googleOAuthService from './google-oauth.service';
 
 jest.mock('./auth.service', () => {
   const actual = jest.requireActual('./auth.service');
@@ -16,6 +17,13 @@ jest.mock('./auth.service', () => {
   };
 });
 
+jest.mock('./google-oauth.service', () => ({
+  buildGoogleAuthUrl: jest.fn(),
+  handleGoogleCallback: jest.fn(),
+  exchangeGoogleCode: jest.fn(),
+  isGoogleConfigured: jest.fn(),
+}));
+
 jest.mock('../../middleware/rate-limit', () => ({
   loginRateLimit: () => (_req: unknown, _res: unknown, next: () => void) => next(),
   incrementLoginFailures: jest.fn().mockResolvedValue(undefined),
@@ -23,6 +31,7 @@ jest.mock('../../middleware/rate-limit', () => ({
 }));
 
 const mockedService = jest.mocked(authService);
+const mockedGoogleService = jest.mocked(googleOAuthService);
 
 function withAuth() {
   mockedService.verifyAccessToken.mockReturnValue({
@@ -439,6 +448,178 @@ describe('Auth endpoints', () => {
         .post('/api/auth/logout')
         .set('Authorization', 'Bearer valid-token')
         .send({ refreshToken: 'refresh-token-123' });
+
+      expect(response.status).toBe(500);
+      expect(response.body.error).toBe('Erro interno do servidor');
+    });
+  });
+
+  // ─── GET /api/auth/google ──────────────────────────────────────────
+
+  describe('GET /api/auth/google', () => {
+    it('should redirect to Google when configured', async () => {
+      mockedGoogleService.isGoogleConfigured.mockReturnValue(true);
+      mockedGoogleService.buildGoogleAuthUrl.mockResolvedValue(
+        'https://accounts.google.com/o/oauth2/v2/auth?state=abc',
+      );
+
+      const response = await request(app).get('/api/auth/google');
+
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe(
+        'https://accounts.google.com/o/oauth2/v2/auth?state=abc',
+      );
+    });
+
+    it('should return 503 when Google OAuth is not configured', async () => {
+      mockedGoogleService.isGoogleConfigured.mockReturnValue(false);
+
+      const response = await request(app).get('/api/auth/google');
+
+      expect(response.status).toBe(503);
+      expect(response.body.error).toBe('Login com Google não está configurado');
+    });
+  });
+
+  // ─── GET /api/auth/google/callback ─────────────────────────────────
+
+  describe('GET /api/auth/google/callback', () => {
+    it('should redirect to frontend with exchange code on success', async () => {
+      mockedGoogleService.handleGoogleCallback.mockResolvedValue('exchange-code-123');
+
+      const response = await request(app)
+        .get('/api/auth/google/callback')
+        .query({ code: 'google-code', state: 'csrf-state' });
+
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe(
+        'http://localhost:5173/auth/callback?code=exchange-code-123',
+      );
+    });
+
+    it('should redirect to login with error when Google denies access', async () => {
+      const response = await request(app)
+        .get('/api/auth/google/callback')
+        .query({ error: 'access_denied' });
+
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe(
+        'http://localhost:5173/login?error=google_access_denied',
+      );
+    });
+
+    it('should redirect to login with error when code/state are missing', async () => {
+      const response = await request(app).get('/api/auth/google/callback');
+
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe(
+        'http://localhost:5173/login?error=google_invalid_request',
+      );
+    });
+
+    it('should redirect to login with google_email_not_found when email is not registered', async () => {
+      mockedGoogleService.handleGoogleCallback.mockRejectedValue(
+        new authService.AuthError('Email não cadastrado no sistema', 403),
+      );
+
+      const response = await request(app)
+        .get('/api/auth/google/callback')
+        .query({ code: 'google-code', state: 'csrf-state' });
+
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe(
+        'http://localhost:5173/login?error=google_email_not_found',
+      );
+    });
+
+    it('should redirect to login with google_account_mismatch when Google sub does not match', async () => {
+      mockedGoogleService.handleGoogleCallback.mockRejectedValue(
+        new authService.AuthError('Esta conta está vinculada a outra conta Google', 403),
+      );
+
+      const response = await request(app)
+        .get('/api/auth/google/callback')
+        .query({ code: 'google-code', state: 'csrf-state' });
+
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe(
+        'http://localhost:5173/login?error=google_account_mismatch',
+      );
+    });
+
+    it('should redirect to login with google_social_disabled when org disables social login', async () => {
+      mockedGoogleService.handleGoogleCallback.mockRejectedValue(
+        new authService.AuthError('Login social desabilitado para esta organização', 403),
+      );
+
+      const response = await request(app)
+        .get('/api/auth/google/callback')
+        .query({ code: 'google-code', state: 'csrf-state' });
+
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe(
+        'http://localhost:5173/login?error=google_social_disabled',
+      );
+    });
+
+    it('should redirect to login with google_error on unexpected error', async () => {
+      mockedGoogleService.handleGoogleCallback.mockRejectedValue(new Error('unexpected'));
+
+      const response = await request(app)
+        .get('/api/auth/google/callback')
+        .query({ code: 'google-code', state: 'csrf-state' });
+
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('http://localhost:5173/login?error=google_error');
+    });
+  });
+
+  // ─── POST /api/auth/google/exchange ────────────────────────────────
+
+  describe('POST /api/auth/google/exchange', () => {
+    it('should return tokens on valid exchange code', async () => {
+      mockedGoogleService.exchangeGoogleCode.mockResolvedValue({
+        accessToken: 'access-123',
+        refreshToken: 'refresh-456',
+      });
+
+      const response = await request(app)
+        .post('/api/auth/google/exchange')
+        .send({ code: 'exchange-code-123' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        accessToken: 'access-123',
+        refreshToken: 'refresh-456',
+      });
+    });
+
+    it('should return 400 when code is missing', async () => {
+      const response = await request(app).post('/api/auth/google/exchange').send({});
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Código é obrigatório');
+    });
+
+    it('should return 401 on invalid exchange code', async () => {
+      mockedGoogleService.exchangeGoogleCode.mockRejectedValue(
+        new authService.AuthError('Código inválido ou expirado', 401),
+      );
+
+      const response = await request(app)
+        .post('/api/auth/google/exchange')
+        .send({ code: 'invalid-code' });
+
+      expect(response.status).toBe(401);
+      expect(response.body.error).toBe('Código inválido ou expirado');
+    });
+
+    it('should return 500 on unexpected error', async () => {
+      mockedGoogleService.exchangeGoogleCode.mockRejectedValue(new Error('Redis down'));
+
+      const response = await request(app)
+        .post('/api/auth/google/exchange')
+        .send({ code: 'some-code' });
 
       expect(response.status).toBe(500);
       expect(response.body.error).toBe('Erro interno do servidor');

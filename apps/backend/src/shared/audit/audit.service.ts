@@ -11,6 +11,8 @@ export interface AuditEntry {
   targetId?: string;
   metadata?: Prisma.InputJsonValue;
   ipAddress?: string;
+  farmId?: string;
+  organizationId?: string;
 }
 
 export async function logAudit(entry: AuditEntry): Promise<void> {

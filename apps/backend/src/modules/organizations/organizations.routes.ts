@@ -9,6 +9,7 @@ import {
   updateOrganizationStatus,
   updateOrganizationPlan,
   updateSessionPolicy,
+  updateSocialLoginPolicy,
   createOrgAdmin,
   resetOrgUserPassword,
   unlockOrgUser,
@@ -56,6 +57,7 @@ organizationsRouter.post('/admin/organizations', ...adminOnly, async (req, res) 
       targetId: org.id,
       metadata: { name, type, plan: plan ?? 'basic' },
       ipAddress: getClientIp(req),
+      organizationId: org.id,
     });
 
     res.status(201).json(org);
@@ -127,6 +129,7 @@ organizationsRouter.patch('/admin/organizations/:id/status', ...adminOnly, async
       targetId: req.params.id as string,
       metadata: { status },
       ipAddress: getClientIp(req),
+      organizationId: req.params.id as string,
     });
 
     res.json(org);
@@ -160,6 +163,7 @@ organizationsRouter.patch('/admin/organizations/:id/plan', ...adminOnly, async (
       targetId: req.params.id as string,
       metadata: { plan, maxUsers, maxFarms },
       ipAddress: getClientIp(req),
+      organizationId: req.params.id as string,
     });
 
     res.json(org);
@@ -198,6 +202,45 @@ organizationsRouter.patch(
         targetId: req.params.id as string,
         metadata: { allowMultipleSessions },
         ipAddress: getClientIp(req),
+        organizationId: req.params.id as string,
+      });
+
+      res.json(org);
+    } catch (err) {
+      if (err instanceof OrgError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// PATCH /admin/organizations/:id/social-login-policy
+organizationsRouter.patch(
+  '/admin/organizations/:id/social-login-policy',
+  ...adminOnly,
+  async (req, res) => {
+    try {
+      const { allowSocialLogin } = req.body;
+
+      if (typeof allowSocialLogin !== 'boolean') {
+        res.status(400).json({ error: 'allowSocialLogin é obrigatório e deve ser um booleano' });
+        return;
+      }
+
+      const org = await updateSocialLoginPolicy(req.params.id as string, allowSocialLogin);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'UPDATE_SOCIAL_LOGIN_POLICY',
+        targetType: 'organization',
+        targetId: req.params.id as string,
+        metadata: { allowSocialLogin },
+        ipAddress: getClientIp(req),
+        organizationId: req.params.id as string,
       });
 
       res.json(org);
@@ -237,6 +280,7 @@ organizationsRouter.post('/admin/organizations/:id/users', ...adminOnly, async (
       targetId: user.id,
       metadata: { organizationId: req.params.id, email },
       ipAddress: getClientIp(req),
+      organizationId: req.params.id as string,
     });
 
     res.status(201).json(user);
@@ -269,6 +313,7 @@ organizationsRouter.post(
         targetId: req.params.userId as string,
         metadata: { organizationId: req.params.id },
         ipAddress: getClientIp(req),
+        organizationId: req.params.id as string,
       });
 
       res.json(result);
@@ -299,6 +344,7 @@ organizationsRouter.patch(
         targetId: req.params.userId as string,
         metadata: { organizationId: req.params.id },
         ipAddress: getClientIp(req),
+        organizationId: req.params.id as string,
       });
 
       res.json(user);

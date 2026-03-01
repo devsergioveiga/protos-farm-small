@@ -1,0 +1,189 @@
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-4);
+  background-color: var(--color-neutral-50);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-8);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.login-header h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-800);
+  margin-bottom: var(--space-2);
+}
+
+.login-header p {
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.form-field label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-700);
+}
+
+.form-field input {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-800);
+  transition: border-color var(--duration-fast) var(--ease-out);
+  min-height: 48px;
+}
+
+.form-field input:hover {
+  border-color: var(--color-neutral-400);
+}
+
+.form-field input:focus {
+  border-color: var(--color-primary-500);
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -1px;
+}
+
+.form-field input::placeholder {
+  color: var(--color-neutral-400);
+}
+
+.form-field-error input {
+  border-color: var(--color-error-500);
+}
+
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-error-500);
+}
+
+.btn-primary {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  padding: var(--space-3) var(--space-6);
+  min-height: 48px;
+  background-color: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-700);
+}
+
+.btn-primary:active {
+  background-color: var(--color-primary-800);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: var(--space-2) 0;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-neutral-200);
+}
+
+.login-divider span {
+  font-size: var(--text-sm);
+  color: var(--color-neutral-400);
+  white-space: nowrap;
+}
+
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  padding: var(--space-3) var(--space-6);
+  min-height: 48px;
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  width: 100%;
+}
+
+.btn-google:hover {
+  background-color: var(--color-neutral-50);
+  border-color: var(--color-neutral-400);
+}
+
+.btn-google:active {
+  background-color: var(--color-neutral-100);
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.login-alert {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-error-100);
+  color: var(--color-error-500);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.login-alert svg {
+  flex-shrink: 0;
+}

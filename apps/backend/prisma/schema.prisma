@@ -54,11 +54,13 @@ model Organization {
   maxUsers  Int              @default(10)
   maxFarms  Int              @default(5)
   allowMultipleSessions Boolean @default(true)
+  allowSocialLogin     Boolean @default(true)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 
-  users User[]
-  farms Farm[]
+  users       User[]
+  farms       Farm[]
+  customRoles CustomRole[]
 
   @@map("organizations")
 }
@@ -69,14 +71,17 @@ model User {
   name           String
   passwordHash   String?
   phone          String?
+  googleId       String?    @unique
   role           UserRole   @default(OPERATOR)
   status         UserStatus @default(ACTIVE)
   lastLoginAt    DateTime?
   organizationId String
+  customRoleId   String?
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 
   organization Organization     @relation(fields: [organizationId], references: [id])
+  customRole   CustomRole?      @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
   farmAccess   UserFarmAccess[]
 
   @@map("users")
@@ -119,20 +124,55 @@ model UserFarmAccess {
   @@map("user_farm_access")
 }
 
+model CustomRole {
+  id             String   @id @default(uuid())
+  name           String
+  description    String?
+  baseRole       UserRole
+  organizationId String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  permissions  RolePermission[]
+  users        User[]
+
+  @@unique([name, organizationId])
+  @@map("custom_roles")
+}
+
+model RolePermission {
+  id           String @id @default(uuid())
+  customRoleId String
+  module       String
+  action       String
+  allowed      Boolean @default(true)
+
+  customRole CustomRole @relation(fields: [customRoleId], references: [id], onDelete: Cascade)
+
+  @@unique([customRoleId, module, action])
+  @@map("role_permissions")
+}
+
 model AuditLog {
-  id         String   @id @default(uuid())
-  actorId    String
-  actorEmail String
-  actorRole  UserRole
-  action     String
-  targetType String?
-  targetId   String?
-  metadata   Json?
-  ipAddress  String?
-  createdAt  DateTime @default(now())
+  id             String   @id @default(uuid())
+  actorId        String
+  actorEmail     String
+  actorRole      UserRole
+  action         String
+  targetType     String?
+  targetId       String?
+  metadata       Json?
+  ipAddress      String?
+  farmId         String?
+  organizationId String?
+  createdAt      DateTime @default(now())
 
   @@index([actorId])
   @@index([action])
   @@index([createdAt])
+  @@index([farmId])
+  @@index([organizationId])
   @@map("audit_logs")
 }
