@@ -57,6 +57,7 @@ organizationsRouter.post('/admin/organizations', ...adminOnly, async (req, res) 
       targetId: org.id,
       metadata: { name, type, plan: plan ?? 'basic' },
       ipAddress: getClientIp(req),
+      organizationId: org.id,
     });
 
     res.status(201).json(org);
@@ -128,6 +129,7 @@ organizationsRouter.patch('/admin/organizations/:id/status', ...adminOnly, async
       targetId: req.params.id as string,
       metadata: { status },
       ipAddress: getClientIp(req),
+      organizationId: req.params.id as string,
     });
 
     res.json(org);
@@ -161,6 +163,7 @@ organizationsRouter.patch('/admin/organizations/:id/plan', ...adminOnly, async (
       targetId: req.params.id as string,
       metadata: { plan, maxUsers, maxFarms },
       ipAddress: getClientIp(req),
+      organizationId: req.params.id as string,
     });
 
     res.json(org);
@@ -199,6 +202,7 @@ organizationsRouter.patch(
         targetId: req.params.id as string,
         metadata: { allowMultipleSessions },
         ipAddress: getClientIp(req),
+        organizationId: req.params.id as string,
       });
 
       res.json(org);
@@ -236,6 +240,7 @@ organizationsRouter.patch(
         targetId: req.params.id as string,
         metadata: { allowSocialLogin },
         ipAddress: getClientIp(req),
+        organizationId: req.params.id as string,
       });
 
       res.json(org);
@@ -275,6 +280,7 @@ organizationsRouter.post('/admin/organizations/:id/users', ...adminOnly, async (
       targetId: user.id,
       metadata: { organizationId: req.params.id, email },
       ipAddress: getClientIp(req),
+      organizationId: req.params.id as string,
     });
 
     res.status(201).json(user);
@@ -307,6 +313,7 @@ organizationsRouter.post(
         targetId: req.params.userId as string,
         metadata: { organizationId: req.params.id },
         ipAddress: getClientIp(req),
+        organizationId: req.params.id as string,
       });
 
       res.json(result);
@@ -337,6 +344,7 @@ organizationsRouter.patch(
         targetId: req.params.userId as string,
         metadata: { organizationId: req.params.id },
         ipAddress: getClientIp(req),
+        organizationId: req.params.id as string,
       });
 
       res.json(user);

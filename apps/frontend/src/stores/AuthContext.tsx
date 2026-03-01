@@ -12,6 +12,7 @@ interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  permissions: string[];
   login: (email: string, password: string) => Promise<void>;
   loginWithTokens: (accessToken: string, refreshToken: string) => void;
   logout: () => Promise<void>;
@@ -33,32 +34,51 @@ function decodeJwtPayload(token: string): User | null {
 function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [permissions, setPermissions] = useState<string[]>([]);
+
+  const fetchPermissions = useCallback(async () => {
+    try {
+      const data = await api.get<{ permissions: string[] }>('/org/permissions/me');
+      setPermissions(data.permissions);
+    } catch {
+      setPermissions([]);
+    }
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
       const decoded = decodeJwtPayload(token);
       setUser(decoded);
+      void fetchPermissions();
     }
     setIsLoading(false);
-  }, []);
+  }, [fetchPermissions]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const tokens = await api.post<{ accessToken: string; refreshToken: string }>('/auth/login', {
-      email,
-      password,
-    });
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const tokens = await api.post<{ accessToken: string; refreshToken: string }>('/auth/login', {
+        email,
+        password,
+      });
 
-    api.setTokens(tokens.accessToken, tokens.refreshToken);
-    const decoded = decodeJwtPayload(tokens.accessToken);
-    setUser(decoded);
-  }, []);
+      api.setTokens(tokens.accessToken, tokens.refreshToken);
+      const decoded = decodeJwtPayload(tokens.accessToken);
+      setUser(decoded);
+      void fetchPermissions();
+    },
+    [fetchPermissions],
+  );
 
-  const loginWithTokens = useCallback((accessToken: string, refreshToken: string) => {
-    api.setTokens(accessToken, refreshToken);
-    const decoded = decodeJwtPayload(accessToken);
-    setUser(decoded);
-  }, []);
+  const loginWithTokens = useCallback(
+    (accessToken: string, refreshToken: string) => {
+      api.setTokens(accessToken, refreshToken);
+      const decoded = decodeJwtPayload(accessToken);
+      setUser(decoded);
+      void fetchPermissions();
+    },
+    [fetchPermissions],
+  );
 
   const logout = useCallback(async () => {
     try {
@@ -71,6 +91,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       api.clearTokens();
       setUser(null);
+      setPermissions([]);
     }
   }, []);
 
@@ -80,6 +101,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isAuthenticated: !!user,
         isLoading,
+        permissions,
         login,
         loginWithTokens,
         logout,

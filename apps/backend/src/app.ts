@@ -8,6 +8,7 @@ import { authRouter } from './modules/auth/auth.routes';
 import { organizationsRouter } from './modules/organizations/organizations.routes';
 import { adminRouter } from './modules/admin/admin.routes';
 import { orgUsersRouter } from './modules/org-users/org-users.routes';
+import { rolesRouter } from './modules/roles/roles.routes';
 
 const app = express();
 
@@ -23,5 +24,6 @@ app.use('/api', authRouter);
 app.use('/api', organizationsRouter);
 app.use('/api', adminRouter);
 app.use('/api', orgUsersRouter);
+app.use('/api', rolesRouter);
 
 export { app };

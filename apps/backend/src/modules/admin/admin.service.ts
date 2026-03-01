@@ -21,6 +21,8 @@ export interface AuditLogQuery {
   actorId?: string;
   dateFrom?: string;
   dateTo?: string;
+  farmId?: string;
+  organizationId?: string;
 }
 
 // ─── Service functions ──────────────────────────────────────────────
@@ -70,6 +72,14 @@ export async function listAuditLogs(query: AuditLogQuery) {
       ...(query.dateFrom && { gte: new Date(query.dateFrom) }),
       ...(query.dateTo && { lte: new Date(query.dateTo) }),
     };
+  }
+
+  if (query.farmId) {
+    where.farmId = query.farmId;
+  }
+
+  if (query.organizationId) {
+    where.organizationId = query.organizationId;
   }
 
   const [data, total] = await Promise.all([
