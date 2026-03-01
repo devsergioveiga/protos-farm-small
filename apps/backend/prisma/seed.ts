@@ -187,6 +187,70 @@ const farms = [
   },
 ];
 
+// ─── Matrículas das Fazendas ─────────────────────────────────────────
+
+const farmRegistrations = [
+  // Santa Helena — 2 matrículas
+  {
+    id: 'd1b2c3d4-0001-4000-8000-000000000001',
+    farmId: farms[0].id,
+    number: '15.234',
+    cnsCode: '123456',
+    cartorioName: '1º Cartório de Registro de Imóveis de Sorriso',
+    comarca: 'Sorriso',
+    state: 'MT',
+    livro: '2-B',
+    registrationDate: new Date('2015-03-12'),
+    areaHa: 3200.0,
+  },
+  {
+    id: 'd1b2c3d4-0002-4000-8000-000000000002',
+    farmId: farms[0].id,
+    number: '15.235',
+    cartorioName: '1º Cartório de Registro de Imóveis de Sorriso',
+    comarca: 'Sorriso',
+    state: 'MT',
+    livro: '2-B',
+    registrationDate: new Date('2018-07-20'),
+    areaHa: 2000.0,
+  },
+  // Três Irmãos — 1 matrícula
+  {
+    id: 'd1b2c3d4-0003-4000-8000-000000000003',
+    farmId: farms[1].id,
+    number: '8.901',
+    cartorioName: '2º Cartório de Registro de Imóveis de Rio Verde',
+    comarca: 'Rio Verde',
+    state: 'GO',
+    registrationDate: new Date('2020-11-05'),
+    areaHa: 1800.5,
+  },
+  // Lagoa Dourada — 1 matrícula
+  {
+    id: 'd1b2c3d4-0004-4000-8000-000000000004',
+    farmId: farms[2].id,
+    number: '22.456',
+    cnsCode: '789012',
+    cartorioName: 'Cartório de Registro de Imóveis de Uberaba',
+    comarca: 'Uberaba',
+    state: 'MG',
+    livro: '3-A',
+    registrationDate: new Date('2012-01-18'),
+    areaHa: 520.75,
+  },
+  // Recanto do Sol — 1 matrícula
+  {
+    id: 'd1b2c3d4-0005-4000-8000-000000000005',
+    farmId: farms[3].id,
+    number: '5.678',
+    cartorioName: '1º Cartório de Registro de Imóveis de Jaú',
+    comarca: 'Jaú',
+    state: 'SP',
+    registrationDate: new Date('2019-09-30'),
+    areaHa: 185.3,
+  },
+];
+
 // ─── Vínculos Usuário-Fazenda ────────────────────────────────────────
 
 const userFarmAccess = [
@@ -295,6 +359,23 @@ async function main() {
       farm.id,
     );
     console.log(`  ✓ Coordenadas: ${farm.name} (${farm.lat}, ${farm.lng})`);
+  }
+
+  // Matrículas das Fazendas
+  console.log('\n  Criando matrículas...');
+  for (const reg of farmRegistrations) {
+    await prisma.farmRegistration.upsert({
+      where: { id: reg.id },
+      update: {
+        number: reg.number,
+        cartorioName: reg.cartorioName,
+        comarca: reg.comarca,
+        state: reg.state,
+        areaHa: reg.areaHa,
+      },
+      create: reg,
+    });
+    console.log(`  ✓ Matrícula: ${reg.number} (${reg.state})`);
   }
 
   // Vínculos Usuário-Fazenda
