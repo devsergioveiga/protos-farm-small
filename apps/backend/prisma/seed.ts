@@ -1,7 +1,17 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
+const pgUser = process.env.POSTGRES_USER ?? 'protos';
+const pgPassword = process.env.POSTGRES_PASSWORD ?? 'protos';
+const pgHost = process.env.POSTGRES_HOST ?? 'localhost';
+const pgPort = process.env.POSTGRES_PORT ?? '5432';
+const pgDb = process.env.POSTGRES_DB ?? 'protos_farm';
+const connectionString = `postgresql://${pgUser}:${pgPassword}@${pgHost}:${pgPort}/${pgDb}?schema=public`;
+
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString }),
+});
 
 const DEFAULT_PASSWORD_HASH = bcrypt.hashSync('Test@1234', 12);
 
