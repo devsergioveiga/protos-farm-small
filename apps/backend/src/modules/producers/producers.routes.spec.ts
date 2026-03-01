@@ -39,6 +39,10 @@ jest.mock('./producers.service', () => ({
   updateFarmLink: jest.fn(),
   deleteFarmLink: jest.fn(),
   getProducersByFarm: jest.fn(),
+  validateFarmParticipation: jest.fn(),
+  getItrDeclarant: jest.fn(),
+  setItrDeclarant: jest.fn(),
+  getExpiringContracts: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -864,7 +868,8 @@ describe('Producers endpoints', () => {
         {
           id: 'link-1',
           bondType: 'PROPRIETARIO',
-          producer: { id: 'prod-1', name: 'João', type: 'PF' },
+          producer: { id: 'prod-1', name: 'João', type: 'PF', stateRegistrations: [] },
+          registrationLinks: [],
         },
       ];
       mockedService.getProducersByFarm.mockResolvedValue(links as never);
@@ -888,6 +893,400 @@ describe('Producers endpoints', () => {
         .set('Authorization', 'Bearer valid-token');
 
       expect(response.status).toBe(404);
+    });
+  });
+
+  // ─── US-014: Farm Link with new fields ──────────────────────────────
+
+  describe('POST /api/org/producers/:producerId/farms (US-014 fields)', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should create link with startDate/endDate/registrationIds', async () => {
+      const created = {
+        id: 'link-new',
+        farmId: 'farm-1',
+        bondType: 'ARRENDATARIO',
+        startDate: '2024-01-01',
+        endDate: '2026-12-31',
+        isItrDeclarant: false,
+        registrationLinks: [{ id: 'rl-1', farmRegistration: { id: 'reg-1', number: '15.234' } }],
+        farm: { id: 'farm-1', name: 'Fazenda 1' },
+      };
+      mockedService.addFarmLink.mockResolvedValue(created as never);
+
+      const response = await request(app)
+        .post('/api/org/producers/prod-1/farms')
+        .set('Authorization', 'Bearer valid-token')
+        .send({
+          farmId: 'farm-1',
+          bondType: 'ARRENDATARIO',
+          startDate: '2024-01-01',
+          endDate: '2026-12-31',
+          registrationIds: ['reg-1'],
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.registrationLinks).toHaveLength(1);
+    });
+
+    it('should return 400 when endDate < startDate', async () => {
+      mockedService.addFarmLink.mockRejectedValue(
+        new ProducerError('Data de término deve ser igual ou posterior à data de início', 400),
+      );
+
+      const response = await request(app)
+        .post('/api/org/producers/prod-1/farms')
+        .set('Authorization', 'Bearer valid-token')
+        .send({
+          farmId: 'farm-1',
+          bondType: 'ARRENDATARIO',
+          startDate: '2026-01-01',
+          endDate: '2024-01-01',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toContain('Data de término');
+    });
+
+    it('should return 400 when registrationIds do not belong to farm', async () => {
+      mockedService.addFarmLink.mockRejectedValue(
+        new ProducerError('Uma ou mais matrículas não pertencem a esta fazenda', 400),
+      );
+
+      const response = await request(app)
+        .post('/api/org/producers/prod-1/farms')
+        .set('Authorization', 'Bearer valid-token')
+        .send({
+          farmId: 'farm-1',
+          bondType: 'PROPRIETARIO',
+          registrationIds: ['wrong-reg'],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toContain('matrículas');
+    });
+
+    it('should create link with isItrDeclarant=true', async () => {
+      const created = {
+        id: 'link-itr',
+        farmId: 'farm-1',
+        bondType: 'PROPRIETARIO',
+        isItrDeclarant: true,
+        registrationLinks: [],
+        farm: { id: 'farm-1', name: 'Fazenda 1' },
+      };
+      mockedService.addFarmLink.mockResolvedValue(created as never);
+
+      const response = await request(app)
+        .post('/api/org/producers/prod-1/farms')
+        .set('Authorization', 'Bearer valid-token')
+        .send({
+          farmId: 'farm-1',
+          bondType: 'PROPRIETARIO',
+          isItrDeclarant: true,
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.isItrDeclarant).toBe(true);
+    });
+  });
+
+  describe('PATCH /api/org/producers/:producerId/farms/:linkId (US-014 fields)', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should update link with startDate/endDate', async () => {
+      const updated = {
+        id: 'link-1',
+        startDate: '2024-06-01',
+        endDate: '2027-06-01',
+        registrationLinks: [],
+        farm: { id: 'farm-1', name: 'Fazenda 1' },
+      };
+      mockedService.updateFarmLink.mockResolvedValue(updated as never);
+
+      const response = await request(app)
+        .patch('/api/org/producers/prod-1/farms/link-1')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ startDate: '2024-06-01', endDate: '2027-06-01' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.startDate).toBe('2024-06-01');
+    });
+
+    it('should return 400 when endDate < startDate on update', async () => {
+      mockedService.updateFarmLink.mockRejectedValue(
+        new ProducerError('Data de término deve ser igual ou posterior à data de início', 400),
+      );
+
+      const response = await request(app)
+        .patch('/api/org/producers/prod-1/farms/link-1')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ startDate: '2027-01-01', endDate: '2024-01-01' });
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should sync registrationIds on update', async () => {
+      const updated = {
+        id: 'link-1',
+        registrationLinks: [{ id: 'rl-new', farmRegistration: { id: 'reg-2', number: '15.235' } }],
+        farm: { id: 'farm-1', name: 'Fazenda 1' },
+      };
+      mockedService.updateFarmLink.mockResolvedValue(updated as never);
+
+      const response = await request(app)
+        .patch('/api/org/producers/prod-1/farms/link-1')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ registrationIds: ['reg-2'] });
+
+      expect(response.status).toBe(200);
+      expect(response.body.registrationLinks).toHaveLength(1);
+    });
+
+    it('should return 400 when registrationIds do not belong to farm on update', async () => {
+      mockedService.updateFarmLink.mockRejectedValue(
+        new ProducerError('Uma ou mais matrículas não pertencem a esta fazenda', 400),
+      );
+
+      const response = await request(app)
+        .patch('/api/org/producers/prod-1/farms/link-1')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ registrationIds: ['wrong-reg'] });
+
+      expect(response.status).toBe(400);
+    });
+  });
+
+  // ─── ITR Declarant ──────────────────────────────────────────────────
+
+  describe('PATCH /api/org/producers/:producerId/farms/:linkId/itr-declarant', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 and set ITR declarant', async () => {
+      const result = {
+        id: 'link-1',
+        isItrDeclarant: true,
+        farm: { id: 'farm-1', name: 'Fazenda 1' },
+        producer: { id: 'prod-1', name: 'João', type: 'PF', document: '529.982.247-25' },
+      };
+      mockedService.setItrDeclarant.mockResolvedValue(result as never);
+
+      const response = await request(app)
+        .patch('/api/org/producers/prod-1/farms/link-1/itr-declarant')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.isItrDeclarant).toBe(true);
+      expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'SET_ITR_DECLARANT' }),
+      );
+    });
+
+    it('should return 404 when link not found', async () => {
+      mockedService.setItrDeclarant.mockRejectedValue(
+        new ProducerError('Vínculo não encontrado', 404),
+      );
+
+      const response = await request(app)
+        .patch('/api/org/producers/prod-1/farms/non-existent/itr-declarant')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  // ─── Farm Participation ─────────────────────────────────────────────
+
+  describe('GET /api/org/farms/:farmId/participation', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 with participation summary', async () => {
+      const result = {
+        farmId: 'farm-1',
+        participation: {
+          PROPRIETARIO: { total: 100, producers: [{ id: 'p1', name: 'João', pct: 100 }] },
+        },
+        warnings: [],
+      };
+      mockedService.validateFarmParticipation.mockResolvedValue(result as never);
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/participation')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.participation.PROPRIETARIO.total).toBe(100);
+      expect(response.body.warnings).toHaveLength(0);
+    });
+
+    it('should return warnings when participation != 100%', async () => {
+      const result = {
+        farmId: 'farm-1',
+        participation: {
+          PROPRIETARIO: { total: 70, producers: [{ id: 'p1', name: 'João', pct: 70 }] },
+        },
+        warnings: ['Soma dos percentuais para PROPRIETARIO: 70% (esperado: 100%)'],
+      };
+      mockedService.validateFarmParticipation.mockResolvedValue(result as never);
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/participation')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.warnings).toHaveLength(1);
+      expect(response.body.warnings[0]).toContain('70%');
+    });
+
+    it('should return 404 when farm not found', async () => {
+      mockedService.validateFarmParticipation.mockRejectedValue(
+        new ProducerError('Fazenda não encontrada', 404),
+      );
+
+      const response = await request(app)
+        .get('/api/org/farms/non-existent/participation')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  // ─── ITR Declarant (GET) ────────────────────────────────────────────
+
+  describe('GET /api/org/farms/:farmId/itr-declarant', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 with declarant', async () => {
+      const result = {
+        id: 'link-1',
+        isItrDeclarant: true,
+        producer: { id: 'prod-1', name: 'João', type: 'PF', document: '529.982.247-25' },
+      };
+      mockedService.getItrDeclarant.mockResolvedValue(result as never);
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/itr-declarant')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.isItrDeclarant).toBe(true);
+      expect(response.body.producer.name).toBe('João');
+    });
+
+    it('should return 404 when no declarant defined', async () => {
+      mockedService.getItrDeclarant.mockRejectedValue(
+        new ProducerError('Nenhum declarante ITR definido para esta fazenda', 404),
+      );
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/itr-declarant')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  // ─── Expiring Contracts ─────────────────────────────────────────────
+
+  describe('GET /api/org/contracts/expiring', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 with expiring alerts (default 30 days)', async () => {
+      const result = {
+        alerts: [
+          {
+            type: 'FARM_LINK',
+            id: 'link-1',
+            producerName: 'João',
+            farmName: 'Fazenda 1',
+            bondType: 'ARRENDATARIO',
+            expiresAt: '2026-04-01T00:00:00.000Z',
+          },
+        ],
+        total: 1,
+      };
+      mockedService.getExpiringContracts.mockResolvedValue(result as never);
+
+      const response = await request(app)
+        .get('/api/org/contracts/expiring')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.total).toBe(1);
+      expect(response.body.alerts[0].type).toBe('FARM_LINK');
+    });
+
+    it('should accept days query parameter', async () => {
+      mockedService.getExpiringContracts.mockResolvedValue({
+        alerts: [],
+        total: 0,
+      } as never);
+
+      await request(app)
+        .get('/api/org/contracts/expiring?days=60')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(mockedService.getExpiringContracts).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        60,
+      );
+    });
+
+    it('should return 400 for invalid days parameter', async () => {
+      const response = await request(app)
+        .get('/api/org/contracts/expiring?days=0')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toContain('days');
+    });
+
+    it('should return 400 for days > 365', async () => {
+      const response = await request(app)
+        .get('/api/org/contracts/expiring?days=500')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should return 403 for COWBOY trying to access expiring contracts', async () => {
+      authAs(COWBOY_PAYLOAD);
+
+      const response = await request(app)
+        .get('/api/org/contracts/expiring')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(403);
+    });
+  });
+
+  // ─── Farm Links list includes registrationLinks ─────────────────────
+
+  describe('GET /api/org/producers/:producerId/farms (with registrationLinks)', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return farm links with registrationLinks included', async () => {
+      const links = [
+        {
+          id: 'link-1',
+          farmId: 'farm-1',
+          bondType: 'PROPRIETARIO',
+          startDate: '2020-01-01',
+          endDate: null,
+          isItrDeclarant: true,
+          farm: { id: 'farm-1', name: 'Fazenda 1' },
+          registrationLinks: [{ id: 'rl-1', farmRegistration: { id: 'reg-1', number: '15.234' } }],
+        },
+      ];
+      mockedService.listFarmLinks.mockResolvedValue(links as never);
+
+      const response = await request(app)
+        .get('/api/org/producers/prod-1/farms')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body[0].registrationLinks).toHaveLength(1);
+      expect(response.body[0].isItrDeclarant).toBe(true);
     });
   });
 });
