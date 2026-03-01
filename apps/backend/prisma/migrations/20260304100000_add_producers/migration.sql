@@ -20,8 +20,8 @@ CREATE TYPE "IeCategory" AS ENUM ('PRIMEIRO_ESTABELECIMENTO', 'DEMAIS', 'UNICO')
 -- ─── Tabela producers ─────────────────────────────────────────────────────────
 
 CREATE TABLE producers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  "organizationId" UUID NOT NULL REFERENCES organizations(id),
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "organizationId" TEXT NOT NULL REFERENCES organizations(id),
   type "ProducerType" NOT NULL,
   name TEXT NOT NULL,
   "tradeName" TEXT,
@@ -50,8 +50,8 @@ CREATE UNIQUE INDEX idx_producers_document_org ON producers(document, "organizat
 -- ─── Tabela society_participants ──────────────────────────────────────────────
 
 CREATE TABLE society_participants (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  "producerId" UUID NOT NULL REFERENCES producers(id) ON DELETE CASCADE,
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "producerId" TEXT NOT NULL REFERENCES producers(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   cpf TEXT NOT NULL,
   "participationPct" DECIMAL(5,2) NOT NULL,
@@ -65,9 +65,9 @@ CREATE UNIQUE INDEX idx_society_participants_producer_cpf ON society_participant
 -- ─── Tabela producer_state_registrations (IEs) ───────────────────────────────
 
 CREATE TABLE producer_state_registrations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  "producerId" UUID NOT NULL REFERENCES producers(id) ON DELETE CASCADE,
-  "farmId" UUID REFERENCES farms(id) ON DELETE SET NULL,
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "producerId" TEXT NOT NULL REFERENCES producers(id) ON DELETE CASCADE,
+  "farmId" TEXT REFERENCES farms(id) ON DELETE SET NULL,
   "number" TEXT NOT NULL,
   state VARCHAR(2) NOT NULL,
   "cnaeActivity" TEXT,
@@ -89,9 +89,9 @@ CREATE UNIQUE INDEX idx_producer_ie_unique ON producer_state_registrations("prod
 -- ─── Tabela producer_farm_links ───────────────────────────────────────────────
 
 CREATE TABLE producer_farm_links (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  "producerId" UUID NOT NULL REFERENCES producers(id) ON DELETE CASCADE,
-  "farmId" UUID NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "producerId" TEXT NOT NULL REFERENCES producers(id) ON DELETE CASCADE,
+  "farmId" TEXT NOT NULL REFERENCES farms(id) ON DELETE CASCADE,
   "bondType" "ProducerFarmBondType" NOT NULL,
   "participationPct" DECIMAL(5,2),
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -104,8 +104,8 @@ CREATE UNIQUE INDEX idx_producer_farm_link_unique ON producer_farm_links("produc
 -- ─── Tabela producer_documents (esqueleto) ────────────────────────────────────
 
 CREATE TABLE producer_documents (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  "producerId" UUID NOT NULL REFERENCES producers(id) ON DELETE CASCADE,
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  "producerId" TEXT NOT NULL REFERENCES producers(id) ON DELETE CASCADE,
   type TEXT NOT NULL,
   filename TEXT NOT NULL,
   url TEXT NOT NULL,
