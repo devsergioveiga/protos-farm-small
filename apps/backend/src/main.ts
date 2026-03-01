@@ -1,3 +1,4 @@
+import './preload';
 import { app } from './app';
 import { logger } from './shared/utils/logger';
 
