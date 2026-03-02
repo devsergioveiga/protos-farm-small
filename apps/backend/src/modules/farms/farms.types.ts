@@ -140,6 +140,21 @@ export interface UpdateRegistrationInput {
   areaHa?: number;
 }
 
+export interface DeleteFarmInput {
+  confirmName: string;
+}
+
+export interface BoundaryVersionItem {
+  id: string;
+  farmId: string;
+  registrationId: string | null;
+  boundaryAreaHa: number;
+  uploadedBy: string;
+  uploadedAt: string;
+  filename: string | null;
+  version: number;
+}
+
 // ─── Boundary Upload ─────────────────────────────────────────────────
 
 export const ALLOWED_GEO_EXTENSIONS = ['.geojson', '.json', '.kml', '.kmz', '.zip'] as const;

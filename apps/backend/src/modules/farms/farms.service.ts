@@ -14,6 +14,8 @@ import {
   type BoundaryUploadResult,
   type BoundaryInfo,
   type FarmListCaller,
+  type DeleteFarmInput,
+  type BoundaryVersionItem,
 } from './farms.types';
 import { ROLE_HIERARCHY } from '../../shared/rbac/permissions';
 import { parseGeoFile, validateGeometry } from './geo-parser';
@@ -186,7 +188,7 @@ export async function listFarms(ctx: RlsContext, caller: FarmListCaller, query: 
   const limit = Math.min(100, Math.max(1, query.limit ?? 20));
   const skip = (page - 1) * limit;
 
-  const where: Record<string, unknown> = { organizationId: ctx.organizationId };
+  const where: Record<string, unknown> = { organizationId: ctx.organizationId, deletedAt: null };
 
   // Non-admin users only see farms they have access to
   if (ROLE_HIERARCHY[caller.role as keyof typeof ROLE_HIERARCHY] < 90) {
@@ -258,7 +260,7 @@ export async function getFarm(ctx: RlsContext, farmId: string) {
       },
     });
 
-    if (!farm) {
+    if (!farm || farm.deletedAt) {
       throw new FarmError('Fazenda não encontrada', 404);
     }
 
@@ -528,6 +530,86 @@ export async function deleteRegistration(ctx: RlsContext, farmId: string, regId:
   });
 }
 
+// ─── Soft Delete Farm ──────────────────────────────────────────────
+
+export async function softDeleteFarm(ctx: RlsContext, farmId: string, input: DeleteFarmInput) {
+  return withRlsContext(ctx, async (tx) => {
+    const farm = await tx.farm.findUnique({ where: { id: farmId } });
+    if (!farm || farm.deletedAt) {
+      throw new FarmError('Fazenda não encontrada', 404);
+    }
+
+    if (farm.name.toLowerCase() !== input.confirmName.toLowerCase()) {
+      throw new FarmError('Nome de confirmação não confere com o nome da fazenda', 400);
+    }
+
+    // TODO: Check for active dependencies (safras, animais, lançamentos financeiros)
+    // These tables don't exist yet. When they are created, add checks here:
+    // const activeCrops = await tx.crop.count({ where: { farmId, status: 'ACTIVE' } });
+    // const activeAnimals = await tx.animal.count({ where: { farmId } });
+    // const pendingFinancials = await tx.financialEntry.count({ where: { farmId, status: 'PENDING' } });
+    // const blockers: string[] = [];
+    // if (activeCrops > 0) blockers.push(`${activeCrops} safra(s) ativa(s)`);
+    // if (activeAnimals > 0) blockers.push(`${activeAnimals} animal(is) vinculado(s)`);
+    // if (pendingFinancials > 0) blockers.push(`${pendingFinancials} lançamento(s) financeiro(s) pendente(s)`);
+    // if (blockers.length > 0) {
+    //   throw new FarmError(`Não é possível excluir. Dependências ativas: ${blockers.join(', ')}`, 422);
+    // }
+
+    await tx.farm.update({
+      where: { id: farmId },
+      data: { deletedAt: new Date() },
+    });
+
+    logger.info({ farmId, orgId: ctx.organizationId }, 'Farm soft-deleted');
+
+    return { message: 'Fazenda excluída com sucesso' };
+  });
+}
+
+// ─── Boundary Versions ─────────────────────────────────────────────
+
+export async function getBoundaryVersions(
+  ctx: RlsContext,
+  farmId: string,
+  registrationId?: string,
+): Promise<BoundaryVersionItem[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const farm = await tx.farm.findUnique({ where: { id: farmId } });
+    if (!farm || farm.deletedAt) {
+      throw new FarmError('Fazenda não encontrada', 404);
+    }
+
+    const where: Record<string, unknown> = { farmId };
+    if (registrationId) {
+      where.registrationId = registrationId;
+    } else {
+      where.registrationId = null;
+    }
+
+    const versions = await tx.farmBoundaryVersion.findMany({
+      where,
+      orderBy: { version: 'desc' },
+      select: {
+        id: true,
+        farmId: true,
+        registrationId: true,
+        boundaryAreaHa: true,
+        uploadedBy: true,
+        uploadedAt: true,
+        filename: true,
+        version: true,
+      },
+    });
+
+    return versions.map((v) => ({
+      ...v,
+      boundaryAreaHa: Number(v.boundaryAreaHa),
+      uploadedAt: v.uploadedAt.toISOString(),
+    }));
+  });
+}
+
 // ─── Upload Farm Boundary ──────────────────────────────────────────
 
 export async function uploadFarmBoundary(
@@ -535,6 +617,7 @@ export async function uploadFarmBoundary(
   farmId: string,
   buffer: Buffer,
   filename: string,
+  actorId: string,
 ): Promise<BoundaryUploadResult> {
   const parsed = await parseGeoFile(buffer, filename);
   const polygon = parsed.boundaries[0];
@@ -555,6 +638,32 @@ export async function uploadFarmBoundary(
     const farm = await tx.farm.findUnique({ where: { id: farmId } });
     if (!farm) {
       throw new FarmError('Fazenda não encontrada', 404);
+    }
+
+    // Save current boundary as a version before overwriting
+    const existingBoundary = await prisma.$queryRawUnsafe<
+      { has_boundary: boolean; area_ha: number | null }[]
+    >(
+      `SELECT boundary IS NOT NULL AS has_boundary, "boundaryAreaHa"::float AS area_ha FROM farms WHERE id = $1`,
+      farmId,
+    );
+
+    if (existingBoundary[0]?.has_boundary) {
+      const lastVersion = await tx.farmBoundaryVersion.findFirst({
+        where: { farmId, registrationId: null },
+        orderBy: { version: 'desc' },
+        select: { version: true },
+      });
+      const nextVersion = (lastVersion?.version ?? 0) + 1;
+
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO farm_boundary_versions (id, "farmId", "registrationId", boundary, "boundaryAreaHa", "uploadedBy", "uploadedAt", filename, version)
+         SELECT gen_random_uuid(), id, NULL, boundary, "boundaryAreaHa", $2, now(), NULL, $3
+         FROM farms WHERE id = $1 AND boundary IS NOT NULL`,
+        farmId,
+        actorId,
+        nextVersion,
+      );
     }
 
     // Insert boundary and calculate area using PostGIS
@@ -609,6 +718,7 @@ export async function uploadRegistrationBoundary(
   regId: string,
   buffer: Buffer,
   filename: string,
+  actorId: string,
 ): Promise<BoundaryUploadResult> {
   const parsed = await parseGeoFile(buffer, filename);
   const polygon = parsed.boundaries[0];
@@ -637,6 +747,33 @@ export async function uploadRegistrationBoundary(
     const reg = farm.registrations.find((r) => r.id === regId);
     if (!reg) {
       throw new FarmError('Matrícula não encontrada', 404);
+    }
+
+    // Save current boundary as a version before overwriting
+    const existingRegBoundary = await prisma.$queryRawUnsafe<
+      { has_boundary: boolean; area_ha: number | null }[]
+    >(
+      `SELECT boundary IS NOT NULL AS has_boundary, "boundaryAreaHa"::float AS area_ha FROM farm_registrations WHERE id = $1`,
+      regId,
+    );
+
+    if (existingRegBoundary[0]?.has_boundary) {
+      const lastVersion = await tx.farmBoundaryVersion.findFirst({
+        where: { farmId, registrationId: regId },
+        orderBy: { version: 'desc' },
+        select: { version: true },
+      });
+      const nextVersion = (lastVersion?.version ?? 0) + 1;
+
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO farm_boundary_versions (id, "farmId", "registrationId", boundary, "boundaryAreaHa", "uploadedBy", "uploadedAt", filename, version)
+         SELECT gen_random_uuid(), $3, id, boundary, "boundaryAreaHa", $2, now(), NULL, $4
+         FROM farm_registrations WHERE id = $1 AND boundary IS NOT NULL`,
+        regId,
+        actorId,
+        farmId,
+        nextVersion,
+      );
     }
 
     const result = await prisma.$queryRawUnsafe<{ area_ha: number; is_valid: boolean }[]>(

@@ -1,0 +1,153 @@
+.confirm-delete-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+}
+
+.confirm-delete-modal {
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  max-width: 480px;
+  width: 100%;
+  box-shadow: var(--shadow-xl);
+}
+
+.confirm-delete-modal__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+  margin-bottom: var(--space-4);
+}
+
+.confirm-delete-modal__title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-800);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.confirm-delete-modal__description {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-600);
+  margin: 0 0 var(--space-6) 0;
+  line-height: 1.5;
+}
+
+.confirm-delete-modal__field {
+  margin-bottom: var(--space-6);
+}
+
+.confirm-delete-modal__label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-700);
+  margin-bottom: var(--space-2);
+}
+
+.confirm-delete-modal__input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  min-height: 48px;
+  box-sizing: border-box;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.confirm-delete-modal__input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.confirm-delete-modal__input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.confirm-delete-modal__hint {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+  margin-top: var(--space-1);
+}
+
+.confirm-delete-modal__actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.confirm-delete-modal__btn {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  min-height: 48px;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    opacity var(--duration-fast) var(--ease-out);
+}
+
+.confirm-delete-modal__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.confirm-delete-modal__btn--cancel {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.confirm-delete-modal__btn--cancel:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+}
+
+.confirm-delete-modal__btn--delete {
+  background: var(--color-error-500);
+  color: var(--color-neutral-0);
+}
+
+.confirm-delete-modal__btn--delete:hover:not(:disabled) {
+  background: var(--color-error-600, #b71c1c);
+}
+
+.confirm-delete-modal__btn--delete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirm-delete-modal__btn--cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confirm-delete-modal__btn,
+  .confirm-delete-modal__input {
+    transition: none;
+  }
+}

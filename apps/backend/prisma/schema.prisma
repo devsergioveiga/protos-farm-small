@@ -121,9 +121,10 @@ model User {
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 
-  organization Organization     @relation(fields: [organizationId], references: [id])
-  customRole   CustomRole?      @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
-  farmAccess   UserFarmAccess[]
+  organization      Organization          @relation(fields: [organizationId], references: [id])
+  customRole        CustomRole?           @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
+  farmAccess        UserFarmAccess[]
+  boundaryUploads   FarmBoundaryVersion[]
 
   @@map("users")
 }
@@ -156,6 +157,7 @@ model Farm {
   boundaryAreaHa       Decimal?                              @db.Decimal(12, 4)
   location             Unsupported("geometry(Point, 4326)")?
   boundary             Unsupported("geometry(Polygon, 4326)")?
+  deletedAt            DateTime?
   createdAt            DateTime                              @default(now())
   updatedAt            DateTime                              @updatedAt
 
@@ -165,6 +167,7 @@ model Farm {
   documents               FarmDocument[]
   producerFarmLinks       ProducerFarmLink[]
   producerStateRegistrations ProducerStateRegistration[]
+  boundaryVersions        FarmBoundaryVersion[]
 
   @@map("farms")
 }
@@ -185,8 +188,9 @@ model FarmRegistration {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  farm          Farm                      @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  producerLinks ProducerRegistrationLink[]
+  farm              Farm                      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  producerLinks     ProducerRegistrationLink[]
+  boundaryVersions  FarmBoundaryVersion[]
 
   @@index([farmId])
   @@map("farm_registrations")
@@ -271,6 +275,26 @@ model AuditLog {
   @@index([farmId])
   @@index([organizationId])
   @@map("audit_logs")
+}
+
+model FarmBoundaryVersion {
+  id              String    @id @default(uuid())
+  farmId          String
+  registrationId  String?
+  boundary        Unsupported("geometry(Polygon, 4326)")
+  boundaryAreaHa  Decimal   @db.Decimal(12, 4)
+  uploadedBy      String
+  uploadedAt      DateTime  @default(now())
+  filename        String?
+  version         Int       @default(1)
+
+  farm         Farm              @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  registration FarmRegistration? @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  uploader     User              @relation(fields: [uploadedBy], references: [id])
+
+  @@index([farmId])
+  @@index([registrationId])
+  @@map("farm_boundary_versions")
 }
 
 // ─── Producer Models ────────────────────────────────────────────────

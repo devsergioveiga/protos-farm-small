@@ -157,11 +157,11 @@ describe('DEFAULT_ROLE_PERMISSIONS', () => {
     expect(perms.every((p: Permission) => p.endsWith(':read'))).toBe(true);
   });
 
-  it('MANAGER should have all farm permissions', () => {
+  it('MANAGER should have farms CRU but not delete', () => {
     expect(DEFAULT_ROLE_PERMISSIONS.MANAGER).toContain('farms:create');
     expect(DEFAULT_ROLE_PERMISSIONS.MANAGER).toContain('farms:read');
     expect(DEFAULT_ROLE_PERMISSIONS.MANAGER).toContain('farms:update');
-    expect(DEFAULT_ROLE_PERMISSIONS.MANAGER).toContain('farms:delete');
+    expect(DEFAULT_ROLE_PERMISSIONS.MANAGER).not.toContain('farms:delete');
   });
 
   it('FINANCIAL should have all financial permissions', () => {

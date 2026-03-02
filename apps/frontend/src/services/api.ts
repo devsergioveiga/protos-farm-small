@@ -114,6 +114,10 @@ class ApiClient {
   delete<T>(path: string): Promise<T> {
     return this.request<T>('DELETE', path);
   }
+
+  deleteWithBody<T>(path: string, body: unknown): Promise<T> {
+    return this.request<T>('DELETE', path, body);
+  }
 }
 
 export const api = new ApiClient();

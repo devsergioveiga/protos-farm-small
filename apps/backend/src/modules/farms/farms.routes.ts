@@ -22,6 +22,8 @@ import {
   getRegistrationBoundary,
   deleteFarmBoundary,
   deleteRegistrationBoundary,
+  softDeleteFarm,
+  getBoundaryVersions,
 } from './farms.service';
 import { FarmError, ALLOWED_GEO_EXTENSIONS, MAX_GEO_FILE_SIZE } from './farms.types';
 
@@ -222,6 +224,48 @@ farmsRouter.patch(
       });
 
       res.json(farm);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// DELETE /org/farms/:farmId (soft delete)
+farmsRouter.delete(
+  '/org/farms/:farmId',
+  authenticate,
+  checkPermission('farms:delete'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const { confirmName } = req.body;
+
+      if (!confirmName) {
+        res.status(400).json({ error: 'Nome de confirmação é obrigatório' });
+        return;
+      }
+
+      const ctx = buildRlsContext(req);
+      const result = await softDeleteFarm(ctx, req.params.farmId as string, { confirmName });
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'DELETE_FARM',
+        targetType: 'farm',
+        targetId: req.params.farmId as string,
+        metadata: { confirmName },
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+        farmId: req.params.farmId as string,
+      });
+
+      res.json(result);
     } catch (err) {
       if (err instanceof FarmError) {
         res.status(err.statusCode).json({ error: err.message });
@@ -435,6 +479,7 @@ farmsRouter.post(
         req.params.farmId as string,
         req.file.buffer,
         req.file.originalname,
+        req.user!.userId,
       );
 
       void logAudit({
@@ -548,6 +593,7 @@ farmsRouter.post(
         req.params.regId as string,
         req.file.buffer,
         req.file.originalname,
+        req.user!.userId,
       );
 
       void logAudit({
@@ -641,6 +687,52 @@ farmsRouter.delete(
       });
 
       res.json({ message: 'Perímetro da matrícula removido com sucesso' });
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// GET /org/farms/:farmId/boundary/versions
+farmsRouter.get(
+  '/org/farms/:farmId/boundary/versions',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const versions = await getBoundaryVersions(ctx, req.params.farmId as string);
+      res.json(versions);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// GET /org/farms/:farmId/registrations/:regId/boundary/versions
+farmsRouter.get(
+  '/org/farms/:farmId/registrations/:regId/boundary/versions',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const versions = await getBoundaryVersions(
+        ctx,
+        req.params.farmId as string,
+        req.params.regId as string,
+      );
+      res.json(versions);
     } catch (err) {
       if (err instanceof FarmError) {
         res.status(err.statusCode).json({ error: err.message });
