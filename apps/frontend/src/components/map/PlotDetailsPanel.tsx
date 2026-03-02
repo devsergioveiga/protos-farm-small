@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X, Pencil } from 'lucide-react';
 import { getCropColor, formatArea } from './FarmMap';
 import type { FieldPlot } from '@/types/farm';
 import './PlotDetailsPanel.css';
@@ -6,6 +6,7 @@ import './PlotDetailsPanel.css';
 interface PlotDetailsPanelProps {
   plot: FieldPlot | null;
   onClose: () => void;
+  onEditGeometry?: (plot: FieldPlot) => void;
 }
 
 function formatSoilType(soilType: string): string {
@@ -19,7 +20,7 @@ function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('pt-BR');
 }
 
-function PlotDetailsPanel({ plot, onClose }: PlotDetailsPanelProps) {
+function PlotDetailsPanel({ plot, onClose, onEditGeometry }: PlotDetailsPanelProps) {
   if (!plot) return null;
 
   const cropColor = getCropColor(plot.currentCrop);
@@ -35,14 +36,26 @@ function PlotDetailsPanel({ plot, onClose }: PlotDetailsPanelProps) {
           />
           <h2 className="plot-details__name">{plot.name}</h2>
         </div>
-        <button
-          type="button"
-          className="plot-details__close"
-          onClick={onClose}
-          aria-label="Fechar detalhes do talhão"
-        >
-          <X size={20} aria-hidden="true" />
-        </button>
+        <div className="plot-details__header-actions">
+          {onEditGeometry && (
+            <button
+              type="button"
+              className="plot-details__action-btn"
+              onClick={() => onEditGeometry(plot)}
+              aria-label="Editar perímetro"
+            >
+              <Pencil size={20} aria-hidden="true" />
+            </button>
+          )}
+          <button
+            type="button"
+            className="plot-details__close"
+            onClick={onClose}
+            aria-label="Fechar detalhes do talhão"
+          >
+            <X size={20} aria-hidden="true" />
+          </button>
+        </div>
       </div>
 
       <dl className="plot-details__fields">

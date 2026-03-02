@@ -1,17 +1,33 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, AlertCircle, Upload } from 'lucide-react';
+import turfArea from '@turf/area';
+import { polygon as turfPolygon } from '@turf/helpers';
 import { useFarmMap } from '@/hooks/useFarmMap';
+import { api } from '@/services/api';
 import FarmMap from '@/components/map/FarmMap';
 import BaseMapSelector, { type BaseMapType } from '@/components/map/BaseMapSelector';
 import LayerControlPanel, { type LayerConfig } from '@/components/map/LayerControlPanel';
 import CropLegend from '@/components/map/CropLegend';
 import PlotDetailsPanel from '@/components/map/PlotDetailsPanel';
 import PlotSummaryBar from '@/components/map/PlotSummaryBar';
-import type { FieldPlot } from '@/types/farm';
+import type { FieldPlot, UpdatePlotBoundaryResult } from '@/types/farm';
 import './FarmMapPage.css';
 
 const BulkImportModal = lazy(() => import('@/components/bulk-import/BulkImportModal'));
+const PlotGeometryEditor = lazy(() => import('@/components/map/PlotGeometryEditor'));
+const ConfirmBoundaryEdit = lazy(() => import('@/components/map/ConfirmBoundaryEdit'));
+
+interface EditingPlotState {
+  plot: FieldPlot;
+  boundary: GeoJSON.Polygon;
+}
+
+interface PendingSaveState {
+  geojson: GeoJSON.Polygon;
+  previousAreaHa: number;
+  newAreaHa: number;
+}
 
 const DEFAULT_LAYERS: LayerConfig[] = [
   { id: 'perimeter', label: 'Perímetro', enabled: true },
@@ -42,6 +58,8 @@ function FarmMapPage() {
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [selectedPlot, setSelectedPlot] = useState<FieldPlot | null>(null);
   const [cropFilter, setCropFilter] = useState<Set<string>>(new Set());
+  const [editingPlot, setEditingPlot] = useState<EditingPlotState | null>(null);
+  const [pendingSave, setPendingSave] = useState<PendingSaveState | null>(null);
 
   const handleToggleLayer = useCallback((layerId: string) => {
     setLayers((prev) =>
@@ -67,6 +85,47 @@ function FarmMapPage() {
       }
       return next;
     });
+  }, []);
+
+  const handleEditGeometry = useCallback(
+    (plot: FieldPlot) => {
+      if (!data) return;
+      const pb = data.plotBoundaries.find((p) => p.plotId === plot.id);
+      if (!pb?.boundary.boundaryGeoJSON) return;
+      setEditingPlot({ plot, boundary: pb.boundary.boundaryGeoJSON });
+      setSelectedPlot(null);
+    },
+    [data],
+  );
+
+  const handleEditorSave = useCallback((geojson: GeoJSON.Polygon, previousAreaHa: number) => {
+    const feature = turfPolygon(geojson.coordinates);
+    const newAreaHa = turfArea(feature) / 10000;
+    setPendingSave({ geojson, previousAreaHa, newAreaHa });
+  }, []);
+
+  const handleConfirmSave = useCallback(async () => {
+    if (!pendingSave || !editingPlot || !farmId) return;
+    try {
+      await api.patch<UpdatePlotBoundaryResult>(
+        `/org/farms/${farmId}/plots/${editingPlot.plot.id}/boundary`,
+        { geojson: pendingSave.geojson },
+      );
+      setPendingSave(null);
+      setEditingPlot(null);
+      void refetch();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao salvar';
+      alert(message);
+    }
+  }, [pendingSave, editingPlot, farmId, refetch]);
+
+  const handleCancelSave = useCallback(() => {
+    setPendingSave(null);
+  }, []);
+
+  const handleCancelEditor = useCallback(() => {
+    setEditingPlot(null);
   }, []);
 
   const showFarmBoundary = layers.find((l) => l.id === 'perimeter')?.enabled ?? true;
@@ -160,7 +219,35 @@ function FarmMapPage() {
           />
         )}
 
-        <PlotDetailsPanel plot={selectedPlot} onClose={() => setSelectedPlot(null)} />
+        <PlotDetailsPanel
+          plot={selectedPlot}
+          onClose={() => setSelectedPlot(null)}
+          onEditGeometry={handleEditGeometry}
+        />
+
+        {editingPlot && (
+          <Suspense fallback={null}>
+            <PlotGeometryEditor
+              plot={editingPlot.plot}
+              plotBoundary={editingPlot.boundary}
+              farmBoundary={data.farmBoundary.boundaryGeoJSON}
+              otherPlots={data.plotBoundaries.filter((pb) => pb.plotId !== editingPlot.plot.id)}
+              onSave={handleEditorSave}
+              onCancel={handleCancelEditor}
+            />
+          </Suspense>
+        )}
+
+        {pendingSave && (
+          <Suspense fallback={null}>
+            <ConfirmBoundaryEdit
+              previousAreaHa={pendingSave.previousAreaHa}
+              newAreaHa={pendingSave.newAreaHa}
+              onConfirm={() => void handleConfirmSave()}
+              onCancel={handleCancelSave}
+            />
+          </Suspense>
+        )}
       </div>
 
       {isBulkImportOpen && farmId && (

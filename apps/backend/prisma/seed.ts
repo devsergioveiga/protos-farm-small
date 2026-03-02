@@ -788,6 +788,42 @@ async function main() {
     console.log(`  ✓ Talhão: ${plot.name} (${plot.code})`);
   }
 
+  // Field Plot Boundary Versions (historial de edição)
+  console.log('');
+  console.log('Inserindo histórico de edição de talhões...');
+
+  await prisma.$executeRawUnsafe(`DELETE FROM field_plot_boundary_versions`);
+
+  // Versão anterior do Talhão A1 (antes de edição no editor de mapa)
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO field_plot_boundary_versions (id, "plotId", "farmId", boundary, "boundaryAreaHa", "editedBy", "editedAt", "editSource", version)
+     VALUES ($1, $2, $3,
+             ST_GeomFromGeoJSON($4),
+             ROUND((ST_Area(ST_GeomFromGeoJSON($4)::geography) / 10000)::numeric, 4),
+             $5, '2026-02-20T10:00:00Z', 'file_upload', 1)`,
+    'fpbv-0001-4000-8000-000000000001',
+    fieldPlots[0].id,
+    farms[0].id,
+    '{"type":"Polygon","coordinates":[[[-55.78,-12.48],[-55.68,-12.48],[-55.68,-12.57],[-55.78,-12.57],[-55.78,-12.48]]]}',
+    users[0].id,
+  );
+  console.log('  ✓ Versão 1 do Talhão A1 (upload original)');
+
+  // Segunda versão (edição via mapa)
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO field_plot_boundary_versions (id, "plotId", "farmId", boundary, "boundaryAreaHa", "editedBy", "editedAt", "editSource", version)
+     VALUES ($1, $2, $3,
+             ST_GeomFromGeoJSON($4),
+             ROUND((ST_Area(ST_GeomFromGeoJSON($4)::geography) / 10000)::numeric, 4),
+             $5, '2026-02-25T14:30:00Z', 'map_editor', 2)`,
+    'fpbv-0001-4000-8000-000000000002',
+    fieldPlots[0].id,
+    farms[0].id,
+    '{"type":"Polygon","coordinates":[[[-55.78,-12.47],[-55.67,-12.47],[-55.67,-12.57],[-55.78,-12.57],[-55.78,-12.47]]]}',
+    users[0].id,
+  );
+  console.log('  ✓ Versão 2 do Talhão A1 (edição via mapa)');
+
   // Audit Logs de exemplo
   console.log('');
   const auditLogs = [

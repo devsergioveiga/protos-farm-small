@@ -75,4 +75,20 @@ describe('PlotDetailsPanel', () => {
     expect(screen.queryByText('Tipo de solo')).toBeNull();
     expect(screen.queryByText('Observações')).toBeNull();
   });
+
+  it('should show edit geometry button when onEditGeometry is provided', () => {
+    const onEditGeometry = vi.fn();
+    render(<PlotDetailsPanel plot={PLOT} onClose={vi.fn()} onEditGeometry={onEditGeometry} />);
+
+    const editBtn = screen.getByLabelText('Editar perímetro');
+    expect(editBtn).toBeDefined();
+    fireEvent.click(editBtn);
+    expect(onEditGeometry).toHaveBeenCalledWith(PLOT);
+  });
+
+  it('should not show edit geometry button when onEditGeometry is not provided', () => {
+    render(<PlotDetailsPanel plot={PLOT} onClose={vi.fn()} />);
+
+    expect(screen.queryByLabelText('Editar perímetro')).toBeNull();
+  });
 });
