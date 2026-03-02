@@ -1,11 +1,13 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Upload } from 'lucide-react';
 import { useFarmMap } from '@/hooks/useFarmMap';
 import FarmMap from '@/components/map/FarmMap';
 import BaseMapSelector, { type BaseMapType } from '@/components/map/BaseMapSelector';
 import LayerControlPanel, { type LayerConfig } from '@/components/map/LayerControlPanel';
 import './FarmMapPage.css';
+
+const BulkImportModal = lazy(() => import('@/components/bulk-import/BulkImportModal'));
 
 const DEFAULT_LAYERS: LayerConfig[] = [
   { id: 'perimeter', label: 'Perímetro', enabled: true },
@@ -30,15 +32,20 @@ const DEFAULT_LAYERS: LayerConfig[] = [
 
 function FarmMapPage() {
   const { farmId } = useParams<{ farmId: string }>();
-  const { data, isLoading, error } = useFarmMap(farmId);
+  const { data, isLoading, error, refetch } = useFarmMap(farmId);
   const [baseMap, setBaseMap] = useState<BaseMapType>('satellite');
   const [layers, setLayers] = useState<LayerConfig[]>(DEFAULT_LAYERS);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
   const handleToggleLayer = useCallback((layerId: string) => {
     setLayers((prev) =>
       prev.map((l) => (l.id === layerId && !l.disabled ? { ...l, enabled: !l.enabled } : l)),
     );
   }, []);
+
+  const handleImportComplete = useCallback(() => {
+    void refetch();
+  }, [refetch]);
 
   const showFarmBoundary = layers.find((l) => l.id === 'perimeter')?.enabled ?? true;
   const showRegistrations = layers.find((l) => l.id === 'registrations')?.enabled ?? true;
@@ -91,6 +98,16 @@ function FarmMapPage() {
           </nav>
           <h1 className="farm-map-page__title">{data.farm.name}</h1>
         </div>
+
+        <button
+          type="button"
+          className="farm-map-page__import-btn"
+          onClick={() => setIsBulkImportOpen(true)}
+          aria-label="Importar talhões"
+        >
+          <Upload size={20} aria-hidden="true" />
+          <span className="farm-map-page__import-btn-label">Importar talhões</span>
+        </button>
       </header>
 
       <div className="farm-map-page__map-wrapper">
@@ -104,6 +121,18 @@ function FarmMapPage() {
         <BaseMapSelector selected={baseMap} onChange={setBaseMap} />
         <LayerControlPanel layers={layers} onToggle={handleToggleLayer} />
       </div>
+
+      {isBulkImportOpen && farmId && (
+        <Suspense fallback={null}>
+          <BulkImportModal
+            isOpen={isBulkImportOpen}
+            farmId={farmId}
+            farmBoundary={data.farmBoundary.boundaryGeoJSON}
+            onClose={() => setIsBulkImportOpen(false)}
+            onImportComplete={handleImportComplete}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

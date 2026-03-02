@@ -41,6 +41,8 @@ jest.mock('./farms.service', () => ({
   getFieldPlotBoundary: jest.fn(),
   deleteFieldPlot: jest.fn(),
   getFieldPlotsSummary: jest.fn(),
+  previewBulkImport: jest.fn(),
+  executeBulkImport: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -1219,6 +1221,513 @@ describe('Farms endpoints', () => {
         .set('Authorization', 'Bearer valid-token');
 
       expect(response.status).toBe(403);
+    });
+  });
+
+  // ─── Bulk Import ──────────────────────────────────────────────────
+
+  describe('POST /api/org/farms/:farmId/plots/bulk/preview', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    const sampleGeojson = JSON.stringify({
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: { nome: 'Talhão A', cultura: 'soja' },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [-55.7, -12.5],
+                [-55.6, -12.5],
+                [-55.6, -12.6],
+                [-55.7, -12.6],
+                [-55.7, -12.5],
+              ],
+            ],
+          },
+        },
+        {
+          type: 'Feature',
+          properties: { nome: 'Talhão B', cultura: 'milho' },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [-55.5, -12.5],
+                [-55.4, -12.5],
+                [-55.4, -12.6],
+                [-55.5, -12.6],
+                [-55.5, -12.5],
+              ],
+            ],
+          },
+        },
+        {
+          type: 'Feature',
+          properties: { nome: 'Talhão C', cultura: 'café' },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [-55.3, -12.5],
+                [-55.2, -12.5],
+                [-55.2, -12.6],
+                [-55.3, -12.6],
+                [-55.3, -12.5],
+              ],
+            ],
+          },
+        },
+      ],
+    });
+
+    it('should return 200 with preview for valid file', async () => {
+      const previewResult = {
+        filename: 'plots.geojson',
+        totalFeatures: 3,
+        validCount: 3,
+        invalidCount: 0,
+        propertyKeys: ['cultura', 'nome'],
+        features: [
+          {
+            index: 0,
+            properties: { nome: 'Talhão A', cultura: 'soja' },
+            areaHa: 100.5,
+            validation: { valid: true, errors: [], warnings: [] },
+          },
+          {
+            index: 1,
+            properties: { nome: 'Talhão B', cultura: 'milho' },
+            areaHa: 80.3,
+            validation: { valid: true, errors: [], warnings: [] },
+          },
+          {
+            index: 2,
+            properties: { nome: 'Talhão C', cultura: 'café' },
+            areaHa: 60.1,
+            validation: { valid: true, errors: [], warnings: [] },
+          },
+        ],
+      };
+      mockedService.previewBulkImport.mockResolvedValue(previewResult as never);
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk/preview')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(sampleGeojson), 'plots.geojson');
+
+      expect(response.status).toBe(200);
+      expect(response.body.totalFeatures).toBe(3);
+      expect(response.body.validCount).toBe(3);
+      expect(response.body.propertyKeys).toEqual(['cultura', 'nome']);
+    });
+
+    it('should return 200 with invalid features marked', async () => {
+      const previewResult = {
+        filename: 'plots.geojson',
+        totalFeatures: 2,
+        validCount: 1,
+        invalidCount: 1,
+        propertyKeys: ['nome'],
+        features: [
+          { index: 0, areaHa: 100, validation: { valid: true, errors: [], warnings: [] } },
+          {
+            index: 1,
+            areaHa: 0,
+            validation: { valid: false, errors: ['Geometria inválida'], warnings: [] },
+          },
+        ],
+      };
+      mockedService.previewBulkImport.mockResolvedValue(previewResult as never);
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk/preview')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(sampleGeojson), 'plots.geojson');
+
+      expect(response.status).toBe(200);
+      expect(response.body.invalidCount).toBe(1);
+      expect(response.body.features[1].validation.valid).toBe(false);
+    });
+
+    it('should return 200 with containment warnings', async () => {
+      const previewResult = {
+        filename: 'plots.geojson',
+        totalFeatures: 1,
+        validCount: 1,
+        invalidCount: 0,
+        propertyKeys: [],
+        features: [
+          {
+            index: 0,
+            areaHa: 100,
+            validation: {
+              valid: true,
+              errors: [],
+              warnings: ['Talhão extrapola o perímetro da fazenda'],
+            },
+          },
+        ],
+      };
+      mockedService.previewBulkImport.mockResolvedValue(previewResult as never);
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk/preview')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(sampleGeojson), 'plots.geojson');
+
+      expect(response.status).toBe(200);
+      expect(response.body.features[0].validation.warnings).toContain(
+        'Talhão extrapola o perímetro da fazenda',
+      );
+    });
+
+    it('should return 200 with inter-feature overlap warnings', async () => {
+      const previewResult = {
+        filename: 'plots.geojson',
+        totalFeatures: 2,
+        validCount: 2,
+        invalidCount: 0,
+        propertyKeys: [],
+        features: [
+          {
+            index: 0,
+            areaHa: 100,
+            validation: {
+              valid: true,
+              errors: [],
+              warnings: ['Sobreposição de 15% com feature 1'],
+            },
+          },
+          {
+            index: 1,
+            areaHa: 80,
+            validation: {
+              valid: true,
+              errors: [],
+              warnings: ['Sobreposição de 15% com feature 0'],
+            },
+          },
+        ],
+      };
+      mockedService.previewBulkImport.mockResolvedValue(previewResult as never);
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk/preview')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(sampleGeojson), 'plots.geojson');
+
+      expect(response.status).toBe(200);
+      expect(response.body.features[0].validation.warnings[0]).toContain('Sobreposição');
+    });
+
+    it('should return 400 for file with no polygons', async () => {
+      mockedService.previewBulkImport.mockRejectedValue(
+        new Error('Nenhum polígono encontrado no arquivo GeoJSON'),
+      );
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk/preview')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from('{"type":"FeatureCollection","features":[]}'), 'empty.geojson');
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should return 400 when >500 features', async () => {
+      mockedService.previewBulkImport.mockRejectedValue(
+        new FarmError('Arquivo contém 501 features (máximo: 500)', 400),
+      );
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk/preview')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(sampleGeojson), 'big.geojson');
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toContain('500');
+    });
+
+    it('should return 400 without file', async () => {
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk/preview')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Arquivo é obrigatório');
+    });
+  });
+
+  describe('POST /api/org/farms/:farmId/plots/bulk', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    const sampleGeojson = JSON.stringify({
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: { nome: 'Talhão A', cultura: 'soja', solo: 'LATOSSOLO_VERMELHO' },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [-55.7, -12.5],
+                [-55.6, -12.5],
+                [-55.6, -12.6],
+                [-55.7, -12.6],
+                [-55.7, -12.5],
+              ],
+            ],
+          },
+        },
+        {
+          type: 'Feature',
+          properties: { nome: 'Talhão B', cultura: 'milho' },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [-55.5, -12.5],
+                [-55.4, -12.5],
+                [-55.4, -12.6],
+                [-55.5, -12.6],
+                [-55.5, -12.5],
+              ],
+            ],
+          },
+        },
+        {
+          type: 'Feature',
+          properties: { nome: 'Talhão C', cultura: 'café' },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [-55.3, -12.5],
+                [-55.2, -12.5],
+                [-55.2, -12.6],
+                [-55.3, -12.6],
+                [-55.3, -12.5],
+              ],
+            ],
+          },
+        },
+      ],
+    });
+
+    it('should return 200 with import result for selected features', async () => {
+      const importResult = {
+        imported: 2,
+        skipped: 0,
+        items: [
+          { index: 0, status: 'imported', plotId: 'plot-1', name: 'Talhão A', areaHa: 100.5 },
+          { index: 1, status: 'imported', plotId: 'plot-2', name: 'Talhão B', areaHa: 80.3 },
+        ],
+        warnings: [],
+      };
+      mockedService.executeBulkImport.mockResolvedValue(importResult as never);
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(sampleGeojson), 'plots.geojson')
+        .field('columnMapping', JSON.stringify({ name: 'nome', currentCrop: 'cultura' }))
+        .field('selectedIndices', JSON.stringify([0, 1]));
+
+      expect(response.status).toBe(200);
+      expect(response.body.imported).toBe(2);
+      expect(response.body.items).toHaveLength(2);
+    });
+
+    it('should apply column mapping correctly', async () => {
+      const importResult = {
+        imported: 1,
+        skipped: 0,
+        items: [{ index: 0, status: 'imported', plotId: 'plot-1', name: 'Talhão A', areaHa: 100 }],
+        warnings: [],
+      };
+      mockedService.executeBulkImport.mockResolvedValue(importResult as never);
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(sampleGeojson), 'plots.geojson')
+        .field(
+          'columnMapping',
+          JSON.stringify({ name: 'nome', currentCrop: 'cultura', soilType: 'solo' }),
+        )
+        .field('selectedIndices', JSON.stringify([0]));
+
+      expect(response.status).toBe(200);
+      expect(mockedService.executeBulkImport).toHaveBeenCalledWith(
+        expect.anything(),
+        'farm-1',
+        expect.any(Buffer),
+        'plots.geojson',
+        expect.objectContaining({
+          columnMapping: { name: 'nome', currentCrop: 'cultura', soilType: 'solo' },
+          selectedIndices: [0],
+        }),
+        'admin-1',
+      );
+    });
+
+    it('should use default name template', async () => {
+      const importResult = {
+        imported: 2,
+        skipped: 0,
+        items: [
+          { index: 0, status: 'imported', plotId: 'plot-1', name: 'Lote 1', areaHa: 100 },
+          { index: 1, status: 'imported', plotId: 'plot-2', name: 'Lote 2', areaHa: 80 },
+        ],
+        warnings: [],
+      };
+      mockedService.executeBulkImport.mockResolvedValue(importResult as never);
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(sampleGeojson), 'plots.geojson')
+        .field('columnMapping', JSON.stringify({}))
+        .field('selectedIndices', JSON.stringify([0, 1]))
+        .field('defaultName', 'Lote {n}');
+
+      expect(response.status).toBe(200);
+      expect(mockedService.executeBulkImport).toHaveBeenCalledWith(
+        expect.anything(),
+        'farm-1',
+        expect.any(Buffer),
+        'plots.geojson',
+        expect.objectContaining({ defaultName: 'Lote {n}' }),
+        'admin-1',
+      );
+    });
+
+    it('should handle overlap skip', async () => {
+      const importResult = {
+        imported: 1,
+        skipped: 1,
+        items: [
+          { index: 0, status: 'imported', plotId: 'plot-1', name: 'Talhão A', areaHa: 100 },
+          {
+            index: 1,
+            status: 'skipped',
+            name: 'Talhão B',
+            reason: 'Sobreposição de 15% com talhão existente (máximo: 5%)',
+          },
+        ],
+        warnings: [],
+      };
+      mockedService.executeBulkImport.mockResolvedValue(importResult as never);
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(sampleGeojson), 'plots.geojson')
+        .field('columnMapping', JSON.stringify({ name: 'nome' }))
+        .field('selectedIndices', JSON.stringify([0, 1]));
+
+      expect(response.status).toBe(200);
+      expect(response.body.skipped).toBe(1);
+      expect(response.body.items[1].status).toBe('skipped');
+      expect(response.body.items[1].reason).toContain('Sobreposição');
+    });
+
+    it('should handle invalid soilType skip', async () => {
+      const importResult = {
+        imported: 0,
+        skipped: 1,
+        items: [
+          {
+            index: 0,
+            status: 'skipped',
+            name: 'Talhão A',
+            reason: 'Tipo de solo inválido: INVALIDO',
+          },
+        ],
+        warnings: [],
+      };
+      mockedService.executeBulkImport.mockResolvedValue(importResult as never);
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(sampleGeojson), 'plots.geojson')
+        .field('columnMapping', JSON.stringify({ name: 'nome', soilType: 'solo' }))
+        .field('selectedIndices', JSON.stringify([0]));
+
+      expect(response.status).toBe(200);
+      expect(response.body.skipped).toBe(1);
+    });
+
+    it('should return 403 for OPERATOR (no farms:create)', async () => {
+      authAs(OPERATOR_PAYLOAD);
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(sampleGeojson), 'plots.geojson')
+        .field('columnMapping', JSON.stringify({}))
+        .field('selectedIndices', JSON.stringify([0]));
+
+      expect(response.status).toBe(403);
+    });
+
+    it('should return 400 without file', async () => {
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk')
+        .set('Authorization', 'Bearer valid-token')
+        .field('columnMapping', JSON.stringify({}))
+        .field('selectedIndices', JSON.stringify([0]));
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Arquivo é obrigatório');
+    });
+
+    it('should return 400 with empty selectedIndices', async () => {
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(sampleGeojson), 'plots.geojson')
+        .field('columnMapping', JSON.stringify({}))
+        .field('selectedIndices', JSON.stringify([]));
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toContain('selectedIndices');
+    });
+
+    it('should log audit on successful import', async () => {
+      const importResult = {
+        imported: 2,
+        skipped: 0,
+        items: [
+          { index: 0, status: 'imported', plotId: 'plot-1', name: 'Talhão A', areaHa: 100 },
+          { index: 1, status: 'imported', plotId: 'plot-2', name: 'Talhão B', areaHa: 80 },
+        ],
+        warnings: [],
+      };
+      mockedService.executeBulkImport.mockResolvedValue(importResult as never);
+
+      await request(app)
+        .post('/api/org/farms/farm-1/plots/bulk')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(sampleGeojson), 'plots.geojson')
+        .field('columnMapping', JSON.stringify({ name: 'nome' }))
+        .field('selectedIndices', JSON.stringify([0, 1]));
+
+      expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'BULK_IMPORT_FIELD_PLOTS',
+          targetType: 'farm',
+          targetId: 'farm-1',
+          metadata: expect.objectContaining({
+            imported: 2,
+            skipped: 0,
+          }),
+        }),
+      );
     });
   });
 

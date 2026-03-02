@@ -23,6 +23,18 @@ export interface ValidationResult {
   errors: string[];
 }
 
+export interface ParsedFeature {
+  polygon: GeoJSON.Polygon;
+  properties: Record<string, unknown>;
+  sourceIndex: number;
+}
+
+export interface ParseResultWithFeatures {
+  features: ParsedFeature[];
+  propertyKeys: string[];
+  warnings: string[];
+}
+
 // ─── Format Detection ───────────────────────────────────────────────
 
 const EXTENSION_MAP: Record<string, GeoFormat> = {
@@ -178,6 +190,146 @@ function extractPolygons(geojson: GeoJSON.GeoJSON, warnings: string[]): GeoJSON.
   return polygons;
 }
 
+// ─── Feature Extraction (preserves properties) ──────────────────────
+
+function extractFeatures(geojson: GeoJSON.GeoJSON, warnings: string[]): ParsedFeature[] {
+  const features: ParsedFeature[] = [];
+  let idx = 0;
+
+  function addFromFeature(feature: GeoJSON.Feature, sourceIndex: number): void {
+    const props = (feature.properties ?? {}) as Record<string, unknown>;
+    if (feature.geometry?.type === 'Polygon') {
+      features.push({ polygon: feature.geometry, properties: props, sourceIndex });
+    } else if (feature.geometry?.type === 'MultiPolygon') {
+      for (const coords of feature.geometry.coordinates) {
+        features.push({
+          polygon: { type: 'Polygon', coordinates: coords },
+          properties: props,
+          sourceIndex,
+        });
+      }
+    } else {
+      warnings.push(`Feature ${sourceIndex} ignorada: tipo ${feature.geometry?.type ?? 'null'}`);
+    }
+  }
+
+  if (geojson.type === 'Polygon') {
+    features.push({ polygon: geojson, properties: {}, sourceIndex: idx });
+  } else if (geojson.type === 'MultiPolygon') {
+    for (const coords of geojson.coordinates) {
+      features.push({
+        polygon: { type: 'Polygon', coordinates: coords },
+        properties: {},
+        sourceIndex: idx++,
+      });
+    }
+  } else if (geojson.type === 'Feature') {
+    addFromFeature(geojson, 0);
+  } else if (geojson.type === 'FeatureCollection') {
+    for (const feature of geojson.features) {
+      addFromFeature(feature, idx++);
+    }
+  }
+
+  return features;
+}
+
+// ─── Parse With Features (format-specific) ──────────────────────────
+
+function parseGeoJSONWithFeatures(buffer: Buffer): ParseResultWithFeatures {
+  const warnings: string[] = [];
+  let data: unknown;
+
+  try {
+    data = JSON.parse(buffer.toString('utf-8'));
+  } catch {
+    throw new Error('Arquivo GeoJSON inválido: JSON mal-formado');
+  }
+
+  const geojson = data as GeoJSON.GeoJSON;
+  const features = extractFeatures(geojson, warnings);
+
+  if (features.length === 0) {
+    throw new Error('Nenhum polígono encontrado no arquivo GeoJSON');
+  }
+
+  const propertyKeys = collectPropertyKeys(features);
+  return { features, propertyKeys, warnings };
+}
+
+function parseKMLStringWithFeatures(xmlString: string): ParseResultWithFeatures {
+  const warnings: string[] = [];
+  const doc = new DOMParser().parseFromString(xmlString, 'text/xml');
+  const geojson = kml(doc) as GeoJSON.GeoJSON;
+  const features = extractFeatures(geojson, warnings);
+
+  if (features.length === 0) {
+    throw new Error('Nenhum polígono encontrado no arquivo KML');
+  }
+
+  const propertyKeys = collectPropertyKeys(features);
+  return { features, propertyKeys, warnings };
+}
+
+async function parseKMZWithFeatures(buffer: Buffer): Promise<ParseResultWithFeatures> {
+  const zip = await JSZip.loadAsync(buffer);
+
+  let kmlContent: string | null = null;
+  for (const [filename, file] of Object.entries(zip.files)) {
+    if (filename.toLowerCase().endsWith('.kml') && !file.dir) {
+      kmlContent = await file.async('string');
+      break;
+    }
+  }
+
+  if (!kmlContent) {
+    throw new Error('Nenhum arquivo KML encontrado dentro do KMZ');
+  }
+
+  return parseKMLStringWithFeatures(kmlContent);
+}
+
+async function parseShapefileZipWithFeatures(buffer: Buffer): Promise<ParseResultWithFeatures> {
+  const warnings: string[] = [];
+  const zip = await JSZip.loadAsync(buffer);
+
+  let shpBuffer: ArrayBuffer | null = null;
+  let dbfBuffer: ArrayBuffer | null = null;
+
+  for (const [filename, file] of Object.entries(zip.files)) {
+    const lower = filename.toLowerCase();
+    if (lower.endsWith('.shp') && !file.dir) {
+      shpBuffer = await file.async('arraybuffer');
+    } else if (lower.endsWith('.dbf') && !file.dir) {
+      dbfBuffer = await file.async('arraybuffer');
+    }
+  }
+
+  if (!shpBuffer) {
+    throw new Error('Nenhum arquivo .shp encontrado dentro do ZIP');
+  }
+
+  const geojson = (await shapefile.read(shpBuffer, dbfBuffer ?? undefined)) as GeoJSON.GeoJSON;
+  const features = extractFeatures(geojson, warnings);
+
+  if (features.length === 0) {
+    throw new Error('Nenhum polígono encontrado no Shapefile');
+  }
+
+  const propertyKeys = collectPropertyKeys(features);
+  return { features, propertyKeys, warnings };
+}
+
+function collectPropertyKeys(features: ParsedFeature[]): string[] {
+  const keys = new Set<string>();
+  for (const f of features) {
+    for (const k of Object.keys(f.properties)) {
+      keys.add(k);
+    }
+  }
+  return Array.from(keys).sort();
+}
+
 // ─── Geometry Validation ────────────────────────────────────────────
 
 export function validateGeometry(polygon: GeoJSON.Polygon): ValidationResult {
@@ -246,5 +398,26 @@ export async function parseGeoFile(buffer: Buffer, filename: string): Promise<Pa
       return parseKMZ(buffer);
     case 'shapefile':
       return parseShapefileZip(buffer);
+  }
+}
+
+export async function parseGeoFileWithFeatures(
+  buffer: Buffer,
+  filename: string,
+): Promise<ParseResultWithFeatures> {
+  const format = detectFormat(filename);
+  if (!format) {
+    throw new Error(`Formato não suportado: ${filename}`);
+  }
+
+  switch (format) {
+    case 'geojson':
+      return parseGeoJSONWithFeatures(buffer);
+    case 'kml':
+      return parseKMLStringWithFeatures(buffer.toString('utf-8'));
+    case 'kmz':
+      return parseKMZWithFeatures(buffer);
+    case 'shapefile':
+      return parseShapefileZipWithFeatures(buffer);
   }
 }

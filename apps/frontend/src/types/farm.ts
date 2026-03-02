@@ -98,3 +98,47 @@ export interface FieldPlotsSummary {
   unmappedAreaHa: number;
   plotCount: number;
 }
+
+// ─── Bulk Import ─────────────────────────────────────────────────────
+
+export interface BulkPreviewFeature {
+  index: number;
+  properties: Record<string, unknown>;
+  polygon: GeoJSON.Polygon;
+  areaHa: number;
+  validation: { valid: boolean; errors: string[]; warnings: string[] };
+}
+
+export interface BulkPreviewResult {
+  filename: string;
+  totalFeatures: number;
+  validCount: number;
+  invalidCount: number;
+  propertyKeys: string[];
+  features: BulkPreviewFeature[];
+}
+
+export interface ColumnMapping {
+  name?: string;
+  code?: string;
+  soilType?: string;
+  currentCrop?: string;
+  previousCrop?: string;
+  notes?: string;
+}
+
+export interface BulkImportResultItem {
+  index: number;
+  status: 'imported' | 'skipped';
+  plotId?: string;
+  name?: string;
+  areaHa?: number;
+  reason?: string;
+}
+
+export interface BulkImportResult {
+  imported: number;
+  skipped: number;
+  items: BulkImportResultItem[];
+  warnings: string[];
+}
