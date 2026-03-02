@@ -5,6 +5,10 @@ import { useFarmMap } from '@/hooks/useFarmMap';
 import FarmMap from '@/components/map/FarmMap';
 import BaseMapSelector, { type BaseMapType } from '@/components/map/BaseMapSelector';
 import LayerControlPanel, { type LayerConfig } from '@/components/map/LayerControlPanel';
+import CropLegend from '@/components/map/CropLegend';
+import PlotDetailsPanel from '@/components/map/PlotDetailsPanel';
+import PlotSummaryBar from '@/components/map/PlotSummaryBar';
+import type { FieldPlot } from '@/types/farm';
 import './FarmMapPage.css';
 
 const BulkImportModal = lazy(() => import('@/components/bulk-import/BulkImportModal'));
@@ -36,6 +40,8 @@ function FarmMapPage() {
   const [baseMap, setBaseMap] = useState<BaseMapType>('satellite');
   const [layers, setLayers] = useState<LayerConfig[]>(DEFAULT_LAYERS);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+  const [selectedPlot, setSelectedPlot] = useState<FieldPlot | null>(null);
+  const [cropFilter, setCropFilter] = useState<Set<string>>(new Set());
 
   const handleToggleLayer = useCallback((layerId: string) => {
     setLayers((prev) =>
@@ -46,6 +52,22 @@ function FarmMapPage() {
   const handleImportComplete = useCallback(() => {
     void refetch();
   }, [refetch]);
+
+  const handlePlotClick = useCallback((plot: FieldPlot) => {
+    setSelectedPlot(plot);
+  }, []);
+
+  const handleToggleCrop = useCallback((cropKey: string) => {
+    setCropFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(cropKey)) {
+        next.delete(cropKey);
+      } else {
+        next.add(cropKey);
+      }
+      return next;
+    });
+  }, []);
 
   const showFarmBoundary = layers.find((l) => l.id === 'perimeter')?.enabled ?? true;
   const showRegistrations = layers.find((l) => l.id === 'registrations')?.enabled ?? true;
@@ -117,9 +139,28 @@ function FarmMapPage() {
           showFarmBoundary={showFarmBoundary}
           showRegistrations={showRegistrations}
           showPlots={showPlots}
+          onPlotClick={handlePlotClick}
+          cropFilter={cropFilter}
         />
         <BaseMapSelector selected={baseMap} onChange={setBaseMap} />
         <LayerControlPanel layers={layers} onToggle={handleToggleLayer} />
+
+        {showPlots && data.plotBoundaries.length > 0 && (
+          <CropLegend
+            plotBoundaries={data.plotBoundaries}
+            cropFilter={cropFilter}
+            onToggleCrop={handleToggleCrop}
+          />
+        )}
+
+        {showPlots && data.plotBoundaries.length > 0 && (
+          <PlotSummaryBar
+            plotBoundaries={data.plotBoundaries}
+            farmTotalAreaHa={Number(data.farm.totalAreaHa)}
+          />
+        )}
+
+        <PlotDetailsPanel plot={selectedPlot} onClose={() => setSelectedPlot(null)} />
       </div>
 
       {isBulkImportOpen && farmId && (

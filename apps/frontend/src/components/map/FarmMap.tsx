@@ -1,11 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { MapContainer, TileLayer, GeoJSON, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import MapAutoFit from './MapAutoFit';
+import PlotLabels from './PlotLabels';
 import type { BaseMapType } from './BaseMapSelector';
 import type { FarmMapData } from '@/hooks/useFarmMap';
-import type { FarmRegistration } from '@/types/farm';
+import type { FarmRegistration, FieldPlot } from '@/types/farm';
 
 const TILE_URLS: Record<BaseMapType, { url: string; attribution: string; maxZoom: number }> = {
   topographic: {
@@ -30,7 +31,7 @@ const HYBRID_LABELS_URL =
 
 const REGISTRATION_COLORS = ['#e65100', '#1565c0', '#f9a825', '#ad1457', '#00897b', '#6a1b9a'];
 
-const CROP_COLORS: Record<string, string> = {
+export const CROP_COLORS: Record<string, string> = {
   soja: '#DAA520',
   milho: '#228B22',
   café: '#8B4513',
@@ -48,10 +49,12 @@ const CROP_COLORS: Record<string, string> = {
   sorgo: '#D2691E',
 };
 
-function getCropColor(crop: string | null): string {
-  if (!crop) return '#6B7280';
+export const NO_CROP_COLOR = '#6B7280';
+
+export function getCropColor(crop: string | null): string {
+  if (!crop) return NO_CROP_COLOR;
   const key = crop.toLowerCase().trim();
-  return CROP_COLORS[key] ?? '#6B7280';
+  return CROP_COLORS[key] ?? NO_CROP_COLOR;
 }
 
 function getPlotStyle(crop: string | null): L.PathOptions {
@@ -62,6 +65,11 @@ function getPlotStyle(crop: string | null): L.PathOptions {
     fillOpacity: 0.3,
     fillColor: color,
   };
+}
+
+export function formatArea(ha: number | null): string {
+  if (ha == null) return '—';
+  return `${Number(ha).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ha`;
 }
 
 const FARM_STYLE: L.PathOptions = {
@@ -82,17 +90,14 @@ function getRegistrationStyle(index: number): L.PathOptions {
   };
 }
 
-function formatArea(ha: number | null): string {
-  if (ha == null) return '—';
-  return `${Number(ha).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ha`;
-}
-
 interface FarmMapProps {
   data: FarmMapData;
   baseMap: BaseMapType;
   showFarmBoundary: boolean;
   showRegistrations: boolean;
   showPlots?: boolean;
+  onPlotClick?: (plot: FieldPlot) => void;
+  cropFilter?: Set<string>;
 }
 
 function FarmMap({
@@ -101,6 +106,8 @@ function FarmMap({
   showFarmBoundary,
   showRegistrations,
   showPlots = true,
+  onPlotClick,
+  cropFilter,
 }: FarmMapProps) {
   const { farm, farmBoundary, registrationBoundaries, plotBoundaries } = data;
   const tile = TILE_URLS[baseMap];
@@ -126,6 +133,39 @@ function FarmMap({
     }
     return map;
   }, [farm.registrations]);
+
+  const filteredPlotBoundaries = useMemo(() => {
+    if (!cropFilter || cropFilter.size === 0) return plotBoundaries;
+    return plotBoundaries.filter((pb) => {
+      const cropKey = pb.plot.currentCrop?.toLowerCase().trim() ?? '__none__';
+      return cropFilter.has(cropKey);
+    });
+  }, [plotBoundaries, cropFilter]);
+
+  const makePlotEachFeature = useCallback(
+    (plot: FieldPlot) => {
+      return (_feature: GeoJSON.Feature, layer: L.Layer) => {
+        const soilLabel = plot.soilType ? plot.soilType.replace(/_/g, ' ') : null;
+        const tooltipLines = [
+          `<strong>${plot.name}</strong>`,
+          `Área: ${formatArea(plot.boundaryAreaHa)}`,
+          plot.currentCrop ? `Cultura: ${plot.currentCrop}` : null,
+          soilLabel ? `Solo: ${soilLabel}` : null,
+        ].filter(Boolean);
+
+        layer.bindTooltip(tooltipLines.join('<br>'), {
+          sticky: true,
+          direction: 'auto',
+          className: 'plot-tooltip',
+        });
+
+        layer.on('click', () => {
+          onPlotClick?.(plot);
+        });
+      };
+    },
+    [onPlotClick],
+  );
 
   const classificationLabels: Record<string, string> = {
     MINIFUNDIO: 'Minifúndio',
@@ -193,33 +233,18 @@ function FarmMap({
           })}
 
       {showPlots &&
-        plotBoundaries
+        filteredPlotBoundaries
           .filter((pb) => pb.boundary.hasBoundary && pb.boundary.boundaryGeoJSON)
           .map((pb) => (
             <GeoJSON
-              key={`plot-boundary-${pb.plotId}`}
+              key={`plot-boundary-${pb.plotId}-${cropFilter?.size ?? 0}`}
               data={pb.boundary.boundaryGeoJSON!}
               style={getPlotStyle(pb.plot.currentCrop)}
-            >
-              <Popup>
-                <strong>{pb.plot.name}</strong>
-                <br />
-                Área: {formatArea(pb.plot.boundaryAreaHa)}
-                {pb.plot.currentCrop && (
-                  <>
-                    <br />
-                    Cultura: {pb.plot.currentCrop}
-                  </>
-                )}
-                {pb.plot.soilType && (
-                  <>
-                    <br />
-                    Solo: {pb.plot.soilType.replace(/_/g, ' ')}
-                  </>
-                )}
-              </Popup>
-            </GeoJSON>
+              onEachFeature={makePlotEachFeature(pb.plot)}
+            />
           ))}
+
+      {showPlots && <PlotLabels plotBoundaries={filteredPlotBoundaries} />}
     </MapContainer>
   );
 }

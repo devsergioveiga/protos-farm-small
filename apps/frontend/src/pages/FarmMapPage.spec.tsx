@@ -13,18 +13,23 @@ vi.mock('react-leaflet', () => ({
     <div data-testid="geojson-layer">{children}</div>
   ),
   Popup: ({ children }: { children: React.ReactNode }) => <div data-testid="popup">{children}</div>,
-  useMap: () => ({ fitBounds: vi.fn() }),
+  useMap: () => ({ fitBounds: vi.fn(), getZoom: () => 10, on: vi.fn(), off: vi.fn() }),
+  useMapEvents: () => null,
 }));
 
+const mockLayerGroup = { addTo: vi.fn(), remove: vi.fn(), clearLayers: vi.fn(), addLayer: vi.fn() };
 vi.mock('leaflet', () => ({
   default: {
     geoJSON: () => ({
-      getBounds: () => [
-        [0, 0],
-        [1, 1],
-      ],
+      getBounds: () => ({
+        getCenter: () => ({ lat: 0, lng: 0 }),
+        0: [0, 0],
+        1: [1, 1],
+      }),
     }),
     latLngBounds: (a: number[], b: number[]) => [a, b],
+    layerGroup: () => mockLayerGroup,
+    marker: () => ({ bindTooltip: vi.fn() }),
   },
 }));
 
