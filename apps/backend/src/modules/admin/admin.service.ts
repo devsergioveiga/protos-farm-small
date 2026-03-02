@@ -29,23 +29,13 @@ export interface AuditLogQuery {
 
 export async function getDashboardStats(): Promise<DashboardStats> {
   return withRlsBypass(async (tx) => {
-    const [
-      totalOrgs,
-      activeOrgs,
-      suspendedOrgs,
-      cancelledOrgs,
-      planGroups,
-      totalUsers,
-      totalFarms,
-    ] = await Promise.all([
-      tx.organization.count(),
-      tx.organization.count({ where: { status: 'ACTIVE' } }),
-      tx.organization.count({ where: { status: 'SUSPENDED' } }),
-      tx.organization.count({ where: { status: 'CANCELLED' } }),
-      tx.organization.groupBy({ by: ['plan'], _count: { plan: true } }),
-      tx.user.count(),
-      tx.farm.count(),
-    ]);
+    const totalOrgs = await tx.organization.count();
+    const activeOrgs = await tx.organization.count({ where: { status: 'ACTIVE' } });
+    const suspendedOrgs = await tx.organization.count({ where: { status: 'SUSPENDED' } });
+    const cancelledOrgs = await tx.organization.count({ where: { status: 'CANCELLED' } });
+    const planGroups = await tx.organization.groupBy({ by: ['plan'], _count: { plan: true } });
+    const totalUsers = await tx.user.count();
+    const totalFarms = await tx.farm.count();
 
     return {
       organizations: {
@@ -92,15 +82,13 @@ export async function listAuditLogs(query: AuditLogQuery) {
   }
 
   return withRlsBypass(async (tx) => {
-    const [data, total] = await Promise.all([
-      tx.auditLog.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-      }),
-      tx.auditLog.count({ where }),
-    ]);
+    const data = await tx.auditLog.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+    const total = await tx.auditLog.count({ where });
 
     return {
       data,

@@ -236,13 +236,52 @@ describe('Farms endpoints', () => {
 
       expect(mockedService.listFarms).toHaveBeenCalledWith(
         { organizationId: 'org-1' },
+        { userId: 'admin-1', role: 'ADMIN' },
         {
           page: 2,
           limit: 10,
           search: 'santa',
           status: 'ACTIVE',
           state: 'SP',
+          minAreaHa: undefined,
+          maxAreaHa: undefined,
         },
+      );
+    });
+
+    it('should pass caller with OPERATOR role', async () => {
+      authAs(OPERATOR_PAYLOAD);
+      mockedService.listFarms.mockResolvedValue({
+        data: [],
+        meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
+      } as never);
+
+      await request(app).get('/api/org/farms').set('Authorization', 'Bearer valid-token');
+
+      expect(mockedService.listFarms).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        { userId: 'user-1', role: 'OPERATOR' },
+        expect.objectContaining({}),
+      );
+    });
+
+    it('should pass minAreaHa and maxAreaHa filters', async () => {
+      mockedService.listFarms.mockResolvedValue({
+        data: [],
+        meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
+      } as never);
+
+      await request(app)
+        .get('/api/org/farms?minAreaHa=100&maxAreaHa=500')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(mockedService.listFarms).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        { userId: 'admin-1', role: 'ADMIN' },
+        expect.objectContaining({
+          minAreaHa: 100,
+          maxAreaHa: 500,
+        }),
       );
     });
 

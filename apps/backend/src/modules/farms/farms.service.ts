@@ -13,7 +13,9 @@ import {
   type UpdateRegistrationInput,
   type BoundaryUploadResult,
   type BoundaryInfo,
+  type FarmListCaller,
 } from './farms.types';
+import { ROLE_HIERARCHY } from '../../shared/rbac/permissions';
 import { parseGeoFile, validateGeometry } from './geo-parser';
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -179,17 +181,23 @@ export async function createFarm(ctx: RlsContext, actorId: string, input: Create
 
 // ─── List Farms ─────────────────────────────────────────────────────
 
-export async function listFarms(ctx: RlsContext, query: ListFarmsQuery) {
+export async function listFarms(ctx: RlsContext, caller: FarmListCaller, query: ListFarmsQuery) {
   const page = Math.max(1, query.page ?? 1);
   const limit = Math.min(100, Math.max(1, query.limit ?? 20));
   const skip = (page - 1) * limit;
 
   const where: Record<string, unknown> = { organizationId: ctx.organizationId };
 
+  // Non-admin users only see farms they have access to
+  if (ROLE_HIERARCHY[caller.role as keyof typeof ROLE_HIERARCHY] < 90) {
+    where.userAccess = { some: { userId: caller.userId } };
+  }
+
   if (query.search) {
     where.OR = [
       { name: { contains: query.search, mode: 'insensitive' } },
       { nickname: { contains: query.search, mode: 'insensitive' } },
+      { city: { contains: query.search, mode: 'insensitive' } },
     ];
   }
 
@@ -201,19 +209,24 @@ export async function listFarms(ctx: RlsContext, query: ListFarmsQuery) {
     where.state = query.state;
   }
 
+  if (query.minAreaHa != null || query.maxAreaHa != null) {
+    const areaFilter: Record<string, number> = {};
+    if (query.minAreaHa != null) areaFilter.gte = query.minAreaHa;
+    if (query.maxAreaHa != null) areaFilter.lte = query.maxAreaHa;
+    where.totalAreaHa = areaFilter;
+  }
+
   return withRlsContext(ctx, async (tx) => {
-    const [data, total] = await Promise.all([
-      tx.farm.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          _count: { select: { registrations: true } },
-        },
-      }),
-      tx.farm.count({ where }),
-    ]);
+    const data = await tx.farm.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: { select: { registrations: true } },
+      },
+    });
+    const total = await tx.farm.count({ where });
 
     return {
       data,
