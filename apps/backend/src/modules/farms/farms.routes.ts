@@ -106,13 +106,24 @@ farmsRouter.get(
 farmsRouter.get('/org/farms', authenticate, checkPermission('farms:read'), async (req, res) => {
   try {
     const ctx = buildRlsContext(req);
+    const caller = { userId: req.user!.userId, role: req.user!.role };
     const page = req.query.page ? Number(req.query.page as string) : undefined;
     const limit = req.query.limit ? Number(req.query.limit as string) : undefined;
     const search = req.query.search as string | undefined;
     const status = req.query.status as string | undefined;
     const state = req.query.state as string | undefined;
+    const minAreaHa = req.query.minAreaHa ? Number(req.query.minAreaHa as string) : undefined;
+    const maxAreaHa = req.query.maxAreaHa ? Number(req.query.maxAreaHa as string) : undefined;
 
-    const result = await listFarms(ctx, { page, limit, search, status, state });
+    const result = await listFarms(ctx, caller, {
+      page,
+      limit,
+      search,
+      status,
+      state,
+      minAreaHa,
+      maxAreaHa,
+    });
     res.json(result);
   } catch (err) {
     if (err instanceof FarmError) {
@@ -384,12 +395,10 @@ function handleGeoUpload(
     geoUpload.single('file')(req, res, (err: unknown) => {
       if (err) {
         if (err instanceof multer.MulterError) {
-          res
-            .status(400)
-            .json({
-              error:
-                err.code === 'LIMIT_FILE_SIZE' ? 'Arquivo excede o limite de 10 MB' : err.message,
-            });
+          res.status(400).json({
+            error:
+              err.code === 'LIMIT_FILE_SIZE' ? 'Arquivo excede o limite de 10 MB' : err.message,
+          });
         } else if (err instanceof Error) {
           res.status(400).json({ error: err.message });
         } else {

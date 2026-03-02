@@ -109,6 +109,13 @@ export interface ListFarmsQuery {
   search?: string;
   status?: string;
   state?: string;
+  minAreaHa?: number;
+  maxAreaHa?: number;
+}
+
+export interface FarmListCaller {
+  userId: string;
+  role: string;
 }
 
 export interface CreateRegistrationInput {

@@ -8,7 +8,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
 }
 
 @media (min-width: 768px) {
@@ -17,6 +17,12 @@
     align-items: center;
     justify-content: space-between;
   }
+}
+
+.farms-page__header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
 .farms-page__title {
@@ -45,6 +51,48 @@
 .farms-page__breadcrumb a:hover {
   text-decoration: underline;
 }
+
+/* ─── View toggle ─── */
+
+.farms-page__view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.farms-page__view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--color-neutral-0);
+  border: none;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.farms-page__view-btn:hover {
+  background: var(--color-neutral-50);
+}
+
+.farms-page__view-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+
+.farms-page__view-btn--active {
+  background: var(--color-primary-50);
+  color: var(--color-primary-600);
+}
+
+.farms-page__view-btn + .farms-page__view-btn {
+  border-left: 1px solid var(--color-neutral-300);
+}
+
+/* ─── Search ─── */
 
 .farms-page__search-wrapper {
   position: relative;
@@ -84,6 +132,63 @@
   color: var(--color-neutral-400);
 }
 
+/* ─── Filters ─── */
+
+.farms-page__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-neutral-200);
+}
+
+.farms-page__filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 120px;
+}
+
+.farms-page__filter-group--disabled {
+  opacity: 0.5;
+}
+
+.farms-page__filter-label {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.farms-page__filter-select,
+.farms-page__filter-input {
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  min-height: 40px;
+  min-width: 100px;
+}
+
+.farms-page__filter-select:focus,
+.farms-page__filter-input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.farms-page__filter-input {
+  max-width: 120px;
+}
+
 /* ─── Cards grid ─── */
 
 .farms-page__grid {
@@ -102,6 +207,63 @@
   .farms-page__grid {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+/* ─── List view ─── */
+
+.farms-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.farm-list-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.farm-list-row:hover {
+  box-shadow: var(--shadow-md);
+}
+
+@media (min-width: 768px) {
+  .farm-list-row {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-4);
+  }
+}
+
+.farm-list-row__main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 200px;
+}
+
+.farm-list-row__name {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.farm-list-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  flex: 1;
+}
+
+.farm-list-row__actions {
+  flex-shrink: 0;
 }
 
 /* ─── Farm card ─── */
@@ -296,4 +458,5 @@
   color: var(--color-error-500);
   font-family: var(--font-body);
   font-size: var(--text-sm);
+  margin-bottom: var(--space-4);
 }

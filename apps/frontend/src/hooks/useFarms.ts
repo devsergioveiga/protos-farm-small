@@ -6,6 +6,8 @@ interface UseFarmsParams {
   search?: string;
   page?: number;
   state?: string;
+  minAreaHa?: number;
+  maxAreaHa?: number;
 }
 
 interface UseFarmsResult {
@@ -22,7 +24,7 @@ export function useFarms(params: UseFarmsParams = {}): UseFarmsResult {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { search, page, state } = params;
+  const { search, page, state, minAreaHa, maxAreaHa } = params;
 
   const fetchFarms = useCallback(async () => {
     setIsLoading(true);
@@ -32,6 +34,8 @@ export function useFarms(params: UseFarmsParams = {}): UseFarmsResult {
       if (search) query.set('search', search);
       if (page) query.set('page', String(page));
       if (state) query.set('state', state);
+      if (minAreaHa != null) query.set('minAreaHa', String(minAreaHa));
+      if (maxAreaHa != null) query.set('maxAreaHa', String(maxAreaHa));
 
       const qs = query.toString();
       const path = `/org/farms${qs ? `?${qs}` : ''}`;
@@ -46,7 +50,7 @@ export function useFarms(params: UseFarmsParams = {}): UseFarmsResult {
     } finally {
       setIsLoading(false);
     }
-  }, [search, page, state]);
+  }, [search, page, state, minAreaHa, maxAreaHa]);
 
   useEffect(() => {
     void fetchFarms();
