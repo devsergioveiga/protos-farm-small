@@ -10,7 +10,7 @@ import './FarmMapPage.css';
 const DEFAULT_LAYERS: LayerConfig[] = [
   { id: 'perimeter', label: 'Perímetro', enabled: true },
   { id: 'registrations', label: 'Matrículas', enabled: true },
-  { id: 'plots', label: 'Talhões', enabled: false, disabled: true, futureLabel: 'Em breve' },
+  { id: 'plots', label: 'Talhões', enabled: true },
   { id: 'pastures', label: 'Pastos', enabled: false, disabled: true, futureLabel: 'Em breve' },
   {
     id: 'structures',
@@ -42,6 +42,7 @@ function FarmMapPage() {
 
   const showFarmBoundary = layers.find((l) => l.id === 'perimeter')?.enabled ?? true;
   const showRegistrations = layers.find((l) => l.id === 'registrations')?.enabled ?? true;
+  const showPlots = layers.find((l) => l.id === 'plots')?.enabled ?? true;
 
   if (isLoading) {
     return (
@@ -98,6 +99,7 @@ function FarmMapPage() {
           baseMap={baseMap}
           showFarmBoundary={showFarmBoundary}
           showRegistrations={showRegistrations}
+          showPlots={showPlots}
         />
         <BaseMapSelector selected={baseMap} onChange={setBaseMap} />
         <LayerControlPanel layers={layers} onToggle={handleToggleLayer} />

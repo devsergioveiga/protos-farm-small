@@ -5,7 +5,8 @@ import LayerControlPanel, { type LayerConfig } from './LayerControlPanel';
 const LAYERS: LayerConfig[] = [
   { id: 'perimeter', label: 'Perímetro', enabled: true },
   { id: 'registrations', label: 'Matrículas', enabled: true },
-  { id: 'plots', label: 'Talhões', enabled: false, disabled: true, futureLabel: 'Em breve' },
+  { id: 'plots', label: 'Talhões', enabled: true },
+  { id: 'pastures', label: 'Pastos', enabled: false, disabled: true, futureLabel: 'Em breve' },
 ];
 
 describe('LayerControlPanel', () => {
@@ -22,8 +23,12 @@ describe('LayerControlPanel', () => {
 
     expect(screen.getByText('Em breve')).toBeDefined();
 
+    const pasturesToggle = screen.getByLabelText('Camada Pastos');
+    expect(pasturesToggle.hasAttribute('disabled')).toBe(true);
+
+    // Talhões is now enabled, not disabled
     const plotsToggle = screen.getByLabelText('Camada Talhões');
-    expect(plotsToggle.hasAttribute('disabled')).toBe(true);
+    expect(plotsToggle.hasAttribute('disabled')).toBe(false);
   });
 
   it('should call onToggle when enabled layer is clicked', () => {

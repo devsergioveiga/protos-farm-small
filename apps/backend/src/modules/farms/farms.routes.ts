@@ -24,6 +24,14 @@ import {
   deleteRegistrationBoundary,
   softDeleteFarm,
   getBoundaryVersions,
+  createFieldPlot,
+  listFieldPlots,
+  getFieldPlot,
+  updateFieldPlot,
+  uploadFieldPlotBoundary,
+  getFieldPlotBoundary,
+  deleteFieldPlot,
+  getFieldPlotsSummary,
 } from './farms.service';
 import { FarmError, ALLOWED_GEO_EXTENSIONS, MAX_GEO_FILE_SIZE } from './farms.types';
 
@@ -733,6 +741,304 @@ farmsRouter.get(
         req.params.regId as string,
       );
       res.json(versions);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// ─── Field Plot Endpoints ──────────────────────────────────────────
+
+// POST /org/farms/:farmId/plots
+farmsRouter.post(
+  '/org/farms/:farmId/plots',
+  authenticate,
+  checkPermission('farms:create'),
+  checkFarmAccess(),
+  async (req, res) => {
+    await handleGeoUpload(req, res);
+    if (res.headersSent) return;
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: 'Arquivo de perímetro é obrigatório' });
+        return;
+      }
+
+      const { name, code, soilType, currentCrop, previousCrop, notes, registrationId } = req.body;
+
+      if (!name) {
+        res.status(400).json({ error: 'Nome do talhão é obrigatório' });
+        return;
+      }
+
+      const ctx = buildRlsContext(req);
+      const result = await createFieldPlot(
+        ctx,
+        req.params.farmId as string,
+        { name, code, soilType, currentCrop, previousCrop, notes, registrationId },
+        req.file.buffer,
+        req.file.originalname,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'CREATE_FIELD_PLOT',
+        targetType: 'field_plot',
+        targetId: result.plot.id,
+        metadata: { farmId: req.params.farmId, name, boundaryAreaHa: result.plot.boundaryAreaHa },
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+        farmId: req.params.farmId as string,
+      });
+
+      res.status(201).json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      if (
+        err instanceof Error &&
+        (err.message.includes('Nenhum') ||
+          err.message.includes('inválido') ||
+          err.message.includes('mal-formado'))
+      ) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// GET /org/farms/:farmId/plots/summary (MUST be before /:plotId)
+farmsRouter.get(
+  '/org/farms/:farmId/plots/summary',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const summary = await getFieldPlotsSummary(ctx, req.params.farmId as string);
+      res.json(summary);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// GET /org/farms/:farmId/plots
+farmsRouter.get(
+  '/org/farms/:farmId/plots',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const plots = await listFieldPlots(ctx, req.params.farmId as string);
+      res.json(plots);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// GET /org/farms/:farmId/plots/:plotId
+farmsRouter.get(
+  '/org/farms/:farmId/plots/:plotId',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const plot = await getFieldPlot(
+        ctx,
+        req.params.farmId as string,
+        req.params.plotId as string,
+      );
+      res.json(plot);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// PATCH /org/farms/:farmId/plots/:plotId
+farmsRouter.patch(
+  '/org/farms/:farmId/plots/:plotId',
+  authenticate,
+  checkPermission('farms:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const plot = await updateFieldPlot(
+        ctx,
+        req.params.farmId as string,
+        req.params.plotId as string,
+        req.body,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'UPDATE_FIELD_PLOT',
+        targetType: 'field_plot',
+        targetId: req.params.plotId as string,
+        metadata: { farmId: req.params.farmId, ...req.body },
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+        farmId: req.params.farmId as string,
+      });
+
+      res.json(plot);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// PUT /org/farms/:farmId/plots/:plotId/boundary
+farmsRouter.put(
+  '/org/farms/:farmId/plots/:plotId/boundary',
+  authenticate,
+  checkPermission('farms:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    await handleGeoUpload(req, res);
+    if (res.headersSent) return;
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: 'Arquivo de perímetro é obrigatório' });
+        return;
+      }
+
+      const ctx = buildRlsContext(req);
+      const result = await uploadFieldPlotBoundary(
+        ctx,
+        req.params.farmId as string,
+        req.params.plotId as string,
+        req.file.buffer,
+        req.file.originalname,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'UPDATE_FIELD_PLOT_BOUNDARY',
+        targetType: 'field_plot',
+        targetId: req.params.plotId as string,
+        metadata: {
+          farmId: req.params.farmId,
+          filename: req.file.originalname,
+          boundaryAreaHa: result.boundaryAreaHa,
+        },
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+        farmId: req.params.farmId as string,
+      });
+
+      res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      if (
+        err instanceof Error &&
+        (err.message.includes('Nenhum') ||
+          err.message.includes('inválido') ||
+          err.message.includes('mal-formado'))
+      ) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// GET /org/farms/:farmId/plots/:plotId/boundary
+farmsRouter.get(
+  '/org/farms/:farmId/plots/:plotId/boundary',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await getFieldPlotBoundary(
+        ctx,
+        req.params.farmId as string,
+        req.params.plotId as string,
+      );
+      res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// DELETE /org/farms/:farmId/plots/:plotId
+farmsRouter.delete(
+  '/org/farms/:farmId/plots/:plotId',
+  authenticate,
+  checkPermission('farms:delete'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await deleteFieldPlot(
+        ctx,
+        req.params.farmId as string,
+        req.params.plotId as string,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'DELETE_FIELD_PLOT',
+        targetType: 'field_plot',
+        targetId: req.params.plotId as string,
+        metadata: { farmId: req.params.farmId },
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+        farmId: req.params.farmId as string,
+      });
+
+      res.json(result);
     } catch (err) {
       if (err instanceof FarmError) {
         res.status(err.statusCode).json({ error: err.message });

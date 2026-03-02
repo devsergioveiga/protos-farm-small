@@ -177,3 +177,64 @@ export interface BoundaryInfo {
   boundaryAreaHa: number | null;
   boundaryGeoJSON: GeoJSON.Polygon | null;
 }
+
+// ─── Field Plots ────────────────────────────────────────────────────
+
+export const VALID_SOIL_TYPES = [
+  'LATOSSOLO_VERMELHO',
+  'LATOSSOLO_AMARELO',
+  'ARGISSOLO',
+  'NEOSSOLO',
+  'CAMBISSOLO',
+  'GLEISSOLO',
+  'PLANOSSOLO',
+  'NITOSSOLO',
+  'OUTRO',
+] as const;
+
+export interface CreateFieldPlotInput {
+  name: string;
+  code?: string;
+  soilType?: string;
+  currentCrop?: string;
+  previousCrop?: string;
+  notes?: string;
+  registrationId?: string;
+}
+
+export interface UpdateFieldPlotInput {
+  name?: string;
+  code?: string;
+  soilType?: string | null;
+  currentCrop?: string | null;
+  previousCrop?: string | null;
+  notes?: string | null;
+  registrationId?: string | null;
+}
+
+export interface FieldPlotItem {
+  id: string;
+  farmId: string;
+  registrationId: string | null;
+  name: string;
+  code: string | null;
+  soilType: string | null;
+  currentCrop: string | null;
+  previousCrop: string | null;
+  notes: string | null;
+  boundaryAreaHa: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface FieldPlotsSummary {
+  totalPlotAreaHa: number;
+  farmTotalAreaHa: number;
+  unmappedAreaHa: number;
+  plotCount: number;
+}
+
+export interface CreateFieldPlotResult {
+  plot: FieldPlotItem;
+  warnings: string[];
+}

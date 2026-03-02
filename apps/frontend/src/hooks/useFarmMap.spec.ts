@@ -84,6 +84,7 @@ describe('useFarmMap', () => {
   it('should fetch farm detail and boundaries in parallel', async () => {
     mockGet.mockImplementation((path: string) => {
       if (path === '/org/farms/farm-1') return Promise.resolve(FARM_DETAIL);
+      if (path === '/org/farms/farm-1/plots') return Promise.resolve([]);
       if (path === '/org/farms/farm-1/boundary') return Promise.resolve(FARM_BOUNDARY);
       if (path.includes('/registrations/')) return Promise.resolve(NO_BOUNDARY);
       return Promise.reject(new Error('Unknown path'));
@@ -97,12 +98,14 @@ describe('useFarmMap', () => {
     expect(result.current.data!.farm.name).toBe('Fazenda Sol');
     expect(result.current.data!.farmBoundary.hasBoundary).toBe(true);
     expect(result.current.data!.registrationBoundaries).toHaveLength(2);
+    expect(result.current.data!.plotBoundaries).toHaveLength(0);
     expect(result.current.error).toBeNull();
   });
 
   it('should handle farm boundary being absent', async () => {
     mockGet.mockImplementation((path: string) => {
       if (path === '/org/farms/farm-1') return Promise.resolve(FARM_DETAIL);
+      if (path === '/org/farms/farm-1/plots') return Promise.resolve([]);
       return Promise.resolve(NO_BOUNDARY);
     });
 

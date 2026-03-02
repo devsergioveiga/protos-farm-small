@@ -65,7 +65,8 @@ function FarmCard({ farm, canDelete, onDelete }: FarmCardProps) {
           {farm._count.registrations} {farm._count.registrations === 1 ? 'matrícula' : 'matrículas'}
         </span>
         <span className="farm-card__detail">
-          <Layers size={16} aria-hidden="true" className="farm-card__detail-icon" />0 talhões
+          <Layers size={16} aria-hidden="true" className="farm-card__detail-icon" />
+          {farm._count.fieldPlots} {farm._count.fieldPlots === 1 ? 'talhão' : 'talhões'}
         </span>
         <span className="farm-card__detail">
           <Wheat size={16} aria-hidden="true" className="farm-card__detail-icon" />-
