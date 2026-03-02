@@ -12,9 +12,13 @@ import {
   List,
   Layers,
   Wheat,
+  Trash2,
 } from 'lucide-react';
 import { useFarms } from '@/hooks/useFarms';
+import { useAuth } from '@/stores/AuthContext';
+import { api } from '@/services/api';
 import { VALID_UF } from '@/constants/states';
+import ConfirmDeleteModal from '@/components/confirm-delete/ConfirmDeleteModal';
 import type { FarmListItem } from '@/types/farm';
 import './FarmsPage.css';
 
@@ -27,7 +31,13 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced;
 }
 
-function FarmCard({ farm }: { farm: FarmListItem }) {
+interface FarmCardProps {
+  farm: FarmListItem;
+  canDelete: boolean;
+  onDelete: (farm: FarmListItem) => void;
+}
+
+function FarmCard({ farm, canDelete, onDelete }: FarmCardProps) {
   const statusClass = farm.status === 'ACTIVE' ? 'active' : 'inactive';
   const statusLabel = farm.status === 'ACTIVE' ? 'Ativa' : 'Inativa';
   const location = [farm.city, farm.state].filter(Boolean).join(' — ');
@@ -71,6 +81,16 @@ function FarmCard({ farm }: { farm: FarmListItem }) {
           <Map size={16} aria-hidden="true" />
           Ver no mapa
         </Link>
+        {canDelete && (
+          <button
+            type="button"
+            className="farm-card__delete-btn"
+            aria-label={`Excluir ${farm.name}`}
+            onClick={() => onDelete(farm)}
+          >
+            <Trash2 size={16} aria-hidden="true" />
+          </button>
+        )}
       </div>
     </article>
   );
@@ -154,6 +174,11 @@ function FarmsPage() {
   const [stateFilter, setStateFilter] = useState('');
   const [minAreaInput, setMinAreaInput] = useState('');
   const [maxAreaInput, setMaxAreaInput] = useState('');
+  const [farmToDelete, setFarmToDelete] = useState<FarmListItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const { permissions } = useAuth();
+  const canDelete = permissions.includes('farms:delete');
 
   const debouncedSearch = useDebounce(searchInput, 300);
   const debouncedMinArea = useDebounce(minAreaInput, 500);
@@ -162,7 +187,7 @@ function FarmsPage() {
   const minAreaHa = debouncedMinArea ? Number(debouncedMinArea) : undefined;
   const maxAreaHa = debouncedMaxArea ? Number(debouncedMaxArea) : undefined;
 
-  const { farms, isLoading, error } = useFarms({
+  const { farms, isLoading, error, refetch } = useFarms({
     search: debouncedSearch || undefined,
     state: stateFilter || undefined,
     minAreaHa: minAreaHa != null && !isNaN(minAreaHa) ? minAreaHa : undefined,
@@ -170,6 +195,22 @@ function FarmsPage() {
   });
 
   const hasFilters = !!(debouncedSearch || stateFilter || debouncedMinArea || debouncedMaxArea);
+
+  async function handleDeleteFarm() {
+    if (!farmToDelete) return;
+    setIsDeleting(true);
+    try {
+      await api.deleteWithBody(`/org/farms/${farmToDelete.id}`, {
+        confirmName: farmToDelete.name,
+      });
+      setFarmToDelete(null);
+      void refetch();
+    } catch {
+      // Error is shown via the modal — user can retry
+    } finally {
+      setIsDeleting(false);
+    }
+  }
 
   return (
     <main className="farms-page">
@@ -301,7 +342,7 @@ function FarmsPage() {
       {!isLoading && !error && farms.length > 0 && viewMode === 'card' && (
         <div className="farms-page__grid">
           {farms.map((farm) => (
-            <FarmCard key={farm.id} farm={farm} />
+            <FarmCard key={farm.id} farm={farm} canDelete={canDelete} onDelete={setFarmToDelete} />
           ))}
         </div>
       )}
@@ -313,6 +354,14 @@ function FarmsPage() {
           ))}
         </div>
       )}
+
+      <ConfirmDeleteModal
+        isOpen={!!farmToDelete}
+        farmName={farmToDelete?.name ?? ''}
+        onConfirm={handleDeleteFarm}
+        onCancel={() => setFarmToDelete(null)}
+        isDeleting={isDeleting}
+      />
     </main>
   );
 }

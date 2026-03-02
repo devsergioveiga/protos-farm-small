@@ -373,6 +373,33 @@
   outline-offset: 2px;
 }
 
+.farm-card__delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: transparent;
+  color: var(--color-neutral-400);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  margin-left: auto;
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
+}
+
+.farm-card__delete-btn:hover {
+  color: var(--color-error-500);
+  background: var(--color-error-100);
+}
+
+.farm-card__delete-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
 /* ─── Skeleton ─── */
 
 .farms-page__skeleton-card {

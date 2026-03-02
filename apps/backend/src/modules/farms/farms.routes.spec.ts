@@ -31,6 +31,8 @@ jest.mock('./farms.service', () => ({
   addRegistration: jest.fn(),
   updateRegistration: jest.fn(),
   deleteRegistration: jest.fn(),
+  softDeleteFarm: jest.fn(),
+  getBoundaryVersions: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -61,6 +63,13 @@ const OPERATOR_PAYLOAD = {
   userId: 'user-1',
   email: 'user@org.com',
   role: 'OPERATOR' as const,
+  organizationId: 'org-1',
+};
+
+const MANAGER_PAYLOAD = {
+  userId: 'manager-1',
+  email: 'manager@org.com',
+  role: 'MANAGER' as const,
   organizationId: 'org-1',
 };
 
@@ -673,6 +682,133 @@ describe('Farms endpoints', () => {
         .set('Authorization', 'Bearer valid-token');
 
       expect(response.status).toBe(500);
+    });
+  });
+
+  // ─── DELETE /api/org/farms/:farmId (soft delete) ─────────────────
+
+  describe('DELETE /api/org/farms/:farmId', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 with correct confirmName', async () => {
+      mockedService.softDeleteFarm.mockResolvedValue({
+        message: 'Fazenda excluída com sucesso',
+      } as never);
+
+      const response = await request(app)
+        .delete('/api/org/farms/farm-1')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ confirmName: 'Fazenda Teste' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Fazenda excluída com sucesso');
+      expect(mockedService.softDeleteFarm).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        'farm-1',
+        { confirmName: 'Fazenda Teste' },
+      );
+      expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'DELETE_FARM',
+          targetType: 'farm',
+          targetId: 'farm-1',
+        }),
+      );
+    });
+
+    it('should return 400 without confirmName', async () => {
+      const response = await request(app)
+        .delete('/api/org/farms/farm-1')
+        .set('Authorization', 'Bearer valid-token')
+        .send({});
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Nome de confirmação é obrigatório');
+      expect(mockedService.softDeleteFarm).not.toHaveBeenCalled();
+    });
+
+    it('should return 400 with wrong confirmName', async () => {
+      mockedService.softDeleteFarm.mockRejectedValue(
+        new FarmError('Nome de confirmação não confere com o nome da fazenda', 400),
+      );
+
+      const response = await request(app)
+        .delete('/api/org/farms/farm-1')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ confirmName: 'Wrong Name' });
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should return 403 for MANAGER', async () => {
+      authAs(MANAGER_PAYLOAD);
+
+      const response = await request(app)
+        .delete('/api/org/farms/farm-1')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ confirmName: 'Fazenda Teste' });
+
+      expect(response.status).toBe(403);
+      expect(mockedService.softDeleteFarm).not.toHaveBeenCalled();
+    });
+
+    it('should return 500 on unexpected error', async () => {
+      mockedService.softDeleteFarm.mockRejectedValue(new Error('DB down'));
+
+      const response = await request(app)
+        .delete('/api/org/farms/farm-1')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ confirmName: 'Fazenda Teste' });
+
+      expect(response.status).toBe(500);
+    });
+  });
+
+  // ─── GET /api/org/farms/:farmId/boundary/versions ────────────────
+
+  describe('GET /api/org/farms/:farmId/boundary/versions', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 with boundary versions', async () => {
+      const versions = [
+        { id: 'v-1', farmId: 'farm-1', registrationId: null, boundaryAreaHa: 100, version: 1 },
+      ];
+      mockedService.getBoundaryVersions.mockResolvedValue(versions as never);
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/boundary/versions')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0].version).toBe(1);
+    });
+
+    it('should return 404 when farm not found', async () => {
+      mockedService.getBoundaryVersions.mockRejectedValue(
+        new FarmError('Fazenda não encontrada', 404),
+      );
+
+      const response = await request(app)
+        .get('/api/org/farms/non-existent/boundary/versions')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  // ─── RBAC: MANAGER lacks farms:delete ────────────────────────────
+
+  describe('RBAC', () => {
+    it('MANAGER should not have farms:delete permission', () => {
+      expect(DEFAULT_ROLE_PERMISSIONS.MANAGER).not.toContain('farms:delete');
+      expect(DEFAULT_ROLE_PERMISSIONS.MANAGER).toContain('farms:create');
+      expect(DEFAULT_ROLE_PERMISSIONS.MANAGER).toContain('farms:read');
+      expect(DEFAULT_ROLE_PERMISSIONS.MANAGER).toContain('farms:update');
+    });
+
+    it('ADMIN should have farms:delete permission', () => {
+      expect(DEFAULT_ROLE_PERMISSIONS.ADMIN).toContain('farms:delete');
     });
   });
 });

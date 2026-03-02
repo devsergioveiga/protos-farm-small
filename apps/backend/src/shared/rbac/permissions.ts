@@ -74,7 +74,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   ),
 
   MANAGER: [
-    ...modulePermissions('farms'),
+    ...p('farms', 'create', 'read', 'update'),
     ...modulePermissions('producers'),
     ...p('users', 'read'),
     ...modulePermissions('operations'),

@@ -42,9 +42,27 @@ vi.mock('@/hooks/useFarms', () => ({
   useFarms: (...args: unknown[]) => mockUseFarms(...args),
 }));
 
+const mockUseAuth = vi.fn();
+vi.mock('@/stores/AuthContext', () => ({
+  useAuth: () => mockUseAuth(),
+}));
+
+vi.mock('@/services/api', () => ({
+  api: { deleteWithBody: vi.fn() },
+}));
+
 describe('FarmsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseAuth.mockReturnValue({
+      user: { userId: 'u1', email: 'a@a.com', role: 'ADMIN', organizationId: 'o1' },
+      permissions: ['farms:create', 'farms:read', 'farms:update', 'farms:delete'],
+      isAuthenticated: true,
+      isLoading: false,
+      login: vi.fn(),
+      loginWithTokens: vi.fn(),
+      logout: vi.fn(),
+    });
   });
 
   function defaultReturn() {
@@ -161,5 +179,44 @@ describe('FarmsPage', () => {
 
     const talhoes = screen.getAllByText('0 talhões');
     expect(talhoes.length).toBe(2);
+  });
+
+  it('should show delete button when user has farms:delete permission', async () => {
+    mockUseFarms.mockReturnValue(defaultReturn());
+
+    await renderPage();
+
+    const deleteBtns = screen.getAllByLabelText(/^Excluir /);
+    expect(deleteBtns).toHaveLength(2);
+  });
+
+  it('should NOT show delete button when user lacks farms:delete permission', async () => {
+    mockUseAuth.mockReturnValue({
+      user: { userId: 'u1', email: 'a@a.com', role: 'MANAGER', organizationId: 'o1' },
+      permissions: ['farms:create', 'farms:read', 'farms:update'],
+      isAuthenticated: true,
+      isLoading: false,
+      login: vi.fn(),
+      loginWithTokens: vi.fn(),
+      logout: vi.fn(),
+    });
+    mockUseFarms.mockReturnValue(defaultReturn());
+
+    await renderPage();
+
+    expect(screen.queryAllByLabelText(/^Excluir /)).toHaveLength(0);
+  });
+
+  it('should open delete modal when delete button is clicked', async () => {
+    const user = userEvent.setup();
+    mockUseFarms.mockReturnValue(defaultReturn());
+
+    await renderPage();
+
+    const deleteBtns = screen.getAllByLabelText(/^Excluir /);
+    await user.click(deleteBtns[0]);
+
+    expect(screen.getByRole('dialog')).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Excluir fazenda' })).toBeDefined();
   });
 });
