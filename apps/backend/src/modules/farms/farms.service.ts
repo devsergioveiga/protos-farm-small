@@ -6,6 +6,7 @@ import {
   VALID_UF,
   CIB_REGEX,
   LAND_CLASSIFICATIONS,
+  VALID_SOIL_TYPES,
   type CreateFarmInput,
   type UpdateFarmInput,
   type ListFarmsQuery,
@@ -16,6 +17,11 @@ import {
   type FarmListCaller,
   type DeleteFarmInput,
   type BoundaryVersionItem,
+  type CreateFieldPlotInput,
+  type UpdateFieldPlotInput,
+  type FieldPlotItem,
+  type FieldPlotsSummary,
+  type CreateFieldPlotResult,
 } from './farms.types';
 import { ROLE_HIERARCHY } from '../../shared/rbac/permissions';
 import { parseGeoFile, validateGeometry } from './geo-parser';
@@ -225,7 +231,7 @@ export async function listFarms(ctx: RlsContext, caller: FarmListCaller, query: 
       take: limit,
       orderBy: { createdAt: 'desc' },
       include: {
-        _count: { select: { registrations: true } },
+        _count: { select: { registrations: true, fieldPlots: { where: { deletedAt: null } } } },
       },
     });
     const total = await tx.farm.count({ where });
@@ -902,6 +908,427 @@ export async function deleteFarmBoundary(ctx: RlsContext, farmId: string): Promi
     );
 
     logger.info({ farmId }, 'Farm boundary deleted');
+  });
+}
+
+// ─── Field Plots ──────────────────────────────────────────────────
+
+function validateSoilType(soilType: string | undefined | null): void {
+  if (soilType && !(VALID_SOIL_TYPES as readonly string[]).includes(soilType)) {
+    throw new FarmError(
+      `Tipo de solo inválido. Valores permitidos: ${VALID_SOIL_TYPES.join(', ')}`,
+      400,
+    );
+  }
+}
+
+function toFieldPlotItem(row: {
+  id: string;
+  farmId: string;
+  registrationId: string | null;
+  name: string;
+  code: string | null;
+  soilType: string | null;
+  currentCrop: string | null;
+  previousCrop: string | null;
+  notes: string | null;
+  boundaryAreaHa: { toNumber?: () => number } | number;
+  status: string;
+  createdAt: Date;
+}): FieldPlotItem {
+  return {
+    id: row.id,
+    farmId: row.farmId,
+    registrationId: row.registrationId,
+    name: row.name,
+    code: row.code,
+    soilType: row.soilType,
+    currentCrop: row.currentCrop,
+    previousCrop: row.previousCrop,
+    notes: row.notes,
+    boundaryAreaHa:
+      typeof row.boundaryAreaHa === 'number' ? row.boundaryAreaHa : Number(row.boundaryAreaHa),
+    status: row.status,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
+export async function createFieldPlot(
+  ctx: RlsContext,
+  farmId: string,
+  input: CreateFieldPlotInput,
+  buffer: Buffer,
+  filename: string,
+): Promise<CreateFieldPlotResult> {
+  if (!input.name) {
+    throw new FarmError('Nome do talhão é obrigatório', 400);
+  }
+
+  validateSoilType(input.soilType);
+
+  const parsed = await parseGeoFile(buffer, filename);
+  const polygon = parsed.boundaries[0];
+  const warnings = [...parsed.warnings];
+
+  if (parsed.boundaries.length > 1) {
+    warnings.push('Múltiplos polígonos encontrados; usando o primeiro');
+  }
+
+  const validation = validateGeometry(polygon);
+  if (!validation.valid) {
+    throw new FarmError(`Geometria inválida: ${validation.errors.join('; ')}`, 400);
+  }
+
+  const geojsonStr = JSON.stringify(polygon);
+
+  return withRlsContext(ctx, async (tx) => {
+    const farm = await tx.farm.findUnique({ where: { id: farmId } });
+    if (!farm || farm.deletedAt) {
+      throw new FarmError('Fazenda não encontrada', 404);
+    }
+
+    // Validate registrationId belongs to this farm
+    if (input.registrationId) {
+      const reg = await tx.farmRegistration.findFirst({
+        where: { id: input.registrationId, farmId },
+      });
+      if (!reg) {
+        throw new FarmError('Matrícula não pertence a esta fazenda', 400);
+      }
+    }
+
+    // Validation 1: containment check (warning only, does not block)
+    const containmentCheck = await prisma.$queryRawUnsafe<{ is_contained: boolean }[]>(
+      `SELECT ST_Within(ST_GeomFromGeoJSON($1), boundary) AS is_contained
+       FROM farms WHERE id = $2 AND boundary IS NOT NULL`,
+      geojsonStr,
+      farmId,
+    );
+    if (containmentCheck.length > 0 && !containmentCheck[0].is_contained) {
+      warnings.push('Talhão extrapola o perímetro da fazenda');
+    }
+
+    // Validation 2: overlap check (blocks if >5%)
+    const overlapCheck = await prisma.$queryRawUnsafe<{ plot_id: string; overlap_pct: number }[]>(
+      `SELECT id AS plot_id,
+              ROUND((ST_Area(ST_Intersection(boundary, ST_GeomFromGeoJSON($1))::geography)
+                / ST_Area(ST_GeomFromGeoJSON($1)::geography) * 100)::numeric, 2)::float AS overlap_pct
+       FROM field_plots
+       WHERE "farmId" = $2
+         AND "deletedAt" IS NULL
+         AND ST_Intersects(boundary, ST_GeomFromGeoJSON($1))`,
+      geojsonStr,
+      farmId,
+    );
+
+    for (const ov of overlapCheck) {
+      if (ov.overlap_pct > 5) {
+        throw new FarmError(
+          `Sobreposição de ${ov.overlap_pct}% com talhão existente (máximo permitido: 5%)`,
+          422,
+        );
+      }
+    }
+
+    // Insert using raw SQL for PostGIS boundary
+    const inserted = await prisma.$queryRawUnsafe<
+      {
+        id: string;
+        area_ha: number;
+      }[]
+    >(
+      `INSERT INTO field_plots (id, "farmId", "registrationId", name, code, "soilType", "currentCrop", "previousCrop", notes, boundary, "boundaryAreaHa", status, "createdAt", "updatedAt")
+       VALUES (
+         gen_random_uuid(), $1, $2, $3, $4, $5::"SoilType", $6, $7, $8,
+         ST_GeomFromGeoJSON($9),
+         ROUND((ST_Area(ST_GeomFromGeoJSON($9)::geography) / 10000)::numeric, 4),
+         'ACTIVE', now(), now()
+       )
+       RETURNING id, ROUND((ST_Area(boundary::geography) / 10000)::numeric, 4)::float AS area_ha`,
+      farmId,
+      input.registrationId ?? null,
+      input.name,
+      input.code ?? null,
+      input.soilType ?? null,
+      input.currentCrop ?? null,
+      input.previousCrop ?? null,
+      input.notes ?? null,
+      geojsonStr,
+    );
+
+    const row = inserted[0];
+
+    logger.info({ farmId, plotId: row.id, areaHa: row.area_ha }, 'Field plot created');
+
+    return {
+      plot: {
+        id: row.id,
+        farmId,
+        registrationId: input.registrationId ?? null,
+        name: input.name,
+        code: input.code ?? null,
+        soilType: input.soilType ?? null,
+        currentCrop: input.currentCrop ?? null,
+        previousCrop: input.previousCrop ?? null,
+        notes: input.notes ?? null,
+        boundaryAreaHa: row.area_ha,
+        status: 'ACTIVE',
+        createdAt: new Date().toISOString(),
+      },
+      warnings,
+    };
+  });
+}
+
+export async function listFieldPlots(ctx: RlsContext, farmId: string): Promise<FieldPlotItem[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const farm = await tx.farm.findUnique({ where: { id: farmId } });
+    if (!farm || farm.deletedAt) {
+      throw new FarmError('Fazenda não encontrada', 404);
+    }
+
+    const plots = await tx.fieldPlot.findMany({
+      where: { farmId, deletedAt: null },
+      orderBy: { name: 'asc' },
+    });
+
+    return plots.map(toFieldPlotItem);
+  });
+}
+
+export async function getFieldPlot(
+  ctx: RlsContext,
+  farmId: string,
+  plotId: string,
+): Promise<FieldPlotItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const plot = await tx.fieldPlot.findFirst({
+      where: { id: plotId, farmId, deletedAt: null },
+    });
+
+    if (!plot) {
+      throw new FarmError('Talhão não encontrado', 404);
+    }
+
+    return toFieldPlotItem(plot);
+  });
+}
+
+export async function updateFieldPlot(
+  ctx: RlsContext,
+  farmId: string,
+  plotId: string,
+  input: UpdateFieldPlotInput,
+): Promise<FieldPlotItem> {
+  if (input.soilType !== undefined) {
+    validateSoilType(input.soilType);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    const plot = await tx.fieldPlot.findFirst({
+      where: { id: plotId, farmId, deletedAt: null },
+    });
+
+    if (!plot) {
+      throw new FarmError('Talhão não encontrado', 404);
+    }
+
+    // Validate registrationId belongs to this farm
+    if (input.registrationId) {
+      const reg = await tx.farmRegistration.findFirst({
+        where: { id: input.registrationId, farmId },
+      });
+      if (!reg) {
+        throw new FarmError('Matrícula não pertence a esta fazenda', 400);
+      }
+    }
+
+    const updated = await tx.fieldPlot.update({
+      where: { id: plotId },
+      data: {
+        ...(input.name !== undefined && { name: input.name }),
+        ...(input.code !== undefined && { code: input.code || null }),
+        ...(input.soilType !== undefined && { soilType: (input.soilType as never) || null }),
+        ...(input.currentCrop !== undefined && { currentCrop: input.currentCrop || null }),
+        ...(input.previousCrop !== undefined && { previousCrop: input.previousCrop || null }),
+        ...(input.notes !== undefined && { notes: input.notes || null }),
+        ...(input.registrationId !== undefined && { registrationId: input.registrationId || null }),
+      },
+    });
+
+    logger.info({ farmId, plotId }, 'Field plot updated');
+
+    return toFieldPlotItem(updated);
+  });
+}
+
+export async function uploadFieldPlotBoundary(
+  ctx: RlsContext,
+  farmId: string,
+  plotId: string,
+  buffer: Buffer,
+  filename: string,
+): Promise<{ boundaryAreaHa: number; warnings: string[] }> {
+  const parsed = await parseGeoFile(buffer, filename);
+  const polygon = parsed.boundaries[0];
+  const warnings = [...parsed.warnings];
+
+  if (parsed.boundaries.length > 1) {
+    warnings.push('Múltiplos polígonos encontrados; usando o primeiro');
+  }
+
+  const validation = validateGeometry(polygon);
+  if (!validation.valid) {
+    throw new FarmError(`Geometria inválida: ${validation.errors.join('; ')}`, 400);
+  }
+
+  const geojsonStr = JSON.stringify(polygon);
+
+  return withRlsContext(ctx, async (tx) => {
+    const plot = await tx.fieldPlot.findFirst({
+      where: { id: plotId, farmId, deletedAt: null },
+    });
+    if (!plot) {
+      throw new FarmError('Talhão não encontrado', 404);
+    }
+
+    // Containment check
+    const containmentCheck = await prisma.$queryRawUnsafe<{ is_contained: boolean }[]>(
+      `SELECT ST_Within(ST_GeomFromGeoJSON($1), boundary) AS is_contained
+       FROM farms WHERE id = $2 AND boundary IS NOT NULL`,
+      geojsonStr,
+      farmId,
+    );
+    if (containmentCheck.length > 0 && !containmentCheck[0].is_contained) {
+      warnings.push('Talhão extrapola o perímetro da fazenda');
+    }
+
+    // Overlap check (exclude self)
+    const overlapCheck = await prisma.$queryRawUnsafe<{ plot_id: string; overlap_pct: number }[]>(
+      `SELECT id AS plot_id,
+              ROUND((ST_Area(ST_Intersection(boundary, ST_GeomFromGeoJSON($1))::geography)
+                / ST_Area(ST_GeomFromGeoJSON($1)::geography) * 100)::numeric, 2)::float AS overlap_pct
+       FROM field_plots
+       WHERE "farmId" = $2
+         AND id != $3
+         AND "deletedAt" IS NULL
+         AND ST_Intersects(boundary, ST_GeomFromGeoJSON($1))`,
+      geojsonStr,
+      farmId,
+      plotId,
+    );
+
+    for (const ov of overlapCheck) {
+      if (ov.overlap_pct > 5) {
+        throw new FarmError(
+          `Sobreposição de ${ov.overlap_pct}% com talhão existente (máximo permitido: 5%)`,
+          422,
+        );
+      }
+    }
+
+    const result = await prisma.$queryRawUnsafe<{ area_ha: number }[]>(
+      `UPDATE field_plots
+       SET boundary = ST_GeomFromGeoJSON($1),
+           "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON($1)::geography) / 10000)::numeric, 4),
+           "updatedAt" = now()
+       WHERE id = $2
+       RETURNING ROUND((ST_Area(boundary::geography) / 10000)::numeric, 4)::float AS area_ha`,
+      geojsonStr,
+      plotId,
+    );
+
+    const boundaryAreaHa = result[0].area_ha;
+    logger.info({ farmId, plotId, boundaryAreaHa }, 'Field plot boundary updated');
+
+    return { boundaryAreaHa, warnings };
+  });
+}
+
+export async function getFieldPlotBoundary(
+  ctx: RlsContext,
+  farmId: string,
+  plotId: string,
+): Promise<BoundaryInfo> {
+  return withRlsContext(ctx, async (tx) => {
+    const plot = await tx.fieldPlot.findFirst({
+      where: { id: plotId, farmId, deletedAt: null },
+    });
+    if (!plot) {
+      throw new FarmError('Talhão não encontrado', 404);
+    }
+
+    const rows = await prisma.$queryRawUnsafe<{ geojson: string | null; area_ha: number | null }[]>(
+      `SELECT ST_AsGeoJSON(boundary)::text AS geojson, "boundaryAreaHa"::float AS area_ha
+       FROM field_plots WHERE id = $1`,
+      plotId,
+    );
+
+    const row = rows[0];
+    if (!row?.geojson) {
+      return { hasBoundary: false, boundaryAreaHa: null, boundaryGeoJSON: null };
+    }
+
+    return {
+      hasBoundary: true,
+      boundaryAreaHa: row.area_ha,
+      boundaryGeoJSON: JSON.parse(row.geojson) as GeoJSON.Polygon,
+    };
+  });
+}
+
+export async function deleteFieldPlot(
+  ctx: RlsContext,
+  farmId: string,
+  plotId: string,
+): Promise<{ message: string }> {
+  return withRlsContext(ctx, async (tx) => {
+    const plot = await tx.fieldPlot.findFirst({
+      where: { id: plotId, farmId, deletedAt: null },
+    });
+    if (!plot) {
+      throw new FarmError('Talhão não encontrado', 404);
+    }
+
+    await tx.fieldPlot.update({
+      where: { id: plotId },
+      data: { deletedAt: new Date() },
+    });
+
+    logger.info({ farmId, plotId }, 'Field plot soft-deleted');
+
+    return { message: 'Talhão excluído com sucesso' };
+  });
+}
+
+export async function getFieldPlotsSummary(
+  ctx: RlsContext,
+  farmId: string,
+): Promise<FieldPlotsSummary> {
+  return withRlsContext(ctx, async (tx) => {
+    const farm = await tx.farm.findUnique({ where: { id: farmId } });
+    if (!farm || farm.deletedAt) {
+      throw new FarmError('Fazenda não encontrada', 404);
+    }
+
+    const result = await prisma.$queryRawUnsafe<{ total_plot_area: number; plot_count: number }[]>(
+      `SELECT COALESCE(SUM("boundaryAreaHa"::float), 0) AS total_plot_area,
+              COUNT(*)::int AS plot_count
+       FROM field_plots
+       WHERE "farmId" = $1 AND "deletedAt" IS NULL`,
+      farmId,
+    );
+
+    const farmTotalAreaHa = Number(farm.totalAreaHa);
+    const totalPlotAreaHa = result[0].total_plot_area;
+    const plotCount = result[0].plot_count;
+
+    return {
+      totalPlotAreaHa: Math.round(totalPlotAreaHa * 10000) / 10000,
+      farmTotalAreaHa,
+      unmappedAreaHa: Math.round((farmTotalAreaHa - totalPlotAreaHa) * 10000) / 10000,
+      plotCount,
+    };
   });
 }
 

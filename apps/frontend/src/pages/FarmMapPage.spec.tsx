@@ -73,6 +73,7 @@ const MOCK_DATA: FarmMapData = {
     },
   },
   registrationBoundaries: [],
+  plotBoundaries: [],
 };
 
 const mockUseFarmMap = vi.fn();

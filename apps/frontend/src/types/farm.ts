@@ -29,6 +29,7 @@ export interface FarmListItem {
   createdAt: string;
   _count: {
     registrations: number;
+    fieldPlots: number;
   };
 }
 
@@ -74,4 +75,26 @@ export interface BoundaryInfo {
   hasBoundary: boolean;
   boundaryAreaHa: number | null;
   boundaryGeoJSON: GeoJSON.Polygon | null;
+}
+
+export interface FieldPlot {
+  id: string;
+  farmId: string;
+  registrationId: string | null;
+  name: string;
+  code: string | null;
+  soilType: string | null;
+  currentCrop: string | null;
+  previousCrop: string | null;
+  notes: string | null;
+  boundaryAreaHa: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface FieldPlotsSummary {
+  totalPlotAreaHa: number;
+  farmTotalAreaHa: number;
+  unmappedAreaHa: number;
+  plotCount: number;
 }

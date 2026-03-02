@@ -30,6 +30,40 @@ const HYBRID_LABELS_URL =
 
 const REGISTRATION_COLORS = ['#e65100', '#1565c0', '#f9a825', '#ad1457', '#00897b', '#6a1b9a'];
 
+const CROP_COLORS: Record<string, string> = {
+  soja: '#DAA520',
+  milho: '#228B22',
+  café: '#8B4513',
+  cafe: '#8B4513',
+  algodão: '#E6E6FA',
+  algodao: '#E6E6FA',
+  cana: '#90EE90',
+  'cana-de-açúcar': '#90EE90',
+  pasto: '#7CFC00',
+  pastagem: '#7CFC00',
+  arroz: '#F0E68C',
+  feijão: '#CD853F',
+  feijao: '#CD853F',
+  trigo: '#F5DEB3',
+  sorgo: '#D2691E',
+};
+
+function getCropColor(crop: string | null): string {
+  if (!crop) return '#6B7280';
+  const key = crop.toLowerCase().trim();
+  return CROP_COLORS[key] ?? '#6B7280';
+}
+
+function getPlotStyle(crop: string | null): L.PathOptions {
+  const color = getCropColor(crop);
+  return {
+    color,
+    weight: 2,
+    fillOpacity: 0.3,
+    fillColor: color,
+  };
+}
+
 const FARM_STYLE: L.PathOptions = {
   color: '#2E7D32',
   weight: 3,
@@ -58,10 +92,17 @@ interface FarmMapProps {
   baseMap: BaseMapType;
   showFarmBoundary: boolean;
   showRegistrations: boolean;
+  showPlots?: boolean;
 }
 
-function FarmMap({ data, baseMap, showFarmBoundary, showRegistrations }: FarmMapProps) {
-  const { farm, farmBoundary, registrationBoundaries } = data;
+function FarmMap({
+  data,
+  baseMap,
+  showFarmBoundary,
+  showRegistrations,
+  showPlots = true,
+}: FarmMapProps) {
+  const { farm, farmBoundary, registrationBoundaries, plotBoundaries } = data;
   const tile = TILE_URLS[baseMap];
 
   const bounds = useMemo(() => {
@@ -150,6 +191,35 @@ function FarmMap({ data, baseMap, showFarmBoundary, showRegistrations }: FarmMap
               </GeoJSON>
             );
           })}
+
+      {showPlots &&
+        plotBoundaries
+          .filter((pb) => pb.boundary.hasBoundary && pb.boundary.boundaryGeoJSON)
+          .map((pb) => (
+            <GeoJSON
+              key={`plot-boundary-${pb.plotId}`}
+              data={pb.boundary.boundaryGeoJSON!}
+              style={getPlotStyle(pb.plot.currentCrop)}
+            >
+              <Popup>
+                <strong>{pb.plot.name}</strong>
+                <br />
+                Área: {formatArea(pb.plot.boundaryAreaHa)}
+                {pb.plot.currentCrop && (
+                  <>
+                    <br />
+                    Cultura: {pb.plot.currentCrop}
+                  </>
+                )}
+                {pb.plot.soilType && (
+                  <>
+                    <br />
+                    Solo: {pb.plot.soilType.replace(/_/g, ' ')}
+                  </>
+                )}
+              </Popup>
+            </GeoJSON>
+          ))}
     </MapContainer>
   );
 }

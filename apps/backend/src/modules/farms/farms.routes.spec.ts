@@ -33,6 +33,14 @@ jest.mock('./farms.service', () => ({
   deleteRegistration: jest.fn(),
   softDeleteFarm: jest.fn(),
   getBoundaryVersions: jest.fn(),
+  createFieldPlot: jest.fn(),
+  listFieldPlots: jest.fn(),
+  getFieldPlot: jest.fn(),
+  updateFieldPlot: jest.fn(),
+  uploadFieldPlotBoundary: jest.fn(),
+  getFieldPlotBoundary: jest.fn(),
+  deleteFieldPlot: jest.fn(),
+  getFieldPlotsSummary: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -794,6 +802,423 @@ describe('Farms endpoints', () => {
         .set('Authorization', 'Bearer valid-token');
 
       expect(response.status).toBe(404);
+    });
+  });
+
+  // ─── Field Plot Endpoints ──────────────────────────────────────────
+
+  describe('POST /api/org/farms/:farmId/plots', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 201 on success with file upload', async () => {
+      const result = {
+        plot: {
+          id: 'plot-1',
+          farmId: 'farm-1',
+          name: 'Talhão A',
+          boundaryAreaHa: 50.5,
+          status: 'ACTIVE',
+        },
+        warnings: [],
+      };
+      mockedService.createFieldPlot.mockResolvedValue(result as never);
+
+      const geojson = JSON.stringify({
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-55.7, -12.5],
+            [-55.6, -12.5],
+            [-55.6, -12.6],
+            [-55.7, -12.6],
+            [-55.7, -12.5],
+          ],
+        ],
+      });
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots')
+        .set('Authorization', 'Bearer valid-token')
+        .field('name', 'Talhão A')
+        .field('currentCrop', 'Soja')
+        .attach('file', Buffer.from(geojson), 'plot.geojson');
+
+      expect(response.status).toBe(201);
+      expect(response.body.plot.id).toBe('plot-1');
+      expect(mockedService.createFieldPlot).toHaveBeenCalled();
+      expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'CREATE_FIELD_PLOT',
+          targetType: 'field_plot',
+          targetId: 'plot-1',
+        }),
+      );
+    });
+
+    it('should return 400 without file', async () => {
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots')
+        .set('Authorization', 'Bearer valid-token')
+        .field('name', 'Talhão A');
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Arquivo de perímetro é obrigatório');
+    });
+
+    it('should return 400 without name', async () => {
+      const geojson = JSON.stringify({
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-55.7, -12.5],
+            [-55.6, -12.5],
+            [-55.6, -12.6],
+            [-55.7, -12.6],
+            [-55.7, -12.5],
+          ],
+        ],
+      });
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(geojson), 'plot.geojson');
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Nome do talhão é obrigatório');
+    });
+
+    it('should return 422 on overlap >5%', async () => {
+      mockedService.createFieldPlot.mockRejectedValue(
+        new FarmError('Sobreposição de 15% com talhão existente (máximo permitido: 5%)', 422),
+      );
+
+      const geojson = JSON.stringify({
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-55.7, -12.5],
+            [-55.6, -12.5],
+            [-55.6, -12.6],
+            [-55.7, -12.6],
+            [-55.7, -12.5],
+          ],
+        ],
+      });
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots')
+        .set('Authorization', 'Bearer valid-token')
+        .field('name', 'Talhão B')
+        .attach('file', Buffer.from(geojson), 'plot.geojson');
+
+      expect(response.status).toBe(422);
+      expect(response.body.error).toContain('Sobreposição');
+    });
+
+    it('should return 201 with containment warning', async () => {
+      const result = {
+        plot: {
+          id: 'plot-2',
+          farmId: 'farm-1',
+          name: 'Talhão C',
+          boundaryAreaHa: 30,
+          status: 'ACTIVE',
+        },
+        warnings: ['Talhão extrapola o perímetro da fazenda'],
+      };
+      mockedService.createFieldPlot.mockResolvedValue(result as never);
+
+      const geojson = JSON.stringify({
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-55.7, -12.5],
+            [-55.6, -12.5],
+            [-55.6, -12.6],
+            [-55.7, -12.6],
+            [-55.7, -12.5],
+          ],
+        ],
+      });
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots')
+        .set('Authorization', 'Bearer valid-token')
+        .field('name', 'Talhão C')
+        .attach('file', Buffer.from(geojson), 'plot.geojson');
+
+      expect(response.status).toBe(201);
+      expect(response.body.warnings).toContain('Talhão extrapola o perímetro da fazenda');
+    });
+
+    it('should return 500 on unexpected error', async () => {
+      mockedService.createFieldPlot.mockRejectedValue(new Error('DB down'));
+
+      const geojson = JSON.stringify({
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-55.7, -12.5],
+            [-55.6, -12.5],
+            [-55.6, -12.6],
+            [-55.7, -12.6],
+            [-55.7, -12.5],
+          ],
+        ],
+      });
+
+      const response = await request(app)
+        .post('/api/org/farms/farm-1/plots')
+        .set('Authorization', 'Bearer valid-token')
+        .field('name', 'Talhão D')
+        .attach('file', Buffer.from(geojson), 'plot.geojson');
+
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe('GET /api/org/farms/:farmId/plots', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 with list of plots', async () => {
+      const plots = [
+        { id: 'plot-1', name: 'Talhão A', boundaryAreaHa: 50, status: 'ACTIVE' },
+        { id: 'plot-2', name: 'Talhão B', boundaryAreaHa: 80, status: 'ACTIVE' },
+      ];
+      mockedService.listFieldPlots.mockResolvedValue(plots as never);
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/plots')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(2);
+      expect(response.body[0].name).toBe('Talhão A');
+    });
+
+    it('should return 404 when farm not found', async () => {
+      mockedService.listFieldPlots.mockRejectedValue(new FarmError('Fazenda não encontrada', 404));
+
+      const response = await request(app)
+        .get('/api/org/farms/non-existent/plots')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  describe('GET /api/org/farms/:farmId/plots/summary', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 with summary', async () => {
+      const summary = {
+        totalPlotAreaHa: 130.5,
+        farmTotalAreaHa: 500,
+        unmappedAreaHa: 369.5,
+        plotCount: 3,
+      };
+      mockedService.getFieldPlotsSummary.mockResolvedValue(summary as never);
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/plots/summary')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.plotCount).toBe(3);
+      expect(response.body.unmappedAreaHa).toBe(369.5);
+    });
+  });
+
+  describe('GET /api/org/farms/:farmId/plots/:plotId', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 with plot detail', async () => {
+      const plot = { id: 'plot-1', name: 'Talhão A', boundaryAreaHa: 50, status: 'ACTIVE' };
+      mockedService.getFieldPlot.mockResolvedValue(plot as never);
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/plots/plot-1')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.id).toBe('plot-1');
+    });
+
+    it('should return 404 when plot not found', async () => {
+      mockedService.getFieldPlot.mockRejectedValue(new FarmError('Talhão não encontrado', 404));
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/plots/non-existent')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  describe('PATCH /api/org/farms/:farmId/plots/:plotId', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 on successful update', async () => {
+      const updated = { id: 'plot-1', name: 'Talhão Atualizado', currentCrop: 'Milho' };
+      mockedService.updateFieldPlot.mockResolvedValue(updated as never);
+
+      const response = await request(app)
+        .patch('/api/org/farms/farm-1/plots/plot-1')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ name: 'Talhão Atualizado', currentCrop: 'Milho' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.name).toBe('Talhão Atualizado');
+      expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'UPDATE_FIELD_PLOT',
+          targetId: 'plot-1',
+        }),
+      );
+    });
+
+    it('should return 404 when plot not found', async () => {
+      mockedService.updateFieldPlot.mockRejectedValue(new FarmError('Talhão não encontrado', 404));
+
+      const response = await request(app)
+        .patch('/api/org/farms/farm-1/plots/non-existent')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ name: 'Updated' });
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  describe('PUT /api/org/farms/:farmId/plots/:plotId/boundary', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 on boundary re-upload', async () => {
+      const result = { boundaryAreaHa: 55.3, warnings: [] };
+      mockedService.uploadFieldPlotBoundary.mockResolvedValue(result as never);
+
+      const geojson = JSON.stringify({
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-55.7, -12.5],
+            [-55.6, -12.5],
+            [-55.6, -12.6],
+            [-55.7, -12.6],
+            [-55.7, -12.5],
+          ],
+        ],
+      });
+
+      const response = await request(app)
+        .put('/api/org/farms/farm-1/plots/plot-1/boundary')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', Buffer.from(geojson), 'new-boundary.geojson');
+
+      expect(response.status).toBe(200);
+      expect(response.body.boundaryAreaHa).toBe(55.3);
+      expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'UPDATE_FIELD_PLOT_BOUNDARY',
+        }),
+      );
+    });
+
+    it('should return 400 without file', async () => {
+      const response = await request(app)
+        .put('/api/org/farms/farm-1/plots/plot-1/boundary')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe('Arquivo de perímetro é obrigatório');
+    });
+  });
+
+  describe('GET /api/org/farms/:farmId/plots/:plotId/boundary', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 with GeoJSON', async () => {
+      const boundary = {
+        hasBoundary: true,
+        boundaryAreaHa: 50,
+        boundaryGeoJSON: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [-55.7, -12.5],
+              [-55.6, -12.5],
+              [-55.6, -12.6],
+              [-55.7, -12.6],
+              [-55.7, -12.5],
+            ],
+          ],
+        },
+      };
+      mockedService.getFieldPlotBoundary.mockResolvedValue(boundary as never);
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/plots/plot-1/boundary')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.hasBoundary).toBe(true);
+      expect(response.body.boundaryGeoJSON.type).toBe('Polygon');
+    });
+
+    it('should return 404 when plot not found', async () => {
+      mockedService.getFieldPlotBoundary.mockRejectedValue(
+        new FarmError('Talhão não encontrado', 404),
+      );
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/plots/non-existent/boundary')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  describe('DELETE /api/org/farms/:farmId/plots/:plotId', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 on soft delete', async () => {
+      mockedService.deleteFieldPlot.mockResolvedValue({
+        message: 'Talhão excluído com sucesso',
+      } as never);
+
+      const response = await request(app)
+        .delete('/api/org/farms/farm-1/plots/plot-1')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe('Talhão excluído com sucesso');
+      expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'DELETE_FIELD_PLOT',
+          targetType: 'field_plot',
+          targetId: 'plot-1',
+        }),
+      );
+    });
+
+    it('should return 404 when plot not found', async () => {
+      mockedService.deleteFieldPlot.mockRejectedValue(new FarmError('Talhão não encontrado', 404));
+
+      const response = await request(app)
+        .delete('/api/org/farms/farm-1/plots/non-existent')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(404);
+    });
+
+    it('should return 403 for MANAGER', async () => {
+      authAs(MANAGER_PAYLOAD);
+
+      const response = await request(app)
+        .delete('/api/org/farms/farm-1/plots/plot-1')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(403);
     });
   });
 

@@ -714,6 +714,80 @@ async function main() {
   );
   console.log('  ✓ Perímetro: Matrícula 15.234 (Santa Helena)');
 
+  // ─── Talhões (Field Plots) ────────────────────────────────────────
+  console.log('\n  Criando talhões...');
+
+  // Santa Helena boundary: [[-55.78,-12.47],[-55.55,-12.47],[-55.55,-12.69],[-55.78,-12.69]]
+  // Create 3 plots inside this area
+  const fieldPlots = [
+    {
+      id: 'fp-0001-4000-8000-000000000001',
+      farmId: farms[0].id,
+      registrationId: farmRegistrations[0].id, // Matrícula 15.234
+      name: 'Talhão A1 — Soja',
+      code: 'SH-A1',
+      soilType: 'LATOSSOLO_VERMELHO',
+      currentCrop: 'Soja',
+      previousCrop: 'Milho',
+      notes: 'Plantio direto, rotação soja/milho',
+      // NW quadrant
+      boundary:
+        '{"type":"Polygon","coordinates":[[[-55.78,-12.47],[-55.67,-12.47],[-55.67,-12.58],[-55.78,-12.58],[-55.78,-12.47]]]}',
+    },
+    {
+      id: 'fp-0001-4000-8000-000000000002',
+      farmId: farms[0].id,
+      registrationId: farmRegistrations[0].id,
+      name: 'Talhão A2 — Milho',
+      code: 'SH-A2',
+      soilType: 'LATOSSOLO_VERMELHO',
+      currentCrop: 'Milho',
+      previousCrop: 'Soja',
+      notes: 'Safrinha de milho',
+      // NE quadrant
+      boundary:
+        '{"type":"Polygon","coordinates":[[[-55.67,-12.47],[-55.56,-12.47],[-55.56,-12.58],[-55.67,-12.58],[-55.67,-12.47]]]}',
+    },
+    {
+      id: 'fp-0001-4000-8000-000000000003',
+      farmId: farms[0].id,
+      registrationId: farmRegistrations[1].id, // Matrícula 15.235
+      name: 'Talhão B1 — Café',
+      code: 'SH-B1',
+      soilType: 'ARGISSOLO',
+      currentCrop: 'Café',
+      previousCrop: null,
+      notes: 'Café arábica, área de encosta',
+      // SW quadrant
+      boundary:
+        '{"type":"Polygon","coordinates":[[[-55.78,-12.58],[-55.67,-12.58],[-55.67,-12.69],[-55.78,-12.69],[-55.78,-12.58]]]}',
+    },
+  ];
+
+  // Delete existing field plots to avoid duplicates on re-seed
+  await prisma.$executeRawUnsafe(`DELETE FROM field_plots`);
+
+  for (const plot of fieldPlots) {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO field_plots (id, "farmId", "registrationId", name, code, "soilType", "currentCrop", "previousCrop", notes, boundary, "boundaryAreaHa", status, "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, $6::"SoilType", $7, $8, $9,
+               ST_GeomFromGeoJSON($10),
+               ROUND((ST_Area(ST_GeomFromGeoJSON($10)::geography) / 10000)::numeric, 4),
+               'ACTIVE', now(), now())`,
+      plot.id,
+      plot.farmId,
+      plot.registrationId,
+      plot.name,
+      plot.code,
+      plot.soilType,
+      plot.currentCrop,
+      plot.previousCrop,
+      plot.notes,
+      plot.boundary,
+    );
+    console.log(`  ✓ Talhão: ${plot.name} (${plot.code})`);
+  }
+
   // Audit Logs de exemplo
   console.log('');
   const auditLogs = [
