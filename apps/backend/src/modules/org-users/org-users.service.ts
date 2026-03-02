@@ -129,29 +129,27 @@ export async function listOrgUsers(ctx: RlsContext, query: ListOrgUsersQuery) {
   }
 
   return withRlsContext(ctx, async (tx) => {
-    const [data, total] = await Promise.all([
-      tx.user.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-          role: true,
-          status: true,
-          lastLoginAt: true,
-          passwordHash: false,
-          createdAt: true,
-          farmAccess: {
-            include: { farm: { select: { id: true, name: true } } },
-          },
+    const data = await tx.user.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        status: true,
+        lastLoginAt: true,
+        passwordHash: false,
+        createdAt: true,
+        farmAccess: {
+          include: { farm: { select: { id: true, name: true } } },
         },
-      }),
-      tx.user.count({ where }),
-    ]);
+      },
+    });
+    const total = await tx.user.count({ where });
 
     return {
       data,

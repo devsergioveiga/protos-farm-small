@@ -191,18 +191,16 @@ export async function listProducers(ctx: RlsContext, query: ListProducersQuery) 
   }
 
   return withRlsContext(ctx, async (tx) => {
-    const [data, total] = await Promise.all([
-      tx.producer.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          _count: { select: { farmLinks: true, stateRegistrations: true } },
-        },
-      }),
-      tx.producer.count({ where }),
-    ]);
+    const data = await tx.producer.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: { select: { farmLinks: true, stateRegistrations: true } },
+      },
+    });
+    const total = await tx.producer.count({ where });
 
     return {
       data,
