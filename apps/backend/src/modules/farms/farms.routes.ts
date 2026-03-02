@@ -30,6 +30,8 @@ import {
   updateFieldPlot,
   uploadFieldPlotBoundary,
   getFieldPlotBoundary,
+  updatePlotBoundaryFromGeoJSON,
+  getPlotBoundaryVersions,
   deleteFieldPlot,
   getFieldPlotsSummary,
   previewBulkImport,
@@ -1085,6 +1087,7 @@ farmsRouter.put(
         req.params.plotId as string,
         req.file.buffer,
         req.file.originalname,
+        req.user!.userId,
       );
 
       void logAudit({
@@ -1139,6 +1142,90 @@ farmsRouter.get(
         req.params.plotId as string,
       );
       res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// PATCH /org/farms/:farmId/plots/:plotId/boundary
+farmsRouter.patch(
+  '/org/farms/:farmId/plots/:plotId/boundary',
+  authenticate,
+  checkPermission('farms:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const { geojson } = req.body;
+      if (!geojson || geojson.type !== 'Polygon') {
+        res.status(400).json({ error: 'Body deve conter geojson com type Polygon' });
+        return;
+      }
+
+      const ctx = buildRlsContext(req);
+      const result = await updatePlotBoundaryFromGeoJSON(
+        ctx,
+        req.params.farmId as string,
+        req.params.plotId as string,
+        geojson as GeoJSON.Polygon,
+        req.user!.userId,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'EDIT_FIELD_PLOT_BOUNDARY',
+        targetType: 'field_plot',
+        targetId: req.params.plotId as string,
+        metadata: {
+          farmId: req.params.farmId,
+          editSource: 'map_editor',
+          boundaryAreaHa: result.boundaryAreaHa,
+          previousAreaHa: result.previousAreaHa,
+        },
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+        farmId: req.params.farmId as string,
+      });
+
+      res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      if (
+        err instanceof Error &&
+        (err.message.includes('Geometria inválida') || err.message.includes('inválido'))
+      ) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// GET /org/farms/:farmId/plots/:plotId/boundary/versions
+farmsRouter.get(
+  '/org/farms/:farmId/plots/:plotId/boundary/versions',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const versions = await getPlotBoundaryVersions(
+        ctx,
+        req.params.farmId as string,
+        req.params.plotId as string,
+      );
+      res.json(versions);
     } catch (err) {
       if (err instanceof FarmError) {
         res.status(err.statusCode).json({ error: err.message });

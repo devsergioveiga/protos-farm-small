@@ -1,0 +1,42 @@
+.plot-summary-bar {
+  position: absolute;
+  bottom: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2) var(--space-4);
+  white-space: nowrap;
+}
+
+.plot-summary-bar__text {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+}
+
+.plot-summary-bar__mono {
+  font-family: var(--font-mono);
+}
+
+/* Avoid overlap with CropLegend on desktop */
+@media (min-width: 768px) {
+  .plot-summary-bar {
+    left: auto;
+    right: var(--space-4);
+    bottom: var(--space-4);
+    transform: none;
+  }
+}
+
+/* Mobile: centered at bottom, above legend FAB */
+@media (max-width: 767px) {
+  .plot-summary-bar {
+    bottom: calc(var(--space-4) + 56px);
+    max-width: calc(100% - var(--space-8));
+    white-space: normal;
+    text-align: center;
+  }
+}

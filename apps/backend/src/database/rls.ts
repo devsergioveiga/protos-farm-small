@@ -8,7 +8,7 @@ export interface RlsContext {
 }
 
 // Prisma transaction client type
-type TxClient = Omit<
+export type TxClient = Omit<
   PrismaClient,
   '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
 >;

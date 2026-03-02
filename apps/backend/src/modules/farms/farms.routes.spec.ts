@@ -39,6 +39,8 @@ jest.mock('./farms.service', () => ({
   updateFieldPlot: jest.fn(),
   uploadFieldPlotBoundary: jest.fn(),
   getFieldPlotBoundary: jest.fn(),
+  updatePlotBoundaryFromGeoJSON: jest.fn(),
+  getPlotBoundaryVersions: jest.fn(),
   deleteFieldPlot: jest.fn(),
   getFieldPlotsSummary: jest.fn(),
   previewBulkImport: jest.fn(),
@@ -1221,6 +1223,132 @@ describe('Farms endpoints', () => {
         .set('Authorization', 'Bearer valid-token');
 
       expect(response.status).toBe(403);
+    });
+  });
+
+  // ─── PATCH Plot Boundary (GeoJSON) ────────────────────────────────
+
+  describe('PATCH /api/org/farms/:farmId/plots/:plotId/boundary', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    const validGeoJSON = {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [-55.7, -12.5],
+          [-55.6, -12.5],
+          [-55.6, -12.6],
+          [-55.7, -12.6],
+          [-55.7, -12.5],
+        ],
+      ],
+    };
+
+    it('should return 200 with valid GeoJSON', async () => {
+      mockedService.updatePlotBoundaryFromGeoJSON.mockResolvedValue({
+        boundaryAreaHa: 60.5,
+        previousAreaHa: 55.3,
+        warnings: [],
+      });
+
+      const response = await request(app)
+        .patch('/api/org/farms/farm-1/plots/plot-1/boundary')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ geojson: validGeoJSON });
+
+      expect(response.status).toBe(200);
+      expect(response.body.boundaryAreaHa).toBe(60.5);
+      expect(response.body.previousAreaHa).toBe(55.3);
+      expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'EDIT_FIELD_PLOT_BOUNDARY',
+          targetType: 'field_plot',
+          targetId: 'plot-1',
+        }),
+      );
+    });
+
+    it('should return 400 without geojson', async () => {
+      const response = await request(app)
+        .patch('/api/org/farms/farm-1/plots/plot-1/boundary')
+        .set('Authorization', 'Bearer valid-token')
+        .send({});
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toMatch(/geojson/);
+    });
+
+    it('should return 400 with invalid geometry from service', async () => {
+      mockedService.updatePlotBoundaryFromGeoJSON.mockRejectedValue(
+        new FarmError('Geometria inválida: Polígono não é fechado', 400),
+      );
+
+      const response = await request(app)
+        .patch('/api/org/farms/farm-1/plots/plot-1/boundary')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ geojson: validGeoJSON });
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should return 422 with overlap >5%', async () => {
+      mockedService.updatePlotBoundaryFromGeoJSON.mockRejectedValue(
+        new FarmError('Sobreposição de 15% com talhão existente (máximo permitido: 5%)', 422),
+      );
+
+      const response = await request(app)
+        .patch('/api/org/farms/farm-1/plots/plot-1/boundary')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ geojson: validGeoJSON });
+
+      expect(response.status).toBe(422);
+    });
+  });
+
+  // ─── GET Plot Boundary Versions ─────────────────────────────────
+
+  describe('GET /api/org/farms/:farmId/plots/:plotId/boundary/versions', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 with versions list', async () => {
+      const versions = [
+        {
+          id: 'v-1',
+          version: 2,
+          boundaryAreaHa: 55.3,
+          editedAt: '2026-03-01T10:00:00.000Z',
+          editSource: 'map_editor',
+        },
+        {
+          id: 'v-2',
+          version: 1,
+          boundaryAreaHa: 50.0,
+          editedAt: '2026-02-28T10:00:00.000Z',
+          editSource: 'file_upload',
+        },
+      ];
+      mockedService.getPlotBoundaryVersions.mockResolvedValue(versions);
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/plots/plot-1/boundary/versions')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(2);
+      expect(response.body[0].version).toBe(2);
+      expect(response.body[0].editSource).toBe('map_editor');
+    });
+
+    it('should return 404 when plot not found', async () => {
+      mockedService.getPlotBoundaryVersions.mockRejectedValue(
+        new FarmError('Talhão não encontrado', 404),
+      );
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/plots/non-existent/boundary/versions')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(404);
     });
   });
 

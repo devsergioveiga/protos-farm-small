@@ -1,0 +1,153 @@
+/* ─── Plot Geometry Editor overlay ─── */
+
+.plot-editor {
+  position: absolute;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-neutral-0);
+}
+
+.plot-editor__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-0);
+  border-bottom: 1px solid var(--color-neutral-200);
+  z-index: 1;
+}
+
+.plot-editor__title {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-800);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plot-editor__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.plot-editor__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  border: none;
+  min-height: 48px;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.plot-editor__btn--primary {
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+}
+
+.plot-editor__btn--primary:hover {
+  background: var(--color-primary-700);
+}
+
+.plot-editor__btn--primary:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.plot-editor__btn--secondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.plot-editor__btn--secondary:hover {
+  background: var(--color-neutral-200);
+}
+
+.plot-editor__btn--secondary:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.plot-editor__map-container {
+  flex: 1;
+  position: relative;
+}
+
+.plot-editor__map-container .leaflet-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* ─── Area badge ─── */
+
+.plot-editor__area-badge {
+  position: absolute;
+  top: var(--space-3);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-4);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.plot-editor__area-label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+}
+
+.plot-editor__area-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-800);
+}
+
+/* ─── Hide default leaflet-draw toolbar ─── */
+
+.plot-editor .leaflet-draw-toolbar {
+  display: none;
+}
+
+/* ─── Mobile ─── */
+
+@media (max-width: 767px) {
+  .plot-editor__toolbar {
+    flex-wrap: wrap;
+  }
+
+  .plot-editor__title {
+    width: 100%;
+    text-align: center;
+  }
+
+  .plot-editor__actions {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plot-editor__area-badge {
+    transition: none;
+  }
+}

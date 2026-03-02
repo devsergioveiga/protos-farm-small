@@ -291,3 +291,19 @@ export interface BulkImportResult {
   items: BulkImportResultItem[];
   warnings: string[];
 }
+
+// ─── Plot Boundary Edit ──────────────────────────────────────────────
+
+export interface UpdatePlotBoundaryResult {
+  boundaryAreaHa: number;
+  previousAreaHa: number;
+  warnings: string[];
+}
+
+export interface PlotBoundaryVersionItem {
+  id: string;
+  version: number;
+  boundaryAreaHa: number;
+  editedAt: string;
+  editSource: string;
+}

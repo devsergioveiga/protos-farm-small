@@ -1,4 +1,4 @@
-import { withRlsContext, type RlsContext } from '../../database/rls';
+import { withRlsContext, type RlsContext, type TxClient } from '../../database/rls';
 import { prisma } from '../../database/prisma';
 import { logger } from '../../shared/utils/logger';
 import {
@@ -29,6 +29,8 @@ import {
   type BulkImportResult,
   type BulkImportResultItem,
   type ColumnMapping,
+  type UpdatePlotBoundaryResult,
+  type PlotBoundaryVersionItem,
 } from './farms.types';
 import { ROLE_HIERARCHY } from '../../shared/rbac/permissions';
 import {
@@ -1183,6 +1185,7 @@ export async function uploadFieldPlotBoundary(
   plotId: string,
   buffer: Buffer,
   filename: string,
+  actorId?: string,
 ): Promise<{ boundaryAreaHa: number; warnings: string[] }> {
   const parsed = await parseGeoFile(buffer, filename);
   const polygon = parsed.boundaries[0];
@@ -1205,6 +1208,11 @@ export async function uploadFieldPlotBoundary(
     });
     if (!plot) {
       throw new FarmError('Talhão não encontrado', 404);
+    }
+
+    // Save current boundary as a version before overwriting
+    if (actorId) {
+      await saveFieldPlotBoundaryVersion(tx, plotId, farmId, actorId, 'file_upload');
     }
 
     // Containment check
@@ -1257,6 +1265,159 @@ export async function uploadFieldPlotBoundary(
     logger.info({ farmId, plotId, boundaryAreaHa }, 'Field plot boundary updated');
 
     return { boundaryAreaHa, warnings };
+  });
+}
+
+async function saveFieldPlotBoundaryVersion(
+  tx: TxClient,
+  plotId: string,
+  farmId: string,
+  actorId: string,
+  editSource: string,
+): Promise<void> {
+  const existingBoundary = await prisma.$queryRawUnsafe<
+    { has_boundary: boolean; area_ha: number | null }[]
+  >(
+    `SELECT boundary IS NOT NULL AS has_boundary, "boundaryAreaHa"::float AS area_ha FROM field_plots WHERE id = $1`,
+    plotId,
+  );
+
+  if (existingBoundary[0]?.has_boundary) {
+    const lastVersion = await tx.fieldPlotBoundaryVersion.findFirst({
+      where: { plotId },
+      orderBy: { version: 'desc' },
+      select: { version: true },
+    });
+    const nextVersion = (lastVersion?.version ?? 0) + 1;
+
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO field_plot_boundary_versions (id, "plotId", "farmId", boundary, "boundaryAreaHa", "editedBy", "editedAt", "editSource", version)
+       SELECT gen_random_uuid(), id, "farmId", boundary, "boundaryAreaHa", $2, now(), $3, $4
+       FROM field_plots WHERE id = $1 AND boundary IS NOT NULL`,
+      plotId,
+      actorId,
+      editSource,
+      nextVersion,
+    );
+  }
+}
+
+export async function updatePlotBoundaryFromGeoJSON(
+  ctx: RlsContext,
+  farmId: string,
+  plotId: string,
+  polygon: GeoJSON.Polygon,
+  actorId: string,
+): Promise<UpdatePlotBoundaryResult> {
+  const validation = validateGeometry(polygon);
+  if (!validation.valid) {
+    throw new FarmError(`Geometria inválida: ${validation.errors.join('; ')}`, 400);
+  }
+
+  const geojsonStr = JSON.stringify(polygon);
+  const warnings: string[] = [];
+
+  return withRlsContext(ctx, async (tx) => {
+    const plot = await tx.fieldPlot.findFirst({
+      where: { id: plotId, farmId, deletedAt: null },
+    });
+    if (!plot) {
+      throw new FarmError('Talhão não encontrado', 404);
+    }
+
+    const previousAreaHa = Number(plot.boundaryAreaHa) || 0;
+
+    // Save current boundary as a version before overwriting
+    await saveFieldPlotBoundaryVersion(tx, plotId, farmId, actorId, 'map_editor');
+
+    // Containment check
+    const containmentCheck = await prisma.$queryRawUnsafe<{ is_contained: boolean }[]>(
+      `SELECT ST_Within(ST_GeomFromGeoJSON($1), boundary) AS is_contained
+       FROM farms WHERE id = $2 AND boundary IS NOT NULL`,
+      geojsonStr,
+      farmId,
+    );
+    if (containmentCheck.length > 0 && !containmentCheck[0].is_contained) {
+      warnings.push('Talhão extrapola o perímetro da fazenda');
+    }
+
+    // Overlap check (exclude self)
+    const overlapCheck = await prisma.$queryRawUnsafe<{ plot_id: string; overlap_pct: number }[]>(
+      `SELECT id AS plot_id,
+              ROUND((ST_Area(ST_Intersection(boundary, ST_GeomFromGeoJSON($1))::geography)
+                / ST_Area(ST_GeomFromGeoJSON($1)::geography) * 100)::numeric, 2)::float AS overlap_pct
+       FROM field_plots
+       WHERE "farmId" = $2
+         AND id != $3
+         AND "deletedAt" IS NULL
+         AND ST_Intersects(boundary, ST_GeomFromGeoJSON($1))`,
+      geojsonStr,
+      farmId,
+      plotId,
+    );
+
+    for (const ov of overlapCheck) {
+      if (ov.overlap_pct > 5) {
+        throw new FarmError(
+          `Sobreposição de ${ov.overlap_pct}% com talhão existente (máximo permitido: 5%)`,
+          422,
+        );
+      }
+    }
+
+    const result = await prisma.$queryRawUnsafe<{ area_ha: number }[]>(
+      `UPDATE field_plots
+       SET boundary = ST_GeomFromGeoJSON($1),
+           "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON($1)::geography) / 10000)::numeric, 4),
+           "updatedAt" = now()
+       WHERE id = $2
+       RETURNING ROUND((ST_Area(boundary::geography) / 10000)::numeric, 4)::float AS area_ha`,
+      geojsonStr,
+      plotId,
+    );
+
+    const boundaryAreaHa = result[0].area_ha;
+    logger.info(
+      { farmId, plotId, boundaryAreaHa, previousAreaHa },
+      'Field plot boundary updated from map editor',
+    );
+
+    return { boundaryAreaHa, previousAreaHa, warnings };
+  });
+}
+
+export async function getPlotBoundaryVersions(
+  ctx: RlsContext,
+  farmId: string,
+  plotId: string,
+): Promise<PlotBoundaryVersionItem[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const plot = await tx.fieldPlot.findFirst({
+      where: { id: plotId, farmId, deletedAt: null },
+    });
+    if (!plot) {
+      throw new FarmError('Talhão não encontrado', 404);
+    }
+
+    const versions = await tx.fieldPlotBoundaryVersion.findMany({
+      where: { plotId },
+      orderBy: { version: 'desc' },
+      select: {
+        id: true,
+        version: true,
+        boundaryAreaHa: true,
+        editedAt: true,
+        editSource: true,
+      },
+    });
+
+    return versions.map((v) => ({
+      id: v.id,
+      version: v.version,
+      boundaryAreaHa: Number(v.boundaryAreaHa),
+      editedAt: v.editedAt.toISOString(),
+      editSource: v.editSource,
+    }));
   });
 }
 

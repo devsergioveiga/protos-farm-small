@@ -99,6 +99,22 @@ export interface FieldPlotsSummary {
   plotCount: number;
 }
 
+// ─── Plot Boundary Edit ──────────────────────────────────────────────
+
+export interface UpdatePlotBoundaryResult {
+  boundaryAreaHa: number;
+  previousAreaHa: number;
+  warnings: string[];
+}
+
+export interface PlotBoundaryVersionItem {
+  id: string;
+  version: number;
+  boundaryAreaHa: number;
+  editedAt: string;
+  editSource: string;
+}
+
 // ─── Bulk Import ─────────────────────────────────────────────────────
 
 export interface BulkPreviewFeature {
