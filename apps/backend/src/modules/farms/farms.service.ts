@@ -31,6 +31,10 @@ import {
   type ColumnMapping,
   type UpdatePlotBoundaryResult,
   type PlotBoundaryVersionItem,
+  type SubdividePreviewResult,
+  type SubdivideExecuteResult,
+  type MergePreviewResult,
+  type MergeExecuteResult,
 } from './farms.types';
 import { ROLE_HIERARCHY } from '../../shared/rbac/permissions';
 import {
@@ -1855,4 +1859,356 @@ function applyColumnMapping(
   }
 
   return result;
+}
+
+// ─── Subdivide ──────────────────────────────────────────────────────
+
+export async function previewSubdivide(
+  ctx: RlsContext,
+  farmId: string,
+  plotId: string,
+  cutLine: GeoJSON.LineString,
+): Promise<SubdividePreviewResult> {
+  return withRlsContext(ctx, async (tx) => {
+    const plot = await tx.fieldPlot.findFirst({
+      where: { id: plotId, farmId, deletedAt: null },
+    });
+    if (!plot) {
+      throw new FarmError('Talhão não encontrado', 404);
+    }
+
+    const hasBoundary = await prisma.$queryRawUnsafe<{ has: boolean }[]>(
+      `SELECT boundary IS NOT NULL AS has FROM field_plots WHERE id = $1`,
+      plotId,
+    );
+    if (!hasBoundary[0]?.has) {
+      throw new FarmError('Talhão não possui perímetro', 400);
+    }
+
+    const cutLineStr = JSON.stringify(cutLine);
+
+    // ST_Split returns a GeometryCollection; extract individual polygons
+    const splitResult = await prisma.$queryRawUnsafe<{ geojson: string; area_ha: number }[]>(
+      `WITH split AS (
+         SELECT ST_Split(boundary, ST_GeomFromGeoJSON($2)) AS geom
+         FROM field_plots WHERE id = $1
+       ),
+       parts AS (
+         SELECT (ST_Dump(geom)).geom AS part FROM split
+       )
+       SELECT ST_AsGeoJSON(part)::text AS geojson,
+              ROUND((ST_Area(part::geography) / 10000)::numeric, 4)::float AS area_ha
+       FROM parts
+       WHERE GeometryType(part) IN ('POLYGON', 'MULTIPOLYGON')`,
+      plotId,
+      cutLineStr,
+    );
+
+    if (splitResult.length !== 2) {
+      throw new FarmError('Linha de corte não divide o talhão em duas partes', 422);
+    }
+
+    // Sort by area descending
+    splitResult.sort((a, b) => b.area_ha - a.area_ha);
+
+    const originalAreaHa = Number(plot.boundaryAreaHa) || 0;
+
+    return {
+      parts: splitResult.map((r, i) => ({
+        suggestedName: `${plot.name} - ${i === 0 ? 'A' : 'B'}`,
+        areaHa: r.area_ha,
+        geojson: JSON.parse(r.geojson) as GeoJSON.Polygon,
+      })),
+      originalAreaHa,
+    };
+  });
+}
+
+export async function executeSubdivide(
+  ctx: RlsContext,
+  farmId: string,
+  plotId: string,
+  cutLine: GeoJSON.LineString,
+  names: [string, string],
+  actorId: string,
+): Promise<SubdivideExecuteResult> {
+  const cutLineStr = JSON.stringify(cutLine);
+
+  return withRlsContext(ctx, async (tx) => {
+    const plot = await tx.fieldPlot.findFirst({
+      where: { id: plotId, farmId, deletedAt: null },
+    });
+    if (!plot) {
+      throw new FarmError('Talhão não encontrado', 404);
+    }
+
+    // Re-execute split for consistency
+    const splitResult = await prisma.$queryRawUnsafe<{ geojson: string; area_ha: number }[]>(
+      `WITH split AS (
+         SELECT ST_Split(boundary, ST_GeomFromGeoJSON($2)) AS geom
+         FROM field_plots WHERE id = $1
+       ),
+       parts AS (
+         SELECT (ST_Dump(geom)).geom AS part FROM split
+       )
+       SELECT ST_AsGeoJSON(part)::text AS geojson,
+              ROUND((ST_Area(part::geography) / 10000)::numeric, 4)::float AS area_ha
+       FROM parts
+       WHERE GeometryType(part) IN ('POLYGON', 'MULTIPOLYGON')`,
+      plotId,
+      cutLineStr,
+    );
+
+    if (splitResult.length !== 2) {
+      throw new FarmError('Linha de corte não divide o talhão em duas partes', 422);
+    }
+
+    // Sort by area descending
+    splitResult.sort((a, b) => b.area_ha - a.area_ha);
+
+    // 1. Save boundary version of original
+    await saveFieldPlotBoundaryVersion(tx, plotId, farmId, actorId, 'subdivide');
+
+    // 2. Soft-delete original
+    await tx.fieldPlot.update({
+      where: { id: plotId },
+      data: { deletedAt: new Date() },
+    });
+
+    // 3. Create 2 new plots
+    const createdPlots: Array<{ id: string; name: string; boundaryAreaHa: number }> = [];
+
+    for (let i = 0; i < 2; i++) {
+      const geojsonStr = splitResult[i].geojson;
+      const inserted = await prisma.$queryRawUnsafe<{ id: string; area_ha: number }[]>(
+        `INSERT INTO field_plots (id, "farmId", "registrationId", name, code, "soilType", "currentCrop", "previousCrop", notes, boundary, "boundaryAreaHa", status, "createdAt", "updatedAt")
+         VALUES (
+           gen_random_uuid(), $1, $2, $3, $4, $5::"SoilType", $6, $7, $8,
+           ST_GeomFromGeoJSON($9),
+           ROUND((ST_Area(ST_GeomFromGeoJSON($9)::geography) / 10000)::numeric, 4),
+           'ACTIVE', now(), now()
+         )
+         RETURNING id, ROUND((ST_Area(boundary::geography) / 10000)::numeric, 4)::float AS area_ha`,
+        farmId,
+        plot.registrationId ?? null,
+        names[i],
+        plot.code ?? null,
+        plot.soilType ?? null,
+        plot.currentCrop ?? null,
+        plot.previousCrop ?? null,
+        plot.notes ?? null,
+        geojsonStr,
+      );
+
+      createdPlots.push({
+        id: inserted[0].id,
+        name: names[i],
+        boundaryAreaHa: inserted[0].area_ha,
+      });
+    }
+
+    logger.info(
+      { farmId, originalPlotId: plotId, newPlots: createdPlots.map((p) => p.id) },
+      'Field plot subdivided',
+    );
+
+    return { plots: createdPlots, archivedPlotId: plotId };
+  });
+}
+
+// ─── Merge ──────────────────────────────────────────────────────────
+
+export async function previewMerge(
+  ctx: RlsContext,
+  farmId: string,
+  plotIds: string[],
+): Promise<MergePreviewResult> {
+  if (plotIds.length < 2) {
+    throw new FarmError('É necessário selecionar pelo menos 2 talhões para mesclar', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    // Validate all plots exist and have boundaries
+    const sourcePlots: Array<{ id: string; name: string; areaHa: number }> = [];
+
+    for (const id of plotIds) {
+      const plot = await tx.fieldPlot.findFirst({
+        where: { id, farmId, deletedAt: null },
+      });
+      if (!plot) {
+        throw new FarmError(`Talhão ${id} não encontrado`, 404);
+      }
+
+      const hasBoundary = await prisma.$queryRawUnsafe<{ has: boolean }[]>(
+        `SELECT boundary IS NOT NULL AS has FROM field_plots WHERE id = $1`,
+        id,
+      );
+      if (!hasBoundary[0]?.has) {
+        throw new FarmError(`Talhão "${plot.name}" não possui perímetro`, 400);
+      }
+
+      sourcePlots.push({
+        id: plot.id,
+        name: plot.name,
+        areaHa: Number(plot.boundaryAreaHa) || 0,
+      });
+    }
+
+    // Check adjacency — each plot must touch at least one other
+    const adjacencyCheck = await prisma.$queryRawUnsafe<{ pair_count: number }[]>(
+      `SELECT COUNT(*)::int AS pair_count
+       FROM field_plots a, field_plots b
+       WHERE a.id = ANY($1::text[])
+         AND b.id = ANY($1::text[])
+         AND a.id < b.id
+         AND ST_Intersects(a.boundary, b.boundary)`,
+      plotIds,
+    );
+
+    if (adjacencyCheck[0].pair_count === 0) {
+      throw new FarmError('Talhões selecionados não são adjacentes', 422);
+    }
+
+    // ST_Union all boundaries
+    const unionResult = await prisma.$queryRawUnsafe<
+      { geojson: string; area_ha: number; geom_type: string }[]
+    >(
+      `SELECT ST_AsGeoJSON(ST_Union(boundary))::text AS geojson,
+              ROUND((ST_Area(ST_Union(boundary)::geography) / 10000)::numeric, 4)::float AS area_ha,
+              GeometryType(ST_Union(boundary)) AS geom_type
+       FROM field_plots
+       WHERE id = ANY($1::text[])`,
+      plotIds,
+    );
+
+    if (!unionResult[0]?.geojson) {
+      throw new FarmError('Erro ao calcular união dos talhões', 500);
+    }
+
+    if (unionResult[0].geom_type !== 'POLYGON') {
+      throw new FarmError('Talhões selecionados não formam um polígono contíguo', 422);
+    }
+
+    // Suggested name: name of the largest plot
+    const largest = sourcePlots.reduce((a, b) => (a.areaHa >= b.areaHa ? a : b));
+
+    return {
+      mergedGeojson: JSON.parse(unionResult[0].geojson) as GeoJSON.Polygon,
+      mergedAreaHa: unionResult[0].area_ha,
+      sourcePlots,
+      suggestedName: largest.name,
+    };
+  });
+}
+
+export async function executeMerge(
+  ctx: RlsContext,
+  farmId: string,
+  plotIds: string[],
+  name: string,
+  actorId: string,
+): Promise<MergeExecuteResult> {
+  if (plotIds.length < 2) {
+    throw new FarmError('É necessário selecionar pelo menos 2 talhões para mesclar', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    // Validate and collect source plot data
+    const sourcePlots: Array<{
+      id: string;
+      soilType: string | null;
+      currentCrop: string | null;
+      previousCrop: string | null;
+      registrationId: string | null;
+      code: string | null;
+      notes: string | null;
+      areaHa: number;
+    }> = [];
+
+    for (const id of plotIds) {
+      const plot = await tx.fieldPlot.findFirst({
+        where: { id, farmId, deletedAt: null },
+      });
+      if (!plot) {
+        throw new FarmError(`Talhão ${id} não encontrado`, 404);
+      }
+      sourcePlots.push({
+        id: plot.id,
+        soilType: plot.soilType,
+        currentCrop: plot.currentCrop,
+        previousCrop: plot.previousCrop,
+        registrationId: plot.registrationId,
+        code: plot.code,
+        notes: plot.notes,
+        areaHa: Number(plot.boundaryAreaHa) || 0,
+      });
+    }
+
+    // Re-execute union
+    const unionResult = await prisma.$queryRawUnsafe<
+      { geojson: string; area_ha: number; geom_type: string }[]
+    >(
+      `SELECT ST_AsGeoJSON(ST_Union(boundary))::text AS geojson,
+              ROUND((ST_Area(ST_Union(boundary)::geography) / 10000)::numeric, 4)::float AS area_ha,
+              GeometryType(ST_Union(boundary)) AS geom_type
+       FROM field_plots
+       WHERE id = ANY($1::text[])`,
+      plotIds,
+    );
+
+    if (!unionResult[0]?.geojson || unionResult[0].geom_type !== 'POLYGON') {
+      throw new FarmError('Talhões selecionados não formam um polígono contíguo', 422);
+    }
+
+    // 1. Save boundary versions for all source plots
+    for (const sp of sourcePlots) {
+      await saveFieldPlotBoundaryVersion(tx, sp.id, farmId, actorId, 'merge');
+    }
+
+    // 2. Soft-delete all source plots
+    for (const sp of sourcePlots) {
+      await tx.fieldPlot.update({
+        where: { id: sp.id },
+        data: { deletedAt: new Date() },
+      });
+    }
+
+    // 3. Create new merged plot (inherit properties from the largest)
+    const largest = sourcePlots.reduce((a, b) => (a.areaHa >= b.areaHa ? a : b));
+    const geojsonStr = unionResult[0].geojson;
+
+    const inserted = await prisma.$queryRawUnsafe<{ id: string; area_ha: number }[]>(
+      `INSERT INTO field_plots (id, "farmId", "registrationId", name, code, "soilType", "currentCrop", "previousCrop", notes, boundary, "boundaryAreaHa", status, "createdAt", "updatedAt")
+       VALUES (
+         gen_random_uuid(), $1, $2, $3, $4, $5::"SoilType", $6, $7, $8,
+         ST_GeomFromGeoJSON($9),
+         ROUND((ST_Area(ST_GeomFromGeoJSON($9)::geography) / 10000)::numeric, 4),
+         'ACTIVE', now(), now()
+       )
+       RETURNING id, ROUND((ST_Area(boundary::geography) / 10000)::numeric, 4)::float AS area_ha`,
+      farmId,
+      largest.registrationId ?? null,
+      name,
+      largest.code ?? null,
+      largest.soilType ?? null,
+      largest.currentCrop ?? null,
+      largest.previousCrop ?? null,
+      largest.notes ?? null,
+      geojsonStr,
+    );
+
+    logger.info(
+      { farmId, sourcePlotIds: plotIds, newPlotId: inserted[0].id },
+      'Field plots merged',
+    );
+
+    return {
+      plot: {
+        id: inserted[0].id,
+        name,
+        boundaryAreaHa: inserted[0].area_ha,
+      },
+      archivedPlotIds: plotIds,
+    };
+  });
 }

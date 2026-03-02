@@ -1,0 +1,292 @@
+/* ─── Plot Merge Editor overlay ─── */
+
+.plot-merge {
+  position: absolute;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-neutral-0);
+}
+
+.plot-merge__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-0);
+  border-bottom: 1px solid var(--color-neutral-200);
+  z-index: 1;
+}
+
+.plot-merge__title {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.plot-merge__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.plot-merge__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  border: none;
+  min-height: 48px;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.plot-merge__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.plot-merge__btn--primary {
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+}
+
+.plot-merge__btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+}
+
+.plot-merge__btn--primary:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.plot-merge__btn--secondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.plot-merge__btn--secondary:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+}
+
+.plot-merge__btn--secondary:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Content ─── */
+
+.plot-merge__content {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.plot-merge__map-container {
+  flex: 1;
+  position: relative;
+}
+
+.plot-merge__map-container .leaflet-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* ─── Hint / Loading ─── */
+
+.plot-merge__hint,
+.plot-merge__loading {
+  position: absolute;
+  top: var(--space-3);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-4);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.plot-merge__hint {
+  color: var(--color-neutral-700);
+}
+
+.plot-merge__loading {
+  color: var(--color-neutral-500);
+}
+
+/* ─── Sidebar ─── */
+
+.plot-merge__sidebar {
+  width: 280px;
+  border-left: 1px solid var(--color-neutral-200);
+  padding: var(--space-4);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+.plot-merge__sidebar-title {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.plot-merge__selected-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.plot-merge__selected-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-md);
+}
+
+.plot-merge__selected-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.plot-merge__selected-name {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plot-merge__selected-area {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+  flex-shrink: 0;
+}
+
+/* ─── Preview info ─── */
+
+.plot-merge__preview-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.plot-merge__area-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-md);
+}
+
+.plot-merge__area-label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+}
+
+.plot-merge__area-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-800);
+}
+
+.plot-merge__name-label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+}
+
+.plot-merge__name-input {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+  min-height: 48px;
+}
+
+.plot-merge__name-input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -1px;
+  border-color: var(--color-primary-500);
+}
+
+.plot-merge__error {
+  color: var(--color-error-600, #dc2626);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+/* ─── Mobile ─── */
+
+@media (max-width: 767px) {
+  .plot-merge__content {
+    flex-direction: column;
+  }
+
+  .plot-merge__sidebar {
+    width: auto;
+    border-left: none;
+    border-top: 1px solid var(--color-neutral-200);
+    max-height: 40vh;
+  }
+
+  .plot-merge__toolbar {
+    flex-wrap: wrap;
+  }
+
+  .plot-merge__title {
+    width: 100%;
+    text-align: center;
+  }
+
+  .plot-merge__actions {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plot-merge__hint,
+  .plot-merge__loading {
+    transition: none;
+  }
+}

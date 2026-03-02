@@ -1,4 +1,4 @@
-import { X, Pencil } from 'lucide-react';
+import { X, Pencil, Scissors } from 'lucide-react';
 import { getCropColor, formatArea } from './FarmMap';
 import type { FieldPlot } from '@/types/farm';
 import './PlotDetailsPanel.css';
@@ -7,6 +7,7 @@ interface PlotDetailsPanelProps {
   plot: FieldPlot | null;
   onClose: () => void;
   onEditGeometry?: (plot: FieldPlot) => void;
+  onSubdivide?: (plot: FieldPlot) => void;
 }
 
 function formatSoilType(soilType: string): string {
@@ -20,7 +21,7 @@ function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('pt-BR');
 }
 
-function PlotDetailsPanel({ plot, onClose, onEditGeometry }: PlotDetailsPanelProps) {
+function PlotDetailsPanel({ plot, onClose, onEditGeometry, onSubdivide }: PlotDetailsPanelProps) {
   if (!plot) return null;
 
   const cropColor = getCropColor(plot.currentCrop);
@@ -37,6 +38,16 @@ function PlotDetailsPanel({ plot, onClose, onEditGeometry }: PlotDetailsPanelPro
           <h2 className="plot-details__name">{plot.name}</h2>
         </div>
         <div className="plot-details__header-actions">
+          {onSubdivide && (
+            <button
+              type="button"
+              className="plot-details__action-btn"
+              onClick={() => onSubdivide(plot)}
+              aria-label="Subdividir talhão"
+            >
+              <Scissors size={20} aria-hidden="true" />
+            </button>
+          )}
           {onEditGeometry && (
             <button
               type="button"

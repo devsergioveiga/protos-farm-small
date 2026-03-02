@@ -36,6 +36,10 @@ import {
   getFieldPlotsSummary,
   previewBulkImport,
   executeBulkImport,
+  previewSubdivide,
+  executeSubdivide,
+  previewMerge,
+  executeMerge,
 } from './farms.service';
 import { FarmError, ALLOWED_GEO_EXTENSIONS, MAX_GEO_FILE_SIZE } from './farms.types';
 
@@ -1226,6 +1230,180 @@ farmsRouter.get(
         req.params.plotId as string,
       );
       res.json(versions);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// ─── Subdivide & Merge Endpoints ─────────────────────────────────────
+
+// POST /org/farms/:farmId/plots/:plotId/subdivide/preview
+farmsRouter.post(
+  '/org/farms/:farmId/plots/:plotId/subdivide/preview',
+  authenticate,
+  checkPermission('farms:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const { cutLine } = req.body;
+      if (!cutLine || cutLine.type !== 'LineString') {
+        res.status(400).json({ error: 'Body deve conter cutLine com type LineString' });
+        return;
+      }
+
+      const ctx = buildRlsContext(req);
+      const result = await previewSubdivide(
+        ctx,
+        req.params.farmId as string,
+        req.params.plotId as string,
+        cutLine as GeoJSON.LineString,
+      );
+
+      res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// POST /org/farms/:farmId/plots/:plotId/subdivide
+farmsRouter.post(
+  '/org/farms/:farmId/plots/:plotId/subdivide',
+  authenticate,
+  checkPermission('farms:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const { cutLine, names } = req.body;
+      if (!cutLine || cutLine.type !== 'LineString') {
+        res.status(400).json({ error: 'Body deve conter cutLine com type LineString' });
+        return;
+      }
+      if (!Array.isArray(names) || names.length !== 2 || !names[0] || !names[1]) {
+        res.status(400).json({ error: 'Body deve conter names com exatamente 2 nomes' });
+        return;
+      }
+
+      const ctx = buildRlsContext(req);
+      const result = await executeSubdivide(
+        ctx,
+        req.params.farmId as string,
+        req.params.plotId as string,
+        cutLine as GeoJSON.LineString,
+        names as [string, string],
+        req.user!.userId,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'SUBDIVIDE_FIELD_PLOT',
+        targetType: 'field_plot',
+        targetId: req.params.plotId as string,
+        metadata: {
+          farmId: req.params.farmId,
+          archivedPlotId: result.archivedPlotId,
+          newPlots: result.plots.map((p) => ({ id: p.id, name: p.name })),
+        },
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+        farmId: req.params.farmId as string,
+      });
+
+      res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// POST /org/farms/:farmId/plots/merge/preview
+farmsRouter.post(
+  '/org/farms/:farmId/plots/merge/preview',
+  authenticate,
+  checkPermission('farms:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const { plotIds } = req.body;
+      if (!Array.isArray(plotIds) || plotIds.length < 2) {
+        res.status(400).json({ error: 'Body deve conter plotIds com pelo menos 2 IDs' });
+        return;
+      }
+
+      const ctx = buildRlsContext(req);
+      const result = await previewMerge(ctx, req.params.farmId as string, plotIds as string[]);
+
+      res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// POST /org/farms/:farmId/plots/merge
+farmsRouter.post(
+  '/org/farms/:farmId/plots/merge',
+  authenticate,
+  checkPermission('farms:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const { plotIds, name } = req.body;
+      if (!Array.isArray(plotIds) || plotIds.length < 2) {
+        res.status(400).json({ error: 'Body deve conter plotIds com pelo menos 2 IDs' });
+        return;
+      }
+      if (!name) {
+        res.status(400).json({ error: 'Nome é obrigatório' });
+        return;
+      }
+
+      const ctx = buildRlsContext(req);
+      const result = await executeMerge(
+        ctx,
+        req.params.farmId as string,
+        plotIds as string[],
+        name as string,
+        req.user!.userId,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'MERGE_FIELD_PLOTS',
+        targetType: 'field_plot',
+        targetId: result.plot.id,
+        metadata: {
+          farmId: req.params.farmId,
+          archivedPlotIds: result.archivedPlotIds,
+          newPlotName: result.plot.name,
+        },
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+        farmId: req.params.farmId as string,
+      });
+
+      res.json(result);
     } catch (err) {
       if (err instanceof FarmError) {
         res.status(err.statusCode).json({ error: err.message });

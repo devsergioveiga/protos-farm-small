@@ -307,3 +307,27 @@ export interface PlotBoundaryVersionItem {
   editedAt: string;
   editSource: string;
 }
+
+// ─── Subdivide & Merge ──────────────────────────────────────────────
+
+export interface SubdividePreviewResult {
+  parts: Array<{ suggestedName: string; areaHa: number; geojson: GeoJSON.Polygon }>;
+  originalAreaHa: number;
+}
+
+export interface SubdivideExecuteResult {
+  plots: Array<{ id: string; name: string; boundaryAreaHa: number }>;
+  archivedPlotId: string;
+}
+
+export interface MergePreviewResult {
+  mergedGeojson: GeoJSON.Polygon;
+  mergedAreaHa: number;
+  sourcePlots: Array<{ id: string; name: string; areaHa: number }>;
+  suggestedName: string;
+}
+
+export interface MergeExecuteResult {
+  plot: { id: string; name: string; boundaryAreaHa: number };
+  archivedPlotIds: string[];
+}
