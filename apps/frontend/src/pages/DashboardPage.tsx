@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { LogOut, MapPin } from 'lucide-react';
 import { useAuth } from '@/stores/AuthContext';
 
 function DashboardPage() {
@@ -57,6 +57,30 @@ function DashboardPage() {
           Conectado como <strong>{user?.email}</strong>
         </p>
       </section>
+
+      <nav style={{ marginTop: 'var(--space-8)' }}>
+        <Link
+          to="/farms"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)',
+            fontFamily: 'var(--font-body)',
+            fontSize: 'var(--text-base)',
+            fontWeight: 'var(--font-semibold)',
+            color: 'var(--color-primary-600)',
+            textDecoration: 'none',
+            padding: 'var(--space-3) var(--space-4)',
+            borderRadius: 'var(--radius-md)',
+            minHeight: '48px',
+            border: '1px solid var(--color-primary-200)',
+            background: 'var(--color-primary-50)',
+          }}
+        >
+          <MapPin size={20} aria-hidden="true" />
+          Fazendas
+        </Link>
+      </nav>
     </main>
   );
 }

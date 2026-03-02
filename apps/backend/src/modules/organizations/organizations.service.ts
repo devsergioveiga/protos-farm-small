@@ -100,16 +100,14 @@ export async function listOrganizations(query: ListOrgsQuery) {
   }
 
   return withRlsBypass(async (tx) => {
-    const [data, total] = await Promise.all([
-      tx.organization.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: { _count: { select: { users: true, farms: true } } },
-      }),
-      tx.organization.count({ where }),
-    ]);
+    const data = await tx.organization.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: { _count: { select: { users: true, farms: true } } },
+    });
+    const total = await tx.organization.count({ where });
 
     return {
       data,

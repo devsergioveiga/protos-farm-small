@@ -202,18 +202,16 @@ export async function listFarms(ctx: RlsContext, query: ListFarmsQuery) {
   }
 
   return withRlsContext(ctx, async (tx) => {
-    const [data, total] = await Promise.all([
-      tx.farm.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          _count: { select: { registrations: true } },
-        },
-      }),
-      tx.farm.count({ where }),
-    ]);
+    const data = await tx.farm.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: { select: { registrations: true } },
+      },
+    });
+    const total = await tx.farm.count({ where });
 
     return {
       data,
