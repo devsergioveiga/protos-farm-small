@@ -132,3 +132,26 @@ export interface UpdateRegistrationInput {
   registrationDate?: string;
   areaHa?: number;
 }
+
+// ─── Boundary Upload ─────────────────────────────────────────────────
+
+export const ALLOWED_GEO_EXTENSIONS = ['.geojson', '.json', '.kml', '.kmz', '.zip'] as const;
+
+export const MAX_GEO_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+export interface BoundaryUploadResult {
+  boundaryAreaHa: number;
+  areaDivergence: {
+    referenceAreaHa: number;
+    boundaryAreaHa: number;
+    percentage: number;
+    warning: boolean;
+  } | null;
+  warnings: string[];
+}
+
+export interface BoundaryInfo {
+  hasBoundary: boolean;
+  boundaryAreaHa: number | null;
+  boundaryGeoJSON: GeoJSON.Polygon | null;
+}

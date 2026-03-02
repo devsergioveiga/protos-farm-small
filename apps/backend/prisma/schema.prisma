@@ -153,6 +153,7 @@ model Farm {
   utilizationDegree    Decimal?                              @db.Decimal(5, 2)
   status               FarmStatus                            @default(ACTIVE)
   organizationId       String
+  boundaryAreaHa       Decimal?                              @db.Decimal(12, 4)
   location             Unsupported("geometry(Point, 4326)")?
   boundary             Unsupported("geometry(Polygon, 4326)")?
   createdAt            DateTime                              @default(now())
@@ -179,10 +180,13 @@ model FarmRegistration {
   livro            String?
   registrationDate DateTime?
   areaHa           Decimal   @db.Decimal(12, 4)
+  boundaryAreaHa   Decimal?  @db.Decimal(12, 4)
+  boundary         Unsupported("geometry(Polygon, 4326)")?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  farm Farm @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  farm          Farm                      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  producerLinks ProducerRegistrationLink[]
 
   @@index([farmId])
   @@map("farm_registrations")
@@ -353,15 +357,36 @@ model ProducerFarmLink {
   farmId           String
   bondType         ProducerFarmBondType
   participationPct Decimal?            @db.Decimal(5, 2)
+  startDate        DateTime?
+  endDate          DateTime?
+  isItrDeclarant   Boolean             @default(false)
   createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
 
-  producer Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
-  farm     Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  producer          Producer                  @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  farm              Farm                      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  registrationLinks ProducerRegistrationLink[]
 
   @@unique([producerId, farmId, bondType])
   @@index([producerId])
   @@index([farmId])
+  @@index([endDate])
   @@map("producer_farm_links")
+}
+
+model ProducerRegistrationLink {
+  id                 String   @id @default(uuid())
+  farmLinkId         String
+  farmRegistrationId String
+  createdAt          DateTime @default(now())
+
+  farmLink         ProducerFarmLink @relation(fields: [farmLinkId], references: [id], onDelete: Cascade)
+  farmRegistration FarmRegistration  @relation(fields: [farmRegistrationId], references: [id], onDelete: Cascade)
+
+  @@unique([farmLinkId, farmRegistrationId])
+  @@index([farmLinkId])
+  @@index([farmRegistrationId])
+  @@map("producer_registration_links")
 }
 
 model ProducerDocument {

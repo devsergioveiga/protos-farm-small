@@ -153,9 +153,17 @@ export interface CreateFarmLinkInput {
   farmId: string;
   bondType: string;
   participationPct?: number;
+  startDate?: string;
+  endDate?: string;
+  isItrDeclarant?: boolean;
+  registrationIds?: string[];
 }
 
 export interface UpdateFarmLinkInput {
   bondType?: string;
   participationPct?: number;
+  startDate?: string;
+  endDate?: string;
+  isItrDeclarant?: boolean;
+  registrationIds?: string[];
 }

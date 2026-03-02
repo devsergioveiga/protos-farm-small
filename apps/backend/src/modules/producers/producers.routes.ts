@@ -21,6 +21,10 @@ import {
   updateFarmLink,
   deleteFarmLink,
   getProducersByFarm,
+  validateFarmParticipation,
+  getItrDeclarant,
+  setItrDeclarant,
+  getExpiringContracts,
 } from './producers.service';
 import { ProducerError } from './producers.types';
 
@@ -570,6 +574,41 @@ producersRouter.delete(
   },
 );
 
+// ─── ITR Declarant ──────────────────────────────────────────────────
+
+// PATCH /org/producers/:producerId/farms/:linkId/itr-declarant
+producersRouter.patch(
+  '/org/producers/:producerId/farms/:linkId/itr-declarant',
+  authenticate,
+  checkPermission('producers:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const link = await setItrDeclarant(
+        ctx,
+        req.params.producerId as string,
+        req.params.linkId as string,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'SET_ITR_DECLARANT',
+        targetType: 'producer_farm_link',
+        targetId: req.params.linkId as string,
+        metadata: { producerId: req.params.producerId, farmId: link.farm.id },
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+      });
+
+      res.json(link);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
 // ─── Reverse: Farm → Producers ──────────────────────────────────────
 
 // GET /org/farms/:farmId/producers
@@ -582,6 +621,61 @@ producersRouter.get(
       const ctx = buildRlsContext(req);
       const links = await getProducersByFarm(ctx, req.params.farmId as string);
       res.json(links);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// GET /org/farms/:farmId/participation
+producersRouter.get(
+  '/org/farms/:farmId/participation',
+  authenticate,
+  checkPermission('farms:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await validateFarmParticipation(ctx, req.params.farmId as string);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// GET /org/farms/:farmId/itr-declarant
+producersRouter.get(
+  '/org/farms/:farmId/itr-declarant',
+  authenticate,
+  checkPermission('farms:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const link = await getItrDeclarant(ctx, req.params.farmId as string);
+      res.json(link);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── Expiring Contracts ─────────────────────────────────────────────
+
+// GET /org/contracts/expiring
+producersRouter.get(
+  '/org/contracts/expiring',
+  authenticate,
+  checkPermission('producers:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const days = req.query.days ? Number(req.query.days as string) : 30;
+      if (isNaN(days) || days < 1 || days > 365) {
+        res.status(400).json({ error: 'Parâmetro days deve ser entre 1 e 365' });
+        return;
+      }
+      const result = await getExpiringContracts(ctx, days);
+      res.json(result);
     } catch (err) {
       handleError(err, res);
     }

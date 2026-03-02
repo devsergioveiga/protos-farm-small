@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Test Farm KML</name>
+    <Placemark>
+      <name>Farm Boundary</name>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              -55.75,-12.50,0
+              -55.50,-12.50,0
+              -55.50,-12.70,0
+              -55.75,-12.70,0
+              -55.75,-12.50,0
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Document>
+</kml>

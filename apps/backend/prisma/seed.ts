@@ -588,6 +588,8 @@ async function main() {
       farmId: farms[0].id,
       bondType: 'PROPRIETARIO' as const,
       participationPct: 100,
+      startDate: new Date('2020-01-01'),
+      isItrDeclarant: true,
     },
     {
       id: 'h1b2c3d4-0002-4000-8000-000000000002',
@@ -595,20 +597,27 @@ async function main() {
       farmId: farms[1].id,
       bondType: 'PROPRIETARIO' as const,
       participationPct: 100,
+      startDate: new Date('2019-06-01'),
+      isItrDeclarant: true,
     },
     {
       id: 'h1b2c3d4-0003-4000-8000-000000000003',
-      producerId: producers[1].id, // Agropecuária Bom Futuro → Lagoa Dourada
+      producerId: producers[1].id, // Agropecuária Bom Futuro → Lagoa Dourada (arrendamento)
       farmId: farms[2].id,
       bondType: 'ARRENDATARIO' as const,
       participationPct: 80,
+      startDate: new Date('2022-01-01'),
+      endDate: new Date('2027-06-30'),
+      isItrDeclarant: false,
     },
     {
       id: 'h1b2c3d4-0004-4000-8000-000000000004',
       producerId: producers[2].id, // Sociedade Irmãos Silva → Santa Helena
       farmId: farms[0].id,
-      bondType: 'PARCEIRO' as const,
+      bondType: 'CONDOMINO' as const,
       participationPct: 30,
+      startDate: new Date('2021-03-15'),
+      isItrDeclarant: false,
     },
     {
       id: 'h1b2c3d4-0005-4000-8000-000000000005',
@@ -616,6 +625,8 @@ async function main() {
       farmId: farms[1].id,
       bondType: 'MEEIRO' as const,
       participationPct: 50,
+      startDate: new Date('2023-01-01'),
+      isItrDeclarant: false,
     },
     {
       id: 'h1b2c3d4-0006-4000-8000-000000000006',
@@ -623,17 +634,85 @@ async function main() {
       farmId: farms[3].id,
       bondType: 'PROPRIETARIO' as const,
       participationPct: 100,
+      startDate: new Date('2019-09-30'),
+      isItrDeclarant: true,
     },
   ];
 
   for (const link of producerFarmLinks) {
     await prisma.producerFarmLink.upsert({
       where: { id: link.id },
-      update: { bondType: link.bondType },
+      update: {
+        bondType: link.bondType,
+        startDate: link.startDate,
+        endDate: (link as { endDate?: Date }).endDate ?? null,
+        isItrDeclarant: link.isItrDeclarant,
+      },
       create: link,
     });
   }
   console.log(`  ✓ ${producerFarmLinks.length} vínculos produtor-fazenda criados`);
+
+  // ─── Vínculos Produtor-Fazenda → Matrículas ───────────────────────
+  console.log('\n  Criando vínculos com matrículas...');
+
+  const producerRegistrationLinks = [
+    // Carlos Eduardo → Santa Helena → 2 matrículas
+    { farmLinkId: producerFarmLinks[0].id, farmRegistrationId: farmRegistrations[0].id },
+    { farmLinkId: producerFarmLinks[0].id, farmRegistrationId: farmRegistrations[1].id },
+    // Agropecuária Bom Futuro → Três Irmãos → 1 matrícula
+    { farmLinkId: producerFarmLinks[1].id, farmRegistrationId: farmRegistrations[2].id },
+    // Sociedade Irmãos Silva → Santa Helena → matrícula 2
+    { farmLinkId: producerFarmLinks[3].id, farmRegistrationId: farmRegistrations[1].id },
+    // João Carlos Mendes → Recanto do Sol → 1 matrícula
+    { farmLinkId: producerFarmLinks[5].id, farmRegistrationId: farmRegistrations[4].id },
+  ];
+
+  // Delete existing registration links to avoid duplicates on re-seed
+  await prisma.producerRegistrationLink.deleteMany();
+  for (const prl of producerRegistrationLinks) {
+    await prisma.producerRegistrationLink.create({ data: prl });
+  }
+  console.log(`  ✓ ${producerRegistrationLinks.length} vínculos produtor-matrícula criados`);
+
+  // ─── Boundaries (Perímetros) ──────────────────────────────────────
+  console.log('\n  Inserindo perímetros de fazendas...');
+
+  // Santa Helena: retângulo ~5200 ha em Sorriso/MT
+  await prisma.$executeRawUnsafe(
+    `
+    UPDATE farms
+    SET boundary = ST_GeomFromGeoJSON('{"type":"Polygon","coordinates":[[[-55.78,-12.47],[-55.55,-12.47],[-55.55,-12.69],[-55.78,-12.69],[-55.78,-12.47]]]}'),
+        "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON('{"type":"Polygon","coordinates":[[[-55.78,-12.47],[-55.55,-12.47],[-55.55,-12.69],[-55.78,-12.69],[-55.78,-12.47]]]}')::geography) / 10000)::numeric, 4)
+    WHERE id = $1
+  `,
+    farms[0].id,
+  );
+  console.log('  ✓ Perímetro: Fazenda Santa Helena');
+
+  // Recanto do Sol: retângulo ~185 ha em Jaú/SP
+  await prisma.$executeRawUnsafe(
+    `
+    UPDATE farms
+    SET boundary = ST_GeomFromGeoJSON('{"type":"Polygon","coordinates":[[[-48.57,-22.29],[-48.555,-22.29],[-48.555,-22.30],[-48.57,-22.30],[-48.57,-22.29]]]}'),
+        "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON('{"type":"Polygon","coordinates":[[[-48.57,-22.29],[-48.555,-22.29],[-48.555,-22.30],[-48.57,-22.30],[-48.57,-22.29]]]}')::geography) / 10000)::numeric, 4)
+    WHERE id = $1
+  `,
+    farms[3].id,
+  );
+  console.log('  ✓ Perímetro: Sítio Recanto do Sol');
+
+  // Matrícula 15.234 (Santa Helena): sub-polígono
+  await prisma.$executeRawUnsafe(
+    `
+    UPDATE farm_registrations
+    SET boundary = ST_GeomFromGeoJSON('{"type":"Polygon","coordinates":[[[-55.78,-12.47],[-55.62,-12.47],[-55.62,-12.69],[-55.78,-12.69],[-55.78,-12.47]]]}'),
+        "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON('{"type":"Polygon","coordinates":[[[-55.78,-12.47],[-55.62,-12.47],[-55.62,-12.69],[-55.78,-12.69],[-55.78,-12.47]]]}')::geography) / 10000)::numeric, 4)
+    WHERE id = $1
+  `,
+    farmRegistrations[0].id,
+  );
+  console.log('  ✓ Perímetro: Matrícula 15.234 (Santa Helena)');
 
   // Audit Logs de exemplo
   console.log('');
