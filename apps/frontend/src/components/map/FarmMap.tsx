@@ -1,0 +1,157 @@
+import { useMemo } from 'react';
+import { MapContainer, TileLayer, GeoJSON, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import MapAutoFit from './MapAutoFit';
+import type { BaseMapType } from './BaseMapSelector';
+import type { FarmMapData } from '@/hooks/useFarmMap';
+import type { FarmRegistration } from '@/types/farm';
+
+const TILE_URLS: Record<BaseMapType, { url: string; attribution: string; maxZoom: number }> = {
+  topographic: {
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+  },
+  satellite: {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri',
+    maxZoom: 18,
+  },
+  hybrid: {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri',
+    maxZoom: 18,
+  },
+};
+
+const HYBRID_LABELS_URL =
+  'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
+
+const REGISTRATION_COLORS = ['#e65100', '#1565c0', '#f9a825', '#ad1457', '#00897b', '#6a1b9a'];
+
+const FARM_STYLE: L.PathOptions = {
+  color: '#2E7D32',
+  weight: 3,
+  fillOpacity: 0.1,
+  fillColor: '#2E7D32',
+};
+
+function getRegistrationStyle(index: number): L.PathOptions {
+  const color = REGISTRATION_COLORS[index % REGISTRATION_COLORS.length];
+  return {
+    color,
+    weight: 2,
+    fillOpacity: 0.15,
+    fillColor: color,
+    dashArray: '6 4',
+  };
+}
+
+function formatArea(ha: number | null): string {
+  if (ha == null) return '—';
+  return `${Number(ha).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ha`;
+}
+
+interface FarmMapProps {
+  data: FarmMapData;
+  baseMap: BaseMapType;
+  showFarmBoundary: boolean;
+  showRegistrations: boolean;
+}
+
+function FarmMap({ data, baseMap, showFarmBoundary, showRegistrations }: FarmMapProps) {
+  const { farm, farmBoundary, registrationBoundaries } = data;
+  const tile = TILE_URLS[baseMap];
+
+  const bounds = useMemo(() => {
+    if (farmBoundary.hasBoundary && farmBoundary.boundaryGeoJSON) {
+      const geoLayer = L.geoJSON(farmBoundary.boundaryGeoJSON);
+      return geoLayer.getBounds();
+    }
+    if (farm.latitude != null && farm.longitude != null) {
+      return L.latLngBounds(
+        [farm.latitude - 0.01, farm.longitude - 0.01],
+        [farm.latitude + 0.01, farm.longitude + 0.01],
+      );
+    }
+    return null;
+  }, [farmBoundary, farm.latitude, farm.longitude]);
+
+  const registrationMap = useMemo(() => {
+    const map = new Map<string, FarmRegistration>();
+    for (const reg of farm.registrations) {
+      map.set(reg.id, reg);
+    }
+    return map;
+  }, [farm.registrations]);
+
+  const classificationLabels: Record<string, string> = {
+    MINIFUNDIO: 'Minifúndio',
+    PEQUENA: 'Pequena',
+    MEDIA: 'Média',
+    GRANDE: 'Grande',
+  };
+
+  return (
+    <MapContainer
+      center={[-15.78, -47.93]}
+      zoom={4}
+      preferCanvas={true}
+      style={{ height: '100%', width: '100%' }}
+    >
+      <TileLayer url={tile.url} attribution={tile.attribution} maxZoom={tile.maxZoom} />
+      {baseMap === 'hybrid' && <TileLayer url={HYBRID_LABELS_URL} maxZoom={18} />}
+      <MapAutoFit bounds={bounds} />
+
+      {showFarmBoundary && farmBoundary.hasBoundary && farmBoundary.boundaryGeoJSON && (
+        <GeoJSON
+          key={`farm-boundary-${farm.id}`}
+          data={farmBoundary.boundaryGeoJSON}
+          style={FARM_STYLE}
+        >
+          <Popup>
+            <strong>{farm.name}</strong>
+            <br />
+            Área total: {formatArea(Number(farm.totalAreaHa))}
+            <br />
+            Estado: {farm.state}
+            {farm.landClassification && (
+              <>
+                <br />
+                Classificação:{' '}
+                {classificationLabels[farm.landClassification] ?? farm.landClassification}
+              </>
+            )}
+          </Popup>
+        </GeoJSON>
+      )}
+
+      {showRegistrations &&
+        registrationBoundaries
+          .filter((rb) => rb.boundary.hasBoundary && rb.boundary.boundaryGeoJSON)
+          .map((rb, index) => {
+            const reg = registrationMap.get(rb.registrationId);
+            return (
+              <GeoJSON
+                key={`reg-boundary-${rb.registrationId}`}
+                data={rb.boundary.boundaryGeoJSON!}
+                style={getRegistrationStyle(index)}
+              >
+                <Popup>
+                  <strong>Matrícula {reg?.number ?? '—'}</strong>
+                  <br />
+                  Cartório: {reg?.cartorioName ?? '—'}
+                  <br />
+                  Comarca: {reg?.comarca ?? '—'}
+                  <br />
+                  Área: {formatArea(reg?.areaHa ?? null)}
+                </Popup>
+              </GeoJSON>
+            );
+          })}
+    </MapContainer>
+  );
+}
+
+export default FarmMap;
