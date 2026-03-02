@@ -1,0 +1,8 @@
+{
+  "type": "Feature",
+  "properties": { "name": "Just a point" },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [-55.75, -12.50]
+  }
+}

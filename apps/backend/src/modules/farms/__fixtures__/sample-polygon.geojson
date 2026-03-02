@@ -1,0 +1,16 @@
+{
+  "type": "Feature",
+  "properties": { "name": "Test Farm" },
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [-55.75, -12.50],
+        [-55.50, -12.50],
+        [-55.50, -12.70],
+        [-55.75, -12.70],
+        [-55.75, -12.50]
+      ]
+    ]
+  }
+}

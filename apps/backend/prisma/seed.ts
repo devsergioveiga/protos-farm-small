@@ -675,6 +675,45 @@ async function main() {
   }
   console.log(`  ✓ ${producerRegistrationLinks.length} vínculos produtor-matrícula criados`);
 
+  // ─── Boundaries (Perímetros) ──────────────────────────────────────
+  console.log('\n  Inserindo perímetros de fazendas...');
+
+  // Santa Helena: retângulo ~5200 ha em Sorriso/MT
+  await prisma.$executeRawUnsafe(
+    `
+    UPDATE farms
+    SET boundary = ST_GeomFromGeoJSON('{"type":"Polygon","coordinates":[[[-55.78,-12.47],[-55.55,-12.47],[-55.55,-12.69],[-55.78,-12.69],[-55.78,-12.47]]]}'),
+        "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON('{"type":"Polygon","coordinates":[[[-55.78,-12.47],[-55.55,-12.47],[-55.55,-12.69],[-55.78,-12.69],[-55.78,-12.47]]]}')::geography) / 10000)::numeric, 4)
+    WHERE id = $1
+  `,
+    farms[0].id,
+  );
+  console.log('  ✓ Perímetro: Fazenda Santa Helena');
+
+  // Recanto do Sol: retângulo ~185 ha em Jaú/SP
+  await prisma.$executeRawUnsafe(
+    `
+    UPDATE farms
+    SET boundary = ST_GeomFromGeoJSON('{"type":"Polygon","coordinates":[[[-48.57,-22.29],[-48.555,-22.29],[-48.555,-22.30],[-48.57,-22.30],[-48.57,-22.29]]]}'),
+        "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON('{"type":"Polygon","coordinates":[[[-48.57,-22.29],[-48.555,-22.29],[-48.555,-22.30],[-48.57,-22.30],[-48.57,-22.29]]]}')::geography) / 10000)::numeric, 4)
+    WHERE id = $1
+  `,
+    farms[3].id,
+  );
+  console.log('  ✓ Perímetro: Sítio Recanto do Sol');
+
+  // Matrícula 15.234 (Santa Helena): sub-polígono
+  await prisma.$executeRawUnsafe(
+    `
+    UPDATE farm_registrations
+    SET boundary = ST_GeomFromGeoJSON('{"type":"Polygon","coordinates":[[[-55.78,-12.47],[-55.62,-12.47],[-55.62,-12.69],[-55.78,-12.69],[-55.78,-12.47]]]}'),
+        "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON('{"type":"Polygon","coordinates":[[[-55.78,-12.47],[-55.62,-12.47],[-55.62,-12.69],[-55.78,-12.69],[-55.78,-12.47]]]}')::geography) / 10000)::numeric, 4)
+    WHERE id = $1
+  `,
+    farmRegistrations[0].id,
+  );
+  console.log('  ✓ Perímetro: Matrícula 15.234 (Santa Helena)');
+
   // Audit Logs de exemplo
   console.log('');
   const auditLogs = [

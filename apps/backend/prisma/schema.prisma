@@ -153,6 +153,7 @@ model Farm {
   utilizationDegree    Decimal?                              @db.Decimal(5, 2)
   status               FarmStatus                            @default(ACTIVE)
   organizationId       String
+  boundaryAreaHa       Decimal?                              @db.Decimal(12, 4)
   location             Unsupported("geometry(Point, 4326)")?
   boundary             Unsupported("geometry(Polygon, 4326)")?
   createdAt            DateTime                              @default(now())
@@ -179,6 +180,8 @@ model FarmRegistration {
   livro            String?
   registrationDate DateTime?
   areaHa           Decimal   @db.Decimal(12, 4)
+  boundaryAreaHa   Decimal?  @db.Decimal(12, 4)
+  boundary         Unsupported("geometry(Polygon, 4326)")?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 

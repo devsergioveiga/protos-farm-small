@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import multer, { memoryStorage } from 'multer';
+import path from 'path';
 import { authenticate } from '../../middleware/auth';
 import { checkPermission } from '../../middleware/check-permission';
 import { checkFarmAccess } from '../../middleware/check-farm-access';
@@ -14,8 +16,14 @@ import {
   addRegistration,
   updateRegistration,
   deleteRegistration,
+  uploadFarmBoundary,
+  uploadRegistrationBoundary,
+  getFarmBoundary,
+  getRegistrationBoundary,
+  deleteFarmBoundary,
+  deleteRegistrationBoundary,
 } from './farms.service';
-import { FarmError } from './farms.types';
+import { FarmError, ALLOWED_GEO_EXTENSIONS, MAX_GEO_FILE_SIZE } from './farms.types';
 
 export const farmsRouter = Router();
 
@@ -340,6 +348,290 @@ farmsRouter.delete(
       });
 
       res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// ─── Multer config for geo file uploads ─────────────────────────────
+
+const geoUpload = multer({
+  storage: memoryStorage(),
+  limits: { fileSize: MAX_GEO_FILE_SIZE },
+  fileFilter: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if ((ALLOWED_GEO_EXTENSIONS as readonly string[]).includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(
+        new Error(`Formato não suportado. Extensões aceitas: ${ALLOWED_GEO_EXTENSIONS.join(', ')}`),
+      );
+    }
+  },
+});
+
+// Wrap multer to catch fileFilter errors and return 400
+function handleGeoUpload(
+  req: import('express').Request,
+  res: import('express').Response,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    geoUpload.single('file')(req, res, (err: unknown) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          res
+            .status(400)
+            .json({
+              error:
+                err.code === 'LIMIT_FILE_SIZE' ? 'Arquivo excede o limite de 10 MB' : err.message,
+            });
+        } else if (err instanceof Error) {
+          res.status(400).json({ error: err.message });
+        } else {
+          reject(err);
+        }
+        resolve();
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+// ─── Boundary Endpoints ─────────────────────────────────────────────
+
+// POST /org/farms/:farmId/boundary
+farmsRouter.post(
+  '/org/farms/:farmId/boundary',
+  authenticate,
+  checkPermission('farms:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    await handleGeoUpload(req, res);
+    if (res.headersSent) return;
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: 'Arquivo é obrigatório' });
+        return;
+      }
+
+      const ctx = buildRlsContext(req);
+      const result = await uploadFarmBoundary(
+        ctx,
+        req.params.farmId as string,
+        req.file.buffer,
+        req.file.originalname,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'UPLOAD_FARM_BOUNDARY',
+        targetType: 'farm',
+        targetId: req.params.farmId as string,
+        metadata: { filename: req.file.originalname, boundaryAreaHa: result.boundaryAreaHa },
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+        farmId: req.params.farmId as string,
+      });
+
+      res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      if (
+        err instanceof Error &&
+        (err.message.includes('Nenhum') ||
+          err.message.includes('inválido') ||
+          err.message.includes('mal-formado'))
+      ) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// GET /org/farms/:farmId/boundary
+farmsRouter.get(
+  '/org/farms/:farmId/boundary',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await getFarmBoundary(ctx, req.params.farmId as string);
+      res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// DELETE /org/farms/:farmId/boundary
+farmsRouter.delete(
+  '/org/farms/:farmId/boundary',
+  authenticate,
+  checkPermission('farms:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      await deleteFarmBoundary(ctx, req.params.farmId as string);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'DELETE_FARM_BOUNDARY',
+        targetType: 'farm',
+        targetId: req.params.farmId as string,
+        metadata: {},
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+        farmId: req.params.farmId as string,
+      });
+
+      res.json({ message: 'Perímetro removido com sucesso' });
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// POST /org/farms/:farmId/registrations/:regId/boundary
+farmsRouter.post(
+  '/org/farms/:farmId/registrations/:regId/boundary',
+  authenticate,
+  checkPermission('farms:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    await handleGeoUpload(req, res);
+    if (res.headersSent) return;
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: 'Arquivo é obrigatório' });
+        return;
+      }
+
+      const ctx = buildRlsContext(req);
+      const result = await uploadRegistrationBoundary(
+        ctx,
+        req.params.farmId as string,
+        req.params.regId as string,
+        req.file.buffer,
+        req.file.originalname,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'UPLOAD_REGISTRATION_BOUNDARY',
+        targetType: 'farm_registration',
+        targetId: req.params.regId as string,
+        metadata: {
+          farmId: req.params.farmId,
+          filename: req.file.originalname,
+          boundaryAreaHa: result.boundaryAreaHa,
+        },
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+        farmId: req.params.farmId as string,
+      });
+
+      res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      if (
+        err instanceof Error &&
+        (err.message.includes('Nenhum') ||
+          err.message.includes('inválido') ||
+          err.message.includes('mal-formado'))
+      ) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// GET /org/farms/:farmId/registrations/:regId/boundary
+farmsRouter.get(
+  '/org/farms/:farmId/registrations/:regId/boundary',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await getRegistrationBoundary(
+        ctx,
+        req.params.farmId as string,
+        req.params.regId as string,
+      );
+      res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// DELETE /org/farms/:farmId/registrations/:regId/boundary
+farmsRouter.delete(
+  '/org/farms/:farmId/registrations/:regId/boundary',
+  authenticate,
+  checkPermission('farms:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      await deleteRegistrationBoundary(
+        ctx,
+        req.params.farmId as string,
+        req.params.regId as string,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'DELETE_REGISTRATION_BOUNDARY',
+        targetType: 'farm_registration',
+        targetId: req.params.regId as string,
+        metadata: { farmId: req.params.farmId },
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+        farmId: req.params.farmId as string,
+      });
+
+      res.json({ message: 'Perímetro da matrícula removido com sucesso' });
     } catch (err) {
       if (err instanceof FarmError) {
         res.status(err.statusCode).json({ error: err.message });

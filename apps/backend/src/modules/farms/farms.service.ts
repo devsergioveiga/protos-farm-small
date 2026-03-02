@@ -11,7 +11,10 @@ import {
   type ListFarmsQuery,
   type CreateRegistrationInput,
   type UpdateRegistrationInput,
+  type BoundaryUploadResult,
+  type BoundaryInfo,
 } from './farms.types';
+import { parseGeoFile, validateGeometry } from './geo-parser';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -509,5 +512,275 @@ export async function deleteRegistration(ctx: RlsContext, farmId: string, regId:
     logger.info({ farmId, registrationId: regId }, 'Farm registration deleted');
 
     return { message: 'Matrícula removida com sucesso', areaDivergence };
+  });
+}
+
+// ─── Upload Farm Boundary ──────────────────────────────────────────
+
+export async function uploadFarmBoundary(
+  ctx: RlsContext,
+  farmId: string,
+  buffer: Buffer,
+  filename: string,
+): Promise<BoundaryUploadResult> {
+  const parsed = await parseGeoFile(buffer, filename);
+  const polygon = parsed.boundaries[0];
+  const warnings = [...parsed.warnings];
+
+  if (parsed.boundaries.length > 1) {
+    warnings.push('Múltiplos polígonos encontrados; usando o primeiro');
+  }
+
+  const validation = validateGeometry(polygon);
+  if (!validation.valid) {
+    throw new FarmError(`Geometria inválida: ${validation.errors.join('; ')}`, 400);
+  }
+
+  const geojsonStr = JSON.stringify(polygon);
+
+  return withRlsContext(ctx, async (tx) => {
+    const farm = await tx.farm.findUnique({ where: { id: farmId } });
+    if (!farm) {
+      throw new FarmError('Fazenda não encontrada', 404);
+    }
+
+    // Insert boundary and calculate area using PostGIS
+    const result = await prisma.$queryRawUnsafe<{ area_ha: number; is_valid: boolean }[]>(
+      `UPDATE farms
+       SET boundary = ST_GeomFromGeoJSON($1),
+           "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON($1)::geography) / 10000)::numeric, 4)
+       WHERE id = $2
+       RETURNING
+         ROUND((ST_Area(boundary::geography) / 10000)::numeric, 4)::float AS area_ha,
+         ST_IsValid(boundary) AS is_valid`,
+      geojsonStr,
+      farmId,
+    );
+
+    const boundaryAreaHa = result[0].area_ha;
+
+    if (!result[0].is_valid) {
+      warnings.push('PostGIS marcou a geometria como inválida (ST_IsValid=false)');
+    }
+
+    // Compare with totalAreaHa
+    const totalAreaHa = Number(farm.totalAreaHa);
+    let areaDivergence = null;
+    if (totalAreaHa > 0) {
+      const percentage =
+        Math.round(Math.abs((boundaryAreaHa - totalAreaHa) / totalAreaHa) * 10000) / 100;
+      areaDivergence = {
+        referenceAreaHa: totalAreaHa,
+        boundaryAreaHa,
+        percentage,
+        warning: percentage > 10,
+      };
+      if (areaDivergence.warning) {
+        warnings.push(
+          `Divergência de ${percentage}% entre área do perímetro (${boundaryAreaHa} ha) e área total cadastrada (${totalAreaHa} ha)`,
+        );
+      }
+    }
+
+    logger.info({ farmId, boundaryAreaHa }, 'Farm boundary uploaded');
+
+    return { boundaryAreaHa, areaDivergence, warnings };
+  });
+}
+
+// ─── Upload Registration Boundary ──────────────────────────────────
+
+export async function uploadRegistrationBoundary(
+  ctx: RlsContext,
+  farmId: string,
+  regId: string,
+  buffer: Buffer,
+  filename: string,
+): Promise<BoundaryUploadResult> {
+  const parsed = await parseGeoFile(buffer, filename);
+  const polygon = parsed.boundaries[0];
+  const warnings = [...parsed.warnings];
+
+  if (parsed.boundaries.length > 1) {
+    warnings.push('Múltiplos polígonos encontrados; usando o primeiro');
+  }
+
+  const validation = validateGeometry(polygon);
+  if (!validation.valid) {
+    throw new FarmError(`Geometria inválida: ${validation.errors.join('; ')}`, 400);
+  }
+
+  const geojsonStr = JSON.stringify(polygon);
+
+  return withRlsContext(ctx, async (tx) => {
+    const farm = await tx.farm.findUnique({
+      where: { id: farmId },
+      include: { registrations: true },
+    });
+    if (!farm) {
+      throw new FarmError('Fazenda não encontrada', 404);
+    }
+
+    const reg = farm.registrations.find((r) => r.id === regId);
+    if (!reg) {
+      throw new FarmError('Matrícula não encontrada', 404);
+    }
+
+    const result = await prisma.$queryRawUnsafe<{ area_ha: number; is_valid: boolean }[]>(
+      `UPDATE farm_registrations
+       SET boundary = ST_GeomFromGeoJSON($1),
+           "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON($1)::geography) / 10000)::numeric, 4)
+       WHERE id = $2
+       RETURNING
+         ROUND((ST_Area(boundary::geography) / 10000)::numeric, 4)::float AS area_ha,
+         ST_IsValid(boundary) AS is_valid`,
+      geojsonStr,
+      regId,
+    );
+
+    const boundaryAreaHa = result[0].area_ha;
+
+    if (!result[0].is_valid) {
+      warnings.push('PostGIS marcou a geometria como inválida (ST_IsValid=false)');
+    }
+
+    // Compare with registration areaHa
+    const refAreaHa = Number(reg.areaHa);
+    let areaDivergence = null;
+    if (refAreaHa > 0) {
+      const percentage =
+        Math.round(Math.abs((boundaryAreaHa - refAreaHa) / refAreaHa) * 10000) / 100;
+      areaDivergence = {
+        referenceAreaHa: refAreaHa,
+        boundaryAreaHa,
+        percentage,
+        warning: percentage > 10,
+      };
+      if (areaDivergence.warning) {
+        warnings.push(
+          `Divergência de ${percentage}% entre área do perímetro (${boundaryAreaHa} ha) e área da matrícula (${refAreaHa} ha)`,
+        );
+      }
+    }
+
+    logger.info({ farmId, regId, boundaryAreaHa }, 'Registration boundary uploaded');
+
+    return { boundaryAreaHa, areaDivergence, warnings };
+  });
+}
+
+// ─── Get Farm Boundary ─────────────────────────────────────────────
+
+export async function getFarmBoundary(ctx: RlsContext, farmId: string): Promise<BoundaryInfo> {
+  return withRlsContext(ctx, async (tx) => {
+    const farm = await tx.farm.findUnique({ where: { id: farmId } });
+    if (!farm) {
+      throw new FarmError('Fazenda não encontrada', 404);
+    }
+
+    const rows = await prisma.$queryRawUnsafe<{ geojson: string | null; area_ha: number | null }[]>(
+      `SELECT ST_AsGeoJSON(boundary)::text AS geojson, "boundaryAreaHa"::float AS area_ha
+       FROM farms WHERE id = $1`,
+      farmId,
+    );
+
+    const row = rows[0];
+    if (!row?.geojson) {
+      return { hasBoundary: false, boundaryAreaHa: null, boundaryGeoJSON: null };
+    }
+
+    return {
+      hasBoundary: true,
+      boundaryAreaHa: row.area_ha,
+      boundaryGeoJSON: JSON.parse(row.geojson) as GeoJSON.Polygon,
+    };
+  });
+}
+
+// ─── Get Registration Boundary ─────────────────────────────────────
+
+export async function getRegistrationBoundary(
+  ctx: RlsContext,
+  farmId: string,
+  regId: string,
+): Promise<BoundaryInfo> {
+  return withRlsContext(ctx, async (tx) => {
+    const farm = await tx.farm.findUnique({
+      where: { id: farmId },
+      include: { registrations: true },
+    });
+    if (!farm) {
+      throw new FarmError('Fazenda não encontrada', 404);
+    }
+
+    const reg = farm.registrations.find((r) => r.id === regId);
+    if (!reg) {
+      throw new FarmError('Matrícula não encontrada', 404);
+    }
+
+    const rows = await prisma.$queryRawUnsafe<{ geojson: string | null; area_ha: number | null }[]>(
+      `SELECT ST_AsGeoJSON(boundary)::text AS geojson, "boundaryAreaHa"::float AS area_ha
+       FROM farm_registrations WHERE id = $1`,
+      regId,
+    );
+
+    const row = rows[0];
+    if (!row?.geojson) {
+      return { hasBoundary: false, boundaryAreaHa: null, boundaryGeoJSON: null };
+    }
+
+    return {
+      hasBoundary: true,
+      boundaryAreaHa: row.area_ha,
+      boundaryGeoJSON: JSON.parse(row.geojson) as GeoJSON.Polygon,
+    };
+  });
+}
+
+// ─── Delete Farm Boundary ──────────────────────────────────────────
+
+export async function deleteFarmBoundary(ctx: RlsContext, farmId: string): Promise<void> {
+  return withRlsContext(ctx, async (tx) => {
+    const farm = await tx.farm.findUnique({ where: { id: farmId } });
+    if (!farm) {
+      throw new FarmError('Fazenda não encontrada', 404);
+    }
+
+    await prisma.$executeRawUnsafe(
+      `UPDATE farms SET boundary = NULL, "boundaryAreaHa" = NULL WHERE id = $1`,
+      farmId,
+    );
+
+    logger.info({ farmId }, 'Farm boundary deleted');
+  });
+}
+
+// ─── Delete Registration Boundary ──────────────────────────────────
+
+export async function deleteRegistrationBoundary(
+  ctx: RlsContext,
+  farmId: string,
+  regId: string,
+): Promise<void> {
+  return withRlsContext(ctx, async (tx) => {
+    const farm = await tx.farm.findUnique({
+      where: { id: farmId },
+      include: { registrations: true },
+    });
+    if (!farm) {
+      throw new FarmError('Fazenda não encontrada', 404);
+    }
+
+    const reg = farm.registrations.find((r) => r.id === regId);
+    if (!reg) {
+      throw new FarmError('Matrícula não encontrada', 404);
+    }
+
+    await prisma.$executeRawUnsafe(
+      `UPDATE farm_registrations SET boundary = NULL, "boundaryAreaHa" = NULL WHERE id = $1`,
+      regId,
+    );
+
+    logger.info({ farmId, regId }, 'Registration boundary deleted');
   });
 }
