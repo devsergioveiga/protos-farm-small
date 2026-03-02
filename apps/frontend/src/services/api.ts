@@ -123,6 +123,32 @@ class ApiClient {
     return this.request<T>('DELETE', path, body);
   }
 
+  async getBlob(path: string): Promise<Blob> {
+    const token = this.getAccessToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      const errorBody = (await response.json().catch(() => ({}))) as ApiError;
+      const error = new Error(errorBody.error || 'Erro inesperado') as Error & {
+        status: number;
+        details?: string[];
+      };
+      error.status = response.status;
+      error.details = errorBody.details;
+      throw error;
+    }
+
+    return response.blob();
+  }
+
   async postFormData<T>(path: string, formData: FormData): Promise<T> {
     const token = this.getAccessToken();
     const headers: Record<string, string> = {};

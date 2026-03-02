@@ -159,6 +159,58 @@ export interface BulkImportResult {
   warnings: string[];
 }
 
+// ─── Plot History ───────────────────────────────────────────────────
+
+export interface CropSeasonItem {
+  id: string;
+  plotId: string;
+  farmId: string;
+  seasonType: string;
+  seasonYear: string;
+  crop: string;
+  varietyName: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  plantedAreaHa: number | null;
+  productivityKgHa: number | null;
+  totalProductionKg: number | null;
+  operations: unknown[];
+  notes: string | null;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface SoilAnalysisItem {
+  id: string;
+  plotId: string;
+  farmId: string;
+  analysisDate: string;
+  labName: string | null;
+  sampleDepthCm: string | null;
+  phH2o: number | null;
+  organicMatterPct: number | null;
+  phosphorusMgDm3: number | null;
+  potassiumMgDm3: number | null;
+  calciumCmolcDm3: number | null;
+  magnesiumCmolcDm3: number | null;
+  aluminumCmolcDm3: number | null;
+  ctcCmolcDm3: number | null;
+  baseSaturationPct: number | null;
+  sulfurMgDm3: number | null;
+  clayContentPct: number | null;
+  notes: string | null;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface RotationIndicator {
+  level: 0 | 1 | 2 | 3;
+  label: string;
+  description: string;
+  uniqueCrops: string[];
+  seasonsAnalyzed: number;
+}
+
 // ─── Subdivide & Merge ──────────────────────────────────────────────
 
 export interface SubdividePreviewResult {

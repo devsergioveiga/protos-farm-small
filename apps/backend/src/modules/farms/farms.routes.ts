@@ -42,8 +42,12 @@ import {
   executeMerge,
 } from './farms.service';
 import { FarmError, ALLOWED_GEO_EXTENSIONS, MAX_GEO_FILE_SIZE } from './farms.types';
+import { plotHistoryRouter } from './plot-history.routes';
 
 export const farmsRouter = Router();
+
+// Mount plot history sub-router
+farmsRouter.use('/org/farms/:farmId/plots/:plotId', plotHistoryRouter);
 
 function getClientIp(req: import('express').Request): string {
   const forwarded = req.headers['x-forwarded-for'];

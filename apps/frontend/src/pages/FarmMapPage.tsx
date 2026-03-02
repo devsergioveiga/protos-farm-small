@@ -14,6 +14,7 @@ import PlotSummaryBar from '@/components/map/PlotSummaryBar';
 import type { FieldPlot, UpdatePlotBoundaryResult } from '@/types/farm';
 import './FarmMapPage.css';
 
+const PlotHistoryPanel = lazy(() => import('@/components/map/PlotHistoryPanel'));
 const BulkImportModal = lazy(() => import('@/components/bulk-import/BulkImportModal'));
 const PlotGeometryEditor = lazy(() => import('@/components/map/PlotGeometryEditor'));
 const ConfirmBoundaryEdit = lazy(() => import('@/components/map/ConfirmBoundaryEdit'));
@@ -64,6 +65,7 @@ function FarmMapPage() {
   const [pendingSave, setPendingSave] = useState<PendingSaveState | null>(null);
   const [subdividingPlot, setSubdividingPlot] = useState<EditingPlotState | null>(null);
   const [isMergeMode, setIsMergeMode] = useState(false);
+  const [historyPlot, setHistoryPlot] = useState<FieldPlot | null>(null);
 
   const handleToggleLayer = useCallback((layerId: string) => {
     setLayers((prev) =>
@@ -89,6 +91,11 @@ function FarmMapPage() {
       }
       return next;
     });
+  }, []);
+
+  const handleViewHistory = useCallback((plot: FieldPlot) => {
+    setHistoryPlot(plot);
+    setSelectedPlot(null);
   }, []);
 
   const handleEditGeometry = useCallback(
@@ -259,7 +266,18 @@ function FarmMapPage() {
           onClose={() => setSelectedPlot(null)}
           onEditGeometry={handleEditGeometry}
           onSubdivide={handleSubdivide}
+          onViewHistory={handleViewHistory}
         />
+
+        {historyPlot && farmId && (
+          <Suspense fallback={null}>
+            <PlotHistoryPanel
+              plot={historyPlot}
+              farmId={farmId}
+              onClose={() => setHistoryPlot(null)}
+            />
+          </Suspense>
+        )}
 
         {editingPlot && (
           <Suspense fallback={null}>
