@@ -45,6 +45,10 @@ jest.mock('./farms.service', () => ({
   getFieldPlotsSummary: jest.fn(),
   previewBulkImport: jest.fn(),
   executeBulkImport: jest.fn(),
+  previewSubdivide: jest.fn(),
+  executeSubdivide: jest.fn(),
+  previewMerge: jest.fn(),
+  executeMerge: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -1871,6 +1875,234 @@ describe('Farms endpoints', () => {
 
     it('ADMIN should have farms:delete permission', () => {
       expect(DEFAULT_ROLE_PERMISSIONS.ADMIN).toContain('farms:delete');
+    });
+  });
+
+  // ─── Subdivide ────────────────────────────────────────────────────
+
+  describe('POST /api/org/farms/:farmId/plots/:plotId/subdivide/preview', () => {
+    const validCutLine = {
+      type: 'LineString',
+      coordinates: [
+        [-47.0, -22.0],
+        [-47.0, -22.1],
+      ],
+    };
+
+    it('should return 200 with 2 parts for valid cut line', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.previewSubdivide.mockResolvedValue({
+        parts: [
+          {
+            suggestedName: 'T1 - A',
+            areaHa: 5.0,
+            geojson: {
+              type: 'Polygon',
+              coordinates: [
+                [
+                  [0, 0],
+                  [1, 0],
+                  [1, 1],
+                  [0, 0],
+                ],
+              ],
+            },
+          },
+          {
+            suggestedName: 'T1 - B',
+            areaHa: 3.0,
+            geojson: {
+              type: 'Polygon',
+              coordinates: [
+                [
+                  [0, 0],
+                  [0, 1],
+                  [1, 1],
+                  [0, 0],
+                ],
+              ],
+            },
+          },
+        ],
+        originalAreaHa: 8.0,
+      });
+
+      const res = await request(app)
+        .post('/api/org/farms/farm-1/plots/plot-1/subdivide/preview')
+        .set('Authorization', 'Bearer token')
+        .send({ cutLine: validCutLine });
+
+      expect(res.status).toBe(200);
+      expect(res.body.parts).toHaveLength(2);
+      expect(res.body.originalAreaHa).toBe(8.0);
+    });
+
+    it('should return 422 when cut line does not split', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.previewSubdivide.mockRejectedValue(
+        new FarmError('Linha de corte não divide o talhão em duas partes', 422),
+      );
+
+      const res = await request(app)
+        .post('/api/org/farms/farm-1/plots/plot-1/subdivide/preview')
+        .set('Authorization', 'Bearer token')
+        .send({ cutLine: validCutLine });
+
+      expect(res.status).toBe(422);
+    });
+
+    it('should return 400 when cutLine is missing', async () => {
+      authAs(ADMIN_PAYLOAD);
+
+      const res = await request(app)
+        .post('/api/org/farms/farm-1/plots/plot-1/subdivide/preview')
+        .set('Authorization', 'Bearer token')
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('cutLine');
+    });
+  });
+
+  describe('POST /api/org/farms/:farmId/plots/:plotId/subdivide', () => {
+    const validCutLine = {
+      type: 'LineString',
+      coordinates: [
+        [-47.0, -22.0],
+        [-47.0, -22.1],
+      ],
+    };
+
+    it('should return 200 with 2 new plots', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.executeSubdivide.mockResolvedValue({
+        plots: [
+          { id: 'new-1', name: 'T1 - A', boundaryAreaHa: 5.0 },
+          { id: 'new-2', name: 'T1 - B', boundaryAreaHa: 3.0 },
+        ],
+        archivedPlotId: 'plot-1',
+      });
+
+      const res = await request(app)
+        .post('/api/org/farms/farm-1/plots/plot-1/subdivide')
+        .set('Authorization', 'Bearer token')
+        .send({ cutLine: validCutLine, names: ['T1 - A', 'T1 - B'] });
+
+      expect(res.status).toBe(200);
+      expect(res.body.plots).toHaveLength(2);
+      expect(res.body.archivedPlotId).toBe('plot-1');
+      expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'SUBDIVIDE_FIELD_PLOT' }),
+      );
+    });
+
+    it('should return 400 when names are missing', async () => {
+      authAs(ADMIN_PAYLOAD);
+
+      const res = await request(app)
+        .post('/api/org/farms/farm-1/plots/plot-1/subdivide')
+        .set('Authorization', 'Bearer token')
+        .send({ cutLine: validCutLine });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('names');
+    });
+  });
+
+  // ─── Merge ────────────────────────────────────────────────────────
+
+  describe('POST /api/org/farms/:farmId/plots/merge/preview', () => {
+    it('should return 200 with merged polygon', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.previewMerge.mockResolvedValue({
+        mergedGeojson: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [0, 0],
+              [2, 0],
+              [2, 2],
+              [0, 2],
+              [0, 0],
+            ],
+          ],
+        },
+        mergedAreaHa: 10.0,
+        sourcePlots: [
+          { id: 'plot-1', name: 'T1', areaHa: 5.0 },
+          { id: 'plot-2', name: 'T2', areaHa: 5.0 },
+        ],
+        suggestedName: 'T1',
+      });
+
+      const res = await request(app)
+        .post('/api/org/farms/farm-1/plots/merge/preview')
+        .set('Authorization', 'Bearer token')
+        .send({ plotIds: ['plot-1', 'plot-2'] });
+
+      expect(res.status).toBe(200);
+      expect(res.body.mergedAreaHa).toBe(10.0);
+      expect(res.body.sourcePlots).toHaveLength(2);
+    });
+
+    it('should return 422 when plots are not adjacent', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.previewMerge.mockRejectedValue(
+        new FarmError('Talhões selecionados não são adjacentes', 422),
+      );
+
+      const res = await request(app)
+        .post('/api/org/farms/farm-1/plots/merge/preview')
+        .set('Authorization', 'Bearer token')
+        .send({ plotIds: ['plot-1', 'plot-2'] });
+
+      expect(res.status).toBe(422);
+    });
+
+    it('should return 400 when plotIds has less than 2', async () => {
+      authAs(ADMIN_PAYLOAD);
+
+      const res = await request(app)
+        .post('/api/org/farms/farm-1/plots/merge/preview')
+        .set('Authorization', 'Bearer token')
+        .send({ plotIds: ['plot-1'] });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('pelo menos 2');
+    });
+  });
+
+  describe('POST /api/org/farms/:farmId/plots/merge', () => {
+    it('should return 200 with merged plot', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.executeMerge.mockResolvedValue({
+        plot: { id: 'merged-1', name: 'Talhão Unificado', boundaryAreaHa: 10.0 },
+        archivedPlotIds: ['plot-1', 'plot-2'],
+      });
+
+      const res = await request(app)
+        .post('/api/org/farms/farm-1/plots/merge')
+        .set('Authorization', 'Bearer token')
+        .send({ plotIds: ['plot-1', 'plot-2'], name: 'Talhão Unificado' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.plot.name).toBe('Talhão Unificado');
+      expect(res.body.archivedPlotIds).toEqual(['plot-1', 'plot-2']);
+      expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'MERGE_FIELD_PLOTS' }),
+      );
+    });
+
+    it('should return 400 when name is missing', async () => {
+      authAs(ADMIN_PAYLOAD);
+
+      const res = await request(app)
+        .post('/api/org/farms/farm-1/plots/merge')
+        .set('Authorization', 'Bearer token')
+        .send({ plotIds: ['plot-1', 'plot-2'] });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('Nome');
     });
   });
 });

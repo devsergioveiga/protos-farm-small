@@ -1,6 +1,6 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, Upload } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Upload, Combine } from 'lucide-react';
 import turfArea from '@turf/area';
 import { polygon as turfPolygon } from '@turf/helpers';
 import { useFarmMap } from '@/hooks/useFarmMap';
@@ -17,6 +17,8 @@ import './FarmMapPage.css';
 const BulkImportModal = lazy(() => import('@/components/bulk-import/BulkImportModal'));
 const PlotGeometryEditor = lazy(() => import('@/components/map/PlotGeometryEditor'));
 const ConfirmBoundaryEdit = lazy(() => import('@/components/map/ConfirmBoundaryEdit'));
+const PlotSubdivideEditor = lazy(() => import('@/components/map/PlotSubdivideEditor'));
+const PlotMergeEditor = lazy(() => import('@/components/map/PlotMergeEditor'));
 
 interface EditingPlotState {
   plot: FieldPlot;
@@ -60,6 +62,8 @@ function FarmMapPage() {
   const [cropFilter, setCropFilter] = useState<Set<string>>(new Set());
   const [editingPlot, setEditingPlot] = useState<EditingPlotState | null>(null);
   const [pendingSave, setPendingSave] = useState<PendingSaveState | null>(null);
+  const [subdividingPlot, setSubdividingPlot] = useState<EditingPlotState | null>(null);
+  const [isMergeMode, setIsMergeMode] = useState(false);
 
   const handleToggleLayer = useCallback((layerId: string) => {
     setLayers((prev) =>
@@ -97,6 +101,27 @@ function FarmMapPage() {
     },
     [data],
   );
+
+  const handleSubdivide = useCallback(
+    (plot: FieldPlot) => {
+      if (!data) return;
+      const pb = data.plotBoundaries.find((p) => p.plotId === plot.id);
+      if (!pb?.boundary.boundaryGeoJSON) return;
+      setSubdividingPlot({ plot, boundary: pb.boundary.boundaryGeoJSON });
+      setSelectedPlot(null);
+    },
+    [data],
+  );
+
+  const handleSubdivideComplete = useCallback(() => {
+    setSubdividingPlot(null);
+    void refetch();
+  }, [refetch]);
+
+  const handleMergeComplete = useCallback(() => {
+    setIsMergeMode(false);
+    void refetch();
+  }, [refetch]);
 
   const handleEditorSave = useCallback((geojson: GeoJSON.Polygon, previousAreaHa: number) => {
     const feature = turfPolygon(geojson.coordinates);
@@ -182,12 +207,22 @@ function FarmMapPage() {
 
         <button
           type="button"
-          className="farm-map-page__import-btn"
+          className="farm-map-page__header-btn"
+          onClick={() => setIsMergeMode(true)}
+          aria-label="Mesclar talhões"
+        >
+          <Combine size={20} aria-hidden="true" />
+          <span className="farm-map-page__header-btn-label">Mesclar talhões</span>
+        </button>
+
+        <button
+          type="button"
+          className="farm-map-page__header-btn"
           onClick={() => setIsBulkImportOpen(true)}
           aria-label="Importar talhões"
         >
           <Upload size={20} aria-hidden="true" />
-          <span className="farm-map-page__import-btn-label">Importar talhões</span>
+          <span className="farm-map-page__header-btn-label">Importar talhões</span>
         </button>
       </header>
 
@@ -223,6 +258,7 @@ function FarmMapPage() {
           plot={selectedPlot}
           onClose={() => setSelectedPlot(null)}
           onEditGeometry={handleEditGeometry}
+          onSubdivide={handleSubdivide}
         />
 
         {editingPlot && (
@@ -245,6 +281,32 @@ function FarmMapPage() {
               newAreaHa={pendingSave.newAreaHa}
               onConfirm={() => void handleConfirmSave()}
               onCancel={handleCancelSave}
+            />
+          </Suspense>
+        )}
+
+        {subdividingPlot && farmId && (
+          <Suspense fallback={null}>
+            <PlotSubdivideEditor
+              plot={subdividingPlot.plot}
+              plotBoundary={subdividingPlot.boundary}
+              farmBoundary={data.farmBoundary.boundaryGeoJSON}
+              otherPlots={data.plotBoundaries.filter((pb) => pb.plotId !== subdividingPlot.plot.id)}
+              farmId={farmId}
+              onComplete={handleSubdivideComplete}
+              onCancel={() => setSubdividingPlot(null)}
+            />
+          </Suspense>
+        )}
+
+        {isMergeMode && farmId && (
+          <Suspense fallback={null}>
+            <PlotMergeEditor
+              plotBoundaries={data.plotBoundaries}
+              farmBoundary={data.farmBoundary.boundaryGeoJSON}
+              farmId={farmId}
+              onComplete={handleMergeComplete}
+              onCancel={() => setIsMergeMode(false)}
             />
           </Suspense>
         )}

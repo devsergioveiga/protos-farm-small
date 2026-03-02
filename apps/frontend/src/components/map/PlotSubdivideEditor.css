@@ -1,0 +1,294 @@
+/* ─── Plot Subdivide Editor overlay ─── */
+
+.plot-subdivide {
+  position: absolute;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-neutral-0);
+}
+
+.plot-subdivide__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-0);
+  border-bottom: 1px solid var(--color-neutral-200);
+  z-index: 1;
+}
+
+.plot-subdivide__title {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-800);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.plot-subdivide__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.plot-subdivide__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  border: none;
+  min-height: 48px;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.plot-subdivide__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.plot-subdivide__btn--primary {
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+}
+
+.plot-subdivide__btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+}
+
+.plot-subdivide__btn--primary:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.plot-subdivide__btn--secondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.plot-subdivide__btn--secondary:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+}
+
+.plot-subdivide__btn--secondary:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Content area ─── */
+
+.plot-subdivide__content {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.plot-subdivide__map-container {
+  flex: 1;
+  position: relative;
+}
+
+.plot-subdivide__map-container .leaflet-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* ─── Hint overlay ─── */
+
+.plot-subdivide__hint {
+  position: absolute;
+  top: var(--space-3);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-4);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+
+.plot-subdivide__loading {
+  position: absolute;
+  top: var(--space-3);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-4);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+}
+
+.plot-subdivide__draw-error {
+  position: absolute;
+  bottom: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: var(--color-error-50, #fef2f2);
+  border: 1px solid var(--color-error-200, #fecaca);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-error-700, #b91c1c);
+}
+
+/* ─── Sidebar ─── */
+
+.plot-subdivide__sidebar {
+  width: 280px;
+  border-left: 1px solid var(--color-neutral-200);
+  padding: var(--space-4);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+.plot-subdivide__area-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-md);
+}
+
+.plot-subdivide__area-label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+}
+
+.plot-subdivide__area-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-800);
+}
+
+/* ─── Part card ─── */
+
+.plot-subdivide__part {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+}
+
+.plot-subdivide__part-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.plot-subdivide__part-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.plot-subdivide__part-area {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+}
+
+.plot-subdivide__name-label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+}
+
+.plot-subdivide__name-input {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+  min-height: 48px;
+}
+
+.plot-subdivide__name-input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -1px;
+  border-color: var(--color-primary-500);
+}
+
+.plot-subdivide__error {
+  color: var(--color-error-600, #dc2626);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+/* ─── Hide default leaflet-draw toolbar ─── */
+
+.plot-subdivide .leaflet-draw-toolbar {
+  display: none;
+}
+
+/* ─── Mobile ─── */
+
+@media (max-width: 767px) {
+  .plot-subdivide__content {
+    flex-direction: column;
+  }
+
+  .plot-subdivide__sidebar {
+    width: auto;
+    border-left: none;
+    border-top: 1px solid var(--color-neutral-200);
+    max-height: 40vh;
+  }
+
+  .plot-subdivide__toolbar {
+    flex-wrap: wrap;
+  }
+
+  .plot-subdivide__title {
+    width: 100%;
+    text-align: center;
+  }
+
+  .plot-subdivide__actions {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plot-subdivide__hint,
+  .plot-subdivide__loading {
+    transition: none;
+  }
+}

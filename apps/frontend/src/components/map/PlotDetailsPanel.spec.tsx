@@ -91,4 +91,20 @@ describe('PlotDetailsPanel', () => {
 
     expect(screen.queryByLabelText('Editar perímetro')).toBeNull();
   });
+
+  it('should show subdivide button when onSubdivide is provided', () => {
+    const onSubdivide = vi.fn();
+    render(<PlotDetailsPanel plot={PLOT} onClose={vi.fn()} onSubdivide={onSubdivide} />);
+
+    const subdivideBtn = screen.getByLabelText('Subdividir talhão');
+    expect(subdivideBtn).toBeDefined();
+    fireEvent.click(subdivideBtn);
+    expect(onSubdivide).toHaveBeenCalledWith(PLOT);
+  });
+
+  it('should not show subdivide button when onSubdivide is not provided', () => {
+    render(<PlotDetailsPanel plot={PLOT} onClose={vi.fn()} />);
+
+    expect(screen.queryByLabelText('Subdividir talhão')).toBeNull();
+  });
 });
