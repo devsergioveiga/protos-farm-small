@@ -1,0 +1,163 @@
+.soil-table__wrapper {
+  overflow: hidden;
+}
+
+.soil-table__empty {
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.soil-table__empty-text {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+/* ─── Desktop table ─── */
+
+.soil-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.soil-table thead th {
+  font-family: var(--font-body);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-500);
+  text-align: left;
+  padding: var(--space-2) var(--space-2);
+  border-bottom: 2px solid var(--color-neutral-200);
+  white-space: nowrap;
+  font-size: var(--text-xs);
+}
+
+.soil-table tbody td {
+  padding: var(--space-2) var(--space-2);
+  border-bottom: 1px solid var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+
+.soil-table__date {
+  font-family: var(--font-body);
+}
+
+.soil-table__value {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ─── Delta arrows ─── */
+
+.soil-delta {
+  flex-shrink: 0;
+}
+
+.soil-delta--up {
+  color: var(--color-primary-600);
+}
+
+.soil-delta--down {
+  color: var(--color-error-500, #c62828);
+}
+
+.soil-delta--neutral {
+  color: var(--color-neutral-400);
+}
+
+/* ─── Mobile cards ─── */
+
+.soil-cards {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .soil-table {
+    display: none;
+  }
+
+  .soil-cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .soil-card {
+    background: var(--color-neutral-50);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+  }
+
+  .soil-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-2);
+  }
+
+  .soil-card__date {
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--color-neutral-800);
+  }
+
+  .soil-card__lab {
+    font-family: var(--font-body);
+    font-size: var(--text-xs);
+    color: var(--color-neutral-500);
+  }
+
+  .soil-card__params {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-1) var(--space-3);
+    margin: 0;
+  }
+
+  .soil-card__param {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .soil-card__param dt {
+    font-family: var(--font-body);
+    font-size: var(--text-xs);
+    color: var(--color-neutral-500);
+  }
+
+  .soil-card__param dd {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-neutral-700);
+  }
+
+  .soil-card__unit {
+    font-family: var(--font-body);
+    font-size: 10px;
+    color: var(--color-neutral-400);
+  }
+}
+
+/* ─── Screen reader only ─── */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

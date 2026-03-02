@@ -82,6 +82,12 @@ enum IeCategory {
   UNICO
 }
 
+enum SeasonType {
+  SAFRA
+  SAFRINHA
+  INVERNO
+}
+
 enum SoilType {
   LATOSSOLO_VERMELHO
   LATOSSOLO_AMARELO
@@ -138,6 +144,8 @@ model User {
   farmAccess                UserFarmAccess[]
   boundaryUploads           FarmBoundaryVersion[]
   plotBoundaryEdits         FieldPlotBoundaryVersion[]
+  createdCropSeasons        PlotCropSeason[]
+  createdSoilAnalyses       PlotSoilAnalysis[]
 
   @@map("users")
 }
@@ -183,6 +191,8 @@ model Farm {
   boundaryVersions           FarmBoundaryVersion[]
   fieldPlots                 FieldPlot[]
   fieldPlotBoundaryVersions  FieldPlotBoundaryVersion[]
+  plotCropSeasons            PlotCropSeason[]
+  plotSoilAnalyses           PlotSoilAnalysis[]
 
   @@map("farms")
 }
@@ -467,6 +477,8 @@ model FieldPlot {
   farm              Farm              @relation(fields: [farmId], references: [id], onDelete: Cascade)
   registration      FarmRegistration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
   boundaryVersions  FieldPlotBoundaryVersion[]
+  cropSeasons       PlotCropSeason[]
+  soilAnalyses      PlotSoilAnalysis[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -491,4 +503,68 @@ model FieldPlotBoundaryVersion {
   @@index([plotId])
   @@index([farmId])
   @@map("field_plot_boundary_versions")
+}
+
+// ─── Plot Usage History ────────────────────────────────────────────
+
+model PlotCropSeason {
+  id                String     @id @default(uuid())
+  plotId            String
+  farmId            String
+  seasonType        SeasonType
+  seasonYear        String
+  crop              String
+  varietyName       String?
+  startDate         DateTime?  @db.Date
+  endDate           DateTime?  @db.Date
+  plantedAreaHa     Decimal?   @db.Decimal(12, 4)
+  productivityKgHa  Decimal?   @db.Decimal(12, 2)
+  totalProductionKg Decimal?   @db.Decimal(14, 2)
+  operations        Json?      @default("[]")
+  notes             String?
+  createdBy         String
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  plot    FieldPlot @relation(fields: [plotId], references: [id], onDelete: Cascade)
+  farm    Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  creator User      @relation(fields: [createdBy], references: [id])
+
+  @@index([plotId])
+  @@index([farmId])
+  @@index([startDate])
+  @@map("plot_crop_seasons")
+}
+
+model PlotSoilAnalysis {
+  id                  String   @id @default(uuid())
+  plotId              String
+  farmId              String
+  analysisDate        DateTime @db.Date
+  labName             String?
+  sampleDepthCm       String?
+  phH2o               Decimal? @db.Decimal(4, 2)
+  organicMatterPct    Decimal? @db.Decimal(5, 2)
+  phosphorusMgDm3     Decimal? @db.Decimal(8, 2)
+  potassiumMgDm3      Decimal? @db.Decimal(8, 2)
+  calciumCmolcDm3     Decimal? @db.Decimal(8, 2)
+  magnesiumCmolcDm3   Decimal? @db.Decimal(8, 2)
+  aluminumCmolcDm3    Decimal? @db.Decimal(8, 2)
+  ctcCmolcDm3         Decimal? @db.Decimal(8, 2)
+  baseSaturationPct   Decimal? @db.Decimal(5, 2)
+  sulfurMgDm3         Decimal? @db.Decimal(8, 2)
+  clayContentPct      Decimal? @db.Decimal(5, 2)
+  notes               String?
+  createdBy           String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  plot    FieldPlot @relation(fields: [plotId], references: [id], onDelete: Cascade)
+  farm    Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  creator User      @relation(fields: [createdBy], references: [id])
+
+  @@index([plotId])
+  @@index([farmId])
+  @@index([analysisDate])
+  @@map("plot_soil_analyses")
 }

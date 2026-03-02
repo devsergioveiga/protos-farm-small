@@ -824,6 +824,168 @@ async function main() {
   );
   console.log('  ✓ Versão 2 do Talhão A1 (edição via mapa)');
 
+  // ─── Safras (Plot Crop Seasons) ─────────────────────────────────────
+  console.log('\n  Criando safras dos talhões...');
+
+  await prisma.$executeRawUnsafe(`DELETE FROM plot_crop_seasons`);
+  await prisma.$executeRawUnsafe(`DELETE FROM plot_soil_analyses`);
+
+  const cropSeasons = [
+    {
+      id: 'pcs-0001-4000-8000-000000000001',
+      plotId: fieldPlots[0].id, // Talhão A1 — Soja
+      farmId: farms[0].id,
+      seasonType: 'SAFRA',
+      seasonYear: '2024/2025',
+      crop: 'Soja',
+      varietyName: 'TMG 2381 IPRO',
+      startDate: new Date('2024-10-15'),
+      endDate: new Date('2025-02-28'),
+      plantedAreaHa: 1300,
+      productivityKgHa: 3600,
+      totalProductionKg: 4680000,
+      operations: JSON.stringify([
+        { date: '2024-10-15', type: 'plantio', description: 'Plantio direto' },
+        { date: '2024-12-01', type: 'pulverização', description: 'Fungicida' },
+        { date: '2025-02-28', type: 'colheita', description: 'Colheita mecanizada' },
+      ]),
+      notes: 'Boa produtividade, sem perdas significativas',
+      createdBy: users[3].id, // Ana (AGRONOMIST)
+    },
+    {
+      id: 'pcs-0001-4000-8000-000000000002',
+      plotId: fieldPlots[0].id, // Talhão A1 — safrinha anterior
+      farmId: farms[0].id,
+      seasonType: 'SAFRINHA',
+      seasonYear: '2024',
+      crop: 'Milho',
+      varietyName: 'AG 9025 PRO3',
+      startDate: new Date('2024-03-01'),
+      endDate: new Date('2024-07-15'),
+      plantedAreaHa: 1300,
+      productivityKgHa: 5400,
+      totalProductionKg: 7020000,
+      operations: JSON.stringify([]),
+      notes: null,
+      createdBy: users[3].id,
+    },
+    {
+      id: 'pcs-0001-4000-8000-000000000003',
+      plotId: fieldPlots[1].id, // Talhão A2 — Milho
+      farmId: farms[0].id,
+      seasonType: 'SAFRA',
+      seasonYear: '2024/2025',
+      crop: 'Milho',
+      varietyName: 'DKB 310 PRO3',
+      startDate: new Date('2024-10-20'),
+      endDate: new Date('2025-03-10'),
+      plantedAreaHa: 1200,
+      productivityKgHa: 8200,
+      totalProductionKg: 9840000,
+      operations: JSON.stringify([]),
+      notes: 'Safra cheia de milho',
+      createdBy: users[3].id,
+    },
+  ];
+
+  for (const cs of cropSeasons) {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO plot_crop_seasons (id, "plotId", "farmId", "seasonType", "seasonYear", crop, "varietyName", "startDate", "endDate", "plantedAreaHa", "productivityKgHa", "totalProductionKg", operations, notes, "createdBy", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4::"SeasonType", $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb, $14, $15, now(), now())`,
+      cs.id,
+      cs.plotId,
+      cs.farmId,
+      cs.seasonType,
+      cs.seasonYear,
+      cs.crop,
+      cs.varietyName,
+      cs.startDate,
+      cs.endDate,
+      cs.plantedAreaHa,
+      cs.productivityKgHa,
+      cs.totalProductionKg,
+      cs.operations,
+      cs.notes,
+      cs.createdBy,
+    );
+    console.log(`  ✓ Safra: ${cs.crop} ${cs.seasonYear} (${cs.seasonType})`);
+  }
+
+  // ─── Análises de Solo ──────────────────────────────────────────────
+  console.log('\n  Criando análises de solo...');
+
+  const soilAnalyses = [
+    {
+      id: 'psa-0001-4000-8000-000000000001',
+      plotId: fieldPlots[0].id, // Talhão A1
+      farmId: farms[0].id,
+      analysisDate: new Date('2024-08-15'),
+      labName: 'Laboratório de Solos MT',
+      sampleDepthCm: '0-20',
+      phH2o: 5.8,
+      organicMatterPct: 3.2,
+      phosphorusMgDm3: 12.5,
+      potassiumMgDm3: 85,
+      calciumCmolcDm3: 4.2,
+      magnesiumCmolcDm3: 1.8,
+      aluminumCmolcDm3: 0.1,
+      ctcCmolcDm3: 8.5,
+      baseSaturationPct: 62,
+      sulfurMgDm3: 8,
+      clayContentPct: 45,
+      notes: 'Solo em boas condições para soja',
+      createdBy: users[3].id,
+    },
+    {
+      id: 'psa-0001-4000-8000-000000000002',
+      plotId: fieldPlots[0].id, // Talhão A1 — análise anterior
+      farmId: farms[0].id,
+      analysisDate: new Date('2023-08-10'),
+      labName: 'Laboratório de Solos MT',
+      sampleDepthCm: '0-20',
+      phH2o: 5.4,
+      organicMatterPct: 2.8,
+      phosphorusMgDm3: 9.5,
+      potassiumMgDm3: 72,
+      calciumCmolcDm3: 3.5,
+      magnesiumCmolcDm3: 1.5,
+      aluminumCmolcDm3: 0.3,
+      ctcCmolcDm3: 7.8,
+      baseSaturationPct: 55,
+      sulfurMgDm3: 6,
+      clayContentPct: 45,
+      notes: 'Recomendada calagem para elevação de V%',
+      createdBy: users[3].id,
+    },
+  ];
+
+  for (const sa of soilAnalyses) {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO plot_soil_analyses (id, "plotId", "farmId", "analysisDate", "labName", "sampleDepthCm", "phH2o", "organicMatterPct", "phosphorusMgDm3", "potassiumMgDm3", "calciumCmolcDm3", "magnesiumCmolcDm3", "aluminumCmolcDm3", "ctcCmolcDm3", "baseSaturationPct", "sulfurMgDm3", "clayContentPct", notes, "createdBy", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, now(), now())`,
+      sa.id,
+      sa.plotId,
+      sa.farmId,
+      sa.analysisDate,
+      sa.labName,
+      sa.sampleDepthCm,
+      sa.phH2o,
+      sa.organicMatterPct,
+      sa.phosphorusMgDm3,
+      sa.potassiumMgDm3,
+      sa.calciumCmolcDm3,
+      sa.magnesiumCmolcDm3,
+      sa.aluminumCmolcDm3,
+      sa.ctcCmolcDm3,
+      sa.baseSaturationPct,
+      sa.sulfurMgDm3,
+      sa.clayContentPct,
+      sa.notes,
+      sa.createdBy,
+    );
+    console.log(`  ✓ Análise: ${sa.analysisDate.toISOString().split('T')[0]} (${sa.labName})`);
+  }
+
   // Audit Logs de exemplo
   console.log('');
   const auditLogs = [

@@ -1,4 +1,4 @@
-import { X, Pencil, Scissors } from 'lucide-react';
+import { X, Pencil, Scissors, BookOpen } from 'lucide-react';
 import { getCropColor, formatArea } from './FarmMap';
 import type { FieldPlot } from '@/types/farm';
 import './PlotDetailsPanel.css';
@@ -8,6 +8,7 @@ interface PlotDetailsPanelProps {
   onClose: () => void;
   onEditGeometry?: (plot: FieldPlot) => void;
   onSubdivide?: (plot: FieldPlot) => void;
+  onViewHistory?: (plot: FieldPlot) => void;
 }
 
 function formatSoilType(soilType: string): string {
@@ -21,7 +22,13 @@ function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('pt-BR');
 }
 
-function PlotDetailsPanel({ plot, onClose, onEditGeometry, onSubdivide }: PlotDetailsPanelProps) {
+function PlotDetailsPanel({
+  plot,
+  onClose,
+  onEditGeometry,
+  onSubdivide,
+  onViewHistory,
+}: PlotDetailsPanelProps) {
   if (!plot) return null;
 
   const cropColor = getCropColor(plot.currentCrop);
@@ -38,6 +45,16 @@ function PlotDetailsPanel({ plot, onClose, onEditGeometry, onSubdivide }: PlotDe
           <h2 className="plot-details__name">{plot.name}</h2>
         </div>
         <div className="plot-details__header-actions">
+          {onViewHistory && (
+            <button
+              type="button"
+              className="plot-details__action-btn"
+              onClick={() => onViewHistory(plot)}
+              aria-label="Ver histórico do talhão"
+            >
+              <BookOpen size={20} aria-hidden="true" />
+            </button>
+          )}
           {onSubdivide && (
             <button
               type="button"
