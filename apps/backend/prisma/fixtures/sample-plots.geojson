@@ -1,0 +1,100 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "nome": "Talhão Norte",
+        "cultura": "soja",
+        "solo": "LATOSSOLO_VERMELHO",
+        "codigo": "TN-01"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-55.76, -12.48],
+          [-55.68, -12.48],
+          [-55.68, -12.54],
+          [-55.76, -12.54],
+          [-55.76, -12.48]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "nome": "Talhão Central",
+        "cultura": "milho",
+        "solo": "LATOSSOLO_AMARELO",
+        "codigo": "TC-02"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-55.67, -12.48],
+          [-55.59, -12.48],
+          [-55.59, -12.54],
+          [-55.67, -12.54],
+          [-55.67, -12.48]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "nome": "Talhão Sul A",
+        "cultura": "café",
+        "solo": "ARGISSOLO",
+        "codigo": "TS-03"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-55.76, -12.55],
+          [-55.68, -12.55],
+          [-55.68, -12.62],
+          [-55.76, -12.62],
+          [-55.76, -12.55]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "nome": "Talhão Sul B",
+        "cultura": "soja",
+        "solo": "LATOSSOLO_VERMELHO",
+        "codigo": "TS-04"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-55.67, -12.55],
+          [-55.59, -12.55],
+          [-55.59, -12.62],
+          [-55.67, -12.62],
+          [-55.67, -12.55]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "nome": "Talhão Reserva",
+        "cultura": "pastagem",
+        "solo": "NEOSSOLO",
+        "codigo": "TR-05"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-55.76, -12.63],
+          [-55.59, -12.63],
+          [-55.59, -12.68],
+          [-55.76, -12.68],
+          [-55.76, -12.63]
+        ]]
+      }
+    }
+  ]
+}

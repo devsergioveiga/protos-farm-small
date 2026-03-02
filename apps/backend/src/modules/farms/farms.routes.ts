@@ -32,6 +32,8 @@ import {
   getFieldPlotBoundary,
   deleteFieldPlot,
   getFieldPlotsSummary,
+  previewBulkImport,
+  executeBulkImport,
 } from './farms.service';
 import { FarmError, ALLOWED_GEO_EXTENSIONS, MAX_GEO_FILE_SIZE } from './farms.types';
 
@@ -744,6 +746,143 @@ farmsRouter.get(
     } catch (err) {
       if (err instanceof FarmError) {
         res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// ─── Bulk Import Endpoints ────────────────────────────────────────
+
+// POST /org/farms/:farmId/plots/bulk/preview
+farmsRouter.post(
+  '/org/farms/:farmId/plots/bulk/preview',
+  authenticate,
+  checkPermission('farms:create'),
+  checkFarmAccess(),
+  async (req, res) => {
+    await handleGeoUpload(req, res);
+    if (res.headersSent) return;
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: 'Arquivo é obrigatório' });
+        return;
+      }
+
+      const ctx = buildRlsContext(req);
+      const result = await previewBulkImport(
+        ctx,
+        req.params.farmId as string,
+        req.file.buffer,
+        req.file.originalname,
+      );
+
+      res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      if (
+        err instanceof Error &&
+        (err.message.includes('Nenhum') ||
+          err.message.includes('inválido') ||
+          err.message.includes('mal-formado'))
+      ) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// POST /org/farms/:farmId/plots/bulk
+farmsRouter.post(
+  '/org/farms/:farmId/plots/bulk',
+  authenticate,
+  checkPermission('farms:create'),
+  checkFarmAccess(),
+  async (req, res) => {
+    await handleGeoUpload(req, res);
+    if (res.headersSent) return;
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: 'Arquivo é obrigatório' });
+        return;
+      }
+
+      // Parse JSON fields from multipart form data
+      let columnMapping = {};
+      let selectedIndices: number[] = [];
+      let registrationId: string | undefined;
+      let defaultName: string | undefined;
+
+      try {
+        if (req.body.columnMapping) {
+          columnMapping = JSON.parse(req.body.columnMapping as string);
+        }
+        if (req.body.selectedIndices) {
+          selectedIndices = JSON.parse(req.body.selectedIndices as string);
+        }
+      } catch {
+        res.status(400).json({ error: 'Formato inválido de columnMapping ou selectedIndices' });
+        return;
+      }
+
+      if (req.body.registrationId) {
+        registrationId = req.body.registrationId as string;
+      }
+      if (req.body.defaultName) {
+        defaultName = req.body.defaultName as string;
+      }
+
+      if (!Array.isArray(selectedIndices) || selectedIndices.length === 0) {
+        res.status(400).json({ error: 'selectedIndices deve ser um array não vazio' });
+        return;
+      }
+
+      const ctx = buildRlsContext(req);
+      const result = await executeBulkImport(
+        ctx,
+        req.params.farmId as string,
+        req.file.buffer,
+        req.file.originalname,
+        { columnMapping, selectedIndices, registrationId, defaultName },
+        req.user!.userId,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'BULK_IMPORT_FIELD_PLOTS',
+        targetType: 'farm',
+        targetId: req.params.farmId as string,
+        metadata: {
+          filename: req.file.originalname,
+          imported: result.imported,
+          skipped: result.skipped,
+        },
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+        farmId: req.params.farmId as string,
+      });
+
+      res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      if (
+        err instanceof Error &&
+        (err.message.includes('Nenhum') ||
+          err.message.includes('inválido') ||
+          err.message.includes('mal-formado'))
+      ) {
+        res.status(400).json({ error: err.message });
         return;
       }
       res.status(500).json({ error: 'Erro interno do servidor' });
