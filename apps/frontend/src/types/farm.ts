@@ -1,3 +1,11 @@
+export interface FarmLimitInfo {
+  current: number;
+  max: number;
+  percentage: number;
+  warning: boolean;
+  blocked: boolean;
+}
+
 export interface FarmRegistration {
   id: string;
   farmId: string;

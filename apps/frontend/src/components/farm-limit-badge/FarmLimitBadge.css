@@ -1,0 +1,67 @@
+/* ─── Farm Limit Badge ─────────────────────────────────────────── */
+
+.farm-limit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.farm-limit-badge--ok {
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+}
+
+.farm-limit-badge--warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.farm-limit-badge--blocked {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-700, #b91c1c);
+}
+
+.farm-limit-badge__text {
+  line-height: 1;
+}
+
+.farm-limit-badge__track {
+  width: 48px;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.farm-limit-badge__fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 300ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.farm-limit-badge--ok .farm-limit-badge__fill {
+  background: var(--color-primary-500);
+}
+
+.farm-limit-badge--warning .farm-limit-badge__fill {
+  background: #d97706;
+}
+
+.farm-limit-badge--blocked .farm-limit-badge__fill {
+  background: var(--color-error-500);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .farm-limit-badge__track {
+    display: none;
+  }
+}
