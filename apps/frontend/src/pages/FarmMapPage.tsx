@@ -1,9 +1,10 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, Upload, Combine } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Upload, Combine, FileText } from 'lucide-react';
 import turfArea from '@turf/area';
 import { polygon as turfPolygon } from '@turf/helpers';
 import { useFarmMap } from '@/hooks/useFarmMap';
+import { useRegistrations } from '@/hooks/useRegistrations';
 import { api } from '@/services/api';
 import FarmMap from '@/components/map/FarmMap';
 import BaseMapSelector, { type BaseMapType } from '@/components/map/BaseMapSelector';
@@ -11,7 +12,12 @@ import LayerControlPanel, { type LayerConfig } from '@/components/map/LayerContr
 import CropLegend from '@/components/map/CropLegend';
 import PlotDetailsPanel from '@/components/map/PlotDetailsPanel';
 import PlotSummaryBar from '@/components/map/PlotSummaryBar';
-import type { FieldPlot, UpdatePlotBoundaryResult } from '@/types/farm';
+import type {
+  FieldPlot,
+  FarmRegistration,
+  CreateRegistrationPayload,
+  UpdatePlotBoundaryResult,
+} from '@/types/farm';
 import './FarmMapPage.css';
 
 const PlotHistoryPanel = lazy(() => import('@/components/map/PlotHistoryPanel'));
@@ -20,6 +26,10 @@ const PlotGeometryEditor = lazy(() => import('@/components/map/PlotGeometryEdito
 const ConfirmBoundaryEdit = lazy(() => import('@/components/map/ConfirmBoundaryEdit'));
 const PlotSubdivideEditor = lazy(() => import('@/components/map/PlotSubdivideEditor'));
 const PlotMergeEditor = lazy(() => import('@/components/map/PlotMergeEditor'));
+const RegistrationsPanel = lazy(() => import('@/components/registrations/RegistrationsPanel'));
+const RegistrationFormModal = lazy(
+  () => import('@/components/registrations/RegistrationFormModal'),
+);
 
 interface EditingPlotState {
   plot: FieldPlot;
@@ -56,6 +66,18 @@ const DEFAULT_LAYERS: LayerConfig[] = [
 function FarmMapPage() {
   const { farmId } = useParams<{ farmId: string }>();
   const { data, isLoading, error, refetch } = useFarmMap(farmId);
+  const handleRegistrationMutationSuccess = useCallback(() => {
+    void refetch();
+  }, [refetch]);
+  const {
+    areaDivergence,
+    isSubmitting: isRegSubmitting,
+    submitError: regSubmitError,
+    addRegistration,
+    updateRegistration,
+    deleteRegistration,
+    clearError: clearRegError,
+  } = useRegistrations(farmId, handleRegistrationMutationSuccess);
   const [baseMap, setBaseMap] = useState<BaseMapType>('satellite');
   const [layers, setLayers] = useState<LayerConfig[]>(DEFAULT_LAYERS);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
@@ -66,6 +88,43 @@ function FarmMapPage() {
   const [subdividingPlot, setSubdividingPlot] = useState<EditingPlotState | null>(null);
   const [isMergeMode, setIsMergeMode] = useState(false);
   const [historyPlot, setHistoryPlot] = useState<FieldPlot | null>(null);
+  const [showRegistrations, setShowRegistrations] = useState(false);
+  const [isRegFormOpen, setIsRegFormOpen] = useState(false);
+  const [editingRegistration, setEditingRegistration] = useState<FarmRegistration | undefined>(
+    undefined,
+  );
+
+  const handleOpenRegForm = useCallback(
+    (reg?: FarmRegistration) => {
+      setEditingRegistration(reg);
+      clearRegError();
+      setIsRegFormOpen(true);
+    },
+    [clearRegError],
+  );
+
+  const handleCloseRegForm = useCallback(() => {
+    setIsRegFormOpen(false);
+    setEditingRegistration(undefined);
+  }, []);
+
+  const handleRegFormSubmit = useCallback(
+    async (payload: CreateRegistrationPayload) => {
+      if (editingRegistration) {
+        await updateRegistration(editingRegistration.id, payload);
+      } else {
+        await addRegistration(payload);
+      }
+    },
+    [editingRegistration, addRegistration, updateRegistration],
+  );
+
+  const handleDeleteRegistration = useCallback(
+    (reg: FarmRegistration) => {
+      void deleteRegistration(reg.id);
+    },
+    [deleteRegistration],
+  );
 
   const handleToggleLayer = useCallback((layerId: string) => {
     setLayers((prev) =>
@@ -161,7 +220,7 @@ function FarmMapPage() {
   }, []);
 
   const showFarmBoundary = layers.find((l) => l.id === 'perimeter')?.enabled ?? true;
-  const showRegistrations = layers.find((l) => l.id === 'registrations')?.enabled ?? true;
+  const showRegistrationLayer = layers.find((l) => l.id === 'registrations')?.enabled ?? true;
   const showPlots = layers.find((l) => l.id === 'plots')?.enabled ?? true;
 
   if (isLoading) {
@@ -215,6 +274,16 @@ function FarmMapPage() {
         <button
           type="button"
           className="farm-map-page__header-btn"
+          onClick={() => setShowRegistrations(true)}
+          aria-label="Matrículas"
+        >
+          <FileText size={20} aria-hidden="true" />
+          <span className="farm-map-page__header-btn-label">Matrículas</span>
+        </button>
+
+        <button
+          type="button"
+          className="farm-map-page__header-btn"
           onClick={() => setIsMergeMode(true)}
           aria-label="Mesclar talhões"
         >
@@ -238,7 +307,7 @@ function FarmMapPage() {
           data={data}
           baseMap={baseMap}
           showFarmBoundary={showFarmBoundary}
-          showRegistrations={showRegistrations}
+          showRegistrations={showRegistrationLayer}
           showPlots={showPlots}
           onPlotClick={handlePlotClick}
           cropFilter={cropFilter}
@@ -328,6 +397,21 @@ function FarmMapPage() {
             />
           </Suspense>
         )}
+
+        {showRegistrations && (
+          <Suspense fallback={null}>
+            <RegistrationsPanel
+              registrations={data.farm.registrations}
+              farmTotalAreaHa={Number(data.farm.totalAreaHa)}
+              areaDivergence={areaDivergence}
+              isLoading={false}
+              onAdd={() => handleOpenRegForm()}
+              onEdit={(reg) => handleOpenRegForm(reg)}
+              onDelete={handleDeleteRegistration}
+              onClose={() => setShowRegistrations(false)}
+            />
+          </Suspense>
+        )}
       </div>
 
       {isBulkImportOpen && farmId && (
@@ -338,6 +422,19 @@ function FarmMapPage() {
             farmBoundary={data.farmBoundary.boundaryGeoJSON}
             onClose={() => setIsBulkImportOpen(false)}
             onImportComplete={handleImportComplete}
+          />
+        </Suspense>
+      )}
+
+      {isRegFormOpen && (
+        <Suspense fallback={null}>
+          <RegistrationFormModal
+            isOpen={isRegFormOpen}
+            onClose={handleCloseRegForm}
+            onSubmit={handleRegFormSubmit}
+            registration={editingRegistration}
+            isSubmitting={isRegSubmitting}
+            submitError={regSubmitError}
           />
         </Suspense>
       )}

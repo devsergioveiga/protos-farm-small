@@ -160,6 +160,45 @@ export interface BulkImportResult {
   warnings: string[];
 }
 
+// ─── Registrations ─────────────────────────────────────────────────
+
+export interface CreateRegistrationPayload {
+  number: string;
+  cartorioName: string;
+  comarca: string;
+  state: string;
+  areaHa: number;
+  cnsCode?: string;
+  livro?: string;
+  registrationDate?: string;
+}
+
+export type UpdateRegistrationPayload = Partial<CreateRegistrationPayload>;
+
+export interface AreaDivergence {
+  divergent: boolean;
+  percentage: number;
+}
+
+export interface RegistrationMutationResponse {
+  id: string;
+  farmId: string;
+  number: string;
+  cnsCode: string | null;
+  cartorioName: string;
+  comarca: string;
+  state: string;
+  livro: string | null;
+  registrationDate: string | null;
+  areaHa: number;
+  areaDivergence: AreaDivergence | null;
+}
+
+export interface RegistrationDeleteResponse {
+  message: string;
+  areaDivergence: AreaDivergence | null;
+}
+
 // ─── Create Farm ────────────────────────────────────────────────────
 
 export interface CreateFarmPayload {
