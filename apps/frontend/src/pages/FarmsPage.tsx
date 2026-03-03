@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   MapPin,
   Search,
@@ -13,12 +13,15 @@ import {
   Layers,
   Wheat,
   Trash2,
+  Plus,
+  CheckCircle2,
 } from 'lucide-react';
 import { useFarms } from '@/hooks/useFarms';
 import { useAuth } from '@/stores/AuthContext';
 import { api } from '@/services/api';
 import { VALID_UF } from '@/constants/states';
 import ConfirmDeleteModal from '@/components/confirm-delete/ConfirmDeleteModal';
+import PermissionGate from '@/components/auth/PermissionGate';
 import type { FarmListItem } from '@/types/farm';
 import './FarmsPage.css';
 
@@ -177,9 +180,21 @@ function FarmsPage() {
   const [maxAreaInput, setMaxAreaInput] = useState('');
   const [farmToDelete, setFarmToDelete] = useState<FarmListItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  const location = useLocation();
   const { permissions } = useAuth();
   const canDelete = permissions.includes('farms:delete');
+
+  useEffect(() => {
+    const state = location.state as { success?: string } | null;
+    if (state?.success) {
+      setSuccessMessage(state.success);
+      window.history.replaceState({}, document.title);
+      const timer = setTimeout(() => setSuccessMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   const debouncedSearch = useDebounce(searchInput, 300);
   const debouncedMinArea = useDebounce(minAreaInput, 500);
@@ -221,10 +236,23 @@ function FarmsPage() {
         <span aria-current="page">Fazendas</span>
       </nav>
 
+      {successMessage && (
+        <div className="farms-page__success" role="status">
+          <CheckCircle2 size={20} aria-hidden="true" />
+          {successMessage}
+        </div>
+      )}
+
       <header className="farms-page__header">
         <h1 className="farms-page__title">Fazendas</h1>
 
         <div className="farms-page__header-actions">
+          <PermissionGate permission="farms:create">
+            <Link to="/farms/new" className="farms-page__new-btn">
+              <Plus size={20} aria-hidden="true" />
+              Nova fazenda
+            </Link>
+          </PermissionGate>
           <div
             className="farms-page__view-toggle"
             role="radiogroup"
