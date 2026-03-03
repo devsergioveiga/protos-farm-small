@@ -130,6 +130,24 @@ export interface CreateProducerPJPayload {
   ruralActivityType?: string;
 }
 
+export interface CreateProducerSCPayload {
+  type: 'SOCIEDADE_EM_COMUM';
+  name: string;
+  tradeName?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  taxRegime?: string;
+}
+
+export interface CreateParticipantPayload {
+  name: string;
+  cpf: string;
+  participationPct: number;
+  isMainResponsible: boolean;
+}
+
 export interface UpdateProducerPayload {
   name?: string;
   document?: string;

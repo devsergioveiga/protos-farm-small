@@ -4,6 +4,7 @@ import { useProducers } from '@/hooks/useProducers';
 import PermissionGate from '@/components/auth/PermissionGate';
 import ProducerPFFormModal from '@/components/producer-form/ProducerPFFormModal';
 import ProducerPJFormModal from '@/components/producer-form/ProducerPJFormModal';
+import ProducerSCFormModal from '@/components/producer-form/ProducerSCFormModal';
 import ProducerDetailModal from '@/components/producer-detail/ProducerDetailModal';
 import type { ProducerListItem, ProducerType } from '@/types/producer';
 import './ProducersPage.css';
@@ -41,6 +42,7 @@ function ProducersPage() {
 
   const [showCreatePFModal, setShowCreatePFModal] = useState(false);
   const [showCreatePJModal, setShowCreatePJModal] = useState(false);
+  const [showCreateSCModal, setShowCreateSCModal] = useState(false);
   const [showNewDropdown, setShowNewDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [selectedProducerId, setSelectedProducerId] = useState<string | null>(null);
@@ -162,6 +164,19 @@ function ProducersPage() {
                     }}
                   >
                     Pessoa Jurídica
+                  </button>
+                </li>
+                <li role="none">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="producers__dropdown-item"
+                    onClick={() => {
+                      setShowNewDropdown(false);
+                      setShowCreateSCModal(true);
+                    }}
+                  >
+                    Sociedade em Comum
                   </button>
                 </li>
               </ul>
@@ -395,6 +410,25 @@ function ProducersPage() {
       )}
       {editingProducer?.type === 'PJ' && (
         <ProducerPJFormModal
+          isOpen
+          producerId={editingProducer.id}
+          onClose={() => setEditingProducer(null)}
+          onSuccess={() => {
+            setEditingProducer(null);
+            void refetch();
+          }}
+        />
+      )}
+      <ProducerSCFormModal
+        isOpen={showCreateSCModal}
+        onClose={() => setShowCreateSCModal(false)}
+        onSuccess={() => {
+          setShowCreateSCModal(false);
+          void refetch();
+        }}
+      />
+      {editingProducer?.type === 'SOCIEDADE_EM_COMUM' && (
+        <ProducerSCFormModal
           isOpen
           producerId={editingProducer.id}
           onClose={() => setEditingProducer(null)}
