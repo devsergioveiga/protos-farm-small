@@ -23,3 +23,20 @@ export interface ProducersResponse {
   data: ProducerListItem[];
   meta: PaginationMeta;
 }
+
+export interface CreateProducerPFPayload {
+  type: 'PF';
+  name: string;
+  document: string;
+  tradeName?: string;
+  birthDate?: string;
+  spouseCpf?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  incraRegistration?: string;
+  legalRepresentative?: string;
+  legalRepCpf?: string;
+  taxRegime?: string;
+}
