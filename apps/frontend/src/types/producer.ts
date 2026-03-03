@@ -112,3 +112,20 @@ export interface CreateProducerPFPayload {
   legalRepCpf?: string;
   taxRegime?: string;
 }
+
+export interface CreateProducerPJPayload {
+  type: 'PJ';
+  name: string;
+  document: string;
+  tradeName?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  incraRegistration?: string;
+  legalRepresentative?: string;
+  legalRepCpf?: string;
+  taxRegime?: string;
+  mainCnae?: string;
+  ruralActivityType?: string;
+}
