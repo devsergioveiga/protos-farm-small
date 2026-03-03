@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
-import { Users, Plus, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Users, Plus, AlertCircle, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { useProducers } from '@/hooks/useProducers';
 import PermissionGate from '@/components/auth/PermissionGate';
 import ProducerPFFormModal from '@/components/producer-form/ProducerPFFormModal';
+import ProducerPJFormModal from '@/components/producer-form/ProducerPJFormModal';
 import ProducerDetailModal from '@/components/producer-detail/ProducerDetailModal';
 import type { ProducerListItem, ProducerType } from '@/types/producer';
 import './ProducersPage.css';
@@ -38,7 +39,10 @@ function ProducersPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCreatePFModal, setShowCreatePFModal] = useState(false);
+  const [showCreatePJModal, setShowCreatePJModal] = useState(false);
+  const [showNewDropdown, setShowNewDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [selectedProducerId, setSelectedProducerId] = useState<string | null>(null);
 
   const { producers, meta, isLoading, error, refetch } = useProducers({
@@ -58,6 +62,24 @@ function ProducersPage() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [searchInput]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!showNewDropdown) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowNewDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showNewDropdown]);
+
+  const handleDropdownKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setShowNewDropdown(false);
+    }
+  }, []);
 
   const handleRowClick = (producer: ProducerListItem) => {
     setSelectedProducerId(producer.id);
@@ -95,14 +117,53 @@ function ProducersPage() {
           <p className="producers__subtitle">Gerencie os produtores rurais da organização</p>
         </div>
         <PermissionGate permission="producers:create">
-          <button
-            type="button"
-            className="producers__btn producers__btn--primary"
-            onClick={() => setShowCreateModal(true)}
+          <div
+            className="producers__new-dropdown"
+            ref={dropdownRef}
+            onKeyDown={handleDropdownKeyDown}
           >
-            <Plus aria-hidden="true" size={20} />
-            Novo produtor
-          </button>
+            <button
+              type="button"
+              className="producers__btn producers__btn--primary"
+              aria-haspopup="true"
+              aria-expanded={showNewDropdown}
+              onClick={() => setShowNewDropdown((prev) => !prev)}
+            >
+              <Plus aria-hidden="true" size={20} />
+              Novo produtor
+              <ChevronDown aria-hidden="true" size={16} />
+            </button>
+            {showNewDropdown && (
+              <ul className="producers__dropdown-menu" role="menu">
+                <li role="none">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="producers__dropdown-item"
+                    onClick={() => {
+                      setShowNewDropdown(false);
+                      setShowCreatePFModal(true);
+                    }}
+                  >
+                    Pessoa Física
+                  </button>
+                </li>
+                <li role="none">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="producers__dropdown-item"
+                    onClick={() => {
+                      setShowNewDropdown(false);
+                      setShowCreatePJModal(true);
+                    }}
+                  >
+                    Pessoa Jurídica
+                  </button>
+                </li>
+              </ul>
+            )}
+          </div>
         </PermissionGate>
       </header>
 
@@ -303,10 +364,18 @@ function ProducersPage() {
         </>
       )}
       <ProducerPFFormModal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
+        isOpen={showCreatePFModal}
+        onClose={() => setShowCreatePFModal(false)}
         onSuccess={() => {
-          setShowCreateModal(false);
+          setShowCreatePFModal(false);
+          void refetch();
+        }}
+      />
+      <ProducerPJFormModal
+        isOpen={showCreatePJModal}
+        onClose={() => setShowCreatePJModal(false)}
+        onSuccess={() => {
+          setShowCreatePJModal(false);
           void refetch();
         }}
       />
