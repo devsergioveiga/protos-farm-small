@@ -1,6 +1,14 @@
 import { useCallback } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
-import { LogOut, LayoutDashboard, MapPin, Users, Shield, ShieldCheck } from 'lucide-react';
+import {
+  LogOut,
+  LayoutDashboard,
+  MapPin,
+  Users,
+  UserCheck,
+  Shield,
+  ShieldCheck,
+} from 'lucide-react';
 import { useAuth } from '@/stores/AuthContext';
 import { FarmProvider } from '@/stores/FarmContext';
 import FarmSelector from '@/components/farm-selector/FarmSelector';
@@ -53,6 +61,13 @@ function AppLayout() {
             >
               <MapPin size={16} aria-hidden="true" />
               <span className="app-topbar__nav-label">Fazendas</span>
+            </Link>
+            <Link
+              to="/producers"
+              className={`app-topbar__nav-link ${isActive('/producers') ? 'app-topbar__nav-link--active' : ''}`}
+            >
+              <UserCheck size={16} aria-hidden="true" />
+              <span className="app-topbar__nav-label">Produtores</span>
             </Link>
             <Link
               to="/users"
