@@ -3,6 +3,6 @@
   "properties": { "name": "Just a point" },
   "geometry": {
     "type": "Point",
-    "coordinates": [-55.75, -12.50]
+    "coordinates": [-55.75, -12.5]
   }
 }
