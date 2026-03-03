@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Plus, Pencil, Trash2, AlertTriangle, FileText, MapPin } from 'lucide-react';
+import { X, Plus, Pencil, Trash2, AlertTriangle, FileText, MapPin, Clock } from 'lucide-react';
 import PermissionGate from '@/components/auth/PermissionGate';
 import type { FarmRegistration, AreaDivergence } from '@/types/farm';
 import './RegistrationsPanel.css';
@@ -13,6 +13,7 @@ interface RegistrationsPanelProps {
   onEdit: (registration: FarmRegistration) => void;
   onDelete: (registration: FarmRegistration) => void;
   onUploadBoundary: (registration: FarmRegistration) => void;
+  onViewBoundaryHistory?: (registration: FarmRegistration) => void;
   onClose: () => void;
 }
 
@@ -78,11 +79,13 @@ function RegistrationCard({
   onEdit,
   onDelete,
   onUploadBoundary,
+  onViewBoundaryHistory,
 }: {
   registration: FarmRegistration;
   onEdit: () => void;
   onDelete: () => void;
   onUploadBoundary: () => void;
+  onViewBoundaryHistory?: () => void;
 }) {
   return (
     <article className="reg-card">
@@ -98,6 +101,16 @@ function RegistrationCard({
             >
               <MapPin size={16} aria-hidden="true" />
             </button>
+            {registration.boundaryAreaHa != null && onViewBoundaryHistory && (
+              <button
+                type="button"
+                className="reg-card__action-btn"
+                onClick={onViewBoundaryHistory}
+                aria-label={`Histórico de perímetro da matrícula ${registration.number}`}
+              >
+                <Clock size={16} aria-hidden="true" />
+              </button>
+            )}
             <button
               type="button"
               className="reg-card__action-btn"
@@ -171,6 +184,7 @@ function RegistrationsPanel({
   onEdit,
   onDelete,
   onUploadBoundary,
+  onViewBoundaryHistory,
   onClose,
 }: RegistrationsPanelProps) {
   const [deletingReg, setDeletingReg] = useState<FarmRegistration | null>(null);
@@ -226,6 +240,9 @@ function RegistrationsPanel({
                   onEdit={() => onEdit(reg)}
                   onDelete={() => setDeletingReg(reg)}
                   onUploadBoundary={() => onUploadBoundary(reg)}
+                  onViewBoundaryHistory={
+                    onViewBoundaryHistory ? () => onViewBoundaryHistory(reg) : undefined
+                  }
                 />
               </li>
             ))}

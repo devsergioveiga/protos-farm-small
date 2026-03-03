@@ -33,6 +33,7 @@ jest.mock('./farms.service', () => ({
   deleteRegistration: jest.fn(),
   softDeleteFarm: jest.fn(),
   getBoundaryVersions: jest.fn(),
+  getBoundaryVersionById: jest.fn(),
   createFieldPlot: jest.fn(),
   listFieldPlots: jest.fn(),
   getFieldPlot: jest.fn(),
@@ -807,6 +808,70 @@ describe('Farms endpoints', () => {
 
       const response = await request(app)
         .get('/api/org/farms/non-existent/boundary/versions')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  // ─── GET /api/org/farms/:farmId/boundary/versions/:versionId ──────
+
+  describe('GET /api/org/farms/:farmId/boundary/versions/:versionId', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return 200 with version detail including GeoJSON', async () => {
+      const detail = {
+        id: 'v-1',
+        farmId: 'farm-1',
+        registrationId: null,
+        boundaryAreaHa: 100,
+        uploadedBy: 'user-1',
+        uploadedAt: '2026-01-01T00:00:00.000Z',
+        filename: 'farm.geojson',
+        version: 1,
+        boundaryGeoJSON: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [-47.0, -15.0],
+              [-47.0, -16.0],
+              [-46.0, -16.0],
+              [-46.0, -15.0],
+              [-47.0, -15.0],
+            ],
+          ],
+        },
+      };
+      mockedService.getBoundaryVersionById.mockResolvedValue(detail as never);
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/boundary/versions/v-1')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.id).toBe('v-1');
+      expect(response.body.boundaryGeoJSON.type).toBe('Polygon');
+    });
+
+    it('should return 404 when version not found', async () => {
+      mockedService.getBoundaryVersionById.mockRejectedValue(
+        new FarmError('Versão não encontrada', 404),
+      );
+
+      const response = await request(app)
+        .get('/api/org/farms/farm-1/boundary/versions/non-existent')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(404);
+    });
+
+    it('should return 404 when farm not found', async () => {
+      mockedService.getBoundaryVersionById.mockRejectedValue(
+        new FarmError('Fazenda não encontrada', 404),
+      );
+
+      const response = await request(app)
+        .get('/api/org/farms/non-existent/boundary/versions/v-1')
         .set('Authorization', 'Bearer valid-token');
 
       expect(response.status).toBe(404);

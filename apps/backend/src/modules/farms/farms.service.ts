@@ -17,6 +17,7 @@ import {
   type FarmListCaller,
   type DeleteFarmInput,
   type BoundaryVersionItem,
+  type BoundaryVersionDetail,
   type CreateFieldPlotInput,
   type UpdateFieldPlotInput,
   type FieldPlotItem,
@@ -634,6 +635,57 @@ export async function getBoundaryVersions(
       boundaryAreaHa: Number(v.boundaryAreaHa),
       uploadedAt: v.uploadedAt.toISOString(),
     }));
+  });
+}
+
+// ─── Get Boundary Version By Id ───────────────────────────────────
+
+export async function getBoundaryVersionById(
+  ctx: RlsContext,
+  farmId: string,
+  versionId: string,
+  registrationId?: string,
+): Promise<BoundaryVersionDetail> {
+  return withRlsContext(ctx, async (tx) => {
+    const farm = await tx.farm.findUnique({ where: { id: farmId } });
+    if (!farm || farm.deletedAt) {
+      throw new FarmError('Fazenda não encontrada', 404);
+    }
+
+    const where: Record<string, unknown> = { id: versionId, farmId };
+    if (registrationId) {
+      where.registrationId = registrationId;
+    } else {
+      where.registrationId = null;
+    }
+
+    const version = await tx.farmBoundaryVersion.findFirst({ where });
+    if (!version) {
+      throw new FarmError('Versão não encontrada', 404);
+    }
+
+    const rows = await prisma.$queryRawUnsafe<{ geojson: string; area_ha: number }[]>(
+      `SELECT ST_AsGeoJSON(boundary)::text AS geojson, "boundaryAreaHa"::float AS area_ha
+       FROM farm_boundary_versions WHERE id = $1`,
+      versionId,
+    );
+
+    const row = rows[0];
+    if (!row?.geojson) {
+      throw new FarmError('Geometria da versão não encontrada', 404);
+    }
+
+    return {
+      id: version.id,
+      farmId: version.farmId,
+      registrationId: version.registrationId,
+      boundaryAreaHa: Number(version.boundaryAreaHa),
+      uploadedBy: version.uploadedBy,
+      uploadedAt: version.uploadedAt.toISOString(),
+      filename: version.filename,
+      version: version.version,
+      boundaryGeoJSON: JSON.parse(row.geojson) as GeoJSON.Polygon,
+    };
   });
 }
 
