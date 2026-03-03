@@ -1,0 +1,450 @@
+import { useEffect, useCallback, useState } from 'react';
+import { X, AlertCircle, FileText, MapPin, Users, Loader2 } from 'lucide-react';
+import { useProducerDetail } from '@/hooks/useProducerDetail';
+import PermissionGate from '@/components/auth/PermissionGate';
+import { api } from '@/services/api';
+import type {
+  ProducerType,
+  ProducerDetail,
+  ProducerStateRegistration,
+  ProducerFarmLink,
+  SocietyParticipant,
+} from '@/types/producer';
+import './ProducerDetailModal.css';
+
+const TYPE_LABELS: Record<ProducerType, string> = {
+  PF: 'Pessoa Física',
+  PJ: 'Pessoa Jurídica',
+  SOCIEDADE_EM_COMUM: 'Sociedade',
+};
+
+const BOND_TYPE_LABELS: Record<string, string> = {
+  OWNER: 'Proprietário',
+  TENANT: 'Arrendatário',
+  PARTNER: 'Parceiro',
+  SHARECROPPER: 'Meeiro',
+  USUFRUCTUARY: 'Usufrutuário',
+  CONCESSIONAIRE: 'Concessionário',
+};
+
+const TAX_REGIME_LABELS: Record<string, string> = {
+  REAL: 'Lucro Real',
+  PRESUMIDO: 'Lucro Presumido',
+  SIMPLES: 'Simples Nacional',
+  ISENTO: 'Isento',
+};
+
+const IE_SITUATION_LABELS: Record<string, string> = {
+  ACTIVE: 'Ativa',
+  INACTIVE: 'Inativa',
+  SUSPENDED: 'Suspensa',
+  CANCELLED: 'Cancelada',
+};
+
+interface ProducerDetailModalProps {
+  producerId: string | null;
+  onClose: () => void;
+  onStatusChange: () => void;
+}
+
+function formatDocument(doc: string | null, type: ProducerType): string {
+  if (!doc) return '—';
+  const digits = doc.replace(/\D/g, '');
+  if (type === 'PJ' && digits.length === 14) {
+    return digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+  }
+  if (digits.length === 11) {
+    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  }
+  return doc;
+}
+
+function formatCpf(cpf: string | null): string {
+  if (!cpf) return '—';
+  const digits = cpf.replace(/\D/g, '');
+  if (digits.length === 11) {
+    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  }
+  return cpf;
+}
+
+function formatDate(date: string | null): string {
+  if (!date) return '—';
+  try {
+    return new Date(date).toLocaleDateString('pt-BR');
+  } catch {
+    return date;
+  }
+}
+
+function formatCep(cep: string | null): string {
+  if (!cep) return '—';
+  const digits = cep.replace(/\D/g, '');
+  if (digits.length === 8) {
+    return digits.replace(/(\d{5})(\d{3})/, '$1-$2');
+  }
+  return cep;
+}
+
+// ─── Sub-components ────────────────────────────────────────────────
+
+function DlItem({
+  label,
+  value,
+  mono,
+  full,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  full?: boolean;
+}) {
+  const isEmpty = value === '—' || !value;
+  return (
+    <div className={`producer-detail__dl-item${full ? ' producer-detail__dl-item--full' : ''}`}>
+      <dt className="producer-detail__dt">{label}</dt>
+      <dd
+        className={`producer-detail__dd${mono ? ' producer-detail__dd--mono' : ''}${isEmpty ? ' producer-detail__dd--empty' : ''}`}
+      >
+        {value || '—'}
+      </dd>
+    </div>
+  );
+}
+
+function GeneralSection({ producer }: { producer: ProducerDetail }) {
+  return (
+    <section className="producer-detail__section">
+      <h3 className="producer-detail__section-title">Dados Gerais</h3>
+      <dl className="producer-detail__dl">
+        <DlItem label="Nome" value={producer.name} full />
+        <DlItem label="Documento" value={formatDocument(producer.document, producer.type)} mono />
+        <DlItem label="Nome fantasia" value={producer.tradeName || '—'} />
+        {producer.type === 'PF' && (
+          <>
+            <DlItem label="Data de nascimento" value={formatDate(producer.birthDate)} />
+            <DlItem label="CPF do cônjuge" value={formatCpf(producer.spouseCpf)} mono />
+          </>
+        )}
+        <DlItem label="Endereço" value={producer.address || '—'} full />
+        <DlItem label="Município" value={producer.city || '—'} />
+        <DlItem label="UF" value={producer.state || '—'} />
+        <DlItem label="CEP" value={formatCep(producer.zipCode)} mono />
+        <DlItem label="Registro INCRA" value={producer.incraRegistration || '—'} mono />
+        <DlItem label="Representante legal" value={producer.legalRepresentative || '—'} />
+        <DlItem label="CPF do representante" value={formatCpf(producer.legalRepCpf)} mono />
+        <DlItem
+          label="Regime tributário"
+          value={
+            producer.taxRegime ? TAX_REGIME_LABELS[producer.taxRegime] || producer.taxRegime : '—'
+          }
+        />
+        {producer.type === 'PJ' && (
+          <>
+            <DlItem label="CNAE principal" value={producer.mainCnae || '—'} mono />
+            <DlItem label="Atividade rural" value={producer.ruralActivityType || '—'} />
+          </>
+        )}
+      </dl>
+    </section>
+  );
+}
+
+function ParticipantsSection({ participants }: { participants: SocietyParticipant[] }) {
+  if (participants.length === 0) {
+    return (
+      <section className="producer-detail__section">
+        <h3 className="producer-detail__section-title">Participantes</h3>
+        <div className="producer-detail__empty">
+          <Users size={32} aria-hidden="true" />
+          <p className="producer-detail__empty-text">Nenhum participante cadastrado</p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="producer-detail__section">
+      <h3 className="producer-detail__section-title">Participantes</h3>
+      <div className="producer-detail__cards-list">
+        {participants.map((p) => (
+          <div key={p.id} className="producer-detail__card">
+            <h4 className="producer-detail__card-title">
+              {p.name}
+              {p.isMainResponsible && (
+                <span
+                  className="producer-detail__badge producer-detail__badge--active"
+                  style={{ marginLeft: 8 }}
+                >
+                  Responsável
+                </span>
+              )}
+            </h4>
+            <div className="producer-detail__card-row">
+              <span className="producer-detail__card-label">CPF</span>
+              <span className="producer-detail__card-value producer-detail__card-value--mono">
+                {formatCpf(p.cpf)}
+              </span>
+            </div>
+            {p.participationPct != null && (
+              <div className="producer-detail__card-row">
+                <span className="producer-detail__card-label">Participação</span>
+                <span className="producer-detail__card-value">{p.participationPct}%</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function IeSection({ registrations }: { registrations: ProducerStateRegistration[] }) {
+  if (registrations.length === 0) {
+    return (
+      <section className="producer-detail__section">
+        <h3 className="producer-detail__section-title">Inscrições Estaduais</h3>
+        <div className="producer-detail__empty">
+          <FileText size={32} aria-hidden="true" />
+          <p className="producer-detail__empty-text">Nenhuma inscrição estadual cadastrada</p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="producer-detail__section">
+      <h3 className="producer-detail__section-title">Inscrições Estaduais</h3>
+      <div className="producer-detail__cards-list">
+        {registrations.map((ie) => (
+          <div key={ie.id} className="producer-detail__card">
+            <h4 className="producer-detail__card-title">
+              IE {ie.number} — {ie.state}
+            </h4>
+            <div className="producer-detail__card-row">
+              <span className="producer-detail__card-label">Situação</span>
+              <span className="producer-detail__card-value">
+                {ie.situation ? IE_SITUATION_LABELS[ie.situation] || ie.situation : '—'}
+              </span>
+            </div>
+            {ie.category && (
+              <div className="producer-detail__card-row">
+                <span className="producer-detail__card-label">Categoria</span>
+                <span className="producer-detail__card-value">{ie.category}</span>
+              </div>
+            )}
+            {ie.inscriptionDate && (
+              <div className="producer-detail__card-row">
+                <span className="producer-detail__card-label">Data inscrição</span>
+                <span className="producer-detail__card-value">
+                  {formatDate(ie.inscriptionDate)}
+                </span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function FarmLinksSection({ links }: { links: ProducerFarmLink[] }) {
+  if (links.length === 0) {
+    return (
+      <section className="producer-detail__section">
+        <h3 className="producer-detail__section-title">Vínculos com Fazendas</h3>
+        <div className="producer-detail__empty">
+          <MapPin size={32} aria-hidden="true" />
+          <p className="producer-detail__empty-text">Nenhum vínculo com fazenda cadastrado</p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="producer-detail__section">
+      <h3 className="producer-detail__section-title">Vínculos com Fazendas</h3>
+      <div className="producer-detail__cards-list">
+        {links.map((link) => (
+          <div key={link.id} className="producer-detail__card">
+            <h4 className="producer-detail__card-title">
+              {link.farm.name}
+              {link.farm.state && ` — ${link.farm.state}`}
+            </h4>
+            <div className="producer-detail__card-row">
+              <span className="producer-detail__card-label">Tipo de vínculo</span>
+              <span className="producer-detail__card-value">
+                {BOND_TYPE_LABELS[link.bondType] || link.bondType}
+              </span>
+            </div>
+            {link.participationPct != null && (
+              <div className="producer-detail__card-row">
+                <span className="producer-detail__card-label">Participação</span>
+                <span className="producer-detail__card-value">{link.participationPct}%</span>
+              </div>
+            )}
+            <div className="producer-detail__card-row">
+              <span className="producer-detail__card-label">Vigência</span>
+              <span className="producer-detail__card-value">
+                {formatDate(link.startDate)}
+                {link.endDate ? ` a ${formatDate(link.endDate)}` : ' — vigente'}
+              </span>
+            </div>
+            {link.isItrDeclarant && (
+              <div className="producer-detail__card-row">
+                <span className="producer-detail__card-label">ITR</span>
+                <span className="producer-detail__card-value producer-detail__card-value--highlight">
+                  Declarante
+                </span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SkeletonBody() {
+  return (
+    <div className="producer-detail__body" data-testid="producer-detail-skeleton">
+      <div
+        className="producer-detail__skeleton"
+        style={{ width: '40%', height: 20, marginBottom: 16 }}
+      />
+      <div
+        className="producer-detail__skeleton"
+        style={{ width: '100%', height: 120, marginBottom: 24 }}
+      />
+      <div
+        className="producer-detail__skeleton"
+        style={{ width: '50%', height: 20, marginBottom: 16 }}
+      />
+      <div className="producer-detail__skeleton" style={{ width: '100%', height: 80 }} />
+    </div>
+  );
+}
+
+// ─── Main component ────────────────────────────────────────────────
+
+function ProducerDetailModal({ producerId, onClose, onStatusChange }: ProducerDetailModalProps) {
+  const { producer, isLoading, error, refetch } = useProducerDetail(producerId);
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
+
+  const handleClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!producerId) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') handleClose();
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [producerId, handleClose]);
+
+  const handleToggleStatus = useCallback(async () => {
+    if (!producer) return;
+    const newStatus = producer.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    setIsTogglingStatus(true);
+    try {
+      await api.patch(`/org/producers/${producer.id}/status`, { status: newStatus });
+      await refetch();
+      onStatusChange();
+    } catch {
+      // Error will show on next refetch
+    } finally {
+      setIsTogglingStatus(false);
+    }
+  }, [producer, refetch, onStatusChange]);
+
+  if (!producerId) return null;
+
+  return (
+    <div
+      className="producer-detail__overlay"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose();
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="producer-detail-title"
+    >
+      <div className="producer-detail">
+        <header className="producer-detail__header">
+          <div className="producer-detail__header-info">
+            <h2 id="producer-detail-title" className="producer-detail__title">
+              {isLoading ? 'Carregando...' : (producer?.name ?? 'Produtor')}
+            </h2>
+            {producer && (
+              <>
+                <span className="producer-detail__badge producer-detail__badge--type">
+                  {TYPE_LABELS[producer.type]}
+                </span>
+                <span
+                  className={`producer-detail__badge producer-detail__badge--${producer.status.toLowerCase()}`}
+                >
+                  {producer.status === 'ACTIVE' ? 'Ativo' : 'Inativo'}
+                </span>
+              </>
+            )}
+          </div>
+          <button
+            type="button"
+            className="producer-detail__close"
+            aria-label="Fechar"
+            onClick={handleClose}
+          >
+            <X size={20} aria-hidden="true" />
+          </button>
+        </header>
+
+        {isLoading ? (
+          <SkeletonBody />
+        ) : error ? (
+          <div className="producer-detail__body">
+            <div className="producer-detail__error" role="alert">
+              <AlertCircle size={20} aria-hidden="true" />
+              {error}
+            </div>
+          </div>
+        ) : producer ? (
+          <div className="producer-detail__body">
+            <GeneralSection producer={producer} />
+            {producer.type === 'SOCIEDADE_EM_COMUM' && (
+              <ParticipantsSection participants={producer.participants} />
+            )}
+            <IeSection registrations={producer.stateRegistrations} />
+            <FarmLinksSection links={producer.farmLinks} />
+          </div>
+        ) : null}
+
+        <footer className="producer-detail__footer">
+          <PermissionGate permission="producers:update">
+            {producer && (
+              <button
+                type="button"
+                className={`producer-detail__btn producer-detail__btn--${producer.status === 'ACTIVE' ? 'deactivate' : 'activate'}`}
+                onClick={() => void handleToggleStatus()}
+                disabled={isTogglingStatus}
+              >
+                {isTogglingStatus ? <Loader2 size={16} aria-hidden="true" /> : null}
+                {producer.status === 'ACTIVE' ? 'Desativar' : 'Ativar'}
+              </button>
+            )}
+          </PermissionGate>
+          <button
+            type="button"
+            className="producer-detail__btn producer-detail__btn--secondary"
+            onClick={handleClose}
+          >
+            Fechar
+          </button>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+export default ProducerDetailModal;
