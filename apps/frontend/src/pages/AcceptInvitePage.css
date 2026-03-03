@@ -1,0 +1,5 @@
+/* AcceptInvitePage reuses login-page, login-card, login-header, login-form,
+   forgot-header-icon, forgot-back-link, login-alert, form-field, form-field-error,
+   field-error, btn-primary from LoginPage.css and ForgotPasswordPage.css.
+
+   reset-error-state and reset-error-icon from ResetPasswordPage.css. */

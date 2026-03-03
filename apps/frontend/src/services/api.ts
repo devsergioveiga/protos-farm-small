@@ -179,6 +179,17 @@ class ApiClient {
   forgotPassword(email: string): Promise<{ message: string }> {
     return this.post('/auth/forgot-password', { email });
   }
+
+  resetPassword(token: string, password: string): Promise<{ message: string }> {
+    return this.post('/auth/reset-password', { token, password });
+  }
+
+  acceptInvite(
+    token: string,
+    password: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    return this.post('/auth/accept-invite', { token, password });
+  }
 }
 
 export const api = new ApiClient();
