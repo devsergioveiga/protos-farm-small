@@ -4,6 +4,7 @@ import { LogOut, LayoutDashboard, MapPin, Users, Shield, ShieldCheck } from 'luc
 import { useAuth } from '@/stores/AuthContext';
 import { FarmProvider } from '@/stores/FarmContext';
 import FarmSelector from '@/components/farm-selector/FarmSelector';
+import FarmLimitBadge from '@/components/farm-limit-badge/FarmLimitBadge';
 import './AppLayout.css';
 
 function AppLayout() {
@@ -67,6 +68,8 @@ function AppLayout() {
               <Shield size={16} aria-hidden="true" />
               <span className="app-topbar__nav-label">Papéis</span>
             </Link>
+
+            <FarmLimitBadge />
 
             <div className="app-topbar__separator" role="separator" />
 
