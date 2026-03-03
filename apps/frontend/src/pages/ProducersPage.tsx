@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Users, Plus, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useProducers } from '@/hooks/useProducers';
 import PermissionGate from '@/components/auth/PermissionGate';
+import ProducerPFFormModal from '@/components/producer-form/ProducerPFFormModal';
 import type { ProducerListItem, ProducerType } from '@/types/producer';
 import './ProducersPage.css';
 
@@ -36,7 +37,9 @@ function ProducersPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { producers, meta, isLoading, error } = useProducers({
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const { producers, meta, isLoading, error, refetch } = useProducers({
     page,
     search: search || undefined,
     type: typeFilter || undefined,
@@ -91,7 +94,11 @@ function ProducersPage() {
           <p className="producers__subtitle">Gerencie os produtores rurais da organização</p>
         </div>
         <PermissionGate permission="producers:create">
-          <button type="button" className="producers__btn producers__btn--primary" disabled>
+          <button
+            type="button"
+            className="producers__btn producers__btn--primary"
+            onClick={() => setShowCreateModal(true)}
+          >
             <Plus aria-hidden="true" size={20} />
             Novo produtor
           </button>
@@ -294,6 +301,14 @@ function ProducersPage() {
           )}
         </>
       )}
+      <ProducerPFFormModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={() => {
+          setShowCreateModal(false);
+          void refetch();
+        }}
+      />
     </section>
   );
 }
