@@ -17,9 +17,10 @@ function PlotLabels({ plotBoundaries }: PlotLabelsProps) {
   const tooltipLayerRef = useRef<L.LayerGroup>(L.layerGroup());
 
   useEffect(() => {
-    tooltipLayerRef.current.addTo(map);
+    const layer = tooltipLayerRef.current;
+    layer.addTo(map);
     return () => {
-      tooltipLayerRef.current.remove();
+      layer.remove();
     };
   }, [map]);
 

@@ -181,10 +181,11 @@ function PlotMergeEditor({
 
     mapRef.current = map;
 
+    const currentPlotLayers = plotLayersRef.current;
     return () => {
       map.remove();
       mapRef.current = null;
-      plotLayersRef.current.clear();
+      currentPlotLayers.clear();
       previewLayerRef.current = null;
     };
   }, [plotBoundaries, farmBoundary]);
