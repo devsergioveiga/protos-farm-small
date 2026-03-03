@@ -54,14 +54,23 @@ function BulkImportModal({
   const [file, setFile] = useState<File | null>(null);
   const [defaultName, setDefaultName] = useState('Talhão {n}');
   const dialogRef = useRef<HTMLDivElement>(null);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
-  useEffect(() => {
+  if (prevIsOpen !== isOpen) {
+    setPrevIsOpen(isOpen);
     if (!isOpen) {
       reset();
       setFile(null);
       setDefaultName('Talhão {n}');
     }
-  }, [isOpen, reset]);
+  }
+
+  const handleClose = useCallback(() => {
+    if (step === 'done') {
+      onImportComplete();
+    }
+    onClose();
+  }, [step, onClose, onImportComplete]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -72,7 +81,7 @@ function BulkImportModal({
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, step]);
+  }, [isOpen, handleClose]);
 
   const handleFileSelect = useCallback(
     (selectedFile: File) => {
@@ -86,13 +95,6 @@ function BulkImportModal({
     if (!file) return;
     void confirmImport(file, farmId, undefined, defaultName);
   }, [file, farmId, defaultName, confirmImport]);
-
-  const handleClose = useCallback(() => {
-    if (step === 'done') {
-      onImportComplete();
-    }
-    onClose();
-  }, [step, onClose, onImportComplete]);
 
   if (!isOpen) return null;
 
