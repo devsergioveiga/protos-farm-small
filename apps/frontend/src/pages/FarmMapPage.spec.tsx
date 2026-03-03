@@ -55,6 +55,7 @@ const MOCK_DATA: FarmMapData = {
     legalReserveHa: null,
     taxableAreaHa: null,
     usableAreaHa: null,
+    utilizationDegree: null,
     latitude: -18.9,
     longitude: -48.3,
     registrations: [],

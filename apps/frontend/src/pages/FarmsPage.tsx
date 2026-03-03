@@ -13,6 +13,7 @@ import {
   Layers,
   Wheat,
   Trash2,
+  Pencil,
   Plus,
   CheckCircle2,
 } from 'lucide-react';
@@ -21,7 +22,7 @@ import { useAuth } from '@/stores/AuthContext';
 import { api } from '@/services/api';
 import { VALID_UF } from '@/constants/states';
 import ConfirmDeleteModal from '@/components/confirm-delete/ConfirmDeleteModal';
-import CreateFarmModal from '@/components/create-farm/CreateFarmModal';
+import FarmFormModal from '@/components/farm-form/FarmFormModal';
 import PermissionGate from '@/components/auth/PermissionGate';
 import type { FarmListItem } from '@/types/farm';
 import './FarmsPage.css';
@@ -38,10 +39,12 @@ function useDebounce<T>(value: T, delay: number): T {
 interface FarmCardProps {
   farm: FarmListItem;
   canDelete: boolean;
+  canEdit: boolean;
   onDelete: (farm: FarmListItem) => void;
+  onEdit: (farm: FarmListItem) => void;
 }
 
-function FarmCard({ farm, canDelete, onDelete }: FarmCardProps) {
+function FarmCard({ farm, canDelete, canEdit, onDelete, onEdit }: FarmCardProps) {
   const statusClass = farm.status === 'ACTIVE' ? 'active' : 'inactive';
   const statusLabel = farm.status === 'ACTIVE' ? 'Ativa' : 'Inativa';
   const location = [farm.city, farm.state].filter(Boolean).join(' — ');
@@ -86,6 +89,16 @@ function FarmCard({ farm, canDelete, onDelete }: FarmCardProps) {
           <Map size={16} aria-hidden="true" />
           Ver no mapa
         </Link>
+        {canEdit && (
+          <button
+            type="button"
+            className="farm-card__edit-btn"
+            aria-label={`Editar ${farm.name}`}
+            onClick={() => onEdit(farm)}
+          >
+            <Pencil size={16} aria-hidden="true" />
+          </button>
+        )}
         {canDelete && (
           <button
             type="button"
@@ -101,7 +114,13 @@ function FarmCard({ farm, canDelete, onDelete }: FarmCardProps) {
   );
 }
 
-function FarmListRow({ farm }: { farm: FarmListItem }) {
+interface FarmListRowProps {
+  farm: FarmListItem;
+  canEdit: boolean;
+  onEdit: (farm: FarmListItem) => void;
+}
+
+function FarmListRow({ farm, canEdit, onEdit }: FarmListRowProps) {
   const statusClass = farm.status === 'ACTIVE' ? 'active' : 'inactive';
   const statusLabel = farm.status === 'ACTIVE' ? 'Ativa' : 'Inativa';
   const location = [farm.city, farm.state].filter(Boolean).join(' — ');
@@ -137,6 +156,16 @@ function FarmListRow({ farm }: { farm: FarmListItem }) {
           <Map size={16} aria-hidden="true" />
           Ver no mapa
         </Link>
+        {canEdit && (
+          <button
+            type="button"
+            className="farm-card__edit-btn"
+            aria-label={`Editar ${farm.name}`}
+            onClick={() => onEdit(farm)}
+          >
+            <Pencil size={16} aria-hidden="true" />
+          </button>
+        )}
       </div>
     </article>
   );
@@ -182,10 +211,12 @@ function FarmsPage() {
   const [farmToDelete, setFarmToDelete] = useState<FarmListItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [farmToEdit, setFarmToEdit] = useState<FarmListItem | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { permissions } = useAuth();
   const canDelete = permissions.includes('farms:delete');
+  const canEdit = permissions.includes('farms:update');
 
   const debouncedSearch = useDebounce(searchInput, 300);
   const debouncedMinArea = useDebounce(minAreaInput, 500);
@@ -366,7 +397,14 @@ function FarmsPage() {
       {!isLoading && !error && farms.length > 0 && viewMode === 'card' && (
         <div className="farms-page__grid">
           {farms.map((farm) => (
-            <FarmCard key={farm.id} farm={farm} canDelete={canDelete} onDelete={setFarmToDelete} />
+            <FarmCard
+              key={farm.id}
+              farm={farm}
+              canDelete={canDelete}
+              canEdit={canEdit}
+              onDelete={setFarmToDelete}
+              onEdit={setFarmToEdit}
+            />
           ))}
         </div>
       )}
@@ -374,7 +412,7 @@ function FarmsPage() {
       {!isLoading && !error && farms.length > 0 && viewMode === 'list' && (
         <div className="farms-page__list">
           {farms.map((farm) => (
-            <FarmListRow key={farm.id} farm={farm} />
+            <FarmListRow key={farm.id} farm={farm} canEdit={canEdit} onEdit={setFarmToEdit} />
           ))}
         </div>
       )}
@@ -387,12 +425,25 @@ function FarmsPage() {
         isDeleting={isDeleting}
       />
 
-      <CreateFarmModal
+      <FarmFormModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSuccess={() => {
           setShowCreateModal(false);
           setSuccessMessage('Fazenda cadastrada com sucesso!');
+          const timer = setTimeout(() => setSuccessMessage(null), 3000);
+          void refetch();
+          return () => clearTimeout(timer);
+        }}
+      />
+
+      <FarmFormModal
+        isOpen={!!farmToEdit}
+        farmId={farmToEdit?.id}
+        onClose={() => setFarmToEdit(null)}
+        onSuccess={() => {
+          setFarmToEdit(null);
+          setSuccessMessage('Fazenda atualizada com sucesso!');
           const timer = setTimeout(() => setSuccessMessage(null), 3000);
           void refetch();
           return () => clearTimeout(timer);

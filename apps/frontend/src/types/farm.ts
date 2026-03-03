@@ -53,6 +53,7 @@ export interface FarmDetail {
   legalReserveHa: number | null;
   taxableAreaHa: number | null;
   usableAreaHa: number | null;
+  utilizationDegree: number | null;
   latitude: number | null;
   longitude: number | null;
   status: 'ACTIVE' | 'INACTIVE';
@@ -181,6 +182,8 @@ export interface CreateFarmPayload {
   usableAreaHa?: number;
   utilizationDegree?: number;
 }
+
+export type UpdateFarmPayload = Partial<CreateFarmPayload>;
 
 // ─── Plot History ───────────────────────────────────────────────────
 
