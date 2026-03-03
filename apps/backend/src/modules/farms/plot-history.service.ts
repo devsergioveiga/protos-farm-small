@@ -135,7 +135,8 @@ export async function createCropSeason(
         plantedAreaHa: input.plantedAreaHa ?? null,
         productivityKgHa: input.productivityKgHa ?? null,
         totalProductionKg: input.totalProductionKg ?? null,
-        operations: input.operations ?? [],
+        operations: (input.operations ??
+          []) as unknown as import('@prisma/client').Prisma.InputJsonValue,
         notes: input.notes ?? null,
         createdBy: userId,
       },
