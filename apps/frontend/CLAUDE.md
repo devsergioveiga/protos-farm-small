@@ -78,6 +78,17 @@ var(--color-neutral-50)    /* Background secundário */
 - **Formulários:** max-width 800px, campos full-width em mobile
 - **Tabelas <768px:** transformar em cards empilhados
 
+### Formulários de Criação e Edição — SEMPRE em Modal
+
+- **Nunca** criar página dedicada para formulários de criação ou edição
+- Formulários devem abrir em **modal** dentro da página que lista os recursos
+- Padrão: botão na página → `useState(showModal)` → componente `<XxxModal isOpen onClose onSuccess />`
+- Modal fica em `components/{domínio}/{NomeModal}.tsx` + `.css`
+- Hook de form fica em `hooks/useCreateXxx.ts` (sem `useNavigate`, recebe `onSuccess` callback)
+- Sucesso: `onSuccess` callback fecha modal + toast na página pai + refetch da lista
+- Exemplos existentes: `CreateFarmModal`, `BulkImportModal`, modais em `OrgUsersPage`, `RolesPage`
+- Para multi-step: usar padrão header/body(scrollable)/footer com stepper no header
+
 ### Componentes
 
 - **Botão primário:** máximo 1 por tela

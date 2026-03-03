@@ -13,12 +13,16 @@ import {
   Layers,
   Wheat,
   Trash2,
+  Plus,
+  CheckCircle2,
 } from 'lucide-react';
 import { useFarms } from '@/hooks/useFarms';
 import { useAuth } from '@/stores/AuthContext';
 import { api } from '@/services/api';
 import { VALID_UF } from '@/constants/states';
 import ConfirmDeleteModal from '@/components/confirm-delete/ConfirmDeleteModal';
+import CreateFarmModal from '@/components/create-farm/CreateFarmModal';
+import PermissionGate from '@/components/auth/PermissionGate';
 import type { FarmListItem } from '@/types/farm';
 import './FarmsPage.css';
 
@@ -177,6 +181,8 @@ function FarmsPage() {
   const [maxAreaInput, setMaxAreaInput] = useState('');
   const [farmToDelete, setFarmToDelete] = useState<FarmListItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const { permissions } = useAuth();
   const canDelete = permissions.includes('farms:delete');
@@ -221,10 +227,27 @@ function FarmsPage() {
         <span aria-current="page">Fazendas</span>
       </nav>
 
+      {successMessage && (
+        <div className="farms-page__success" role="status">
+          <CheckCircle2 size={20} aria-hidden="true" />
+          {successMessage}
+        </div>
+      )}
+
       <header className="farms-page__header">
         <h1 className="farms-page__title">Fazendas</h1>
 
         <div className="farms-page__header-actions">
+          <PermissionGate permission="farms:create">
+            <button
+              type="button"
+              className="farms-page__new-btn"
+              onClick={() => setShowCreateModal(true)}
+            >
+              <Plus size={20} aria-hidden="true" />
+              Nova fazenda
+            </button>
+          </PermissionGate>
           <div
             className="farms-page__view-toggle"
             role="radiogroup"
@@ -362,6 +385,18 @@ function FarmsPage() {
         onConfirm={handleDeleteFarm}
         onCancel={() => setFarmToDelete(null)}
         isDeleting={isDeleting}
+      />
+
+      <CreateFarmModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={() => {
+          setShowCreateModal(false);
+          setSuccessMessage('Fazenda cadastrada com sucesso!');
+          const timer = setTimeout(() => setSuccessMessage(null), 3000);
+          void refetch();
+          return () => clearTimeout(timer);
+        }}
       />
     </main>
   );

@@ -64,6 +64,7 @@ Ao criar ou modificar qualquer componente de interface (web ou mobile), seguir *
 - **Tabela em mobile:** transformar em cards empilhados
 - **Empty state:** ilustração + título + descrição + CTA
 - **Modal destrutivo:** exigir confirmação proporcional ao risco
+- **Formulários de criação/edição:** sempre em modal, nunca em página dedicada
 - Specs completas: `docs/design-system/04-componentes.md`
 
 ## UX

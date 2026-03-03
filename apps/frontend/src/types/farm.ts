@@ -159,6 +159,29 @@ export interface BulkImportResult {
   warnings: string[];
 }
 
+// ─── Create Farm ────────────────────────────────────────────────────
+
+export interface CreateFarmPayload {
+  name: string;
+  nickname?: string;
+  address?: string;
+  city?: string;
+  state: string;
+  zipCode?: string;
+  totalAreaHa: number;
+  cib?: string;
+  incraCode?: string;
+  carCode?: string;
+  ccirCode?: string;
+  landClassification?: string;
+  productive?: boolean;
+  appAreaHa?: number;
+  legalReserveHa?: number;
+  taxableAreaHa?: number;
+  usableAreaHa?: number;
+  utilizationDegree?: number;
+}
+
 // ─── Plot History ───────────────────────────────────────────────────
 
 export interface CropSeasonItem {
