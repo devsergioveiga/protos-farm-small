@@ -1,6 +1,6 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, Upload, Combine, FileText } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Upload, Combine, FileText, MapPin } from 'lucide-react';
 import turfArea from '@turf/area';
 import { polygon as turfPolygon } from '@turf/helpers';
 import { useFarmMap } from '@/hooks/useFarmMap';
@@ -26,6 +26,7 @@ const PlotGeometryEditor = lazy(() => import('@/components/map/PlotGeometryEdito
 const ConfirmBoundaryEdit = lazy(() => import('@/components/map/ConfirmBoundaryEdit'));
 const PlotSubdivideEditor = lazy(() => import('@/components/map/PlotSubdivideEditor'));
 const PlotMergeEditor = lazy(() => import('@/components/map/PlotMergeEditor'));
+const BoundaryUploadModal = lazy(() => import('@/components/boundary/BoundaryUploadModal'));
 const RegistrationsPanel = lazy(() => import('@/components/registrations/RegistrationsPanel'));
 const RegistrationFormModal = lazy(
   () => import('@/components/registrations/RegistrationFormModal'),
@@ -88,6 +89,7 @@ function FarmMapPage() {
   const [subdividingPlot, setSubdividingPlot] = useState<EditingPlotState | null>(null);
   const [isMergeMode, setIsMergeMode] = useState(false);
   const [historyPlot, setHistoryPlot] = useState<FieldPlot | null>(null);
+  const [isBoundaryUploadOpen, setIsBoundaryUploadOpen] = useState(false);
   const [showRegistrations, setShowRegistrations] = useState(false);
   const [isRegFormOpen, setIsRegFormOpen] = useState(false);
   const [editingRegistration, setEditingRegistration] = useState<FarmRegistration | undefined>(
@@ -274,6 +276,16 @@ function FarmMapPage() {
         <button
           type="button"
           className="farm-map-page__header-btn"
+          onClick={() => setIsBoundaryUploadOpen(true)}
+          aria-label="Perímetro"
+        >
+          <MapPin size={20} aria-hidden="true" />
+          <span className="farm-map-page__header-btn-label">Perímetro</span>
+        </button>
+
+        <button
+          type="button"
+          className="farm-map-page__header-btn"
           onClick={() => setShowRegistrations(true)}
           aria-label="Matrículas"
         >
@@ -422,6 +434,19 @@ function FarmMapPage() {
             farmBoundary={data.farmBoundary.boundaryGeoJSON}
             onClose={() => setIsBulkImportOpen(false)}
             onImportComplete={handleImportComplete}
+          />
+        </Suspense>
+      )}
+
+      {isBoundaryUploadOpen && farmId && (
+        <Suspense fallback={null}>
+          <BoundaryUploadModal
+            isOpen={isBoundaryUploadOpen}
+            farmId={farmId}
+            farmTotalAreaHa={Number(data.farm.totalAreaHa)}
+            existingBoundary={data.farmBoundary.boundaryGeoJSON}
+            onClose={() => setIsBoundaryUploadOpen(false)}
+            onUploadComplete={handleImportComplete}
           />
         </Suspense>
       )}
