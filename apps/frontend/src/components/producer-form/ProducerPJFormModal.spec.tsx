@@ -1,10 +1,13 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import ProducerPJFormModal from './ProducerPJFormModal';
+import type { ProducerDetail } from '@/types/producer';
 
 vi.mock('@/services/api', () => ({
   api: {
     post: vi.fn(),
+    get: vi.fn(),
+    patch: vi.fn(),
   },
 }));
 
@@ -14,6 +17,33 @@ const defaultProps = {
   isOpen: true,
   onClose: vi.fn(),
   onSuccess: vi.fn(),
+};
+
+const mockProducerPJ: ProducerDetail = {
+  id: 'prod-pj-1',
+  name: 'Agropecuária Silva LTDA',
+  tradeName: 'Agro Silva',
+  document: '12345678000199',
+  type: 'PJ',
+  status: 'ACTIVE',
+  address: 'Rod BR-153 KM 10',
+  city: 'Uberlândia',
+  state: 'MG',
+  zipCode: '38400000',
+  birthDate: null,
+  spouseCpf: null,
+  incraRegistration: null,
+  legalRepresentative: 'Carlos Silva',
+  legalRepCpf: '11122233344',
+  taxRegime: 'REAL',
+  mainCnae: '0111-3/01',
+  ruralActivityType: 'Cultivo de cereais',
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+  organizationId: 'org-1',
+  participants: [],
+  stateRegistrations: [],
+  farmLinks: [],
 };
 
 describe('ProducerPJFormModal', () => {
@@ -238,5 +268,91 @@ describe('ProducerPJFormModal', () => {
 
     expect(screen.queryByLabelText(/Data de nascimento/)).toBeNull();
     expect(screen.queryByLabelText(/CPF do cônjuge/)).toBeNull();
+  });
+
+  // ─── Edit mode tests ───────────────────────────────────────────
+
+  describe('edit mode', () => {
+    beforeEach(() => {
+      (api.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockProducerPJ);
+      (api.patch as ReturnType<typeof vi.fn>).mockResolvedValue({ ...mockProducerPJ });
+    });
+
+    it('should show edit title when producerId is provided', async () => {
+      render(<ProducerPJFormModal {...defaultProps} producerId="prod-pj-1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Editar produtor — Pessoa Jurídica')).toBeDefined();
+      });
+    });
+
+    it('should show skeleton while loading detail', () => {
+      (api.get as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
+      render(<ProducerPJFormModal {...defaultProps} producerId="prod-pj-1" />);
+      expect(screen.getByTestId('pj-form-skeleton')).toBeDefined();
+    });
+
+    it('should prefill form with producer data', async () => {
+      render(<ProducerPJFormModal {...defaultProps} producerId="prod-pj-1" />);
+
+      await waitFor(() => {
+        const nameInput = screen.getByLabelText(/Razão social/) as HTMLInputElement;
+        expect(nameInput.value).toBe('Agropecuária Silva LTDA');
+      });
+
+      const cnpjInput = document.getElementById('pj-document')! as HTMLInputElement;
+      expect(cnpjInput.value).toBe('12.345.678/0001-99');
+
+      const tradeNameInput = screen.getByLabelText(/Nome fantasia/) as HTMLInputElement;
+      expect(tradeNameInput.value).toBe('Agro Silva');
+
+      const cnaeInput = screen.getByLabelText(/CNAE principal/) as HTMLInputElement;
+      expect(cnaeInput.value).toBe('0111-3/01');
+    });
+
+    it('should show "Salvar alterações" button in edit mode', async () => {
+      render(<ProducerPJFormModal {...defaultProps} producerId="prod-pj-1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Salvar alterações')).toBeDefined();
+      });
+    });
+
+    it('should call PATCH on submit in edit mode', async () => {
+      render(<ProducerPJFormModal {...defaultProps} producerId="prod-pj-1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Salvar alterações')).toBeDefined();
+      });
+
+      fireEvent.click(screen.getByText('Salvar alterações'));
+
+      await waitFor(() => {
+        expect(api.patch).toHaveBeenCalledWith(
+          '/org/producers/prod-pj-1',
+          expect.objectContaining({
+            name: 'Agropecuária Silva LTDA',
+            document: '12345678000199',
+          }),
+        );
+      });
+    });
+
+    it('should call onSuccess after successful edit', async () => {
+      const onSuccess = vi.fn();
+      render(
+        <ProducerPJFormModal {...defaultProps} onSuccess={onSuccess} producerId="prod-pj-1" />,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Salvar alterações')).toBeDefined();
+      });
+
+      fireEvent.click(screen.getByText('Salvar alterações'));
+
+      await waitFor(() => {
+        expect(onSuccess).toHaveBeenCalledOnce();
+      });
+    });
   });
 });

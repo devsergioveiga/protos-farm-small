@@ -44,6 +44,9 @@ function ProducersPage() {
   const [showNewDropdown, setShowNewDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [selectedProducerId, setSelectedProducerId] = useState<string | null>(null);
+  const [editingProducer, setEditingProducer] = useState<{ id: string; type: ProducerType } | null>(
+    null,
+  );
 
   const { producers, meta, isLoading, error, refetch } = useProducers({
     page,
@@ -379,10 +382,36 @@ function ProducersPage() {
           void refetch();
         }}
       />
+      {editingProducer?.type === 'PF' && (
+        <ProducerPFFormModal
+          isOpen
+          producerId={editingProducer.id}
+          onClose={() => setEditingProducer(null)}
+          onSuccess={() => {
+            setEditingProducer(null);
+            void refetch();
+          }}
+        />
+      )}
+      {editingProducer?.type === 'PJ' && (
+        <ProducerPJFormModal
+          isOpen
+          producerId={editingProducer.id}
+          onClose={() => setEditingProducer(null)}
+          onSuccess={() => {
+            setEditingProducer(null);
+            void refetch();
+          }}
+        />
+      )}
       <ProducerDetailModal
         producerId={selectedProducerId}
         onClose={() => setSelectedProducerId(null)}
         onStatusChange={() => void refetch()}
+        onEdit={(id, type) => {
+          setSelectedProducerId(null);
+          setEditingProducer({ id, type });
+        }}
       />
     </section>
   );

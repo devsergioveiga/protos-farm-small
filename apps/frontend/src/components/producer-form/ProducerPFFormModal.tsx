@@ -15,6 +15,7 @@ interface ProducerPFFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  producerId?: string;
 }
 
 interface FieldInputProps {
@@ -134,18 +135,20 @@ function FieldSelect({
   );
 }
 
-function ProducerPFFormModal({ isOpen, onClose, onSuccess }: ProducerPFFormModalProps) {
+function ProducerPFFormModal({ isOpen, onClose, onSuccess, producerId }: ProducerPFFormModalProps) {
   const {
     formData,
     errors,
     touched,
     isSubmitting,
     submitError,
+    isEditMode,
+    isLoadingDetail,
     setField,
     touchField,
     submit,
     reset,
-  } = useCreateProducer({ onSuccess });
+  } = useCreateProducer({ onSuccess, producerId });
 
   const handleClose = useCallback(() => {
     reset();
@@ -180,7 +183,7 @@ function ProducerPFFormModal({ isOpen, onClose, onSuccess }: ProducerPFFormModal
       <div className="pf-form-modal">
         <header className="pf-form-modal__header">
           <h2 id="pf-form-title" className="pf-form-modal__title">
-            Novo produtor — Pessoa Física
+            {isEditMode ? 'Editar produtor — Pessoa Física' : 'Novo produtor — Pessoa Física'}
           </h2>
           <button
             type="button"
@@ -193,157 +196,177 @@ function ProducerPFFormModal({ isOpen, onClose, onSuccess }: ProducerPFFormModal
         </header>
 
         <div className="pf-form-modal__body">
-          {/* Dados Pessoais */}
-          <fieldset className="pf-form-modal__section">
-            <legend className="pf-form-modal__section-title">Dados Pessoais</legend>
-            <div className="pf-form-modal__fields">
-              <FieldInput
-                id="pf-name"
-                label="Nome completo"
-                value={formData.name}
-                error={errors.name}
-                touched={touched.name}
-                required
-                placeholder="Ex: João da Silva"
-                fullWidth
-                onChange={(v) => setField('name', v)}
-                onBlur={() => touchField('name')}
+          {isLoadingDetail ? (
+            <div data-testid="pf-form-skeleton">
+              <div
+                className="pf-form-modal__skeleton"
+                style={{ width: '40%', height: 20, marginBottom: 16 }}
               />
-              <FieldInput
-                id="pf-document"
-                label="CPF"
-                value={formData.document}
-                error={errors.document}
-                touched={touched.document}
-                required
-                placeholder="000.000.000-00"
-                mono
-                onChange={(v) => handleCpfChange('document', v)}
-                onBlur={() => touchField('document')}
+              <div
+                className="pf-form-modal__skeleton"
+                style={{ width: '100%', height: 120, marginBottom: 24 }}
               />
-              <FieldInput
-                id="pf-trade-name"
-                label="Nome fantasia"
-                value={formData.tradeName}
-                placeholder="Opcional"
-                onChange={(v) => setField('tradeName', v)}
-                onBlur={() => touchField('tradeName')}
+              <div
+                className="pf-form-modal__skeleton"
+                style={{ width: '50%', height: 20, marginBottom: 16 }}
               />
-              <FieldInput
-                id="pf-birth-date"
-                label="Data de nascimento"
-                value={formData.birthDate}
-                type="date"
-                onChange={(v) => setField('birthDate', v)}
-                onBlur={() => touchField('birthDate')}
-              />
-              <FieldInput
-                id="pf-spouse-cpf"
-                label="CPF do cônjuge"
-                value={formData.spouseCpf}
-                error={errors.spouseCpf}
-                touched={touched.spouseCpf}
-                placeholder="000.000.000-00"
-                mono
-                onChange={(v) => handleCpfChange('spouseCpf', v)}
-                onBlur={() => touchField('spouseCpf')}
-              />
+              <div className="pf-form-modal__skeleton" style={{ width: '100%', height: 80 }} />
             </div>
-          </fieldset>
+          ) : (
+            <>
+              {/* Dados Pessoais */}
+              <fieldset className="pf-form-modal__section">
+                <legend className="pf-form-modal__section-title">Dados Pessoais</legend>
+                <div className="pf-form-modal__fields">
+                  <FieldInput
+                    id="pf-name"
+                    label="Nome completo"
+                    value={formData.name}
+                    error={errors.name}
+                    touched={touched.name}
+                    required
+                    placeholder="Ex: João da Silva"
+                    fullWidth
+                    onChange={(v) => setField('name', v)}
+                    onBlur={() => touchField('name')}
+                  />
+                  <FieldInput
+                    id="pf-document"
+                    label="CPF"
+                    value={formData.document}
+                    error={errors.document}
+                    touched={touched.document}
+                    required
+                    placeholder="000.000.000-00"
+                    mono
+                    onChange={(v) => handleCpfChange('document', v)}
+                    onBlur={() => touchField('document')}
+                  />
+                  <FieldInput
+                    id="pf-trade-name"
+                    label="Nome fantasia"
+                    value={formData.tradeName}
+                    placeholder="Opcional"
+                    onChange={(v) => setField('tradeName', v)}
+                    onBlur={() => touchField('tradeName')}
+                  />
+                  <FieldInput
+                    id="pf-birth-date"
+                    label="Data de nascimento"
+                    value={formData.birthDate}
+                    type="date"
+                    onChange={(v) => setField('birthDate', v)}
+                    onBlur={() => touchField('birthDate')}
+                  />
+                  <FieldInput
+                    id="pf-spouse-cpf"
+                    label="CPF do cônjuge"
+                    value={formData.spouseCpf}
+                    error={errors.spouseCpf}
+                    touched={touched.spouseCpf}
+                    placeholder="000.000.000-00"
+                    mono
+                    onChange={(v) => handleCpfChange('spouseCpf', v)}
+                    onBlur={() => touchField('spouseCpf')}
+                  />
+                </div>
+              </fieldset>
 
-          {/* Endereço Fiscal */}
-          <fieldset className="pf-form-modal__section">
-            <legend className="pf-form-modal__section-title">Endereço Fiscal</legend>
-            <div className="pf-form-modal__fields">
-              <FieldInput
-                id="pf-address"
-                label="Endereço"
-                value={formData.address}
-                placeholder="Rua, número, complemento"
-                fullWidth
-                onChange={(v) => setField('address', v)}
-                onBlur={() => touchField('address')}
-              />
-              <FieldInput
-                id="pf-city"
-                label="Município"
-                value={formData.city}
-                placeholder="Ex: Uberlândia"
-                onChange={(v) => setField('city', v)}
-                onBlur={() => touchField('city')}
-              />
-              <FieldSelect
-                id="pf-state"
-                label="UF"
-                value={formData.state}
-                error={errors.state}
-                touched={touched.state}
-                placeholder="Selecione a UF"
-                options={VALID_UF.map((uf) => ({ value: uf, label: uf }))}
-                onChange={(v) => setField('state', v)}
-                onBlur={() => touchField('state')}
-              />
-              <FieldInput
-                id="pf-zip-code"
-                label="CEP"
-                value={formData.zipCode}
-                error={errors.zipCode}
-                touched={touched.zipCode}
-                placeholder="00000-000"
-                onChange={(v) => setField('zipCode', v)}
-                onBlur={() => touchField('zipCode')}
-              />
-            </div>
-          </fieldset>
+              {/* Endereço Fiscal */}
+              <fieldset className="pf-form-modal__section">
+                <legend className="pf-form-modal__section-title">Endereço Fiscal</legend>
+                <div className="pf-form-modal__fields">
+                  <FieldInput
+                    id="pf-address"
+                    label="Endereço"
+                    value={formData.address}
+                    placeholder="Rua, número, complemento"
+                    fullWidth
+                    onChange={(v) => setField('address', v)}
+                    onBlur={() => touchField('address')}
+                  />
+                  <FieldInput
+                    id="pf-city"
+                    label="Município"
+                    value={formData.city}
+                    placeholder="Ex: Uberlândia"
+                    onChange={(v) => setField('city', v)}
+                    onBlur={() => touchField('city')}
+                  />
+                  <FieldSelect
+                    id="pf-state"
+                    label="UF"
+                    value={formData.state}
+                    error={errors.state}
+                    touched={touched.state}
+                    placeholder="Selecione a UF"
+                    options={VALID_UF.map((uf) => ({ value: uf, label: uf }))}
+                    onChange={(v) => setField('state', v)}
+                    onBlur={() => touchField('state')}
+                  />
+                  <FieldInput
+                    id="pf-zip-code"
+                    label="CEP"
+                    value={formData.zipCode}
+                    error={errors.zipCode}
+                    touched={touched.zipCode}
+                    placeholder="00000-000"
+                    onChange={(v) => setField('zipCode', v)}
+                    onBlur={() => touchField('zipCode')}
+                  />
+                </div>
+              </fieldset>
 
-          {/* Informações Adicionais */}
-          <fieldset className="pf-form-modal__section">
-            <legend className="pf-form-modal__section-title">Informações Adicionais</legend>
-            <div className="pf-form-modal__fields">
-              <FieldInput
-                id="pf-incra"
-                label="Registro INCRA"
-                value={formData.incraRegistration}
-                placeholder="Opcional"
-                onChange={(v) => setField('incraRegistration', v)}
-                onBlur={() => touchField('incraRegistration')}
-              />
-              <FieldInput
-                id="pf-legal-rep"
-                label="Representante legal"
-                value={formData.legalRepresentative}
-                placeholder="Opcional"
-                onChange={(v) => setField('legalRepresentative', v)}
-                onBlur={() => touchField('legalRepresentative')}
-              />
-              <FieldInput
-                id="pf-legal-rep-cpf"
-                label="CPF do representante"
-                value={formData.legalRepCpf}
-                error={errors.legalRepCpf}
-                touched={touched.legalRepCpf}
-                placeholder="000.000.000-00"
-                mono
-                onChange={(v) => handleCpfChange('legalRepCpf', v)}
-                onBlur={() => touchField('legalRepCpf')}
-              />
-              <FieldSelect
-                id="pf-tax-regime"
-                label="Regime tributário"
-                value={formData.taxRegime}
-                placeholder="Selecione..."
-                options={TAX_REGIME_OPTIONS}
-                onChange={(v) => setField('taxRegime', v)}
-                onBlur={() => touchField('taxRegime')}
-              />
-            </div>
-          </fieldset>
+              {/* Informações Adicionais */}
+              <fieldset className="pf-form-modal__section">
+                <legend className="pf-form-modal__section-title">Informações Adicionais</legend>
+                <div className="pf-form-modal__fields">
+                  <FieldInput
+                    id="pf-incra"
+                    label="Registro INCRA"
+                    value={formData.incraRegistration}
+                    placeholder="Opcional"
+                    onChange={(v) => setField('incraRegistration', v)}
+                    onBlur={() => touchField('incraRegistration')}
+                  />
+                  <FieldInput
+                    id="pf-legal-rep"
+                    label="Representante legal"
+                    value={formData.legalRepresentative}
+                    placeholder="Opcional"
+                    onChange={(v) => setField('legalRepresentative', v)}
+                    onBlur={() => touchField('legalRepresentative')}
+                  />
+                  <FieldInput
+                    id="pf-legal-rep-cpf"
+                    label="CPF do representante"
+                    value={formData.legalRepCpf}
+                    error={errors.legalRepCpf}
+                    touched={touched.legalRepCpf}
+                    placeholder="000.000.000-00"
+                    mono
+                    onChange={(v) => handleCpfChange('legalRepCpf', v)}
+                    onBlur={() => touchField('legalRepCpf')}
+                  />
+                  <FieldSelect
+                    id="pf-tax-regime"
+                    label="Regime tributário"
+                    value={formData.taxRegime}
+                    placeholder="Selecione..."
+                    options={TAX_REGIME_OPTIONS}
+                    onChange={(v) => setField('taxRegime', v)}
+                    onBlur={() => touchField('taxRegime')}
+                  />
+                </div>
+              </fieldset>
 
-          {submitError && (
-            <div className="pf-form-modal__submit-error" role="alert">
-              <AlertCircle size={20} aria-hidden="true" />
-              {submitError}
-            </div>
+              {submitError && (
+                <div className="pf-form-modal__submit-error" role="alert">
+                  <AlertCircle size={20} aria-hidden="true" />
+                  {submitError}
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -364,8 +387,10 @@ function ProducerPFFormModal({ isOpen, onClose, onSuccess }: ProducerPFFormModal
             {isSubmitting ? (
               <>
                 <Loader2 size={16} aria-hidden="true" className="pf-form-modal__spinner" />
-                Cadastrando...
+                {isEditMode ? 'Salvando...' : 'Cadastrando...'}
               </>
+            ) : isEditMode ? (
+              'Salvar alterações'
             ) : (
               'Cadastrar produtor'
             )}

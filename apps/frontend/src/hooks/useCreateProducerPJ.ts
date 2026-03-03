@@ -1,7 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { api } from '@/services/api';
 import { VALID_UF } from '@/constants/states';
-import type { CreateProducerPJPayload } from '@/types/producer';
+import type {
+  CreateProducerPJPayload,
+  UpdateProducerPayload,
+  ProducerDetail,
+} from '@/types/producer';
 
 export interface ProducerPJFormFields {
   name: string;
@@ -97,7 +101,7 @@ export function validatePJFields(
   return errors;
 }
 
-function buildPayload(fields: ProducerPJFormFields): CreateProducerPJPayload {
+function buildCreatePayload(fields: ProducerPJFormFields): CreateProducerPJPayload {
   const payload: CreateProducerPJPayload = {
     type: 'PJ',
     name: fields.name.trim(),
@@ -120,16 +124,86 @@ function buildPayload(fields: ProducerPJFormFields): CreateProducerPJPayload {
   return payload;
 }
 
-interface UseCreateProducerPJOptions {
-  onSuccess: () => void;
+function buildUpdatePayload(fields: ProducerPJFormFields): UpdateProducerPayload {
+  const payload: UpdateProducerPayload = {
+    name: fields.name.trim(),
+    document: stripDigits(fields.document),
+  };
+
+  payload.tradeName = fields.tradeName.trim() || undefined;
+  payload.address = fields.address.trim() || undefined;
+  payload.city = fields.city.trim() || undefined;
+  payload.state = fields.state || undefined;
+  payload.zipCode = fields.zipCode.trim() ? fields.zipCode.replace(/\D/g, '') : undefined;
+  payload.incraRegistration = fields.incraRegistration.trim() || undefined;
+  payload.legalRepresentative = fields.legalRepresentative.trim() || undefined;
+  payload.legalRepCpf = fields.legalRepCpf.trim() ? stripDigits(fields.legalRepCpf) : undefined;
+  payload.taxRegime = fields.taxRegime || undefined;
+  payload.mainCnae = fields.mainCnae.trim() || undefined;
+  payload.ruralActivityType = fields.ruralActivityType.trim() || undefined;
+
+  return payload;
 }
 
-export function useCreateProducerPJ({ onSuccess }: UseCreateProducerPJOptions) {
+function detailToFormFields(detail: ProducerDetail): ProducerPJFormFields {
+  return {
+    name: detail.name || '',
+    document: detail.document ? formatCnpjInput(detail.document) : '',
+    tradeName: detail.tradeName || '',
+    address: detail.address || '',
+    city: detail.city || '',
+    state: detail.state || '',
+    zipCode: detail.zipCode || '',
+    incraRegistration: detail.incraRegistration || '',
+    legalRepresentative: detail.legalRepresentative || '',
+    legalRepCpf: detail.legalRepCpf ? formatCpfInput(detail.legalRepCpf) : '',
+    taxRegime: detail.taxRegime || '',
+    mainCnae: detail.mainCnae || '',
+    ruralActivityType: detail.ruralActivityType || '',
+  };
+}
+
+interface UseCreateProducerPJOptions {
+  onSuccess: () => void;
+  producerId?: string;
+}
+
+export function useCreateProducerPJ({ onSuccess, producerId }: UseCreateProducerPJOptions) {
+  const isEditMode = !!producerId;
   const [formData, setFormData] = useState<ProducerPJFormFields>(INITIAL_FIELDS);
   const [errors, setErrors] = useState<Partial<Record<PJFieldKey, string>>>({});
   const [touched, setTouched] = useState<Partial<Record<PJFieldKey, boolean>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+
+  useEffect(() => {
+    if (!producerId) return;
+    let cancelled = false;
+    setIsLoadingDetail(true);
+
+    api
+      .get<ProducerDetail>(`/org/producers/${producerId}`)
+      .then((detail) => {
+        if (!cancelled) {
+          setFormData(detailToFormFields(detail));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSubmitError('Não foi possível carregar os dados do produtor.');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoadingDetail(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [producerId]);
 
   const setField = useCallback(
     (key: PJFieldKey, value: string) => {
@@ -187,16 +261,26 @@ export function useCreateProducerPJ({ onSuccess }: UseCreateProducerPJOptions) {
     setSubmitError(null);
 
     try {
-      const payload = buildPayload(formData);
-      await api.post('/org/producers', payload);
+      if (isEditMode) {
+        const payload = buildUpdatePayload(formData);
+        await api.patch(`/org/producers/${producerId}`, payload);
+      } else {
+        const payload = buildCreatePayload(formData);
+        await api.post('/org/producers', payload);
+      }
       onSuccess();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Não foi possível cadastrar o produtor.';
+      const message =
+        err instanceof Error
+          ? err.message
+          : isEditMode
+            ? 'Não foi possível salvar as alterações.'
+            : 'Não foi possível cadastrar o produtor.';
       setSubmitError(message);
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, onSuccess]);
+  }, [formData, onSuccess, isEditMode, producerId]);
 
   const reset = useCallback(() => {
     setFormData(INITIAL_FIELDS);
@@ -212,6 +296,8 @@ export function useCreateProducerPJ({ onSuccess }: UseCreateProducerPJOptions) {
     touched,
     isSubmitting,
     submitError,
+    isEditMode,
+    isLoadingDetail,
     setField,
     touchField,
     handleCnpjChange,
