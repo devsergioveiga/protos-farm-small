@@ -59,9 +59,11 @@ const ADMIN_PAYLOAD = {
 
 const BASE_URL = '/api/org/farms/farm-1/plots/plot-1';
 
-function setupAuth(payload = ADMIN_PAYLOAD) {
+function setupAuth(payload: typeof ADMIN_PAYLOAD = ADMIN_PAYLOAD) {
   mockedAuth.verifyAccessToken.mockReturnValue(payload);
-  mockGetUserPermissions.mockResolvedValue(DEFAULT_ROLE_PERMISSIONS[payload.role]);
+  const permissions =
+    DEFAULT_ROLE_PERMISSIONS[payload.role as keyof typeof DEFAULT_ROLE_PERMISSIONS] ?? [];
+  mockGetUserPermissions.mockResolvedValue(permissions);
 }
 
 // ─── Crop Seasons ───────────────────────────────────────────────────
@@ -173,7 +175,7 @@ describe('Plot History Routes — Crop Seasons', () => {
     });
 
     it('should reject COWBOY (no farms:update)', async () => {
-      setupAuth({ ...ADMIN_PAYLOAD, role: 'COWBOY' as const });
+      setupAuth({ ...ADMIN_PAYLOAD, role: 'COWBOY' as unknown as 'ADMIN' });
 
       const res = await request(app)
         .post(`${BASE_URL}/crop-seasons`)

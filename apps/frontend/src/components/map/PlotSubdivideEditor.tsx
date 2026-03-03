@@ -119,9 +119,12 @@ function PlotSubdivideEditor({
 
     // Re-enable draw mode
     if (mapRef.current) {
-      const handler = new L.Draw.Polyline(mapRef.current, {
-        shapeOptions: { color: '#D32F2F', weight: 3, dashArray: '10 5' },
-      } as L.DrawOptions.PolylineOptions);
+      const handler = new L.Draw.Polyline(
+        mapRef.current as unknown as L.DrawMap,
+        {
+          shapeOptions: { color: '#D32F2F', weight: 3, dashArray: '10 5' },
+        } as L.DrawOptions.PolylineOptions,
+      );
       handler.enable();
     }
   }, []);
@@ -176,13 +179,17 @@ function PlotSubdivideEditor({
     }
 
     // Enable polyline draw mode
-    const handler = new L.Draw.Polyline(map, {
-      shapeOptions: { color: '#D32F2F', weight: 3, dashArray: '10 5' },
-    } as L.DrawOptions.PolylineOptions);
+    const handler = new L.Draw.Polyline(
+      map as unknown as L.DrawMap,
+      {
+        shapeOptions: { color: '#D32F2F', weight: 3, dashArray: '10 5' },
+      } as L.DrawOptions.PolylineOptions,
+    );
     handler.enable();
 
-    map.on(L.Draw.Event.CREATED, (e: L.DrawEvents.Created) => {
-      const layer = e.layer as L.Polyline;
+    map.on(L.Draw.Event.CREATED, (e: L.LeafletEvent) => {
+      const { layer: createdLayer } = e as L.DrawEvents.Created;
+      const layer = createdLayer as L.Polyline;
       drawnLineRef.current = layer;
       layer.addTo(map);
 

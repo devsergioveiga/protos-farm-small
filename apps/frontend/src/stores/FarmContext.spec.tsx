@@ -17,7 +17,7 @@ const MOCK_FARMS: FarmListItem[] = [
     latitude: null,
     longitude: null,
     createdAt: '2026-01-01',
-    _count: { registrations: 2 },
+    _count: { registrations: 2, fieldPlots: 0 },
   },
   {
     id: 'farm-2',
@@ -32,7 +32,7 @@ const MOCK_FARMS: FarmListItem[] = [
     latitude: null,
     longitude: null,
     createdAt: '2026-01-02',
-    _count: { registrations: 1 },
+    _count: { registrations: 1, fieldPlots: 0 },
   },
 ];
 
