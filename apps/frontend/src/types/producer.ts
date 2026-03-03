@@ -129,3 +129,21 @@ export interface CreateProducerPJPayload {
   mainCnae?: string;
   ruralActivityType?: string;
 }
+
+export interface UpdateProducerPayload {
+  name?: string;
+  document?: string;
+  tradeName?: string;
+  birthDate?: string;
+  spouseCpf?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  incraRegistration?: string;
+  legalRepresentative?: string;
+  legalRepCpf?: string;
+  taxRegime?: string;
+  mainCnae?: string;
+  ruralActivityType?: string;
+}

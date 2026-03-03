@@ -316,4 +316,60 @@ describe('ProducerDetailModal', () => {
     expect(dialog?.getAttribute('aria-modal')).toBe('true');
     expect(dialog?.getAttribute('aria-labelledby')).toBe('producer-detail-title');
   });
+
+  // ─── Edit button tests ─────────────────────────────────────────
+
+  it('should show Editar button for PF producer when onEdit is provided', async () => {
+    const onEdit = vi.fn();
+    render(<ProducerDetailModal {...defaultProps} onEdit={onEdit} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Editar')).toBeDefined();
+    });
+  });
+
+  it('should show Editar button for PJ producer when onEdit is provided', async () => {
+    (api.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockProducerPJ);
+    const onEdit = vi.fn();
+    render(<ProducerDetailModal {...defaultProps} producerId="prod-2" onEdit={onEdit} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Editar')).toBeDefined();
+    });
+  });
+
+  it('should not show Editar button for SOCIEDADE_EM_COMUM producer', async () => {
+    (api.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockProducerSC);
+    const onEdit = vi.fn();
+    render(<ProducerDetailModal {...defaultProps} producerId="prod-3" onEdit={onEdit} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Dados Gerais')).toBeDefined();
+    });
+
+    expect(screen.queryByText('Editar')).toBeNull();
+  });
+
+  it('should not show Editar button when onEdit is not provided', async () => {
+    render(<ProducerDetailModal {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Dados Gerais')).toBeDefined();
+    });
+
+    expect(screen.queryByText('Editar')).toBeNull();
+  });
+
+  it('should call onEdit with producerId and type when Editar is clicked', async () => {
+    const onEdit = vi.fn();
+    render(<ProducerDetailModal {...defaultProps} onEdit={onEdit} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Editar')).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByText('Editar'));
+
+    expect(onEdit).toHaveBeenCalledWith('prod-1', 'PF');
+  });
 });

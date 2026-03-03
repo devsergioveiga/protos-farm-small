@@ -1,10 +1,13 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import ProducerPFFormModal from './ProducerPFFormModal';
+import type { ProducerDetail } from '@/types/producer';
 
 vi.mock('@/services/api', () => ({
   api: {
     post: vi.fn(),
+    get: vi.fn(),
+    patch: vi.fn(),
   },
 }));
 
@@ -14,6 +17,33 @@ const defaultProps = {
   isOpen: true,
   onClose: vi.fn(),
   onSuccess: vi.fn(),
+};
+
+const mockProducerPF: ProducerDetail = {
+  id: 'prod-1',
+  name: 'João da Silva',
+  tradeName: 'Fazenda São João',
+  document: '12345678901',
+  type: 'PF',
+  status: 'ACTIVE',
+  address: 'Rua das Flores, 123',
+  city: 'Uberlândia',
+  state: 'MG',
+  zipCode: '38400000',
+  birthDate: '1980-05-15T00:00:00.000Z',
+  spouseCpf: '98765432100',
+  incraRegistration: '123456',
+  legalRepresentative: null,
+  legalRepCpf: null,
+  taxRegime: 'SIMPLES',
+  mainCnae: null,
+  ruralActivityType: null,
+  createdAt: '2026-01-01T00:00:00.000Z',
+  updatedAt: '2026-01-01T00:00:00.000Z',
+  organizationId: 'org-1',
+  participants: [],
+  stateRegistrations: [],
+  farmLinks: [],
 };
 
 describe('ProducerPFFormModal', () => {
@@ -218,6 +248,90 @@ describe('ProducerPFFormModal', () => {
         tradeName: 'Fazenda São João',
         city: 'Uberlândia',
         state: 'MG',
+      });
+    });
+  });
+
+  // ─── Edit mode tests ───────────────────────────────────────────
+
+  describe('edit mode', () => {
+    beforeEach(() => {
+      (api.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockProducerPF);
+      (api.patch as ReturnType<typeof vi.fn>).mockResolvedValue({ ...mockProducerPF });
+    });
+
+    it('should show edit title when producerId is provided', async () => {
+      render(<ProducerPFFormModal {...defaultProps} producerId="prod-1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Editar produtor — Pessoa Física')).toBeDefined();
+      });
+    });
+
+    it('should show skeleton while loading detail', () => {
+      (api.get as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
+      render(<ProducerPFFormModal {...defaultProps} producerId="prod-1" />);
+      expect(screen.getByTestId('pf-form-skeleton')).toBeDefined();
+    });
+
+    it('should prefill form with producer data', async () => {
+      render(<ProducerPFFormModal {...defaultProps} producerId="prod-1" />);
+
+      await waitFor(() => {
+        const nameInput = screen.getByLabelText(/Nome completo/) as HTMLInputElement;
+        expect(nameInput.value).toBe('João da Silva');
+      });
+
+      const cpfInput = document.getElementById('pf-document')! as HTMLInputElement;
+      expect(cpfInput.value).toBe('123.456.789-01');
+
+      const tradeNameInput = screen.getByLabelText(/Nome fantasia/) as HTMLInputElement;
+      expect(tradeNameInput.value).toBe('Fazenda São João');
+
+      const cityInput = screen.getByLabelText(/Município/) as HTMLInputElement;
+      expect(cityInput.value).toBe('Uberlândia');
+    });
+
+    it('should show "Salvar alterações" button in edit mode', async () => {
+      render(<ProducerPFFormModal {...defaultProps} producerId="prod-1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Salvar alterações')).toBeDefined();
+      });
+    });
+
+    it('should call PATCH on submit in edit mode', async () => {
+      render(<ProducerPFFormModal {...defaultProps} producerId="prod-1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Salvar alterações')).toBeDefined();
+      });
+
+      fireEvent.click(screen.getByText('Salvar alterações'));
+
+      await waitFor(() => {
+        expect(api.patch).toHaveBeenCalledWith(
+          '/org/producers/prod-1',
+          expect.objectContaining({
+            name: 'João da Silva',
+            document: '12345678901',
+          }),
+        );
+      });
+    });
+
+    it('should call onSuccess after successful edit', async () => {
+      const onSuccess = vi.fn();
+      render(<ProducerPFFormModal {...defaultProps} onSuccess={onSuccess} producerId="prod-1" />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Salvar alterações')).toBeDefined();
+      });
+
+      fireEvent.click(screen.getByText('Salvar alterações'));
+
+      await waitFor(() => {
+        expect(onSuccess).toHaveBeenCalledOnce();
       });
     });
   });
