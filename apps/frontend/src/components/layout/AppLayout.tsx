@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
-import { LogOut, LayoutDashboard, MapPin, Shield } from 'lucide-react';
+import { LogOut, LayoutDashboard, MapPin, Shield, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/stores/AuthContext';
 import { FarmProvider } from '@/stores/FarmContext';
 import FarmSelector from '@/components/farm-selector/FarmSelector';
@@ -33,6 +33,12 @@ function AppLayout() {
           </div>
 
           <nav className="app-topbar__right" aria-label="Menu principal">
+            {user?.role === 'SUPER_ADMIN' && (
+              <Link to="/admin" className="app-topbar__nav-link app-topbar__nav-link--admin">
+                <ShieldCheck size={16} aria-hidden="true" />
+                <span className="app-topbar__nav-label">Admin</span>
+              </Link>
+            )}
             <Link
               to="/dashboard"
               className={`app-topbar__nav-link ${isActive('/dashboard') ? 'app-topbar__nav-link--active' : ''}`}
