@@ -7,7 +7,19 @@ vi.mock('@/services/api', () => ({
   api: {
     get: vi.fn(),
     patch: vi.fn(),
+    post: vi.fn(),
+    delete: vi.fn(),
   },
+}));
+
+vi.mock('@/hooks/useFarms', () => ({
+  useFarms: () => ({
+    farms: [{ id: 'farm-1', name: 'Fazenda Santa Helena', state: 'MG', nickname: null }],
+    meta: null,
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
 }));
 
 vi.mock('@/hooks/usePermissions', () => ({
@@ -65,7 +77,7 @@ const mockProducerPF: ProducerDetail = {
   farmLinks: [
     {
       id: 'link-1',
-      bondType: 'OWNER',
+      bondType: 'PROPRIETARIO',
       participationPct: 100,
       startDate: '2020-01-01T00:00:00.000Z',
       endDate: null,

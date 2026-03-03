@@ -1,0 +1,272 @@
+/* ─── Overlay ─── */
+
+.farm-link-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: var(--space-4);
+}
+
+/* ─── Modal ─── */
+
+.farm-link-modal {
+  display: flex;
+  flex-direction: column;
+  width: 95vw;
+  max-width: 540px;
+  max-height: 90vh;
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+/* ─── Header ─── */
+
+.farm-link-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+.farm-link-modal__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.farm-link-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  color: var(--color-neutral-600);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.farm-link-modal__close:hover {
+  background: var(--color-neutral-100);
+}
+
+.farm-link-modal__close:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Body ─── */
+
+.farm-link-modal__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+}
+
+/* ─── Fields ─── */
+
+.farm-link-modal__fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .farm-link-modal__fields {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4) var(--space-5);
+  }
+}
+
+.farm-link-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.farm-link-modal__field--full {
+  grid-column: 1 / -1;
+}
+
+.farm-link-modal__label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-700);
+}
+
+.farm-link-modal__required {
+  color: var(--color-error-500);
+}
+
+.farm-link-modal__input,
+.farm-link-modal__select {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  min-height: 48px;
+  box-sizing: border-box;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.farm-link-modal__input:focus,
+.farm-link-modal__select:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.farm-link-modal__input::placeholder {
+  color: var(--color-neutral-400);
+}
+
+.farm-link-modal__input--error,
+.farm-link-modal__select--error {
+  border-color: var(--color-error-500);
+}
+
+.farm-link-modal__input--error:focus,
+.farm-link-modal__select--error:focus {
+  outline-color: var(--color-error-500);
+}
+
+.farm-link-modal__error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-error-500);
+}
+
+/* ─── Checkbox ─── */
+
+.farm-link-modal__checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 48px;
+  grid-column: 1 / -1;
+}
+
+.farm-link-modal__checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-primary-600);
+  cursor: pointer;
+}
+
+.farm-link-modal__checkbox-label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-700);
+  cursor: pointer;
+}
+
+/* ─── Submit error ─── */
+
+.farm-link-modal__submit-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-error-100);
+  border-radius: var(--radius-md);
+  color: var(--color-error-500);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  margin-top: var(--space-4);
+}
+
+/* ─── Footer ─── */
+
+.farm-link-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+/* ─── Buttons ─── */
+
+.farm-link-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.farm-link-modal__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.farm-link-modal__btn--primary {
+  background: var(--color-primary-600);
+  color: white;
+}
+
+.farm-link-modal__btn--primary:hover {
+  background: var(--color-primary-700);
+}
+
+.farm-link-modal__btn--primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.farm-link-modal__btn--secondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.farm-link-modal__btn--secondary:hover {
+  background: var(--color-neutral-200);
+}
+
+/* ─── Spinner ─── */
+
+@keyframes farm-link-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.farm-link-modal__spinner {
+  animation: farm-link-spin 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .farm-link-modal__spinner {
+    animation: none;
+  }
+}

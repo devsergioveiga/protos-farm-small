@@ -1,7 +1,18 @@
 import { useEffect, useCallback, useState } from 'react';
-import { X, AlertCircle, FileText, MapPin, Users, Loader2, Pencil } from 'lucide-react';
+import {
+  X,
+  AlertCircle,
+  FileText,
+  MapPin,
+  Users,
+  Loader2,
+  Pencil,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 import { useProducerDetail } from '@/hooks/useProducerDetail';
 import PermissionGate from '@/components/auth/PermissionGate';
+import FarmLinkFormModal from '@/components/producer-form/FarmLinkFormModal';
 import { api } from '@/services/api';
 import type {
   ProducerType,
@@ -19,12 +30,13 @@ const TYPE_LABELS: Record<ProducerType, string> = {
 };
 
 const BOND_TYPE_LABELS: Record<string, string> = {
-  OWNER: 'Proprietário',
-  TENANT: 'Arrendatário',
-  PARTNER: 'Parceiro',
-  SHARECROPPER: 'Meeiro',
-  USUFRUCTUARY: 'Usufrutuário',
-  CONCESSIONAIRE: 'Concessionário',
+  PROPRIETARIO: 'Proprietário',
+  ARRENDATARIO: 'Arrendatário',
+  COMODATARIO: 'Comodatário',
+  PARCEIRO: 'Parceiro',
+  MEEIRO: 'Meeiro',
+  USUFRUTUARIO: 'Usufrutuário',
+  CONDOMINO: 'Condômino',
 };
 
 const TAX_REGIME_LABELS: Record<string, string> = {
@@ -249,59 +261,100 @@ function IeSection({ registrations }: { registrations: ProducerStateRegistration
   );
 }
 
-function FarmLinksSection({ links }: { links: ProducerFarmLink[] }) {
-  if (links.length === 0) {
-    return (
-      <section className="producer-detail__section">
-        <h3 className="producer-detail__section-title">Vínculos com Fazendas</h3>
+function FarmLinksSection({
+  links,
+  onAdd,
+  onEdit,
+  onDelete,
+}: {
+  links: ProducerFarmLink[];
+  onAdd: () => void;
+  onEdit: (link: ProducerFarmLink) => void;
+  onDelete: (link: ProducerFarmLink) => void;
+}) {
+  return (
+    <section className="producer-detail__section">
+      <div className="producer-detail__section-header">
+        <h3 className="producer-detail__section-title" style={{ marginBottom: 0 }}>
+          Vínculos com Fazendas
+        </h3>
+        <PermissionGate permission="producers:update">
+          <button
+            type="button"
+            className="producer-detail__btn producer-detail__btn--add"
+            onClick={onAdd}
+          >
+            <Plus size={16} aria-hidden="true" />
+            Vincular fazenda
+          </button>
+        </PermissionGate>
+      </div>
+      {links.length === 0 ? (
         <div className="producer-detail__empty">
           <MapPin size={32} aria-hidden="true" />
           <p className="producer-detail__empty-text">Nenhum vínculo com fazenda cadastrado</p>
         </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="producer-detail__section">
-      <h3 className="producer-detail__section-title">Vínculos com Fazendas</h3>
-      <div className="producer-detail__cards-list">
-        {links.map((link) => (
-          <div key={link.id} className="producer-detail__card">
-            <h4 className="producer-detail__card-title">
-              {link.farm.name}
-              {link.farm.state && ` — ${link.farm.state}`}
-            </h4>
-            <div className="producer-detail__card-row">
-              <span className="producer-detail__card-label">Tipo de vínculo</span>
-              <span className="producer-detail__card-value">
-                {BOND_TYPE_LABELS[link.bondType] || link.bondType}
-              </span>
-            </div>
-            {link.participationPct != null && (
-              <div className="producer-detail__card-row">
-                <span className="producer-detail__card-label">Participação</span>
-                <span className="producer-detail__card-value">{link.participationPct}%</span>
+      ) : (
+        <div className="producer-detail__cards-list">
+          {links.map((link) => (
+            <div key={link.id} className="producer-detail__card">
+              <div className="producer-detail__card-header">
+                <h4 className="producer-detail__card-title">
+                  {link.farm.name}
+                  {link.farm.state && ` — ${link.farm.state}`}
+                </h4>
+                <PermissionGate permission="producers:update">
+                  <div className="producer-detail__card-actions">
+                    <button
+                      type="button"
+                      className="producer-detail__card-action"
+                      aria-label={`Editar vínculo com ${link.farm.name}`}
+                      onClick={() => onEdit(link)}
+                    >
+                      <Pencil size={16} aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      className="producer-detail__card-action producer-detail__card-action--danger"
+                      aria-label={`Excluir vínculo com ${link.farm.name}`}
+                      onClick={() => onDelete(link)}
+                    >
+                      <Trash2 size={16} aria-hidden="true" />
+                    </button>
+                  </div>
+                </PermissionGate>
               </div>
-            )}
-            <div className="producer-detail__card-row">
-              <span className="producer-detail__card-label">Vigência</span>
-              <span className="producer-detail__card-value">
-                {formatDate(link.startDate)}
-                {link.endDate ? ` a ${formatDate(link.endDate)}` : ' — vigente'}
-              </span>
-            </div>
-            {link.isItrDeclarant && (
               <div className="producer-detail__card-row">
-                <span className="producer-detail__card-label">ITR</span>
-                <span className="producer-detail__card-value producer-detail__card-value--highlight">
-                  Declarante
+                <span className="producer-detail__card-label">Tipo de vínculo</span>
+                <span className="producer-detail__card-value">
+                  {BOND_TYPE_LABELS[link.bondType] || link.bondType}
                 </span>
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+              {link.participationPct != null && (
+                <div className="producer-detail__card-row">
+                  <span className="producer-detail__card-label">Participação</span>
+                  <span className="producer-detail__card-value">{link.participationPct}%</span>
+                </div>
+              )}
+              <div className="producer-detail__card-row">
+                <span className="producer-detail__card-label">Vigência</span>
+                <span className="producer-detail__card-value">
+                  {formatDate(link.startDate)}
+                  {link.endDate ? ` a ${formatDate(link.endDate)}` : ' — vigente'}
+                </span>
+              </div>
+              {link.isItrDeclarant && (
+                <div className="producer-detail__card-row">
+                  <span className="producer-detail__card-label">ITR</span>
+                  <span className="producer-detail__card-value producer-detail__card-value--highlight">
+                    Declarante
+                  </span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -336,6 +389,12 @@ function ProducerDetailModal({
 }: ProducerDetailModalProps) {
   const { producer, isLoading, error, refetch } = useProducerDetail(producerId);
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
+  const [farmLinkModal, setFarmLinkModal] = useState<{
+    isOpen: boolean;
+    link?: ProducerFarmLink;
+  }>({ isOpen: false });
+  const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null);
+  const [confirmDeleteLink, setConfirmDeleteLink] = useState<ProducerFarmLink | null>(null);
 
   const handleClose = useCallback(() => {
     onClose();
@@ -364,6 +423,30 @@ function ProducerDetailModal({
       setIsTogglingStatus(false);
     }
   }, [producer, refetch, onStatusChange]);
+
+  const handleFarmLinkSuccess = useCallback(() => {
+    setFarmLinkModal({ isOpen: false });
+    void refetch();
+    onStatusChange();
+  }, [refetch, onStatusChange]);
+
+  const handleDeleteLink = useCallback(
+    async (link: ProducerFarmLink) => {
+      if (!producer) return;
+      setDeletingLinkId(link.id);
+      try {
+        await api.delete(`/org/producers/${producer.id}/farms/${link.id}`);
+        setConfirmDeleteLink(null);
+        await refetch();
+        onStatusChange();
+      } catch {
+        // Error will show on next refetch
+      } finally {
+        setDeletingLinkId(null);
+      }
+    },
+    [producer, refetch, onStatusChange],
+  );
 
   if (!producerId) return null;
 
@@ -422,7 +505,12 @@ function ProducerDetailModal({
               <ParticipantsSection participants={producer.participants} />
             )}
             <IeSection registrations={producer.stateRegistrations} />
-            <FarmLinksSection links={producer.farmLinks} />
+            <FarmLinksSection
+              links={producer.farmLinks}
+              onAdd={() => setFarmLinkModal({ isOpen: true })}
+              onEdit={(link) => setFarmLinkModal({ isOpen: true, link })}
+              onDelete={(link) => setConfirmDeleteLink(link)}
+            />
           </div>
         ) : null}
 
@@ -461,6 +549,75 @@ function ProducerDetailModal({
           </button>
         </footer>
       </div>
+
+      {producer && (
+        <FarmLinkFormModal
+          isOpen={farmLinkModal.isOpen}
+          onClose={() => setFarmLinkModal({ isOpen: false })}
+          onSuccess={handleFarmLinkSuccess}
+          producerId={producer.id}
+          existingLink={farmLinkModal.link}
+        />
+      )}
+
+      {confirmDeleteLink && (
+        <div
+          className="producer-detail__overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setConfirmDeleteLink(null);
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-delete-link-title"
+        >
+          <div className="producer-detail producer-detail--confirm">
+            <header className="producer-detail__header">
+              <h2 id="confirm-delete-link-title" className="producer-detail__title">
+                Excluir vínculo
+              </h2>
+              <button
+                type="button"
+                className="producer-detail__close"
+                aria-label="Fechar"
+                onClick={() => setConfirmDeleteLink(null)}
+              >
+                <X size={20} aria-hidden="true" />
+              </button>
+            </header>
+            <div className="producer-detail__body">
+              <p
+                style={{
+                  margin: 0,
+                  fontFamily: 'var(--font-body)',
+                  color: 'var(--color-neutral-700)',
+                }}
+              >
+                Deseja remover o vínculo com <strong>{confirmDeleteLink.farm.name}</strong>?
+              </p>
+            </div>
+            <footer className="producer-detail__footer">
+              <button
+                type="button"
+                className="producer-detail__btn producer-detail__btn--secondary"
+                onClick={() => setConfirmDeleteLink(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="producer-detail__btn producer-detail__btn--deactivate"
+                onClick={() => void handleDeleteLink(confirmDeleteLink)}
+                disabled={deletingLinkId === confirmDeleteLink.id}
+              >
+                {deletingLinkId === confirmDeleteLink.id ? (
+                  <Loader2 size={16} aria-hidden="true" />
+                ) : null}
+                Excluir
+              </button>
+            </footer>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

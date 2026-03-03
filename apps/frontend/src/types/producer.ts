@@ -165,3 +165,22 @@ export interface UpdateProducerPayload {
   mainCnae?: string;
   ruralActivityType?: string;
 }
+
+// ─── Farm link types ──────────────────────────────────────────────
+
+export interface CreateFarmLinkPayload {
+  farmId: string;
+  bondType: string;
+  participationPct?: number;
+  startDate?: string;
+  endDate?: string;
+  isItrDeclarant?: boolean;
+}
+
+export interface UpdateFarmLinkPayload {
+  bondType?: string;
+  participationPct?: number;
+  startDate?: string;
+  endDate?: string;
+  isItrDeclarant?: boolean;
+}
