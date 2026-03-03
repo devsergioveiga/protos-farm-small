@@ -19,6 +19,7 @@ const FarmMapPage = lazy(() => import('@/pages/FarmMapPage'));
 const AdminDashboardPage = lazy(() => import('@/pages/AdminDashboardPage'));
 const AdminOrganizationsPage = lazy(() => import('@/pages/AdminOrganizationsPage'));
 const AdminAuditLogsPage = lazy(() => import('@/pages/AdminAuditLogsPage'));
+const ProducersPage = lazy(() => import('@/pages/ProducersPage'));
 
 export function App() {
   return (
@@ -45,6 +46,7 @@ export function App() {
                 <Route path="/roles" element={<RolesPage />} />
                 <Route path="/farms" element={<FarmsPage />} />
                 <Route path="/farms/:farmId/map" element={<FarmMapPage />} />
+                <Route path="/producers" element={<ProducersPage />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/login" replace />} />
