@@ -95,6 +95,7 @@ function FarmMapPage() {
   const [editingRegistration, setEditingRegistration] = useState<FarmRegistration | undefined>(
     undefined,
   );
+  const [uploadingBoundaryReg, setUploadingBoundaryReg] = useState<FarmRegistration | null>(null);
 
   const handleOpenRegForm = useCallback(
     (reg?: FarmRegistration) => {
@@ -120,6 +121,10 @@ function FarmMapPage() {
     },
     [editingRegistration, addRegistration, updateRegistration],
   );
+
+  const handleUploadRegBoundary = useCallback((reg: FarmRegistration) => {
+    setUploadingBoundaryReg(reg);
+  }, []);
 
   const handleDeleteRegistration = useCallback(
     (reg: FarmRegistration) => {
@@ -420,6 +425,7 @@ function FarmMapPage() {
               onAdd={() => handleOpenRegForm()}
               onEdit={(reg) => handleOpenRegForm(reg)}
               onDelete={handleDeleteRegistration}
+              onUploadBoundary={handleUploadRegBoundary}
               onClose={() => setShowRegistrations(false)}
             />
           </Suspense>
@@ -446,6 +452,26 @@ function FarmMapPage() {
             farmTotalAreaHa={Number(data.farm.totalAreaHa)}
             existingBoundary={data.farmBoundary.boundaryGeoJSON}
             onClose={() => setIsBoundaryUploadOpen(false)}
+            onUploadComplete={handleImportComplete}
+          />
+        </Suspense>
+      )}
+
+      {uploadingBoundaryReg && farmId && (
+        <Suspense fallback={null}>
+          <BoundaryUploadModal
+            isOpen={!!uploadingBoundaryReg}
+            farmId={farmId}
+            farmTotalAreaHa={Number(data.farm.totalAreaHa)}
+            registrationId={uploadingBoundaryReg.id}
+            referenceAreaHa={uploadingBoundaryReg.areaHa}
+            entityLabel={`da matrícula ${uploadingBoundaryReg.number}`}
+            existingBoundary={
+              data.registrationBoundaries.find(
+                (rb) => rb.registrationId === uploadingBoundaryReg.id,
+              )?.boundary.boundaryGeoJSON ?? null
+            }
+            onClose={() => setUploadingBoundaryReg(null)}
             onUploadComplete={handleImportComplete}
           />
         </Suspense>

@@ -48,6 +48,7 @@ const defaultProps = {
   onAdd: vi.fn(),
   onEdit: vi.fn(),
   onDelete: vi.fn(),
+  onUploadBoundary: vi.fn(),
   onClose: vi.fn(),
 };
 
@@ -163,5 +164,30 @@ describe('RegistrationsPanel', () => {
     render(<RegistrationsPanel {...defaultProps} isLoading={true} />);
 
     expect(screen.getByLabelText('Carregando matrículas')).toBeDefined();
+  });
+
+  it('should call onUploadBoundary when boundary button is clicked', () => {
+    const onUploadBoundary = vi.fn();
+    render(<RegistrationsPanel {...defaultProps} onUploadBoundary={onUploadBoundary} />);
+
+    fireEvent.click(screen.getByLabelText('Upload de perímetro da matrícula 12345'));
+    expect(onUploadBoundary).toHaveBeenCalledWith(REG1);
+  });
+
+  it('should show boundary badge when registration has boundaryAreaHa', () => {
+    const regWithBoundary: FarmRegistration = {
+      ...REG1,
+      boundaryAreaHa: 74.2,
+    };
+    render(<RegistrationsPanel {...defaultProps} registrations={[regWithBoundary]} />);
+
+    expect(screen.getByText(/Perímetro:/)).toBeDefined();
+    expect(screen.getByText(/74,20/)).toBeDefined();
+  });
+
+  it('should not show boundary badge when boundaryAreaHa is null', () => {
+    render(<RegistrationsPanel {...defaultProps} registrations={[REG1]} />);
+
+    expect(screen.queryByText(/Perímetro:/)).toBeNull();
   });
 });
