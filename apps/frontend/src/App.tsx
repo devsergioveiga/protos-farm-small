@@ -5,6 +5,8 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
+const AcceptInvitePage = lazy(() => import('@/pages/AcceptInvitePage'));
 const AuthCallbackPage = lazy(() => import('@/pages/AuthCallbackPage'));
 const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
@@ -20,6 +22,8 @@ export function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/accept-invite" element={<AcceptInvitePage />} />
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
