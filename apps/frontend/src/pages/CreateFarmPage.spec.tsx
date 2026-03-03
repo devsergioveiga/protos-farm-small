@@ -3,12 +3,6 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
-const mockNavigate = vi.fn();
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
-  return { ...actual, useNavigate: () => mockNavigate };
-});
-
 const mockApiPost = vi.fn();
 vi.mock('@/services/api', () => ({
   api: { post: (...args: unknown[]) => mockApiPost(...args) },
@@ -18,32 +12,53 @@ vi.mock('@/hooks/usePermissions', () => ({
   usePermissions: () => ({ hasPermission: () => true, isLoading: false }),
 }));
 
-describe('CreateFarmPage', () => {
+async function importModal() {
+  const mod = await import('@/components/create-farm/CreateFarmModal');
+  return mod.default;
+}
+
+describe('CreateFarmModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  async function renderPage() {
-    const { default: CreateFarmPage } = await import('./CreateFarmPage');
-    return render(
-      <MemoryRouter initialEntries={['/farms/new']}>
-        <CreateFarmPage />
+  async function renderModal(props?: { onClose?: () => void; onSuccess?: () => void }) {
+    const CreateFarmModal = await importModal();
+    const onClose = props?.onClose ?? vi.fn();
+    const onSuccess = props?.onSuccess ?? vi.fn();
+    const result = render(
+      <MemoryRouter>
+        <CreateFarmModal isOpen={true} onClose={onClose} onSuccess={onSuccess} />
       </MemoryRouter>,
     );
+    return { ...result, onClose, onSuccess };
   }
 
   it('should render step 1 (Dados Básicos) by default', async () => {
-    await renderPage();
+    await renderModal();
 
+    expect(screen.getByRole('dialog')).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Nova fazenda' })).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Dados Básicos' })).toBeDefined();
     expect(screen.getByLabelText(/Nome da fazenda/)).toBeDefined();
     expect(screen.getByLabelText(/UF/)).toBeDefined();
     expect(screen.getByLabelText(/Área total/)).toBeDefined();
   });
 
+  it('should not render when isOpen is false', async () => {
+    const CreateFarmModal = await importModal();
+    render(
+      <MemoryRouter>
+        <CreateFarmModal isOpen={false} onClose={vi.fn()} onSuccess={vi.fn()} />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
   it('should show validation errors on blur for required fields', async () => {
     const user = userEvent.setup();
-    await renderPage();
+    await renderModal();
 
     const nameInput = screen.getByLabelText(/Nome da fazenda/);
     await user.click(nameInput);
@@ -54,7 +69,7 @@ describe('CreateFarmPage', () => {
 
   it('should not advance when required fields are empty', async () => {
     const user = userEvent.setup();
-    await renderPage();
+    await renderModal();
 
     await user.click(screen.getByRole('button', { name: /Próximo/ }));
 
@@ -66,7 +81,7 @@ describe('CreateFarmPage', () => {
 
   it('should advance to step 2 with valid fields', async () => {
     const user = userEvent.setup();
-    await renderPage();
+    await renderModal();
 
     await user.type(screen.getByLabelText(/Nome da fazenda/), 'Fazenda Test');
     await user.selectOptions(screen.getByLabelText(/UF/), 'MG');
@@ -80,7 +95,7 @@ describe('CreateFarmPage', () => {
 
   it('should preserve data when going back', async () => {
     const user = userEvent.setup();
-    await renderPage();
+    await renderModal();
 
     await user.type(screen.getByLabelText(/Nome da fazenda/), 'Fazenda Test');
     await user.selectOptions(screen.getByLabelText(/UF/), 'SP');
@@ -99,7 +114,7 @@ describe('CreateFarmPage', () => {
 
   it('should validate CIB format', async () => {
     const user = userEvent.setup();
-    await renderPage();
+    await renderModal();
 
     await user.type(screen.getByLabelText(/Nome da fazenda/), 'Fazenda Test');
     await user.selectOptions(screen.getByLabelText(/UF/), 'MG');
@@ -115,7 +130,7 @@ describe('CreateFarmPage', () => {
 
   it('should show step indicator with completed steps', async () => {
     const user = userEvent.setup();
-    await renderPage();
+    await renderModal();
 
     await user.type(screen.getByLabelText(/Nome da fazenda/), 'Fazenda Test');
     await user.selectOptions(screen.getByLabelText(/UF/), 'MG');
@@ -128,7 +143,7 @@ describe('CreateFarmPage', () => {
 
   it('should show confirmation summary on step 4', async () => {
     const user = userEvent.setup();
-    await renderPage();
+    await renderModal();
 
     // Step 0
     await user.type(screen.getByLabelText(/Nome da fazenda/), 'Fazenda Test');
@@ -149,10 +164,10 @@ describe('CreateFarmPage', () => {
     expect(screen.getByRole('button', { name: /Cadastrar fazenda/ })).toBeDefined();
   });
 
-  it('should submit successfully and redirect', async () => {
+  it('should submit successfully and call onSuccess', async () => {
     mockApiPost.mockResolvedValue({ id: '1', name: 'Fazenda Test' });
     const user = userEvent.setup();
-    await renderPage();
+    const { onSuccess } = await renderModal();
 
     // Step 0
     await user.type(screen.getByLabelText(/Nome da fazenda/), 'Fazenda Test');
@@ -177,15 +192,13 @@ describe('CreateFarmPage', () => {
         totalAreaHa: 150,
       }),
     );
-    expect(mockNavigate).toHaveBeenCalledWith('/farms', {
-      state: { success: 'Fazenda cadastrada com sucesso!' },
-    });
+    expect(onSuccess).toHaveBeenCalled();
   });
 
   it('should show error message on submit failure', async () => {
     mockApiPost.mockRejectedValue(new Error('Limite de fazendas atingido'));
     const user = userEvent.setup();
-    await renderPage();
+    await renderModal();
 
     // Navigate to confirmation
     await user.type(screen.getByLabelText(/Nome da fazenda/), 'Fazenda Test');
@@ -200,16 +213,25 @@ describe('CreateFarmPage', () => {
     expect(await screen.findByText('Limite de fazendas atingido')).toBeDefined();
   });
 
-  it('should render cancel link on step 0 pointing to /farms', async () => {
-    await renderPage();
+  it('should call onClose when cancel button is clicked', async () => {
+    const user = userEvent.setup();
+    const { onClose } = await renderModal();
 
-    const cancelLink = screen.getByRole('link', { name: /Cancelar/ });
-    expect(cancelLink.getAttribute('href')).toBe('/farms');
+    await user.click(screen.getByRole('button', { name: /Cancelar/ }));
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('should call onClose when X button is clicked', async () => {
+    const user = userEvent.setup();
+    const { onClose } = await renderModal();
+
+    await user.click(screen.getByRole('button', { name: /Fechar/ }));
+    expect(onClose).toHaveBeenCalled();
   });
 
   it('should validate utilization degree range (0-100)', async () => {
     const user = userEvent.setup();
-    await renderPage();
+    await renderModal();
 
     // Navigate to step 2
     await user.type(screen.getByLabelText(/Nome da fazenda/), 'Fazenda Test');

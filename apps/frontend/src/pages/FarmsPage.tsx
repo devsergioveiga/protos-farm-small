@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   MapPin,
   Search,
@@ -21,6 +21,7 @@ import { useAuth } from '@/stores/AuthContext';
 import { api } from '@/services/api';
 import { VALID_UF } from '@/constants/states';
 import ConfirmDeleteModal from '@/components/confirm-delete/ConfirmDeleteModal';
+import CreateFarmModal from '@/components/create-farm/CreateFarmModal';
 import PermissionGate from '@/components/auth/PermissionGate';
 import type { FarmListItem } from '@/types/farm';
 import './FarmsPage.css';
@@ -180,21 +181,11 @@ function FarmsPage() {
   const [maxAreaInput, setMaxAreaInput] = useState('');
   const [farmToDelete, setFarmToDelete] = useState<FarmListItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const location = useLocation();
   const { permissions } = useAuth();
   const canDelete = permissions.includes('farms:delete');
-
-  useEffect(() => {
-    const state = location.state as { success?: string } | null;
-    if (state?.success) {
-      setSuccessMessage(state.success);
-      window.history.replaceState({}, document.title);
-      const timer = setTimeout(() => setSuccessMessage(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [location.state]);
 
   const debouncedSearch = useDebounce(searchInput, 300);
   const debouncedMinArea = useDebounce(minAreaInput, 500);
@@ -248,10 +239,14 @@ function FarmsPage() {
 
         <div className="farms-page__header-actions">
           <PermissionGate permission="farms:create">
-            <Link to="/farms/new" className="farms-page__new-btn">
+            <button
+              type="button"
+              className="farms-page__new-btn"
+              onClick={() => setShowCreateModal(true)}
+            >
               <Plus size={20} aria-hidden="true" />
               Nova fazenda
-            </Link>
+            </button>
           </PermissionGate>
           <div
             className="farms-page__view-toggle"
@@ -390,6 +385,18 @@ function FarmsPage() {
         onConfirm={handleDeleteFarm}
         onCancel={() => setFarmToDelete(null)}
         isDeleting={isDeleting}
+      />
+
+      <CreateFarmModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={() => {
+          setShowCreateModal(false);
+          setSuccessMessage('Fazenda cadastrada com sucesso!');
+          const timer = setTimeout(() => setSuccessMessage(null), 3000);
+          void refetch();
+          return () => clearTimeout(timer);
+        }}
       />
     </main>
   );

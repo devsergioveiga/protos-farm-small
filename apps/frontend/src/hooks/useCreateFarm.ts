@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { api } from '@/services/api';
 import { VALID_UF } from '@/constants/states';
 import type { CreateFarmPayload } from '@/types/farm';
@@ -109,8 +108,7 @@ function validateField(field: keyof FormFields, value: string): string | undefin
   return undefined;
 }
 
-export function useCreateFarm() {
-  const navigate = useNavigate();
+export function useCreateFarm(onSuccess?: () => void) {
   const [formData, setFormData] = useState<FormFields>(INITIAL_FORM);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState<TouchedFields>({});
@@ -252,14 +250,24 @@ export function useCreateFarm() {
     try {
       const payload = buildPayload();
       await api.post('/org/farms', payload);
-      navigate('/farms', { state: { success: 'Fazenda cadastrada com sucesso!' } });
+      onSuccess?.();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao cadastrar fazenda';
       setSubmitError(message);
     } finally {
       setIsSubmitting(false);
     }
-  }, [validateStep, buildPayload, navigate]);
+  }, [validateStep, buildPayload, onSuccess]);
+
+  const reset = useCallback(() => {
+    setFormData(INITIAL_FORM);
+    setErrors({});
+    setTouched({});
+    setCurrentStep(0);
+    setVisitedSteps(new Set([0]));
+    setIsSubmitting(false);
+    setSubmitError(null);
+  }, []);
 
   return {
     formData,
@@ -278,6 +286,7 @@ export function useCreateFarm() {
     goToStep,
     canAdvance,
     submit,
+    reset,
   };
 }
 

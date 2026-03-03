@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom';
-import { AlertCircle, Check, ChevronRight, Loader2 } from 'lucide-react';
+import { useEffect, useCallback } from 'react';
+import { X, AlertCircle, Check, ChevronRight, Loader2 } from 'lucide-react';
 import { useCreateFarm, LAND_CLASSIFICATIONS, TOTAL_STEPS } from '@/hooks/useCreateFarm';
 import type { FormFields } from '@/hooks/useCreateFarm';
 import { VALID_UF } from '@/constants/states';
-import './CreateFarmPage.css';
+import './CreateFarmModal.css';
 
 const STEP_LABELS = ['Dados Básicos', 'Identificadores', 'Dados Ambientais', 'Confirmação'];
 
@@ -13,6 +13,12 @@ const CLASSIFICATION_LABELS: Record<string, string> = {
   MEDIA: 'Média propriedade',
   GRANDE: 'Grande propriedade',
 };
+
+interface CreateFarmModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
 
 interface FieldInputProps {
   id: string;
@@ -47,15 +53,15 @@ function FieldInput({
 }: FieldInputProps) {
   const hasError = touched && !!error;
   return (
-    <div className="create-farm__field">
-      <label htmlFor={id} className="create-farm__label">
+    <div className="create-farm-modal__field">
+      <label htmlFor={id} className="create-farm-modal__label">
         {label}
-        {required && <span className="create-farm__required"> *</span>}
+        {required && <span className="create-farm-modal__required"> *</span>}
       </label>
       <input
         id={id}
         type={type}
-        className={`create-farm__input ${hasError ? 'create-farm__input--error' : ''}`}
+        className={`create-farm-modal__input ${hasError ? 'create-farm-modal__input--error' : ''}`}
         value={value}
         placeholder={placeholder}
         min={min}
@@ -68,7 +74,7 @@ function FieldInput({
         onBlur={onBlur}
       />
       {hasError && (
-        <span id={`${id}-error`} className="create-farm__error" role="alert">
+        <span id={`${id}-error`} className="create-farm-modal__error" role="alert">
           <AlertCircle size={16} aria-hidden="true" />
           {error}
         </span>
@@ -104,14 +110,14 @@ function FieldSelect({
 }: FieldSelectProps) {
   const hasError = touched && !!error;
   return (
-    <div className="create-farm__field">
-      <label htmlFor={id} className="create-farm__label">
+    <div className="create-farm-modal__field">
+      <label htmlFor={id} className="create-farm-modal__label">
         {label}
-        {required && <span className="create-farm__required"> *</span>}
+        {required && <span className="create-farm-modal__required"> *</span>}
       </label>
       <select
         id={id}
-        className={`create-farm__select ${hasError ? 'create-farm__select--error' : ''}`}
+        className={`create-farm-modal__select ${hasError ? 'create-farm-modal__select--error' : ''}`}
         value={value}
         aria-required={required}
         aria-invalid={hasError}
@@ -127,7 +133,7 @@ function FieldSelect({
         ))}
       </select>
       {hasError && (
-        <span id={`${id}-error`} className="create-farm__error" role="alert">
+        <span id={`${id}-error`} className="create-farm-modal__error" role="alert">
           <AlertCircle size={16} aria-hidden="true" />
           {error}
         </span>
@@ -144,8 +150,8 @@ interface StepIndicatorProps {
 
 function StepIndicator({ currentStep, visitedSteps, onGoToStep }: StepIndicatorProps) {
   return (
-    <nav className="create-farm__stepper" aria-label="Etapas do formulário">
-      <ol className="create-farm__steps">
+    <nav className="create-farm-modal__stepper" aria-label="Etapas do formulário">
+      <ol className="create-farm-modal__steps">
         {STEP_LABELS.map((label, i) => {
           const isComplete = i < currentStep;
           const isCurrent = i === currentStep;
@@ -154,21 +160,21 @@ function StepIndicator({ currentStep, visitedSteps, onGoToStep }: StepIndicatorP
           return (
             <li
               key={i}
-              className={`create-farm__step ${isCurrent ? 'create-farm__step--current' : ''} ${isComplete ? 'create-farm__step--complete' : ''}`}
+              className={`create-farm-modal__step ${isCurrent ? 'create-farm-modal__step--current' : ''} ${isComplete ? 'create-farm-modal__step--complete' : ''}`}
             >
-              {i > 0 && <span className="create-farm__step-connector" aria-hidden="true" />}
+              {i > 0 && <span className="create-farm-modal__step-connector" aria-hidden="true" />}
               <button
                 type="button"
-                className="create-farm__step-btn"
+                className="create-farm-modal__step-btn"
                 aria-current={isCurrent ? 'step' : undefined}
                 aria-label={`Etapa ${i + 1}: ${label}${isComplete ? ' (concluída)' : ''}`}
                 disabled={!isVisited}
                 onClick={() => onGoToStep(i)}
               >
-                <span className="create-farm__step-dot">
+                <span className="create-farm-modal__step-dot">
                   {isComplete ? <Check size={14} aria-hidden="true" /> : i + 1}
                 </span>
-                <span className="create-farm__step-label">{label}</span>
+                <span className="create-farm-modal__step-label">{label}</span>
               </button>
             </li>
           );
@@ -180,9 +186,9 @@ function StepIndicator({ currentStep, visitedSteps, onGoToStep }: StepIndicatorP
 
 function SummarySection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="create-farm__summary-section">
-      <h3 className="create-farm__summary-title">{title}</h3>
-      <dl className="create-farm__summary-list">{children}</dl>
+    <section className="create-farm-modal__summary-section">
+      <h3 className="create-farm-modal__summary-title">{title}</h3>
+      <dl className="create-farm-modal__summary-list">{children}</dl>
     </section>
   );
 }
@@ -191,8 +197,8 @@ function SummaryItem({ label, value }: { label: string; value: string }) {
   if (!value) return null;
   return (
     <>
-      <dt className="create-farm__summary-dt">{label}</dt>
-      <dd className="create-farm__summary-dd">{value}</dd>
+      <dt className="create-farm-modal__summary-dt">{label}</dt>
+      <dd className="create-farm-modal__summary-dd">{value}</dd>
     </>
   );
 }
@@ -202,9 +208,17 @@ function formatArea(value: string): string {
   return `${Number(value).toLocaleString('pt-BR')} ha`;
 }
 
+interface StepProps {
+  formData: FormFields;
+  errors: Partial<Record<keyof FormFields, string>>;
+  touched: Partial<Record<keyof FormFields, boolean>>;
+  setField: (field: keyof FormFields, value: string) => void;
+  touchField: (field: keyof FormFields) => void;
+}
+
 function Step0({ formData, errors, touched, setField, touchField }: StepProps) {
   return (
-    <div className="create-farm__fields">
+    <div className="create-farm-modal__fields">
       <FieldInput
         id="name"
         label="Nome da fazenda"
@@ -282,7 +296,7 @@ function Step0({ formData, errors, touched, setField, touchField }: StepProps) {
 
 function Step1({ formData, errors, touched, setField, touchField }: StepProps) {
   return (
-    <div className="create-farm__fields">
+    <div className="create-farm-modal__fields">
       <FieldInput
         id="cib"
         label="CIB"
@@ -320,7 +334,7 @@ function Step1({ formData, errors, touched, setField, touchField }: StepProps) {
 
 function Step2({ formData, errors, touched, setField, touchField }: StepProps) {
   return (
-    <div className="create-farm__fields">
+    <div className="create-farm-modal__fields">
       <FieldSelect
         id="landClassification"
         label="Classificação fundiária"
@@ -335,11 +349,11 @@ function Step2({ formData, errors, touched, setField, touchField }: StepProps) {
         onChange={(v) => setField('landClassification', v)}
         onBlur={() => touchField('landClassification')}
       />
-      <div className="create-farm__field create-farm__field--checkbox">
-        <label className="create-farm__checkbox-label">
+      <div className="create-farm-modal__field create-farm-modal__field--checkbox">
+        <label className="create-farm-modal__checkbox-label">
           <input
             type="checkbox"
-            className="create-farm__checkbox"
+            className="create-farm-modal__checkbox"
             checked={formData.productive === 'true'}
             onChange={(e) => setField('productive', String(e.target.checked))}
           />
@@ -418,7 +432,7 @@ function Step2({ formData, errors, touched, setField, touchField }: StepProps) {
 
 function Step3({ formData }: { formData: FormFields }) {
   return (
-    <div className="create-farm__confirmation">
+    <div className="create-farm-modal__confirmation">
       <SummarySection title="Dados Básicos">
         <SummaryItem label="Nome" value={formData.name} />
         <SummaryItem label="Apelido" value={formData.nickname} />
@@ -455,15 +469,7 @@ function Step3({ formData }: { formData: FormFields }) {
   );
 }
 
-interface StepProps {
-  formData: FormFields;
-  errors: Partial<Record<keyof FormFields, string>>;
-  touched: Partial<Record<keyof FormFields, boolean>>;
-  setField: (field: keyof FormFields, value: string) => void;
-  touchField: (field: keyof FormFields) => void;
-}
-
-function CreateFarmPage() {
+function CreateFarmModal({ isOpen, onClose, onSuccess }: CreateFarmModalProps) {
   const {
     formData,
     errors,
@@ -479,50 +485,90 @@ function CreateFarmPage() {
     goBack,
     goToStep,
     submit,
-  } = useCreateFarm();
+    reset,
+  } = useCreateFarm(onSuccess);
+
+  const handleClose = useCallback(() => {
+    reset();
+    onClose();
+  }, [reset, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleClose]);
+
+  if (!isOpen) return null;
 
   const stepProps: StepProps = { formData, errors, touched, setField, touchField };
-
   const isLastStep = currentStep === TOTAL_STEPS - 1;
 
   return (
-    <main className="create-farm">
-      <nav className="create-farm__breadcrumb" aria-label="Breadcrumb">
-        <Link to="/dashboard">Início</Link>
-        <span aria-hidden="true">/</span>
-        <Link to="/farms">Fazendas</Link>
-        <span aria-hidden="true">/</span>
-        <span aria-current="page">Nova fazenda</span>
-      </nav>
+    <div
+      className="create-farm-modal__overlay"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose();
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-farm-title"
+    >
+      <div className="create-farm-modal">
+        <header className="create-farm-modal__header">
+          <h2 id="create-farm-title" className="create-farm-modal__title">
+            Nova fazenda
+          </h2>
+          <button
+            type="button"
+            className="create-farm-modal__close"
+            aria-label="Fechar"
+            onClick={handleClose}
+          >
+            <X size={20} aria-hidden="true" />
+          </button>
+        </header>
 
-      <h1 className="create-farm__title">Nova fazenda</h1>
+        <StepIndicator
+          currentStep={currentStep}
+          visitedSteps={visitedSteps}
+          onGoToStep={goToStep}
+        />
 
-      <StepIndicator currentStep={currentStep} visitedSteps={visitedSteps} onGoToStep={goToStep} />
+        <div className="create-farm-modal__body" ref={stepRef}>
+          <h3 className="create-farm-modal__step-title">{STEP_LABELS[currentStep]}</h3>
 
-      <div className="create-farm__body" ref={stepRef}>
-        <h2 className="create-farm__step-title">{STEP_LABELS[currentStep]}</h2>
+          {currentStep === 0 && <Step0 {...stepProps} />}
+          {currentStep === 1 && <Step1 {...stepProps} />}
+          {currentStep === 2 && <Step2 {...stepProps} />}
+          {currentStep === 3 && <Step3 formData={formData} />}
 
-        {currentStep === 0 && <Step0 {...stepProps} />}
-        {currentStep === 1 && <Step1 {...stepProps} />}
-        {currentStep === 2 && <Step2 {...stepProps} />}
-        {currentStep === 3 && <Step3 formData={formData} />}
+          {submitError && (
+            <div className="create-farm-modal__submit-error" role="alert">
+              <AlertCircle size={20} aria-hidden="true" />
+              {submitError}
+            </div>
+          )}
+        </div>
 
-        {submitError && (
-          <div className="create-farm__submit-error" role="alert">
-            <AlertCircle size={20} aria-hidden="true" />
-            {submitError}
-          </div>
-        )}
-
-        <div className="create-farm__actions">
+        <footer className="create-farm-modal__footer">
           {currentStep === 0 ? (
-            <Link to="/farms" className="create-farm__btn create-farm__btn--ghost">
+            <button
+              type="button"
+              className="create-farm-modal__btn create-farm-modal__btn--secondary"
+              onClick={handleClose}
+            >
               Cancelar
-            </Link>
+            </button>
           ) : (
             <button
               type="button"
-              className="create-farm__btn create-farm__btn--ghost"
+              className="create-farm-modal__btn create-farm-modal__btn--secondary"
               onClick={goBack}
             >
               Anterior
@@ -532,13 +578,13 @@ function CreateFarmPage() {
           {isLastStep ? (
             <button
               type="button"
-              className="create-farm__btn create-farm__btn--primary"
+              className="create-farm-modal__btn create-farm-modal__btn--primary"
               onClick={submit}
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 size={16} aria-hidden="true" className="create-farm__spinner" />
+                  <Loader2 size={16} aria-hidden="true" className="create-farm-modal__spinner" />
                   Cadastrando...
                 </>
               ) : (
@@ -548,17 +594,17 @@ function CreateFarmPage() {
           ) : (
             <button
               type="button"
-              className="create-farm__btn create-farm__btn--secondary"
+              className="create-farm-modal__btn create-farm-modal__btn--secondary"
               onClick={goNext}
             >
               Próximo
               <ChevronRight size={16} aria-hidden="true" />
             </button>
           )}
-        </div>
+        </footer>
       </div>
-    </main>
+    </div>
   );
 }
 
-export default CreateFarmPage;
+export default CreateFarmModal;

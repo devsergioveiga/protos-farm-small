@@ -1,78 +1,112 @@
-/* ─── Layout ─── */
+/* ─── Overlay ─── */
 
-.create-farm {
-  padding: var(--space-6);
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.create-farm__breadcrumb {
+.create-farm-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  color: var(--color-neutral-500);
-  margin-bottom: var(--space-2);
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: var(--space-4);
 }
 
-.create-farm__breadcrumb a {
-  color: var(--color-primary-600);
-  text-decoration: none;
+/* ─── Modal ─── */
+
+.create-farm-modal {
+  display: flex;
+  flex-direction: column;
+  width: 95vw;
+  max-width: 720px;
+  max-height: 90vh;
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
 }
 
-.create-farm__breadcrumb a:hover {
-  text-decoration: underline;
+/* ─── Header ─── */
+
+.create-farm-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
 }
 
-.create-farm__title {
+.create-farm-modal__title {
   font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--color-neutral-800);
-  margin: 0 0 var(--space-6);
+  margin: 0;
+}
+
+.create-farm-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  color: var(--color-neutral-600);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.create-farm-modal__close:hover {
+  background: var(--color-neutral-100);
+}
+
+.create-farm-modal__close:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
 }
 
 /* ─── Stepper ─── */
 
-.create-farm__stepper {
-  margin-bottom: var(--space-8);
+.create-farm-modal__stepper {
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-neutral-100);
+  flex-shrink: 0;
 }
 
-.create-farm__steps {
+.create-farm-modal__steps {
   display: flex;
   align-items: flex-start;
   list-style: none;
   margin: 0;
   padding: 0;
-  gap: 0;
 }
 
-.create-farm__step {
+.create-farm-modal__step {
   display: flex;
   align-items: center;
   flex: 1;
-  position: relative;
 }
 
-.create-farm__step-connector {
+.create-farm-modal__step-connector {
   flex: 0 0 auto;
   width: 100%;
-  max-width: 40px;
+  max-width: 32px;
   height: 2px;
   background: var(--color-neutral-200);
   margin: 0 var(--space-1);
 }
 
-.create-farm__step--complete .create-farm__step-connector {
+.create-farm-modal__step--complete .create-farm-modal__step-connector {
   background: var(--color-primary-500);
 }
 
-.create-farm__step-btn {
+.create-farm-modal__step-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   background: none;
   border: none;
   cursor: pointer;
@@ -81,26 +115,26 @@
   min-height: 48px;
 }
 
-.create-farm__step-btn:disabled {
+.create-farm-modal__step-btn:disabled {
   cursor: default;
   opacity: 0.5;
 }
 
-.create-farm__step-btn:focus-visible {
+.create-farm-modal__step-btn:focus-visible {
   outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
   border-radius: var(--radius-md);
 }
 
-.create-farm__step-dot {
+.create-farm-modal__step-dot {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-full);
   font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   background: var(--color-neutral-100);
   color: var(--color-neutral-500);
@@ -109,129 +143,129 @@
     color var(--duration-normal) var(--ease-out);
 }
 
-.create-farm__step--current .create-farm__step-dot {
+.create-farm-modal__step--current .create-farm-modal__step-dot {
   background: var(--color-primary-500);
   color: var(--color-neutral-0);
 }
 
-.create-farm__step--complete .create-farm__step-dot {
+.create-farm-modal__step--complete .create-farm-modal__step-dot {
   background: var(--color-primary-100);
   color: var(--color-primary-600);
 }
 
-.create-farm__step-label {
+.create-farm-modal__step-label {
   font-family: var(--font-body);
   font-size: var(--text-xs);
   color: var(--color-neutral-500);
   white-space: nowrap;
 }
 
-.create-farm__step--current .create-farm__step-label {
+.create-farm-modal__step--current .create-farm-modal__step-label {
   color: var(--color-primary-600);
   font-weight: var(--font-semibold);
 }
 
-/* Hide labels on small screens */
 @media (max-width: 639px) {
-  .create-farm__step-label {
+  .create-farm-modal__step-label {
     display: none;
   }
 
-  .create-farm__step-connector {
-    max-width: 24px;
+  .create-farm-modal__step-connector {
+    max-width: 20px;
   }
 }
 
 /* ─── Body ─── */
 
-.create-farm__body {
-  background: var(--color-neutral-0);
-  border: 1px solid var(--color-neutral-200);
-  border-radius: var(--radius-lg);
+.create-farm-modal__body {
+  flex: 1;
+  overflow-y: auto;
   padding: var(--space-6);
 }
 
-.create-farm__step-title {
+.create-farm-modal__step-title {
   font-family: var(--font-display);
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   font-weight: var(--font-semibold);
   color: var(--color-neutral-800);
-  margin: 0 0 var(--space-6);
+  margin: 0 0 var(--space-5);
   padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--color-neutral-100);
 }
 
 /* ─── Fields ─── */
 
-.create-farm__fields {
+.create-farm-modal__fields {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
-@media (min-width: 768px) {
-  .create-farm__fields {
+@media (min-width: 640px) {
+  .create-farm-modal__fields {
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-5) var(--space-6);
+    gap: var(--space-4) var(--space-5);
   }
 }
 
-.create-farm__field {
+.create-farm-modal__field {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
 }
 
-.create-farm__field--checkbox {
+.create-farm-modal__field--checkbox {
   justify-content: flex-end;
 }
 
-.create-farm__label {
+.create-farm-modal__label {
   font-family: var(--font-body);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   color: var(--color-neutral-700);
 }
 
-.create-farm__required {
+.create-farm-modal__required {
   color: var(--color-error-500);
 }
 
-.create-farm__input,
-.create-farm__select {
+.create-farm-modal__input,
+.create-farm-modal__select {
+  width: 100%;
   padding: var(--space-3) var(--space-4);
   font-family: var(--font-body);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   color: var(--color-neutral-700);
   background: var(--color-neutral-0);
   border: 1px solid var(--color-neutral-300);
   border-radius: var(--radius-md);
   min-height: 48px;
+  box-sizing: border-box;
   transition: border-color var(--duration-fast) var(--ease-out);
 }
 
-.create-farm__input:focus,
-.create-farm__select:focus {
+.create-farm-modal__input:focus,
+.create-farm-modal__select:focus {
   outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
   border-color: var(--color-primary-500);
 }
 
-.create-farm__input::placeholder {
+.create-farm-modal__input::placeholder {
   color: var(--color-neutral-400);
 }
 
-.create-farm__input--error,
-.create-farm__select--error {
+.create-farm-modal__input--error,
+.create-farm-modal__select--error {
   border-color: var(--color-error-500);
 }
 
-.create-farm__input--error:focus,
-.create-farm__select--error:focus {
+.create-farm-modal__input--error:focus,
+.create-farm-modal__select--error:focus {
   outline-color: var(--color-error-500);
 }
 
-.create-farm__error {
+.create-farm-modal__error {
   display: flex;
   align-items: center;
   gap: var(--space-1);
@@ -242,18 +276,18 @@
 
 /* ─── Checkbox ─── */
 
-.create-farm__checkbox-label {
+.create-farm-modal__checkbox-label {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   font-family: var(--font-body);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   color: var(--color-neutral-700);
   cursor: pointer;
   min-height: 48px;
 }
 
-.create-farm__checkbox {
+.create-farm-modal__checkbox {
   width: 20px;
   height: 20px;
   accent-color: var(--color-primary-500);
@@ -262,40 +296,40 @@
 
 /* ─── Confirmation ─── */
 
-.create-farm__confirmation {
+.create-farm-modal__confirmation {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
 
-.create-farm__summary-section {
+.create-farm-modal__summary-section {
   border: 1px solid var(--color-neutral-100);
   border-radius: var(--radius-md);
   padding: var(--space-4);
 }
 
-.create-farm__summary-title {
+.create-farm-modal__summary-title {
   font-family: var(--font-display);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   color: var(--color-neutral-800);
   margin: 0 0 var(--space-3);
 }
 
-.create-farm__summary-list {
+.create-farm-modal__summary-list {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: var(--space-2) var(--space-4);
   margin: 0;
 }
 
-.create-farm__summary-dt {
+.create-farm-modal__summary-dt {
   font-family: var(--font-body);
   font-size: var(--text-sm);
   color: var(--color-neutral-500);
 }
 
-.create-farm__summary-dd {
+.create-farm-modal__summary-dd {
   font-family: var(--font-body);
   font-size: var(--text-sm);
   color: var(--color-neutral-700);
@@ -305,11 +339,11 @@
 
 /* ─── Submit error ─── */
 
-.create-farm__submit-error {
+.create-farm-modal__submit-error {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-4);
+  padding: var(--space-3);
   background: var(--color-error-100);
   border-radius: var(--radius-md);
   color: var(--color-error-500);
@@ -318,91 +352,77 @@
   margin-top: var(--space-4);
 }
 
-/* ─── Actions ─── */
+/* ─── Footer ─── */
 
-.create-farm__actions {
+.create-farm-modal__footer {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: var(--space-4);
-  margin-top: var(--space-8);
-  padding-top: var(--space-6);
-  border-top: 1px solid var(--color-neutral-100);
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
 }
 
-.create-farm__btn {
+/* ─── Buttons ─── */
+
+.create-farm-modal__btn {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-5);
-  min-height: 48px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 600;
   cursor: pointer;
-  text-decoration: none;
-  transition:
-    background var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
+  min-height: 48px;
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
-.create-farm__btn:focus-visible {
+.create-farm-modal__btn:focus-visible {
   outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
 }
 
-.create-farm__btn--ghost {
-  background: transparent;
-  border: none;
-  color: var(--color-neutral-600);
-}
-
-.create-farm__btn--ghost:hover {
-  color: var(--color-neutral-800);
-  background: var(--color-neutral-50);
-}
-
-.create-farm__btn--secondary {
-  background: var(--color-neutral-0);
-  border: 1px solid var(--color-neutral-300);
-  color: var(--color-neutral-700);
-}
-
-.create-farm__btn--secondary:hover {
-  background: var(--color-neutral-50);
-  border-color: var(--color-neutral-400);
-}
-
-.create-farm__btn--primary {
+.create-farm-modal__btn--primary {
   background: var(--color-primary-600);
-  border: none;
-  color: var(--color-neutral-0);
+  color: white;
 }
 
-.create-farm__btn--primary:hover {
+.create-farm-modal__btn--primary:hover {
   background: var(--color-primary-700);
 }
 
-.create-farm__btn--primary:disabled {
+.create-farm-modal__btn--primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
+.create-farm-modal__btn--secondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.create-farm-modal__btn--secondary:hover {
+  background: var(--color-neutral-200);
+}
+
 /* ─── Spinner ─── */
 
-@keyframes spin {
+@keyframes create-farm-spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-.create-farm__spinner {
-  animation: spin 1s linear infinite;
+.create-farm-modal__spinner {
+  animation: create-farm-spin 1s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .create-farm__spinner {
+  .create-farm-modal__spinner {
     animation: none;
   }
 }
