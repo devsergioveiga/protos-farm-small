@@ -13,6 +13,7 @@ const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
 const AdminLayout = lazy(() => import('@/components/layout/AdminLayout'));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
 const RolesPage = lazy(() => import('@/pages/RolesPage'));
+const OrgUsersPage = lazy(() => import('@/pages/OrgUsersPage'));
 const FarmsPage = lazy(() => import('@/pages/FarmsPage'));
 const FarmMapPage = lazy(() => import('@/pages/FarmMapPage'));
 const AdminDashboardPage = lazy(() => import('@/pages/AdminDashboardPage'));
@@ -40,6 +41,7 @@ export function App() {
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/users" element={<OrgUsersPage />} />
                 <Route path="/roles" element={<RolesPage />} />
                 <Route path="/farms" element={<FarmsPage />} />
                 <Route path="/farms/:farmId/map" element={<FarmMapPage />} />
