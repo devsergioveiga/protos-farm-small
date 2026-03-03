@@ -105,7 +105,7 @@ function BoundaryUploadModal({
         {formatArea(percentage)}% de divergência
       </span>
     );
-  }, [result?.areaDivergence]);
+  }, [result]);
 
   if (!isOpen) return null;
 

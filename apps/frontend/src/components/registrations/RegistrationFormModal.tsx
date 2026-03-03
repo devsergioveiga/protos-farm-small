@@ -198,29 +198,22 @@ function RegistrationFormModal({
   submitError,
 }: RegistrationFormModalProps) {
   const isEditMode = !!registration;
-  const [fields, setFields] = useState<FormFields>(INITIAL_FIELDS);
+  const [fields, setFields] = useState<FormFields>(() =>
+    registration
+      ? {
+          number: registration.number,
+          cartorioName: registration.cartorioName,
+          comarca: registration.comarca,
+          state: registration.state,
+          areaHa: String(registration.areaHa),
+          cnsCode: registration.cnsCode ?? '',
+          livro: registration.livro ?? '',
+          registrationDate: formatDateForInput(registration.registrationDate),
+        }
+      : INITIAL_FIELDS,
+  );
   const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
-
-  useEffect(() => {
-    if (!isOpen) return;
-    if (registration) {
-      setFields({
-        number: registration.number,
-        cartorioName: registration.cartorioName,
-        comarca: registration.comarca,
-        state: registration.state,
-        areaHa: String(registration.areaHa),
-        cnsCode: registration.cnsCode ?? '',
-        livro: registration.livro ?? '',
-        registrationDate: formatDateForInput(registration.registrationDate),
-      });
-    } else {
-      setFields(INITIAL_FIELDS);
-    }
-    setTouched({});
-    setErrors({});
-  }, [isOpen, registration]);
 
   const handleClose = useCallback(() => {
     setFields(INITIAL_FIELDS);
