@@ -187,3 +187,17 @@
 .login-alert svg {
   flex-shrink: 0;
 }
+
+.forgot-password-link {
+  display: block;
+  text-align: right;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-primary-600);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.forgot-password-link:hover {
+  color: var(--color-primary-700);
+}

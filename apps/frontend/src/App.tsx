@@ -4,6 +4,7 @@ import { AuthProvider } from '@/stores/AuthContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const AuthCallbackPage = lazy(() => import('@/pages/AuthCallbackPage'));
 const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
@@ -18,6 +19,7 @@ export function App() {
         <Suspense fallback={null}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
