@@ -175,7 +175,12 @@ class ApiClient {
 
     return response.json() as Promise<T>;
   }
+
+  forgotPassword(email: string): Promise<{ message: string }> {
+    return this.post('/auth/forgot-password', { email });
+  }
 }
 
 export const api = new ApiClient();
+
 export { TOKEN_KEY, REFRESH_KEY };

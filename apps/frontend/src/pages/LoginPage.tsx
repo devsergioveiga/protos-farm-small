@@ -1,5 +1,5 @@
 import { useState, type FormEvent, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import { useAuth } from '@/stores/AuthContext';
 import './LoginPage.css';
@@ -134,6 +134,10 @@ function LoginPage() {
           <button type="submit" className="btn-primary" disabled={isSubmitting}>
             {isSubmitting ? 'Entrando...' : 'Entrar'}
           </button>
+
+          <Link to="/forgot-password" className="forgot-password-link">
+            Esqueci minha senha
+          </Link>
         </form>
 
         <div className="login-divider">
