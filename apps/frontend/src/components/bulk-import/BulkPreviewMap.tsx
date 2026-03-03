@@ -98,7 +98,7 @@ function BulkPreviewMap({ features, farmBoundary, selectedIndices }: BulkPreview
         <GeoJSON
           key={JSON.stringify(selectedIndices.size)}
           data={featureCollection}
-          style={(feature) => ({
+          style={(feature: GeoJSON.Feature | undefined) => ({
             color: (feature?.properties?.color as string) ?? '#9E9E9E',
             weight: 2,
             fillOpacity: 0.3,
