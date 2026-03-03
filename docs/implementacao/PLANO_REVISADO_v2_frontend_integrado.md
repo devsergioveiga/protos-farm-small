@@ -364,17 +364,45 @@ Auditoria dos documentos de requisitos das Fases 2-5 para verificar se os crité
 
 ### 7.2 Fase 2 — Operações Core (57 USs, 371 pts)
 
-**Nota:** O documento possui IDs duplicados entre épicos (US-076 a US-080 se repetem). Os IDs precisam ser corrigidos antes da implementação.
+**Correção de IDs duplicados:** Os documentos originais (.docx) reutilizam os IDs US-035, US-076 a US-080 entre épicos diferentes. A tabela abaixo mapeia cada ocorrência duplicada para um ID único. O ID original do documento é mantido entre parênteses para rastreabilidade.
+
+| Épico   | ID original | ID corrigido | Título                                   |
+| ------- | ----------- | ------------ | ---------------------------------------- |
+| EPIC-07 | US-035      | **US-094**   | Registro de operação de plantio          |
+| EPIC-09 | US-076      | **US-095**   | Registro de colheita de grãos            |
+| EPIC-09 | US-078      | **US-096**   | Registro de colheita de café             |
+| EPIC-09 | US-079      | **US-097**   | Registro de colheita de laranja          |
+| EPIC-09 | US-080      | **US-098**   | Mapa de produtividade por talhão         |
+| EPIC-10 | US-076      | **US-099**   | Entrada de insumos no estoque            |
+| EPIC-10 | US-077      | **US-100**   | Cadastro de unidades de medida           |
+| EPIC-10 | US-078      | **US-101**   | Saída de insumos (consumo/transferência) |
+| EPIC-10 | US-078      | **US-102**   | Conversão automática em operações        |
+| EPIC-10 | US-079      | **US-103**   | Alertas de estoque mínimo                |
+| EPIC-10 | US-080      | **US-104**   | Inventário de estoque                    |
+| EPIC-11 | US-076      | **US-105**   | Protocolos sanitários base               |
+| EPIC-11 | US-077      | **US-106**   | Calendário sanitário                     |
+| EPIC-11 | US-078      | **US-107**   | Registro de tratamentos                  |
+| EPIC-11 | US-079      | **US-108**   | Registro de vermifugação                 |
+| EPIC-11 | US-080      | **US-109**   | Registro de vacinação                    |
+| EPIC-12 | US-076      | **US-110**   | Ficha reprodutiva da fêmea               |
+| EPIC-12 | US-077      | **US-111**   | Cadastro de touros e sêmen               |
+| EPIC-12 | US-078      | **US-112**   | Registro de inseminação artificial       |
+| EPIC-12 | US-079      | **US-113**   | Diagnóstico de gestação                  |
+| EPIC-12 | US-080      | **US-114**   | Registro de monta natural                |
+| EPIC-13 | US-078      | **US-115**   | Análise de qualidade do leite            |
+| EPIC-13 | US-080      | **US-116**   | Curva de lactação                        |
+
+> **Nota:** US-035 da Fase 1 (EPIC-06, Mapa offline) permanece inalterado. Apenas a US-035 do EPIC-07 foi renumerada. Os IDs não duplicados (ex: US-037, US-039, US-081–US-093) permanecem inalterados.
 
 #### USs sem nenhum critério de frontend (NO) — 5 USs, 31 pts
 
-| Épico   | ID (doc) | Pts | Título                                     | Lacuna                                                                                                                  |
-| ------- | -------- | --- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| EPIC-07 | US-035   | 8   | Registro de operação de plantio            | Nenhuma menção de formulário mobile/web. Status "Plantado" no talhão não descreve feedback visual.                      |
-| EPIC-08 | US-039   | 5   | Registro de adubação de cobertura/foliar   | Operação de campo sem tela mobile descrita. "Acumulado de nutrientes por talhão" implica visualização não especificada. |
-| EPIC-09 | US-078   | 5   | Registro de colheita de café               | Campos de dados sem formulário mobile. US de alta prioridade para uso no campo.                                         |
-| EPIC-09 | US-079   | 5   | Registro de colheita de laranja            | Idem — campos sem tela. Vinculação a contrato implica select nunca descrito.                                            |
-| EPIC-10 | US-077   | 8   | Cadastro de unidades de medida e conversão | Tela de administração/configuração completamente ausente.                                                               |
+| Épico   | ID corrigido | Pts | Título                                     | Lacuna                                                                                                                  |
+| ------- | ------------ | --- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| EPIC-07 | US-094       | 8   | Registro de operação de plantio            | Nenhuma menção de formulário mobile/web. Status "Plantado" no talhão não descreve feedback visual.                      |
+| EPIC-08 | US-039       | 5   | Registro de adubação de cobertura/foliar   | Operação de campo sem tela mobile descrita. "Acumulado de nutrientes por talhão" implica visualização não especificada. |
+| EPIC-09 | US-096       | 5   | Registro de colheita de café               | Campos de dados sem formulário mobile. US de alta prioridade para uso no campo.                                         |
+| EPIC-09 | US-097       | 5   | Registro de colheita de laranja            | Idem — campos sem tela. Vinculação a contrato implica select nunca descrito.                                            |
+| EPIC-10 | US-100       | 8   | Cadastro de unidades de medida e conversão | Tela de administração/configuração completamente ausente.                                                               |
 
 **Critérios de frontend a adicionar:**
 
@@ -384,13 +412,13 @@ Auditoria dos documentos de requisitos das Fases 2-5 para verificar se os crité
 
 #### USs com frontend parcial (PARTIAL) — 5 USs
 
-| Épico   | ID (doc) | Pts | Título                                   | Lacuna                                                                    |
-| ------- | -------- | --- | ---------------------------------------- | ------------------------------------------------------------------------- |
-| EPIC-07 | US-037   | 5   | Gestão de cultivares e sementes          | "Histórico de performance" e "comparativo" sem descrever tela/gráfico     |
-| EPIC-10 | US-078   | 5   | Saída de insumos (consumo/transferência) | "Saldo insuficiente" sem descrever como é exibido (inline, toast, modal?) |
-| EPIC-10 | US-078   | 8   | Conversão automática em operações        | "Preview antes de confirmar" sem descrever componente UI                  |
-| EPIC-11 | US-079   | 5   | Registro de vermifugação                 | "Alertas de próxima vermifugação" sem canal/tela                          |
-| EPIC-12 | US-077   | 5   | Cadastro de touros e sêmen               | "Catálogo com ranking" e "histórico de uso" sem tela de listagem          |
+| Épico   | ID corrigido | Pts | Título                                   | Lacuna                                                                    |
+| ------- | ------------ | --- | ---------------------------------------- | ------------------------------------------------------------------------- |
+| EPIC-07 | US-037       | 5   | Gestão de cultivares e sementes          | "Histórico de performance" e "comparativo" sem descrever tela/gráfico     |
+| EPIC-10 | US-101       | 5   | Saída de insumos (consumo/transferência) | "Saldo insuficiente" sem descrever como é exibido (inline, toast, modal?) |
+| EPIC-10 | US-102       | 8   | Conversão automática em operações        | "Preview antes de confirmar" sem descrever componente UI                  |
+| EPIC-11 | US-108       | 5   | Registro de vermifugação                 | "Alertas de próxima vermifugação" sem canal/tela                          |
+| EPIC-12 | US-111       | 5   | Cadastro de touros e sêmen               | "Catálogo com ranking" e "histórico de uso" sem tela de listagem          |
 
 #### Épicos com 100% de cobertura frontend
 
@@ -535,7 +563,7 @@ Toda US que envolve **automação com geração de registros** (CPs, lançamento
    - Localização na navegação (rota)
    - Comportamento mobile vs desktop
 
-2. **Corrigir IDs duplicados na Fase 2** — o documento repete US-076 a US-080 entre épicos
+2. **IDs duplicados na Fase 2 — CORRIGIDO** — tabela de renumeração adicionada na seção 7.2 (US-094 a US-116)
 
 3. **Adicionar critério padrão para automações:**
    - CA de revisão: "Antes de confirmar, o usuário vê preview dos registros a serem criados"
@@ -572,6 +600,6 @@ Toda US futura deve incluir obrigatoriamente:
 | Prioridade           | Fase     | Motivo                                                               |
 | -------------------- | -------- | -------------------------------------------------------------------- |
 | 1 (agora)            | Fase 1   | Lacunas de implementação real — precisa de código                    |
-| 2 (antes de começar) | Fase 2   | Próxima a ser implementada, 5 USs sem FE + IDs duplicados            |
+| 2 (antes de começar) | Fase 2   | Próxima a ser implementada, 5 USs sem FE (IDs duplicados corrigidos) |
 | 3 (pode esperar)     | Fase 3   | 10 USs PARTIAL, padrão claro de automação sem revisão                |
 | 4 (pode esperar)     | Fase 4-5 | 21 USs PARTIAL, maioria em IoT/fiscal — corrigir quando chegar a vez |
