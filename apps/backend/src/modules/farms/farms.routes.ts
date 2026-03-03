@@ -24,6 +24,7 @@ import {
   deleteRegistrationBoundary,
   softDeleteFarm,
   getBoundaryVersions,
+  getBoundaryVersionById,
   createFieldPlot,
   listFieldPlots,
   getFieldPlot,
@@ -753,6 +754,57 @@ farmsRouter.get(
         req.params.regId as string,
       );
       res.json(versions);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// GET /org/farms/:farmId/boundary/versions/:versionId
+farmsRouter.get(
+  '/org/farms/:farmId/boundary/versions/:versionId',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const version = await getBoundaryVersionById(
+        ctx,
+        req.params.farmId as string,
+        req.params.versionId as string,
+      );
+      res.json(version);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// GET /org/farms/:farmId/registrations/:regId/boundary/versions/:versionId
+farmsRouter.get(
+  '/org/farms/:farmId/registrations/:regId/boundary/versions/:versionId',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const version = await getBoundaryVersionById(
+        ctx,
+        req.params.farmId as string,
+        req.params.versionId as string,
+        req.params.regId as string,
+      );
+      res.json(version);
     } catch (err) {
       if (err instanceof FarmError) {
         res.status(err.statusCode).json({ error: err.message });

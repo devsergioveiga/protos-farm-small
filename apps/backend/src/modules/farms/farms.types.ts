@@ -155,6 +155,10 @@ export interface BoundaryVersionItem {
   version: number;
 }
 
+export interface BoundaryVersionDetail extends BoundaryVersionItem {
+  boundaryGeoJSON: GeoJSON.Polygon;
+}
+
 // ─── Boundary Upload ─────────────────────────────────────────────────
 
 export const ALLOWED_GEO_EXTENSIONS = ['.geojson', '.json', '.kml', '.kmz', '.zip'] as const;

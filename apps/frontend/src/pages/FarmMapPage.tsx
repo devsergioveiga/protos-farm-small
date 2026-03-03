@@ -1,6 +1,6 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, Upload, Combine, FileText, MapPin } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Upload, Combine, FileText, MapPin, Clock } from 'lucide-react';
 import turfArea from '@turf/area';
 import { polygon as turfPolygon } from '@turf/helpers';
 import { useFarmMap } from '@/hooks/useFarmMap';
@@ -27,10 +27,16 @@ const ConfirmBoundaryEdit = lazy(() => import('@/components/map/ConfirmBoundaryE
 const PlotSubdivideEditor = lazy(() => import('@/components/map/PlotSubdivideEditor'));
 const PlotMergeEditor = lazy(() => import('@/components/map/PlotMergeEditor'));
 const BoundaryUploadModal = lazy(() => import('@/components/boundary/BoundaryUploadModal'));
+const BoundaryVersionsPanel = lazy(() => import('@/components/boundary/BoundaryVersionsPanel'));
 const RegistrationsPanel = lazy(() => import('@/components/registrations/RegistrationsPanel'));
 const RegistrationFormModal = lazy(
   () => import('@/components/registrations/RegistrationFormModal'),
 );
+
+interface BoundaryVersionsTarget {
+  registrationId?: string;
+  entityLabel: string;
+}
 
 interface EditingPlotState {
   plot: FieldPlot;
@@ -96,6 +102,9 @@ function FarmMapPage() {
     undefined,
   );
   const [uploadingBoundaryReg, setUploadingBoundaryReg] = useState<FarmRegistration | null>(null);
+  const [boundaryVersionsTarget, setBoundaryVersionsTarget] =
+    useState<BoundaryVersionsTarget | null>(null);
+  const [versionOverlay, setVersionOverlay] = useState<GeoJSON.Polygon | null>(null);
 
   const handleOpenRegForm = useCallback(
     (reg?: FarmRegistration) => {
@@ -132,6 +141,30 @@ function FarmMapPage() {
     },
     [deleteRegistration],
   );
+
+  const handleOpenFarmBoundaryHistory = useCallback(() => {
+    setBoundaryVersionsTarget({ entityLabel: 'da fazenda' });
+    setVersionOverlay(null);
+    setShowRegistrations(false);
+    setSelectedPlot(null);
+    setHistoryPlot(null);
+  }, []);
+
+  const handleOpenRegBoundaryHistory = useCallback((reg: FarmRegistration) => {
+    setBoundaryVersionsTarget({
+      registrationId: reg.id,
+      entityLabel: `da matrícula ${reg.number}`,
+    });
+    setVersionOverlay(null);
+    setShowRegistrations(false);
+    setSelectedPlot(null);
+    setHistoryPlot(null);
+  }, []);
+
+  const handleCloseBoundaryVersions = useCallback(() => {
+    setBoundaryVersionsTarget(null);
+    setVersionOverlay(null);
+  }, []);
 
   const handleToggleLayer = useCallback((layerId: string) => {
     setLayers((prev) =>
@@ -291,6 +324,16 @@ function FarmMapPage() {
         <button
           type="button"
           className="farm-map-page__header-btn"
+          onClick={handleOpenFarmBoundaryHistory}
+          aria-label="Histórico de perímetro"
+        >
+          <Clock size={20} aria-hidden="true" />
+          <span className="farm-map-page__header-btn-label">Histórico</span>
+        </button>
+
+        <button
+          type="button"
+          className="farm-map-page__header-btn"
           onClick={() => setShowRegistrations(true)}
           aria-label="Matrículas"
         >
@@ -328,6 +371,7 @@ function FarmMapPage() {
           showPlots={showPlots}
           onPlotClick={handlePlotClick}
           cropFilter={cropFilter}
+          versionOverlay={versionOverlay}
         />
         <BaseMapSelector selected={baseMap} onChange={setBaseMap} />
         <LayerControlPanel layers={layers} onToggle={handleToggleLayer} />
@@ -426,7 +470,20 @@ function FarmMapPage() {
               onEdit={(reg) => handleOpenRegForm(reg)}
               onDelete={handleDeleteRegistration}
               onUploadBoundary={handleUploadRegBoundary}
+              onViewBoundaryHistory={handleOpenRegBoundaryHistory}
               onClose={() => setShowRegistrations(false)}
+            />
+          </Suspense>
+        )}
+
+        {boundaryVersionsTarget && farmId && (
+          <Suspense fallback={null}>
+            <BoundaryVersionsPanel
+              farmId={farmId}
+              registrationId={boundaryVersionsTarget.registrationId}
+              entityLabel={boundaryVersionsTarget.entityLabel}
+              onClose={handleCloseBoundaryVersions}
+              onPreviewVersion={setVersionOverlay}
             />
           </Suspense>
         )}

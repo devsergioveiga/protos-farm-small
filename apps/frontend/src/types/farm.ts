@@ -124,6 +124,23 @@ export interface PlotBoundaryVersionItem {
   editSource: string;
 }
 
+// ─── Boundary Versions ──────────────────────────────────────────
+
+export interface BoundaryVersionItem {
+  id: string;
+  farmId: string;
+  registrationId: string | null;
+  boundaryAreaHa: number;
+  uploadedBy: string;
+  uploadedAt: string;
+  filename: string | null;
+  version: number;
+}
+
+export interface BoundaryVersionDetail extends BoundaryVersionItem {
+  boundaryGeoJSON: GeoJSON.Polygon;
+}
+
 // ─── Bulk Import ─────────────────────────────────────────────────────
 
 export interface BulkPreviewFeature {

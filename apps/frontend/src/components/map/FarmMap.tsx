@@ -90,6 +90,14 @@ function getRegistrationStyle(index: number): L.PathOptions {
   };
 }
 
+const VERSION_OVERLAY_STYLE: L.PathOptions = {
+  color: '#FF6F00',
+  weight: 3,
+  fillOpacity: 0.15,
+  fillColor: '#FF6F00',
+  dashArray: '8 6',
+};
+
 interface FarmMapProps {
   data: FarmMapData;
   baseMap: BaseMapType;
@@ -98,6 +106,7 @@ interface FarmMapProps {
   showPlots?: boolean;
   onPlotClick?: (plot: FieldPlot) => void;
   cropFilter?: Set<string>;
+  versionOverlay?: GeoJSON.Polygon | null;
 }
 
 function FarmMap({
@@ -108,6 +117,7 @@ function FarmMap({
   showPlots = true,
   onPlotClick,
   cropFilter,
+  versionOverlay,
 }: FarmMapProps) {
   const { farm, farmBoundary, registrationBoundaries, plotBoundaries } = data;
   const tile = TILE_URLS[baseMap];
@@ -245,6 +255,16 @@ function FarmMap({
           ))}
 
       {showPlots && <PlotLabels plotBoundaries={filteredPlotBoundaries} />}
+
+      {versionOverlay && (
+        <GeoJSON
+          key={`version-overlay-${JSON.stringify(versionOverlay.coordinates[0]?.[0])}`}
+          data={versionOverlay}
+          style={VERSION_OVERLAY_STYLE}
+        >
+          <Popup>Versão anterior do perímetro</Popup>
+        </GeoJSON>
+      )}
     </MapContainer>
   );
 }
