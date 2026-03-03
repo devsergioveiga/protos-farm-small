@@ -986,6 +986,93 @@ async function main() {
     console.log(`  ✓ Análise: ${sa.analysisDate.toISOString().split('T')[0]} (${sa.labName})`);
   }
 
+  // ─── CAR Registrations ─────────────────────────────────────────────
+  console.log('\n  Criando registros de CAR...');
+
+  await prisma.$executeRawUnsafe(`DELETE FROM car_registration_links`);
+  await prisma.$executeRawUnsafe(`DELETE FROM car_registrations`);
+
+  const carRegistrations = [
+    {
+      id: 'car-0001-4000-8000-000000000001',
+      farmId: farms[0].id, // Santa Helena
+      carCode: 'MT-5107248-F8A9B1C2D3E4F5A6B7C8D9E0F1A2B3C4',
+      status: 'ATIVO',
+      inscriptionDate: '2018-05-15',
+      areaHa: 3500,
+      city: 'Sorriso',
+      state: 'MT',
+      nativeVegetationHa: 700,
+      consolidatedAreaHa: 2450,
+      legalReserveRecordedHa: 700,
+      legalReserveApprovedHa: 700,
+      appTotalHa: 350,
+      appNativeVegetationHa: 280,
+      appConsolidatedHa: 70,
+    },
+    {
+      id: 'car-0001-4000-8000-000000000002',
+      farmId: farms[0].id, // Santa Helena (segundo CAR)
+      carCode: 'MT-5107248-A1B2C3D4E5F6A7B8C9D0E1F2A3B4C5D6',
+      status: 'ATIVO',
+      inscriptionDate: '2020-02-10',
+      areaHa: 1700,
+      city: 'Sorriso',
+      state: 'MT',
+      nativeVegetationHa: 340,
+      consolidatedAreaHa: 1190,
+      legalReserveRecordedHa: 340,
+      legalReserveApprovedHa: 340,
+      appTotalHa: 170,
+      appNativeVegetationHa: 136,
+      appConsolidatedHa: 34,
+    },
+  ];
+
+  for (const car of carRegistrations) {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO car_registrations (id, "farmId", "carCode", status, "inscriptionDate", "areaHa", city, state, "nativeVegetationHa", "consolidatedAreaHa", "legalReserveRecordedHa", "legalReserveApprovedHa", "appTotalHa", "appNativeVegetationHa", "appConsolidatedHa", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4::"CarStatus", $5::date, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, now(), now())`,
+      car.id,
+      car.farmId,
+      car.carCode,
+      car.status,
+      car.inscriptionDate,
+      car.areaHa,
+      car.city,
+      car.state,
+      car.nativeVegetationHa,
+      car.consolidatedAreaHa,
+      car.legalReserveRecordedHa,
+      car.legalReserveApprovedHa,
+      car.appTotalHa,
+      car.appNativeVegetationHa,
+      car.appConsolidatedHa,
+    );
+    console.log(`  ✓ CAR: ${car.carCode} (${car.city}/${car.state})`);
+  }
+
+  // Links CAR ↔ Matrícula
+  console.log('\n  Criando vínculos CAR ↔ Matrícula...');
+
+  const carRegistrationLinks = [
+    // CAR 1 → Matrícula 15.234 e 15.235 (cobre as duas matrículas de Santa Helena)
+    { carRegistrationId: carRegistrations[0].id, farmRegistrationId: farmRegistrations[0].id },
+    { carRegistrationId: carRegistrations[0].id, farmRegistrationId: farmRegistrations[1].id },
+    // CAR 2 → Matrícula 15.235 (segundo CAR cobre apenas a segunda matrícula)
+    { carRegistrationId: carRegistrations[1].id, farmRegistrationId: farmRegistrations[1].id },
+  ];
+
+  for (const link of carRegistrationLinks) {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO car_registration_links (id, "carRegistrationId", "farmRegistrationId", "createdAt")
+       VALUES (gen_random_uuid(), $1, $2, now())`,
+      link.carRegistrationId,
+      link.farmRegistrationId,
+    );
+  }
+  console.log(`  ✓ ${carRegistrationLinks.length} vínculos CAR-matrícula criados`);
+
   // Audit Logs de exemplo
   console.log('');
   const auditLogs = [
