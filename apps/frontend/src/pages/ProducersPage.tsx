@@ -3,6 +3,7 @@ import { Users, Plus, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-reac
 import { useProducers } from '@/hooks/useProducers';
 import PermissionGate from '@/components/auth/PermissionGate';
 import ProducerPFFormModal from '@/components/producer-form/ProducerPFFormModal';
+import ProducerDetailModal from '@/components/producer-detail/ProducerDetailModal';
 import type { ProducerListItem, ProducerType } from '@/types/producer';
 import './ProducersPage.css';
 
@@ -38,6 +39,7 @@ function ProducersPage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedProducerId, setSelectedProducerId] = useState<string | null>(null);
 
   const { producers, meta, isLoading, error, refetch } = useProducers({
     page,
@@ -58,8 +60,7 @@ function ProducersPage() {
   }, [searchInput]);
 
   const handleRowClick = (producer: ProducerListItem) => {
-    // Placeholder — detail modal será implementado em CA seguinte
-    void producer;
+    setSelectedProducerId(producer.id);
   };
 
   const handleRowKeyDown = (e: React.KeyboardEvent, producer: ProducerListItem) => {
@@ -308,6 +309,11 @@ function ProducersPage() {
           setShowCreateModal(false);
           void refetch();
         }}
+      />
+      <ProducerDetailModal
+        producerId={selectedProducerId}
+        onClose={() => setSelectedProducerId(null)}
+        onStatusChange={() => void refetch()}
       />
     </section>
   );

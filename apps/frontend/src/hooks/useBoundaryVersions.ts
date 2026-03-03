@@ -21,8 +21,6 @@ export function useBoundaryVersions(
     if (!farmId) return;
 
     let cancelled = false;
-    setIsLoading(true);
-    setError(null);
 
     const basePath = registrationId
       ? `/org/farms/${farmId}/registrations/${registrationId}/boundary/versions`
@@ -34,6 +32,7 @@ export function useBoundaryVersions(
         if (!cancelled) {
           setVersions(data);
           setIsLoading(false);
+          setError(null);
         }
       })
       .catch((err: unknown) => {
