@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Plus, Pencil, Trash2, AlertTriangle, FileText } from 'lucide-react';
+import { X, Plus, Pencil, Trash2, AlertTriangle, FileText, MapPin } from 'lucide-react';
 import PermissionGate from '@/components/auth/PermissionGate';
 import type { FarmRegistration, AreaDivergence } from '@/types/farm';
 import './RegistrationsPanel.css';
@@ -12,6 +12,7 @@ interface RegistrationsPanelProps {
   onAdd: () => void;
   onEdit: (registration: FarmRegistration) => void;
   onDelete: (registration: FarmRegistration) => void;
+  onUploadBoundary: (registration: FarmRegistration) => void;
   onClose: () => void;
 }
 
@@ -76,10 +77,12 @@ function RegistrationCard({
   registration,
   onEdit,
   onDelete,
+  onUploadBoundary,
 }: {
   registration: FarmRegistration;
   onEdit: () => void;
   onDelete: () => void;
+  onUploadBoundary: () => void;
 }) {
   return (
     <article className="reg-card">
@@ -87,6 +90,14 @@ function RegistrationCard({
         <h3 className="reg-card__number">Matrícula {registration.number}</h3>
         <PermissionGate permission="farms:update">
           <div className="reg-card__actions">
+            <button
+              type="button"
+              className="reg-card__action-btn reg-card__action-btn--boundary"
+              onClick={onUploadBoundary}
+              aria-label={`Upload de perímetro da matrícula ${registration.number}`}
+            >
+              <MapPin size={16} aria-hidden="true" />
+            </button>
             <button
               type="button"
               className="reg-card__action-btn"
@@ -106,6 +117,13 @@ function RegistrationCard({
           </div>
         </PermissionGate>
       </div>
+
+      {registration.boundaryAreaHa != null && (
+        <div className="reg-card__boundary-badge">
+          <MapPin size={14} aria-hidden="true" />
+          Perímetro: {formatArea(registration.boundaryAreaHa)}
+        </div>
+      )}
 
       <dl className="reg-card__details">
         <dt>Cartório</dt>
@@ -152,6 +170,7 @@ function RegistrationsPanel({
   onAdd,
   onEdit,
   onDelete,
+  onUploadBoundary,
   onClose,
 }: RegistrationsPanelProps) {
   const [deletingReg, setDeletingReg] = useState<FarmRegistration | null>(null);
@@ -206,6 +225,7 @@ function RegistrationsPanel({
                   registration={reg}
                   onEdit={() => onEdit(reg)}
                   onDelete={() => setDeletingReg(reg)}
+                  onUploadBoundary={() => onUploadBoundary(reg)}
                 />
               </li>
             ))}

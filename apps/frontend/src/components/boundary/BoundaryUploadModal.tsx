@@ -13,6 +13,12 @@ interface BoundaryUploadModalProps {
   existingBoundary?: GeoJSON.Polygon | null;
   onClose: () => void;
   onUploadComplete: () => void;
+  /** If provided, uploads to registration boundary endpoint instead of farm boundary */
+  registrationId?: string;
+  /** Area to compare boundary against (defaults to farmTotalAreaHa) */
+  referenceAreaHa?: number;
+  /** Label for the entity ("da fazenda" or "da matrícula 1234") */
+  entityLabel?: string;
 }
 
 const STEP_TITLES: Record<string, string> = {
@@ -34,9 +40,18 @@ function BoundaryUploadModal({
   existingBoundary,
   onClose,
   onUploadComplete,
+  registrationId,
+  referenceAreaHa,
+  entityLabel,
 }: BoundaryUploadModalProps) {
   const { step, file, clientPreview, canPreview, result, error, selectFile, upload, reset } =
     useBoundaryUpload();
+
+  const effectiveAreaHa = referenceAreaHa ?? farmTotalAreaHa;
+  const effectiveLabel = entityLabel ?? 'da fazenda';
+  const uploadUrl = registrationId
+    ? `/org/farms/${farmId}/registrations/${registrationId}/boundary`
+    : `/org/farms/${farmId}/boundary`;
 
   const handleClose = useCallback(() => {
     if (step === 'done') {
@@ -59,14 +74,14 @@ function BoundaryUploadModal({
 
   const handleFileSelect = useCallback(
     (selectedFile: File) => {
-      selectFile(selectedFile, farmTotalAreaHa);
+      selectFile(selectedFile, effectiveAreaHa);
     },
-    [selectFile, farmTotalAreaHa],
+    [selectFile, effectiveAreaHa],
   );
 
   const handleUpload = useCallback(() => {
-    void upload(farmId);
-  }, [upload, farmId]);
+    void upload(uploadUrl);
+  }, [upload, uploadUrl]);
 
   const divergenceBadge = useMemo(() => {
     const pct = clientPreview?.divergencePercentage;
@@ -114,7 +129,7 @@ function BoundaryUploadModal({
       className="boundary-modal__overlay"
       role="dialog"
       aria-modal="true"
-      aria-label="Upload de perímetro da fazenda"
+      aria-label={`Upload de perímetro ${effectiveLabel}`}
     >
       <div className="boundary-modal">
         <header className="boundary-modal__header">
@@ -162,7 +177,7 @@ function BoundaryUploadModal({
                 <div className="boundary-modal__info-row">
                   <span className="boundary-modal__info-label">ÁREA CADASTRADA</span>
                   <span className="boundary-modal__info-value">
-                    {formatArea(farmTotalAreaHa)} ha
+                    {formatArea(effectiveAreaHa)} ha
                   </span>
                 </div>
 

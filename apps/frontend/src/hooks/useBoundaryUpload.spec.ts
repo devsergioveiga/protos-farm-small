@@ -244,7 +244,7 @@ describe('useBoundaryUpload', () => {
     });
 
     await act(async () => {
-      await result.current.upload('farm-1');
+      await result.current.upload('/org/farms/farm-1/boundary');
     });
 
     expect(result.current.step).toBe('done');
@@ -266,7 +266,7 @@ describe('useBoundaryUpload', () => {
     });
 
     await act(async () => {
-      await result.current.upload('farm-1');
+      await result.current.upload('/org/farms/farm-1/boundary');
     });
 
     expect(result.current.step).toBe('idle');

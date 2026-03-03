@@ -251,7 +251,7 @@ describe('BoundaryUploadModal', () => {
 
     render(<BoundaryUploadModal {...defaultProps} />);
     await user.click(screen.getByText('Enviar perímetro'));
-    expect(mockUpload).toHaveBeenCalledWith('farm-1');
+    expect(mockUpload).toHaveBeenCalledWith('/org/farms/farm-1/boundary');
   });
 
   it('should call reset when Cancelar is clicked', async () => {
@@ -347,5 +347,49 @@ describe('BoundaryUploadModal', () => {
 
     render(<BoundaryUploadModal {...defaultProps} />);
     expect(screen.getByText(/20,00% de divergência/)).toBeDefined();
+  });
+
+  describe('registration boundary upload', () => {
+    const regProps = {
+      ...defaultProps,
+      registrationId: 'reg-1',
+      referenceAreaHa: 75.5,
+      entityLabel: 'da matrícula 12345',
+    };
+
+    it('should use registration aria-label', () => {
+      render(<BoundaryUploadModal {...regProps} />);
+      expect(screen.getByRole('dialog').getAttribute('aria-label')).toBe(
+        'Upload de perímetro da matrícula 12345',
+      );
+    });
+
+    it('should use referenceAreaHa for preview comparison', () => {
+      mockHookState.step = 'previewing';
+      mockHookState.file = new File(['{}'], 'test.geojson');
+      mockHookState.canPreview = false;
+
+      render(<BoundaryUploadModal {...regProps} />);
+      expect(screen.getByText('75,50 ha')).toBeDefined();
+    });
+
+    it('should call selectFile with referenceAreaHa', async () => {
+      const user = userEvent.setup();
+      render(<BoundaryUploadModal {...regProps} />);
+
+      await user.click(screen.getByText('Select File'));
+      expect(mockSelectFile).toHaveBeenCalledWith(expect.any(File), 75.5);
+    });
+
+    it('should call upload with registration boundary URL', async () => {
+      const user = userEvent.setup();
+      mockHookState.step = 'previewing';
+      mockHookState.file = new File(['<kml></kml>'], 'test.kml');
+      mockHookState.canPreview = false;
+
+      render(<BoundaryUploadModal {...regProps} />);
+      await user.click(screen.getByText('Enviar perímetro'));
+      expect(mockUpload).toHaveBeenCalledWith('/org/farms/farm-1/registrations/reg-1/boundary');
+    });
   });
 });

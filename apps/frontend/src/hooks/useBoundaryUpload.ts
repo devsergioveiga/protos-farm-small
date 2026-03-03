@@ -163,7 +163,7 @@ export function useBoundaryUpload() {
   }, []);
 
   const upload = useCallback(
-    async (farmId: string) => {
+    async (uploadUrl: string) => {
       if (!state.file) return;
 
       setState((prev) => ({ ...prev, step: 'uploading', error: null }));
@@ -172,10 +172,7 @@ export function useBoundaryUpload() {
         const formData = new FormData();
         formData.append('file', state.file);
 
-        const result = await api.postFormData<BoundaryUploadResult>(
-          `/org/farms/${farmId}/boundary`,
-          formData,
-        );
+        const result = await api.postFormData<BoundaryUploadResult>(uploadUrl, formData);
 
         setState((prev) => ({ ...prev, step: 'done', result }));
       } catch (err) {
