@@ -284,6 +284,19 @@ export interface RotationIndicator {
   seasonsAnalyzed: number;
 }
 
+// ─── Boundary Upload ────────────────────────────────────────────────
+
+export interface BoundaryUploadResult {
+  boundaryAreaHa: number;
+  areaDivergence: {
+    referenceAreaHa: number;
+    boundaryAreaHa: number;
+    percentage: number;
+    warning: boolean;
+  } | null;
+  warnings: string[];
+}
+
 // ─── Subdivide & Merge ──────────────────────────────────────────────
 
 export interface SubdividePreviewResult {
