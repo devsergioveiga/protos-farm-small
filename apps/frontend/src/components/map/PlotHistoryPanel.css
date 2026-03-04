@@ -156,6 +156,86 @@
   outline-offset: 2px;
 }
 
+/* ─── Confirm Delete ─── */
+
+.plot-history__confirm-delete {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-3) var(--space-4) 0;
+  background: var(--color-error-100, #fce4ec);
+  border-radius: var(--radius-md);
+}
+
+.plot-history__confirm-delete-text {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.plot-history__confirm-delete-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-error-500);
+}
+
+.plot-history__confirm-delete-actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+.plot-history__confirm-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.plot-history__confirm-btn:hover {
+  background: var(--color-neutral-100);
+}
+
+.plot-history__confirm-btn--danger {
+  background: var(--color-error-500, #c62828);
+  color: white;
+}
+
+.plot-history__confirm-btn--danger:hover {
+  background: var(--color-error-600, #b71c1c);
+}
+
+.plot-history__confirm-btn--danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.plot-history__confirm-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plot-history__confirm-btn {
+    transition: none;
+  }
+}
+
 /* ─── Content ─── */
 
 .plot-history__content {

@@ -1,9 +1,12 @@
+import { Pencil, Trash2 } from 'lucide-react';
 import { getCropColor, formatArea } from './FarmMap';
 import type { CropSeasonItem } from '@/types/farm';
 import './PlotSeasonTimeline.css';
 
 interface PlotSeasonTimelineProps {
   seasons: CropSeasonItem[];
+  onEdit?: (season: CropSeasonItem) => void;
+  onDelete?: (season: CropSeasonItem) => void;
 }
 
 function formatDate(dateStr: string | null): string {
@@ -24,7 +27,7 @@ function formatSeasonType(type: string): string {
   }
 }
 
-function PlotSeasonTimeline({ seasons }: PlotSeasonTimelineProps) {
+function PlotSeasonTimeline({ seasons, onEdit, onDelete }: PlotSeasonTimelineProps) {
   if (seasons.length === 0) {
     return (
       <div className="season-timeline__empty">
@@ -49,9 +52,35 @@ function PlotSeasonTimeline({ seasons }: PlotSeasonTimelineProps) {
             <div className="season-timeline__card">
               <div className="season-timeline__card-header">
                 <span className="season-timeline__crop">{season.crop}</span>
-                <span className="season-timeline__season-tag">
-                  {formatSeasonType(season.seasonType)} {season.seasonYear}
-                </span>
+                <div className="season-timeline__header-right">
+                  <span className="season-timeline__season-tag">
+                    {formatSeasonType(season.seasonType)} {season.seasonYear}
+                  </span>
+                  {(onEdit || onDelete) && (
+                    <div className="season-timeline__actions">
+                      {onEdit && (
+                        <button
+                          type="button"
+                          className="season-timeline__action-btn"
+                          aria-label="Editar safra"
+                          onClick={() => onEdit(season)}
+                        >
+                          <Pencil size={20} aria-hidden="true" />
+                        </button>
+                      )}
+                      {onDelete && (
+                        <button
+                          type="button"
+                          className="season-timeline__action-btn season-timeline__action-btn--danger"
+                          aria-label="Excluir safra"
+                          onClick={() => onDelete(season)}
+                        >
+                          <Trash2 size={20} aria-hidden="true" />
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <dl className="season-timeline__details">
