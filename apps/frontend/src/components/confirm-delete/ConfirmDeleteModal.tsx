@@ -8,6 +8,7 @@ interface ConfirmDeleteModalProps {
   onConfirm: () => void;
   onCancel: () => void;
   isDeleting: boolean;
+  entityLabel?: string;
 }
 
 function ConfirmDeleteModal({
@@ -16,6 +17,7 @@ function ConfirmDeleteModal({
   onConfirm,
   onCancel,
   isDeleting,
+  entityLabel = 'fazenda',
 }: ConfirmDeleteModalProps) {
   const [confirmInput, setConfirmInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -83,17 +85,19 @@ function ConfirmDeleteModal({
         </div>
 
         <h2 id="confirm-delete-title" className="confirm-delete-modal__title">
-          Excluir fazenda
+          Excluir {entityLabel}
         </h2>
 
         <p id="confirm-delete-description" className="confirm-delete-modal__description">
-          Esta ação não pode ser desfeita. Todos os dados da fazenda serão marcados como excluídos.
-          Digite o nome da fazenda para confirmar.
+          Esta ação não pode ser desfeita. Todos os dados{' '}
+          {entityLabel === 'fazenda' ? 'da fazenda' : `do ${entityLabel}`} serão marcados como
+          excluídos. Digite o nome {entityLabel === 'fazenda' ? 'da fazenda' : `do ${entityLabel}`}{' '}
+          para confirmar.
         </p>
 
         <div className="confirm-delete-modal__field">
           <label htmlFor="confirm-farm-name" className="confirm-delete-modal__label">
-            Nome da fazenda *
+            Nome {entityLabel === 'fazenda' ? 'da fazenda' : `do ${entityLabel}`} *
           </label>
           <input
             ref={inputRef}
@@ -127,7 +131,7 @@ function ConfirmDeleteModal({
             disabled={!isMatch || isDeleting}
             aria-disabled={!isMatch || isDeleting}
           >
-            {isDeleting ? 'Excluindo...' : 'Excluir fazenda'}
+            {isDeleting ? 'Excluindo...' : `Excluir ${entityLabel}`}
           </button>
         </div>
       </div>

@@ -107,4 +107,20 @@ describe('PlotDetailsPanel', () => {
 
     expect(screen.queryByLabelText('Subdividir talhão')).toBeNull();
   });
+
+  it('should show delete button when onDelete is provided', () => {
+    const onDelete = vi.fn();
+    render(<PlotDetailsPanel plot={PLOT} onClose={vi.fn()} onDelete={onDelete} />);
+
+    const deleteBtn = screen.getByLabelText('Excluir talhão');
+    expect(deleteBtn).toBeDefined();
+    fireEvent.click(deleteBtn);
+    expect(onDelete).toHaveBeenCalledWith(PLOT);
+  });
+
+  it('should not show delete button when onDelete is not provided', () => {
+    render(<PlotDetailsPanel plot={PLOT} onClose={vi.fn()} />);
+
+    expect(screen.queryByLabelText('Excluir talhão')).toBeNull();
+  });
 });

@@ -93,6 +93,14 @@
   outline-offset: 2px;
 }
 
+.plot-details__action-btn--delete {
+  color: var(--color-error-500);
+}
+
+.plot-details__action-btn--delete:hover {
+  background: var(--color-error-50, #ffebee);
+}
+
 .plot-details__close {
   display: flex;
   align-items: center;
