@@ -26,20 +26,27 @@ function AppLayout() {
   }, [logout, navigate]);
 
   const isActive = (path: string) => location.pathname.startsWith(path);
+  const isPlatformAdmin = user?.role === 'SUPER_ADMIN' && !user.organizationId;
 
   return (
     <FarmProvider>
       <div className="app-layout">
         <header className="app-topbar">
           <div className="app-topbar__left">
-            <Link to="/dashboard" className="app-topbar__logo" aria-label="Ir para o início">
+            <Link
+              to={isPlatformAdmin ? '/admin' : '/dashboard'}
+              className="app-topbar__logo"
+              aria-label="Ir para o início"
+            >
               Protos Farm
             </Link>
           </div>
 
-          <div className="app-topbar__center">
-            <FarmSelector />
-          </div>
+          {!isPlatformAdmin && (
+            <div className="app-topbar__center">
+              <FarmSelector />
+            </div>
+          )}
 
           <nav className="app-topbar__right" aria-label="Menu principal">
             {user?.role === 'SUPER_ADMIN' && (
@@ -48,43 +55,47 @@ function AppLayout() {
                 <span className="app-topbar__nav-label">Admin</span>
               </Link>
             )}
-            <Link
-              to="/dashboard"
-              className={`app-topbar__nav-link ${isActive('/dashboard') ? 'app-topbar__nav-link--active' : ''}`}
-            >
-              <LayoutDashboard size={16} aria-hidden="true" />
-              <span className="app-topbar__nav-label">Início</span>
-            </Link>
-            <Link
-              to="/farms"
-              className={`app-topbar__nav-link ${isActive('/farms') ? 'app-topbar__nav-link--active' : ''}`}
-            >
-              <MapPin size={16} aria-hidden="true" />
-              <span className="app-topbar__nav-label">Fazendas</span>
-            </Link>
-            <Link
-              to="/producers"
-              className={`app-topbar__nav-link ${isActive('/producers') ? 'app-topbar__nav-link--active' : ''}`}
-            >
-              <UserCheck size={16} aria-hidden="true" />
-              <span className="app-topbar__nav-label">Produtores</span>
-            </Link>
-            <Link
-              to="/users"
-              className={`app-topbar__nav-link ${isActive('/users') ? 'app-topbar__nav-link--active' : ''}`}
-            >
-              <Users size={16} aria-hidden="true" />
-              <span className="app-topbar__nav-label">Usuários</span>
-            </Link>
-            <Link
-              to="/roles"
-              className={`app-topbar__nav-link ${isActive('/roles') ? 'app-topbar__nav-link--active' : ''}`}
-            >
-              <Shield size={16} aria-hidden="true" />
-              <span className="app-topbar__nav-label">Papéis</span>
-            </Link>
+            {!isPlatformAdmin && (
+              <>
+                <Link
+                  to="/dashboard"
+                  className={`app-topbar__nav-link ${isActive('/dashboard') ? 'app-topbar__nav-link--active' : ''}`}
+                >
+                  <LayoutDashboard size={16} aria-hidden="true" />
+                  <span className="app-topbar__nav-label">Início</span>
+                </Link>
+                <Link
+                  to="/farms"
+                  className={`app-topbar__nav-link ${isActive('/farms') ? 'app-topbar__nav-link--active' : ''}`}
+                >
+                  <MapPin size={16} aria-hidden="true" />
+                  <span className="app-topbar__nav-label">Fazendas</span>
+                </Link>
+                <Link
+                  to="/producers"
+                  className={`app-topbar__nav-link ${isActive('/producers') ? 'app-topbar__nav-link--active' : ''}`}
+                >
+                  <UserCheck size={16} aria-hidden="true" />
+                  <span className="app-topbar__nav-label">Produtores</span>
+                </Link>
+                <Link
+                  to="/users"
+                  className={`app-topbar__nav-link ${isActive('/users') ? 'app-topbar__nav-link--active' : ''}`}
+                >
+                  <Users size={16} aria-hidden="true" />
+                  <span className="app-topbar__nav-label">Usuários</span>
+                </Link>
+                <Link
+                  to="/roles"
+                  className={`app-topbar__nav-link ${isActive('/roles') ? 'app-topbar__nav-link--active' : ''}`}
+                >
+                  <Shield size={16} aria-hidden="true" />
+                  <span className="app-topbar__nav-label">Papéis</span>
+                </Link>
 
-            <FarmLimitBadge />
+                <FarmLimitBadge />
+              </>
+            )}
 
             <div className="app-topbar__separator" role="separator" />
 

@@ -44,14 +44,14 @@ const organizations = [
 // ─── Dados dos Usuários ──────────────────────────────────────────────
 
 const users = [
-  // Org 1 — Agropecuária Bom Futuro
+  // SUPER_ADMIN — Admin de plataforma (sem organização)
   {
     id: 'b1b2c3d4-0001-4000-8000-000000000001',
-    email: 'carlos.admin@bomfuturo.agro.br',
-    name: 'Carlos Eduardo Silva',
+    email: 'admin@protosfarm.com.br',
+    name: 'Admin Protos Farm',
     role: 'SUPER_ADMIN' as const,
     phone: '+55 65 99901-0001',
-    organizationId: organizations[0].id,
+    organizationId: null,
   },
   {
     id: 'b1b2c3d4-0002-4000-8000-000000000002',
@@ -254,10 +254,7 @@ const farmRegistrations = [
 // ─── Vínculos Usuário-Fazenda ────────────────────────────────────────
 
 const userFarmAccess = [
-  // SUPER_ADMIN e ADMIN acessam todas as fazendas da org
-  { userId: users[0].id, farmId: farms[0].id }, // Carlos (SUPER_ADMIN) → Santa Helena
-  { userId: users[0].id, farmId: farms[1].id }, // Carlos (SUPER_ADMIN) → Três Irmãos
-  { userId: users[0].id, farmId: farms[2].id }, // Carlos (SUPER_ADMIN) → Lagoa Dourada
+  // ADMIN acessa todas as fazendas da org (SUPER_ADMIN não precisa de farm access)
   { userId: users[1].id, farmId: farms[0].id }, // Maria (ADMIN) → Santa Helena
   { userId: users[1].id, farmId: farms[1].id }, // Maria (ADMIN) → Três Irmãos
   { userId: users[1].id, farmId: farms[2].id }, // Maria (ADMIN) → Lagoa Dourada
@@ -307,6 +304,7 @@ async function main() {
 
   // Usuários
   for (const user of users) {
+    const userData = { ...user, passwordHash: DEFAULT_PASSWORD_HASH };
     await prisma.user.upsert({
       where: { email: user.email },
       update: {
@@ -316,10 +314,7 @@ async function main() {
         organizationId: user.organizationId,
         passwordHash: DEFAULT_PASSWORD_HASH,
       },
-      create: {
-        ...user,
-        passwordHash: DEFAULT_PASSWORD_HASH,
-      },
+      create: userData,
     });
     console.log(`  ✓ Usuário: ${user.name} (${user.role})`);
   }

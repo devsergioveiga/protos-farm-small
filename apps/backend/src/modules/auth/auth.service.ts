@@ -14,7 +14,7 @@ export interface TokenPayload {
   userId: string;
   email: string;
   role: UserRole;
-  organizationId: string;
+  organizationId: string | null;
 }
 
 export interface AuthTokens {
@@ -101,14 +101,14 @@ interface UserForSession {
   id: string;
   email: string;
   role: UserRole;
-  organizationId: string;
+  organizationId: string | null;
 }
 
 export async function createSessionForUser(user: UserForSession): Promise<AuthTokens> {
   return withRlsBypass(async (tx) => {
     let allowMultipleSessions = true;
 
-    if (user.role !== 'SUPER_ADMIN') {
+    if (user.role !== 'SUPER_ADMIN' && user.organizationId) {
       const org = await tx.organization.findUnique({ where: { id: user.organizationId } });
       if (!org || org.status !== 'ACTIVE') {
         throw new AuthError('Organização suspensa ou cancelada', 403);
@@ -177,7 +177,7 @@ export async function refreshTokens(token: string): Promise<AuthTokens> {
       throw new AuthError('Conta inativa', 403);
     }
 
-    if (user.role !== 'SUPER_ADMIN') {
+    if (user.role !== 'SUPER_ADMIN' && user.organizationId) {
       const org = await tx.organization.findUnique({ where: { id: user.organizationId } });
       if (!org || org.status !== 'ACTIVE') {
         throw new AuthError('Organização suspensa ou cancelada', 403);

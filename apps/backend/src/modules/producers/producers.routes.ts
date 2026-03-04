@@ -37,7 +37,11 @@ function getClientIp(req: import('express').Request): string {
 }
 
 function buildRlsContext(req: import('express').Request): RlsContext {
-  return { organizationId: req.user!.organizationId };
+  const organizationId = req.user!.organizationId;
+  if (!organizationId) {
+    throw new ProducerError('Acesso negado: usuário sem organização vinculada', 403);
+  }
+  return { organizationId };
 }
 
 function handleError(err: unknown, res: import('express').Response) {

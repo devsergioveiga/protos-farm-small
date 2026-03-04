@@ -97,7 +97,7 @@ export async function handleGoogleCallback(code: string, state: string): Promise
     }
 
     // CA5: Check if organization allows social login
-    if (u.role !== 'SUPER_ADMIN') {
+    if (u.role !== 'SUPER_ADMIN' && u.organizationId) {
       const org = await tx.organization.findUnique({ where: { id: u.organizationId } });
       if (org && !org.allowSocialLogin) {
         throw new AuthError('Login social desabilitado para esta organização', 403);

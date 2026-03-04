@@ -141,12 +141,12 @@ model User {
   role           UserRole   @default(OPERATOR)
   status         UserStatus @default(ACTIVE)
   lastLoginAt    DateTime?
-  organizationId String
+  organizationId String?
   customRoleId   String?
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 
-  organization      Organization          @relation(fields: [organizationId], references: [id])
+  organization      Organization?         @relation(fields: [organizationId], references: [id])
   customRole        CustomRole?           @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
   farmAccess                UserFarmAccess[]
   boundaryUploads           FarmBoundaryVersion[]
