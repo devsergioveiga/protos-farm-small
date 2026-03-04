@@ -333,6 +333,21 @@ export interface CreateCropSeasonPayload {
   notes?: string;
 }
 
+// ─── Update Crop Season ────────────────────────────────────────────
+
+export interface UpdateCropSeasonPayload {
+  seasonType?: string;
+  seasonYear?: string;
+  crop?: string;
+  varietyName?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  plantedAreaHa?: number | null;
+  productivityKgHa?: number | null;
+  totalProductionKg?: number | null;
+  notes?: string | null;
+}
+
 // ─── Boundary Upload ────────────────────────────────────────────────
 
 export interface BoundaryUploadResult {

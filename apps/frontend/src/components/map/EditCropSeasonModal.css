@@ -1,0 +1,271 @@
+/* ─── Overlay ─── */
+
+.edit-crop-season-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: var(--space-4);
+}
+
+/* ─── Modal ─── */
+
+.edit-crop-season-modal {
+  display: flex;
+  flex-direction: column;
+  width: 95vw;
+  max-width: 600px;
+  max-height: 90vh;
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+/* ─── Header ─── */
+
+.edit-crop-season-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+.edit-crop-season-modal__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.edit-crop-season-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  color: var(--color-neutral-600);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.edit-crop-season-modal__close:hover {
+  background: var(--color-neutral-100);
+}
+
+.edit-crop-season-modal__close:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Body ─── */
+
+.edit-crop-season-modal__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ─── Fields ─── */
+
+.edit-crop-season-modal__fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .edit-crop-season-modal__fields {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4) var(--space-5);
+  }
+}
+
+.edit-crop-season-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.edit-crop-season-modal__field--full {
+  grid-column: 1 / -1;
+}
+
+.edit-crop-season-modal__label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-700);
+}
+
+.edit-crop-season-modal__required {
+  color: var(--color-error-500);
+}
+
+.edit-crop-season-modal__input,
+.edit-crop-season-modal__select,
+.edit-crop-season-modal__textarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  min-height: 48px;
+  box-sizing: border-box;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.edit-crop-season-modal__textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.edit-crop-season-modal__input:focus,
+.edit-crop-season-modal__select:focus,
+.edit-crop-season-modal__textarea:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.edit-crop-season-modal__input::placeholder,
+.edit-crop-season-modal__textarea::placeholder {
+  color: var(--color-neutral-400);
+}
+
+.edit-crop-season-modal__input--error {
+  border-color: var(--color-error-500);
+}
+
+.edit-crop-season-modal__input--error:focus {
+  outline-color: var(--color-error-500);
+}
+
+.edit-crop-season-modal__error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-error-500);
+}
+
+/* ─── Auto-calc hint ─── */
+
+.edit-crop-season-modal__hint {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+}
+
+/* ─── Submit Error ─── */
+
+.edit-crop-season-modal__submit-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-error-100);
+  border-radius: var(--radius-md);
+  color: var(--color-error-500);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+
+/* ─── Footer ─── */
+
+.edit-crop-season-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+/* ─── Buttons ─── */
+
+.edit-crop-season-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.edit-crop-season-modal__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.edit-crop-season-modal__btn--primary {
+  background: var(--color-primary-600);
+  color: white;
+}
+
+.edit-crop-season-modal__btn--primary:hover {
+  background: var(--color-primary-700);
+}
+
+.edit-crop-season-modal__btn--primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.edit-crop-season-modal__btn--secondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.edit-crop-season-modal__btn--secondary:hover {
+  background: var(--color-neutral-200);
+}
+
+/* ─── Spinner ─── */
+
+@keyframes edit-crop-season-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.edit-crop-season-modal__spinner {
+  animation: edit-crop-season-spin 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edit-crop-season-modal__spinner {
+    animation: none;
+  }
+
+  .edit-crop-season-modal__input,
+  .edit-crop-season-modal__select,
+  .edit-crop-season-modal__textarea,
+  .edit-crop-season-modal__close,
+  .edit-crop-season-modal__btn {
+    transition: none;
+  }
+}
