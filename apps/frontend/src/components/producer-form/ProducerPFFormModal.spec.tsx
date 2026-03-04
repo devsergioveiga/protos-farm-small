@@ -304,7 +304,8 @@ describe('ProducerPFFormModal', () => {
       render(<ProducerPFFormModal {...defaultProps} producerId="prod-1" />);
 
       await waitFor(() => {
-        expect(screen.getByText('Salvar alterações')).toBeDefined();
+        const nameInput = screen.getByLabelText(/Nome completo/) as HTMLInputElement;
+        expect(nameInput.value).toBe('João da Silva');
       });
 
       fireEvent.click(screen.getByText('Salvar alterações'));
@@ -325,7 +326,8 @@ describe('ProducerPFFormModal', () => {
       render(<ProducerPFFormModal {...defaultProps} onSuccess={onSuccess} producerId="prod-1" />);
 
       await waitFor(() => {
-        expect(screen.getByText('Salvar alterações')).toBeDefined();
+        const nameInput = screen.getByLabelText(/Nome completo/) as HTMLInputElement;
+        expect(nameInput.value).toBe('João da Silva');
       });
 
       fireEvent.click(screen.getByText('Salvar alterações'));

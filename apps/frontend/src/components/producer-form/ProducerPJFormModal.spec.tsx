@@ -322,7 +322,8 @@ describe('ProducerPJFormModal', () => {
       render(<ProducerPJFormModal {...defaultProps} producerId="prod-pj-1" />);
 
       await waitFor(() => {
-        expect(screen.getByText('Salvar alterações')).toBeDefined();
+        const nameInput = screen.getByLabelText(/Razão social/) as HTMLInputElement;
+        expect(nameInput.value).toBe('Agropecuária Silva LTDA');
       });
 
       fireEvent.click(screen.getByText('Salvar alterações'));
@@ -345,7 +346,8 @@ describe('ProducerPJFormModal', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Salvar alterações')).toBeDefined();
+        const nameInput = screen.getByLabelText(/Razão social/) as HTMLInputElement;
+        expect(nameInput.value).toBe('Agropecuária Silva LTDA');
       });
 
       fireEvent.click(screen.getByText('Salvar alterações'));

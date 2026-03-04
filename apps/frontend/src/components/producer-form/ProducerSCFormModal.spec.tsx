@@ -432,7 +432,8 @@ describe('ProducerSCFormModal', () => {
       render(<ProducerSCFormModal {...defaultProps} producerId="prod-sc-1" />);
 
       await waitFor(() => {
-        expect(screen.getByText('Salvar alterações')).toBeDefined();
+        const nameInput = screen.getByLabelText(/Nome da sociedade/) as HTMLInputElement;
+        expect(nameInput.value).toBe('Irmãos Silva');
       });
 
       fireEvent.click(screen.getByText('Salvar alterações'));
