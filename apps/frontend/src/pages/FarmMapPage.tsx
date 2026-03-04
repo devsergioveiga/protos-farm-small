@@ -9,6 +9,7 @@ import {
   MapPin,
   Clock,
   Users,
+  Plus,
 } from 'lucide-react';
 import turfArea from '@turf/area';
 import { polygon as turfPolygon } from '@turf/helpers';
@@ -42,6 +43,7 @@ const RegistrationFormModal = lazy(
   () => import('@/components/registrations/RegistrationFormModal'),
 );
 const FarmProducersPanel = lazy(() => import('@/components/farm-producers/FarmProducersPanel'));
+const CreatePlotModal = lazy(() => import('@/components/map/CreatePlotModal'));
 
 interface BoundaryVersionsTarget {
   registrationId?: string;
@@ -98,6 +100,7 @@ function FarmMapPage() {
   const [baseMap, setBaseMap] = useState<BaseMapType>('satellite');
   const [layers, setLayers] = useState<LayerConfig[]>(DEFAULT_LAYERS);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+  const [isCreatePlotOpen, setIsCreatePlotOpen] = useState(false);
   const [selectedPlot, setSelectedPlot] = useState<FieldPlot | null>(null);
   const [cropFilter, setCropFilter] = useState<Set<string>>(new Set());
   const [editingPlot, setEditingPlot] = useState<EditingPlotState | null>(null);
@@ -365,6 +368,16 @@ function FarmMapPage() {
         <button
           type="button"
           className="farm-map-page__header-btn"
+          onClick={() => setIsCreatePlotOpen(true)}
+          aria-label="Novo talhão"
+        >
+          <Plus size={20} aria-hidden="true" />
+          <span className="farm-map-page__header-btn-label">Novo talhão</span>
+        </button>
+
+        <button
+          type="button"
+          className="farm-map-page__header-btn"
           onClick={() => setIsMergeMode(true)}
           aria-label="Mesclar talhões"
         >
@@ -515,6 +528,18 @@ function FarmMapPage() {
           </Suspense>
         )}
       </div>
+
+      {isCreatePlotOpen && farmId && (
+        <Suspense fallback={null}>
+          <CreatePlotModal
+            isOpen={isCreatePlotOpen}
+            farmId={farmId}
+            registrations={data.farm.registrations}
+            onClose={() => setIsCreatePlotOpen(false)}
+            onSuccess={handleImportComplete}
+          />
+        </Suspense>
+      )}
 
       {isBulkImportOpen && farmId && (
         <Suspense fallback={null}>
