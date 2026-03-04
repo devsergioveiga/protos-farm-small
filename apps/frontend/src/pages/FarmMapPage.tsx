@@ -1,6 +1,15 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, Upload, Combine, FileText, MapPin, Clock } from 'lucide-react';
+import {
+  ArrowLeft,
+  AlertCircle,
+  Upload,
+  Combine,
+  FileText,
+  MapPin,
+  Clock,
+  Users,
+} from 'lucide-react';
 import turfArea from '@turf/area';
 import { polygon as turfPolygon } from '@turf/helpers';
 import { useFarmMap } from '@/hooks/useFarmMap';
@@ -32,6 +41,7 @@ const RegistrationsPanel = lazy(() => import('@/components/registrations/Registr
 const RegistrationFormModal = lazy(
   () => import('@/components/registrations/RegistrationFormModal'),
 );
+const FarmProducersPanel = lazy(() => import('@/components/farm-producers/FarmProducersPanel'));
 
 interface BoundaryVersionsTarget {
   registrationId?: string;
@@ -97,6 +107,7 @@ function FarmMapPage() {
   const [historyPlot, setHistoryPlot] = useState<FieldPlot | null>(null);
   const [isBoundaryUploadOpen, setIsBoundaryUploadOpen] = useState(false);
   const [showRegistrations, setShowRegistrations] = useState(false);
+  const [showProducers, setShowProducers] = useState(false);
   const [isRegFormOpen, setIsRegFormOpen] = useState(false);
   const [editingRegistration, setEditingRegistration] = useState<FarmRegistration | undefined>(
     undefined,
@@ -344,6 +355,16 @@ function FarmMapPage() {
         <button
           type="button"
           className="farm-map-page__header-btn"
+          onClick={() => setShowProducers(true)}
+          aria-label="Produtores"
+        >
+          <Users size={20} aria-hidden="true" />
+          <span className="farm-map-page__header-btn-label">Produtores</span>
+        </button>
+
+        <button
+          type="button"
+          className="farm-map-page__header-btn"
           onClick={() => setIsMergeMode(true)}
           aria-label="Mesclar talhões"
         >
@@ -473,6 +494,12 @@ function FarmMapPage() {
               onViewBoundaryHistory={handleOpenRegBoundaryHistory}
               onClose={() => setShowRegistrations(false)}
             />
+          </Suspense>
+        )}
+
+        {showProducers && farmId && (
+          <Suspense fallback={null}>
+            <FarmProducersPanel farmId={farmId} onClose={() => setShowProducers(false)} />
           </Suspense>
         )}
 
