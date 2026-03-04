@@ -7,12 +7,27 @@
 .farm-map-page__header {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-3) var(--space-6);
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
   background: var(--color-neutral-0);
   border-bottom: 1px solid var(--color-neutral-200);
   min-height: var(--topbar-height);
   flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 1024px) {
+  .farm-map-page__header {
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-6);
+    flex-wrap: nowrap;
+  }
+}
+
+@media (min-width: 1280px) {
+  .farm-map-page__header {
+    gap: var(--space-4);
+  }
 }
 
 .farm-map-page__back {
@@ -43,7 +58,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  flex: 1;
+  flex: 1 1 0;
 }
 
 .farm-map-page__header-btn {
@@ -81,7 +96,7 @@
   display: none;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 1440px) {
   .farm-map-page__header-btn-label {
     display: inline;
   }
@@ -96,7 +111,7 @@
   color: var(--color-neutral-500);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1440px) {
   .farm-map-page__breadcrumb {
     display: flex;
   }
