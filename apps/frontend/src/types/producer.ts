@@ -197,3 +197,19 @@ export interface UpdateFarmLinkPayload {
   isItrDeclarant?: boolean;
   registrationIds?: string[];
 }
+
+// ─── IE types ─────────────────────────────────────────────────────
+
+export interface CreateIePayload {
+  number: string;
+  state: string;
+  situation?: string;
+  category?: string;
+  inscriptionDate?: string;
+  contractEndDate?: string;
+  cnaeActivity?: string;
+  assessmentRegime?: string;
+  milkProgramOptIn?: boolean;
+}
+
+export type UpdateIePayload = Partial<CreateIePayload>;

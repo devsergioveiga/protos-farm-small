@@ -8,11 +8,13 @@ import {
   Loader2,
   Pencil,
   Plus,
+  Star,
   Trash2,
 } from 'lucide-react';
 import { useProducerDetail } from '@/hooks/useProducerDetail';
 import PermissionGate from '@/components/auth/PermissionGate';
 import FarmLinkFormModal from '@/components/producer-form/FarmLinkFormModal';
+import IeFormModal from '@/components/producer-form/IeFormModal';
 import { api } from '@/services/api';
 import type {
   ProducerType,
@@ -212,51 +214,112 @@ function ParticipantsSection({ participants }: { participants: SocietyParticipan
   );
 }
 
-function IeSection({ registrations }: { registrations: ProducerStateRegistration[] }) {
-  if (registrations.length === 0) {
-    return (
-      <section className="producer-detail__section">
-        <h3 className="producer-detail__section-title">Inscrições Estaduais</h3>
+function IeSection({
+  registrations,
+  onAdd,
+  onEdit,
+  onDelete,
+  onSetDefault,
+}: {
+  registrations: ProducerStateRegistration[];
+  onAdd: () => void;
+  onEdit: (ie: ProducerStateRegistration) => void;
+  onDelete: (ie: ProducerStateRegistration) => void;
+  onSetDefault: (ie: ProducerStateRegistration) => void;
+}) {
+  return (
+    <section className="producer-detail__section">
+      <div className="producer-detail__section-header">
+        <h3 className="producer-detail__section-title" style={{ marginBottom: 0 }}>
+          Inscrições Estaduais
+        </h3>
+        <PermissionGate permission="producers:update">
+          <button
+            type="button"
+            className="producer-detail__btn producer-detail__btn--add"
+            onClick={onAdd}
+          >
+            <Plus size={16} aria-hidden="true" />
+            Adicionar
+          </button>
+        </PermissionGate>
+      </div>
+      {registrations.length === 0 ? (
         <div className="producer-detail__empty">
           <FileText size={32} aria-hidden="true" />
           <p className="producer-detail__empty-text">Nenhuma inscrição estadual cadastrada</p>
         </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="producer-detail__section">
-      <h3 className="producer-detail__section-title">Inscrições Estaduais</h3>
-      <div className="producer-detail__cards-list">
-        {registrations.map((ie) => (
-          <div key={ie.id} className="producer-detail__card">
-            <h4 className="producer-detail__card-title">
-              IE {ie.number} — {ie.state}
-            </h4>
-            <div className="producer-detail__card-row">
-              <span className="producer-detail__card-label">Situação</span>
-              <span className="producer-detail__card-value">
-                {ie.situation ? IE_SITUATION_LABELS[ie.situation] || ie.situation : '—'}
-              </span>
-            </div>
-            {ie.category && (
-              <div className="producer-detail__card-row">
-                <span className="producer-detail__card-label">Categoria</span>
-                <span className="producer-detail__card-value">{ie.category}</span>
+      ) : (
+        <div className="producer-detail__cards-list">
+          {registrations.map((ie) => (
+            <div key={ie.id} className="producer-detail__card">
+              <div className="producer-detail__card-header">
+                <h4 className="producer-detail__card-title">
+                  IE {ie.number} — {ie.state}
+                  {ie.isDefaultForFarm && (
+                    <span
+                      className="producer-detail__badge producer-detail__badge--active"
+                      style={{ marginLeft: 8 }}
+                    >
+                      Padrão
+                    </span>
+                  )}
+                </h4>
+                <PermissionGate permission="producers:update">
+                  <div className="producer-detail__card-actions">
+                    {!ie.isDefaultForFarm && (
+                      <button
+                        type="button"
+                        className="producer-detail__card-action"
+                        aria-label={`Definir IE ${ie.number} como padrão`}
+                        onClick={() => onSetDefault(ie)}
+                      >
+                        <Star size={16} aria-hidden="true" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="producer-detail__card-action"
+                      aria-label={`Editar IE ${ie.number}`}
+                      onClick={() => onEdit(ie)}
+                    >
+                      <Pencil size={16} aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      className="producer-detail__card-action producer-detail__card-action--danger"
+                      aria-label={`Excluir IE ${ie.number}`}
+                      onClick={() => onDelete(ie)}
+                    >
+                      <Trash2 size={16} aria-hidden="true" />
+                    </button>
+                  </div>
+                </PermissionGate>
               </div>
-            )}
-            {ie.inscriptionDate && (
               <div className="producer-detail__card-row">
-                <span className="producer-detail__card-label">Data inscrição</span>
+                <span className="producer-detail__card-label">Situação</span>
                 <span className="producer-detail__card-value">
-                  {formatDate(ie.inscriptionDate)}
+                  {ie.situation ? IE_SITUATION_LABELS[ie.situation] || ie.situation : '—'}
                 </span>
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+              {ie.category && (
+                <div className="producer-detail__card-row">
+                  <span className="producer-detail__card-label">Categoria</span>
+                  <span className="producer-detail__card-value">{ie.category}</span>
+                </div>
+              )}
+              {ie.inscriptionDate && (
+                <div className="producer-detail__card-row">
+                  <span className="producer-detail__card-label">Data inscrição</span>
+                  <span className="producer-detail__card-value">
+                    {formatDate(ie.inscriptionDate)}
+                  </span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -403,6 +466,12 @@ function ProducerDetailModal({
   }>({ isOpen: false });
   const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null);
   const [confirmDeleteLink, setConfirmDeleteLink] = useState<ProducerFarmLink | null>(null);
+  const [ieModal, setIeModal] = useState<{
+    isOpen: boolean;
+    ie?: ProducerStateRegistration;
+  }>({ isOpen: false });
+  const [confirmDeleteIe, setConfirmDeleteIe] = useState<ProducerStateRegistration | null>(null);
+  const [deletingIeId, setDeletingIeId] = useState<string | null>(null);
 
   const handleClose = useCallback(() => {
     onClose();
@@ -451,6 +520,44 @@ function ProducerDetailModal({
         // Error will show on next refetch
       } finally {
         setDeletingLinkId(null);
+      }
+    },
+    [producer, refetch, onStatusChange],
+  );
+
+  const handleIeSuccess = useCallback(() => {
+    setIeModal({ isOpen: false });
+    void refetch();
+    onStatusChange();
+  }, [refetch, onStatusChange]);
+
+  const handleDeleteIe = useCallback(
+    async (ie: ProducerStateRegistration) => {
+      if (!producer) return;
+      setDeletingIeId(ie.id);
+      try {
+        await api.delete(`/org/producers/${producer.id}/ies/${ie.id}`);
+        setConfirmDeleteIe(null);
+        await refetch();
+        onStatusChange();
+      } catch {
+        // Error will show on next refetch
+      } finally {
+        setDeletingIeId(null);
+      }
+    },
+    [producer, refetch, onStatusChange],
+  );
+
+  const handleSetDefaultIe = useCallback(
+    async (ie: ProducerStateRegistration) => {
+      if (!producer) return;
+      try {
+        await api.patch(`/org/producers/${producer.id}/ies/${ie.id}/default`, {});
+        await refetch();
+        onStatusChange();
+      } catch {
+        // Error will show on next refetch
       }
     },
     [producer, refetch, onStatusChange],
@@ -512,7 +619,13 @@ function ProducerDetailModal({
             {producer.type === 'SOCIEDADE_EM_COMUM' && (
               <ParticipantsSection participants={producer.participants} />
             )}
-            <IeSection registrations={producer.stateRegistrations} />
+            <IeSection
+              registrations={producer.stateRegistrations}
+              onAdd={() => setIeModal({ isOpen: true })}
+              onEdit={(ie) => setIeModal({ isOpen: true, ie })}
+              onDelete={(ie) => setConfirmDeleteIe(ie)}
+              onSetDefault={(ie) => void handleSetDefaultIe(ie)}
+            />
             <FarmLinksSection
               links={producer.farmLinks}
               onAdd={() => setFarmLinkModal({ isOpen: true })}
@@ -566,6 +679,76 @@ function ProducerDetailModal({
           producerId={producer.id}
           existingLink={farmLinkModal.link}
         />
+      )}
+
+      {producer && (
+        <IeFormModal
+          isOpen={ieModal.isOpen}
+          onClose={() => setIeModal({ isOpen: false })}
+          onSuccess={handleIeSuccess}
+          producerId={producer.id}
+          existingIe={ieModal.ie}
+        />
+      )}
+
+      {confirmDeleteIe && (
+        <div
+          className="producer-detail__overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setConfirmDeleteIe(null);
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-delete-ie-title"
+        >
+          <div className="producer-detail producer-detail--confirm">
+            <header className="producer-detail__header">
+              <h2 id="confirm-delete-ie-title" className="producer-detail__title">
+                Excluir inscrição estadual
+              </h2>
+              <button
+                type="button"
+                className="producer-detail__close"
+                aria-label="Fechar"
+                onClick={() => setConfirmDeleteIe(null)}
+              >
+                <X size={20} aria-hidden="true" />
+              </button>
+            </header>
+            <div className="producer-detail__body">
+              <p
+                style={{
+                  margin: 0,
+                  fontFamily: 'var(--font-body)',
+                  color: 'var(--color-neutral-700)',
+                }}
+              >
+                Deseja excluir a inscrição estadual <strong>{confirmDeleteIe.number}</strong> (
+                {confirmDeleteIe.state})?
+              </p>
+            </div>
+            <footer className="producer-detail__footer">
+              <button
+                type="button"
+                className="producer-detail__btn producer-detail__btn--secondary"
+                onClick={() => setConfirmDeleteIe(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="producer-detail__btn producer-detail__btn--deactivate"
+                onClick={() => void handleDeleteIe(confirmDeleteIe)}
+                disabled={deletingIeId === confirmDeleteIe.id}
+              >
+                {deletingIeId === confirmDeleteIe.id ? (
+                  <Loader2 size={16} aria-hidden="true" />
+                ) : null}
+                Excluir
+              </button>
+            </footer>
+          </div>
+        </div>
       )}
 
       {confirmDeleteLink && (
