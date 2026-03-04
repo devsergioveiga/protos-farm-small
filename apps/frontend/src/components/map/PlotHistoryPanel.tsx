@@ -1,14 +1,16 @@
-import { useState, lazy, Suspense } from 'react';
-import { X, Plus } from 'lucide-react';
+import { useState, lazy, Suspense, useCallback } from 'react';
+import { X, Plus, AlertCircle } from 'lucide-react';
+import { api } from '@/services/api';
 import { usePlotHistory } from '@/hooks/usePlotHistory';
 import RotationBadge from './RotationBadge';
 import PlotSeasonTimeline from './PlotSeasonTimeline';
 import PlotSoilTable from './PlotSoilTable';
 import PlotHistoryExport from './PlotHistoryExport';
-import type { FieldPlot } from '@/types/farm';
+import type { FieldPlot, CropSeasonItem } from '@/types/farm';
 import './PlotHistoryPanel.css';
 
 const AddCropSeasonModal = lazy(() => import('./AddCropSeasonModal'));
+const EditCropSeasonModal = lazy(() => import('./EditCropSeasonModal'));
 
 interface PlotHistoryPanelProps {
   plot: FieldPlot;
@@ -21,7 +23,28 @@ type Tab = 'seasons' | 'soil' | 'export';
 function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>('seasons');
   const [showAddSeason, setShowAddSeason] = useState(false);
+  const [editingSeason, setEditingSeason] = useState<CropSeasonItem | null>(null);
+  const [deletingSeason, setDeletingSeason] = useState<CropSeasonItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const { data, isLoading, error, refetch } = usePlotHistory(farmId, plot.id);
+
+  const handleDelete = useCallback(async () => {
+    if (!deletingSeason) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await api.delete(`/org/farms/${farmId}/plots/${plot.id}/crop-seasons/${deletingSeason.id}`);
+      setDeletingSeason(null);
+      void refetch();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Não foi possível excluir a safra. Tente novamente.';
+      setDeleteError(message);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [deletingSeason, farmId, plot.id, refetch]);
 
   return (
     <div className="plot-history" role="region" aria-label="Histórico do talhão">
@@ -110,7 +133,46 @@ function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
                   Nova safra
                 </button>
               </div>
-              <PlotSeasonTimeline seasons={data.seasons} />
+
+              {deletingSeason && (
+                <div className="plot-history__confirm-delete" role="alert">
+                  <p className="plot-history__confirm-delete-text">
+                    Excluir safra {deletingSeason.crop} {deletingSeason.seasonYear}?
+                  </p>
+                  {deleteError && (
+                    <div className="plot-history__confirm-delete-error">
+                      <AlertCircle size={16} aria-hidden="true" />
+                      {deleteError}
+                    </div>
+                  )}
+                  <div className="plot-history__confirm-delete-actions">
+                    <button
+                      type="button"
+                      className="plot-history__confirm-btn"
+                      onClick={() => {
+                        setDeletingSeason(null);
+                        setDeleteError(null);
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      className="plot-history__confirm-btn plot-history__confirm-btn--danger"
+                      onClick={() => void handleDelete()}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? 'Excluindo...' : 'Excluir'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <PlotSeasonTimeline
+                seasons={data.seasons}
+                onEdit={setEditingSeason}
+                onDelete={setDeletingSeason}
+              />
             </div>
 
             <div
@@ -140,6 +202,18 @@ function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
             farmId={farmId}
             plotId={plot.id}
             onClose={() => setShowAddSeason(false)}
+            onSuccess={() => void refetch()}
+          />
+        </Suspense>
+      )}
+      {editingSeason && (
+        <Suspense fallback={null}>
+          <EditCropSeasonModal
+            isOpen={!!editingSeason}
+            season={editingSeason}
+            farmId={farmId}
+            plotId={plot.id}
+            onClose={() => setEditingSeason(null)}
             onSuccess={() => void refetch()}
           />
         </Suspense>
