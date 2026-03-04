@@ -83,4 +83,23 @@ describe('ConfirmDeleteModal', () => {
 
     expect(screen.getByText('Excluindo...')).toBeDefined();
   });
+
+  it('should use custom entityLabel in title and button', () => {
+    render(<ConfirmDeleteModal {...defaultProps} entityLabel="talhão" />);
+
+    expect(screen.getByRole('heading', { name: 'Excluir talhão' })).toBeDefined();
+    expect(screen.getByLabelText('Nome do talhão *')).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Excluir talhão' })).toBeDefined();
+  });
+
+  it('should enable delete button with custom entityLabel when name matches', async () => {
+    const user = userEvent.setup();
+    render(<ConfirmDeleteModal {...defaultProps} entityLabel="talhão" />);
+
+    const input = screen.getByLabelText('Nome do talhão *');
+    await user.type(input, 'Fazenda Sol');
+
+    const deleteBtn = screen.getByRole('button', { name: 'Excluir talhão' });
+    expect(deleteBtn).toHaveProperty('disabled', false);
+  });
 });
