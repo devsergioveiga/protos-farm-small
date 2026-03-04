@@ -23,6 +23,7 @@ export interface FarmProducerLink {
       state: string;
       situation: string | null;
       isDefaultForFarm: boolean;
+      contractEndDate: string | null;
     }>;
   };
   registrationLinks: Array<{
@@ -34,4 +35,20 @@ export interface FarmProducerLink {
       cartorioName: string;
     };
   }>;
+}
+
+export interface ExpiringContractAlert {
+  type: 'FARM_LINK' | 'STATE_REGISTRATION';
+  id: string;
+  producerName: string;
+  farmName: string | null;
+  expiresAt: string | null;
+  bondType?: string;
+  ieNumber?: string;
+  ieState?: string;
+}
+
+export interface ExpiringContractsResponse {
+  alerts: ExpiringContractAlert[];
+  total: number;
 }
