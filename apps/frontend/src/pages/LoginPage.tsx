@@ -44,15 +44,16 @@ function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard', { replace: true });
+      const dest = user?.role === 'SUPER_ADMIN' && !user.organizationId ? '/admin' : '/dashboard';
+      navigate(dest, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
     const googleError = searchParams.get('error');
@@ -74,7 +75,7 @@ function LoginPage() {
 
     try {
       await login(email, password);
-      navigate('/dashboard', { replace: true });
+      // Navigation handled by useEffect on isAuthenticated change
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro inesperado';
       setError(message);

@@ -5,7 +5,7 @@ interface User {
   userId: string;
   email: string;
   role: string;
-  organizationId: string;
+  organizationId: string | null;
 }
 
 interface AuthContextValue {

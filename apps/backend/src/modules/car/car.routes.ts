@@ -27,7 +27,11 @@ function getClientIp(req: import('express').Request): string {
 }
 
 function buildRlsContext(req: import('express').Request): RlsContext {
-  return { organizationId: req.user!.organizationId };
+  const organizationId = req.user!.organizationId;
+  if (!organizationId) {
+    throw new CarError('Acesso negado: usuário sem organização vinculada', 403);
+  }
+  return { organizationId };
 }
 
 // ─── Multer config for geo file uploads ─────────────────────────────
