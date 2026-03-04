@@ -385,4 +385,97 @@ describe('ProducerDetailModal', () => {
 
     expect(onEdit).toHaveBeenCalledWith('prod-1', 'PF');
   });
+
+  // ─── IE CRUD tests ───────────────────────────────────────────────
+
+  it('should show Adicionar button in IE section', async () => {
+    render(<ProducerDetailModal {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Inscrições Estaduais')).toBeDefined();
+    });
+
+    expect(screen.getByText('Adicionar')).toBeDefined();
+  });
+
+  it('should show edit and delete buttons on IE cards', async () => {
+    render(<ProducerDetailModal {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('IE 123456789 — MG')).toBeDefined();
+    });
+
+    expect(screen.getByLabelText('Editar IE 123456789')).toBeDefined();
+    expect(screen.getByLabelText('Excluir IE 123456789')).toBeDefined();
+  });
+
+  it('should show Padrão badge for default IE', async () => {
+    const producerWithDefault = {
+      ...mockProducerPF,
+      stateRegistrations: [{ ...mockProducerPF.stateRegistrations[0], isDefaultForFarm: true }],
+    };
+    (api.get as ReturnType<typeof vi.fn>).mockResolvedValue(producerWithDefault);
+    render(<ProducerDetailModal {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Padrão')).toBeDefined();
+    });
+  });
+
+  it('should show delete IE confirmation modal on trash click', async () => {
+    render(<ProducerDetailModal {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Excluir IE 123456789')).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByLabelText('Excluir IE 123456789'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Excluir inscrição estadual')).toBeDefined();
+    });
+  });
+
+  it('should call delete IE API and close confirmation on confirm', async () => {
+    (api.delete as ReturnType<typeof vi.fn>).mockResolvedValue({});
+    render(<ProducerDetailModal {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Excluir IE 123456789')).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByLabelText('Excluir IE 123456789'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Excluir inscrição estadual')).toBeDefined();
+    });
+
+    // Click the Excluir button inside the confirmation modal
+    const excluirButtons = screen.getAllByText('Excluir');
+    fireEvent.click(excluirButtons[excluirButtons.length - 1]);
+
+    await waitFor(() => {
+      expect(api.delete).toHaveBeenCalledWith('/org/producers/prod-1/ies/ie-1');
+    });
+  });
+
+  it('should call set-default IE API on star click', async () => {
+    const producerWithNonDefault = {
+      ...mockProducerPF,
+      stateRegistrations: [{ ...mockProducerPF.stateRegistrations[0], isDefaultForFarm: false }],
+    };
+    (api.get as ReturnType<typeof vi.fn>).mockResolvedValue(producerWithNonDefault);
+    (api.patch as ReturnType<typeof vi.fn>).mockResolvedValue({});
+    render(<ProducerDetailModal {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Definir IE 123456789 como padrão')).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByLabelText('Definir IE 123456789 como padrão'));
+
+    await waitFor(() => {
+      expect(api.patch).toHaveBeenCalledWith('/org/producers/prod-1/ies/ie-1/default', {});
+    });
+  });
 });
