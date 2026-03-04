@@ -15,6 +15,7 @@ import turfArea from '@turf/area';
 import { polygon as turfPolygon } from '@turf/helpers';
 import { useFarmMap } from '@/hooks/useFarmMap';
 import { useRegistrations } from '@/hooks/useRegistrations';
+import { useAuth } from '@/stores/AuthContext';
 import { api } from '@/services/api';
 import FarmMap from '@/components/map/FarmMap';
 import BaseMapSelector, { type BaseMapType } from '@/components/map/BaseMapSelector';
@@ -45,6 +46,7 @@ const RegistrationFormModal = lazy(
 const FarmProducersPanel = lazy(() => import('@/components/farm-producers/FarmProducersPanel'));
 const CreatePlotModal = lazy(() => import('@/components/map/CreatePlotModal'));
 const EditPlotModal = lazy(() => import('@/components/map/EditPlotModal'));
+const ConfirmDeleteModal = lazy(() => import('@/components/confirm-delete/ConfirmDeleteModal'));
 
 interface BoundaryVersionsTarget {
   registrationId?: string;
@@ -85,6 +87,8 @@ const DEFAULT_LAYERS: LayerConfig[] = [
 
 function FarmMapPage() {
   const { farmId } = useParams<{ farmId: string }>();
+  const { permissions } = useAuth();
+  const canDeletePlot = permissions.includes('farms:delete');
   const { data, isLoading, error, refetch } = useFarmMap(farmId);
   const handleRegistrationMutationSuccess = useCallback(() => {
     void refetch();
@@ -110,6 +114,8 @@ function FarmMapPage() {
   const [isMergeMode, setIsMergeMode] = useState(false);
   const [historyPlot, setHistoryPlot] = useState<FieldPlot | null>(null);
   const [editingPlotAttributes, setEditingPlotAttributes] = useState<FieldPlot | null>(null);
+  const [plotToDelete, setPlotToDelete] = useState<FieldPlot | null>(null);
+  const [isDeletingPlot, setIsDeletingPlot] = useState(false);
   const [isBoundaryUploadOpen, setIsBoundaryUploadOpen] = useState(false);
   const [showRegistrations, setShowRegistrations] = useState(false);
   const [showProducers, setShowProducers] = useState(false);
@@ -217,6 +223,26 @@ function FarmMapPage() {
     setEditingPlotAttributes(plot);
     setSelectedPlot(null);
   }, []);
+
+  const handleRequestDeletePlot = useCallback((plot: FieldPlot) => {
+    setPlotToDelete(plot);
+    setSelectedPlot(null);
+  }, []);
+
+  const handleDeletePlot = useCallback(async () => {
+    if (!plotToDelete || !farmId) return;
+    setIsDeletingPlot(true);
+    try {
+      await api.delete(`/org/farms/${farmId}/plots/${plotToDelete.id}`);
+      setPlotToDelete(null);
+      void refetch();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao excluir talhão';
+      alert(message);
+    } finally {
+      setIsDeletingPlot(false);
+    }
+  }, [plotToDelete, farmId, refetch]);
 
   const handleEditGeometry = useCallback(
     (plot: FieldPlot) => {
@@ -439,6 +465,7 @@ function FarmMapPage() {
           onEditGeometry={handleEditGeometry}
           onSubdivide={handleSubdivide}
           onViewHistory={handleViewHistory}
+          onDelete={canDeletePlot ? handleRequestDeletePlot : undefined}
         />
 
         {historyPlot && farmId && (
@@ -618,6 +645,19 @@ function FarmMapPage() {
             registration={editingRegistration}
             isSubmitting={isRegSubmitting}
             submitError={regSubmitError}
+          />
+        </Suspense>
+      )}
+
+      {plotToDelete && (
+        <Suspense fallback={null}>
+          <ConfirmDeleteModal
+            isOpen={!!plotToDelete}
+            farmName={plotToDelete.name}
+            entityLabel="talhão"
+            onConfirm={() => void handleDeletePlot()}
+            onCancel={() => setPlotToDelete(null)}
+            isDeleting={isDeletingPlot}
           />
         </Suspense>
       )}

@@ -1,4 +1,4 @@
-import { X, Pencil, Scissors, BookOpen, FileEdit } from 'lucide-react';
+import { X, Pencil, Scissors, BookOpen, FileEdit, Trash2 } from 'lucide-react';
 import { getCropColor, formatArea } from './FarmMap';
 import type { FieldPlot } from '@/types/farm';
 import './PlotDetailsPanel.css';
@@ -10,6 +10,7 @@ interface PlotDetailsPanelProps {
   onEditGeometry?: (plot: FieldPlot) => void;
   onSubdivide?: (plot: FieldPlot) => void;
   onViewHistory?: (plot: FieldPlot) => void;
+  onDelete?: (plot: FieldPlot) => void;
 }
 
 function formatSoilType(soilType: string): string {
@@ -30,6 +31,7 @@ function PlotDetailsPanel({
   onEditGeometry,
   onSubdivide,
   onViewHistory,
+  onDelete,
 }: PlotDetailsPanelProps) {
   if (!plot) return null;
 
@@ -85,6 +87,16 @@ function PlotDetailsPanel({
               aria-label="Editar perímetro"
             >
               <Pencil size={20} aria-hidden="true" />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              className="plot-details__action-btn plot-details__action-btn--delete"
+              onClick={() => onDelete(plot)}
+              aria-label="Excluir talhão"
+            >
+              <Trash2 size={20} aria-hidden="true" />
             </button>
           )}
           <button
