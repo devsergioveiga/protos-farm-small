@@ -318,6 +318,21 @@ export interface RotationIndicator {
   seasonsAnalyzed: number;
 }
 
+// ─── Create Crop Season ────────────────────────────────────────────
+
+export interface CreateCropSeasonPayload {
+  seasonType: string;
+  seasonYear: string;
+  crop: string;
+  varietyName?: string;
+  startDate?: string;
+  endDate?: string;
+  plantedAreaHa?: number;
+  productivityKgHa?: number;
+  totalProductionKg?: number;
+  notes?: string;
+}
+
 // ─── Boundary Upload ────────────────────────────────────────────────
 
 export interface BoundaryUploadResult {
