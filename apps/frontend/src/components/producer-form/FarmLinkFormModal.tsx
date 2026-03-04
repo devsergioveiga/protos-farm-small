@@ -2,6 +2,7 @@ import { useEffect, useCallback } from 'react';
 import { X, AlertCircle, Loader2 } from 'lucide-react';
 import { useFarmLinkForm } from '@/hooks/useFarmLinkForm';
 import { useFarms } from '@/hooks/useFarms';
+import { useFarmRegistrations } from '@/hooks/useFarmRegistrations';
 import type { ProducerFarmLink } from '@/types/producer';
 import './FarmLinkFormModal.css';
 
@@ -39,11 +40,15 @@ function FarmLinkFormModal({
     isEditMode,
     setField,
     touchField,
+    toggleRegistration,
     submit,
     reset,
   } = useFarmLinkForm({ onSuccess, producerId, existingLink });
 
   const { farms, isLoading: isLoadingFarms } = useFarms();
+  const { registrations, isLoading: isLoadingRegistrations } = useFarmRegistrations(
+    formData.farmId || undefined,
+  );
 
   const handleClose = useCallback(() => {
     reset();
@@ -127,6 +132,47 @@ function FarmLinkFormModal({
                 </span>
               )}
             </div>
+
+            {/* Matrículas */}
+            {formData.farmId && (
+              <fieldset
+                className="farm-link-modal__registrations farm-link-modal__field--full"
+                role="group"
+                aria-label="Matrículas da fazenda"
+              >
+                <legend className="farm-link-modal__label">Matrículas</legend>
+                {isLoadingRegistrations ? (
+                  <div className="farm-link-modal__registrations-loading">
+                    <Loader2 size={16} aria-hidden="true" className="farm-link-modal__spinner" />
+                    <span>Carregando matrículas...</span>
+                  </div>
+                ) : registrations.length === 0 ? (
+                  <p className="farm-link-modal__registrations-empty">
+                    Nenhuma matrícula cadastrada para esta fazenda.
+                  </p>
+                ) : (
+                  <div className="farm-link-modal__registrations-list">
+                    {registrations.map((reg) => (
+                      <div key={reg.id} className="farm-link-modal__checkbox-row">
+                        <input
+                          id={`fl-reg-${reg.id}`}
+                          type="checkbox"
+                          className="farm-link-modal__checkbox"
+                          checked={formData.registrationIds.includes(reg.id)}
+                          onChange={() => toggleRegistration(reg.id)}
+                        />
+                        <label
+                          htmlFor={`fl-reg-${reg.id}`}
+                          className="farm-link-modal__checkbox-label"
+                        >
+                          {reg.number} — {reg.cartorioName}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </fieldset>
+            )}
 
             {/* Tipo de vínculo */}
             <div className="farm-link-modal__field">

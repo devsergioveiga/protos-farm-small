@@ -84,6 +84,7 @@ const mockProducerPF: ProducerDetail = {
       isItrDeclarant: true,
       createdAt: '2026-01-01T00:00:00.000Z',
       farm: { id: 'farm-1', name: 'Fazenda Santa Helena', nickname: null, state: 'MG' },
+      registrationLinks: [],
     },
   ],
 };

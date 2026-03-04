@@ -52,6 +52,7 @@ const existingLink: ProducerFarmLink = {
     nickname: null,
     state: 'MG',
   },
+  registrationLinks: [],
 };
 
 describe('FarmLinkFormModal', () => {
@@ -59,6 +60,7 @@ describe('FarmLinkFormModal', () => {
     vi.clearAllMocks();
     (api.post as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'new-link-1' });
     (api.patch as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 'link-1' });
+    (api.get as ReturnType<typeof vi.fn>).mockResolvedValue({ registrations: [] });
   });
 
   it('should not render when isOpen is false', () => {
@@ -144,6 +146,7 @@ describe('FarmLinkFormModal', () => {
         participationPct: 25,
         startDate: '2026-01-01',
         isItrDeclarant: true,
+        registrationIds: [],
       });
     });
 
@@ -185,6 +188,7 @@ describe('FarmLinkFormModal', () => {
         startDate: '2025-01-01',
         endDate: '2026-12-31',
         isItrDeclarant: true,
+        registrationIds: [],
       });
     });
 

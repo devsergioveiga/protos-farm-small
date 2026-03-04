@@ -351,6 +351,14 @@ function FarmLinksSection({
                   </span>
                 </div>
               )}
+              {link.registrationLinks && link.registrationLinks.length > 0 && (
+                <div className="producer-detail__card-row">
+                  <span className="producer-detail__card-label">Matrículas</span>
+                  <span className="producer-detail__card-value">
+                    {link.registrationLinks.map((rl) => rl.farmRegistration.number).join(', ')}
+                  </span>
+                </div>
+              )}
             </div>
           ))}
         </div>

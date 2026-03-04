@@ -13,6 +13,7 @@ export interface FarmLinkFormFields {
   startDate: string;
   endDate: string;
   isItrDeclarant: boolean;
+  registrationIds: string[];
 }
 
 export type FarmLinkFieldKey = keyof FarmLinkFormFields;
@@ -24,6 +25,7 @@ const INITIAL_FIELDS: FarmLinkFormFields = {
   startDate: '',
   endDate: '',
   isItrDeclarant: false,
+  registrationIds: [],
 };
 
 export function validateFarmLinkFields(
@@ -63,6 +65,7 @@ function linkToFormFields(link: ProducerFarmLink): FarmLinkFormFields {
     startDate: link.startDate ? link.startDate.split('T')[0] : '',
     endDate: link.endDate ? link.endDate.split('T')[0] : '',
     isItrDeclarant: link.isItrDeclarant,
+    registrationIds: (link.registrationLinks ?? []).map((rl) => rl.farmRegistrationId),
   };
 }
 
@@ -92,7 +95,13 @@ export function useFarmLinkForm({ onSuccess, producerId, existingLink }: UseFarm
 
   const setField = useCallback(
     (key: FarmLinkFieldKey, value: string | boolean) => {
-      setFormData((prev) => ({ ...prev, [key]: value }));
+      setFormData((prev) => {
+        const next = { ...prev, [key]: value };
+        if (key === 'farmId') {
+          next.registrationIds = [];
+        }
+        return next;
+      });
       setSubmitError(null);
       if (touched[key]) {
         setErrors((prev) => {
@@ -104,6 +113,15 @@ export function useFarmLinkForm({ onSuccess, producerId, existingLink }: UseFarm
     },
     [formData, touched],
   );
+
+  const toggleRegistration = useCallback((regId: string) => {
+    setFormData((prev) => {
+      const ids = prev.registrationIds.includes(regId)
+        ? prev.registrationIds.filter((id) => id !== regId)
+        : [...prev.registrationIds, regId];
+      return { ...prev, registrationIds: ids };
+    });
+  }, []);
 
   const touchField = useCallback(
     (key: FarmLinkFieldKey) => {
@@ -139,6 +157,7 @@ export function useFarmLinkForm({ onSuccess, producerId, existingLink }: UseFarm
         if (formData.startDate) payload.startDate = formData.startDate;
         if (formData.endDate) payload.endDate = formData.endDate;
         payload.isItrDeclarant = formData.isItrDeclarant;
+        payload.registrationIds = formData.registrationIds;
 
         await api.patch(`/org/producers/${producerId}/farms/${existingLink.id}`, payload);
       } else {
@@ -152,6 +171,7 @@ export function useFarmLinkForm({ onSuccess, producerId, existingLink }: UseFarm
         if (formData.startDate) payload.startDate = formData.startDate;
         if (formData.endDate) payload.endDate = formData.endDate;
         payload.isItrDeclarant = formData.isItrDeclarant;
+        payload.registrationIds = formData.registrationIds;
 
         await api.post(`/org/producers/${producerId}/farms`, payload);
       }
@@ -186,6 +206,7 @@ export function useFarmLinkForm({ onSuccess, producerId, existingLink }: UseFarm
     isEditMode,
     setField,
     touchField,
+    toggleRegistration,
     submit,
     reset,
   };

@@ -156,6 +156,41 @@
   color: var(--color-error-500);
 }
 
+/* ─── Registrations fieldset ─── */
+
+.farm-link-modal__registrations {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: 0;
+}
+
+.farm-link-modal__registrations > legend {
+  padding: 0 var(--space-2);
+}
+
+.farm-link-modal__registrations-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+}
+
+.farm-link-modal__registrations-empty {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+}
+
+.farm-link-modal__registrations-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
 /* ─── Checkbox ─── */
 
 .farm-link-modal__checkbox-row {
