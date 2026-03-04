@@ -1,6 +1,8 @@
-import { X, Users } from 'lucide-react';
+import { useState } from 'react';
+import { X, Users, Clock, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useFarmProducers } from '@/hooks/useFarmProducers';
-import type { FarmProducerLink } from '@/types/farm-producer';
+import { useExpiringContracts } from '@/hooks/useExpiringContracts';
+import type { FarmProducerLink, ExpiringContractAlert } from '@/types/farm-producer';
 import type { ProducerType } from '@/types/producer';
 import './FarmProducersPanel.css';
 
@@ -25,6 +27,11 @@ const TYPE_LABELS: Record<ProducerType, string> = {
   SOCIEDADE_EM_COMUM: 'SC',
 };
 
+const ALERT_TYPE_LABELS: Record<string, string> = {
+  FARM_LINK: 'Contrato',
+  STATE_REGISTRATION: 'IE',
+};
+
 function formatDocument(doc: string | null, type: ProducerType): string {
   if (!doc) return '—';
   if (type === 'SOCIEDADE_EM_COMUM') return '—';
@@ -40,6 +47,40 @@ function formatDocument(doc: string | null, type: ProducerType): string {
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('pt-BR');
+}
+
+function daysUntil(dateStr: string | null): number | null {
+  if (!dateStr) return null;
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const target = new Date(dateStr);
+  target.setHours(0, 0, 0, 0);
+  return Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function ExpiringBadge({ days }: { days: number }) {
+  if (days < 0) {
+    return (
+      <span className="fp-card__badge fp-card__badge--expiring-danger">
+        <Clock size={12} aria-hidden="true" />
+        Vencido
+      </span>
+    );
+  }
+  if (days <= 7) {
+    return (
+      <span className="fp-card__badge fp-card__badge--expiring-danger">
+        <Clock size={12} aria-hidden="true" />
+        Vence em {days}d
+      </span>
+    );
+  }
+  return (
+    <span className="fp-card__badge fp-card__badge--expiring-warning">
+      <Clock size={12} aria-hidden="true" />
+      Vence em {days}d
+    </span>
+  );
 }
 
 function SkeletonCards() {
@@ -69,9 +110,95 @@ function EmptyState() {
   );
 }
 
+function AlertItem({ alert }: { alert: ExpiringContractAlert }) {
+  const days = daysUntil(alert.expiresAt);
+  const typeLabel = ALERT_TYPE_LABELS[alert.type] ?? alert.type;
+  const isDanger = days !== null && days <= 7;
+
+  return (
+    <li className={`fp-alert-item ${isDanger ? 'fp-alert-item--danger' : ''}`}>
+      <div className="fp-alert-item__header">
+        <span className="fp-alert-item__type">{typeLabel}</span>
+        {days !== null && (
+          <span
+            className={`fp-alert-item__days ${isDanger ? 'fp-alert-item__days--danger' : 'fp-alert-item__days--warning'}`}
+          >
+            {days < 0 ? 'Vencido' : `${days}d`}
+          </span>
+        )}
+      </div>
+      <span className="fp-alert-item__producer">{alert.producerName}</span>
+      {alert.ieNumber && (
+        <span className="fp-alert-item__detail">
+          IE {alert.ieNumber} ({alert.ieState})
+        </span>
+      )}
+      {alert.bondType && (
+        <span className="fp-alert-item__detail">
+          {BOND_TYPE_LABELS[alert.bondType] ?? alert.bondType}
+        </span>
+      )}
+      {alert.expiresAt && (
+        <span className="fp-alert-item__date">{formatDate(alert.expiresAt)}</span>
+      )}
+    </li>
+  );
+}
+
+function AlertsSection({
+  alerts,
+  total,
+  isLoading,
+}: {
+  alerts: ExpiringContractAlert[];
+  total: number;
+  isLoading: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  if (isLoading) {
+    return (
+      <div className="fp-panel__alerts" aria-busy="true">
+        <div className="fp-panel__skeleton-line fp-panel__skeleton-line--wide" />
+      </div>
+    );
+  }
+
+  if (total === 0) return null;
+
+  return (
+    <section className="fp-panel__alerts" aria-label="Alertas de contratos vencendo">
+      <button
+        type="button"
+        className="fp-alert-banner"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+      >
+        <AlertTriangle size={16} aria-hidden="true" className="fp-alert-banner__icon" />
+        <span className="fp-alert-banner__text">
+          {total} {total === 1 ? 'contrato vencendo' : 'contratos vencendo'} nos próximos 30 dias
+        </span>
+        {expanded ? (
+          <ChevronUp size={16} aria-hidden="true" />
+        ) : (
+          <ChevronDown size={16} aria-hidden="true" />
+        )}
+      </button>
+      {expanded && (
+        <ul className="fp-alert-list">
+          {alerts.map((alert) => (
+            <AlertItem key={`${alert.type}-${alert.id}`} alert={alert} />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 function ProducerCard({ link }: { link: FarmProducerLink }) {
   const { producer } = link;
   const bondLabel = BOND_TYPE_LABELS[link.bondType] ?? link.bondType;
+  const linkDays = daysUntil(link.endDate);
 
   const hasVigencia = link.startDate || link.endDate;
   const vigenciaText = hasVigencia
@@ -90,6 +217,7 @@ function ProducerCard({ link }: { link: FarmProducerLink }) {
             {producer.status === 'ACTIVE' ? 'Ativo' : 'Inativo'}
           </span>
           {link.isItrDeclarant && <span className="fp-card__badge fp-card__badge--itr">ITR</span>}
+          {linkDays !== null && linkDays <= 30 && <ExpiringBadge days={linkDays} />}
         </div>
       </div>
 
@@ -114,14 +242,25 @@ function ProducerCard({ link }: { link: FarmProducerLink }) {
         <div className="fp-card__section">
           <h4 className="fp-card__section-title">IEs ATIVAS</h4>
           <ul className="fp-card__ie-list">
-            {producer.stateRegistrations.map((ie) => (
-              <li key={ie.id} className="fp-card__ie-item">
-                <span>
-                  {ie.number} ({ie.state})
-                </span>
-                {ie.isDefaultForFarm && <span className="fp-card__ie-default">padrão</span>}
-              </li>
-            ))}
+            {producer.stateRegistrations.map((ie) => {
+              const ieDays = daysUntil(ie.contractEndDate);
+              return (
+                <li key={ie.id} className="fp-card__ie-item">
+                  <span>
+                    {ie.number} ({ie.state})
+                  </span>
+                  {ie.isDefaultForFarm && <span className="fp-card__ie-default">padrão</span>}
+                  {ieDays !== null && ieDays <= 30 && (
+                    <span
+                      className={`fp-card__ie-expiring ${ieDays <= 7 ? 'fp-card__ie-expiring--danger' : 'fp-card__ie-expiring--warning'}`}
+                    >
+                      <Clock size={10} aria-hidden="true" />
+                      {ieDays < 0 ? 'Vencido' : `${ieDays}d`}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
@@ -144,6 +283,7 @@ function ProducerCard({ link }: { link: FarmProducerLink }) {
 
 function FarmProducersPanel({ farmId, onClose }: FarmProducersPanelProps) {
   const { producers, isLoading } = useFarmProducers(farmId);
+  const { alerts, total, isLoading: alertsLoading } = useExpiringContracts(30);
 
   return (
     <div className="fp-panel" role="region" aria-label="Produtores da fazenda">
@@ -158,6 +298,8 @@ function FarmProducersPanel({ farmId, onClose }: FarmProducersPanelProps) {
           <X size={20} aria-hidden="true" />
         </button>
       </div>
+
+      <AlertsSection alerts={alerts} total={total} isLoading={alertsLoading} />
 
       <div className="fp-panel__body">
         {isLoading ? (
