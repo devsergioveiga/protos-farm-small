@@ -44,6 +44,7 @@ const RegistrationFormModal = lazy(
 );
 const FarmProducersPanel = lazy(() => import('@/components/farm-producers/FarmProducersPanel'));
 const CreatePlotModal = lazy(() => import('@/components/map/CreatePlotModal'));
+const EditPlotModal = lazy(() => import('@/components/map/EditPlotModal'));
 
 interface BoundaryVersionsTarget {
   registrationId?: string;
@@ -108,6 +109,7 @@ function FarmMapPage() {
   const [subdividingPlot, setSubdividingPlot] = useState<EditingPlotState | null>(null);
   const [isMergeMode, setIsMergeMode] = useState(false);
   const [historyPlot, setHistoryPlot] = useState<FieldPlot | null>(null);
+  const [editingPlotAttributes, setEditingPlotAttributes] = useState<FieldPlot | null>(null);
   const [isBoundaryUploadOpen, setIsBoundaryUploadOpen] = useState(false);
   const [showRegistrations, setShowRegistrations] = useState(false);
   const [showProducers, setShowProducers] = useState(false);
@@ -208,6 +210,11 @@ function FarmMapPage() {
 
   const handleViewHistory = useCallback((plot: FieldPlot) => {
     setHistoryPlot(plot);
+    setSelectedPlot(null);
+  }, []);
+
+  const handleEditAttributes = useCallback((plot: FieldPlot) => {
+    setEditingPlotAttributes(plot);
     setSelectedPlot(null);
   }, []);
 
@@ -428,6 +435,7 @@ function FarmMapPage() {
         <PlotDetailsPanel
           plot={selectedPlot}
           onClose={() => setSelectedPlot(null)}
+          onEditAttributes={handleEditAttributes}
           onEditGeometry={handleEditGeometry}
           onSubdivide={handleSubdivide}
           onViewHistory={handleViewHistory}
@@ -537,6 +545,21 @@ function FarmMapPage() {
             registrations={data.farm.registrations}
             onClose={() => setIsCreatePlotOpen(false)}
             onSuccess={handleImportComplete}
+          />
+        </Suspense>
+      )}
+
+      {editingPlotAttributes && farmId && (
+        <Suspense fallback={null}>
+          <EditPlotModal
+            plot={editingPlotAttributes}
+            farmId={farmId}
+            registrations={data.farm.registrations}
+            onClose={() => setEditingPlotAttributes(null)}
+            onSuccess={() => {
+              setEditingPlotAttributes(null);
+              void refetch();
+            }}
           />
         </Suspense>
       )}

@@ -1,4 +1,4 @@
-import { X, Pencil, Scissors, BookOpen } from 'lucide-react';
+import { X, Pencil, Scissors, BookOpen, FileEdit } from 'lucide-react';
 import { getCropColor, formatArea } from './FarmMap';
 import type { FieldPlot } from '@/types/farm';
 import './PlotDetailsPanel.css';
@@ -6,6 +6,7 @@ import './PlotDetailsPanel.css';
 interface PlotDetailsPanelProps {
   plot: FieldPlot | null;
   onClose: () => void;
+  onEditAttributes?: (plot: FieldPlot) => void;
   onEditGeometry?: (plot: FieldPlot) => void;
   onSubdivide?: (plot: FieldPlot) => void;
   onViewHistory?: (plot: FieldPlot) => void;
@@ -25,6 +26,7 @@ function formatDate(dateStr: string): string {
 function PlotDetailsPanel({
   plot,
   onClose,
+  onEditAttributes,
   onEditGeometry,
   onSubdivide,
   onViewHistory,
@@ -53,6 +55,16 @@ function PlotDetailsPanel({
               aria-label="Ver histórico do talhão"
             >
               <BookOpen size={20} aria-hidden="true" />
+            </button>
+          )}
+          {onEditAttributes && (
+            <button
+              type="button"
+              className="plot-details__action-btn"
+              onClick={() => onEditAttributes(plot)}
+              aria-label="Editar atributos do talhão"
+            >
+              <FileEdit size={20} aria-hidden="true" />
             </button>
           )}
           {onSubdivide && (
