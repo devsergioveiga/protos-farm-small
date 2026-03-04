@@ -51,6 +51,16 @@ export interface ProducerStateRegistration {
   createdAt: string;
 }
 
+export interface RegistrationLink {
+  id: string;
+  farmRegistrationId: string;
+  farmRegistration: {
+    id: string;
+    number: string;
+    cartorioName: string;
+  };
+}
+
 export interface ProducerFarmLink {
   id: string;
   bondType: string;
@@ -65,6 +75,7 @@ export interface ProducerFarmLink {
     nickname: string | null;
     state: string | null;
   };
+  registrationLinks: RegistrationLink[];
 }
 
 export interface ProducerDetail {
@@ -175,6 +186,7 @@ export interface CreateFarmLinkPayload {
   startDate?: string;
   endDate?: string;
   isItrDeclarant?: boolean;
+  registrationIds?: string[];
 }
 
 export interface UpdateFarmLinkPayload {
@@ -183,4 +195,5 @@ export interface UpdateFarmLinkPayload {
   startDate?: string;
   endDate?: string;
   isItrDeclarant?: boolean;
+  registrationIds?: string[];
 }

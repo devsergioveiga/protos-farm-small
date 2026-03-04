@@ -221,6 +221,7 @@ export async function getProducer(ctx: RlsContext, producerId: string) {
         farmLinks: {
           include: {
             farm: { select: { id: true, name: true, nickname: true, state: true } },
+            registrationLinks: { include: { farmRegistration: true } },
           },
           orderBy: { createdAt: 'asc' },
         },
