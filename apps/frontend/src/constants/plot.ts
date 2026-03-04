@@ -13,3 +13,9 @@ export const SOIL_TYPE_OPTIONS = [
 ];
 
 export const CROP_SUGGESTIONS = Object.keys(CROP_COLORS).filter((k) => k !== 'Sem cultura');
+
+export const SEASON_TYPE_OPTIONS = [
+  { value: 'SAFRA', label: 'Safra' },
+  { value: 'SAFRINHA', label: 'Safrinha' },
+  { value: 'INVERNO', label: 'Inverno' },
+];

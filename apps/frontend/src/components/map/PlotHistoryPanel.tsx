@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useState, lazy, Suspense } from 'react';
+import { X, Plus } from 'lucide-react';
 import { usePlotHistory } from '@/hooks/usePlotHistory';
 import RotationBadge from './RotationBadge';
 import PlotSeasonTimeline from './PlotSeasonTimeline';
@@ -7,6 +7,8 @@ import PlotSoilTable from './PlotSoilTable';
 import PlotHistoryExport from './PlotHistoryExport';
 import type { FieldPlot } from '@/types/farm';
 import './PlotHistoryPanel.css';
+
+const AddCropSeasonModal = lazy(() => import('./AddCropSeasonModal'));
 
 interface PlotHistoryPanelProps {
   plot: FieldPlot;
@@ -18,7 +20,8 @@ type Tab = 'seasons' | 'soil' | 'export';
 
 function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>('seasons');
-  const { data, isLoading, error } = usePlotHistory(farmId, plot.id);
+  const [showAddSeason, setShowAddSeason] = useState(false);
+  const { data, isLoading, error, refetch } = usePlotHistory(farmId, plot.id);
 
   return (
     <div className="plot-history" role="region" aria-label="Histórico do talhão">
@@ -96,6 +99,17 @@ function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
               aria-labelledby="tab-seasons"
               hidden={activeTab !== 'seasons'}
             >
+              <div className="plot-history__panel-header">
+                <button
+                  type="button"
+                  className="plot-history__add-btn"
+                  onClick={() => setShowAddSeason(true)}
+                  aria-label="Nova safra"
+                >
+                  <Plus size={16} aria-hidden="true" />
+                  Nova safra
+                </button>
+              </div>
               <PlotSeasonTimeline seasons={data.seasons} />
             </div>
 
@@ -119,6 +133,17 @@ function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
           </>
         )}
       </div>
+      {showAddSeason && (
+        <Suspense fallback={null}>
+          <AddCropSeasonModal
+            isOpen={showAddSeason}
+            farmId={farmId}
+            plotId={plot.id}
+            onClose={() => setShowAddSeason(false)}
+            onSuccess={() => void refetch()}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
