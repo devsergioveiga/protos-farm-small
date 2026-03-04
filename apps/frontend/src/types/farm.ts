@@ -185,6 +185,23 @@ export interface BulkImportResult {
   warnings: string[];
 }
 
+// ─── Create Plot ────────────────────────────────────────────────────
+
+export interface CreatePlotPayload {
+  name: string;
+  code?: string;
+  soilType?: string;
+  currentCrop?: string;
+  previousCrop?: string;
+  notes?: string;
+  registrationId?: string;
+}
+
+export interface CreatePlotResponse {
+  plot: FieldPlot;
+  warnings: string[];
+}
+
 // ─── Registrations ─────────────────────────────────────────────────
 
 export interface CreateRegistrationPayload {
