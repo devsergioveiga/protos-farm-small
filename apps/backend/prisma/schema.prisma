@@ -95,6 +95,40 @@ enum CarStatus {
   SUSPENSO
 }
 
+enum AnimalSex {
+  MALE
+  FEMALE
+}
+
+enum AnimalCategory {
+  BEZERRO
+  BEZERRA
+  NOVILHA
+  NOVILHO
+  VACA_LACTACAO
+  VACA_SECA
+  TOURO_REPRODUTOR
+  DESCARTE
+}
+
+enum AnimalOrigin {
+  BORN
+  PURCHASED
+}
+
+enum GenealogyClass {
+  PO
+  PC_OC
+  PC_OD
+  GC_01
+  GC_02
+  GC_03
+  PA
+  LA
+  CCG
+  SRD
+}
+
 enum SoilType {
   LATOSSOLO_VERMELHO
   LATOSSOLO_AMARELO
@@ -127,6 +161,7 @@ model Organization {
   farms       Farm[]
   customRoles CustomRole[]
   producers   Producer[]
+  breeds      Breed[]
 
   @@map("organizations")
 }
@@ -153,6 +188,7 @@ model User {
   plotBoundaryEdits         FieldPlotBoundaryVersion[]
   createdCropSeasons        PlotCropSeason[]
   createdSoilAnalyses       PlotSoilAnalysis[]
+  createdAnimals            Animal[]
 
   @@map("users")
 }
@@ -201,6 +237,7 @@ model Farm {
   plotCropSeasons            PlotCropSeason[]
   plotSoilAnalyses           PlotSoilAnalysis[]
   carRegistrations           CarRegistration[]
+  animals                    Animal[]
 
   @@map("farms")
 }
@@ -646,4 +683,103 @@ model CarRegistrationLink {
   @@index([carRegistrationId])
   @@index([farmRegistrationId])
   @@map("car_registration_links")
+}
+
+// ─── Animal Models ──────────────────────────────────────────────────
+
+model Breed {
+  id             String        @id @default(uuid())
+  name           String
+  code           String?
+  species        String        @default("BOVINO")
+  category       String        @default("DUPLA_APTIDAO")
+  isDefault      Boolean       @default(false)
+  organizationId String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  compositions   AnimalBreedComposition[]
+
+  @@unique([name, organizationId])
+  @@map("breeds")
+}
+
+model Animal {
+  id                     String          @id @default(uuid())
+  farmId                 String
+  earTag                 String
+  rfidTag                String?
+  name                   String?
+  sex                    AnimalSex
+  birthDate              DateTime?       @db.Date
+  birthDateEstimated     Boolean         @default(false)
+  category               AnimalCategory
+  categorySuggested      AnimalCategory?
+  origin                 AnimalOrigin    @default(BORN)
+  entryWeightKg          Decimal?        @db.Decimal(8, 2)
+  bodyConditionScore     Int?
+  sireId                 String?
+  damId                  String?
+  lotId                  String?
+  pastureId              String?
+  photoUrl               String?
+  notes                  String?
+  isCompositionEstimated Boolean         @default(false)
+  deletedAt              DateTime?
+  createdBy              String
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+
+  farm         Farm                       @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  sire         Animal?                    @relation("SireOffspring", fields: [sireId], references: [id], onDelete: SetNull)
+  dam          Animal?                    @relation("DamOffspring", fields: [damId], references: [id], onDelete: SetNull)
+  sireOffspring Animal[]                  @relation("SireOffspring")
+  damOffspring  Animal[]                  @relation("DamOffspring")
+  creator      User                       @relation(fields: [createdBy], references: [id])
+  compositions AnimalBreedComposition[]
+  genealogicalRecords AnimalGenealogicalRecord[]
+
+  @@unique([farmId, earTag])
+  @@index([farmId])
+  @@index([category])
+  @@index([sex])
+  @@index([sireId])
+  @@index([damId])
+  @@map("animals")
+}
+
+model AnimalBreedComposition {
+  id         String   @id @default(uuid())
+  animalId   String
+  breedId    String
+  fraction   String?
+  percentage Decimal  @db.Decimal(5, 2)
+  createdAt  DateTime @default(now())
+
+  animal Animal @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  breed  Breed  @relation(fields: [breedId], references: [id], onDelete: Restrict)
+
+  @@unique([animalId, breedId])
+  @@index([animalId])
+  @@map("animal_breed_compositions")
+}
+
+model AnimalGenealogicalRecord {
+  id                 String         @id @default(uuid())
+  animalId           String
+  genealogyClass     GenealogyClass
+  registrationNumber String?
+  associationName    String?
+  registrationDate   DateTime?      @db.Date
+  girolando_grade    String?
+  notes              String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  animal Animal @relation(fields: [animalId], references: [id], onDelete: Cascade)
+
+  @@unique([animalId, genealogyClass])
+  @@index([animalId])
+  @@map("animal_genealogical_records")
 }

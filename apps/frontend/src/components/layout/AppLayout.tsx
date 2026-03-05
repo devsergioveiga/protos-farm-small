@@ -8,6 +8,7 @@ import {
   UserCheck,
   Shield,
   ShieldCheck,
+  Beef,
 } from 'lucide-react';
 import { useAuth } from '@/stores/AuthContext';
 import { FarmProvider } from '@/stores/FarmContext';
@@ -77,6 +78,13 @@ function AppLayout() {
                 >
                   <UserCheck size={16} aria-hidden="true" />
                   <span className="app-topbar__nav-label">Produtores</span>
+                </Link>
+                <Link
+                  to="/animals"
+                  className={`app-topbar__nav-link ${isActive('/animals') ? 'app-topbar__nav-link--active' : ''}`}
+                >
+                  <Beef size={16} aria-hidden="true" />
+                  <span className="app-topbar__nav-label">Animais</span>
                 </Link>
                 <Link
                   to="/users"

@@ -32,7 +32,7 @@ const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
   development: {
     PORT: 3000,
     POSTGRES_HOST: 'localhost',
-    POSTGRES_PORT: 5432,
+    POSTGRES_PORT: 5450,
     POSTGRES_USER: 'protos',
     POSTGRES_PASSWORD: 'protos',
     POSTGRES_DB: 'protos_farm',
@@ -57,7 +57,7 @@ const DEFAULTS: Record<NodeEnv, Partial<Env>> = {
   test: {
     PORT: 3000,
     POSTGRES_HOST: 'localhost',
-    POSTGRES_PORT: 5432,
+    POSTGRES_PORT: 5450,
     POSTGRES_USER: 'protos',
     POSTGRES_PASSWORD: 'protos',
     POSTGRES_DB: 'protos_farm',
