@@ -71,7 +71,8 @@ async function parseCsv(buffer: Buffer): Promise<ParsedAnimalFile> {
 
 async function parseExcel(buffer: Buffer): Promise<ParsedAnimalFile> {
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(buffer);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await workbook.xlsx.load(buffer as any);
 
   const sheet = workbook.worksheets[0];
   if (!sheet || sheet.rowCount < 2) {

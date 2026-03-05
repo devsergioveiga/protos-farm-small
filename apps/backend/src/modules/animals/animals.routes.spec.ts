@@ -77,7 +77,9 @@ const CONSULTANT_PAYLOAD = {
   organizationId: 'org-1',
 };
 
-function authAs(payload: typeof ADMIN_PAYLOAD) {
+function authAs(
+  payload: typeof ADMIN_PAYLOAD | typeof OPERATOR_PAYLOAD | typeof CONSULTANT_PAYLOAD,
+) {
   mockedAuth.verifyAccessToken.mockReturnValue(payload);
   mockGetUserPermissions.mockResolvedValue(DEFAULT_ROLE_PERMISSIONS[payload.role]);
 }
