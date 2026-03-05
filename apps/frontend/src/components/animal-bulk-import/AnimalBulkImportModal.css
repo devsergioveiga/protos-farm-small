@@ -1,0 +1,133 @@
+/* ─── Reuses bulk-modal styles from BulkImportModal.css ────────────── */
+/* Imports shared modal, upload, report styles */
+@import '../bulk-import/BulkImportModal.css';
+
+/* ─── Animal Column Mapping ───────────────────────────────────────── */
+
+.animal-column-mapping {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.animal-column-mapping__group {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: 0;
+}
+
+.animal-column-mapping__group-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-neutral-700);
+  padding: 0 var(--space-2);
+}
+
+/* ─── Animal Preview Table ────────────────────────────────────────── */
+
+.animal-bulk-preview__scroll {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  overflow: auto;
+  max-height: 500px;
+}
+
+.animal-bulk-preview__row {
+  display: grid;
+  grid-template-columns: 40px 48px 1fr 80px 1fr 1.5fr;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-neutral-100);
+  min-height: 48px;
+}
+
+.animal-bulk-preview__row--header {
+  background: var(--color-neutral-50);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.animal-bulk-preview__row--invalid {
+  background: var(--color-error-50, #fef2f2);
+  opacity: 0.7;
+}
+
+.animal-bulk-preview__cell {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+}
+
+.animal-bulk-preview__cell--info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.animal-bulk-preview__cell--eartag {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.animal-bulk-preview__eartag-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.animal-bulk-preview__name-value {
+  font-size: 0.75rem;
+  color: var(--color-neutral-500);
+}
+
+.animal-bulk-preview__cell--breed {
+  font-size: 0.8125rem;
+}
+
+/* ─── Report Warnings ─────────────────────────────────────────────── */
+
+.bulk-report__warnings {
+  padding: 0 var(--space-4);
+}
+
+.bulk-report__warning-list {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-2) 0 0;
+}
+
+.bulk-report__warning-item {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: #f57f17;
+  padding: var(--space-1) 0;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .animal-bulk-preview__row {
+    grid-template-columns: 32px 32px 1fr 1fr;
+  }
+
+  .animal-bulk-preview__cell--breed,
+  .animal-bulk-preview__cell--sex {
+    display: none;
+  }
+
+  .animal-bulk-preview__row--header .animal-bulk-preview__cell--breed,
+  .animal-bulk-preview__row--header .animal-bulk-preview__cell--sex {
+    display: none;
+  }
+}

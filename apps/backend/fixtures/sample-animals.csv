@@ -1,0 +1,9 @@
+Brinco;Nome;Sexo;Nascimento;Origem;Categoria;Raça;Percentual;Raça2;Percentual2;Peso;ECC;Pai;Mãe;RFID;Notas
+BR100;Mimosa;Fêmea;15/03/2022;Nascido;VACA_LACTACAO;Holandesa;75;Gir Leiteiro;25;450;3.5;;;900001234;Boa produtora
+BR101;Trovão;Macho;2024-01-10;Comprado;TOURO_REPRODUTOR;Nelore;100;;;;;BR100;;Touro reprodutor adquirido
+BR102;Estrela;F;20/06/2023;nascido;;Girolando;100;;;;;BR101;BR100;900001235;
+BR103;Relâmpago;M;05/11/2024;BORN;BEZERRO;Holandesa;50;Gir Leiteiro;50;85;2;BR101;BR100;;Bezerro F1
+BR104;Flor;fêmea;12/08/2023;purchased;NOVILHA;Nelore;62.5;Angus;37.5;320;;;900001236;Cruzamento industrial
+BR105;;macho;2025-02-01;;;Gir Leiteiro;100;;;45;1.5;;;;Sem nome registrado
+BR106;Aurora;Female;30/04/2022;Born;;Jersey;100;;;;;BR101;;900001237;
+BR107;Diamante;male;15/09/2024;purchased;NOVILHO;Holandesa;87.5;Gir Leiteiro;12.5;280;3;;;;;Grau 7/8

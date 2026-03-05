@@ -9,6 +9,10 @@ import {
   BODY_CONDITION_SCORE_MAX,
   BREED_CATEGORIES,
   GIROLANDO_GRADES,
+  SEX_ALIASES,
+  ORIGIN_ALIASES,
+  CATEGORY_ALIASES,
+  COLUMN_AUTO_MAP,
   type AnimalSexType,
   type AnimalCategoryType,
   type CreateAnimalInput,
@@ -16,7 +20,14 @@ import {
   type ListAnimalsQuery,
   type BreedCompositionInput,
   type CreateBreedInput,
+  type AnimalColumnMapping,
+  type AnimalBulkPreviewRow,
+  type AnimalBulkPreviewResult,
+  type AnimalBulkImportInput,
+  type AnimalBulkImportResult,
+  type AnimalBulkImportResultItem,
 } from './animals.types';
+import { parseAnimalFile } from './animal-file-parser';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -596,4 +607,405 @@ export async function deleteBreed(ctx: RlsContext, breedId: string) {
 
     await tx.breed.delete({ where: { id: breedId } });
   });
+}
+
+// ─── Bulk Import Helpers ────────────────────────────────────────────
+
+export function resolveEnumValue(
+  raw: string | number | null | undefined,
+  aliases: Record<string, string>,
+  validValues: readonly string[],
+): string | null {
+  if (raw === null || raw === undefined) return null;
+  const normalized = String(raw).trim().toLowerCase();
+  if (normalized === '') return null;
+
+  // Direct match (case-insensitive)
+  const upper = normalized.toUpperCase();
+  if ((validValues as readonly string[]).includes(upper)) return upper;
+
+  // Alias match
+  const aliased = aliases[normalized];
+  if (aliased && (validValues as readonly string[]).includes(aliased)) return aliased;
+
+  return null;
+}
+
+export function parseDate(raw: string | number | null | undefined): string | null {
+  if (raw === null || raw === undefined) return null;
+  const str = String(raw).trim();
+  if (str === '') return null;
+
+  // DD/MM/YYYY format
+  const brMatch = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (brMatch) {
+    const [, day, month, year] = brMatch;
+    const d = new Date(`${year}-${month!.padStart(2, '0')}-${day!.padStart(2, '0')}T00:00:00Z`);
+    if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+  }
+
+  // YYYY-MM-DD format
+  const isoMatch = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (isoMatch) {
+    const d = new Date(`${str}T00:00:00Z`);
+    if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+  }
+
+  return null;
+}
+
+function autoMapColumns(columnHeaders: string[]): AnimalColumnMapping {
+  const mapping: AnimalColumnMapping = {};
+  for (const header of columnHeaders) {
+    const normalized = header
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+    const mappedKey = COLUMN_AUTO_MAP[normalized];
+    if (mappedKey && !mapping[mappedKey]) {
+      mapping[mappedKey] = header;
+    }
+  }
+  return mapping;
+}
+
+function getVal(
+  row: Record<string, string | number | null>,
+  mapping: AnimalColumnMapping,
+  field: keyof AnimalColumnMapping,
+): string | number | null {
+  const col = mapping[field];
+  if (!col) return null;
+  return row[col] ?? null;
+}
+
+function strVal(v: string | number | null): string | null {
+  if (v === null || v === undefined) return null;
+  const s = String(v).trim();
+  return s === '' ? null : s;
+}
+
+function numVal(v: string | number | null): number | null {
+  if (v === null || v === undefined) return null;
+  const n = typeof v === 'number' ? v : parseFloat(String(v).replace(',', '.'));
+  return isNaN(n) ? null : n;
+}
+
+// ─── Bulk Preview ───────────────────────────────────────────────────
+
+export async function previewBulkImportAnimals(
+  ctx: RlsContext,
+  farmId: string,
+  buffer: Buffer,
+  filename: string,
+): Promise<AnimalBulkPreviewResult> {
+  const parsed = await parseAnimalFile(buffer, filename);
+  const mapping = autoMapColumns(parsed.columnHeaders);
+
+  // Load breeds and existing earTags
+  return withRlsContext(ctx, async (tx) => {
+    const breeds = await tx.breed.findMany({
+      where: {
+        OR: [{ isDefault: true }, { organizationId: ctx.organizationId }],
+      },
+    });
+
+    const existingAnimals = await tx.animal.findMany({
+      where: { farmId, deletedAt: null },
+      select: { earTag: true },
+    });
+    const existingEarTags = new Set(existingAnimals.map((a) => a.earTag.toLowerCase()));
+
+    const seenEarTags = new Map<string, number>();
+    const rows: AnimalBulkPreviewRow[] = [];
+
+    for (const row of parsed.rows) {
+      const errors: string[] = [];
+      const warnings: string[] = [];
+
+      // Parse fields
+      const earTag = strVal(getVal(row.raw, mapping, 'earTag'));
+      const name = strVal(getVal(row.raw, mapping, 'name'));
+      const rawSex = strVal(getVal(row.raw, mapping, 'sex'));
+      const rawBirthDate = getVal(row.raw, mapping, 'birthDate');
+      const rawCategory = strVal(getVal(row.raw, mapping, 'category'));
+      const rawOrigin = strVal(getVal(row.raw, mapping, 'origin'));
+      const rawWeight = numVal(getVal(row.raw, mapping, 'entryWeightKg'));
+      const rawBcs = numVal(getVal(row.raw, mapping, 'bodyConditionScore'));
+      const sireEarTag = strVal(getVal(row.raw, mapping, 'sireEarTag'));
+      const damEarTag = strVal(getVal(row.raw, mapping, 'damEarTag'));
+      const rfidTag = strVal(getVal(row.raw, mapping, 'rfidTag'));
+      const notes = strVal(getVal(row.raw, mapping, 'notes'));
+
+      // Breed composition
+      const rawBreed1 = strVal(getVal(row.raw, mapping, 'breed1'));
+      const rawBreed2 = strVal(getVal(row.raw, mapping, 'breed2'));
+      const rawBreed3 = strVal(getVal(row.raw, mapping, 'breed3'));
+      const rawPct1 = numVal(getVal(row.raw, mapping, 'pct1'));
+      const rawPct2 = numVal(getVal(row.raw, mapping, 'pct2'));
+      const rawPct3 = numVal(getVal(row.raw, mapping, 'pct3'));
+
+      // Validate earTag
+      if (!earTag) {
+        errors.push('Brinco é obrigatório');
+      } else {
+        const lower = earTag.toLowerCase();
+        if (existingEarTags.has(lower)) {
+          warnings.push('Brinco já existe na fazenda');
+        }
+        const prevRow = seenEarTags.get(lower);
+        if (prevRow !== undefined) {
+          warnings.push(`Brinco duplicado no arquivo (linha ${prevRow + 1})`);
+        }
+        seenEarTags.set(lower, row.index);
+      }
+
+      // Resolve sex
+      const sex = rawSex ? resolveEnumValue(rawSex, SEX_ALIASES, ANIMAL_SEXES) : null;
+      if (!sex) {
+        errors.push('Sexo é obrigatório (M/F, Macho/Fêmea)');
+      }
+
+      // Parse birthDate
+      const birthDate = parseDate(rawBirthDate);
+      if (rawBirthDate && !birthDate) {
+        warnings.push('Data de nascimento inválida (use DD/MM/AAAA ou AAAA-MM-DD)');
+      }
+
+      // Resolve category/origin
+      const category = rawCategory
+        ? resolveEnumValue(rawCategory, CATEGORY_ALIASES, ANIMAL_CATEGORIES)
+        : null;
+      if (rawCategory && !category) {
+        warnings.push(`Categoria "${rawCategory}" não reconhecida`);
+      }
+
+      const origin = rawOrigin ? resolveEnumValue(rawOrigin, ORIGIN_ALIASES, ANIMAL_ORIGINS) : null;
+      if (rawOrigin && !origin) {
+        warnings.push(`Origem "${rawOrigin}" não reconhecida`);
+      }
+
+      // Resolve breeds
+      const resolvedBreeds: Array<{ breedId: string; breedName: string; percentage: number }> = [];
+      const breedEntries = [
+        { name: rawBreed1, pct: rawPct1 },
+        { name: rawBreed2, pct: rawPct2 },
+        { name: rawBreed3, pct: rawPct3 },
+      ];
+
+      const parsedBreeds: Array<{ name: string; pct: number }> = [];
+
+      for (const entry of breedEntries) {
+        if (!entry.name) continue;
+        const breed = breeds.find(
+          (b) =>
+            b.name.toLowerCase() === entry.name!.toLowerCase() ||
+            b.code?.toLowerCase() === entry.name!.toLowerCase(),
+        );
+        const pct = entry.pct ?? (breedEntries.filter((e) => e.name).length === 1 ? 100 : 0);
+        parsedBreeds.push({ name: entry.name, pct });
+        if (breed) {
+          resolvedBreeds.push({ breedId: breed.id, breedName: breed.name, percentage: pct });
+        } else {
+          errors.push(`Raça "${entry.name}" não encontrada`);
+        }
+      }
+
+      // Validate breed percentages sum
+      if (resolvedBreeds.length > 0) {
+        const total = resolvedBreeds.reduce((sum, b) => sum + b.percentage, 0);
+        if (Math.abs(total - 100) > 0.01) {
+          errors.push(`Soma dos percentuais raciais: ${total.toFixed(1)}% (deve ser 100%)`);
+        }
+      }
+
+      // Suggest category
+      const suggestedCategory = sex ? suggestCategory(sex, birthDate) : undefined;
+
+      // Detect girolando grade
+      const girolandoGrade =
+        resolvedBreeds.length > 0
+          ? detectGirolandoGrade(
+              resolvedBreeds.map((b) => ({ breedName: b.breedName, percentage: b.percentage })),
+            )
+          : null;
+
+      rows.push({
+        index: row.index,
+        parsed: {
+          earTag: earTag ?? undefined,
+          name: name ?? undefined,
+          sex: sex ?? undefined,
+          birthDate: birthDate ?? undefined,
+          category: category ?? undefined,
+          origin: origin ?? undefined,
+          breeds: parsedBreeds.length > 0 ? parsedBreeds : undefined,
+          entryWeightKg: rawWeight ?? undefined,
+          bodyConditionScore: rawBcs ?? undefined,
+          sireEarTag: sireEarTag ?? undefined,
+          damEarTag: damEarTag ?? undefined,
+          rfidTag: rfidTag ?? undefined,
+          notes: notes ?? undefined,
+        },
+        derived: {
+          suggestedCategory,
+          girolandoGrade,
+          resolvedBreeds: resolvedBreeds.length > 0 ? resolvedBreeds : undefined,
+        },
+        validation: {
+          valid: errors.length === 0,
+          errors,
+          warnings,
+        },
+      });
+    }
+
+    const validCount = rows.filter((r) => r.validation.valid).length;
+
+    return {
+      filename,
+      totalRows: rows.length,
+      validCount,
+      invalidCount: rows.length - validCount,
+      columnHeaders: parsed.columnHeaders,
+      rows,
+    };
+  });
+}
+
+// ─── Bulk Execute ───────────────────────────────────────────────────
+
+export async function executeBulkImportAnimals(
+  ctx: RlsContext,
+  farmId: string,
+  buffer: Buffer,
+  filename: string,
+  input: AnimalBulkImportInput,
+  actorId: string,
+): Promise<AnimalBulkImportResult> {
+  // Re-parse and re-preview to get validated rows
+  const preview = await previewBulkImportAnimals(ctx, farmId, buffer, filename);
+
+  const selectedSet = new Set(input.selectedIndices);
+  const items: AnimalBulkImportResultItem[] = [];
+  const warnings: string[] = [];
+
+  // Map earTag → animalId for sire/dam resolution within batch
+  const batchEarTagMap = new Map<string, string>();
+
+  // Process selected rows sequentially
+  for (const row of preview.rows) {
+    if (!selectedSet.has(row.index)) continue;
+
+    if (!row.validation.valid) {
+      items.push({
+        index: row.index,
+        status: 'skipped',
+        earTag: row.parsed.earTag,
+        reason: row.validation.errors.join('; '),
+      });
+      continue;
+    }
+
+    try {
+      // Resolve sire/dam by earTag
+      let sireId: string | undefined;
+      let damId: string | undefined;
+
+      if (row.parsed.sireEarTag) {
+        // Check batch first, then DB
+        const batchSire = batchEarTagMap.get(row.parsed.sireEarTag.toLowerCase());
+        if (batchSire) {
+          sireId = batchSire;
+        } else {
+          const dbSire = await withRlsContext(ctx, async (tx) => {
+            return tx.animal.findFirst({
+              where: {
+                farmId,
+                earTag: { equals: row.parsed.sireEarTag!, mode: 'insensitive' },
+                deletedAt: null,
+              },
+              select: { id: true, sex: true },
+            });
+          });
+          if (dbSire) {
+            if (dbSire.sex !== 'MALE') {
+              warnings.push(`Linha ${row.index + 1}: pai "${row.parsed.sireEarTag}" não é macho`);
+            } else {
+              sireId = dbSire.id;
+            }
+          }
+        }
+      }
+
+      if (row.parsed.damEarTag) {
+        const batchDam = batchEarTagMap.get(row.parsed.damEarTag.toLowerCase());
+        if (batchDam) {
+          damId = batchDam;
+        } else {
+          const dbDam = await withRlsContext(ctx, async (tx) => {
+            return tx.animal.findFirst({
+              where: {
+                farmId,
+                earTag: { equals: row.parsed.damEarTag!, mode: 'insensitive' },
+                deletedAt: null,
+              },
+              select: { id: true, sex: true },
+            });
+          });
+          if (dbDam) {
+            if (dbDam.sex !== 'FEMALE') {
+              warnings.push(`Linha ${row.index + 1}: mãe "${row.parsed.damEarTag}" não é fêmea`);
+            } else {
+              damId = dbDam.id;
+            }
+          }
+        }
+      }
+
+      const createInput: CreateAnimalInput = {
+        earTag: row.parsed.earTag!,
+        name: row.parsed.name,
+        sex: row.parsed.sex!,
+        birthDate: row.parsed.birthDate,
+        category: row.parsed.category ?? row.derived.suggestedCategory,
+        origin: row.parsed.origin,
+        entryWeightKg: row.parsed.entryWeightKg,
+        bodyConditionScore: row.parsed.bodyConditionScore,
+        sireId,
+        damId,
+        rfidTag: row.parsed.rfidTag,
+        notes: row.parsed.notes,
+        isCompositionEstimated: true,
+        compositions: row.derived.resolvedBreeds?.map((b) => ({
+          breedId: b.breedId,
+          percentage: b.percentage,
+        })),
+      };
+
+      const animal = await createAnimal(ctx, farmId, actorId, createInput);
+      batchEarTagMap.set(row.parsed.earTag!.toLowerCase(), animal.id);
+
+      items.push({
+        index: row.index,
+        status: 'imported',
+        animalId: animal.id,
+        earTag: row.parsed.earTag,
+      });
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : 'Erro desconhecido';
+      items.push({
+        index: row.index,
+        status: 'skipped',
+        earTag: row.parsed.earTag,
+        reason,
+      });
+    }
+  }
+
+  const imported = items.filter((i) => i.status === 'imported').length;
+  const skipped = items.filter((i) => i.status === 'skipped').length;
+
+  return { imported, skipped, items, warnings };
 }
