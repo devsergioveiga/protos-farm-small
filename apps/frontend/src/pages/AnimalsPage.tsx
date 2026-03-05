@@ -24,9 +24,21 @@ function AnimalsPage() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [breedFilter, setBreedFilter] = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevFarmIdRef = useRef(selectedFarm?.id);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
+
+  // Reset filters when farm changes (during render, not in effect)
+  if (prevFarmIdRef.current !== selectedFarm?.id) {
+    prevFarmIdRef.current = selectedFarm?.id;
+    setPage(1);
+    setSearch('');
+    setSearchInput('');
+    setSexFilter('');
+    setCategoryFilter('');
+    setBreedFilter('');
+  }
 
   const { animals, meta, isLoading, error, refetch } = useAnimals({
     farmId: selectedFarm?.id ?? null,
@@ -49,16 +61,6 @@ function AnimalsPage() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [searchInput]);
-
-  // Reset page when farm changes
-  useEffect(() => {
-    setPage(1);
-    setSearch('');
-    setSearchInput('');
-    setSexFilter('');
-    setCategoryFilter('');
-    setBreedFilter('');
-  }, [selectedFarm?.id]);
 
   const handleRowClick = (animal: AnimalListItem) => {
     // Future: open detail modal

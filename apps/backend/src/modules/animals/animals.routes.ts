@@ -107,7 +107,7 @@ animalsRouter.delete(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      await deleteBreed(ctx, req.params.breedId);
+      await deleteBreed(ctx, req.params.breedId as string);
 
       void logAudit({
         actorId: req.user!.userId,
@@ -115,7 +115,7 @@ animalsRouter.delete(
         actorRole: req.user!.role,
         action: 'DELETE_BREED',
         targetType: 'breed',
-        targetId: req.params.breedId,
+        targetId: req.params.breedId as string,
         ipAddress: getClientIp(req),
         organizationId: ctx.organizationId,
       });
@@ -141,7 +141,7 @@ animalsRouter.post(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const { farmId } = req.params;
+      const farmId = req.params.farmId as string;
       const { earTag, sex } = req.body;
 
       if (!earTag) {
@@ -241,7 +241,7 @@ animalsRouter.post(
       const ctx = buildRlsContext(req);
       const result = await previewBulkImportAnimals(
         ctx,
-        req.params.farmId,
+        req.params.farmId as string,
         req.file.buffer,
         req.file.originalname,
       );
@@ -296,9 +296,10 @@ animalsRouter.post(
       }
 
       const ctx = buildRlsContext(req);
+      const farmId = req.params.farmId as string;
       const result = await executeBulkImportAnimals(
         ctx,
-        req.params.farmId,
+        farmId,
         req.file.buffer,
         req.file.originalname,
         { columnMapping, selectedIndices },
@@ -311,7 +312,7 @@ animalsRouter.post(
         actorRole: req.user!.role,
         action: 'BULK_IMPORT_ANIMALS',
         targetType: 'farm',
-        targetId: req.params.farmId,
+        targetId: farmId,
         metadata: {
           filename: req.file.originalname,
           imported: result.imported,
@@ -319,7 +320,7 @@ animalsRouter.post(
         },
         ipAddress: getClientIp(req),
         organizationId: ctx.organizationId,
-        farmId: req.params.farmId,
+        farmId,
       });
 
       res.json(result);
@@ -346,7 +347,7 @@ animalsRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const summary = await getAnimalsSummary(ctx, req.params.farmId);
+      const summary = await getAnimalsSummary(ctx, req.params.farmId as string);
       res.json(summary);
     } catch (err) {
       if (err instanceof AnimalError) {
@@ -366,7 +367,7 @@ animalsRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const { farmId } = req.params;
+      const farmId = req.params.farmId as string;
 
       const page = req.query.page ? Number(req.query.page as string) : undefined;
       const limit = req.query.limit ? Number(req.query.limit as string) : undefined;
@@ -405,7 +406,11 @@ animalsRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const animal = await getAnimal(ctx, req.params.farmId, req.params.animalId);
+      const animal = await getAnimal(
+        ctx,
+        req.params.farmId as string,
+        req.params.animalId as string,
+      );
       res.json(animal);
     } catch (err) {
       if (err instanceof AnimalError) {
@@ -425,7 +430,8 @@ animalsRouter.patch(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const { farmId, animalId } = req.params;
+      const farmId = req.params.farmId as string;
+      const animalId = req.params.animalId as string;
 
       const animal = await updateAnimal(ctx, farmId, animalId, req.body);
 
@@ -461,7 +467,8 @@ animalsRouter.delete(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const { farmId, animalId } = req.params;
+      const farmId = req.params.farmId as string;
+      const animalId = req.params.animalId as string;
 
       await softDeleteAnimal(ctx, farmId, animalId);
 
