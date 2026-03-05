@@ -6,6 +6,7 @@ import RotationBadge from './RotationBadge';
 import PlotSeasonTimeline from './PlotSeasonTimeline';
 import PlotSoilTable from './PlotSoilTable';
 import PlotHistoryExport from './PlotHistoryExport';
+import PlotBoundaryVersionsList from './PlotBoundaryVersionsList';
 import type { FieldPlot, CropSeasonItem, SoilAnalysisItem } from '@/types/farm';
 import './PlotHistoryPanel.css';
 
@@ -20,7 +21,7 @@ interface PlotHistoryPanelProps {
   onClose: () => void;
 }
 
-type Tab = 'seasons' | 'soil' | 'export';
+type Tab = 'seasons' | 'soil' | 'boundary' | 'export';
 
 function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>('seasons');
@@ -113,6 +114,17 @@ function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
           id="tab-soil"
         >
           Solo
+        </button>
+        <button
+          type="button"
+          role="tab"
+          className={`plot-history__tab ${activeTab === 'boundary' ? 'plot-history__tab--active' : ''}`}
+          onClick={() => setActiveTab('boundary')}
+          aria-selected={activeTab === 'boundary'}
+          aria-controls="panel-boundary"
+          id="tab-boundary"
+        >
+          Perímetro
         </button>
         <button
           type="button"
@@ -260,6 +272,15 @@ function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
                 onEdit={setEditingAnalysis}
                 onDelete={setDeletingAnalysis}
               />
+            </div>
+
+            <div
+              role="tabpanel"
+              id="panel-boundary"
+              aria-labelledby="tab-boundary"
+              hidden={activeTab !== 'boundary'}
+            >
+              <PlotBoundaryVersionsList farmId={farmId} plotId={plot.id} />
             </div>
 
             <div
