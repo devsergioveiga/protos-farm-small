@@ -11,6 +11,7 @@ import './PlotHistoryPanel.css';
 
 const AddCropSeasonModal = lazy(() => import('./AddCropSeasonModal'));
 const EditCropSeasonModal = lazy(() => import('./EditCropSeasonModal'));
+const AddSoilAnalysisModal = lazy(() => import('./AddSoilAnalysisModal'));
 
 interface PlotHistoryPanelProps {
   plot: FieldPlot;
@@ -23,6 +24,7 @@ type Tab = 'seasons' | 'soil' | 'export';
 function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>('seasons');
   const [showAddSeason, setShowAddSeason] = useState(false);
+  const [showAddSoilAnalysis, setShowAddSoilAnalysis] = useState(false);
   const [editingSeason, setEditingSeason] = useState<CropSeasonItem | null>(null);
   const [deletingSeason, setDeletingSeason] = useState<CropSeasonItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -181,6 +183,17 @@ function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
               aria-labelledby="tab-soil"
               hidden={activeTab !== 'soil'}
             >
+              <div className="plot-history__panel-header">
+                <button
+                  type="button"
+                  className="plot-history__add-btn"
+                  onClick={() => setShowAddSoilAnalysis(true)}
+                  aria-label="Nova análise de solo"
+                >
+                  <Plus size={16} aria-hidden="true" />
+                  Nova análise
+                </button>
+              </div>
               <PlotSoilTable analyses={data.analyses} />
             </div>
 
@@ -214,6 +227,17 @@ function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
             farmId={farmId}
             plotId={plot.id}
             onClose={() => setEditingSeason(null)}
+            onSuccess={() => void refetch()}
+          />
+        </Suspense>
+      )}
+      {showAddSoilAnalysis && (
+        <Suspense fallback={null}>
+          <AddSoilAnalysisModal
+            isOpen={showAddSoilAnalysis}
+            farmId={farmId}
+            plotId={plot.id}
+            onClose={() => setShowAddSoilAnalysis(false)}
             onSuccess={() => void refetch()}
           />
         </Suspense>
