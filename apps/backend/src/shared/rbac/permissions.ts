@@ -7,6 +7,7 @@ export type PermissionModule =
   | 'users'
   | 'farms'
   | 'producers'
+  | 'animals'
   | 'operations'
   | 'financial'
   | 'reports'
@@ -23,6 +24,7 @@ export const ALL_MODULES: PermissionModule[] = [
   'users',
   'farms',
   'producers',
+  'animals',
   'operations',
   'financial',
   'reports',
@@ -76,6 +78,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   MANAGER: [
     ...p('farms', 'create', 'read', 'update'),
     ...modulePermissions('producers'),
+    ...p('animals', 'create', 'read', 'update'),
     ...p('users', 'read'),
     ...modulePermissions('operations'),
     ...p('reports', 'read'),
@@ -85,6 +88,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   AGRONOMIST: [
     ...p('farms', 'read'),
     ...p('producers', 'read'),
+    ...p('animals', 'read'),
     ...p('operations', 'create', 'read', 'update'),
     ...p('reports', 'read'),
   ],
@@ -99,14 +103,20 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   OPERATOR: [
     ...p('farms', 'read'),
     ...p('producers', 'read'),
+    ...p('animals', 'create', 'read'),
     ...p('operations', 'create', 'read'),
   ],
 
-  COWBOY: [...p('farms', 'read'), ...p('operations', 'create', 'read')],
+  COWBOY: [
+    ...p('farms', 'read'),
+    ...p('animals', 'create', 'read'),
+    ...p('operations', 'create', 'read'),
+  ],
 
   CONSULTANT: [
     ...p('farms', 'read'),
     ...p('producers', 'read'),
+    ...p('animals', 'read'),
     ...p('operations', 'read'),
     ...p('reports', 'read'),
   ],

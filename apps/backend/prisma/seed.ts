@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 const pgUser = process.env.POSTGRES_USER ?? 'protos';
 const pgPassword = process.env.POSTGRES_PASSWORD ?? 'protos';
 const pgHost = process.env.POSTGRES_HOST ?? 'localhost';
-const pgPort = process.env.POSTGRES_PORT ?? '5432';
+const pgPort = process.env.POSTGRES_PORT ?? '5450';
 const pgDb = process.env.POSTGRES_DB ?? 'protos_farm';
 const connectionString = `postgresql://${pgUser}:${pgPassword}@${pgHost}:${pgPort}/${pgDb}?schema=public`;
 
@@ -1067,6 +1067,334 @@ async function main() {
     );
   }
   console.log(`  ✓ ${carRegistrationLinks.length} vínculos CAR-matrícula criados`);
+
+  // ─── Raças (Breeds) ──────────────────────────────────────────────
+  console.log('\n  Criando raças...');
+
+  const breeds = [
+    {
+      id: 'breed-0001-4000-8000-000000000001',
+      name: 'Holandesa',
+      code: 'HOL',
+      category: 'LEITEIRA',
+      isDefault: true,
+    },
+    {
+      id: 'breed-0001-4000-8000-000000000002',
+      name: 'Gir Leiteiro',
+      code: 'GIR',
+      category: 'LEITEIRA',
+      isDefault: true,
+    },
+    {
+      id: 'breed-0001-4000-8000-000000000003',
+      name: 'Girolando',
+      code: 'GIRO',
+      category: 'LEITEIRA',
+      isDefault: true,
+    },
+    {
+      id: 'breed-0001-4000-8000-000000000004',
+      name: 'Jersey',
+      code: 'JER',
+      category: 'LEITEIRA',
+      isDefault: true,
+    },
+    {
+      id: 'breed-0001-4000-8000-000000000005',
+      name: 'Pardo-Suíço',
+      code: 'PSU',
+      category: 'DUPLA_APTIDAO',
+      isDefault: true,
+    },
+    {
+      id: 'breed-0001-4000-8000-000000000006',
+      name: 'Guzerá',
+      code: 'GUZ',
+      category: 'DUPLA_APTIDAO',
+      isDefault: true,
+    },
+    {
+      id: 'breed-0001-4000-8000-000000000007',
+      name: 'Sindi',
+      code: 'SIN',
+      category: 'LEITEIRA',
+      isDefault: true,
+    },
+    {
+      id: 'breed-0001-4000-8000-000000000008',
+      name: 'Nelore',
+      code: 'NEL',
+      category: 'CORTE',
+      isDefault: true,
+    },
+    {
+      id: 'breed-0001-4000-8000-000000000009',
+      name: 'Brahman',
+      code: 'BRA',
+      category: 'CORTE',
+      isDefault: true,
+    },
+    {
+      id: 'breed-0001-4000-8000-000000000010',
+      name: 'Senepol',
+      code: 'SEN',
+      category: 'CORTE',
+      isDefault: true,
+    },
+    {
+      id: 'breed-0001-4000-8000-000000000011',
+      name: 'Angus',
+      code: 'ANG',
+      category: 'CORTE',
+      isDefault: true,
+    },
+    {
+      id: 'breed-0001-4000-8000-000000000012',
+      name: 'Caracu',
+      code: 'CAR',
+      category: 'DUPLA_APTIDAO',
+      isDefault: true,
+    },
+    {
+      id: 'breed-0001-4000-8000-000000000013',
+      name: 'Simental',
+      code: 'SIM',
+      category: 'DUPLA_APTIDAO',
+      isDefault: true,
+    },
+    {
+      id: 'breed-0001-4000-8000-000000000014',
+      name: 'Red Angus',
+      code: 'RAN',
+      category: 'CORTE',
+      isDefault: true,
+    },
+    {
+      id: 'breed-0001-4000-8000-000000000015',
+      name: 'Mestiço/SRD',
+      code: 'SRD',
+      category: 'DUPLA_APTIDAO',
+      isDefault: true,
+    },
+  ];
+
+  for (const breed of breeds) {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO breeds (id, name, code, species, category, "isDefault", "organizationId", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, 'BOVINO', $4, $5, NULL, now(), now())
+       ON CONFLICT (name, COALESCE("organizationId", '___global___')) DO UPDATE SET code = $3, category = $4`,
+      breed.id,
+      breed.name,
+      breed.code,
+      breed.category,
+      breed.isDefault,
+    );
+    console.log(`  ✓ Raça: ${breed.name} (${breed.code})`);
+  }
+
+  // ─── Animais ──────────────────────────────────────────────────────────
+  console.log('\n  Criando animais...');
+
+  await prisma.$executeRawUnsafe(`DELETE FROM animal_genealogical_records`);
+  await prisma.$executeRawUnsafe(`DELETE FROM animal_breed_compositions`);
+  await prisma.$executeRawUnsafe(`DELETE FROM animals`);
+
+  const SANTA_HELENA = farms[0].id;
+  const HOLANDESA = breeds[0].id;
+  const GIR_LEITEIRO = breeds[1].id;
+  const NELORE = breeds[7].id;
+  const ANGUS = breeds[10].id;
+  const CREATED_BY = users[5].id; // José (OPERATOR)
+
+  const seedAnimals = [
+    {
+      id: 'ani-0001-4000-8000-000000000001',
+      earTag: 'SH-001',
+      name: 'Mimosa',
+      sex: 'FEMALE',
+      birthDate: '2020-03-15',
+      category: 'VACA_LACTACAO',
+      categorySuggested: 'VACA_LACTACAO',
+      origin: 'BORN',
+      entryWeightKg: 520,
+      bodyConditionScore: 3,
+      isCompositionEstimated: false,
+      compositions: [
+        { breedId: HOLANDESA, fraction: '1/2', percentage: 50 },
+        { breedId: GIR_LEITEIRO, fraction: '1/2', percentage: 50 },
+      ],
+    },
+    {
+      id: 'ani-0001-4000-8000-000000000002',
+      earTag: 'SH-002',
+      name: 'Estrela',
+      sex: 'FEMALE',
+      birthDate: '2019-08-20',
+      category: 'VACA_LACTACAO',
+      categorySuggested: 'VACA_LACTACAO',
+      origin: 'PURCHASED',
+      entryWeightKg: 550,
+      bodyConditionScore: 4,
+      isCompositionEstimated: false,
+      compositions: [
+        { breedId: HOLANDESA, fraction: '3/4', percentage: 75 },
+        { breedId: GIR_LEITEIRO, fraction: '1/4', percentage: 25 },
+      ],
+    },
+    {
+      id: 'ani-0001-4000-8000-000000000003',
+      earTag: 'SH-003',
+      name: 'Princesa',
+      sex: 'FEMALE',
+      birthDate: '2021-11-05',
+      category: 'VACA_SECA',
+      categorySuggested: 'VACA_SECA',
+      origin: 'BORN',
+      entryWeightKg: 480,
+      bodyConditionScore: 3,
+      isCompositionEstimated: false,
+      compositions: [
+        { breedId: HOLANDESA, fraction: '5/8', percentage: 62.5 },
+        { breedId: GIR_LEITEIRO, fraction: '3/8', percentage: 37.5 },
+      ],
+    },
+    {
+      id: 'ani-0001-4000-8000-000000000004',
+      earTag: 'SH-004',
+      name: 'Trovão',
+      sex: 'MALE',
+      birthDate: '2018-01-10',
+      category: 'TOURO_REPRODUTOR',
+      categorySuggested: 'TOURO_REPRODUTOR',
+      origin: 'PURCHASED',
+      entryWeightKg: 980,
+      bodyConditionScore: 4,
+      isCompositionEstimated: false,
+      compositions: [
+        { breedId: HOLANDESA, fraction: '1/2', percentage: 50 },
+        { breedId: GIR_LEITEIRO, fraction: '1/2', percentage: 50 },
+      ],
+    },
+    {
+      id: 'ani-0001-4000-8000-000000000005',
+      earTag: 'SH-005',
+      name: null,
+      sex: 'FEMALE',
+      birthDate: '2025-02-10',
+      category: 'BEZERRA',
+      categorySuggested: 'BEZERRA',
+      origin: 'BORN',
+      entryWeightKg: 38,
+      bodyConditionScore: null,
+      isCompositionEstimated: false,
+      sireId: 'ani-0001-4000-8000-000000000004', // Trovão
+      damId: 'ani-0001-4000-8000-000000000001', // Mimosa
+      compositions: [
+        { breedId: HOLANDESA, fraction: '1/2', percentage: 50 },
+        { breedId: GIR_LEITEIRO, fraction: '1/2', percentage: 50 },
+      ],
+    },
+    {
+      id: 'ani-0001-4000-8000-000000000006',
+      earTag: 'SH-006',
+      name: null,
+      sex: 'MALE',
+      birthDate: '2025-06-18',
+      category: 'BEZERRO',
+      categorySuggested: 'BEZERRO',
+      origin: 'BORN',
+      entryWeightKg: 42,
+      bodyConditionScore: null,
+      isCompositionEstimated: false,
+      sireId: 'ani-0001-4000-8000-000000000004', // Trovão
+      damId: 'ani-0001-4000-8000-000000000002', // Estrela
+      compositions: [
+        { breedId: HOLANDESA, fraction: '5/8', percentage: 62.5 },
+        { breedId: GIR_LEITEIRO, fraction: '3/8', percentage: 37.5 },
+      ],
+    },
+    {
+      id: 'ani-0001-4000-8000-000000000007',
+      earTag: 'SH-007',
+      name: 'Flor',
+      sex: 'FEMALE',
+      birthDate: '2023-04-12',
+      category: 'NOVILHA',
+      categorySuggested: 'NOVILHA',
+      origin: 'BORN',
+      entryWeightKg: 320,
+      bodyConditionScore: 3,
+      isCompositionEstimated: true,
+      compositions: [{ breedId: NELORE, fraction: '1/1', percentage: 100 }],
+    },
+    {
+      id: 'ani-0001-4000-8000-000000000008',
+      earTag: 'SH-008',
+      name: 'Relâmpago',
+      sex: 'MALE',
+      birthDate: '2022-09-25',
+      category: 'NOVILHO',
+      categorySuggested: 'NOVILHO',
+      origin: 'PURCHASED',
+      entryWeightKg: 410,
+      bodyConditionScore: 3,
+      isCompositionEstimated: false,
+      compositions: [
+        { breedId: ANGUS, fraction: '1/2', percentage: 50 },
+        { breedId: NELORE, fraction: '1/2', percentage: 50 },
+      ],
+    },
+  ];
+
+  for (const animal of seedAnimals) {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO animals (id, "farmId", "earTag", name, sex, "birthDate", "birthDateEstimated", category, "categorySuggested", origin, "entryWeightKg", "bodyConditionScore", "sireId", "damId", "isCompositionEstimated", "createdBy", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5::"AnimalSex", $6::date, false, $7::"AnimalCategory", $8::"AnimalCategory", $9::"AnimalOrigin", $10, $11, $12, $13, $14, $15, now(), now())`,
+      animal.id,
+      SANTA_HELENA,
+      animal.earTag,
+      animal.name,
+      animal.sex,
+      animal.birthDate,
+      animal.category,
+      animal.categorySuggested,
+      animal.origin,
+      animal.entryWeightKg,
+      animal.bodyConditionScore,
+      (animal as Record<string, unknown>).sireId ?? null,
+      (animal as Record<string, unknown>).damId ?? null,
+      animal.isCompositionEstimated,
+      CREATED_BY,
+    );
+
+    for (const comp of animal.compositions) {
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO animal_breed_compositions (id, "animalId", "breedId", fraction, percentage, "createdAt")
+         VALUES (gen_random_uuid(), $1, $2, $3, $4, now())`,
+        animal.id,
+        comp.breedId,
+        comp.fraction,
+        comp.percentage,
+      );
+    }
+
+    console.log(
+      `  ✓ Animal: ${animal.earTag}${animal.name ? ` — ${animal.name}` : ''} (${animal.sex}, ${animal.category})`,
+    );
+  }
+
+  // Registro genealógico para Trovão (touro reprodutor com PO)
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO animal_genealogical_records (id, "animalId", "genealogyClass", "registrationNumber", "associationName", "registrationDate", notes, "createdAt", "updatedAt")
+     VALUES (gen_random_uuid(), $1, 'PO'::"GenealogyClass", $2, $3, $4::date, $5, now(), now())`,
+    'ani-0001-4000-8000-000000000004', // Trovão
+    'GR-HOL-12345',
+    'Associação Brasileira dos Criadores de Girolando',
+    '2019-03-15',
+    'Puro de origem, registro definitivo',
+  );
+  console.log('  ✓ Registro genealógico: Trovão (PO, Girolando)');
 
   // Audit Logs de exemplo
   console.log('');

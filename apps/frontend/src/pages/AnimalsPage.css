@@ -1,0 +1,405 @@
+/* ─── Animals Page ───────────────────────────────────────────── */
+
+.animals {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.animals__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.animals__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.animals__subtitle {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 4px 0 0;
+}
+
+/* ─── Toolbar ────────────────────────────────────────────────── */
+
+.animals__toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.animals__search {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  transition: border-color 200ms;
+  box-sizing: border-box;
+}
+
+.animals__search:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.animals__filter-select {
+  padding: 12px 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  cursor: pointer;
+  min-height: 48px;
+}
+
+.animals__filter-select:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Buttons ────────────────────────────────────────────────── */
+
+.animals__btn {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 200ms cubic-bezier(0.33, 1, 0.68, 1);
+  white-space: nowrap;
+}
+
+.animals__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.animals__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.animals__btn--primary {
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+}
+
+.animals__btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+}
+
+/* ─── Table ──────────────────────────────────────────────────── */
+
+.animals__table-wrapper {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.animals__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+}
+
+.animals__table th {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-neutral-500);
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-neutral-200);
+  white-space: nowrap;
+}
+
+.animals__table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  vertical-align: middle;
+}
+
+.animals__table tr:last-child td {
+  border-bottom: none;
+}
+
+.animals__table-row {
+  cursor: pointer;
+  transition: background 100ms;
+}
+
+.animals__table-row:hover {
+  background: var(--color-neutral-50);
+}
+
+.animals__ear-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-neutral-800);
+}
+
+.animals__breed-summary {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+
+/* ─── Badge ──────────────────────────────────────────────────── */
+
+.animals__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.animals__badge--sex-male {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.animals__badge--sex-female {
+  background: #fce4ec;
+  color: #c62828;
+}
+
+.animals__badge--category {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+/* ─── Mobile Cards ───────────────────────────────────────────── */
+
+.animals__cards {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.animals__card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: box-shadow 200ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.animals__card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.animals__card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.animals__card-name {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.animals__card-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 0.875rem;
+}
+
+.animals__card-label {
+  color: var(--color-neutral-500);
+  font-weight: 600;
+}
+
+.animals__card-value {
+  color: var(--color-neutral-700);
+}
+
+/* ─── Pagination ─────────────────────────────────────────────── */
+
+.animals__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+}
+
+.animals__pagination-btn {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--color-neutral-300);
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 200ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.animals__pagination-btn:hover:not(:disabled) {
+  border-color: var(--color-primary-500);
+  color: var(--color-primary-600);
+}
+
+.animals__pagination-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.animals__pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─── Empty State ────────────────────────────────────────────── */
+
+.animals__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px 24px;
+  background: var(--color-neutral-50);
+  border-radius: 12px;
+  border: 1px solid var(--color-neutral-200);
+  text-align: center;
+}
+
+.animals__empty-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.animals__empty-desc {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 0;
+  max-width: 360px;
+}
+
+/* ─── Error ──────────────────────────────────────────────────── */
+
+.animals__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+/* ─── Skeleton ───────────────────────────────────────────────── */
+
+.animals__skeleton {
+  background: var(--color-neutral-100);
+  border-radius: 8px;
+  height: 20px;
+  animation: animals-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes animals-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ─── Responsive ─────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .animals {
+    padding: 20px 16px;
+  }
+
+  .animals__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .animals__title {
+    font-size: 1.5rem;
+  }
+
+  .animals__table-wrapper {
+    display: none;
+  }
+
+  .animals__cards {
+    display: flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animals__skeleton {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .animals__btn,
+  .animals__search,
+  .animals__card,
+  .animals__table-row,
+  .animals__pagination-btn {
+    transition: none;
+  }
+}

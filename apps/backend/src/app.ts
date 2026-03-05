@@ -13,6 +13,7 @@ import { farmsRouter } from './modules/farms/farms.routes';
 import { producersRouter } from './modules/producers/producers.routes';
 import { carRouter } from './modules/car/car.routes';
 import { dashboardRouter } from './modules/dashboard/dashboard.routes';
+import { animalsRouter } from './modules/animals/animals.routes';
 
 const app = express();
 
@@ -33,5 +34,6 @@ app.use('/api', farmsRouter);
 app.use('/api', producersRouter);
 app.use('/api', carRouter);
 app.use('/api', dashboardRouter);
+app.use('/api', animalsRouter);
 
 export { app };
