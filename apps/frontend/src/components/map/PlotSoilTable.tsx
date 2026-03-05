@@ -1,9 +1,11 @@
-import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { ArrowUp, ArrowDown, Minus, Pencil, Trash2 } from 'lucide-react';
 import type { SoilAnalysisItem } from '@/types/farm';
 import './PlotSoilTable.css';
 
 interface PlotSoilTableProps {
   analyses: SoilAnalysisItem[];
+  onEdit?: (analysis: SoilAnalysisItem) => void;
+  onDelete?: (analysis: SoilAnalysisItem) => void;
 }
 
 function formatDate(dateStr: string): string {
@@ -46,7 +48,9 @@ const PARAMS: Array<{ key: keyof SoilAnalysisItem; label: string; unit: string }
   { key: 'clayContentPct', label: 'Argila', unit: '%' },
 ];
 
-function PlotSoilTable({ analyses }: PlotSoilTableProps) {
+function PlotSoilTable({ analyses, onEdit, onDelete }: PlotSoilTableProps) {
+  const hasActions = !!onEdit || !!onDelete;
+
   if (analyses.length === 0) {
     return (
       <div className="soil-table__empty">
@@ -68,6 +72,11 @@ function PlotSoilTable({ analyses }: PlotSoilTableProps) {
                 {p.label}
               </th>
             ))}
+            {hasActions && (
+              <th scope="col">
+                <span className="sr-only">Ações</span>
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -87,6 +96,30 @@ function PlotSoilTable({ analyses }: PlotSoilTableProps) {
                     )}
                   </td>
                 ))}
+                {hasActions && (
+                  <td className="soil-table__actions">
+                    {onEdit && (
+                      <button
+                        type="button"
+                        className="soil-table__action-btn"
+                        onClick={() => onEdit(analysis)}
+                        aria-label={`Editar análise de ${formatDate(analysis.analysisDate)}`}
+                      >
+                        <Pencil size={16} aria-hidden="true" />
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button
+                        type="button"
+                        className="soil-table__action-btn soil-table__action-btn--danger"
+                        onClick={() => onDelete(analysis)}
+                        aria-label={`Excluir análise de ${formatDate(analysis.analysisDate)}`}
+                      >
+                        <Trash2 size={16} aria-hidden="true" />
+                      </button>
+                    )}
+                  </td>
+                )}
               </tr>
             );
           })}
@@ -101,7 +134,33 @@ function PlotSoilTable({ analyses }: PlotSoilTableProps) {
             <div key={analysis.id} className="soil-card">
               <div className="soil-card__header">
                 <span className="soil-card__date">{formatDate(analysis.analysisDate)}</span>
-                {analysis.labName && <span className="soil-card__lab">{analysis.labName}</span>}
+                <div className="soil-card__header-right">
+                  {analysis.labName && <span className="soil-card__lab">{analysis.labName}</span>}
+                  {hasActions && (
+                    <div className="soil-card__actions">
+                      {onEdit && (
+                        <button
+                          type="button"
+                          className="soil-table__action-btn"
+                          onClick={() => onEdit(analysis)}
+                          aria-label={`Editar análise de ${formatDate(analysis.analysisDate)}`}
+                        >
+                          <Pencil size={16} aria-hidden="true" />
+                        </button>
+                      )}
+                      {onDelete && (
+                        <button
+                          type="button"
+                          className="soil-table__action-btn soil-table__action-btn--danger"
+                          onClick={() => onDelete(analysis)}
+                          aria-label={`Excluir análise de ${formatDate(analysis.analysisDate)}`}
+                        >
+                          <Trash2 size={16} aria-hidden="true" />
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
               <dl className="soil-card__params">
                 {PARAMS.map((p) => {

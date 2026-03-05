@@ -69,6 +69,46 @@
   color: var(--color-neutral-400);
 }
 
+/* ─── Action buttons ─── */
+
+.soil-table__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  white-space: nowrap;
+}
+
+.soil-table__action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.soil-table__action-btn:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.soil-table__action-btn--danger:hover {
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+}
+
+.soil-table__action-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
 /* ─── Mobile cards ─── */
 
 .soil-cards {
@@ -97,6 +137,18 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: var(--space-2);
+  }
+
+  .soil-card__header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .soil-card__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
   }
 
   .soil-card__date {
