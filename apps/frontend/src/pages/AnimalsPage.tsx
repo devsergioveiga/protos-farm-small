@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Beef, Plus, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Beef, Plus, Upload, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAnimals } from '@/hooks/useAnimals';
 import { useBreeds } from '@/hooks/useBreeds';
 import { useFarmContext } from '@/stores/FarmContext';
 import PermissionGate from '@/components/auth/PermissionGate';
 import CreateAnimalModal from '@/components/animals/CreateAnimalModal';
+import AnimalBulkImportModal from '@/components/animal-bulk-import/AnimalBulkImportModal';
 import type { AnimalListItem, AnimalSex, AnimalCategory } from '@/types/animal';
 import { SEX_LABELS, CATEGORY_LABELS } from '@/types/animal';
 import './AnimalsPage.css';
@@ -25,6 +26,7 @@ function AnimalsPage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showBulkImportModal, setShowBulkImportModal] = useState(false);
 
   const { animals, meta, isLoading, error, refetch } = useAnimals({
     farmId: selectedFarm?.id ?? null,
@@ -107,16 +109,28 @@ function AnimalsPage() {
           <h1 className="animals__title">Animais</h1>
           <p className="animals__subtitle">Rebanho de {selectedFarm.name}</p>
         </div>
-        <PermissionGate permission="animals:create">
-          <button
-            type="button"
-            className="animals__btn animals__btn--primary"
-            onClick={() => setShowCreateModal(true)}
-          >
-            <Plus aria-hidden="true" size={20} />
-            Novo animal
-          </button>
-        </PermissionGate>
+        <div className="animals__header-actions">
+          <PermissionGate permission="animals:create">
+            <button
+              type="button"
+              className="animals__btn animals__btn--secondary"
+              onClick={() => setShowBulkImportModal(true)}
+            >
+              <Upload aria-hidden="true" size={20} />
+              Importar animais
+            </button>
+          </PermissionGate>
+          <PermissionGate permission="animals:create">
+            <button
+              type="button"
+              className="animals__btn animals__btn--primary"
+              onClick={() => setShowCreateModal(true)}
+            >
+              <Plus aria-hidden="true" size={20} />
+              Novo animal
+            </button>
+          </PermissionGate>
+        </div>
       </header>
 
       {error && (
@@ -335,6 +349,16 @@ function AnimalsPage() {
         onClose={() => setShowCreateModal(false)}
         onSuccess={() => {
           setShowCreateModal(false);
+          void refetch();
+        }}
+      />
+
+      <AnimalBulkImportModal
+        isOpen={showBulkImportModal}
+        farmId={selectedFarm.id}
+        onClose={() => setShowBulkImportModal(false)}
+        onImportComplete={() => {
+          setShowBulkImportModal(false);
           void refetch();
         }}
       />

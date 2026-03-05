@@ -34,6 +34,10 @@ jest.mock('./animals.service', () => ({
   suggestCategory: jest.fn(),
   detectGirolandoGrade: jest.fn(),
   validateBreedComposition: jest.fn(),
+  previewBulkImportAnimals: jest.fn(),
+  executeBulkImportAnimals: jest.fn(),
+  resolveEnumValue: jest.fn(),
+  parseDate: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -499,5 +503,193 @@ describe('validateBreedComposition', () => {
 
   it('should skip validation for empty array', () => {
     expect(() => realValidate([])).not.toThrow();
+  });
+});
+
+// ─── POST /org/farms/:farmId/animals/bulk/preview ────────────────────
+
+describe('POST /org/farms/:farmId/animals/bulk/preview', () => {
+  const mockPreviewResult = {
+    filename: 'test.csv',
+    totalRows: 2,
+    validCount: 2,
+    invalidCount: 0,
+    columnHeaders: ['Brinco', 'Sexo'],
+    rows: [
+      {
+        index: 0,
+        parsed: { earTag: 'BR001', sex: 'MALE' },
+        derived: { suggestedCategory: 'BEZERRO' },
+        validation: { valid: true, errors: [], warnings: [] },
+      },
+    ],
+  };
+
+  it('should preview bulk import and return 200', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.previewBulkImportAnimals.mockResolvedValue(mockPreviewResult as never);
+
+    const res = await request(app)
+      .post(`/api/org/farms/${FARM_ID}/animals/bulk/preview`)
+      .set('Authorization', 'Bearer valid')
+      .attach('file', Buffer.from('Brinco;Sexo\nBR001;M'), 'animals.csv');
+
+    expect(res.status).toBe(200);
+    expect(res.body.filename).toBe('test.csv');
+    expect(res.body.rows).toHaveLength(1);
+  });
+
+  it('should return 400 when no file is provided', async () => {
+    authAs(ADMIN_PAYLOAD);
+
+    const res = await request(app)
+      .post(`/api/org/farms/${FARM_ID}/animals/bulk/preview`)
+      .set('Authorization', 'Bearer valid');
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('Arquivo');
+  });
+
+  it('should return 400 for unsupported file extension', async () => {
+    authAs(ADMIN_PAYLOAD);
+
+    const res = await request(app)
+      .post(`/api/org/farms/${FARM_ID}/animals/bulk/preview`)
+      .set('Authorization', 'Bearer valid')
+      .attach('file', Buffer.from('test'), 'animals.txt');
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('não suportado');
+  });
+
+  it('should return 403 for CONSULTANT', async () => {
+    authAs(CONSULTANT_PAYLOAD);
+
+    const res = await request(app)
+      .post(`/api/org/farms/${FARM_ID}/animals/bulk/preview`)
+      .set('Authorization', 'Bearer valid')
+      .attach('file', Buffer.from('test'), 'animals.csv');
+
+    expect(res.status).toBe(403);
+  });
+});
+
+// ─── POST /org/farms/:farmId/animals/bulk ────────────────────────────
+
+describe('POST /org/farms/:farmId/animals/bulk', () => {
+  const mockImportResult = {
+    imported: 2,
+    skipped: 0,
+    items: [
+      { index: 0, status: 'imported', animalId: 'a1', earTag: 'BR001' },
+      { index: 1, status: 'imported', animalId: 'a2', earTag: 'BR002' },
+    ],
+    warnings: [],
+  };
+
+  it('should execute bulk import and return 200', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.executeBulkImportAnimals.mockResolvedValue(mockImportResult as never);
+
+    const res = await request(app)
+      .post(`/api/org/farms/${FARM_ID}/animals/bulk`)
+      .set('Authorization', 'Bearer valid')
+      .attach('file', Buffer.from('Brinco;Sexo\nBR001;M'), 'animals.csv')
+      .field('columnMapping', '{}')
+      .field('selectedIndices', '[0,1]');
+
+    expect(res.status).toBe(200);
+    expect(res.body.imported).toBe(2);
+    expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'BULK_IMPORT_ANIMALS' }),
+    );
+  });
+
+  it('should return 400 when selectedIndices is empty', async () => {
+    authAs(ADMIN_PAYLOAD);
+
+    const res = await request(app)
+      .post(`/api/org/farms/${FARM_ID}/animals/bulk`)
+      .set('Authorization', 'Bearer valid')
+      .attach('file', Buffer.from('Brinco;Sexo\nBR001;M'), 'animals.csv')
+      .field('columnMapping', '{}')
+      .field('selectedIndices', '[]');
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('selectedIndices');
+  });
+
+  it('should return 400 when no file is provided', async () => {
+    authAs(ADMIN_PAYLOAD);
+
+    const res = await request(app)
+      .post(`/api/org/farms/${FARM_ID}/animals/bulk`)
+      .set('Authorization', 'Bearer valid')
+      .field('selectedIndices', '[0]');
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('Arquivo');
+  });
+
+  it('should return 400 for invalid JSON in columnMapping', async () => {
+    authAs(ADMIN_PAYLOAD);
+
+    const res = await request(app)
+      .post(`/api/org/farms/${FARM_ID}/animals/bulk`)
+      .set('Authorization', 'Bearer valid')
+      .attach('file', Buffer.from('test'), 'animals.csv')
+      .field('columnMapping', 'not-json')
+      .field('selectedIndices', '[0]');
+
+    expect(res.status).toBe(400);
+  });
+});
+
+// ─── resolveEnumValue (unit) ────────────────────────────────────────
+
+describe('resolveEnumValue', () => {
+  const { resolveEnumValue: realResolve } = jest.requireActual('./animals.service');
+  const sexAliases = { m: 'MALE', macho: 'MALE', f: 'FEMALE', fêmea: 'FEMALE' };
+  const validSexes = ['MALE', 'FEMALE'] as const;
+
+  it('should resolve direct uppercase match', () => {
+    expect(realResolve('MALE', sexAliases, validSexes)).toBe('MALE');
+  });
+
+  it('should resolve alias', () => {
+    expect(realResolve('macho', sexAliases, validSexes)).toBe('MALE');
+    expect(realResolve('f', sexAliases, validSexes)).toBe('FEMALE');
+  });
+
+  it('should return null for empty/null', () => {
+    expect(realResolve(null, sexAliases, validSexes)).toBeNull();
+    expect(realResolve('', sexAliases, validSexes)).toBeNull();
+  });
+
+  it('should return null for unrecognized value', () => {
+    expect(realResolve('unknown', sexAliases, validSexes)).toBeNull();
+  });
+});
+
+// ─── parseDate (unit) ───────────────────────────────────────────────
+
+describe('parseDate', () => {
+  const { parseDate: realParse } = jest.requireActual('./animals.service');
+
+  it('should parse DD/MM/YYYY format', () => {
+    expect(realParse('15/03/2024')).toBe('2024-03-15');
+  });
+
+  it('should parse YYYY-MM-DD format', () => {
+    expect(realParse('2024-03-15')).toBe('2024-03-15');
+  });
+
+  it('should return null for null/empty', () => {
+    expect(realParse(null)).toBeNull();
+    expect(realParse('')).toBeNull();
+  });
+
+  it('should return null for invalid date', () => {
+    expect(realParse('invalid')).toBeNull();
   });
 });

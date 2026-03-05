@@ -114,6 +114,21 @@
   background: var(--color-primary-700);
 }
 
+.animals__btn--secondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.animals__btn--secondary:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+}
+
+.animals__header-actions {
+  display: flex;
+  gap: var(--space-3, 12px);
+  align-items: center;
+}
+
 /* ─── Table ──────────────────────────────────────────────────── */
 
 .animals__table-wrapper {

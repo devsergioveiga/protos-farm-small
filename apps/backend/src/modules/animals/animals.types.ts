@@ -142,3 +142,173 @@ export interface CreateBreedInput {
   species?: string;
   category?: string;
 }
+
+// ─── Bulk Import ────────────────────────────────────────────────────
+
+export interface AnimalColumnMapping {
+  earTag?: string;
+  name?: string;
+  sex?: string;
+  birthDate?: string;
+  category?: string;
+  origin?: string;
+  breed1?: string;
+  breed2?: string;
+  breed3?: string;
+  pct1?: string;
+  pct2?: string;
+  pct3?: string;
+  entryWeightKg?: string;
+  bodyConditionScore?: string;
+  sireEarTag?: string;
+  damEarTag?: string;
+  rfidTag?: string;
+  notes?: string;
+}
+
+export interface AnimalBulkPreviewRow {
+  index: number;
+  parsed: {
+    earTag?: string;
+    name?: string;
+    sex?: string;
+    birthDate?: string;
+    category?: string;
+    origin?: string;
+    breeds?: Array<{ name: string; pct: number }>;
+    entryWeightKg?: number;
+    bodyConditionScore?: number;
+    sireEarTag?: string;
+    damEarTag?: string;
+    rfidTag?: string;
+    notes?: string;
+  };
+  derived: {
+    suggestedCategory?: string;
+    girolandoGrade?: string | null;
+    resolvedBreeds?: Array<{ breedId: string; breedName: string; percentage: number }>;
+  };
+  validation: {
+    valid: boolean;
+    errors: string[];
+    warnings: string[];
+  };
+}
+
+export interface AnimalBulkPreviewResult {
+  filename: string;
+  totalRows: number;
+  validCount: number;
+  invalidCount: number;
+  columnHeaders: string[];
+  rows: AnimalBulkPreviewRow[];
+}
+
+export interface AnimalBulkImportInput {
+  columnMapping: AnimalColumnMapping;
+  selectedIndices: number[];
+}
+
+export interface AnimalBulkImportResultItem {
+  index: number;
+  status: 'imported' | 'skipped';
+  animalId?: string;
+  earTag?: string;
+  reason?: string;
+}
+
+export interface AnimalBulkImportResult {
+  imported: number;
+  skipped: number;
+  items: AnimalBulkImportResultItem[];
+  warnings: string[];
+}
+
+export const SEX_ALIASES: Record<string, string> = {
+  m: 'MALE',
+  macho: 'MALE',
+  male: 'MALE',
+  f: 'FEMALE',
+  femea: 'FEMALE',
+  fêmea: 'FEMALE',
+  female: 'FEMALE',
+};
+
+export const ORIGIN_ALIASES: Record<string, string> = {
+  nascido: 'BORN',
+  born: 'BORN',
+  comprado: 'PURCHASED',
+  purchased: 'PURCHASED',
+};
+
+export const CATEGORY_ALIASES: Record<string, string> = {
+  bezerro: 'BEZERRO',
+  bezerra: 'BEZERRA',
+  novilha: 'NOVILHA',
+  novilho: 'NOVILHO',
+  'vaca lactacao': 'VACA_LACTACAO',
+  'vaca lactação': 'VACA_LACTACAO',
+  vaca_lactacao: 'VACA_LACTACAO',
+  'vaca seca': 'VACA_SECA',
+  vaca_seca: 'VACA_SECA',
+  'touro reprodutor': 'TOURO_REPRODUTOR',
+  touro_reprodutor: 'TOURO_REPRODUTOR',
+  touro: 'TOURO_REPRODUTOR',
+  descarte: 'DESCARTE',
+};
+
+// Auto-mapping: header label → AnimalColumnMapping key
+export const COLUMN_AUTO_MAP: Record<string, keyof AnimalColumnMapping> = {
+  brinco: 'earTag',
+  'ear tag': 'earTag',
+  eartag: 'earTag',
+  identificacao: 'earTag',
+  identificação: 'earTag',
+  nome: 'name',
+  name: 'name',
+  sexo: 'sex',
+  sex: 'sex',
+  nascimento: 'birthDate',
+  'data nascimento': 'birthDate',
+  birthdate: 'birthDate',
+  'birth date': 'birthDate',
+  categoria: 'category',
+  category: 'category',
+  origem: 'origin',
+  origin: 'origin',
+  raca: 'breed1',
+  raça: 'breed1',
+  raca1: 'breed1',
+  breed: 'breed1',
+  breed1: 'breed1',
+  raca2: 'breed2',
+  breed2: 'breed2',
+  raca3: 'breed3',
+  breed3: 'breed3',
+  percentual: 'pct1',
+  percentual1: 'pct1',
+  pct1: 'pct1',
+  '%': 'pct1',
+  percentual2: 'pct2',
+  pct2: 'pct2',
+  percentual3: 'pct3',
+  pct3: 'pct3',
+  peso: 'entryWeightKg',
+  'peso entrada': 'entryWeightKg',
+  weight: 'entryWeightKg',
+  ecc: 'bodyConditionScore',
+  'condicao corporal': 'bodyConditionScore',
+  bcs: 'bodyConditionScore',
+  pai: 'sireEarTag',
+  sire: 'sireEarTag',
+  mae: 'damEarTag',
+  mãe: 'damEarTag',
+  dam: 'damEarTag',
+  rfid: 'rfidTag',
+  'rfid tag': 'rfidTag',
+  notas: 'notes',
+  notes: 'notes',
+  obs: 'notes',
+  observacao: 'notes',
+  observação: 'notes',
+};

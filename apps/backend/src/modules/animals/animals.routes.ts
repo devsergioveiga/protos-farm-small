@@ -1,10 +1,13 @@
 import { Router } from 'express';
+import multer, { memoryStorage } from 'multer';
+import path from 'path';
 import { authenticate } from '../../middleware/auth';
 import { checkPermission } from '../../middleware/check-permission';
 import { checkFarmAccess } from '../../middleware/check-farm-access';
 import { logAudit } from '../../shared/audit/audit.service';
 import type { RlsContext } from '../../database/rls';
 import { AnimalError } from './animals.types';
+import { ACCEPTED_ANIMAL_EXTENSIONS, MAX_ANIMAL_FILE_SIZE } from './animal-file-parser';
 import {
   createAnimal,
   listAnimals,
@@ -15,6 +18,8 @@ import {
   listBreeds,
   createBreed,
   deleteBreed,
+  previewBulkImportAnimals,
+  executeBulkImportAnimals,
 } from './animals.service';
 
 export const animalsRouter = Router();
@@ -167,6 +172,164 @@ animalsRouter.post(
     } catch (err) {
       if (err instanceof AnimalError) {
         res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// ─── Multer config for animal file uploads ────────────────────────────
+
+const animalUpload = multer({
+  storage: memoryStorage(),
+  limits: { fileSize: MAX_ANIMAL_FILE_SIZE },
+  fileFilter: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if ((ACCEPTED_ANIMAL_EXTENSIONS as readonly string[]).includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(
+        new Error(
+          `Formato não suportado. Extensões aceitas: ${ACCEPTED_ANIMAL_EXTENSIONS.join(', ')}`,
+        ),
+      );
+    }
+  },
+});
+
+function handleAnimalUpload(
+  req: import('express').Request,
+  res: import('express').Response,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    animalUpload.single('file')(req, res, (err: unknown) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          res.status(400).json({
+            error: err.code === 'LIMIT_FILE_SIZE' ? 'Arquivo excede o limite de 5 MB' : err.message,
+          });
+        } else if (err instanceof Error) {
+          res.status(400).json({ error: err.message });
+        } else {
+          reject(err);
+        }
+        resolve();
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+// ─── Bulk Import Endpoints (must be before :animalId) ─────────────────
+
+animalsRouter.post(
+  '/org/farms/:farmId/animals/bulk/preview',
+  authenticate,
+  checkPermission('animals:create'),
+  checkFarmAccess(),
+  async (req, res) => {
+    await handleAnimalUpload(req, res);
+    if (res.headersSent) return;
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: 'Arquivo é obrigatório' });
+        return;
+      }
+
+      const ctx = buildRlsContext(req);
+      const result = await previewBulkImportAnimals(
+        ctx,
+        req.params.farmId,
+        req.file.buffer,
+        req.file.originalname,
+      );
+
+      res.json(result);
+    } catch (err) {
+      if (err instanceof AnimalError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      if (err instanceof Error) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+animalsRouter.post(
+  '/org/farms/:farmId/animals/bulk',
+  authenticate,
+  checkPermission('animals:create'),
+  checkFarmAccess(),
+  async (req, res) => {
+    await handleAnimalUpload(req, res);
+    if (res.headersSent) return;
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: 'Arquivo é obrigatório' });
+        return;
+      }
+
+      let columnMapping = {};
+      let selectedIndices: number[] = [];
+
+      try {
+        if (req.body.columnMapping) {
+          columnMapping = JSON.parse(req.body.columnMapping as string);
+        }
+        if (req.body.selectedIndices) {
+          selectedIndices = JSON.parse(req.body.selectedIndices as string);
+        }
+      } catch {
+        res.status(400).json({ error: 'Formato inválido de columnMapping ou selectedIndices' });
+        return;
+      }
+
+      if (!Array.isArray(selectedIndices) || selectedIndices.length === 0) {
+        res.status(400).json({ error: 'selectedIndices deve ser um array não vazio' });
+        return;
+      }
+
+      const ctx = buildRlsContext(req);
+      const result = await executeBulkImportAnimals(
+        ctx,
+        req.params.farmId,
+        req.file.buffer,
+        req.file.originalname,
+        { columnMapping, selectedIndices },
+        req.user!.userId,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'BULK_IMPORT_ANIMALS',
+        targetType: 'farm',
+        targetId: req.params.farmId,
+        metadata: {
+          filename: req.file.originalname,
+          imported: result.imported,
+          skipped: result.skipped,
+        },
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+        farmId: req.params.farmId,
+      });
+
+      res.json(result);
+    } catch (err) {
+      if (err instanceof AnimalError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      if (err instanceof Error) {
+        res.status(400).json({ error: err.message });
         return;
       }
       res.status(500).json({ error: 'Erro interno do servidor' });
