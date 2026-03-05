@@ -368,6 +368,26 @@ export interface CreateSoilAnalysisPayload {
   notes?: string;
 }
 
+// ─── Update Soil Analysis ─────────────────────────────────────────────
+
+export interface UpdateSoilAnalysisPayload {
+  analysisDate: string;
+  labName?: string | null;
+  sampleDepthCm?: string | null;
+  phH2o?: number | null;
+  organicMatterPct?: number | null;
+  phosphorusMgDm3?: number | null;
+  potassiumMgDm3?: number | null;
+  calciumCmolcDm3?: number | null;
+  magnesiumCmolcDm3?: number | null;
+  aluminumCmolcDm3?: number | null;
+  ctcCmolcDm3?: number | null;
+  baseSaturationPct?: number | null;
+  sulfurMgDm3?: number | null;
+  clayContentPct?: number | null;
+  notes?: string | null;
+}
+
 // ─── Boundary Upload ────────────────────────────────────────────────
 
 export interface BoundaryUploadResult {

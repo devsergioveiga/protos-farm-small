@@ -6,12 +6,13 @@ import RotationBadge from './RotationBadge';
 import PlotSeasonTimeline from './PlotSeasonTimeline';
 import PlotSoilTable from './PlotSoilTable';
 import PlotHistoryExport from './PlotHistoryExport';
-import type { FieldPlot, CropSeasonItem } from '@/types/farm';
+import type { FieldPlot, CropSeasonItem, SoilAnalysisItem } from '@/types/farm';
 import './PlotHistoryPanel.css';
 
 const AddCropSeasonModal = lazy(() => import('./AddCropSeasonModal'));
 const EditCropSeasonModal = lazy(() => import('./EditCropSeasonModal'));
 const AddSoilAnalysisModal = lazy(() => import('./AddSoilAnalysisModal'));
+const EditSoilAnalysisModal = lazy(() => import('./EditSoilAnalysisModal'));
 
 interface PlotHistoryPanelProps {
   plot: FieldPlot;
@@ -27,11 +28,13 @@ function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
   const [showAddSoilAnalysis, setShowAddSoilAnalysis] = useState(false);
   const [editingSeason, setEditingSeason] = useState<CropSeasonItem | null>(null);
   const [deletingSeason, setDeletingSeason] = useState<CropSeasonItem | null>(null);
+  const [editingAnalysis, setEditingAnalysis] = useState<SoilAnalysisItem | null>(null);
+  const [deletingAnalysis, setDeletingAnalysis] = useState<SoilAnalysisItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const { data, isLoading, error, refetch } = usePlotHistory(farmId, plot.id);
 
-  const handleDelete = useCallback(async () => {
+  const handleDeleteSeason = useCallback(async () => {
     if (!deletingSeason) return;
     setIsDeleting(true);
     setDeleteError(null);
@@ -47,6 +50,29 @@ function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
       setIsDeleting(false);
     }
   }, [deletingSeason, farmId, plot.id, refetch]);
+
+  const handleDeleteAnalysis = useCallback(async () => {
+    if (!deletingAnalysis) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await api.delete(
+        `/org/farms/${farmId}/plots/${plot.id}/soil-analyses/${deletingAnalysis.id}`,
+      );
+      setDeletingAnalysis(null);
+      void refetch();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Não foi possível excluir a análise. Tente novamente.';
+      setDeleteError(message);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [deletingAnalysis, farmId, plot.id, refetch]);
+
+  function formatAnalysisDate(dateStr: string): string {
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-BR');
+  }
 
   return (
     <div className="plot-history" role="region" aria-label="Histórico do talhão">
@@ -161,7 +187,7 @@ function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
                     <button
                       type="button"
                       className="plot-history__confirm-btn plot-history__confirm-btn--danger"
-                      onClick={() => void handleDelete()}
+                      onClick={() => void handleDeleteSeason()}
                       disabled={isDeleting}
                     >
                       {isDeleting ? 'Excluindo...' : 'Excluir'}
@@ -194,7 +220,46 @@ function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
                   Nova análise
                 </button>
               </div>
-              <PlotSoilTable analyses={data.analyses} />
+
+              {deletingAnalysis && (
+                <div className="plot-history__confirm-delete" role="alert">
+                  <p className="plot-history__confirm-delete-text">
+                    Excluir análise de {formatAnalysisDate(deletingAnalysis.analysisDate)}?
+                  </p>
+                  {deleteError && (
+                    <div className="plot-history__confirm-delete-error">
+                      <AlertCircle size={16} aria-hidden="true" />
+                      {deleteError}
+                    </div>
+                  )}
+                  <div className="plot-history__confirm-delete-actions">
+                    <button
+                      type="button"
+                      className="plot-history__confirm-btn"
+                      onClick={() => {
+                        setDeletingAnalysis(null);
+                        setDeleteError(null);
+                      }}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      className="plot-history__confirm-btn plot-history__confirm-btn--danger"
+                      onClick={() => void handleDeleteAnalysis()}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? 'Excluindo...' : 'Excluir'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <PlotSoilTable
+                analyses={data.analyses}
+                onEdit={setEditingAnalysis}
+                onDelete={setDeletingAnalysis}
+              />
             </div>
 
             <div
@@ -238,6 +303,18 @@ function PlotHistoryPanel({ plot, farmId, onClose }: PlotHistoryPanelProps) {
             farmId={farmId}
             plotId={plot.id}
             onClose={() => setShowAddSoilAnalysis(false)}
+            onSuccess={() => void refetch()}
+          />
+        </Suspense>
+      )}
+      {editingAnalysis && (
+        <Suspense fallback={null}>
+          <EditSoilAnalysisModal
+            isOpen={!!editingAnalysis}
+            analysis={editingAnalysis}
+            farmId={farmId}
+            plotId={plot.id}
+            onClose={() => setEditingAnalysis(null)}
             onSuccess={() => void refetch()}
           />
         </Suspense>
