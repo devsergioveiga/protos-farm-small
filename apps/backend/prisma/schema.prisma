@@ -208,6 +208,41 @@ enum ApplicationMethod {
   OTHER
 }
 
+enum ReproductiveEventType {
+  CLEARANCE
+  HEAT
+  BREEDING_PLAN
+  AI
+  PREGNANCY
+  CALVING
+}
+
+enum HeatIntensity {
+  WEAK
+  MODERATE
+  STRONG
+}
+
+enum BreedingMethod {
+  NATURAL
+  AI
+  ET
+}
+
+enum CalvingType {
+  NORMAL
+  ASSISTED
+  CESAREAN
+  DYSTOCIC
+}
+
+enum PregnancyConfirmation {
+  PALPATION
+  ULTRASOUND
+  BLOOD_TEST
+  OBSERVATION
+}
+
 // ─── Core Models ─────────────────────────────────────────────────────
 
 model Organization {
@@ -259,6 +294,7 @@ model User {
   lotMovements              AnimalLotMovement[]
   recordedWeighings         AnimalWeighing[]
   recordedHealthRecords     AnimalHealthRecord[]
+  recordedReproductiveRecords AnimalReproductiveRecord[]
 
   @@map("users")
 }
@@ -312,6 +348,7 @@ model Farm {
   farmLocations              FarmLocation[]
   animalWeighings            AnimalWeighing[]
   animalHealthRecords        AnimalHealthRecord[]
+  animalReproductiveRecords  AnimalReproductiveRecord[]
 
   @@map("farms")
 }
@@ -818,6 +855,10 @@ model Animal {
   lotMovements AnimalLotMovement[]
   weighings    AnimalWeighing[]
   healthRecords AnimalHealthRecord[]
+  reproductiveRecords     AnimalReproductiveRecord[]
+  plannedSireRecords      AnimalReproductiveRecord[] @relation("PlannedSire")
+  sireReproductiveRecords AnimalReproductiveRecord[] @relation("SireReproductive")
+  calfRecords             AnimalReproductiveRecord[] @relation("CalfRecord")
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -1002,4 +1043,63 @@ model AnimalHealthRecord {
   @@index([eventDate])
   @@index([type])
   @@map("animal_health_records")
+}
+
+// ─── Animal Reproductive Records ──────────────────────────────────
+
+model AnimalReproductiveRecord {
+  id                   String                 @id @default(uuid())
+  animalId             String
+  farmId               String
+  type                 ReproductiveEventType
+  eventDate            DateTime               @db.Date
+  notes                String?
+  recordedBy           String
+
+  // CLEARANCE
+  approvedBy           String?
+  criteriaDetails      String?
+
+  // HEAT
+  heatIntensity        HeatIntensity?
+  intervalDays         Int?
+
+  // BREEDING_PLAN
+  plannedSireId        String?
+  breedingMethod       BreedingMethod?
+  plannedDate          DateTime?              @db.Date
+
+  // AI
+  sireId               String?
+  sireName             String?
+  semenBatch           String?
+  technicianName       String?
+
+  // PREGNANCY
+  confirmationMethod   PregnancyConfirmation?
+  confirmationDate     DateTime?              @db.Date
+  expectedDueDate      DateTime?              @db.Date
+
+  // CALVING
+  calvingType          CalvingType?
+  calvingComplications String?
+  calfId               String?
+  calfSex              AnimalSex?
+  calfWeightKg         Decimal?               @db.Decimal(8, 2)
+
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  animal       Animal @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  farm         Farm   @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  recorder     User   @relation(fields: [recordedBy], references: [id])
+  plannedSire  Animal? @relation("PlannedSire", fields: [plannedSireId], references: [id], onDelete: SetNull)
+  sire         Animal? @relation("SireReproductive", fields: [sireId], references: [id], onDelete: SetNull)
+  calf         Animal? @relation("CalfRecord", fields: [calfId], references: [id], onDelete: SetNull)
+
+  @@index([animalId])
+  @@index([farmId])
+  @@index([eventDate])
+  @@index([type])
+  @@map("animal_reproductive_records")
 }

@@ -63,7 +63,7 @@ CREATE INDEX animal_lot_movements_exited_at_idx ON animal_lot_movements ("exited
 
 -- ─── FK animals.lotId ─────────────────────────────────────────────────
 
-ALTER TABLE animals ADD COLUMN "lotId" TEXT REFERENCES animal_lots(id) ON DELETE SET NULL;
+ALTER TABLE animals ADD CONSTRAINT animals_lot_id_fkey FOREIGN KEY ("lotId") REFERENCES animal_lots(id) ON DELETE SET NULL;
 CREATE INDEX animals_lot_id_idx ON animals ("lotId");
 
 -- ─── RLS ──────────────────────────────────────────────────────────────
