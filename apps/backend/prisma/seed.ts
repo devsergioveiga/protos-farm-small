@@ -1396,6 +1396,118 @@ async function main() {
   );
   console.log('  ✓ Registro genealógico: Trovão (PO, Girolando)');
 
+  // ─── Lotes de Animais ──────────────────────────────────────────────
+  console.log('\n  Criando lotes de animais...');
+
+  await prisma.$executeRawUnsafe(`DELETE FROM animal_lot_movements`);
+  await prisma.$executeRawUnsafe(`DELETE FROM animal_lots`);
+
+  const animalLots = [
+    {
+      id: 'lot-0001-4000-8000-000000000001',
+      farmId: SANTA_HELENA,
+      name: 'Lote Maternidade',
+      predominantCategory: 'BEZERRA',
+      currentLocation: 'Pasto 3',
+      locationType: 'BEZERREIRO',
+      maxCapacity: 20,
+      description: 'Bezerros e bezerras recém-nascidos',
+    },
+    {
+      id: 'lot-0001-4000-8000-000000000002',
+      farmId: SANTA_HELENA,
+      name: 'Lote Recria Fêmeas',
+      predominantCategory: 'NOVILHA',
+      currentLocation: 'Pasto 5',
+      locationType: 'PASTO',
+      maxCapacity: 50,
+      description: 'Novilhas em recria',
+    },
+    {
+      id: 'lot-0001-4000-8000-000000000003',
+      farmId: SANTA_HELENA,
+      name: 'Lote Lactação',
+      predominantCategory: 'VACA_LACTACAO',
+      currentLocation: 'Galpão de Ordenha',
+      locationType: 'GALPAO',
+      maxCapacity: 30,
+      description: 'Vacas em lactação ativa',
+    },
+  ];
+
+  for (const lot of animalLots) {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO animal_lots (id, "farmId", name, "predominantCategory", "currentLocation", "locationType", "maxCapacity", description, "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4::"AnimalCategory", $5, $6::"LotLocationType", $7, $8, now(), now())`,
+      lot.id,
+      lot.farmId,
+      lot.name,
+      lot.predominantCategory,
+      lot.currentLocation,
+      lot.locationType,
+      lot.maxCapacity,
+      lot.description,
+    );
+    console.log(`  ✓ Lote: ${lot.name} (${lot.locationType}, cap: ${lot.maxCapacity})`);
+  }
+
+  // Assign animals to lots
+  console.log('\n  Atribuindo animais aos lotes...');
+
+  // Bezerros → Lote Maternidade
+  const maternidadeAnimals = ['ani-0001-4000-8000-000000000005', 'ani-0001-4000-8000-000000000006'];
+  for (const animalId of maternidadeAnimals) {
+    await prisma.$executeRawUnsafe(
+      `UPDATE animals SET "lotId" = $1 WHERE id = $2`,
+      animalLots[0].id,
+      animalId,
+    );
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO animal_lot_movements (id, "animalId", "lotId", "enteredAt", "movedBy", reason, "createdAt")
+       VALUES (gen_random_uuid(), $1, $2, now() - interval '30 days', $3, 'Nascimento', now())`,
+      animalId,
+      animalLots[0].id,
+      CREATED_BY,
+    );
+  }
+  console.log('  ✓ 2 bezerros atribuídos ao Lote Maternidade');
+
+  // Novilhas → Lote Recria Fêmeas
+  const recriaAnimals = ['ani-0001-4000-8000-000000000007'];
+  for (const animalId of recriaAnimals) {
+    await prisma.$executeRawUnsafe(
+      `UPDATE animals SET "lotId" = $1 WHERE id = $2`,
+      animalLots[1].id,
+      animalId,
+    );
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO animal_lot_movements (id, "animalId", "lotId", "enteredAt", "movedBy", reason, "createdAt")
+       VALUES (gen_random_uuid(), $1, $2, now() - interval '60 days', $3, 'Recria', now())`,
+      animalId,
+      animalLots[1].id,
+      CREATED_BY,
+    );
+  }
+  console.log('  ✓ 1 novilha atribuída ao Lote Recria Fêmeas');
+
+  // Vacas lactação → Lote Lactação
+  const lactacaoAnimals = ['ani-0001-4000-8000-000000000001', 'ani-0001-4000-8000-000000000002'];
+  for (const animalId of lactacaoAnimals) {
+    await prisma.$executeRawUnsafe(
+      `UPDATE animals SET "lotId" = $1 WHERE id = $2`,
+      animalLots[2].id,
+      animalId,
+    );
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO animal_lot_movements (id, "animalId", "lotId", "enteredAt", "movedBy", reason, "createdAt")
+       VALUES (gen_random_uuid(), $1, $2, now() - interval '90 days', $3, 'Início lactação', now())`,
+      animalId,
+      animalLots[2].id,
+      CREATED_BY,
+    );
+  }
+  console.log('  ✓ 2 vacas atribuídas ao Lote Lactação');
+
   // Audit Logs de exemplo
   console.log('');
   const auditLogs = [

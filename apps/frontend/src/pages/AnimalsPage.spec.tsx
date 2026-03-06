@@ -39,6 +39,8 @@ const MOCK_ANIMALS: AnimalListItem[] = [
     breedSummary: 'Holandesa 50% + Gir Leiteiro 50%',
     sire: null,
     dam: null,
+    lotId: null,
+    lotName: null,
   },
   {
     id: 'a2',
@@ -60,6 +62,8 @@ const MOCK_ANIMALS: AnimalListItem[] = [
     breedSummary: null,
     sire: null,
     dam: null,
+    lotId: null,
+    lotName: null,
   },
 ];
 
