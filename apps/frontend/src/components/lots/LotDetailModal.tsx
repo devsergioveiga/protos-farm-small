@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, BarChart3, Users, Clock, AlertTriangle } from 'lucide-react';
 import { useLotDashboard } from '@/hooks/useLotDashboard';
 import { useLotHistory } from '@/hooks/useLotHistory';
@@ -21,6 +21,13 @@ type TabId = 'dashboard' | 'animals' | 'history';
 function LotDetailModal({ isOpen, farmId, lot, onClose, onUpdate }: LotDetailModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [showManageAnimals, setShowManageAnimals] = useState(false);
+  const prevIsOpenRef = useRef(isOpen);
+
+  // Reset tab on open (ref-based, no setState in effect)
+  if (isOpen && !prevIsOpenRef.current) {
+    setActiveTab('dashboard');
+  }
+  prevIsOpenRef.current = isOpen;
 
   const { dashboard, isLoading: dashLoading } = useLotDashboard({
     farmId: isOpen ? farmId : null,
@@ -31,11 +38,6 @@ function LotDetailModal({ isOpen, farmId, lot, onClose, onUpdate }: LotDetailMod
     farmId: isOpen && activeTab === 'history' ? farmId : null,
     lotId: isOpen && activeTab === 'history' ? (lot?.id ?? null) : null,
   });
-
-  // Reset tab on open
-  useEffect(() => {
-    if (isOpen) setActiveTab('dashboard');
-  }, [isOpen]);
 
   // Escape key
   useEffect(() => {
