@@ -46,7 +46,7 @@ animalLotsRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const alerts = await getLotsWithCapacityAlerts(ctx, req.params.farmId);
+      const alerts = await getLotsWithCapacityAlerts(ctx, req.params.farmId as string);
       res.json(alerts);
     } catch (err) {
       if (err instanceof AnimalLotError) {
@@ -85,7 +85,7 @@ animalLotsRouter.post(
         return;
       }
 
-      const lot = await createLot(ctx, req.params.farmId, {
+      const lot = await createLot(ctx, req.params.farmId as string, {
         name,
         predominantCategory,
         currentLocation,
@@ -102,9 +102,9 @@ animalLotsRouter.post(
         action: 'CREATE_LOT',
         targetType: 'animal_lot',
         targetId: lot.id,
-        metadata: { name, predominantCategory, locationType, farmId: req.params.farmId },
+        metadata: { name, predominantCategory, locationType, farmId: req.params.farmId as string },
         ipAddress: getClientIp(req),
-        farmId: req.params.farmId,
+        farmId: req.params.farmId as string,
         organizationId: ctx.organizationId,
       });
 
@@ -136,7 +136,7 @@ animalLotsRouter.get(
         category: req.query.category as string | undefined,
         locationType: req.query.locationType as string | undefined,
       };
-      const result = await listLots(ctx, req.params.farmId, query);
+      const result = await listLots(ctx, req.params.farmId as string, query);
       res.json(result);
     } catch (err) {
       if (err instanceof AnimalLotError) {
@@ -158,7 +158,7 @@ animalLotsRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const lot = await getLot(ctx, req.params.farmId, req.params.lotId);
+      const lot = await getLot(ctx, req.params.farmId as string, req.params.lotId as string);
       res.json(lot);
     } catch (err) {
       if (err instanceof AnimalLotError) {
@@ -180,7 +180,12 @@ animalLotsRouter.patch(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const lot = await updateLot(ctx, req.params.farmId, req.params.lotId, req.body);
+      const lot = await updateLot(
+        ctx,
+        req.params.farmId as string,
+        req.params.lotId as string,
+        req.body,
+      );
 
       void logAudit({
         actorId: req.user!.userId,
@@ -189,9 +194,9 @@ animalLotsRouter.patch(
         action: 'UPDATE_LOT',
         targetType: 'animal_lot',
         targetId: lot.id,
-        metadata: { changes: Object.keys(req.body), farmId: req.params.farmId },
+        metadata: { changes: Object.keys(req.body), farmId: req.params.farmId as string },
         ipAddress: getClientIp(req),
-        farmId: req.params.farmId,
+        farmId: req.params.farmId as string,
         organizationId: ctx.organizationId,
       });
 
@@ -216,7 +221,7 @@ animalLotsRouter.delete(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      await softDeleteLot(ctx, req.params.farmId, req.params.lotId);
+      await softDeleteLot(ctx, req.params.farmId as string, req.params.lotId as string);
 
       void logAudit({
         actorId: req.user!.userId,
@@ -224,10 +229,10 @@ animalLotsRouter.delete(
         actorRole: req.user!.role,
         action: 'DELETE_LOT',
         targetType: 'animal_lot',
-        targetId: req.params.lotId,
-        metadata: { farmId: req.params.farmId },
+        targetId: req.params.lotId as string,
+        metadata: { farmId: req.params.farmId as string },
         ipAddress: getClientIp(req),
-        farmId: req.params.farmId,
+        farmId: req.params.farmId as string,
         organizationId: ctx.organizationId,
       });
 
@@ -261,9 +266,9 @@ animalLotsRouter.post(
 
       const result = await moveAnimalsToLot(
         ctx,
-        req.params.farmId,
+        req.params.farmId as string,
         req.user!.userId,
-        req.params.lotId,
+        req.params.lotId as string,
         { animalIds, reason },
       );
 
@@ -273,10 +278,10 @@ animalLotsRouter.post(
         actorRole: req.user!.role,
         action: 'MOVE_ANIMALS_TO_LOT',
         targetType: 'animal_lot',
-        targetId: req.params.lotId,
-        metadata: { animalIds, reason, moved: result.moved, farmId: req.params.farmId },
+        targetId: req.params.lotId as string,
+        metadata: { animalIds, reason, moved: result.moved, farmId: req.params.farmId as string },
         ipAddress: getClientIp(req),
-        farmId: req.params.farmId,
+        farmId: req.params.farmId as string,
         organizationId: ctx.organizationId,
       });
 
@@ -310,9 +315,9 @@ animalLotsRouter.post(
 
       const result = await removeAnimalsFromLot(
         ctx,
-        req.params.farmId,
+        req.params.farmId as string,
         req.user!.userId,
-        req.params.lotId,
+        req.params.lotId as string,
         { animalIds, reason },
       );
 
@@ -322,10 +327,15 @@ animalLotsRouter.post(
         actorRole: req.user!.role,
         action: 'REMOVE_ANIMALS_FROM_LOT',
         targetType: 'animal_lot',
-        targetId: req.params.lotId,
-        metadata: { animalIds, reason, removed: result.removed, farmId: req.params.farmId },
+        targetId: req.params.lotId as string,
+        metadata: {
+          animalIds,
+          reason,
+          removed: result.removed,
+          farmId: req.params.farmId as string,
+        },
         ipAddress: getClientIp(req),
-        farmId: req.params.farmId,
+        farmId: req.params.farmId as string,
         organizationId: ctx.organizationId,
       });
 
@@ -350,7 +360,11 @@ animalLotsRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const dashboard = await getLotDashboard(ctx, req.params.farmId, req.params.lotId);
+      const dashboard = await getLotDashboard(
+        ctx,
+        req.params.farmId as string,
+        req.params.lotId as string,
+      );
       res.json(dashboard);
     } catch (err) {
       if (err instanceof AnimalLotError) {
@@ -372,7 +386,11 @@ animalLotsRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const history = await getLotCompositionHistory(ctx, req.params.farmId, req.params.lotId);
+      const history = await getLotCompositionHistory(
+        ctx,
+        req.params.farmId as string,
+        req.params.lotId as string,
+      );
       res.json(history);
     } catch (err) {
       if (err instanceof AnimalLotError) {
