@@ -16,6 +16,7 @@ import { dashboardRouter } from './modules/dashboard/dashboard.routes';
 import { animalsRouter } from './modules/animals/animals.routes';
 import { animalLotsRouter } from './modules/animals/animal-lots.routes';
 import { animalWeighingRouter } from './modules/animals/animal-weighing.routes';
+import { animalHealthRouter } from './modules/animals/animal-health.routes';
 import { farmLocationsRouter } from './modules/animals/farm-locations.routes';
 
 const app = express();
@@ -40,6 +41,7 @@ app.use('/api', dashboardRouter);
 app.use('/api', animalsRouter);
 app.use('/api', animalLotsRouter);
 app.use('/api', animalWeighingRouter);
+app.use('/api', animalHealthRouter);
 app.use('/api', farmLocationsRouter);
 
 export { app };
