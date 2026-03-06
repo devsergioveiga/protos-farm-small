@@ -1,0 +1,212 @@
+/* ─── Reproductive Modal ────────────────────────────────────── */
+
+.repro-modal__dialog {
+  border: none;
+  border-radius: 12px;
+  padding: 0;
+  max-width: 560px;
+  width: calc(100% - 32px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  background: var(--color-neutral-0);
+}
+
+.repro-modal__dialog::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.repro-modal {
+  display: flex;
+  flex-direction: column;
+}
+
+.repro-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.repro-modal__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.repro-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 6px;
+  color: var(--color-neutral-600);
+  cursor: pointer;
+  transition: all 200ms;
+}
+
+.repro-modal__close:hover {
+  border-color: var(--color-neutral-400);
+  color: var(--color-neutral-700);
+}
+
+.repro-modal__close:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Form ─────────────────────────────────────────────────── */
+
+.repro-modal__form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.repro-modal__error {
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-error-500);
+}
+
+.repro-modal__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.repro-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.repro-modal__label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+}
+
+.repro-modal__label span {
+  color: var(--color-error-500);
+}
+
+.repro-modal__input,
+.repro-modal__textarea {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  transition: border-color 200ms;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.repro-modal__input:focus,
+.repro-modal__textarea:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -1px;
+  border-color: var(--color-primary-500);
+}
+
+.repro-modal__textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* ─── Footer ───────────────────────────────────────────────── */
+
+.repro-modal__footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.repro-modal__btn {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 48px;
+  transition: all 200ms;
+}
+
+.repro-modal__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.repro-modal__btn--secondary {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-300);
+  color: var(--color-neutral-700);
+}
+
+.repro-modal__btn--secondary:hover:not(:disabled) {
+  border-color: var(--color-neutral-400);
+}
+
+.repro-modal__btn--primary {
+  background: var(--color-primary-600);
+  border: 1px solid var(--color-primary-600);
+  color: var(--color-neutral-0);
+}
+
+.repro-modal__btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+  border-color: var(--color-primary-700);
+}
+
+.repro-modal__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .repro-modal__dialog {
+    max-width: none;
+    width: calc(100% - 16px);
+    margin: 8px;
+  }
+
+  .repro-modal__row {
+    grid-template-columns: 1fr;
+  }
+
+  .repro-modal__footer {
+    flex-direction: column-reverse;
+  }
+
+  .repro-modal__btn {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .repro-modal__close,
+  .repro-modal__input,
+  .repro-modal__textarea,
+  .repro-modal__btn {
+    transition: none;
+  }
+}

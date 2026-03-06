@@ -157,14 +157,13 @@ describe('AnimalDetailPage', () => {
     expect(generalTab.getAttribute('aria-selected')).toBe('true');
   });
 
-  it('should render disabled tabs with "Em breve" hint', () => {
+  it('should render all tabs enabled', () => {
     mockUseAnimalDetail.mockReturnValue(defaultReturn());
     renderPage();
 
     const reproductiveTab = screen.getByRole('tab', { name: /Reprodutivo/ });
     expect(reproductiveTab).toBeTruthy();
-    expect(reproductiveTab.hasAttribute('disabled')).toBe(true);
-    expect(screen.getAllByText('(Em breve)').length).toBe(1);
+    expect(reproductiveTab.hasAttribute('disabled')).toBe(false);
   });
 
   it('should render identification section', () => {
@@ -265,13 +264,12 @@ describe('AnimalDetailPage', () => {
     expect(screen.getByText('Voltar para animais')).toBeTruthy();
   });
 
-  it('should show placeholder when clicking disabled tab', async () => {
+  it('should enable reproductive tab', () => {
     mockUseAnimalDetail.mockReturnValue(defaultReturn());
     renderPage();
 
-    // Disabled tabs can't be clicked, so placeholder should not show
     const reproductiveTab = screen.getByRole('tab', { name: /Reprodutivo/ });
-    expect(reproductiveTab.hasAttribute('disabled')).toBe(true);
+    expect(reproductiveTab.hasAttribute('disabled')).toBe(false);
   });
 
   it('should show photo placeholder when no photo', () => {
