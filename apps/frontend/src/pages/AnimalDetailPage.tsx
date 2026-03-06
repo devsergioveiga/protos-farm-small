@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Camera, AlertCircle, ArrowLeft, Beef } from 'lucide-react';
 import { useAnimalDetail } from '@/hooks/useAnimalDetail';
 import { useFarmContext } from '@/stores/FarmContext';
+import WeighingTab from '@/components/animals/WeighingTab';
 import { SEX_LABELS, CATEGORY_LABELS, ORIGIN_LABELS, GENEALOGY_CLASS_LABELS } from '@/types/animal';
 import type { AnimalDetail, AnimalCategory, GenealogyClass } from '@/types/animal';
 import './AnimalDetailPage.css';
@@ -109,7 +110,7 @@ function AnimalDetailPage() {
     { id: 'general', label: 'Dados Gerais', disabled: false },
     { id: 'sanitary', label: 'Sanitário', disabled: true },
     { id: 'reproductive', label: 'Reprodutivo', disabled: true },
-    { id: 'weighing', label: 'Pesagens', disabled: true },
+    { id: 'weighing', label: 'Pesagens', disabled: false },
   ];
 
   return (
@@ -186,6 +187,8 @@ function AnimalDetailPage() {
       <div role="tabpanel" id={`panel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
         {activeTab === 'general' ? (
           <GeneralTab animal={animal} />
+        ) : activeTab === 'weighing' ? (
+          <WeighingTab farmId={selectedFarm.id} animalId={animal.id} animalEarTag={animal.earTag} />
         ) : (
           <div className="animal-detail__panel-placeholder">
             <Beef size={48} color="var(--color-neutral-400)" aria-hidden="true" />

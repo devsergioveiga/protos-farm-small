@@ -1,0 +1,87 @@
+/* ─── Weighing Stats Cards ───────────────────────────────────── */
+
+.weighing-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.weighing-stats__card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+}
+
+.weighing-stats__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--color-primary-50, #e8f5e9);
+  color: var(--color-primary-600);
+  flex-shrink: 0;
+}
+
+.weighing-stats__content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.weighing-stats__label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.weighing-stats__value {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.weighing-stats__value--mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+}
+
+.weighing-stats__trend {
+  flex-shrink: 0;
+}
+
+.weighing-stats__trend--up {
+  color: var(--color-primary-600);
+}
+
+.weighing-stats__trend--down {
+  color: var(--color-error-500);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .weighing-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .weighing-stats {
+    grid-template-columns: 1fr;
+  }
+}
