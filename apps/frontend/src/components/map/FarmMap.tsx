@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from 'react';
-import { MapContainer, TileLayer, GeoJSON, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, Popup, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import MapAutoFit from './MapAutoFit';
@@ -7,6 +7,8 @@ import PlotLabels from './PlotLabels';
 import type { BaseMapType } from './BaseMapSelector';
 import type { FarmMapData } from '@/hooks/useFarmMap';
 import type { FarmRegistration, FieldPlot } from '@/types/farm';
+import type { FarmLocationMapItem } from '@/types/farm-location';
+import { PASTURE_STATUS_COLORS, FACILITY_TYPE_COLORS } from './LocationLegend';
 
 const TILE_URLS: Record<BaseMapType, { url: string; attribution: string; maxZoom: number }> = {
   topographic: {
@@ -104,7 +106,10 @@ interface FarmMapProps {
   showFarmBoundary: boolean;
   showRegistrations: boolean;
   showPlots?: boolean;
+  showPastures?: boolean;
+  showFacilities?: boolean;
   onPlotClick?: (plot: FieldPlot) => void;
+  onLocationClick?: (location: FarmLocationMapItem) => void;
   cropFilter?: Set<string>;
   versionOverlay?: GeoJSON.Polygon | null;
 }
@@ -115,11 +120,14 @@ function FarmMap({
   showFarmBoundary,
   showRegistrations,
   showPlots = true,
+  showPastures = false,
+  showFacilities = false,
   onPlotClick,
+  onLocationClick,
   cropFilter,
   versionOverlay,
 }: FarmMapProps) {
-  const { farm, farmBoundary, registrationBoundaries, plotBoundaries } = data;
+  const { farm, farmBoundary, registrationBoundaries, plotBoundaries, locationBoundaries } = data;
   const tile = TILE_URLS[baseMap];
 
   const bounds = useMemo(() => {
@@ -175,6 +183,67 @@ function FarmMap({
       };
     },
     [onPlotClick],
+  );
+
+  const getLocationColor = useCallback((loc: FarmLocationMapItem): string => {
+    if (loc.type === 'PASTURE') {
+      return PASTURE_STATUS_COLORS[loc.pastureStatus ?? 'EM_USO'] ?? '#6B7280';
+    }
+    return FACILITY_TYPE_COLORS[loc.facilityType ?? 'OUTRO'] ?? '#757575';
+  }, []);
+
+  const getLocationStyle = useCallback(
+    (loc: FarmLocationMapItem): L.PathOptions => {
+      const color = getLocationColor(loc);
+      return {
+        color,
+        weight: 2,
+        fillOpacity: 0.25,
+        fillColor: color,
+        dashArray: loc.type === 'FACILITY' ? '4 4' : undefined,
+      };
+    },
+    [getLocationColor],
+  );
+
+  const makeLocationEachFeature = useCallback(
+    (loc: FarmLocationMapItem) => {
+      return (_feature: GeoJSON.Feature, layer: L.Layer) => {
+        const occupancyDot =
+          loc.occupancy.occupancyPercent != null
+            ? ` | Ocupação: ${loc.occupancy.occupancyPercent}%`
+            : '';
+        const tooltipLines = [
+          `<strong>${loc.name}</strong>`,
+          loc.type === 'PASTURE' ? 'Pasto' : 'Instalação',
+          loc.boundaryAreaHa ? `Área: ${formatArea(loc.boundaryAreaHa)}` : null,
+          loc.capacityUA ? `Capacidade: ${loc.capacityUA} UA` : null,
+          loc.capacityAnimals ? `Capacidade: ${loc.capacityAnimals} animais` : null,
+          occupancyDot ? `${loc.occupancy.totalAnimals} animais${occupancyDot}` : null,
+        ].filter(Boolean);
+
+        layer.bindTooltip(tooltipLines.join('<br>'), {
+          sticky: true,
+          direction: 'auto',
+          className: 'plot-tooltip',
+        });
+
+        layer.on('click', () => {
+          onLocationClick?.(loc);
+        });
+      };
+    },
+    [onLocationClick],
+  );
+
+  const filteredPastures = useMemo(
+    () => locationBoundaries.filter((l) => l.type === 'PASTURE' && l.boundaryGeoJSON),
+    [locationBoundaries],
+  );
+
+  const filteredFacilities = useMemo(
+    () => locationBoundaries.filter((l) => l.type === 'FACILITY' && l.boundaryGeoJSON),
+    [locationBoundaries],
   );
 
   const classificationLabels: Record<string, string> = {
@@ -255,6 +324,66 @@ function FarmMap({
           ))}
 
       {showPlots && <PlotLabels plotBoundaries={filteredPlotBoundaries} />}
+
+      {showPastures &&
+        filteredPastures.map((loc) => {
+          const geojson = loc.boundaryGeoJSON!;
+          const geojsonType = (geojson as GeoJSON.Geometry).type;
+
+          if (geojsonType === 'Point') {
+            const coords = (geojson as GeoJSON.Point).coordinates;
+            return (
+              <CircleMarker
+                key={`loc-${loc.id}`}
+                center={[coords[1], coords[0]]}
+                radius={10}
+                pathOptions={getLocationStyle(loc)}
+                eventHandlers={{
+                  click: () => onLocationClick?.(loc),
+                }}
+              />
+            );
+          }
+
+          return (
+            <GeoJSON
+              key={`loc-${loc.id}`}
+              data={geojson as GeoJSON.GeoJsonObject}
+              style={getLocationStyle(loc)}
+              onEachFeature={makeLocationEachFeature(loc)}
+            />
+          );
+        })}
+
+      {showFacilities &&
+        filteredFacilities.map((loc) => {
+          const geojson = loc.boundaryGeoJSON!;
+          const geojsonType = (geojson as GeoJSON.Geometry).type;
+
+          if (geojsonType === 'Point') {
+            const coords = (geojson as GeoJSON.Point).coordinates;
+            return (
+              <CircleMarker
+                key={`loc-${loc.id}`}
+                center={[coords[1], coords[0]]}
+                radius={8}
+                pathOptions={getLocationStyle(loc)}
+                eventHandlers={{
+                  click: () => onLocationClick?.(loc),
+                }}
+              />
+            );
+          }
+
+          return (
+            <GeoJSON
+              key={`loc-${loc.id}`}
+              data={geojson as GeoJSON.GeoJsonObject}
+              style={getLocationStyle(loc)}
+              onEachFeature={makeLocationEachFeature(loc)}
+            />
+          );
+        })}
 
       {versionOverlay && (
         <GeoJSON
