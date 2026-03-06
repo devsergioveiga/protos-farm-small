@@ -8,6 +8,7 @@ import {
   type HealthRecordItem,
   type HealthStats,
   type HealthEventType,
+  type ApplicationMethod,
 } from './animal-health.types';
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -54,7 +55,7 @@ function toHealthRecordItem(row: Record<string, unknown>): HealthRecordItem {
     eventDate: (row.eventDate as Date).toISOString().slice(0, 10),
     productName: (row.productName as string) ?? null,
     dosage: (row.dosage as string) ?? null,
-    applicationMethod: (row.applicationMethod as string) ?? null,
+    applicationMethod: (row.applicationMethod as ApplicationMethod) ?? null,
     batchNumber: (row.batchNumber as string) ?? null,
     diagnosis: (row.diagnosis as string) ?? null,
     durationDays: (row.durationDays as number) ?? null,
