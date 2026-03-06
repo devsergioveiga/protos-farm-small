@@ -350,6 +350,37 @@ export const PREGNANCY_CONFIRMATION_LABELS: Record<PregnancyConfirmation, string
   OBSERVATION: 'Observação',
 };
 
+// ─── Movement Types ────────────────────────────────────────────────────
+
+export interface AnimalMovementItem {
+  id: string;
+  lotName: string;
+  lotLocationType: string;
+  locationName: string | null;
+  previousLotName: string | null;
+  enteredAt: string;
+  exitedAt: string | null;
+  durationDays: number;
+  reason: string | null;
+  movedByName: string;
+}
+
+export interface AnimalMovementStats {
+  totalMovements: number;
+  currentLotName: string | null;
+  currentLocationName: string | null;
+  daysInCurrentLot: number | null;
+  distinctLots: number;
+}
+
+export const LOT_LOCATION_TYPE_LABELS: Record<string, string> = {
+  PASTO: 'Pasto',
+  CONFINAMENTO: 'Confinamento',
+  GALPAO: 'Galpão',
+  BEZERREIRO: 'Bezerreiro',
+  OUTRO: 'Outro',
+};
+
 // ─── Bulk Import Types ────────────────────────────────────────────────
 
 export interface AnimalColumnMapping {
