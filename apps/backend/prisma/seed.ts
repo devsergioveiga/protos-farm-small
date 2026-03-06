@@ -1508,6 +1508,109 @@ async function main() {
   }
   console.log('  ✓ 2 vacas atribuídas ao Lote Lactação');
 
+  // ─── Farm Locations (Pastos e Instalações) ──────────────────────────
+  console.log('\n  Criando pastos e instalações...');
+
+  await prisma.$executeRawUnsafe(`DELETE FROM farm_locations`);
+
+  const farmLocations = [
+    {
+      id: 'floc-0001-4000-8000-000000000001',
+      farmId: SANTA_HELENA,
+      name: 'Pasto Norte',
+      type: 'PASTURE',
+      capacityUA: 25,
+      forageType: 'BRACHIARIA_BRIZANTHA',
+      pastureStatus: 'EM_USO',
+      description: 'Pasto principal, rotação com Pasto Sul',
+    },
+    {
+      id: 'floc-0001-4000-8000-000000000002',
+      farmId: SANTA_HELENA,
+      name: 'Pasto Sul',
+      type: 'PASTURE',
+      capacityUA: 30,
+      forageType: 'PANICUM_MOMBASA',
+      pastureStatus: 'DESCANSO',
+      description: 'Em descanso para recuperação da pastagem',
+    },
+    {
+      id: 'floc-0001-4000-8000-000000000003',
+      farmId: SANTA_HELENA,
+      name: 'Piquete Maternidade',
+      type: 'PASTURE',
+      capacityUA: 10,
+      forageType: 'CYNODON_TIFTON',
+      pastureStatus: 'EM_USO',
+      description: 'Piquete exclusivo para vacas em maternidade',
+    },
+    {
+      id: 'floc-0001-4000-8000-000000000004',
+      farmId: SANTA_HELENA,
+      name: 'Curral Principal',
+      type: 'FACILITY',
+      capacityAnimals: 50,
+      facilityType: 'CURRAL',
+      facilityStatus: 'ATIVO',
+      description: 'Curral de manejo com tronco e balança',
+    },
+    {
+      id: 'floc-0001-4000-8000-000000000005',
+      farmId: SANTA_HELENA,
+      name: 'Bezerreiro',
+      type: 'FACILITY',
+      capacityAnimals: 20,
+      facilityType: 'BEZERREIRO',
+      facilityStatus: 'ATIVO',
+      description: 'Instalação coberta para bezerros',
+    },
+  ];
+
+  for (const loc of farmLocations) {
+    if (loc.type === 'PASTURE') {
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO farm_locations (id, "farmId", name, type, "capacityUA", "forageType", "pastureStatus", description, "createdAt", "updatedAt")
+         VALUES ($1, $2, $3, $4::"FarmLocationType", $5, $6::"ForageType", $7::"PastureStatus", $8, now(), now())`,
+        loc.id,
+        loc.farmId,
+        loc.name,
+        loc.type,
+        loc.capacityUA,
+        loc.forageType,
+        loc.pastureStatus,
+        loc.description,
+      );
+    } else {
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO farm_locations (id, "farmId", name, type, "capacityAnimals", "facilityType", "facilityStatus", description, "createdAt", "updatedAt")
+         VALUES ($1, $2, $3, $4::"FarmLocationType", $5, $6::"FacilityType", $7::"FacilityStatus", $8, now(), now())`,
+        loc.id,
+        loc.farmId,
+        loc.name,
+        loc.type,
+        loc.capacityAnimals,
+        loc.facilityType,
+        loc.facilityStatus,
+        loc.description,
+      );
+    }
+    console.log(`  ✓ ${loc.type === 'PASTURE' ? 'Pasto' : 'Instalação'}: ${loc.name}`);
+  }
+
+  // Link lots to locations
+  console.log('\n  Vinculando lotes aos locais...');
+  await prisma.$executeRawUnsafe(
+    `UPDATE animal_lots SET "locationId" = $1 WHERE id = $2`,
+    farmLocations[0].id, // Pasto Norte
+    animalLots[1].id, // Lote Recria Fêmeas (was at Pasto 5)
+  );
+  await prisma.$executeRawUnsafe(
+    `UPDATE animal_lots SET "locationId" = $1 WHERE id = $2`,
+    farmLocations[4].id, // Bezerreiro
+    animalLots[0].id, // Lote Maternidade (was at Pasto 3 / Bezerreiro)
+  );
+  console.log('  ✓ 2 lotes vinculados a locais');
+
   // Audit Logs de exemplo
   console.log('');
   const auditLogs = [

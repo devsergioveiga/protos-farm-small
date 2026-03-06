@@ -151,6 +151,49 @@ enum SoilType {
   OUTRO
 }
 
+enum FarmLocationType {
+  PASTURE
+  FACILITY
+}
+
+enum PastureStatus {
+  EM_USO
+  DESCANSO
+  REFORMANDO
+}
+
+enum FacilityStatus {
+  ATIVO
+  MANUTENCAO
+  INATIVO
+}
+
+enum ForageType {
+  BRACHIARIA_BRIZANTHA
+  BRACHIARIA_DECUMBENS
+  BRACHIARIA_HUMIDICOLA
+  PANICUM_MAXIMUM
+  PANICUM_MOMBASA
+  PANICUM_TANZANIA
+  CYNODON_TIFTON
+  CYNODON_COASTCROSS
+  PENNISETUM_NAPIER
+  ANDROPOGON
+  ESTILOSANTES
+  OUTRO
+}
+
+enum FacilityType {
+  GALPAO
+  BEZERREIRO
+  CURRAL
+  BAIA
+  SALA_ORDENHA
+  ESTABULO
+  CONFINAMENTO
+  OUTRO
+}
+
 // ─── Core Models ─────────────────────────────────────────────────────
 
 model Organization {
@@ -250,6 +293,7 @@ model Farm {
   carRegistrations           CarRegistration[]
   animals                    Animal[]
   animalLots                 AnimalLot[]
+  farmLocations              FarmLocation[]
 
   @@map("farms")
 }
@@ -745,6 +789,7 @@ model Animal {
 
   farm         Farm                       @relation(fields: [farmId], references: [id], onDelete: Cascade)
   lot          AnimalLot?                 @relation(fields: [lotId], references: [id], onDelete: SetNull)
+  pasture      FarmLocation?              @relation("AnimalPasture", fields: [pastureId], references: [id], onDelete: SetNull)
   sire         Animal?                    @relation("SireOffspring", fields: [sireId], references: [id], onDelete: SetNull)
   dam          Animal?                    @relation("DamOffspring", fields: [damId], references: [id], onDelete: SetNull)
   sireOffspring Animal[]                  @relation("SireOffspring")
@@ -799,6 +844,36 @@ model AnimalGenealogicalRecord {
   @@map("animal_genealogical_records")
 }
 
+// ─── Farm Locations ──────────────────────────────────────────────────
+
+model FarmLocation {
+  id              String                                @id @default(uuid())
+  farmId          String
+  name            String
+  type            FarmLocationType
+  boundary        Unsupported("geometry(Geometry, 4326)")?
+  boundaryAreaHa  Decimal?                              @db.Decimal(12, 4)
+  capacityUA      Decimal?                              @db.Decimal(10, 2)
+  capacityAnimals Int?
+  forageType      ForageType?
+  pastureStatus   PastureStatus?
+  facilityType    FacilityType?
+  facilityStatus  FacilityStatus?
+  description     String?
+  notes           String?
+  deletedAt       DateTime?
+  createdAt       DateTime                              @default(now())
+  updatedAt       DateTime                              @updatedAt
+
+  farm            Farm                                  @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  lots            AnimalLot[]
+  animals         Animal[]                              @relation("AnimalPasture")
+
+  @@index([farmId])
+  @@index([type])
+  @@map("farm_locations")
+}
+
 // ─── Animal Lots ──────────────────────────────────────────────────────
 
 model AnimalLot {
@@ -808,6 +883,7 @@ model AnimalLot {
   predominantCategory   AnimalCategory
   currentLocation       String
   locationType          LotLocationType
+  locationId            String?
   maxCapacity           Int?
   description           String?
   notes                 String?
@@ -816,12 +892,14 @@ model AnimalLot {
   updatedAt             DateTime        @updatedAt
 
   farm                  Farm                @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  location              FarmLocation?       @relation(fields: [locationId], references: [id], onDelete: SetNull)
   animals               Animal[]
   movements             AnimalLotMovement[] @relation("LotMovements")
   incomingMovements     AnimalLotMovement[] @relation("PreviousLotMovements")
 
   @@index([farmId])
   @@index([predominantCategory])
+  @@index([locationId])
   @@map("animal_lots")
 }
 

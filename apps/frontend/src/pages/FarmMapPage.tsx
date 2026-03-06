@@ -10,6 +10,7 @@ import {
   Clock,
   Users,
   Plus,
+  Fence,
 } from 'lucide-react';
 import turfArea from '@turf/area';
 import { polygon as turfPolygon } from '@turf/helpers';
@@ -23,12 +24,15 @@ import LayerControlPanel, { type LayerConfig } from '@/components/map/LayerContr
 import CropLegend from '@/components/map/CropLegend';
 import PlotDetailsPanel from '@/components/map/PlotDetailsPanel';
 import PlotSummaryBar from '@/components/map/PlotSummaryBar';
+import LocationLegend from '@/components/map/LocationLegend';
+import LocationDetailsPanel from '@/components/farm-locations/LocationDetailsPanel';
 import type {
   FieldPlot,
   FarmRegistration,
   CreateRegistrationPayload,
   UpdatePlotBoundaryResult,
 } from '@/types/farm';
+import type { FarmLocationMapItem } from '@/types/farm-location';
 import './FarmMapPage.css';
 
 const PlotHistoryPanel = lazy(() => import('@/components/map/PlotHistoryPanel'));
@@ -47,6 +51,7 @@ const FarmProducersPanel = lazy(() => import('@/components/farm-producers/FarmPr
 const CreatePlotModal = lazy(() => import('@/components/map/CreatePlotModal'));
 const EditPlotModal = lazy(() => import('@/components/map/EditPlotModal'));
 const ConfirmDeleteModal = lazy(() => import('@/components/confirm-delete/ConfirmDeleteModal'));
+const CreateLocationModal = lazy(() => import('@/components/farm-locations/CreateLocationModal'));
 
 interface BoundaryVersionsTarget {
   registrationId?: string;
@@ -68,14 +73,8 @@ const DEFAULT_LAYERS: LayerConfig[] = [
   { id: 'perimeter', label: 'Perímetro', enabled: true },
   { id: 'registrations', label: 'Matrículas', enabled: true },
   { id: 'plots', label: 'Talhões', enabled: true },
-  { id: 'pastures', label: 'Pastos', enabled: false, disabled: true, futureLabel: 'Em breve' },
-  {
-    id: 'structures',
-    label: 'Sedes/Estruturas',
-    enabled: false,
-    disabled: true,
-    futureLabel: 'Em breve',
-  },
+  { id: 'pastures', label: 'Pastos', enabled: false },
+  { id: 'structures', label: 'Instalações', enabled: false },
   {
     id: 'environmental',
     label: 'APP/Reserva Legal',
@@ -127,6 +126,8 @@ function FarmMapPage() {
   const [boundaryVersionsTarget, setBoundaryVersionsTarget] =
     useState<BoundaryVersionsTarget | null>(null);
   const [versionOverlay, setVersionOverlay] = useState<GeoJSON.Polygon | null>(null);
+  const [isCreateLocationOpen, setIsCreateLocationOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<FarmLocationMapItem | null>(null);
 
   const handleOpenRegForm = useCallback(
     (reg?: FarmRegistration) => {
@@ -213,6 +214,16 @@ function FarmMapPage() {
       return next;
     });
   }, []);
+
+  const handleLocationClick = useCallback((loc: FarmLocationMapItem) => {
+    setSelectedLocation(loc);
+    setSelectedPlot(null);
+  }, []);
+
+  const handleCreateLocationSuccess = useCallback(() => {
+    setIsCreateLocationOpen(false);
+    void refetch();
+  }, [refetch]);
 
   const handleViewHistory = useCallback((plot: FieldPlot) => {
     setHistoryPlot(plot);
@@ -309,6 +320,8 @@ function FarmMapPage() {
   const showFarmBoundary = layers.find((l) => l.id === 'perimeter')?.enabled ?? true;
   const showRegistrationLayer = layers.find((l) => l.id === 'registrations')?.enabled ?? true;
   const showPlots = layers.find((l) => l.id === 'plots')?.enabled ?? true;
+  const showPastures = layers.find((l) => l.id === 'pastures')?.enabled ?? false;
+  const showFacilities = layers.find((l) => l.id === 'structures')?.enabled ?? false;
 
   if (isLoading) {
     return (
@@ -427,6 +440,16 @@ function FarmMapPage() {
           <Upload size={20} aria-hidden="true" />
           <span className="farm-map-page__header-btn-label">Importar talhões</span>
         </button>
+
+        <button
+          type="button"
+          className="farm-map-page__header-btn"
+          onClick={() => setIsCreateLocationOpen(true)}
+          aria-label="Novo local"
+        >
+          <Fence size={20} aria-hidden="true" />
+          <span className="farm-map-page__header-btn-label">Novo local</span>
+        </button>
       </header>
 
       <div className="farm-map-page__map-wrapper">
@@ -436,7 +459,10 @@ function FarmMapPage() {
           showFarmBoundary={showFarmBoundary}
           showRegistrations={showRegistrationLayer}
           showPlots={showPlots}
+          showPastures={showPastures}
+          showFacilities={showFacilities}
           onPlotClick={handlePlotClick}
+          onLocationClick={handleLocationClick}
           cropFilter={cropFilter}
           versionOverlay={versionOverlay}
         />
@@ -457,6 +483,19 @@ function FarmMapPage() {
             farmTotalAreaHa={Number(data.farm.totalAreaHa)}
           />
         )}
+
+        {(showPastures || showFacilities) && data.locationBoundaries.length > 0 && (
+          <LocationLegend
+            locations={data.locationBoundaries}
+            showPastures={showPastures}
+            showFacilities={showFacilities}
+          />
+        )}
+
+        <LocationDetailsPanel
+          location={selectedLocation}
+          onClose={() => setSelectedLocation(null)}
+        />
 
         <PlotDetailsPanel
           plot={selectedPlot}
@@ -658,6 +697,17 @@ function FarmMapPage() {
             onConfirm={() => void handleDeletePlot()}
             onCancel={() => setPlotToDelete(null)}
             isDeleting={isDeletingPlot}
+          />
+        </Suspense>
+      )}
+
+      {isCreateLocationOpen && farmId && (
+        <Suspense fallback={null}>
+          <CreateLocationModal
+            isOpen={isCreateLocationOpen}
+            farmId={farmId}
+            onClose={() => setIsCreateLocationOpen(false)}
+            onSuccess={handleCreateLocationSuccess}
           />
         </Suspense>
       )}
