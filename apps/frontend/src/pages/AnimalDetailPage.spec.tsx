@@ -71,6 +71,10 @@ vi.mock('@/components/animals/WeighingTab', () => ({
   default: () => <div data-testid="weighing-tab">WeighingTab</div>,
 }));
 
+vi.mock('@/components/animals/SanitaryTab', () => ({
+  default: () => <div data-testid="sanitary-tab">SanitaryTab</div>,
+}));
+
 vi.mock('@/stores/FarmContext', () => ({
   useFarmContext: () => ({
     selectedFarm: { id: 'farm-1', name: 'Fazenda Santa Helena' },
@@ -157,10 +161,10 @@ describe('AnimalDetailPage', () => {
     mockUseAnimalDetail.mockReturnValue(defaultReturn());
     renderPage();
 
-    const sanitaryTab = screen.getByRole('tab', { name: /Sanitário/ });
-    expect(sanitaryTab).toBeTruthy();
-    expect(sanitaryTab.hasAttribute('disabled')).toBe(true);
-    expect(screen.getAllByText('(Em breve)').length).toBe(2);
+    const reproductiveTab = screen.getByRole('tab', { name: /Reprodutivo/ });
+    expect(reproductiveTab).toBeTruthy();
+    expect(reproductiveTab.hasAttribute('disabled')).toBe(true);
+    expect(screen.getAllByText('(Em breve)').length).toBe(1);
   });
 
   it('should render identification section', () => {
@@ -266,8 +270,8 @@ describe('AnimalDetailPage', () => {
     renderPage();
 
     // Disabled tabs can't be clicked, so placeholder should not show
-    const sanitaryTab = screen.getByRole('tab', { name: /Sanitário/ });
-    expect(sanitaryTab.hasAttribute('disabled')).toBe(true);
+    const reproductiveTab = screen.getByRole('tab', { name: /Reprodutivo/ });
+    expect(reproductiveTab.hasAttribute('disabled')).toBe(true);
   });
 
   it('should show photo placeholder when no photo', () => {
