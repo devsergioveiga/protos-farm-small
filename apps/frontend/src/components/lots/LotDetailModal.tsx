@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, BarChart3, Users, Clock, AlertTriangle } from 'lucide-react';
 import { useLotDashboard } from '@/hooks/useLotDashboard';
 import { useLotHistory } from '@/hooks/useLotHistory';
@@ -16,45 +16,49 @@ interface LotDetailModalProps {
   onUpdate: () => void;
 }
 
+// Wrapper: unmounts content when closed, so useState resets naturally
+function LotDetailModal({ isOpen, farmId, lot, onClose, onUpdate }: LotDetailModalProps) {
+  if (!isOpen || !lot) return null;
+
+  return <LotDetailModalContent farmId={farmId} lot={lot} onClose={onClose} onUpdate={onUpdate} />;
+}
+
 type TabId = 'dashboard' | 'animals' | 'history';
 
-function LotDetailModal({ isOpen, farmId, lot, onClose, onUpdate }: LotDetailModalProps) {
+interface LotDetailModalContentProps {
+  farmId: string;
+  lot: LotListItem;
+  onClose: () => void;
+  onUpdate: () => void;
+}
+
+function LotDetailModalContent({ farmId, lot, onClose, onUpdate }: LotDetailModalContentProps) {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [showManageAnimals, setShowManageAnimals] = useState(false);
-  const prevIsOpenRef = useRef(isOpen);
-
-  // Reset tab on open (ref-based, no setState in effect)
-  if (isOpen && !prevIsOpenRef.current) {
-    setActiveTab('dashboard');
-  }
-  prevIsOpenRef.current = isOpen;
 
   const { dashboard, isLoading: dashLoading } = useLotDashboard({
-    farmId: isOpen ? farmId : null,
-    lotId: isOpen ? (lot?.id ?? null) : null,
+    farmId,
+    lotId: lot.id,
   });
 
   const { history, isLoading: histLoading } = useLotHistory({
-    farmId: isOpen && activeTab === 'history' ? farmId : null,
-    lotId: isOpen && activeTab === 'history' ? (lot?.id ?? null) : null,
+    farmId: activeTab === 'history' ? farmId : null,
+    lotId: activeTab === 'history' ? lot.id : null,
   });
 
   // Escape key
   useEffect(() => {
-    if (!isOpen) return;
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
-  }, [isOpen, onClose]);
+  }, [onClose]);
 
   const handleManageSuccess = useCallback(() => {
     setShowManageAnimals(false);
     onUpdate();
   }, [onUpdate]);
-
-  if (!isOpen || !lot) return null;
 
   return (
     <>
