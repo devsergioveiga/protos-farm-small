@@ -32,8 +32,8 @@ function LotsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedLot, setSelectedLot] = useState<LotListItem | null>(null);
 
-  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
-  const prevFarmIdRef = useRef<string | undefined>();
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const prevFarmIdRef = useRef<string | undefined>(undefined);
 
   // Reset filters on farm change
   if (prevFarmIdRef.current !== selectedFarm?.id) {

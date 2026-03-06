@@ -34,7 +34,7 @@ function ManageAnimalsModal({
     warning: string | null;
   } | null>(null);
 
-  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const { animals, isLoading } = useAnimals({
     farmId: isOpen ? farmId : null,
