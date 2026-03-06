@@ -67,6 +67,10 @@ vi.mock('@/hooks/useAnimalDetail', () => ({
   useAnimalDetail: (...args: unknown[]) => mockUseAnimalDetail(...args),
 }));
 
+vi.mock('@/components/animals/WeighingTab', () => ({
+  default: () => <div data-testid="weighing-tab">WeighingTab</div>,
+}));
+
 vi.mock('@/stores/FarmContext', () => ({
   useFarmContext: () => ({
     selectedFarm: { id: 'farm-1', name: 'Fazenda Santa Helena' },
@@ -156,7 +160,7 @@ describe('AnimalDetailPage', () => {
     const sanitaryTab = screen.getByRole('tab', { name: /Sanitário/ });
     expect(sanitaryTab).toBeTruthy();
     expect(sanitaryTab.hasAttribute('disabled')).toBe(true);
-    expect(screen.getAllByText('(Em breve)').length).toBe(3);
+    expect(screen.getAllByText('(Em breve)').length).toBe(2);
   });
 
   it('should render identification section', () => {

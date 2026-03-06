@@ -174,6 +174,31 @@ export const GENEALOGY_CLASS_LABELS: Record<GenealogyClass, string> = {
   SRD: 'Sem Raça Definida',
 };
 
+// ─── Weighing Types ──────────────────────────────────────────────────
+
+export interface WeighingItem {
+  id: string;
+  animalId: string;
+  farmId: string;
+  weightKg: number;
+  measuredAt: string;
+  bodyConditionScore: number | null;
+  notes: string | null;
+  recordedBy: string;
+  recorderName: string;
+  createdAt: string;
+}
+
+export interface WeighingStats {
+  currentWeightKg: number | null;
+  entryWeightKg: number | null;
+  totalGainKg: number | null;
+  gmdKgDay: number | null;
+  minWeightKg: number | null;
+  maxWeightKg: number | null;
+  totalWeighings: number;
+}
+
 // ─── Bulk Import Types ────────────────────────────────────────────────
 
 export interface AnimalColumnMapping {

@@ -1,0 +1,39 @@
+/* ─── Weighing Export ────────────────────────────────────────── */
+
+.weighing-export__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--color-neutral-300);
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  min-height: 40px;
+  transition: all 200ms;
+}
+
+.weighing-export__btn:hover:not(:disabled) {
+  border-color: var(--color-primary-500);
+  color: var(--color-primary-600);
+}
+
+.weighing-export__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.weighing-export__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weighing-export__btn {
+    transition: none;
+  }
+}
