@@ -1611,6 +1611,82 @@ async function main() {
   );
   console.log('  ✓ 2 lotes vinculados a locais');
 
+  // ─── Pesagens de Animais ────────────────────────────────────────────
+  console.log('\n  Criando pesagens de animais...');
+
+  await prisma.$executeRawUnsafe(`DELETE FROM animal_weighings`);
+
+  // Pesagens da Mimosa (SH-001, vaca lactação, entrada 520kg)
+  const mimosaWeighings = [
+    { measuredAt: '2025-07-01', weightKg: 520, bcs: 3, notes: 'Peso de entrada' },
+    { measuredAt: '2025-08-01', weightKg: 510, bcs: 3, notes: 'Início lactação, perda esperada' },
+    { measuredAt: '2025-09-01', weightKg: 505, bcs: 3, notes: null },
+    { measuredAt: '2025-10-01', weightKg: 512, bcs: 3, notes: 'Recuperando peso' },
+    { measuredAt: '2025-11-01', weightKg: 525, bcs: 4, notes: null },
+    { measuredAt: '2025-12-01', weightKg: 530, bcs: 4, notes: 'Bom ganho de peso' },
+  ];
+
+  for (const w of mimosaWeighings) {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO animal_weighings (id, "animalId", "farmId", "weightKg", "measuredAt", "bodyConditionScore", notes, "recordedBy", "createdAt", "updatedAt")
+       VALUES (gen_random_uuid(), $1, $2, $3, $4::date, $5, $6, $7, now(), now())`,
+      'ani-0001-4000-8000-000000000001',
+      SANTA_HELENA,
+      w.weightKg,
+      w.measuredAt,
+      w.bcs,
+      w.notes,
+      CREATED_BY,
+    );
+  }
+  console.log(`  ✓ ${mimosaWeighings.length} pesagens: Mimosa (SH-001)`);
+
+  // Pesagens do Trovão (SH-004, touro reprodutor, entrada 980kg)
+  const trovaoWeighings = [
+    { measuredAt: '2025-06-15', weightKg: 980, bcs: 4, notes: 'Peso de entrada na fazenda' },
+    { measuredAt: '2025-09-15', weightKg: 995, bcs: 4, notes: null },
+    { measuredAt: '2025-12-15', weightKg: 1010, bcs: 4, notes: 'Excelente condição' },
+    { measuredAt: '2026-03-01', weightKg: 1025, bcs: 5, notes: 'Estação monta iniciada' },
+  ];
+
+  for (const w of trovaoWeighings) {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO animal_weighings (id, "animalId", "farmId", "weightKg", "measuredAt", "bodyConditionScore", notes, "recordedBy", "createdAt", "updatedAt")
+       VALUES (gen_random_uuid(), $1, $2, $3, $4::date, $5, $6, $7, now(), now())`,
+      'ani-0001-4000-8000-000000000004',
+      SANTA_HELENA,
+      w.weightKg,
+      w.measuredAt,
+      w.bcs,
+      w.notes,
+      CREATED_BY,
+    );
+  }
+  console.log(`  ✓ ${trovaoWeighings.length} pesagens: Trovão (SH-004)`);
+
+  // Pesagens da Flor (SH-007, novilha, entrada 320kg)
+  const florWeighings = [
+    { measuredAt: '2025-08-01', weightKg: 320, bcs: 3, notes: 'Peso de entrada' },
+    { measuredAt: '2025-10-01', weightKg: 345, bcs: 3, notes: null },
+    { measuredAt: '2025-12-01', weightKg: 370, bcs: 3, notes: 'Crescimento adequado' },
+    { measuredAt: '2026-02-01', weightKg: 395, bcs: 4, notes: null },
+  ];
+
+  for (const w of florWeighings) {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO animal_weighings (id, "animalId", "farmId", "weightKg", "measuredAt", "bodyConditionScore", notes, "recordedBy", "createdAt", "updatedAt")
+       VALUES (gen_random_uuid(), $1, $2, $3, $4::date, $5, $6, $7, now(), now())`,
+      'ani-0001-4000-8000-000000000007',
+      SANTA_HELENA,
+      w.weightKg,
+      w.measuredAt,
+      w.bcs,
+      w.notes,
+      CREATED_BY,
+    );
+  }
+  console.log(`  ✓ ${florWeighings.length} pesagens: Flor (SH-007)`);
+
   // Audit Logs de exemplo
   console.log('');
   const auditLogs = [

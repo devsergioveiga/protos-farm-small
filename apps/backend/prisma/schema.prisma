@@ -243,6 +243,7 @@ model User {
   createdSoilAnalyses       PlotSoilAnalysis[]
   createdAnimals            Animal[]
   lotMovements              AnimalLotMovement[]
+  recordedWeighings         AnimalWeighing[]
 
   @@map("users")
 }
@@ -294,6 +295,7 @@ model Farm {
   animals                    Animal[]
   animalLots                 AnimalLot[]
   farmLocations              FarmLocation[]
+  animalWeighings            AnimalWeighing[]
 
   @@map("farms")
 }
@@ -798,6 +800,7 @@ model Animal {
   compositions AnimalBreedComposition[]
   genealogicalRecords AnimalGenealogicalRecord[]
   lotMovements AnimalLotMovement[]
+  weighings    AnimalWeighing[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -924,4 +927,28 @@ model AnimalLotMovement {
   @@index([enteredAt])
   @@index([exitedAt])
   @@map("animal_lot_movements")
+}
+
+// ─── Animal Weighings ──────────────────────────────────────────────
+
+model AnimalWeighing {
+  id                 String   @id @default(uuid())
+  animalId           String
+  farmId             String
+  weightKg           Decimal  @db.Decimal(8, 2)
+  measuredAt         DateTime @db.Date
+  bodyConditionScore Int?
+  notes              String?
+  recordedBy         String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  animal   Animal @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  farm     Farm   @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  recorder User   @relation(fields: [recordedBy], references: [id])
+
+  @@index([animalId])
+  @@index([farmId])
+  @@index([measuredAt])
+  @@map("animal_weighings")
 }
