@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Beef, Plus, Upload, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAnimals } from '@/hooks/useAnimals';
 import { useBreeds } from '@/hooks/useBreeds';
@@ -16,6 +17,7 @@ function formatDate(dateStr: string | null): string {
 }
 
 function AnimalsPage() {
+  const navigate = useNavigate();
   const { selectedFarm } = useFarmContext();
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
@@ -63,8 +65,7 @@ function AnimalsPage() {
   }, [searchInput]);
 
   const handleRowClick = (animal: AnimalListItem) => {
-    // Future: open detail modal
-    void animal;
+    navigate(`/animals/${animal.id}`);
   };
 
   const handleRowKeyDown = (e: React.KeyboardEvent, animal: AnimalListItem) => {

@@ -1,0 +1,571 @@
+/* ─── Animal Detail Page ─────────────────────────────────────── */
+
+.animal-detail {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* ─── Breadcrumb ────────────────────────────────────────────── */
+
+.animal-detail__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  margin-bottom: 24px;
+}
+
+.animal-detail__breadcrumb a {
+  color: var(--color-primary-600);
+  text-decoration: none;
+  transition: color 200ms;
+}
+
+.animal-detail__breadcrumb a:hover {
+  color: var(--color-primary-700);
+  text-decoration: underline;
+}
+
+.animal-detail__breadcrumb a:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.animal-detail__breadcrumb-sep {
+  color: var(--color-neutral-400);
+}
+
+.animal-detail__back-link {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--color-primary-600);
+  text-decoration: none;
+  margin-bottom: 16px;
+  min-height: 48px;
+}
+
+.animal-detail__back-link:hover {
+  color: var(--color-primary-700);
+}
+
+.animal-detail__back-link:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Header ────────────────────────────────────────────────── */
+
+.animal-detail__header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.animal-detail__photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+.animal-detail__photo-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--color-neutral-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2px solid var(--color-neutral-200);
+}
+
+.animal-detail__header-info {
+  min-width: 0;
+}
+
+.animal-detail__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--color-neutral-800);
+  margin: 0 0 8px;
+  word-break: break-word;
+}
+
+.animal-detail__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.animal-detail__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.animal-detail__badge--sex-male {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.animal-detail__badge--sex-female {
+  background: #fce4ec;
+  color: #c62828;
+}
+
+.animal-detail__badge--category {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.animal-detail__badge--origin {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+}
+
+/* ─── Tabs ──────────────────────────────────────────────────── */
+
+.animal-detail__tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--color-neutral-200);
+  margin-bottom: 24px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.animal-detail__tab {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 48px;
+  transition:
+    color 200ms,
+    border-color 200ms;
+}
+
+.animal-detail__tab:hover:not(:disabled) {
+  color: var(--color-neutral-700);
+}
+
+.animal-detail__tab:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+  border-radius: 4px 4px 0 0;
+}
+
+.animal-detail__tab--active {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+
+.animal-detail__tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.animal-detail__tab-hint {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: var(--color-neutral-400);
+  margin-left: 4px;
+}
+
+/* ─── Tab Panel ─────────────────────────────────────────────── */
+
+.animal-detail__panel-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px 24px;
+  background: var(--color-neutral-50);
+  border-radius: 12px;
+  border: 1px solid var(--color-neutral-200);
+  text-align: center;
+}
+
+.animal-detail__panel-placeholder-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.animal-detail__panel-placeholder-desc {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+/* ─── Sections Grid ─────────────────────────────────────────── */
+
+.animal-detail__sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.animal-detail__section {
+  background: var(--color-neutral-50);
+  border-radius: 8px;
+  padding: 24px;
+  border: 1px solid var(--color-neutral-200);
+}
+
+.animal-detail__section--full {
+  grid-column: 1 / -1;
+}
+
+.animal-detail__section-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-neutral-800);
+  margin: 0 0 16px;
+}
+
+/* ─── Field Rows ────────────────────────────────────────────── */
+
+.animal-detail__field {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.animal-detail__field:last-child {
+  border-bottom: none;
+}
+
+.animal-detail__field-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+}
+
+.animal-detail__field-value {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  text-align: right;
+}
+
+.animal-detail__field-value--mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.animal-detail__field-value--hint {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-400);
+  margin-left: 4px;
+}
+
+/* ─── Tables inside sections ────────────────────────────────── */
+
+.animal-detail__mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+}
+
+.animal-detail__mini-table th {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-neutral-500);
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.animal-detail__mini-table td {
+  padding: 8px 12px;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.animal-detail__mini-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ─── Genealogy Links ───────────────────────────────────────── */
+
+.animal-detail__parent-link,
+.animal-detail__offspring-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-primary-600);
+  text-decoration: none;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  padding: 4px 0;
+  transition: color 200ms;
+}
+
+.animal-detail__parent-link:hover,
+.animal-detail__offspring-link:hover {
+  color: var(--color-primary-700);
+  text-decoration: underline;
+}
+
+.animal-detail__parent-link:focus-visible,
+.animal-detail__offspring-link:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.animal-detail__offspring-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.animal-detail__offspring-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ─── Notes ─────────────────────────────────────────────────── */
+
+.animal-detail__notes {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  white-space: pre-wrap;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ─── Empty text ────────────────────────────────────────────── */
+
+.animal-detail__empty-text {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-400);
+  font-style: italic;
+}
+
+/* ─── Category suggested ────────────────────────────────────── */
+
+.animal-detail__category-suggested {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-400);
+  margin-left: 4px;
+}
+
+/* ─── Breed estimated flag ──────────────────────────────────── */
+
+.animal-detail__breed-estimated {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-400);
+  font-style: italic;
+  margin-top: 8px;
+}
+
+/* ─── Empty state ───────────────────────────────────────────── */
+
+.animal-detail__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px 24px;
+  background: var(--color-neutral-50);
+  border-radius: 12px;
+  border: 1px solid var(--color-neutral-200);
+  text-align: center;
+}
+
+.animal-detail__empty-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.animal-detail__empty-desc {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 0;
+  max-width: 360px;
+}
+
+/* ─── Error ─────────────────────────────────────────────────── */
+
+.animal-detail__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px 24px;
+  background: var(--color-neutral-50);
+  border-radius: 12px;
+  border: 1px solid var(--color-neutral-200);
+  text-align: center;
+}
+
+.animal-detail__error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-error-500);
+}
+
+.animal-detail__retry-btn {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: 1px solid var(--color-neutral-300);
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  min-height: 48px;
+  transition: all 200ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.animal-detail__retry-btn:hover {
+  border-color: var(--color-primary-500);
+  color: var(--color-primary-600);
+}
+
+.animal-detail__retry-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Skeleton ──────────────────────────────────────────────── */
+
+.animal-detail__skeleton {
+  background: var(--color-neutral-100);
+  border-radius: 8px;
+  animation: animal-detail-pulse 1.5s ease-in-out infinite;
+}
+
+.animal-detail__skeleton--circle {
+  border-radius: 50%;
+}
+
+.animal-detail__skeleton-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.animal-detail__skeleton-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@keyframes animal-detail-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ─── Responsive ────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .animal-detail {
+    padding: 20px 16px;
+  }
+
+  .animal-detail__breadcrumb {
+    display: none;
+  }
+
+  .animal-detail__back-link {
+    display: inline-flex;
+  }
+
+  .animal-detail__header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .animal-detail__title {
+    font-size: 1.25rem;
+  }
+
+  .animal-detail__badges {
+    justify-content: center;
+  }
+
+  .animal-detail__sections {
+    grid-template-columns: 1fr;
+  }
+
+  .animal-detail__skeleton-sections {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animal-detail__skeleton {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .animal-detail__tab,
+  .animal-detail__retry-btn,
+  .animal-detail__parent-link,
+  .animal-detail__offspring-link {
+    transition: none;
+  }
+}
