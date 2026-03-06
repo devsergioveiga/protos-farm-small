@@ -18,6 +18,7 @@ import { animalLotsRouter } from './modules/animals/animal-lots.routes';
 import { animalWeighingRouter } from './modules/animals/animal-weighing.routes';
 import { animalHealthRouter } from './modules/animals/animal-health.routes';
 import { animalReproductiveRouter } from './modules/animals/animal-reproductive.routes';
+import { animalMovementsRouter } from './modules/animals/animal-movements.routes';
 import { farmLocationsRouter } from './modules/animals/farm-locations.routes';
 
 const app = express();
@@ -44,6 +45,7 @@ app.use('/api', animalLotsRouter);
 app.use('/api', animalWeighingRouter);
 app.use('/api', animalHealthRouter);
 app.use('/api', animalReproductiveRouter);
+app.use('/api', animalMovementsRouter);
 app.use('/api', farmLocationsRouter);
 
 export { app };

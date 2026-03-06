@@ -6,11 +6,12 @@ import { useFarmContext } from '@/stores/FarmContext';
 import WeighingTab from '@/components/animals/WeighingTab';
 import SanitaryTab from '@/components/animals/SanitaryTab';
 import ReproductiveTab from '@/components/animals/ReproductiveTab';
+import MovementsTab from '@/components/animals/MovementsTab';
 import { SEX_LABELS, CATEGORY_LABELS, ORIGIN_LABELS, GENEALOGY_CLASS_LABELS } from '@/types/animal';
 import type { AnimalDetail, AnimalCategory, GenealogyClass } from '@/types/animal';
 import './AnimalDetailPage.css';
 
-type Tab = 'general' | 'sanitary' | 'reproductive' | 'weighing';
+type Tab = 'general' | 'sanitary' | 'reproductive' | 'weighing' | 'movements';
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return '—';
@@ -113,6 +114,7 @@ function AnimalDetailPage() {
     { id: 'sanitary', label: 'Sanitário', disabled: false },
     { id: 'reproductive', label: 'Reprodutivo', disabled: false },
     { id: 'weighing', label: 'Pesagens', disabled: false },
+    { id: 'movements', label: 'Movimentações', disabled: false },
   ];
 
   return (
@@ -199,6 +201,8 @@ function AnimalDetailPage() {
             animalId={animal.id}
             animalEarTag={animal.earTag}
           />
+        ) : activeTab === 'movements' ? (
+          <MovementsTab farmId={selectedFarm.id} animalId={animal.id} />
         ) : null}
       </div>
     </main>
