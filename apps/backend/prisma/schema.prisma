@@ -194,6 +194,20 @@ enum FacilityType {
   OUTRO
 }
 
+enum HealthEventType {
+  VACCINATION
+  DEWORMING
+  TREATMENT
+  EXAM
+}
+
+enum ApplicationMethod {
+  INJECTABLE
+  ORAL
+  POUR_ON
+  OTHER
+}
+
 // ─── Core Models ─────────────────────────────────────────────────────
 
 model Organization {
@@ -244,6 +258,7 @@ model User {
   createdAnimals            Animal[]
   lotMovements              AnimalLotMovement[]
   recordedWeighings         AnimalWeighing[]
+  recordedHealthRecords     AnimalHealthRecord[]
 
   @@map("users")
 }
@@ -296,6 +311,7 @@ model Farm {
   animalLots                 AnimalLot[]
   farmLocations              FarmLocation[]
   animalWeighings            AnimalWeighing[]
+  animalHealthRecords        AnimalHealthRecord[]
 
   @@map("farms")
 }
@@ -801,6 +817,7 @@ model Animal {
   genealogicalRecords AnimalGenealogicalRecord[]
   lotMovements AnimalLotMovement[]
   weighings    AnimalWeighing[]
+  healthRecords AnimalHealthRecord[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -951,4 +968,38 @@ model AnimalWeighing {
   @@index([farmId])
   @@index([measuredAt])
   @@map("animal_weighings")
+}
+
+// ─── Animal Health Records ──────────────────────────────────────────
+
+model AnimalHealthRecord {
+  id                String            @id @default(uuid())
+  animalId          String
+  farmId            String
+  type              HealthEventType
+  eventDate         DateTime          @db.Date
+  productName       String?
+  dosage            String?
+  applicationMethod ApplicationMethod?
+  batchNumber       String?
+  diagnosis         String?
+  durationDays      Int?
+  examResult        String?
+  labName           String?
+  isFieldExam       Boolean?          @default(false)
+  veterinaryName    String?
+  notes             String?
+  recordedBy        String
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  animal   Animal @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  farm     Farm   @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  recorder User   @relation(fields: [recordedBy], references: [id])
+
+  @@index([animalId])
+  @@index([farmId])
+  @@index([eventDate])
+  @@index([type])
+  @@map("animal_health_records")
 }

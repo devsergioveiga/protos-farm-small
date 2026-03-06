@@ -1196,6 +1196,7 @@ async function main() {
   // ─── Animais ──────────────────────────────────────────────────────────
   console.log('\n  Criando animais...');
 
+  await prisma.$executeRawUnsafe(`DELETE FROM animal_health_records`);
   await prisma.$executeRawUnsafe(`DELETE FROM animal_genealogical_records`);
   await prisma.$executeRawUnsafe(`DELETE FROM animal_breed_compositions`);
   await prisma.$executeRawUnsafe(`DELETE FROM animals`);
@@ -1686,6 +1687,166 @@ async function main() {
     );
   }
   console.log(`  ✓ ${florWeighings.length} pesagens: Flor (SH-007)`);
+
+  // ─── Registros Sanitários ──────────────────────────────────────────
+  console.log('\n  Criando registros sanitários...');
+
+  await prisma.$executeRawUnsafe(`DELETE FROM animal_health_records`);
+
+  const healthRecords = [
+    // Mimosa (SH-001)
+    {
+      animalId: 'ani-0001-4000-8000-000000000001',
+      type: 'VACCINATION',
+      eventDate: '2025-05-15',
+      productName: 'Aftosa Bivalente',
+      dosage: '5ml',
+      applicationMethod: 'INJECTABLE',
+      batchNumber: 'AFT-2025-B1',
+      veterinaryName: 'Dr. Carlos Silva',
+      notes: 'Campanha nacional vacinação aftosa',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000001',
+      type: 'DEWORMING',
+      eventDate: '2025-06-01',
+      productName: 'Ivomec Gold',
+      dosage: '1ml/50kg',
+      applicationMethod: 'INJECTABLE',
+      notes: 'Vermifugação estratégica pré-parto',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000001',
+      type: 'VACCINATION',
+      eventDate: '2025-11-10',
+      productName: 'Aftosa Bivalente',
+      dosage: '5ml',
+      applicationMethod: 'INJECTABLE',
+      batchNumber: 'AFT-2025-N2',
+      veterinaryName: 'Dr. Carlos Silva',
+      notes: '2ª etapa campanha aftosa',
+    },
+    // Trovão (SH-004)
+    {
+      animalId: 'ani-0001-4000-8000-000000000004',
+      type: 'VACCINATION',
+      eventDate: '2025-05-15',
+      productName: 'Aftosa Bivalente',
+      dosage: '5ml',
+      applicationMethod: 'INJECTABLE',
+      batchNumber: 'AFT-2025-B1',
+      veterinaryName: 'Dr. Carlos Silva',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000004',
+      type: 'EXAM',
+      eventDate: '2025-07-20',
+      productName: 'Teste Brucelose/Tuberculose',
+      examResult: 'Negativo para ambos',
+      labName: 'Lab Vet Goiás',
+      isFieldExam: false,
+      veterinaryName: 'Dr. Carlos Silva',
+      notes: 'Exame obrigatório reprodutor',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000004',
+      type: 'DEWORMING',
+      eventDate: '2025-09-01',
+      productName: 'Dectomax',
+      dosage: '1ml/50kg',
+      applicationMethod: 'INJECTABLE',
+    },
+    // Flor (SH-007)
+    {
+      animalId: 'ani-0001-4000-8000-000000000007',
+      type: 'VACCINATION',
+      eventDate: '2025-05-15',
+      productName: 'Aftosa Bivalente',
+      dosage: '5ml',
+      applicationMethod: 'INJECTABLE',
+      batchNumber: 'AFT-2025-B1',
+      veterinaryName: 'Dr. Carlos Silva',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000007',
+      type: 'VACCINATION',
+      eventDate: '2025-08-10',
+      productName: 'Brucelose B-19',
+      dosage: '2ml',
+      applicationMethod: 'INJECTABLE',
+      batchNumber: 'BRU-2025-01',
+      veterinaryName: 'Dr. Carlos Silva',
+      notes: 'Vacinação novilhas 3-8 meses',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000007',
+      type: 'TREATMENT',
+      eventDate: '2025-10-05',
+      productName: 'Terramicina LA',
+      dosage: '10ml',
+      applicationMethod: 'INJECTABLE',
+      diagnosis: 'Infecção umbigo',
+      durationDays: 3,
+      veterinaryName: 'Dr. Santos',
+    },
+    // Estrela (SH-002)
+    {
+      animalId: 'ani-0001-4000-8000-000000000002',
+      type: 'VACCINATION',
+      eventDate: '2025-05-15',
+      productName: 'Aftosa Bivalente',
+      dosage: '5ml',
+      applicationMethod: 'INJECTABLE',
+      batchNumber: 'AFT-2025-B1',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000002',
+      type: 'TREATMENT',
+      eventDate: '2025-12-20',
+      productName: 'Mastofin',
+      dosage: '10ml intramamário',
+      applicationMethod: 'OTHER',
+      diagnosis: 'Mastite clínica quarto anterior esquerdo',
+      durationDays: 5,
+      veterinaryName: 'Dr. Santos',
+      notes: 'CMT positivo +++, leite descartado',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000002',
+      type: 'EXAM',
+      eventDate: '2026-01-10',
+      productName: 'Cultura microbiológica leite',
+      examResult: 'Staphylococcus aureus — sensível a cefalosporina',
+      labName: 'Lab Vet Goiás',
+      isFieldExam: false,
+      veterinaryName: 'Dr. Santos',
+      notes: 'Pós-tratamento mastite',
+    },
+  ];
+
+  for (const hr of healthRecords) {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO animal_health_records (id, "animalId", "farmId", type, "eventDate", "productName", dosage, "applicationMethod", "batchNumber", diagnosis, "durationDays", "examResult", "labName", "isFieldExam", "veterinaryName", notes, "recordedBy", "createdAt", "updatedAt")
+       VALUES (gen_random_uuid(), $1, $2, $3::"HealthEventType", $4::date, $5, $6, $7::"ApplicationMethod", $8, $9, $10, $11, $12, $13, $14, $15, $16, now(), now())`,
+      hr.animalId,
+      SANTA_HELENA,
+      hr.type,
+      hr.eventDate,
+      (hr as Record<string, unknown>).productName ?? null,
+      (hr as Record<string, unknown>).dosage ?? null,
+      (hr as Record<string, unknown>).applicationMethod ?? null,
+      (hr as Record<string, unknown>).batchNumber ?? null,
+      (hr as Record<string, unknown>).diagnosis ?? null,
+      (hr as Record<string, unknown>).durationDays ?? null,
+      (hr as Record<string, unknown>).examResult ?? null,
+      (hr as Record<string, unknown>).labName ?? null,
+      (hr as Record<string, unknown>).isFieldExam ?? false,
+      (hr as Record<string, unknown>).veterinaryName ?? null,
+      (hr as Record<string, unknown>).notes ?? null,
+      CREATED_BY,
+    );
+  }
+  console.log(`  ✓ ${healthRecords.length} registros sanitários criados`);
 
   // Audit Logs de exemplo
   console.log('');
