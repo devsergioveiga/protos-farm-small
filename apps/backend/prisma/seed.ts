@@ -1453,10 +1453,10 @@ async function main() {
     console.log(`  ✓ Lote: ${lot.name} (${lot.locationType}, cap: ${lot.maxCapacity})`);
   }
 
-  // Assign animals to lots
-  console.log('\n  Atribuindo animais aos lotes...');
+  // Assign animals to lots (with enriched movement history)
+  console.log('\n  Atribuindo animais aos lotes com histórico de movimentações...');
 
-  // Bezerros → Lote Maternidade
+  // Bezerros → Lote Maternidade (simple — single movement)
   const maternidadeAnimals = ['ani-0001-4000-8000-000000000005', 'ani-0001-4000-8000-000000000006'];
   for (const animalId of maternidadeAnimals) {
     await prisma.$executeRawUnsafe(
@@ -1474,41 +1474,92 @@ async function main() {
   }
   console.log('  ✓ 2 bezerros atribuídos ao Lote Maternidade');
 
-  // Novilhas → Lote Recria Fêmeas
-  const recriaAnimals = ['ani-0001-4000-8000-000000000007'];
-  for (const animalId of recriaAnimals) {
-    await prisma.$executeRawUnsafe(
-      `UPDATE animals SET "lotId" = $1 WHERE id = $2`,
-      animalLots[1].id,
-      animalId,
-    );
-    await prisma.$executeRawUnsafe(
-      `INSERT INTO animal_lot_movements (id, "animalId", "lotId", "enteredAt", "movedBy", reason, "createdAt")
-       VALUES (gen_random_uuid(), $1, $2, now() - interval '60 days', $3, 'Recria', now())`,
-      animalId,
-      animalLots[1].id,
-      CREATED_BY,
-    );
-  }
-  console.log('  ✓ 1 novilha atribuída ao Lote Recria Fêmeas');
+  // Novilha (Flor) → Maternidade(45d) → Recria Fêmeas(atual, 60d)
+  const florId = 'ani-0001-4000-8000-000000000007';
+  await prisma.$executeRawUnsafe(
+    `UPDATE animals SET "lotId" = $1 WHERE id = $2`,
+    animalLots[1].id,
+    florId,
+  );
+  // Past movement: Maternidade (exitedAt 60 days ago)
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO animal_lot_movements (id, "animalId", "lotId", "enteredAt", "exitedAt", "movedBy", reason, "createdAt")
+     VALUES (gen_random_uuid(), $1, $2, now() - interval '105 days', now() - interval '60 days', $3, 'Nascimento', now())`,
+    florId,
+    animalLots[0].id,
+    CREATED_BY,
+  );
+  // Current movement: Recria Fêmeas (since 60 days ago)
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO animal_lot_movements (id, "animalId", "lotId", "previousLotId", "enteredAt", "movedBy", reason, "createdAt")
+     VALUES (gen_random_uuid(), $1, $2, $3, now() - interval '60 days', $4, 'Recria', now())`,
+    florId,
+    animalLots[1].id,
+    animalLots[0].id,
+    CREATED_BY,
+  );
+  console.log('  ✓ Flor: Maternidade(45d) → Recria Fêmeas(atual, 60d)');
 
-  // Vacas lactação → Lote Lactação
-  const lactacaoAnimals = ['ani-0001-4000-8000-000000000001', 'ani-0001-4000-8000-000000000002'];
-  for (const animalId of lactacaoAnimals) {
-    await prisma.$executeRawUnsafe(
-      `UPDATE animals SET "lotId" = $1 WHERE id = $2`,
-      animalLots[2].id,
-      animalId,
-    );
-    await prisma.$executeRawUnsafe(
-      `INSERT INTO animal_lot_movements (id, "animalId", "lotId", "enteredAt", "movedBy", reason, "createdAt")
-       VALUES (gen_random_uuid(), $1, $2, now() - interval '90 days', $3, 'Início lactação', now())`,
-      animalId,
-      animalLots[2].id,
-      CREATED_BY,
-    );
-  }
-  console.log('  ✓ 2 vacas atribuídas ao Lote Lactação');
+  // Mimosa (SH-001) → Maternidade(90d) → Recria(60d) → Lactação(atual, 30d)
+  const mimosaId = 'ani-0001-4000-8000-000000000001';
+  await prisma.$executeRawUnsafe(
+    `UPDATE animals SET "lotId" = $1 WHERE id = $2`,
+    animalLots[2].id,
+    mimosaId,
+  );
+  // Past movement 1: Maternidade (180d ago → 90d ago)
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO animal_lot_movements (id, "animalId", "lotId", "enteredAt", "exitedAt", "movedBy", reason, "createdAt")
+     VALUES (gen_random_uuid(), $1, $2, now() - interval '180 days', now() - interval '90 days', $3, 'Nascimento', now())`,
+    mimosaId,
+    animalLots[0].id,
+    CREATED_BY,
+  );
+  // Past movement 2: Recria (90d ago → 30d ago)
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO animal_lot_movements (id, "animalId", "lotId", "previousLotId", "enteredAt", "exitedAt", "movedBy", reason, "createdAt")
+     VALUES (gen_random_uuid(), $1, $2, $3, now() - interval '90 days', now() - interval '30 days', $4, 'Recria', now())`,
+    mimosaId,
+    animalLots[1].id,
+    animalLots[0].id,
+    CREATED_BY,
+  );
+  // Current movement: Lactação (since 30d ago)
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO animal_lot_movements (id, "animalId", "lotId", "previousLotId", "enteredAt", "movedBy", reason, "createdAt")
+     VALUES (gen_random_uuid(), $1, $2, $3, now() - interval '30 days', $4, 'Início lactação', now())`,
+    mimosaId,
+    animalLots[2].id,
+    animalLots[1].id,
+    CREATED_BY,
+  );
+  console.log('  ✓ Mimosa: Maternidade(90d) → Recria(60d) → Lactação(atual, 30d)');
+
+  // Estrela (SH-002) → Maternidade(120d) → Lactação(atual, 90d)
+  const estrelaId = 'ani-0001-4000-8000-000000000002';
+  await prisma.$executeRawUnsafe(
+    `UPDATE animals SET "lotId" = $1 WHERE id = $2`,
+    animalLots[2].id,
+    estrelaId,
+  );
+  // Past movement: Maternidade (210d ago → 90d ago)
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO animal_lot_movements (id, "animalId", "lotId", "enteredAt", "exitedAt", "movedBy", reason, "createdAt")
+     VALUES (gen_random_uuid(), $1, $2, now() - interval '210 days', now() - interval '90 days', $3, 'Nascimento', now())`,
+    estrelaId,
+    animalLots[0].id,
+    CREATED_BY,
+  );
+  // Current movement: Lactação (since 90d ago)
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO animal_lot_movements (id, "animalId", "lotId", "previousLotId", "enteredAt", "movedBy", reason, "createdAt")
+     VALUES (gen_random_uuid(), $1, $2, $3, now() - interval '90 days', $4, 'Início lactação', now())`,
+    estrelaId,
+    animalLots[2].id,
+    animalLots[0].id,
+    CREATED_BY,
+  );
+  console.log('  ✓ Estrela: Maternidade(120d) → Lactação(atual, 90d)');
 
   // ─── Farm Locations (Pastos e Instalações) ──────────────────────────
   console.log('\n  Criando pastos e instalações...');
