@@ -129,6 +129,16 @@ enum GenealogyClass {
   SRD
 }
 
+enum LotLocationType {
+  PASTO
+  GALPAO
+  BEZERREIRO
+  CURRAL
+  BAIA
+  CONFINAMENTO
+  OUTRO
+}
+
 enum SoilType {
   LATOSSOLO_VERMELHO
   LATOSSOLO_AMARELO
@@ -189,6 +199,7 @@ model User {
   createdCropSeasons        PlotCropSeason[]
   createdSoilAnalyses       PlotSoilAnalysis[]
   createdAnimals            Animal[]
+  lotMovements              AnimalLotMovement[]
 
   @@map("users")
 }
@@ -238,6 +249,7 @@ model Farm {
   plotSoilAnalyses           PlotSoilAnalysis[]
   carRegistrations           CarRegistration[]
   animals                    Animal[]
+  animalLots                 AnimalLot[]
 
   @@map("farms")
 }
@@ -732,6 +744,7 @@ model Animal {
   updatedAt              DateTime        @updatedAt
 
   farm         Farm                       @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  lot          AnimalLot?                 @relation(fields: [lotId], references: [id], onDelete: SetNull)
   sire         Animal?                    @relation("SireOffspring", fields: [sireId], references: [id], onDelete: SetNull)
   dam          Animal?                    @relation("DamOffspring", fields: [damId], references: [id], onDelete: SetNull)
   sireOffspring Animal[]                  @relation("SireOffspring")
@@ -739,6 +752,7 @@ model Animal {
   creator      User                       @relation(fields: [createdBy], references: [id])
   compositions AnimalBreedComposition[]
   genealogicalRecords AnimalGenealogicalRecord[]
+  lotMovements AnimalLotMovement[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -746,6 +760,7 @@ model Animal {
   @@index([sex])
   @@index([sireId])
   @@index([damId])
+  @@index([lotId])
   @@map("animals")
 }
 
@@ -782,4 +797,53 @@ model AnimalGenealogicalRecord {
   @@unique([animalId, genealogyClass])
   @@index([animalId])
   @@map("animal_genealogical_records")
+}
+
+// ─── Animal Lots ──────────────────────────────────────────────────────
+
+model AnimalLot {
+  id                    String          @id @default(uuid())
+  farmId                String
+  name                  String
+  predominantCategory   AnimalCategory
+  currentLocation       String
+  locationType          LotLocationType
+  maxCapacity           Int?
+  description           String?
+  notes                 String?
+  deletedAt             DateTime?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  farm                  Farm                @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animals               Animal[]
+  movements             AnimalLotMovement[] @relation("LotMovements")
+  incomingMovements     AnimalLotMovement[] @relation("PreviousLotMovements")
+
+  @@index([farmId])
+  @@index([predominantCategory])
+  @@map("animal_lots")
+}
+
+model AnimalLotMovement {
+  id            String    @id @default(uuid())
+  animalId      String
+  lotId         String
+  previousLotId String?
+  enteredAt     DateTime  @default(now())
+  exitedAt      DateTime?
+  movedBy       String
+  reason        String?
+  createdAt     DateTime  @default(now())
+
+  animal        Animal    @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  lot           AnimalLot @relation("LotMovements", fields: [lotId], references: [id], onDelete: Cascade)
+  previousLot   AnimalLot? @relation("PreviousLotMovements", fields: [previousLotId], references: [id], onDelete: SetNull)
+  mover         User      @relation(fields: [movedBy], references: [id])
+
+  @@index([animalId])
+  @@index([lotId])
+  @@index([enteredAt])
+  @@index([exitedAt])
+  @@map("animal_lot_movements")
 }
