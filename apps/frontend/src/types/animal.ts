@@ -61,6 +61,8 @@ export interface AnimalListItem {
   origin: AnimalOrigin;
   entryWeightKg: number | null;
   bodyConditionScore: number | null;
+  lotId: string | null;
+  lotName: string | null;
   isCompositionEstimated: boolean;
   createdAt: string;
   compositions: BreedComposition[];

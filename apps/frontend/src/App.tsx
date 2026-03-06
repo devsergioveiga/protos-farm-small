@@ -21,6 +21,7 @@ const AdminOrganizationsPage = lazy(() => import('@/pages/AdminOrganizationsPage
 const AdminAuditLogsPage = lazy(() => import('@/pages/AdminAuditLogsPage'));
 const ProducersPage = lazy(() => import('@/pages/ProducersPage'));
 const AnimalsPage = lazy(() => import('@/pages/AnimalsPage'));
+const LotsPage = lazy(() => import('@/pages/LotsPage'));
 
 export function App() {
   return (
@@ -49,6 +50,7 @@ export function App() {
                 <Route path="/farms/:farmId/map" element={<FarmMapPage />} />
                 <Route path="/producers" element={<ProducersPage />} />
                 <Route path="/animals" element={<AnimalsPage />} />
+                <Route path="/lots" element={<LotsPage />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/login" replace />} />
