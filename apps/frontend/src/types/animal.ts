@@ -252,6 +252,104 @@ export const APPLICATION_METHOD_LABELS: Record<ApplicationMethod, string> = {
   OTHER: 'Outro',
 };
 
+// ─── Reproductive Record Types ──────────────────────────────────────
+
+export type ReproductiveEventType =
+  | 'CLEARANCE'
+  | 'HEAT'
+  | 'BREEDING_PLAN'
+  | 'AI'
+  | 'PREGNANCY'
+  | 'CALVING';
+
+export type HeatIntensity = 'WEAK' | 'MODERATE' | 'STRONG';
+export type BreedingMethod = 'NATURAL' | 'AI' | 'ET';
+export type CalvingType = 'NORMAL' | 'ASSISTED' | 'CESAREAN' | 'DYSTOCIC';
+export type PregnancyConfirmation = 'PALPATION' | 'ULTRASOUND' | 'BLOOD_TEST' | 'OBSERVATION';
+
+export interface ReproductiveRecordItem {
+  id: string;
+  animalId: string;
+  farmId: string;
+  type: ReproductiveEventType;
+  eventDate: string;
+  notes: string | null;
+  recordedBy: string;
+  recorderName: string;
+  approvedBy: string | null;
+  criteriaDetails: string | null;
+  heatIntensity: HeatIntensity | null;
+  intervalDays: number | null;
+  plannedSireId: string | null;
+  plannedSireName: string | null;
+  breedingMethod: BreedingMethod | null;
+  plannedDate: string | null;
+  sireId: string | null;
+  sireName: string | null;
+  semenBatch: string | null;
+  technicianName: string | null;
+  confirmationMethod: PregnancyConfirmation | null;
+  confirmationDate: string | null;
+  expectedDueDate: string | null;
+  calvingType: CalvingType | null;
+  calvingComplications: string | null;
+  calfId: string | null;
+  calfEarTag: string | null;
+  calfSex: string | null;
+  calfWeightKg: number | null;
+  createdAt: string;
+}
+
+export interface ReproductiveStats {
+  totalRecords: number;
+  clearances: number;
+  heats: number;
+  breedingPlans: number;
+  ais: number;
+  pregnancies: number;
+  calvings: number;
+  lastHeatDate: string | null;
+  lastAiDate: string | null;
+  lastCalvingDate: string | null;
+  isPregnant: boolean;
+  averageHeatIntervalDays: number | null;
+}
+
+export const REPRODUCTIVE_EVENT_TYPE_LABELS: Record<ReproductiveEventType, string> = {
+  CLEARANCE: 'Liberação',
+  HEAT: 'Cio',
+  BREEDING_PLAN: 'Plano Acasalamento',
+  AI: 'Inseminação',
+  PREGNANCY: 'Gestação',
+  CALVING: 'Parto',
+};
+
+export const HEAT_INTENSITY_LABELS: Record<HeatIntensity, string> = {
+  WEAK: 'Fraco',
+  MODERATE: 'Moderado',
+  STRONG: 'Forte',
+};
+
+export const BREEDING_METHOD_LABELS: Record<BreedingMethod, string> = {
+  NATURAL: 'Monta Natural',
+  AI: 'Inseminação Artificial',
+  ET: 'Transferência de Embrião',
+};
+
+export const CALVING_TYPE_LABELS: Record<CalvingType, string> = {
+  NORMAL: 'Normal',
+  ASSISTED: 'Assistido',
+  CESAREAN: 'Cesariana',
+  DYSTOCIC: 'Distócico',
+};
+
+export const PREGNANCY_CONFIRMATION_LABELS: Record<PregnancyConfirmation, string> = {
+  PALPATION: 'Palpação',
+  ULTRASOUND: 'Ultrassom',
+  BLOOD_TEST: 'Exame de Sangue',
+  OBSERVATION: 'Observação',
+};
+
 // ─── Bulk Import Types ────────────────────────────────────────────────
 
 export interface AnimalColumnMapping {

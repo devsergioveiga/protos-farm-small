@@ -5,6 +5,7 @@ import { useAnimalDetail } from '@/hooks/useAnimalDetail';
 import { useFarmContext } from '@/stores/FarmContext';
 import WeighingTab from '@/components/animals/WeighingTab';
 import SanitaryTab from '@/components/animals/SanitaryTab';
+import ReproductiveTab from '@/components/animals/ReproductiveTab';
 import { SEX_LABELS, CATEGORY_LABELS, ORIGIN_LABELS, GENEALOGY_CLASS_LABELS } from '@/types/animal';
 import type { AnimalDetail, AnimalCategory, GenealogyClass } from '@/types/animal';
 import './AnimalDetailPage.css';
@@ -110,7 +111,7 @@ function AnimalDetailPage() {
   const tabs: Array<{ id: Tab; label: string; disabled: boolean }> = [
     { id: 'general', label: 'Dados Gerais', disabled: false },
     { id: 'sanitary', label: 'Sanitário', disabled: false },
-    { id: 'reproductive', label: 'Reprodutivo', disabled: true },
+    { id: 'reproductive', label: 'Reprodutivo', disabled: false },
     { id: 'weighing', label: 'Pesagens', disabled: false },
   ];
 
@@ -192,15 +193,13 @@ function AnimalDetailPage() {
           <WeighingTab farmId={selectedFarm.id} animalId={animal.id} animalEarTag={animal.earTag} />
         ) : activeTab === 'sanitary' ? (
           <SanitaryTab farmId={selectedFarm.id} animalId={animal.id} animalEarTag={animal.earTag} />
-        ) : (
-          <div className="animal-detail__panel-placeholder">
-            <Beef size={48} color="var(--color-neutral-400)" aria-hidden="true" />
-            <h2 className="animal-detail__panel-placeholder-title">Em breve</h2>
-            <p className="animal-detail__panel-placeholder-desc">
-              Esta seção será implementada em uma próxima versão.
-            </p>
-          </div>
-        )}
+        ) : activeTab === 'reproductive' ? (
+          <ReproductiveTab
+            farmId={selectedFarm.id}
+            animalId={animal.id}
+            animalEarTag={animal.earTag}
+          />
+        ) : null}
       </div>
     </main>
   );

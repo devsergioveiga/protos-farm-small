@@ -1196,6 +1196,7 @@ async function main() {
   // ─── Animais ──────────────────────────────────────────────────────────
   console.log('\n  Criando animais...');
 
+  await prisma.$executeRawUnsafe(`DELETE FROM animal_reproductive_records`);
   await prisma.$executeRawUnsafe(`DELETE FROM animal_health_records`);
   await prisma.$executeRawUnsafe(`DELETE FROM animal_genealogical_records`);
   await prisma.$executeRawUnsafe(`DELETE FROM animal_breed_compositions`);
@@ -1847,6 +1848,199 @@ async function main() {
     );
   }
   console.log(`  ✓ ${healthRecords.length} registros sanitários criados`);
+
+  // ─── Registros Reprodutivos ──────────────────────────────────────────
+  console.log('\n  Criando registros reprodutivos...');
+
+  await prisma.$executeRawUnsafe(`DELETE FROM animal_reproductive_records`);
+
+  const reproductiveRecords = [
+    // Mimosa (SH-001) — ciclo completo: clearance → heats → AI (Trovão) → pregnancy → calving (SH-005)
+    {
+      animalId: 'ani-0001-4000-8000-000000000001',
+      type: 'CLEARANCE',
+      eventDate: '2025-01-10',
+      approvedBy: 'Dr. Carlos Silva',
+      criteriaDetails: 'Peso acima de 350kg, idade > 24 meses, escore corporal 3.5',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000001',
+      type: 'HEAT',
+      eventDate: '2025-02-05',
+      heatIntensity: 'MODERATE',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000001',
+      type: 'HEAT',
+      eventDate: '2025-02-26',
+      heatIntensity: 'STRONG',
+      intervalDays: 21,
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000001',
+      type: 'HEAT',
+      eventDate: '2025-03-19',
+      heatIntensity: 'STRONG',
+      intervalDays: 21,
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000001',
+      type: 'AI',
+      eventDate: '2025-03-20',
+      sireId: 'ani-0001-4000-8000-000000000004', // Trovão
+      breedingMethod: 'AI',
+      semenBatch: 'TRV-2025-01',
+      technicianName: 'João Inseminador',
+      notes: 'IA 12h após início do cio',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000001',
+      type: 'PREGNANCY',
+      eventDate: '2025-04-20',
+      confirmationMethod: 'ULTRASOUND',
+      confirmationDate: '2025-04-20',
+      expectedDueDate: '2025-12-20',
+      sireId: 'ani-0001-4000-8000-000000000004',
+      notes: 'Gestação confirmada por ultrassom, 30 dias',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000001',
+      type: 'CALVING',
+      eventDate: '2025-12-18',
+      calvingType: 'NORMAL',
+      calfId: 'ani-0001-4000-8000-000000000005',
+      calfSex: 'FEMALE',
+      calfWeightKg: 35,
+      notes: 'Parto normal sem complicações',
+    },
+
+    // Estrela (SH-002) — ciclo completo: clearance → heats → AI (externo) → pregnancy → calving (SH-006)
+    {
+      animalId: 'ani-0001-4000-8000-000000000002',
+      type: 'CLEARANCE',
+      eventDate: '2025-01-15',
+      approvedBy: 'Dr. Carlos Silva',
+      criteriaDetails: 'Apta para reprodução',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000002',
+      type: 'HEAT',
+      eventDate: '2025-02-10',
+      heatIntensity: 'MODERATE',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000002',
+      type: 'HEAT',
+      eventDate: '2025-03-03',
+      heatIntensity: 'STRONG',
+      intervalDays: 21,
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000002',
+      type: 'AI',
+      eventDate: '2025-03-04',
+      sireName: 'Tornado FIV da Epamig',
+      breedingMethod: 'AI',
+      semenBatch: 'TOR-EPM-2025',
+      technicianName: 'João Inseminador',
+      notes: 'Sêmen importado, touro externo',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000002',
+      type: 'PREGNANCY',
+      eventDate: '2025-04-05',
+      confirmationMethod: 'PALPATION',
+      confirmationDate: '2025-04-05',
+      expectedDueDate: '2025-12-05',
+      sireName: 'Tornado FIV da Epamig',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000002',
+      type: 'CALVING',
+      eventDate: '2025-12-03',
+      calvingType: 'ASSISTED',
+      calfId: 'ani-0001-4000-8000-000000000006',
+      calfSex: 'MALE',
+      calfWeightKg: 38,
+      calvingComplications: 'Apresentação posterior, necessitou auxílio',
+    },
+
+    // Princesa (SH-003) — ciclo em andamento: clearance → heats → breeding plan
+    {
+      animalId: 'ani-0001-4000-8000-000000000003',
+      type: 'CLEARANCE',
+      eventDate: '2025-12-01',
+      approvedBy: 'Dr. Carlos Silva',
+      criteriaDetails: 'Novilha pronta para primeira cobertura',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000003',
+      type: 'HEAT',
+      eventDate: '2025-12-20',
+      heatIntensity: 'WEAK',
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000003',
+      type: 'HEAT',
+      eventDate: '2026-01-10',
+      heatIntensity: 'MODERATE',
+      intervalDays: 21,
+    },
+    {
+      animalId: 'ani-0001-4000-8000-000000000003',
+      type: 'BREEDING_PLAN',
+      eventDate: '2026-01-15',
+      plannedSireId: 'ani-0001-4000-8000-000000000004', // Trovão
+      breedingMethod: 'NATURAL',
+      plannedDate: '2026-02-01',
+      notes: 'Plano de monta natural com Trovão no próximo cio',
+    },
+  ];
+
+  for (const rr of reproductiveRecords) {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO animal_reproductive_records (id, "animalId", "farmId", type, "eventDate", notes, "recordedBy",
+       "approvedBy", "criteriaDetails", "heatIntensity", "intervalDays",
+       "plannedSireId", "breedingMethod", "plannedDate",
+       "sireId", "sireName", "semenBatch", "technicianName",
+       "confirmationMethod", "confirmationDate", "expectedDueDate",
+       "calvingType", "calvingComplications", "calfId", "calfSex", "calfWeightKg",
+       "createdAt", "updatedAt")
+       VALUES (gen_random_uuid(), $1, $2, $3::"ReproductiveEventType", $4::date, $5, $6,
+       $7, $8, $9::"HeatIntensity", $10,
+       $11, $12::"BreedingMethod", $13::date,
+       $14, $15, $16, $17,
+       $18::"PregnancyConfirmation", $19::date, $20::date,
+       $21::"CalvingType", $22, $23, $24::"AnimalSex", $25,
+       now(), now())`,
+      rr.animalId,
+      SANTA_HELENA,
+      rr.type,
+      rr.eventDate,
+      (rr as Record<string, unknown>).notes ?? null,
+      CREATED_BY,
+      (rr as Record<string, unknown>).approvedBy ?? null,
+      (rr as Record<string, unknown>).criteriaDetails ?? null,
+      (rr as Record<string, unknown>).heatIntensity ?? null,
+      (rr as Record<string, unknown>).intervalDays ?? null,
+      (rr as Record<string, unknown>).plannedSireId ?? null,
+      (rr as Record<string, unknown>).breedingMethod ?? null,
+      (rr as Record<string, unknown>).plannedDate ?? null,
+      (rr as Record<string, unknown>).sireId ?? null,
+      (rr as Record<string, unknown>).sireName ?? null,
+      (rr as Record<string, unknown>).semenBatch ?? null,
+      (rr as Record<string, unknown>).technicianName ?? null,
+      (rr as Record<string, unknown>).confirmationMethod ?? null,
+      (rr as Record<string, unknown>).confirmationDate ?? null,
+      (rr as Record<string, unknown>).expectedDueDate ?? null,
+      (rr as Record<string, unknown>).calvingType ?? null,
+      (rr as Record<string, unknown>).calvingComplications ?? null,
+      (rr as Record<string, unknown>).calfId ?? null,
+      (rr as Record<string, unknown>).calfSex ?? null,
+      (rr as Record<string, unknown>).calfWeightKg ?? null,
+    );
+  }
+  console.log(`  ✓ ${reproductiveRecords.length} registros reprodutivos criados`);
 
   // Audit Logs de exemplo
   console.log('');
