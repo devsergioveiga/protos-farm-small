@@ -15,6 +15,11 @@ import {
   COLUMN_AUTO_MAP,
   type AnimalSexType,
   type AnimalCategoryType,
+  ANIMAL_SORT_FIELDS,
+  ANIMAL_CSV_HEADERS,
+  ANIMAL_SEX_LABELS_PT,
+  ANIMAL_ORIGIN_LABELS_PT,
+  type AnimalSortField,
   type CreateAnimalInput,
   type UpdateAnimalInput,
   type ListAnimalsQuery,
@@ -249,42 +254,96 @@ export async function createAnimal(
   });
 }
 
+// ─── Where Builder ──────────────────────────────────────────────────
+
+function buildAnimalsWhere(farmId: string, query: ListAnimalsQuery): Record<string, unknown> {
+  const where: Record<string, unknown> = { farmId, deletedAt: null };
+
+  if (query.search) {
+    where.OR = [
+      { earTag: { contains: query.search, mode: 'insensitive' } },
+      { name: { contains: query.search, mode: 'insensitive' } },
+      { rfidTag: { contains: query.search, mode: 'insensitive' } },
+    ];
+  }
+
+  if (query.sex) where.sex = query.sex;
+  if (query.category) where.category = query.category;
+  if (query.origin) where.origin = query.origin;
+  if (query.lotId) where.lotId = query.lotId;
+
+  if (query.breedId) {
+    where.compositions = { some: { breedId: query.breedId } };
+  }
+
+  // Weight range
+  if (query.minWeightKg != null || query.maxWeightKg != null) {
+    const weightFilter: Record<string, unknown> = {};
+    if (query.minWeightKg != null) weightFilter.gte = query.minWeightKg;
+    if (query.maxWeightKg != null) weightFilter.lte = query.maxWeightKg;
+    where.entryWeightKg = weightFilter;
+  }
+
+  // Birth date range (explicit dates + age-based)
+  const birthDateFilter: Record<string, unknown> = {};
+
+  if (query.birthDateFrom) birthDateFilter.gte = new Date(query.birthDateFrom);
+  if (query.birthDateTo) birthDateFilter.lte = new Date(query.birthDateTo);
+
+  // minAgeDays → animal has at least X days → birthDate <= today - X
+  if (query.minAgeDays != null) {
+    const maxBirthDate = new Date();
+    maxBirthDate.setDate(maxBirthDate.getDate() - query.minAgeDays);
+    const existing = birthDateFilter.lte as Date | undefined;
+    if (!existing || maxBirthDate < existing) {
+      birthDateFilter.lte = maxBirthDate;
+    }
+  }
+
+  // maxAgeDays → animal has at most X days → birthDate >= today - X
+  if (query.maxAgeDays != null) {
+    const minBirthDate = new Date();
+    minBirthDate.setDate(minBirthDate.getDate() - query.maxAgeDays);
+    const existing = birthDateFilter.gte as Date | undefined;
+    if (!existing || minBirthDate > existing) {
+      birthDateFilter.gte = minBirthDate;
+    }
+  }
+
+  if (Object.keys(birthDateFilter).length > 0) {
+    where.birthDate = birthDateFilter;
+  }
+
+  return where;
+}
+
 // ─── List Animals ───────────────────────────────────────────────────
 
 export async function listAnimals(ctx: RlsContext, farmId: string, query: ListAnimalsQuery) {
   const page = Math.max(1, query.page ?? 1);
-  const limit = Math.min(100, Math.max(1, query.limit ?? 20));
+  const limit = Math.min(100, Math.max(1, query.limit ?? 50));
   const skip = (page - 1) * limit;
 
+  const sortBy: AnimalSortField =
+    query.sortBy && (ANIMAL_SORT_FIELDS as readonly string[]).includes(query.sortBy)
+      ? query.sortBy
+      : 'createdAt';
+  const sortOrder = query.sortOrder === 'asc' ? 'asc' : 'desc';
+
   return withRlsContext(ctx, async (tx) => {
-    const where: Record<string, unknown> = { farmId, deletedAt: null };
-
-    if (query.search) {
-      where.OR = [
-        { earTag: { contains: query.search, mode: 'insensitive' } },
-        { name: { contains: query.search, mode: 'insensitive' } },
-        { rfidTag: { contains: query.search, mode: 'insensitive' } },
-      ];
-    }
-
-    if (query.sex) where.sex = query.sex;
-    if (query.category) where.category = query.category;
-    if (query.origin) where.origin = query.origin;
-
-    if (query.breedId) {
-      where.compositions = { some: { breedId: query.breedId } };
-    }
+    const where = buildAnimalsWhere(farmId, query);
 
     const [animals, total] = await Promise.all([
       tx.animal.findMany({
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { [sortBy]: sortOrder },
         include: {
           compositions: { include: { breed: { select: { id: true, name: true, code: true } } } },
           sire: { select: { id: true, earTag: true, name: true } },
           dam: { select: { id: true, earTag: true, name: true } },
+          lot: { select: { id: true, name: true } },
         },
       }),
       tx.animal.count({ where }),
@@ -533,6 +592,65 @@ export async function getAnimalsSummary(ctx: RlsContext, farmId: string) {
       byCategory,
       bySex,
     };
+  });
+}
+
+// ─── Export CSV ──────────────────────────────────────────────────
+
+export async function exportAnimalsCsv(
+  ctx: RlsContext,
+  farmId: string,
+  query: ListAnimalsQuery,
+): Promise<string> {
+  return withRlsContext(ctx, async (tx) => {
+    const where = buildAnimalsWhere(farmId, query);
+
+    const animals = await tx.animal.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        compositions: { include: { breed: { select: { name: true } } } },
+        sire: { select: { earTag: true, name: true } },
+        dam: { select: { earTag: true, name: true } },
+        lot: { select: { name: true } },
+      },
+    });
+
+    const BOM = '\uFEFF';
+    const lines: string[] = [];
+
+    lines.push(ANIMAL_CSV_HEADERS.join(';'));
+
+    for (const a of animals) {
+      const birthDate = a.birthDate ? new Date(a.birthDate).toLocaleDateString('pt-BR') : '';
+      const breeds =
+        a.compositions.length > 0
+          ? a.compositions.map((c) => `${c.breed.name} ${Number(c.percentage)}%`).join(' + ')
+          : '';
+      const sireLabel = a.sire ? `${a.sire.earTag}${a.sire.name ? ` (${a.sire.name})` : ''}` : '';
+      const damLabel = a.dam ? `${a.dam.earTag}${a.dam.name ? ` (${a.dam.name})` : ''}` : '';
+
+      const cols = [
+        a.earTag,
+        a.name ?? '',
+        ANIMAL_SEX_LABELS_PT[a.sex] ?? a.sex,
+        birthDate,
+        a.category,
+        ANIMAL_ORIGIN_LABELS_PT[a.origin] ?? a.origin,
+        breeds,
+        a.entryWeightKg != null ? Number(a.entryWeightKg).toString() : '',
+        a.bodyConditionScore != null ? Number(a.bodyConditionScore).toString() : '',
+        (a.lot as { name: string } | null)?.name ?? '',
+        sireLabel,
+        damLabel,
+        a.rfidTag ?? '',
+        a.notes ?? '',
+      ];
+
+      lines.push(cols.join(';'));
+    }
+
+    return BOM + lines.join('\n');
   });
 }
 

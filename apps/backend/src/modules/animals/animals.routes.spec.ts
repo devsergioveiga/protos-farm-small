@@ -28,6 +28,7 @@ jest.mock('./animals.service', () => ({
   updateAnimal: jest.fn(),
   softDeleteAnimal: jest.fn(),
   getAnimalsSummary: jest.fn(),
+  exportAnimalsCsv: jest.fn(),
   listBreeds: jest.fn(),
   createBreed: jest.fn(),
   deleteBreed: jest.fn(),
@@ -644,6 +645,143 @@ describe('POST /org/farms/:farmId/animals/bulk', () => {
       .field('selectedIndices', '[0]');
 
     expect(res.status).toBe(400);
+  });
+});
+
+// ─── GET /org/farms/:farmId/animals — advanced filters ───────────────
+
+describe('GET /org/farms/:farmId/animals — advanced filters', () => {
+  const emptyResult = {
+    data: [],
+    meta: { page: 1, limit: 50, total: 0, totalPages: 0 },
+  };
+
+  it('should pass lotId filter to service', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.listAnimals.mockResolvedValue(emptyResult);
+
+    await request(app)
+      .get(`/api/org/farms/${FARM_ID}/animals?lotId=lot-1`)
+      .set('Authorization', 'Bearer valid');
+
+    expect(mockedService.listAnimals).toHaveBeenCalledWith(
+      expect.any(Object),
+      FARM_ID,
+      expect.objectContaining({ lotId: 'lot-1' }),
+    );
+  });
+
+  it('should pass birthDate range filters to service', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.listAnimals.mockResolvedValue(emptyResult);
+
+    await request(app)
+      .get(`/api/org/farms/${FARM_ID}/animals?birthDateFrom=2024-01-01&birthDateTo=2024-12-31`)
+      .set('Authorization', 'Bearer valid');
+
+    expect(mockedService.listAnimals).toHaveBeenCalledWith(
+      expect.any(Object),
+      FARM_ID,
+      expect.objectContaining({
+        birthDateFrom: '2024-01-01',
+        birthDateTo: '2024-12-31',
+      }),
+    );
+  });
+
+  it('should pass weight range filters as numbers', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.listAnimals.mockResolvedValue(emptyResult);
+
+    await request(app)
+      .get(`/api/org/farms/${FARM_ID}/animals?minWeightKg=100&maxWeightKg=500`)
+      .set('Authorization', 'Bearer valid');
+
+    expect(mockedService.listAnimals).toHaveBeenCalledWith(
+      expect.any(Object),
+      FARM_ID,
+      expect.objectContaining({ minWeightKg: 100, maxWeightKg: 500 }),
+    );
+  });
+
+  it('should pass age range filters as numbers', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.listAnimals.mockResolvedValue(emptyResult);
+
+    await request(app)
+      .get(`/api/org/farms/${FARM_ID}/animals?minAgeDays=30&maxAgeDays=365`)
+      .set('Authorization', 'Bearer valid');
+
+    expect(mockedService.listAnimals).toHaveBeenCalledWith(
+      expect.any(Object),
+      FARM_ID,
+      expect.objectContaining({ minAgeDays: 30, maxAgeDays: 365 }),
+    );
+  });
+
+  it('should pass sortBy and sortOrder to service', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.listAnimals.mockResolvedValue(emptyResult);
+
+    await request(app)
+      .get(`/api/org/farms/${FARM_ID}/animals?sortBy=birthDate&sortOrder=asc`)
+      .set('Authorization', 'Bearer valid');
+
+    expect(mockedService.listAnimals).toHaveBeenCalledWith(
+      expect.any(Object),
+      FARM_ID,
+      expect.objectContaining({ sortBy: 'birthDate', sortOrder: 'asc' }),
+    );
+  });
+
+  it('should return 400 for NaN numeric params', async () => {
+    authAs(ADMIN_PAYLOAD);
+
+    const res = await request(app)
+      .get(`/api/org/farms/${FARM_ID}/animals?minWeightKg=abc`)
+      .set('Authorization', 'Bearer valid');
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('minWeightKg');
+  });
+});
+
+// ─── GET /org/farms/:farmId/animals/export ──────────────────────────
+
+describe('GET /org/farms/:farmId/animals/export', () => {
+  it('should return CSV with correct headers', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.exportAnimalsCsv.mockResolvedValue('\uFEFFBrinco;Nome;Sexo\nBR001;Mimosa;Fêmea');
+
+    const res = await request(app)
+      .get(`/api/org/farms/${FARM_ID}/animals/export`)
+      .set('Authorization', 'Bearer valid');
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('text/csv');
+    expect(res.headers['content-disposition']).toContain(`animais-${FARM_ID}.csv`);
+    expect(res.text).toContain('Brinco;Nome;Sexo');
+  });
+
+  it('should pass filters to exportAnimalsCsv', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.exportAnimalsCsv.mockResolvedValue('\uFEFFBrinco\n');
+
+    await request(app)
+      .get(`/api/org/farms/${FARM_ID}/animals/export?sex=FEMALE&lotId=lot-1`)
+      .set('Authorization', 'Bearer valid');
+
+    expect(mockedService.exportAnimalsCsv).toHaveBeenCalledWith(
+      expect.any(Object),
+      FARM_ID,
+      expect.objectContaining({ sex: 'FEMALE', lotId: 'lot-1' }),
+    );
+  });
+
+  it('should return 401 without auth', async () => {
+    const res = await request(app).get(`/api/org/farms/${FARM_ID}/animals/export`);
+
+    expect(res.status).toBe(401);
   });
 });
 
