@@ -144,6 +144,7 @@ export interface ListAnimalsQuery {
   breedId?: string;
   origin?: string;
   lotId?: string;
+  locationId?: string;
   birthDateFrom?: string;
   birthDateTo?: string;
   minWeightKg?: number;
