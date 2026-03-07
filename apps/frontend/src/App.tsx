@@ -22,6 +22,7 @@ const AdminAuditLogsPage = lazy(() => import('@/pages/AdminAuditLogsPage'));
 const ProducersPage = lazy(() => import('@/pages/ProducersPage'));
 const AnimalsPage = lazy(() => import('@/pages/AnimalsPage'));
 const LotsPage = lazy(() => import('@/pages/LotsPage'));
+const WeighingSessionPage = lazy(() => import('@/pages/WeighingSessionPage'));
 const AnimalDetailPage = lazy(() => import('@/pages/AnimalDetailPage'));
 
 export function App() {
@@ -53,6 +54,7 @@ export function App() {
                 <Route path="/animals" element={<AnimalsPage />} />
                 <Route path="/animals/:animalId" element={<AnimalDetailPage />} />
                 <Route path="/lots" element={<LotsPage />} />
+                <Route path="/weighing-session" element={<WeighingSessionPage />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/login" replace />} />

@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Beef,
   Layers,
+  Scale,
 } from 'lucide-react';
 import { useAuth } from '@/stores/AuthContext';
 import { FarmProvider } from '@/stores/FarmContext';
@@ -93,6 +94,13 @@ function AppLayout() {
                 >
                   <Layers size={16} aria-hidden="true" />
                   <span className="app-topbar__nav-label">Lotes</span>
+                </Link>
+                <Link
+                  to="/weighing-session"
+                  className={`app-topbar__nav-link ${isActive('/weighing-session') ? 'app-topbar__nav-link--active' : ''}`}
+                >
+                  <Scale size={16} aria-hidden="true" />
+                  <span className="app-topbar__nav-label">Pesagem</span>
                 </Link>
                 <Link
                   to="/users"
