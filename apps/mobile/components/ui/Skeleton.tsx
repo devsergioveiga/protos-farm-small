@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Animated, StyleSheet, type ViewStyle, AccessibilityInfo } from 'react-native';
 import { colors, radius } from '@protos-farm/shared';
 
@@ -15,12 +15,10 @@ export function Skeleton({
   borderRadius = radius.md,
   style,
 }: SkeletonProps) {
-  const opacity = useRef(new Animated.Value(0.4)).current;
-  const reduceMotion = useRef(false);
+  const [opacity] = useState(() => new Animated.Value(0.4));
 
   useEffect(() => {
     AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
-      reduceMotion.current = enabled;
       if (enabled) {
         opacity.setValue(0.6);
         return;
