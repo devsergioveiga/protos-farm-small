@@ -15,6 +15,7 @@ import {
   updateAnimal,
   softDeleteAnimal,
   getAnimalsSummary,
+  exportAnimalsCsv,
   listBreeds,
   createBreed,
   deleteBreed,
@@ -359,6 +360,13 @@ animalsRouter.get(
   },
 );
 
+function parseNumericParam(value: unknown): number | undefined {
+  if (value === undefined || value === null || value === '') return undefined;
+  const n = Number(value);
+  if (isNaN(n)) return NaN;
+  return n;
+}
+
 animalsRouter.get(
   '/org/farms/:farmId/animals',
   authenticate,
@@ -376,6 +384,24 @@ animalsRouter.get(
       const category = req.query.category as string | undefined;
       const breedId = req.query.breedId as string | undefined;
       const origin = req.query.origin as string | undefined;
+      const lotId = req.query.lotId as string | undefined;
+      const birthDateFrom = req.query.birthDateFrom as string | undefined;
+      const birthDateTo = req.query.birthDateTo as string | undefined;
+      const sortBy = req.query.sortBy as string | undefined;
+      const sortOrder = req.query.sortOrder as string | undefined;
+
+      const minWeightKg = parseNumericParam(req.query.minWeightKg);
+      const maxWeightKg = parseNumericParam(req.query.maxWeightKg);
+      const minAgeDays = parseNumericParam(req.query.minAgeDays);
+      const maxAgeDays = parseNumericParam(req.query.maxAgeDays);
+
+      const numericParams = { minWeightKg, maxWeightKg, minAgeDays, maxAgeDays };
+      for (const [key, val] of Object.entries(numericParams)) {
+        if (val !== undefined && isNaN(val)) {
+          res.status(400).json({ error: `Parâmetro '${key}' deve ser numérico` });
+          return;
+        }
+      }
 
       const result = await listAnimals(ctx, farmId, {
         page,
@@ -385,9 +411,79 @@ animalsRouter.get(
         category,
         breedId,
         origin,
+        lotId,
+        birthDateFrom,
+        birthDateTo,
+        minWeightKg,
+        maxWeightKg,
+        minAgeDays,
+        maxAgeDays,
+        sortBy: sortBy as import('./animals.types').AnimalSortField | undefined,
+        sortOrder: sortOrder as 'asc' | 'desc' | undefined,
       });
 
       res.json(result);
+    } catch (err) {
+      if (err instanceof AnimalError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// Export must be before :animalId
+animalsRouter.get(
+  '/org/farms/:farmId/animals/export',
+  authenticate,
+  checkPermission('animals:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const farmId = req.params.farmId as string;
+
+      const search = req.query.search as string | undefined;
+      const sex = req.query.sex as string | undefined;
+      const category = req.query.category as string | undefined;
+      const breedId = req.query.breedId as string | undefined;
+      const origin = req.query.origin as string | undefined;
+      const lotId = req.query.lotId as string | undefined;
+      const birthDateFrom = req.query.birthDateFrom as string | undefined;
+      const birthDateTo = req.query.birthDateTo as string | undefined;
+
+      const minWeightKg = parseNumericParam(req.query.minWeightKg);
+      const maxWeightKg = parseNumericParam(req.query.maxWeightKg);
+      const minAgeDays = parseNumericParam(req.query.minAgeDays);
+      const maxAgeDays = parseNumericParam(req.query.maxAgeDays);
+
+      const numericParams = { minWeightKg, maxWeightKg, minAgeDays, maxAgeDays };
+      for (const [key, val] of Object.entries(numericParams)) {
+        if (val !== undefined && isNaN(val)) {
+          res.status(400).json({ error: `Parâmetro '${key}' deve ser numérico` });
+          return;
+        }
+      }
+
+      const csv = await exportAnimalsCsv(ctx, farmId, {
+        search,
+        sex,
+        category,
+        breedId,
+        origin,
+        lotId,
+        birthDateFrom,
+        birthDateTo,
+        minWeightKg,
+        maxWeightKg,
+        minAgeDays,
+        maxAgeDays,
+      });
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="animais-${farmId}.csv"`);
+      res.send(csv);
     } catch (err) {
       if (err instanceof AnimalError) {
         res.status(err.statusCode).json({ error: err.message });

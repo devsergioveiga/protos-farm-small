@@ -126,6 +126,15 @@ export interface UpdateAnimalInput {
   genealogicalRecords?: GenealogicalRecordInput[];
 }
 
+export const ANIMAL_SORT_FIELDS = [
+  'earTag',
+  'name',
+  'birthDate',
+  'entryWeightKg',
+  'createdAt',
+] as const;
+export type AnimalSortField = (typeof ANIMAL_SORT_FIELDS)[number];
+
 export interface ListAnimalsQuery {
   page?: number;
   limit?: number;
@@ -134,7 +143,43 @@ export interface ListAnimalsQuery {
   category?: string;
   breedId?: string;
   origin?: string;
+  lotId?: string;
+  birthDateFrom?: string;
+  birthDateTo?: string;
+  minWeightKg?: number;
+  maxWeightKg?: number;
+  minAgeDays?: number;
+  maxAgeDays?: number;
+  sortBy?: AnimalSortField;
+  sortOrder?: 'asc' | 'desc';
 }
+
+export const ANIMAL_SEX_LABELS_PT: Record<string, string> = {
+  MALE: 'Macho',
+  FEMALE: 'Fêmea',
+};
+
+export const ANIMAL_ORIGIN_LABELS_PT: Record<string, string> = {
+  BORN: 'Nascido',
+  PURCHASED: 'Comprado',
+};
+
+export const ANIMAL_CSV_HEADERS = [
+  'Brinco',
+  'Nome',
+  'Sexo',
+  'Nascimento',
+  'Categoria',
+  'Origem',
+  'Raça(s)',
+  'Peso Entrada (kg)',
+  'ECC',
+  'Lote',
+  'Pai',
+  'Mãe',
+  'RFID',
+  'Observações',
+] as const;
 
 export interface CreateBreedInput {
   name: string;
