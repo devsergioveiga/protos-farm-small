@@ -172,9 +172,48 @@ export const breakpoint = {
   '2xl': 1536,
 } as const;
 
+// ─── Cores (Dark Mode) ──────────────────────────────────────────────────────
+
+export const colorsDark = {
+  primary: {
+    50: '#0D3B10',
+    100: '#145218',
+    200: '#1B5E20',
+    300: '#2E7D32',
+    400: '#43A047',
+    500: '#4CAF50',
+    600: '#66BB6A',
+    700: '#81C784',
+    800: '#A5D6A7',
+    900: '#C8E6C9',
+  },
+  neutral: {
+    0: '#1A1613',
+    50: '#222020',
+    100: '#2A2520',
+    200: '#3E3833',
+    300: '#5C554C',
+    400: '#7A7267',
+    500: '#A8A196',
+    600: '#D4CEC4',
+    700: '#E8E4DD',
+    800: '#F5F3EF',
+    900: '#FAFAF8',
+  },
+  sky: { 100: '#0D47A1', 500: '#42A5F5' },
+  earth: { 100: '#4E342E', 500: '#BCAAA4' },
+  sun: { 100: '#F57F17', 500: '#FFD54F' },
+  success: { 100: '#1B5E20', 500: '#66BB6A' },
+  warning: { 100: '#E65100', 500: '#FFB74D' },
+  error: { 100: '#B71C1C', 500: '#EF5350' },
+  info: { 100: '#01579B', 500: '#4FC3F7' },
+  sync: { offline: '#90A4AE', syncing: '#FFD54F', synced: '#66BB6A' },
+} as const;
+
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
 export type ColorScale = typeof colors;
+export type ColorsDarkScale = typeof colorsDark;
 export type SpacingScale = typeof spacing;
 export type FontSizeScale = typeof fontSize;
 export type RadiusScale = typeof radius;

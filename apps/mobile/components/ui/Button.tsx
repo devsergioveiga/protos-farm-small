@@ -1,6 +1,10 @@
-import { ActivityIndicator, Pressable, Text, StyleSheet, type ViewStyle } from 'react-native';
+import { useCallback } from 'react';
+import { ActivityIndicator, Pressable, Text, type ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { colors, spacing, fontSize, radius } from '@protos-farm/shared';
+import { spacing, fontSize, radius } from '@protos-farm/shared';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { useTheme } from '@/stores/ThemeContext';
+import type { ThemeColors } from '@/stores/ThemeContext';
 
 type ButtonVariant = 'primary' | 'secondary';
 
@@ -14,6 +18,27 @@ interface ButtonProps {
   accessibilityHint?: string;
 }
 
+const createStyles = (c: ThemeColors) => ({
+  base: {
+    minHeight: 48,
+    borderRadius: radius.md,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    paddingVertical: spacing[3],
+    paddingHorizontal: spacing[6],
+  },
+  primary: { backgroundColor: c.primary[600] },
+  secondary: {
+    backgroundColor: 'transparent' as const,
+    borderWidth: 1,
+    borderColor: c.primary[600],
+  },
+  disabled: { opacity: 0.5 },
+  label: { fontFamily: 'SourceSans3_600SemiBold', fontSize: fontSize.base },
+  labelPrimary: { color: c.neutral[0] },
+  labelSecondary: { color: c.primary[600] },
+});
+
 export function Button({
   label,
   onPress,
@@ -24,11 +49,13 @@ export function Button({
   accessibilityHint,
 }: ButtonProps) {
   const isDisabled = disabled || loading;
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
 
-  const handlePress = () => {
+  const handlePress = useCallback(() => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onPress();
-  };
+  }, [onPress]);
 
   return (
     <Pressable
@@ -64,35 +91,3 @@ export function Button({
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  base: {
-    minHeight: 48,
-    borderRadius: radius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: spacing[3],
-    paddingHorizontal: spacing[6],
-  },
-  primary: {
-    backgroundColor: colors.primary[600],
-  },
-  secondary: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: colors.primary[600],
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  label: {
-    fontFamily: 'SourceSans3_600SemiBold',
-    fontSize: fontSize.base,
-  },
-  labelPrimary: {
-    color: colors.neutral[0],
-  },
-  labelSecondary: {
-    color: colors.primary[600],
-  },
-});

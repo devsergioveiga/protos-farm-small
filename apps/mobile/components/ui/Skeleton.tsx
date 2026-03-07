@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { View, Animated, StyleSheet, type ViewStyle, AccessibilityInfo } from 'react-native';
-import { colors, radius } from '@protos-farm/shared';
+import { View, Animated, type ViewStyle, AccessibilityInfo } from 'react-native';
+import { radius } from '@protos-farm/shared';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import type { ThemeColors } from '@/stores/ThemeContext';
 
 interface SkeletonProps {
   width?: number | `${number}%`;
@@ -9,13 +11,19 @@ interface SkeletonProps {
   style?: ViewStyle;
 }
 
+const createStyles = (c: ThemeColors) => ({
+  skeleton: { backgroundColor: c.neutral[200] },
+  card: { backgroundColor: c.neutral[0], borderRadius: radius.lg, padding: 16, marginBottom: 12 },
+});
+
 export function Skeleton({
   width = '100%',
   height = 20,
-  borderRadius = radius.md,
+  borderRadius: br = radius.md,
   style,
 }: SkeletonProps) {
   const [opacity] = useState(() => new Animated.Value(0.4));
+  const styles = useThemedStyles(createStyles);
 
   useEffect(() => {
     AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
@@ -23,19 +31,10 @@ export function Skeleton({
         opacity.setValue(0.6);
         return;
       }
-
       const animation = Animated.loop(
         Animated.sequence([
-          Animated.timing(opacity, {
-            toValue: 0.7,
-            duration: 750,
-            useNativeDriver: true,
-          }),
-          Animated.timing(opacity, {
-            toValue: 0.4,
-            duration: 750,
-            useNativeDriver: true,
-          }),
+          Animated.timing(opacity, { toValue: 0.7, duration: 750, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0.4, duration: 750, useNativeDriver: true }),
         ]),
       );
       animation.start();
@@ -47,12 +46,13 @@ export function Skeleton({
     <Animated.View
       accessibilityRole="none"
       accessibilityLabel="Carregando"
-      style={[styles.skeleton, { width, height, borderRadius, opacity }, style]}
+      style={[styles.skeleton, { width, height, borderRadius: br, opacity }, style]}
     />
   );
 }
 
 export function SkeletonCard() {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.card}>
       <Skeleton width="60%" height={20} />
@@ -61,15 +61,3 @@ export function SkeletonCard() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  skeleton: {
-    backgroundColor: colors.neutral[200],
-  },
-  card: {
-    backgroundColor: colors.neutral[0],
-    borderRadius: radius.lg,
-    padding: 16,
-    marginBottom: 12,
-  },
-});
