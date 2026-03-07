@@ -1,15 +1,36 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Beef, Plus, Upload, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Beef,
+  Plus,
+  Upload,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  X,
+} from 'lucide-react';
 import { useAnimals } from '@/hooks/useAnimals';
 import { useBreeds } from '@/hooks/useBreeds';
+import { useLots } from '@/hooks/useLots';
 import { useFarmContext } from '@/stores/FarmContext';
+import { api } from '@/services/api';
 import PermissionGate from '@/components/auth/PermissionGate';
 import CreateAnimalModal from '@/components/animals/CreateAnimalModal';
 import AnimalBulkImportModal from '@/components/animal-bulk-import/AnimalBulkImportModal';
 import type { AnimalListItem, AnimalSex, AnimalCategory } from '@/types/animal';
-import { SEX_LABELS, CATEGORY_LABELS } from '@/types/animal';
+import { SEX_LABELS, CATEGORY_LABELS, ORIGIN_LABELS } from '@/types/animal';
 import './AnimalsPage.css';
+
+const SORT_FIELD_LABELS: Record<string, string> = {
+  earTag: 'Brinco',
+  name: 'Nome',
+  birthDate: 'Nascimento',
+  entryWeightKg: 'Peso',
+  createdAt: 'Cadastro',
+};
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return '—';
@@ -28,6 +49,26 @@ function AnimalsPage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevFarmIdRef = useRef(selectedFarm?.id);
 
+  // Advanced filters
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [originFilter, setOriginFilter] = useState('');
+  const [lotFilter, setLotFilter] = useState('');
+  const [minWeightInput, setMinWeightInput] = useState('');
+  const [maxWeightInput, setMaxWeightInput] = useState('');
+  const [minAgeInput, setMinAgeInput] = useState('');
+  const [maxAgeInput, setMaxAgeInput] = useState('');
+  const [minWeightKg, setMinWeightKg] = useState<number | undefined>();
+  const [maxWeightKg, setMaxWeightKg] = useState<number | undefined>();
+  const [minAgeDays, setMinAgeDays] = useState<number | undefined>();
+  const [maxAgeDays, setMaxAgeDays] = useState<number | undefined>();
+  const [sortBy, setSortBy] = useState('');
+  const [sortOrder, setSortOrder] = useState('');
+  const weightDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ageDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Export state
+  const [isExporting, setIsExporting] = useState(false);
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
 
@@ -40,6 +81,19 @@ function AnimalsPage() {
     setSexFilter('');
     setCategoryFilter('');
     setBreedFilter('');
+    setOriginFilter('');
+    setLotFilter('');
+    setMinWeightInput('');
+    setMaxWeightInput('');
+    setMinAgeInput('');
+    setMaxAgeInput('');
+    setMinWeightKg(undefined);
+    setMaxWeightKg(undefined);
+    setMinAgeDays(undefined);
+    setMaxAgeDays(undefined);
+    setSortBy('');
+    setSortOrder('');
+    setShowAdvancedFilters(false);
   }
 
   const { animals, meta, isLoading, error, refetch } = useAnimals({
@@ -49,10 +103,20 @@ function AnimalsPage() {
     sex: sexFilter || undefined,
     category: categoryFilter || undefined,
     breedId: breedFilter || undefined,
+    origin: originFilter || undefined,
+    lotId: lotFilter || undefined,
+    minWeightKg,
+    maxWeightKg,
+    minAgeDays,
+    maxAgeDays,
+    sortBy: sortBy || undefined,
+    sortOrder: sortOrder || undefined,
   });
 
   const { breeds } = useBreeds();
+  const { lots } = useLots({ farmId: selectedFarm?.id ?? null, limit: 100 });
 
+  // Search debounce
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
@@ -63,6 +127,114 @@ function AnimalsPage() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [searchInput]);
+
+  // Weight debounce
+  useEffect(() => {
+    if (weightDebounceRef.current) clearTimeout(weightDebounceRef.current);
+    weightDebounceRef.current = setTimeout(() => {
+      setMinWeightKg(minWeightInput ? Number(minWeightInput) : undefined);
+      setMaxWeightKg(maxWeightInput ? Number(maxWeightInput) : undefined);
+      setPage(1);
+    }, 500);
+    return () => {
+      if (weightDebounceRef.current) clearTimeout(weightDebounceRef.current);
+    };
+  }, [minWeightInput, maxWeightInput]);
+
+  // Age debounce
+  useEffect(() => {
+    if (ageDebounceRef.current) clearTimeout(ageDebounceRef.current);
+    ageDebounceRef.current = setTimeout(() => {
+      setMinAgeDays(minAgeInput ? Number(minAgeInput) : undefined);
+      setMaxAgeDays(maxAgeInput ? Number(maxAgeInput) : undefined);
+      setPage(1);
+    }, 500);
+    return () => {
+      if (ageDebounceRef.current) clearTimeout(ageDebounceRef.current);
+    };
+  }, [minAgeInput, maxAgeInput]);
+
+  const hasAdvancedFilters =
+    !!originFilter ||
+    !!lotFilter ||
+    minWeightKg != null ||
+    maxWeightKg != null ||
+    minAgeDays != null ||
+    maxAgeDays != null ||
+    !!sortBy;
+
+  const hasAnyFilter =
+    !!search || !!sexFilter || !!categoryFilter || !!breedFilter || hasAdvancedFilters;
+
+  const activeFilterCount = [
+    search,
+    sexFilter,
+    categoryFilter,
+    breedFilter,
+    originFilter,
+    lotFilter,
+    minWeightKg != null ? 'w' : '',
+    maxWeightKg != null ? 'w' : '',
+    minAgeDays != null ? 'a' : '',
+    maxAgeDays != null ? 'a' : '',
+    sortBy,
+  ].filter(Boolean).length;
+
+  const clearAllFilters = () => {
+    setSearchInput('');
+    setSearch('');
+    setSexFilter('');
+    setCategoryFilter('');
+    setBreedFilter('');
+    setOriginFilter('');
+    setLotFilter('');
+    setMinWeightInput('');
+    setMaxWeightInput('');
+    setMinAgeInput('');
+    setMaxAgeInput('');
+    setMinWeightKg(undefined);
+    setMaxWeightKg(undefined);
+    setMinAgeDays(undefined);
+    setMaxAgeDays(undefined);
+    setSortBy('');
+    setSortOrder('');
+    setPage(1);
+  };
+
+  const handleExportCsv = async () => {
+    if (!selectedFarm) return;
+    setIsExporting(true);
+    try {
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      if (sexFilter) params.set('sex', sexFilter);
+      if (categoryFilter) params.set('category', categoryFilter);
+      if (breedFilter) params.set('breedId', breedFilter);
+      if (originFilter) params.set('origin', originFilter);
+      if (lotFilter) params.set('lotId', lotFilter);
+      if (minWeightKg != null) params.set('minWeightKg', String(minWeightKg));
+      if (maxWeightKg != null) params.set('maxWeightKg', String(maxWeightKg));
+      if (minAgeDays != null) params.set('minAgeDays', String(minAgeDays));
+      if (maxAgeDays != null) params.set('maxAgeDays', String(maxAgeDays));
+      if (sortBy) params.set('sortBy', sortBy);
+      if (sortOrder) params.set('sortOrder', sortOrder);
+
+      const qs = params.toString();
+      const blob = await api.getBlob(
+        `/org/farms/${selectedFarm.id}/animals/export${qs ? `?${qs}` : ''}`,
+      );
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `animais-${selectedFarm.id}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // Export error is non-critical, user sees disabled button revert
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const handleRowClick = (animal: AnimalListItem) => {
     navigate(`/animals/${animal.id}`);
@@ -113,6 +285,16 @@ function AnimalsPage() {
           <p className="animals__subtitle">Rebanho de {selectedFarm.name}</p>
         </div>
         <div className="animals__header-actions">
+          <button
+            type="button"
+            className="animals__btn animals__btn--secondary"
+            onClick={() => void handleExportCsv()}
+            disabled={isExporting}
+            aria-label="Exportar animais em CSV"
+          >
+            <Download aria-hidden="true" size={20} />
+            {isExporting ? 'Exportando...' : 'Exportar CSV'}
+          </button>
           <PermissionGate permission="animals:create">
             <button
               type="button"
@@ -210,7 +392,199 @@ function AnimalsPage() {
             </option>
           ))}
         </select>
+        <button
+          type="button"
+          className="animals__btn animals__btn--secondary animals__btn--toggle"
+          onClick={() => setShowAdvancedFilters((v) => !v)}
+          aria-expanded={showAdvancedFilters}
+          aria-controls="advanced-filters-panel"
+        >
+          {showAdvancedFilters ? (
+            <ChevronUp aria-hidden="true" size={16} />
+          ) : (
+            <ChevronDown aria-hidden="true" size={16} />
+          )}
+          Mais filtros
+          {hasAdvancedFilters && (
+            <span
+              className="animals__filter-badge"
+              aria-label={`${activeFilterCount} filtros ativos`}
+            >
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
       </div>
+
+      {/* Advanced Filters Panel */}
+      {showAdvancedFilters && (
+        <div id="advanced-filters-panel" className="animals__advanced-filters">
+          <div className="animals__advanced-row">
+            <div className="animals__filter-group">
+              <label htmlFor="animal-origin-filter" className="animals__filter-label">
+                Origem
+              </label>
+              <select
+                id="animal-origin-filter"
+                className="animals__filter-select"
+                value={originFilter}
+                onChange={(e) => {
+                  setOriginFilter(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="">Todas as origens</option>
+                {Object.entries(ORIGIN_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="animals__filter-group">
+              <label htmlFor="animal-lot-filter" className="animals__filter-label">
+                Lote
+              </label>
+              <select
+                id="animal-lot-filter"
+                className="animals__filter-select"
+                value={lotFilter}
+                onChange={(e) => {
+                  setLotFilter(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="">Todos os lotes</option>
+                {lots.map((lot) => (
+                  <option key={lot.id} value={lot.id}>
+                    {lot.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="animals__advanced-row">
+            <div className="animals__filter-group">
+              <label htmlFor="animal-min-weight" className="animals__filter-label">
+                Peso mínimo (kg)
+              </label>
+              <input
+                id="animal-min-weight"
+                type="number"
+                className="animals__filter-input"
+                placeholder="Ex: 100"
+                min={0}
+                value={minWeightInput}
+                onChange={(e) => setMinWeightInput(e.target.value)}
+              />
+            </div>
+            <div className="animals__filter-group">
+              <label htmlFor="animal-max-weight" className="animals__filter-label">
+                Peso máximo (kg)
+              </label>
+              <input
+                id="animal-max-weight"
+                type="number"
+                className="animals__filter-input"
+                placeholder="Ex: 500"
+                min={0}
+                value={maxWeightInput}
+                onChange={(e) => setMaxWeightInput(e.target.value)}
+              />
+            </div>
+            <div className="animals__filter-group">
+              <label htmlFor="animal-min-age" className="animals__filter-label">
+                Idade mínima (dias)
+              </label>
+              <input
+                id="animal-min-age"
+                type="number"
+                className="animals__filter-input"
+                placeholder="Ex: 30"
+                min={0}
+                value={minAgeInput}
+                onChange={(e) => setMinAgeInput(e.target.value)}
+              />
+            </div>
+            <div className="animals__filter-group">
+              <label htmlFor="animal-max-age" className="animals__filter-label">
+                Idade máxima (dias)
+              </label>
+              <input
+                id="animal-max-age"
+                type="number"
+                className="animals__filter-input"
+                placeholder="Ex: 365"
+                min={0}
+                value={maxAgeInput}
+                onChange={(e) => setMaxAgeInput(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="animals__advanced-row">
+            <div className="animals__filter-group">
+              <label htmlFor="animal-sort-by" className="animals__filter-label">
+                Ordenar por
+              </label>
+              <select
+                id="animal-sort-by"
+                className="animals__filter-select"
+                value={sortBy}
+                onChange={(e) => {
+                  setSortBy(e.target.value);
+                  if (e.target.value && !sortOrder) setSortOrder('asc');
+                  if (!e.target.value) setSortOrder('');
+                  setPage(1);
+                }}
+              >
+                <option value="">Padrão</option>
+                {Object.entries(SORT_FIELD_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="animals__filter-group">
+              <label htmlFor="animal-sort-order" className="animals__filter-label">
+                Ordem
+              </label>
+              <select
+                id="animal-sort-order"
+                className="animals__filter-select"
+                value={sortOrder}
+                disabled={!sortBy}
+                onChange={(e) => {
+                  setSortOrder(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="asc">Crescente</option>
+                <option value="desc">Decrescente</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filter status bar */}
+      {hasAnyFilter && (
+        <div className="animals__filter-status">
+          <span className="animals__filter-status-text">
+            {meta ? `${meta.total} animal(is) encontrado(s)` : 'Filtrando...'}
+          </span>
+          <button
+            type="button"
+            className="animals__btn animals__btn--ghost"
+            onClick={clearAllFilters}
+          >
+            <X aria-hidden="true" size={16} />
+            Limpar filtros
+          </button>
+        </div>
+      )}
 
       {/* Content */}
       {animals.length === 0 && !isLoading ? (
@@ -218,7 +592,7 @@ function AnimalsPage() {
           <Beef size={64} color="var(--color-neutral-400)" aria-hidden="true" />
           <h2 className="animals__empty-title">Nenhum animal encontrado</h2>
           <p className="animals__empty-desc">
-            {search || sexFilter || categoryFilter || breedFilter
+            {hasAnyFilter
               ? 'Tente ajustar os filtros de busca.'
               : 'Cadastre o primeiro animal para começar.'}
           </p>
