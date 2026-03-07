@@ -1,5 +1,6 @@
 export {
   colors,
+  colorsDark,
   spacing,
   fontFamily,
   fontSize,
@@ -15,6 +16,7 @@ export {
 
 export type {
   ColorScale,
+  ColorsDarkScale,
   SpacingScale,
   FontSizeScale,
   RadiusScale,

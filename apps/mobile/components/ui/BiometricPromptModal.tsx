@@ -1,8 +1,11 @@
-import { Modal, View, Text, StyleSheet } from 'react-native';
+import { Modal, View, Text } from 'react-native';
 import { Fingerprint, ScanFace } from 'lucide-react-native';
-import { colors, spacing, fontSize, radius } from '@protos-farm/shared';
+import { spacing, fontSize, radius } from '@protos-farm/shared';
+import { useTheme } from '@/stores/ThemeContext';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { Button } from '@/components/ui/Button';
 import type { BiometricType } from '@/services/biometrics';
+import type { ThemeColors } from '@/stores/ThemeContext';
 
 interface BiometricPromptModalProps {
   visible: boolean;
@@ -10,6 +13,40 @@ interface BiometricPromptModalProps {
   onEnable: () => void;
   onDismiss: () => void;
 }
+
+const createStyles = (c: ThemeColors) => ({
+  overlay: {
+    flex: 1 as const,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)' as const,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    paddingHorizontal: spacing[6],
+  },
+  modal: {
+    backgroundColor: c.neutral[0],
+    borderRadius: radius.xl,
+    padding: spacing[6],
+    alignItems: 'center' as const,
+    width: '100%' as const,
+    maxWidth: 360,
+  },
+  title: {
+    fontFamily: 'DMSans_700Bold',
+    fontSize: fontSize.lg,
+    color: c.neutral[800],
+    marginTop: spacing[4],
+  },
+  description: {
+    fontFamily: 'SourceSans3_400Regular',
+    fontSize: fontSize.base,
+    color: c.neutral[600],
+    textAlign: 'center' as const,
+    marginTop: spacing[2],
+    marginBottom: spacing[6],
+    lineHeight: fontSize.base * 1.5,
+  },
+  actions: { width: '100%' as const, gap: spacing[3] },
+});
 
 export function BiometricPromptModal({
   visible,
@@ -20,6 +57,8 @@ export function BiometricPromptModal({
   const isFacial = biometricType === 'facial';
   const Icon = isFacial ? ScanFace : Fingerprint;
   const typeLabel = isFacial ? 'Face ID' : 'impressão digital';
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onDismiss}>
@@ -41,40 +80,3 @@ export function BiometricPromptModal({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing[6],
-  },
-  modal: {
-    backgroundColor: colors.neutral[0],
-    borderRadius: radius.xl,
-    padding: spacing[6],
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: 360,
-  },
-  title: {
-    fontFamily: 'DMSans_700Bold',
-    fontSize: fontSize.lg,
-    color: colors.neutral[800],
-    marginTop: spacing[4],
-  },
-  description: {
-    fontFamily: 'SourceSans3_400Regular',
-    fontSize: fontSize.base,
-    color: colors.neutral[600],
-    textAlign: 'center',
-    marginTop: spacing[2],
-    marginBottom: spacing[6],
-    lineHeight: fontSize.base * 1.5,
-  },
-  actions: {
-    width: '100%',
-    gap: spacing[3],
-  },
-});

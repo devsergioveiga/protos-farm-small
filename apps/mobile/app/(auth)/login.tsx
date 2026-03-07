@@ -1,16 +1,67 @@
 import { useState, useCallback } from 'react';
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Sprout } from 'lucide-react-native';
-import { colors, spacing, fontSize } from '@protos-farm/shared';
+import { spacing, fontSize } from '@protos-farm/shared';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/stores/AuthContext';
+import { useTheme } from '@/stores/ThemeContext';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useBiometricLogin } from '@/hooks/useBiometricLogin';
 import { BiometricPromptModal } from '@/components/ui/BiometricPromptModal';
+import type { ThemeColors } from '@/stores/ThemeContext';
+
+const createStyles = (c: ThemeColors) => ({
+  safeArea: {
+    flex: 1 as const,
+    backgroundColor: c.neutral[50],
+  },
+  flex: {
+    flex: 1 as const,
+  },
+  scrollContent: {
+    flexGrow: 1 as const,
+    justifyContent: 'center' as const,
+    paddingHorizontal: spacing[6],
+    paddingVertical: spacing[10],
+  },
+  header: {
+    alignItems: 'center' as const,
+    marginBottom: spacing[10],
+  },
+  title: {
+    fontFamily: 'DMSans_700Bold',
+    fontSize: fontSize['2xl'],
+    color: c.neutral[800],
+    marginTop: spacing[4],
+  },
+  subtitle: {
+    fontFamily: 'SourceSans3_400Regular',
+    fontSize: fontSize.base,
+    color: c.neutral[500],
+    marginTop: spacing[2],
+  },
+  form: {
+    gap: spacing[4],
+  },
+  errorContainer: {
+    backgroundColor: c.error[100],
+    padding: spacing[3],
+    borderRadius: 8,
+  },
+  errorText: {
+    fontFamily: 'SourceSans3_400Regular',
+    fontSize: fontSize.sm,
+    color: c.error[500],
+    textAlign: 'center' as const,
+  },
+});
 
 export default function LoginScreen() {
   const { login } = useAuth();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const {
     canUseBiometrics,
     biometricType,
@@ -37,7 +88,6 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await login(trimmedEmail, password);
-      // After successful login, check if we should prompt for biometrics
       if (shouldPromptEnable) {
         setShowBiometricPrompt(true);
       }
@@ -169,49 +219,3 @@ export default function LoginScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.neutral[50],
-  },
-  flex: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: spacing[6],
-    paddingVertical: spacing[10],
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing[10],
-  },
-  title: {
-    fontFamily: 'DMSans_700Bold',
-    fontSize: fontSize['2xl'],
-    color: colors.neutral[800],
-    marginTop: spacing[4],
-  },
-  subtitle: {
-    fontFamily: 'SourceSans3_400Regular',
-    fontSize: fontSize.base,
-    color: colors.neutral[500],
-    marginTop: spacing[2],
-  },
-  form: {
-    gap: spacing[4],
-  },
-  errorContainer: {
-    backgroundColor: colors.error[100],
-    padding: spacing[3],
-    borderRadius: 8,
-  },
-  errorText: {
-    fontFamily: 'SourceSans3_400Regular',
-    fontSize: fontSize.sm,
-    color: colors.error[500],
-    textAlign: 'center',
-  },
-});

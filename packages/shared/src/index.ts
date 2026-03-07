@@ -9,6 +9,7 @@ export const API_VERSION = 'v1';
 // Design tokens
 export {
   colors,
+  colorsDark,
   spacing,
   fontFamily,
   fontSize,
@@ -24,6 +25,7 @@ export {
 
 export type {
   ColorScale,
+  ColorsDarkScale,
   SpacingScale,
   FontSizeScale,
   RadiusScale,

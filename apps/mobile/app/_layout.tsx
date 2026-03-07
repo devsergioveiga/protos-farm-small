@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { AuthProvider, useAuth } from '@/stores/AuthContext';
 import { ConnectivityProvider } from '@/stores/ConnectivityContext';
+import { ThemeProvider } from '@/stores/ThemeContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -16,9 +17,7 @@ function RootNavigator() {
 
   useEffect(() => {
     if (isLoading) return;
-
     const inAuthGroup = segments[0] === '(auth)';
-
     if (!isAuthenticated && !inAuthGroup) {
       router.replace('/(auth)/login');
     } else if (isAuthenticated && inAuthGroup) {
@@ -27,7 +26,6 @@ function RootNavigator() {
   }, [isAuthenticated, isLoading, segments, router]);
 
   if (isLoading) return null;
-
   return <Slot />;
 }
 
@@ -48,10 +46,12 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <ConnectivityProvider>
-      <AuthProvider>
-        <RootNavigator />
-      </AuthProvider>
-    </ConnectivityProvider>
+    <ThemeProvider>
+      <ConnectivityProvider>
+        <AuthProvider>
+          <RootNavigator />
+        </AuthProvider>
+      </ConnectivityProvider>
+    </ThemeProvider>
   );
 }
