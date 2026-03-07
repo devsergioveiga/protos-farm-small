@@ -15,6 +15,7 @@ import {
 import { useAnimals } from '@/hooks/useAnimals';
 import { useBreeds } from '@/hooks/useBreeds';
 import { useLots } from '@/hooks/useLots';
+import { useFarmLocations } from '@/hooks/useFarmLocations';
 import { useFarmContext } from '@/stores/FarmContext';
 import { api } from '@/services/api';
 import PermissionGate from '@/components/auth/PermissionGate';
@@ -53,6 +54,7 @@ function AnimalsPage() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [originFilter, setOriginFilter] = useState('');
   const [lotFilter, setLotFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
   const [minWeightInput, setMinWeightInput] = useState('');
   const [maxWeightInput, setMaxWeightInput] = useState('');
   const [minAgeInput, setMinAgeInput] = useState('');
@@ -83,6 +85,7 @@ function AnimalsPage() {
     setBreedFilter('');
     setOriginFilter('');
     setLotFilter('');
+    setLocationFilter('');
     setMinWeightInput('');
     setMaxWeightInput('');
     setMinAgeInput('');
@@ -105,6 +108,7 @@ function AnimalsPage() {
     breedId: breedFilter || undefined,
     origin: originFilter || undefined,
     lotId: lotFilter || undefined,
+    locationId: locationFilter || undefined,
     minWeightKg,
     maxWeightKg,
     minAgeDays,
@@ -115,6 +119,7 @@ function AnimalsPage() {
 
   const { breeds } = useBreeds();
   const { lots } = useLots({ farmId: selectedFarm?.id ?? null, limit: 100 });
+  const { locations } = useFarmLocations(selectedFarm?.id);
 
   // Search debounce
   useEffect(() => {
@@ -157,6 +162,7 @@ function AnimalsPage() {
   const hasAdvancedFilters =
     !!originFilter ||
     !!lotFilter ||
+    !!locationFilter ||
     minWeightKg != null ||
     maxWeightKg != null ||
     minAgeDays != null ||
@@ -173,6 +179,7 @@ function AnimalsPage() {
     breedFilter,
     originFilter,
     lotFilter,
+    locationFilter,
     minWeightKg != null ? 'w' : '',
     maxWeightKg != null ? 'w' : '',
     minAgeDays != null ? 'a' : '',
@@ -188,6 +195,7 @@ function AnimalsPage() {
     setBreedFilter('');
     setOriginFilter('');
     setLotFilter('');
+    setLocationFilter('');
     setMinWeightInput('');
     setMaxWeightInput('');
     setMinAgeInput('');
@@ -212,6 +220,7 @@ function AnimalsPage() {
       if (breedFilter) params.set('breedId', breedFilter);
       if (originFilter) params.set('origin', originFilter);
       if (lotFilter) params.set('lotId', lotFilter);
+      if (locationFilter) params.set('locationId', locationFilter);
       if (minWeightKg != null) params.set('minWeightKg', String(minWeightKg));
       if (maxWeightKg != null) params.set('maxWeightKg', String(maxWeightKg));
       if (minAgeDays != null) params.set('minAgeDays', String(minAgeDays));
@@ -458,6 +467,27 @@ function AnimalsPage() {
                 {lots.map((lot) => (
                   <option key={lot.id} value={lot.id}>
                     {lot.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="animals__filter-group">
+              <label htmlFor="animal-location-filter" className="animals__filter-label">
+                Local
+              </label>
+              <select
+                id="animal-location-filter"
+                className="animals__filter-select"
+                value={locationFilter}
+                onChange={(e) => {
+                  setLocationFilter(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="">Todos os locais</option>
+                {locations.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.name} ({loc.type === 'PASTURE' ? 'Pasto' : 'Instalação'})
                   </option>
                 ))}
               </select>

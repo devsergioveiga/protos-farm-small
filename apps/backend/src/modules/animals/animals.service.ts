@@ -272,6 +272,10 @@ function buildAnimalsWhere(farmId: string, query: ListAnimalsQuery): Record<stri
   if (query.origin) where.origin = query.origin;
   if (query.lotId) where.lotId = query.lotId;
 
+  if (query.locationId) {
+    where.lot = { locationId: query.locationId };
+  }
+
   if (query.breedId) {
     where.compositions = { some: { breedId: query.breedId } };
   }

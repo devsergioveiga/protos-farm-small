@@ -70,6 +70,7 @@ const MOCK_ANIMALS: AnimalListItem[] = [
 const mockUseAnimals = vi.fn();
 const mockUseBreeds = vi.fn();
 const mockUseLots = vi.fn();
+const mockUseFarmLocations = vi.fn();
 const mockGetBlob = vi.fn();
 
 vi.mock('@/hooks/useAnimals', () => ({
@@ -82,6 +83,10 @@ vi.mock('@/hooks/useBreeds', () => ({
 
 vi.mock('@/hooks/useLots', () => ({
   useLots: (...args: unknown[]) => mockUseLots(...args),
+}));
+
+vi.mock('@/hooks/useFarmLocations', () => ({
+  useFarmLocations: (...args: unknown[]) => mockUseFarmLocations(...args),
 }));
 
 vi.mock('@/stores/FarmContext', () => ({
@@ -171,6 +176,58 @@ function defaultLotsReturn() {
   };
 }
 
+function defaultLocationsReturn() {
+  return {
+    locations: [
+      {
+        id: 'loc-1',
+        name: 'Pasto Norte',
+        type: 'PASTURE' as const,
+        boundaryGeoJSON: null,
+        boundaryAreaHa: 10,
+        capacityUA: 20,
+        capacityAnimals: 30,
+        forageType: null,
+        pastureStatus: 'EM_USO' as const,
+        facilityType: null,
+        facilityStatus: null,
+        description: null,
+        occupancy: {
+          totalAnimals: 5,
+          capacityUA: 20,
+          capacityAnimals: 30,
+          occupancyPercent: 16,
+          level: 'green' as const,
+        },
+      },
+      {
+        id: 'loc-2',
+        name: 'Curral Principal',
+        type: 'FACILITY' as const,
+        boundaryGeoJSON: null,
+        boundaryAreaHa: null,
+        capacityUA: null,
+        capacityAnimals: 50,
+        forageType: null,
+        pastureStatus: null,
+        facilityType: 'CURRAL' as const,
+        facilityStatus: 'ATIVO' as const,
+        description: null,
+        occupancy: {
+          totalAnimals: 10,
+          capacityUA: null,
+          capacityAnimals: 50,
+          occupancyPercent: 20,
+          level: 'green' as const,
+        },
+      },
+    ],
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+  };
+}
+
 async function renderPage() {
   const { default: AnimalsPage } = await import('./AnimalsPage');
   return render(<AnimalsPage />);
@@ -181,6 +238,7 @@ describe('AnimalsPage', () => {
     vi.clearAllMocks();
     mockUseBreeds.mockReturnValue(defaultBreedsReturn());
     mockUseLots.mockReturnValue(defaultLotsReturn());
+    mockUseFarmLocations.mockReturnValue(defaultLocationsReturn());
   });
 
   it('should render skeleton while loading', async () => {
@@ -350,6 +408,29 @@ describe('AnimalsPage', () => {
     // useAnimals should have been called with lotId
     const lastCall = mockUseAnimals.mock.calls[mockUseAnimals.mock.calls.length - 1][0];
     expect(lastCall.lotId).toBe('lot-1');
+  });
+
+  it('should pass locationId to useAnimals when location filter is selected', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    await userEvent.click(screen.getByText('Mais filtros'));
+
+    const locationSelect = screen.getByLabelText('Local');
+    await userEvent.selectOptions(locationSelect, 'loc-1');
+
+    const lastCall = mockUseAnimals.mock.calls[mockUseAnimals.mock.calls.length - 1][0];
+    expect(lastCall.locationId).toBe('loc-1');
+  });
+
+  it('should render location options with type label', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    await userEvent.click(screen.getByText('Mais filtros'));
+
+    expect(screen.getByText('Pasto Norte (Pasto)')).toBeTruthy();
+    expect(screen.getByText('Curral Principal (Instalação)')).toBeTruthy();
   });
 
   it('should pass origin to useAnimals when origin filter is selected', async () => {

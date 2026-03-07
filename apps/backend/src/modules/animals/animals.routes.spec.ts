@@ -671,6 +671,21 @@ describe('GET /org/farms/:farmId/animals — advanced filters', () => {
     );
   });
 
+  it('should pass locationId filter to service', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.listAnimals.mockResolvedValue(emptyResult);
+
+    await request(app)
+      .get(`/api/org/farms/${FARM_ID}/animals?locationId=loc-1`)
+      .set('Authorization', 'Bearer valid');
+
+    expect(mockedService.listAnimals).toHaveBeenCalledWith(
+      expect.any(Object),
+      FARM_ID,
+      expect.objectContaining({ locationId: 'loc-1' }),
+    );
+  });
+
   it('should pass birthDate range filters to service', async () => {
     authAs(ADMIN_PAYLOAD);
     mockedService.listAnimals.mockResolvedValue(emptyResult);
@@ -775,6 +790,21 @@ describe('GET /org/farms/:farmId/animals/export', () => {
       expect.any(Object),
       FARM_ID,
       expect.objectContaining({ sex: 'FEMALE', lotId: 'lot-1' }),
+    );
+  });
+
+  it('should pass locationId to exportAnimalsCsv', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.exportAnimalsCsv.mockResolvedValue('\uFEFFBrinco\n');
+
+    await request(app)
+      .get(`/api/org/farms/${FARM_ID}/animals/export?locationId=loc-1`)
+      .set('Authorization', 'Bearer valid');
+
+    expect(mockedService.exportAnimalsCsv).toHaveBeenCalledWith(
+      expect.any(Object),
+      FARM_ID,
+      expect.objectContaining({ locationId: 'loc-1' }),
     );
   });
 
