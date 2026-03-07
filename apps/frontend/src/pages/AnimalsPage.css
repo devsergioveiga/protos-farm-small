@@ -81,6 +81,104 @@
   outline-offset: 2px;
 }
 
+/* ─── Advanced Filters ───────────────────────────────────────── */
+
+.animals__advanced-filters {
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.animals__advanced-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.animals__filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.animals__filter-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+}
+
+.animals__filter-input {
+  padding: 12px 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  min-height: 48px;
+  box-sizing: border-box;
+  transition: border-color 200ms;
+}
+
+.animals__filter-input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.animals__filter-input::placeholder {
+  color: var(--color-neutral-400);
+}
+
+/* ─── Filter Status Bar ─────────────────────────────────────── */
+
+.animals__filter-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  margin-bottom: 16px;
+  background: var(--color-neutral-50);
+  border-radius: 8px;
+  border: 1px solid var(--color-neutral-200);
+}
+
+.animals__filter-status-text {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+}
+
+/* ─── Filter Badge ──────────────────────────────────────────── */
+
+.animals__filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 9999px;
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.animals__btn--toggle {
+  padding: 12px 16px;
+}
+
 /* ─── Buttons ────────────────────────────────────────────────── */
 
 .animals__btn {
@@ -125,6 +223,19 @@
 
 .animals__btn--secondary:hover:not(:disabled) {
   background: var(--color-neutral-200);
+}
+
+.animals__btn--ghost {
+  background: transparent;
+  color: var(--color-neutral-600);
+  padding: 8px 12px;
+  min-height: 36px;
+  font-size: 0.8125rem;
+}
+
+.animals__btn--ghost:hover:not(:disabled) {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-800);
 }
 
 .animals__header-actions {
@@ -406,6 +517,19 @@
   .animals__cards {
     display: flex;
   }
+
+  .animals__advanced-filters {
+    padding: 16px;
+  }
+
+  .animals__advanced-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .animals__filter-group {
+    min-width: unset;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -418,7 +542,8 @@
   .animals__search,
   .animals__card,
   .animals__table-row,
-  .animals__pagination-btn {
+  .animals__pagination-btn,
+  .animals__filter-input {
     transition: none;
   }
 }

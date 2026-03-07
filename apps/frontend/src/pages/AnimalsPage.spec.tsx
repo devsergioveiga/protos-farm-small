@@ -69,6 +69,8 @@ const MOCK_ANIMALS: AnimalListItem[] = [
 
 const mockUseAnimals = vi.fn();
 const mockUseBreeds = vi.fn();
+const mockUseLots = vi.fn();
+const mockGetBlob = vi.fn();
 
 vi.mock('@/hooks/useAnimals', () => ({
   useAnimals: (...args: unknown[]) => mockUseAnimals(...args),
@@ -76,6 +78,10 @@ vi.mock('@/hooks/useAnimals', () => ({
 
 vi.mock('@/hooks/useBreeds', () => ({
   useBreeds: () => mockUseBreeds(),
+}));
+
+vi.mock('@/hooks/useLots', () => ({
+  useLots: (...args: unknown[]) => mockUseLots(...args),
 }));
 
 vi.mock('@/stores/FarmContext', () => ({
@@ -87,6 +93,12 @@ vi.mock('@/stores/FarmContext', () => ({
     selectFarm: vi.fn(),
     refreshFarms: vi.fn(),
   }),
+}));
+
+vi.mock('@/services/api', () => ({
+  api: {
+    getBlob: (...args: unknown[]) => mockGetBlob(...args),
+  },
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -101,6 +113,11 @@ vi.mock('@/components/auth/PermissionGate', () => ({
 vi.mock('@/components/animals/CreateAnimalModal', () => ({
   default: ({ isOpen }: { isOpen: boolean }) =>
     isOpen ? <div data-testid="create-animal-modal">Modal</div> : null,
+}));
+
+vi.mock('@/components/animal-bulk-import/AnimalBulkImportModal', () => ({
+  default: ({ isOpen }: { isOpen: boolean }) =>
+    isOpen ? <div data-testid="bulk-import-modal">Modal</div> : null,
 }));
 
 function defaultReturn() {
@@ -141,6 +158,19 @@ function defaultBreedsReturn() {
   };
 }
 
+function defaultLotsReturn() {
+  return {
+    lots: [
+      { id: 'lot-1', name: 'Lote Maternidade', farmId: 'farm-1' },
+      { id: 'lot-2', name: 'Lote Engorda', farmId: 'farm-1' },
+    ],
+    meta: { page: 1, limit: 100, total: 2, totalPages: 1 },
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+  };
+}
+
 async function renderPage() {
   const { default: AnimalsPage } = await import('./AnimalsPage');
   return render(<AnimalsPage />);
@@ -150,6 +180,7 @@ describe('AnimalsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseBreeds.mockReturnValue(defaultBreedsReturn());
+    mockUseLots.mockReturnValue(defaultLotsReturn());
   });
 
   it('should render skeleton while loading', async () => {
@@ -191,7 +222,6 @@ describe('AnimalsPage', () => {
     mockUseAnimals.mockReturnValue(defaultReturn());
     await renderPage();
 
-    // Multiple Fêmea/Macho badges (table + mobile cards)
     const femaleLabels = screen.getAllByText('Fêmea');
     const maleLabels = screen.getAllByText('Macho');
     expect(femaleLabels.length).toBeGreaterThan(0);
@@ -216,7 +246,6 @@ describe('AnimalsPage', () => {
     });
     await renderPage();
 
-    // Set a filter
     const sexSelect = screen.getByLabelText('Filtrar por sexo');
     await userEvent.selectOptions(sexSelect, 'FEMALE');
 
@@ -272,8 +301,206 @@ describe('AnimalsPage', () => {
     mockUseAnimals.mockReturnValue(defaultReturn());
     await renderPage();
 
-    // Both table + cards render categories
     const vacaLabels = screen.getAllByText('Vaca em Lactação');
     expect(vacaLabels.length).toBeGreaterThan(0);
+  });
+
+  // ─── Advanced Filters Tests ─────────────────────────────────────
+
+  it('should show "Mais filtros" button', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    expect(screen.getByText('Mais filtros')).toBeTruthy();
+  });
+
+  it('should toggle advanced filters panel on click', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    // Panel should be hidden initially
+    expect(screen.queryByLabelText('Origem')).toBeNull();
+
+    // Click to expand
+    await userEvent.click(screen.getByText('Mais filtros'));
+
+    // Panel should be visible
+    expect(screen.getByLabelText('Origem')).toBeTruthy();
+    expect(screen.getByLabelText('Lote')).toBeTruthy();
+    expect(screen.getByLabelText('Peso mínimo (kg)')).toBeTruthy();
+    expect(screen.getByLabelText('Peso máximo (kg)')).toBeTruthy();
+    expect(screen.getByLabelText('Idade mínima (dias)')).toBeTruthy();
+    expect(screen.getByLabelText('Idade máxima (dias)')).toBeTruthy();
+    expect(screen.getByLabelText('Ordenar por')).toBeTruthy();
+
+    // Click to collapse
+    await userEvent.click(screen.getByText('Mais filtros'));
+    expect(screen.queryByLabelText('Origem')).toBeNull();
+  });
+
+  it('should pass lotId to useAnimals when lot filter is selected', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    await userEvent.click(screen.getByText('Mais filtros'));
+
+    const lotSelect = screen.getByLabelText('Lote');
+    await userEvent.selectOptions(lotSelect, 'lot-1');
+
+    // useAnimals should have been called with lotId
+    const lastCall = mockUseAnimals.mock.calls[mockUseAnimals.mock.calls.length - 1][0];
+    expect(lastCall.lotId).toBe('lot-1');
+  });
+
+  it('should pass origin to useAnimals when origin filter is selected', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    await userEvent.click(screen.getByText('Mais filtros'));
+
+    const originSelect = screen.getByLabelText('Origem');
+    await userEvent.selectOptions(originSelect, 'BORN');
+
+    const lastCall = mockUseAnimals.mock.calls[mockUseAnimals.mock.calls.length - 1][0];
+    expect(lastCall.origin).toBe('BORN');
+  });
+
+  it('should render weight filter inputs in advanced panel', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    await userEvent.click(screen.getByText('Mais filtros'));
+
+    const minWeight = screen.getByLabelText('Peso mínimo (kg)');
+    const maxWeight = screen.getByLabelText('Peso máximo (kg)');
+    expect(minWeight).toBeTruthy();
+    expect(maxWeight).toBeTruthy();
+    expect(minWeight.getAttribute('type')).toBe('number');
+    expect(maxWeight.getAttribute('type')).toBe('number');
+  });
+
+  it('should show filter count badge when advanced filters are active', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    await userEvent.click(screen.getByText('Mais filtros'));
+
+    const originSelect = screen.getByLabelText('Origem');
+    await userEvent.selectOptions(originSelect, 'PURCHASED');
+
+    // Badge should appear on "Mais filtros" button area
+    const badge = document.querySelector('.animals__filter-badge');
+    expect(badge).toBeTruthy();
+  });
+
+  it('should show "Limpar filtros" when filters are active and clear them', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    // Apply a basic filter
+    const sexSelect = screen.getByLabelText('Filtrar por sexo');
+    await userEvent.selectOptions(sexSelect, 'FEMALE');
+
+    // "Limpar filtros" should appear
+    const clearBtn = screen.getByText('Limpar filtros');
+    expect(clearBtn).toBeTruthy();
+
+    // Click to clear
+    await userEvent.click(clearBtn);
+
+    // Filter should be reset
+    expect((sexSelect as HTMLSelectElement).value).toBe('');
+  });
+
+  it('should show filter status text with total count', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    const sexSelect = screen.getByLabelText('Filtrar por sexo');
+    await userEvent.selectOptions(sexSelect, 'FEMALE');
+
+    expect(screen.getByText('2 animal(is) encontrado(s)')).toBeTruthy();
+  });
+
+  // ─── CSV Export Tests ───────────────────────────────────────────
+
+  it('should render "Exportar CSV" button', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    expect(screen.getByText('Exportar CSV')).toBeTruthy();
+  });
+
+  it('should call api.getBlob when export button is clicked', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    mockGetBlob.mockResolvedValue(new Blob(['test'], { type: 'text/csv' }));
+    await renderPage();
+
+    const exportBtn = screen.getByText('Exportar CSV');
+    await userEvent.click(exportBtn);
+
+    expect(mockGetBlob).toHaveBeenCalledWith('/org/farms/farm-1/animals/export');
+  });
+
+  it('should pass active filters to export URL', async () => {
+    // Pre-set the filter by making useAnimals return with a sex filter already active
+    let capturedParams: Record<string, unknown> = {};
+    mockUseAnimals.mockImplementation((params: Record<string, unknown>) => {
+      capturedParams = params;
+      return defaultReturn();
+    });
+    mockGetBlob.mockResolvedValue(new Blob(['test'], { type: 'text/csv' }));
+    await renderPage();
+
+    // Set a filter first
+    const sexSelect = screen.getByLabelText('Filtrar por sexo');
+    await userEvent.selectOptions(sexSelect, 'FEMALE');
+
+    expect(capturedParams.sex).toBe('FEMALE');
+
+    const exportBtn = screen.getByText('Exportar CSV');
+    await userEvent.click(exportBtn);
+
+    expect(mockGetBlob).toHaveBeenCalledWith('/org/farms/farm-1/animals/export?sex=FEMALE');
+  });
+
+  it('should have aria-expanded on "Mais filtros" button', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    const toggleBtn = screen.getByText('Mais filtros').closest('button')!;
+    expect(toggleBtn.getAttribute('aria-expanded')).toBe('false');
+
+    await userEvent.click(toggleBtn);
+    expect(toggleBtn.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('should render lot options from useLots', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    await userEvent.click(screen.getByText('Mais filtros'));
+
+    expect(screen.getByText('Lote Maternidade')).toBeTruthy();
+    expect(screen.getByText('Lote Engorda')).toBeTruthy();
+  });
+
+  it('should render sort options', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    await userEvent.click(screen.getByText('Mais filtros'));
+
+    const sortSelect = screen.getByLabelText('Ordenar por');
+    expect(sortSelect).toBeTruthy();
+
+    // Check sort options exist
+    const options = sortSelect.querySelectorAll('option');
+    const optionTexts = Array.from(options).map((o) => o.textContent);
+    expect(optionTexts).toContain('Brinco');
+    expect(optionTexts).toContain('Nome');
+    expect(optionTexts).toContain('Nascimento');
+    expect(optionTexts).toContain('Peso');
+    expect(optionTexts).toContain('Cadastro');
   });
 });

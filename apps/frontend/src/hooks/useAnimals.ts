@@ -11,6 +11,14 @@ interface UseAnimalsParams {
   sex?: string;
   category?: string;
   breedId?: string;
+  origin?: string;
+  lotId?: string;
+  minWeightKg?: number;
+  maxWeightKg?: number;
+  minAgeDays?: number;
+  maxAgeDays?: number;
+  sortBy?: string;
+  sortOrder?: string;
 }
 
 interface UseAnimalsResult {
@@ -27,7 +35,23 @@ export function useAnimals(params: UseAnimalsParams): UseAnimalsResult {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { farmId, search, page, limit, sex, category, breedId } = params;
+  const {
+    farmId,
+    search,
+    page,
+    limit,
+    sex,
+    category,
+    breedId,
+    origin,
+    lotId,
+    minWeightKg,
+    maxWeightKg,
+    minAgeDays,
+    maxAgeDays,
+    sortBy,
+    sortOrder,
+  } = params;
 
   const fetchAnimals = useCallback(async () => {
     if (!farmId) {
@@ -47,6 +71,14 @@ export function useAnimals(params: UseAnimalsParams): UseAnimalsResult {
       if (sex) query.set('sex', sex);
       if (category) query.set('category', category);
       if (breedId) query.set('breedId', breedId);
+      if (origin) query.set('origin', origin);
+      if (lotId) query.set('lotId', lotId);
+      if (minWeightKg != null) query.set('minWeightKg', String(minWeightKg));
+      if (maxWeightKg != null) query.set('maxWeightKg', String(maxWeightKg));
+      if (minAgeDays != null) query.set('minAgeDays', String(minAgeDays));
+      if (maxAgeDays != null) query.set('maxAgeDays', String(maxAgeDays));
+      if (sortBy) query.set('sortBy', sortBy);
+      if (sortOrder) query.set('sortOrder', sortOrder);
 
       const qs = query.toString();
       const path = `/org/farms/${farmId}/animals${qs ? `?${qs}` : ''}`;
@@ -61,7 +93,23 @@ export function useAnimals(params: UseAnimalsParams): UseAnimalsResult {
     } finally {
       setIsLoading(false);
     }
-  }, [farmId, search, page, limit, sex, category, breedId]);
+  }, [
+    farmId,
+    search,
+    page,
+    limit,
+    sex,
+    category,
+    breedId,
+    origin,
+    lotId,
+    minWeightKg,
+    maxWeightKg,
+    minAgeDays,
+    maxAgeDays,
+    sortBy,
+    sortOrder,
+  ]);
 
   useEffect(() => {
     void fetchAnimals();
