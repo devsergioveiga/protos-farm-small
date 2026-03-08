@@ -1,0 +1,162 @@
+import type { SQLiteDatabase } from 'expo-sqlite';
+
+/**
+ * Database version — increment when adding new migrations.
+ * Each version maps to a migration function in the migrations array.
+ */
+const DATABASE_VERSION = 1;
+
+/**
+ * Run migrations on database init (called by SQLiteProvider onInit).
+ */
+export async function migrateDbIfNeeded(db: SQLiteDatabase): Promise<void> {
+  const result = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
+  let currentVersion = result?.user_version ?? 0;
+
+  if (currentVersion >= DATABASE_VERSION) {
+    return;
+  }
+
+  await db.execAsync('PRAGMA journal_mode = WAL');
+  await db.execAsync('PRAGMA foreign_keys = ON');
+
+  if (currentVersion === 0) {
+    await migrationV1(db);
+    currentVersion = 1;
+  }
+
+  // Future migrations:
+  // if (currentVersion === 1) { await migrationV2(db); currentVersion = 2; }
+
+  await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
+}
+
+/**
+ * V1 — Initial schema: essential offline data tables + sync metadata.
+ */
+async function migrationV1(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS farms (
+      id TEXT PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      nickname TEXT,
+      address TEXT,
+      city TEXT,
+      state TEXT,
+      zip_code TEXT,
+      total_area_ha REAL,
+      status TEXT NOT NULL DEFAULT 'ACTIVE',
+      organization_id TEXT NOT NULL,
+      latitude REAL,
+      longitude REAL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS field_plots (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      code TEXT,
+      soil_type TEXT,
+      current_crop TEXT,
+      previous_crop TEXT,
+      notes TEXT,
+      boundary_area_ha REAL,
+      status TEXT NOT NULL DEFAULT 'ACTIVE',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS farm_locations (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      boundary_area_ha REAL,
+      capacity_ua REAL,
+      capacity_animals INTEGER,
+      forage_type TEXT,
+      pasture_status TEXT,
+      facility_type TEXT,
+      facility_status TEXT,
+      description TEXT,
+      notes TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS animal_lots (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      predominant_category TEXT,
+      current_location TEXT,
+      location_type TEXT,
+      location_id TEXT,
+      max_capacity INTEGER,
+      description TEXT,
+      notes TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE,
+      FOREIGN KEY (location_id) REFERENCES farm_locations(id) ON DELETE SET NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS animals (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      ear_tag TEXT NOT NULL,
+      rfid_tag TEXT,
+      name TEXT,
+      sex TEXT NOT NULL,
+      birth_date TEXT,
+      birth_date_estimated INTEGER NOT NULL DEFAULT 0,
+      category TEXT NOT NULL,
+      category_suggested TEXT,
+      origin TEXT NOT NULL DEFAULT 'BORN',
+      entry_weight_kg REAL,
+      body_condition_score INTEGER,
+      sire_id TEXT,
+      dam_id TEXT,
+      lot_id TEXT,
+      pasture_id TEXT,
+      photo_url TEXT,
+      notes TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE,
+      FOREIGN KEY (lot_id) REFERENCES animal_lots(id) ON DELETE SET NULL,
+      FOREIGN KEY (pasture_id) REFERENCES farm_locations(id) ON DELETE SET NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS animal_breed_compositions (
+      id TEXT PRIMARY KEY NOT NULL,
+      animal_id TEXT NOT NULL,
+      breed_id TEXT NOT NULL,
+      breed_name TEXT NOT NULL,
+      fraction REAL NOT NULL,
+      percentage REAL NOT NULL,
+      FOREIGN KEY (animal_id) REFERENCES animals(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS sync_meta (
+      entity TEXT PRIMARY KEY NOT NULL,
+      last_synced_at TEXT NOT NULL,
+      record_count INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_field_plots_farm ON field_plots(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_farm_locations_farm ON farm_locations(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_animal_lots_farm ON animal_lots(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_animals_farm ON animals(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_animals_lot ON animals(lot_id);
+    CREATE INDEX IF NOT EXISTS idx_animals_pasture ON animals(pasture_id);
+    CREATE INDEX IF NOT EXISTS idx_animals_ear_tag ON animals(ear_tag);
+    CREATE INDEX IF NOT EXISTS idx_animal_breed_comp_animal ON animal_breed_compositions(animal_id);
+  `);
+}
+
+export const DB_NAME = 'protosfarm.db';
