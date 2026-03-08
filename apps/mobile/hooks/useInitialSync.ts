@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { AppState, type AppStateStatus } from 'react-native';
 import { useOfflineData } from './useOfflineData';
 import { useConnectivity } from '@/stores/ConnectivityContext';
 import type { SyncProgress } from '@/services/sync';
+
+/** Re-sync interval: 15 minutes */
+const RESYNC_INTERVAL_MS = 15 * 60 * 1000;
 
 interface UseInitialSyncOptions {
   farmId: string | null;
@@ -17,8 +21,10 @@ interface UseInitialSyncResult {
 }
 
 /**
- * Triggers initial data sync when a farm is selected.
- * Re-syncs when connectivity is restored after being offline.
+ * Triggers data sync when:
+ * 1. A farm is selected (initial sync)
+ * 2. Connectivity is restored after being offline
+ * 3. App returns to foreground after >15min since last sync
  */
 export function useInitialSync({
   farmId,
@@ -31,6 +37,7 @@ export function useInitialSync({
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const syncingRef = useRef(false);
+  const wasDisconnectedRef = useRef(false);
 
   const doSync = useCallback(async () => {
     if (!farmId || !isConnected || syncingRef.current) return;
@@ -59,23 +66,50 @@ export function useInitialSync({
     }
   }, [farmId, isConnected, sync, syncMeta]);
 
-  // Sync on farm selection
+  // 1. Sync on farm selection
   useEffect(() => {
     if (!enabled || !farmId) return;
     void doSync();
   }, [farmId, enabled]);
-  // Re-sync when connectivity is restored
-  useEffect(() => {
-    if (!enabled || !farmId || !isConnected) return;
 
-    // Check if we have synced data — if not, trigger sync
-    void (async () => {
-      const hasFarms = await sync.hasSyncedData('farms');
-      if (!hasFarms) {
+  // 2. Track disconnection and re-sync on reconnect
+  useEffect(() => {
+    if (!isConnected) {
+      wasDisconnectedRef.current = true;
+      return;
+    }
+    if (wasDisconnectedRef.current && enabled && farmId) {
+      wasDisconnectedRef.current = false;
+      void doSync();
+    }
+  }, [isConnected]);
+
+  // 3. Re-sync when app returns to foreground after interval
+  useEffect(() => {
+    if (!enabled || !farmId) return;
+
+    const handleAppState = async (state: AppStateStatus) => {
+      if (state !== 'active' || !isConnected) return;
+
+      const meta = await syncMeta.get('farms');
+      if (!meta) {
+        void doSync();
+        return;
+      }
+
+      const lastSync = new Date(meta.last_synced_at).getTime();
+      if (Date.now() - lastSync > RESYNC_INTERVAL_MS) {
         void doSync();
       }
-    })();
-  }, [isConnected]);
+    };
+
+    const subscription = AppState.addEventListener('change', (state) => {
+      void handleAppState(state);
+    });
+
+    return () => subscription.remove();
+  }, [farmId, enabled, isConnected, syncMeta, doSync]);
+
   // Load last sync time on mount
   useEffect(() => {
     void (async () => {

@@ -2,11 +2,12 @@ import { useCallback } from 'react';
 import { View, Text, FlatList, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeftRight, Settings, Info, LogOut } from 'lucide-react-native';
+import { ArrowLeftRight, Settings, Info, LogOut, RefreshCw } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { spacing, fontSize } from '@protos-farm/shared';
 import { useAuth } from '@/stores/AuthContext';
 import { useFarmContext } from '@/stores/FarmContext';
+import { useSyncContext } from '@/stores/SyncContext';
 import { useTheme } from '@/stores/ThemeContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { ThemeColors } from '@/stores/ThemeContext';
@@ -67,14 +68,38 @@ const createStyles = (c: ThemeColors) => ({
   },
 });
 
+function formatRelativeTime(isoDate: string): string {
+  const diff = Date.now() - new Date(isoDate).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'agora';
+  if (minutes < 60) return `${minutes}min atrás`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h atrás`;
+  const days = Math.floor(hours / 24);
+  return `${days}d atrás`;
+}
+
 export default function MoreScreen() {
   const { user, logout } = useAuth();
   const { selectedFarm } = useFarmContext();
+  const { lastSyncedAt, retrySync, isSyncing } = useSyncContext();
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
 
+  const syncLabel = isSyncing
+    ? 'Sincronizando...'
+    : lastSyncedAt
+      ? `Sincronizar (última: ${formatRelativeTime(lastSyncedAt)})`
+      : 'Sincronizar dados';
+
   const menuItems: MenuItem[] = [
+    {
+      id: 'sync',
+      label: syncLabel,
+      icon: RefreshCw,
+      onPress: retrySync,
+    },
     {
       id: 'switch-farm',
       label: 'Trocar Fazenda',
