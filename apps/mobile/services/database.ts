@@ -4,7 +4,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
  * Database version — increment when adding new migrations.
  * Each version maps to a migration function in the migrations array.
  */
-const DATABASE_VERSION = 2;
+const DATABASE_VERSION = 3;
 
 /**
  * Run migrations on database init (called by SQLiteProvider onInit).
@@ -28,6 +28,11 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase): Promise<void> {
   if (currentVersion === 1) {
     await migrationV2(db);
     currentVersion = 2;
+  }
+
+  if (currentVersion === 2) {
+    await migrationV3(db);
+    currentVersion = 3;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
@@ -182,6 +187,27 @@ async function migrationV2(db: SQLiteDatabase): Promise<void> {
 
     CREATE INDEX IF NOT EXISTS idx_pending_ops_status ON pending_operations(status);
     CREATE INDEX IF NOT EXISTS idx_pending_ops_entity ON pending_operations(entity, entity_id);
+  `);
+}
+
+/**
+ * V3 — Conflict log for last-write-wins resolution.
+ */
+async function migrationV3(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS conflict_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      entity TEXT NOT NULL,
+      entity_id TEXT NOT NULL,
+      local_payload TEXT NOT NULL,
+      server_payload TEXT NOT NULL,
+      resolution TEXT NOT NULL DEFAULT 'server_wins',
+      resolved_at TEXT NOT NULL,
+      reviewed INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_conflict_log_entity ON conflict_log(entity, entity_id);
+    CREATE INDEX IF NOT EXISTS idx_conflict_log_reviewed ON conflict_log(reviewed);
   `);
 }
 

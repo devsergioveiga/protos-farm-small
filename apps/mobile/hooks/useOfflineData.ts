@@ -8,6 +8,7 @@ import {
   createAnimalRepository,
   createSyncMetaRepository,
   createPendingOperationsRepository,
+  createConflictLogRepository,
 } from '@/services/db';
 import { createSyncService } from '@/services/sync';
 import { createOfflineQueue } from '@/services/offline-queue';
@@ -28,6 +29,7 @@ export function useOfflineData() {
       animals: createAnimalRepository(db),
       syncMeta: createSyncMetaRepository(db),
       pendingOps: createPendingOperationsRepository(db),
+      conflictLog: createConflictLogRepository(db),
       sync: createSyncService(db),
       queue: createOfflineQueue(db),
     }),

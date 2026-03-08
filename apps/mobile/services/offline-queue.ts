@@ -2,6 +2,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import { api } from './api';
 import {
   createPendingOperationsRepository,
+  createConflictLogRepository,
   type OperationEntity,
   type OperationType,
   type PendingOperation,
@@ -25,15 +26,13 @@ export type QueueFlushCallback = (
 
 /**
  * Service for queuing offline write operations and flushing them when online.
+ * Uses last-write-wins conflict resolution with conflict logging.
  */
 export function createOfflineQueue(db: SQLiteDatabase) {
   const pendingOps = createPendingOperationsRepository(db);
+  const conflictLog = createConflictLogRepository(db);
 
   return {
-    /**
-     * Queue a write operation for later sync.
-     * Returns the operation ID.
-     */
     async enqueue(
       entity: OperationEntity,
       entityId: string,
@@ -42,8 +41,6 @@ export function createOfflineQueue(db: SQLiteDatabase) {
       endpoint: string,
       method: string,
     ): Promise<QueuedWrite> {
-      // If updating or deleting, remove any pending CREATE for the same entity
-      // (collapse create+update into a single create with updated data)
       if (operation === 'UPDATE' || operation === 'DELETE') {
         const existing = await pendingOps.getByEntity(entity, entityId);
         const pendingCreate = existing.find(
@@ -51,7 +48,6 @@ export function createOfflineQueue(db: SQLiteDatabase) {
         );
 
         if (pendingCreate && operation === 'UPDATE') {
-          // Merge update into the pending create
           await pendingOps.remove(pendingCreate.id);
           const mergedPayload = {
             ...JSON.parse(pendingCreate.payload),
@@ -69,9 +65,7 @@ export function createOfflineQueue(db: SQLiteDatabase) {
         }
 
         if (pendingCreate && operation === 'DELETE') {
-          // Remove the pending create — item never existed on server
           await pendingOps.remove(pendingCreate.id);
-          // Also remove any pending updates
           for (const op of existing) {
             if (op.id !== pendingCreate.id) {
               await pendingOps.remove(op.id);
@@ -87,7 +81,7 @@ export function createOfflineQueue(db: SQLiteDatabase) {
 
     /**
      * Flush all pending operations to the server.
-     * Processes in FIFO order. Stops on unrecoverable errors.
+     * On 409 conflict: logs conflict with local+server data, applies server version (last-write-wins).
      */
     async flush(onProgress?: QueueFlushCallback): Promise<{ processed: number; failed: number }> {
       const ops = await pendingOps.getPending();
@@ -112,12 +106,27 @@ export function createOfflineQueue(db: SQLiteDatabase) {
           const error = err instanceof Error ? err.message : 'Erro desconhecido';
           const status = (err as Error & { status?: number }).status;
 
-          // 4xx errors (except 409 conflict) are unrecoverable — don't retry
-          if (status && status >= 400 && status < 500 && status !== 409) {
+          if (status === 409) {
+            // Conflict: server has newer data. Log and accept server version.
+            let serverData: unknown = null;
+            try {
+              serverData = await fetchServerVersion(op);
+            } catch {
+              // If we can't fetch server version, log what we have
+            }
+            await conflictLog.log(
+              op.entity,
+              op.entity_id,
+              JSON.parse(op.payload),
+              serverData,
+              'server_wins',
+            );
+            await pendingOps.remove(op.id);
+            processed++;
+          } else if (status && status >= 400 && status < 500) {
             await pendingOps.markError(op.id, `${status}: ${error}`);
             failed++;
           } else {
-            // Network or 5xx — mark error but can retry later
             await pendingOps.markError(op.id, error);
             failed++;
           }
@@ -130,20 +139,18 @@ export function createOfflineQueue(db: SQLiteDatabase) {
       return { processed, failed };
     },
 
-    /**
-     * Get count of pending operations.
-     */
     pendingCount: () => pendingOps.countPending(),
-
-    /**
-     * Get all pending operations (for UI display).
-     */
     getPending: () => pendingOps.getPending(),
-
-    /**
-     * Clear all pending operations (e.g., on logout).
-     */
     clear: () => pendingOps.clear(),
+
+    /** Get unreviewed conflict count */
+    conflictCount: () => conflictLog.countUnreviewed(),
+    /** Get all unreviewed conflicts */
+    getConflicts: () => conflictLog.getUnreviewed(),
+    /** Mark a conflict as reviewed */
+    reviewConflict: (id: number) => conflictLog.markReviewed(id),
+    /** Mark all conflicts as reviewed */
+    reviewAllConflicts: () => conflictLog.markAllReviewed(),
   };
 }
 
@@ -163,4 +170,14 @@ async function sendToServer(op: PendingOperation): Promise<void> {
     default:
       throw new Error(`Método HTTP não suportado: ${op.method}`);
   }
+}
+
+/** Fetch current server version of an entity for conflict logging */
+async function fetchServerVersion(op: PendingOperation): Promise<unknown> {
+  // For updates, GET the entity to see what the server has
+  if (op.operation === 'UPDATE') {
+    // endpoint is like /org/farms/:farmId/animals/:id — GET same URL
+    return api.get(op.endpoint);
+  }
+  return null;
 }
