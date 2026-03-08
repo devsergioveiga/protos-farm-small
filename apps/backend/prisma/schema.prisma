@@ -1239,6 +1239,8 @@ model PesticideApplication {
   adjuvantDose      Decimal?        @db.Decimal(10, 4)
   tankMixOrder      String?
   tankMixPh         Decimal?        @db.Decimal(4, 2)
+  withdrawalPeriodDays Int?
+  safeHarvestDate   DateTime?
   notes             String?
   recordedBy        String
   deletedAt         DateTime?

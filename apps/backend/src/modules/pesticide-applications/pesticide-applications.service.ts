@@ -70,6 +70,8 @@ function toItem(row: Record<string, unknown>): PesticideApplicationItem {
     adjuvantDose: row.adjuvantDose != null ? Number(row.adjuvantDose) : null,
     tankMixOrder: (row.tankMixOrder as string) ?? null,
     tankMixPh: row.tankMixPh != null ? Number(row.tankMixPh) : null,
+    withdrawalPeriodDays: (row.withdrawalPeriodDays as number) ?? null,
+    safeHarvestDate: row.safeHarvestDate ? (row.safeHarvestDate as Date).toISOString() : null,
     notes: (row.notes as string) ?? null,
     recordedBy: row.recordedBy as string,
     recorderName: recorder?.name ?? '',
@@ -130,6 +132,14 @@ export async function createPesticideApplication(
       adjuvantDose: input.adjuvantDose ?? null,
       tankMixOrder: input.tankMixOrder?.trim() ?? null,
       tankMixPh: input.tankMixPh ?? null,
+      withdrawalPeriodDays: input.withdrawalPeriodDays ?? null,
+      safeHarvestDate:
+        input.withdrawalPeriodDays != null
+          ? new Date(
+              new Date(input.appliedAt).getTime() +
+                input.withdrawalPeriodDays * 24 * 60 * 60 * 1000,
+            )
+          : null,
       notes: input.notes?.trim() ?? null,
       recordedBy: userId,
     };
@@ -293,6 +303,26 @@ export async function updatePesticideApplication(
     if (input.adjuvantDose !== undefined) data.adjuvantDose = input.adjuvantDose ?? null;
     if (input.tankMixOrder !== undefined) data.tankMixOrder = input.tankMixOrder?.trim() ?? null;
     if (input.tankMixPh !== undefined) data.tankMixPh = input.tankMixPh ?? null;
+    if (input.withdrawalPeriodDays !== undefined)
+      data.withdrawalPeriodDays = input.withdrawalPeriodDays ?? null;
+
+    // Recalculate safeHarvestDate when withdrawal period or appliedAt changes
+    if (input.withdrawalPeriodDays !== undefined || input.appliedAt !== undefined) {
+      const existingRow = await tx.pesticideApplication.findFirst({
+        where: { id: applicationId },
+        select: { appliedAt: true, withdrawalPeriodDays: true },
+      });
+      const appliedAt = input.appliedAt
+        ? new Date(input.appliedAt)
+        : (existingRow?.appliedAt ?? new Date());
+      const days =
+        input.withdrawalPeriodDays !== undefined
+          ? input.withdrawalPeriodDays
+          : existingRow?.withdrawalPeriodDays;
+      data.safeHarvestDate =
+        days != null ? new Date(appliedAt.getTime() + days * 24 * 60 * 60 * 1000) : null;
+    }
+
     if (input.notes !== undefined) data.notes = input.notes?.trim() ?? null;
 
     const row = await tx.pesticideApplication.update({

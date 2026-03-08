@@ -31,6 +31,8 @@ const MOCK_APPLICATIONS: PesticideApplicationItem[] = [
     adjuvantDose: 500,
     tankMixOrder: 'Água → Adjuvante → Herbicida',
     tankMixPh: 6.5,
+    withdrawalPeriodDays: 14,
+    safeHarvestDate: '2026-03-22T10:00:00.000Z',
     notes: null,
     recordedBy: 'admin-1',
     recorderName: 'Admin',
@@ -64,6 +66,8 @@ const MOCK_APPLICATIONS: PesticideApplicationItem[] = [
     adjuvantDose: null,
     tankMixOrder: null,
     tankMixPh: null,
+    withdrawalPeriodDays: null,
+    safeHarvestDate: null,
     notes: 'Alta infestação',
     recordedBy: 'admin-1',
     recorderName: 'Admin',
@@ -275,6 +279,20 @@ describe('PesticideApplicationsPage', () => {
     render(<PesticideApplicationsPage />);
     expect(screen.getByText('Barra tratorizado')).toBeTruthy();
     expect(screen.getByText('Leque (plano)')).toBeTruthy();
+  });
+
+  it('should display withdrawal period on cards', () => {
+    mockUsePesticideApplications.mockReturnValue({
+      applications: MOCK_APPLICATIONS,
+      meta: { page: 1, limit: 20, total: 2, totalPages: 1 },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(<PesticideApplicationsPage />);
+    expect(screen.getByText(/Carência: 14 dias/)).toBeTruthy();
+    expect(screen.getByText(/22\/03\/2026/)).toBeTruthy();
   });
 
   it('should display tank mix info on cards', () => {

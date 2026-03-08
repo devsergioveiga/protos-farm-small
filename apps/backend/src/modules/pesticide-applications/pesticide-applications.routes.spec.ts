@@ -96,6 +96,8 @@ const SAMPLE_APPLICATION = {
   adjuvantDose: null,
   tankMixOrder: null,
   tankMixPh: null,
+  withdrawalPeriodDays: null,
+  safeHarvestDate: null,
   notes: null,
   recordedBy: 'admin-1',
   recorderName: 'Admin User',
@@ -295,6 +297,33 @@ describe('Pesticide Application endpoints', () => {
       expect(response.body.adjuvantDose).toBe(500);
       expect(response.body.tankMixOrder).toBe('Água → Adjuvante → Herbicida');
       expect(response.body.tankMixPh).toBe(6.5);
+    });
+
+    it('should create application with withdrawal period and compute safe harvest date', async () => {
+      const withWithdrawal = {
+        ...SAMPLE_APPLICATION,
+        withdrawalPeriodDays: 14,
+        safeHarvestDate: '2026-03-22T10:00:00.000Z',
+      };
+      mockedService.createPesticideApplication.mockResolvedValue(withWithdrawal as never);
+
+      const response = await request(app)
+        .post(BASE_URL)
+        .set('Authorization', 'Bearer valid-token')
+        .send({
+          fieldPlotId: 'plot-1',
+          appliedAt: '2026-03-08T10:00:00.000Z',
+          productName: 'Roundup Ready',
+          activeIngredient: 'Glifosato',
+          dose: 2.5,
+          sprayVolume: 150,
+          target: 'PLANTA_DANINHA',
+          withdrawalPeriodDays: 14,
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.withdrawalPeriodDays).toBe(14);
+      expect(response.body.safeHarvestDate).toBe('2026-03-22T10:00:00.000Z');
     });
 
     it('should return 500 on unexpected error', async () => {
