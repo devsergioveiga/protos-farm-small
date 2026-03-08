@@ -22,10 +22,10 @@ export function createFieldPlotRepository(db: SQLiteDatabase) {
         const stmt = await db.prepareAsync(`
           INSERT OR REPLACE INTO field_plots (
             id, farm_id, name, code, soil_type, current_crop, previous_crop,
-            notes, boundary_area_ha, status, created_at, updated_at
+            notes, boundary_area_ha, boundary_geojson, status, created_at, updated_at
           ) VALUES (
             $id, $farm_id, $name, $code, $soil_type, $current_crop, $previous_crop,
-            $notes, $boundary_area_ha, $status, $created_at, $updated_at
+            $notes, $boundary_area_ha, $boundary_geojson, $status, $created_at, $updated_at
           )
         `);
         try {
@@ -40,6 +40,7 @@ export function createFieldPlotRepository(db: SQLiteDatabase) {
               $previous_crop: p.previous_crop,
               $notes: p.notes,
               $boundary_area_ha: p.boundary_area_ha,
+              $boundary_geojson: p.boundary_geojson,
               $status: p.status,
               $created_at: p.created_at,
               $updated_at: p.updated_at,

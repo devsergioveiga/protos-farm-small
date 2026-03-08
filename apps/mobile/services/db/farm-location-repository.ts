@@ -28,11 +28,11 @@ export function createFarmLocationRepository(db: SQLiteDatabase) {
       await db.withTransactionAsync(async () => {
         const stmt = await db.prepareAsync(`
           INSERT OR REPLACE INTO farm_locations (
-            id, farm_id, name, type, boundary_area_ha, capacity_ua, capacity_animals,
+            id, farm_id, name, type, boundary_area_ha, boundary_geojson, capacity_ua, capacity_animals,
             forage_type, pasture_status, facility_type, facility_status,
             description, notes, created_at, updated_at
           ) VALUES (
-            $id, $farm_id, $name, $type, $boundary_area_ha, $capacity_ua, $capacity_animals,
+            $id, $farm_id, $name, $type, $boundary_area_ha, $boundary_geojson, $capacity_ua, $capacity_animals,
             $forage_type, $pasture_status, $facility_type, $facility_status,
             $description, $notes, $created_at, $updated_at
           )
@@ -45,6 +45,7 @@ export function createFarmLocationRepository(db: SQLiteDatabase) {
               $name: l.name,
               $type: l.type,
               $boundary_area_ha: l.boundary_area_ha,
+              $boundary_geojson: l.boundary_geojson,
               $capacity_ua: l.capacity_ua,
               $capacity_animals: l.capacity_animals,
               $forage_type: l.forage_type,

@@ -11,12 +11,18 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.protosfarm.mobile",
       "infoPlist": {
-        "NSFaceIDUsageDescription": "Usar Face ID para login rápido no Protos Farm"
+        "NSFaceIDUsageDescription": "Usar Face ID para login rápido no Protos Farm",
+        "NSLocationWhenInUseUsageDescription": "Protos Farm usa sua localização para mostrar sua posição no mapa da fazenda"
       }
     },
     "android": {
       "package": "com.protosfarm.mobile",
-      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT"]
+      "permissions": [
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "plugins": [
       "expo-router",
