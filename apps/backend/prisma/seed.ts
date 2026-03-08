@@ -1765,7 +1765,8 @@ async function main() {
       productName: 'Ivomec Gold',
       dosage: '1ml/50kg',
       applicationMethod: 'INJECTABLE',
-      notes: 'Vermifugação estratégica pré-parto',
+      withdrawalDays: 35,
+      notes: 'Vermifugação estratégica pré-parto — carência 35 dias (leite)',
     },
     {
       animalId: 'ani-0001-4000-8000-000000000001',
@@ -1854,12 +1855,13 @@ async function main() {
     {
       animalId: 'ani-0001-4000-8000-000000000002',
       type: 'TREATMENT',
-      eventDate: '2025-12-20',
+      eventDate: '2026-03-01',
       productName: 'Mastofin',
       dosage: '10ml intramamário',
       applicationMethod: 'OTHER',
       diagnosis: 'Mastite clínica quarto anterior esquerdo',
       durationDays: 5,
+      withdrawalDays: 14,
       veterinaryName: 'Dr. Santos',
       notes: 'CMT positivo +++, leite descartado',
     },
@@ -1878,8 +1880,8 @@ async function main() {
 
   for (const hr of healthRecords) {
     await prisma.$executeRawUnsafe(
-      `INSERT INTO animal_health_records (id, "animalId", "farmId", type, "eventDate", "productName", dosage, "applicationMethod", "batchNumber", diagnosis, "durationDays", "examResult", "labName", "isFieldExam", "veterinaryName", notes, "recordedBy", "createdAt", "updatedAt")
-       VALUES (gen_random_uuid(), $1, $2, $3::"HealthEventType", $4::date, $5, $6, $7::"ApplicationMethod", $8, $9, $10, $11, $12, $13, $14, $15, $16, now(), now())`,
+      `INSERT INTO animal_health_records (id, "animalId", "farmId", type, "eventDate", "productName", dosage, "applicationMethod", "batchNumber", diagnosis, "durationDays", "withdrawalDays", "examResult", "labName", "isFieldExam", "veterinaryName", notes, "recordedBy", "createdAt", "updatedAt")
+       VALUES (gen_random_uuid(), $1, $2, $3::"HealthEventType", $4::date, $5, $6, $7::"ApplicationMethod", $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, now(), now())`,
       hr.animalId,
       SANTA_HELENA,
       hr.type,
@@ -1890,6 +1892,7 @@ async function main() {
       (hr as Record<string, unknown>).batchNumber ?? null,
       (hr as Record<string, unknown>).diagnosis ?? null,
       (hr as Record<string, unknown>).durationDays ?? null,
+      (hr as Record<string, unknown>).withdrawalDays ?? null,
       (hr as Record<string, unknown>).examResult ?? null,
       (hr as Record<string, unknown>).labName ?? null,
       (hr as Record<string, unknown>).isFieldExam ?? false,

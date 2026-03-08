@@ -55,6 +55,7 @@ function AnimalsPage() {
   const [originFilter, setOriginFilter] = useState('');
   const [lotFilter, setLotFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
+  const [specialFilter, setSpecialFilter] = useState('');
   const [minWeightInput, setMinWeightInput] = useState('');
   const [maxWeightInput, setMaxWeightInput] = useState('');
   const [minAgeInput, setMinAgeInput] = useState('');
@@ -86,6 +87,7 @@ function AnimalsPage() {
     setOriginFilter('');
     setLotFilter('');
     setLocationFilter('');
+    setSpecialFilter('');
     setMinWeightInput('');
     setMaxWeightInput('');
     setMinAgeInput('');
@@ -109,6 +111,7 @@ function AnimalsPage() {
     origin: originFilter || undefined,
     lotId: lotFilter || undefined,
     locationId: locationFilter || undefined,
+    specialFilter: specialFilter || undefined,
     minWeightKg,
     maxWeightKg,
     minAgeDays,
@@ -163,6 +166,7 @@ function AnimalsPage() {
     !!originFilter ||
     !!lotFilter ||
     !!locationFilter ||
+    !!specialFilter ||
     minWeightKg != null ||
     maxWeightKg != null ||
     minAgeDays != null ||
@@ -180,6 +184,7 @@ function AnimalsPage() {
     originFilter,
     lotFilter,
     locationFilter,
+    specialFilter,
     minWeightKg != null ? 'w' : '',
     maxWeightKg != null ? 'w' : '',
     minAgeDays != null ? 'a' : '',
@@ -196,6 +201,7 @@ function AnimalsPage() {
     setOriginFilter('');
     setLotFilter('');
     setLocationFilter('');
+    setSpecialFilter('');
     setMinWeightInput('');
     setMaxWeightInput('');
     setMinAgeInput('');
@@ -221,6 +227,7 @@ function AnimalsPage() {
       if (originFilter) params.set('origin', originFilter);
       if (lotFilter) params.set('lotId', lotFilter);
       if (locationFilter) params.set('locationId', locationFilter);
+      if (specialFilter) params.set('specialFilter', specialFilter);
       if (minWeightKg != null) params.set('minWeightKg', String(minWeightKg));
       if (maxWeightKg != null) params.set('maxWeightKg', String(maxWeightKg));
       if (minAgeDays != null) params.set('minAgeDays', String(minAgeDays));
@@ -490,6 +497,28 @@ function AnimalsPage() {
                     {loc.name} ({loc.type === 'PASTURE' ? 'Pasto' : 'Instalação'})
                   </option>
                 ))}
+              </select>
+            </div>
+            <div className="animals__filter-group">
+              <label htmlFor="animal-special-filter" className="animals__filter-label">
+                Filtro especial
+              </label>
+              <select
+                id="animal-special-filter"
+                className="animals__filter-select"
+                value={specialFilter}
+                onChange={(e) => {
+                  setSpecialFilter(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="">Nenhum</option>
+                <option value="PREGNANT">Prenhas</option>
+                <option value="EMPTY">Vazias</option>
+                <option value="WITHDRAWAL">Em carência</option>
+                <option value="LACTATING">Em lactação</option>
+                <option value="DRY">Secas</option>
+                <option value="CULLING">Aptas para descarte</option>
               </select>
             </div>
           </div>

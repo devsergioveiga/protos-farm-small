@@ -433,6 +433,19 @@ describe('AnimalsPage', () => {
     expect(screen.getByText('Curral Principal (Instalação)')).toBeTruthy();
   });
 
+  it('should pass specialFilter to useAnimals when special filter is selected', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    await userEvent.click(screen.getByText('Mais filtros'));
+
+    const specialSelect = screen.getByLabelText('Filtro especial');
+    await userEvent.selectOptions(specialSelect, 'PREGNANT');
+
+    const lastCall = mockUseAnimals.mock.calls[mockUseAnimals.mock.calls.length - 1][0];
+    expect(lastCall.specialFilter).toBe('PREGNANT');
+  });
+
   it('should pass origin to useAnimals when origin filter is selected', async () => {
     mockUseAnimals.mockReturnValue(defaultReturn());
     await renderPage();
