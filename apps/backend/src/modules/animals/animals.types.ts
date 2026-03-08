@@ -126,6 +126,25 @@ export interface UpdateAnimalInput {
   genealogicalRecords?: GenealogicalRecordInput[];
 }
 
+export const SPECIAL_FILTERS = [
+  'PREGNANT',
+  'EMPTY',
+  'WITHDRAWAL',
+  'LACTATING',
+  'DRY',
+  'CULLING',
+] as const;
+export type SpecialFilter = (typeof SPECIAL_FILTERS)[number];
+
+export const SPECIAL_FILTER_LABELS_PT: Record<SpecialFilter, string> = {
+  PREGNANT: 'Prenhas',
+  EMPTY: 'Vazias',
+  WITHDRAWAL: 'Em carência',
+  LACTATING: 'Em lactação',
+  DRY: 'Secas',
+  CULLING: 'Aptas para descarte',
+};
+
 export const ANIMAL_SORT_FIELDS = [
   'earTag',
   'name',
@@ -153,6 +172,7 @@ export interface ListAnimalsQuery {
   maxAgeDays?: number;
   sortBy?: AnimalSortField;
   sortOrder?: 'asc' | 'desc';
+  specialFilter?: SpecialFilter;
 }
 
 export const ANIMAL_SEX_LABELS_PT: Record<string, string> = {
