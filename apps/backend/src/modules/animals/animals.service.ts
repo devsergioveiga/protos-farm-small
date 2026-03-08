@@ -778,6 +778,103 @@ export async function exportAnimalsCsv(
   });
 }
 
+// ─── Export Excel ────────────────────────────────────────────────
+
+export async function exportAnimalsXlsx(
+  ctx: RlsContext,
+  farmId: string,
+  query: ListAnimalsQuery,
+): Promise<Buffer> {
+  const ExcelJS = await import('exceljs');
+
+  return withRlsContext(ctx, async (tx) => {
+    const where = buildAnimalsWhere(farmId, query);
+
+    if (
+      query.specialFilter &&
+      (SPECIAL_FILTERS as readonly string[]).includes(query.specialFilter) &&
+      !['LACTATING', 'DRY', 'CULLING'].includes(query.specialFilter)
+    ) {
+      const ids = await getSpecialFilterIds(tx, farmId, query.specialFilter);
+      if (ids !== null) {
+        where.id = { in: ids };
+      }
+    }
+
+    const [animals, aggregate] = await Promise.all([
+      tx.animal.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          compositions: { include: { breed: { select: { name: true } } } },
+          sire: { select: { earTag: true, name: true } },
+          dam: { select: { earTag: true, name: true } },
+          lot: { select: { name: true } },
+        },
+      }),
+      tx.animal.aggregate({ where, _avg: { entryWeightKg: true } }),
+    ]);
+
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Animais');
+
+    // Summary row
+    const avgWeight = aggregate._avg.entryWeightKg;
+    ws.addRow([
+      `Total: ${animals.length} animal(is)`,
+      '',
+      '',
+      avgWeight != null ? `Peso médio: ${Number(Number(avgWeight).toFixed(1))} kg` : '',
+    ]);
+    ws.addRow([]);
+
+    // Headers
+    const headerRow = ws.addRow([...ANIMAL_CSV_HEADERS]);
+    headerRow.font = { bold: true };
+
+    // Data rows
+    for (const a of animals) {
+      const birthDate = a.birthDate ? new Date(a.birthDate).toLocaleDateString('pt-BR') : '';
+      const breeds =
+        a.compositions.length > 0
+          ? a.compositions.map((c) => `${c.breed.name} ${Number(c.percentage)}%`).join(' + ')
+          : '';
+      const sireLabel = a.sire ? `${a.sire.earTag}${a.sire.name ? ` (${a.sire.name})` : ''}` : '';
+      const damLabel = a.dam ? `${a.dam.earTag}${a.dam.name ? ` (${a.dam.name})` : ''}` : '';
+
+      ws.addRow([
+        a.earTag,
+        a.name ?? '',
+        ANIMAL_SEX_LABELS_PT[a.sex] ?? a.sex,
+        birthDate,
+        a.category,
+        ANIMAL_ORIGIN_LABELS_PT[a.origin] ?? a.origin,
+        breeds,
+        a.entryWeightKg != null ? Number(a.entryWeightKg) : '',
+        a.bodyConditionScore != null ? Number(a.bodyConditionScore) : '',
+        (a.lot as { name: string } | null)?.name ?? '',
+        sireLabel,
+        damLabel,
+        a.rfidTag ?? '',
+        a.notes ?? '',
+      ]);
+    }
+
+    // Auto-fit column widths
+    ws.columns.forEach((col) => {
+      let maxLen = 10;
+      col.eachCell?.({ includeEmpty: false }, (cell) => {
+        const len = String(cell.value ?? '').length;
+        if (len > maxLen) maxLen = Math.min(len, 40);
+      });
+      col.width = maxLen + 2;
+    });
+
+    const buffer = await wb.xlsx.writeBuffer();
+    return Buffer.from(buffer);
+  });
+}
+
 // ─── Breeds ─────────────────────────────────────────────────────────
 
 export async function listBreeds(ctx: RlsContext) {

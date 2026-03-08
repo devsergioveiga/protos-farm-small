@@ -217,7 +217,7 @@ function AnimalsPage() {
     setPage(1);
   };
 
-  const handleExportCsv = async () => {
+  const handleExport = async (format: 'csv' | 'xlsx') => {
     if (!selectedFarm) return;
     setIsExporting(true);
     try {
@@ -236,6 +236,7 @@ function AnimalsPage() {
       if (maxAgeDays != null) params.set('maxAgeDays', String(maxAgeDays));
       if (sortBy) params.set('sortBy', sortBy);
       if (sortOrder) params.set('sortOrder', sortOrder);
+      if (format === 'xlsx') params.set('format', 'xlsx');
 
       const qs = params.toString();
       const blob = await api.getBlob(
@@ -244,7 +245,7 @@ function AnimalsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `animais-${selectedFarm.id}.csv`;
+      a.download = `animais-${selectedFarm.id}.${format}`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -306,12 +307,22 @@ function AnimalsPage() {
           <button
             type="button"
             className="animals__btn animals__btn--secondary"
-            onClick={() => void handleExportCsv()}
+            onClick={() => void handleExport('csv')}
             disabled={isExporting}
             aria-label="Exportar animais em CSV"
           >
             <Download aria-hidden="true" size={20} />
-            {isExporting ? 'Exportando...' : 'Exportar CSV'}
+            {isExporting ? 'Exportando...' : 'CSV'}
+          </button>
+          <button
+            type="button"
+            className="animals__btn animals__btn--secondary"
+            onClick={() => void handleExport('xlsx')}
+            disabled={isExporting}
+            aria-label="Exportar animais em Excel"
+          >
+            <Download aria-hidden="true" size={20} />
+            {isExporting ? 'Exportando...' : 'Excel'}
           </button>
           <PermissionGate permission="animals:create">
             <button

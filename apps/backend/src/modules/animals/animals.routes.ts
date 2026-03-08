@@ -16,6 +16,7 @@ import {
   softDeleteAnimal,
   getAnimalsSummary,
   exportAnimalsCsv,
+  exportAnimalsXlsx,
   listBreeds,
   createBreed,
   deleteBreed,
@@ -472,7 +473,8 @@ animalsRouter.get(
         }
       }
 
-      const csv = await exportAnimalsCsv(ctx, farmId, {
+      const format = req.query.format as string | undefined;
+      const filterQuery = {
         search,
         sex,
         category,
@@ -487,11 +489,22 @@ animalsRouter.get(
         minAgeDays,
         maxAgeDays,
         specialFilter: specialFilter as import('./animals.types').SpecialFilter | undefined,
-      });
+      };
 
-      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader('Content-Disposition', `attachment; filename="animais-${farmId}.csv"`);
-      res.send(csv);
+      if (format === 'xlsx') {
+        const buffer = await exportAnimalsXlsx(ctx, farmId, filterQuery);
+        res.setHeader(
+          'Content-Type',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        );
+        res.setHeader('Content-Disposition', `attachment; filename="animais-${farmId}.xlsx"`);
+        res.send(buffer);
+      } else {
+        const csv = await exportAnimalsCsv(ctx, farmId, filterQuery);
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="animais-${farmId}.csv"`);
+        res.send(csv);
+      }
     } catch (err) {
       if (err instanceof AnimalError) {
         res.status(err.statusCode).json({ error: err.message });
