@@ -142,6 +142,20 @@
   border-color: var(--color-primary-500);
 }
 
+.pesticide-modal__computed-value {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  color: var(--color-neutral-600);
+  background: var(--color-neutral-50);
+  box-sizing: border-box;
+}
+
 .pesticide-modal__condition-alert {
   display: flex;
   gap: 12px;
