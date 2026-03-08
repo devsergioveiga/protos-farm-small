@@ -321,6 +321,15 @@
   color: var(--color-neutral-600);
 }
 
+.pesticides__card-tank-mix {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+
 .pesticides__card-badges {
   display: flex;
   gap: 8px;

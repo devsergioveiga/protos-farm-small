@@ -52,6 +52,10 @@ export interface CreatePesticideApplicationInput {
   nozzleType?: string | null;
   workingPressure?: number | null;
   applicationSpeed?: number | null;
+  adjuvant?: string | null;
+  adjuvantDose?: number | null;
+  tankMixOrder?: string | null;
+  tankMixPh?: number | null;
   notes?: string | null;
 }
 
@@ -80,6 +84,10 @@ export interface PesticideApplicationItem {
   nozzleType: string | null;
   workingPressure: number | null;
   applicationSpeed: number | null;
+  adjuvant: string | null;
+  adjuvantDose: number | null;
+  tankMixOrder: string | null;
+  tankMixPh: number | null;
   notes: string | null;
   recordedBy: string;
   recorderName: string;

@@ -50,6 +50,10 @@ function PesticideApplicationModal({
   const [nozzleType, setNozzleType] = useState('');
   const [workingPressure, setWorkingPressure] = useState('');
   const [applicationSpeed, setApplicationSpeed] = useState('');
+  const [adjuvant, setAdjuvant] = useState('');
+  const [adjuvantDose, setAdjuvantDose] = useState('');
+  const [tankMixOrder, setTankMixOrder] = useState('');
+  const [tankMixPh, setTankMixPh] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -118,6 +122,10 @@ function PesticideApplicationModal({
       setNozzleType('');
       setWorkingPressure('');
       setApplicationSpeed('');
+      setAdjuvant('');
+      setAdjuvantDose('');
+      setTankMixOrder('');
+      setTankMixPh('');
       setNotes('');
       setSubmitError(null);
       setIsSubmitting(false);
@@ -148,6 +156,10 @@ function PesticideApplicationModal({
       setApplicationSpeed(
         application.applicationSpeed != null ? String(application.applicationSpeed) : '',
       );
+      setAdjuvant(application.adjuvant ?? '');
+      setAdjuvantDose(application.adjuvantDose != null ? String(application.adjuvantDose) : '');
+      setTankMixOrder(application.tankMixOrder ?? '');
+      setTankMixPh(application.tankMixPh != null ? String(application.tankMixPh) : '');
       setNotes(application.notes ?? '');
     }
   }, [isOpen, application]);
@@ -200,6 +212,10 @@ function PesticideApplicationModal({
         nozzleType: nozzleType || undefined,
         workingPressure: workingPressure ? Number(workingPressure) : undefined,
         applicationSpeed: applicationSpeed ? Number(applicationSpeed) : undefined,
+        adjuvant: adjuvant.trim() || undefined,
+        adjuvantDose: adjuvantDose ? Number(adjuvantDose) : undefined,
+        tankMixOrder: tankMixOrder.trim() || undefined,
+        tankMixPh: tankMixPh ? Number(tankMixPh) : undefined,
         notes: notes.trim() || undefined,
       };
 
@@ -240,6 +256,10 @@ function PesticideApplicationModal({
     nozzleType,
     workingPressure,
     applicationSpeed,
+    adjuvant,
+    adjuvantDose,
+    tankMixOrder,
+    tankMixPh,
     notes,
     isEditing,
     application,
@@ -625,6 +645,72 @@ function PesticideApplicationModal({
                   placeholder="Ex: 6"
                   min="0"
                   step="0.1"
+                />
+              </div>
+            </div>
+
+            {/* Calda */}
+            <h3 className="pesticide-modal__section-title">Calda</h3>
+
+            <div className="pesticide-modal__row">
+              <div className="pesticide-modal__field">
+                <label htmlFor="pest-adjuvant" className="pesticide-modal__label">
+                  Adjuvante
+                </label>
+                <input
+                  id="pest-adjuvant"
+                  type="text"
+                  className="pesticide-modal__input"
+                  value={adjuvant}
+                  onChange={(e) => setAdjuvant(e.target.value)}
+                  placeholder="Ex: Nimbus, Assist"
+                />
+              </div>
+              <div className="pesticide-modal__field">
+                <label htmlFor="pest-adjuvant-dose" className="pesticide-modal__label">
+                  Dose do adjuvante (mL/ha)
+                </label>
+                <input
+                  id="pest-adjuvant-dose"
+                  type="number"
+                  className="pesticide-modal__input"
+                  value={adjuvantDose}
+                  onChange={(e) => setAdjuvantDose(e.target.value)}
+                  placeholder="Ex: 500"
+                  min="0"
+                  step="0.1"
+                />
+              </div>
+            </div>
+
+            <div className="pesticide-modal__row">
+              <div className="pesticide-modal__field">
+                <label htmlFor="pest-tank-ph" className="pesticide-modal__label">
+                  pH da calda
+                </label>
+                <input
+                  id="pest-tank-ph"
+                  type="number"
+                  className="pesticide-modal__input"
+                  value={tankMixPh}
+                  onChange={(e) => setTankMixPh(e.target.value)}
+                  placeholder="Ex: 6.5"
+                  min="0"
+                  max="14"
+                  step="0.1"
+                />
+              </div>
+              <div className="pesticide-modal__field">
+                <label htmlFor="pest-tank-order" className="pesticide-modal__label">
+                  Ordem de mistura
+                </label>
+                <input
+                  id="pest-tank-order"
+                  type="text"
+                  className="pesticide-modal__input"
+                  value={tankMixOrder}
+                  onChange={(e) => setTankMixOrder(e.target.value)}
+                  placeholder="Ex: Água → Adjuvante → Herbicida"
                 />
               </div>
             </div>

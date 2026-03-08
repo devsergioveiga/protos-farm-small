@@ -27,6 +27,10 @@ const MOCK_APPLICATIONS: PesticideApplicationItem[] = [
     nozzleType: 'LEQUE',
     workingPressure: 3.5,
     applicationSpeed: 6.0,
+    adjuvant: 'Nimbus',
+    adjuvantDose: 500,
+    tankMixOrder: 'Água → Adjuvante → Herbicida',
+    tankMixPh: 6.5,
     notes: null,
     recordedBy: 'admin-1',
     recorderName: 'Admin',
@@ -56,6 +60,10 @@ const MOCK_APPLICATIONS: PesticideApplicationItem[] = [
     nozzleType: null,
     workingPressure: null,
     applicationSpeed: null,
+    adjuvant: null,
+    adjuvantDose: null,
+    tankMixOrder: null,
+    tankMixPh: null,
     notes: 'Alta infestação',
     recordedBy: 'admin-1',
     recorderName: 'Admin',
@@ -267,6 +275,20 @@ describe('PesticideApplicationsPage', () => {
     render(<PesticideApplicationsPage />);
     expect(screen.getByText('Barra tratorizado')).toBeTruthy();
     expect(screen.getByText('Leque (plano)')).toBeTruthy();
+  });
+
+  it('should display tank mix info on cards', () => {
+    mockUsePesticideApplications.mockReturnValue({
+      applications: MOCK_APPLICATIONS,
+      meta: { page: 1, limit: 20, total: 2, totalPages: 1 },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(<PesticideApplicationsPage />);
+    expect(screen.getByText('Nimbus')).toBeTruthy();
+    expect(screen.getByText('pH 6.5')).toBeTruthy();
   });
 
   it('should show pagination when multiple pages', () => {
