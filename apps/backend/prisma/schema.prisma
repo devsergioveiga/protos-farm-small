@@ -1235,6 +1235,10 @@ model PesticideApplication {
   nozzleType        String?
   workingPressure   Decimal?        @db.Decimal(7, 2)
   applicationSpeed  Decimal?        @db.Decimal(5, 2)
+  adjuvant          String?
+  adjuvantDose      Decimal?        @db.Decimal(10, 4)
+  tankMixOrder      String?
+  tankMixPh         Decimal?        @db.Decimal(4, 2)
   notes             String?
   recordedBy        String
   deletedAt         DateTime?

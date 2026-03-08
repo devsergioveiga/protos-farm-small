@@ -92,6 +92,10 @@ const SAMPLE_APPLICATION = {
   nozzleType: 'LEQUE',
   workingPressure: 3.5,
   applicationSpeed: 6.0,
+  adjuvant: null,
+  adjuvantDose: null,
+  tankMixOrder: null,
+  tankMixPh: null,
   notes: null,
   recordedBy: 'admin-1',
   recorderName: 'Admin User',
@@ -257,6 +261,40 @@ describe('Pesticide Application endpoints', () => {
       expect(response.body.nozzleType).toBe('INDUÇÃO_AR');
       expect(response.body.workingPressure).toBe(4.0);
       expect(response.body.applicationSpeed).toBe(8.5);
+    });
+
+    it('should create application with tank mix data', async () => {
+      const withTankMix = {
+        ...SAMPLE_APPLICATION,
+        adjuvant: 'Nimbus',
+        adjuvantDose: 500,
+        tankMixOrder: 'Água → Adjuvante → Herbicida',
+        tankMixPh: 6.5,
+      };
+      mockedService.createPesticideApplication.mockResolvedValue(withTankMix as never);
+
+      const response = await request(app)
+        .post(BASE_URL)
+        .set('Authorization', 'Bearer valid-token')
+        .send({
+          fieldPlotId: 'plot-1',
+          appliedAt: '2026-03-08T10:00:00.000Z',
+          productName: 'Roundup Ready',
+          activeIngredient: 'Glifosato',
+          dose: 2.5,
+          sprayVolume: 150,
+          target: 'PLANTA_DANINHA',
+          adjuvant: 'Nimbus',
+          adjuvantDose: 500,
+          tankMixOrder: 'Água → Adjuvante → Herbicida',
+          tankMixPh: 6.5,
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.adjuvant).toBe('Nimbus');
+      expect(response.body.adjuvantDose).toBe(500);
+      expect(response.body.tankMixOrder).toBe('Água → Adjuvante → Herbicida');
+      expect(response.body.tankMixPh).toBe(6.5);
     });
 
     it('should return 500 on unexpected error', async () => {

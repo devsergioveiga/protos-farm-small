@@ -11,6 +11,7 @@ import {
   Droplets,
   Thermometer,
   Settings2,
+  FlaskConical,
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
 import { usePesticideApplications } from '@/hooks/usePesticideApplications';
@@ -272,6 +273,14 @@ function PesticideApplicationsPage() {
                         app.nozzleType}
                     </span>
                   )}
+                </div>
+              )}
+
+              {(app.adjuvant || app.tankMixPh != null) && (
+                <div className="pesticides__card-tank-mix">
+                  <FlaskConical size={14} aria-hidden="true" />
+                  {app.adjuvant && <span>{app.adjuvant}</span>}
+                  {app.tankMixPh != null && <span>pH {app.tankMixPh}</span>}
                 </div>
               )}
 
