@@ -25,6 +25,8 @@ export interface PesticideApplicationItem {
   adjuvantDose: number | null;
   tankMixOrder: string | null;
   tankMixPh: number | null;
+  withdrawalPeriodDays: number | null;
+  safeHarvestDate: string | null;
   notes: string | null;
   recordedBy: string;
   recorderName: string;
@@ -66,6 +68,7 @@ export interface CreatePesticideApplicationInput {
   adjuvantDose?: number;
   tankMixOrder?: string;
   tankMixPh?: number;
+  withdrawalPeriodDays?: number;
   notes?: string;
 }
 

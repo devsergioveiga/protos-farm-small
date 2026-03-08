@@ -54,11 +54,19 @@ function PesticideApplicationModal({
   const [adjuvantDose, setAdjuvantDose] = useState('');
   const [tankMixOrder, setTankMixOrder] = useState('');
   const [tankMixPh, setTankMixPh] = useState('');
+  const [withdrawalPeriodDays, setWithdrawalPeriodDays] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [plots, setPlots] = useState<FieldPlot[]>([]);
   const [loadingPlots, setLoadingPlots] = useState(false);
+
+  const computedSafeHarvestDate = useMemo(() => {
+    const days = Number(withdrawalPeriodDays);
+    if (!appliedAt || !withdrawalPeriodDays || isNaN(days) || days <= 0) return null;
+    const date = new Date(new Date(appliedAt).getTime() + days * 24 * 60 * 60 * 1000);
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }, [appliedAt, withdrawalPeriodDays]);
 
   const conditionAlerts = useMemo(() => {
     const alerts: string[] = [];
@@ -126,6 +134,7 @@ function PesticideApplicationModal({
       setAdjuvantDose('');
       setTankMixOrder('');
       setTankMixPh('');
+      setWithdrawalPeriodDays('');
       setNotes('');
       setSubmitError(null);
       setIsSubmitting(false);
@@ -160,6 +169,9 @@ function PesticideApplicationModal({
       setAdjuvantDose(application.adjuvantDose != null ? String(application.adjuvantDose) : '');
       setTankMixOrder(application.tankMixOrder ?? '');
       setTankMixPh(application.tankMixPh != null ? String(application.tankMixPh) : '');
+      setWithdrawalPeriodDays(
+        application.withdrawalPeriodDays != null ? String(application.withdrawalPeriodDays) : '',
+      );
       setNotes(application.notes ?? '');
     }
   }, [isOpen, application]);
@@ -216,6 +228,7 @@ function PesticideApplicationModal({
         adjuvantDose: adjuvantDose ? Number(adjuvantDose) : undefined,
         tankMixOrder: tankMixOrder.trim() || undefined,
         tankMixPh: tankMixPh ? Number(tankMixPh) : undefined,
+        withdrawalPeriodDays: withdrawalPeriodDays ? Number(withdrawalPeriodDays) : undefined,
         notes: notes.trim() || undefined,
       };
 
@@ -260,6 +273,7 @@ function PesticideApplicationModal({
     adjuvantDose,
     tankMixOrder,
     tankMixPh,
+    withdrawalPeriodDays,
     notes,
     isEditing,
     application,
@@ -712,6 +726,33 @@ function PesticideApplicationModal({
                   onChange={(e) => setTankMixOrder(e.target.value)}
                   placeholder="Ex: Água → Adjuvante → Herbicida"
                 />
+              </div>
+            </div>
+
+            {/* Período de carência */}
+            <h3 className="pesticide-modal__section-title">Período de carência</h3>
+
+            <div className="pesticide-modal__row">
+              <div className="pesticide-modal__field">
+                <label htmlFor="pest-withdrawal" className="pesticide-modal__label">
+                  Carência do produto (dias)
+                </label>
+                <input
+                  id="pest-withdrawal"
+                  type="number"
+                  className="pesticide-modal__input"
+                  value={withdrawalPeriodDays}
+                  onChange={(e) => setWithdrawalPeriodDays(e.target.value)}
+                  placeholder="Ex: 14"
+                  min="0"
+                  step="1"
+                />
+              </div>
+              <div className="pesticide-modal__field">
+                <label className="pesticide-modal__label">Data segura para colheita</label>
+                <div className="pesticide-modal__computed-value">
+                  {computedSafeHarvestDate ?? 'Preencha a data de aplicação e a carência'}
+                </div>
               </div>
             </div>
 

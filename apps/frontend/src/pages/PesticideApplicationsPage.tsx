@@ -12,6 +12,7 @@ import {
   Thermometer,
   Settings2,
   FlaskConical,
+  ShieldAlert,
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
 import { usePesticideApplications } from '@/hooks/usePesticideApplications';
@@ -273,6 +274,16 @@ function PesticideApplicationsPage() {
                         app.nozzleType}
                     </span>
                   )}
+                </div>
+              )}
+
+              {app.safeHarvestDate && (
+                <div className="pesticides__card-withdrawal">
+                  <ShieldAlert size={14} aria-hidden="true" />
+                  <span>
+                    Carência: {app.withdrawalPeriodDays} dias — Colheita a partir de{' '}
+                    {new Date(app.safeHarvestDate).toLocaleDateString('pt-BR')}
+                  </span>
                 </div>
               )}
 
