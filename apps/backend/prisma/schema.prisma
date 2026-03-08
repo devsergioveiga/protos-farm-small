@@ -297,6 +297,7 @@ model User {
   recordedHealthRecords     AnimalHealthRecord[]
   recordedReproductiveRecords AnimalReproductiveRecord[]
   recordedFieldOperations     FieldOperation[]
+  recordedPesticideApplications PesticideApplication[] @relation("PesticideRecorder")
 
   @@map("users")
 }
@@ -352,6 +353,7 @@ model Farm {
   animalHealthRecords        AnimalHealthRecord[]
   animalReproductiveRecords  AnimalReproductiveRecord[]
   fieldOperations            FieldOperation[]
+  pesticideApplications      PesticideApplication[]
 
   @@map("farms")
 }
@@ -637,8 +639,9 @@ model FieldPlot {
   farm              Farm              @relation(fields: [farmId], references: [id], onDelete: Cascade)
   registration      FarmRegistration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
   boundaryVersions  FieldPlotBoundaryVersion[]
-  cropSeasons       PlotCropSeason[]
-  soilAnalyses      PlotSoilAnalysis[]
+  cropSeasons            PlotCropSeason[]
+  soilAnalyses           PlotSoilAnalysis[]
+  pesticideApplications  PesticideApplication[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -1193,4 +1196,47 @@ model FieldOperation {
   @@index([recordedAt])
   @@index([operationType])
   @@map("field_operations")
+}
+
+// ─── Pesticide Applications ───────────────────────────────────────────────
+
+enum PesticideTarget {
+  PRAGA
+  DOENCA
+  PLANTA_DANINHA
+}
+
+enum DoseUnit {
+  L_HA
+  KG_HA
+  ML_HA
+  G_HA
+}
+
+model PesticideApplication {
+  id                String          @id @default(uuid())
+  farmId            String
+  fieldPlotId       String
+  appliedAt         DateTime
+  productName       String
+  activeIngredient  String
+  dose              Decimal         @db.Decimal(10, 4)
+  doseUnit          DoseUnit        @default(L_HA)
+  sprayVolume       Decimal         @db.Decimal(10, 2)
+  target            PesticideTarget
+  targetDescription String?
+  notes             String?
+  recordedBy        String
+  deletedAt         DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  recorder  User      @relation("PesticideRecorder", fields: [recordedBy], references: [id])
+
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@index([appliedAt])
+  @@map("pesticide_applications")
 }

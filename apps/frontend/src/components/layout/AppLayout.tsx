@@ -12,6 +12,7 @@ import {
   Layers,
   Scale,
   Sprout,
+  SprayCan,
 } from 'lucide-react';
 import { useAuth } from '@/stores/AuthContext';
 import { FarmProvider } from '@/stores/FarmContext';
@@ -109,6 +110,13 @@ function AppLayout() {
                 >
                   <Sprout size={16} aria-hidden="true" />
                   <span className="app-topbar__nav-label">Cultivares</span>
+                </Link>
+                <Link
+                  to="/pesticide-applications"
+                  className={`app-topbar__nav-link ${isActive('/pesticide-applications') ? 'app-topbar__nav-link--active' : ''}`}
+                >
+                  <SprayCan size={16} aria-hidden="true" />
+                  <span className="app-topbar__nav-label">Defensivos</span>
                 </Link>
                 <Link
                   to="/users"
