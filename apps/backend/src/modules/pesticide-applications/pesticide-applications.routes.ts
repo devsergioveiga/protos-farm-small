@@ -11,6 +11,7 @@ import {
   getPesticideApplication,
   updatePesticideApplication,
   deletePesticideApplication,
+  getWithdrawalAlerts,
 } from './pesticide-applications.service';
 
 export const pesticideApplicationsRouter = Router();
@@ -95,6 +96,24 @@ pesticideApplicationsRouter.get(
         search: (req.query.search as string) || undefined,
       });
       res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── WITHDRAWAL ALERTS ──────────────────────────────────────────────
+
+pesticideApplicationsRouter.get(
+  '/org/farms/:farmId/pesticide-applications/withdrawal-alerts',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const alerts = await getWithdrawalAlerts(ctx, req.params.farmId as string);
+      res.json(alerts);
     } catch (err) {
       handleError(err, res);
     }

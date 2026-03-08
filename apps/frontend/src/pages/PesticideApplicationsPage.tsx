@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
 import { usePesticideApplications } from '@/hooks/usePesticideApplications';
+import { useWithdrawalAlerts } from '@/hooks/useWithdrawalAlerts';
 import PermissionGate from '@/components/auth/PermissionGate';
 import PesticideApplicationModal from '@/components/pesticide-applications/PesticideApplicationModal';
 import {
@@ -40,6 +41,10 @@ function PesticideApplicationsPage() {
   );
 
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const { alerts } = useWithdrawalAlerts(selectedFarmId);
+
+  const activeWithdrawalIds = new Set(alerts.map((a) => a.applicationId));
 
   const { applications, meta, isLoading, error, refetch } = usePesticideApplications({
     farmId: selectedFarmId,
@@ -177,6 +182,27 @@ function PesticideApplicationsPage() {
         </div>
       )}
 
+      {/* Withdrawal alerts */}
+      {alerts.length > 0 && (
+        <div className="pesticides__withdrawal-banner" role="alert" aria-live="polite">
+          <ShieldAlert size={20} aria-hidden="true" />
+          <div>
+            <strong>
+              {alerts.length} {alerts.length === 1 ? 'talhão em' : 'talhões em'} período de carência
+            </strong>
+            <ul className="pesticides__withdrawal-list">
+              {alerts.map((a) => (
+                <li key={a.applicationId}>
+                  <strong>{a.fieldPlotName}</strong> — {a.productName} ({a.daysRemaining}{' '}
+                  {a.daysRemaining === 1 ? 'dia restante' : 'dias restantes'}, colheita a partir de{' '}
+                  {new Date(a.safeHarvestDate).toLocaleDateString('pt-BR')})
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
       {/* Loading skeleton */}
       {isLoading && (
         <div className="pesticides__skeleton-grid">
@@ -204,7 +230,7 @@ function PesticideApplicationsPage() {
           {applications.map((app) => (
             <div
               key={app.id}
-              className="pesticides__card"
+              className={`pesticides__card${activeWithdrawalIds.has(app.id) ? ' pesticides__card--withdrawal-active' : ''}`}
               onClick={() => handleCardClick(app)}
               onKeyDown={(e) => handleCardKeyDown(e, app)}
               tabIndex={0}

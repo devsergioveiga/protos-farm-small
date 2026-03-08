@@ -338,6 +338,64 @@ export async function updatePesticideApplication(
   });
 }
 
+// ─── Withdrawal alerts ──────────────────────────────────────────────
+
+export interface WithdrawalAlert {
+  applicationId: string;
+  fieldPlotId: string;
+  fieldPlotName: string;
+  productName: string;
+  activeIngredient: string;
+  appliedAt: string;
+  withdrawalPeriodDays: number;
+  safeHarvestDate: string;
+  daysRemaining: number;
+}
+
+export async function getWithdrawalAlerts(
+  ctx: RlsContext,
+  farmId: string,
+): Promise<WithdrawalAlert[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const now = new Date();
+    const rows = await tx.pesticideApplication.findMany({
+      where: {
+        farmId,
+        deletedAt: null,
+        safeHarvestDate: { gt: now },
+        withdrawalPeriodDays: { not: null },
+      },
+      orderBy: { safeHarvestDate: 'asc' },
+      select: {
+        id: true,
+        fieldPlotId: true,
+        productName: true,
+        activeIngredient: true,
+        appliedAt: true,
+        withdrawalPeriodDays: true,
+        safeHarvestDate: true,
+        fieldPlot: { select: { name: true } },
+      },
+    });
+
+    return rows.map((r) => {
+      const safeDate = r.safeHarvestDate as Date;
+      const daysRemaining = Math.ceil((safeDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+      return {
+        applicationId: r.id,
+        fieldPlotId: r.fieldPlotId,
+        fieldPlotName: (r.fieldPlot as { name: string }).name,
+        productName: r.productName,
+        activeIngredient: r.activeIngredient,
+        appliedAt: (r.appliedAt as Date).toISOString(),
+        withdrawalPeriodDays: r.withdrawalPeriodDays as number,
+        safeHarvestDate: safeDate.toISOString(),
+        daysRemaining,
+      };
+    });
+  });
+}
+
 export async function deletePesticideApplication(
   ctx: RlsContext,
   farmId: string,
