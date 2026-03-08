@@ -59,6 +59,9 @@ function toItem(row: Record<string, unknown>): PesticideApplicationItem {
     artNumber: (row.artNumber as string) ?? null,
     agronomistCrea: (row.agronomistCrea as string) ?? null,
     technicalJustification: (row.technicalJustification as string) ?? null,
+    temperature: row.temperature != null ? Number(row.temperature) : null,
+    relativeHumidity: row.relativeHumidity != null ? Number(row.relativeHumidity) : null,
+    windSpeed: row.windSpeed != null ? Number(row.windSpeed) : null,
     notes: (row.notes as string) ?? null,
     recordedBy: row.recordedBy as string,
     recorderName: recorder?.name ?? '',
@@ -108,6 +111,9 @@ export async function createPesticideApplication(
       artNumber: input.artNumber?.trim() ?? null,
       agronomistCrea: input.agronomistCrea?.trim() ?? null,
       technicalJustification: input.technicalJustification?.trim() ?? null,
+      temperature: input.temperature ?? null,
+      relativeHumidity: input.relativeHumidity ?? null,
+      windSpeed: input.windSpeed ?? null,
       notes: input.notes?.trim() ?? null,
       recordedBy: userId,
     };
@@ -258,6 +264,10 @@ export async function updatePesticideApplication(
       data.agronomistCrea = input.agronomistCrea?.trim() ?? null;
     if (input.technicalJustification !== undefined)
       data.technicalJustification = input.technicalJustification?.trim() ?? null;
+    if (input.temperature !== undefined) data.temperature = input.temperature ?? null;
+    if (input.relativeHumidity !== undefined)
+      data.relativeHumidity = input.relativeHumidity ?? null;
+    if (input.windSpeed !== undefined) data.windSpeed = input.windSpeed ?? null;
     if (input.notes !== undefined) data.notes = input.notes?.trim() ?? null;
 
     const row = await tx.pesticideApplication.update({

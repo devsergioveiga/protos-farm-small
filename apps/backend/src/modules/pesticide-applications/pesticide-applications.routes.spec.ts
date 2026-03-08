@@ -85,6 +85,9 @@ const SAMPLE_APPLICATION = {
   artNumber: 'ART-2026-001234',
   agronomistCrea: 'CREA-SP 5012345678',
   technicalJustification: 'Alta infestação de buva',
+  temperature: 28.5,
+  relativeHumidity: 62.0,
+  windSpeed: 8.0,
   notes: null,
   recordedBy: 'admin-1',
   recorderName: 'Admin User',
@@ -185,6 +188,37 @@ describe('Pesticide Application endpoints', () => {
         .send({ fieldPlotId: 'invalid' });
 
       expect(response.status).toBe(404);
+    });
+
+    it('should create application with environmental conditions', async () => {
+      const withConditions = {
+        ...SAMPLE_APPLICATION,
+        temperature: 32.0,
+        relativeHumidity: 50.0,
+        windSpeed: 12.0,
+      };
+      mockedService.createPesticideApplication.mockResolvedValue(withConditions as never);
+
+      const response = await request(app)
+        .post(BASE_URL)
+        .set('Authorization', 'Bearer valid-token')
+        .send({
+          fieldPlotId: 'plot-1',
+          appliedAt: '2026-03-08T10:00:00.000Z',
+          productName: 'Roundup Ready',
+          activeIngredient: 'Glifosato',
+          dose: 2.5,
+          sprayVolume: 150,
+          target: 'PLANTA_DANINHA',
+          temperature: 32.0,
+          relativeHumidity: 50.0,
+          windSpeed: 12.0,
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.temperature).toBe(32.0);
+      expect(response.body.relativeHumidity).toBe(50.0);
+      expect(response.body.windSpeed).toBe(12.0);
     });
 
     it('should return 500 on unexpected error', async () => {

@@ -6,8 +6,10 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
+  AlertTriangle,
   Calendar,
   Droplets,
+  Thermometer,
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
 import { usePesticideApplications } from '@/hooks/usePesticideApplications';
@@ -84,6 +86,11 @@ function PesticideApplicationsPage() {
       minute: '2-digit',
     });
   };
+
+  const hasInadequateConditions = (app: PesticideApplicationItem) =>
+    (app.temperature != null && app.temperature > 30) ||
+    (app.relativeHumidity != null && app.relativeHumidity < 55) ||
+    (app.windSpeed != null && app.windSpeed > 10);
 
   if (!selectedFarmId) {
     return (
@@ -227,6 +234,22 @@ function PesticideApplicationsPage() {
                   <span className="pesticides__card-detail-label">ART:</span>
                   {app.artNumber}
                 </span>
+              )}
+
+              {(app.temperature != null ||
+                app.relativeHumidity != null ||
+                app.windSpeed != null) && (
+                <div className="pesticides__card-conditions">
+                  <Thermometer size={14} aria-hidden="true" />
+                  {app.temperature != null && <span>{app.temperature}°C</span>}
+                  {app.relativeHumidity != null && <span>{app.relativeHumidity}% UR</span>}
+                  {app.windSpeed != null && <span>{app.windSpeed} km/h</span>}
+                  {hasInadequateConditions(app) && (
+                    <span className="pesticides__card-condition-warn" title="Condições inadequadas">
+                      <AlertTriangle size={14} aria-label="Condições inadequadas" />
+                    </span>
+                  )}
+                </div>
               )}
 
               {app.targetDescription && (

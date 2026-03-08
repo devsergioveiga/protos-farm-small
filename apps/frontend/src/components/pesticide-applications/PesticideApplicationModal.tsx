@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { X, AlertTriangle } from 'lucide-react';
 import { api } from '@/services/api';
 import { useFarmContext } from '@/stores/FarmContext';
 import { PESTICIDE_TARGETS, DOSE_UNITS } from '@/types/pesticide-application';
@@ -38,11 +38,31 @@ function PesticideApplicationModal({
   const [artNumber, setArtNumber] = useState('');
   const [agronomistCrea, setAgronomistCrea] = useState('');
   const [technicalJustification, setTechnicalJustification] = useState('');
+  const [temperature, setTemperature] = useState('');
+  const [relativeHumidity, setRelativeHumidity] = useState('');
+  const [windSpeed, setWindSpeed] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [plots, setPlots] = useState<FieldPlot[]>([]);
   const [loadingPlots, setLoadingPlots] = useState(false);
+
+  const conditionAlerts = useMemo(() => {
+    const alerts: string[] = [];
+    const temp = Number(temperature);
+    const humidity = Number(relativeHumidity);
+    const wind = Number(windSpeed);
+    if (temperature && !isNaN(temp) && temp > 30) {
+      alerts.push(`Temperatura elevada (${temp}°C > 30°C)`);
+    }
+    if (relativeHumidity && !isNaN(humidity) && humidity < 55) {
+      alerts.push(`Umidade baixa (${humidity}% < 55%)`);
+    }
+    if (windSpeed && !isNaN(wind) && wind > 10) {
+      alerts.push(`Vento forte (${wind} km/h > 10 km/h)`);
+    }
+    return alerts;
+  }, [temperature, relativeHumidity, windSpeed]);
 
   // Load field plots when modal opens
   useEffect(() => {
@@ -82,6 +102,9 @@ function PesticideApplicationModal({
       setArtNumber('');
       setAgronomistCrea('');
       setTechnicalJustification('');
+      setTemperature('');
+      setRelativeHumidity('');
+      setWindSpeed('');
       setNotes('');
       setSubmitError(null);
       setIsSubmitting(false);
@@ -99,6 +122,11 @@ function PesticideApplicationModal({
       setArtNumber(application.artNumber ?? '');
       setAgronomistCrea(application.agronomistCrea ?? '');
       setTechnicalJustification(application.technicalJustification ?? '');
+      setTemperature(application.temperature != null ? String(application.temperature) : '');
+      setRelativeHumidity(
+        application.relativeHumidity != null ? String(application.relativeHumidity) : '',
+      );
+      setWindSpeed(application.windSpeed != null ? String(application.windSpeed) : '');
       setNotes(application.notes ?? '');
     }
   }, [isOpen, application]);
@@ -144,6 +172,9 @@ function PesticideApplicationModal({
         artNumber: artNumber.trim() || undefined,
         agronomistCrea: agronomistCrea.trim() || undefined,
         technicalJustification: technicalJustification.trim() || undefined,
+        temperature: temperature ? Number(temperature) : undefined,
+        relativeHumidity: relativeHumidity ? Number(relativeHumidity) : undefined,
+        windSpeed: windSpeed ? Number(windSpeed) : undefined,
         notes: notes.trim() || undefined,
       };
 
@@ -177,6 +208,9 @@ function PesticideApplicationModal({
     artNumber,
     agronomistCrea,
     technicalJustification,
+    temperature,
+    relativeHumidity,
+    windSpeed,
     notes,
     isEditing,
     application,
@@ -422,6 +456,74 @@ function PesticideApplicationModal({
                 rows={3}
               />
             </div>
+
+            {/* Condições da aplicação */}
+            <h3 className="pesticide-modal__section-title">Condições da aplicação</h3>
+
+            <div className="pesticide-modal__row--three">
+              <div className="pesticide-modal__field">
+                <label htmlFor="pest-temperature" className="pesticide-modal__label">
+                  Temperatura (°C)
+                </label>
+                <input
+                  id="pest-temperature"
+                  type="number"
+                  className="pesticide-modal__input"
+                  value={temperature}
+                  onChange={(e) => setTemperature(e.target.value)}
+                  placeholder="Ex: 28"
+                  min="-10"
+                  max="60"
+                  step="0.1"
+                />
+              </div>
+              <div className="pesticide-modal__field">
+                <label htmlFor="pest-humidity" className="pesticide-modal__label">
+                  Umidade relativa (%)
+                </label>
+                <input
+                  id="pest-humidity"
+                  type="number"
+                  className="pesticide-modal__input"
+                  value={relativeHumidity}
+                  onChange={(e) => setRelativeHumidity(e.target.value)}
+                  placeholder="Ex: 65"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                />
+              </div>
+              <div className="pesticide-modal__field">
+                <label htmlFor="pest-wind" className="pesticide-modal__label">
+                  Velocidade do vento (km/h)
+                </label>
+                <input
+                  id="pest-wind"
+                  type="number"
+                  className="pesticide-modal__input"
+                  value={windSpeed}
+                  onChange={(e) => setWindSpeed(e.target.value)}
+                  placeholder="Ex: 8"
+                  min="0"
+                  max="200"
+                  step="0.1"
+                />
+              </div>
+            </div>
+
+            {conditionAlerts.length > 0 && (
+              <div className="pesticide-modal__condition-alert" role="alert" aria-live="polite">
+                <AlertTriangle size={20} aria-hidden="true" />
+                <div>
+                  <strong>Condições inadequadas para aplicação</strong>
+                  <ul className="pesticide-modal__condition-alert-list">
+                    {conditionAlerts.map((alert) => (
+                      <li key={alert}>{alert}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
 
             {/* Observações */}
             <h3 className="pesticide-modal__section-title">Observações</h3>

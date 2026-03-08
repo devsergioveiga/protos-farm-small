@@ -296,6 +296,22 @@
   color: var(--color-neutral-700);
 }
 
+.pesticides__card-conditions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.pesticides__card-condition-warn {
+  color: #e65100;
+  display: inline-flex;
+  align-items: center;
+}
+
 .pesticides__card-badges {
   display: flex;
   gap: 8px;

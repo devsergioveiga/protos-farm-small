@@ -14,6 +14,9 @@ export interface PesticideApplicationItem {
   artNumber: string | null;
   agronomistCrea: string | null;
   technicalJustification: string | null;
+  temperature: number | null;
+  relativeHumidity: number | null;
+  windSpeed: number | null;
   notes: string | null;
   recordedBy: string;
   recorderName: string;
@@ -44,6 +47,9 @@ export interface CreatePesticideApplicationInput {
   artNumber?: string;
   agronomistCrea?: string;
   technicalJustification?: string;
+  temperature?: number;
+  relativeHumidity?: number;
+  windSpeed?: number;
   notes?: string;
 }
 

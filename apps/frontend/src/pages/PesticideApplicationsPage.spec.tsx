@@ -20,6 +20,9 @@ const MOCK_APPLICATIONS: PesticideApplicationItem[] = [
     artNumber: 'ART-2026-001234',
     agronomistCrea: 'CREA-SP 5012345678',
     technicalJustification: 'Alta infestação de buva resistente',
+    temperature: 28.5,
+    relativeHumidity: 62.0,
+    windSpeed: 8.0,
     notes: null,
     recordedBy: 'admin-1',
     recorderName: 'Admin',
@@ -42,6 +45,9 @@ const MOCK_APPLICATIONS: PesticideApplicationItem[] = [
     artNumber: null,
     agronomistCrea: null,
     technicalJustification: null,
+    temperature: null,
+    relativeHumidity: null,
+    windSpeed: null,
     notes: 'Alta infestação',
     recordedBy: 'admin-1',
     recorderName: 'Admin',
@@ -202,6 +208,43 @@ describe('PesticideApplicationsPage', () => {
     render(<PesticideApplicationsPage />);
     expect(screen.getByLabelText('Buscar aplicações')).toBeTruthy();
     expect(screen.getByLabelText('Filtrar por tipo de alvo')).toBeTruthy();
+  });
+
+  it('should display environmental conditions on cards', () => {
+    mockUsePesticideApplications.mockReturnValue({
+      applications: MOCK_APPLICATIONS,
+      meta: { page: 1, limit: 20, total: 2, totalPages: 1 },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(<PesticideApplicationsPage />);
+    expect(screen.getByText('28.5°C')).toBeTruthy();
+    expect(screen.getByText('62% UR')).toBeTruthy();
+    expect(screen.getByText('8 km/h')).toBeTruthy();
+  });
+
+  it('should show warning icon for inadequate conditions', () => {
+    const appWithBadConditions: PesticideApplicationItem[] = [
+      {
+        ...MOCK_APPLICATIONS[0],
+        temperature: 35,
+        relativeHumidity: 40,
+        windSpeed: 15,
+      },
+    ];
+
+    mockUsePesticideApplications.mockReturnValue({
+      applications: appWithBadConditions,
+      meta: { page: 1, limit: 20, total: 1, totalPages: 1 },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(<PesticideApplicationsPage />);
+    expect(screen.getByTitle('Condições inadequadas')).toBeTruthy();
   });
 
   it('should show pagination when multiple pages', () => {

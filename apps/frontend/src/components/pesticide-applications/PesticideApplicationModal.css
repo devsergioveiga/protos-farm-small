@@ -142,6 +142,40 @@
   border-color: var(--color-primary-500);
 }
 
+.pesticide-modal__condition-alert {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  background: #fff3e0;
+  border: 1px solid #ffb74d;
+  border-radius: 8px;
+  color: #e65100;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.pesticide-modal__condition-alert svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.pesticide-modal__condition-alert strong {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.pesticide-modal__condition-alert-list {
+  margin: 0;
+  padding: 0 0 0 20px;
+  list-style: disc;
+}
+
+.pesticide-modal__condition-alert-list li {
+  margin-bottom: 2px;
+}
+
 .pesticide-modal__error {
   margin-top: 12px;
   padding: 12px 16px;
