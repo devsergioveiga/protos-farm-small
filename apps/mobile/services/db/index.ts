@@ -4,4 +4,10 @@ export { createFarmLocationRepository } from './farm-location-repository';
 export { createAnimalLotRepository } from './animal-lot-repository';
 export { createAnimalRepository } from './animal-repository';
 export { createSyncMetaRepository } from './sync-meta-repository';
+export { createPendingOperationsRepository } from './pending-operations-repository';
 export type { AnimalWithBreeds } from './animal-repository';
+export type {
+  PendingOperation,
+  OperationType,
+  OperationEntity,
+} from './pending-operations-repository';

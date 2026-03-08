@@ -4,7 +4,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
  * Database version — increment when adding new migrations.
  * Each version maps to a migration function in the migrations array.
  */
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2;
 
 /**
  * Run migrations on database init (called by SQLiteProvider onInit).
@@ -25,8 +25,10 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase): Promise<void> {
     currentVersion = 1;
   }
 
-  // Future migrations:
-  // if (currentVersion === 1) { await migrationV2(db); currentVersion = 2; }
+  if (currentVersion === 1) {
+    await migrationV2(db);
+    currentVersion = 2;
+  }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
 }
@@ -156,6 +158,30 @@ async function migrationV1(db: SQLiteDatabase): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_animals_pasture ON animals(pasture_id);
     CREATE INDEX IF NOT EXISTS idx_animals_ear_tag ON animals(ear_tag);
     CREATE INDEX IF NOT EXISTS idx_animal_breed_comp_animal ON animal_breed_compositions(animal_id);
+  `);
+}
+
+/**
+ * V2 — Pending operations queue for offline CRUD.
+ */
+async function migrationV2(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS pending_operations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      entity TEXT NOT NULL,
+      entity_id TEXT NOT NULL,
+      operation TEXT NOT NULL,
+      payload TEXT NOT NULL,
+      endpoint TEXT NOT NULL,
+      method TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      retries INTEGER NOT NULL DEFAULT 0,
+      last_error TEXT,
+      status TEXT NOT NULL DEFAULT 'pending'
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_pending_ops_status ON pending_operations(status);
+    CREATE INDEX IF NOT EXISTS idx_pending_ops_entity ON pending_operations(entity, entity_id);
   `);
 }
 
