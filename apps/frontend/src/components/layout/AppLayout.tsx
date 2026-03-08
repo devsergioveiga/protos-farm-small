@@ -11,6 +11,7 @@ import {
   Beef,
   Layers,
   Scale,
+  Sprout,
 } from 'lucide-react';
 import { useAuth } from '@/stores/AuthContext';
 import { FarmProvider } from '@/stores/FarmContext';
@@ -101,6 +102,13 @@ function AppLayout() {
                 >
                   <Scale size={16} aria-hidden="true" />
                   <span className="app-topbar__nav-label">Pesagem</span>
+                </Link>
+                <Link
+                  to="/cultivars"
+                  className={`app-topbar__nav-link ${isActive('/cultivars') ? 'app-topbar__nav-link--active' : ''}`}
+                >
+                  <Sprout size={16} aria-hidden="true" />
+                  <span className="app-topbar__nav-label">Cultivares</span>
                 </Link>
                 <Link
                   to="/users"

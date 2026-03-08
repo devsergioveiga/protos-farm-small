@@ -264,6 +264,7 @@ model Organization {
   customRoles CustomRole[]
   producers   Producer[]
   breeds      Breed[]
+  cultivars   Cultivar[]
 
   @@map("organizations")
 }
@@ -670,6 +671,7 @@ model PlotCropSeason {
   id                String     @id @default(uuid())
   plotId            String
   farmId            String
+  cultivarId        String?
   seasonType        SeasonType
   seasonYear        String
   crop              String
@@ -685,12 +687,14 @@ model PlotCropSeason {
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
 
-  plot    FieldPlot @relation(fields: [plotId], references: [id], onDelete: Cascade)
-  farm    Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  creator User      @relation(fields: [createdBy], references: [id])
+  plot     FieldPlot @relation(fields: [plotId], references: [id], onDelete: Cascade)
+  farm     Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  creator  User      @relation(fields: [createdBy], references: [id])
+  cultivar Cultivar? @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
 
   @@index([plotId])
   @@index([farmId])
+  @@index([cultivarId])
   @@index([startDate])
   @@map("plot_crop_seasons")
 }
@@ -1105,6 +1109,42 @@ model AnimalReproductiveRecord {
   @@index([eventDate])
   @@index([type])
   @@map("animal_reproductive_records")
+}
+
+// ─── Cultivars ─────────────────────────────────────────────────────────────
+
+enum CultivarType {
+  CONVENCIONAL
+  TRANSGENICO
+}
+
+model Cultivar {
+  id                   String       @id @default(uuid())
+  organizationId       String
+  name                 String
+  crop                 String
+  breeder              String?
+  cycleDays            Int?
+  maturationGroup      String?
+  type                 CultivarType @default(CONVENCIONAL)
+  technology           String?
+  diseaseTolerances    String?
+  regionalAptitude     String?
+  populationRecommendation String?
+  plantingWindowStart  DateTime?    @db.Date
+  plantingWindowEnd    DateTime?    @db.Date
+  notes                String?
+  deletedAt            DateTime?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  plotCropSeasons PlotCropSeason[]
+
+  @@unique([name, crop, organizationId])
+  @@index([organizationId])
+  @@index([crop])
+  @@map("cultivars")
 }
 
 // ─── Field Operations ─────────────────────────────────────────────────────
