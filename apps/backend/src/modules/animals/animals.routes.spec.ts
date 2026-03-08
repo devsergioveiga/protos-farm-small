@@ -686,6 +686,21 @@ describe('GET /org/farms/:farmId/animals — advanced filters', () => {
     );
   });
 
+  it('should pass specialFilter to service', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.listAnimals.mockResolvedValue(emptyResult);
+
+    await request(app)
+      .get(`/api/org/farms/${FARM_ID}/animals?specialFilter=PREGNANT`)
+      .set('Authorization', 'Bearer valid');
+
+    expect(mockedService.listAnimals).toHaveBeenCalledWith(
+      expect.any(Object),
+      FARM_ID,
+      expect.objectContaining({ specialFilter: 'PREGNANT' }),
+    );
+  });
+
   it('should pass birthDate range filters to service', async () => {
     authAs(ADMIN_PAYLOAD);
     mockedService.listAnimals.mockResolvedValue(emptyResult);

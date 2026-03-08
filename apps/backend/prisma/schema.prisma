@@ -1025,6 +1025,7 @@ model AnimalHealthRecord {
   batchNumber       String?
   diagnosis         String?
   durationDays      Int?
+  withdrawalDays    Int?
   examResult        String?
   labName           String?
   isFieldExam       Boolean?          @default(false)

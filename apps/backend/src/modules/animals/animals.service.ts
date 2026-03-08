@@ -16,9 +16,11 @@ import {
   type AnimalSexType,
   type AnimalCategoryType,
   ANIMAL_SORT_FIELDS,
+  SPECIAL_FILTERS,
   ANIMAL_CSV_HEADERS,
   ANIMAL_SEX_LABELS_PT,
   ANIMAL_ORIGIN_LABELS_PT,
+  type SpecialFilter,
   type AnimalSortField,
   type CreateAnimalInput,
   type UpdateAnimalInput,
@@ -318,7 +320,92 @@ function buildAnimalsWhere(farmId: string, query: ListAnimalsQuery): Record<stri
     where.birthDate = birthDateFilter;
   }
 
+  // Category-based special filters
+  if (query.specialFilter === 'LACTATING') where.category = 'VACA_LACTACAO';
+  if (query.specialFilter === 'DRY') where.category = 'VACA_SECA';
+  if (query.specialFilter === 'CULLING') where.category = 'DESCARTE';
+
   return where;
+}
+
+// ─── Special Filter ID Resolution ──────────────────────────────────
+
+import type { TxClient } from '../../database/rls';
+import { Prisma } from '@prisma/client';
+
+async function getSpecialFilterIds(
+  tx: TxClient,
+  farmId: string,
+  specialFilter: SpecialFilter,
+): Promise<string[] | null> {
+  if (specialFilter === 'PREGNANT') {
+    const rows = await tx.$queryRaw<{ id: string }[]>(
+      Prisma.sql`
+        SELECT DISTINCT a.id
+        FROM animals a
+        JOIN animal_reproductive_records r ON r."animalId" = a.id
+        WHERE a."farmId" = ${farmId}
+          AND a."deletedAt" IS NULL
+          AND r.type = 'PREGNANCY'
+          AND NOT EXISTS (
+            SELECT 1 FROM animal_reproductive_records r2
+            WHERE r2."animalId" = a.id
+              AND r2.type = 'CALVING'
+              AND r2."eventDate" > r."eventDate"
+          )
+      `,
+    );
+    return rows.map((r) => r.id);
+  }
+
+  if (specialFilter === 'EMPTY') {
+    const pregnantRows = await tx.$queryRaw<{ id: string }[]>(
+      Prisma.sql`
+        SELECT DISTINCT a.id
+        FROM animals a
+        JOIN animal_reproductive_records r ON r."animalId" = a.id
+        WHERE a."farmId" = ${farmId}
+          AND a."deletedAt" IS NULL
+          AND r.type = 'PREGNANCY'
+          AND NOT EXISTS (
+            SELECT 1 FROM animal_reproductive_records r2
+            WHERE r2."animalId" = a.id
+              AND r2.type = 'CALVING'
+              AND r2."eventDate" > r."eventDate"
+          )
+      `,
+    );
+    const pregnantIds = pregnantRows.map((r) => r.id);
+
+    const emptyRows = await tx.$queryRaw<{ id: string }[]>(
+      Prisma.sql`
+        SELECT a.id
+        FROM animals a
+        WHERE a."farmId" = ${farmId}
+          AND a."deletedAt" IS NULL
+          AND a.sex = 'FEMALE'
+          ${pregnantIds.length > 0 ? Prisma.sql`AND a.id NOT IN (${Prisma.join(pregnantIds)})` : Prisma.empty}
+      `,
+    );
+    return emptyRows.map((r) => r.id);
+  }
+
+  if (specialFilter === 'WITHDRAWAL') {
+    const rows = await tx.$queryRaw<{ id: string }[]>(
+      Prisma.sql`
+        SELECT DISTINCT a.id
+        FROM animals a
+        JOIN animal_health_records h ON h."animalId" = a.id
+        WHERE a."farmId" = ${farmId}
+          AND a."deletedAt" IS NULL
+          AND h."withdrawalDays" IS NOT NULL
+          AND h."eventDate" + INTERVAL '1 day' * h."withdrawalDays" > CURRENT_DATE
+      `,
+    );
+    return rows.map((r) => r.id);
+  }
+
+  return null;
 }
 
 // ─── List Animals ───────────────────────────────────────────────────
@@ -336,6 +423,18 @@ export async function listAnimals(ctx: RlsContext, farmId: string, query: ListAn
 
   return withRlsContext(ctx, async (tx) => {
     const where = buildAnimalsWhere(farmId, query);
+
+    // Resolve complex special filters (PREGNANT, EMPTY, WITHDRAWAL) via raw SQL
+    if (
+      query.specialFilter &&
+      (SPECIAL_FILTERS as readonly string[]).includes(query.specialFilter) &&
+      !['LACTATING', 'DRY', 'CULLING'].includes(query.specialFilter)
+    ) {
+      const ids = await getSpecialFilterIds(tx, farmId, query.specialFilter);
+      if (ids !== null) {
+        where.id = { in: ids };
+      }
+    }
 
     const [animals, total] = await Promise.all([
       tx.animal.findMany({
@@ -608,6 +707,17 @@ export async function exportAnimalsCsv(
 ): Promise<string> {
   return withRlsContext(ctx, async (tx) => {
     const where = buildAnimalsWhere(farmId, query);
+
+    if (
+      query.specialFilter &&
+      (SPECIAL_FILTERS as readonly string[]).includes(query.specialFilter) &&
+      !['LACTATING', 'DRY', 'CULLING'].includes(query.specialFilter)
+    ) {
+      const ids = await getSpecialFilterIds(tx, farmId, query.specialFilter);
+      if (ids !== null) {
+        where.id = { in: ids };
+      }
+    }
 
     const animals = await tx.animal.findMany({
       where,

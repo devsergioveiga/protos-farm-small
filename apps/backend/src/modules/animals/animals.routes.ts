@@ -390,6 +390,7 @@ animalsRouter.get(
       const birthDateTo = req.query.birthDateTo as string | undefined;
       const sortBy = req.query.sortBy as string | undefined;
       const sortOrder = req.query.sortOrder as string | undefined;
+      const specialFilter = req.query.specialFilter as string | undefined;
 
       const minWeightKg = parseNumericParam(req.query.minWeightKg);
       const maxWeightKg = parseNumericParam(req.query.maxWeightKg);
@@ -422,6 +423,7 @@ animalsRouter.get(
         maxAgeDays,
         sortBy: sortBy as import('./animals.types').AnimalSortField | undefined,
         sortOrder: sortOrder as 'asc' | 'desc' | undefined,
+        specialFilter: specialFilter as import('./animals.types').SpecialFilter | undefined,
       });
 
       res.json(result);
@@ -453,6 +455,7 @@ animalsRouter.get(
       const origin = req.query.origin as string | undefined;
       const lotId = req.query.lotId as string | undefined;
       const locationId = req.query.locationId as string | undefined;
+      const specialFilter = req.query.specialFilter as string | undefined;
       const birthDateFrom = req.query.birthDateFrom as string | undefined;
       const birthDateTo = req.query.birthDateTo as string | undefined;
 
@@ -483,6 +486,7 @@ animalsRouter.get(
         maxWeightKg,
         minAgeDays,
         maxAgeDays,
+        specialFilter: specialFilter as import('./animals.types').SpecialFilter | undefined,
       });
 
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
