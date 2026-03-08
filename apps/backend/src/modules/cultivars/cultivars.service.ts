@@ -6,6 +6,8 @@ import {
   type UpdateCultivarInput,
   type CultivarItem,
   type ListCultivarsQuery,
+  type CultivarProductivityComparison,
+  type CultivarPlotHistory,
 } from './cultivars.types';
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -300,5 +302,132 @@ export async function importCultivarsFromCsv(
     }
 
     return { imported, skipped, errors };
+  });
+}
+
+// ─── Productivity Comparison ────────────────────────────────────────
+
+export async function getCultivarProductivityComparison(
+  ctx: RlsContext,
+  farmId: string,
+  crop?: string,
+): Promise<CultivarProductivityComparison[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = {
+      farmId,
+      cultivarId: { not: null },
+    };
+    if (crop) {
+      where.crop = crop;
+    }
+
+    const seasons = await tx.plotCropSeason.findMany({
+      where: where as Parameters<typeof tx.plotCropSeason.findMany>[0] extends { where?: infer W }
+        ? W
+        : never,
+      include: {
+        cultivar: { select: { id: true, name: true, crop: true } },
+        plot: { select: { id: true, name: true } },
+      },
+      orderBy: [{ seasonYear: 'desc' }, { seasonType: 'asc' }],
+    });
+
+    const grouped = new Map<
+      string,
+      {
+        cultivarId: string;
+        cultivarName: string;
+        crop: string;
+        entries: CultivarProductivityComparison['entries'];
+      }
+    >();
+
+    for (const s of seasons) {
+      if (!s.cultivar) continue;
+      const key = s.cultivar.id;
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          cultivarId: s.cultivar.id,
+          cultivarName: s.cultivar.name,
+          crop: s.cultivar.crop,
+          entries: [],
+        });
+      }
+      grouped.get(key)!.entries.push({
+        seasonYear: s.seasonYear,
+        seasonType: s.seasonType,
+        plotName: s.plot.name,
+        plotId: s.plot.id,
+        plantedAreaHa: s.plantedAreaHa != null ? Number(s.plantedAreaHa) : null,
+        productivityKgHa: s.productivityKgHa != null ? Number(s.productivityKgHa) : null,
+        totalProductionKg: s.totalProductionKg != null ? Number(s.totalProductionKg) : null,
+        notes: s.notes,
+      });
+    }
+
+    return Array.from(grouped.values()).map((g) => {
+      const withProductivity = g.entries.filter((e) => e.productivityKgHa != null);
+      const avgProductivityKgHa =
+        withProductivity.length > 0
+          ? Math.round(
+              (withProductivity.reduce((sum, e) => sum + e.productivityKgHa!, 0) /
+                withProductivity.length) *
+                100,
+            ) / 100
+          : null;
+
+      return {
+        ...g,
+        avgProductivityKgHa,
+        totalPlantings: g.entries.length,
+      };
+    });
+  });
+}
+
+export async function getCultivarPlotHistory(
+  ctx: RlsContext,
+  farmId: string,
+  plotId?: string,
+): Promise<CultivarPlotHistory[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = { farmId };
+    if (plotId) {
+      where.plotId = plotId;
+    }
+
+    const seasons = await tx.plotCropSeason.findMany({
+      where: where as Parameters<typeof tx.plotCropSeason.findMany>[0] extends { where?: infer W }
+        ? W
+        : never,
+      include: {
+        cultivar: { select: { id: true, name: true } },
+        plot: { select: { id: true, name: true } },
+      },
+      orderBy: [{ seasonYear: 'desc' }, { seasonType: 'asc' }],
+    });
+
+    const grouped = new Map<string, CultivarPlotHistory>();
+
+    for (const s of seasons) {
+      if (!grouped.has(s.plotId)) {
+        grouped.set(s.plotId, {
+          plotId: s.plotId,
+          plotName: s.plot.name,
+          seasons: [],
+        });
+      }
+      grouped.get(s.plotId)!.seasons.push({
+        seasonYear: s.seasonYear,
+        seasonType: s.seasonType,
+        cultivarId: s.cultivar?.id ?? null,
+        cultivarName: s.cultivar?.name ?? s.varietyName ?? null,
+        productivityKgHa: s.productivityKgHa != null ? Number(s.productivityKgHa) : null,
+        totalProductionKg: s.totalProductionKg != null ? Number(s.totalProductionKg) : null,
+        notes: s.notes,
+      });
+    }
+
+    return Array.from(grouped.values());
   });
 }

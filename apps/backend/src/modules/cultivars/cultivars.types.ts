@@ -62,3 +62,39 @@ export interface CultivarItem {
   createdAt: string;
   updatedAt: string;
 }
+
+// ─── Productivity Comparison Types ──────────────────────────────────
+
+export interface CultivarProductivityEntry {
+  seasonYear: string;
+  seasonType: string;
+  plotName: string;
+  plotId: string;
+  plantedAreaHa: number | null;
+  productivityKgHa: number | null;
+  totalProductionKg: number | null;
+  notes: string | null;
+}
+
+export interface CultivarProductivityComparison {
+  cultivarId: string;
+  cultivarName: string;
+  crop: string;
+  avgProductivityKgHa: number | null;
+  totalPlantings: number;
+  entries: CultivarProductivityEntry[];
+}
+
+export interface CultivarPlotHistory {
+  plotId: string;
+  plotName: string;
+  seasons: {
+    seasonYear: string;
+    seasonType: string;
+    cultivarId: string | null;
+    cultivarName: string | null;
+    productivityKgHa: number | null;
+    totalProductionKg: number | null;
+    notes: string | null;
+  }[];
+}

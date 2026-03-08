@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../../middleware/auth';
 import { checkPermission } from '../../middleware/check-permission';
+import { checkFarmAccess } from '../../middleware/check-farm-access';
 import { logAudit } from '../../shared/audit/audit.service';
 import type { RlsContext } from '../../database/rls';
 import { CultivarError, type CreateCultivarInput } from './cultivars.types';
@@ -11,6 +12,8 @@ import {
   updateCultivar,
   deleteCultivar,
   importCultivarsFromCsv,
+  getCultivarProductivityComparison,
+  getCultivarPlotHistory,
 } from './cultivars.service';
 
 export const cultivarsRouter = Router();
@@ -193,6 +196,48 @@ cultivarsRouter.post(
         ipAddress: getClientIp(req),
       });
 
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── PRODUCTIVITY COMPARISON (CA4/CA8) ──────────────────────────────
+
+cultivarsRouter.get(
+  '/org/farms/:farmId/cultivars/productivity',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const crop = (req.query.crop as string) || undefined;
+      const result = await getCultivarProductivityComparison(
+        ctx,
+        req.params.farmId as string,
+        crop,
+      );
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── PLOT HISTORY (CA3/CA9) ─────────────────────────────────────────
+
+cultivarsRouter.get(
+  '/org/farms/:farmId/cultivars/plot-history',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const plotId = (req.query.plotId as string) || undefined;
+      const result = await getCultivarPlotHistory(ctx, req.params.farmId as string, plotId);
       res.json(result);
     } catch (err) {
       handleError(err, res);
