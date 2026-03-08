@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/services/api';
-import type { AnimalListItem, AnimalsResponse } from '@/types/animal';
+import type { AnimalListItem, AnimalsResponse, GroupStats } from '@/types/animal';
 import type { PaginationMeta } from '@/types/admin';
 
 interface UseAnimalsParams {
@@ -26,6 +26,7 @@ interface UseAnimalsParams {
 interface UseAnimalsResult {
   animals: AnimalListItem[];
   meta: PaginationMeta | null;
+  groupStats: GroupStats | null;
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
@@ -34,6 +35,7 @@ interface UseAnimalsResult {
 export function useAnimals(params: UseAnimalsParams): UseAnimalsResult {
   const [animals, setAnimals] = useState<AnimalListItem[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const [groupStats, setGroupStats] = useState<GroupStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,11 +93,13 @@ export function useAnimals(params: UseAnimalsParams): UseAnimalsResult {
       const result = await api.get<AnimalsResponse>(path);
       setAnimals(result.data);
       setMeta(result.meta);
+      setGroupStats(result.groupStats ?? null);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao carregar animais';
       setError(message);
       setAnimals([]);
       setMeta(null);
+      setGroupStats(null);
     } finally {
       setIsLoading(false);
     }
@@ -123,5 +127,5 @@ export function useAnimals(params: UseAnimalsParams): UseAnimalsResult {
     void fetchAnimals();
   }, [fetchAnimals]);
 
-  return { animals, meta, isLoading, error, refetch: fetchAnimals };
+  return { animals, meta, groupStats, isLoading, error, refetch: fetchAnimals };
 }

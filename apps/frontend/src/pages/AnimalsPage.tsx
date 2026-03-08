@@ -11,6 +11,8 @@ import {
   ChevronUp,
   Download,
   X,
+  Scale,
+  Hash,
 } from 'lucide-react';
 import { useAnimals } from '@/hooks/useAnimals';
 import { useBreeds } from '@/hooks/useBreeds';
@@ -101,7 +103,7 @@ function AnimalsPage() {
     setShowAdvancedFilters(false);
   }
 
-  const { animals, meta, isLoading, error, refetch } = useAnimals({
+  const { animals, meta, groupStats, isLoading, error, refetch } = useAnimals({
     farmId: selectedFarm?.id ?? null,
     page,
     search: search || undefined,
@@ -628,20 +630,32 @@ function AnimalsPage() {
         </div>
       )}
 
-      {/* Filter status bar */}
-      {hasAnyFilter && (
-        <div className="animals__filter-status">
-          <span className="animals__filter-status-text">
-            {meta ? `${meta.total} animal(is) encontrado(s)` : 'Filtrando...'}
-          </span>
-          <button
-            type="button"
-            className="animals__btn animals__btn--ghost"
-            onClick={clearAllFilters}
-          >
-            <X aria-hidden="true" size={16} />
-            Limpar filtros
-          </button>
+      {/* Group stats bar */}
+      {groupStats && (
+        <div className="animals__group-stats" aria-live="polite">
+          <div className="animals__group-stats-items">
+            <span className="animals__group-stats-item">
+              <Hash aria-hidden="true" size={16} />
+              <strong>{groupStats.totalCount}</strong> animal(is)
+              {hasAnyFilter ? ' encontrado(s)' : ''}
+            </span>
+            {groupStats.averageWeightKg != null && (
+              <span className="animals__group-stats-item">
+                <Scale aria-hidden="true" size={16} />
+                Peso médio: <strong>{groupStats.averageWeightKg} kg</strong>
+              </span>
+            )}
+          </div>
+          {hasAnyFilter && (
+            <button
+              type="button"
+              className="animals__btn animals__btn--ghost"
+              onClick={clearAllFilters}
+            >
+              <X aria-hidden="true" size={16} />
+              Limpar filtros
+            </button>
+          )}
         </div>
       )}
 
