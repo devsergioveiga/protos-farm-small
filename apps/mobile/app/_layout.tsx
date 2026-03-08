@@ -3,10 +3,12 @@ import { useFonts } from 'expo-font';
 import { DMSans_500Medium, DMSans_700Bold } from '@expo-google-fonts/dm-sans';
 import { SourceSans3_400Regular, SourceSans3_600SemiBold } from '@expo-google-fonts/source-sans-3';
 import * as SplashScreen from 'expo-splash-screen';
+import { SQLiteProvider } from 'expo-sqlite';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { AuthProvider, useAuth } from '@/stores/AuthContext';
 import { ConnectivityProvider } from '@/stores/ConnectivityContext';
 import { ThemeProvider } from '@/stores/ThemeContext';
+import { DB_NAME, migrateDbIfNeeded } from '@/services/database';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -47,11 +49,13 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <ConnectivityProvider>
-        <AuthProvider>
-          <RootNavigator />
-        </AuthProvider>
-      </ConnectivityProvider>
+      <SQLiteProvider databaseName={DB_NAME} onInit={migrateDbIfNeeded}>
+        <ConnectivityProvider>
+          <AuthProvider>
+            <RootNavigator />
+          </AuthProvider>
+        </ConnectivityProvider>
+      </SQLiteProvider>
     </ThemeProvider>
   );
 }
