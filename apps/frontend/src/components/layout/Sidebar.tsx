@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -70,12 +70,14 @@ const NAV_GROUPS: NavGroup[] = [
 function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
   const isActive = (path: string) => location.pathname.startsWith(path);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) onClose();
+      if (e.key === 'Escape' && isOpen) onCloseRef.current();
     },
-    [isOpen, onClose],
+    [isOpen],
   );
 
   useEffect(() => {
@@ -85,8 +87,8 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   // Close drawer on route change (mobile)
   useEffect(() => {
-    onClose();
-  }, [location.pathname, onClose]);
+    onCloseRef.current();
+  }, [location.pathname]);
 
   return (
     <>
