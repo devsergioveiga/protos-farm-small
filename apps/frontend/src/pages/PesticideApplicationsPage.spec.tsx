@@ -77,9 +77,14 @@ const MOCK_APPLICATIONS: PesticideApplicationItem[] = [
 ];
 
 const mockUsePesticideApplications = vi.fn();
+const mockUseWithdrawalAlerts = vi.fn();
 
 vi.mock('@/hooks/usePesticideApplications', () => ({
   usePesticideApplications: (...args: unknown[]) => mockUsePesticideApplications(...args),
+}));
+
+vi.mock('@/hooks/useWithdrawalAlerts', () => ({
+  useWithdrawalAlerts: (...args: unknown[]) => mockUseWithdrawalAlerts(...args),
 }));
 
 vi.mock('@/stores/FarmContext', () => ({
@@ -112,6 +117,12 @@ import PesticideApplicationsPage from './PesticideApplicationsPage';
 describe('PesticideApplicationsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseWithdrawalAlerts.mockReturnValue({
+      alerts: [],
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
   });
 
   it('should render title and subtitle', () => {
@@ -307,6 +318,38 @@ describe('PesticideApplicationsPage', () => {
     render(<PesticideApplicationsPage />);
     expect(screen.getByText('Nimbus')).toBeTruthy();
     expect(screen.getByText('pH 6.5')).toBeTruthy();
+  });
+
+  it('should show withdrawal alert banner when there are active alerts', () => {
+    mockUsePesticideApplications.mockReturnValue({
+      applications: MOCK_APPLICATIONS,
+      meta: { page: 1, limit: 20, total: 2, totalPages: 1 },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    mockUseWithdrawalAlerts.mockReturnValue({
+      alerts: [
+        {
+          applicationId: 'pa-1',
+          fieldPlotId: 'plot-1',
+          fieldPlotName: 'Talhão Norte',
+          productName: 'Roundup Ready',
+          activeIngredient: 'Glifosato',
+          appliedAt: '2026-03-08T10:00:00.000Z',
+          withdrawalPeriodDays: 14,
+          safeHarvestDate: '2026-03-22T10:00:00.000Z',
+          daysRemaining: 10,
+        },
+      ],
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(<PesticideApplicationsPage />);
+    expect(screen.getByText(/1 talhão em período de carência/)).toBeTruthy();
+    expect(screen.getByText(/10 dias restantes/)).toBeTruthy();
   });
 
   it('should show pagination when multiple pages', () => {

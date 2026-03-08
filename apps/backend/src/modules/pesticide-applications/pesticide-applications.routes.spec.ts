@@ -27,6 +27,7 @@ jest.mock('./pesticide-applications.service', () => ({
   getPesticideApplication: jest.fn(),
   updatePesticideApplication: jest.fn(),
   deletePesticideApplication: jest.fn(),
+  getWithdrawalAlerts: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -408,6 +409,49 @@ describe('Pesticide Application endpoints', () => {
       expect(mockedAudit.logAudit).toHaveBeenCalledWith(
         expect.objectContaining({ action: 'UPDATE_PESTICIDE_APPLICATION' }),
       );
+    });
+  });
+
+  // ─── WITHDRAWAL ALERTS ─────────────────────────────────────────────
+
+  describe('GET /org/farms/:farmId/pesticide-applications/withdrawal-alerts', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return active withdrawal alerts', async () => {
+      const alerts = [
+        {
+          applicationId: APP_ID,
+          fieldPlotId: 'plot-1',
+          fieldPlotName: 'Talhão Norte',
+          productName: 'Roundup Ready',
+          activeIngredient: 'Glifosato',
+          appliedAt: '2026-03-08T10:00:00.000Z',
+          withdrawalPeriodDays: 14,
+          safeHarvestDate: '2026-03-22T10:00:00.000Z',
+          daysRemaining: 10,
+        },
+      ];
+      mockedService.getWithdrawalAlerts.mockResolvedValue(alerts);
+
+      const response = await request(app)
+        .get(`${BASE_URL}/withdrawal-alerts`)
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0].productName).toBe('Roundup Ready');
+      expect(response.body[0].daysRemaining).toBe(10);
+    });
+
+    it('should return empty array when no active withdrawals', async () => {
+      mockedService.getWithdrawalAlerts.mockResolvedValue([]);
+
+      const response = await request(app)
+        .get(`${BASE_URL}/withdrawal-alerts`)
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(0);
     });
   });
 
