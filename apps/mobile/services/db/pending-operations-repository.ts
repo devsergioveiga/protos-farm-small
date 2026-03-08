@@ -8,7 +8,8 @@ export type OperationEntity =
   | 'animal_weighings'
   | 'animal_health_records'
   | 'animal_reproductive_records'
-  | 'animal_lot_movements';
+  | 'animal_lot_movements'
+  | 'field_operations';
 
 export interface PendingOperation {
   id: number;

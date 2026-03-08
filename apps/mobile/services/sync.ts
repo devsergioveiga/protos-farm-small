@@ -20,6 +20,27 @@ import type {
 
 // ─── API response types (camelCase) ────────────────────────────────────────
 
+interface BoundaryResponse {
+  hasBoundary: boolean;
+  boundaryAreaHa: number | null;
+  boundaryGeoJSON: { type: string; coordinates: number[][][] } | null;
+}
+
+interface ApiMapLocation {
+  id: string;
+  name: string;
+  type: string;
+  boundaryGeoJSON: { type: string; coordinates: number[][][] } | null;
+  boundaryAreaHa: number | null;
+  capacityUA: number | null;
+  capacityAnimals: number | null;
+  forageType: string | null;
+  pastureStatus: string | null;
+  facilityType: string | null;
+  facilityStatus: string | null;
+  description: string | null;
+}
+
 interface PaginatedResponse<T> {
   data: T[];
   meta: { page: number; limit: number; total: number; totalPages: number };
@@ -121,7 +142,7 @@ interface ApiAnimal {
 
 // ─── Mappers: API → Offline ────────────────────────────────────────────────
 
-function mapFarm(f: ApiFarm): OfflineFarm {
+function mapFarm(f: ApiFarm, boundaryGeoJSON?: string | null): OfflineFarm {
   const coords = f.location?.coordinates;
   return {
     id: f.id,
@@ -136,12 +157,13 @@ function mapFarm(f: ApiFarm): OfflineFarm {
     organization_id: f.organizationId,
     latitude: coords ? coords[1] : null,
     longitude: coords ? coords[0] : null,
+    boundary_geojson: boundaryGeoJSON ?? null,
     created_at: f.createdAt,
     updated_at: f.updatedAt,
   };
 }
 
-function mapFieldPlot(p: ApiFieldPlot): OfflineFieldPlot {
+function mapFieldPlot(p: ApiFieldPlot, boundaryGeoJSON?: string | null): OfflineFieldPlot {
   return {
     id: p.id,
     farm_id: p.farmId,
@@ -152,19 +174,21 @@ function mapFieldPlot(p: ApiFieldPlot): OfflineFieldPlot {
     previous_crop: p.previousCrop ?? null,
     notes: p.notes ?? null,
     boundary_area_ha: p.boundaryAreaHa ?? null,
+    boundary_geojson: boundaryGeoJSON ?? null,
     status: p.status,
     created_at: p.createdAt,
     updated_at: p.updatedAt ?? p.createdAt,
   };
 }
 
-function mapFarmLocation(l: ApiFarmLocation): OfflineFarmLocation {
+function mapFarmLocation(l: ApiFarmLocation, boundaryGeoJSON?: string | null): OfflineFarmLocation {
   return {
     id: l.id,
     farm_id: l.farmId,
     name: l.name,
     type: l.type as 'PASTURE' | 'FACILITY',
     boundary_area_ha: l.boundaryAreaHa ?? null,
+    boundary_geojson: boundaryGeoJSON ?? null,
     capacity_ua: l.capacityUA ?? null,
     capacity_animals: l.capacityAnimals ?? null,
     forage_type: l.forageType ?? null,
@@ -175,6 +199,27 @@ function mapFarmLocation(l: ApiFarmLocation): OfflineFarmLocation {
     notes: l.notes ?? null,
     created_at: l.createdAt,
     updated_at: l.updatedAt ?? l.createdAt,
+  };
+}
+
+function mapLocationFromMap(l: ApiMapLocation, farmId: string): OfflineFarmLocation {
+  return {
+    id: l.id,
+    farm_id: farmId,
+    name: l.name,
+    type: l.type as 'PASTURE' | 'FACILITY',
+    boundary_area_ha: l.boundaryAreaHa ?? null,
+    boundary_geojson: l.boundaryGeoJSON ? JSON.stringify(l.boundaryGeoJSON) : null,
+    capacity_ua: l.capacityUA ?? null,
+    capacity_animals: l.capacityAnimals ?? null,
+    forage_type: l.forageType ?? null,
+    pasture_status: l.pastureStatus ?? null,
+    facility_type: l.facilityType ?? null,
+    facility_status: l.facilityStatus ?? null,
+    description: l.description ?? null,
+    notes: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   };
 }
 
@@ -311,11 +356,25 @@ export function createSyncService(db: SQLiteDatabase) {
       const progress = initProgress();
       onProgress?.(progress);
 
-      // 1. Sync farms
+      // 1. Sync farms (with boundary for the selected farm)
       try {
         updateProgress(progress, 'farms', { status: 'syncing' }, onProgress);
         const apiFarms = await fetchAllPages<ApiFarm>('/org/farms');
-        const offlineFarms = apiFarms.map(mapFarm);
+
+        // Fetch boundary for the selected farm
+        let farmBoundaryJson: string | null = null;
+        try {
+          const boundary = await api.get<BoundaryResponse>(`/org/farms/${farmId}/boundary`);
+          if (boundary.hasBoundary && boundary.boundaryGeoJSON) {
+            farmBoundaryJson = JSON.stringify(boundary.boundaryGeoJSON);
+          }
+        } catch {
+          // Boundary fetch is optional — continue without it
+        }
+
+        const offlineFarms = apiFarms.map((f) =>
+          mapFarm(f, f.id === farmId ? farmBoundaryJson : null),
+        );
         await farmRepo.upsertMany(offlineFarms);
         await syncMetaRepo.upsert('farms', offlineFarms.length);
         updateProgress(
@@ -329,11 +388,31 @@ export function createSyncService(db: SQLiteDatabase) {
         updateProgress(progress, 'farms', { status: 'error', error: msg }, onProgress);
       }
 
-      // 2. Sync field plots for this farm
+      // 2. Sync field plots for this farm (with boundaries)
       try {
         updateProgress(progress, 'field_plots', { status: 'syncing' }, onProgress);
         const apiPlots = await api.get<ApiFieldPlot[]>(`/org/farms/${farmId}/plots`);
-        const offlinePlots = apiPlots.map(mapFieldPlot);
+
+        // Fetch boundaries for each plot
+        const plotBoundaries = await Promise.allSettled(
+          apiPlots.map((p) =>
+            api.get<BoundaryResponse>(`/org/farms/${farmId}/plots/${p.id}/boundary`),
+          ),
+        );
+
+        const offlinePlots = apiPlots.map((p, i) => {
+          const result = plotBoundaries[i];
+          let geojson: string | null = null;
+          if (
+            result?.status === 'fulfilled' &&
+            result.value.hasBoundary &&
+            result.value.boundaryGeoJSON
+          ) {
+            geojson = JSON.stringify(result.value.boundaryGeoJSON);
+          }
+          return mapFieldPlot(p, geojson);
+        });
+
         await plotRepo.deleteByFarmId(farmId);
         await plotRepo.upsertMany(offlinePlots);
         await syncMetaRepo.upsert('field_plots', offlinePlots.length);
@@ -348,11 +427,25 @@ export function createSyncService(db: SQLiteDatabase) {
         updateProgress(progress, 'field_plots', { status: 'error', error: msg }, onProgress);
       }
 
-      // 3. Sync farm locations
+      // 3. Sync farm locations (using /map endpoint for boundaries)
       try {
         updateProgress(progress, 'farm_locations', { status: 'syncing' }, onProgress);
-        const apiLocations = await fetchAllPages<ApiFarmLocation>(`/org/farms/${farmId}/locations`);
-        const offlineLocations = apiLocations.map(mapFarmLocation);
+
+        // Try /locations/map first (includes boundaries)
+        let offlineLocations: OfflineFarmLocation[];
+        try {
+          const mapLocations = await api.get<ApiMapLocation[]>(
+            `/org/farms/${farmId}/locations/map`,
+          );
+          offlineLocations = mapLocations.map((l) => mapLocationFromMap(l, farmId));
+        } catch {
+          // Fallback to paginated list without boundaries
+          const apiLocations = await fetchAllPages<ApiFarmLocation>(
+            `/org/farms/${farmId}/locations`,
+          );
+          offlineLocations = apiLocations.map((l) => mapFarmLocation(l));
+        }
+
         await locationRepo.deleteByFarmId(farmId);
         await locationRepo.upsertMany(offlineLocations);
         await syncMetaRepo.upsert('farm_locations', offlineLocations.length);
