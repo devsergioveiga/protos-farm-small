@@ -17,6 +17,10 @@ export interface PesticideApplicationItem {
   temperature: number | null;
   relativeHumidity: number | null;
   windSpeed: number | null;
+  sprayerType: string | null;
+  nozzleType: string | null;
+  workingPressure: number | null;
+  applicationSpeed: number | null;
   notes: string | null;
   recordedBy: string;
   recorderName: string;
@@ -50,6 +54,10 @@ export interface CreatePesticideApplicationInput {
   temperature?: number;
   relativeHumidity?: number;
   windSpeed?: number;
+  sprayerType?: string;
+  nozzleType?: string;
+  workingPressure?: number;
+  applicationSpeed?: number;
   notes?: string;
 }
 
@@ -78,3 +86,22 @@ export const TARGET_LABELS: Record<string, string> = {
   DOENCA: 'Doença',
   PLANTA_DANINHA: 'Planta daninha',
 };
+
+export const SPRAYER_TYPES = [
+  { value: 'COSTAL_MANUAL', label: 'Costal manual' },
+  { value: 'COSTAL_MOTORIZADO', label: 'Costal motorizado' },
+  { value: 'BARRA_TRATORIZADO', label: 'Barra tratorizado' },
+  { value: 'AUTOPROPELIDO', label: 'Autopropelido' },
+  { value: 'PIVÔ', label: 'Pivô central' },
+  { value: 'DRONE', label: 'Drone/VANT' },
+  { value: 'OUTRO', label: 'Outro' },
+] as const;
+
+export const NOZZLE_TYPES = [
+  { value: 'LEQUE', label: 'Leque (plano)' },
+  { value: 'CONICO_VAZIO', label: 'Cônico vazio' },
+  { value: 'CONICO_CHEIO', label: 'Cônico cheio' },
+  { value: 'DEFLETOR', label: 'Defletor' },
+  { value: 'INDUÇÃO_AR', label: 'Indução de ar' },
+  { value: 'OUTRO', label: 'Outro' },
+] as const;

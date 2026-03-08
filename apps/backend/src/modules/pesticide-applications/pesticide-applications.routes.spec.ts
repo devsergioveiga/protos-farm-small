@@ -88,6 +88,10 @@ const SAMPLE_APPLICATION = {
   temperature: 28.5,
   relativeHumidity: 62.0,
   windSpeed: 8.0,
+  sprayerType: 'BARRA_TRATORIZADO',
+  nozzleType: 'LEQUE',
+  workingPressure: 3.5,
+  applicationSpeed: 6.0,
   notes: null,
   recordedBy: 'admin-1',
   recorderName: 'Admin User',
@@ -219,6 +223,40 @@ describe('Pesticide Application endpoints', () => {
       expect(response.body.temperature).toBe(32.0);
       expect(response.body.relativeHumidity).toBe(50.0);
       expect(response.body.windSpeed).toBe(12.0);
+    });
+
+    it('should create application with equipment data', async () => {
+      const withEquipment = {
+        ...SAMPLE_APPLICATION,
+        sprayerType: 'AUTOPROPELIDO',
+        nozzleType: 'INDUÇÃO_AR',
+        workingPressure: 4.0,
+        applicationSpeed: 8.5,
+      };
+      mockedService.createPesticideApplication.mockResolvedValue(withEquipment as never);
+
+      const response = await request(app)
+        .post(BASE_URL)
+        .set('Authorization', 'Bearer valid-token')
+        .send({
+          fieldPlotId: 'plot-1',
+          appliedAt: '2026-03-08T10:00:00.000Z',
+          productName: 'Roundup Ready',
+          activeIngredient: 'Glifosato',
+          dose: 2.5,
+          sprayVolume: 150,
+          target: 'PLANTA_DANINHA',
+          sprayerType: 'AUTOPROPELIDO',
+          nozzleType: 'INDUÇÃO_AR',
+          workingPressure: 4.0,
+          applicationSpeed: 8.5,
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.sprayerType).toBe('AUTOPROPELIDO');
+      expect(response.body.nozzleType).toBe('INDUÇÃO_AR');
+      expect(response.body.workingPressure).toBe(4.0);
+      expect(response.body.applicationSpeed).toBe(8.5);
     });
 
     it('should return 500 on unexpected error', async () => {

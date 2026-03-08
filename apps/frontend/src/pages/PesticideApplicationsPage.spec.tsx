@@ -23,6 +23,10 @@ const MOCK_APPLICATIONS: PesticideApplicationItem[] = [
     temperature: 28.5,
     relativeHumidity: 62.0,
     windSpeed: 8.0,
+    sprayerType: 'BARRA_TRATORIZADO',
+    nozzleType: 'LEQUE',
+    workingPressure: 3.5,
+    applicationSpeed: 6.0,
     notes: null,
     recordedBy: 'admin-1',
     recorderName: 'Admin',
@@ -48,6 +52,10 @@ const MOCK_APPLICATIONS: PesticideApplicationItem[] = [
     temperature: null,
     relativeHumidity: null,
     windSpeed: null,
+    sprayerType: null,
+    nozzleType: null,
+    workingPressure: null,
+    applicationSpeed: null,
     notes: 'Alta infestação',
     recordedBy: 'admin-1',
     recorderName: 'Admin',
@@ -245,6 +253,20 @@ describe('PesticideApplicationsPage', () => {
 
     render(<PesticideApplicationsPage />);
     expect(screen.getByTitle('Condições inadequadas')).toBeTruthy();
+  });
+
+  it('should display equipment info on cards', () => {
+    mockUsePesticideApplications.mockReturnValue({
+      applications: MOCK_APPLICATIONS,
+      meta: { page: 1, limit: 20, total: 2, totalPages: 1 },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(<PesticideApplicationsPage />);
+    expect(screen.getByText('Barra tratorizado')).toBeTruthy();
+    expect(screen.getByText('Leque (plano)')).toBeTruthy();
   });
 
   it('should show pagination when multiple pages', () => {

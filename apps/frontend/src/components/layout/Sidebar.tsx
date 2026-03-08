@@ -1,0 +1,148 @@
+import { useCallback, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  MapPin,
+  UserCheck,
+  Beef,
+  Layers,
+  Scale,
+  Sprout,
+  SprayCan,
+  Users,
+  Shield,
+  X,
+} from 'lucide-react';
+import './Sidebar.css';
+
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+interface NavItem {
+  to: string;
+  icon: React.ElementType;
+  label: string;
+}
+
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    title: 'GERAL',
+    items: [{ to: '/dashboard', icon: LayoutDashboard, label: 'Início' }],
+  },
+  {
+    title: 'PROPRIEDADE',
+    items: [
+      { to: '/farms', icon: MapPin, label: 'Fazendas' },
+      { to: '/producers', icon: UserCheck, label: 'Produtores' },
+    ],
+  },
+  {
+    title: 'REBANHO',
+    items: [
+      { to: '/animals', icon: Beef, label: 'Animais' },
+      { to: '/lots', icon: Layers, label: 'Lotes' },
+      { to: '/weighing-session', icon: Scale, label: 'Pesagem' },
+    ],
+  },
+  {
+    title: 'LAVOURA',
+    items: [
+      { to: '/cultivars', icon: Sprout, label: 'Cultivares' },
+      { to: '/pesticide-applications', icon: SprayCan, label: 'Defensivos' },
+    ],
+  },
+  {
+    title: 'CONFIGURAÇÃO',
+    items: [
+      { to: '/users', icon: Users, label: 'Usuários' },
+      { to: '/roles', icon: Shield, label: 'Papéis' },
+    ],
+  },
+];
+
+function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const location = useLocation();
+  const isActive = (path: string) => location.pathname.startsWith(path);
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) onClose();
+    },
+    [isOpen, onClose],
+  );
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  // Close drawer on route change (mobile)
+  useEffect(() => {
+    onClose();
+  }, [location.pathname, onClose]);
+
+  return (
+    <>
+      {/* Mobile overlay */}
+      <div
+        className={`sidebar-overlay ${isOpen ? 'sidebar-overlay--visible' : ''}`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      <aside
+        className={`sidebar ${isOpen ? 'sidebar--open' : ''}`}
+        aria-label="Navegação principal"
+      >
+        {/* Mobile close button */}
+        <div className="sidebar__mobile-header">
+          <span className="sidebar__mobile-title">Menu</span>
+          <button
+            type="button"
+            className="sidebar__close"
+            onClick={onClose}
+            aria-label="Fechar menu"
+          >
+            <X size={20} aria-hidden="true" />
+          </button>
+        </div>
+
+        <nav className="sidebar__nav">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.title} className="sidebar__group">
+              <span className="sidebar__group-title">{group.title}</span>
+              <ul className="sidebar__list">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.to);
+                  return (
+                    <li key={item.to}>
+                      <Link
+                        to={item.to}
+                        className={`sidebar__link ${active ? 'sidebar__link--active' : ''}`}
+                        aria-current={active ? 'page' : undefined}
+                        data-tooltip={item.label}
+                      >
+                        <Icon size={20} aria-hidden="true" className="sidebar__icon" />
+                        <span className="sidebar__label">{item.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </nav>
+      </aside>
+    </>
+  );
+}
+
+export default Sidebar;
