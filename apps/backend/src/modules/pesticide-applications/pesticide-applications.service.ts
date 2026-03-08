@@ -66,6 +66,10 @@ function toItem(row: Record<string, unknown>): PesticideApplicationItem {
     nozzleType: (row.nozzleType as string) ?? null,
     workingPressure: row.workingPressure != null ? Number(row.workingPressure) : null,
     applicationSpeed: row.applicationSpeed != null ? Number(row.applicationSpeed) : null,
+    adjuvant: (row.adjuvant as string) ?? null,
+    adjuvantDose: row.adjuvantDose != null ? Number(row.adjuvantDose) : null,
+    tankMixOrder: (row.tankMixOrder as string) ?? null,
+    tankMixPh: row.tankMixPh != null ? Number(row.tankMixPh) : null,
     notes: (row.notes as string) ?? null,
     recordedBy: row.recordedBy as string,
     recorderName: recorder?.name ?? '',
@@ -122,6 +126,10 @@ export async function createPesticideApplication(
       nozzleType: input.nozzleType?.trim() ?? null,
       workingPressure: input.workingPressure ?? null,
       applicationSpeed: input.applicationSpeed ?? null,
+      adjuvant: input.adjuvant?.trim() ?? null,
+      adjuvantDose: input.adjuvantDose ?? null,
+      tankMixOrder: input.tankMixOrder?.trim() ?? null,
+      tankMixPh: input.tankMixPh ?? null,
       notes: input.notes?.trim() ?? null,
       recordedBy: userId,
     };
@@ -281,6 +289,10 @@ export async function updatePesticideApplication(
     if (input.workingPressure !== undefined) data.workingPressure = input.workingPressure ?? null;
     if (input.applicationSpeed !== undefined)
       data.applicationSpeed = input.applicationSpeed ?? null;
+    if (input.adjuvant !== undefined) data.adjuvant = input.adjuvant?.trim() ?? null;
+    if (input.adjuvantDose !== undefined) data.adjuvantDose = input.adjuvantDose ?? null;
+    if (input.tankMixOrder !== undefined) data.tankMixOrder = input.tankMixOrder?.trim() ?? null;
+    if (input.tankMixPh !== undefined) data.tankMixPh = input.tankMixPh ?? null;
     if (input.notes !== undefined) data.notes = input.notes?.trim() ?? null;
 
     const row = await tx.pesticideApplication.update({
