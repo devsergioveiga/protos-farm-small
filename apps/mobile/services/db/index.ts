@@ -7,6 +7,7 @@ export { createSyncMetaRepository } from './sync-meta-repository';
 export { createPendingOperationsRepository } from './pending-operations-repository';
 export { createConflictLogRepository } from './conflict-log-repository';
 export { createTileCacheRepository } from './tile-cache-repository';
+export { createOperationRepository, createTemplateRepository } from './operation-repository';
 export type { AnimalWithBreeds } from './animal-repository';
 export type {
   PendingOperation,

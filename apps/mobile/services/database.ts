@@ -4,7 +4,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
  * Database version — increment when adding new migrations.
  * Each version maps to a migration function in the migrations array.
  */
-const DATABASE_VERSION = 4;
+const DATABASE_VERSION = 5;
 
 /**
  * Run migrations on database init (called by SQLiteProvider onInit).
@@ -38,6 +38,11 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase): Promise<void> {
   if (currentVersion === 3) {
     await migrationV4(db);
     currentVersion = 4;
+  }
+
+  if (currentVersion === 4) {
+    await migrationV5(db);
+    currentVersion = 5;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
@@ -241,6 +246,47 @@ async function migrationV4(db: SQLiteDatabase): Promise<void> {
       updated_at TEXT NOT NULL,
       FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
     );
+  `);
+}
+
+/**
+ * V5 — Field operations + operation templates for quick registration.
+ */
+async function migrationV5(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS field_operations (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      location_id TEXT,
+      location_type TEXT,
+      location_name TEXT,
+      operation_type TEXT NOT NULL,
+      notes TEXT,
+      photo_uri TEXT,
+      latitude REAL,
+      longitude REAL,
+      recorded_at TEXT NOT NULL,
+      synced INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_operations_farm ON field_operations(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_operations_synced ON field_operations(synced);
+
+    CREATE TABLE IF NOT EXISTS operation_templates (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      operation_type TEXT NOT NULL,
+      default_notes TEXT,
+      usage_count INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_templates_farm ON operation_templates(farm_id);
   `);
 }
 
