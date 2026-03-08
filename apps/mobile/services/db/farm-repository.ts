@@ -22,11 +22,11 @@ export function createFarmRepository(db: SQLiteDatabase) {
           INSERT OR REPLACE INTO farms (
             id, name, nickname, address, city, state, zip_code,
             total_area_ha, status, organization_id, latitude, longitude,
-            created_at, updated_at
+            boundary_geojson, created_at, updated_at
           ) VALUES (
             $id, $name, $nickname, $address, $city, $state, $zip_code,
             $total_area_ha, $status, $organization_id, $latitude, $longitude,
-            $created_at, $updated_at
+            $boundary_geojson, $created_at, $updated_at
           )
         `);
         try {
@@ -44,6 +44,7 @@ export function createFarmRepository(db: SQLiteDatabase) {
               $organization_id: f.organization_id,
               $latitude: f.latitude,
               $longitude: f.longitude,
+              $boundary_geojson: f.boundary_geojson,
               $created_at: f.created_at,
               $updated_at: f.updated_at,
             });

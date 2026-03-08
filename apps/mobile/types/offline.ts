@@ -16,6 +16,7 @@ export interface OfflineFarm {
   organization_id: string;
   latitude: number | null;
   longitude: number | null;
+  boundary_geojson: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -30,6 +31,7 @@ export interface OfflineFieldPlot {
   previous_crop: string | null;
   notes: string | null;
   boundary_area_ha: number | null;
+  boundary_geojson: string | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -41,6 +43,7 @@ export interface OfflineFarmLocation {
   name: string;
   type: 'PASTURE' | 'FACILITY';
   boundary_area_ha: number | null;
+  boundary_geojson: string | null;
   capacity_ua: number | null;
   capacity_animals: number | null;
   forage_type: string | null;
@@ -105,6 +108,22 @@ export interface SyncMeta {
   entity: string;
   last_synced_at: string;
   record_count: number;
+}
+
+export interface TileCacheMeta {
+  farm_id: string;
+  min_zoom: number;
+  max_zoom: number;
+  total_tiles: number;
+  downloaded_tiles: number;
+  cache_size_bytes: number;
+  bbox_south: number;
+  bbox_west: number;
+  bbox_north: number;
+  bbox_east: number;
+  status: 'pending' | 'downloading' | 'complete' | 'error';
+  created_at: string;
+  updated_at: string;
 }
 
 /** Entities that can be synced */
