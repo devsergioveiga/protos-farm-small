@@ -264,6 +264,7 @@ model Organization {
   customRoles CustomRole[]
   producers   Producer[]
   breeds      Breed[]
+  cultivars   Cultivar[]
 
   @@map("organizations")
 }
@@ -1105,6 +1106,41 @@ model AnimalReproductiveRecord {
   @@index([eventDate])
   @@index([type])
   @@map("animal_reproductive_records")
+}
+
+// ─── Cultivars ─────────────────────────────────────────────────────────────
+
+enum CultivarType {
+  CONVENCIONAL
+  TRANSGENICO
+}
+
+model Cultivar {
+  id                   String       @id @default(uuid())
+  organizationId       String
+  name                 String
+  crop                 String
+  breeder              String?
+  cycleDays            Int?
+  maturationGroup      String?
+  type                 CultivarType @default(CONVENCIONAL)
+  technology           String?
+  diseaseTolerances    String?
+  regionalAptitude     String?
+  populationRecommendation String?
+  plantingWindowStart  DateTime?    @db.Date
+  plantingWindowEnd    DateTime?    @db.Date
+  notes                String?
+  deletedAt            DateTime?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([name, crop, organizationId])
+  @@index([organizationId])
+  @@index([crop])
+  @@map("cultivars")
 }
 
 // ─── Field Operations ─────────────────────────────────────────────────────
