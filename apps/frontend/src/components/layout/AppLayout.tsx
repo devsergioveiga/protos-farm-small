@@ -1,43 +1,40 @@
-import { useCallback } from 'react';
-import { Outlet, useNavigate, Link, useLocation } from 'react-router-dom';
-import {
-  LogOut,
-  LayoutDashboard,
-  MapPin,
-  Users,
-  UserCheck,
-  Shield,
-  ShieldCheck,
-  Beef,
-  Layers,
-  Scale,
-  Sprout,
-  SprayCan,
-} from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Outlet, useNavigate, Link } from 'react-router-dom';
+import { LogOut, Menu, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/stores/AuthContext';
 import { FarmProvider } from '@/stores/FarmContext';
 import FarmSelector from '@/components/farm-selector/FarmSelector';
 import FarmLimitBadge from '@/components/farm-limit-badge/FarmLimitBadge';
+import Sidebar from './Sidebar';
 import './AppLayout.css';
 
 function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const isPlatformAdmin = user?.role === 'SUPER_ADMIN' && !user.organizationId;
 
   const handleLogout = useCallback(async () => {
     await logout();
     navigate('/login', { replace: true });
   }, [logout, navigate]);
 
-  const isActive = (path: string) => location.pathname.startsWith(path);
-  const isPlatformAdmin = user?.role === 'SUPER_ADMIN' && !user.organizationId;
-
   return (
     <FarmProvider>
       <div className="app-layout">
         <header className="app-topbar">
           <div className="app-topbar__left">
+            {!isPlatformAdmin && (
+              <button
+                type="button"
+                className="app-topbar__hamburger"
+                onClick={() => setSidebarOpen(true)}
+                aria-label="Abrir menu de navegação"
+              >
+                <Menu size={20} aria-hidden="true" />
+              </button>
+            )}
             <Link
               to={isPlatformAdmin ? '/admin' : '/dashboard'}
               className="app-topbar__logo"
@@ -53,89 +50,15 @@ function AppLayout() {
             </div>
           )}
 
-          <nav className="app-topbar__right" aria-label="Menu principal">
+          <div className="app-topbar__right">
             {user?.role === 'SUPER_ADMIN' && (
               <Link to="/admin" className="app-topbar__nav-link app-topbar__nav-link--admin">
                 <ShieldCheck size={16} aria-hidden="true" />
-                <span className="app-topbar__nav-label">Admin</span>
+                <span className="app-topbar__nav-text">Admin</span>
               </Link>
             )}
-            {!isPlatformAdmin && (
-              <>
-                <Link
-                  to="/dashboard"
-                  className={`app-topbar__nav-link ${isActive('/dashboard') ? 'app-topbar__nav-link--active' : ''}`}
-                >
-                  <LayoutDashboard size={16} aria-hidden="true" />
-                  <span className="app-topbar__nav-label">Início</span>
-                </Link>
-                <Link
-                  to="/farms"
-                  className={`app-topbar__nav-link ${isActive('/farms') ? 'app-topbar__nav-link--active' : ''}`}
-                >
-                  <MapPin size={16} aria-hidden="true" />
-                  <span className="app-topbar__nav-label">Fazendas</span>
-                </Link>
-                <Link
-                  to="/producers"
-                  className={`app-topbar__nav-link ${isActive('/producers') ? 'app-topbar__nav-link--active' : ''}`}
-                >
-                  <UserCheck size={16} aria-hidden="true" />
-                  <span className="app-topbar__nav-label">Produtores</span>
-                </Link>
-                <Link
-                  to="/animals"
-                  className={`app-topbar__nav-link ${isActive('/animals') ? 'app-topbar__nav-link--active' : ''}`}
-                >
-                  <Beef size={16} aria-hidden="true" />
-                  <span className="app-topbar__nav-label">Animais</span>
-                </Link>
-                <Link
-                  to="/lots"
-                  className={`app-topbar__nav-link ${isActive('/lots') ? 'app-topbar__nav-link--active' : ''}`}
-                >
-                  <Layers size={16} aria-hidden="true" />
-                  <span className="app-topbar__nav-label">Lotes</span>
-                </Link>
-                <Link
-                  to="/weighing-session"
-                  className={`app-topbar__nav-link ${isActive('/weighing-session') ? 'app-topbar__nav-link--active' : ''}`}
-                >
-                  <Scale size={16} aria-hidden="true" />
-                  <span className="app-topbar__nav-label">Pesagem</span>
-                </Link>
-                <Link
-                  to="/cultivars"
-                  className={`app-topbar__nav-link ${isActive('/cultivars') ? 'app-topbar__nav-link--active' : ''}`}
-                >
-                  <Sprout size={16} aria-hidden="true" />
-                  <span className="app-topbar__nav-label">Cultivares</span>
-                </Link>
-                <Link
-                  to="/pesticide-applications"
-                  className={`app-topbar__nav-link ${isActive('/pesticide-applications') ? 'app-topbar__nav-link--active' : ''}`}
-                >
-                  <SprayCan size={16} aria-hidden="true" />
-                  <span className="app-topbar__nav-label">Defensivos</span>
-                </Link>
-                <Link
-                  to="/users"
-                  className={`app-topbar__nav-link ${isActive('/users') ? 'app-topbar__nav-link--active' : ''}`}
-                >
-                  <Users size={16} aria-hidden="true" />
-                  <span className="app-topbar__nav-label">Usuários</span>
-                </Link>
-                <Link
-                  to="/roles"
-                  className={`app-topbar__nav-link ${isActive('/roles') ? 'app-topbar__nav-link--active' : ''}`}
-                >
-                  <Shield size={16} aria-hidden="true" />
-                  <span className="app-topbar__nav-label">Papéis</span>
-                </Link>
 
-                <FarmLimitBadge />
-              </>
-            )}
+            {!isPlatformAdmin && <FarmLimitBadge />}
 
             <div className="app-topbar__separator" role="separator" />
 
@@ -147,12 +70,17 @@ function AppLayout() {
               aria-label="Sair da conta"
             >
               <LogOut size={16} aria-hidden="true" />
-              <span className="app-topbar__nav-label">Sair</span>
+              <span className="app-topbar__nav-text">Sair</span>
             </button>
-          </nav>
+          </div>
         </header>
 
-        <main className="app-content" id="main-content">
+        {!isPlatformAdmin && <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
+
+        <main
+          className={`app-content ${!isPlatformAdmin ? 'app-content--with-sidebar' : ''}`}
+          id="main-content"
+        >
           <Outlet />
         </main>
       </div>

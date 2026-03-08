@@ -1231,6 +1231,10 @@ model PesticideApplication {
   temperature       Decimal?        @db.Decimal(5, 2)
   relativeHumidity  Decimal?        @db.Decimal(5, 2)
   windSpeed         Decimal?        @db.Decimal(5, 2)
+  sprayerType       String?
+  nozzleType        String?
+  workingPressure   Decimal?        @db.Decimal(7, 2)
+  applicationSpeed  Decimal?        @db.Decimal(5, 2)
   notes             String?
   recordedBy        String
   deletedAt         DateTime?

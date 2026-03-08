@@ -10,12 +10,19 @@ import {
   Calendar,
   Droplets,
   Thermometer,
+  Settings2,
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
 import { usePesticideApplications } from '@/hooks/usePesticideApplications';
 import PermissionGate from '@/components/auth/PermissionGate';
 import PesticideApplicationModal from '@/components/pesticide-applications/PesticideApplicationModal';
-import { PESTICIDE_TARGETS, TARGET_LABELS, DOSE_UNIT_LABELS } from '@/types/pesticide-application';
+import {
+  PESTICIDE_TARGETS,
+  TARGET_LABELS,
+  DOSE_UNIT_LABELS,
+  SPRAYER_TYPES,
+  NOZZLE_TYPES,
+} from '@/types/pesticide-application';
 import type { PesticideApplicationItem } from '@/types/pesticide-application';
 import './PesticideApplicationsPage.css';
 
@@ -247,6 +254,22 @@ function PesticideApplicationsPage() {
                   {hasInadequateConditions(app) && (
                     <span className="pesticides__card-condition-warn" title="Condições inadequadas">
                       <AlertTriangle size={14} aria-label="Condições inadequadas" />
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {app.sprayerType && (
+                <div className="pesticides__card-equipment">
+                  <Settings2 size={14} aria-hidden="true" />
+                  <span>
+                    {SPRAYER_TYPES.find((s) => s.value === app.sprayerType)?.label ??
+                      app.sprayerType}
+                  </span>
+                  {app.nozzleType && (
+                    <span>
+                      {NOZZLE_TYPES.find((n) => n.value === app.nozzleType)?.label ??
+                        app.nozzleType}
                     </span>
                   )}
                 </div>

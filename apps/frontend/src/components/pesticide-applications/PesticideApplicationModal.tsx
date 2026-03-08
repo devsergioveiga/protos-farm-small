@@ -2,7 +2,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import { api } from '@/services/api';
 import { useFarmContext } from '@/stores/FarmContext';
-import { PESTICIDE_TARGETS, DOSE_UNITS } from '@/types/pesticide-application';
+import {
+  PESTICIDE_TARGETS,
+  DOSE_UNITS,
+  SPRAYER_TYPES,
+  NOZZLE_TYPES,
+} from '@/types/pesticide-application';
 import type {
   PesticideApplicationItem,
   CreatePesticideApplicationInput,
@@ -41,6 +46,10 @@ function PesticideApplicationModal({
   const [temperature, setTemperature] = useState('');
   const [relativeHumidity, setRelativeHumidity] = useState('');
   const [windSpeed, setWindSpeed] = useState('');
+  const [sprayerType, setSprayerType] = useState('');
+  const [nozzleType, setNozzleType] = useState('');
+  const [workingPressure, setWorkingPressure] = useState('');
+  const [applicationSpeed, setApplicationSpeed] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -105,6 +114,10 @@ function PesticideApplicationModal({
       setTemperature('');
       setRelativeHumidity('');
       setWindSpeed('');
+      setSprayerType('');
+      setNozzleType('');
+      setWorkingPressure('');
+      setApplicationSpeed('');
       setNotes('');
       setSubmitError(null);
       setIsSubmitting(false);
@@ -127,6 +140,14 @@ function PesticideApplicationModal({
         application.relativeHumidity != null ? String(application.relativeHumidity) : '',
       );
       setWindSpeed(application.windSpeed != null ? String(application.windSpeed) : '');
+      setSprayerType(application.sprayerType ?? '');
+      setNozzleType(application.nozzleType ?? '');
+      setWorkingPressure(
+        application.workingPressure != null ? String(application.workingPressure) : '',
+      );
+      setApplicationSpeed(
+        application.applicationSpeed != null ? String(application.applicationSpeed) : '',
+      );
       setNotes(application.notes ?? '');
     }
   }, [isOpen, application]);
@@ -175,6 +196,10 @@ function PesticideApplicationModal({
         temperature: temperature ? Number(temperature) : undefined,
         relativeHumidity: relativeHumidity ? Number(relativeHumidity) : undefined,
         windSpeed: windSpeed ? Number(windSpeed) : undefined,
+        sprayerType: sprayerType || undefined,
+        nozzleType: nozzleType || undefined,
+        workingPressure: workingPressure ? Number(workingPressure) : undefined,
+        applicationSpeed: applicationSpeed ? Number(applicationSpeed) : undefined,
         notes: notes.trim() || undefined,
       };
 
@@ -211,6 +236,10 @@ function PesticideApplicationModal({
     temperature,
     relativeHumidity,
     windSpeed,
+    sprayerType,
+    nozzleType,
+    workingPressure,
+    applicationSpeed,
     notes,
     isEditing,
     application,
@@ -524,6 +553,81 @@ function PesticideApplicationModal({
                 </div>
               </div>
             )}
+
+            {/* Equipamento */}
+            <h3 className="pesticide-modal__section-title">Equipamento de aplicação</h3>
+
+            <div className="pesticide-modal__row">
+              <div className="pesticide-modal__field">
+                <label htmlFor="pest-sprayer" className="pesticide-modal__label">
+                  Tipo de pulverizador
+                </label>
+                <select
+                  id="pest-sprayer"
+                  className="pesticide-modal__select"
+                  value={sprayerType}
+                  onChange={(e) => setSprayerType(e.target.value)}
+                >
+                  <option value="">Selecione</option>
+                  {SPRAYER_TYPES.map((s) => (
+                    <option key={s.value} value={s.value}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="pesticide-modal__field">
+                <label htmlFor="pest-nozzle" className="pesticide-modal__label">
+                  Tipo de bico
+                </label>
+                <select
+                  id="pest-nozzle"
+                  className="pesticide-modal__select"
+                  value={nozzleType}
+                  onChange={(e) => setNozzleType(e.target.value)}
+                >
+                  <option value="">Selecione</option>
+                  {NOZZLE_TYPES.map((n) => (
+                    <option key={n.value} value={n.value}>
+                      {n.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="pesticide-modal__row">
+              <div className="pesticide-modal__field">
+                <label htmlFor="pest-pressure" className="pesticide-modal__label">
+                  Pressão de trabalho (bar)
+                </label>
+                <input
+                  id="pest-pressure"
+                  type="number"
+                  className="pesticide-modal__input"
+                  value={workingPressure}
+                  onChange={(e) => setWorkingPressure(e.target.value)}
+                  placeholder="Ex: 3.5"
+                  min="0"
+                  step="0.1"
+                />
+              </div>
+              <div className="pesticide-modal__field">
+                <label htmlFor="pest-app-speed" className="pesticide-modal__label">
+                  Velocidade de aplicação (km/h)
+                </label>
+                <input
+                  id="pest-app-speed"
+                  type="number"
+                  className="pesticide-modal__input"
+                  value={applicationSpeed}
+                  onChange={(e) => setApplicationSpeed(e.target.value)}
+                  placeholder="Ex: 6"
+                  min="0"
+                  step="0.1"
+                />
+              </div>
+            </div>
 
             {/* Observações */}
             <h3 className="pesticide-modal__section-title">Observações</h3>

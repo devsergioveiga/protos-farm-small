@@ -48,6 +48,10 @@ export interface CreatePesticideApplicationInput {
   temperature?: number | null;
   relativeHumidity?: number | null;
   windSpeed?: number | null;
+  sprayerType?: string | null;
+  nozzleType?: string | null;
+  workingPressure?: number | null;
+  applicationSpeed?: number | null;
   notes?: string | null;
 }
 
@@ -72,6 +76,10 @@ export interface PesticideApplicationItem {
   temperature: number | null;
   relativeHumidity: number | null;
   windSpeed: number | null;
+  sprayerType: string | null;
+  nozzleType: string | null;
+  workingPressure: number | null;
+  applicationSpeed: number | null;
   notes: string | null;
   recordedBy: string;
   recorderName: string;
