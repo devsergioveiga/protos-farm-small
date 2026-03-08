@@ -21,6 +21,33 @@
 
 .app-topbar__left {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.app-topbar__hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
+  padding: var(--space-2);
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--color-neutral-600);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.app-topbar__hamburger:hover {
+  background: var(--color-neutral-50);
+}
+
+.app-topbar__hamburger:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
 }
 
 .app-topbar__logo {
@@ -49,14 +76,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  flex-shrink: 1;
-  min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.app-topbar__right::-webkit-scrollbar {
-  display: none;
+  flex-shrink: 0;
 }
 
 .app-topbar__nav-link {
@@ -82,11 +102,6 @@
 .app-topbar__nav-link:focus-visible {
   outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
-}
-
-.app-topbar__nav-link--active {
-  color: var(--color-primary-600);
-  background: var(--color-primary-50);
 }
 
 .app-topbar__nav-link--admin {
@@ -150,7 +165,22 @@
   flex: 1;
 }
 
-/* ─── Responsive ─── */
+/* ─── Desktop: content offset for sidebar ─── */
+
+@media (min-width: 1024px) {
+  .app-content--with-sidebar {
+    margin-left: 64px;
+    transition: margin-left var(--duration-normal) var(--ease-out);
+  }
+}
+
+@media (min-width: 1280px) {
+  .app-content--with-sidebar {
+    margin-left: 240px;
+  }
+}
+
+/* ─── Mobile (< 1024px) ─── */
 
 @media (max-width: 1023px) {
   .app-topbar {
@@ -158,11 +188,15 @@
     padding: 0 var(--space-3);
   }
 
+  .app-topbar__hamburger {
+    display: flex;
+  }
+
   .app-topbar__center {
     display: none;
   }
 
-  .app-topbar__nav-label {
+  .app-topbar__nav-text {
     display: none;
   }
 
@@ -180,5 +214,13 @@
 
   .app-topbar__logout {
     padding: var(--space-2);
+  }
+}
+
+/* ─── Reduced motion ─── */
+
+@media (prefers-reduced-motion: reduce) {
+  .app-content--with-sidebar {
+    transition: none;
   }
 }

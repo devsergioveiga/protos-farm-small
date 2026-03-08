@@ -62,6 +62,10 @@ function toItem(row: Record<string, unknown>): PesticideApplicationItem {
     temperature: row.temperature != null ? Number(row.temperature) : null,
     relativeHumidity: row.relativeHumidity != null ? Number(row.relativeHumidity) : null,
     windSpeed: row.windSpeed != null ? Number(row.windSpeed) : null,
+    sprayerType: (row.sprayerType as string) ?? null,
+    nozzleType: (row.nozzleType as string) ?? null,
+    workingPressure: row.workingPressure != null ? Number(row.workingPressure) : null,
+    applicationSpeed: row.applicationSpeed != null ? Number(row.applicationSpeed) : null,
     notes: (row.notes as string) ?? null,
     recordedBy: row.recordedBy as string,
     recorderName: recorder?.name ?? '',
@@ -114,6 +118,10 @@ export async function createPesticideApplication(
       temperature: input.temperature ?? null,
       relativeHumidity: input.relativeHumidity ?? null,
       windSpeed: input.windSpeed ?? null,
+      sprayerType: input.sprayerType?.trim() ?? null,
+      nozzleType: input.nozzleType?.trim() ?? null,
+      workingPressure: input.workingPressure ?? null,
+      applicationSpeed: input.applicationSpeed ?? null,
       notes: input.notes?.trim() ?? null,
       recordedBy: userId,
     };
@@ -268,6 +276,11 @@ export async function updatePesticideApplication(
     if (input.relativeHumidity !== undefined)
       data.relativeHumidity = input.relativeHumidity ?? null;
     if (input.windSpeed !== undefined) data.windSpeed = input.windSpeed ?? null;
+    if (input.sprayerType !== undefined) data.sprayerType = input.sprayerType?.trim() ?? null;
+    if (input.nozzleType !== undefined) data.nozzleType = input.nozzleType?.trim() ?? null;
+    if (input.workingPressure !== undefined) data.workingPressure = input.workingPressure ?? null;
+    if (input.applicationSpeed !== undefined)
+      data.applicationSpeed = input.applicationSpeed ?? null;
     if (input.notes !== undefined) data.notes = input.notes?.trim() ?? null;
 
     const row = await tx.pesticideApplication.update({
