@@ -129,6 +129,7 @@ function defaultReturn() {
   return {
     animals: MOCK_ANIMALS,
     meta: { page: 1, limit: 20, total: 2, totalPages: 1 },
+    groupStats: { totalCount: 2, averageWeightKg: 375 },
     isLoading: false,
     error: null,
     refetch: vi.fn(),
@@ -506,14 +507,25 @@ describe('AnimalsPage', () => {
     expect((sexSelect as HTMLSelectElement).value).toBe('');
   });
 
-  it('should show filter status text with total count', async () => {
+  it('should show group stats with total count and average weight', async () => {
     mockUseAnimals.mockReturnValue(defaultReturn());
     await renderPage();
 
-    const sexSelect = screen.getByLabelText('Filtrar por sexo');
-    await userEvent.selectOptions(sexSelect, 'FEMALE');
+    // Group stats bar is always visible
+    expect(screen.getByText(/animal\(is\)/)).toBeTruthy();
+    expect(screen.getByText('2')).toBeTruthy();
+    expect(screen.getByText('375 kg')).toBeTruthy();
+  });
 
-    expect(screen.getByText('2 animal(is) encontrado(s)')).toBeTruthy();
+  it('should hide average weight when null', async () => {
+    mockUseAnimals.mockReturnValue({
+      ...defaultReturn(),
+      groupStats: { totalCount: 2, averageWeightKg: null },
+    });
+    await renderPage();
+
+    expect(screen.getByText('2')).toBeTruthy();
+    expect(screen.queryByText(/Peso médio/)).toBeNull();
   });
 
   // ─── CSV Export Tests ───────────────────────────────────────────
