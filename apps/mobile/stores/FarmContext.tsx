@@ -8,7 +8,9 @@ import {
   type ReactNode,
 } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import { useSQLiteContext } from 'expo-sqlite';
 import { api } from '@/services/api';
+import { createFarmRepository } from '@/services/db';
 import { useAuth } from '@/stores/AuthContext';
 import type { FarmListItem, FarmsListResponse } from '@/types/auth';
 
@@ -29,6 +31,7 @@ function getStorageKey(userId: string): string {
 
 function FarmProvider({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth();
+  const db = useSQLiteContext();
   const [farms, setFarms] = useState<FarmListItem[]>([]);
   const [isLoadingFarms, setIsLoadingFarms] = useState(true);
   const [selectedFarmId, setSelectedFarmId] = useState<string | null>(null);
@@ -44,11 +47,38 @@ function FarmProvider({ children }: { children: ReactNode }) {
       const result = await api.get<FarmsListResponse>('/org/farms?limit=100');
       setFarms(result.data);
     } catch {
-      setFarms([]);
+      // Offline fallback: load from local SQLite
+      try {
+        const farmRepo = createFarmRepository(db);
+        const localFarms = await farmRepo.getAll();
+        if (localFarms.length > 0) {
+          setFarms(
+            localFarms.map((f) => ({
+              id: f.id,
+              name: f.name,
+              nickname: f.nickname,
+              city: f.city,
+              state: f.state ?? '',
+              totalAreaHa: f.total_area_ha ?? 0,
+              boundaryAreaHa: null,
+              status: f.status,
+              landClassification: null,
+              latitude: f.latitude,
+              longitude: f.longitude,
+              createdAt: f.created_at,
+              _count: { registrations: 0, fieldPlots: 0 },
+            })),
+          );
+        } else {
+          setFarms([]);
+        }
+      } catch {
+        setFarms([]);
+      }
     } finally {
       setIsLoadingFarms(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, db]);
 
   useEffect(() => {
     void fetchFarms();
