@@ -9,6 +9,7 @@ import type { HealthEventType } from './animal-health.types';
 import {
   listHealthRecords,
   createHealthRecord,
+  bulkCreateHealthRecords,
   updateHealthRecord,
   deleteHealthRecord,
   getHealthStats,
@@ -32,6 +33,78 @@ function buildRlsContext(req: import('express').Request): RlsContext {
   }
   return { organizationId };
 }
+
+// ─── BULK CREATE ────────────────────────────────────────────────────
+
+animalHealthRouter.post(
+  '/org/farms/:farmId/animals/bulk-health',
+  authenticate,
+  checkPermission('animals:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const body = req.body as Record<string, unknown>;
+      const animalIds = body.animalIds as string[] | undefined;
+
+      if (!Array.isArray(animalIds) || animalIds.length === 0) {
+        res.status(400).json({ error: 'animalIds é obrigatório e deve ser um array não vazio' });
+        return;
+      }
+
+      const input = {
+        type: body.type as string,
+        eventDate: body.eventDate as string,
+        productName: body.productName as string | undefined,
+        dosage: body.dosage as string | undefined,
+        applicationMethod: body.applicationMethod as string | undefined,
+        batchNumber: body.batchNumber as string | undefined,
+        diagnosis: body.diagnosis as string | undefined,
+        durationDays: body.durationDays as number | undefined,
+        examResult: body.examResult as string | undefined,
+        labName: body.labName as string | undefined,
+        isFieldExam: body.isFieldExam as boolean | undefined,
+        veterinaryName: body.veterinaryName as string | undefined,
+        notes: body.notes as string | undefined,
+      } as import('./animal-health.types').CreateHealthRecordInput;
+
+      const result = await bulkCreateHealthRecords(
+        ctx,
+        req.params.farmId as string,
+        animalIds,
+        req.user!.userId,
+        input,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'BULK_CREATE_HEALTH_RECORD',
+        targetType: 'animal_health_record',
+        targetId: 'bulk',
+        metadata: {
+          animalCount: animalIds.length,
+          created: result.created,
+          failed: result.failed,
+          type: String(body.type ?? ''),
+          farmId: req.params.farmId as string,
+        },
+        ipAddress: getClientIp(req),
+        farmId: req.params.farmId as string,
+        organizationId: ctx.organizationId,
+      });
+
+      res.status(201).json(result);
+    } catch (err) {
+      if (err instanceof AnimalHealthError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
 
 // ─── STATS (before :recordId to avoid route conflict) ───────────────
 

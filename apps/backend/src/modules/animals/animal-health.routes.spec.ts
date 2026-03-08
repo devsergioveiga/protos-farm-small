@@ -24,6 +24,7 @@ const mockGetUserPermissions = getUserPermissions as jest.MockedFunction<typeof 
 jest.mock('./animal-health.service', () => ({
   listHealthRecords: jest.fn(),
   createHealthRecord: jest.fn(),
+  bulkCreateHealthRecords: jest.fn(),
   updateHealthRecord: jest.fn(),
   deleteHealthRecord: jest.fn(),
   getHealthStats: jest.fn(),
@@ -334,6 +335,88 @@ describe('GET /health/export', () => {
     expect(res.headers['content-type']).toContain('text/csv');
     expect(res.headers['content-disposition']).toContain('attachment');
     expect(res.text).toContain('HISTÓRICO SANITÁRIO');
+  });
+});
+
+// ─── POST /org/farms/:farmId/animals/bulk-health ───────────────────
+
+describe('POST /org/farms/:farmId/animals/bulk-health', () => {
+  const BULK_URL = `/api/org/farms/${FARM_ID}/animals/bulk-health`;
+
+  it('should create health records for multiple animals', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.bulkCreateHealthRecords.mockResolvedValue({
+      created: 3,
+      failed: 0,
+      errors: [],
+    });
+
+    const res = await request(app)
+      .post(BULK_URL)
+      .set('Authorization', 'Bearer token')
+      .send({
+        animalIds: ['a1', 'a2', 'a3'],
+        type: 'VACCINATION',
+        eventDate: '2026-03-01',
+        productName: 'Aftosa',
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.created).toBe(3);
+    expect(res.body.failed).toBe(0);
+    expect(mockedAudit.logAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'BULK_CREATE_HEALTH_RECORD',
+        metadata: expect.objectContaining({ animalCount: 3, created: 3 }),
+      }),
+    );
+  });
+
+  it('should return 400 when animalIds is empty', async () => {
+    authAs(ADMIN_PAYLOAD);
+
+    const res = await request(app)
+      .post(BULK_URL)
+      .set('Authorization', 'Bearer token')
+      .send({ animalIds: [], type: 'VACCINATION', eventDate: '2026-03-01' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('animalIds');
+  });
+
+  it('should return 400 when animalIds is missing', async () => {
+    authAs(ADMIN_PAYLOAD);
+
+    const res = await request(app)
+      .post(BULK_URL)
+      .set('Authorization', 'Bearer token')
+      .send({ type: 'VACCINATION', eventDate: '2026-03-01' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('animalIds');
+  });
+
+  it('should handle partial failures', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.bulkCreateHealthRecords.mockResolvedValue({
+      created: 2,
+      failed: 1,
+      errors: [{ animalId: 'a3', error: 'Animal não encontrado' }],
+    });
+
+    const res = await request(app)
+      .post(BULK_URL)
+      .set('Authorization', 'Bearer token')
+      .send({
+        animalIds: ['a1', 'a2', 'a3'],
+        type: 'DEWORMING',
+        eventDate: '2026-03-01',
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.created).toBe(2);
+    expect(res.body.failed).toBe(1);
+    expect(res.body.errors).toHaveLength(1);
   });
 });
 
