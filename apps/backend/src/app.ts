@@ -22,6 +22,7 @@ import { animalMovementsRouter } from './modules/animals/animal-movements.routes
 import { farmLocationsRouter } from './modules/animals/farm-locations.routes';
 import { fieldOperationsRouter } from './modules/field-operations/field-operations.routes';
 import { cultivarsRouter } from './modules/cultivars/cultivars.routes';
+import { pesticideApplicationsRouter } from './modules/pesticide-applications/pesticide-applications.routes';
 
 const app = express();
 
@@ -51,5 +52,6 @@ app.use('/api', animalMovementsRouter);
 app.use('/api', farmLocationsRouter);
 app.use('/api', fieldOperationsRouter);
 app.use('/api', cultivarsRouter);
+app.use('/api', pesticideApplicationsRouter);
 
 export { app };
