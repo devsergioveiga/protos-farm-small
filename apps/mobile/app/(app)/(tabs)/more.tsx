@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { View, Text, FlatList, Pressable } from 'react-native';
+import { useCallback, useState, useEffect } from 'react';
+import { View, Text, FlatList, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowLeftRight, Settings, Info, LogOut, RefreshCw } from 'lucide-react-native';
@@ -10,6 +10,11 @@ import { useFarmContext } from '@/stores/FarmContext';
 import { useSyncContext } from '@/stores/SyncContext';
 import { useTheme } from '@/stores/ThemeContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
+import {
+  getMapCacheLimitMB,
+  setMapCacheLimitMB,
+  CACHE_LIMIT_OPTIONS,
+} from '@/services/map-settings';
 import type { ThemeColors } from '@/stores/ThemeContext';
 import type { LucideIcon } from 'lucide-react-native';
 
@@ -87,6 +92,24 @@ export default function MoreScreen() {
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
 
+  const [cacheLimitMB, setCacheLimitMB] = useState(200);
+
+  useEffect(() => {
+    void getMapCacheLimitMB().then(setCacheLimitMB);
+  }, []);
+
+  const handleCacheLimitPress = useCallback(() => {
+    const buttons = CACHE_LIMIT_OPTIONS.map((mb) => ({
+      text: `${mb} MB${mb === cacheLimitMB ? ' (atual)' : ''}`,
+      onPress: async () => {
+        await setMapCacheLimitMB(mb);
+        setCacheLimitMB(mb);
+      },
+    }));
+    buttons.push({ text: 'Cancelar', onPress: async () => {} });
+    Alert.alert('Limite do cache de mapa', `Atual: ${cacheLimitMB} MB`, buttons);
+  }, [cacheLimitMB]);
+
   const syncLabel = isSyncing
     ? 'Sincronizando...'
     : lastSyncedAt
@@ -105,6 +128,12 @@ export default function MoreScreen() {
       label: 'Trocar Fazenda',
       icon: ArrowLeftRight,
       onPress: () => router.push('/(app)/select-farm'),
+    },
+    {
+      id: 'map-cache',
+      label: `Cache do mapa (${cacheLimitMB} MB)`,
+      icon: Settings,
+      onPress: handleCacheLimitPress,
     },
     { id: 'settings', label: 'Configurações', icon: Settings, onPress: () => {} },
     { id: 'about', label: 'Sobre', icon: Info, onPress: () => {} },

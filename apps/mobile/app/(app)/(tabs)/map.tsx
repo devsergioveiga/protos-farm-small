@@ -31,6 +31,7 @@ import {
   estimateSizeMB,
 } from '@/services/tile-cache';
 import type { BoundingBox, TileDownloadProgress } from '@/services/tile-cache';
+import { getMapCacheLimitMB } from '@/services/map-settings';
 import type { TileCacheMeta } from '@/types/offline';
 import type { ThemeColors } from '@/stores/ThemeContext';
 import type { LatLng } from 'react-native-maps';
@@ -435,9 +436,17 @@ export default function MapScreen() {
     if (!selectedFarmId || !bbox || isDownloading) return;
 
     const sizeMB = estimateSizeMB(estimatedTiles);
+    const cacheLimitMB = await getMapCacheLimitMB();
+    if (sizeMB > cacheLimitMB) {
+      Alert.alert(
+        'Limite de cache',
+        `O download estimado (~${sizeMB} MB) excede o limite configurado de ${cacheLimitMB} MB. Ajuste o limite em Mais > Configurações.`,
+      );
+      return;
+    }
     Alert.alert(
       'Baixar mapa offline',
-      `Serão baixados ~${estimatedTiles} tiles (~${sizeMB} MB). Isso pode levar alguns minutos.`,
+      `Serão baixados ~${estimatedTiles} tiles (~${sizeMB} MB). Limite: ${cacheLimitMB} MB.`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
