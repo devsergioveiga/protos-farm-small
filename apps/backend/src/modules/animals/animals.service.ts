@@ -436,7 +436,7 @@ export async function listAnimals(ctx: RlsContext, farmId: string, query: ListAn
       }
     }
 
-    const [animals, total] = await Promise.all([
+    const [animals, total, aggregate] = await Promise.all([
       tx.animal.findMany({
         where,
         skip,
@@ -450,6 +450,10 @@ export async function listAnimals(ctx: RlsContext, farmId: string, query: ListAn
         },
       }),
       tx.animal.count({ where }),
+      tx.animal.aggregate({
+        where,
+        _avg: { entryWeightKg: true },
+      }),
     ]);
 
     const data = animals.map((a) => ({
@@ -461,9 +465,15 @@ export async function listAnimals(ctx: RlsContext, farmId: string, query: ListAn
           : null,
     }));
 
+    const avgWeight = aggregate._avg.entryWeightKg;
+
     return {
       data,
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      groupStats: {
+        totalCount: total,
+        averageWeightKg: avgWeight != null ? Number(Number(avgWeight).toFixed(1)) : null,
+      },
     };
   });
 }

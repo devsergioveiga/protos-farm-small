@@ -187,6 +187,7 @@ describe('GET /org/farms/:farmId/animals', () => {
     mockedService.listAnimals.mockResolvedValue({
       data: [mockAnimal] as never,
       meta: { page: 1, limit: 20, total: 1, totalPages: 1 },
+      groupStats: { totalCount: 1, averageWeightKg: 350 },
     });
 
     const res = await request(app)
@@ -196,6 +197,24 @@ describe('GET /org/farms/:farmId/animals', () => {
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
     expect(res.body.meta.total).toBe(1);
+    expect(res.body.groupStats).toEqual({ totalCount: 1, averageWeightKg: 350 });
+  });
+
+  it('should return groupStats with null averageWeightKg when no weights', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.listAnimals.mockResolvedValue({
+      data: [] as never,
+      meta: { page: 1, limit: 50, total: 0, totalPages: 0 },
+      groupStats: { totalCount: 0, averageWeightKg: null },
+    });
+
+    const res = await request(app)
+      .get(`/api/org/farms/${FARM_ID}/animals`)
+      .set('Authorization', 'Bearer valid');
+
+    expect(res.status).toBe(200);
+    expect(res.body.groupStats.totalCount).toBe(0);
+    expect(res.body.groupStats.averageWeightKg).toBeNull();
   });
 
   it('should pass filters to service', async () => {
@@ -203,6 +222,7 @@ describe('GET /org/farms/:farmId/animals', () => {
     mockedService.listAnimals.mockResolvedValue({
       data: [],
       meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
+      groupStats: { totalCount: 0, averageWeightKg: null },
     });
 
     await request(app)
@@ -654,6 +674,7 @@ describe('GET /org/farms/:farmId/animals — advanced filters', () => {
   const emptyResult = {
     data: [],
     meta: { page: 1, limit: 50, total: 0, totalPages: 0 },
+    groupStats: { totalCount: 0, averageWeightKg: null },
   };
 
   it('should pass lotId filter to service', async () => {

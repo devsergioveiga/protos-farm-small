@@ -138,24 +138,39 @@
   color: var(--color-neutral-400);
 }
 
-/* ─── Filter Status Bar ─────────────────────────────────────── */
+/* ─── Group Stats Bar ──────────────────────────────────────── */
 
-.animals__filter-status {
+.animals__group-stats {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
+  padding: 12px 16px;
   margin-bottom: 16px;
   background: var(--color-neutral-50);
   border-radius: 8px;
   border: 1px solid var(--color-neutral-200);
 }
 
-.animals__filter-status-text {
+.animals__group-stats-items {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.animals__group-stats-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 0.875rem;
-  font-weight: 600;
   color: var(--color-neutral-600);
+}
+
+.animals__group-stats-item strong {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--color-neutral-800);
 }
 
 /* ─── Filter Badge ──────────────────────────────────────────── */

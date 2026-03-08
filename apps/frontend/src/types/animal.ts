@@ -93,9 +93,15 @@ export interface AnimalDetail extends AnimalListItem {
   }>;
 }
 
+export interface GroupStats {
+  totalCount: number;
+  averageWeightKg: number | null;
+}
+
 export interface AnimalsResponse {
   data: AnimalListItem[];
   meta: PaginationMeta;
+  groupStats: GroupStats;
 }
 
 export interface AnimalsSummary {
