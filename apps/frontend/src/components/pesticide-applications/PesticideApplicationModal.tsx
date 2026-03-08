@@ -35,6 +35,9 @@ function PesticideApplicationModal({
   const [sprayVolume, setSprayVolume] = useState('');
   const [target, setTarget] = useState('');
   const [targetDescription, setTargetDescription] = useState('');
+  const [artNumber, setArtNumber] = useState('');
+  const [agronomistCrea, setAgronomistCrea] = useState('');
+  const [technicalJustification, setTechnicalJustification] = useState('');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -76,6 +79,9 @@ function PesticideApplicationModal({
       setSprayVolume('');
       setTarget('');
       setTargetDescription('');
+      setArtNumber('');
+      setAgronomistCrea('');
+      setTechnicalJustification('');
       setNotes('');
       setSubmitError(null);
       setIsSubmitting(false);
@@ -90,6 +96,9 @@ function PesticideApplicationModal({
       setSprayVolume(String(application.sprayVolume));
       setTarget(application.target);
       setTargetDescription(application.targetDescription ?? '');
+      setArtNumber(application.artNumber ?? '');
+      setAgronomistCrea(application.agronomistCrea ?? '');
+      setTechnicalJustification(application.technicalJustification ?? '');
       setNotes(application.notes ?? '');
     }
   }, [isOpen, application]);
@@ -132,6 +141,9 @@ function PesticideApplicationModal({
         sprayVolume: Number(sprayVolume),
         target,
         targetDescription: targetDescription.trim() || undefined,
+        artNumber: artNumber.trim() || undefined,
+        agronomistCrea: agronomistCrea.trim() || undefined,
+        technicalJustification: technicalJustification.trim() || undefined,
         notes: notes.trim() || undefined,
       };
 
@@ -162,6 +174,9 @@ function PesticideApplicationModal({
     sprayVolume,
     target,
     targetDescription,
+    artNumber,
+    agronomistCrea,
+    technicalJustification,
     notes,
     isEditing,
     application,
@@ -360,6 +375,52 @@ function PesticideApplicationModal({
                   placeholder="Ex: Lagarta-da-soja, Ferrugem asiática"
                 />
               </div>
+            </div>
+
+            {/* Receituário agronômico */}
+            <h3 className="pesticide-modal__section-title">Receituário agronômico</h3>
+
+            <div className="pesticide-modal__row">
+              <div className="pesticide-modal__field">
+                <label htmlFor="pest-art" className="pesticide-modal__label">
+                  Nº da ART / Receita
+                </label>
+                <input
+                  id="pest-art"
+                  type="text"
+                  className="pesticide-modal__input"
+                  value={artNumber}
+                  onChange={(e) => setArtNumber(e.target.value)}
+                  placeholder="Ex: ART-2026-001234"
+                />
+              </div>
+              <div className="pesticide-modal__field">
+                <label htmlFor="pest-crea" className="pesticide-modal__label">
+                  Agrônomo responsável (CREA)
+                </label>
+                <input
+                  id="pest-crea"
+                  type="text"
+                  className="pesticide-modal__input"
+                  value={agronomistCrea}
+                  onChange={(e) => setAgronomistCrea(e.target.value)}
+                  placeholder="Ex: CREA-SP 5012345678"
+                />
+              </div>
+            </div>
+
+            <div className="pesticide-modal__field">
+              <label htmlFor="pest-justification" className="pesticide-modal__label">
+                Justificativa técnica
+              </label>
+              <textarea
+                id="pest-justification"
+                className="pesticide-modal__textarea"
+                value={technicalJustification}
+                onChange={(e) => setTechnicalJustification(e.target.value)}
+                placeholder="Justificativa técnica para a aplicação do defensivo..."
+                rows={3}
+              />
             </div>
 
             {/* Observações */}

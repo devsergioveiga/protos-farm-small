@@ -56,6 +56,9 @@ function toItem(row: Record<string, unknown>): PesticideApplicationItem {
     sprayVolume: Number(row.sprayVolume),
     target: row.target as string,
     targetDescription: (row.targetDescription as string) ?? null,
+    artNumber: (row.artNumber as string) ?? null,
+    agronomistCrea: (row.agronomistCrea as string) ?? null,
+    technicalJustification: (row.technicalJustification as string) ?? null,
     notes: (row.notes as string) ?? null,
     recordedBy: row.recordedBy as string,
     recorderName: recorder?.name ?? '',
@@ -102,6 +105,9 @@ export async function createPesticideApplication(
       sprayVolume: input.sprayVolume,
       target: input.target,
       targetDescription: input.targetDescription?.trim() ?? null,
+      artNumber: input.artNumber?.trim() ?? null,
+      agronomistCrea: input.agronomistCrea?.trim() ?? null,
+      technicalJustification: input.technicalJustification?.trim() ?? null,
       notes: input.notes?.trim() ?? null,
       recordedBy: userId,
     };
@@ -247,6 +253,11 @@ export async function updatePesticideApplication(
     if (input.target) data.target = input.target;
     if (input.targetDescription !== undefined)
       data.targetDescription = input.targetDescription?.trim() ?? null;
+    if (input.artNumber !== undefined) data.artNumber = input.artNumber?.trim() ?? null;
+    if (input.agronomistCrea !== undefined)
+      data.agronomistCrea = input.agronomistCrea?.trim() ?? null;
+    if (input.technicalJustification !== undefined)
+      data.technicalJustification = input.technicalJustification?.trim() ?? null;
     if (input.notes !== undefined) data.notes = input.notes?.trim() ?? null;
 
     const row = await tx.pesticideApplication.update({

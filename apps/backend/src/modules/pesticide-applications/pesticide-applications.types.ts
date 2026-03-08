@@ -42,6 +42,9 @@ export interface CreatePesticideApplicationInput {
   sprayVolume: number;
   target: string;
   targetDescription?: string | null;
+  artNumber?: string | null;
+  agronomistCrea?: string | null;
+  technicalJustification?: string | null;
   notes?: string | null;
 }
 
@@ -60,6 +63,9 @@ export interface PesticideApplicationItem {
   sprayVolume: number;
   target: string;
   targetDescription: string | null;
+  artNumber: string | null;
+  agronomistCrea: string | null;
+  technicalJustification: string | null;
   notes: string | null;
   recordedBy: string;
   recorderName: string;

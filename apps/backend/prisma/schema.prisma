@@ -1225,6 +1225,9 @@ model PesticideApplication {
   sprayVolume       Decimal         @db.Decimal(10, 2)
   target            PesticideTarget
   targetDescription String?
+  artNumber         String?
+  agronomistCrea    String?
+  technicalJustification String?
   notes             String?
   recordedBy        String
   deletedAt         DateTime?

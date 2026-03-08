@@ -222,6 +222,13 @@ function PesticideApplicationsPage() {
                 </span>
               </div>
 
+              {app.artNumber && (
+                <span className="pesticides__card-detail">
+                  <span className="pesticides__card-detail-label">ART:</span>
+                  {app.artNumber}
+                </span>
+              )}
+
               {app.targetDescription && (
                 <div className="pesticides__card-badges">
                   <span className="pesticides__badge pesticides__badge--type">
