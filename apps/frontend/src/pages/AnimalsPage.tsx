@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Beef,
@@ -23,6 +23,9 @@ import { api } from '@/services/api';
 import PermissionGate from '@/components/auth/PermissionGate';
 import CreateAnimalModal from '@/components/animals/CreateAnimalModal';
 import AnimalBulkImportModal from '@/components/animal-bulk-import/AnimalBulkImportModal';
+import BulkActionsBar from '@/components/bulk-actions/BulkActionsBar';
+import BulkMoveToLotModal from '@/components/bulk-actions/BulkMoveToLotModal';
+import BulkHealthEventModal from '@/components/bulk-actions/BulkHealthEventModal';
 import type { AnimalListItem, AnimalSex, AnimalCategory } from '@/types/animal';
 import { SEX_LABELS, CATEGORY_LABELS, ORIGIN_LABELS } from '@/types/animal';
 import './AnimalsPage.css';
@@ -77,6 +80,11 @@ function AnimalsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
 
+  // Selection state for bulk actions
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkMoveModal, setShowBulkMoveModal] = useState(false);
+  const [showBulkHealthModal, setShowBulkHealthModal] = useState(false);
+
   // Reset filters when farm changes (during render, not in effect)
   if (prevFarmIdRef.current !== selectedFarm?.id) {
     prevFarmIdRef.current = selectedFarm?.id;
@@ -101,6 +109,7 @@ function AnimalsPage() {
     setSortBy('');
     setSortOrder('');
     setShowAdvancedFilters(false);
+    setSelectedIds(new Set());
   }
 
   const { animals, meta, groupStats, isLoading, error, refetch } = useAnimals({
@@ -216,6 +225,49 @@ function AnimalsPage() {
     setSortOrder('');
     setPage(1);
   };
+
+  const toggleAnimalSelection = useCallback(
+    (id: string, e: React.MouseEvent | React.ChangeEvent) => {
+      e.stopPropagation();
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) {
+          next.delete(id);
+        } else {
+          next.add(id);
+        }
+        return next;
+      });
+    },
+    [],
+  );
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      const allOnPage = animals.map((a) => a.id);
+      const allSelected = allOnPage.every((id) => prev.has(id));
+      if (allSelected) {
+        const next = new Set(prev);
+        allOnPage.forEach((id) => next.delete(id));
+        return next;
+      } else {
+        const next = new Set(prev);
+        allOnPage.forEach((id) => next.add(id));
+        return next;
+      }
+    });
+  }, [animals]);
+
+  const allOnPageSelected = animals.length > 0 && animals.every((a) => selectedIds.has(a.id));
+  const someOnPageSelected = animals.some((a) => selectedIds.has(a.id));
+  const selectedAnimalIds = Array.from(selectedIds);
+
+  const handleBulkSuccess = useCallback(() => {
+    setSelectedIds(new Set());
+    setShowBulkMoveModal(false);
+    setShowBulkHealthModal(false);
+    void refetch();
+  }, [refetch]);
 
   const handleExport = async (format: 'csv' | 'xlsx') => {
     if (!selectedFarm) return;
@@ -688,6 +740,18 @@ function AnimalsPage() {
             <table className="animals__table">
               <thead>
                 <tr>
+                  <th scope="col" className="animals__th-check">
+                    <input
+                      type="checkbox"
+                      className="animals__checkbox"
+                      checked={allOnPageSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = someOnPageSelected && !allOnPageSelected;
+                      }}
+                      onChange={toggleSelectAll}
+                      aria-label="Selecionar todos os animais da página"
+                    />
+                  </th>
                   <th scope="col">Brinco</th>
                   <th scope="col">Nome</th>
                   <th scope="col">Sexo</th>
@@ -700,13 +764,23 @@ function AnimalsPage() {
                 {animals.map((animal) => (
                   <tr
                     key={animal.id}
-                    className="animals__table-row"
+                    className={`animals__table-row${selectedIds.has(animal.id) ? ' animals__table-row--selected' : ''}`}
                     onClick={() => handleRowClick(animal)}
                     tabIndex={0}
                     role="button"
                     aria-label={`Ver detalhes de ${animal.earTag}`}
                     onKeyDown={(e) => handleRowKeyDown(e, animal)}
                   >
+                    <td className="animals__td-check">
+                      <input
+                        type="checkbox"
+                        className="animals__checkbox"
+                        checked={selectedIds.has(animal.id)}
+                        onChange={(e) => toggleAnimalSelection(animal.id, e)}
+                        onClick={(e) => e.stopPropagation()}
+                        aria-label={`Selecionar ${animal.earTag}`}
+                      />
+                    </td>
                     <td>
                       <span className="animals__ear-tag">{animal.earTag}</span>
                     </td>
@@ -738,7 +812,7 @@ function AnimalsPage() {
             {animals.map((animal) => (
               <div
                 key={animal.id}
-                className="animals__card"
+                className={`animals__card${selectedIds.has(animal.id) ? ' animals__card--selected' : ''}`}
                 onClick={() => handleRowClick(animal)}
                 tabIndex={0}
                 role="button"
@@ -746,9 +820,19 @@ function AnimalsPage() {
                 onKeyDown={(e) => handleRowKeyDown(e, animal)}
               >
                 <div className="animals__card-header">
-                  <h3 className="animals__card-name">
-                    {animal.earTag} {animal.name ? `— ${animal.name}` : ''}
-                  </h3>
+                  <div className="animals__card-header-left">
+                    <input
+                      type="checkbox"
+                      className="animals__checkbox"
+                      checked={selectedIds.has(animal.id)}
+                      onChange={(e) => toggleAnimalSelection(animal.id, e)}
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label={`Selecionar ${animal.earTag}`}
+                    />
+                    <h3 className="animals__card-name">
+                      {animal.earTag} {animal.name ? `— ${animal.name}` : ''}
+                    </h3>
+                  </div>
                   <span
                     className={`animals__badge animals__badge--sex-${animal.sex.toLowerCase()}`}
                   >
@@ -823,6 +907,31 @@ function AnimalsPage() {
           void refetch();
         }}
       />
+
+      <PermissionGate permission="animals:update">
+        <BulkActionsBar
+          selectedCount={selectedIds.size}
+          onClearSelection={() => setSelectedIds(new Set())}
+          onMoveToLot={() => setShowBulkMoveModal(true)}
+          onRegisterHealthEvent={() => setShowBulkHealthModal(true)}
+        />
+
+        <BulkMoveToLotModal
+          isOpen={showBulkMoveModal}
+          farmId={selectedFarm.id}
+          selectedAnimalIds={selectedAnimalIds}
+          onClose={() => setShowBulkMoveModal(false)}
+          onSuccess={handleBulkSuccess}
+        />
+
+        <BulkHealthEventModal
+          isOpen={showBulkHealthModal}
+          farmId={selectedFarm.id}
+          selectedAnimalIds={selectedAnimalIds}
+          onClose={() => setShowBulkHealthModal(false)}
+          onSuccess={handleBulkSuccess}
+        />
+      </PermissionGate>
     </section>
   );
 }

@@ -1,0 +1,267 @@
+/* ─── Bulk Health Event Modal ──────────────────────────────── */
+
+.bulk-health-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 24px;
+  animation: bulk-health-fade-in 200ms;
+}
+
+@keyframes bulk-health-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.bulk-health {
+  background: var(--color-neutral-0);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.16);
+}
+
+.bulk-health__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.bulk-health__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-neutral-800);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bulk-health__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  min-width: 36px;
+  min-height: 36px;
+  transition: all 200ms;
+}
+
+.bulk-health__close:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.bulk-health__close:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.bulk-health__body {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.bulk-health__info {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-600);
+  margin: 0 0 20px;
+}
+
+.bulk-health__info strong {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--color-neutral-800);
+}
+
+.bulk-health__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.bulk-health__row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 0;
+}
+
+.bulk-health__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex: 1;
+}
+
+.bulk-health__label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.bulk-health__select,
+.bulk-health__input {
+  padding: 12px 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  min-height: 48px;
+  box-sizing: border-box;
+  transition: border-color 200ms;
+}
+
+.bulk-health__select {
+  appearance: none;
+  padding-right: 36px;
+  background: var(--color-neutral-0)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B6560' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")
+    no-repeat right 12px center / 16px;
+}
+
+.bulk-health__select:focus,
+.bulk-health__input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.bulk-health__input::placeholder {
+  color: var(--color-neutral-400);
+}
+
+.bulk-health__result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 0;
+  text-align: center;
+}
+
+.bulk-health__result-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.bulk-health__result-desc {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-600);
+  margin: 0;
+}
+
+.bulk-health__result-desc strong {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--color-neutral-800);
+}
+
+.bulk-health__result-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-warning-600, #e65100);
+  margin: 0;
+}
+
+.bulk-health__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.bulk-health__btn {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  min-height: 48px;
+  transition: all 200ms;
+}
+
+.bulk-health__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.bulk-health__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bulk-health__btn--primary {
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+}
+
+.bulk-health__btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+}
+
+.bulk-health__btn--secondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.bulk-health__btn--secondary:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+}
+
+@media (max-width: 640px) {
+  .bulk-health__row {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bulk-health-overlay {
+    animation: none;
+  }
+
+  .bulk-health__close,
+  .bulk-health__select,
+  .bulk-health__input,
+  .bulk-health__btn {
+    transition: none;
+  }
+}
