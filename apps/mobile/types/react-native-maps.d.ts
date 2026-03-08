@@ -26,6 +26,7 @@ declare module 'react-native-maps' {
     onRegionChange?: (region: Region) => void;
     onRegionChangeComplete?: (region: Region) => void;
     onPress?: (event: any) => void;
+    onUserLocationChange?: (event: { nativeEvent: { coordinate: LatLng } }) => void;
     children?: React.ReactNode;
     style?: any;
     accessibilityLabel?: string;

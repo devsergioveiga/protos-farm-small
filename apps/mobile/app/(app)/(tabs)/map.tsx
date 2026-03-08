@@ -1,15 +1,28 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView, { UrlTile } from 'react-native-maps';
+import MapView, { Polygon, UrlTile } from 'react-native-maps';
 import { useSQLiteContext } from 'expo-sqlite';
-import { Download, Trash2, Map as MapIcon, WifiOff, CheckCircle } from 'lucide-react-native';
+import {
+  Download,
+  Trash2,
+  Map as MapIcon,
+  WifiOff,
+  CheckCircle,
+  MapPin,
+  X,
+} from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { spacing, fontSize } from '@protos-farm/shared';
 import { useTheme } from '@/stores/ThemeContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { useFarmContext } from '@/stores/FarmContext';
 import { useConnectivity } from '@/stores/ConnectivityContext';
-import { createFarmRepository } from '@/services/db';
+import {
+  createFarmRepository,
+  createFieldPlotRepository,
+  createFarmLocationRepository,
+} from '@/services/db';
 import {
   createTileCacheService,
   computeBBoxFromGeoJSON,
@@ -20,6 +33,78 @@ import {
 import type { BoundingBox, TileDownloadProgress } from '@/services/tile-cache';
 import type { TileCacheMeta } from '@/types/offline';
 import type { ThemeColors } from '@/stores/ThemeContext';
+import type { LatLng } from 'react-native-maps';
+
+// ─── Color maps (matching frontend FarmMap) ─────────────────────────────────
+
+const CROP_COLORS: Record<string, string> = {
+  soja: '#DAA520',
+  milho: '#228B22',
+  café: '#8B4513',
+  cafe: '#8B4513',
+  algodão: '#E6E6FA',
+  algodao: '#E6E6FA',
+  cana: '#90EE90',
+  'cana-de-açúcar': '#90EE90',
+  pasto: '#7CFC00',
+  pastagem: '#7CFC00',
+  arroz: '#F0E68C',
+  feijão: '#CD853F',
+  feijao: '#CD853F',
+  trigo: '#F5DEB3',
+  sorgo: '#D2691E',
+};
+
+const NO_CROP_COLOR = '#6B7280';
+const FARM_BOUNDARY_COLOR = '#2E7D32';
+const PASTURE_COLOR = '#43A047';
+const FACILITY_COLOR = '#FF6F00';
+
+function getCropColor(crop: string | null): string {
+  if (!crop) return NO_CROP_COLOR;
+  return CROP_COLORS[crop.toLowerCase().trim()] ?? NO_CROP_COLOR;
+}
+
+// ─── GeoJSON helpers ────────────────────────────────────────────────────────
+
+interface ParsedPolygon {
+  id: string;
+  name: string;
+  type: 'farm' | 'plot' | 'pasture' | 'facility';
+  coordinates: LatLng[];
+  color: string;
+  areaHa: number | null;
+  extra?: string | null;
+}
+
+function parseGeoJSONToCoords(geojsonStr: string | null): LatLng[] | null {
+  if (!geojsonStr) return null;
+  try {
+    const geojson = JSON.parse(geojsonStr);
+    const ring = geojson.coordinates?.[0];
+    if (!ring || !Array.isArray(ring)) return null;
+    return ring.map(([lng, lat]: [number, number]) => ({ latitude: lat, longitude: lng }));
+  } catch {
+    return null;
+  }
+}
+
+function pointInPolygon(point: LatLng, polygon: LatLng[]): boolean {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].latitude;
+    const yi = polygon[i].longitude;
+    const xj = polygon[j].latitude;
+    const yj = polygon[j].longitude;
+    const intersect =
+      yi > point.longitude !== yj > point.longitude &&
+      point.latitude < ((xj - xi) * (point.longitude - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
 
 const DEFAULT_REGION = {
   latitude: -15.7801,
@@ -91,11 +176,6 @@ const createStyles = (c: ThemeColors) => ({
     fontSize: fontSize.sm,
     color: c.neutral[0],
   },
-  deleteButtonText: {
-    fontFamily: 'SourceSans3_600SemiBold',
-    fontSize: fontSize.sm,
-    color: c.error[500],
-  },
   progressBar: {
     height: 4,
     backgroundColor: c.neutral[200],
@@ -113,6 +193,7 @@ const createStyles = (c: ThemeColors) => ({
     alignItems: 'center' as const,
     gap: spacing[2],
     marginBottom: spacing[2],
+    flexWrap: 'wrap' as const,
   },
   statusText: {
     fontFamily: 'SourceSans3_400Regular',
@@ -154,6 +235,55 @@ const createStyles = (c: ThemeColors) => ({
     marginTop: spacing[2],
     lineHeight: fontSize.base * 1.5,
   },
+  // Location info card
+  locationCard: {
+    position: 'absolute' as const,
+    top: Platform.OS === 'ios' ? spacing[3] : spacing[4],
+    left: spacing[4],
+    right: spacing[4],
+    backgroundColor: c.neutral[0],
+    borderRadius: 12,
+    padding: spacing[4],
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: spacing[3],
+  },
+  locationCardContent: {
+    flex: 1 as const,
+  },
+  locationCardTitle: {
+    fontFamily: 'DMSans_700Bold',
+    fontSize: fontSize.sm,
+    color: c.neutral[800],
+  },
+  locationCardSubtitle: {
+    fontFamily: 'SourceSans3_400Regular',
+    fontSize: fontSize.xs,
+    color: c.neutral[500],
+    marginTop: 2,
+  },
+  locationCardArea: {
+    fontFamily: 'JetBrains Mono',
+    fontSize: fontSize.xs,
+    color: c.neutral[600],
+    marginTop: 2,
+  },
+  locationCardDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  closeButton: {
+    minWidth: 48,
+    minHeight: 48,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
 });
 
 function formatBytes(bytes: number): string {
@@ -161,6 +291,20 @@ function formatBytes(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
+
+function formatArea(ha: number | null): string {
+  if (ha == null) return '';
+  return `${Number(ha).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ha`;
+}
+
+function getLocationTypeLabel(type: string, extra?: string | null): string {
+  if (type === 'plot') return extra ? `Talhão — ${extra}` : 'Talhão';
+  if (type === 'pasture') return 'Pasto';
+  if (type === 'facility') return 'Instalação';
+  return 'Perímetro da fazenda';
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function MapScreen() {
   const { colors } = useTheme();
@@ -172,6 +316,8 @@ export default function MapScreen() {
   const mapRef = useRef<React.ComponentRef<typeof MapView>>(null);
   const tileCacheService = useRef(createTileCacheService(db)).current;
   const farmRepo = useRef(createFarmRepository(db)).current;
+  const plotRepo = useRef(createFieldPlotRepository(db)).current;
+  const locationRepo = useRef(createFarmLocationRepository(db)).current;
 
   const [cacheMeta, setCacheMeta] = useState<TileCacheMeta | null>(null);
   const [bbox, setBbox] = useState<BoundingBox | null>(null);
@@ -179,21 +325,32 @@ export default function MapScreen() {
   const [downloadProgress, setDownloadProgress] = useState<TileDownloadProgress | null>(null);
   const [estimatedTiles, setEstimatedTiles] = useState(0);
 
-  // Load cache metadata and compute bounding box
+  // Polygon data
+  const [farmBoundaryCoords, setFarmBoundaryCoords] = useState<LatLng[] | null>(null);
+  const [polygons, setPolygons] = useState<ParsedPolygon[]>([]);
+  const [selectedPolygon, setSelectedPolygon] = useState<ParsedPolygon | null>(null);
+
+  // GPS-based current location identification (CA4)
+  const [currentLocation, setCurrentLocation] = useState<ParsedPolygon | null>(null);
+  const [userPosition, setUserPosition] = useState<LatLng | null>(null);
+
+  // Load cache metadata, compute bounding box, and load polygons
   const loadCacheState = useCallback(async () => {
     if (!selectedFarmId) return;
 
     const meta = await tileCacheService.getCacheMeta(selectedFarmId);
     setCacheMeta(meta);
 
-    // Compute bounding box from farm data
     const farm = await farmRepo.getById(selectedFarmId);
     if (!farm) return;
 
     let computedBbox: BoundingBox | null = null;
 
+    // Farm boundary
     if (farm.boundary_geojson) {
       computedBbox = computeBBoxFromGeoJSON(farm.boundary_geojson);
+      const coords = parseGeoJSONToCoords(farm.boundary_geojson);
+      setFarmBoundaryCoords(coords);
     }
 
     if (!computedBbox && farm.latitude && farm.longitude) {
@@ -208,11 +365,71 @@ export default function MapScreen() {
       setBbox(computedBbox);
       setEstimatedTiles(estimateTileCount(computedBbox));
     }
-  }, [selectedFarmId, tileCacheService, farmRepo]);
+
+    // Load plots and locations for polygon rendering (CA2)
+    const allPolygons: ParsedPolygon[] = [];
+
+    const plots = await plotRepo.getByFarmId(selectedFarmId);
+    for (const plot of plots) {
+      const coords = parseGeoJSONToCoords(plot.boundary_geojson);
+      if (coords) {
+        allPolygons.push({
+          id: plot.id,
+          name: plot.name,
+          type: 'plot',
+          coordinates: coords,
+          color: getCropColor(plot.current_crop),
+          areaHa: plot.boundary_area_ha,
+          extra: plot.current_crop,
+        });
+      }
+    }
+
+    const locations = await locationRepo.getByFarmId(selectedFarmId);
+    for (const loc of locations) {
+      const coords = parseGeoJSONToCoords(loc.boundary_geojson);
+      if (coords) {
+        allPolygons.push({
+          id: loc.id,
+          name: loc.name,
+          type: loc.type === 'PASTURE' ? 'pasture' : 'facility',
+          coordinates: coords,
+          color: loc.type === 'PASTURE' ? PASTURE_COLOR : FACILITY_COLOR,
+          areaHa: loc.boundary_area_ha,
+        });
+      }
+    }
+
+    setPolygons(allPolygons);
+  }, [selectedFarmId, tileCacheService, farmRepo, plotRepo, locationRepo]);
 
   useEffect(() => {
     void loadCacheState();
   }, [loadCacheState]);
+
+  // Identify current talhão/pasto based on GPS (CA4)
+  useEffect(() => {
+    if (!userPosition || polygons.length === 0) {
+      setCurrentLocation(null);
+      return;
+    }
+
+    // Check plots first (more specific), then locations
+    const plotMatch = polygons.find(
+      (p) =>
+        (p.type === 'plot' || p.type === 'pasture') && pointInPolygon(userPosition, p.coordinates),
+    );
+    setCurrentLocation(plotMatch ?? null);
+  }, [userPosition, polygons]);
+
+  const handleUserLocationChange = useCallback((event: { nativeEvent: { coordinate: LatLng } }) => {
+    setUserPosition(event.nativeEvent.coordinate);
+  }, []);
+
+  const handlePolygonPress = useCallback((polygon: ParsedPolygon) => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelectedPolygon(polygon);
+  }, []);
 
   const handleDownload = useCallback(async () => {
     if (!selectedFarmId || !bbox || isDownloading) return;
@@ -283,6 +500,9 @@ export default function MapScreen() {
     );
   }, [selectedFarmId, tileCacheService]);
 
+  // Info card content (selected polygon or GPS-identified location)
+  const infoCard = selectedPolygon ?? currentLocation;
+
   // No farm selected
   if (!selectedFarm || !selectedFarmId) {
     return (
@@ -334,6 +554,7 @@ export default function MapScreen() {
         showsCompass
         mapType="standard"
         accessibilityLabel="Mapa da fazenda"
+        onUserLocationChange={handleUserLocationChange}
       >
         {tileUrlTemplate && (
           <UrlTile
@@ -345,7 +566,66 @@ export default function MapScreen() {
             zIndex={1}
           />
         )}
+
+        {/* Farm boundary (CA2) */}
+        {farmBoundaryCoords && (
+          <Polygon
+            coordinates={farmBoundaryCoords}
+            strokeColor={FARM_BOUNDARY_COLOR}
+            fillColor={`${FARM_BOUNDARY_COLOR}1A`}
+            strokeWidth={3}
+            zIndex={2}
+          />
+        )}
+
+        {/* Field plots and farm locations (CA2) */}
+        {polygons.map((poly) => (
+          <Polygon
+            key={poly.id}
+            coordinates={poly.coordinates}
+            strokeColor={poly.color}
+            fillColor={`${poly.color}4D`}
+            strokeWidth={2}
+            tappable
+            onPress={() => handlePolygonPress(poly)}
+            zIndex={3}
+          />
+        ))}
       </MapView>
+
+      {/* GPS-identified location or selected polygon info card (CA4) */}
+      {infoCard && (
+        <View
+          style={styles.locationCard}
+          accessibilityLabel={`Você está em: ${infoCard.name}`}
+          accessibilityRole="text"
+        >
+          <View style={[styles.locationCardDot, { backgroundColor: infoCard.color }]} />
+          <View style={styles.locationCardContent}>
+            <Text style={styles.locationCardTitle}>{infoCard.name}</Text>
+            <Text style={styles.locationCardSubtitle}>
+              {getLocationTypeLabel(infoCard.type, infoCard.extra)}
+            </Text>
+            {infoCard.areaHa != null && (
+              <Text style={styles.locationCardArea}>{formatArea(infoCard.areaHa)}</Text>
+            )}
+          </View>
+          {infoCard === currentLocation && (
+            <MapPin size={20} color={colors.primary[500]} aria-hidden />
+          )}
+          {selectedPolygon && (
+            <Pressable
+              style={styles.closeButton}
+              onPress={() => setSelectedPolygon(null)}
+              accessible
+              accessibilityLabel="Fechar detalhes"
+              accessibilityRole="button"
+            >
+              <X size={20} color={colors.neutral[400]} aria-hidden />
+            </Pressable>
+          )}
+        </View>
+      )}
 
       {/* Download overlay */}
       <View style={styles.overlay}>
@@ -362,6 +642,17 @@ export default function MapScreen() {
               <CheckCircle size={14} color={colors.success[500]} aria-hidden />
               <Text style={styles.cachedText}>
                 Offline ({formatBytes(cacheMeta.cache_size_bytes)})
+              </Text>
+            </View>
+          )}
+          {polygons.length > 0 && (
+            <View
+              style={[styles.cachedBadge, { backgroundColor: colors.info[100] }]}
+              accessibilityLabel={`${polygons.length} áreas no mapa`}
+              accessibilityRole="text"
+            >
+              <Text style={[styles.cachedText, { color: colors.info[500] }]}>
+                {polygons.length} áreas
               </Text>
             </View>
           )}
