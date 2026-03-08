@@ -152,6 +152,77 @@ export async function createHealthRecord(
   });
 }
 
+// ─── BULK CREATE ────────────────────────────────────────────────────
+
+export interface BulkHealthResult {
+  created: number;
+  failed: number;
+  errors: Array<{ animalId: string; error: string }>;
+}
+
+export async function bulkCreateHealthRecords(
+  ctx: RlsContext,
+  farmId: string,
+  animalIds: string[],
+  userId: string,
+  input: CreateHealthRecordInput,
+): Promise<BulkHealthResult> {
+  validateHealthRecordInput(input);
+
+  if (!input.type || !input.eventDate) {
+    throw new AnimalHealthError('Tipo e data do evento são obrigatórios', 400);
+  }
+
+  if (!animalIds.length || animalIds.length > 200) {
+    throw new AnimalHealthError('Selecione entre 1 e 200 animais', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    const animals = await tx.animal.findMany({
+      where: { id: { in: animalIds }, farmId, deletedAt: null },
+      select: { id: true },
+    });
+    const validIds = new Set(animals.map((a) => a.id));
+    const errors: Array<{ animalId: string; error: string }> = [];
+
+    for (const id of animalIds) {
+      if (!validIds.has(id)) {
+        errors.push({ animalId: id, error: 'Animal não encontrado' });
+      }
+    }
+
+    const toCreate = animalIds.filter((id) => validIds.has(id));
+    if (toCreate.length > 0) {
+      await tx.animalHealthRecord.createMany({
+        data: toCreate.map((animalId) => ({
+          animalId,
+          farmId,
+          type: input.type,
+          eventDate: new Date(input.eventDate),
+          productName: input.productName ?? null,
+          dosage: input.dosage ?? null,
+          applicationMethod: input.applicationMethod ?? null,
+          batchNumber: input.batchNumber ?? null,
+          diagnosis: input.diagnosis ?? null,
+          durationDays: input.durationDays ?? null,
+          examResult: input.examResult ?? null,
+          labName: input.labName ?? null,
+          isFieldExam: input.isFieldExam ?? false,
+          veterinaryName: input.veterinaryName ?? null,
+          notes: input.notes ?? null,
+          recordedBy: userId,
+        })),
+      });
+    }
+
+    return {
+      created: toCreate.length,
+      failed: errors.length,
+      errors,
+    };
+  });
+}
+
 // ─── UPDATE ─────────────────────────────────────────────────────────
 
 export async function updateHealthRecord(

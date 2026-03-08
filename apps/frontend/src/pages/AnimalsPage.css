@@ -4,6 +4,7 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 32px 24px;
+  padding-bottom: 80px; /* Space for bulk action bar */
 }
 
 .animals__header {
@@ -317,6 +318,43 @@
 .animals__breed-summary {
   font-size: 0.8125rem;
   color: var(--color-neutral-600);
+}
+
+/* ─── Checkbox & Selection ───────────────────────────────────── */
+
+.animals__th-check,
+.animals__td-check {
+  width: 48px;
+  text-align: center;
+  padding: 12px 8px 12px 16px !important;
+}
+
+.animals__checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary-600);
+  cursor: pointer;
+  margin: 0;
+}
+
+.animals__checkbox:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.animals__table-row--selected {
+  background: var(--color-primary-50, #e8f5e9) !important;
+}
+
+.animals__card--selected {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-50, #e8f5e9);
+}
+
+.animals__card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ─── Badge ──────────────────────────────────────────────────── */

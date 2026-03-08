@@ -125,6 +125,44 @@ vi.mock('@/components/animal-bulk-import/AnimalBulkImportModal', () => ({
     isOpen ? <div data-testid="bulk-import-modal">Modal</div> : null,
 }));
 
+vi.mock('@/components/bulk-actions/BulkActionsBar', () => ({
+  default: ({
+    selectedCount,
+    onClearSelection,
+    onMoveToLot,
+    onRegisterHealthEvent,
+  }: {
+    selectedCount: number;
+    onClearSelection: () => void;
+    onMoveToLot: () => void;
+    onRegisterHealthEvent: () => void;
+  }) =>
+    selectedCount > 0 ? (
+      <div data-testid="bulk-actions-bar">
+        <span data-testid="bulk-count">{selectedCount}</span>
+        <button data-testid="bulk-clear" onClick={onClearSelection}>
+          Limpar
+        </button>
+        <button data-testid="bulk-move" onClick={onMoveToLot}>
+          Mover
+        </button>
+        <button data-testid="bulk-health" onClick={onRegisterHealthEvent}>
+          Sanitário
+        </button>
+      </div>
+    ) : null,
+}));
+
+vi.mock('@/components/bulk-actions/BulkMoveToLotModal', () => ({
+  default: ({ isOpen }: { isOpen: boolean }) =>
+    isOpen ? <div data-testid="bulk-move-modal">Modal</div> : null,
+}));
+
+vi.mock('@/components/bulk-actions/BulkHealthEventModal', () => ({
+  default: ({ isOpen }: { isOpen: boolean }) =>
+    isOpen ? <div data-testid="bulk-health-modal">Modal</div> : null,
+}));
+
 function defaultReturn() {
   return {
     animals: MOCK_ANIMALS,
@@ -608,5 +646,80 @@ describe('AnimalsPage', () => {
     expect(optionTexts).toContain('Nascimento');
     expect(optionTexts).toContain('Peso');
     expect(optionTexts).toContain('Cadastro');
+  });
+
+  // ─── Selection & Bulk Actions ───────────────────────────────────
+
+  it('should render checkboxes for each animal row', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    // Select all checkbox + one per animal row
+    const checkboxes = screen.getAllByRole('checkbox');
+    // At least 3: select-all + 2 animals (desktop) — cards are hidden
+    expect(checkboxes.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('should show bulk actions bar when animals are selected', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    // No bar initially
+    expect(screen.queryByTestId('bulk-actions-bar')).toBeNull();
+
+    // Click the first animal checkbox (skip the "select all" which is first)
+    const checkboxes = screen.getAllByRole('checkbox');
+    await userEvent.click(checkboxes[1]);
+
+    expect(screen.getByTestId('bulk-actions-bar')).toBeTruthy();
+    expect(screen.getByTestId('bulk-count')?.textContent).toBe('1');
+  });
+
+  it('should select all animals when clicking "select all" checkbox', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    // First checkbox is "select all"
+    await userEvent.click(checkboxes[0]);
+
+    expect(screen.getByTestId('bulk-actions-bar')).toBeTruthy();
+    expect(screen.getByTestId('bulk-count')?.textContent).toBe('2');
+  });
+
+  it('should clear selection when clicking clear button', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    // Select all
+    const checkboxes = screen.getAllByRole('checkbox');
+    await userEvent.click(checkboxes[0]);
+    expect(screen.getByTestId('bulk-actions-bar')).toBeTruthy();
+
+    // Clear
+    await userEvent.click(screen.getByTestId('bulk-clear'));
+    expect(screen.queryByTestId('bulk-actions-bar')).toBeNull();
+  });
+
+  it('should open bulk move modal when clicking "Mover" button', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    await userEvent.click(checkboxes[0]);
+
+    await userEvent.click(screen.getByTestId('bulk-move'));
+    expect(screen.getByTestId('bulk-move-modal')).toBeTruthy();
+  });
+
+  it('should open bulk health modal when clicking "Sanitário" button', async () => {
+    mockUseAnimals.mockReturnValue(defaultReturn());
+    await renderPage();
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    await userEvent.click(checkboxes[0]);
+
+    await userEvent.click(screen.getByTestId('bulk-health'));
+    expect(screen.getByTestId('bulk-health-modal')).toBeTruthy();
   });
 });
