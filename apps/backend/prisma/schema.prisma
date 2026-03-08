@@ -295,6 +295,7 @@ model User {
   recordedWeighings         AnimalWeighing[]
   recordedHealthRecords     AnimalHealthRecord[]
   recordedReproductiveRecords AnimalReproductiveRecord[]
+  recordedFieldOperations     FieldOperation[]
 
   @@map("users")
 }
@@ -349,6 +350,7 @@ model Farm {
   animalWeighings            AnimalWeighing[]
   animalHealthRecords        AnimalHealthRecord[]
   animalReproductiveRecords  AnimalReproductiveRecord[]
+  fieldOperations            FieldOperation[]
 
   @@map("farms")
 }
@@ -1103,4 +1105,52 @@ model AnimalReproductiveRecord {
   @@index([eventDate])
   @@index([type])
   @@map("animal_reproductive_records")
+}
+
+// ─── Field Operations ─────────────────────────────────────────────────────
+
+enum FieldOperationType {
+  PULVERIZACAO
+  ADUBACAO
+  PLANTIO
+  COLHEITA
+  IRRIGACAO
+  MANEJO_PASTO
+  VACINACAO
+  VERMIFUGACAO
+  INSEMINACAO
+  MOVIMENTACAO
+  PESAGEM
+  OUTRO
+}
+
+enum FieldOperationLocationType {
+  PLOT
+  PASTURE
+  FACILITY
+}
+
+model FieldOperation {
+  id             String                      @id @default(uuid())
+  farmId         String
+  locationId     String?
+  locationType   FieldOperationLocationType?
+  locationName   String?
+  operationType  FieldOperationType
+  notes          String?
+  photoUri       String?
+  latitude       Decimal?                    @db.Decimal(10, 7)
+  longitude      Decimal?                    @db.Decimal(10, 7)
+  recordedAt     DateTime
+  recordedBy     String
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
+
+  farm      Farm @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  recorder  User @relation(fields: [recordedBy], references: [id])
+
+  @@index([farmId])
+  @@index([recordedAt])
+  @@index([operationType])
+  @@map("field_operations")
 }

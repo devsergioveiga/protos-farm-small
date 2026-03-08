@@ -126,6 +126,51 @@ export interface TileCacheMeta {
   updated_at: string;
 }
 
+/** Operation types for field operations quick register */
+export type FieldOperationType =
+  | 'PULVERIZACAO'
+  | 'ADUBACAO'
+  | 'PLANTIO'
+  | 'COLHEITA'
+  | 'IRRIGACAO'
+  | 'MANEJO_PASTO'
+  | 'VACINACAO'
+  | 'VERMIFUGACAO'
+  | 'INSEMINACAO'
+  | 'MOVIMENTACAO'
+  | 'PESAGEM'
+  | 'OUTRO';
+
+/** Location type for field operations */
+export type FieldOperationLocationType = 'PLOT' | 'PASTURE' | 'FACILITY';
+
+export interface OfflineFieldOperation {
+  id: string;
+  farm_id: string;
+  location_id: string | null;
+  location_type: FieldOperationLocationType | null;
+  location_name: string | null;
+  operation_type: FieldOperationType;
+  notes: string | null;
+  photo_uri: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  recorded_at: string;
+  synced: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OfflineOperationTemplate {
+  id: string;
+  farm_id: string;
+  name: string;
+  operation_type: FieldOperationType;
+  default_notes: string | null;
+  usage_count: number;
+  created_at: string;
+}
+
 /** Entities that can be synced */
 export type SyncEntity =
   | 'farms'
