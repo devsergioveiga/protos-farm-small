@@ -530,11 +530,11 @@ describe('AnimalsPage', () => {
 
   // ─── CSV Export Tests ───────────────────────────────────────────
 
-  it('should render "Exportar CSV" button', async () => {
+  it('should render CSV and Excel export buttons', async () => {
     mockUseAnimals.mockReturnValue(defaultReturn());
     await renderPage();
 
-    expect(screen.getByText('Exportar CSV')).toBeTruthy();
+    expect(screen.getByLabelText('Exportar animais em CSV')).toBeTruthy();
   });
 
   it('should call api.getBlob when export button is clicked', async () => {
@@ -542,7 +542,7 @@ describe('AnimalsPage', () => {
     mockGetBlob.mockResolvedValue(new Blob(['test'], { type: 'text/csv' }));
     await renderPage();
 
-    const exportBtn = screen.getByText('Exportar CSV');
+    const exportBtn = screen.getByLabelText('Exportar animais em CSV');
     await userEvent.click(exportBtn);
 
     expect(mockGetBlob).toHaveBeenCalledWith('/org/farms/farm-1/animals/export');
@@ -564,7 +564,7 @@ describe('AnimalsPage', () => {
 
     expect(capturedParams.sex).toBe('FEMALE');
 
-    const exportBtn = screen.getByText('Exportar CSV');
+    const exportBtn = screen.getByLabelText('Exportar animais em CSV');
     await userEvent.click(exportBtn);
 
     expect(mockGetBlob).toHaveBeenCalledWith('/org/farms/farm-1/animals/export?sex=FEMALE');
