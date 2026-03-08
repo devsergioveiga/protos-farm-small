@@ -153,6 +153,40 @@
   font-size: 0.9375rem;
 }
 
+/* Withdrawal banner */
+.pesticides__withdrawal-banner {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  background: #fff3e0;
+  border: 1px solid #ffb74d;
+  border-radius: 8px;
+  color: #e65100;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.pesticides__withdrawal-banner strong {
+  font-weight: 600;
+}
+
+.pesticides__withdrawal-list {
+  margin: 8px 0 0;
+  padding: 0 0 0 20px;
+  list-style: disc;
+}
+
+.pesticides__withdrawal-list li {
+  margin-bottom: 4px;
+}
+
+/* Card withdrawal active */
+.pesticides__card--withdrawal-active {
+  border-left: 4px solid #ffb74d;
+}
+
 /* Skeleton */
 .pesticides__skeleton-grid {
   display: grid;

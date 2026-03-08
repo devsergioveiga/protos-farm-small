@@ -72,6 +72,18 @@ export interface CreatePesticideApplicationInput {
   notes?: string;
 }
 
+export interface WithdrawalAlert {
+  applicationId: string;
+  fieldPlotId: string;
+  fieldPlotName: string;
+  productName: string;
+  activeIngredient: string;
+  appliedAt: string;
+  withdrawalPeriodDays: number;
+  safeHarvestDate: string;
+  daysRemaining: number;
+}
+
 export const PESTICIDE_TARGETS = [
   { value: 'PRAGA', label: 'Praga' },
   { value: 'DOENCA', label: 'Doença' },
