@@ -94,6 +94,20 @@ function exportProductivityCsv(data: CultivarProductivityComparison[]) {
   URL.revokeObjectURL(url);
 }
 
+function formatTooltip(
+  value: number | string,
+  _name: string,
+  entry: { payload?: { fullName: string; plantings: number } },
+) {
+  const v = Number(value);
+  const p = entry.payload;
+  if (!p) return [String(v), ''];
+  return [
+    `${v.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} kg/ha (${p.plantings} plantios)`,
+    p.fullName,
+  ];
+}
+
 function CultivarProductivity() {
   const { selectedFarmId, selectedFarm } = useFarmContext();
   const [cropFilter, setCropFilter] = useState('');
@@ -156,17 +170,14 @@ function CultivarProductivity() {
     });
   }, []);
 
-  const SortIcon = useCallback(
-    ({ field }: { field: SortField }) => {
-      if (sortField !== field) return null;
-      return sortDir === 'asc' ? (
-        <ChevronUp size={14} aria-hidden="true" />
-      ) : (
-        <ChevronDown size={14} aria-hidden="true" />
-      );
-    },
-    [sortField, sortDir],
-  );
+  const renderSortIcon = (field: SortField) => {
+    if (sortField !== field) return null;
+    return sortDir === 'asc' ? (
+      <ChevronUp size={14} aria-hidden="true" />
+    ) : (
+      <ChevronDown size={14} aria-hidden="true" />
+    );
+  };
 
   if (!selectedFarmId) {
     return (
@@ -289,14 +300,7 @@ function CultivarProductivity() {
                 tick={{ fontSize: 13, fontFamily: 'Source Sans 3, system-ui, sans-serif' }}
               />
               <Tooltip
-                formatter={(value, _name, props) => {
-                  const v = Number(value);
-                  const p = props.payload as { fullName: string; plantings: number };
-                  return [
-                    `${v.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} kg/ha (${p.plantings} plantios)`,
-                    p.fullName,
-                  ];
-                }}
+                formatter={formatTooltip}
                 contentStyle={{
                   fontFamily: 'Source Sans 3, system-ui, sans-serif',
                   fontSize: 13,
@@ -325,7 +329,7 @@ function CultivarProductivity() {
                     className="prod-comp__sort-btn"
                     onClick={() => handleSort('name')}
                   >
-                    Cultivar <SortIcon field="name" />
+                    Cultivar {renderSortIcon('name')}
                   </button>
                 </th>
                 <th scope="col">Cultura</th>
@@ -335,7 +339,7 @@ function CultivarProductivity() {
                     className="prod-comp__sort-btn"
                     onClick={() => handleSort('productivity')}
                   >
-                    Prod. Média <SortIcon field="productivity" />
+                    Prod. Média {renderSortIcon('productivity')}
                   </button>
                 </th>
                 <th scope="col">
@@ -344,7 +348,7 @@ function CultivarProductivity() {
                     className="prod-comp__sort-btn"
                     onClick={() => handleSort('plantings')}
                   >
-                    Plantios <SortIcon field="plantings" />
+                    Plantios {renderSortIcon('plantings')}
                   </button>
                 </th>
                 <th scope="col" aria-label="Expandir"></th>
