@@ -84,6 +84,34 @@ export interface HeatmapPoint {
   topPests: Array<{ pestId: string; pestName: string; count: number }>;
 }
 
+// ─── Timeline Types ────────────────────────────────────────────────
+
+export interface TimelineQuery {
+  pestIds?: string;
+  startDate?: string;
+  endDate?: string;
+  aggregation?: 'daily' | 'weekly' | 'monthly';
+}
+
+export interface TimelinePestEntry {
+  pestId: string;
+  pestName: string;
+  avgIntensity: number;
+  maxLevel: string;
+  recordCount: number;
+}
+
+export interface TimelineDataPoint {
+  date: string;
+  pests: TimelinePestEntry[];
+}
+
+export interface TimelineSummary {
+  totalRecords: number;
+  dateRange: { start: string; end: string };
+  pestsFound: string[];
+}
+
 // ─── Response Types ─────────────────────────────────────────────────
 
 export interface MonitoringRecordItem {

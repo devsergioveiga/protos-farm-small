@@ -34,6 +34,7 @@ const PestsPage = lazy(() => import('@/pages/PestsPage'));
 const MonitoringPointsPage = lazy(() => import('@/pages/MonitoringPointsPage'));
 const MonitoringRecordsPage = lazy(() => import('@/pages/MonitoringRecordsPage'));
 const MonitoringHeatmapPage = lazy(() => import('@/pages/MonitoringHeatmapPage'));
+const MonitoringTimelinePage = lazy(() => import('@/pages/MonitoringTimelinePage'));
 
 export function App() {
   return (
@@ -83,6 +84,10 @@ export function App() {
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-heatmap"
                   element={<MonitoringHeatmapPage />}
+                />
+                <Route
+                  path="/farms/:farmId/plots/:fieldPlotId/monitoring-timeline"
+                  element={<MonitoringTimelinePage />}
                 />
               </Route>
             </Route>

@@ -12,6 +12,7 @@ import {
   Trash2,
   ClipboardList,
   Flame,
+  TrendingUp,
 } from 'lucide-react';
 import { useMonitoringPoints } from '@/hooks/useMonitoringPoints';
 import { api } from '@/services/api';
@@ -144,6 +145,13 @@ function MonitoringPointsPage() {
           >
             <Flame size={20} aria-hidden="true" />
             Mapa de calor
+          </Link>
+          <Link
+            to={`/farms/${farmId}/plots/${fieldPlotId}/monitoring-timeline`}
+            className="mp-page__btn mp-page__btn--secondary"
+          >
+            <TrendingUp size={20} aria-hidden="true" />
+            Histórico
           </Link>
           <Link
             to={`/farms/${farmId}/plots/${fieldPlotId}/monitoring-records`}

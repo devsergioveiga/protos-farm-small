@@ -28,6 +28,7 @@ jest.mock('./monitoring-records.service', () => ({
   updateMonitoringRecord: jest.fn(),
   deleteMonitoringRecord: jest.fn(),
   getMonitoringHeatmap: jest.fn(),
+  getMonitoringTimeline: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -260,7 +261,7 @@ describe('Monitoring Records routes', () => {
         latitude: -15.5,
         longitude: -47.5,
         intensity: 0.75,
-        maxLevel: 'ALTO',
+        maxLevel: 'ALTO' as const,
         recordCount: 3,
         topPests: [{ pestId: 'pest-1', pestName: 'Lagarta-da-soja', count: 2 }],
       },
@@ -332,6 +333,142 @@ describe('Monitoring Records routes', () => {
         .send({ infestationLevel: 'ALTO' });
 
       expect(res.status).toBe(403);
+    });
+  });
+
+  // ─── TIMELINE ────────────────────────────────────────────────────
+
+  describe('GET /api/org/farms/:farmId/field-plots/:fieldPlotId/monitoring-timeline', () => {
+    const url = `/api/org/farms/${FARM_ID}/field-plots/${PLOT_ID}/monitoring-timeline`;
+
+    const SAMPLE_TIMELINE = {
+      data: [
+        {
+          date: '2026-03-01',
+          pests: [
+            {
+              pestId: 'pest-1',
+              pestName: 'Lagarta-da-soja',
+              avgIntensity: 0.5,
+              maxLevel: 'MODERADO',
+              recordCount: 3,
+            },
+          ],
+        },
+        {
+          date: '2026-03-02',
+          pests: [
+            {
+              pestId: 'pest-1',
+              pestName: 'Lagarta-da-soja',
+              avgIntensity: 0.75,
+              maxLevel: 'ALTO',
+              recordCount: 2,
+            },
+          ],
+        },
+      ],
+      summary: {
+        totalRecords: 5,
+        dateRange: { start: '2026-03-01', end: '2026-03-02' },
+        pestsFound: ['pest-1'],
+      },
+    };
+
+    const EMPTY_TIMELINE = {
+      data: [],
+      summary: {
+        totalRecords: 0,
+        dateRange: { start: '', end: '' },
+        pestsFound: [],
+      },
+    };
+
+    it('returns timeline data with daily aggregation', async () => {
+      mockedService.getMonitoringTimeline.mockResolvedValue(SAMPLE_TIMELINE);
+
+      const res = await request(app).get(url).set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(2);
+      expect(res.body.data[0].date).toBe('2026-03-01');
+      expect(res.body.data[0].pests[0].pestName).toBe('Lagarta-da-soja');
+      expect(res.body.summary.totalRecords).toBe(5);
+    });
+
+    it('returns empty data when no records', async () => {
+      mockedService.getMonitoringTimeline.mockResolvedValue(EMPTY_TIMELINE);
+
+      const res = await request(app).get(url).set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toEqual([]);
+      expect(res.body.summary.totalRecords).toBe(0);
+    });
+
+    it('passes pestIds filter (comma-separated)', async () => {
+      mockedService.getMonitoringTimeline.mockResolvedValue(EMPTY_TIMELINE);
+
+      await request(app).get(`${url}?pestIds=pest-1,pest-2`).set('Authorization', 'Bearer token');
+
+      expect(mockedService.getMonitoringTimeline).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        FARM_ID,
+        PLOT_ID,
+        expect.objectContaining({ pestIds: 'pest-1,pest-2' }),
+      );
+    });
+
+    it('passes date range and aggregation params', async () => {
+      mockedService.getMonitoringTimeline.mockResolvedValue(EMPTY_TIMELINE);
+
+      await request(app)
+        .get(`${url}?startDate=2026-02-01&endDate=2026-03-09&aggregation=weekly`)
+        .set('Authorization', 'Bearer token');
+
+      expect(mockedService.getMonitoringTimeline).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        FARM_ID,
+        PLOT_ID,
+        {
+          pestIds: undefined,
+          startDate: '2026-02-01',
+          endDate: '2026-03-09',
+          aggregation: 'weekly',
+        },
+      );
+    });
+
+    it('passes monthly aggregation', async () => {
+      mockedService.getMonitoringTimeline.mockResolvedValue(EMPTY_TIMELINE);
+
+      await request(app).get(`${url}?aggregation=monthly`).set('Authorization', 'Bearer token');
+
+      expect(mockedService.getMonitoringTimeline).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        FARM_ID,
+        PLOT_ID,
+        expect.objectContaining({ aggregation: 'monthly' }),
+      );
+    });
+
+    it('ignores invalid aggregation value', async () => {
+      mockedService.getMonitoringTimeline.mockResolvedValue(EMPTY_TIMELINE);
+
+      await request(app).get(`${url}?aggregation=invalid`).set('Authorization', 'Bearer token');
+
+      expect(mockedService.getMonitoringTimeline).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        FARM_ID,
+        PLOT_ID,
+        expect.objectContaining({ aggregation: undefined }),
+      );
+    });
+
+    it('returns 401 without auth token', async () => {
+      const res = await request(app).get(url);
+
+      expect(res.status).toBe(401);
     });
   });
 

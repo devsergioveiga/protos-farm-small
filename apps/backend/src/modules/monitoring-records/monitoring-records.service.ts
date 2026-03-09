@@ -10,6 +10,10 @@ import {
   type InfestationLevel,
   type HeatmapQuery,
   type HeatmapPoint,
+  type TimelineQuery,
+  type TimelineDataPoint,
+  type TimelinePestEntry,
+  type TimelineSummary,
 } from './monitoring-records.types';
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -407,6 +411,153 @@ export async function getMonitoringHeatmap(
     }
 
     return result;
+  });
+}
+
+// ─── TIMELINE ──────────────────────────────────────────────────────
+
+function getDateBucket(date: Date, aggregation: 'daily' | 'weekly' | 'monthly'): string {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+
+  switch (aggregation) {
+    case 'daily':
+      return `${year}-${month}-${day}`;
+    case 'weekly': {
+      // Start of week (Monday)
+      const d = new Date(Date.UTC(year, date.getUTCMonth(), date.getUTCDate()));
+      const dayOfWeek = d.getUTCDay(); // 0=Sun, 1=Mon...
+      const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      d.setUTCDate(d.getUTCDate() - diff);
+      const wy = d.getUTCFullYear();
+      const wm = String(d.getUTCMonth() + 1).padStart(2, '0');
+      const wd = String(d.getUTCDate()).padStart(2, '0');
+      return `${wy}-${wm}-${wd}`;
+    }
+    case 'monthly':
+      return `${year}-${month}-01`;
+  }
+}
+
+export async function getMonitoringTimeline(
+  ctx: RlsContext,
+  farmId: string,
+  fieldPlotId: string,
+  query: TimelineQuery,
+): Promise<{ data: TimelineDataPoint[]; summary: TimelineSummary }> {
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = {
+      farmId,
+      fieldPlotId,
+      deletedAt: null,
+    };
+
+    if (query.pestIds) {
+      const ids = query.pestIds
+        .split(',')
+        .map((id) => id.trim())
+        .filter(Boolean);
+      if (ids.length > 0) {
+        where.pestId = { in: ids };
+      }
+    }
+    if (query.startDate || query.endDate) {
+      const dateFilter: Record<string, Date> = {};
+      if (query.startDate) dateFilter.gte = new Date(query.startDate);
+      if (query.endDate) dateFilter.lte = new Date(query.endDate);
+      where.observedAt = dateFilter;
+    }
+
+    const records = await tx.monitoringRecord.findMany({
+      where,
+      include: {
+        pest: { select: { commonName: true } },
+      },
+      orderBy: { observedAt: 'asc' },
+    });
+
+    if (records.length === 0) {
+      return {
+        data: [],
+        summary: {
+          totalRecords: 0,
+          dateRange: {
+            start: query.startDate ?? '',
+            end: query.endDate ?? '',
+          },
+          pestsFound: [],
+        },
+      };
+    }
+
+    const aggregation = query.aggregation ?? 'daily';
+    const pestsFoundMap = new Map<string, string>(); // pestId → pestName
+
+    // Group by date bucket → pestId
+    const bucketMap = new Map<
+      string,
+      Map<string, { pestName: string; levels: InfestationLevel[] }>
+    >();
+
+    for (const rec of records) {
+      const observedAt = rec.observedAt as Date;
+      const bucket = getDateBucket(observedAt, aggregation);
+      const pest = rec.pest as { commonName: string };
+      const level = rec.infestationLevel as InfestationLevel;
+
+      pestsFoundMap.set(rec.pestId, pest.commonName);
+
+      if (!bucketMap.has(bucket)) {
+        bucketMap.set(bucket, new Map());
+      }
+      const pestMap = bucketMap.get(bucket)!;
+      if (!pestMap.has(rec.pestId)) {
+        pestMap.set(rec.pestId, { pestName: pest.commonName, levels: [] });
+      }
+      pestMap.get(rec.pestId)!.levels.push(level);
+    }
+
+    // Build sorted data points
+    const sortedBuckets = Array.from(bucketMap.keys()).sort();
+    const data: TimelineDataPoint[] = sortedBuckets.map((bucket) => {
+      const pestMap = bucketMap.get(bucket)!;
+      const pests: TimelinePestEntry[] = Array.from(pestMap.entries()).map(
+        ([pestId, { pestName, levels }]) => {
+          const avgIntensity =
+            Math.round(
+              (levels.reduce((sum, lvl) => sum + LEVEL_WEIGHT[lvl], 0) / levels.length) * 100,
+            ) / 100;
+
+          const maxLevel = levels.reduce((max, lvl) => {
+            return LEVEL_WEIGHT[lvl] > LEVEL_WEIGHT[max] ? lvl : max;
+          }, 'AUSENTE' as InfestationLevel);
+
+          return {
+            pestId,
+            pestName,
+            avgIntensity,
+            maxLevel,
+            recordCount: levels.length,
+          };
+        },
+      );
+
+      return { date: bucket, pests };
+    });
+
+    // Calculate date range from actual records
+    const firstDate = (records[0].observedAt as Date).toISOString().split('T')[0];
+    const lastDate = (records[records.length - 1].observedAt as Date).toISOString().split('T')[0];
+
+    return {
+      data,
+      summary: {
+        totalRecords: records.length,
+        dateRange: { start: firstDate, end: lastDate },
+        pestsFound: Array.from(pestsFoundMap.values()),
+      },
+    };
   });
 }
 

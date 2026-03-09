@@ -12,6 +12,7 @@ import {
   updateMonitoringRecord,
   deleteMonitoringRecord,
   getMonitoringHeatmap,
+  getMonitoringTimeline,
 } from './monitoring-records.service';
 
 export const monitoringRecordsRouter = Router();
@@ -116,6 +117,36 @@ monitoringRecordsRouter.get(
         endDate: req.query.endDate as string | undefined,
       });
       res.json({ data: result });
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── TIMELINE ───────────────────────────────────────────────────────
+
+monitoringRecordsRouter.get(
+  '/org/farms/:farmId/field-plots/:fieldPlotId/monitoring-timeline',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const farmId = req.params.farmId as string;
+      const fieldPlotId = req.params.fieldPlotId as string;
+      const aggregation = (req.query.aggregation as string) || undefined;
+      const validAggregations = ['daily', 'weekly', 'monthly'];
+      const result = await getMonitoringTimeline(ctx, farmId, fieldPlotId, {
+        pestIds: req.query.pestIds as string | undefined,
+        startDate: req.query.startDate as string | undefined,
+        endDate: req.query.endDate as string | undefined,
+        aggregation:
+          aggregation && validAggregations.includes(aggregation)
+            ? (aggregation as 'daily' | 'weekly' | 'monthly')
+            : undefined,
+      });
+      res.json(result);
     } catch (err) {
       handleError(err, res);
     }

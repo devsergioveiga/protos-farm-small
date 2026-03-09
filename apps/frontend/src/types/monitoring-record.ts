@@ -84,6 +84,32 @@ export const INFESTATION_LEVELS = [
   { value: 'CRITICO', label: 'Crítico' },
 ] as const;
 
+/* ─── Timeline (CA6) ────────────────────────────────────────────────── */
+
+export interface TimelinePestEntry {
+  pestId: string;
+  pestName: string;
+  avgIntensity: number;
+  maxLevel: string;
+  recordCount: number;
+}
+
+export interface TimelineDataPoint {
+  date: string;
+  pests: TimelinePestEntry[];
+}
+
+export interface TimelineSummary {
+  totalRecords: number;
+  dateRange: { start: string; end: string };
+  pestsFound: string[];
+}
+
+export interface TimelineResponse {
+  data: TimelineDataPoint[];
+  summary: TimelineSummary;
+}
+
 export const GROWTH_STAGES = [
   'VE',
   'V1',
