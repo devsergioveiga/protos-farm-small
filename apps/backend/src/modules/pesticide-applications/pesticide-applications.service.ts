@@ -73,6 +73,9 @@ function toItem(row: Record<string, unknown>): PesticideApplicationItem {
     withdrawalPeriodDays: (row.withdrawalPeriodDays as number) ?? null,
     safeHarvestDate: row.safeHarvestDate ? (row.safeHarvestDate as Date).toISOString() : null,
     notes: (row.notes as string) ?? null,
+    photoUrl: (row.photoUrl as string) ?? null,
+    latitude: row.latitude != null ? Number(row.latitude) : null,
+    longitude: row.longitude != null ? Number(row.longitude) : null,
     recordedBy: row.recordedBy as string,
     recorderName: recorder?.name ?? '',
     createdAt: (row.createdAt as Date).toISOString(),
@@ -141,6 +144,9 @@ export async function createPesticideApplication(
             )
           : null,
       notes: input.notes?.trim() ?? null,
+      photoUrl: input.photoUrl?.trim() ?? null,
+      latitude: input.latitude ?? null,
+      longitude: input.longitude ?? null,
       recordedBy: userId,
     };
 
@@ -324,6 +330,9 @@ export async function updatePesticideApplication(
     }
 
     if (input.notes !== undefined) data.notes = input.notes?.trim() ?? null;
+    if (input.photoUrl !== undefined) data.photoUrl = input.photoUrl?.trim() ?? null;
+    if (input.latitude !== undefined) data.latitude = input.latitude ?? null;
+    if (input.longitude !== undefined) data.longitude = input.longitude ?? null;
 
     const row = await tx.pesticideApplication.update({
       where: { id: applicationId },
@@ -467,6 +476,9 @@ export function applicationsToCsv(items: PesticideApplicationItem[]): string {
     'Carência (dias)',
     'Colheita Segura',
     'Observações',
+    'Foto URL',
+    'Latitude',
+    'Longitude',
     'Registrado por',
   ];
 
@@ -506,6 +518,9 @@ export function applicationsToCsv(items: PesticideApplicationItem[]): string {
       i.withdrawalPeriodDays,
       i.safeHarvestDate,
       i.notes,
+      i.photoUrl,
+      i.latitude,
+      i.longitude,
       i.recorderName,
     ]
       .map((v) => esc(v != null ? String(v) : null))

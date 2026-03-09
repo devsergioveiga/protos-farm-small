@@ -1242,6 +1242,9 @@ model PesticideApplication {
   withdrawalPeriodDays Int?
   safeHarvestDate   DateTime?
   notes             String?
+  photoUrl          String?
+  latitude          Decimal?        @db.Decimal(10, 7)
+  longitude         Decimal?        @db.Decimal(10, 7)
   recordedBy        String
   deletedAt         DateTime?
   createdAt         DateTime        @default(now())

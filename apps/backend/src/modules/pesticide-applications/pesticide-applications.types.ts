@@ -58,6 +58,9 @@ export interface CreatePesticideApplicationInput {
   tankMixPh?: number | null;
   withdrawalPeriodDays?: number | null;
   notes?: string | null;
+  photoUrl?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 // ─── Response Types ─────────────────────────────────────────────────
@@ -92,6 +95,9 @@ export interface PesticideApplicationItem {
   withdrawalPeriodDays: number | null;
   safeHarvestDate: string | null;
   notes: string | null;
+  photoUrl: string | null;
+  latitude: number | null;
+  longitude: number | null;
   recordedBy: string;
   recorderName: string;
   createdAt: string;
