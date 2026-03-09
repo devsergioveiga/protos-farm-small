@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Pencil,
   Trash2,
+  ClipboardList,
 } from 'lucide-react';
 import { useMonitoringPoints } from '@/hooks/useMonitoringPoints';
 import { api } from '@/services/api';
@@ -136,6 +137,13 @@ function MonitoringPointsPage() {
           </p>
         </div>
         <div className="mp-page__header-actions">
+          <Link
+            to={`/farms/${farmId}/plots/${fieldPlotId}/monitoring-records`}
+            className="mp-page__btn mp-page__btn--secondary"
+          >
+            <ClipboardList size={20} aria-hidden="true" />
+            Registros MIP
+          </Link>
           <PermissionGate permission="farms:update">
             <button
               type="button"
