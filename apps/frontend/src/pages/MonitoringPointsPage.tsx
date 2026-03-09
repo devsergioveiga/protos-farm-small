@@ -11,6 +11,7 @@ import {
   Pencil,
   Trash2,
   ClipboardList,
+  Flame,
 } from 'lucide-react';
 import { useMonitoringPoints } from '@/hooks/useMonitoringPoints';
 import { api } from '@/services/api';
@@ -137,6 +138,13 @@ function MonitoringPointsPage() {
           </p>
         </div>
         <div className="mp-page__header-actions">
+          <Link
+            to={`/farms/${farmId}/plots/${fieldPlotId}/monitoring-heatmap`}
+            className="mp-page__btn mp-page__btn--secondary"
+          >
+            <Flame size={20} aria-hidden="true" />
+            Mapa de calor
+          </Link>
           <Link
             to={`/farms/${farmId}/plots/${fieldPlotId}/monitoring-records`}
             className="mp-page__btn mp-page__btn--secondary"

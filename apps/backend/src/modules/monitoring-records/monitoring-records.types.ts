@@ -65,6 +65,25 @@ export interface ListMonitoringRecordsQuery {
   endDate?: string;
 }
 
+// ─── Heatmap Types ──────────────────────────────────────────────────
+
+export interface HeatmapQuery {
+  pestId?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface HeatmapPoint {
+  monitoringPointId: string;
+  code: string;
+  latitude: number;
+  longitude: number;
+  intensity: number;
+  maxLevel: InfestationLevel;
+  recordCount: number;
+  topPests: Array<{ pestId: string; pestName: string; count: number }>;
+}
+
 // ─── Response Types ─────────────────────────────────────────────────
 
 export interface MonitoringRecordItem {

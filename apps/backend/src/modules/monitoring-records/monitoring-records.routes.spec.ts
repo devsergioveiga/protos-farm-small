@@ -27,6 +27,7 @@ jest.mock('./monitoring-records.service', () => ({
   getMonitoringRecord: jest.fn(),
   updateMonitoringRecord: jest.fn(),
   deleteMonitoringRecord: jest.fn(),
+  getMonitoringHeatmap: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -244,6 +245,60 @@ describe('Monitoring Records routes', () => {
       const res = await request(app).get(url).set('Authorization', 'Bearer token');
 
       expect(res.status).toBe(404);
+    });
+  });
+
+  // ─── HEATMAP ──────────────────────────────────────────────────────
+
+  describe('GET /api/org/farms/:farmId/field-plots/:fieldPlotId/monitoring-heatmap', () => {
+    const url = `/api/org/farms/${FARM_ID}/field-plots/${PLOT_ID}/monitoring-heatmap`;
+
+    const SAMPLE_HEATMAP = [
+      {
+        monitoringPointId: 'point-1',
+        code: 'P01',
+        latitude: -15.5,
+        longitude: -47.5,
+        intensity: 0.75,
+        maxLevel: 'ALTO',
+        recordCount: 3,
+        topPests: [{ pestId: 'pest-1', pestName: 'Lagarta-da-soja', count: 2 }],
+      },
+    ];
+
+    it('returns heatmap data', async () => {
+      mockedService.getMonitoringHeatmap.mockResolvedValue(SAMPLE_HEATMAP);
+
+      const res = await request(app).get(url).set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(1);
+      expect(res.body.data[0].intensity).toBe(0.75);
+      expect(res.body.data[0].maxLevel).toBe('ALTO');
+    });
+
+    it('passes filter params to service', async () => {
+      mockedService.getMonitoringHeatmap.mockResolvedValue([]);
+
+      await request(app)
+        .get(`${url}?pestId=pest-1&startDate=2026-03-01&endDate=2026-03-31`)
+        .set('Authorization', 'Bearer token');
+
+      expect(mockedService.getMonitoringHeatmap).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        FARM_ID,
+        PLOT_ID,
+        { pestId: 'pest-1', startDate: '2026-03-01', endDate: '2026-03-31' },
+      );
+    });
+
+    it('returns empty array when no records', async () => {
+      mockedService.getMonitoringHeatmap.mockResolvedValue([]);
+
+      const res = await request(app).get(url).set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toEqual([]);
     });
   });
 

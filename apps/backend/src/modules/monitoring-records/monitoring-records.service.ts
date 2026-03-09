@@ -8,6 +8,8 @@ import {
   type ListMonitoringRecordsQuery,
   type MonitoringRecordItem,
   type InfestationLevel,
+  type HeatmapQuery,
+  type HeatmapPoint,
 } from './monitoring-records.types';
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -295,6 +297,116 @@ export async function updateMonitoringRecord(
     });
 
     return toItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+// ─── HEATMAP ────────────────────────────────────────────────────────
+
+const LEVEL_WEIGHT: Record<InfestationLevel, number> = {
+  AUSENTE: 0,
+  BAIXO: 0.25,
+  MODERADO: 0.5,
+  ALTO: 0.75,
+  CRITICO: 1,
+};
+
+export async function getMonitoringHeatmap(
+  ctx: RlsContext,
+  farmId: string,
+  fieldPlotId: string,
+  query: HeatmapQuery,
+): Promise<HeatmapPoint[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = {
+      farmId,
+      fieldPlotId,
+      deletedAt: null,
+    };
+
+    if (query.pestId) {
+      where.pestId = query.pestId;
+    }
+    if (query.startDate || query.endDate) {
+      const dateFilter: Record<string, Date> = {};
+      if (query.startDate) dateFilter.gte = new Date(query.startDate);
+      if (query.endDate) dateFilter.lte = new Date(query.endDate);
+      where.observedAt = dateFilter;
+    }
+
+    const records = await tx.monitoringRecord.findMany({
+      where,
+      include: {
+        monitoringPoint: { select: { code: true, latitude: true, longitude: true } },
+        pest: { select: { commonName: true } },
+      },
+      orderBy: { observedAt: 'desc' },
+    });
+
+    // Group by monitoring point
+    const grouped = new Map<
+      string,
+      {
+        code: string;
+        latitude: number;
+        longitude: number;
+        levels: InfestationLevel[];
+        pests: Map<string, { name: string; count: number }>;
+      }
+    >();
+
+    for (const rec of records) {
+      const point = rec.monitoringPoint as { code: string; latitude: unknown; longitude: unknown };
+      const pest = rec.pest as { commonName: string };
+      const pointId = rec.monitoringPointId;
+
+      if (!grouped.has(pointId)) {
+        grouped.set(pointId, {
+          code: point.code,
+          latitude: Number(point.latitude),
+          longitude: Number(point.longitude),
+          levels: [],
+          pests: new Map(),
+        });
+      }
+
+      const group = grouped.get(pointId)!;
+      group.levels.push(rec.infestationLevel as InfestationLevel);
+
+      const pestEntry = group.pests.get(rec.pestId);
+      if (pestEntry) {
+        pestEntry.count++;
+      } else {
+        group.pests.set(rec.pestId, { name: pest.commonName, count: 1 });
+      }
+    }
+
+    const result: HeatmapPoint[] = [];
+    for (const [pointId, group] of grouped) {
+      const maxLevel = group.levels.reduce((max, lvl) => {
+        return LEVEL_WEIGHT[lvl] > LEVEL_WEIGHT[max] ? lvl : max;
+      }, 'AUSENTE' as InfestationLevel);
+
+      const avgIntensity =
+        group.levels.reduce((sum, lvl) => sum + LEVEL_WEIGHT[lvl], 0) / group.levels.length;
+
+      const topPests = Array.from(group.pests.entries())
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, 3)
+        .map(([pestId, { name, count }]) => ({ pestId, pestName: name, count }));
+
+      result.push({
+        monitoringPointId: pointId,
+        code: group.code,
+        latitude: group.latitude,
+        longitude: group.longitude,
+        intensity: Math.round(avgIntensity * 100) / 100,
+        maxLevel,
+        recordCount: group.levels.length,
+        topPests,
+      });
+    }
+
+    return result;
   });
 }
 

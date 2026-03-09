@@ -11,6 +11,7 @@ import {
   getMonitoringRecord,
   updateMonitoringRecord,
   deleteMonitoringRecord,
+  getMonitoringHeatmap,
 } from './monitoring-records.service';
 
 export const monitoringRecordsRouter = Router();
@@ -91,6 +92,30 @@ monitoringRecordsRouter.get(
         endDate: req.query.endDate as string | undefined,
       });
       res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── HEATMAP ─────────────────────────────────────────────────────────
+
+monitoringRecordsRouter.get(
+  '/org/farms/:farmId/field-plots/:fieldPlotId/monitoring-heatmap',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const farmId = req.params.farmId as string;
+      const fieldPlotId = req.params.fieldPlotId as string;
+      const result = await getMonitoringHeatmap(ctx, farmId, fieldPlotId, {
+        pestId: req.query.pestId as string | undefined,
+        startDate: req.query.startDate as string | undefined,
+        endDate: req.query.endDate as string | undefined,
+      });
+      res.json({ data: result });
     } catch (err) {
       handleError(err, res);
     }

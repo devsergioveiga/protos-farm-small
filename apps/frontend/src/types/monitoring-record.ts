@@ -61,6 +61,21 @@ export interface UpdateMonitoringRecordInput {
   notes?: string | null;
 }
 
+export interface HeatmapPoint {
+  monitoringPointId: string;
+  code: string;
+  latitude: number;
+  longitude: number;
+  intensity: number;
+  maxLevel: string;
+  recordCount: number;
+  topPests: Array<{ pestId: string; pestName: string; count: number }>;
+}
+
+export interface HeatmapResponse {
+  data: HeatmapPoint[];
+}
+
 export const INFESTATION_LEVELS = [
   { value: 'AUSENTE', label: 'Ausente' },
   { value: 'BAIXO', label: 'Baixo' },
