@@ -194,11 +194,11 @@ describe('Cultural Operations Routes', () => {
       expect(res.body.error).toContain('inválido');
     });
 
-    it('rejects VIEWER role (no farms:update)', async () => {
+    it('rejects OPERATOR role (no farms:update)', async () => {
       authAs({
         userId: 'viewer-1',
         email: 'viewer@org.com',
-        role: 'VIEWER' as const,
+        role: 'OPERATOR' as const,
         organizationId: 'org-1',
       });
 
