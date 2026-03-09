@@ -299,6 +299,7 @@ model User {
   recordedFieldOperations     FieldOperation[]
   recordedPesticideApplications PesticideApplication[] @relation("PesticideRecorder")
   recordedFertilizerApplications FertilizerApplication[] @relation("FertilizerRecorder")
+  recordedCulturalOperations CulturalOperation[] @relation("CulturalOperationRecorder")
 
   @@map("users")
 }
@@ -356,6 +357,7 @@ model Farm {
   fieldOperations            FieldOperation[]
   pesticideApplications      PesticideApplication[]
   fertilizerApplications     FertilizerApplication[]
+  culturalOperations         CulturalOperation[]
 
   @@map("farms")
 }
@@ -645,6 +647,7 @@ model FieldPlot {
   soilAnalyses           PlotSoilAnalysis[]
   pesticideApplications  PesticideApplication[]
   fertilizerApplications FertilizerApplication[]
+  culturalOperations     CulturalOperation[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -1316,4 +1319,71 @@ model FertilizerApplication {
   @@index([fieldPlotId])
   @@index([appliedAt])
   @@map("fertilizer_applications")
+}
+
+// ─── Cultural Operations (US-040) ────────────────────────────────────────
+
+enum CulturalOperationType {
+  CAPINA_MANUAL
+  ROCAGEM_MECANICA
+  IRRIGACAO
+  PODA
+  DESBROTA
+  RALEIO
+  QUEBRA_VENTO
+}
+
+enum PruningType {
+  ESQUELETAMENTO
+  DECOTE
+  RECEPA
+}
+
+model CulturalOperation {
+  id                  String                @id @default(uuid())
+  farmId              String
+  fieldPlotId         String
+  performedAt         DateTime
+  operationType       CulturalOperationType
+
+  // CA2 — duration & labor
+  durationHours       Decimal?              @db.Decimal(6, 2)
+  machineName         String?
+  laborCount          Int?
+  laborHours          Decimal?              @db.Decimal(6, 2)
+
+  // CA3 — irrigation-specific
+  irrigationDepthMm   Decimal?              @db.Decimal(8, 2)
+  irrigationTimeMin   Decimal?              @db.Decimal(8, 2)
+  irrigationSystem    String?
+
+  // CA4 — pruning-specific
+  pruningType         PruningType?
+  pruningPercentage   Decimal?              @db.Decimal(5, 2)
+
+  // CA5 — cost
+  machineHourCost     Decimal?              @db.Decimal(10, 2)
+  laborHourCost       Decimal?              @db.Decimal(10, 2)
+  supplyCost          Decimal?              @db.Decimal(10, 2)
+
+  // CA6 — photo & location
+  notes               String?
+  photoUrl            String?
+  latitude            Decimal?              @db.Decimal(10, 7)
+  longitude           Decimal?              @db.Decimal(10, 7)
+
+  recordedBy          String
+  deletedAt           DateTime?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  recorder  User      @relation("CulturalOperationRecorder", fields: [recordedBy], references: [id])
+
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@index([performedAt])
+  @@index([operationType])
+  @@map("cultural_operations")
 }
