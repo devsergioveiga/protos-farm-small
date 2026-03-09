@@ -154,11 +154,11 @@ describe('Field Teams Routes', () => {
       expect(res.status).toBe(400);
     });
 
-    it('rejects VIEWER', async () => {
+    it('rejects OPERATOR (no farms:update)', async () => {
       authAs({
         userId: 'v1',
         email: 'v@org.com',
-        role: 'VIEWER' as const,
+        role: 'OPERATOR' as const,
         organizationId: 'org-1',
       });
 
