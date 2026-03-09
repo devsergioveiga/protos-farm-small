@@ -6,6 +6,8 @@ dist/
 build/
 .next/
 .expo/
+apps/mobile/android/
+apps/mobile/ios/
 *.tsbuildinfo
 
 # Environment
