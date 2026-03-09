@@ -13,6 +13,7 @@ import {
   Settings2,
   FlaskConical,
   ShieldAlert,
+  Download,
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
 import { usePesticideApplications } from '@/hooks/usePesticideApplications';
@@ -85,6 +86,15 @@ function PesticideApplicationsPage() {
     [handleCardClick],
   );
 
+  const handleExportCsv = useCallback(() => {
+    if (!selectedFarmId) return;
+    const query = new URLSearchParams();
+    if (search) query.set('productName', search);
+    const qs = query.toString();
+    const url = `/api/org/farms/${selectedFarmId}/pesticide-applications/report/export${qs ? `?${qs}` : ''}`;
+    window.open(url, '_blank');
+  }, [selectedFarmId, search]);
+
   const handleNewApplication = useCallback(() => {
     setSelectedApplication(null);
     setShowModal(true);
@@ -130,6 +140,15 @@ function PesticideApplicationsPage() {
           </p>
         </div>
         <div className="pesticides__header-actions">
+          <button
+            type="button"
+            className="pesticides__btn pesticides__btn--ghost"
+            onClick={handleExportCsv}
+            aria-label="Exportar relatório CSV"
+          >
+            <Download size={20} aria-hidden="true" />
+            Exportar CSV
+          </button>
           <PermissionGate permission="farms:update">
             <button
               type="button"

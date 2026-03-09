@@ -396,6 +396,125 @@ export async function getWithdrawalAlerts(
   });
 }
 
+// ─── Report / Export ────────────────────────────────────────────────
+
+export interface ReportFilters {
+  dateFrom?: string;
+  dateTo?: string;
+  fieldPlotId?: string;
+  productName?: string;
+}
+
+export async function getApplicationsReport(
+  ctx: RlsContext,
+  farmId: string,
+  filters: ReportFilters = {},
+): Promise<PesticideApplicationItem[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = { farmId, deletedAt: null };
+
+    if (filters.dateFrom || filters.dateTo) {
+      const appliedAt: Record<string, Date> = {};
+      if (filters.dateFrom) appliedAt.gte = new Date(filters.dateFrom);
+      if (filters.dateTo) appliedAt.lte = new Date(filters.dateTo);
+      where.appliedAt = appliedAt;
+    }
+    if (filters.fieldPlotId) where.fieldPlotId = filters.fieldPlotId;
+    if (filters.productName) {
+      where.productName = { contains: filters.productName, mode: 'insensitive' };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const whereClause = where as any;
+    const rows = await tx.pesticideApplication.findMany({
+      where: whereClause,
+      orderBy: { appliedAt: 'desc' },
+      include: {
+        fieldPlot: { select: { name: true } },
+        recorder: { select: { name: true } },
+      },
+    });
+
+    return rows.map((r) => toItem(r as unknown as Record<string, unknown>));
+  });
+}
+
+export function applicationsToCsv(items: PesticideApplicationItem[]): string {
+  const headers = [
+    'Data/Hora',
+    'Talhão',
+    'Produto',
+    'Ingrediente Ativo',
+    'Dose',
+    'Unidade',
+    'Volume Calda (L/ha)',
+    'Alvo',
+    'Descrição Alvo',
+    'ART',
+    'CREA',
+    'Justificativa',
+    'Temp (°C)',
+    'Umidade (%)',
+    'Vento (km/h)',
+    'Pulverizador',
+    'Bico',
+    'Pressão (bar)',
+    'Velocidade (km/h)',
+    'Adjuvante',
+    'Dose Adjuvante',
+    'Ordem Mistura',
+    'pH Calda',
+    'Carência (dias)',
+    'Colheita Segura',
+    'Observações',
+    'Registrado por',
+  ];
+
+  const esc = (v: string | null | undefined) => {
+    if (v == null) return '';
+    const s = String(v);
+    return s.includes(',') || s.includes('"') || s.includes('\n')
+      ? `"${s.replace(/"/g, '""')}"`
+      : s;
+  };
+
+  const rows = items.map((i) =>
+    [
+      i.appliedAt,
+      i.fieldPlotName,
+      i.productName,
+      i.activeIngredient,
+      i.dose,
+      i.doseUnit,
+      i.sprayVolume,
+      i.target,
+      i.targetDescription,
+      i.artNumber,
+      i.agronomistCrea,
+      i.technicalJustification,
+      i.temperature,
+      i.relativeHumidity,
+      i.windSpeed,
+      i.sprayerType,
+      i.nozzleType,
+      i.workingPressure,
+      i.applicationSpeed,
+      i.adjuvant,
+      i.adjuvantDose,
+      i.tankMixOrder,
+      i.tankMixPh,
+      i.withdrawalPeriodDays,
+      i.safeHarvestDate,
+      i.notes,
+      i.recorderName,
+    ]
+      .map((v) => esc(v != null ? String(v) : null))
+      .join(','),
+  );
+
+  return [headers.join(','), ...rows].join('\n');
+}
+
 export async function deletePesticideApplication(
   ctx: RlsContext,
   farmId: string,
