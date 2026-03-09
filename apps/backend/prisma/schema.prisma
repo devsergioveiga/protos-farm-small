@@ -265,6 +265,7 @@ model Organization {
   producers   Producer[]
   breeds      Breed[]
   cultivars   Cultivar[]
+  pests       Pest[]
 
   @@map("organizations")
 }
@@ -1482,6 +1483,52 @@ model TeamOperation {
   @@index([fieldPlotId])
   @@index([performedAt])
   @@map("team_operations")
+}
+
+// ─── Pest Library (MIP) ─────────────────────────────────────────────
+
+enum PestCategory {
+  INSETO
+  ACARO
+  FUNGO
+  BACTERIA
+  VIRUS
+  NEMATOIDE
+  PLANTA_DANINHA
+  OUTRO
+}
+
+enum PestSeverity {
+  BAIXO
+  MEDIO
+  ALTO
+  CRITICO
+}
+
+model Pest {
+  id              String        @id @default(uuid())
+  organizationId  String
+  commonName      String
+  scientificName  String?
+  category        PestCategory
+  affectedCrops   String[]
+  severity        PestSeverity?
+  ndeDescription  String?
+  ncDescription   String?
+  lifecycle       String?
+  symptoms        String?
+  photoUrl        String?
+  notes           String?
+  deletedAt       DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([commonName, organizationId])
+  @@index([organizationId])
+  @@index([category])
+  @@map("pests")
 }
 
 model TeamOperationEntry {
