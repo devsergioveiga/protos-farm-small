@@ -24,6 +24,7 @@ import { fieldOperationsRouter } from './modules/field-operations/field-operatio
 import { cultivarsRouter } from './modules/cultivars/cultivars.routes';
 import { pesticideApplicationsRouter } from './modules/pesticide-applications/pesticide-applications.routes';
 import { fertilizerApplicationsRouter } from './modules/fertilizer-applications/fertilizer-applications.routes';
+import { culturalOperationsRouter } from './modules/cultural-operations/cultural-operations.routes';
 
 const app = express();
 
@@ -55,5 +56,6 @@ app.use('/api', fieldOperationsRouter);
 app.use('/api', cultivarsRouter);
 app.use('/api', pesticideApplicationsRouter);
 app.use('/api', fertilizerApplicationsRouter);
+app.use('/api', culturalOperationsRouter);
 
 export { app };
