@@ -28,6 +28,8 @@ jest.mock('./pesticide-applications.service', () => ({
   updatePesticideApplication: jest.fn(),
   deletePesticideApplication: jest.fn(),
   getWithdrawalAlerts: jest.fn(),
+  getApplicationsReport: jest.fn(),
+  applicationsToCsv: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -452,6 +454,44 @@ describe('Pesticide Application endpoints', () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveLength(0);
+    });
+  });
+
+  // ─── REPORT EXPORT ─────────────────────────────────────────────────
+
+  describe('GET /org/farms/:farmId/pesticide-applications/report/export', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return CSV with correct headers', async () => {
+      mockedService.getApplicationsReport.mockResolvedValue([SAMPLE_APPLICATION as never]);
+      mockedService.applicationsToCsv.mockReturnValue('Data/Hora,Talhão\n2026-03-08,Talhão Norte');
+
+      const response = await request(app)
+        .get(`${BASE_URL}/report/export`)
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toContain('text/csv');
+      expect(response.headers['content-disposition']).toContain('aplicacoes-defensivos.csv');
+    });
+
+    it('should pass filters to report service', async () => {
+      mockedService.getApplicationsReport.mockResolvedValue([]);
+      mockedService.applicationsToCsv.mockReturnValue('Data/Hora,Talhão');
+
+      await request(app)
+        .get(`${BASE_URL}/report/export?dateFrom=2026-03-01&dateTo=2026-03-31&fieldPlotId=plot-1`)
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(mockedService.getApplicationsReport).toHaveBeenCalledWith(
+        expect.any(Object),
+        FARM_ID,
+        expect.objectContaining({
+          dateFrom: '2026-03-01',
+          dateTo: '2026-03-31',
+          fieldPlotId: 'plot-1',
+        }),
+      );
     });
   });
 
