@@ -207,9 +207,43 @@ export async function updateFieldTeam(
     if (input.leaderId) data.leaderId = input.leaderId;
     if (input.notes !== undefined) data.notes = input.notes?.trim() ?? null;
 
-    const row = await tx.fieldTeam.update({
+    await tx.fieldTeam.update({
       where: { id: teamId },
       data: data as Parameters<typeof tx.fieldTeam.update>[0]['data'],
+    });
+
+    // Sync members if memberIds provided
+    if (input.memberIds !== undefined) {
+      const desiredIds = [...new Set(input.memberIds)];
+
+      // Current active members
+      const currentMembers = await tx.fieldTeamMember.findMany({
+        where: { teamId, leftAt: null },
+        select: { id: true, userId: true },
+      });
+      const currentUserIds = currentMembers.map((m) => m.userId);
+
+      // Members to add (in desired but not current)
+      const toAdd = desiredIds.filter((uid) => !currentUserIds.includes(uid));
+      // Members to remove (in current but not desired)
+      const toRemove = currentMembers.filter((m) => !desiredIds.includes(m.userId));
+
+      if (toRemove.length > 0) {
+        await tx.fieldTeamMember.updateMany({
+          where: { id: { in: toRemove.map((m) => m.id) } },
+          data: { leftAt: new Date() },
+        });
+      }
+
+      if (toAdd.length > 0) {
+        await tx.fieldTeamMember.createMany({
+          data: toAdd.map((uid) => ({ teamId, userId: uid })),
+        });
+      }
+    }
+
+    const row = await tx.fieldTeam.findUnique({
+      where: { id: teamId },
       include: INCLUDE_RELATIONS,
     });
 
