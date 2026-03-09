@@ -298,6 +298,7 @@ model User {
   recordedReproductiveRecords AnimalReproductiveRecord[]
   recordedFieldOperations     FieldOperation[]
   recordedPesticideApplications PesticideApplication[] @relation("PesticideRecorder")
+  recordedFertilizerApplications FertilizerApplication[] @relation("FertilizerRecorder")
 
   @@map("users")
 }
@@ -354,6 +355,7 @@ model Farm {
   animalReproductiveRecords  AnimalReproductiveRecord[]
   fieldOperations            FieldOperation[]
   pesticideApplications      PesticideApplication[]
+  fertilizerApplications     FertilizerApplication[]
 
   @@map("farms")
 }
@@ -642,6 +644,7 @@ model FieldPlot {
   cropSeasons            PlotCropSeason[]
   soilAnalyses           PlotSoilAnalysis[]
   pesticideApplications  PesticideApplication[]
+  fertilizerApplications FertilizerApplication[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -1258,4 +1261,59 @@ model PesticideApplication {
   @@index([fieldPlotId])
   @@index([appliedAt])
   @@map("pesticide_applications")
+}
+
+enum FertilizerApplicationType {
+  COBERTURA_SOLIDA
+  COBERTURA_SULCO
+  COBERTURA_LANCO
+  FOLIAR
+  FERTIRRIGACAO
+}
+
+enum FertilizerDoseUnit {
+  KG_HA
+  L_HA
+  G_HA
+  ML_HA
+  G_PLANTA
+}
+
+model FertilizerApplication {
+  id                String                    @id @default(uuid())
+  farmId            String
+  fieldPlotId       String
+  appliedAt         DateTime
+  applicationType   FertilizerApplicationType
+  productName       String
+  formulation       String?
+  dose              Decimal                   @db.Decimal(10, 4)
+  doseUnit          FertilizerDoseUnit        @default(KG_HA)
+  nutrientSource    String?
+  phenologicalStage String?
+  nitrogenN         Decimal?                  @db.Decimal(10, 2)
+  phosphorusP       Decimal?                  @db.Decimal(10, 2)
+  potassiumK        Decimal?                  @db.Decimal(10, 2)
+  machineName       String?
+  operatorName      String?
+  areaAppliedHa     Decimal?                  @db.Decimal(10, 4)
+  plantsPerHa       Int?
+  dosePerPlantG     Decimal?                  @db.Decimal(10, 4)
+  photoUrl          String?
+  latitude          Decimal?                  @db.Decimal(10, 7)
+  longitude         Decimal?                  @db.Decimal(10, 7)
+  notes             String?
+  recordedBy        String
+  deletedAt         DateTime?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  recorder  User      @relation("FertilizerRecorder", fields: [recordedBy], references: [id])
+
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@index([appliedAt])
+  @@map("fertilizer_applications")
 }
