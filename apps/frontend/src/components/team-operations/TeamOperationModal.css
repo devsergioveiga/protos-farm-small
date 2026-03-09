@@ -265,6 +265,88 @@
   margin-left: auto;
 }
 
+/* Individual data section (CA4+CA6) */
+.to-modal__individual-section {
+  margin-top: 8px;
+}
+
+.to-modal__individual-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+  min-height: 48px;
+  transition: background 100ms;
+}
+
+.to-modal__individual-toggle:hover {
+  background: var(--color-neutral-100);
+}
+
+.to-modal__individual-toggle:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.to-modal__individual-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.to-modal__individual-row {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 0;
+}
+
+.to-modal__individual-name {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.to-modal__individual-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 2fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.to-modal__individual-fields .to-modal__input,
+.to-modal__individual-fields .to-modal__select {
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 0.8125rem;
+}
+
+.to-modal__individual-fields .to-modal__label {
+  font-size: 0.75rem;
+}
+
+.to-modal__individual-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 /* Confirm step */
 .to-modal__confirm {
   display: flex;
@@ -407,5 +489,9 @@
 
   .to-modal__footer {
     flex-wrap: wrap;
+  }
+
+  .to-modal__individual-fields {
+    grid-template-columns: 1fr 1fr;
   }
 }

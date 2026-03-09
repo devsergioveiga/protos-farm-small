@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
-import { X, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { X, ChevronLeft, ChevronRight, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { api } from '@/services/api';
 import { useFarmContext } from '@/stores/FarmContext';
 import { TEAM_OPERATION_TYPES } from '@/types/team-operation';
-import type { CreateTeamOperationInput } from '@/types/team-operation';
+import type { CreateTeamOperationInput, TeamOperationEntryInput } from '@/types/team-operation';
 import type { FieldPlot } from '@/types/farm';
 import type { FieldTeamItem } from '@/types/field-team';
 import './TeamOperationModal.css';
@@ -21,6 +21,20 @@ interface TeamsResponse {
 
 const STEPS = ['Operação', 'Equipe e membros', 'Confirmar'] as const;
 
+const PRODUCTIVITY_UNITS = [
+  { value: 'kg', label: 'kg' },
+  { value: 'litros', label: 'litros' },
+  { value: 'animais', label: 'nº animais' },
+  { value: 'ha', label: 'hectares' },
+] as const;
+
+interface MemberEntryData {
+  hoursWorked: string;
+  productivity: string;
+  productivityUnit: string;
+  notes: string;
+}
+
 function TeamOperationModal({ isOpen, onClose, onSuccess }: TeamOperationModalProps) {
   const { selectedFarmId } = useFarmContext();
 
@@ -37,6 +51,8 @@ function TeamOperationModal({ isOpen, onClose, onSuccess }: TeamOperationModalPr
   // Step 2 — Team & members
   const [teamId, setTeamId] = useState('');
   const [memberIds, setMemberIds] = useState<string[]>([]);
+  const [entryData, setEntryData] = useState<Record<string, MemberEntryData>>({});
+  const [showIndividual, setShowIndividual] = useState(false);
 
   // Data
   const [plots, setPlots] = useState<FieldPlot[]>([]);
@@ -100,6 +116,8 @@ function TeamOperationModal({ isOpen, onClose, onSuccess }: TeamOperationModalPr
       setNotes('');
       setTeamId('');
       setMemberIds([]);
+      setEntryData({});
+      setShowIndividual(false);
       setSubmitError(null);
       setIsSubmitting(false);
     }
@@ -126,6 +144,32 @@ function TeamOperationModal({ isOpen, onClose, onSuccess }: TeamOperationModalPr
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
   }, [isOpen, onClose]);
+
+  const defaultHours = useMemo(() => {
+    if (!timeStart || !timeEnd) return '';
+    const [sh, sm] = timeStart.split(':').map(Number);
+    const [eh, em] = timeEnd.split(':').map(Number);
+    const diff = (eh * 60 + em - sh * 60 - sm) / 60;
+    return diff > 0 ? diff.toFixed(1) : '';
+  }, [timeStart, timeEnd]);
+
+  const updateEntryField = useCallback(
+    (userId: string, field: keyof MemberEntryData, value: string) => {
+      setEntryData((prev) => {
+        const existing = prev[userId] || {
+          hoursWorked: '',
+          productivity: '',
+          productivityUnit: '',
+          notes: '',
+        };
+        return {
+          ...prev,
+          [userId]: { ...existing, [field]: value },
+        };
+      });
+    },
+    [],
+  );
 
   const selectedTeam = teams.find((t) => t.id === teamId);
 
@@ -164,6 +208,21 @@ function TeamOperationModal({ isOpen, onClose, onSuccess }: TeamOperationModalPr
     setSubmitError(null);
 
     try {
+      const entries: TeamOperationEntryInput[] = [];
+      for (const uid of memberIds) {
+        const d = entryData[uid];
+        if (!d) continue;
+        const hasData = d.hoursWorked || d.productivity || d.notes;
+        if (!hasData) continue;
+        entries.push({
+          userId: uid,
+          hoursWorked: d.hoursWorked ? Number(d.hoursWorked) : undefined,
+          productivity: d.productivity ? Number(d.productivity) : undefined,
+          productivityUnit: d.productivityUnit || undefined,
+          notes: d.notes.trim() || undefined,
+        });
+      }
+
       const payload: CreateTeamOperationInput = {
         fieldPlotId,
         teamId,
@@ -172,6 +231,7 @@ function TeamOperationModal({ isOpen, onClose, onSuccess }: TeamOperationModalPr
         timeStart: `${performedAt}T${timeStart}:00`,
         timeEnd: `${performedAt}T${timeEnd}:00`,
         memberIds,
+        entries: entries.length > 0 ? entries : undefined,
         notes: notes.trim() || null,
       };
 
@@ -194,6 +254,7 @@ function TeamOperationModal({ isOpen, onClose, onSuccess }: TeamOperationModalPr
     timeStart,
     timeEnd,
     memberIds,
+    entryData,
     notes,
     onSuccess,
   ]);
@@ -408,6 +469,137 @@ function TeamOperationModal({ isOpen, onClose, onSuccess }: TeamOperationModalPr
                       </>
                     )}
                   </div>
+
+                  {/* Individual data per member (CA4+CA6) */}
+                  {memberIds.length > 0 && (
+                    <div className="to-modal__individual-section">
+                      <button
+                        type="button"
+                        className="to-modal__individual-toggle"
+                        onClick={() => setShowIndividual((v) => !v)}
+                        aria-expanded={showIndividual}
+                      >
+                        <span>Dados individuais (opcional)</span>
+                        {showIndividual ? (
+                          <ChevronUp size={16} aria-hidden="true" />
+                        ) : (
+                          <ChevronDown size={16} aria-hidden="true" />
+                        )}
+                      </button>
+                      {showIndividual && (
+                        <div className="to-modal__individual-list">
+                          <p className="to-modal__hint">
+                            Preencha produtividade e horas individuais quando diferentes do padrão.
+                            {defaultHours && ` Duração padrão: ${defaultHours}h.`}
+                          </p>
+                          {selectedTeam.members
+                            .filter((m) => memberIds.includes(m.userId))
+                            .map((m) => {
+                              const data = entryData[m.userId] || {
+                                hoursWorked: '',
+                                productivity: '',
+                                productivityUnit: '',
+                                notes: '',
+                              };
+                              return (
+                                <fieldset key={m.userId} className="to-modal__individual-row">
+                                  <legend className="to-modal__individual-name">
+                                    {m.userName}
+                                  </legend>
+                                  <div className="to-modal__individual-fields">
+                                    <div className="to-modal__field">
+                                      <label
+                                        htmlFor={`entry-hours-${m.userId}`}
+                                        className="to-modal__label"
+                                      >
+                                        Horas
+                                      </label>
+                                      <input
+                                        id={`entry-hours-${m.userId}`}
+                                        type="number"
+                                        step="0.1"
+                                        min="0"
+                                        className="to-modal__input"
+                                        value={data.hoursWorked}
+                                        onChange={(e) =>
+                                          updateEntryField(m.userId, 'hoursWorked', e.target.value)
+                                        }
+                                        placeholder={defaultHours || 'Ex: 8.0'}
+                                      />
+                                    </div>
+                                    <div className="to-modal__field">
+                                      <label
+                                        htmlFor={`entry-prod-${m.userId}`}
+                                        className="to-modal__label"
+                                      >
+                                        Produtividade
+                                      </label>
+                                      <input
+                                        id={`entry-prod-${m.userId}`}
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        className="to-modal__input"
+                                        value={data.productivity}
+                                        onChange={(e) =>
+                                          updateEntryField(m.userId, 'productivity', e.target.value)
+                                        }
+                                        placeholder="Ex: 150"
+                                      />
+                                    </div>
+                                    <div className="to-modal__field">
+                                      <label
+                                        htmlFor={`entry-unit-${m.userId}`}
+                                        className="to-modal__label"
+                                      >
+                                        Unidade
+                                      </label>
+                                      <select
+                                        id={`entry-unit-${m.userId}`}
+                                        className="to-modal__select"
+                                        value={data.productivityUnit}
+                                        onChange={(e) =>
+                                          updateEntryField(
+                                            m.userId,
+                                            'productivityUnit',
+                                            e.target.value,
+                                          )
+                                        }
+                                      >
+                                        <option value="">—</option>
+                                        {PRODUCTIVITY_UNITS.map((u) => (
+                                          <option key={u.value} value={u.value}>
+                                            {u.label}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <div className="to-modal__field">
+                                      <label
+                                        htmlFor={`entry-notes-${m.userId}`}
+                                        className="to-modal__label"
+                                      >
+                                        Obs.
+                                      </label>
+                                      <input
+                                        id={`entry-notes-${m.userId}`}
+                                        type="text"
+                                        className="to-modal__input"
+                                        value={data.notes}
+                                        onChange={(e) =>
+                                          updateEntryField(m.userId, 'notes', e.target.value)
+                                        }
+                                        placeholder="Observação individual"
+                                      />
+                                    </div>
+                                  </div>
+                                </fieldset>
+                              );
+                            })}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -451,6 +643,43 @@ function TeamOperationModal({ isOpen, onClose, onSuccess }: TeamOperationModalPr
                   </div>
                 )}
               </dl>
+
+              {/* Individual data summary */}
+              {memberIds.some((uid) => {
+                const d = entryData[uid];
+                return d && (d.hoursWorked || d.productivity || d.notes);
+              }) && (
+                <>
+                  <h3 className="to-modal__section-title">Dados individuais</h3>
+                  <div className="to-modal__individual-summary">
+                    {memberIds.map((uid) => {
+                      const d = entryData[uid];
+                      if (!d || (!d.hoursWorked && !d.productivity && !d.notes)) return null;
+                      const member = selectedTeam?.members.find((m) => m.userId === uid);
+                      return (
+                        <div key={uid} className="to-modal__summary-row">
+                          <dt>{member?.userName ?? uid}</dt>
+                          <dd>
+                            {[
+                              d.hoursWorked && `${d.hoursWorked}h`,
+                              d.productivity &&
+                                `${d.productivity} ${
+                                  PRODUCTIVITY_UNITS.find((u) => u.value === d.productivityUnit)
+                                    ?.label ||
+                                  d.productivityUnit ||
+                                  ''
+                                }`,
+                              d.notes,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </dd>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
 
               <p className="to-modal__confirm-msg">
                 Será criado um apontamento para cada membro selecionado.
