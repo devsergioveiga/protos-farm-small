@@ -229,6 +229,44 @@ describe('Field Teams Routes', () => {
       expect(res.status).toBe(200);
       expect(res.body.name).toBe('Turma 2');
     });
+
+    it('updates team members via memberIds', async () => {
+      authAs(ADMIN_PAYLOAD);
+      const updated = {
+        ...SAMPLE_TEAM,
+        memberCount: 1,
+        members: [SAMPLE_TEAM.members[0]],
+      };
+      mockedService.updateFieldTeam.mockResolvedValue(updated);
+
+      const res = await request(app)
+        .patch(`/api/org/farms/${FARM_ID}/field-teams/${TEAM_ID}`)
+        .set('Authorization', 'Bearer valid-token')
+        .send({ memberIds: ['user-2'] });
+
+      expect(res.status).toBe(200);
+      expect(res.body.members).toHaveLength(1);
+      expect(mockedService.updateFieldTeam).toHaveBeenCalledWith(
+        expect.any(Object),
+        FARM_ID,
+        TEAM_ID,
+        { memberIds: ['user-2'] },
+      );
+    });
+
+    it('removes all members when memberIds is empty array', async () => {
+      authAs(ADMIN_PAYLOAD);
+      const updated = { ...SAMPLE_TEAM, memberCount: 0, members: [] };
+      mockedService.updateFieldTeam.mockResolvedValue(updated);
+
+      const res = await request(app)
+        .patch(`/api/org/farms/${FARM_ID}/field-teams/${TEAM_ID}`)
+        .set('Authorization', 'Bearer valid-token')
+        .send({ memberIds: [] });
+
+      expect(res.status).toBe(200);
+      expect(res.body.members).toHaveLength(0);
+    });
   });
 
   describe('DELETE', () => {

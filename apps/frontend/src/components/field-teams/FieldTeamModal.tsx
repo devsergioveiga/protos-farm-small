@@ -113,7 +113,7 @@ function FieldTeamModal({ isOpen, team, onClose, onSuccess }: FieldTeamModalProp
         teamType,
         isTemporary,
         leaderId,
-        memberIds: memberIds.length > 0 ? memberIds : undefined,
+        memberIds: isEditing ? memberIds : memberIds.length > 0 ? memberIds : undefined,
         notes: notes.trim() || null,
       };
 
@@ -273,70 +273,50 @@ function FieldTeamModal({ isOpen, team, onClose, onSuccess }: FieldTeamModalProp
             </div>
 
             {/* Membros */}
-            {!isEditing && (
-              <>
-                <h3 className="ft-modal__section-title">Membros</h3>
-                <p className="ft-modal__members-farm-hint">
-                  Exibindo colaboradores com acesso a esta fazenda.
+            <h3 className="ft-modal__section-title">
+              {isEditing ? `Membros (${memberIds.length})` : 'Membros'}
+            </h3>
+            <p className="ft-modal__members-farm-hint">
+              Exibindo colaboradores com acesso a esta fazenda.
+            </p>
+            <div className="ft-modal__members-list">
+              {loadingUsers ? (
+                <p className="ft-modal__members-hint">Carregando usuários...</p>
+              ) : availableMembers.length === 0 ? (
+                <p className="ft-modal__members-hint">
+                  {leaderId
+                    ? 'Nenhum outro colaborador com acesso a esta fazenda.'
+                    : 'Selecione um responsável primeiro.'}
                 </p>
-                <div className="ft-modal__members-list">
-                  {loadingUsers ? (
-                    <p className="ft-modal__members-hint">Carregando usuários...</p>
-                  ) : availableMembers.length === 0 ? (
-                    <p className="ft-modal__members-hint">
-                      {leaderId
-                        ? 'Nenhum outro colaborador com acesso a esta fazenda.'
-                        : 'Selecione um responsável primeiro.'}
-                    </p>
-                  ) : (
-                    <>
-                      <label className="ft-modal__member-item ft-modal__member-item--select-all">
-                        <input
-                          type="checkbox"
-                          checked={allMembersSelected}
-                          onChange={handleSelectAll}
-                          className="ft-modal__checkbox"
-                        />
-                        <span className="ft-modal__member-name">Selecionar todos</span>
-                        <span className="ft-modal__member-email">
-                          {memberIds.length}/{availableMembers.length}
-                        </span>
-                      </label>
-                      {availableMembers.map((u) => (
-                        <label key={u.id} className="ft-modal__member-item">
-                          <input
-                            type="checkbox"
-                            checked={memberIds.includes(u.id)}
-                            onChange={() => handleMemberToggle(u.id)}
-                            className="ft-modal__checkbox"
-                          />
-                          <span className="ft-modal__member-name">{u.name}</span>
-                          <span className="ft-modal__member-email">{u.email}</span>
-                        </label>
-                      ))}
-                    </>
-                  )}
-                </div>
-              </>
-            )}
-
-            {/* Membros atuais (edição) */}
-            {isEditing && team && team.members.length > 0 && (
-              <>
-                <h3 className="ft-modal__section-title">Membros atuais ({team.memberCount})</h3>
-                <div className="ft-modal__members-list">
-                  {team.members.map((m) => (
-                    <div
-                      key={m.id}
-                      className="ft-modal__member-item ft-modal__member-item--readonly"
-                    >
-                      <span className="ft-modal__member-name">{m.userName}</span>
-                      <span className="ft-modal__member-email">{m.userEmail}</span>
-                    </div>
+              ) : (
+                <>
+                  <label className="ft-modal__member-item ft-modal__member-item--select-all">
+                    <input
+                      type="checkbox"
+                      checked={allMembersSelected}
+                      onChange={handleSelectAll}
+                      className="ft-modal__checkbox"
+                    />
+                    <span className="ft-modal__member-name">Selecionar todos</span>
+                    <span className="ft-modal__member-email">
+                      {memberIds.length}/{availableMembers.length}
+                    </span>
+                  </label>
+                  {availableMembers.map((u) => (
+                    <label key={u.id} className="ft-modal__member-item">
+                      <input
+                        type="checkbox"
+                        checked={memberIds.includes(u.id)}
+                        onChange={() => handleMemberToggle(u.id)}
+                        className="ft-modal__checkbox"
+                      />
+                      <span className="ft-modal__member-name">{u.name}</span>
+                      <span className="ft-modal__member-email">{u.email}</span>
+                    </label>
                   ))}
-                </div>
-              </>
-            )}
+                </>
+              )}
+            </div>
 
             {/* Observações */}
             <h3 className="ft-modal__section-title">Observações</h3>
