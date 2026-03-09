@@ -200,6 +200,54 @@ export interface OfflineOperationTemplate {
   created_at: string;
 }
 
+export interface OfflinePest {
+  id: string;
+  common_name: string;
+  scientific_name: string | null;
+  category: string;
+  control_threshold: number | null;
+  recommended_products: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OfflineMonitoringPoint {
+  id: string;
+  farm_id: string;
+  field_plot_id: string;
+  code: string;
+  latitude: number;
+  longitude: number;
+  created_at: string;
+}
+
+export type InfestationLevel = 'AUSENTE' | 'BAIXO' | 'MODERADO' | 'ALTO' | 'CRITICO';
+
+export interface OfflineMonitoringRecord {
+  id: string;
+  farm_id: string;
+  field_plot_id: string;
+  monitoring_point_id: string;
+  monitoring_point_code: string;
+  pest_id: string;
+  pest_name: string;
+  observed_at: string;
+  infestation_level: InfestationLevel;
+  sample_count: number | null;
+  pest_count: number | null;
+  growth_stage: string | null;
+  has_natural_enemies: number;
+  natural_enemies_desc: string | null;
+  damage_percentage: number | null;
+  photo_uri: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  notes: string | null;
+  synced: number;
+  created_at: string;
+  updated_at: string;
+}
+
 /** Entities that can be synced */
 export type SyncEntity =
   | 'farms'
@@ -207,4 +255,6 @@ export type SyncEntity =
   | 'farm_locations'
   | 'animal_lots'
   | 'animals'
-  | 'animal_breed_compositions';
+  | 'animal_breed_compositions'
+  | 'pests'
+  | 'monitoring_points';

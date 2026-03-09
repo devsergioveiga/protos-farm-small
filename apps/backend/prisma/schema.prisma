@@ -265,6 +265,7 @@ model Organization {
   producers   Producer[]
   breeds      Breed[]
   cultivars   Cultivar[]
+  pests       Pest[]
 
   @@map("organizations")
 }
@@ -365,6 +366,8 @@ model Farm {
   culturalOperations         CulturalOperation[]
   fieldTeams                 FieldTeam[]
   teamOperations             TeamOperation[]
+  monitoringPoints           MonitoringPoint[]
+  monitoringRecords          MonitoringRecord[]
 
   @@map("farms")
 }
@@ -656,6 +659,8 @@ model FieldPlot {
   fertilizerApplications FertilizerApplication[]
   culturalOperations     CulturalOperation[]
   teamOperations         TeamOperation[]
+  monitoringPoints       MonitoringPoint[]
+  monitoringRecords      MonitoringRecord[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -1482,6 +1487,124 @@ model TeamOperation {
   @@index([fieldPlotId])
   @@index([performedAt])
   @@map("team_operations")
+}
+
+// ─── Pest Library (MIP) ─────────────────────────────────────────────
+
+enum InfestationLevel {
+  AUSENTE
+  BAIXO
+  MODERADO
+  ALTO
+  CRITICO
+}
+
+enum PestCategory {
+  INSETO
+  ACARO
+  FUNGO
+  BACTERIA
+  VIRUS
+  NEMATOIDE
+  PLANTA_DANINHA
+  OUTRO
+}
+
+enum PestSeverity {
+  BAIXO
+  MEDIO
+  ALTO
+  CRITICO
+}
+
+model Pest {
+  id              String        @id @default(uuid())
+  organizationId  String
+  commonName      String
+  scientificName  String?
+  category        PestCategory
+  affectedCrops   String[]
+  severity          PestSeverity?
+  ndeDescription    String?
+  ncDescription     String?
+  controlThreshold  InfestationLevel?
+  recommendedProducts String?
+  lifecycle       String?
+  symptoms        String?
+  photoUrl        String?
+  notes           String?
+  deletedAt       DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  monitoringRecords MonitoringRecord[]
+
+  @@unique([commonName, organizationId])
+  @@index([organizationId])
+  @@index([category])
+  @@map("pests")
+}
+
+// ─── Monitoring Points (MIP) ──────────────────────────────────────────
+
+model MonitoringPoint {
+  id            String    @id @default(uuid())
+  farmId        String
+  fieldPlotId   String
+  code          String
+  latitude      Decimal   @db.Decimal(10, 7)
+  longitude     Decimal   @db.Decimal(10, 7)
+  notes         String?
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+
+  monitoringRecords MonitoringRecord[]
+
+  @@unique([fieldPlotId, code])
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@map("monitoring_points")
+}
+
+// ─── Monitoring Records (MIP) ─────────────────────────────────────────
+
+model MonitoringRecord {
+  id                  String           @id @default(uuid())
+  farmId              String
+  fieldPlotId         String
+  monitoringPointId   String
+  pestId              String
+  observedAt          DateTime
+  infestationLevel    InfestationLevel
+  sampleCount         Int?
+  pestCount           Int?
+  growthStage         String?
+  hasNaturalEnemies   Boolean          @default(false)
+  naturalEnemiesDesc  String?
+  damagePercentage    Decimal?         @db.Decimal(5, 2)
+  photoUrl            String?
+  notes               String?
+  deletedAt           DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  farm            Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot       FieldPlot       @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  monitoringPoint MonitoringPoint @relation(fields: [monitoringPointId], references: [id], onDelete: Cascade)
+  pest            Pest            @relation(fields: [pestId], references: [id])
+
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@index([monitoringPointId])
+  @@index([pestId])
+  @@index([observedAt])
+  @@map("monitoring_records")
 }
 
 model TeamOperationEntry {

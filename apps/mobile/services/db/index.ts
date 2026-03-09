@@ -9,6 +9,9 @@ export { createConflictLogRepository } from './conflict-log-repository';
 export { createTileCacheRepository } from './tile-cache-repository';
 export { createOperationRepository, createTemplateRepository } from './operation-repository';
 export { createPesticideApplicationRepository } from './pesticide-application-repository';
+export { createPestRepository } from './pest-repository';
+export { createMonitoringPointRepository } from './monitoring-point-repository';
+export { createMonitoringRecordRepository } from './monitoring-record-repository';
 export type { AnimalWithBreeds } from './animal-repository';
 export type {
   PendingOperation,

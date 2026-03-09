@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { vi, describe, it, expect } from 'vitest';
 import PlotDetailsPanel from './PlotDetailsPanel';
 import type { FieldPlot } from '@/types/farm';
@@ -35,7 +36,11 @@ const MINIMAL_PLOT: FieldPlot = {
 
 describe('PlotDetailsPanel', () => {
   it('should render plot details (name, area, crop, soil)', () => {
-    render(<PlotDetailsPanel plot={PLOT} onClose={vi.fn()} />);
+    render(
+      <MemoryRouter>
+        <PlotDetailsPanel plot={PLOT} onClose={vi.fn()} />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText('Talhão Norte')).toBeDefined();
     expect(screen.getByText('Soja')).toBeDefined();
@@ -44,7 +49,11 @@ describe('PlotDetailsPanel', () => {
   });
 
   it('should show all optional fields when present', () => {
-    render(<PlotDetailsPanel plot={PLOT} onClose={vi.fn()} />);
+    render(
+      <MemoryRouter>
+        <PlotDetailsPanel plot={PLOT} onClose={vi.fn()} />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText('TN-01')).toBeDefined();
     expect(screen.getByText('Milho')).toBeDefined();
@@ -54,19 +63,31 @@ describe('PlotDetailsPanel', () => {
 
   it('should call onClose when close button is clicked', () => {
     const onClose = vi.fn();
-    render(<PlotDetailsPanel plot={PLOT} onClose={onClose} />);
+    render(
+      <MemoryRouter>
+        <PlotDetailsPanel plot={PLOT} onClose={onClose} />
+      </MemoryRouter>,
+    );
 
     fireEvent.click(screen.getByLabelText('Fechar detalhes do talhão'));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
   it('should not render when plot is null', () => {
-    const { container } = render(<PlotDetailsPanel plot={null} onClose={vi.fn()} />);
+    const { container } = render(
+      <MemoryRouter>
+        <PlotDetailsPanel plot={null} onClose={vi.fn()} />
+      </MemoryRouter>,
+    );
     expect(container.innerHTML).toBe('');
   });
 
   it('should handle minimal plot without optional fields', () => {
-    render(<PlotDetailsPanel plot={MINIMAL_PLOT} onClose={vi.fn()} />);
+    render(
+      <MemoryRouter>
+        <PlotDetailsPanel plot={MINIMAL_PLOT} onClose={vi.fn()} />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText('Talhão Sul')).toBeDefined();
     expect(screen.getByText('Não definida')).toBeDefined();
@@ -78,7 +99,11 @@ describe('PlotDetailsPanel', () => {
 
   it('should show edit geometry button when onEditGeometry is provided', () => {
     const onEditGeometry = vi.fn();
-    render(<PlotDetailsPanel plot={PLOT} onClose={vi.fn()} onEditGeometry={onEditGeometry} />);
+    render(
+      <MemoryRouter>
+        <PlotDetailsPanel plot={PLOT} onClose={vi.fn()} onEditGeometry={onEditGeometry} />
+      </MemoryRouter>,
+    );
 
     const editBtn = screen.getByLabelText('Editar perímetro');
     expect(editBtn).toBeDefined();
@@ -87,14 +112,22 @@ describe('PlotDetailsPanel', () => {
   });
 
   it('should not show edit geometry button when onEditGeometry is not provided', () => {
-    render(<PlotDetailsPanel plot={PLOT} onClose={vi.fn()} />);
+    render(
+      <MemoryRouter>
+        <PlotDetailsPanel plot={PLOT} onClose={vi.fn()} />
+      </MemoryRouter>,
+    );
 
     expect(screen.queryByLabelText('Editar perímetro')).toBeNull();
   });
 
   it('should show subdivide button when onSubdivide is provided', () => {
     const onSubdivide = vi.fn();
-    render(<PlotDetailsPanel plot={PLOT} onClose={vi.fn()} onSubdivide={onSubdivide} />);
+    render(
+      <MemoryRouter>
+        <PlotDetailsPanel plot={PLOT} onClose={vi.fn()} onSubdivide={onSubdivide} />
+      </MemoryRouter>,
+    );
 
     const subdivideBtn = screen.getByLabelText('Subdividir talhão');
     expect(subdivideBtn).toBeDefined();
@@ -103,14 +136,22 @@ describe('PlotDetailsPanel', () => {
   });
 
   it('should not show subdivide button when onSubdivide is not provided', () => {
-    render(<PlotDetailsPanel plot={PLOT} onClose={vi.fn()} />);
+    render(
+      <MemoryRouter>
+        <PlotDetailsPanel plot={PLOT} onClose={vi.fn()} />
+      </MemoryRouter>,
+    );
 
     expect(screen.queryByLabelText('Subdividir talhão')).toBeNull();
   });
 
   it('should show delete button when onDelete is provided', () => {
     const onDelete = vi.fn();
-    render(<PlotDetailsPanel plot={PLOT} onClose={vi.fn()} onDelete={onDelete} />);
+    render(
+      <MemoryRouter>
+        <PlotDetailsPanel plot={PLOT} onClose={vi.fn()} onDelete={onDelete} />
+      </MemoryRouter>,
+    );
 
     const deleteBtn = screen.getByLabelText('Excluir talhão');
     expect(deleteBtn).toBeDefined();
@@ -119,7 +160,11 @@ describe('PlotDetailsPanel', () => {
   });
 
   it('should not show delete button when onDelete is not provided', () => {
-    render(<PlotDetailsPanel plot={PLOT} onClose={vi.fn()} />);
+    render(
+      <MemoryRouter>
+        <PlotDetailsPanel plot={PLOT} onClose={vi.fn()} />
+      </MemoryRouter>,
+    );
 
     expect(screen.queryByLabelText('Excluir talhão')).toBeNull();
   });

@@ -27,6 +27,10 @@ import { fertilizerApplicationsRouter } from './modules/fertilizer-applications/
 import { culturalOperationsRouter } from './modules/cultural-operations/cultural-operations.routes';
 import { fieldTeamsRouter } from './modules/field-teams/field-teams.routes';
 import { teamOperationsRouter } from './modules/team-operations/team-operations.routes';
+import { pestsRouter } from './modules/pests/pests.routes';
+import { monitoringPointsRouter } from './modules/monitoring-points/monitoring-points.routes';
+import { monitoringRecordsRouter } from './modules/monitoring-records/monitoring-records.routes';
+import { monitoringReportsRouter } from './modules/monitoring-reports/monitoring-reports.routes';
 
 const app = express();
 
@@ -61,5 +65,9 @@ app.use('/api', fertilizerApplicationsRouter);
 app.use('/api', culturalOperationsRouter);
 app.use('/api', fieldTeamsRouter);
 app.use('/api', teamOperationsRouter);
+app.use('/api', pestsRouter);
+app.use('/api', monitoringPointsRouter);
+app.use('/api', monitoringRecordsRouter);
+app.use('/api', monitoringReportsRouter);
 
 export { app };

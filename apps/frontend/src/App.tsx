@@ -30,6 +30,13 @@ const FertilizerApplicationsPage = lazy(() => import('@/pages/FertilizerApplicat
 const CulturalOperationsPage = lazy(() => import('@/pages/CulturalOperationsPage'));
 const FieldTeamsPage = lazy(() => import('@/pages/FieldTeamsPage'));
 const TeamOperationsPage = lazy(() => import('@/pages/TeamOperationsPage'));
+const PestsPage = lazy(() => import('@/pages/PestsPage'));
+const MonitoringPointsPage = lazy(() => import('@/pages/MonitoringPointsPage'));
+const MonitoringRecordsPage = lazy(() => import('@/pages/MonitoringRecordsPage'));
+const MonitoringHeatmapPage = lazy(() => import('@/pages/MonitoringHeatmapPage'));
+const MonitoringTimelinePage = lazy(() => import('@/pages/MonitoringTimelinePage'));
+const MonitoringRecommendationsPage = lazy(() => import('@/pages/MonitoringRecommendationsPage'));
+const MonitoringReportPage = lazy(() => import('@/pages/MonitoringReportPage'));
 
 export function App() {
   return (
@@ -67,6 +74,28 @@ export function App() {
                 <Route path="/cultural-operations" element={<CulturalOperationsPage />} />
                 <Route path="/field-teams" element={<FieldTeamsPage />} />
                 <Route path="/team-operations" element={<TeamOperationsPage />} />
+                <Route path="/pests" element={<PestsPage />} />
+                <Route
+                  path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
+                  element={<MonitoringPointsPage />}
+                />
+                <Route
+                  path="/farms/:farmId/plots/:fieldPlotId/monitoring-records"
+                  element={<MonitoringRecordsPage />}
+                />
+                <Route
+                  path="/farms/:farmId/plots/:fieldPlotId/monitoring-heatmap"
+                  element={<MonitoringHeatmapPage />}
+                />
+                <Route
+                  path="/farms/:farmId/plots/:fieldPlotId/monitoring-timeline"
+                  element={<MonitoringTimelinePage />}
+                />
+                <Route
+                  path="/farms/:farmId/plots/:fieldPlotId/monitoring-recommendations"
+                  element={<MonitoringRecommendationsPage />}
+                />
+                <Route path="/farms/:farmId/monitoring-report" element={<MonitoringReportPage />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/login" replace />} />
