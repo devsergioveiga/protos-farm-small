@@ -303,6 +303,8 @@ model User {
   ledTeams                   FieldTeam[]         @relation("TeamLeader")
   createdTeams               FieldTeam[]         @relation("TeamCreator")
   teamMemberships            FieldTeamMember[]
+  recordedTeamOperations     TeamOperation[]     @relation("TeamOperationRecorder")
+  teamOperationEntries       TeamOperationEntry[] @relation("TeamOperationEntryWorker")
 
   @@map("users")
 }
@@ -362,6 +364,7 @@ model Farm {
   fertilizerApplications     FertilizerApplication[]
   culturalOperations         CulturalOperation[]
   fieldTeams                 FieldTeam[]
+  teamOperations             TeamOperation[]
 
   @@map("farms")
 }
@@ -652,6 +655,7 @@ model FieldPlot {
   pesticideApplications  PesticideApplication[]
   fertilizerApplications FertilizerApplication[]
   culturalOperations     CulturalOperation[]
+  teamOperations         TeamOperation[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -1422,7 +1426,8 @@ model FieldTeam {
   farm    Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
   leader  User            @relation("TeamLeader", fields: [leaderId], references: [id])
   creator User            @relation("TeamCreator", fields: [createdBy], references: [id])
-  members FieldTeamMember[]
+  members        FieldTeamMember[]
+  teamOperations TeamOperation[]
 
   @@index([farmId])
   @@index([leaderId])
@@ -1444,4 +1449,56 @@ model FieldTeamMember {
   @@index([teamId])
   @@index([userId])
   @@map("field_team_members")
+}
+
+// ─── Team Operations — Bulk (US-077) ──────────────────────────────────────
+
+model TeamOperation {
+  id             String          @id @default(uuid())
+  farmId         String
+  fieldPlotId    String
+  teamId         String
+  operationType  FieldOperationType
+  performedAt    DateTime
+  timeStart      DateTime
+  timeEnd        DateTime
+  notes          String?
+  photoUrl       String?
+  latitude       Decimal?        @db.Decimal(10, 7)
+  longitude      Decimal?        @db.Decimal(10, 7)
+  recordedBy     String
+  deletedAt      DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  team      FieldTeam @relation(fields: [teamId], references: [id])
+  recorder  User      @relation("TeamOperationRecorder", fields: [recordedBy], references: [id])
+  entries   TeamOperationEntry[]
+
+  @@index([farmId])
+  @@index([teamId])
+  @@index([fieldPlotId])
+  @@index([performedAt])
+  @@map("team_operations")
+}
+
+model TeamOperationEntry {
+  id                String    @id @default(uuid())
+  teamOperationId   String
+  userId            String
+  hoursWorked       Decimal?  @db.Decimal(6, 2)
+  productivity      Decimal?  @db.Decimal(12, 4)
+  productivityUnit  String?
+  notes             String?
+  createdAt         DateTime  @default(now())
+
+  teamOperation TeamOperation @relation(fields: [teamOperationId], references: [id], onDelete: Cascade)
+  user          User          @relation("TeamOperationEntryWorker", fields: [userId], references: [id])
+
+  @@unique([teamOperationId, userId])
+  @@index([teamOperationId])
+  @@index([userId])
+  @@map("team_operation_entries")
 }
