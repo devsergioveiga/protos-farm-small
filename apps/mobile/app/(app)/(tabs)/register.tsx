@@ -13,6 +13,7 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
@@ -378,6 +379,7 @@ const createStyles = (c: ThemeColors) => ({
 
 export default function RegisterScreen() {
   const db = useSQLiteContext();
+  const router = useRouter();
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const { selectedFarmId, selectedFarm } = useFarmContext();
@@ -615,11 +617,20 @@ export default function RegisterScreen() {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   }, []);
 
-  const handleSelectType = useCallback((type: FieldOperationType) => {
-    setOperationType(type);
-    setShowTypePicker(false);
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, []);
+  const handleSelectType = useCallback(
+    (type: FieldOperationType) => {
+      if (type === 'PULVERIZACAO') {
+        setShowTypePicker(false);
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        router.push('/pesticide-application');
+        return;
+      }
+      setOperationType(type);
+      setShowTypePicker(false);
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    },
+    [router],
+  );
 
   const handleTakePhoto = useCallback(async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();

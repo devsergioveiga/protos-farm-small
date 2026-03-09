@@ -8,6 +8,7 @@ export { createPendingOperationsRepository } from './pending-operations-reposito
 export { createConflictLogRepository } from './conflict-log-repository';
 export { createTileCacheRepository } from './tile-cache-repository';
 export { createOperationRepository, createTemplateRepository } from './operation-repository';
+export { createPesticideApplicationRepository } from './pesticide-application-repository';
 export type { AnimalWithBreeds } from './animal-repository';
 export type {
   PendingOperation,
