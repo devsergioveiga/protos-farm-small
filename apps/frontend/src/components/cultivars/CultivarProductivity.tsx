@@ -95,11 +95,11 @@ function exportProductivityCsv(data: CultivarProductivityComparison[]) {
 }
 
 function formatTooltip(
-  value: number | string,
-  _name: string,
+  value: string | number | undefined,
+  _name: string | undefined,
   entry: { payload?: { fullName: string; plantings: number } },
 ) {
-  const v = Number(value);
+  const v = Number(value ?? 0);
   const p = entry.payload;
   if (!p) return [String(v), ''];
   return [
