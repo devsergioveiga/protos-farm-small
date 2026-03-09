@@ -110,6 +110,55 @@ export interface TimelineResponse {
   summary: TimelineSummary;
 }
 
+/* ─── Recommendations (CA7) ────────────────────────────────────────── */
+
+export interface RecommendationAffectedPoint {
+  monitoringPointId: string;
+  code: string;
+  latitude: number;
+  longitude: number;
+  currentLevel: string;
+  currentLevelLabel: string;
+  lastObservedAt: string;
+  damagePercentage: number | null;
+}
+
+export interface RecommendationItem {
+  pestId: string;
+  pestName: string;
+  pestCategory: string;
+  pestCategoryLabel: string;
+  severity: string | null;
+  severityLabel: string | null;
+  controlThreshold: string;
+  controlThresholdLabel: string;
+  ndeDescription: string | null;
+  ncDescription: string | null;
+  recommendedProducts: string | null;
+  urgency: 'ALERTA' | 'CRITICO';
+  urgencyLabel: string;
+  affectedPoints: RecommendationAffectedPoint[];
+  affectedPointCount: number;
+  maxLevel: string;
+  maxLevelLabel: string;
+  avgDamagePercentage: number | null;
+  hasNaturalEnemies: boolean;
+  trend: 'increasing' | 'stable' | 'decreasing' | 'unknown';
+  trendLabel: string;
+}
+
+export interface RecommendationSummary {
+  totalRecommendations: number;
+  criticalCount: number;
+  alertCount: number;
+  totalAffectedPoints: number;
+}
+
+export interface RecommendationsResponse {
+  data: RecommendationItem[];
+  summary: RecommendationSummary;
+}
+
 export const GROWTH_STAGES = [
   'VE',
   'V1',

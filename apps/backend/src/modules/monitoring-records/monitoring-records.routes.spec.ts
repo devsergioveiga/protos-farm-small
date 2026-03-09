@@ -29,6 +29,7 @@ jest.mock('./monitoring-records.service', () => ({
   deleteMonitoringRecord: jest.fn(),
   getMonitoringHeatmap: jest.fn(),
   getMonitoringTimeline: jest.fn(),
+  getMonitoringRecommendations: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -496,6 +497,136 @@ describe('Monitoring Records routes', () => {
       const res = await request(app).delete(url).set('Authorization', 'Bearer token');
 
       expect(res.status).toBe(404);
+    });
+  });
+
+  // ─── RECOMMENDATIONS ──────────────────────────────────────────────
+
+  describe('GET /api/org/farms/:farmId/field-plots/:plotId/monitoring-recommendations', () => {
+    const url = `/api/org/farms/${FARM_ID}/field-plots/${PLOT_ID}/monitoring-recommendations`;
+
+    const SAMPLE_RECOMMENDATION = {
+      pestId: 'pest-1',
+      pestName: 'Lagarta-da-soja',
+      pestCategory: 'INSETO',
+      pestCategoryLabel: 'Inseto',
+      severity: 'ALTO',
+      severityLabel: 'Alto',
+      controlThreshold: 'MODERADO',
+      controlThresholdLabel: 'Moderado',
+      ndeDescription: '20% folhas raspadas',
+      ncDescription: '2 lagartas por planta',
+      recommendedProducts: 'Clorantraniliprole 200g/L — 100-150 mL/ha',
+      urgency: 'ALERTA' as const,
+      urgencyLabel: 'Alerta',
+      affectedPoints: [
+        {
+          monitoringPointId: 'point-1',
+          code: 'P01',
+          latitude: -23.5,
+          longitude: -46.6,
+          currentLevel: 'ALTO',
+          currentLevelLabel: 'Alto',
+          lastObservedAt: '2026-03-09T10:00:00.000Z',
+          damagePercentage: 15.5,
+        },
+      ],
+      affectedPointCount: 1,
+      maxLevel: 'ALTO',
+      maxLevelLabel: 'Alto',
+      avgDamagePercentage: 15.5,
+      hasNaturalEnemies: true,
+      trend: 'increasing' as const,
+      trendLabel: 'Em alta',
+    };
+
+    const SAMPLE_SUMMARY = {
+      totalRecommendations: 1,
+      criticalCount: 0,
+      alertCount: 1,
+      totalAffectedPoints: 1,
+    };
+
+    it('returns recommendations with 200', async () => {
+      mockedService.getMonitoringRecommendations.mockResolvedValue({
+        data: [SAMPLE_RECOMMENDATION],
+        summary: SAMPLE_SUMMARY,
+      });
+
+      const res = await request(app).get(url).set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(1);
+      expect(res.body.data[0].pestName).toBe('Lagarta-da-soja');
+      expect(res.body.data[0].urgency).toBe('ALERTA');
+      expect(res.body.data[0].controlThreshold).toBe('MODERADO');
+      expect(res.body.data[0].affectedPoints).toHaveLength(1);
+      expect(res.body.summary.totalRecommendations).toBe(1);
+      expect(res.body.summary.alertCount).toBe(1);
+    });
+
+    it('returns empty data when no thresholds exceeded', async () => {
+      mockedService.getMonitoringRecommendations.mockResolvedValue({
+        data: [],
+        summary: {
+          totalRecommendations: 0,
+          criticalCount: 0,
+          alertCount: 0,
+          totalAffectedPoints: 0,
+        },
+      });
+
+      const res = await request(app).get(url).set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(0);
+      expect(res.body.summary.totalRecommendations).toBe(0);
+    });
+
+    it('passes query params to service', async () => {
+      mockedService.getMonitoringRecommendations.mockResolvedValue({
+        data: [],
+        summary: {
+          totalRecommendations: 0,
+          criticalCount: 0,
+          alertCount: 0,
+          totalAffectedPoints: 0,
+        },
+      });
+
+      await request(app)
+        .get(`${url}?pestId=pest-1&urgency=CRITICO`)
+        .set('Authorization', 'Bearer token');
+
+      expect(mockedService.getMonitoringRecommendations).toHaveBeenCalledWith(
+        expect.objectContaining({ organizationId: 'org-1' }),
+        FARM_ID,
+        PLOT_ID,
+        { pestId: 'pest-1', urgency: 'CRITICO' },
+      );
+    });
+
+    it('returns 401 without auth', async () => {
+      mockedAuth.verifyAccessToken.mockImplementation(() => {
+        throw new Error('Token inválido');
+      });
+
+      const res = await request(app).get(url);
+
+      expect(res.status).toBe(401);
+    });
+
+    it('returns 403 for VIEWER role', async () => {
+      authAs({
+        userId: 'viewer-1',
+        email: 'viewer@org.com',
+        role: 'VIEWER' as const,
+        organizationId: 'org-1',
+      });
+
+      const res = await request(app).get(url).set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(403);
     });
   });
 });

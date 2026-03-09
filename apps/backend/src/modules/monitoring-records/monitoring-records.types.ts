@@ -112,6 +112,69 @@ export interface TimelineSummary {
   pestsFound: string[];
 }
 
+// ─── Recommendation Types ──────────────────────────────────────────
+
+export interface RecommendationQuery {
+  pestId?: string;
+  urgency?: 'ALERTA' | 'CRITICO';
+}
+
+export type RecommendationUrgency = 'ALERTA' | 'CRITICO';
+
+export const URGENCY_LABELS: Record<RecommendationUrgency, string> = {
+  ALERTA: 'Alerta',
+  CRITICO: 'Crítico',
+};
+
+export interface RecommendationAffectedPoint {
+  monitoringPointId: string;
+  code: string;
+  latitude: number;
+  longitude: number;
+  currentLevel: InfestationLevel;
+  currentLevelLabel: string;
+  lastObservedAt: string;
+  damagePercentage: number | null;
+}
+
+export interface RecommendationItem {
+  pestId: string;
+  pestName: string;
+  pestCategory: string;
+  pestCategoryLabel: string;
+  severity: string | null;
+  severityLabel: string | null;
+  controlThreshold: string;
+  controlThresholdLabel: string;
+  ndeDescription: string | null;
+  ncDescription: string | null;
+  recommendedProducts: string | null;
+  urgency: RecommendationUrgency;
+  urgencyLabel: string;
+  affectedPoints: RecommendationAffectedPoint[];
+  affectedPointCount: number;
+  maxLevel: InfestationLevel;
+  maxLevelLabel: string;
+  avgDamagePercentage: number | null;
+  hasNaturalEnemies: boolean;
+  trend: 'increasing' | 'stable' | 'decreasing' | 'unknown';
+  trendLabel: string;
+}
+
+export interface RecommendationSummary {
+  totalRecommendations: number;
+  criticalCount: number;
+  alertCount: number;
+  totalAffectedPoints: number;
+}
+
+export const TREND_LABELS: Record<string, string> = {
+  increasing: 'Em alta',
+  stable: 'Estável',
+  decreasing: 'Em queda',
+  unknown: 'Sem dados suficientes',
+};
+
 // ─── Response Types ─────────────────────────────────────────────────
 
 export interface MonitoringRecordItem {

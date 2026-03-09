@@ -1,4 +1,4 @@
-import type { PestCategory, PestSeverity } from '@prisma/client';
+import type { PestCategory, PestSeverity, InfestationLevel } from '@prisma/client';
 import { withRlsContext, type RlsContext } from '../../database/rls';
 import {
   PestError,
@@ -11,6 +11,10 @@ import {
   type ListPestsQuery,
   type PestItem,
 } from './pests.types';
+import {
+  INFESTATION_LEVELS,
+  INFESTATION_LEVEL_LABELS,
+} from '../monitoring-records/monitoring-records.types';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -36,6 +40,12 @@ function toItem(row: Record<string, unknown>): PestItem {
     severityLabel: severity ? (PEST_SEVERITY_LABELS[severity] ?? severity) : null,
     ndeDescription: (row.ndeDescription as string) ?? null,
     ncDescription: (row.ncDescription as string) ?? null,
+    controlThreshold: (row.controlThreshold as string) ?? null,
+    controlThresholdLabel: row.controlThreshold
+      ? (INFESTATION_LEVEL_LABELS[row.controlThreshold as (typeof INFESTATION_LEVELS)[number]] ??
+        (row.controlThreshold as string))
+      : null,
+    recommendedProducts: (row.recommendedProducts as string) ?? null,
     lifecycle: (row.lifecycle as string) ?? null,
     symptoms: (row.symptoms as string) ?? null,
     photoUrl: (row.photoUrl as string) ?? null,
@@ -69,6 +79,16 @@ function validateInput(input: CreatePestInput, isUpdate = false): void {
       throw new PestError('affectedCrops deve ser um array de strings', 400);
     }
   }
+  if (input.controlThreshold !== undefined && input.controlThreshold !== null) {
+    if (
+      !INFESTATION_LEVELS.includes(input.controlThreshold as (typeof INFESTATION_LEVELS)[number])
+    ) {
+      throw new PestError(
+        `Limiar de controle inválido. Use: ${INFESTATION_LEVELS.join(', ')}`,
+        400,
+      );
+    }
+  }
 }
 
 // ─── CREATE ─────────────────────────────────────────────────────────
@@ -99,6 +119,8 @@ export async function createPest(ctx: RlsContext, input: CreatePestInput): Promi
         severity: (input.severity as PestSeverity) || null,
         ndeDescription: input.ndeDescription?.trim() || null,
         ncDescription: input.ncDescription?.trim() || null,
+        controlThreshold: (input.controlThreshold as InfestationLevel) || null,
+        recommendedProducts: input.recommendedProducts?.trim() || null,
         lifecycle: input.lifecycle?.trim() || null,
         symptoms: input.symptoms?.trim() || null,
         photoUrl: input.photoUrl?.trim() || null,
@@ -230,6 +252,10 @@ export async function updatePest(
     if (input.ndeDescription !== undefined)
       data.ndeDescription = input.ndeDescription?.trim() || null;
     if (input.ncDescription !== undefined) data.ncDescription = input.ncDescription?.trim() || null;
+    if (input.controlThreshold !== undefined)
+      data.controlThreshold = (input.controlThreshold as InfestationLevel) || null;
+    if (input.recommendedProducts !== undefined)
+      data.recommendedProducts = input.recommendedProducts?.trim() || null;
     if (input.lifecycle !== undefined) data.lifecycle = input.lifecycle?.trim() || null;
     if (input.symptoms !== undefined) data.symptoms = input.symptoms?.trim() || null;
     if (input.photoUrl !== undefined) data.photoUrl = input.photoUrl?.trim() || null;

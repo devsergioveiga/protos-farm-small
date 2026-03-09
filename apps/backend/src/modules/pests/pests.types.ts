@@ -53,6 +53,8 @@ export interface CreatePestInput {
   severity?: string | null;
   ndeDescription?: string | null;
   ncDescription?: string | null;
+  controlThreshold?: string | null;
+  recommendedProducts?: string | null;
   lifecycle?: string | null;
   symptoms?: string | null;
   photoUrl?: string | null;
@@ -83,6 +85,9 @@ export interface PestItem {
   severityLabel: string | null;
   ndeDescription: string | null;
   ncDescription: string | null;
+  controlThreshold: string | null;
+  controlThresholdLabel: string | null;
+  recommendedProducts: string | null;
   lifecycle: string | null;
   symptoms: string | null;
   photoUrl: string | null;

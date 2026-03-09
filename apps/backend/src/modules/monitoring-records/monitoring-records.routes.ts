@@ -13,6 +13,7 @@ import {
   deleteMonitoringRecord,
   getMonitoringHeatmap,
   getMonitoringTimeline,
+  getMonitoringRecommendations,
 } from './monitoring-records.service';
 
 export const monitoringRecordsRouter = Router();
@@ -145,6 +146,29 @@ monitoringRecordsRouter.get(
           aggregation && validAggregations.includes(aggregation)
             ? (aggregation as 'daily' | 'weekly' | 'monthly')
             : undefined,
+      });
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── RECOMMENDATIONS ────────────────────────────────────────────────
+
+monitoringRecordsRouter.get(
+  '/org/farms/:farmId/field-plots/:fieldPlotId/monitoring-recommendations',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const farmId = req.params.farmId as string;
+      const fieldPlotId = req.params.fieldPlotId as string;
+      const result = await getMonitoringRecommendations(ctx, farmId, fieldPlotId, {
+        pestId: req.query.pestId as string | undefined,
+        urgency: req.query.urgency as 'ALERTA' | 'CRITICO' | undefined,
       });
       res.json(result);
     } catch (err) {

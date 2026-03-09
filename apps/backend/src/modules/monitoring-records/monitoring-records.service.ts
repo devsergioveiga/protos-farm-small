@@ -3,6 +3,8 @@ import {
   MonitoringRecordError,
   INFESTATION_LEVELS,
   INFESTATION_LEVEL_LABELS,
+  TREND_LABELS,
+  URGENCY_LABELS,
   type CreateMonitoringRecordInput,
   type UpdateMonitoringRecordInput,
   type ListMonitoringRecordsQuery,
@@ -14,7 +16,13 @@ import {
   type TimelineDataPoint,
   type TimelinePestEntry,
   type TimelineSummary,
+  type RecommendationQuery,
+  type RecommendationItem,
+  type RecommendationAffectedPoint,
+  type RecommendationSummary,
+  type RecommendationUrgency,
 } from './monitoring-records.types';
+import { PEST_CATEGORY_LABELS, PEST_SEVERITY_LABELS } from '../pests/pests.types';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -556,6 +564,237 @@ export async function getMonitoringTimeline(
         totalRecords: records.length,
         dateRange: { start: firstDate, end: lastDate },
         pestsFound: Array.from(pestsFoundMap.values()),
+      },
+    };
+  });
+}
+
+// ─── RECOMMENDATIONS ────────────────────────────────────────────────
+
+function computeTrend(
+  levels: { level: InfestationLevel; date: Date }[],
+): 'increasing' | 'stable' | 'decreasing' | 'unknown' {
+  if (levels.length < 3) return 'unknown';
+
+  // Sort by date ascending
+  const sorted = [...levels].sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  // Compare average of last third vs first third
+  const thirdLen = Math.max(1, Math.floor(sorted.length / 3));
+  const firstThird = sorted.slice(0, thirdLen);
+  const lastThird = sorted.slice(-thirdLen);
+
+  const avgFirst = firstThird.reduce((s, r) => s + LEVEL_WEIGHT[r.level], 0) / firstThird.length;
+  const avgLast = lastThird.reduce((s, r) => s + LEVEL_WEIGHT[r.level], 0) / lastThird.length;
+
+  const diff = avgLast - avgFirst;
+  if (diff > 0.1) return 'increasing';
+  if (diff < -0.1) return 'decreasing';
+  return 'stable';
+}
+
+export async function getMonitoringRecommendations(
+  ctx: RlsContext,
+  farmId: string,
+  fieldPlotId: string,
+  query: RecommendationQuery,
+): Promise<{ data: RecommendationItem[]; summary: RecommendationSummary }> {
+  return withRlsContext(ctx, async (tx) => {
+    // 1. Get all pests with controlThreshold defined
+    const pests = await tx.pest.findMany({
+      where: {
+        organizationId: ctx.organizationId,
+        deletedAt: null,
+        controlThreshold: { not: null },
+        ...(query.pestId ? { id: query.pestId } : {}),
+      },
+    });
+
+    if (pests.length === 0) {
+      return {
+        data: [],
+        summary: {
+          totalRecommendations: 0,
+          criticalCount: 0,
+          alertCount: 0,
+          totalAffectedPoints: 0,
+        },
+      };
+    }
+
+    const pestIds = pests.map((p) => p.id);
+
+    // 2. Get latest monitoring records per pest per point (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const records = await tx.monitoringRecord.findMany({
+      where: {
+        farmId,
+        fieldPlotId,
+        pestId: { in: pestIds },
+        deletedAt: null,
+        observedAt: { gte: thirtyDaysAgo },
+      },
+      include: {
+        monitoringPoint: { select: { code: true, latitude: true, longitude: true } },
+      },
+      orderBy: { observedAt: 'desc' },
+    });
+
+    // 3. Group records by pest → latest record per point
+    const pestMap = new Map<
+      string,
+      {
+        latestPerPoint: Map<
+          string,
+          {
+            pointId: string;
+            code: string;
+            latitude: number;
+            longitude: number;
+            level: InfestationLevel;
+            observedAt: Date;
+            damagePercentage: number | null;
+            hasNaturalEnemies: boolean;
+          }
+        >;
+        allLevels: { level: InfestationLevel; date: Date }[];
+        anyNaturalEnemies: boolean;
+      }
+    >();
+
+    for (const rec of records) {
+      const point = rec.monitoringPoint as { code: string; latitude: unknown; longitude: unknown };
+      const level = rec.infestationLevel as InfestationLevel;
+
+      if (!pestMap.has(rec.pestId)) {
+        pestMap.set(rec.pestId, {
+          latestPerPoint: new Map(),
+          allLevels: [],
+          anyNaturalEnemies: false,
+        });
+      }
+      const entry = pestMap.get(rec.pestId)!;
+      entry.allLevels.push({ level, date: rec.observedAt as Date });
+
+      if (rec.hasNaturalEnemies) entry.anyNaturalEnemies = true;
+
+      // Keep only latest per point
+      if (!entry.latestPerPoint.has(rec.monitoringPointId)) {
+        entry.latestPerPoint.set(rec.monitoringPointId, {
+          pointId: rec.monitoringPointId,
+          code: point.code,
+          latitude: Number(point.latitude),
+          longitude: Number(point.longitude),
+          level,
+          observedAt: rec.observedAt as Date,
+          damagePercentage: rec.damagePercentage != null ? Number(rec.damagePercentage) : null,
+          hasNaturalEnemies: rec.hasNaturalEnemies as boolean,
+        });
+      }
+    }
+
+    // 4. Build recommendations
+    const recommendations: RecommendationItem[] = [];
+
+    for (const pest of pests) {
+      const threshold = pest.controlThreshold as InfestationLevel;
+      const thresholdWeight = LEVEL_WEIGHT[threshold];
+      const pestData = pestMap.get(pest.id);
+      if (!pestData) continue;
+
+      // Filter points where latest level >= threshold
+      const affectedPoints: RecommendationAffectedPoint[] = [];
+      for (const [, pointData] of pestData.latestPerPoint) {
+        if (LEVEL_WEIGHT[pointData.level] >= thresholdWeight) {
+          affectedPoints.push({
+            monitoringPointId: pointData.pointId,
+            code: pointData.code,
+            latitude: pointData.latitude,
+            longitude: pointData.longitude,
+            currentLevel: pointData.level,
+            currentLevelLabel: INFESTATION_LEVEL_LABELS[pointData.level] ?? pointData.level,
+            lastObservedAt: pointData.observedAt.toISOString(),
+            damagePercentage: pointData.damagePercentage,
+          });
+        }
+      }
+
+      if (affectedPoints.length === 0) continue;
+
+      // Determine max level and urgency
+      const maxLevel = affectedPoints.reduce((max, p) => {
+        return LEVEL_WEIGHT[p.currentLevel] > LEVEL_WEIGHT[max] ? p.currentLevel : max;
+      }, 'AUSENTE' as InfestationLevel);
+
+      const urgency: RecommendationUrgency =
+        LEVEL_WEIGHT[maxLevel] >= LEVEL_WEIGHT.CRITICO ? 'CRITICO' : 'ALERTA';
+
+      // Calculate avg damage
+      const damageValues = affectedPoints
+        .map((p) => p.damagePercentage)
+        .filter((d): d is number => d !== null);
+      const avgDamage =
+        damageValues.length > 0
+          ? Math.round((damageValues.reduce((s, d) => s + d, 0) / damageValues.length) * 100) / 100
+          : null;
+
+      const trend = computeTrend(pestData.allLevels);
+      const category = pest.category as string;
+      const severity = (pest.severity as string) ?? null;
+
+      recommendations.push({
+        pestId: pest.id,
+        pestName: pest.commonName,
+        pestCategory: category,
+        pestCategoryLabel: PEST_CATEGORY_LABELS[category] ?? category,
+        severity,
+        severityLabel: severity ? (PEST_SEVERITY_LABELS[severity] ?? severity) : null,
+        controlThreshold: threshold,
+        controlThresholdLabel: INFESTATION_LEVEL_LABELS[threshold] ?? threshold,
+        ndeDescription: (pest.ndeDescription as string) ?? null,
+        ncDescription: (pest.ncDescription as string) ?? null,
+        recommendedProducts: (pest.recommendedProducts as string) ?? null,
+        urgency,
+        urgencyLabel: URGENCY_LABELS[urgency],
+        affectedPoints: affectedPoints.sort(
+          (a, b) => LEVEL_WEIGHT[b.currentLevel] - LEVEL_WEIGHT[a.currentLevel],
+        ),
+        affectedPointCount: affectedPoints.length,
+        maxLevel,
+        maxLevelLabel: INFESTATION_LEVEL_LABELS[maxLevel] ?? maxLevel,
+        avgDamagePercentage: avgDamage,
+        hasNaturalEnemies: pestData.anyNaturalEnemies,
+        trend,
+        trendLabel: TREND_LABELS[trend],
+      });
+    }
+
+    // Sort: CRITICO first, then by affected points count
+    recommendations.sort((a, b) => {
+      if (a.urgency !== b.urgency) return a.urgency === 'CRITICO' ? -1 : 1;
+      return b.affectedPointCount - a.affectedPointCount;
+    });
+
+    // Apply urgency filter
+    const filtered = query.urgency
+      ? recommendations.filter((r) => r.urgency === query.urgency)
+      : recommendations;
+
+    const criticalCount = recommendations.filter((r) => r.urgency === 'CRITICO').length;
+    const alertCount = recommendations.filter((r) => r.urgency === 'ALERTA').length;
+    const totalAffectedPoints = new Set(
+      recommendations.flatMap((r) => r.affectedPoints.map((p) => p.monitoringPointId)),
+    ).size;
+
+    return {
+      data: filtered,
+      summary: {
+        totalRecommendations: recommendations.length,
+        criticalCount,
+        alertCount,
+        totalAffectedPoints,
       },
     };
   });

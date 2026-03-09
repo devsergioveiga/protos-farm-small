@@ -1524,9 +1524,11 @@ model Pest {
   scientificName  String?
   category        PestCategory
   affectedCrops   String[]
-  severity        PestSeverity?
-  ndeDescription  String?
-  ncDescription   String?
+  severity          PestSeverity?
+  ndeDescription    String?
+  ncDescription     String?
+  controlThreshold  InfestationLevel?
+  recommendedProducts String?
   lifecycle       String?
   symptoms        String?
   photoUrl        String?

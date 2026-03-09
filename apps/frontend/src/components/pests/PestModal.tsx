@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
 import { api } from '@/services/api';
 import { PEST_CATEGORIES, PEST_SEVERITIES, CROP_OPTIONS_PEST } from '@/types/pest';
+import { INFESTATION_LEVELS } from '@/types/monitoring-record';
 import type { PestItem, CreatePestInput } from '@/types/pest';
 import './PestModal.css';
 
@@ -22,6 +23,8 @@ function PestModal({ isOpen, pest, onClose, onSuccess }: PestModalProps) {
   const [severity, setSeverity] = useState('');
   const [ndeDescription, setNdeDescription] = useState('');
   const [ncDescription, setNcDescription] = useState('');
+  const [controlThreshold, setControlThreshold] = useState('');
+  const [recommendedProducts, setRecommendedProducts] = useState('');
   const [lifecycle, setLifecycle] = useState('');
   const [symptoms, setSymptoms] = useState('');
   const [notes, setNotes] = useState('');
@@ -37,6 +40,8 @@ function PestModal({ isOpen, pest, onClose, onSuccess }: PestModalProps) {
       setSeverity('');
       setNdeDescription('');
       setNcDescription('');
+      setControlThreshold('');
+      setRecommendedProducts('');
       setLifecycle('');
       setSymptoms('');
       setNotes('');
@@ -50,6 +55,8 @@ function PestModal({ isOpen, pest, onClose, onSuccess }: PestModalProps) {
       setSeverity(pest.severity ?? '');
       setNdeDescription(pest.ndeDescription ?? '');
       setNcDescription(pest.ncDescription ?? '');
+      setControlThreshold(pest.controlThreshold ?? '');
+      setRecommendedProducts(pest.recommendedProducts ?? '');
       setLifecycle(pest.lifecycle ?? '');
       setSymptoms(pest.symptoms ?? '');
       setNotes(pest.notes ?? '');
@@ -88,6 +95,8 @@ function PestModal({ isOpen, pest, onClose, onSuccess }: PestModalProps) {
         severity: severity || null,
         ndeDescription: ndeDescription.trim() || null,
         ncDescription: ncDescription.trim() || null,
+        controlThreshold: controlThreshold || null,
+        recommendedProducts: recommendedProducts.trim() || null,
         lifecycle: lifecycle.trim() || null,
         symptoms: symptoms.trim() || null,
         notes: notes.trim() || null,
@@ -114,6 +123,8 @@ function PestModal({ isOpen, pest, onClose, onSuccess }: PestModalProps) {
     severity,
     ndeDescription,
     ncDescription,
+    controlThreshold,
+    recommendedProducts,
     lifecycle,
     symptoms,
     notes,
@@ -265,6 +276,41 @@ function PestModal({ isOpen, pest, onClose, onSuccess }: PestModalProps) {
                   placeholder="Ex: 2 lagartas por planta"
                 />
               </div>
+            </div>
+
+            <div className="pest-modal__row">
+              <div className="pest-modal__field">
+                <label htmlFor="pest-control-threshold" className="pest-modal__label">
+                  Limiar de controle (nível)
+                </label>
+                <select
+                  id="pest-control-threshold"
+                  className="pest-modal__select"
+                  value={controlThreshold}
+                  onChange={(e) => setControlThreshold(e.target.value)}
+                >
+                  <option value="">Não definido</option>
+                  {INFESTATION_LEVELS.map((l) => (
+                    <option key={l.value} value={l.value}>
+                      {l.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="pest-modal__field">
+              <label htmlFor="pest-recommended-products" className="pest-modal__label">
+                Produtos recomendados
+              </label>
+              <textarea
+                id="pest-recommended-products"
+                className="pest-modal__textarea"
+                value={recommendedProducts}
+                onChange={(e) => setRecommendedProducts(e.target.value)}
+                placeholder="Ex: Clorantraniliprole 200g/L (Prêmio) — 100-150 mL/ha — Carência 14d&#10;Metomil 215g/L (Lannate) — 600-1000 mL/ha — Carência 14d"
+                rows={3}
+              />
             </div>
 
             {/* Biologia */}
