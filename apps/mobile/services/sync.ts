@@ -7,6 +7,8 @@ import {
   createAnimalLotRepository,
   createAnimalRepository,
   createSyncMetaRepository,
+  createPestRepository,
+  createMonitoringPointRepository,
 } from './db';
 import type {
   OfflineFarm,
@@ -15,6 +17,8 @@ import type {
   OfflineAnimalLot,
   OfflineAnimal,
   OfflineAnimalBreedComposition,
+  OfflinePest,
+  OfflineMonitoringPoint,
   SyncEntity,
 } from '@/types/offline';
 
@@ -138,6 +142,27 @@ interface ApiAnimal {
     fraction?: number;
     percentage: number;
   }>;
+}
+
+interface ApiPest {
+  id: string;
+  commonName: string;
+  scientificName?: string;
+  category: string;
+  controlThreshold?: string;
+  recommendedProducts?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+interface ApiMonitoringPoint {
+  id: string;
+  farmId: string;
+  fieldPlotId: string;
+  code: string;
+  latitude: number;
+  longitude: number;
+  createdAt: string;
 }
 
 // ─── Mappers: API → Offline ────────────────────────────────────────────────
@@ -278,6 +303,31 @@ function mapBreedCompositions(a: ApiAnimal): OfflineAnimalBreedComposition[] {
   }));
 }
 
+function mapPest(p: ApiPest): OfflinePest {
+  return {
+    id: p.id,
+    common_name: p.commonName,
+    scientific_name: p.scientificName ?? null,
+    category: p.category,
+    control_threshold: p.controlThreshold ? parseFloat(p.controlThreshold) : null,
+    recommended_products: p.recommendedProducts ?? null,
+    created_at: p.createdAt,
+    updated_at: p.updatedAt ?? p.createdAt,
+  };
+}
+
+function mapMonitoringPoint(mp: ApiMonitoringPoint): OfflineMonitoringPoint {
+  return {
+    id: mp.id,
+    farm_id: mp.farmId,
+    field_plot_id: mp.fieldPlotId,
+    code: mp.code,
+    latitude: mp.latitude,
+    longitude: mp.longitude,
+    created_at: mp.createdAt,
+  };
+}
+
 // ─── Paginated fetcher ─────────────────────────────────────────────────────
 
 async function fetchAllPages<T>(path: string, limit = 100): Promise<T[]> {
@@ -316,6 +366,8 @@ export function createSyncService(db: SQLiteDatabase) {
   const locationRepo = createFarmLocationRepository(db);
   const lotRepo = createAnimalLotRepository(db);
   const animalRepo = createAnimalRepository(db);
+  const pestRepo = createPestRepository(db);
+  const monitoringPointRepo = createMonitoringPointRepository(db);
   const syncMetaRepo = createSyncMetaRepository(db);
 
   const entities: SyncEntity[] = [
@@ -324,6 +376,8 @@ export function createSyncService(db: SQLiteDatabase) {
     'farm_locations',
     'animal_lots',
     'animals',
+    'pests',
+    'monitoring_points',
   ];
 
   function initProgress(): SyncProgress[] {
@@ -503,6 +557,58 @@ export function createSyncService(db: SQLiteDatabase) {
         updateProgress(progress, 'animals', { status: 'error', error: msg }, onProgress);
       }
 
+      // 6. Sync pests (org-level, not farm-specific)
+      try {
+        updateProgress(progress, 'pests', { status: 'syncing' }, onProgress);
+        const apiPests = await fetchAllPages<ApiPest>('/org/pests');
+        const offlinePests = apiPests.map(mapPest);
+        await pestRepo.clear();
+        await pestRepo.upsertMany(offlinePests);
+        await syncMetaRepo.upsert('pests', offlinePests.length);
+        updateProgress(
+          progress,
+          'pests',
+          { status: 'done', count: offlinePests.length },
+          onProgress,
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+        updateProgress(progress, 'pests', { status: 'error', error: msg }, onProgress);
+      }
+
+      // 7. Sync monitoring points for each field plot
+      try {
+        updateProgress(progress, 'monitoring_points', { status: 'syncing' }, onProgress);
+        const plotRepo2 = createFieldPlotRepository(db);
+        const plots = await plotRepo2.getByFarmId(farmId);
+        let totalPoints = 0;
+
+        await monitoringPointRepo.deleteByFarmId(farmId);
+        for (const plot of plots) {
+          try {
+            const apiPoints = await fetchAllPages<ApiMonitoringPoint>(
+              `/org/farms/${farmId}/field-plots/${plot.id}/monitoring-points`,
+            );
+            const offlinePoints = apiPoints.map(mapMonitoringPoint);
+            await monitoringPointRepo.upsertMany(offlinePoints);
+            totalPoints += offlinePoints.length;
+          } catch {
+            // Skip plots without monitoring points
+          }
+        }
+
+        await syncMetaRepo.upsert('monitoring_points', totalPoints);
+        updateProgress(
+          progress,
+          'monitoring_points',
+          { status: 'done', count: totalPoints },
+          onProgress,
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+        updateProgress(progress, 'monitoring_points', { status: 'error', error: msg }, onProgress);
+      }
+
       return progress;
     },
 
@@ -533,6 +639,8 @@ export function createSyncService(db: SQLiteDatabase) {
      * Clear all offline data (used on logout or farm switch).
      */
     async clearAll(): Promise<void> {
+      await monitoringPointRepo.clear();
+      await pestRepo.clear();
       await animalRepo.clear();
       await lotRepo.clear();
       await locationRepo.clear();

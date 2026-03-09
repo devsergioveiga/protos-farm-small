@@ -58,7 +58,10 @@ import type {
 
 // ─── Operation type labels ──────────────────────────────────────────────────
 
-const OPERATION_TYPES: { value: FieldOperationType; label: string }[] = [
+type ExtendedOperationType = FieldOperationType | 'MONITORAMENTO_MIP';
+
+const OPERATION_TYPES: { value: ExtendedOperationType; label: string }[] = [
+  { value: 'MONITORAMENTO_MIP', label: 'Monitoramento MIP' },
   { value: 'PULVERIZACAO', label: 'Pulverização' },
   { value: 'ADUBACAO', label: 'Adubação' },
   { value: 'PLANTIO', label: 'Plantio' },
@@ -618,14 +621,20 @@ export default function RegisterScreen() {
   }, []);
 
   const handleSelectType = useCallback(
-    (type: FieldOperationType) => {
+    (type: ExtendedOperationType) => {
       if (type === 'PULVERIZACAO') {
         setShowTypePicker(false);
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         router.push('/pesticide-application');
         return;
       }
-      setOperationType(type);
+      if (type === 'MONITORAMENTO_MIP') {
+        setShowTypePicker(false);
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        router.push('/monitoring-record');
+        return;
+      }
+      setOperationType(type as FieldOperationType);
       setShowTypePicker(false);
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     },
