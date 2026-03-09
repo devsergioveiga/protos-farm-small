@@ -12,6 +12,8 @@ import {
   updatePesticideApplication,
   deletePesticideApplication,
   getWithdrawalAlerts,
+  getApplicationsReport,
+  applicationsToCsv,
 } from './pesticide-applications.service';
 
 export const pesticideApplicationsRouter = Router();
@@ -114,6 +116,32 @@ pesticideApplicationsRouter.get(
       const ctx = buildRlsContext(req);
       const alerts = await getWithdrawalAlerts(ctx, req.params.farmId as string);
       res.json(alerts);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── REPORT EXPORT (CSV) ────────────────────────────────────────────
+
+pesticideApplicationsRouter.get(
+  '/org/farms/:farmId/pesticide-applications/report/export',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const items = await getApplicationsReport(ctx, req.params.farmId as string, {
+        dateFrom: (req.query.dateFrom as string) || undefined,
+        dateTo: (req.query.dateTo as string) || undefined,
+        fieldPlotId: (req.query.fieldPlotId as string) || undefined,
+        productName: (req.query.productName as string) || undefined,
+      });
+      const csv = applicationsToCsv(items);
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="aplicacoes-defensivos.csv"');
+      res.send('\uFEFF' + csv);
     } catch (err) {
       handleError(err, res);
     }

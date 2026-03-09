@@ -352,6 +352,19 @@ describe('PesticideApplicationsPage', () => {
     expect(screen.getByText(/10 dias restantes/)).toBeTruthy();
   });
 
+  it('should have export CSV button', () => {
+    mockUsePesticideApplications.mockReturnValue({
+      applications: [],
+      meta: null,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(<PesticideApplicationsPage />);
+    expect(screen.getByText('Exportar CSV')).toBeTruthy();
+  });
+
   it('should show pagination when multiple pages', () => {
     mockUsePesticideApplications.mockReturnValue({
       applications: MOCK_APPLICATIONS,
