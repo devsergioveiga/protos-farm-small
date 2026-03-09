@@ -1,0 +1,342 @@
+.plot-history {
+  margin-top: 8px;
+}
+
+.plot-history__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.plot-history__summary {
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+  margin: 0;
+}
+
+.plot-history__btn {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 200ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.plot-history__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.plot-history__btn--ghost {
+  background: transparent;
+  color: var(--color-neutral-700);
+  border: 1px solid var(--color-neutral-200);
+}
+
+.plot-history__btn--ghost:hover {
+  background: var(--color-neutral-50);
+}
+
+/* List */
+.plot-history__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plot-history__item {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 12px;
+  background: var(--color-neutral-0);
+  overflow: hidden;
+}
+
+.plot-history__item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  text-align: left;
+  min-height: 56px;
+  transition: background 200ms;
+}
+
+.plot-history__item-header:hover {
+  background: var(--color-neutral-50);
+}
+
+.plot-history__item-header:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+
+.plot-history__item-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plot-history__icon {
+  color: var(--color-primary-600);
+  flex-shrink: 0;
+}
+
+.plot-history__plot-name {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+}
+
+.plot-history__season-count {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  padding: 2px 8px;
+  background: var(--color-neutral-100);
+  border-radius: 9999px;
+}
+
+.plot-history__item-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-neutral-500);
+}
+
+.plot-history__best-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary-600);
+  background: #e8f5e9;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+/* Table */
+.plot-history__seasons {
+  border-top: 1px solid var(--color-neutral-200);
+  padding: 0;
+}
+
+.plot-history__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+}
+
+.plot-history__table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  background: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.plot-history__table td {
+  padding: 12px 16px;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.plot-history__table tr:last-child td {
+  border-bottom: none;
+}
+
+.plot-history__row--best {
+  background: #f1f8e9;
+}
+
+.plot-history__td--mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+}
+
+.plot-history__td--notes {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mobile cards (hidden on desktop) */
+.plot-history__cards-mobile {
+  display: none;
+}
+
+/* Error / Empty / Skeleton */
+.plot-history__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+}
+
+.plot-history__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--color-neutral-500);
+}
+
+.plot-history__empty-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.plot-history__empty-desc {
+  font-size: 0.9375rem;
+  max-width: 400px;
+  margin: 0;
+}
+
+.plot-history__skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plot-history__skeleton {
+  background: var(--color-neutral-100);
+  border-radius: 12px;
+  animation: plot-history-pulse 1.5s ease-in-out infinite;
+}
+
+.plot-history__skeleton--row {
+  height: 56px;
+}
+
+@keyframes plot-history-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plot-history__skeleton {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+.plot-history__mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+}
+
+.plot-history__badge {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .plot-history__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .plot-history__item-meta {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .plot-history__table {
+    display: none;
+  }
+
+  .plot-history__cards-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .plot-history__card-mobile {
+    border: 1px solid var(--color-neutral-200);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .plot-history__card-mobile--best {
+    background: #f1f8e9;
+    border-color: #c8e6c9;
+  }
+
+  .plot-history__card-mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .plot-history__card-mobile-year {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    color: var(--color-neutral-800);
+  }
+
+  .plot-history__card-mobile-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .plot-history__card-mobile-field {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: var(--color-neutral-700);
+  }
+
+  .plot-history__card-mobile-label {
+    font-weight: 600;
+    color: var(--color-neutral-600);
+  }
+}

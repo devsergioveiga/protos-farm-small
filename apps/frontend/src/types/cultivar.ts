@@ -44,6 +44,38 @@ export interface CreateCultivarInput {
   notes?: string;
 }
 
+export interface CultivarPlotHistoryItem {
+  plotId: string;
+  plotName: string;
+  seasons: {
+    seasonYear: string;
+    seasonType: string;
+    cultivarId: string | null;
+    cultivarName: string | null;
+    productivityKgHa: number | null;
+    totalProductionKg: number | null;
+    notes: string | null;
+  }[];
+}
+
+export interface CultivarProductivityComparison {
+  cultivarId: string;
+  cultivarName: string;
+  crop: string;
+  avgProductivityKgHa: number | null;
+  totalPlantings: number;
+  entries: {
+    seasonYear: string;
+    seasonType: string;
+    plotName: string;
+    plotId: string;
+    plantedAreaHa: number | null;
+    productivityKgHa: number | null;
+    totalProductionKg: number | null;
+    notes: string | null;
+  }[];
+}
+
 export const CULTIVAR_TYPES = [
   { value: 'CONVENCIONAL', label: 'Convencional' },
   { value: 'TRANSGENICO', label: 'Transgênico' },
