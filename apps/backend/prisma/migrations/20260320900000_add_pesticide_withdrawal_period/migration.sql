@@ -1,4 +1,4 @@
 -- AlterTable
 ALTER TABLE "pesticide_applications"
-ADD COLUMN "withdrawal_period_days" INTEGER,
-ADD COLUMN "safe_harvest_date" TIMESTAMP(3);
+ADD COLUMN "withdrawalPeriodDays" INTEGER,
+ADD COLUMN "safeHarvestDate" TIMESTAMP(3);

@@ -4,7 +4,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
  * Database version — increment when adding new migrations.
  * Each version maps to a migration function in the migrations array.
  */
-const DATABASE_VERSION = 5;
+const DATABASE_VERSION = 6;
 
 /**
  * Run migrations on database init (called by SQLiteProvider onInit).
@@ -43,6 +43,11 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase): Promise<void> {
   if (currentVersion === 4) {
     await migrationV5(db);
     currentVersion = 5;
+  }
+
+  if (currentVersion === 5) {
+    await migrationV6(db);
+    currentVersion = 6;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
@@ -287,6 +292,47 @@ async function migrationV5(db: SQLiteDatabase): Promise<void> {
     );
 
     CREATE INDEX IF NOT EXISTS idx_templates_farm ON operation_templates(farm_id);
+  `);
+}
+
+/**
+ * V6 — Pesticide applications for offline mobile registration.
+ */
+async function migrationV6(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS pesticide_applications (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      field_plot_id TEXT NOT NULL,
+      field_plot_name TEXT NOT NULL,
+      applied_at TEXT NOT NULL,
+      product_name TEXT NOT NULL,
+      active_ingredient TEXT NOT NULL,
+      dose REAL NOT NULL,
+      dose_unit TEXT NOT NULL DEFAULT 'L_HA',
+      spray_volume REAL NOT NULL,
+      target TEXT NOT NULL,
+      target_description TEXT,
+      art_number TEXT,
+      agronomist_crea TEXT,
+      technical_justification TEXT,
+      temperature REAL,
+      relative_humidity REAL,
+      wind_speed REAL,
+      withdrawal_period_days INTEGER,
+      notes TEXT,
+      photo_uri TEXT,
+      latitude REAL,
+      longitude REAL,
+      synced INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_pesticide_apps_farm ON pesticide_applications(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_pesticide_apps_synced ON pesticide_applications(synced);
+    CREATE INDEX IF NOT EXISTS idx_pesticide_apps_applied ON pesticide_applications(applied_at);
   `);
 }
 

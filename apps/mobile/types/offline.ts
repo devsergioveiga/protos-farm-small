@@ -161,6 +161,35 @@ export interface OfflineFieldOperation {
   updated_at: string;
 }
 
+export interface OfflinePesticideApplication {
+  id: string;
+  farm_id: string;
+  field_plot_id: string;
+  field_plot_name: string;
+  applied_at: string;
+  product_name: string;
+  active_ingredient: string;
+  dose: number;
+  dose_unit: string;
+  spray_volume: number;
+  target: string;
+  target_description: string | null;
+  art_number: string | null;
+  agronomist_crea: string | null;
+  technical_justification: string | null;
+  temperature: number | null;
+  relative_humidity: number | null;
+  wind_speed: number | null;
+  withdrawal_period_days: number | null;
+  notes: string | null;
+  photo_uri: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  synced: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface OfflineOperationTemplate {
   id: string;
   farm_id: string;
