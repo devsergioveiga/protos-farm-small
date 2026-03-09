@@ -9,6 +9,7 @@ import {
   Scale,
   Sprout,
   SprayCan,
+  Droplet,
   Users,
   Shield,
   X,
@@ -56,6 +57,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: '/cultivars', icon: Sprout, label: 'Cultivares' },
       { to: '/pesticide-applications', icon: SprayCan, label: 'Defensivos' },
+      { to: '/fertilizer-applications', icon: Droplet, label: 'Adubação' },
     ],
   },
   {
