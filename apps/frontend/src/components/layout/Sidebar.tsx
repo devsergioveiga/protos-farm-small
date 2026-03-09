@@ -11,6 +11,7 @@ import {
   SprayCan,
   Droplet,
   Shovel,
+  UsersRound,
   Users,
   Shield,
   X,
@@ -60,6 +61,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/pesticide-applications', icon: SprayCan, label: 'Defensivos' },
       { to: '/fertilizer-applications', icon: Droplet, label: 'Adubação' },
       { to: '/cultural-operations', icon: Shovel, label: 'Tratos culturais' },
+      { to: '/field-teams', icon: UsersRound, label: 'Equipes de campo' },
     ],
   },
   {

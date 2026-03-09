@@ -28,6 +28,7 @@ const CultivarsPage = lazy(() => import('@/pages/CultivarsPage'));
 const PesticideApplicationsPage = lazy(() => import('@/pages/PesticideApplicationsPage'));
 const FertilizerApplicationsPage = lazy(() => import('@/pages/FertilizerApplicationsPage'));
 const CulturalOperationsPage = lazy(() => import('@/pages/CulturalOperationsPage'));
+const FieldTeamsPage = lazy(() => import('@/pages/FieldTeamsPage'));
 
 export function App() {
   return (
@@ -63,6 +64,7 @@ export function App() {
                 <Route path="/pesticide-applications" element={<PesticideApplicationsPage />} />
                 <Route path="/fertilizer-applications" element={<FertilizerApplicationsPage />} />
                 <Route path="/cultural-operations" element={<CulturalOperationsPage />} />
+                <Route path="/field-teams" element={<FieldTeamsPage />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/login" replace />} />
