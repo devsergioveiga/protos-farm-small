@@ -12,6 +12,7 @@ import {
   Droplet,
   Shovel,
   UsersRound,
+  ClipboardList,
   Users,
   Shield,
   X,
@@ -62,6 +63,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/fertilizer-applications', icon: Droplet, label: 'Adubação' },
       { to: '/cultural-operations', icon: Shovel, label: 'Tratos culturais' },
       { to: '/field-teams', icon: UsersRound, label: 'Equipes de campo' },
+      { to: '/team-operations', icon: ClipboardList, label: 'Operações em bloco' },
     ],
   },
   {
