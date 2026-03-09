@@ -366,6 +366,7 @@ model Farm {
   culturalOperations         CulturalOperation[]
   fieldTeams                 FieldTeam[]
   teamOperations             TeamOperation[]
+  monitoringPoints           MonitoringPoint[]
 
   @@map("farms")
 }
@@ -657,6 +658,7 @@ model FieldPlot {
   fertilizerApplications FertilizerApplication[]
   culturalOperations     CulturalOperation[]
   teamOperations         TeamOperation[]
+  monitoringPoints       MonitoringPoint[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -1529,6 +1531,29 @@ model Pest {
   @@index([organizationId])
   @@index([category])
   @@map("pests")
+}
+
+// ─── Monitoring Points (MIP) ──────────────────────────────────────────
+
+model MonitoringPoint {
+  id            String    @id @default(uuid())
+  farmId        String
+  fieldPlotId   String
+  code          String
+  latitude      Decimal   @db.Decimal(10, 7)
+  longitude     Decimal   @db.Decimal(10, 7)
+  notes         String?
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+
+  @@unique([fieldPlotId, code])
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@map("monitoring_points")
 }
 
 model TeamOperationEntry {

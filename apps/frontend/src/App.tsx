@@ -31,6 +31,7 @@ const CulturalOperationsPage = lazy(() => import('@/pages/CulturalOperationsPage
 const FieldTeamsPage = lazy(() => import('@/pages/FieldTeamsPage'));
 const TeamOperationsPage = lazy(() => import('@/pages/TeamOperationsPage'));
 const PestsPage = lazy(() => import('@/pages/PestsPage'));
+const MonitoringPointsPage = lazy(() => import('@/pages/MonitoringPointsPage'));
 
 export function App() {
   return (
@@ -69,6 +70,10 @@ export function App() {
                 <Route path="/field-teams" element={<FieldTeamsPage />} />
                 <Route path="/team-operations" element={<TeamOperationsPage />} />
                 <Route path="/pests" element={<PestsPage />} />
+                <Route
+                  path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
+                  element={<MonitoringPointsPage />}
+                />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/login" replace />} />

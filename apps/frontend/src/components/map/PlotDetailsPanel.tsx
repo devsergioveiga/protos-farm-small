@@ -1,4 +1,5 @@
-import { X, Pencil, Scissors, BookOpen, FileEdit, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { X, Pencil, Scissors, BookOpen, FileEdit, Trash2, Crosshair } from 'lucide-react';
 import { getCropColor, formatArea } from './FarmMap';
 import type { FieldPlot } from '@/types/farm';
 import './PlotDetailsPanel.css';
@@ -148,6 +149,16 @@ function PlotDetailsPanel({
         <dt>Criado em</dt>
         <dd>{formatDate(plot.createdAt)}</dd>
       </dl>
+
+      <div className="plot-details__mip-link">
+        <Link
+          to={`/farms/${plot.farmId}/plots/${plot.id}/monitoring-points`}
+          className="plot-details__mip-btn"
+        >
+          <Crosshair size={16} aria-hidden="true" />
+          Pontos de monitoramento MIP
+        </Link>
+      </div>
     </div>
   );
 }
