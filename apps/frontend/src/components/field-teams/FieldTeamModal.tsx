@@ -37,14 +37,14 @@ function FieldTeamModal({ isOpen, team, onClose, onSuccess }: FieldTeamModalProp
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
-  // Load org users when modal opens
+  // Load org users filtered by farm when modal opens
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !selectedFarmId) return;
 
     let cancelled = false;
     setLoadingUsers(true);
     api
-      .get<UsersResponse>('/org/users?limit=100&status=ACTIVE')
+      .get<UsersResponse>(`/org/users?limit=100&status=ACTIVE&farmId=${selectedFarmId}`)
       .then((result) => {
         if (!cancelled) setUsers(result.data);
       })
@@ -58,7 +58,7 @@ function FieldTeamModal({ isOpen, team, onClose, onSuccess }: FieldTeamModalProp
     return () => {
       cancelled = true;
     };
-  }, [isOpen]);
+  }, [isOpen, selectedFarmId]);
 
   // Reset / populate form
   useEffect(() => {
@@ -160,8 +160,18 @@ function FieldTeamModal({ isOpen, team, onClose, onSuccess }: FieldTeamModalProp
     }
   }, [selectedFarmId, team, onSuccess]);
 
-  // Users available as members (excluding leader)
+  // Users available as members (excluding leader), filtered to same farm
   const availableMembers = users.filter((u) => u.id !== leaderId);
+  const allMembersSelected =
+    availableMembers.length > 0 && availableMembers.every((u) => memberIds.includes(u.id));
+
+  const handleSelectAll = useCallback(() => {
+    if (allMembersSelected) {
+      setMemberIds([]);
+    } else {
+      setMemberIds(availableMembers.map((u) => u.id));
+    }
+  }, [allMembersSelected, availableMembers]);
 
   if (!isOpen) return null;
 
@@ -266,28 +276,45 @@ function FieldTeamModal({ isOpen, team, onClose, onSuccess }: FieldTeamModalProp
             {!isEditing && (
               <>
                 <h3 className="ft-modal__section-title">Membros</h3>
+                <p className="ft-modal__members-farm-hint">
+                  Exibindo colaboradores com acesso a esta fazenda.
+                </p>
                 <div className="ft-modal__members-list">
                   {loadingUsers ? (
                     <p className="ft-modal__members-hint">Carregando usuários...</p>
                   ) : availableMembers.length === 0 ? (
                     <p className="ft-modal__members-hint">
                       {leaderId
-                        ? 'Nenhum outro usuário disponível para adicionar como membro.'
+                        ? 'Nenhum outro colaborador com acesso a esta fazenda.'
                         : 'Selecione um responsável primeiro.'}
                     </p>
                   ) : (
-                    availableMembers.map((u) => (
-                      <label key={u.id} className="ft-modal__member-item">
+                    <>
+                      <label className="ft-modal__member-item ft-modal__member-item--select-all">
                         <input
                           type="checkbox"
-                          checked={memberIds.includes(u.id)}
-                          onChange={() => handleMemberToggle(u.id)}
+                          checked={allMembersSelected}
+                          onChange={handleSelectAll}
                           className="ft-modal__checkbox"
                         />
-                        <span className="ft-modal__member-name">{u.name}</span>
-                        <span className="ft-modal__member-email">{u.email}</span>
+                        <span className="ft-modal__member-name">Selecionar todos</span>
+                        <span className="ft-modal__member-email">
+                          {memberIds.length}/{availableMembers.length}
+                        </span>
                       </label>
-                    ))
+                      {availableMembers.map((u) => (
+                        <label key={u.id} className="ft-modal__member-item">
+                          <input
+                            type="checkbox"
+                            checked={memberIds.includes(u.id)}
+                            onChange={() => handleMemberToggle(u.id)}
+                            className="ft-modal__checkbox"
+                          />
+                          <span className="ft-modal__member-name">{u.name}</span>
+                          <span className="ft-modal__member-email">{u.email}</span>
+                        </label>
+                      ))}
+                    </>
                   )}
                 </div>
               </>
