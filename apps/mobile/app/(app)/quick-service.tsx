@@ -504,6 +504,7 @@ export default function QuickServiceScreen() {
   const [vaccineDoseMl, setVaccineDoseMl] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [savedCount, setSavedCount] = useState(0);
+  const [syncedImmediately, setSyncedImmediately] = useState(false);
   const toastOpacity = useRef(new Animated.Value(0)).current;
 
   // Picker modals
@@ -745,12 +746,28 @@ export default function QuickServiceScreen() {
         'POST',
       );
 
+      // If online, flush immediately and mark quick_service as synced
+      let synced = false;
+      if (isConnected) {
+        try {
+          const result = await queue.flush();
+          if (result.processed > 0 && result.failed === 0) {
+            await qsRepo.markSynced(id);
+            synced = true;
+          }
+        } catch {
+          // Flush failed — stays in queue for auto-retry on reconnect
+        }
+      }
+
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setSavedCount(presentIds.length);
+      setSyncedImmediately(synced);
 
       // Announce to screen readers
+      const syncMsg = synced ? ' e sincronizado' : '. Será enviado ao reconectar';
       AccessibilityInfo.announceForAccessibility(
-        `Serviço registrado para ${presentIds.length} ${presentIds.length === 1 ? 'pessoa' : 'pessoas'}`,
+        `Serviço registrado para ${presentIds.length} ${presentIds.length === 1 ? 'pessoa' : 'pessoas'}${syncMsg}`,
       );
 
       // Show success toast and auto-navigate back
@@ -788,6 +805,7 @@ export default function QuickServiceScreen() {
     timeEnd,
     buildNotes,
     memberProductivity,
+    isConnected,
     router,
   ]);
 
@@ -1427,9 +1445,12 @@ export default function QuickServiceScreen() {
       >
         <CheckCircle size={24} color={colors.neutral[0]} aria-hidden />
         <View>
-          <Text style={styles.successToastText}>Serviço registrado</Text>
+          <Text style={styles.successToastText}>
+            {syncedImmediately ? 'Serviço registrado e sincronizado' : 'Serviço salvo localmente'}
+          </Text>
           <Text style={styles.successToastSub}>
-            {savedCount} {savedCount === 1 ? 'pessoa' : 'pessoas'} registradas
+            {savedCount} {savedCount === 1 ? 'pessoa' : 'pessoas'}
+            {syncedImmediately ? '' : ' · Será enviado ao reconectar'}
           </Text>
         </View>
       </Animated.View>
