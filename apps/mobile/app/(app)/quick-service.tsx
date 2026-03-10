@@ -499,6 +499,9 @@ export default function QuickServiceScreen() {
   const [coveredAreaHa, setCoveredAreaHa] = useState('');
   const [productName, setProductName] = useState('');
   const [productDose, setProductDose] = useState('');
+  const [vaccineName, setVaccineName] = useState('');
+  const [vaccineBatch, setVaccineBatch] = useState('');
+  const [vaccineDoseMl, setVaccineDoseMl] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [savedCount, setSavedCount] = useState(0);
   const toastOpacity = useRef(new Animated.Value(0)).current;
@@ -660,8 +663,22 @@ export default function QuickServiceScreen() {
       if (productName) parts.push(`Produto: ${productName}`);
       if (productDose) parts.push(`Dose: ${productDose}`);
     }
+    if (operationType === 'VACINACAO') {
+      if (vaccineName) parts.push(`Vacina: ${vaccineName}`);
+      if (vaccineBatch) parts.push(`Lote: ${vaccineBatch}`);
+      if (vaccineDoseMl) parts.push(`Dose: ${vaccineDoseMl} mL`);
+    }
     return parts.length > 0 ? parts.join(' | ') : undefined;
-  }, [notes, operationType, coveredAreaHa, productName, productDose]);
+  }, [
+    notes,
+    operationType,
+    coveredAreaHa,
+    productName,
+    productDose,
+    vaccineName,
+    vaccineBatch,
+    vaccineDoseMl,
+  ]);
 
   const handleSave = useCallback(async () => {
     if (!selectedTeam || !operationType || !selectedFarmId || presentCount === 0) return;
@@ -1095,6 +1112,56 @@ export default function QuickServiceScreen() {
                     placeholderTextColor={colors.neutral[400]}
                     accessible
                     accessibilityLabel="Dose do produto"
+                  />
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* Vacinação fields (CA6) */}
+          {operationType === 'VACINACAO' && (
+            <View style={styles.membersCard}>
+              <View style={styles.membersHeader}>
+                <View style={styles.membersHeaderLeft}>
+                  <Text style={styles.membersTitle}>Dados da vacinação</Text>
+                </View>
+              </View>
+              <View style={{ padding: spacing[4], gap: spacing[3] }}>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>Vacina</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={vaccineName}
+                    onChangeText={setVaccineName}
+                    placeholder="Nome da vacina"
+                    placeholderTextColor={colors.neutral[400]}
+                    accessible
+                    accessibilityLabel="Nome da vacina"
+                  />
+                </View>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>Lote</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={vaccineBatch}
+                    onChangeText={setVaccineBatch}
+                    placeholder="Número do lote"
+                    placeholderTextColor={colors.neutral[400]}
+                    accessible
+                    accessibilityLabel="Número do lote da vacina"
+                  />
+                </View>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>Dose (mL)</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={vaccineDoseMl}
+                    onChangeText={setVaccineDoseMl}
+                    placeholder="Ex: 5"
+                    placeholderTextColor={colors.neutral[400]}
+                    keyboardType="numeric"
+                    accessible
+                    accessibilityLabel="Dose da vacina em mililitros"
                   />
                 </View>
               </View>
