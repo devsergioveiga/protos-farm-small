@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
 import {
   View,
   Text,
@@ -439,6 +439,20 @@ const createStyles = (c: ThemeColors) => ({
     color: 'rgba(255,255,255,0.85)',
   },
 
+  // Inline style extractions
+  sectionPadding: { padding: spacing[4], gap: spacing[3] },
+  productivityInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[2],
+    fontFamily: 'SourceSans3_600SemiBold',
+    fontSize: fontSize.base,
+    width: 80,
+    textAlign: 'center' as const,
+    minHeight: 40,
+  },
+
   // No team state
   emptyState: {
     alignItems: 'center' as const,
@@ -461,6 +475,83 @@ const createStyles = (c: ThemeColors) => ({
   },
 });
 
+// ─── Memoized sub-components ────────────────────────────────────────────────
+
+interface MemberRowProps {
+  member: MemberPresence;
+  onToggle: (id: string) => void;
+  colors: ThemeColors;
+  styles: ReturnType<typeof createStyles>;
+}
+
+const MemberRow = memo(function MemberRow({ member, onToggle, colors, styles }: MemberRowProps) {
+  return (
+    <Pressable
+      style={styles.memberItem}
+      onPress={() => onToggle(member.id)}
+      accessible
+      accessibilityLabel={`${member.userName}, ${member.present ? 'presente' : 'ausente'}`}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: member.present }}
+    >
+      <Text style={[styles.memberName, !member.present && styles.memberNameAbsent]}>
+        {member.userName}
+      </Text>
+      <Switch
+        value={member.present}
+        onValueChange={() => onToggle(member.id)}
+        trackColor={{
+          false: colors.neutral[200],
+          true: colors.primary[200],
+        }}
+        thumbColor={member.present ? colors.primary[600] : colors.neutral[400]}
+        accessibilityElementsHidden
+      />
+    </Pressable>
+  );
+});
+
+interface ProductivityRowProps {
+  member: MemberPresence;
+  value: string;
+  onChangeText: (userId: string, value: string) => void;
+  colors: ThemeColors;
+  styles: ReturnType<typeof createStyles>;
+}
+
+const ProductivityRow = memo(function ProductivityRow({
+  member,
+  value,
+  onChangeText,
+  colors,
+  styles,
+}: ProductivityRowProps) {
+  return (
+    <View style={styles.memberItem}>
+      <Text style={[styles.memberName, { flex: 1 }]} numberOfLines={1}>
+        {member.userName}
+      </Text>
+      <TextInput
+        style={[
+          styles.productivityInput,
+          {
+            backgroundColor: colors.neutral[50],
+            borderColor: colors.neutral[300],
+            color: colors.neutral[700],
+          },
+        ]}
+        value={value}
+        onChangeText={(v) => onChangeText(member.userId, v)}
+        placeholder="0"
+        placeholderTextColor={colors.neutral[400]}
+        keyboardType="numeric"
+        accessible
+        accessibilityLabel={`Litros de ${member.userName}`}
+      />
+    </View>
+  );
+});
+
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export default function QuickServiceScreen() {
@@ -471,6 +562,11 @@ export default function QuickServiceScreen() {
   const { selectedFarmId, selectedFarm } = useFarmContext();
   const { isConnected } = useConnectivity();
   const { user } = useAuth();
+
+  // Memoized repos — avoid recreating on every callback invocation
+  const teamRepo = useMemo(() => createFieldTeamRepository(db), [db]);
+  const qsRepo = useMemo(() => createQuickServiceRepository(db), [db]);
+  const queue = useMemo(() => createOfflineQueue(db), [db]);
 
   // Data from offline DB
   const [teams, setTeams] = useState<OfflineFieldTeam[]>([]);
@@ -516,6 +612,11 @@ export default function QuickServiceScreen() {
 
   const presentCount = useMemo(() => members.filter((m) => m.present).length, [members]);
   const totalCount = members.length;
+  const allPresent = useMemo(
+    () => members.length > 0 && members.every((m) => m.present),
+    [members],
+  );
+  const presentMembers = useMemo(() => members.filter((m) => m.present), [members]);
 
   const isFormValid = selectedTeam !== null && operationType !== null && presentCount > 0;
 
@@ -524,21 +625,17 @@ export default function QuickServiceScreen() {
     if (!selectedFarmId) return;
 
     async function loadData() {
-      const teamRepo = createFieldTeamRepository(db);
       const plotRepo = createFieldPlotRepository(db);
       const locRepo = createFarmLocationRepository(db);
 
-      const [farmTeams, plots, farmLocs] = await Promise.all([
+      const [farmTeams, plots, farmLocs, latest] = await Promise.all([
         teamRepo.getByFarmId(selectedFarmId!),
         plotRepo.getByFarmId(selectedFarmId!),
         locRepo.getByFarmId(selectedFarmId!),
+        qsRepo.getLatestByFarm(selectedFarmId!),
       ]);
 
       setTeams(farmTeams);
-
-      // Load last service for "Repeat yesterday"
-      const qsRepo = createQuickServiceRepository(db);
-      const latest = await qsRepo.getLatestByFarm(selectedFarmId!);
       setLastService(latest);
 
       const items: LocationItem[] = [
@@ -579,12 +676,11 @@ export default function QuickServiceScreen() {
     }
 
     void loadData();
-  }, [db, selectedFarmId]); // selectTeam is stable via useCallback but defined after this effect
+  }, [db, selectedFarmId, teamRepo, qsRepo]); // selectTeam is stable via useCallback but defined after this effect
 
   const selectTeam = useCallback(
     async (team: OfflineFieldTeam) => {
       setSelectedTeam(team);
-      const teamRepo = createFieldTeamRepository(db);
       const teamMembers = await teamRepo.getActiveMembers(team.id);
       setMembers(
         teamMembers.map((m: OfflineFieldTeamMember) => ({
@@ -600,7 +696,7 @@ export default function QuickServiceScreen() {
         await SecureStore.setItemAsync(`${FAVORITE_TEAM_KEY}_${user.userId}`, team.id);
       }
     },
-    [db, user],
+    [teamRepo, user],
   );
 
   const handleRepeatYesterday = useCallback(async () => {
@@ -692,7 +788,6 @@ export default function QuickServiceScreen() {
       const id = generateId();
       const presentIds = members.filter((m) => m.present).map((m) => m.userId);
 
-      const qsRepo = createQuickServiceRepository(db);
       await qsRepo.create({
         id,
         farm_id: selectedFarmId,
@@ -715,7 +810,6 @@ export default function QuickServiceScreen() {
       });
 
       // Enqueue for sync to team-operations API
-      const queue = createOfflineQueue(db);
       const payload = {
         teamId: selectedTeam.id,
         fieldPlotId: locationType === 'PLOT' ? locationId : undefined,
@@ -797,7 +891,8 @@ export default function QuickServiceScreen() {
     selectedFarmId,
     presentCount,
     members,
-    db,
+    qsRepo,
+    queue,
     locationType,
     locationId,
     locationName,
@@ -933,40 +1028,20 @@ export default function QuickServiceScreen() {
                   style={styles.toggleAllButton}
                   onPress={toggleAllMembers}
                   accessible
-                  accessibilityLabel={
-                    members.every((m) => m.present) ? 'Desmarcar todos' : 'Marcar todos'
-                  }
+                  accessibilityLabel={allPresent ? 'Desmarcar todos' : 'Marcar todos'}
                   accessibilityRole="button"
                 >
-                  <Text style={styles.toggleAllText}>
-                    {members.every((m) => m.present) ? 'Nenhum' : 'Todos'}
-                  </Text>
+                  <Text style={styles.toggleAllText}>{allPresent ? 'Nenhum' : 'Todos'}</Text>
                 </Pressable>
               </View>
               {members.map((member) => (
-                <Pressable
+                <MemberRow
                   key={member.id}
-                  style={styles.memberItem}
-                  onPress={() => toggleMember(member.id)}
-                  accessible
-                  accessibilityLabel={`${member.userName}, ${member.present ? 'presente' : 'ausente'}`}
-                  accessibilityRole="switch"
-                  accessibilityState={{ checked: member.present }}
-                >
-                  <Text style={[styles.memberName, !member.present && styles.memberNameAbsent]}>
-                    {member.userName}
-                  </Text>
-                  <Switch
-                    value={member.present}
-                    onValueChange={() => toggleMember(member.id)}
-                    trackColor={{
-                      false: colors.neutral[200],
-                      true: colors.primary[200],
-                    }}
-                    thumbColor={member.present ? colors.primary[600] : colors.neutral[400]}
-                    accessibilityElementsHidden
-                  />
-                </Pressable>
+                  member={member}
+                  onToggle={toggleMember}
+                  colors={colors}
+                  styles={styles}
+                />
               ))}
             </View>
           )}
@@ -1044,45 +1119,23 @@ export default function QuickServiceScreen() {
           </View>
 
           {/* Litros por pessoa — colheita café (CA4) */}
-          {operationType === 'COLHEITA' && members.filter((m) => m.present).length > 0 && (
+          {operationType === 'COLHEITA' && presentMembers.length > 0 && (
             <View style={styles.membersCard}>
               <View style={styles.membersHeader}>
                 <View style={styles.membersHeaderLeft}>
                   <Text style={styles.membersTitle}>Litros por pessoa</Text>
                 </View>
               </View>
-              {members
-                .filter((m) => m.present)
-                .map((member) => (
-                  <View key={member.id} style={styles.memberItem}>
-                    <Text style={[styles.memberName, { flex: 1 }]} numberOfLines={1}>
-                      {member.userName}
-                    </Text>
-                    <TextInput
-                      style={{
-                        backgroundColor: colors.neutral[50],
-                        borderWidth: 1,
-                        borderColor: colors.neutral[300],
-                        borderRadius: 8,
-                        paddingHorizontal: spacing[3],
-                        paddingVertical: spacing[2],
-                        fontFamily: 'SourceSans3_600SemiBold',
-                        fontSize: fontSize.base,
-                        color: colors.neutral[700],
-                        width: 80,
-                        textAlign: 'center' as const,
-                        minHeight: 40,
-                      }}
-                      value={memberProductivity[member.userId] ?? ''}
-                      onChangeText={(v) => updateProductivity(member.userId, v)}
-                      placeholder="0"
-                      placeholderTextColor={colors.neutral[400]}
-                      keyboardType="numeric"
-                      accessible
-                      accessibilityLabel={`Litros de ${member.userName}`}
-                    />
-                  </View>
-                ))}
+              {presentMembers.map((member) => (
+                <ProductivityRow
+                  key={member.id}
+                  member={member}
+                  value={memberProductivity[member.userId] ?? ''}
+                  onChangeText={updateProductivity}
+                  colors={colors}
+                  styles={styles}
+                />
+              ))}
             </View>
           )}
 
@@ -1094,7 +1147,7 @@ export default function QuickServiceScreen() {
                   <Text style={styles.membersTitle}>Dados da aplicação</Text>
                 </View>
               </View>
-              <View style={{ padding: spacing[4], gap: spacing[3] }}>
+              <View style={styles.sectionPadding}>
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Área coberta (ha)</Text>
                   <TextInput
@@ -1144,7 +1197,7 @@ export default function QuickServiceScreen() {
                   <Text style={styles.membersTitle}>Dados da vacinação</Text>
                 </View>
               </View>
-              <View style={{ padding: spacing[4], gap: spacing[3] }}>
+              <View style={styles.sectionPadding}>
                 <View style={styles.fieldContainer}>
                   <Text style={styles.label}>Vacina</Text>
                   <TextInput
