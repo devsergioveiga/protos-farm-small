@@ -901,6 +901,7 @@ export default function QuickServiceScreen() {
     buildNotes,
     memberProductivity,
     isConnected,
+    toastOpacity,
     router,
   ]);
 
