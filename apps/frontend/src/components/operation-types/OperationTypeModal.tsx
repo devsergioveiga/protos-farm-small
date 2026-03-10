@@ -1,8 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
 import { api } from '@/services/api';
-import { CROP_OPTIONS_OPERATION } from '@/types/operation-type';
-import type { OperationTypeItem, CreateOperationTypeInput } from '@/types/operation-type';
+import {
+  CROP_OPTIONS_OPERATION,
+  OPERATION_FIELD_KEYS,
+  OPERATION_FIELD_LABELS,
+} from '@/types/operation-type';
+import type {
+  OperationTypeItem,
+  CreateOperationTypeInput,
+  FieldConfig,
+  FieldVisibility,
+  OperationFieldKey,
+} from '@/types/operation-type';
 import './OperationTypeModal.css';
 
 interface OperationTypeModalProps {
@@ -14,6 +24,12 @@ interface OperationTypeModalProps {
   onClose: () => void;
   onSuccess: () => void;
 }
+
+const VISIBILITY_LABELS: Record<FieldVisibility, string> = {
+  required: 'Obrigatório',
+  optional: 'Opcional',
+  hidden: 'Oculto',
+};
 
 function OperationTypeModal({
   isOpen,
@@ -30,6 +46,10 @@ function OperationTypeModal({
   const [description, setDescription] = useState('');
   const [sortOrder, setSortOrder] = useState(0);
   const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
+  const [fieldConfigs, setFieldConfigs] = useState<Map<OperationFieldKey, FieldVisibility>>(
+    new Map(),
+  );
+  const [showFieldConfig, setShowFieldConfig] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -39,6 +59,8 @@ function OperationTypeModal({
       setDescription('');
       setSortOrder(0);
       setSelectedCrops([]);
+      setFieldConfigs(new Map());
+      setShowFieldConfig(false);
       setSubmitError(null);
       setIsSubmitting(false);
     } else if (operationType) {
@@ -46,6 +68,12 @@ function OperationTypeModal({
       setDescription(operationType.description ?? '');
       setSortOrder(operationType.sortOrder);
       setSelectedCrops(operationType.crops ?? []);
+      const configs = new Map<OperationFieldKey, FieldVisibility>();
+      for (const f of operationType.fields ?? []) {
+        configs.set(f.fieldKey, f.visibility);
+      }
+      setFieldConfigs(configs);
+      setShowFieldConfig((operationType.fields ?? []).length > 0);
     }
   }, [isOpen, operationType]);
 
@@ -68,11 +96,38 @@ function OperationTypeModal({
     });
   }, []);
 
+  const handleFieldVisibility = useCallback(
+    (fieldKey: OperationFieldKey, visibility: FieldVisibility) => {
+      setFieldConfigs((prev) => {
+        const next = new Map(prev);
+        if (visibility === 'optional') {
+          next.delete(fieldKey); // optional is the default, no need to store
+        } else {
+          next.set(fieldKey, visibility);
+        }
+        return next;
+      });
+    },
+    [],
+  );
+
   // Available crops: if parent has crops set (and not "Todas"), restrict to those
   const availableCrops: string[] =
     parentCrops.length > 0 && !parentCrops.includes('Todas')
       ? CROP_OPTIONS_OPERATION.filter((c) => c === 'Todas' || parentCrops.includes(c))
       : [...CROP_OPTIONS_OPERATION];
+
+  const buildFieldsPayload = (): FieldConfig[] => {
+    const fields: FieldConfig[] = [];
+    let order = 0;
+    for (const key of OPERATION_FIELD_KEYS) {
+      const vis = fieldConfigs.get(key);
+      if (vis && vis !== 'optional') {
+        fields.push({ fieldKey: key, visibility: vis, sortOrder: order++ });
+      }
+    }
+    return fields;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,12 +137,15 @@ function OperationTypeModal({
     setSubmitError(null);
 
     try {
+      const fields = showFieldConfig ? buildFieldsPayload() : undefined;
+
       if (isEditing) {
         await api.patch(`/org/operation-types/${operationType.id}`, {
           name: name.trim(),
           description: description.trim() || null,
           sortOrder,
           crops: selectedCrops,
+          fields: fields ?? [],
         });
       } else {
         const body: CreateOperationTypeInput = {
@@ -95,6 +153,7 @@ function OperationTypeModal({
           description: description.trim() || null,
           sortOrder,
           crops: selectedCrops,
+          fields,
         };
         if (parentId) body.parentId = parentId;
         await api.post('/org/operation-types', body);
@@ -219,6 +278,65 @@ function OperationTypeModal({
                 min={0}
               />
             </div>
+
+            <div className="optype-modal__field">
+              <label className="optype-modal__toggle-label">
+                <input
+                  type="checkbox"
+                  checked={showFieldConfig}
+                  onChange={(e) => setShowFieldConfig(e.target.checked)}
+                />
+                Configurar campos do registro
+              </label>
+              <p className="optype-modal__hint">
+                Defina quais campos são obrigatórios, opcionais ou ocultos ao registrar esta
+                operação.
+              </p>
+            </div>
+
+            {showFieldConfig && (
+              <div className="optype-modal__fields-config">
+                <table className="optype-modal__fields-table">
+                  <thead>
+                    <tr>
+                      <th className="optype-modal__fields-th">Campo</th>
+                      <th className="optype-modal__fields-th">Visibilidade</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {OPERATION_FIELD_KEYS.map((key) => {
+                      const currentVis = fieldConfigs.get(key) ?? 'optional';
+                      return (
+                        <tr key={key} className="optype-modal__fields-row">
+                          <td className="optype-modal__fields-td">{OPERATION_FIELD_LABELS[key]}</td>
+                          <td className="optype-modal__fields-td">
+                            <div
+                              className="optype-modal__vis-group"
+                              role="radiogroup"
+                              aria-label={`Visibilidade de ${OPERATION_FIELD_LABELS[key]}`}
+                            >
+                              {(['required', 'optional', 'hidden'] as FieldVisibility[]).map(
+                                (vis) => (
+                                  <button
+                                    key={vis}
+                                    type="button"
+                                    className={`optype-modal__vis-btn${currentVis === vis ? ` optype-modal__vis-btn--${vis}` : ''}`}
+                                    onClick={() => handleFieldVisibility(key, vis)}
+                                    aria-pressed={currentVis === vis}
+                                  >
+                                    {VISIBILITY_LABELS[vis]}
+                                  </button>
+                                ),
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           <footer className="optype-modal__footer">

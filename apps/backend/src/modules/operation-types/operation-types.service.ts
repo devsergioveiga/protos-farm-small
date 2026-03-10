@@ -3,11 +3,14 @@ import {
   OperationTypeError,
   MAX_LEVELS,
   DEFAULT_OPERATION_TYPES,
+  OPERATION_FIELD_KEYS,
   type CreateOperationTypeInput,
   type UpdateOperationTypeInput,
   type OperationTypeItem,
   type OperationTypeTreeNode,
   type ListOperationTypesQuery,
+  type FieldConfig,
+  type OperationFieldKey,
 } from './operation-types.types';
 
 // ─── Include fragments ─────────────────────────────────────────────
@@ -15,13 +18,30 @@ import {
 const INCLUDE_BASE = {
   _count: { select: { children: true } },
   crops: { select: { crop: true } },
-} as const;
+  fields: {
+    select: { fieldKey: true, visibility: true, sortOrder: true },
+    orderBy: { sortOrder: 'asc' as const },
+  },
+};
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
 function extractCrops(row: Record<string, unknown>): string[] {
   const crops = row.crops as Array<{ crop: string }> | undefined;
   return crops?.map((c) => c.crop).sort() ?? [];
+}
+
+function extractFields(row: Record<string, unknown>): FieldConfig[] {
+  const fields = row.fields as
+    | Array<{ fieldKey: string; visibility: string; sortOrder: number }>
+    | undefined;
+  return (
+    fields?.map((f) => ({
+      fieldKey: f.fieldKey as OperationFieldKey,
+      visibility: f.visibility as FieldConfig['visibility'],
+      sortOrder: f.sortOrder,
+    })) ?? []
+  );
 }
 
 function toItem(row: Record<string, unknown>): OperationTypeItem {
@@ -38,6 +58,7 @@ function toItem(row: Record<string, unknown>): OperationTypeItem {
     isActive: row.isActive as boolean,
     childCount: children?.children ?? 0,
     crops: extractCrops(row),
+    fields: extractFields(row),
     createdAt: (row.createdAt as Date).toISOString(),
     updatedAt: (row.updatedAt as Date).toISOString(),
   };
@@ -79,6 +100,26 @@ function validateCropInheritance(childCrops: string[], parentCrops: string[]): v
   }
 }
 
+function validateFields(fields: FieldConfig[]): void {
+  const validKeys = new Set<string>(OPERATION_FIELD_KEYS);
+  const seen = new Set<string>();
+  for (const f of fields) {
+    if (!validKeys.has(f.fieldKey)) {
+      throw new OperationTypeError(`Campo desconhecido: ${f.fieldKey}`, 400);
+    }
+    if (!['required', 'optional', 'hidden'].includes(f.visibility)) {
+      throw new OperationTypeError(
+        `Visibilidade inválida para ${f.fieldKey}: ${f.visibility}. Use: required, optional, hidden`,
+        400,
+      );
+    }
+    if (seen.has(f.fieldKey)) {
+      throw new OperationTypeError(`Campo duplicado: ${f.fieldKey}`, 400);
+    }
+    seen.add(f.fieldKey);
+  }
+}
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 async function getParentCrops(
   tx: { operationTypeCrop: { findMany: (...args: any[]) => any } },
@@ -98,11 +139,34 @@ async function syncCrops(
   operationTypeId: string,
   crops: string[],
 ): Promise<void> {
-  /* eslint-enable @typescript-eslint/no-explicit-any */
   await tx.operationTypeCrop.deleteMany({ where: { operationTypeId } });
   if (crops.length > 0) {
     await tx.operationTypeCrop.createMany({
       data: crops.map((crop) => ({ operationTypeId, crop })),
+    });
+  }
+}
+
+async function syncFields(
+  tx: {
+    operationTypeField: {
+      deleteMany: (...args: any[]) => any;
+      createMany: (...args: any[]) => any;
+    };
+  },
+  operationTypeId: string,
+  fields: FieldConfig[],
+): Promise<void> {
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+  await tx.operationTypeField.deleteMany({ where: { operationTypeId } });
+  if (fields.length > 0) {
+    await tx.operationTypeField.createMany({
+      data: fields.map((f) => ({
+        operationTypeId,
+        fieldKey: f.fieldKey,
+        visibility: f.visibility,
+        sortOrder: f.sortOrder,
+      })),
     });
   }
 }
@@ -114,6 +178,7 @@ export async function createOperationType(
   input: CreateOperationTypeInput,
 ): Promise<OperationTypeItem> {
   validateInput(input);
+  if (input.fields) validateFields(input.fields);
 
   return withRlsContext(ctx, async (tx) => {
     let level = 1;
@@ -165,6 +230,17 @@ export async function createOperationType(
         sortOrder: input.sortOrder ?? 0,
         ...(input.crops && input.crops.length > 0
           ? { crops: { create: input.crops.map((crop) => ({ crop })) } }
+          : {}),
+        ...(input.fields && input.fields.length > 0
+          ? {
+              fields: {
+                create: input.fields.map((f) => ({
+                  fieldKey: f.fieldKey,
+                  visibility: f.visibility,
+                  sortOrder: f.sortOrder,
+                })),
+              },
+            }
           : {}),
       },
       include: INCLUDE_BASE,
@@ -372,6 +448,12 @@ export async function updateOperationType(
         validateCropInheritance(input.crops, parentCrops);
       }
       await syncCrops(tx, id, input.crops);
+    }
+
+    // Sync field configurations
+    if (input.fields !== undefined) {
+      validateFields(input.fields);
+      await syncFields(tx, id, input.fields);
     }
 
     const row = await tx.operationType.update({

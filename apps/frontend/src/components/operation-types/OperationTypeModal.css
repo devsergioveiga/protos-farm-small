@@ -206,3 +206,93 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ─── Toggle Label ──────────────────────────────────────────────── */
+
+.optype-modal__toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+}
+
+/* ─── Field Configuration Table ─────────────────────────────────── */
+
+.optype-modal__fields-config {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.optype-modal__fields-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.optype-modal__fields-th {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-align: left;
+  padding: 8px 12px;
+  background: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.optype-modal__fields-row:not(:last-child) {
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.optype-modal__fields-td {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-700);
+  padding: 6px 12px;
+  vertical-align: middle;
+}
+
+.optype-modal__vis-group {
+  display: flex;
+  gap: 4px;
+}
+
+.optype-modal__vis-btn {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: all 100ms ease-out;
+  min-height: 28px;
+}
+
+.optype-modal__vis-btn:hover {
+  border-color: var(--color-neutral-400);
+}
+
+.optype-modal__vis-btn--required {
+  background: var(--color-primary-50, #e8f5e9);
+  border-color: var(--color-primary-500);
+  color: var(--color-primary-700);
+}
+
+.optype-modal__vis-btn--optional {
+  background: var(--color-neutral-100);
+  border-color: var(--color-neutral-300);
+  color: var(--color-neutral-700);
+}
+
+.optype-modal__vis-btn--hidden {
+  background: var(--color-neutral-100);
+  border-color: var(--color-neutral-300);
+  color: var(--color-neutral-400);
+}

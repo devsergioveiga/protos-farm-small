@@ -2,7 +2,11 @@ import request from 'supertest';
 import { app } from '../../app';
 import * as operationTypeService from './operation-types.service';
 import * as authService from '../auth/auth.service';
-import { OperationTypeError } from './operation-types.types';
+import {
+  OperationTypeError,
+  type OperationTypeItem,
+  type FieldConfig,
+} from './operation-types.types';
 
 jest.mock('../../shared/audit/audit.service', () => ({
   logAudit: jest.fn().mockResolvedValue(undefined),
@@ -60,7 +64,7 @@ function authAs(payload: authService.TokenPayload) {
   mockGetUserPermissions.mockResolvedValue(rolePerms);
 }
 
-const SAMPLE_ITEM = {
+const SAMPLE_ITEM: OperationTypeItem = {
   id: 'ot-1',
   organizationId: 'org-1',
   name: 'Preparo de Solo',
@@ -72,11 +76,12 @@ const SAMPLE_ITEM = {
   isActive: true,
   childCount: 3,
   crops: ['Soja', 'Milho'],
+  fields: [],
   createdAt: '2026-03-10T00:00:00.000Z',
   updatedAt: '2026-03-10T00:00:00.000Z',
 };
 
-const SAMPLE_CHILD = {
+const SAMPLE_CHILD: OperationTypeItem = {
   ...SAMPLE_ITEM,
   id: 'ot-2',
   name: 'Aração',
@@ -559,5 +564,60 @@ describe('CA4: Seed default operation types', () => {
       .set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(403);
+  });
+});
+
+// ─── CA5: FIELD CONFIGURATION ──────────────────────────────────────
+
+describe('CA5: Field configuration', () => {
+  const sampleFields: FieldConfig[] = [
+    { fieldKey: 'product', visibility: 'required', sortOrder: 0 },
+    { fieldKey: 'dose', visibility: 'required', sortOrder: 1 },
+  ];
+
+  it('should create operation type with field configs', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.createOperationType.mockResolvedValue({ ...SAMPLE_ITEM, fields: sampleFields });
+
+    const res = await request(app)
+      .post('/api/org/operation-types')
+      .set('Authorization', 'Bearer token')
+      .send({ name: 'Pulverização', fields: sampleFields });
+
+    expect(res.status).toBe(201);
+    expect(res.body.fields).toHaveLength(2);
+    expect(res.body.fields[0].fieldKey).toBe('product');
+  });
+
+  it('should update field configs on existing type', async () => {
+    authAs(ADMIN_PAYLOAD);
+    const machineField: FieldConfig[] = [
+      { fieldKey: 'machine', visibility: 'required', sortOrder: 0 },
+    ];
+    mockedService.updateOperationType.mockResolvedValue({ ...SAMPLE_ITEM, fields: machineField });
+
+    const res = await request(app)
+      .patch('/api/org/operation-types/ot-1')
+      .set('Authorization', 'Bearer token')
+      .send({ fields: machineField });
+
+    expect(res.status).toBe(200);
+    expect(res.body.fields).toHaveLength(1);
+  });
+
+  it('should return fields in operation type response', async () => {
+    authAs(ADMIN_PAYLOAD);
+    const mixedFields: FieldConfig[] = [
+      { fieldKey: 'product', visibility: 'required', sortOrder: 0 },
+      { fieldKey: 'machine', visibility: 'hidden', sortOrder: 1 },
+    ];
+    mockedService.getOperationType.mockResolvedValue({ ...SAMPLE_ITEM, fields: mixedFields });
+
+    const res = await request(app)
+      .get('/api/org/operation-types/ot-1')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.body.fields).toHaveLength(2);
   });
 });

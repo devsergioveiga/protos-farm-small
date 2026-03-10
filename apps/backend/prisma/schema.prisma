@@ -1648,6 +1648,7 @@ model OperationType {
   parent       OperationType?      @relation("OperationTypeHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
   children     OperationType[]     @relation("OperationTypeHierarchy")
   crops        OperationTypeCrop[]
+  fields       OperationTypeField[]
 
   @@unique([name, parentId, organizationId])
   @@index([organizationId, parentId])
@@ -1666,4 +1667,19 @@ model OperationTypeCrop {
   @@unique([operationTypeId, crop])
   @@index([operationTypeId])
   @@map("operation_type_crops")
+}
+
+model OperationTypeField {
+  id              String   @id @default(uuid())
+  operationTypeId String
+  fieldKey        String
+  visibility      String   @default("optional")
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([operationTypeId, fieldKey])
+  @@index([operationTypeId])
+  @@map("operation_type_fields")
 }
