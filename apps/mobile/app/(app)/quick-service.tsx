@@ -620,6 +620,27 @@ export default function QuickServiceScreen() {
 
   const isFormValid = selectedTeam !== null && operationType !== null && presentCount > 0;
 
+  const selectTeam = useCallback(
+    async (team: OfflineFieldTeam) => {
+      setSelectedTeam(team);
+      const teamMembers = await teamRepo.getActiveMembers(team.id);
+      setMembers(
+        teamMembers.map((m: OfflineFieldTeamMember) => ({
+          id: m.id,
+          userId: m.user_id,
+          userName: m.user_name,
+          present: true,
+        })),
+      );
+
+      // Save as favorite
+      if (user) {
+        await SecureStore.setItemAsync(`${FAVORITE_TEAM_KEY}_${user.userId}`, team.id);
+      }
+    },
+    [teamRepo, user],
+  );
+
   // Load teams and locations
   useEffect(() => {
     if (!selectedFarmId) return;
@@ -676,28 +697,7 @@ export default function QuickServiceScreen() {
     }
 
     void loadData();
-  }, [db, selectedFarmId, teamRepo, qsRepo]); // selectTeam is stable via useCallback but defined after this effect
-
-  const selectTeam = useCallback(
-    async (team: OfflineFieldTeam) => {
-      setSelectedTeam(team);
-      const teamMembers = await teamRepo.getActiveMembers(team.id);
-      setMembers(
-        teamMembers.map((m: OfflineFieldTeamMember) => ({
-          id: m.id,
-          userId: m.user_id,
-          userName: m.user_name,
-          present: true,
-        })),
-      );
-
-      // Save as favorite
-      if (user) {
-        await SecureStore.setItemAsync(`${FAVORITE_TEAM_KEY}_${user.userId}`, team.id);
-      }
-    },
-    [teamRepo, user],
-  );
+  }, [db, selectedFarmId, teamRepo, qsRepo, selectTeam, user]);
 
   const handleRepeatYesterday = useCallback(async () => {
     if (!lastService) return;
