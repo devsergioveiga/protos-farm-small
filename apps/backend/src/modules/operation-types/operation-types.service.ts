@@ -197,6 +197,9 @@ export async function listOperationTypes(
     if (query.search) {
       where.name = { contains: query.search, mode: 'insensitive' };
     }
+    if (query.crop) {
+      where.crops = { some: { crop: { in: [query.crop, 'Todas'] } } };
+    }
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const rows = await tx.operationType.findMany({
@@ -214,11 +217,14 @@ export async function listOperationTypes(
 
 export async function getOperationTypeTree(
   ctx: RlsContext,
-  options: { includeInactive?: boolean } = {},
+  options: { includeInactive?: boolean; crop?: string } = {},
 ): Promise<OperationTypeTreeNode[]> {
   return withRlsContext(ctx, async (tx) => {
     const activeFilter = options.includeInactive ? {} : { isActive: true };
     const deletedFilter = { deletedAt: null };
+    const cropFilter = options.crop
+      ? { crops: { some: { crop: { in: [options.crop, 'Todas'] } } } }
+      : {};
 
     const roots = await tx.operationType.findMany({
       where: {
@@ -230,11 +236,11 @@ export async function getOperationTypeTree(
       include: {
         ...INCLUDE_BASE,
         children: {
-          where: { ...deletedFilter, ...activeFilter },
+          where: { ...deletedFilter, ...activeFilter, ...cropFilter },
           include: {
             ...INCLUDE_BASE,
             children: {
-              where: { ...deletedFilter, ...activeFilter },
+              where: { ...deletedFilter, ...activeFilter, ...cropFilter },
               include: INCLUDE_BASE,
               orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
             },
@@ -244,6 +250,19 @@ export async function getOperationTypeTree(
       },
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
+
+    // When filtering by crop, exclude root categories with no matching children
+    if (options.crop) {
+      const filtered = roots
+        .map((r) => toTreeNode(r as unknown as Record<string, unknown>))
+        .filter((node) => {
+          // Keep root if it has matching crops itself or has children after filtering
+          const rootCrops = node.crops;
+          const hasCrop = rootCrops.includes(options.crop!) || rootCrops.includes('Todas');
+          return hasCrop || node.children.length > 0;
+        });
+      return filtered;
+    }
 
     return roots.map((r) => toTreeNode(r as unknown as Record<string, unknown>));
   });

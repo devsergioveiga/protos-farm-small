@@ -81,6 +81,7 @@ operationTypesRouter.get(
         level: req.query.level ? Number(req.query.level) : undefined,
         search: (req.query.search as string) || undefined,
         includeInactive: req.query.includeInactive === 'true',
+        crop: (req.query.crop as string) || undefined,
       });
       res.json(result);
     } catch (err) {
@@ -100,6 +101,7 @@ operationTypesRouter.get(
       const ctx = buildRlsContext(req);
       const result = await getOperationTypeTree(ctx, {
         includeInactive: req.query.includeInactive === 'true',
+        crop: (req.query.crop as string) || undefined,
       });
       res.json(result);
     } catch (err) {

@@ -15,6 +15,7 @@ import PermissionGate from '@/components/auth/PermissionGate';
 import OperationTypeModal from '@/components/operation-types/OperationTypeModal';
 import { api } from '@/services/api';
 import type { OperationTypeItem, OperationTypeTreeNode } from '@/types/operation-type';
+import { CROP_OPTIONS_OPERATION } from '@/types/operation-type';
 import './OperationTypesPage.css';
 
 // ─── Tree Node ──────────────────────────────────────────────────────
@@ -154,8 +155,10 @@ function TreeNode({
 
 function OperationTypesPage() {
   const [showInactive, setShowInactive] = useState(false);
+  const [filterCrop, setFilterCrop] = useState('');
   const { tree, isLoading, error, refetch } = useOperationTypeTree({
     includeInactive: showInactive,
+    crop: filterCrop || undefined,
   });
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -268,14 +271,35 @@ function OperationTypesPage() {
         </div>
 
         <div className="optype-page__toolbar">
-          <label className="optype-page__toggle-label">
-            <input
-              type="checkbox"
-              checked={showInactive}
-              onChange={(e) => setShowInactive(e.target.checked)}
-            />
-            Mostrar inativos
-          </label>
+          <div className="optype-page__filters">
+            <label className="optype-page__toggle-label">
+              <input
+                type="checkbox"
+                checked={showInactive}
+                onChange={(e) => setShowInactive(e.target.checked)}
+              />
+              Mostrar inativos
+            </label>
+
+            <div className="optype-page__filter-field">
+              <label htmlFor="filter-crop" className="optype-page__filter-label">
+                Filtrar por cultura
+              </label>
+              <select
+                id="filter-crop"
+                className="optype-page__filter-select"
+                value={filterCrop}
+                onChange={(e) => setFilterCrop(e.target.value)}
+              >
+                <option value="">Todas as culturas</option>
+                {CROP_OPTIONS_OPERATION.filter((c) => c !== 'Todas').map((crop) => (
+                  <option key={crop} value={crop}>
+                    {crop}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
           <div className="optype-page__toolbar-btns">
             <button
@@ -330,21 +354,28 @@ function OperationTypesPage() {
       ) : tree.length === 0 ? (
         <div className="optype-page__empty">
           <Layers size={48} aria-hidden="true" className="optype-page__empty-icon" />
-          <h2 className="optype-page__empty-title">Nenhum tipo de operação cadastrado</h2>
+          <h2 className="optype-page__empty-title">
+            {filterCrop
+              ? `Nenhuma operação vinculada a ${filterCrop}`
+              : 'Nenhum tipo de operação cadastrado'}
+          </h2>
           <p className="optype-page__empty-desc">
-            Cadastre as categorias de operação (Preparo de Solo, Plantio, Tratos Culturais, etc.)
-            para organizar os registros de campo.
+            {filterCrop
+              ? 'Altere o filtro de cultura ou vincule operações a esta cultura na edição.'
+              : 'Cadastre as categorias de operação (Preparo de Solo, Plantio, Tratos Culturais, etc.) para organizar os registros de campo.'}
           </p>
-          <PermissionGate permission="farms:update">
-            <button
-              type="button"
-              className="optype-page__btn optype-page__btn--primary"
-              onClick={handleNewRoot}
-            >
-              <Plus size={20} aria-hidden="true" />
-              Criar primeira categoria
-            </button>
-          </PermissionGate>
+          {!filterCrop && (
+            <PermissionGate permission="farms:update">
+              <button
+                type="button"
+                className="optype-page__btn optype-page__btn--primary"
+                onClick={handleNewRoot}
+              >
+                <Plus size={20} aria-hidden="true" />
+                Criar primeira categoria
+              </button>
+            </PermissionGate>
+          )}
         </div>
       ) : (
         <ul className="optype-tree" role="tree" aria-label="Tipos de operação">

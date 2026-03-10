@@ -434,3 +434,84 @@ describe('CA2: Crop linkage', () => {
     expect(res.body.crops).toEqual(['Todas']);
   });
 });
+
+// ─── CA3: FILTER BY CROP ───────────────────────────────────────────
+
+describe('CA3: Filter by crop', () => {
+  it('should pass crop filter to list endpoint', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.listOperationTypes.mockResolvedValue([SAMPLE_CHILD]);
+
+    const res = await request(app)
+      .get('/api/org/operation-types?crop=Soja')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(mockedService.listOperationTypes).toHaveBeenCalledWith(
+      { organizationId: 'org-1' },
+      expect.objectContaining({ crop: 'Soja' }),
+    );
+  });
+
+  it('should pass crop filter to tree endpoint', async () => {
+    authAs(ADMIN_PAYLOAD);
+    const tree = [
+      {
+        ...SAMPLE_ITEM,
+        crops: ['Soja', 'Milho'],
+        children: [{ ...SAMPLE_CHILD, crops: ['Soja'], children: [] }],
+      },
+    ];
+    mockedService.getOperationTypeTree.mockResolvedValue(tree);
+
+    const res = await request(app)
+      .get('/api/org/operation-types/tree?crop=Soja')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(mockedService.getOperationTypeTree).toHaveBeenCalledWith(
+      { organizationId: 'org-1' },
+      expect.objectContaining({ crop: 'Soja' }),
+    );
+  });
+
+  it('should not pass crop when not specified', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.listOperationTypes.mockResolvedValue([SAMPLE_ITEM]);
+
+    await request(app).get('/api/org/operation-types').set('Authorization', 'Bearer token');
+
+    expect(mockedService.listOperationTypes).toHaveBeenCalledWith(
+      { organizationId: 'org-1' },
+      expect.objectContaining({ crop: undefined }),
+    );
+  });
+
+  it('should filter tree by crop and return only matching branches', async () => {
+    authAs(ADMIN_PAYLOAD);
+    const filteredTree = [
+      {
+        ...SAMPLE_ITEM,
+        name: 'Tratos Culturais',
+        crops: ['Café', 'Todas'],
+        children: [
+          {
+            ...SAMPLE_CHILD,
+            name: 'Derriça',
+            crops: ['Café'],
+            children: [],
+          },
+        ],
+      },
+    ];
+    mockedService.getOperationTypeTree.mockResolvedValue(filteredTree);
+
+    const res = await request(app)
+      .get('/api/org/operation-types/tree?crop=Café')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].children[0].name).toBe('Derriça');
+  });
+});

@@ -46,6 +46,13 @@
   gap: 12px;
 }
 
+.optype-page__filters {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 .optype-page__toggle-label {
   display: flex;
   align-items: center;
@@ -54,6 +61,39 @@
   font-size: 0.875rem;
   color: var(--color-neutral-600);
   cursor: pointer;
+}
+
+.optype-page__filter-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.optype-page__filter-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  white-space: nowrap;
+}
+
+.optype-page__filter-select {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  padding: 8px 12px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-800);
+  min-height: 40px;
+  cursor: pointer;
+  transition: border-color 200ms ease-out;
+}
+
+.optype-page__filter-select:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
 }
 
 .optype-page__toolbar-btns {

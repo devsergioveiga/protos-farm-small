@@ -57,6 +57,7 @@ export interface ListOperationTypesQuery {
   level?: number;
   search?: string;
   includeInactive?: boolean;
+  crop?: string;
 }
 
 // ─── Response Types ─────────────────────────────────────────────────
