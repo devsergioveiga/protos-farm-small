@@ -10,6 +10,7 @@ import {
   createPestRepository,
   createMonitoringPointRepository,
   createFieldTeamRepository,
+  createCultivarRepository,
 } from './db';
 import type {
   OfflineFarm,
@@ -22,6 +23,7 @@ import type {
   OfflineMonitoringPoint,
   OfflineFieldTeam,
   OfflineFieldTeamMember,
+  OfflineCultivar,
   SyncEntity,
 } from '@/types/offline';
 
@@ -190,6 +192,19 @@ interface ApiFieldTeam {
   members: ApiFieldTeamMember[];
   createdAt: string;
   updatedAt: string;
+}
+
+interface ApiCultivar {
+  id: string;
+  name: string;
+  crop: string;
+  obtainer?: string;
+  cycleDays?: number;
+  maturityGroup?: string;
+  technology?: string;
+  seedType?: string;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 // ─── Mappers: API → Offline ────────────────────────────────────────────────
@@ -383,6 +398,21 @@ function mapFieldTeamMembers(t: ApiFieldTeam): OfflineFieldTeamMember[] {
     }));
 }
 
+function mapCultivar(c: ApiCultivar): OfflineCultivar {
+  return {
+    id: c.id,
+    name: c.name,
+    crop: c.crop,
+    obtainer: c.obtainer ?? null,
+    cycle_days: c.cycleDays ?? null,
+    maturity_group: c.maturityGroup ?? null,
+    technology: c.technology ?? null,
+    seed_type: c.seedType ?? null,
+    created_at: c.createdAt,
+    updated_at: c.updatedAt ?? c.createdAt,
+  };
+}
+
 // ─── Paginated fetcher ─────────────────────────────────────────────────────
 
 async function fetchAllPages<T>(path: string, limit = 100): Promise<T[]> {
@@ -424,6 +454,7 @@ export function createSyncService(db: SQLiteDatabase) {
   const pestRepo = createPestRepository(db);
   const monitoringPointRepo = createMonitoringPointRepository(db);
   const fieldTeamRepo = createFieldTeamRepository(db);
+  const cultivarRepo = createCultivarRepository(db);
   const syncMetaRepo = createSyncMetaRepository(db);
 
   const entities: SyncEntity[] = [
@@ -435,6 +466,7 @@ export function createSyncService(db: SQLiteDatabase) {
     'pests',
     'monitoring_points',
     'field_teams',
+    'cultivars',
   ];
 
   function initProgress(): SyncProgress[] {
@@ -690,6 +722,25 @@ export function createSyncService(db: SQLiteDatabase) {
         updateProgress(progress, 'field_teams', { status: 'error', error: msg }, onProgress);
       }
 
+      // 9. Sync cultivars (org-level)
+      try {
+        updateProgress(progress, 'cultivars', { status: 'syncing' }, onProgress);
+        const apiCultivars = await fetchAllPages<ApiCultivar>('/org/cultivars');
+        const offlineCultivars = apiCultivars.map(mapCultivar);
+        await cultivarRepo.clear();
+        await cultivarRepo.upsertMany(offlineCultivars);
+        await syncMetaRepo.upsert('cultivars', offlineCultivars.length);
+        updateProgress(
+          progress,
+          'cultivars',
+          { status: 'done', count: offlineCultivars.length },
+          onProgress,
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+        updateProgress(progress, 'cultivars', { status: 'error', error: msg }, onProgress);
+      }
+
       return progress;
     },
 
@@ -720,6 +771,7 @@ export function createSyncService(db: SQLiteDatabase) {
      * Clear all offline data (used on logout or farm switch).
      */
     async clearAll(): Promise<void> {
+      await cultivarRepo.clear();
       await fieldTeamRepo.clear();
       await monitoringPointRepo.clear();
       await pestRepo.clear();

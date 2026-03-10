@@ -4,7 +4,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
  * Database version — increment when adding new migrations.
  * Each version maps to a migration function in the migrations array.
  */
-const DATABASE_VERSION = 9;
+const DATABASE_VERSION = 10;
 
 /**
  * Run migrations on database init (called by SQLiteProvider onInit).
@@ -63,6 +63,11 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase): Promise<void> {
   if (currentVersion === 8) {
     await migrationV9(db);
     currentVersion = 9;
+  }
+
+  if (currentVersion === 9) {
+    await migrationV10(db);
+    currentVersion = 10;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
@@ -501,6 +506,67 @@ async function migrationV9(db: SQLiteDatabase): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_team_operations_farm ON team_operations(farm_id);
     CREATE INDEX IF NOT EXISTS idx_team_operations_synced ON team_operations(synced);
     CREATE INDEX IF NOT EXISTS idx_team_operations_performed ON team_operations(performed_at);
+  `);
+}
+
+/**
+ * V10 — Cultivars (synced from backend) + planting operations (offline-first).
+ */
+async function migrationV10(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS cultivars (
+      id TEXT PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      crop TEXT NOT NULL,
+      obtainer TEXT,
+      cycle_days INTEGER,
+      maturity_group TEXT,
+      technology TEXT,
+      seed_type TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_cultivars_crop ON cultivars(crop);
+
+    CREATE TABLE IF NOT EXISTS planting_operations (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      field_plot_id TEXT NOT NULL,
+      field_plot_name TEXT NOT NULL,
+      cultivar_id TEXT,
+      cultivar_name TEXT,
+      crop TEXT NOT NULL,
+      planting_date TEXT NOT NULL,
+      season_year TEXT NOT NULL,
+      season_type TEXT NOT NULL DEFAULT 'SAFRA',
+      planted_area_percent REAL NOT NULL DEFAULT 100,
+      population_per_m REAL,
+      row_spacing_cm REAL,
+      depth_cm REAL,
+      seed_rate_kg_ha REAL,
+      seed_treatments TEXT,
+      base_fertilizations TEXT,
+      machine_name TEXT,
+      operator_name TEXT,
+      average_speed_km_h REAL,
+      seed_cost REAL,
+      fertilizer_cost REAL,
+      treatment_cost REAL,
+      operation_cost REAL,
+      notes TEXT,
+      photo_uri TEXT,
+      latitude REAL,
+      longitude REAL,
+      synced INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_planting_ops_farm ON planting_operations(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_planting_ops_synced ON planting_operations(synced);
+    CREATE INDEX IF NOT EXISTS idx_planting_ops_date ON planting_operations(planting_date);
   `);
 }
 

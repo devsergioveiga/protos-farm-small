@@ -634,6 +634,12 @@ export default function RegisterScreen() {
         router.push('/monitoring-record');
         return;
       }
+      if (type === 'PLANTIO') {
+        setShowTypePicker(false);
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        router.push('/planting-operation');
+        return;
+      }
       setOperationType(type as FieldOperationType);
       setShowTypePicker(false);
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
