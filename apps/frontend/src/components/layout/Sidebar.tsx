@@ -16,6 +16,7 @@ import {
   Bug,
   FolderTree,
   Wheat,
+  Tractor,
   Users,
   Shield,
   X,
@@ -62,6 +63,7 @@ const NAV_GROUPS: NavGroup[] = [
     title: 'LAVOURA',
     items: [
       { to: '/planting', icon: Wheat, label: 'Plantio' },
+      { to: '/soil-prep', icon: Tractor, label: 'Preparo de solo' },
       { to: '/cultivars', icon: Sprout, label: 'Cultivares' },
       { to: '/pesticide-applications', icon: SprayCan, label: 'Defensivos' },
       { to: '/fertilizer-applications', icon: Droplet, label: 'Adubação' },

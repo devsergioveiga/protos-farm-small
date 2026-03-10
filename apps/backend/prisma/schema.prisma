@@ -306,6 +306,7 @@ model User {
   recordedPesticideApplications PesticideApplication[] @relation("PesticideRecorder")
   recordedFertilizerApplications FertilizerApplication[] @relation("FertilizerRecorder")
   recordedCulturalOperations CulturalOperation[] @relation("CulturalOperationRecorder")
+  recordedSoilPrepOperations SoilPrepOperation[] @relation("SoilPrepRecorder")
   ledTeams                   FieldTeam[]         @relation("TeamLeader")
   createdTeams               FieldTeam[]         @relation("TeamCreator")
   teamMemberships            FieldTeamMember[]
@@ -371,6 +372,7 @@ model Farm {
   pesticideApplications      PesticideApplication[]
   fertilizerApplications     FertilizerApplication[]
   culturalOperations         CulturalOperation[]
+  soilPrepOperations         SoilPrepOperation[]
   fieldTeams                 FieldTeam[]
   teamOperations             TeamOperation[]
   monitoringPoints           MonitoringPoint[]
@@ -666,6 +668,7 @@ model FieldPlot {
   pesticideApplications  PesticideApplication[]
   fertilizerApplications FertilizerApplication[]
   culturalOperations     CulturalOperation[]
+  soilPrepOperations     SoilPrepOperation[]
   teamOperations         TeamOperation[]
   monitoringPoints       MonitoringPoint[]
   monitoringRecords      MonitoringRecord[]
@@ -1412,6 +1415,59 @@ model CulturalOperation {
   @@map("cultural_operations")
 }
 
+// ─── Soil Prep Operations (US-034) ───────────────────────────────────────
+
+model SoilPrepOperation {
+  id                  String    @id @default(uuid())
+  farmId              String
+  fieldPlotId         String
+  operationTypeId     String?
+  operationTypeName   String
+  startedAt           DateTime
+  endedAt             DateTime?
+
+  // CA2 — machine, implement, operator, depth
+  machineName         String?
+  implementName       String?
+  operatorName        String?
+  depthCm             Decimal?  @db.Decimal(6, 2)
+
+  // CA3 — inputs applied (JSON array)
+  inputs              Json?     @default("[]")
+
+  // CA5 — conditions
+  soilMoisturePercent Decimal?  @db.Decimal(5, 2)
+  weatherCondition    String?
+
+  // CA7 — costs
+  durationHours       Decimal?  @db.Decimal(6, 2)
+  machineCostPerHour  Decimal?  @db.Decimal(10, 2)
+  laborCount          Int?
+  laborHourCost       Decimal?  @db.Decimal(10, 2)
+  inputsCost          Decimal?  @db.Decimal(10, 2)
+
+  // common
+  notes               String?
+  photoUrl            String?
+  latitude            Decimal?  @db.Decimal(10, 7)
+  longitude           Decimal?  @db.Decimal(10, 7)
+  recordedBy          String
+  deletedAt           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  farm          Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot     FieldPlot     @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  operationType OperationType? @relation(fields: [operationTypeId], references: [id], onDelete: SetNull)
+  recorder      User          @relation("SoilPrepRecorder", fields: [recordedBy], references: [id])
+
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@index([startedAt])
+  @@index([operationTypeId])
+  @@map("soil_prep_operations")
+}
+
 // ─── Field Teams (US-041) ─────────────────────────────────────────────────
 
 enum FieldTeamType {
@@ -1661,6 +1717,7 @@ model OperationType {
   sequences    CropOperationSequence[]
   schedules    OperationTypeSchedule[]
   plantingOperations PlantingOperation[]
+  soilPrepOperations SoilPrepOperation[]
 
   @@unique([name, parentId, organizationId])
   @@index([organizationId, parentId])
