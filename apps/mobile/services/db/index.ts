@@ -12,6 +12,8 @@ export { createPesticideApplicationRepository } from './pesticide-application-re
 export { createPestRepository } from './pest-repository';
 export { createMonitoringPointRepository } from './monitoring-point-repository';
 export { createMonitoringRecordRepository } from './monitoring-record-repository';
+export { createFieldTeamRepository } from './field-team-repository';
+export { createQuickServiceRepository } from './quick-service-repository';
 export type { AnimalWithBreeds } from './animal-repository';
 export type {
   PendingOperation,
