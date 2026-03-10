@@ -31,6 +31,8 @@ import { pestsRouter } from './modules/pests/pests.routes';
 import { monitoringPointsRouter } from './modules/monitoring-points/monitoring-points.routes';
 import { monitoringRecordsRouter } from './modules/monitoring-records/monitoring-records.routes';
 import { monitoringReportsRouter } from './modules/monitoring-reports/monitoring-reports.routes';
+import { operationTypesRouter } from './modules/operation-types/operation-types.routes';
+import { phenologicalRecordsRouter } from './modules/phenological-records/phenological-records.routes';
 
 const app = express();
 
@@ -69,5 +71,7 @@ app.use('/api', pestsRouter);
 app.use('/api', monitoringPointsRouter);
 app.use('/api', monitoringRecordsRouter);
 app.use('/api', monitoringReportsRouter);
+app.use('/api', operationTypesRouter);
+app.use('/api', phenologicalRecordsRouter);
 
 export { app };

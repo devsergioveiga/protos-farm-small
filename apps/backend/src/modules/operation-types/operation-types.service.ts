@@ -1,0 +1,1271 @@
+import { withRlsContext, type RlsContext } from '../../database/rls';
+import {
+  OperationTypeError,
+  MAX_LEVELS,
+  DEFAULT_OPERATION_TYPES,
+  DEFAULT_CROP_SEQUENCES,
+  OPERATION_FIELD_KEYS,
+  type CreateOperationTypeInput,
+  type UpdateOperationTypeInput,
+  type OperationTypeItem,
+  type OperationTypeTreeNode,
+  type ListOperationTypesQuery,
+  type FieldConfig,
+  type OperationFieldKey,
+  type CropOperationSequenceItem,
+  type SetCropSequenceInput,
+  type OperationScheduleItem,
+  type SetScheduleInput,
+  type ListSchedulesQuery,
+  type ScheduleType,
+  type PhenologicalStageItem,
+  type CreatePhenologicalStageInput,
+  type UpdatePhenologicalStageInput,
+  DEFAULT_CROP_PHENOLOGICAL_STAGES,
+} from './operation-types.types';
+
+// ─── Include fragments ─────────────────────────────────────────────
+
+const INCLUDE_BASE = {
+  _count: { select: { children: true } },
+  crops: { select: { crop: true } },
+  fields: {
+    select: { fieldKey: true, visibility: true, sortOrder: true },
+    orderBy: { sortOrder: 'asc' as const },
+  },
+};
+
+// ─── Helpers ────────────────────────────────────────────────────────
+
+function extractCrops(row: Record<string, unknown>): string[] {
+  const crops = row.crops as Array<{ crop: string }> | undefined;
+  return crops?.map((c) => c.crop).sort() ?? [];
+}
+
+function extractFields(row: Record<string, unknown>): FieldConfig[] {
+  const fields = row.fields as
+    | Array<{ fieldKey: string; visibility: string; sortOrder: number }>
+    | undefined;
+  return (
+    fields?.map((f) => ({
+      fieldKey: f.fieldKey as OperationFieldKey,
+      visibility: f.visibility as FieldConfig['visibility'],
+      sortOrder: f.sortOrder,
+    })) ?? []
+  );
+}
+
+function toItem(row: Record<string, unknown>): OperationTypeItem {
+  const children = row._count as { children: number } | undefined;
+  return {
+    id: row.id as string,
+    organizationId: row.organizationId as string,
+    name: row.name as string,
+    description: (row.description as string) ?? null,
+    parentId: (row.parentId as string) ?? null,
+    level: row.level as number,
+    sortOrder: row.sortOrder as number,
+    isSystem: row.isSystem as boolean,
+    isActive: row.isActive as boolean,
+    childCount: children?.children ?? 0,
+    crops: extractCrops(row),
+    fields: extractFields(row),
+    createdAt: (row.createdAt as Date).toISOString(),
+    updatedAt: (row.updatedAt as Date).toISOString(),
+  };
+}
+
+function toTreeNode(row: Record<string, unknown>): OperationTypeTreeNode {
+  const rawChildren = (row.children as Record<string, unknown>[]) ?? [];
+  return {
+    ...toItem(row),
+    children: rawChildren.map(toTreeNode),
+  };
+}
+
+function validateInput(input: CreateOperationTypeInput): void {
+  if (!input.name?.trim()) {
+    throw new OperationTypeError('Nome do tipo de operação é obrigatório', 400);
+  }
+  if (input.name.trim().length > 200) {
+    throw new OperationTypeError('Nome não pode ter mais de 200 caracteres', 400);
+  }
+}
+
+/**
+ * Validates that child crops are a subset of parent crops.
+ * "Todas" in parent means any crop is allowed for children.
+ * If parent has no crops set, child can have any crops.
+ */
+function validateCropInheritance(childCrops: string[], parentCrops: string[]): void {
+  if (parentCrops.length === 0 || parentCrops.includes('Todas')) {
+    return; // parent allows everything
+  }
+  const invalid = childCrops.filter((c) => c !== 'Todas' && !parentCrops.includes(c));
+  if (invalid.length > 0) {
+    throw new OperationTypeError(
+      `Culturas não permitidas pelo nível pai: ${invalid.join(', ')}. ` +
+        `Culturas disponíveis: ${parentCrops.join(', ')}`,
+      400,
+    );
+  }
+}
+
+function validateFields(fields: FieldConfig[]): void {
+  const validKeys = new Set<string>(OPERATION_FIELD_KEYS);
+  const seen = new Set<string>();
+  for (const f of fields) {
+    if (!validKeys.has(f.fieldKey)) {
+      throw new OperationTypeError(`Campo desconhecido: ${f.fieldKey}`, 400);
+    }
+    if (!['required', 'optional', 'hidden'].includes(f.visibility)) {
+      throw new OperationTypeError(
+        `Visibilidade inválida para ${f.fieldKey}: ${f.visibility}. Use: required, optional, hidden`,
+        400,
+      );
+    }
+    if (seen.has(f.fieldKey)) {
+      throw new OperationTypeError(`Campo duplicado: ${f.fieldKey}`, 400);
+    }
+    seen.add(f.fieldKey);
+  }
+}
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+async function getParentCrops(
+  tx: { operationTypeCrop: { findMany: (...args: any[]) => any } },
+  parentId: string,
+): Promise<string[]> {
+  const rows = await tx.operationTypeCrop.findMany({
+    where: { operationTypeId: parentId },
+    select: { crop: true },
+  });
+  return (rows as Array<{ crop: string }>).map((r) => r.crop);
+}
+
+async function syncCrops(
+  tx: {
+    operationTypeCrop: { deleteMany: (...args: any[]) => any; createMany: (...args: any[]) => any };
+  },
+  operationTypeId: string,
+  crops: string[],
+): Promise<void> {
+  await tx.operationTypeCrop.deleteMany({ where: { operationTypeId } });
+  if (crops.length > 0) {
+    await tx.operationTypeCrop.createMany({
+      data: crops.map((crop) => ({ operationTypeId, crop })),
+    });
+  }
+}
+
+async function syncFields(
+  tx: {
+    operationTypeField: {
+      deleteMany: (...args: any[]) => any;
+      createMany: (...args: any[]) => any;
+    };
+  },
+  operationTypeId: string,
+  fields: FieldConfig[],
+): Promise<void> {
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+  await tx.operationTypeField.deleteMany({ where: { operationTypeId } });
+  if (fields.length > 0) {
+    await tx.operationTypeField.createMany({
+      data: fields.map((f) => ({
+        operationTypeId,
+        fieldKey: f.fieldKey,
+        visibility: f.visibility,
+        sortOrder: f.sortOrder,
+      })),
+    });
+  }
+}
+
+// ─── CREATE ─────────────────────────────────────────────────────────
+
+export async function createOperationType(
+  ctx: RlsContext,
+  input: CreateOperationTypeInput,
+): Promise<OperationTypeItem> {
+  validateInput(input);
+  if (input.fields) validateFields(input.fields);
+
+  return withRlsContext(ctx, async (tx) => {
+    let level = 1;
+
+    if (input.parentId) {
+      const parent = await tx.operationType.findFirst({
+        where: {
+          id: input.parentId,
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+        },
+        select: { id: true, level: true },
+      });
+      if (!parent) {
+        throw new OperationTypeError('Tipo de operação pai não encontrado', 404);
+      }
+      if (parent.level >= MAX_LEVELS) {
+        throw new OperationTypeError(`Máximo de ${MAX_LEVELS} níveis hierárquicos permitidos`, 400);
+      }
+      level = parent.level + 1;
+
+      // Validate crop inheritance
+      if (input.crops && input.crops.length > 0) {
+        const parentCrops = await getParentCrops(tx, input.parentId);
+        validateCropInheritance(input.crops, parentCrops);
+      }
+    }
+
+    const existing = await tx.operationType.findFirst({
+      where: {
+        name: input.name.trim(),
+        parentId: input.parentId ?? null,
+        organizationId: ctx.organizationId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new OperationTypeError('Já existe um tipo de operação com este nome neste nível', 409);
+    }
+
+    const row = await tx.operationType.create({
+      data: {
+        organizationId: ctx.organizationId,
+        name: input.name.trim(),
+        description: input.description?.trim() ?? null,
+        parentId: input.parentId ?? null,
+        level,
+        sortOrder: input.sortOrder ?? 0,
+        ...(input.crops && input.crops.length > 0
+          ? { crops: { create: input.crops.map((crop) => ({ crop })) } }
+          : {}),
+        ...(input.fields && input.fields.length > 0
+          ? {
+              fields: {
+                create: input.fields.map((f) => ({
+                  fieldKey: f.fieldKey,
+                  visibility: f.visibility,
+                  sortOrder: f.sortOrder,
+                })),
+              },
+            }
+          : {}),
+      },
+      include: INCLUDE_BASE,
+    });
+
+    return toItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+// ─── LIST ───────────────────────────────────────────────────────────
+
+export async function listOperationTypes(
+  ctx: RlsContext,
+  query: ListOperationTypesQuery = {},
+): Promise<OperationTypeItem[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = {
+      organizationId: ctx.organizationId,
+      deletedAt: null,
+    };
+
+    if (query.parentId !== undefined) {
+      where.parentId = query.parentId;
+    }
+    if (query.level != null) {
+      where.level = query.level;
+    }
+    if (!query.includeInactive) {
+      where.isActive = true;
+    }
+    if (query.search) {
+      where.name = { contains: query.search, mode: 'insensitive' };
+    }
+    if (query.crop) {
+      where.crops = { some: { crop: { in: [query.crop, 'Todas'] } } };
+    }
+
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const rows = await tx.operationType.findMany({
+      where: where as any,
+      include: INCLUDE_BASE,
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+
+    return rows.map((r) => toItem(r as unknown as Record<string, unknown>));
+  });
+}
+
+// ─── GET TREE ───────────────────────────────────────────────────────
+
+export async function getOperationTypeTree(
+  ctx: RlsContext,
+  options: { includeInactive?: boolean; crop?: string } = {},
+): Promise<OperationTypeTreeNode[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const activeFilter = options.includeInactive ? {} : { isActive: true };
+    const deletedFilter = { deletedAt: null };
+    const cropFilter = options.crop
+      ? { crops: { some: { crop: { in: [options.crop, 'Todas'] } } } }
+      : {};
+
+    const roots = await tx.operationType.findMany({
+      where: {
+        organizationId: ctx.organizationId,
+        parentId: null,
+        ...deletedFilter,
+        ...activeFilter,
+      },
+      include: {
+        ...INCLUDE_BASE,
+        children: {
+          where: { ...deletedFilter, ...activeFilter, ...cropFilter },
+          include: {
+            ...INCLUDE_BASE,
+            children: {
+              where: { ...deletedFilter, ...activeFilter, ...cropFilter },
+              include: INCLUDE_BASE,
+              orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+            },
+          },
+          orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+        },
+      },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+
+    // When filtering by crop, exclude root categories with no matching children
+    if (options.crop) {
+      const filtered = roots
+        .map((r) => toTreeNode(r as unknown as Record<string, unknown>))
+        .filter((node) => {
+          // Keep root if it has matching crops itself or has children after filtering
+          const rootCrops = node.crops;
+          const hasCrop = rootCrops.includes(options.crop!) || rootCrops.includes('Todas');
+          return hasCrop || node.children.length > 0;
+        });
+      return filtered;
+    }
+
+    return roots.map((r) => toTreeNode(r as unknown as Record<string, unknown>));
+  });
+}
+
+// ─── GET BY ID ──────────────────────────────────────────────────────
+
+export async function getOperationType(ctx: RlsContext, id: string): Promise<OperationTypeItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const row = await tx.operationType.findFirst({
+      where: { id, organizationId: ctx.organizationId, deletedAt: null },
+      include: INCLUDE_BASE,
+    });
+    if (!row) {
+      throw new OperationTypeError('Tipo de operação não encontrado', 404);
+    }
+    return toItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+// ─── UPDATE ─────────────────────────────────────────────────────────
+
+export async function updateOperationType(
+  ctx: RlsContext,
+  id: string,
+  input: UpdateOperationTypeInput,
+): Promise<OperationTypeItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const existing = await tx.operationType.findFirst({
+      where: { id, organizationId: ctx.organizationId, deletedAt: null },
+      select: { id: true, isSystem: true, parentId: true, level: true },
+    });
+    if (!existing) {
+      throw new OperationTypeError('Tipo de operação não encontrado', 404);
+    }
+
+    const data: Record<string, unknown> = {};
+
+    if (input.name !== undefined) {
+      if (!input.name?.trim()) {
+        throw new OperationTypeError('Nome do tipo de operação é obrigatório', 400);
+      }
+      const targetParentId = input.parentId !== undefined ? input.parentId : existing.parentId;
+      const duplicate = await tx.operationType.findFirst({
+        where: {
+          name: input.name.trim(),
+          parentId: targetParentId ?? null,
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+          id: { not: id },
+        },
+        select: { id: true },
+      });
+      if (duplicate) {
+        throw new OperationTypeError(
+          'Já existe um tipo de operação com este nome neste nível',
+          409,
+        );
+      }
+      data.name = input.name.trim();
+    }
+
+    if (input.description !== undefined) {
+      data.description = input.description?.trim() ?? null;
+    }
+
+    if (input.sortOrder !== undefined) {
+      data.sortOrder = input.sortOrder;
+    }
+
+    if (input.parentId !== undefined) {
+      if (input.parentId === id) {
+        throw new OperationTypeError('Tipo de operação não pode ser pai de si mesmo', 400);
+      }
+      if (input.parentId) {
+        const parent = await tx.operationType.findFirst({
+          where: {
+            id: input.parentId,
+            organizationId: ctx.organizationId,
+            deletedAt: null,
+          },
+          select: { id: true, level: true },
+        });
+        if (!parent) {
+          throw new OperationTypeError('Tipo de operação pai não encontrado', 404);
+        }
+        if (parent.level >= MAX_LEVELS) {
+          throw new OperationTypeError(
+            `Máximo de ${MAX_LEVELS} níveis hierárquicos permitidos`,
+            400,
+          );
+        }
+        data.parentId = input.parentId;
+        data.level = parent.level + 1;
+      } else {
+        data.parentId = null;
+        data.level = 1;
+      }
+    }
+
+    // Validate crop inheritance against parent
+    if (input.crops !== undefined) {
+      const effectiveParentId = input.parentId !== undefined ? input.parentId : existing.parentId;
+      if (effectiveParentId && input.crops.length > 0) {
+        const parentCrops = await getParentCrops(tx, effectiveParentId);
+        validateCropInheritance(input.crops, parentCrops);
+      }
+      await syncCrops(tx, id, input.crops);
+    }
+
+    // Sync field configurations
+    if (input.fields !== undefined) {
+      validateFields(input.fields);
+      await syncFields(tx, id, input.fields);
+    }
+
+    const row = await tx.operationType.update({
+      where: { id },
+      data,
+      include: INCLUDE_BASE,
+    });
+
+    return toItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+// ─── TOGGLE ACTIVE ──────────────────────────────────────────────────
+
+export async function toggleOperationTypeActive(
+  ctx: RlsContext,
+  id: string,
+): Promise<OperationTypeItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const existing = await tx.operationType.findFirst({
+      where: { id, organizationId: ctx.organizationId, deletedAt: null },
+      select: { id: true, isActive: true },
+    });
+    if (!existing) {
+      throw new OperationTypeError('Tipo de operação não encontrado', 404);
+    }
+
+    const row = await tx.operationType.update({
+      where: { id },
+      data: { isActive: !existing.isActive },
+      include: INCLUDE_BASE,
+    });
+
+    return toItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+// ─── DELETE (soft) ──────────────────────────────────────────────────
+
+export async function deleteOperationType(ctx: RlsContext, id: string): Promise<void> {
+  return withRlsContext(ctx, async (tx) => {
+    const existing = await tx.operationType.findFirst({
+      where: { id, organizationId: ctx.organizationId, deletedAt: null },
+      include: {
+        _count: {
+          select: { children: { where: { deletedAt: null } } },
+        },
+      },
+    });
+    if (!existing) {
+      throw new OperationTypeError('Tipo de operação não encontrado', 404);
+    }
+
+    const childCount = (existing as unknown as Record<string, { children: number }>)._count
+      .children;
+    if (childCount > 0) {
+      throw new OperationTypeError(
+        'Não é possível excluir: existem sub-operações vinculadas. Remova-as primeiro.',
+        400,
+      );
+    }
+
+    await tx.operationType.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+  });
+}
+
+// ─── SEED DEFAULT OPERATION TYPES ────────────────────────────────────
+
+export async function seedOperationTypes(ctx: RlsContext): Promise<{ created: number }> {
+  return withRlsContext(ctx, async (tx) => {
+    // Check if org already has operation types
+    const existingCount = await tx.operationType.count({
+      where: { organizationId: ctx.organizationId, deletedAt: null },
+    });
+    if (existingCount > 0) {
+      throw new OperationTypeError(
+        'Organização já possui tipos de operação cadastrados. O carregamento padrão só pode ser feito em organizações sem cadastros existentes.',
+        409,
+      );
+    }
+
+    let created = 0;
+
+    for (const category of DEFAULT_OPERATION_TYPES) {
+      const parent = await tx.operationType.create({
+        data: {
+          organizationId: ctx.organizationId,
+          name: category.name,
+          level: 1,
+          sortOrder: category.sortOrder,
+          isSystem: true,
+          crops: { create: category.crops.map((crop) => ({ crop })) },
+        },
+      });
+      created++;
+
+      for (const child of category.children) {
+        const level2 = await tx.operationType.create({
+          data: {
+            organizationId: ctx.organizationId,
+            name: child.name,
+            parentId: parent.id,
+            level: 2,
+            sortOrder: child.sortOrder,
+            isSystem: true,
+            crops: { create: child.crops.map((crop) => ({ crop })) },
+          },
+        });
+        created++;
+
+        if (child.children) {
+          for (const grandchild of child.children) {
+            await tx.operationType.create({
+              data: {
+                organizationId: ctx.organizationId,
+                name: grandchild.name,
+                parentId: level2.id,
+                level: 3,
+                sortOrder: grandchild.sortOrder,
+                isSystem: true,
+                crops: { create: grandchild.crops.map((crop) => ({ crop })) },
+              },
+            });
+            created++;
+          }
+        }
+      }
+    }
+
+    return { created };
+  });
+}
+
+// ─── CA6: CROP OPERATION SEQUENCES ──────────────────────────────────
+
+function toSequenceItem(row: Record<string, unknown>): CropOperationSequenceItem {
+  const opType = row.operationType as Record<string, unknown> | undefined;
+  return {
+    id: row.id as string,
+    organizationId: row.organizationId as string,
+    crop: row.crop as string,
+    operationTypeId: row.operationTypeId as string,
+    operationTypeName: (opType?.name as string) ?? '',
+    sequenceOrder: row.sequenceOrder as number,
+    notes: (row.notes as string) ?? null,
+  };
+}
+
+export async function getCropSequence(
+  ctx: RlsContext,
+  crop: string,
+): Promise<CropOperationSequenceItem[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const rows = await tx.cropOperationSequence.findMany({
+      where: { organizationId: ctx.organizationId, crop },
+      include: { operationType: { select: { name: true } } },
+      orderBy: { sequenceOrder: 'asc' },
+    });
+    return rows.map((r) => toSequenceItem(r as unknown as Record<string, unknown>));
+  });
+}
+
+export async function listCropSequences(
+  ctx: RlsContext,
+): Promise<Record<string, CropOperationSequenceItem[]>> {
+  return withRlsContext(ctx, async (tx) => {
+    const rows = await tx.cropOperationSequence.findMany({
+      where: { organizationId: ctx.organizationId },
+      include: { operationType: { select: { name: true } } },
+      orderBy: [{ crop: 'asc' }, { sequenceOrder: 'asc' }],
+    });
+
+    const result: Record<string, CropOperationSequenceItem[]> = {};
+    for (const row of rows) {
+      const item = toSequenceItem(row as unknown as Record<string, unknown>);
+      if (!result[item.crop]) result[item.crop] = [];
+      result[item.crop].push(item);
+    }
+    return result;
+  });
+}
+
+export async function setCropSequence(
+  ctx: RlsContext,
+  input: SetCropSequenceInput,
+): Promise<CropOperationSequenceItem[]> {
+  if (!input.crop?.trim()) {
+    throw new OperationTypeError('Cultura é obrigatória', 400);
+  }
+  if (!input.items || input.items.length === 0) {
+    throw new OperationTypeError('A sequência deve conter ao menos uma operação', 400);
+  }
+
+  // Check for duplicate operation types
+  const opIds = input.items.map((i) => i.operationTypeId);
+  const uniqueIds = new Set(opIds);
+  if (uniqueIds.size !== opIds.length) {
+    throw new OperationTypeError('Tipos de operação duplicados na sequência', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    // Validate all operation types exist in this org
+    const existingOps = await tx.operationType.findMany({
+      where: {
+        id: { in: opIds },
+        organizationId: ctx.organizationId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+
+    const existingIds = new Set(existingOps.map((o) => o.id));
+    const missing = opIds.filter((id) => !existingIds.has(id));
+    if (missing.length > 0) {
+      throw new OperationTypeError(`Tipos de operação não encontrados: ${missing.join(', ')}`, 404);
+    }
+
+    // Delete existing sequence for this crop
+    await tx.cropOperationSequence.deleteMany({
+      where: { organizationId: ctx.organizationId, crop: input.crop },
+    });
+
+    // Create new sequence
+    await tx.cropOperationSequence.createMany({
+      data: input.items.map((item, idx) => ({
+        organizationId: ctx.organizationId,
+        crop: input.crop,
+        operationTypeId: item.operationTypeId,
+        sequenceOrder: idx + 1,
+        notes: item.notes?.trim() ?? null,
+      })),
+    });
+
+    // Return the created sequence
+    const rows = await tx.cropOperationSequence.findMany({
+      where: { organizationId: ctx.organizationId, crop: input.crop },
+      include: { operationType: { select: { name: true } } },
+      orderBy: { sequenceOrder: 'asc' },
+    });
+
+    return rows.map((r) => toSequenceItem(r as unknown as Record<string, unknown>));
+  });
+}
+
+export async function deleteCropSequence(ctx: RlsContext, crop: string): Promise<void> {
+  return withRlsContext(ctx, async (tx) => {
+    const count = await tx.cropOperationSequence.count({
+      where: { organizationId: ctx.organizationId, crop },
+    });
+    if (count === 0) {
+      throw new OperationTypeError(`Sequência não encontrada para a cultura: ${crop}`, 404);
+    }
+
+    await tx.cropOperationSequence.deleteMany({
+      where: { organizationId: ctx.organizationId, crop },
+    });
+  });
+}
+
+export async function seedCropSequences(
+  ctx: RlsContext,
+): Promise<{ seeded: number; skipped: string[] }> {
+  return withRlsContext(ctx, async (tx) => {
+    // Check if org already has sequences
+    const existingCount = await tx.cropOperationSequence.count({
+      where: { organizationId: ctx.organizationId },
+    });
+    if (existingCount > 0) {
+      throw new OperationTypeError(
+        'Organização já possui sequências de operações cadastradas.',
+        409,
+      );
+    }
+
+    // Get all operation types for this org (needed to resolve names → ids)
+    const allTypes = await tx.operationType.findMany({
+      where: { organizationId: ctx.organizationId, deletedAt: null },
+      select: { id: true, name: true },
+    });
+    const nameToId = new Map(allTypes.map((t) => [t.name, t.id]));
+
+    let seeded = 0;
+    const skipped: string[] = [];
+
+    for (const seq of DEFAULT_CROP_SEQUENCES) {
+      const validItems: Array<{ operationTypeId: string; notes: string | null; order: number }> =
+        [];
+      let order = 0;
+
+      for (const item of seq.items) {
+        const opId = nameToId.get(item.operationName);
+        if (opId) {
+          order++;
+          validItems.push({ operationTypeId: opId, notes: item.notes ?? null, order });
+        }
+        // Skip items whose operation types don't exist (not seeded yet)
+      }
+
+      if (validItems.length === 0) {
+        skipped.push(seq.crop);
+        continue;
+      }
+
+      await tx.cropOperationSequence.createMany({
+        data: validItems.map((v) => ({
+          organizationId: ctx.organizationId,
+          crop: seq.crop,
+          operationTypeId: v.operationTypeId,
+          sequenceOrder: v.order,
+          notes: v.notes,
+        })),
+      });
+      seeded += validItems.length;
+    }
+
+    return { seeded, skipped };
+  });
+}
+
+// ─── CA7: OPERATION TYPE SCHEDULES ──────────────────────────────────
+
+function toScheduleItem(row: Record<string, unknown>): OperationScheduleItem {
+  const opType = row.operationType as Record<string, unknown> | undefined;
+  return {
+    id: row.id as string,
+    organizationId: row.organizationId as string,
+    operationTypeId: row.operationTypeId as string,
+    operationTypeName: (opType?.name as string) ?? '',
+    crop: row.crop as string,
+    scheduleType: row.scheduleType as ScheduleType,
+    startDay: (row.startDay as number) ?? null,
+    startMonth: (row.startMonth as number) ?? null,
+    endDay: (row.endDay as number) ?? null,
+    endMonth: (row.endMonth as number) ?? null,
+    phenoStage: (row.phenoStage as string) ?? null,
+    offsetDays: (row.offsetDays as number) ?? null,
+    notes: (row.notes as string) ?? null,
+  };
+}
+
+function validateScheduleInput(input: SetScheduleInput): void {
+  if (!input.operationTypeId?.trim()) {
+    throw new OperationTypeError('Tipo de operação é obrigatório', 400);
+  }
+  if (!input.crop?.trim()) {
+    throw new OperationTypeError('Cultura é obrigatória', 400);
+  }
+  if (!['fixed_date', 'phenological'].includes(input.scheduleType)) {
+    throw new OperationTypeError(
+      'Tipo de agendamento inválido. Use: fixed_date ou phenological',
+      400,
+    );
+  }
+
+  if (input.scheduleType === 'fixed_date') {
+    const { startDay, startMonth, endDay, endMonth } = input;
+    if (startDay == null || startMonth == null || endDay == null || endMonth == null) {
+      throw new OperationTypeError(
+        'Para agendamento por data fixa, informe startDay, startMonth, endDay e endMonth',
+        400,
+      );
+    }
+    if (startMonth < 1 || startMonth > 12 || endMonth < 1 || endMonth > 12) {
+      throw new OperationTypeError('Mês deve estar entre 1 e 12', 400);
+    }
+    if (startDay < 1 || startDay > 31 || endDay < 1 || endDay > 31) {
+      throw new OperationTypeError('Dia deve estar entre 1 e 31', 400);
+    }
+  }
+
+  if (input.scheduleType === 'phenological') {
+    if (!input.phenoStage?.trim()) {
+      throw new OperationTypeError('Para agendamento fenológico, informe a fase (phenoStage)', 400);
+    }
+    if (input.offsetDays == null) {
+      throw new OperationTypeError(
+        'Para agendamento fenológico, informe o offset em dias (offsetDays)',
+        400,
+      );
+    }
+  }
+}
+
+export async function listSchedules(
+  ctx: RlsContext,
+  query: ListSchedulesQuery = {},
+): Promise<OperationScheduleItem[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = {
+      organizationId: ctx.organizationId,
+    };
+    if (query.crop) where.crop = query.crop;
+    if (query.operationTypeId) where.operationTypeId = query.operationTypeId;
+    if (query.scheduleType) where.scheduleType = query.scheduleType;
+
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const rows = await tx.operationTypeSchedule.findMany({
+      where: where as any,
+      include: { operationType: { select: { name: true } } },
+      orderBy: [{ crop: 'asc' }, { operationType: { name: 'asc' } }],
+    });
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+
+    return rows.map((r) => toScheduleItem(r as unknown as Record<string, unknown>));
+  });
+}
+
+export async function getSchedule(ctx: RlsContext, id: string): Promise<OperationScheduleItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const row = await tx.operationTypeSchedule.findFirst({
+      where: { id, organizationId: ctx.organizationId },
+      include: { operationType: { select: { name: true } } },
+    });
+    if (!row) {
+      throw new OperationTypeError('Agendamento não encontrado', 404);
+    }
+    return toScheduleItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+export async function setSchedule(
+  ctx: RlsContext,
+  input: SetScheduleInput,
+): Promise<OperationScheduleItem> {
+  validateScheduleInput(input);
+
+  return withRlsContext(ctx, async (tx) => {
+    // Validate operation type exists
+    const opType = await tx.operationType.findFirst({
+      where: {
+        id: input.operationTypeId,
+        organizationId: ctx.organizationId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+    if (!opType) {
+      throw new OperationTypeError('Tipo de operação não encontrado', 404);
+    }
+
+    // Upsert: replace existing schedule for this operation+crop combo
+    const existing = await tx.operationTypeSchedule.findFirst({
+      where: {
+        organizationId: ctx.organizationId,
+        operationTypeId: input.operationTypeId,
+        crop: input.crop,
+      },
+      select: { id: true },
+    });
+
+    const data = {
+      organizationId: ctx.organizationId,
+      operationTypeId: input.operationTypeId,
+      crop: input.crop,
+      scheduleType: input.scheduleType,
+      startDay: input.scheduleType === 'fixed_date' ? input.startDay! : null,
+      startMonth: input.scheduleType === 'fixed_date' ? input.startMonth! : null,
+      endDay: input.scheduleType === 'fixed_date' ? input.endDay! : null,
+      endMonth: input.scheduleType === 'fixed_date' ? input.endMonth! : null,
+      phenoStage: input.scheduleType === 'phenological' ? input.phenoStage!.trim() : null,
+      offsetDays: input.scheduleType === 'phenological' ? input.offsetDays! : null,
+      notes: input.notes?.trim() ?? null,
+    };
+
+    let row;
+    if (existing) {
+      row = await tx.operationTypeSchedule.update({
+        where: { id: existing.id },
+        data,
+        include: { operationType: { select: { name: true } } },
+      });
+    } else {
+      row = await tx.operationTypeSchedule.create({
+        data,
+        include: { operationType: { select: { name: true } } },
+      });
+    }
+
+    return toScheduleItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+export async function deleteSchedule(ctx: RlsContext, id: string): Promise<void> {
+  return withRlsContext(ctx, async (tx) => {
+    const existing = await tx.operationTypeSchedule.findFirst({
+      where: { id, organizationId: ctx.organizationId },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new OperationTypeError('Agendamento não encontrado', 404);
+    }
+    await tx.operationTypeSchedule.delete({ where: { id } });
+  });
+}
+
+export async function setBulkSchedules(
+  ctx: RlsContext,
+  crop: string,
+  items: SetScheduleInput[],
+): Promise<OperationScheduleItem[]> {
+  if (!crop?.trim()) {
+    throw new OperationTypeError('Cultura é obrigatória', 400);
+  }
+  if (!items || items.length === 0) {
+    throw new OperationTypeError('Informe ao menos um agendamento', 400);
+  }
+
+  // Validate all inputs
+  for (const item of items) {
+    item.crop = crop;
+    validateScheduleInput(item);
+  }
+
+  // Check for duplicate operation types
+  const opIds = items.map((i) => i.operationTypeId);
+  const uniqueIds = new Set(opIds);
+  if (uniqueIds.size !== opIds.length) {
+    throw new OperationTypeError('Tipos de operação duplicados no lote', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    // Validate all operation types exist
+    const existingOps = await tx.operationType.findMany({
+      where: {
+        id: { in: opIds },
+        organizationId: ctx.organizationId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+    const existingIds = new Set(existingOps.map((o) => o.id));
+    const missing = opIds.filter((id) => !existingIds.has(id));
+    if (missing.length > 0) {
+      throw new OperationTypeError(`Tipos de operação não encontrados: ${missing.join(', ')}`, 404);
+    }
+
+    // Delete existing schedules for this crop
+    await tx.operationTypeSchedule.deleteMany({
+      where: { organizationId: ctx.organizationId, crop },
+    });
+
+    // Create new schedules
+    for (const input of items) {
+      await tx.operationTypeSchedule.create({
+        data: {
+          organizationId: ctx.organizationId,
+          operationTypeId: input.operationTypeId,
+          crop,
+          scheduleType: input.scheduleType,
+          startDay: input.scheduleType === 'fixed_date' ? input.startDay! : null,
+          startMonth: input.scheduleType === 'fixed_date' ? input.startMonth! : null,
+          endDay: input.scheduleType === 'fixed_date' ? input.endDay! : null,
+          endMonth: input.scheduleType === 'fixed_date' ? input.endMonth! : null,
+          phenoStage: input.scheduleType === 'phenological' ? input.phenoStage!.trim() : null,
+          offsetDays: input.scheduleType === 'phenological' ? input.offsetDays! : null,
+          notes: input.notes?.trim() ?? null,
+        },
+      });
+    }
+
+    // Return created schedules
+    const rows = await tx.operationTypeSchedule.findMany({
+      where: { organizationId: ctx.organizationId, crop },
+      include: { operationType: { select: { name: true } } },
+      orderBy: { operationType: { name: 'asc' } },
+    });
+
+    return rows.map((r) => toScheduleItem(r as unknown as Record<string, unknown>));
+  });
+}
+
+// ─── CA8: PHENOLOGICAL STAGES ───────────────────────────────────────
+
+function toStageItem(row: Record<string, unknown>): PhenologicalStageItem {
+  return {
+    id: row.id as string,
+    organizationId: row.organizationId as string,
+    crop: row.crop as string,
+    code: row.code as string,
+    name: row.name as string,
+    description: (row.description as string) ?? null,
+    stageOrder: row.stageOrder as number,
+    isSystem: row.isSystem as boolean,
+  };
+}
+
+export async function listPhenologicalStages(
+  ctx: RlsContext,
+  crop?: string,
+): Promise<PhenologicalStageItem[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = { organizationId: ctx.organizationId };
+    if (crop) where.crop = crop;
+
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const rows = await tx.cropPhenologicalStage.findMany({
+      where: where as any,
+      orderBy: [{ crop: 'asc' }, { stageOrder: 'asc' }],
+    });
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+
+    return rows.map((r) => toStageItem(r as unknown as Record<string, unknown>));
+  });
+}
+
+export async function getPhenologicalStage(
+  ctx: RlsContext,
+  id: string,
+): Promise<PhenologicalStageItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const row = await tx.cropPhenologicalStage.findFirst({
+      where: { id, organizationId: ctx.organizationId },
+    });
+    if (!row) {
+      throw new OperationTypeError('Fase fenológica não encontrada', 404);
+    }
+    return toStageItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+export async function createPhenologicalStage(
+  ctx: RlsContext,
+  input: CreatePhenologicalStageInput,
+): Promise<PhenologicalStageItem> {
+  if (!input.crop?.trim()) {
+    throw new OperationTypeError('Cultura é obrigatória', 400);
+  }
+  if (!input.code?.trim()) {
+    throw new OperationTypeError('Código da fase é obrigatório', 400);
+  }
+  if (!input.name?.trim()) {
+    throw new OperationTypeError('Nome da fase é obrigatório', 400);
+  }
+  if (input.stageOrder == null || input.stageOrder < 1) {
+    throw new OperationTypeError('Ordem da fase deve ser um número positivo', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    const dupCode = await tx.cropPhenologicalStage.findFirst({
+      where: { organizationId: ctx.organizationId, crop: input.crop, code: input.code.trim() },
+      select: { id: true },
+    });
+    if (dupCode) {
+      throw new OperationTypeError(
+        `Já existe uma fase com código "${input.code}" para ${input.crop}`,
+        409,
+      );
+    }
+
+    const dupOrder = await tx.cropPhenologicalStage.findFirst({
+      where: { organizationId: ctx.organizationId, crop: input.crop, stageOrder: input.stageOrder },
+      select: { id: true },
+    });
+    if (dupOrder) {
+      throw new OperationTypeError(
+        `Já existe uma fase na posição ${input.stageOrder} para ${input.crop}`,
+        409,
+      );
+    }
+
+    const row = await tx.cropPhenologicalStage.create({
+      data: {
+        organizationId: ctx.organizationId,
+        crop: input.crop.trim(),
+        code: input.code.trim(),
+        name: input.name.trim(),
+        description: input.description?.trim() ?? null,
+        stageOrder: input.stageOrder,
+      },
+    });
+
+    return toStageItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+export async function updatePhenologicalStage(
+  ctx: RlsContext,
+  id: string,
+  input: UpdatePhenologicalStageInput,
+): Promise<PhenologicalStageItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const existing = await tx.cropPhenologicalStage.findFirst({
+      where: { id, organizationId: ctx.organizationId },
+      select: { id: true, crop: true },
+    });
+    if (!existing) {
+      throw new OperationTypeError('Fase fenológica não encontrada', 404);
+    }
+
+    const data: Record<string, unknown> = {};
+
+    if (input.code !== undefined) {
+      if (!input.code?.trim()) {
+        throw new OperationTypeError('Código da fase é obrigatório', 400);
+      }
+      const dup = await tx.cropPhenologicalStage.findFirst({
+        where: {
+          organizationId: ctx.organizationId,
+          crop: existing.crop,
+          code: input.code.trim(),
+          id: { not: id },
+        },
+        select: { id: true },
+      });
+      if (dup) {
+        throw new OperationTypeError(
+          `Já existe uma fase com código "${input.code}" para ${existing.crop}`,
+          409,
+        );
+      }
+      data.code = input.code.trim();
+    }
+
+    if (input.name !== undefined) {
+      if (!input.name?.trim()) {
+        throw new OperationTypeError('Nome da fase é obrigatório', 400);
+      }
+      data.name = input.name.trim();
+    }
+
+    if (input.description !== undefined) {
+      data.description = input.description?.trim() ?? null;
+    }
+
+    if (input.stageOrder !== undefined) {
+      if (input.stageOrder < 1) {
+        throw new OperationTypeError('Ordem da fase deve ser um número positivo', 400);
+      }
+      const dup = await tx.cropPhenologicalStage.findFirst({
+        where: {
+          organizationId: ctx.organizationId,
+          crop: existing.crop,
+          stageOrder: input.stageOrder,
+          id: { not: id },
+        },
+        select: { id: true },
+      });
+      if (dup) {
+        throw new OperationTypeError(
+          `Já existe uma fase na posição ${input.stageOrder} para ${existing.crop}`,
+          409,
+        );
+      }
+      data.stageOrder = input.stageOrder;
+    }
+
+    const row = await tx.cropPhenologicalStage.update({
+      where: { id },
+      data,
+    });
+
+    return toStageItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+export async function deletePhenologicalStage(ctx: RlsContext, id: string): Promise<void> {
+  return withRlsContext(ctx, async (tx) => {
+    const existing = await tx.cropPhenologicalStage.findFirst({
+      where: { id, organizationId: ctx.organizationId },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new OperationTypeError('Fase fenológica não encontrada', 404);
+    }
+    await tx.cropPhenologicalStage.delete({ where: { id } });
+  });
+}
+
+export async function seedPhenologicalStages(
+  ctx: RlsContext,
+): Promise<{ seeded: number; crops: string[] }> {
+  return withRlsContext(ctx, async (tx) => {
+    const existingCount = await tx.cropPhenologicalStage.count({
+      where: { organizationId: ctx.organizationId },
+    });
+    if (existingCount > 0) {
+      throw new OperationTypeError('Organização já possui fases fenológicas cadastradas.', 409);
+    }
+
+    let seeded = 0;
+    const crops: string[] = [];
+
+    for (const cropDef of DEFAULT_CROP_PHENOLOGICAL_STAGES) {
+      crops.push(cropDef.crop);
+      await tx.cropPhenologicalStage.createMany({
+        data: cropDef.stages.map((s, idx) => ({
+          organizationId: ctx.organizationId,
+          crop: cropDef.crop,
+          code: s.code,
+          name: s.name,
+          description: s.description ?? null,
+          stageOrder: idx + 1,
+          isSystem: true,
+        })),
+      });
+      seeded += cropDef.stages.length;
+    }
+
+    return { seeded, crops };
+  });
+}

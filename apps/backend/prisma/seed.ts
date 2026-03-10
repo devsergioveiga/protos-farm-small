@@ -2147,6 +2147,155 @@ async function main() {
   }
   console.log(`  ✓ ${auditLogs.length} registros de auditoria criados`);
 
+  // ─── Tipos de Operação (seed padrão) ─────────────────────────────
+
+  interface SeedChild {
+    name: string;
+    crops: string[];
+    sortOrder: number;
+    children?: SeedChild[];
+  }
+  interface SeedCategory {
+    name: string;
+    crops: string[];
+    sortOrder: number;
+    children: SeedChild[];
+  }
+
+  const defaultOpTypes: SeedCategory[] = [
+    {
+      name: 'Preparo de Solo',
+      crops: ['Todas'],
+      sortOrder: 1,
+      children: [
+        { name: 'Aração', crops: ['Todas'], sortOrder: 1 },
+        { name: 'Gradagem leve', crops: ['Todas'], sortOrder: 2 },
+        { name: 'Gradagem pesada', crops: ['Todas'], sortOrder: 3 },
+        { name: 'Subsolagem', crops: ['Todas'], sortOrder: 4 },
+        { name: 'Calagem', crops: ['Todas'], sortOrder: 5 },
+        { name: 'Dessecação', crops: ['Soja', 'Milho', 'Feijão', 'Algodão'], sortOrder: 6 },
+      ],
+    },
+    {
+      name: 'Plantio',
+      crops: ['Todas'],
+      sortOrder: 2,
+      children: [
+        { name: 'Plantio mecanizado', crops: ['Todas'], sortOrder: 1 },
+        { name: 'Plantio manual', crops: ['Café', 'Laranja'], sortOrder: 2 },
+        {
+          name: 'Tratamento de sementes',
+          crops: ['Soja', 'Milho', 'Feijão', 'Algodão', 'Trigo', 'Arroz'],
+          sortOrder: 3,
+        },
+      ],
+    },
+    {
+      name: 'Tratos Culturais',
+      crops: ['Todas'],
+      sortOrder: 3,
+      children: [
+        {
+          name: 'Adubação',
+          crops: ['Todas'],
+          sortOrder: 1,
+          children: [
+            { name: 'Adubação de cobertura', crops: ['Todas'], sortOrder: 1 },
+            { name: 'Adubação foliar', crops: ['Todas'], sortOrder: 2 },
+            { name: 'Fertirrigação', crops: ['Café', 'Laranja', 'Cana-de-açúcar'], sortOrder: 3 },
+          ],
+        },
+        { name: 'Pulverização', crops: ['Todas'], sortOrder: 2 },
+        { name: 'Roçada', crops: ['Café', 'Pastagem', 'Laranja'], sortOrder: 3 },
+        { name: 'Irrigação', crops: ['Todas'], sortOrder: 4 },
+        { name: 'Poda', crops: ['Café', 'Laranja'], sortOrder: 5 },
+      ],
+    },
+    {
+      name: 'Colheita',
+      crops: ['Todas'],
+      sortOrder: 4,
+      children: [
+        {
+          name: 'Colheita mecanizada',
+          crops: ['Soja', 'Milho', 'Algodão', 'Feijão', 'Trigo', 'Arroz', 'Cana-de-açúcar'],
+          sortOrder: 1,
+        },
+        { name: 'Colheita manual', crops: ['Café', 'Laranja'], sortOrder: 2 },
+        { name: 'Derriça', crops: ['Café'], sortOrder: 3 },
+        { name: 'Varrição', crops: ['Café'], sortOrder: 4 },
+      ],
+    },
+    {
+      name: 'Manejo de Pastagem',
+      crops: ['Pastagem'],
+      sortOrder: 5,
+      children: [
+        { name: 'Roçada de pastagem', crops: ['Pastagem'], sortOrder: 1 },
+        { name: 'Adubação de pastagem', crops: ['Pastagem'], sortOrder: 2 },
+        { name: 'Vedação de piquete', crops: ['Pastagem'], sortOrder: 3 },
+        { name: 'Reforma de pastagem', crops: ['Pastagem'], sortOrder: 4 },
+      ],
+    },
+  ];
+
+  // Seed para ambas as orgs
+  for (const org of organizations) {
+    // Limpar existentes
+    await prisma.operationTypeCrop.deleteMany({
+      where: { operationType: { organizationId: org.id } },
+    });
+    await prisma.operationType.deleteMany({ where: { organizationId: org.id } });
+
+    let count = 0;
+    for (const cat of defaultOpTypes) {
+      const parent = await prisma.operationType.create({
+        data: {
+          organizationId: org.id,
+          name: cat.name,
+          level: 1,
+          sortOrder: cat.sortOrder,
+          isSystem: true,
+          crops: { create: cat.crops.map((c) => ({ crop: c })) },
+        },
+      });
+      count++;
+
+      for (const child of cat.children) {
+        const lvl2 = await prisma.operationType.create({
+          data: {
+            organizationId: org.id,
+            name: child.name,
+            parentId: parent.id,
+            level: 2,
+            sortOrder: child.sortOrder,
+            isSystem: true,
+            crops: { create: child.crops.map((c) => ({ crop: c })) },
+          },
+        });
+        count++;
+
+        if (child.children) {
+          for (const gc of child.children) {
+            await prisma.operationType.create({
+              data: {
+                organizationId: org.id,
+                name: gc.name,
+                parentId: lvl2.id,
+                level: 3,
+                sortOrder: gc.sortOrder,
+                isSystem: true,
+                crops: { create: gc.crops.map((c) => ({ crop: c })) },
+              },
+            });
+            count++;
+          }
+        }
+      }
+    }
+    console.log(`  ✓ ${count} tipos de operação para ${org.name}`);
+  }
+
   console.log('\n🌱 Seed concluído com sucesso!\n');
 }
 

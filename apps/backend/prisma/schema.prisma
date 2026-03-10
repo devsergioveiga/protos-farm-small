@@ -264,8 +264,12 @@ model Organization {
   customRoles CustomRole[]
   producers   Producer[]
   breeds      Breed[]
-  cultivars   Cultivar[]
-  pests       Pest[]
+  cultivars       Cultivar[]
+  pests           Pest[]
+  operationTypes            OperationType[]
+  cropOperationSequences    CropOperationSequence[]
+  operationTypeSchedules    OperationTypeSchedule[]
+  cropPhenologicalStages    CropPhenologicalStage[]
 
   @@map("organizations")
 }
@@ -307,6 +311,7 @@ model User {
   teamMemberships            FieldTeamMember[]
   recordedTeamOperations     TeamOperation[]     @relation("TeamOperationRecorder")
   teamOperationEntries       TeamOperationEntry[] @relation("TeamOperationEntryWorker")
+  phenologicalRecords        PlotPhenologicalRecord[]
 
   @@map("users")
 }
@@ -662,6 +667,7 @@ model FieldPlot {
   teamOperations         TeamOperation[]
   monitoringPoints       MonitoringPoint[]
   monitoringRecords      MonitoringRecord[]
+  phenologicalRecords    PlotPhenologicalRecord[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -1625,4 +1631,145 @@ model TeamOperationEntry {
   @@index([teamOperationId])
   @@index([userId])
   @@map("team_operation_entries")
+}
+
+// ─── Operation Types (US-081) ──────────────────────────────────────
+
+model OperationType {
+  id             String    @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  parentId       String?
+  level          Int       @default(1)
+  sortOrder      Int       @default(0)
+  isSystem       Boolean   @default(false)
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  organization Organization        @relation(fields: [organizationId], references: [id])
+  parent       OperationType?      @relation("OperationTypeHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     OperationType[]     @relation("OperationTypeHierarchy")
+  crops        OperationTypeCrop[]
+  fields       OperationTypeField[]
+  sequences    CropOperationSequence[]
+  schedules    OperationTypeSchedule[]
+
+  @@unique([name, parentId, organizationId])
+  @@index([organizationId, parentId])
+  @@index([organizationId, level])
+  @@map("operation_types")
+}
+
+model OperationTypeCrop {
+  id              String   @id @default(uuid())
+  operationTypeId String
+  crop            String
+  createdAt       DateTime @default(now())
+
+  operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([operationTypeId, crop])
+  @@index([operationTypeId])
+  @@map("operation_type_crops")
+}
+
+model OperationTypeField {
+  id              String   @id @default(uuid())
+  operationTypeId String
+  fieldKey        String
+  visibility      String   @default("optional")
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([operationTypeId, fieldKey])
+  @@index([operationTypeId])
+  @@map("operation_type_fields")
+}
+
+model CropOperationSequence {
+  id              String   @id @default(uuid())
+  organizationId  String
+  crop            String
+  operationTypeId String
+  sequenceOrder   Int
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization  Organization  @relation(fields: [organizationId], references: [id])
+  operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, crop, operationTypeId])
+  @@unique([organizationId, crop, sequenceOrder])
+  @@index([organizationId, crop])
+  @@map("crop_operation_sequences")
+}
+
+model OperationTypeSchedule {
+  id              String   @id @default(uuid())
+  organizationId  String
+  operationTypeId String
+  crop            String
+  scheduleType    String   // "fixed_date" | "phenological"
+  startDay        Int?     // 1-31 (fixed_date)
+  startMonth      Int?     // 1-12 (fixed_date)
+  endDay          Int?     // 1-31 (fixed_date)
+  endMonth        Int?     // 1-12 (fixed_date)
+  phenoStage      String?  // nome da fase fenológica (phenological)
+  offsetDays      Int?     // dias relativos ao evento/fase (phenological), negativo = antes
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization  Organization  @relation(fields: [organizationId], references: [id])
+  operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, operationTypeId, crop])
+  @@index([organizationId, crop])
+  @@index([operationTypeId])
+  @@map("operation_type_schedules")
+}
+
+model CropPhenologicalStage {
+  id             String   @id @default(uuid())
+  organizationId String
+  crop           String
+  code           String   // ex: "VE", "V1", "R1", "Florada"
+  name           String   // ex: "Emergência", "Primeira folha", "Florescimento"
+  description    String?
+  stageOrder     Int      // posição no ciclo da cultura
+  isSystem       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, crop, code])
+  @@unique([organizationId, crop, stageOrder])
+  @@index([organizationId, crop])
+  @@map("crop_phenological_stages")
+}
+
+model PlotPhenologicalRecord {
+  id          String   @id @default(uuid())
+  fieldPlotId String
+  crop        String
+  stageCode   String
+  stageName   String
+  recordedAt  DateTime @default(now())
+  recordedBy  String
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  recorder  User      @relation(fields: [recordedBy], references: [id])
+
+  @@index([fieldPlotId, crop])
+  @@index([fieldPlotId, recordedAt])
+  @@map("plot_phenological_records")
 }
