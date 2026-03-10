@@ -264,8 +264,9 @@ model Organization {
   customRoles CustomRole[]
   producers   Producer[]
   breeds      Breed[]
-  cultivars   Cultivar[]
-  pests       Pest[]
+  cultivars       Cultivar[]
+  pests           Pest[]
+  operationTypes  OperationType[]
 
   @@map("organizations")
 }
@@ -1625,4 +1626,30 @@ model TeamOperationEntry {
   @@index([teamOperationId])
   @@index([userId])
   @@map("team_operation_entries")
+}
+
+// ─── Operation Types (US-081) ──────────────────────────────────────
+
+model OperationType {
+  id             String    @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  parentId       String?
+  level          Int       @default(1)
+  sortOrder      Int       @default(0)
+  isSystem       Boolean   @default(false)
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  organization Organization   @relation(fields: [organizationId], references: [id])
+  parent       OperationType? @relation("OperationTypeHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     OperationType[] @relation("OperationTypeHierarchy")
+
+  @@unique([name, parentId, organizationId])
+  @@index([organizationId, parentId])
+  @@index([organizationId, level])
+  @@map("operation_types")
 }

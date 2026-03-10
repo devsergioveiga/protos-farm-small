@@ -14,6 +14,7 @@ import {
   UsersRound,
   ClipboardList,
   Bug,
+  FolderTree,
   Users,
   Shield,
   X,
@@ -66,6 +67,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/field-teams', icon: UsersRound, label: 'Equipes de campo' },
       { to: '/team-operations', icon: ClipboardList, label: 'Operações em bloco' },
       { to: '/pests', icon: Bug, label: 'Pragas e doenças' },
+      { to: '/operation-types', icon: FolderTree, label: 'Tipos de operação' },
     ],
   },
   {
