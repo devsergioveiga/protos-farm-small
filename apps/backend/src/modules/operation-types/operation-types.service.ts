@@ -2,6 +2,7 @@ import { withRlsContext, type RlsContext } from '../../database/rls';
 import {
   OperationTypeError,
   MAX_LEVELS,
+  DEFAULT_OPERATION_TYPES,
   type CreateOperationTypeInput,
   type UpdateOperationTypeInput,
   type OperationTypeItem,
@@ -437,5 +438,72 @@ export async function deleteOperationType(ctx: RlsContext, id: string): Promise<
       where: { id },
       data: { deletedAt: new Date() },
     });
+  });
+}
+
+// ─── SEED DEFAULT OPERATION TYPES ────────────────────────────────────
+
+export async function seedOperationTypes(ctx: RlsContext): Promise<{ created: number }> {
+  return withRlsContext(ctx, async (tx) => {
+    // Check if org already has operation types
+    const existingCount = await tx.operationType.count({
+      where: { organizationId: ctx.organizationId, deletedAt: null },
+    });
+    if (existingCount > 0) {
+      throw new OperationTypeError(
+        'Organização já possui tipos de operação cadastrados. O carregamento padrão só pode ser feito em organizações sem cadastros existentes.',
+        409,
+      );
+    }
+
+    let created = 0;
+
+    for (const category of DEFAULT_OPERATION_TYPES) {
+      const parent = await tx.operationType.create({
+        data: {
+          organizationId: ctx.organizationId,
+          name: category.name,
+          level: 1,
+          sortOrder: category.sortOrder,
+          isSystem: true,
+          crops: { create: category.crops.map((crop) => ({ crop })) },
+        },
+      });
+      created++;
+
+      for (const child of category.children) {
+        const level2 = await tx.operationType.create({
+          data: {
+            organizationId: ctx.organizationId,
+            name: child.name,
+            parentId: parent.id,
+            level: 2,
+            sortOrder: child.sortOrder,
+            isSystem: true,
+            crops: { create: child.crops.map((crop) => ({ crop })) },
+          },
+        });
+        created++;
+
+        if (child.children) {
+          for (const grandchild of child.children) {
+            await tx.operationType.create({
+              data: {
+                organizationId: ctx.organizationId,
+                name: grandchild.name,
+                parentId: level2.id,
+                level: 3,
+                sortOrder: grandchild.sortOrder,
+                isSystem: true,
+                crops: { create: grandchild.crops.map((crop) => ({ crop })) },
+              },
+            });
+            created++;
+          }
+        }
+      }
+    }
+
+    return { created };
   });
 }

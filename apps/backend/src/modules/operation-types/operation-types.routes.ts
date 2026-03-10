@@ -12,6 +12,7 @@ import {
   updateOperationType,
   toggleOperationTypeActive,
   deleteOperationType,
+  seedOperationTypes,
 } from './operation-types.service';
 
 export const operationTypesRouter = Router();
@@ -179,6 +180,35 @@ operationTypesRouter.patch(
       });
 
       res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── SEED DEFAULTS (CA4) ────────────────────────────────────────────
+
+operationTypesRouter.post(
+  '/org/operation-types/seed',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await seedOperationTypes(ctx);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'SEED_OPERATION_TYPES',
+        targetType: 'operation_type',
+        targetId: 'bulk',
+        metadata: { created: result.created },
+        ipAddress: getClientIp(req),
+      });
+
+      res.status(201).json(result);
     } catch (err) {
       handleError(err, res);
     }

@@ -221,6 +221,14 @@
   max-width: 400px;
 }
 
+.optype-page__empty-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 /* ─── Tree ───────────────────────────────────────────────────────── */
 
 .optype-tree {

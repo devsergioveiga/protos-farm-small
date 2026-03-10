@@ -28,6 +28,7 @@ jest.mock('./operation-types.service', () => ({
   updateOperationType: jest.fn(),
   toggleOperationTypeActive: jest.fn(),
   deleteOperationType: jest.fn(),
+  seedOperationTypes: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -513,5 +514,50 @@ describe('CA3: Filter by crop', () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
     expect(res.body[0].children[0].name).toBe('Derriça');
+  });
+});
+
+// ─── CA4: SEED DEFAULTS ─────────────────────────────────────────────
+
+describe('CA4: Seed default operation types', () => {
+  it('should seed default operation types', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.seedOperationTypes.mockResolvedValue({ created: 42 });
+
+    const res = await request(app)
+      .post('/api/org/operation-types/seed')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(201);
+    expect(res.body.created).toBe(42);
+    expect(mockedService.seedOperationTypes).toHaveBeenCalledWith({
+      organizationId: 'org-1',
+    });
+  });
+
+  it('should return 409 if org already has operation types', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.seedOperationTypes.mockRejectedValue(
+      new OperationTypeError(
+        'Organização já possui tipos de operação cadastrados. O carregamento padrão só pode ser feito em organizações sem cadastros existentes.',
+        409,
+      ),
+    );
+
+    const res = await request(app)
+      .post('/api/org/operation-types/seed')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(409);
+  });
+
+  it('should deny access without farms:update permission', async () => {
+    authAs(OPERATOR_PAYLOAD);
+
+    const res = await request(app)
+      .post('/api/org/operation-types/seed')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(403);
   });
 });

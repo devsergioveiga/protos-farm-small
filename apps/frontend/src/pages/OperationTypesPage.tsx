@@ -9,6 +9,7 @@ import {
   Power,
   AlertCircle,
   Layers,
+  Download,
 } from 'lucide-react';
 import { useOperationTypeTree } from '@/hooks/useOperationTypes';
 import PermissionGate from '@/components/auth/PermissionGate';
@@ -169,6 +170,7 @@ function OperationTypesPage() {
   const [modalParentCrops, setModalParentCrops] = useState<string[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<OperationTypeItem | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [seeding, setSeeding] = useState(false);
 
   const handleToggleExpand = useCallback((id: string) => {
     setExpandedIds((prev) => {
@@ -256,6 +258,19 @@ function OperationTypesPage() {
       setDeleteConfirm(null);
     }
   }, [deleteConfirm, refetch]);
+
+  const handleSeedDefaults = useCallback(async () => {
+    setSeeding(true);
+    setActionError(null);
+    try {
+      await api.post('/org/operation-types/seed', {});
+      void refetch();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Erro ao carregar operações padrão');
+    } finally {
+      setSeeding(false);
+    }
+  }, [refetch]);
 
   const totalCount = tree.reduce(function countAll(acc: number, n: OperationTypeTreeNode): number {
     return n.children.reduce(countAll, acc + 1);
@@ -366,14 +381,25 @@ function OperationTypesPage() {
           </p>
           {!filterCrop && (
             <PermissionGate permission="farms:update">
-              <button
-                type="button"
-                className="optype-page__btn optype-page__btn--primary"
-                onClick={handleNewRoot}
-              >
-                <Plus size={20} aria-hidden="true" />
-                Criar primeira categoria
-              </button>
+              <div className="optype-page__empty-actions">
+                <button
+                  type="button"
+                  className="optype-page__btn optype-page__btn--primary"
+                  onClick={handleSeedDefaults}
+                  disabled={seeding}
+                >
+                  <Download size={20} aria-hidden="true" />
+                  {seeding ? 'Carregando...' : 'Carregar operações padrão'}
+                </button>
+                <button
+                  type="button"
+                  className="optype-page__btn optype-page__btn--ghost"
+                  onClick={handleNewRoot}
+                >
+                  <Plus size={20} aria-hidden="true" />
+                  Criar do zero
+                </button>
+              </div>
             </PermissionGate>
           )}
         </div>
