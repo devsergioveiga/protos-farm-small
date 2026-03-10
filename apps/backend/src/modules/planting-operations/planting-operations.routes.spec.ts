@@ -55,7 +55,7 @@ const ADMIN_PAYLOAD = {
 const VIEWER_PAYLOAD = {
   userId: 'viewer-1',
   email: 'viewer@org.com',
-  role: 'VIEWER' as const,
+  role: 'CONSULTANT' as const,
   organizationId: 'org-1',
 };
 
