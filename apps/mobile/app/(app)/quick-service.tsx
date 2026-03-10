@@ -496,6 +496,9 @@ export default function QuickServiceScreen() {
   });
   const [notes, setNotes] = useState('');
   const [memberProductivity, setMemberProductivity] = useState<Record<string, string>>({});
+  const [coveredAreaHa, setCoveredAreaHa] = useState('');
+  const [productName, setProductName] = useState('');
+  const [productDose, setProductDose] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [savedCount, setSavedCount] = useState(0);
   const toastOpacity = useRef(new Animated.Value(0)).current;
@@ -649,6 +652,17 @@ export default function QuickServiceScreen() {
     if (date) setTimeEnd(date);
   }, []);
 
+  const buildNotes = useCallback((): string | undefined => {
+    const parts: string[] = [];
+    if (notes.trim()) parts.push(notes.trim());
+    if (operationType === 'PULVERIZACAO') {
+      if (coveredAreaHa) parts.push(`Área: ${coveredAreaHa} ha`);
+      if (productName) parts.push(`Produto: ${productName}`);
+      if (productDose) parts.push(`Dose: ${productDose}`);
+    }
+    return parts.length > 0 ? parts.join(' | ') : undefined;
+  }, [notes, operationType, coveredAreaHa, productName, productDose]);
+
   const handleSave = useCallback(async () => {
     if (!selectedTeam || !operationType || !selectedFarmId || presentCount === 0) return;
 
@@ -676,7 +690,7 @@ export default function QuickServiceScreen() {
         time_start: formatTime(timeStart),
         time_end: formatTime(timeEnd),
         present_member_ids: JSON.stringify(presentIds),
-        notes: notes.trim() || null,
+        notes: buildNotes() ?? null,
         synced: 0,
         created_at: now,
         updated_at: now,
@@ -693,7 +707,7 @@ export default function QuickServiceScreen() {
         performedAt: new Date().toISOString(),
         timeStart: timeStart.toISOString(),
         timeEnd: timeEnd.toISOString(),
-        notes: notes.trim() || undefined,
+        notes: buildNotes(),
         entries: presentIds.map((uid) => {
           const prod = memberProductivity[uid];
           const prodNum = prod ? parseFloat(prod) : undefined;
@@ -755,7 +769,7 @@ export default function QuickServiceScreen() {
     locationName,
     timeStart,
     timeEnd,
-    notes,
+    buildNotes,
     memberProductivity,
     router,
   ]);
@@ -1034,6 +1048,56 @@ export default function QuickServiceScreen() {
                     />
                   </View>
                 ))}
+            </View>
+          )}
+
+          {/* Herbicida fields (CA5) */}
+          {operationType === 'PULVERIZACAO' && (
+            <View style={styles.membersCard}>
+              <View style={styles.membersHeader}>
+                <View style={styles.membersHeaderLeft}>
+                  <Text style={styles.membersTitle}>Dados da aplicação</Text>
+                </View>
+              </View>
+              <View style={{ padding: spacing[4], gap: spacing[3] }}>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>Área coberta (ha)</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={coveredAreaHa}
+                    onChangeText={setCoveredAreaHa}
+                    placeholder="Ex: 2.5"
+                    placeholderTextColor={colors.neutral[400]}
+                    keyboardType="numeric"
+                    accessible
+                    accessibilityLabel="Área coberta em hectares"
+                  />
+                </View>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>Produto</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={productName}
+                    onChangeText={setProductName}
+                    placeholder="Nome do produto"
+                    placeholderTextColor={colors.neutral[400]}
+                    accessible
+                    accessibilityLabel="Nome do produto"
+                  />
+                </View>
+                <View style={styles.fieldContainer}>
+                  <Text style={styles.label}>Dose</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={productDose}
+                    onChangeText={setProductDose}
+                    placeholder="Ex: 2 L/ha"
+                    placeholderTextColor={colors.neutral[400]}
+                    accessible
+                    accessibilityLabel="Dose do produto"
+                  />
+                </View>
+              </View>
             </View>
           )}
 
