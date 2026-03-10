@@ -67,6 +67,37 @@ export interface CreateTeamOperationInput {
   longitude?: number | null;
 }
 
+// ─── Report Types ──────────────────────────────────────────────────
+
+export interface PlotLaborCostItem {
+  fieldPlotId: string;
+  fieldPlotName: string;
+  operationCount: number;
+  totalHours: number;
+  totalLaborCost: number;
+  entries: number;
+}
+
+export interface TimesheetEntry {
+  date: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  hourlyRate: number | null;
+  operationCount: number;
+  totalHours: number;
+  totalLaborCost: number | null;
+  operations: Array<{
+    operationId: string;
+    operationType: string;
+    operationTypeLabel: string;
+    fieldPlotName: string;
+    timeStart: string;
+    timeEnd: string;
+    hoursWorked: number;
+  }>;
+}
+
 // ─── Response Types ─────────────────────────────────────────────────
 
 export interface TeamOperationEntryItem {
@@ -78,6 +109,8 @@ export interface TeamOperationEntryItem {
   productivity: number | null;
   productivityUnit: string | null;
   notes: string | null;
+  hourlyRate: number | null;
+  laborCost: number | null;
 }
 
 export interface TeamOperationItem {
@@ -99,6 +132,7 @@ export interface TeamOperationItem {
   longitude: number | null;
   entryCount: number;
   entries: TeamOperationEntryItem[];
+  totalLaborCost: number | null;
   recordedBy: string;
   recorderName: string;
   createdAt: string;

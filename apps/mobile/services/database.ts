@@ -4,7 +4,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
  * Database version — increment when adding new migrations.
  * Each version maps to a migration function in the migrations array.
  */
-const DATABASE_VERSION = 8;
+const DATABASE_VERSION = 9;
 
 /**
  * Run migrations on database init (called by SQLiteProvider onInit).
@@ -58,6 +58,11 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase): Promise<void> {
   if (currentVersion === 7) {
     await migrationV8(db);
     currentVersion = 8;
+  }
+
+  if (currentVersion === 8) {
+    await migrationV9(db);
+    currentVersion = 9;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
@@ -465,6 +470,37 @@ async function migrationV8(db: SQLiteDatabase): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_quick_services_farm ON quick_services(farm_id);
     CREATE INDEX IF NOT EXISTS idx_quick_services_synced ON quick_services(synced);
     CREATE INDEX IF NOT EXISTS idx_quick_services_performed ON quick_services(performed_at);
+  `);
+}
+
+/**
+ * V9 — Team operations offline (US-077 CA10).
+ */
+async function migrationV9(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS team_operations (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      field_plot_id TEXT NOT NULL,
+      field_plot_name TEXT NOT NULL,
+      team_id TEXT NOT NULL,
+      team_name TEXT NOT NULL,
+      operation_type TEXT NOT NULL,
+      performed_at TEXT NOT NULL,
+      time_start TEXT NOT NULL,
+      time_end TEXT NOT NULL,
+      member_ids TEXT NOT NULL,
+      entry_data TEXT,
+      notes TEXT,
+      synced INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_team_operations_farm ON team_operations(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_team_operations_synced ON team_operations(synced);
+    CREATE INDEX IF NOT EXISTS idx_team_operations_performed ON team_operations(performed_at);
   `);
 }
 

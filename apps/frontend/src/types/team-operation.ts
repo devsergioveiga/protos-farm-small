@@ -7,6 +7,8 @@ export interface TeamOperationEntryItem {
   productivity: number | null;
   productivityUnit: string | null;
   notes: string | null;
+  hourlyRate: number | null;
+  laborCost: number | null;
 }
 
 export interface TeamOperationItem {
@@ -28,6 +30,7 @@ export interface TeamOperationItem {
   longitude: number | null;
   entryCount: number;
   entries: TeamOperationEntryItem[];
+  totalLaborCost: number | null;
   recordedBy: string;
   recorderName: string;
   createdAt: string;

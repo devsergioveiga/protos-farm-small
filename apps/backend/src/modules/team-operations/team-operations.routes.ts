@@ -11,6 +11,8 @@ import {
   getTeamOperation,
   deleteTeamOperation,
   getOperationTypes,
+  getCostByPlot,
+  getTimesheet,
 } from './team-operations.service';
 
 export const teamOperationsRouter = Router();
@@ -47,6 +49,49 @@ teamOperationsRouter.get(
   async (_req, res) => {
     try {
       res.json(getOperationTypes());
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── CA9: COST BY PLOT ─────────────────────────────────────────────
+
+teamOperationsRouter.get(
+  '/org/farms/:farmId/team-operations/cost-by-plot',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await getCostByPlot(ctx, req.params.farmId as string, {
+        dateFrom: (req.query.dateFrom as string) || undefined,
+        dateTo: (req.query.dateTo as string) || undefined,
+      });
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── CA8: TIMESHEET ────────────────────────────────────────────────
+
+teamOperationsRouter.get(
+  '/org/farms/:farmId/team-operations/timesheet',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await getTimesheet(ctx, req.params.farmId as string, {
+        dateFrom: (req.query.dateFrom as string) || undefined,
+        dateTo: (req.query.dateTo as string) || undefined,
+        userId: (req.query.userId as string) || undefined,
+      });
+      res.json(result);
     } catch (err) {
       handleError(err, res);
     }

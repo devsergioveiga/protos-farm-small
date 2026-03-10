@@ -231,6 +231,7 @@ export async function updateOrgUser(
         ...(input.name !== undefined && { name: input.name }),
         ...(input.phone !== undefined && { phone: input.phone || null }),
         ...(input.role && { role: input.role }),
+        ...(input.hourlyRate !== undefined && { hourlyRate: input.hourlyRate }),
       },
     });
 

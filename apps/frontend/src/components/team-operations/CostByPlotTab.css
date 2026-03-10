@@ -1,0 +1,196 @@
+.cost-plot__filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.cost-plot__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cost-plot__label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cost-plot__input {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  min-height: 48px;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+}
+
+.cost-plot__input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.cost-plot__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+}
+
+.cost-plot__skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cost-plot__skeleton {
+  height: 48px;
+  background: var(--color-neutral-100);
+  border-radius: 8px;
+  animation: cost-plot-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes cost-plot-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cost-plot__skeleton {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+.cost-plot__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--color-neutral-500);
+}
+
+.cost-plot__empty-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.cost-plot__empty-desc {
+  font-size: 0.9375rem;
+  max-width: 400px;
+  margin: 0;
+}
+
+.cost-plot__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--color-primary-50, #e8f5e9);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.cost-plot__total-label {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+}
+
+.cost-plot__total-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: var(--color-primary-700, #1b5e20);
+}
+
+.cost-plot__list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.cost-plot__row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+  gap: 12px;
+  padding: 12px 20px;
+  align-items: center;
+  font-size: 0.9375rem;
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.cost-plot__row:last-child {
+  border-bottom: none;
+}
+
+.cost-plot__row--header {
+  background: var(--color-neutral-50);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cost-plot__plot-name {
+  font-weight: 600;
+  color: var(--color-neutral-800);
+}
+
+.cost-plot__cell {
+  color: var(--color-neutral-600);
+}
+
+.cost-plot__cell--mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.cost-plot__cell--cost {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--color-primary-600);
+}
+
+@media (max-width: 768px) {
+  .cost-plot__row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px 16px;
+  }
+
+  .cost-plot__row--header {
+    display: none;
+  }
+
+  .cost-plot__plot-name {
+    grid-column: 1 / -1;
+  }
+}

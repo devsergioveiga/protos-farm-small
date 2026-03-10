@@ -294,6 +294,26 @@ export interface OfflineQuickService {
   updated_at: string;
 }
 
+/** Offline team operation (US-077 CA10) */
+export interface OfflineTeamOperation {
+  id: string;
+  farm_id: string;
+  field_plot_id: string;
+  field_plot_name: string;
+  team_id: string;
+  team_name: string;
+  operation_type: FieldOperationType;
+  performed_at: string;
+  time_start: string;
+  time_end: string;
+  member_ids: string; // JSON array
+  entry_data: string | null; // JSON array of {userId, hoursWorked?, productivity?, productivityUnit?, notes?}
+  notes: string | null;
+  synced: number;
+  created_at: string;
+  updated_at: string;
+}
+
 /** Entities that can be synced */
 export type SyncEntity =
   | 'farms'
