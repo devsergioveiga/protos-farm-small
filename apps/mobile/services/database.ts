@@ -4,7 +4,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
  * Database version — increment when adding new migrations.
  * Each version maps to a migration function in the migrations array.
  */
-const DATABASE_VERSION = 7;
+const DATABASE_VERSION = 8;
 
 /**
  * Run migrations on database init (called by SQLiteProvider onInit).
@@ -53,6 +53,11 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase): Promise<void> {
   if (currentVersion === 6) {
     await migrationV7(db);
     currentVersion = 7;
+  }
+
+  if (currentVersion === 7) {
+    await migrationV8(db);
+    currentVersion = 8;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
@@ -401,6 +406,65 @@ async function migrationV7(db: SQLiteDatabase): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_monitoring_records_plot ON monitoring_records(field_plot_id);
     CREATE INDEX IF NOT EXISTS idx_monitoring_records_synced ON monitoring_records(synced);
     CREATE INDEX IF NOT EXISTS idx_monitoring_records_observed ON monitoring_records(observed_at);
+  `);
+}
+
+/**
+ * V8 — Field teams + quick services for rapid daily service entry (US-078).
+ */
+async function migrationV8(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS field_teams (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      team_type TEXT NOT NULL,
+      is_temporary INTEGER NOT NULL DEFAULT 0,
+      leader_id TEXT NOT NULL,
+      leader_name TEXT NOT NULL,
+      notes TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS field_team_members (
+      id TEXT PRIMARY KEY NOT NULL,
+      team_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      user_name TEXT NOT NULL,
+      joined_at TEXT NOT NULL,
+      left_at TEXT,
+      FOREIGN KEY (team_id) REFERENCES field_teams(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS quick_services (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      team_id TEXT NOT NULL,
+      team_name TEXT NOT NULL,
+      field_plot_id TEXT,
+      field_plot_name TEXT,
+      location_id TEXT,
+      location_type TEXT,
+      location_name TEXT,
+      operation_type TEXT NOT NULL,
+      performed_at TEXT NOT NULL,
+      time_start TEXT NOT NULL,
+      time_end TEXT NOT NULL,
+      present_member_ids TEXT NOT NULL,
+      notes TEXT,
+      synced INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_field_teams_farm ON field_teams(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_field_team_members_team ON field_team_members(team_id);
+    CREATE INDEX IF NOT EXISTS idx_quick_services_farm ON quick_services(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_quick_services_synced ON quick_services(synced);
+    CREATE INDEX IF NOT EXISTS idx_quick_services_performed ON quick_services(performed_at);
   `);
 }
 

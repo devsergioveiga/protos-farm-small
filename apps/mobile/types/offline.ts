@@ -248,6 +248,52 @@ export interface OfflineMonitoringRecord {
   updated_at: string;
 }
 
+/** Offline field team (synced from backend) */
+export interface OfflineFieldTeam {
+  id: string;
+  farm_id: string;
+  name: string;
+  team_type: string;
+  is_temporary: number;
+  leader_id: string;
+  leader_name: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Offline field team member (synced from backend) */
+export interface OfflineFieldTeamMember {
+  id: string;
+  team_id: string;
+  user_id: string;
+  user_name: string;
+  joined_at: string;
+  left_at: string | null;
+}
+
+/** Offline quick service entry (created locally, synced to team-operations) */
+export interface OfflineQuickService {
+  id: string;
+  farm_id: string;
+  team_id: string;
+  team_name: string;
+  field_plot_id: string | null;
+  field_plot_name: string | null;
+  location_id: string | null;
+  location_type: FieldOperationLocationType | null;
+  location_name: string | null;
+  operation_type: FieldOperationType;
+  performed_at: string;
+  time_start: string;
+  time_end: string;
+  present_member_ids: string;
+  notes: string | null;
+  synced: number;
+  created_at: string;
+  updated_at: string;
+}
+
 /** Entities that can be synced */
 export type SyncEntity =
   | 'farms'
@@ -257,4 +303,5 @@ export type SyncEntity =
   | 'animals'
   | 'animal_breed_compositions'
   | 'pests'
-  | 'monitoring_points';
+  | 'monitoring_points'
+  | 'field_teams';

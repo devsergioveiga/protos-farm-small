@@ -9,6 +9,7 @@ import {
   createSyncMetaRepository,
   createPestRepository,
   createMonitoringPointRepository,
+  createFieldTeamRepository,
 } from './db';
 import type {
   OfflineFarm,
@@ -19,6 +20,8 @@ import type {
   OfflineAnimalBreedComposition,
   OfflinePest,
   OfflineMonitoringPoint,
+  OfflineFieldTeam,
+  OfflineFieldTeamMember,
   SyncEntity,
 } from '@/types/offline';
 
@@ -163,6 +166,30 @@ interface ApiMonitoringPoint {
   latitude: number;
   longitude: number;
   createdAt: string;
+}
+
+interface ApiFieldTeamMember {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  joinedAt: string;
+  leftAt: string | null;
+}
+
+interface ApiFieldTeam {
+  id: string;
+  farmId: string;
+  name: string;
+  teamType: string;
+  isTemporary: boolean;
+  leaderId: string;
+  leaderName: string;
+  notes: string | null;
+  memberCount: number;
+  members: ApiFieldTeamMember[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ─── Mappers: API → Offline ────────────────────────────────────────────────
@@ -328,6 +355,34 @@ function mapMonitoringPoint(mp: ApiMonitoringPoint): OfflineMonitoringPoint {
   };
 }
 
+function mapFieldTeam(t: ApiFieldTeam): OfflineFieldTeam {
+  return {
+    id: t.id,
+    farm_id: t.farmId,
+    name: t.name,
+    team_type: t.teamType,
+    is_temporary: t.isTemporary ? 1 : 0,
+    leader_id: t.leaderId,
+    leader_name: t.leaderName,
+    notes: t.notes,
+    created_at: t.createdAt,
+    updated_at: t.updatedAt,
+  };
+}
+
+function mapFieldTeamMembers(t: ApiFieldTeam): OfflineFieldTeamMember[] {
+  return t.members
+    .filter((m) => !m.leftAt)
+    .map((m) => ({
+      id: m.id,
+      team_id: t.id,
+      user_id: m.userId,
+      user_name: m.userName,
+      joined_at: m.joinedAt,
+      left_at: m.leftAt,
+    }));
+}
+
 // ─── Paginated fetcher ─────────────────────────────────────────────────────
 
 async function fetchAllPages<T>(path: string, limit = 100): Promise<T[]> {
@@ -368,6 +423,7 @@ export function createSyncService(db: SQLiteDatabase) {
   const animalRepo = createAnimalRepository(db);
   const pestRepo = createPestRepository(db);
   const monitoringPointRepo = createMonitoringPointRepository(db);
+  const fieldTeamRepo = createFieldTeamRepository(db);
   const syncMetaRepo = createSyncMetaRepository(db);
 
   const entities: SyncEntity[] = [
@@ -378,6 +434,7 @@ export function createSyncService(db: SQLiteDatabase) {
     'animals',
     'pests',
     'monitoring_points',
+    'field_teams',
   ];
 
   function initProgress(): SyncProgress[] {
@@ -609,6 +666,30 @@ export function createSyncService(db: SQLiteDatabase) {
         updateProgress(progress, 'monitoring_points', { status: 'error', error: msg }, onProgress);
       }
 
+      // 8. Sync field teams for this farm
+      try {
+        updateProgress(progress, 'field_teams', { status: 'syncing' }, onProgress);
+        const apiTeams = await fetchAllPages<ApiFieldTeam>(`/org/farms/${farmId}/field-teams`);
+        const offlineTeams = apiTeams.map(mapFieldTeam);
+        const allMembers = apiTeams.flatMap(mapFieldTeamMembers);
+
+        await fieldTeamRepo.deleteByFarmId(farmId);
+        await fieldTeamRepo.upsertMany(offlineTeams);
+        if (allMembers.length > 0) {
+          await fieldTeamRepo.upsertMembers(allMembers);
+        }
+        await syncMetaRepo.upsert('field_teams', offlineTeams.length);
+        updateProgress(
+          progress,
+          'field_teams',
+          { status: 'done', count: offlineTeams.length },
+          onProgress,
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+        updateProgress(progress, 'field_teams', { status: 'error', error: msg }, onProgress);
+      }
+
       return progress;
     },
 
@@ -639,6 +720,7 @@ export function createSyncService(db: SQLiteDatabase) {
      * Clear all offline data (used on logout or farm switch).
      */
     async clearAll(): Promise<void> {
+      await fieldTeamRepo.clear();
       await monitoringPointRepo.clear();
       await pestRepo.clear();
       await animalRepo.clear();

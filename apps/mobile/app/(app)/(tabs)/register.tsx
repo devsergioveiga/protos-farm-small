@@ -780,6 +780,61 @@ export default function RegisterScreen() {
             </View>
           )}
 
+          {/* Quick team service shortcut */}
+          <Pressable
+            style={({ pressed }) => [
+              {
+                flexDirection: 'row' as const,
+                alignItems: 'center' as const,
+                gap: spacing[3],
+                backgroundColor: colors.primary[50],
+                borderWidth: 1,
+                borderColor: colors.primary[200],
+                borderRadius: 12,
+                paddingHorizontal: spacing[4],
+                paddingVertical: spacing[3],
+                minHeight: 56,
+              },
+              pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+            ]}
+            onPress={() => {
+              void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/quick-service');
+            }}
+            accessible
+            accessibilityLabel="Serviço rápido da equipe"
+            accessibilityHint="Lançar o serviço do dia para sua equipe"
+            accessibilityRole="button"
+          >
+            <Zap size={24} color={colors.primary[600]} />
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontFamily: 'DMSans_700Bold',
+                  fontSize: fontSize.base,
+                  color: colors.primary[700],
+                }}
+              >
+                Serviço rápido da equipe
+              </Text>
+              <Text
+                style={{
+                  fontFamily: 'SourceSans3_400Regular',
+                  fontSize: fontSize.sm,
+                  color: colors.primary[600],
+                }}
+              >
+                Lançar o serviço do dia em menos de 2 min
+              </Text>
+            </View>
+            <ChevronDown
+              size={20}
+              color={colors.primary[500]}
+              style={{ transform: [{ rotate: '-90deg' }] }}
+              aria-hidden
+            />
+          </Pressable>
+
           {/* Farm info */}
           <View style={styles.dateTimeRow}>
             <MapPin size={16} color={colors.neutral[500]} aria-hidden />
