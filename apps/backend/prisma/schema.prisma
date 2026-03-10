@@ -311,6 +311,7 @@ model User {
   teamMemberships            FieldTeamMember[]
   recordedTeamOperations     TeamOperation[]     @relation("TeamOperationRecorder")
   teamOperationEntries       TeamOperationEntry[] @relation("TeamOperationEntryWorker")
+  phenologicalRecords        PlotPhenologicalRecord[]
 
   @@map("users")
 }
@@ -666,6 +667,7 @@ model FieldPlot {
   teamOperations         TeamOperation[]
   monitoringPoints       MonitoringPoint[]
   monitoringRecords      MonitoringRecord[]
+  phenologicalRecords    PlotPhenologicalRecord[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -1751,4 +1753,23 @@ model CropPhenologicalStage {
   @@unique([organizationId, crop, stageOrder])
   @@index([organizationId, crop])
   @@map("crop_phenological_stages")
+}
+
+model PlotPhenologicalRecord {
+  id          String   @id @default(uuid())
+  fieldPlotId String
+  crop        String
+  stageCode   String
+  stageName   String
+  recordedAt  DateTime @default(now())
+  recordedBy  String
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  recorder  User      @relation(fields: [recordedBy], references: [id])
+
+  @@index([fieldPlotId, crop])
+  @@index([fieldPlotId, recordedAt])
+  @@map("plot_phenological_records")
 }
