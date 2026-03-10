@@ -7,6 +7,7 @@ import {
   OperationTypeItem,
   FieldConfig,
   CropOperationSequenceItem,
+  OperationScheduleItem,
 } from './operation-types.types';
 
 jest.mock('../../shared/audit/audit.service', () => ({
@@ -39,6 +40,11 @@ jest.mock('./operation-types.service', () => ({
   setCropSequence: jest.fn(),
   deleteCropSequence: jest.fn(),
   seedCropSequences: jest.fn(),
+  listSchedules: jest.fn(),
+  getSchedule: jest.fn(),
+  setSchedule: jest.fn(),
+  deleteSchedule: jest.fn(),
+  setBulkSchedules: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -859,6 +865,350 @@ describe('CA6: Crop operation sequences', () => {
 
       const res = await request(app)
         .post('/api/org/operation-sequences/seed')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(403);
+    });
+  });
+});
+
+// ─── CA7: OPERATION TYPE SCHEDULES ──────────────────────────────────
+
+const FIXED_SCHEDULE: OperationScheduleItem = {
+  id: 'sched-1',
+  organizationId: 'org-1',
+  operationTypeId: 'ot-calagem',
+  operationTypeName: 'Calagem',
+  crop: 'Soja',
+  scheduleType: 'fixed_date',
+  startDay: 1,
+  startMonth: 3,
+  endDay: 15,
+  endMonth: 3,
+  phenoStage: null,
+  offsetDays: null,
+  notes: 'Correção de solo',
+};
+
+const PHENO_SCHEDULE: OperationScheduleItem = {
+  id: 'sched-2',
+  organizationId: 'org-1',
+  operationTypeId: 'ot-adub',
+  operationTypeName: 'Adubação de cobertura',
+  crop: 'Milho',
+  scheduleType: 'phenological',
+  startDay: null,
+  startMonth: null,
+  endDay: null,
+  endMonth: null,
+  phenoStage: 'V4',
+  offsetDays: 30,
+  notes: 'Nitrogênio 30 dias após plantio',
+};
+
+describe('CA7: Operation type schedules', () => {
+  describe('GET /api/org/operation-schedules', () => {
+    it('should list all schedules', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.listSchedules.mockResolvedValue([FIXED_SCHEDULE, PHENO_SCHEDULE]);
+
+      const res = await request(app)
+        .get('/api/org/operation-schedules')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(2);
+    });
+
+    it('should filter by crop', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.listSchedules.mockResolvedValue([FIXED_SCHEDULE]);
+
+      const res = await request(app)
+        .get('/api/org/operation-schedules?crop=Soja')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(200);
+      expect(mockedService.listSchedules).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        expect.objectContaining({ crop: 'Soja' }),
+      );
+    });
+
+    it('should filter by scheduleType', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.listSchedules.mockResolvedValue([PHENO_SCHEDULE]);
+
+      await request(app)
+        .get('/api/org/operation-schedules?scheduleType=phenological')
+        .set('Authorization', 'Bearer token');
+
+      expect(mockedService.listSchedules).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        expect.objectContaining({ scheduleType: 'phenological' }),
+      );
+    });
+
+    it('should filter by operationTypeId', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.listSchedules.mockResolvedValue([FIXED_SCHEDULE]);
+
+      await request(app)
+        .get('/api/org/operation-schedules?operationTypeId=ot-calagem')
+        .set('Authorization', 'Bearer token');
+
+      expect(mockedService.listSchedules).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        expect.objectContaining({ operationTypeId: 'ot-calagem' }),
+      );
+    });
+  });
+
+  describe('GET /api/org/operation-schedules/:id', () => {
+    it('should return a single schedule', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.getSchedule.mockResolvedValue(FIXED_SCHEDULE);
+
+      const res = await request(app)
+        .get('/api/org/operation-schedules/sched-1')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.scheduleType).toBe('fixed_date');
+      expect(res.body.startDay).toBe(1);
+      expect(res.body.startMonth).toBe(3);
+    });
+
+    it('should return 404 for non-existent', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.getSchedule.mockRejectedValue(
+        new OperationTypeError('Agendamento não encontrado', 404),
+      );
+
+      const res = await request(app)
+        .get('/api/org/operation-schedules/non-existent')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe('PUT /api/org/operation-schedules', () => {
+    it('should create a fixed_date schedule', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.setSchedule.mockResolvedValue(FIXED_SCHEDULE);
+
+      const res = await request(app)
+        .put('/api/org/operation-schedules')
+        .set('Authorization', 'Bearer token')
+        .send({
+          operationTypeId: 'ot-calagem',
+          crop: 'Soja',
+          scheduleType: 'fixed_date',
+          startDay: 1,
+          startMonth: 3,
+          endDay: 15,
+          endMonth: 3,
+          notes: 'Correção de solo',
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.scheduleType).toBe('fixed_date');
+      expect(res.body.startDay).toBe(1);
+    });
+
+    it('should create a phenological schedule', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.setSchedule.mockResolvedValue(PHENO_SCHEDULE);
+
+      const res = await request(app)
+        .put('/api/org/operation-schedules')
+        .set('Authorization', 'Bearer token')
+        .send({
+          operationTypeId: 'ot-adub',
+          crop: 'Milho',
+          scheduleType: 'phenological',
+          phenoStage: 'V4',
+          offsetDays: 30,
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.scheduleType).toBe('phenological');
+      expect(res.body.phenoStage).toBe('V4');
+      expect(res.body.offsetDays).toBe(30);
+    });
+
+    it('should return 400 for invalid scheduleType', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.setSchedule.mockRejectedValue(
+        new OperationTypeError(
+          'Tipo de agendamento inválido. Use: fixed_date ou phenological',
+          400,
+        ),
+      );
+
+      const res = await request(app)
+        .put('/api/org/operation-schedules')
+        .set('Authorization', 'Bearer token')
+        .send({ operationTypeId: 'ot-1', crop: 'Soja', scheduleType: 'invalid' });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should return 400 for fixed_date missing fields', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.setSchedule.mockRejectedValue(
+        new OperationTypeError(
+          'Para agendamento por data fixa, informe startDay, startMonth, endDay e endMonth',
+          400,
+        ),
+      );
+
+      const res = await request(app)
+        .put('/api/org/operation-schedules')
+        .set('Authorization', 'Bearer token')
+        .send({
+          operationTypeId: 'ot-1',
+          crop: 'Soja',
+          scheduleType: 'fixed_date',
+          startDay: 1,
+        });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should return 400 for phenological missing stage', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.setSchedule.mockRejectedValue(
+        new OperationTypeError('Para agendamento fenológico, informe a fase (phenoStage)', 400),
+      );
+
+      const res = await request(app)
+        .put('/api/org/operation-schedules')
+        .set('Authorization', 'Bearer token')
+        .send({ operationTypeId: 'ot-1', crop: 'Milho', scheduleType: 'phenological' });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should return 404 for non-existent operation type', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.setSchedule.mockRejectedValue(
+        new OperationTypeError('Tipo de operação não encontrado', 404),
+      );
+
+      const res = await request(app)
+        .put('/api/org/operation-schedules')
+        .set('Authorization', 'Bearer token')
+        .send({
+          operationTypeId: 'ot-999',
+          crop: 'Soja',
+          scheduleType: 'fixed_date',
+          startDay: 1,
+          startMonth: 1,
+          endDay: 31,
+          endMonth: 1,
+        });
+
+      expect(res.status).toBe(404);
+    });
+
+    it('should deny access without farms:update permission', async () => {
+      authAs(OPERATOR_PAYLOAD);
+
+      const res = await request(app)
+        .put('/api/org/operation-schedules')
+        .set('Authorization', 'Bearer token')
+        .send({
+          operationTypeId: 'ot-1',
+          crop: 'Soja',
+          scheduleType: 'fixed_date',
+          startDay: 1,
+          startMonth: 1,
+          endDay: 31,
+          endMonth: 1,
+        });
+
+      expect(res.status).toBe(403);
+    });
+  });
+
+  describe('PUT /api/org/operation-schedules/bulk/:crop', () => {
+    it('should set bulk schedules for a crop', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.setBulkSchedules.mockResolvedValue([FIXED_SCHEDULE, PHENO_SCHEDULE]);
+
+      const res = await request(app)
+        .put('/api/org/operation-schedules/bulk/Soja')
+        .set('Authorization', 'Bearer token')
+        .send({
+          items: [
+            {
+              operationTypeId: 'ot-calagem',
+              scheduleType: 'fixed_date',
+              startDay: 1,
+              startMonth: 3,
+              endDay: 15,
+              endMonth: 3,
+            },
+            {
+              operationTypeId: 'ot-adub',
+              scheduleType: 'phenological',
+              phenoStage: 'V4',
+              offsetDays: 30,
+            },
+          ],
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(2);
+    });
+
+    it('should return 400 for empty items', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.setBulkSchedules.mockRejectedValue(
+        new OperationTypeError('Informe ao menos um agendamento', 400),
+      );
+
+      const res = await request(app)
+        .put('/api/org/operation-schedules/bulk/Soja')
+        .set('Authorization', 'Bearer token')
+        .send({ items: [] });
+
+      expect(res.status).toBe(400);
+    });
+  });
+
+  describe('DELETE /api/org/operation-schedules/:id', () => {
+    it('should delete a schedule', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.deleteSchedule.mockResolvedValue(undefined);
+
+      const res = await request(app)
+        .delete('/api/org/operation-schedules/sched-1')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(204);
+    });
+
+    it('should return 404 for non-existent', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.deleteSchedule.mockRejectedValue(
+        new OperationTypeError('Agendamento não encontrado', 404),
+      );
+
+      const res = await request(app)
+        .delete('/api/org/operation-schedules/non-existent')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(404);
+    });
+
+    it('should deny access without farms:update permission', async () => {
+      authAs(OPERATOR_PAYLOAD);
+
+      const res = await request(app)
+        .delete('/api/org/operation-schedules/sched-1')
         .set('Authorization', 'Bearer token');
 
       expect(res.status).toBe(403);

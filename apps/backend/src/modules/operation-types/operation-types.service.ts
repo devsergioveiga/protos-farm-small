@@ -14,6 +14,10 @@ import {
   type OperationFieldKey,
   type CropOperationSequenceItem,
   type SetCropSequenceInput,
+  type OperationScheduleItem,
+  type SetScheduleInput,
+  type ListSchedulesQuery,
+  type ScheduleType,
 } from './operation-types.types';
 
 // ─── Include fragments ─────────────────────────────────────────────
@@ -776,5 +780,257 @@ export async function seedCropSequences(
     }
 
     return { seeded, skipped };
+  });
+}
+
+// ─── CA7: OPERATION TYPE SCHEDULES ──────────────────────────────────
+
+function toScheduleItem(row: Record<string, unknown>): OperationScheduleItem {
+  const opType = row.operationType as Record<string, unknown> | undefined;
+  return {
+    id: row.id as string,
+    organizationId: row.organizationId as string,
+    operationTypeId: row.operationTypeId as string,
+    operationTypeName: (opType?.name as string) ?? '',
+    crop: row.crop as string,
+    scheduleType: row.scheduleType as ScheduleType,
+    startDay: (row.startDay as number) ?? null,
+    startMonth: (row.startMonth as number) ?? null,
+    endDay: (row.endDay as number) ?? null,
+    endMonth: (row.endMonth as number) ?? null,
+    phenoStage: (row.phenoStage as string) ?? null,
+    offsetDays: (row.offsetDays as number) ?? null,
+    notes: (row.notes as string) ?? null,
+  };
+}
+
+function validateScheduleInput(input: SetScheduleInput): void {
+  if (!input.operationTypeId?.trim()) {
+    throw new OperationTypeError('Tipo de operação é obrigatório', 400);
+  }
+  if (!input.crop?.trim()) {
+    throw new OperationTypeError('Cultura é obrigatória', 400);
+  }
+  if (!['fixed_date', 'phenological'].includes(input.scheduleType)) {
+    throw new OperationTypeError(
+      'Tipo de agendamento inválido. Use: fixed_date ou phenological',
+      400,
+    );
+  }
+
+  if (input.scheduleType === 'fixed_date') {
+    const { startDay, startMonth, endDay, endMonth } = input;
+    if (startDay == null || startMonth == null || endDay == null || endMonth == null) {
+      throw new OperationTypeError(
+        'Para agendamento por data fixa, informe startDay, startMonth, endDay e endMonth',
+        400,
+      );
+    }
+    if (startMonth < 1 || startMonth > 12 || endMonth < 1 || endMonth > 12) {
+      throw new OperationTypeError('Mês deve estar entre 1 e 12', 400);
+    }
+    if (startDay < 1 || startDay > 31 || endDay < 1 || endDay > 31) {
+      throw new OperationTypeError('Dia deve estar entre 1 e 31', 400);
+    }
+  }
+
+  if (input.scheduleType === 'phenological') {
+    if (!input.phenoStage?.trim()) {
+      throw new OperationTypeError('Para agendamento fenológico, informe a fase (phenoStage)', 400);
+    }
+    if (input.offsetDays == null) {
+      throw new OperationTypeError(
+        'Para agendamento fenológico, informe o offset em dias (offsetDays)',
+        400,
+      );
+    }
+  }
+}
+
+export async function listSchedules(
+  ctx: RlsContext,
+  query: ListSchedulesQuery = {},
+): Promise<OperationScheduleItem[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = {
+      organizationId: ctx.organizationId,
+    };
+    if (query.crop) where.crop = query.crop;
+    if (query.operationTypeId) where.operationTypeId = query.operationTypeId;
+    if (query.scheduleType) where.scheduleType = query.scheduleType;
+
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const rows = await tx.operationTypeSchedule.findMany({
+      where: where as any,
+      include: { operationType: { select: { name: true } } },
+      orderBy: [{ crop: 'asc' }, { operationType: { name: 'asc' } }],
+    });
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+
+    return rows.map((r) => toScheduleItem(r as unknown as Record<string, unknown>));
+  });
+}
+
+export async function getSchedule(ctx: RlsContext, id: string): Promise<OperationScheduleItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const row = await tx.operationTypeSchedule.findFirst({
+      where: { id, organizationId: ctx.organizationId },
+      include: { operationType: { select: { name: true } } },
+    });
+    if (!row) {
+      throw new OperationTypeError('Agendamento não encontrado', 404);
+    }
+    return toScheduleItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+export async function setSchedule(
+  ctx: RlsContext,
+  input: SetScheduleInput,
+): Promise<OperationScheduleItem> {
+  validateScheduleInput(input);
+
+  return withRlsContext(ctx, async (tx) => {
+    // Validate operation type exists
+    const opType = await tx.operationType.findFirst({
+      where: {
+        id: input.operationTypeId,
+        organizationId: ctx.organizationId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+    if (!opType) {
+      throw new OperationTypeError('Tipo de operação não encontrado', 404);
+    }
+
+    // Upsert: replace existing schedule for this operation+crop combo
+    const existing = await tx.operationTypeSchedule.findFirst({
+      where: {
+        organizationId: ctx.organizationId,
+        operationTypeId: input.operationTypeId,
+        crop: input.crop,
+      },
+      select: { id: true },
+    });
+
+    const data = {
+      organizationId: ctx.organizationId,
+      operationTypeId: input.operationTypeId,
+      crop: input.crop,
+      scheduleType: input.scheduleType,
+      startDay: input.scheduleType === 'fixed_date' ? input.startDay! : null,
+      startMonth: input.scheduleType === 'fixed_date' ? input.startMonth! : null,
+      endDay: input.scheduleType === 'fixed_date' ? input.endDay! : null,
+      endMonth: input.scheduleType === 'fixed_date' ? input.endMonth! : null,
+      phenoStage: input.scheduleType === 'phenological' ? input.phenoStage!.trim() : null,
+      offsetDays: input.scheduleType === 'phenological' ? input.offsetDays! : null,
+      notes: input.notes?.trim() ?? null,
+    };
+
+    let row;
+    if (existing) {
+      row = await tx.operationTypeSchedule.update({
+        where: { id: existing.id },
+        data,
+        include: { operationType: { select: { name: true } } },
+      });
+    } else {
+      row = await tx.operationTypeSchedule.create({
+        data,
+        include: { operationType: { select: { name: true } } },
+      });
+    }
+
+    return toScheduleItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+export async function deleteSchedule(ctx: RlsContext, id: string): Promise<void> {
+  return withRlsContext(ctx, async (tx) => {
+    const existing = await tx.operationTypeSchedule.findFirst({
+      where: { id, organizationId: ctx.organizationId },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new OperationTypeError('Agendamento não encontrado', 404);
+    }
+    await tx.operationTypeSchedule.delete({ where: { id } });
+  });
+}
+
+export async function setBulkSchedules(
+  ctx: RlsContext,
+  crop: string,
+  items: SetScheduleInput[],
+): Promise<OperationScheduleItem[]> {
+  if (!crop?.trim()) {
+    throw new OperationTypeError('Cultura é obrigatória', 400);
+  }
+  if (!items || items.length === 0) {
+    throw new OperationTypeError('Informe ao menos um agendamento', 400);
+  }
+
+  // Validate all inputs
+  for (const item of items) {
+    item.crop = crop;
+    validateScheduleInput(item);
+  }
+
+  // Check for duplicate operation types
+  const opIds = items.map((i) => i.operationTypeId);
+  const uniqueIds = new Set(opIds);
+  if (uniqueIds.size !== opIds.length) {
+    throw new OperationTypeError('Tipos de operação duplicados no lote', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    // Validate all operation types exist
+    const existingOps = await tx.operationType.findMany({
+      where: {
+        id: { in: opIds },
+        organizationId: ctx.organizationId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+    const existingIds = new Set(existingOps.map((o) => o.id));
+    const missing = opIds.filter((id) => !existingIds.has(id));
+    if (missing.length > 0) {
+      throw new OperationTypeError(`Tipos de operação não encontrados: ${missing.join(', ')}`, 404);
+    }
+
+    // Delete existing schedules for this crop
+    await tx.operationTypeSchedule.deleteMany({
+      where: { organizationId: ctx.organizationId, crop },
+    });
+
+    // Create new schedules
+    for (const input of items) {
+      await tx.operationTypeSchedule.create({
+        data: {
+          organizationId: ctx.organizationId,
+          operationTypeId: input.operationTypeId,
+          crop,
+          scheduleType: input.scheduleType,
+          startDay: input.scheduleType === 'fixed_date' ? input.startDay! : null,
+          startMonth: input.scheduleType === 'fixed_date' ? input.startMonth! : null,
+          endDay: input.scheduleType === 'fixed_date' ? input.endDay! : null,
+          endMonth: input.scheduleType === 'fixed_date' ? input.endMonth! : null,
+          phenoStage: input.scheduleType === 'phenological' ? input.phenoStage!.trim() : null,
+          offsetDays: input.scheduleType === 'phenological' ? input.offsetDays! : null,
+          notes: input.notes?.trim() ?? null,
+        },
+      });
+    }
+
+    // Return created schedules
+    const rows = await tx.operationTypeSchedule.findMany({
+      where: { organizationId: ctx.organizationId, crop },
+      include: { operationType: { select: { name: true } } },
+      orderBy: { operationType: { name: 'asc' } },
+    });
+
+    return rows.map((r) => toScheduleItem(r as unknown as Record<string, unknown>));
   });
 }

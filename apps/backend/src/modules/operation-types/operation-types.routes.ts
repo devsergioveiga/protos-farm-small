@@ -18,6 +18,11 @@ import {
   setCropSequence,
   deleteCropSequence,
   seedCropSequences,
+  listSchedules,
+  getSchedule,
+  setSchedule,
+  deleteSchedule,
+  setBulkSchedules,
 } from './operation-types.service';
 
 export const operationTypesRouter = Router();
@@ -319,6 +324,127 @@ operationTypesRouter.post(
       });
 
       res.status(201).json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── CA7: OPERATION TYPE SCHEDULES ──────────────────────────────────
+
+operationTypesRouter.get(
+  '/org/operation-schedules',
+  authenticate,
+  checkPermission('farms:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await listSchedules(ctx, {
+        crop: (req.query.crop as string) || undefined,
+        operationTypeId: (req.query.operationTypeId as string) || undefined,
+        scheduleType: (req.query.scheduleType as 'fixed_date' | 'phenological') || undefined,
+      });
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+operationTypesRouter.get(
+  '/org/operation-schedules/:id',
+  authenticate,
+  checkPermission('farms:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await getSchedule(ctx, req.params.id as string);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+operationTypesRouter.put(
+  '/org/operation-schedules',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await setSchedule(ctx, req.body);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'SET_OPERATION_SCHEDULE',
+        targetType: 'operation_type_schedule',
+        targetId: result.id,
+        metadata: {
+          operationTypeId: result.operationTypeId,
+          crop: result.crop,
+          scheduleType: result.scheduleType,
+        },
+        ipAddress: getClientIp(req),
+      });
+
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+operationTypesRouter.put(
+  '/org/operation-schedules/bulk/:crop',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await setBulkSchedules(ctx, req.params.crop as string, req.body.items);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'SET_BULK_OPERATION_SCHEDULES',
+        targetType: 'operation_type_schedule',
+        targetId: req.params.crop as string,
+        metadata: { crop: req.params.crop, count: result.length },
+        ipAddress: getClientIp(req),
+      });
+
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+operationTypesRouter.delete(
+  '/org/operation-schedules/:id',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      await deleteSchedule(ctx, req.params.id as string);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'DELETE_OPERATION_SCHEDULE',
+        targetType: 'operation_type_schedule',
+        targetId: req.params.id as string,
+        metadata: {},
+        ipAddress: getClientIp(req),
+      });
+
+      res.status(204).send();
     } catch (err) {
       handleError(err, res);
     }

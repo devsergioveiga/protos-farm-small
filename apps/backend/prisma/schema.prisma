@@ -266,8 +266,9 @@ model Organization {
   breeds      Breed[]
   cultivars       Cultivar[]
   pests           Pest[]
-  operationTypes          OperationType[]
-  cropOperationSequences  CropOperationSequence[]
+  operationTypes            OperationType[]
+  cropOperationSequences    CropOperationSequence[]
+  operationTypeSchedules    OperationTypeSchedule[]
 
   @@map("organizations")
 }
@@ -1651,6 +1652,7 @@ model OperationType {
   crops        OperationTypeCrop[]
   fields       OperationTypeField[]
   sequences    CropOperationSequence[]
+  schedules    OperationTypeSchedule[]
 
   @@unique([name, parentId, organizationId])
   @@index([organizationId, parentId])
@@ -1703,4 +1705,29 @@ model CropOperationSequence {
   @@unique([organizationId, crop, sequenceOrder])
   @@index([organizationId, crop])
   @@map("crop_operation_sequences")
+}
+
+model OperationTypeSchedule {
+  id              String   @id @default(uuid())
+  organizationId  String
+  operationTypeId String
+  crop            String
+  scheduleType    String   // "fixed_date" | "phenological"
+  startDay        Int?     // 1-31 (fixed_date)
+  startMonth      Int?     // 1-12 (fixed_date)
+  endDay          Int?     // 1-31 (fixed_date)
+  endMonth        Int?     // 1-12 (fixed_date)
+  phenoStage      String?  // nome da fase fenológica (phenological)
+  offsetDays      Int?     // dias relativos ao evento/fase (phenological), negativo = antes
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization  Organization  @relation(fields: [organizationId], references: [id])
+  operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, operationTypeId, crop])
+  @@index([organizationId, crop])
+  @@index([operationTypeId])
+  @@map("operation_type_schedules")
 }

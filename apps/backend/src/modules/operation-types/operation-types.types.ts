@@ -156,6 +156,45 @@ export interface SetCropSequenceInput {
   }>;
 }
 
+// ─── CA7: Operation Schedule Types ──────────────────────────────────
+
+export type ScheduleType = 'fixed_date' | 'phenological';
+
+export interface OperationScheduleItem {
+  id: string;
+  organizationId: string;
+  operationTypeId: string;
+  operationTypeName: string;
+  crop: string;
+  scheduleType: ScheduleType;
+  startDay: number | null;
+  startMonth: number | null;
+  endDay: number | null;
+  endMonth: number | null;
+  phenoStage: string | null;
+  offsetDays: number | null;
+  notes: string | null;
+}
+
+export interface SetScheduleInput {
+  operationTypeId: string;
+  crop: string;
+  scheduleType: ScheduleType;
+  startDay?: number | null;
+  startMonth?: number | null;
+  endDay?: number | null;
+  endMonth?: number | null;
+  phenoStage?: string | null;
+  offsetDays?: number | null;
+  notes?: string | null;
+}
+
+export interface ListSchedulesQuery {
+  crop?: string;
+  operationTypeId?: string;
+  scheduleType?: ScheduleType;
+}
+
 // ─── CA6: Default Crop Sequences ────────────────────────────────────
 
 interface DefaultSequenceItem {
