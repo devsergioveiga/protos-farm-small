@@ -9,7 +9,19 @@ import {
   type ListOperationTypesQuery,
 } from './operation-types.types';
 
+// ─── Include fragments ─────────────────────────────────────────────
+
+const INCLUDE_BASE = {
+  _count: { select: { children: true } },
+  crops: { select: { crop: true } },
+} as const;
+
 // ─── Helpers ────────────────────────────────────────────────────────
+
+function extractCrops(row: Record<string, unknown>): string[] {
+  const crops = row.crops as Array<{ crop: string }> | undefined;
+  return crops?.map((c) => c.crop).sort() ?? [];
+}
 
 function toItem(row: Record<string, unknown>): OperationTypeItem {
   const children = row._count as { children: number } | undefined;
@@ -24,6 +36,7 @@ function toItem(row: Record<string, unknown>): OperationTypeItem {
     isSystem: row.isSystem as boolean,
     isActive: row.isActive as boolean,
     childCount: children?.children ?? 0,
+    crops: extractCrops(row),
     createdAt: (row.createdAt as Date).toISOString(),
     updatedAt: (row.updatedAt as Date).toISOString(),
   };
@@ -43,6 +56,53 @@ function validateInput(input: CreateOperationTypeInput): void {
   }
   if (input.name.trim().length > 200) {
     throw new OperationTypeError('Nome não pode ter mais de 200 caracteres', 400);
+  }
+}
+
+/**
+ * Validates that child crops are a subset of parent crops.
+ * "Todas" in parent means any crop is allowed for children.
+ * If parent has no crops set, child can have any crops.
+ */
+function validateCropInheritance(childCrops: string[], parentCrops: string[]): void {
+  if (parentCrops.length === 0 || parentCrops.includes('Todas')) {
+    return; // parent allows everything
+  }
+  const invalid = childCrops.filter((c) => c !== 'Todas' && !parentCrops.includes(c));
+  if (invalid.length > 0) {
+    throw new OperationTypeError(
+      `Culturas não permitidas pelo nível pai: ${invalid.join(', ')}. ` +
+        `Culturas disponíveis: ${parentCrops.join(', ')}`,
+      400,
+    );
+  }
+}
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+async function getParentCrops(
+  tx: { operationTypeCrop: { findMany: (...args: any[]) => any } },
+  parentId: string,
+): Promise<string[]> {
+  const rows = await tx.operationTypeCrop.findMany({
+    where: { operationTypeId: parentId },
+    select: { crop: true },
+  });
+  return (rows as Array<{ crop: string }>).map((r) => r.crop);
+}
+
+async function syncCrops(
+  tx: {
+    operationTypeCrop: { deleteMany: (...args: any[]) => any; createMany: (...args: any[]) => any };
+  },
+  operationTypeId: string,
+  crops: string[],
+): Promise<void> {
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+  await tx.operationTypeCrop.deleteMany({ where: { operationTypeId } });
+  if (crops.length > 0) {
+    await tx.operationTypeCrop.createMany({
+      data: crops.map((crop) => ({ operationTypeId, crop })),
+    });
   }
 }
 
@@ -73,6 +133,12 @@ export async function createOperationType(
         throw new OperationTypeError(`Máximo de ${MAX_LEVELS} níveis hierárquicos permitidos`, 400);
       }
       level = parent.level + 1;
+
+      // Validate crop inheritance
+      if (input.crops && input.crops.length > 0) {
+        const parentCrops = await getParentCrops(tx, input.parentId);
+        validateCropInheritance(input.crops, parentCrops);
+      }
     }
 
     const existing = await tx.operationType.findFirst({
@@ -96,8 +162,11 @@ export async function createOperationType(
         parentId: input.parentId ?? null,
         level,
         sortOrder: input.sortOrder ?? 0,
+        ...(input.crops && input.crops.length > 0
+          ? { crops: { create: input.crops.map((crop) => ({ crop })) } }
+          : {}),
       },
-      include: { _count: { select: { children: true } } },
+      include: INCLUDE_BASE,
     });
 
     return toItem(row as unknown as Record<string, unknown>);
@@ -132,7 +201,7 @@ export async function listOperationTypes(
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const rows = await tx.operationType.findMany({
       where: where as any,
-      include: { _count: { select: { children: true } } },
+      include: INCLUDE_BASE,
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
     });
     /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -159,14 +228,14 @@ export async function getOperationTypeTree(
         ...activeFilter,
       },
       include: {
-        _count: { select: { children: true } },
+        ...INCLUDE_BASE,
         children: {
           where: { ...deletedFilter, ...activeFilter },
           include: {
-            _count: { select: { children: true } },
+            ...INCLUDE_BASE,
             children: {
               where: { ...deletedFilter, ...activeFilter },
-              include: { _count: { select: { children: true } } },
+              include: INCLUDE_BASE,
               orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
             },
           },
@@ -186,7 +255,7 @@ export async function getOperationType(ctx: RlsContext, id: string): Promise<Ope
   return withRlsContext(ctx, async (tx) => {
     const row = await tx.operationType.findFirst({
       where: { id, organizationId: ctx.organizationId, deletedAt: null },
-      include: { _count: { select: { children: true } } },
+      include: INCLUDE_BASE,
     });
     if (!row) {
       throw new OperationTypeError('Tipo de operação não encontrado', 404);
@@ -275,10 +344,20 @@ export async function updateOperationType(
       }
     }
 
+    // Validate crop inheritance against parent
+    if (input.crops !== undefined) {
+      const effectiveParentId = input.parentId !== undefined ? input.parentId : existing.parentId;
+      if (effectiveParentId && input.crops.length > 0) {
+        const parentCrops = await getParentCrops(tx, effectiveParentId);
+        validateCropInheritance(input.crops, parentCrops);
+      }
+      await syncCrops(tx, id, input.crops);
+    }
+
     const row = await tx.operationType.update({
       where: { id },
       data,
-      include: { _count: { select: { children: true } } },
+      include: INCLUDE_BASE,
     });
 
     return toItem(row as unknown as Record<string, unknown>);
@@ -303,7 +382,7 @@ export async function toggleOperationTypeActive(
     const row = await tx.operationType.update({
       where: { id },
       data: { isActive: !existing.isActive },
-      include: { _count: { select: { children: true } } },
+      include: INCLUDE_BASE,
     });
 
     return toItem(row as unknown as Record<string, unknown>);

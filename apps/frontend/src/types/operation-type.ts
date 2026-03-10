@@ -11,9 +11,27 @@ export interface OperationTypeItem {
   isSystem: boolean;
   isActive: boolean;
   childCount: number;
+  crops: string[];
   createdAt: string;
   updatedAt: string;
 }
+
+export const CROP_OPTIONS_OPERATION = [
+  'Soja',
+  'Milho',
+  'Algodão',
+  'Feijão',
+  'Trigo',
+  'Arroz',
+  'Café',
+  'Cana-de-açúcar',
+  'Laranja',
+  'Sorgo',
+  'Girassol',
+  'Amendoim',
+  'Pastagem',
+  'Todas',
+] as const;
 
 export interface OperationTypeTreeNode extends OperationTypeItem {
   children: OperationTypeTreeNode[];
@@ -26,6 +44,7 @@ export interface CreateOperationTypeInput {
   description?: string | null;
   parentId?: string | null;
   sortOrder?: number;
+  crops?: string[];
 }
 
 export type UpdateOperationTypeInput = Partial<CreateOperationTypeInput>;

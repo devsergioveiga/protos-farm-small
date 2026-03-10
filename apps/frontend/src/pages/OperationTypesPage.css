@@ -421,3 +421,16 @@
     justify-content: flex-end;
   }
 }
+
+.optype-tree__crops {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  color: var(--color-primary-600);
+  background: var(--color-primary-50, #e8f5e9);
+  padding: 2px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+}

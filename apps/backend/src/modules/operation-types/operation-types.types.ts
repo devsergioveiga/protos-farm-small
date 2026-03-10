@@ -23,6 +23,23 @@ export const LEVEL_1_CATEGORIES = [
   'Manejo de Pastagem',
 ] as const;
 
+export const ALL_CROPS = [
+  'Soja',
+  'Milho',
+  'Algodão',
+  'Feijão',
+  'Trigo',
+  'Arroz',
+  'Café',
+  'Cana-de-açúcar',
+  'Laranja',
+  'Sorgo',
+  'Girassol',
+  'Amendoim',
+  'Pastagem',
+  'Todas',
+] as const;
+
 // ─── Input Types ────────────────────────────────────────────────────
 
 export interface CreateOperationTypeInput {
@@ -30,6 +47,7 @@ export interface CreateOperationTypeInput {
   description?: string | null;
   parentId?: string | null;
   sortOrder?: number;
+  crops?: string[];
 }
 
 export type UpdateOperationTypeInput = Partial<CreateOperationTypeInput>;
@@ -54,6 +72,7 @@ export interface OperationTypeItem {
   isSystem: boolean;
   isActive: boolean;
   childCount: number;
+  crops: string[];
   createdAt: string;
   updatedAt: string;
 }

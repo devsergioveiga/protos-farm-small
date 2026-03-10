@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
 import { api } from '@/services/api';
+import { CROP_OPTIONS_OPERATION } from '@/types/operation-type';
 import type { OperationTypeItem, CreateOperationTypeInput } from '@/types/operation-type';
 import './OperationTypeModal.css';
 
@@ -9,6 +10,7 @@ interface OperationTypeModalProps {
   operationType: OperationTypeItem | null;
   parentId: string | null;
   parentName: string | null;
+  parentCrops: string[];
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -18,6 +20,7 @@ function OperationTypeModal({
   operationType,
   parentId,
   parentName,
+  parentCrops,
   onClose,
   onSuccess,
 }: OperationTypeModalProps) {
@@ -26,6 +29,7 @@ function OperationTypeModal({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [sortOrder, setSortOrder] = useState(0);
+  const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -34,12 +38,14 @@ function OperationTypeModal({
       setName('');
       setDescription('');
       setSortOrder(0);
+      setSelectedCrops([]);
       setSubmitError(null);
       setIsSubmitting(false);
     } else if (operationType) {
       setName(operationType.name);
       setDescription(operationType.description ?? '');
       setSortOrder(operationType.sortOrder);
+      setSelectedCrops(operationType.crops ?? []);
     }
   }, [isOpen, operationType]);
 
@@ -51,6 +57,22 @@ function OperationTypeModal({
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
   }, [isOpen, onClose]);
+
+  const handleCropToggle = useCallback((crop: string) => {
+    setSelectedCrops((prev) => {
+      if (crop === 'Todas') {
+        return prev.includes('Todas') ? [] : ['Todas'];
+      }
+      const without = prev.filter((c) => c !== 'Todas');
+      return without.includes(crop) ? without.filter((c) => c !== crop) : [...without, crop];
+    });
+  }, []);
+
+  // Available crops: if parent has crops set (and not "Todas"), restrict to those
+  const availableCrops: string[] =
+    parentCrops.length > 0 && !parentCrops.includes('Todas')
+      ? CROP_OPTIONS_OPERATION.filter((c) => c === 'Todas' || parentCrops.includes(c))
+      : [...CROP_OPTIONS_OPERATION];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,12 +87,14 @@ function OperationTypeModal({
           name: name.trim(),
           description: description.trim() || null,
           sortOrder,
+          crops: selectedCrops,
         });
       } else {
         const body: CreateOperationTypeInput = {
           name: name.trim(),
           description: description.trim() || null,
           sortOrder,
+          crops: selectedCrops,
         };
         if (parentId) body.parentId = parentId;
         await api.post('/org/operation-types', body);
@@ -153,6 +177,33 @@ function OperationTypeModal({
                 placeholder="Descrição opcional da operação"
                 rows={3}
               />
+            </div>
+
+            <div className="optype-modal__field">
+              <label className="optype-modal__label">Culturas vinculadas</label>
+              {parentCrops.length > 0 && !parentCrops.includes('Todas') && (
+                <p className="optype-modal__hint">
+                  Restritas às culturas do nível pai: {parentCrops.join(', ')}
+                </p>
+              )}
+              <div className="optype-modal__crops">
+                {availableCrops.map((crop) => {
+                  const isSelected = selectedCrops.includes(crop);
+                  const isDisabled = crop !== 'Todas' && selectedCrops.includes('Todas');
+                  return (
+                    <button
+                      key={crop}
+                      type="button"
+                      className={`optype-modal__crop-chip${isSelected ? ' optype-modal__crop-chip--selected' : ''}`}
+                      onClick={() => handleCropToggle(crop)}
+                      disabled={isDisabled}
+                      aria-pressed={isSelected}
+                    >
+                      {crop}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="optype-modal__field">

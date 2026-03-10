@@ -70,6 +70,7 @@ const SAMPLE_ITEM = {
   isSystem: false,
   isActive: true,
   childCount: 3,
+  crops: ['Soja', 'Milho'],
   createdAt: '2026-03-10T00:00:00.000Z',
   updatedAt: '2026-03-10T00:00:00.000Z',
 };
@@ -81,6 +82,7 @@ const SAMPLE_CHILD = {
   parentId: 'ot-1',
   level: 2,
   childCount: 0,
+  crops: ['Soja'],
 };
 
 beforeEach(() => {
@@ -346,5 +348,89 @@ describe('DELETE /api/org/operation-types/:id', () => {
       .set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(400);
+  });
+});
+
+// ─── CA2: CROP LINKAGE ──────────────────────────────────────────────
+
+describe('CA2: Crop linkage', () => {
+  it('should create operation type with crops', async () => {
+    authAs(ADMIN_PAYLOAD);
+    const withCrops = { ...SAMPLE_ITEM, crops: ['Café', 'Milho', 'Soja'] };
+    mockedService.createOperationType.mockResolvedValue(withCrops);
+
+    const res = await request(app)
+      .post('/api/org/operation-types')
+      .set('Authorization', 'Bearer token')
+      .send({ name: 'Colheita', crops: ['Soja', 'Milho', 'Café'] });
+
+    expect(res.status).toBe(201);
+    expect(res.body.crops).toEqual(['Café', 'Milho', 'Soja']);
+  });
+
+  it('should return crops in tree response', async () => {
+    authAs(ADMIN_PAYLOAD);
+    const tree = [
+      {
+        ...SAMPLE_ITEM,
+        crops: ['Milho', 'Soja'],
+        children: [{ ...SAMPLE_CHILD, crops: ['Soja'], children: [] }],
+      },
+    ];
+    mockedService.getOperationTypeTree.mockResolvedValue(tree);
+
+    const res = await request(app)
+      .get('/api/org/operation-types/tree')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.body[0].crops).toEqual(['Milho', 'Soja']);
+    expect(res.body[0].children[0].crops).toEqual(['Soja']);
+  });
+
+  it('should update crops on existing type', async () => {
+    authAs(ADMIN_PAYLOAD);
+    const updated = { ...SAMPLE_ITEM, crops: ['Café', 'Laranja'] };
+    mockedService.updateOperationType.mockResolvedValue(updated);
+
+    const res = await request(app)
+      .patch('/api/org/operation-types/ot-1')
+      .set('Authorization', 'Bearer token')
+      .send({ crops: ['Café', 'Laranja'] });
+
+    expect(res.status).toBe(200);
+    expect(res.body.crops).toEqual(['Café', 'Laranja']);
+  });
+
+  it('should reject child crops not in parent', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.createOperationType.mockRejectedValue(
+      new OperationTypeError(
+        'Culturas não permitidas pelo nível pai: Trigo. Culturas disponíveis: Soja, Milho',
+        400,
+      ),
+    );
+
+    const res = await request(app)
+      .post('/api/org/operation-types')
+      .set('Authorization', 'Bearer token')
+      .send({ name: 'Sub-op', parentId: 'ot-1', crops: ['Soja', 'Trigo'] });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('não permitidas');
+  });
+
+  it('should accept "Todas" as wildcard crop', async () => {
+    authAs(ADMIN_PAYLOAD);
+    const withTodas = { ...SAMPLE_ITEM, crops: ['Todas'] };
+    mockedService.createOperationType.mockResolvedValue(withTodas);
+
+    const res = await request(app)
+      .post('/api/org/operation-types')
+      .set('Authorization', 'Bearer token')
+      .send({ name: 'Genérica', crops: ['Todas'] });
+
+    expect(res.status).toBe(201);
+    expect(res.body.crops).toEqual(['Todas']);
   });
 });

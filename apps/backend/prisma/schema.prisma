@@ -1644,12 +1644,26 @@ model OperationType {
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
 
-  organization Organization   @relation(fields: [organizationId], references: [id])
-  parent       OperationType? @relation("OperationTypeHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
-  children     OperationType[] @relation("OperationTypeHierarchy")
+  organization Organization        @relation(fields: [organizationId], references: [id])
+  parent       OperationType?      @relation("OperationTypeHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     OperationType[]     @relation("OperationTypeHierarchy")
+  crops        OperationTypeCrop[]
 
   @@unique([name, parentId, organizationId])
   @@index([organizationId, parentId])
   @@index([organizationId, level])
   @@map("operation_types")
+}
+
+model OperationTypeCrop {
+  id              String   @id @default(uuid())
+  operationTypeId String
+  crop            String
+  createdAt       DateTime @default(now())
+
+  operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([operationTypeId, crop])
+  @@index([operationTypeId])
+  @@map("operation_type_crops")
 }

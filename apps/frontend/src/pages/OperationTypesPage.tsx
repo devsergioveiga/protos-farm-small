@@ -23,11 +23,12 @@ interface TreeNodeProps {
   node: OperationTypeTreeNode;
   expandedIds: Set<string>;
   onToggleExpand: (id: string) => void;
-  onEdit: (item: OperationTypeItem, parentName: string | null) => void;
-  onAddChild: (parentId: string, parentName: string) => void;
+  onEdit: (item: OperationTypeItem, parentName: string | null, parentCrops: string[]) => void;
+  onAddChild: (parentId: string, parentName: string, parentCrops: string[]) => void;
   onDelete: (item: OperationTypeItem) => void;
   onToggleActive: (item: OperationTypeItem) => void;
   parentName?: string | null;
+  parentCrops?: string[];
 }
 
 function TreeNode({
@@ -39,6 +40,7 @@ function TreeNode({
   onDelete,
   onToggleActive,
   parentName = null,
+  parentCrops = [],
 }: TreeNodeProps) {
   const isExpanded = expandedIds.has(node.id);
   const hasChildren = node.children.length > 0;
@@ -72,6 +74,9 @@ function TreeNode({
 
         <div className="optype-tree__info">
           <span className="optype-tree__name">{node.name}</span>
+          {node.crops.length > 0 && (
+            <span className="optype-tree__crops">{node.crops.join(', ')}</span>
+          )}
           {node.description && <span className="optype-tree__desc">{node.description}</span>}
           {!node.isActive && (
             <span className="optype-tree__badge optype-tree__badge--inactive">Inativo</span>
@@ -87,7 +92,7 @@ function TreeNode({
               <button
                 type="button"
                 className="optype-tree__action-btn"
-                onClick={() => onAddChild(node.id, node.name)}
+                onClick={() => onAddChild(node.id, node.name, node.crops)}
                 aria-label={`Adicionar sub-operação em ${node.name}`}
               >
                 <Plus size={16} aria-hidden="true" />
@@ -96,7 +101,7 @@ function TreeNode({
             <button
               type="button"
               className="optype-tree__action-btn"
-              onClick={() => onEdit(node, parentName)}
+              onClick={() => onEdit(node, parentName, parentCrops)}
               aria-label={`Editar ${node.name}`}
             >
               <Pencil size={16} aria-hidden="true" />
@@ -136,6 +141,7 @@ function TreeNode({
               onDelete={onDelete}
               onToggleActive={onToggleActive}
               parentName={node.name}
+              parentCrops={node.crops}
             />
           ))}
         </ul>
@@ -157,6 +163,7 @@ function OperationTypesPage() {
   const [editingItem, setEditingItem] = useState<OperationTypeItem | null>(null);
   const [modalParentId, setModalParentId] = useState<string | null>(null);
   const [modalParentName, setModalParentName] = useState<string | null>(null);
+  const [modalParentCrops, setModalParentCrops] = useState<string[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<OperationTypeItem | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -189,22 +196,31 @@ function OperationTypesPage() {
     setEditingItem(null);
     setModalParentId(null);
     setModalParentName(null);
+    setModalParentCrops([]);
     setShowModal(true);
   }, []);
 
-  const handleAddChild = useCallback((parentId: string, parentName: string) => {
-    setEditingItem(null);
-    setModalParentId(parentId);
-    setModalParentName(parentName);
-    setShowModal(true);
-  }, []);
+  const handleAddChild = useCallback(
+    (parentId: string, parentName: string, parentCrops: string[]) => {
+      setEditingItem(null);
+      setModalParentId(parentId);
+      setModalParentName(parentName);
+      setModalParentCrops(parentCrops);
+      setShowModal(true);
+    },
+    [],
+  );
 
-  const handleEdit = useCallback((item: OperationTypeItem, parentName: string | null) => {
-    setEditingItem(item);
-    setModalParentId(item.parentId);
-    setModalParentName(parentName);
-    setShowModal(true);
-  }, []);
+  const handleEdit = useCallback(
+    (item: OperationTypeItem, parentName: string | null, parentCrops: string[]) => {
+      setEditingItem(item);
+      setModalParentId(item.parentId);
+      setModalParentName(parentName);
+      setModalParentCrops(parentCrops);
+      setShowModal(true);
+    },
+    [],
+  );
 
   const handleModalSuccess = useCallback(() => {
     setShowModal(false);
@@ -352,6 +368,7 @@ function OperationTypesPage() {
         operationType={editingItem}
         parentId={modalParentId}
         parentName={modalParentName}
+        parentCrops={modalParentCrops}
         onClose={() => setShowModal(false)}
         onSuccess={handleModalSuccess}
       />
@@ -364,7 +381,7 @@ function OperationTypesPage() {
           aria-label="Confirmar exclusão"
         >
           <div className="optype-confirm">
-            <h3 className="optype-confirm__title">Excluir "{deleteConfirm.name}"?</h3>
+            <h3 className="optype-confirm__title">Excluir &ldquo;{deleteConfirm.name}&rdquo;?</h3>
             <p className="optype-confirm__text">
               Esta ação não pode ser desfeita. O tipo de operação será removido da lista.
             </p>
