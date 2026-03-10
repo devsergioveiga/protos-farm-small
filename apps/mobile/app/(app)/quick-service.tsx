@@ -31,6 +31,7 @@ import {
   Clock,
   Zap,
   ChevronLeft,
+  RotateCcw,
 } from 'lucide-react-native';
 import { spacing, fontSize } from '@protos-farm/shared';
 import { useTheme } from '@/stores/ThemeContext';
@@ -53,6 +54,7 @@ import type {
   OfflineFarmLocation,
   OfflineFieldTeam,
   OfflineFieldTeamMember,
+  OfflineQuickService,
 } from '@/types/offline';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -380,6 +382,32 @@ const createStyles = (c: ThemeColors) => ({
     marginTop: 2,
   },
 
+  // Repeat yesterday button
+  repeatButton: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: spacing[3],
+    backgroundColor: c.neutral[0],
+    borderWidth: 1,
+    borderColor: c.primary[300],
+    borderRadius: 12,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[3],
+    minHeight: 56,
+  },
+  repeatButtonContent: { flex: 1 as const },
+  repeatTitle: {
+    fontFamily: 'DMSans_700Bold',
+    fontSize: fontSize.base,
+    color: c.primary[700],
+  },
+  repeatDesc: {
+    fontFamily: 'SourceSans3_400Regular',
+    fontSize: fontSize.sm,
+    color: c.neutral[500],
+    marginTop: 2,
+  },
+
   // Success toast
   successToast: {
     position: 'absolute' as const,
@@ -447,6 +475,7 @@ export default function QuickServiceScreen() {
   // Data from offline DB
   const [teams, setTeams] = useState<OfflineFieldTeam[]>([]);
   const [locations, setLocations] = useState<LocationItem[]>([]);
+  const [lastService, setLastService] = useState<OfflineQuickService | null>(null);
 
   // Form state
   const [selectedTeam, setSelectedTeam] = useState<OfflineFieldTeam | null>(null);
@@ -498,6 +527,11 @@ export default function QuickServiceScreen() {
       ]);
 
       setTeams(farmTeams);
+
+      // Load last service for "Repeat yesterday"
+      const qsRepo = createQuickServiceRepository(db);
+      const latest = await qsRepo.getLatestByFarm(selectedFarmId!);
+      setLastService(latest);
 
       const items: LocationItem[] = [
         ...plots.map((p: OfflineFieldPlot) => ({
@@ -560,6 +594,36 @@ export default function QuickServiceScreen() {
     },
     [db, user],
   );
+
+  const handleRepeatYesterday = useCallback(async () => {
+    if (!lastService) return;
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    // Select the same team and load its members
+    const team = teams.find((t) => t.id === lastService.team_id);
+    if (team) {
+      await selectTeam(team);
+    }
+
+    // Clone activity and location
+    setOperationType(lastService.operation_type as FieldOperationType);
+    setLocationId(lastService.location_id);
+    setLocationType(lastService.location_type as FieldOperationLocationType | null);
+    setLocationName(lastService.location_name);
+
+    // Clone time start/end (parse HH:MM)
+    const parseTime = (timeStr: string): Date => {
+      const [h, m] = timeStr.split(':').map(Number);
+      const d = new Date();
+      d.setHours(h, m, 0, 0);
+      return d;
+    };
+    setTimeStart(parseTime(lastService.time_start));
+    setTimeEnd(parseTime(lastService.time_end));
+
+    // Clone notes
+    setNotes(lastService.notes ?? '');
+  }, [lastService, teams, selectTeam]);
 
   const toggleMember = useCallback((memberId: string) => {
     setMembers((prev) => prev.map((m) => (m.id === memberId ? { ...m, present: !m.present } : m)));
@@ -734,6 +798,38 @@ export default function QuickServiceScreen() {
                 Sem conexão. O serviço será enviado quando reconectar.
               </Text>
             </View>
+          )}
+
+          {/* Repeat yesterday */}
+          {lastService && (
+            <Pressable
+              style={({ pressed }) => [
+                styles.repeatButton,
+                pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+              ]}
+              onPress={handleRepeatYesterday}
+              accessible
+              accessibilityLabel="Repetir serviço anterior"
+              accessibilityHint={`Clona ${lastService.team_name}, ${OPERATION_TYPES.find((t) => t.value === lastService.operation_type)?.label ?? lastService.operation_type}`}
+              accessibilityRole="button"
+            >
+              <RotateCcw size={24} color={colors.primary[600]} />
+              <View style={styles.repeatButtonContent}>
+                <Text style={styles.repeatTitle}>Repetir ontem</Text>
+                <Text style={styles.repeatDesc} numberOfLines={1}>
+                  {lastService.team_name} ·{' '}
+                  {OPERATION_TYPES.find((t) => t.value === lastService.operation_type)?.label ??
+                    lastService.operation_type}
+                  {lastService.location_name ? ` · ${lastService.location_name}` : ''}
+                </Text>
+              </View>
+              <ChevronDown
+                size={20}
+                color={colors.primary[500]}
+                style={{ transform: [{ rotate: '-90deg' }] }}
+                aria-hidden
+              />
+            </Pressable>
           )}
 
           {/* Team selector */}
