@@ -13,6 +13,11 @@ import {
   toggleOperationTypeActive,
   deleteOperationType,
   seedOperationTypes,
+  getCropSequence,
+  listCropSequences,
+  setCropSequence,
+  deleteCropSequence,
+  seedCropSequences,
 } from './operation-types.service';
 
 export const operationTypesRouter = Router();
@@ -205,6 +210,111 @@ operationTypesRouter.post(
         targetType: 'operation_type',
         targetId: 'bulk',
         metadata: { created: result.created },
+        ipAddress: getClientIp(req),
+      });
+
+      res.status(201).json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── CA6: CROP OPERATION SEQUENCES ──────────────────────────────────
+
+operationTypesRouter.get(
+  '/org/operation-sequences',
+  authenticate,
+  checkPermission('farms:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const crop = req.query.crop as string | undefined;
+
+      if (crop) {
+        const result = await getCropSequence(ctx, crop);
+        res.json(result);
+      } else {
+        const result = await listCropSequences(ctx);
+        res.json(result);
+      }
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+operationTypesRouter.put(
+  '/org/operation-sequences',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await setCropSequence(ctx, req.body);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'SET_CROP_OPERATION_SEQUENCE',
+        targetType: 'crop_operation_sequence',
+        targetId: req.body.crop,
+        metadata: { crop: req.body.crop, itemCount: result.length },
+        ipAddress: getClientIp(req),
+      });
+
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+operationTypesRouter.delete(
+  '/org/operation-sequences/:crop',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      await deleteCropSequence(ctx, req.params.crop as string);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'DELETE_CROP_OPERATION_SEQUENCE',
+        targetType: 'crop_operation_sequence',
+        targetId: req.params.crop as string,
+        metadata: {},
+        ipAddress: getClientIp(req),
+      });
+
+      res.status(204).send();
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+operationTypesRouter.post(
+  '/org/operation-sequences/seed',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await seedCropSequences(ctx);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'SEED_CROP_OPERATION_SEQUENCES',
+        targetType: 'crop_operation_sequence',
+        targetId: 'bulk',
+        metadata: result,
         ipAddress: getClientIp(req),
       });
 

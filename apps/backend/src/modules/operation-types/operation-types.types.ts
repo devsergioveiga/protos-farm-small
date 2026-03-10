@@ -136,6 +136,114 @@ export interface OperationTypeTreeNode extends OperationTypeItem {
   children: OperationTypeTreeNode[];
 }
 
+// ─── CA6: Crop Operation Sequence Types ─────────────────────────────
+
+export interface CropOperationSequenceItem {
+  id: string;
+  organizationId: string;
+  crop: string;
+  operationTypeId: string;
+  operationTypeName: string;
+  sequenceOrder: number;
+  notes: string | null;
+}
+
+export interface SetCropSequenceInput {
+  crop: string;
+  items: Array<{
+    operationTypeId: string;
+    notes?: string | null;
+  }>;
+}
+
+// ─── CA6: Default Crop Sequences ────────────────────────────────────
+
+interface DefaultSequenceItem {
+  operationName: string;
+  notes?: string;
+}
+
+interface DefaultCropSequence {
+  crop: string;
+  items: DefaultSequenceItem[];
+}
+
+export const DEFAULT_CROP_SEQUENCES: DefaultCropSequence[] = [
+  {
+    crop: 'Café',
+    items: [
+      { operationName: 'Poda', notes: 'Após colheita ou no inverno' },
+      { operationName: 'Calagem', notes: 'Correção de solo' },
+      { operationName: 'Adubação de cobertura', notes: 'Início das chuvas' },
+      { operationName: 'Pulverização', notes: 'Controle fitossanitário' },
+      { operationName: 'Capina manual', notes: 'Manutenção das ruas' },
+      { operationName: 'Roçada', notes: 'Entrelinhas' },
+      { operationName: 'Arruação', notes: 'Preparo para colheita' },
+      { operationName: 'Derriça', notes: 'Colheita dos frutos' },
+      { operationName: 'Varrição', notes: 'Recolhimento do café do chão' },
+      { operationName: 'Lavagem', notes: 'Pós-colheita' },
+      { operationName: 'Secagem', notes: 'Terreiro ou secador' },
+      { operationName: 'Beneficiamento', notes: 'Descascamento/classificação' },
+    ],
+  },
+  {
+    crop: 'Soja',
+    items: [
+      { operationName: 'Calagem', notes: 'Correção 60-90 dias antes do plantio' },
+      { operationName: 'Gessagem', notes: 'Se necessário, junto com calagem' },
+      { operationName: 'Dessecação', notes: '10-15 dias pré-plantio' },
+      { operationName: 'Tratamento de sementes', notes: 'Inoculação + fungicida' },
+      { operationName: 'Plantio mecanizado', notes: 'Início da janela de plantio' },
+      { operationName: 'Adubação de cobertura', notes: 'Se necessário, V3-V4' },
+      { operationName: 'Pulverização', notes: 'Herbicida pós-emergente' },
+      { operationName: 'Pulverização', notes: 'Fungicida preventivo' },
+      { operationName: 'Colheita mecanizada', notes: 'Maturação fisiológica' },
+      { operationName: 'Secagem', notes: 'Se umidade acima de 14%' },
+      { operationName: 'Armazenagem', notes: 'Grãos secos e limpos' },
+    ],
+  },
+  {
+    crop: 'Milho',
+    items: [
+      { operationName: 'Calagem', notes: 'Correção de solo' },
+      { operationName: 'Gradagem pesada', notes: 'Incorporação de corretivos' },
+      { operationName: 'Gradagem leve', notes: 'Nivelamento' },
+      { operationName: 'Tratamento de sementes', notes: 'Inseticida + fungicida' },
+      { operationName: 'Plantio mecanizado', notes: 'Com adubação de base' },
+      { operationName: 'Pulverização', notes: 'Herbicida pré/pós-emergente' },
+      { operationName: 'Adubação de cobertura', notes: 'Nitrogênio em V4-V6' },
+      { operationName: 'Pulverização', notes: 'Inseticida se necessário' },
+      { operationName: 'Colheita mecanizada', notes: 'Grão seco no campo' },
+      { operationName: 'Secagem', notes: 'Se necessário' },
+      { operationName: 'Armazenagem', notes: 'Grãos secos' },
+    ],
+  },
+  {
+    crop: 'Pastagem',
+    items: [
+      { operationName: 'Roçada de pastagem', notes: 'Uniformização' },
+      { operationName: 'Calagem', notes: 'Correção de solo se necessário' },
+      { operationName: 'Adubação de pastagem', notes: 'Início das chuvas' },
+      { operationName: 'Controle de invasoras', notes: 'Herbicida seletivo' },
+      { operationName: 'Vedação de piquete', notes: 'Descanso para recuperação' },
+      { operationName: 'Reforma de pastagem', notes: 'Quando degradação severa' },
+    ],
+  },
+  {
+    crop: 'Laranja',
+    items: [
+      { operationName: 'Poda', notes: 'Limpeza e condução' },
+      { operationName: 'Calagem', notes: 'Correção de solo' },
+      { operationName: 'Adubação de cobertura', notes: 'Parcelada 3-4x/ano' },
+      { operationName: 'Pulverização', notes: 'Controle fitossanitário' },
+      { operationName: 'Roçada', notes: 'Entrelinhas' },
+      { operationName: 'Desbrota', notes: 'Remoção de brotações indesejadas' },
+      { operationName: 'Irrigação', notes: 'Se necessário na seca' },
+      { operationName: 'Colheita manual', notes: 'Frutos maduros' },
+    ],
+  },
+];
+
 // ─── Seed Data ──────────────────────────────────────────────────────
 
 interface SeedChild {

@@ -4,8 +4,9 @@ import * as operationTypeService from './operation-types.service';
 import * as authService from '../auth/auth.service';
 import {
   OperationTypeError,
-  type OperationTypeItem,
-  type FieldConfig,
+  OperationTypeItem,
+  FieldConfig,
+  CropOperationSequenceItem,
 } from './operation-types.types';
 
 jest.mock('../../shared/audit/audit.service', () => ({
@@ -33,6 +34,11 @@ jest.mock('./operation-types.service', () => ({
   toggleOperationTypeActive: jest.fn(),
   deleteOperationType: jest.fn(),
   seedOperationTypes: jest.fn(),
+  getCropSequence: jest.fn(),
+  listCropSequences: jest.fn(),
+  setCropSequence: jest.fn(),
+  deleteCropSequence: jest.fn(),
+  seedCropSequences: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -619,5 +625,243 @@ describe('CA5: Field configuration', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.fields).toHaveLength(2);
+  });
+});
+
+// ─── CA6: CROP OPERATION SEQUENCES ──────────────────────────────────
+
+const SAMPLE_SEQUENCE: CropOperationSequenceItem[] = [
+  {
+    id: 'seq-1',
+    organizationId: 'org-1',
+    crop: 'Café',
+    operationTypeId: 'ot-poda',
+    operationTypeName: 'Poda',
+    sequenceOrder: 1,
+    notes: 'Após colheita',
+  },
+  {
+    id: 'seq-2',
+    organizationId: 'org-1',
+    crop: 'Café',
+    operationTypeId: 'ot-adub',
+    operationTypeName: 'Adubação de cobertura',
+    sequenceOrder: 2,
+    notes: 'Início das chuvas',
+  },
+  {
+    id: 'seq-3',
+    organizationId: 'org-1',
+    crop: 'Café',
+    operationTypeId: 'ot-derrica',
+    operationTypeName: 'Derriça',
+    sequenceOrder: 3,
+    notes: null,
+  },
+];
+
+describe('CA6: Crop operation sequences', () => {
+  describe('GET /api/org/operation-sequences', () => {
+    it('should return sequence for a specific crop', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.getCropSequence.mockResolvedValue(SAMPLE_SEQUENCE);
+
+      const res = await request(app)
+        .get('/api/org/operation-sequences?crop=Café')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(3);
+      expect(res.body[0].operationTypeName).toBe('Poda');
+      expect(res.body[0].sequenceOrder).toBe(1);
+      expect(res.body[2].sequenceOrder).toBe(3);
+      expect(mockedService.getCropSequence).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        'Café',
+      );
+    });
+
+    it('should return all sequences grouped by crop when no filter', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.listCropSequences.mockResolvedValue({
+        Café: SAMPLE_SEQUENCE,
+        Soja: [{ ...SAMPLE_SEQUENCE[0], crop: 'Soja', operationTypeName: 'Dessecação' }],
+      });
+
+      const res = await request(app)
+        .get('/api/org/operation-sequences')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.Café).toHaveLength(3);
+      expect(res.body.Soja).toHaveLength(1);
+    });
+
+    it('should require farms:read permission', async () => {
+      authAs(OPERATOR_PAYLOAD);
+
+      const res = await request(app)
+        .get('/api/org/operation-sequences?crop=Café')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(200);
+    });
+  });
+
+  describe('PUT /api/org/operation-sequences', () => {
+    it('should set sequence for a crop', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.setCropSequence.mockResolvedValue(SAMPLE_SEQUENCE);
+
+      const res = await request(app)
+        .put('/api/org/operation-sequences')
+        .set('Authorization', 'Bearer token')
+        .send({
+          crop: 'Café',
+          items: [
+            { operationTypeId: 'ot-poda', notes: 'Após colheita' },
+            { operationTypeId: 'ot-adub', notes: 'Início das chuvas' },
+            { operationTypeId: 'ot-derrica' },
+          ],
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(3);
+      expect(mockedService.setCropSequence).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        {
+          crop: 'Café',
+          items: [
+            { operationTypeId: 'ot-poda', notes: 'Após colheita' },
+            { operationTypeId: 'ot-adub', notes: 'Início das chuvas' },
+            { operationTypeId: 'ot-derrica' },
+          ],
+        },
+      );
+    });
+
+    it('should return 400 for empty sequence', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.setCropSequence.mockRejectedValue(
+        new OperationTypeError('A sequência deve conter ao menos uma operação', 400),
+      );
+
+      const res = await request(app)
+        .put('/api/org/operation-sequences')
+        .set('Authorization', 'Bearer token')
+        .send({ crop: 'Café', items: [] });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should return 400 for duplicate operations', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.setCropSequence.mockRejectedValue(
+        new OperationTypeError('Tipos de operação duplicados na sequência', 400),
+      );
+
+      const res = await request(app)
+        .put('/api/org/operation-sequences')
+        .set('Authorization', 'Bearer token')
+        .send({
+          crop: 'Café',
+          items: [{ operationTypeId: 'ot-1' }, { operationTypeId: 'ot-1' }],
+        });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should return 404 for non-existent operation types', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.setCropSequence.mockRejectedValue(
+        new OperationTypeError('Tipos de operação não encontrados: ot-999', 404),
+      );
+
+      const res = await request(app)
+        .put('/api/org/operation-sequences')
+        .set('Authorization', 'Bearer token')
+        .send({ crop: 'Café', items: [{ operationTypeId: 'ot-999' }] });
+
+      expect(res.status).toBe(404);
+    });
+
+    it('should deny access without farms:update permission', async () => {
+      authAs(OPERATOR_PAYLOAD);
+
+      const res = await request(app)
+        .put('/api/org/operation-sequences')
+        .set('Authorization', 'Bearer token')
+        .send({ crop: 'Café', items: [{ operationTypeId: 'ot-1' }] });
+
+      expect(res.status).toBe(403);
+    });
+  });
+
+  describe('DELETE /api/org/operation-sequences/:crop', () => {
+    it('should delete sequence for a crop', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.deleteCropSequence.mockResolvedValue(undefined);
+
+      const res = await request(app)
+        .delete('/api/org/operation-sequences/Café')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(204);
+      expect(mockedService.deleteCropSequence).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        'Café',
+      );
+    });
+
+    it('should return 404 for non-existent sequence', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.deleteCropSequence.mockRejectedValue(
+        new OperationTypeError('Sequência não encontrada para a cultura: Arroz', 404),
+      );
+
+      const res = await request(app)
+        .delete('/api/org/operation-sequences/Arroz')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe('POST /api/org/operation-sequences/seed', () => {
+    it('should seed default sequences', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.seedCropSequences.mockResolvedValue({ seeded: 45, skipped: [] });
+
+      const res = await request(app)
+        .post('/api/org/operation-sequences/seed')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(201);
+      expect(res.body.seeded).toBe(45);
+      expect(res.body.skipped).toEqual([]);
+    });
+
+    it('should return 409 if sequences already exist', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.seedCropSequences.mockRejectedValue(
+        new OperationTypeError('Organização já possui sequências de operações cadastradas.', 409),
+      );
+
+      const res = await request(app)
+        .post('/api/org/operation-sequences/seed')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(409);
+    });
+
+    it('should deny access without farms:update permission', async () => {
+      authAs(OPERATOR_PAYLOAD);
+
+      const res = await request(app)
+        .post('/api/org/operation-sequences/seed')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(403);
+    });
   });
 });

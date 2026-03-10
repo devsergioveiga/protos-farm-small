@@ -266,7 +266,8 @@ model Organization {
   breeds      Breed[]
   cultivars       Cultivar[]
   pests           Pest[]
-  operationTypes  OperationType[]
+  operationTypes          OperationType[]
+  cropOperationSequences  CropOperationSequence[]
 
   @@map("organizations")
 }
@@ -1649,6 +1650,7 @@ model OperationType {
   children     OperationType[]     @relation("OperationTypeHierarchy")
   crops        OperationTypeCrop[]
   fields       OperationTypeField[]
+  sequences    CropOperationSequence[]
 
   @@unique([name, parentId, organizationId])
   @@index([organizationId, parentId])
@@ -1682,4 +1684,23 @@ model OperationTypeField {
   @@unique([operationTypeId, fieldKey])
   @@index([operationTypeId])
   @@map("operation_type_fields")
+}
+
+model CropOperationSequence {
+  id              String   @id @default(uuid())
+  organizationId  String
+  crop            String
+  operationTypeId String
+  sequenceOrder   Int
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization  Organization  @relation(fields: [organizationId], references: [id])
+  operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, crop, operationTypeId])
+  @@unique([organizationId, crop, sequenceOrder])
+  @@index([organizationId, crop])
+  @@map("crop_operation_sequences")
 }

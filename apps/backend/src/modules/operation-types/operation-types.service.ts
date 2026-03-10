@@ -3,6 +3,7 @@ import {
   OperationTypeError,
   MAX_LEVELS,
   DEFAULT_OPERATION_TYPES,
+  DEFAULT_CROP_SEQUENCES,
   OPERATION_FIELD_KEYS,
   type CreateOperationTypeInput,
   type UpdateOperationTypeInput,
@@ -11,6 +12,8 @@ import {
   type ListOperationTypesQuery,
   type FieldConfig,
   type OperationFieldKey,
+  type CropOperationSequenceItem,
+  type SetCropSequenceInput,
 } from './operation-types.types';
 
 // ─── Include fragments ─────────────────────────────────────────────
@@ -587,5 +590,191 @@ export async function seedOperationTypes(ctx: RlsContext): Promise<{ created: nu
     }
 
     return { created };
+  });
+}
+
+// ─── CA6: CROP OPERATION SEQUENCES ──────────────────────────────────
+
+function toSequenceItem(row: Record<string, unknown>): CropOperationSequenceItem {
+  const opType = row.operationType as Record<string, unknown> | undefined;
+  return {
+    id: row.id as string,
+    organizationId: row.organizationId as string,
+    crop: row.crop as string,
+    operationTypeId: row.operationTypeId as string,
+    operationTypeName: (opType?.name as string) ?? '',
+    sequenceOrder: row.sequenceOrder as number,
+    notes: (row.notes as string) ?? null,
+  };
+}
+
+export async function getCropSequence(
+  ctx: RlsContext,
+  crop: string,
+): Promise<CropOperationSequenceItem[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const rows = await tx.cropOperationSequence.findMany({
+      where: { organizationId: ctx.organizationId, crop },
+      include: { operationType: { select: { name: true } } },
+      orderBy: { sequenceOrder: 'asc' },
+    });
+    return rows.map((r) => toSequenceItem(r as unknown as Record<string, unknown>));
+  });
+}
+
+export async function listCropSequences(
+  ctx: RlsContext,
+): Promise<Record<string, CropOperationSequenceItem[]>> {
+  return withRlsContext(ctx, async (tx) => {
+    const rows = await tx.cropOperationSequence.findMany({
+      where: { organizationId: ctx.organizationId },
+      include: { operationType: { select: { name: true } } },
+      orderBy: [{ crop: 'asc' }, { sequenceOrder: 'asc' }],
+    });
+
+    const result: Record<string, CropOperationSequenceItem[]> = {};
+    for (const row of rows) {
+      const item = toSequenceItem(row as unknown as Record<string, unknown>);
+      if (!result[item.crop]) result[item.crop] = [];
+      result[item.crop].push(item);
+    }
+    return result;
+  });
+}
+
+export async function setCropSequence(
+  ctx: RlsContext,
+  input: SetCropSequenceInput,
+): Promise<CropOperationSequenceItem[]> {
+  if (!input.crop?.trim()) {
+    throw new OperationTypeError('Cultura é obrigatória', 400);
+  }
+  if (!input.items || input.items.length === 0) {
+    throw new OperationTypeError('A sequência deve conter ao menos uma operação', 400);
+  }
+
+  // Check for duplicate operation types
+  const opIds = input.items.map((i) => i.operationTypeId);
+  const uniqueIds = new Set(opIds);
+  if (uniqueIds.size !== opIds.length) {
+    throw new OperationTypeError('Tipos de operação duplicados na sequência', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    // Validate all operation types exist in this org
+    const existingOps = await tx.operationType.findMany({
+      where: {
+        id: { in: opIds },
+        organizationId: ctx.organizationId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+
+    const existingIds = new Set(existingOps.map((o) => o.id));
+    const missing = opIds.filter((id) => !existingIds.has(id));
+    if (missing.length > 0) {
+      throw new OperationTypeError(`Tipos de operação não encontrados: ${missing.join(', ')}`, 404);
+    }
+
+    // Delete existing sequence for this crop
+    await tx.cropOperationSequence.deleteMany({
+      where: { organizationId: ctx.organizationId, crop: input.crop },
+    });
+
+    // Create new sequence
+    await tx.cropOperationSequence.createMany({
+      data: input.items.map((item, idx) => ({
+        organizationId: ctx.organizationId,
+        crop: input.crop,
+        operationTypeId: item.operationTypeId,
+        sequenceOrder: idx + 1,
+        notes: item.notes?.trim() ?? null,
+      })),
+    });
+
+    // Return the created sequence
+    const rows = await tx.cropOperationSequence.findMany({
+      where: { organizationId: ctx.organizationId, crop: input.crop },
+      include: { operationType: { select: { name: true } } },
+      orderBy: { sequenceOrder: 'asc' },
+    });
+
+    return rows.map((r) => toSequenceItem(r as unknown as Record<string, unknown>));
+  });
+}
+
+export async function deleteCropSequence(ctx: RlsContext, crop: string): Promise<void> {
+  return withRlsContext(ctx, async (tx) => {
+    const count = await tx.cropOperationSequence.count({
+      where: { organizationId: ctx.organizationId, crop },
+    });
+    if (count === 0) {
+      throw new OperationTypeError(`Sequência não encontrada para a cultura: ${crop}`, 404);
+    }
+
+    await tx.cropOperationSequence.deleteMany({
+      where: { organizationId: ctx.organizationId, crop },
+    });
+  });
+}
+
+export async function seedCropSequences(
+  ctx: RlsContext,
+): Promise<{ seeded: number; skipped: string[] }> {
+  return withRlsContext(ctx, async (tx) => {
+    // Check if org already has sequences
+    const existingCount = await tx.cropOperationSequence.count({
+      where: { organizationId: ctx.organizationId },
+    });
+    if (existingCount > 0) {
+      throw new OperationTypeError(
+        'Organização já possui sequências de operações cadastradas.',
+        409,
+      );
+    }
+
+    // Get all operation types for this org (needed to resolve names → ids)
+    const allTypes = await tx.operationType.findMany({
+      where: { organizationId: ctx.organizationId, deletedAt: null },
+      select: { id: true, name: true },
+    });
+    const nameToId = new Map(allTypes.map((t) => [t.name, t.id]));
+
+    let seeded = 0;
+    const skipped: string[] = [];
+
+    for (const seq of DEFAULT_CROP_SEQUENCES) {
+      const validItems: Array<{ operationTypeId: string; notes: string | null; order: number }> =
+        [];
+      let order = 0;
+
+      for (const item of seq.items) {
+        const opId = nameToId.get(item.operationName);
+        if (opId) {
+          order++;
+          validItems.push({ operationTypeId: opId, notes: item.notes ?? null, order });
+        }
+        // Skip items whose operation types don't exist (not seeded yet)
+      }
+
+      if (validItems.length === 0) {
+        skipped.push(seq.crop);
+        continue;
+      }
+
+      await tx.cropOperationSequence.createMany({
+        data: validItems.map((v) => ({
+          organizationId: ctx.organizationId,
+          crop: seq.crop,
+          operationTypeId: v.operationTypeId,
+          sequenceOrder: v.order,
+          notes: v.notes,
+        })),
+      });
+      seeded += validItems.length;
+    }
+
+    return { seeded, skipped };
   });
 }
