@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import {
   Modal,
   FlatList,
   Switch,
+  Animated,
+  AccessibilityInfo,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -21,6 +23,7 @@ import DateTimePicker, { type DateTimePickerEvent } from '@react-native-communit
 import {
   ChevronDown,
   Check,
+  CheckCircle,
   X,
   WifiOff,
   Users,
@@ -377,6 +380,37 @@ const createStyles = (c: ThemeColors) => ({
     marginTop: 2,
   },
 
+  // Success toast
+  successToast: {
+    position: 'absolute' as const,
+    bottom: spacing[8],
+    left: spacing[4],
+    right: spacing[4],
+    backgroundColor: c.primary[600],
+    borderRadius: 12,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[4],
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: spacing[3],
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  successToastText: {
+    fontFamily: 'DMSans_700Bold',
+    fontSize: fontSize.base,
+    color: c.neutral[0],
+    flex: 1 as const,
+  },
+  successToastSub: {
+    fontFamily: 'SourceSans3_400Regular',
+    fontSize: fontSize.sm,
+    color: 'rgba(255,255,255,0.85)',
+  },
+
   // No team state
   emptyState: {
     alignItems: 'center' as const,
@@ -433,6 +467,8 @@ export default function QuickServiceScreen() {
   });
   const [notes, setNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [savedCount, setSavedCount] = useState(0);
+  const toastOpacity = useRef(new Animated.Value(0)).current;
 
   // Picker modals
   const [showTeamPicker, setShowTeamPicker] = useState(false);
@@ -602,13 +638,32 @@ export default function QuickServiceScreen() {
       );
 
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Serviço registrado', 'Lançamento salvo com sucesso.', [
-        { text: 'OK', onPress: () => router.back() },
-      ]);
+      setSavedCount(presentIds.length);
+
+      // Announce to screen readers
+      AccessibilityInfo.announceForAccessibility(
+        `Serviço registrado para ${presentIds.length} ${presentIds.length === 1 ? 'pessoa' : 'pessoas'}`,
+      );
+
+      // Show success toast and auto-navigate back
+      Animated.sequence([
+        Animated.timing(toastOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.delay(1200),
+        Animated.timing(toastOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        router.back();
+      });
     } catch {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert('Erro ao salvar', 'Não foi possível registrar o serviço. Tente novamente.');
-    } finally {
       setIsSaving(false);
     }
   }, [
@@ -1079,6 +1134,21 @@ export default function QuickServiceScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      {/* Success toast */}
+      <Animated.View
+        style={[styles.successToast, { opacity: toastOpacity }]}
+        pointerEvents="none"
+        accessibilityLiveRegion="polite"
+      >
+        <CheckCircle size={24} color={colors.neutral[0]} aria-hidden />
+        <View>
+          <Text style={styles.successToastText}>Serviço registrado</Text>
+          <Text style={styles.successToastSub}>
+            {savedCount} {savedCount === 1 ? 'pessoa' : 'pessoas'} registradas
+          </Text>
+        </View>
+      </Animated.View>
     </SafeAreaView>
   );
 }
