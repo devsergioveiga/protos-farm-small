@@ -8,6 +8,7 @@ import {
   FieldConfig,
   CropOperationSequenceItem,
   OperationScheduleItem,
+  PhenologicalStageItem,
 } from './operation-types.types';
 
 jest.mock('../../shared/audit/audit.service', () => ({
@@ -45,6 +46,12 @@ jest.mock('./operation-types.service', () => ({
   setSchedule: jest.fn(),
   deleteSchedule: jest.fn(),
   setBulkSchedules: jest.fn(),
+  listPhenologicalStages: jest.fn(),
+  getPhenologicalStage: jest.fn(),
+  createPhenologicalStage: jest.fn(),
+  updatePhenologicalStage: jest.fn(),
+  deletePhenologicalStage: jest.fn(),
+  seedPhenologicalStages: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -1209,6 +1216,239 @@ describe('CA7: Operation type schedules', () => {
 
       const res = await request(app)
         .delete('/api/org/operation-schedules/sched-1')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(403);
+    });
+  });
+});
+
+// ─── CA8: PHENOLOGICAL STAGES ───────────────────────────────────────
+
+const SAMPLE_STAGE: PhenologicalStageItem = {
+  id: 'stage-1',
+  organizationId: 'org-1',
+  crop: 'Milho',
+  code: 'VE',
+  name: 'Emergência',
+  description: 'Coleóptilo visível na superfície',
+  stageOrder: 1,
+  isSystem: true,
+};
+
+const SAMPLE_STAGE_2: PhenologicalStageItem = {
+  ...SAMPLE_STAGE,
+  id: 'stage-2',
+  code: 'V1',
+  name: 'Primeira folha',
+  stageOrder: 2,
+};
+
+describe('CA8: Phenological stages', () => {
+  describe('GET /api/org/phenological-stages', () => {
+    it('should list all stages', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.listPhenologicalStages.mockResolvedValue([SAMPLE_STAGE, SAMPLE_STAGE_2]);
+
+      const res = await request(app)
+        .get('/api/org/phenological-stages')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(2);
+      expect(res.body[0].code).toBe('VE');
+    });
+
+    it('should filter by crop', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.listPhenologicalStages.mockResolvedValue([SAMPLE_STAGE]);
+
+      await request(app)
+        .get('/api/org/phenological-stages?crop=Milho')
+        .set('Authorization', 'Bearer token');
+
+      expect(mockedService.listPhenologicalStages).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        'Milho',
+      );
+    });
+  });
+
+  describe('GET /api/org/phenological-stages/:id', () => {
+    it('should return a single stage', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.getPhenologicalStage.mockResolvedValue(SAMPLE_STAGE);
+
+      const res = await request(app)
+        .get('/api/org/phenological-stages/stage-1')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.code).toBe('VE');
+    });
+
+    it('should return 404 for non-existent', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.getPhenologicalStage.mockRejectedValue(
+        new OperationTypeError('Fase fenológica não encontrada', 404),
+      );
+
+      const res = await request(app)
+        .get('/api/org/phenological-stages/non-existent')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe('POST /api/org/phenological-stages', () => {
+    it('should create a phenological stage', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.createPhenologicalStage.mockResolvedValue({
+        ...SAMPLE_STAGE,
+        isSystem: false,
+      });
+
+      const res = await request(app)
+        .post('/api/org/phenological-stages')
+        .set('Authorization', 'Bearer token')
+        .send({ crop: 'Milho', code: 'VE', name: 'Emergência', stageOrder: 1 });
+
+      expect(res.status).toBe(201);
+      expect(res.body.code).toBe('VE');
+    });
+
+    it('should return 409 for duplicate code', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.createPhenologicalStage.mockRejectedValue(
+        new OperationTypeError('Já existe uma fase com código "VE" para Milho', 409),
+      );
+
+      const res = await request(app)
+        .post('/api/org/phenological-stages')
+        .set('Authorization', 'Bearer token')
+        .send({ crop: 'Milho', code: 'VE', name: 'Emergência', stageOrder: 1 });
+
+      expect(res.status).toBe(409);
+    });
+
+    it('should return 400 for missing fields', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.createPhenologicalStage.mockRejectedValue(
+        new OperationTypeError('Código da fase é obrigatório', 400),
+      );
+
+      const res = await request(app)
+        .post('/api/org/phenological-stages')
+        .set('Authorization', 'Bearer token')
+        .send({ crop: 'Milho', name: 'Test', stageOrder: 1 });
+
+      expect(res.status).toBe(400);
+    });
+
+    it('should deny access without farms:update', async () => {
+      authAs(OPERATOR_PAYLOAD);
+
+      const res = await request(app)
+        .post('/api/org/phenological-stages')
+        .set('Authorization', 'Bearer token')
+        .send({ crop: 'Milho', code: 'VE', name: 'Test', stageOrder: 1 });
+
+      expect(res.status).toBe(403);
+    });
+  });
+
+  describe('PATCH /api/org/phenological-stages/:id', () => {
+    it('should update a stage', async () => {
+      authAs(ADMIN_PAYLOAD);
+      const updated = { ...SAMPLE_STAGE, name: 'Emergência atualizada' };
+      mockedService.updatePhenologicalStage.mockResolvedValue(updated);
+
+      const res = await request(app)
+        .patch('/api/org/phenological-stages/stage-1')
+        .set('Authorization', 'Bearer token')
+        .send({ name: 'Emergência atualizada' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.name).toBe('Emergência atualizada');
+    });
+
+    it('should return 404 for non-existent', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.updatePhenologicalStage.mockRejectedValue(
+        new OperationTypeError('Fase fenológica não encontrada', 404),
+      );
+
+      const res = await request(app)
+        .patch('/api/org/phenological-stages/non-existent')
+        .set('Authorization', 'Bearer token')
+        .send({ name: 'Test' });
+
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe('DELETE /api/org/phenological-stages/:id', () => {
+    it('should delete a stage', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.deletePhenologicalStage.mockResolvedValue(undefined);
+
+      const res = await request(app)
+        .delete('/api/org/phenological-stages/stage-1')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(204);
+    });
+
+    it('should return 404 for non-existent', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.deletePhenologicalStage.mockRejectedValue(
+        new OperationTypeError('Fase fenológica não encontrada', 404),
+      );
+
+      const res = await request(app)
+        .delete('/api/org/phenological-stages/non-existent')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe('POST /api/org/phenological-stages/seed', () => {
+    it('should seed default stages', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.seedPhenologicalStages.mockResolvedValue({
+        seeded: 73,
+        crops: ['Milho', 'Soja', 'Café', 'Laranja', 'Pastagem', 'Feijão', 'Trigo'],
+      });
+
+      const res = await request(app)
+        .post('/api/org/phenological-stages/seed')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(201);
+      expect(res.body.seeded).toBe(73);
+      expect(res.body.crops).toHaveLength(7);
+    });
+
+    it('should return 409 if stages already exist', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.seedPhenologicalStages.mockRejectedValue(
+        new OperationTypeError('Organização já possui fases fenológicas cadastradas.', 409),
+      );
+
+      const res = await request(app)
+        .post('/api/org/phenological-stages/seed')
+        .set('Authorization', 'Bearer token');
+
+      expect(res.status).toBe(409);
+    });
+
+    it('should deny access without farms:update', async () => {
+      authAs(OPERATOR_PAYLOAD);
+
+      const res = await request(app)
+        .post('/api/org/phenological-stages/seed')
         .set('Authorization', 'Bearer token');
 
       expect(res.status).toBe(403);

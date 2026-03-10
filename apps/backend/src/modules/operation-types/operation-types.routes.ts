@@ -23,6 +23,12 @@ import {
   setSchedule,
   deleteSchedule,
   setBulkSchedules,
+  listPhenologicalStages,
+  getPhenologicalStage,
+  createPhenologicalStage,
+  updatePhenologicalStage,
+  deletePhenologicalStage,
+  seedPhenologicalStages,
 } from './operation-types.service';
 
 export const operationTypesRouter = Router();
@@ -445,6 +451,146 @@ operationTypesRouter.delete(
       });
 
       res.status(204).send();
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── CA8: PHENOLOGICAL STAGES ───────────────────────────────────────
+
+operationTypesRouter.get(
+  '/org/phenological-stages',
+  authenticate,
+  checkPermission('farms:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await listPhenologicalStages(ctx, (req.query.crop as string) || undefined);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+operationTypesRouter.get(
+  '/org/phenological-stages/:id',
+  authenticate,
+  checkPermission('farms:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await getPhenologicalStage(ctx, req.params.id as string);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+operationTypesRouter.post(
+  '/org/phenological-stages',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await createPhenologicalStage(ctx, req.body);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'CREATE_PHENOLOGICAL_STAGE',
+        targetType: 'crop_phenological_stage',
+        targetId: result.id,
+        metadata: { crop: result.crop, code: result.code, name: result.name },
+        ipAddress: getClientIp(req),
+      });
+
+      res.status(201).json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+operationTypesRouter.patch(
+  '/org/phenological-stages/:id',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await updatePhenologicalStage(ctx, req.params.id as string, req.body);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'UPDATE_PHENOLOGICAL_STAGE',
+        targetType: 'crop_phenological_stage',
+        targetId: result.id,
+        metadata: { crop: result.crop, code: result.code },
+        ipAddress: getClientIp(req),
+      });
+
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+operationTypesRouter.delete(
+  '/org/phenological-stages/:id',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      await deletePhenologicalStage(ctx, req.params.id as string);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'DELETE_PHENOLOGICAL_STAGE',
+        targetType: 'crop_phenological_stage',
+        targetId: req.params.id as string,
+        metadata: {},
+        ipAddress: getClientIp(req),
+      });
+
+      res.status(204).send();
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+operationTypesRouter.post(
+  '/org/phenological-stages/seed',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await seedPhenologicalStages(ctx);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'SEED_PHENOLOGICAL_STAGES',
+        targetType: 'crop_phenological_stage',
+        targetId: 'bulk',
+        metadata: result,
+        ipAddress: getClientIp(req),
+      });
+
+      res.status(201).json(result);
     } catch (err) {
       handleError(err, res);
     }

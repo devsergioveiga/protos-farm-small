@@ -18,6 +18,10 @@ import {
   type SetScheduleInput,
   type ListSchedulesQuery,
   type ScheduleType,
+  type PhenologicalStageItem,
+  type CreatePhenologicalStageInput,
+  type UpdatePhenologicalStageInput,
+  DEFAULT_CROP_PHENOLOGICAL_STAGES,
 } from './operation-types.types';
 
 // ─── Include fragments ─────────────────────────────────────────────
@@ -1032,5 +1036,236 @@ export async function setBulkSchedules(
     });
 
     return rows.map((r) => toScheduleItem(r as unknown as Record<string, unknown>));
+  });
+}
+
+// ─── CA8: PHENOLOGICAL STAGES ───────────────────────────────────────
+
+function toStageItem(row: Record<string, unknown>): PhenologicalStageItem {
+  return {
+    id: row.id as string,
+    organizationId: row.organizationId as string,
+    crop: row.crop as string,
+    code: row.code as string,
+    name: row.name as string,
+    description: (row.description as string) ?? null,
+    stageOrder: row.stageOrder as number,
+    isSystem: row.isSystem as boolean,
+  };
+}
+
+export async function listPhenologicalStages(
+  ctx: RlsContext,
+  crop?: string,
+): Promise<PhenologicalStageItem[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = { organizationId: ctx.organizationId };
+    if (crop) where.crop = crop;
+
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const rows = await tx.cropPhenologicalStage.findMany({
+      where: where as any,
+      orderBy: [{ crop: 'asc' }, { stageOrder: 'asc' }],
+    });
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+
+    return rows.map((r) => toStageItem(r as unknown as Record<string, unknown>));
+  });
+}
+
+export async function getPhenologicalStage(
+  ctx: RlsContext,
+  id: string,
+): Promise<PhenologicalStageItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const row = await tx.cropPhenologicalStage.findFirst({
+      where: { id, organizationId: ctx.organizationId },
+    });
+    if (!row) {
+      throw new OperationTypeError('Fase fenológica não encontrada', 404);
+    }
+    return toStageItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+export async function createPhenologicalStage(
+  ctx: RlsContext,
+  input: CreatePhenologicalStageInput,
+): Promise<PhenologicalStageItem> {
+  if (!input.crop?.trim()) {
+    throw new OperationTypeError('Cultura é obrigatória', 400);
+  }
+  if (!input.code?.trim()) {
+    throw new OperationTypeError('Código da fase é obrigatório', 400);
+  }
+  if (!input.name?.trim()) {
+    throw new OperationTypeError('Nome da fase é obrigatório', 400);
+  }
+  if (input.stageOrder == null || input.stageOrder < 1) {
+    throw new OperationTypeError('Ordem da fase deve ser um número positivo', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    const dupCode = await tx.cropPhenologicalStage.findFirst({
+      where: { organizationId: ctx.organizationId, crop: input.crop, code: input.code.trim() },
+      select: { id: true },
+    });
+    if (dupCode) {
+      throw new OperationTypeError(
+        `Já existe uma fase com código "${input.code}" para ${input.crop}`,
+        409,
+      );
+    }
+
+    const dupOrder = await tx.cropPhenologicalStage.findFirst({
+      where: { organizationId: ctx.organizationId, crop: input.crop, stageOrder: input.stageOrder },
+      select: { id: true },
+    });
+    if (dupOrder) {
+      throw new OperationTypeError(
+        `Já existe uma fase na posição ${input.stageOrder} para ${input.crop}`,
+        409,
+      );
+    }
+
+    const row = await tx.cropPhenologicalStage.create({
+      data: {
+        organizationId: ctx.organizationId,
+        crop: input.crop.trim(),
+        code: input.code.trim(),
+        name: input.name.trim(),
+        description: input.description?.trim() ?? null,
+        stageOrder: input.stageOrder,
+      },
+    });
+
+    return toStageItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+export async function updatePhenologicalStage(
+  ctx: RlsContext,
+  id: string,
+  input: UpdatePhenologicalStageInput,
+): Promise<PhenologicalStageItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const existing = await tx.cropPhenologicalStage.findFirst({
+      where: { id, organizationId: ctx.organizationId },
+      select: { id: true, crop: true },
+    });
+    if (!existing) {
+      throw new OperationTypeError('Fase fenológica não encontrada', 404);
+    }
+
+    const data: Record<string, unknown> = {};
+
+    if (input.code !== undefined) {
+      if (!input.code?.trim()) {
+        throw new OperationTypeError('Código da fase é obrigatório', 400);
+      }
+      const dup = await tx.cropPhenologicalStage.findFirst({
+        where: {
+          organizationId: ctx.organizationId,
+          crop: existing.crop,
+          code: input.code.trim(),
+          id: { not: id },
+        },
+        select: { id: true },
+      });
+      if (dup) {
+        throw new OperationTypeError(
+          `Já existe uma fase com código "${input.code}" para ${existing.crop}`,
+          409,
+        );
+      }
+      data.code = input.code.trim();
+    }
+
+    if (input.name !== undefined) {
+      if (!input.name?.trim()) {
+        throw new OperationTypeError('Nome da fase é obrigatório', 400);
+      }
+      data.name = input.name.trim();
+    }
+
+    if (input.description !== undefined) {
+      data.description = input.description?.trim() ?? null;
+    }
+
+    if (input.stageOrder !== undefined) {
+      if (input.stageOrder < 1) {
+        throw new OperationTypeError('Ordem da fase deve ser um número positivo', 400);
+      }
+      const dup = await tx.cropPhenologicalStage.findFirst({
+        where: {
+          organizationId: ctx.organizationId,
+          crop: existing.crop,
+          stageOrder: input.stageOrder,
+          id: { not: id },
+        },
+        select: { id: true },
+      });
+      if (dup) {
+        throw new OperationTypeError(
+          `Já existe uma fase na posição ${input.stageOrder} para ${existing.crop}`,
+          409,
+        );
+      }
+      data.stageOrder = input.stageOrder;
+    }
+
+    const row = await tx.cropPhenologicalStage.update({
+      where: { id },
+      data,
+    });
+
+    return toStageItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+export async function deletePhenologicalStage(ctx: RlsContext, id: string): Promise<void> {
+  return withRlsContext(ctx, async (tx) => {
+    const existing = await tx.cropPhenologicalStage.findFirst({
+      where: { id, organizationId: ctx.organizationId },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new OperationTypeError('Fase fenológica não encontrada', 404);
+    }
+    await tx.cropPhenologicalStage.delete({ where: { id } });
+  });
+}
+
+export async function seedPhenologicalStages(
+  ctx: RlsContext,
+): Promise<{ seeded: number; crops: string[] }> {
+  return withRlsContext(ctx, async (tx) => {
+    const existingCount = await tx.cropPhenologicalStage.count({
+      where: { organizationId: ctx.organizationId },
+    });
+    if (existingCount > 0) {
+      throw new OperationTypeError('Organização já possui fases fenológicas cadastradas.', 409);
+    }
+
+    let seeded = 0;
+    const crops: string[] = [];
+
+    for (const cropDef of DEFAULT_CROP_PHENOLOGICAL_STAGES) {
+      crops.push(cropDef.crop);
+      await tx.cropPhenologicalStage.createMany({
+        data: cropDef.stages.map((s, idx) => ({
+          organizationId: ctx.organizationId,
+          crop: cropDef.crop,
+          code: s.code,
+          name: s.name,
+          description: s.description ?? null,
+          stageOrder: idx + 1,
+          isSystem: true,
+        })),
+      });
+      seeded += cropDef.stages.length;
+    }
+
+    return { seeded, crops };
   });
 }

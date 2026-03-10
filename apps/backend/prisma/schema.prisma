@@ -269,6 +269,7 @@ model Organization {
   operationTypes            OperationType[]
   cropOperationSequences    CropOperationSequence[]
   operationTypeSchedules    OperationTypeSchedule[]
+  cropPhenologicalStages    CropPhenologicalStage[]
 
   @@map("organizations")
 }
@@ -1730,4 +1731,24 @@ model OperationTypeSchedule {
   @@index([organizationId, crop])
   @@index([operationTypeId])
   @@map("operation_type_schedules")
+}
+
+model CropPhenologicalStage {
+  id             String   @id @default(uuid())
+  organizationId String
+  crop           String
+  code           String   // ex: "VE", "V1", "R1", "Florada"
+  name           String   // ex: "Emergência", "Primeira folha", "Florescimento"
+  description    String?
+  stageOrder     Int      // posição no ciclo da cultura
+  isSystem       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, crop, code])
+  @@unique([organizationId, crop, stageOrder])
+  @@index([organizationId, crop])
+  @@map("crop_phenological_stages")
 }
