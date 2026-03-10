@@ -525,14 +525,14 @@ describe('Monitoring Records routes', () => {
           code: 'P01',
           latitude: -23.5,
           longitude: -46.6,
-          currentLevel: 'ALTO',
+          currentLevel: 'ALTO' as const,
           currentLevelLabel: 'Alto',
           lastObservedAt: '2026-03-09T10:00:00.000Z',
           damagePercentage: 15.5,
         },
       ],
       affectedPointCount: 1,
-      maxLevel: 'ALTO',
+      maxLevel: 'ALTO' as const,
       maxLevelLabel: 'Alto',
       avgDamagePercentage: 15.5,
       hasNaturalEnemies: true,
@@ -620,7 +620,7 @@ describe('Monitoring Records routes', () => {
       authAs({
         userId: 'viewer-1',
         email: 'viewer@org.com',
-        role: 'VIEWER' as const,
+        role: 'VIEWER' as unknown as authService.TokenPayload['role'],
         organizationId: 'org-1',
       });
 
