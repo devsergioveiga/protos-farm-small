@@ -495,6 +495,7 @@ export default function QuickServiceScreen() {
     return d;
   });
   const [notes, setNotes] = useState('');
+  const [memberProductivity, setMemberProductivity] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [savedCount, setSavedCount] = useState(0);
   const toastOpacity = useRef(new Animated.Value(0)).current;
@@ -634,6 +635,10 @@ export default function QuickServiceScreen() {
     setMembers((prev) => prev.map((m) => ({ ...m, present: !allPresent })));
   }, [members]);
 
+  const updateProductivity = useCallback((userId: string, value: string) => {
+    setMemberProductivity((prev) => ({ ...prev, [userId]: value }));
+  }, []);
+
   const handleTimeStartChange = useCallback((_: DateTimePickerEvent, date?: Date) => {
     setShowTimeStartPicker(false);
     if (date) setTimeStart(date);
@@ -689,7 +694,15 @@ export default function QuickServiceScreen() {
         timeStart: timeStart.toISOString(),
         timeEnd: timeEnd.toISOString(),
         notes: notes.trim() || undefined,
-        entries: presentIds.map((uid) => ({ userId: uid })),
+        entries: presentIds.map((uid) => {
+          const prod = memberProductivity[uid];
+          const prodNum = prod ? parseFloat(prod) : undefined;
+          return {
+            userId: uid,
+            productivity: prodNum && !isNaN(prodNum) ? prodNum : undefined,
+            productivityUnit: prodNum && !isNaN(prodNum) ? 'LITROS' : undefined,
+          };
+        }),
       };
 
       await queue.enqueue(
@@ -743,6 +756,7 @@ export default function QuickServiceScreen() {
     timeStart,
     timeEnd,
     notes,
+    memberProductivity,
     router,
   ]);
 
@@ -979,6 +993,49 @@ export default function QuickServiceScreen() {
               </Pressable>
             </View>
           </View>
+
+          {/* Litros por pessoa — colheita café (CA4) */}
+          {operationType === 'COLHEITA' && members.filter((m) => m.present).length > 0 && (
+            <View style={styles.membersCard}>
+              <View style={styles.membersHeader}>
+                <View style={styles.membersHeaderLeft}>
+                  <Text style={styles.membersTitle}>Litros por pessoa</Text>
+                </View>
+              </View>
+              {members
+                .filter((m) => m.present)
+                .map((member) => (
+                  <View key={member.id} style={styles.memberItem}>
+                    <Text style={[styles.memberName, { flex: 1 }]} numberOfLines={1}>
+                      {member.userName}
+                    </Text>
+                    <TextInput
+                      style={{
+                        backgroundColor: colors.neutral[50],
+                        borderWidth: 1,
+                        borderColor: colors.neutral[300],
+                        borderRadius: 8,
+                        paddingHorizontal: spacing[3],
+                        paddingVertical: spacing[2],
+                        fontFamily: 'SourceSans3_600SemiBold',
+                        fontSize: fontSize.base,
+                        color: colors.neutral[700],
+                        width: 80,
+                        textAlign: 'center' as const,
+                        minHeight: 40,
+                      }}
+                      value={memberProductivity[member.userId] ?? ''}
+                      onChangeText={(v) => updateProductivity(member.userId, v)}
+                      placeholder="0"
+                      placeholderTextColor={colors.neutral[400]}
+                      keyboardType="numeric"
+                      accessible
+                      accessibilityLabel={`Litros de ${member.userName}`}
+                    />
+                  </View>
+                ))}
+            </View>
+          )}
 
           {/* Notes */}
           <View style={styles.fieldContainer}>
