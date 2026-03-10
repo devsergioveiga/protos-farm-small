@@ -283,7 +283,7 @@ model User {
   googleId       String?    @unique
   role           UserRole   @default(OPERATOR)
   status         UserStatus @default(ACTIVE)
-  hourlyRate     Decimal?   @db.Decimal(10, 2)
+  hourlyRate     Decimal?   @map("hourly_rate") @db.Decimal(10, 2)
   lastLoginAt    DateTime?
   organizationId String?
   customRoleId   String?
@@ -1594,8 +1594,8 @@ model Pest {
   severity          PestSeverity?
   ndeDescription    String?
   ncDescription     String?
-  controlThreshold  InfestationLevel?
-  recommendedProducts String?
+  controlThreshold  InfestationLevel? @map("control_threshold")
+  recommendedProducts String?          @map("recommended_products")
   lifecycle       String?
   symptoms        String?
   photoUrl        String?
@@ -1697,17 +1697,17 @@ model TeamOperationEntry {
 
 model OperationType {
   id             String    @id @default(uuid())
-  organizationId String
+  organizationId String    @map("organization_id")
   name           String
   description    String?
-  parentId       String?
+  parentId       String?   @map("parent_id")
   level          Int       @default(1)
-  sortOrder      Int       @default(0)
-  isSystem       Boolean   @default(false)
-  isActive       Boolean   @default(true)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  deletedAt      DateTime?
+  sortOrder      Int       @default(0) @map("sort_order")
+  isSystem       Boolean   @default(false) @map("is_system")
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
 
   organization Organization        @relation(fields: [organizationId], references: [id])
   parent       OperationType?      @relation("OperationTypeHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
@@ -1727,9 +1727,9 @@ model OperationType {
 
 model OperationTypeCrop {
   id              String   @id @default(uuid())
-  operationTypeId String
+  operationTypeId String   @map("operation_type_id")
   crop            String
-  createdAt       DateTime @default(now())
+  createdAt       DateTime @default(now()) @map("created_at")
 
   operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
 
@@ -1740,11 +1740,11 @@ model OperationTypeCrop {
 
 model OperationTypeField {
   id              String   @id @default(uuid())
-  operationTypeId String
-  fieldKey        String
+  operationTypeId String   @map("operation_type_id")
+  fieldKey        String   @map("field_key")
   visibility      String   @default("optional")
-  sortOrder       Int      @default(0)
-  createdAt       DateTime @default(now())
+  sortOrder       Int      @default(0) @map("sort_order")
+  createdAt       DateTime @default(now()) @map("created_at")
 
   operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
 
@@ -1755,13 +1755,13 @@ model OperationTypeField {
 
 model CropOperationSequence {
   id              String   @id @default(uuid())
-  organizationId  String
+  organizationId  String   @map("organization_id")
   crop            String
-  operationTypeId String
-  sequenceOrder   Int
+  operationTypeId String   @map("operation_type_id")
+  sequenceOrder   Int      @map("sequence_order")
   notes           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   organization  Organization  @relation(fields: [organizationId], references: [id])
   operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
@@ -1774,19 +1774,19 @@ model CropOperationSequence {
 
 model OperationTypeSchedule {
   id              String   @id @default(uuid())
-  organizationId  String
-  operationTypeId String
+  organizationId  String   @map("organization_id")
+  operationTypeId String   @map("operation_type_id")
   crop            String
-  scheduleType    String   // "fixed_date" | "phenological"
-  startDay        Int?     // 1-31 (fixed_date)
-  startMonth      Int?     // 1-12 (fixed_date)
-  endDay          Int?     // 1-31 (fixed_date)
-  endMonth        Int?     // 1-12 (fixed_date)
-  phenoStage      String?  // nome da fase fenológica (phenological)
-  offsetDays      Int?     // dias relativos ao evento/fase (phenological), negativo = antes
+  scheduleType    String   @map("schedule_type") // "fixed_date" | "phenological"
+  startDay        Int?     @map("start_day") // 1-31 (fixed_date)
+  startMonth      Int?     @map("start_month") // 1-12 (fixed_date)
+  endDay          Int?     @map("end_day") // 1-31 (fixed_date)
+  endMonth        Int?     @map("end_month") // 1-12 (fixed_date)
+  phenoStage      String?  @map("pheno_stage") // nome da fase fenológica (phenological)
+  offsetDays      Int?     @map("offset_days") // dias relativos ao evento/fase (phenological), negativo = antes
   notes           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   organization  Organization  @relation(fields: [organizationId], references: [id])
   operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
@@ -1799,15 +1799,15 @@ model OperationTypeSchedule {
 
 model CropPhenologicalStage {
   id             String   @id @default(uuid())
-  organizationId String
+  organizationId String   @map("organization_id")
   crop           String
   code           String   // ex: "VE", "V1", "R1", "Florada"
   name           String   // ex: "Emergência", "Primeira folha", "Florescimento"
   description    String?
-  stageOrder     Int      // posição no ciclo da cultura
-  isSystem       Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  stageOrder     Int      @map("stage_order") // posição no ciclo da cultura
+  isSystem       Boolean  @default(false) @map("is_system")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id])
 
@@ -1819,14 +1819,14 @@ model CropPhenologicalStage {
 
 model PlotPhenologicalRecord {
   id          String   @id @default(uuid())
-  fieldPlotId String
+  fieldPlotId String   @map("field_plot_id")
   crop        String
-  stageCode   String
-  stageName   String
-  recordedAt  DateTime @default(now())
-  recordedBy  String
+  stageCode   String   @map("stage_code")
+  stageName   String   @map("stage_name")
+  recordedAt  DateTime @default(now()) @map("recorded_at")
+  recordedBy  String   @map("recorded_by")
   notes       String?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime @default(now()) @map("created_at")
 
   fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
   recorder  User      @relation(fields: [recordedBy], references: [id])
