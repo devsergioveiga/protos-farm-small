@@ -14,6 +14,7 @@ export { createMonitoringPointRepository } from './monitoring-point-repository';
 export { createMonitoringRecordRepository } from './monitoring-record-repository';
 export { createFieldTeamRepository } from './field-team-repository';
 export { createQuickServiceRepository } from './quick-service-repository';
+export { createTeamOperationsRepository } from './team-operations-repository';
 export type { AnimalWithBreeds } from './animal-repository';
 export type {
   PendingOperation,

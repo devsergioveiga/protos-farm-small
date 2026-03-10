@@ -77,6 +77,46 @@
   cursor: not-allowed;
 }
 
+.team-ops__tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--color-neutral-200);
+  padding-bottom: 0;
+}
+
+.team-ops__tab {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  transition: all 200ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.team-ops__tab:hover {
+  color: var(--color-neutral-700);
+}
+
+.team-ops__tab--active {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+
+.team-ops__tab:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
 .team-ops__toolbar {
   display: flex;
   gap: 12px;
@@ -359,6 +399,13 @@
   font-weight: 600;
   font-size: 0.9375rem;
   color: var(--color-neutral-700);
+}
+
+.team-ops__detail-member-cost {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  color: var(--color-primary-600);
+  font-weight: 600;
 }
 
 .team-ops__detail-member-email {

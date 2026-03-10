@@ -27,6 +27,8 @@ jest.mock('./team-operations.service', () => ({
   getTeamOperation: jest.fn(),
   deleteTeamOperation: jest.fn(),
   getOperationTypes: jest.fn(),
+  getCostByPlot: jest.fn(),
+  getTimesheet: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -77,6 +79,7 @@ const SAMPLE_OPERATION = {
   latitude: null,
   longitude: null,
   entryCount: 3,
+  totalLaborCost: 750,
   entries: [
     {
       id: 'e1',
@@ -87,6 +90,8 @@ const SAMPLE_OPERATION = {
       productivity: null,
       productivityUnit: null,
       notes: null,
+      hourlyRate: 50,
+      laborCost: 250,
     },
     {
       id: 'e2',
@@ -97,6 +102,8 @@ const SAMPLE_OPERATION = {
       productivity: null,
       productivityUnit: null,
       notes: null,
+      hourlyRate: 50,
+      laborCost: 250,
     },
     {
       id: 'e3',
@@ -107,6 +114,8 @@ const SAMPLE_OPERATION = {
       productivity: null,
       productivityUnit: null,
       notes: null,
+      hourlyRate: 50,
+      laborCost: 250,
     },
   ],
   recordedBy: 'admin-1',
@@ -291,6 +300,99 @@ describe('Team Operations Routes', () => {
       expect(res.status).toBe(204);
       expect(mockedAudit.logAudit).toHaveBeenCalledWith(
         expect.objectContaining({ action: 'DELETE_TEAM_OPERATION' }),
+      );
+    });
+  });
+
+  describe('GET cost-by-plot (CA9)', () => {
+    it('returns labor cost aggregated by plot', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.getCostByPlot.mockResolvedValue([
+        {
+          fieldPlotId: 'plot-1',
+          fieldPlotName: 'Talhão Norte',
+          operationCount: 3,
+          totalHours: 24,
+          totalLaborCost: 1200,
+          entries: 9,
+        },
+      ]);
+
+      const res = await request(app)
+        .get(
+          `/api/org/farms/${FARM_ID}/team-operations/cost-by-plot?dateFrom=2026-03-01&dateTo=2026-03-31`,
+        )
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(1);
+      expect(res.body[0].totalLaborCost).toBe(1200);
+      expect(res.body[0].fieldPlotName).toBe('Talhão Norte');
+    });
+  });
+
+  describe('GET timesheet (CA8)', () => {
+    it('returns timesheet entries grouped by date and user', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.getTimesheet.mockResolvedValue([
+        {
+          date: '2026-03-09',
+          userId: 'user-1',
+          userName: 'Maria',
+          userEmail: 'maria@org.com',
+          hourlyRate: 50,
+          operationCount: 2,
+          totalHours: 10,
+          totalLaborCost: 500,
+          operations: [
+            {
+              operationId: 'op-1',
+              operationType: 'COLHEITA',
+              operationTypeLabel: 'Colheita',
+              fieldPlotName: 'Talhão Norte',
+              timeStart: '2026-03-09T07:00:00.000Z',
+              timeEnd: '2026-03-09T12:00:00.000Z',
+              hoursWorked: 5,
+            },
+            {
+              operationId: 'op-2',
+              operationType: 'ADUBACAO',
+              operationTypeLabel: 'Adubação',
+              fieldPlotName: 'Talhão Sul',
+              timeStart: '2026-03-09T13:00:00.000Z',
+              timeEnd: '2026-03-09T18:00:00.000Z',
+              hoursWorked: 5,
+            },
+          ],
+        },
+      ]);
+
+      const res = await request(app)
+        .get(
+          `/api/org/farms/${FARM_ID}/team-operations/timesheet?dateFrom=2026-03-01&dateTo=2026-03-31`,
+        )
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(1);
+      expect(res.body[0].totalHours).toBe(10);
+      expect(res.body[0].totalLaborCost).toBe(500);
+      expect(res.body[0].operations).toHaveLength(2);
+    });
+
+    it('supports filtering by userId', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.getTimesheet.mockResolvedValue([]);
+
+      const res = await request(app)
+        .get(`/api/org/farms/${FARM_ID}/team-operations/timesheet?userId=user-1`)
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(res.status).toBe(200);
+      expect(mockedService.getTimesheet).toHaveBeenCalledWith(
+        expect.any(Object),
+        FARM_ID,
+        expect.objectContaining({ userId: 'user-1' }),
       );
     });
   });

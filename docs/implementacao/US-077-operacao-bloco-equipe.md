@@ -101,16 +101,33 @@ Permitir que o encarregado registre uma operação de campo para toda a equipe d
 
 ---
 
-## Critérios pendentes (bloqueados)
+### CA7 — Cálculo custo mão de obra
 
-| CA   | Descrição                   | Dependência                                   |
-| ---- | --------------------------- | --------------------------------------------- |
-| CA7  | Cálculo custo mão de obra   | Campo `custoHora` no modelo User (não existe) |
-| CA8  | Integração espelho de ponto | EPIC-RH2 (módulo RH)                          |
-| CA9  | Integração custo por talhão | Módulo de custos por talhão                   |
-| CA10 | Lançamento mobile offline   | Sync offline para team-operations             |
+**O quê:** Campo `hourlyRate` no User, cálculo `laborCost` por entry e `totalLaborCost` por operação. Exibido nos cards e painel de detalhes.
+
+**Doc completa:** `US-077-CA7-CA10_custo-ponto-mobile.md`
+
+---
+
+### CA8 — Espelho de ponto
+
+**O quê:** Endpoint `GET .../timesheet` gera relatório de horas por colaborador/dia. Frontend com aba "Espelho de ponto" com linhas expansíveis.
+
+---
+
+### CA9 — Custo por talhão
+
+**O quê:** Endpoint `GET .../cost-by-plot` agrega custo MO por talhão. Frontend com aba "Custo por talhão" e tabela com totais.
+
+---
+
+### CA10 — Lançamento mobile offline
+
+**O quê:** SQLite V9 + repository + tela mobile para registrar operações offline com sync via queue.
+
+---
 
 ## Testes
 
-- **Backend:** 10 testes de rota (create, validações, list, get, delete, auth, errors)
-- **Frontend:** 14 testes da página + 8 testes do modal (toggle, expand, campos individuais, payload com/sem entries, deselect, collapse, reset)
+- **Backend:** 13 testes de rota (create, validações, list, get, delete, auth, errors, cost-by-plot, timesheet, timesheet+userId)
+- **Frontend:** 8 testes do modal (toggle, expand, campos individuais, payload com/sem entries, deselect, collapse, reset)

@@ -279,6 +279,7 @@ model User {
   googleId       String?    @unique
   role           UserRole   @default(OPERATOR)
   status         UserStatus @default(ACTIVE)
+  hourlyRate     Decimal?   @db.Decimal(10, 2)
   lastLoginAt    DateTime?
   organizationId String?
   customRoleId   String?

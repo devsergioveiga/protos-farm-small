@@ -6,6 +6,8 @@ import {
   type CreateTeamOperationInput,
   type TeamOperationItem,
   type TeamOperationEntryItem,
+  type PlotLaborCostItem,
+  type TimesheetEntry,
 } from './team-operations.types';
 
 const INCLUDE_RELATIONS = {
@@ -13,22 +15,29 @@ const INCLUDE_RELATIONS = {
   team: { select: { name: true } },
   recorder: { select: { name: true } },
   entries: {
-    include: { user: { select: { name: true, email: true } } },
+    include: { user: { select: { name: true, email: true, hourlyRate: true } } },
     orderBy: { createdAt: 'asc' as const },
   },
 };
 
-function toEntryItem(row: Record<string, unknown>): TeamOperationEntryItem {
-  const user = row.user as { name: string; email: string } | undefined;
+function toEntryItem(row: Record<string, unknown>, durationHours: number): TeamOperationEntryItem {
+  const user = row.user as { name: string; email: string; hourlyRate?: unknown } | undefined;
+  const hoursWorked = row.hoursWorked != null ? Number(row.hoursWorked) : null;
+  const hourlyRate = user?.hourlyRate != null ? Number(user.hourlyRate) : null;
+  const effectiveHours = hoursWorked ?? durationHours;
+  const laborCost = hourlyRate != null ? Math.round(effectiveHours * hourlyRate * 100) / 100 : null;
+
   return {
     id: row.id as string,
     userId: row.userId as string,
     userName: user?.name ?? '',
     userEmail: user?.email ?? '',
-    hoursWorked: row.hoursWorked != null ? Number(row.hoursWorked) : null,
+    hoursWorked,
     productivity: row.productivity != null ? Number(row.productivity) : null,
     productivityUnit: (row.productivityUnit as string) ?? null,
     notes: (row.notes as string) ?? null,
+    hourlyRate,
+    laborCost,
   };
 }
 
@@ -43,6 +52,11 @@ function toItem(row: Record<string, unknown>): TeamOperationItem {
   const timeEnd = row.timeEnd as Date;
   const durationMs = timeEnd.getTime() - timeStart.getTime();
   const durationHours = Math.round((durationMs / 3_600_000) * 100) / 100;
+
+  const mappedEntries = entries.map((e) => toEntryItem(e, durationHours));
+  const costs = mappedEntries.map((e) => e.laborCost).filter((c): c is number => c != null);
+  const totalLaborCost =
+    costs.length > 0 ? Math.round(costs.reduce((a, b) => a + b, 0) * 100) / 100 : null;
 
   return {
     id: row.id as string,
@@ -61,8 +75,9 @@ function toItem(row: Record<string, unknown>): TeamOperationItem {
     photoUrl: (row.photoUrl as string) ?? null,
     latitude: row.latitude != null ? Number(row.latitude) : null,
     longitude: row.longitude != null ? Number(row.longitude) : null,
-    entryCount: entries.length,
-    entries: entries.map((e) => toEntryItem(e)),
+    entryCount: mappedEntries.length,
+    entries: mappedEntries,
+    totalLaborCost,
     recordedBy: row.recordedBy as string,
     recorderName: recorder?.name ?? '',
     createdAt: (row.createdAt as Date).toISOString(),
@@ -267,4 +282,179 @@ export async function deleteTeamOperation(
 
 export function getOperationTypes(): Array<{ value: string; label: string }> {
   return TEAM_OPERATION_TYPES.map((t) => ({ value: t, label: TEAM_OPERATION_TYPE_LABELS[t] ?? t }));
+}
+
+// ─── CA9: Cost by plot ─────────────────────────────────────────────
+
+export async function getCostByPlot(
+  ctx: RlsContext,
+  farmId: string,
+  options: { dateFrom?: string; dateTo?: string } = {},
+): Promise<PlotLaborCostItem[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = { farmId, deletedAt: null };
+    if (options.dateFrom || options.dateTo) {
+      const performedAt: Record<string, Date> = {};
+      if (options.dateFrom) performedAt.gte = new Date(options.dateFrom);
+      if (options.dateTo) performedAt.lte = new Date(options.dateTo);
+      where.performedAt = performedAt;
+    }
+
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const operations = await tx.teamOperation.findMany({
+      where: where as any,
+      include: {
+        fieldPlot: { select: { id: true, name: true } },
+        entries: {
+          include: { user: { select: { hourlyRate: true } } },
+        },
+      },
+      orderBy: { performedAt: 'desc' },
+    });
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+
+    const plotMap = new Map<
+      string,
+      { name: string; opCount: number; totalHours: number; totalCost: number; entries: number }
+    >();
+
+    for (const op of operations) {
+      const plotId = op.fieldPlotId;
+      const plotName = (op.fieldPlot as { name: string }).name;
+      const durationMs = (op.timeEnd as Date).getTime() - (op.timeStart as Date).getTime();
+      const durationHours = durationMs / 3_600_000;
+
+      let acc = plotMap.get(plotId);
+      if (!acc) {
+        acc = { name: plotName, opCount: 0, totalHours: 0, totalCost: 0, entries: 0 };
+        plotMap.set(plotId, acc);
+      }
+      acc.opCount += 1;
+
+      for (const entry of op.entries as Array<Record<string, unknown>>) {
+        const user = entry.user as { hourlyRate?: unknown } | undefined;
+        const hw = entry.hoursWorked != null ? Number(entry.hoursWorked) : durationHours;
+        const rate = user?.hourlyRate != null ? Number(user.hourlyRate) : null;
+        acc.totalHours += hw;
+        acc.entries += 1;
+        if (rate != null) {
+          acc.totalCost += hw * rate;
+        }
+      }
+    }
+
+    return Array.from(plotMap.entries())
+      .map(([fieldPlotId, data]) => ({
+        fieldPlotId,
+        fieldPlotName: data.name,
+        operationCount: data.opCount,
+        totalHours: Math.round(data.totalHours * 100) / 100,
+        totalLaborCost: Math.round(data.totalCost * 100) / 100,
+        entries: data.entries,
+      }))
+      .sort((a, b) => b.totalLaborCost - a.totalLaborCost);
+  });
+}
+
+// ─── CA8: Timesheet report ─────────────────────────────────────────
+
+export async function getTimesheet(
+  ctx: RlsContext,
+  farmId: string,
+  options: { dateFrom?: string; dateTo?: string; userId?: string } = {},
+): Promise<TimesheetEntry[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = { farmId, deletedAt: null };
+    if (options.dateFrom || options.dateTo) {
+      const performedAt: Record<string, Date> = {};
+      if (options.dateFrom) performedAt.gte = new Date(options.dateFrom);
+      if (options.dateTo) performedAt.lte = new Date(options.dateTo);
+      where.performedAt = performedAt;
+    }
+
+    const entryWhere: Record<string, unknown> = {};
+    if (options.userId) entryWhere.userId = options.userId;
+
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const operations = await tx.teamOperation.findMany({
+      where: where as any,
+      include: {
+        fieldPlot: { select: { name: true } },
+        entries: {
+          where: Object.keys(entryWhere).length > 0 ? (entryWhere as any) : undefined,
+          include: { user: { select: { name: true, email: true, hourlyRate: true } } },
+        },
+      },
+      orderBy: { performedAt: 'asc' },
+    });
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+
+    // Group by date + userId
+    const key = (date: string, userId: string) => `${date}|${userId}`;
+    const map = new Map<
+      string,
+      {
+        date: string;
+        userId: string;
+        userName: string;
+        userEmail: string;
+        hourlyRate: number | null;
+        operations: TimesheetEntry['operations'];
+      }
+    >();
+
+    for (const op of operations) {
+      const dateStr = (op.performedAt as Date).toISOString().split('T')[0];
+      const plotName = (op.fieldPlot as { name: string }).name;
+      const durationMs = (op.timeEnd as Date).getTime() - (op.timeStart as Date).getTime();
+      const durationHours = durationMs / 3_600_000;
+      const opType = op.operationType as string;
+
+      for (const entry of op.entries as Array<Record<string, unknown>>) {
+        const user = entry.user as { name: string; email: string; hourlyRate?: unknown };
+        const userId = entry.userId as string;
+        const k = key(dateStr, userId);
+        const hw = entry.hoursWorked != null ? Number(entry.hoursWorked) : durationHours;
+
+        let acc = map.get(k);
+        if (!acc) {
+          acc = {
+            date: dateStr,
+            userId,
+            userName: user.name,
+            userEmail: user.email,
+            hourlyRate: user.hourlyRate != null ? Number(user.hourlyRate) : null,
+            operations: [],
+          };
+          map.set(k, acc);
+        }
+
+        acc.operations.push({
+          operationId: op.id,
+          operationType: opType,
+          operationTypeLabel: TEAM_OPERATION_TYPE_LABELS[opType] ?? opType,
+          fieldPlotName: plotName,
+          timeStart: (op.timeStart as Date).toISOString(),
+          timeEnd: (op.timeEnd as Date).toISOString(),
+          hoursWorked: Math.round(hw * 100) / 100,
+        });
+      }
+    }
+
+    return Array.from(map.values()).map((entry) => {
+      const totalHours = entry.operations.reduce((sum, o) => sum + o.hoursWorked, 0);
+      return {
+        date: entry.date,
+        userId: entry.userId,
+        userName: entry.userName,
+        userEmail: entry.userEmail,
+        hourlyRate: entry.hourlyRate,
+        operationCount: entry.operations.length,
+        totalHours: Math.round(totalHours * 100) / 100,
+        totalLaborCost:
+          entry.hourlyRate != null ? Math.round(totalHours * entry.hourlyRate * 100) / 100 : null,
+        operations: entry.operations,
+      };
+    });
+  });
 }
