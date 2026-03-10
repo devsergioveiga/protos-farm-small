@@ -34,6 +34,7 @@ import { monitoringReportsRouter } from './modules/monitoring-reports/monitoring
 import { operationTypesRouter } from './modules/operation-types/operation-types.routes';
 import { phenologicalRecordsRouter } from './modules/phenological-records/phenological-records.routes';
 import { plantingRouter } from './modules/planting-operations/planting-operations.routes';
+import { soilPrepRouter } from './modules/soil-prep-operations/soil-prep-operations.routes';
 
 const app = express();
 
@@ -75,5 +76,6 @@ app.use('/api', monitoringReportsRouter);
 app.use('/api', operationTypesRouter);
 app.use('/api', phenologicalRecordsRouter);
 app.use('/api', plantingRouter);
+app.use('/api', soilPrepRouter);
 
 export { app };
