@@ -33,6 +33,7 @@ import { monitoringRecordsRouter } from './modules/monitoring-records/monitoring
 import { monitoringReportsRouter } from './modules/monitoring-reports/monitoring-reports.routes';
 import { operationTypesRouter } from './modules/operation-types/operation-types.routes';
 import { phenologicalRecordsRouter } from './modules/phenological-records/phenological-records.routes';
+import { plantingRouter } from './modules/planting-operations/planting-operations.routes';
 
 const app = express();
 
@@ -73,5 +74,6 @@ app.use('/api', monitoringRecordsRouter);
 app.use('/api', monitoringReportsRouter);
 app.use('/api', operationTypesRouter);
 app.use('/api', phenologicalRecordsRouter);
+app.use('/api', plantingRouter);
 
 export { app };

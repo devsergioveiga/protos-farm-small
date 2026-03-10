@@ -312,6 +312,7 @@ model User {
   recordedTeamOperations     TeamOperation[]     @relation("TeamOperationRecorder")
   teamOperationEntries       TeamOperationEntry[] @relation("TeamOperationEntryWorker")
   phenologicalRecords        PlotPhenologicalRecord[]
+  recordedPlantingOperations PlantingOperation[]      @relation("PlantingRecorder")
 
   @@map("users")
 }
@@ -374,6 +375,7 @@ model Farm {
   teamOperations             TeamOperation[]
   monitoringPoints           MonitoringPoint[]
   monitoringRecords          MonitoringRecord[]
+  plantingOperations         PlantingOperation[]
 
   @@map("farms")
 }
@@ -668,6 +670,7 @@ model FieldPlot {
   monitoringPoints       MonitoringPoint[]
   monitoringRecords      MonitoringRecord[]
   phenologicalRecords    PlotPhenologicalRecord[]
+  plantingOperations     PlantingOperation[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -1167,8 +1170,9 @@ model Cultivar {
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 
-  organization   Organization    @relation(fields: [organizationId], references: [id])
-  plotCropSeasons PlotCropSeason[]
+  organization       Organization       @relation(fields: [organizationId], references: [id])
+  plotCropSeasons    PlotCropSeason[]
+  plantingOperations PlantingOperation[]
 
   @@unique([name, crop, organizationId])
   @@index([organizationId])
@@ -1656,6 +1660,7 @@ model OperationType {
   fields       OperationTypeField[]
   sequences    CropOperationSequence[]
   schedules    OperationTypeSchedule[]
+  plantingOperations PlantingOperation[]
 
   @@unique([name, parentId, organizationId])
   @@index([organizationId, parentId])
@@ -1772,4 +1777,67 @@ model PlotPhenologicalRecord {
   @@index([fieldPlotId, crop])
   @@index([fieldPlotId, recordedAt])
   @@map("plot_phenological_records")
+}
+
+// ─── Planting Operations (US-083) ─────────────────────────────────
+
+model PlantingOperation {
+  id                  String    @id @default(uuid())
+  farmId              String
+  fieldPlotId         String
+  cultivarId          String?
+  operationTypeId     String?
+  seasonYear          String    // ex: "2025/2026"
+  seasonType          SeasonType @default(SAFRA)
+
+  // CA1 — basic required
+  crop                String    // ex: "Soja", "Milho"
+  plantingDate        DateTime  @db.Date
+  plantedAreaPercent  Decimal   @default(100) @db.Decimal(5, 2) // CA9 — partial planting
+
+  // CA2 — technical fields
+  populationPerM      Decimal?  @db.Decimal(8, 2)  // seeds/m
+  rowSpacingCm        Decimal?  @db.Decimal(6, 2)  // spacing between rows
+  depthCm             Decimal?  @db.Decimal(6, 2)  // planting depth
+  seedRateKgHa        Decimal?  @db.Decimal(8, 2)  // sowing rate kg/ha
+
+  // CA3 — seed treatment (JSON array)
+  seedTreatments      Json?     @default("[]")
+
+  // CA4 — base fertilization (JSON array)
+  baseFertilizations  Json?     @default("[]")
+
+  // CA5 — machine & operator
+  machineName         String?
+  operatorName        String?
+  averageSpeedKmH     Decimal?  @db.Decimal(6, 2)
+
+  // CA8 — cost fields
+  seedCost            Decimal?  @db.Decimal(12, 2)
+  fertilizerCost      Decimal?  @db.Decimal(12, 2)
+  treatmentCost       Decimal?  @db.Decimal(12, 2)
+  operationCost       Decimal?  @db.Decimal(12, 2)
+
+  // common
+  notes               String?
+  photoUrl            String?
+  latitude            Decimal?  @db.Decimal(10, 7)
+  longitude           Decimal?  @db.Decimal(10, 7)
+  recordedBy          String
+  deletedAt           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  farm          Farm           @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot     FieldPlot      @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  cultivar      Cultivar?      @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
+  operationType OperationType? @relation(fields: [operationTypeId], references: [id], onDelete: SetNull)
+  recorder      User           @relation("PlantingRecorder", fields: [recordedBy], references: [id])
+
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@index([cultivarId])
+  @@index([plantingDate])
+  @@index([operationTypeId])
+  @@map("planting_operations")
 }
