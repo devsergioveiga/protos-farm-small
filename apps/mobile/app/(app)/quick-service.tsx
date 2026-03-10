@@ -601,7 +601,7 @@ export default function QuickServiceScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const [savedCount, setSavedCount] = useState(0);
   const [syncedImmediately, setSyncedImmediately] = useState(false);
-  const toastOpacity = useRef(new Animated.Value(0)).current;
+  const toastOpacityRef = useRef(new Animated.Value(0));
 
   // Picker modals
   const [showTeamPicker, setShowTeamPicker] = useState(false);
@@ -866,13 +866,13 @@ export default function QuickServiceScreen() {
 
       // Show success toast and auto-navigate back
       Animated.sequence([
-        Animated.timing(toastOpacity, {
+        Animated.timing(toastOpacityRef.current, {
           toValue: 1,
           duration: 200,
           useNativeDriver: true,
         }),
         Animated.delay(1200),
-        Animated.timing(toastOpacity, {
+        Animated.timing(toastOpacityRef.current, {
           toValue: 0,
           duration: 300,
           useNativeDriver: true,
@@ -1492,7 +1492,7 @@ export default function QuickServiceScreen() {
 
       {/* Success toast */}
       <Animated.View
-        style={[styles.successToast, { opacity: toastOpacity }]}
+        style={[styles.successToast, { opacity: toastOpacityRef.current }]}
         pointerEvents="none"
         accessibilityLiveRegion="polite"
       >
