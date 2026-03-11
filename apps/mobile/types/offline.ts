@@ -200,6 +200,178 @@ export interface OfflineOperationTemplate {
   created_at: string;
 }
 
+export interface OfflinePest {
+  id: string;
+  common_name: string;
+  scientific_name: string | null;
+  category: string;
+  control_threshold: number | null;
+  recommended_products: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OfflineMonitoringPoint {
+  id: string;
+  farm_id: string;
+  field_plot_id: string;
+  code: string;
+  latitude: number;
+  longitude: number;
+  created_at: string;
+}
+
+export type InfestationLevel = 'AUSENTE' | 'BAIXO' | 'MODERADO' | 'ALTO' | 'CRITICO';
+
+export interface OfflineMonitoringRecord {
+  id: string;
+  farm_id: string;
+  field_plot_id: string;
+  monitoring_point_id: string;
+  monitoring_point_code: string;
+  pest_id: string;
+  pest_name: string;
+  observed_at: string;
+  infestation_level: InfestationLevel;
+  sample_count: number | null;
+  pest_count: number | null;
+  growth_stage: string | null;
+  has_natural_enemies: number;
+  natural_enemies_desc: string | null;
+  damage_percentage: number | null;
+  photo_uri: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  notes: string | null;
+  synced: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Offline field team (synced from backend) */
+export interface OfflineFieldTeam {
+  id: string;
+  farm_id: string;
+  name: string;
+  team_type: string;
+  is_temporary: number;
+  leader_id: string;
+  leader_name: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Offline field team member (synced from backend) */
+export interface OfflineFieldTeamMember {
+  id: string;
+  team_id: string;
+  user_id: string;
+  user_name: string;
+  joined_at: string;
+  left_at: string | null;
+}
+
+/** Offline quick service entry (created locally, synced to team-operations) */
+export interface OfflineQuickService {
+  id: string;
+  farm_id: string;
+  team_id: string;
+  team_name: string;
+  field_plot_id: string | null;
+  field_plot_name: string | null;
+  location_id: string | null;
+  location_type: FieldOperationLocationType | null;
+  location_name: string | null;
+  operation_type: FieldOperationType;
+  performed_at: string;
+  time_start: string;
+  time_end: string;
+  present_member_ids: string;
+  notes: string | null;
+  synced: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Offline team operation (US-077 CA10) */
+export interface OfflineTeamOperation {
+  id: string;
+  farm_id: string;
+  field_plot_id: string;
+  field_plot_name: string;
+  team_id: string;
+  team_name: string;
+  operation_type: FieldOperationType;
+  performed_at: string;
+  time_start: string;
+  time_end: string;
+  member_ids: string; // JSON array
+  entry_data: string | null; // JSON array of {userId, hoursWorked?, productivity?, productivityUnit?, notes?}
+  notes: string | null;
+  synced: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Offline cultivar (synced from backend) */
+export interface OfflineCultivar {
+  id: string;
+  name: string;
+  crop: string;
+  obtainer: string | null;
+  cycle_days: number | null;
+  maturity_group: string | null;
+  technology: string | null;
+  seed_type: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Season types for planting operations */
+export type SeasonType = 'SAFRA' | 'SAFRINHA' | 'INVERNO';
+
+/** Dose units for seed treatments */
+export type SeedTreatmentDoseUnit = 'KG_HA' | 'L_HA' | 'ML_100KG';
+
+/** Application modes for base fertilization */
+export type FertilizerApplicationMode = 'SULCO' | 'LANCO' | 'INCORPORADO';
+
+/** Offline planting operation (created locally, synced to backend) */
+export interface OfflinePlantingOperation {
+  id: string;
+  farm_id: string;
+  field_plot_id: string;
+  field_plot_name: string;
+  cultivar_id: string | null;
+  cultivar_name: string | null;
+  crop: string;
+  planting_date: string;
+  season_year: string;
+  season_type: SeasonType;
+  planted_area_percent: number;
+  population_per_m: number | null;
+  row_spacing_cm: number | null;
+  depth_cm: number | null;
+  seed_rate_kg_ha: number | null;
+  seed_treatments: string | null;
+  base_fertilizations: string | null;
+  machine_name: string | null;
+  operator_name: string | null;
+  average_speed_km_h: number | null;
+  seed_cost: number | null;
+  fertilizer_cost: number | null;
+  treatment_cost: number | null;
+  operation_cost: number | null;
+  notes: string | null;
+  photo_uri: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  synced: number;
+  created_at: string;
+  updated_at: string;
+}
+
 /** Entities that can be synced */
 export type SyncEntity =
   | 'farms'
@@ -207,4 +379,8 @@ export type SyncEntity =
   | 'farm_locations'
   | 'animal_lots'
   | 'animals'
-  | 'animal_breed_compositions';
+  | 'animal_breed_compositions'
+  | 'pests'
+  | 'monitoring_points'
+  | 'field_teams'
+  | 'cultivars';

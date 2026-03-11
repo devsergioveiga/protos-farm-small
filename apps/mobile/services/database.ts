@@ -4,7 +4,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
  * Database version — increment when adding new migrations.
  * Each version maps to a migration function in the migrations array.
  */
-const DATABASE_VERSION = 6;
+const DATABASE_VERSION = 10;
 
 /**
  * Run migrations on database init (called by SQLiteProvider onInit).
@@ -48,6 +48,26 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase): Promise<void> {
   if (currentVersion === 5) {
     await migrationV6(db);
     currentVersion = 6;
+  }
+
+  if (currentVersion === 6) {
+    await migrationV7(db);
+    currentVersion = 7;
+  }
+
+  if (currentVersion === 7) {
+    await migrationV8(db);
+    currentVersion = 8;
+  }
+
+  if (currentVersion === 8) {
+    await migrationV9(db);
+    currentVersion = 9;
+  }
+
+  if (currentVersion === 9) {
+    await migrationV10(db);
+    currentVersion = 10;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
@@ -333,6 +353,220 @@ async function migrationV6(db: SQLiteDatabase): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_pesticide_apps_farm ON pesticide_applications(farm_id);
     CREATE INDEX IF NOT EXISTS idx_pesticide_apps_synced ON pesticide_applications(synced);
     CREATE INDEX IF NOT EXISTS idx_pesticide_apps_applied ON pesticide_applications(applied_at);
+  `);
+}
+
+/**
+ * V7 — Pests + monitoring points + monitoring records for offline MIP registration.
+ */
+async function migrationV7(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS pests (
+      id TEXT PRIMARY KEY NOT NULL,
+      common_name TEXT NOT NULL,
+      scientific_name TEXT,
+      category TEXT NOT NULL,
+      control_threshold REAL,
+      recommended_products TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS monitoring_points (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      field_plot_id TEXT NOT NULL,
+      code TEXT NOT NULL,
+      latitude REAL NOT NULL,
+      longitude REAL NOT NULL,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_monitoring_points_farm ON monitoring_points(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_monitoring_points_plot ON monitoring_points(field_plot_id);
+
+    CREATE TABLE IF NOT EXISTS monitoring_records (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      field_plot_id TEXT NOT NULL,
+      monitoring_point_id TEXT NOT NULL,
+      monitoring_point_code TEXT NOT NULL,
+      pest_id TEXT NOT NULL,
+      pest_name TEXT NOT NULL,
+      observed_at TEXT NOT NULL,
+      infestation_level TEXT NOT NULL,
+      sample_count INTEGER,
+      pest_count INTEGER,
+      growth_stage TEXT,
+      has_natural_enemies INTEGER NOT NULL DEFAULT 0,
+      natural_enemies_desc TEXT,
+      damage_percentage REAL,
+      photo_uri TEXT,
+      latitude REAL,
+      longitude REAL,
+      notes TEXT,
+      synced INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_monitoring_records_farm ON monitoring_records(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_monitoring_records_plot ON monitoring_records(field_plot_id);
+    CREATE INDEX IF NOT EXISTS idx_monitoring_records_synced ON monitoring_records(synced);
+    CREATE INDEX IF NOT EXISTS idx_monitoring_records_observed ON monitoring_records(observed_at);
+  `);
+}
+
+/**
+ * V8 — Field teams + quick services for rapid daily service entry (US-078).
+ */
+async function migrationV8(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS field_teams (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      team_type TEXT NOT NULL,
+      is_temporary INTEGER NOT NULL DEFAULT 0,
+      leader_id TEXT NOT NULL,
+      leader_name TEXT NOT NULL,
+      notes TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS field_team_members (
+      id TEXT PRIMARY KEY NOT NULL,
+      team_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      user_name TEXT NOT NULL,
+      joined_at TEXT NOT NULL,
+      left_at TEXT,
+      FOREIGN KEY (team_id) REFERENCES field_teams(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS quick_services (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      team_id TEXT NOT NULL,
+      team_name TEXT NOT NULL,
+      field_plot_id TEXT,
+      field_plot_name TEXT,
+      location_id TEXT,
+      location_type TEXT,
+      location_name TEXT,
+      operation_type TEXT NOT NULL,
+      performed_at TEXT NOT NULL,
+      time_start TEXT NOT NULL,
+      time_end TEXT NOT NULL,
+      present_member_ids TEXT NOT NULL,
+      notes TEXT,
+      synced INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_field_teams_farm ON field_teams(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_field_team_members_team ON field_team_members(team_id);
+    CREATE INDEX IF NOT EXISTS idx_quick_services_farm ON quick_services(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_quick_services_synced ON quick_services(synced);
+    CREATE INDEX IF NOT EXISTS idx_quick_services_performed ON quick_services(performed_at);
+  `);
+}
+
+/**
+ * V9 — Team operations offline (US-077 CA10).
+ */
+async function migrationV9(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS team_operations (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      field_plot_id TEXT NOT NULL,
+      field_plot_name TEXT NOT NULL,
+      team_id TEXT NOT NULL,
+      team_name TEXT NOT NULL,
+      operation_type TEXT NOT NULL,
+      performed_at TEXT NOT NULL,
+      time_start TEXT NOT NULL,
+      time_end TEXT NOT NULL,
+      member_ids TEXT NOT NULL,
+      entry_data TEXT,
+      notes TEXT,
+      synced INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_team_operations_farm ON team_operations(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_team_operations_synced ON team_operations(synced);
+    CREATE INDEX IF NOT EXISTS idx_team_operations_performed ON team_operations(performed_at);
+  `);
+}
+
+/**
+ * V10 — Cultivars (synced from backend) + planting operations (offline-first).
+ */
+async function migrationV10(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS cultivars (
+      id TEXT PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      crop TEXT NOT NULL,
+      obtainer TEXT,
+      cycle_days INTEGER,
+      maturity_group TEXT,
+      technology TEXT,
+      seed_type TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_cultivars_crop ON cultivars(crop);
+
+    CREATE TABLE IF NOT EXISTS planting_operations (
+      id TEXT PRIMARY KEY NOT NULL,
+      farm_id TEXT NOT NULL,
+      field_plot_id TEXT NOT NULL,
+      field_plot_name TEXT NOT NULL,
+      cultivar_id TEXT,
+      cultivar_name TEXT,
+      crop TEXT NOT NULL,
+      planting_date TEXT NOT NULL,
+      season_year TEXT NOT NULL,
+      season_type TEXT NOT NULL DEFAULT 'SAFRA',
+      planted_area_percent REAL NOT NULL DEFAULT 100,
+      population_per_m REAL,
+      row_spacing_cm REAL,
+      depth_cm REAL,
+      seed_rate_kg_ha REAL,
+      seed_treatments TEXT,
+      base_fertilizations TEXT,
+      machine_name TEXT,
+      operator_name TEXT,
+      average_speed_km_h REAL,
+      seed_cost REAL,
+      fertilizer_cost REAL,
+      treatment_cost REAL,
+      operation_cost REAL,
+      notes TEXT,
+      photo_uri TEXT,
+      latitude REAL,
+      longitude REAL,
+      synced INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (farm_id) REFERENCES farms(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_planting_ops_farm ON planting_operations(farm_id);
+    CREATE INDEX IF NOT EXISTS idx_planting_ops_synced ON planting_operations(synced);
+    CREATE INDEX IF NOT EXISTS idx_planting_ops_date ON planting_operations(planting_date);
   `);
 }
 

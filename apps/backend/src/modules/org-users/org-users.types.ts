@@ -37,6 +37,7 @@ export interface UpdateOrgUserInput {
   name?: string;
   phone?: string;
   role?: UserRole;
+  hourlyRate?: number | null;
   farmIds?: string[];
 }
 

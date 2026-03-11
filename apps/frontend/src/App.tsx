@@ -29,6 +29,18 @@ const PesticideApplicationsPage = lazy(() => import('@/pages/PesticideApplicatio
 const FertilizerApplicationsPage = lazy(() => import('@/pages/FertilizerApplicationsPage'));
 const CulturalOperationsPage = lazy(() => import('@/pages/CulturalOperationsPage'));
 const FieldTeamsPage = lazy(() => import('@/pages/FieldTeamsPage'));
+const TeamOperationsPage = lazy(() => import('@/pages/TeamOperationsPage'));
+const PestsPage = lazy(() => import('@/pages/PestsPage'));
+const MonitoringPointsPage = lazy(() => import('@/pages/MonitoringPointsPage'));
+const MonitoringRecordsPage = lazy(() => import('@/pages/MonitoringRecordsPage'));
+const MonitoringHeatmapPage = lazy(() => import('@/pages/MonitoringHeatmapPage'));
+const MonitoringTimelinePage = lazy(() => import('@/pages/MonitoringTimelinePage'));
+const MonitoringRecommendationsPage = lazy(() => import('@/pages/MonitoringRecommendationsPage'));
+const MonitoringReportPage = lazy(() => import('@/pages/MonitoringReportPage'));
+const OperationTypesPage = lazy(() => import('@/pages/OperationTypesPage'));
+const PlantingPage = lazy(() => import('@/pages/PlantingPage'));
+const SoilPrepPage = lazy(() => import('@/pages/SoilPrepPage'));
+const CoffeeHarvestsPage = lazy(() => import('@/pages/CoffeeHarvestsPage'));
 
 export function App() {
   return (
@@ -65,6 +77,33 @@ export function App() {
                 <Route path="/fertilizer-applications" element={<FertilizerApplicationsPage />} />
                 <Route path="/cultural-operations" element={<CulturalOperationsPage />} />
                 <Route path="/field-teams" element={<FieldTeamsPage />} />
+                <Route path="/team-operations" element={<TeamOperationsPage />} />
+                <Route path="/operation-types" element={<OperationTypesPage />} />
+                <Route path="/planting" element={<PlantingPage />} />
+                <Route path="/soil-prep" element={<SoilPrepPage />} />
+                <Route path="/coffee-harvests" element={<CoffeeHarvestsPage />} />
+                <Route path="/pests" element={<PestsPage />} />
+                <Route
+                  path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
+                  element={<MonitoringPointsPage />}
+                />
+                <Route
+                  path="/farms/:farmId/plots/:fieldPlotId/monitoring-records"
+                  element={<MonitoringRecordsPage />}
+                />
+                <Route
+                  path="/farms/:farmId/plots/:fieldPlotId/monitoring-heatmap"
+                  element={<MonitoringHeatmapPage />}
+                />
+                <Route
+                  path="/farms/:farmId/plots/:fieldPlotId/monitoring-timeline"
+                  element={<MonitoringTimelinePage />}
+                />
+                <Route
+                  path="/farms/:farmId/plots/:fieldPlotId/monitoring-recommendations"
+                  element={<MonitoringRecommendationsPage />}
+                />
+                <Route path="/farms/:farmId/monitoring-report" element={<MonitoringReportPage />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/login" replace />} />

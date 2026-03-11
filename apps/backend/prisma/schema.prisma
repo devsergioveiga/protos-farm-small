@@ -264,7 +264,13 @@ model Organization {
   customRoles CustomRole[]
   producers   Producer[]
   breeds      Breed[]
-  cultivars   Cultivar[]
+  cultivars           Cultivar[]
+  moistureStandards   MoistureStandard[]
+  pests           Pest[]
+  operationTypes            OperationType[]
+  cropOperationSequences    CropOperationSequence[]
+  operationTypeSchedules    OperationTypeSchedule[]
+  cropPhenologicalStages    CropPhenologicalStage[]
 
   @@map("organizations")
 }
@@ -278,6 +284,7 @@ model User {
   googleId       String?    @unique
   role           UserRole   @default(OPERATOR)
   status         UserStatus @default(ACTIVE)
+  hourlyRate     Decimal?   @map("hourly_rate") @db.Decimal(10, 2)
   lastLoginAt    DateTime?
   organizationId String?
   customRoleId   String?
@@ -300,9 +307,16 @@ model User {
   recordedPesticideApplications PesticideApplication[] @relation("PesticideRecorder")
   recordedFertilizerApplications FertilizerApplication[] @relation("FertilizerRecorder")
   recordedCulturalOperations CulturalOperation[] @relation("CulturalOperationRecorder")
+  recordedSoilPrepOperations SoilPrepOperation[] @relation("SoilPrepRecorder")
   ledTeams                   FieldTeam[]         @relation("TeamLeader")
   createdTeams               FieldTeam[]         @relation("TeamCreator")
   teamMemberships            FieldTeamMember[]
+  recordedTeamOperations     TeamOperation[]     @relation("TeamOperationRecorder")
+  teamOperationEntries       TeamOperationEntry[] @relation("TeamOperationEntryWorker")
+  phenologicalRecords        PlotPhenologicalRecord[]
+  recordedPlantingOperations PlantingOperation[]      @relation("PlantingRecorder")
+  recordedGrainHarvests      GrainHarvest[]           @relation("GrainHarvestRecorder")
+  recordedCoffeeHarvests     CoffeeHarvest[]          @relation("CoffeeHarvestRecorder")
 
   @@map("users")
 }
@@ -361,7 +375,15 @@ model Farm {
   pesticideApplications      PesticideApplication[]
   fertilizerApplications     FertilizerApplication[]
   culturalOperations         CulturalOperation[]
+  soilPrepOperations         SoilPrepOperation[]
   fieldTeams                 FieldTeam[]
+  teamOperations             TeamOperation[]
+  productivityTargets        ProductivityTarget[]
+  monitoringPoints           MonitoringPoint[]
+  monitoringRecords          MonitoringRecord[]
+  plantingOperations         PlantingOperation[]
+  grainHarvests              GrainHarvest[]
+  coffeeHarvests             CoffeeHarvest[]
 
   @@map("farms")
 }
@@ -652,6 +674,14 @@ model FieldPlot {
   pesticideApplications  PesticideApplication[]
   fertilizerApplications FertilizerApplication[]
   culturalOperations     CulturalOperation[]
+  soilPrepOperations     SoilPrepOperation[]
+  teamOperations         TeamOperation[]
+  monitoringPoints       MonitoringPoint[]
+  monitoringRecords      MonitoringRecord[]
+  phenologicalRecords    PlotPhenologicalRecord[]
+  plantingOperations     PlantingOperation[]
+  grainHarvests          GrainHarvest[]
+  coffeeHarvests         CoffeeHarvest[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -1151,8 +1181,11 @@ model Cultivar {
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 
-  organization   Organization    @relation(fields: [organizationId], references: [id])
-  plotCropSeasons PlotCropSeason[]
+  organization       Organization       @relation(fields: [organizationId], references: [id])
+  plotCropSeasons    PlotCropSeason[]
+  plantingOperations PlantingOperation[]
+  grainHarvests      GrainHarvest[]
+  coffeeHarvests     CoffeeHarvest[]
 
   @@unique([name, crop, organizationId])
   @@index([organizationId])
@@ -1392,6 +1425,59 @@ model CulturalOperation {
   @@map("cultural_operations")
 }
 
+// ─── Soil Prep Operations (US-034) ───────────────────────────────────────
+
+model SoilPrepOperation {
+  id                  String    @id @default(uuid())
+  farmId              String
+  fieldPlotId         String
+  operationTypeId     String?
+  operationTypeName   String
+  startedAt           DateTime
+  endedAt             DateTime?
+
+  // CA2 — machine, implement, operator, depth
+  machineName         String?
+  implementName       String?
+  operatorName        String?
+  depthCm             Decimal?  @db.Decimal(6, 2)
+
+  // CA3 — inputs applied (JSON array)
+  inputs              Json?     @default("[]")
+
+  // CA5 — conditions
+  soilMoisturePercent Decimal?  @db.Decimal(5, 2)
+  weatherCondition    String?
+
+  // CA7 — costs
+  durationHours       Decimal?  @db.Decimal(6, 2)
+  machineCostPerHour  Decimal?  @db.Decimal(10, 2)
+  laborCount          Int?
+  laborHourCost       Decimal?  @db.Decimal(10, 2)
+  inputsCost          Decimal?  @db.Decimal(10, 2)
+
+  // common
+  notes               String?
+  photoUrl            String?
+  latitude            Decimal?  @db.Decimal(10, 7)
+  longitude           Decimal?  @db.Decimal(10, 7)
+  recordedBy          String
+  deletedAt           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  farm          Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot     FieldPlot     @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  operationType OperationType? @relation(fields: [operationTypeId], references: [id], onDelete: SetNull)
+  recorder      User          @relation("SoilPrepRecorder", fields: [recordedBy], references: [id])
+
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@index([startedAt])
+  @@index([operationTypeId])
+  @@map("soil_prep_operations")
+}
+
 // ─── Field Teams (US-041) ─────────────────────────────────────────────────
 
 enum FieldTeamType {
@@ -1422,7 +1508,8 @@ model FieldTeam {
   farm    Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
   leader  User            @relation("TeamLeader", fields: [leaderId], references: [id])
   creator User            @relation("TeamCreator", fields: [createdBy], references: [id])
-  members FieldTeamMember[]
+  members        FieldTeamMember[]
+  teamOperations TeamOperation[]
 
   @@index([farmId])
   @@index([leaderId])
@@ -1444,4 +1531,534 @@ model FieldTeamMember {
   @@index([teamId])
   @@index([userId])
   @@map("field_team_members")
+}
+
+// ─── Team Operations — Bulk (US-077) ──────────────────────────────────────
+
+model TeamOperation {
+  id             String          @id @default(uuid())
+  farmId         String
+  fieldPlotId    String
+  teamId         String
+  operationType  FieldOperationType
+  performedAt    DateTime
+  timeStart      DateTime
+  timeEnd        DateTime
+  notes          String?
+  photoUrl       String?
+  latitude       Decimal?        @db.Decimal(10, 7)
+  longitude      Decimal?        @db.Decimal(10, 7)
+  recordedBy     String
+  deletedAt      DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  team      FieldTeam @relation(fields: [teamId], references: [id])
+  recorder  User      @relation("TeamOperationRecorder", fields: [recordedBy], references: [id])
+  entries   TeamOperationEntry[]
+
+  @@index([farmId])
+  @@index([teamId])
+  @@index([fieldPlotId])
+  @@index([performedAt])
+  @@map("team_operations")
+}
+
+// ─── Pest Library (MIP) ─────────────────────────────────────────────
+
+enum InfestationLevel {
+  AUSENTE
+  BAIXO
+  MODERADO
+  ALTO
+  CRITICO
+}
+
+enum PestCategory {
+  INSETO
+  ACARO
+  FUNGO
+  BACTERIA
+  VIRUS
+  NEMATOIDE
+  PLANTA_DANINHA
+  OUTRO
+}
+
+enum PestSeverity {
+  BAIXO
+  MEDIO
+  ALTO
+  CRITICO
+}
+
+model Pest {
+  id              String        @id @default(uuid())
+  organizationId  String
+  commonName      String
+  scientificName  String?
+  category        PestCategory
+  affectedCrops   String[]
+  severity          PestSeverity?
+  ndeDescription    String?
+  ncDescription     String?
+  controlThreshold  InfestationLevel? @map("control_threshold")
+  recommendedProducts String?          @map("recommended_products")
+  lifecycle       String?
+  symptoms        String?
+  photoUrl        String?
+  notes           String?
+  deletedAt       DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  monitoringRecords MonitoringRecord[]
+
+  @@unique([commonName, organizationId])
+  @@index([organizationId])
+  @@index([category])
+  @@map("pests")
+}
+
+// ─── Monitoring Points (MIP) ──────────────────────────────────────────
+
+model MonitoringPoint {
+  id            String    @id @default(uuid())
+  farmId        String
+  fieldPlotId   String
+  code          String
+  latitude      Decimal   @db.Decimal(10, 7)
+  longitude     Decimal   @db.Decimal(10, 7)
+  notes         String?
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+
+  monitoringRecords MonitoringRecord[]
+
+  @@unique([fieldPlotId, code])
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@map("monitoring_points")
+}
+
+// ─── Monitoring Records (MIP) ─────────────────────────────────────────
+
+model MonitoringRecord {
+  id                  String           @id @default(uuid())
+  farmId              String
+  fieldPlotId         String
+  monitoringPointId   String
+  pestId              String
+  observedAt          DateTime
+  infestationLevel    InfestationLevel
+  sampleCount         Int?
+  pestCount           Int?
+  growthStage         String?
+  hasNaturalEnemies   Boolean          @default(false)
+  naturalEnemiesDesc  String?
+  damagePercentage    Decimal?         @db.Decimal(5, 2)
+  photoUrl            String?
+  notes               String?
+  deletedAt           DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  farm            Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot       FieldPlot       @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  monitoringPoint MonitoringPoint @relation(fields: [monitoringPointId], references: [id], onDelete: Cascade)
+  pest            Pest            @relation(fields: [pestId], references: [id])
+
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@index([monitoringPointId])
+  @@index([pestId])
+  @@index([observedAt])
+  @@map("monitoring_records")
+}
+
+model TeamOperationEntry {
+  id                String    @id @default(uuid())
+  teamOperationId   String
+  userId            String
+  hoursWorked       Decimal?  @db.Decimal(6, 2)
+  productivity      Decimal?  @db.Decimal(12, 4)
+  productivityUnit  String?
+  notes             String?
+  createdAt         DateTime  @default(now())
+
+  teamOperation TeamOperation @relation(fields: [teamOperationId], references: [id], onDelete: Cascade)
+  user          User          @relation("TeamOperationEntryWorker", fields: [userId], references: [id])
+
+  @@unique([teamOperationId, userId])
+  @@index([teamOperationId])
+  @@index([userId])
+  @@map("team_operation_entries")
+}
+
+// ─── Productivity Targets (US-079 CA3) ─────────────────────────────
+
+model ProductivityTarget {
+  id              String          @id @default(uuid())
+  farmId          String
+  operationType   FieldOperationType
+  targetValue     Decimal         @db.Decimal(12, 4)
+  targetUnit      String
+  period          String          @default("day")
+  ratePerUnit     Decimal?        @db.Decimal(12, 4)
+  rateUnit        String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  farm Farm @relation(fields: [farmId], references: [id], onDelete: Cascade)
+
+  @@unique([farmId, operationType, targetUnit])
+  @@index([farmId])
+  @@map("productivity_targets")
+}
+
+// ─── Operation Types (US-081) ──────────────────────────────────────
+
+model OperationType {
+  id             String    @id @default(uuid())
+  organizationId String    @map("organization_id")
+  name           String
+  description    String?
+  parentId       String?   @map("parent_id")
+  level          Int       @default(1)
+  sortOrder      Int       @default(0) @map("sort_order")
+  isSystem       Boolean   @default(false) @map("is_system")
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  organization Organization        @relation(fields: [organizationId], references: [id])
+  parent       OperationType?      @relation("OperationTypeHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     OperationType[]     @relation("OperationTypeHierarchy")
+  crops        OperationTypeCrop[]
+  fields       OperationTypeField[]
+  sequences    CropOperationSequence[]
+  schedules    OperationTypeSchedule[]
+  plantingOperations PlantingOperation[]
+  soilPrepOperations SoilPrepOperation[]
+
+  @@unique([name, parentId, organizationId])
+  @@index([organizationId, parentId])
+  @@index([organizationId, level])
+  @@map("operation_types")
+}
+
+model OperationTypeCrop {
+  id              String   @id @default(uuid())
+  operationTypeId String   @map("operation_type_id")
+  crop            String
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([operationTypeId, crop])
+  @@index([operationTypeId])
+  @@map("operation_type_crops")
+}
+
+model OperationTypeField {
+  id              String   @id @default(uuid())
+  operationTypeId String   @map("operation_type_id")
+  fieldKey        String   @map("field_key")
+  visibility      String   @default("optional")
+  sortOrder       Int      @default(0) @map("sort_order")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([operationTypeId, fieldKey])
+  @@index([operationTypeId])
+  @@map("operation_type_fields")
+}
+
+model CropOperationSequence {
+  id              String   @id @default(uuid())
+  organizationId  String   @map("organization_id")
+  crop            String
+  operationTypeId String   @map("operation_type_id")
+  sequenceOrder   Int      @map("sequence_order")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization  Organization  @relation(fields: [organizationId], references: [id])
+  operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, crop, operationTypeId])
+  @@unique([organizationId, crop, sequenceOrder])
+  @@index([organizationId, crop])
+  @@map("crop_operation_sequences")
+}
+
+model OperationTypeSchedule {
+  id              String   @id @default(uuid())
+  organizationId  String   @map("organization_id")
+  operationTypeId String   @map("operation_type_id")
+  crop            String
+  scheduleType    String   @map("schedule_type") // "fixed_date" | "phenological"
+  startDay        Int?     @map("start_day") // 1-31 (fixed_date)
+  startMonth      Int?     @map("start_month") // 1-12 (fixed_date)
+  endDay          Int?     @map("end_day") // 1-31 (fixed_date)
+  endMonth        Int?     @map("end_month") // 1-12 (fixed_date)
+  phenoStage      String?  @map("pheno_stage") // nome da fase fenológica (phenological)
+  offsetDays      Int?     @map("offset_days") // dias relativos ao evento/fase (phenological), negativo = antes
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization  Organization  @relation(fields: [organizationId], references: [id])
+  operationType OperationType @relation(fields: [operationTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, operationTypeId, crop])
+  @@index([organizationId, crop])
+  @@index([operationTypeId])
+  @@map("operation_type_schedules")
+}
+
+model CropPhenologicalStage {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  crop           String
+  code           String   // ex: "VE", "V1", "R1", "Florada"
+  name           String   // ex: "Emergência", "Primeira folha", "Florescimento"
+  description    String?
+  stageOrder     Int      @map("stage_order") // posição no ciclo da cultura
+  isSystem       Boolean  @default(false) @map("is_system")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, crop, code])
+  @@unique([organizationId, crop, stageOrder])
+  @@index([organizationId, crop])
+  @@map("crop_phenological_stages")
+}
+
+model PlotPhenologicalRecord {
+  id          String   @id @default(uuid())
+  fieldPlotId String   @map("field_plot_id")
+  crop        String
+  stageCode   String   @map("stage_code")
+  stageName   String   @map("stage_name")
+  recordedAt  DateTime @default(now()) @map("recorded_at")
+  recordedBy  String   @map("recorded_by")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  recorder  User      @relation(fields: [recordedBy], references: [id])
+
+  @@index([fieldPlotId, crop])
+  @@index([fieldPlotId, recordedAt])
+  @@map("plot_phenological_records")
+}
+
+// ─── Planting Operations (US-083) ─────────────────────────────────
+
+model PlantingOperation {
+  id                  String    @id @default(uuid())
+  farmId              String
+  fieldPlotId         String
+  cultivarId          String?
+  operationTypeId     String?
+  seasonYear          String    // ex: "2025/2026"
+  seasonType          SeasonType @default(SAFRA)
+
+  // CA1 — basic required
+  crop                String    // ex: "Soja", "Milho"
+  plantingDate        DateTime  @db.Date
+  plantedAreaPercent  Decimal   @default(100) @db.Decimal(5, 2) // CA9 — partial planting
+
+  // CA2 — technical fields
+  populationPerM      Decimal?  @db.Decimal(8, 2)  // seeds/m
+  rowSpacingCm        Decimal?  @db.Decimal(6, 2)  // spacing between rows
+  depthCm             Decimal?  @db.Decimal(6, 2)  // planting depth
+  seedRateKgHa        Decimal?  @db.Decimal(8, 2)  // sowing rate kg/ha
+
+  // CA3 — seed treatment (JSON array)
+  seedTreatments      Json?     @default("[]")
+
+  // CA4 — base fertilization (JSON array)
+  baseFertilizations  Json?     @default("[]")
+
+  // CA5 — machine & operator
+  machineName         String?
+  operatorName        String?
+  averageSpeedKmH     Decimal?  @db.Decimal(6, 2)
+
+  // CA8 — cost fields
+  seedCost            Decimal?  @db.Decimal(12, 2)
+  fertilizerCost      Decimal?  @db.Decimal(12, 2)
+  treatmentCost       Decimal?  @db.Decimal(12, 2)
+  operationCost       Decimal?  @db.Decimal(12, 2)
+
+  // common
+  notes               String?
+  photoUrl            String?
+  latitude            Decimal?  @db.Decimal(10, 7)
+  longitude           Decimal?  @db.Decimal(10, 7)
+  recordedBy          String
+  deletedAt           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  farm          Farm           @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot     FieldPlot      @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  cultivar      Cultivar?      @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
+  operationType OperationType? @relation(fields: [operationTypeId], references: [id], onDelete: SetNull)
+  recorder      User           @relation("PlantingRecorder", fields: [recordedBy], references: [id])
+
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@index([cultivarId])
+  @@index([plantingDate])
+  @@index([operationTypeId])
+  @@map("planting_operations")
+}
+
+// ─── Grain Harvest (EPIC-09 / US-084) ──────────────────────────────
+
+model GrainHarvest {
+  id              String    @id @default(uuid())
+  farmId          String
+  fieldPlotId     String
+  cultivarId      String?
+
+  // CA1 — basic required fields
+  crop            String    // ex: "Soja", "Milho", "Feijão", "Trigo"
+  harvestDate     DateTime  @db.Date
+  harvestedAreaHa Decimal   @db.Decimal(12, 4) // área colhida
+  grossProductionKg Decimal @db.Decimal(14, 2) // produção bruta em kg
+  moisturePct     Decimal   @db.Decimal(5, 2)  // umidade %
+  impurityPct     Decimal   @db.Decimal(5, 2)  // impureza %
+
+  // CA7 — múltiplas cargas por talhão
+  loadNumber      Int       @default(0) // nº sequencial por talhão (auto)
+
+  // CA4 — colheitadeira e operador
+  harvesterName   String?   // nome/identificação da colheitadeira
+  operatorName    String?   // nome do operador
+
+  // CA5 — destino da produção
+  destination       String?   // SILO_PROPRIO, ARMAZEM_TERCEIRO, VENDA_DIRETA
+  destinationName   String?   // nome do silo/armazém/comprador
+  romaneioNumber    String?   // nº romaneio (venda direta)
+
+  // CA6 — pesagem
+  grossWeightKg     Decimal?  @db.Decimal(14, 2) // peso bruto
+  tareWeightKg      Decimal?  @db.Decimal(14, 2) // tara
+  netWeightKg       Decimal?  @db.Decimal(14, 2) // peso líquido (calculado ou manual)
+  weighingMethod    String?   // MANUAL, BALANCA
+
+  // CA9 — custo de colheita
+  harvesterHours      Decimal?  @db.Decimal(8, 2)  // horas de colheitadeira
+  harvesterCostPerHour Decimal? @db.Decimal(12, 2) // R$/hora colheitadeira
+  transhipmentCost    Decimal?  @db.Decimal(12, 2) // custo de transbordo (R$)
+  transportCost       Decimal?  @db.Decimal(12, 2) // custo de transporte (R$)
+
+  // common
+  notes           String?
+  recordedBy      String
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  farm          Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot     FieldPlot   @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  cultivar      Cultivar?   @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
+  recorder      User        @relation("GrainHarvestRecorder", fields: [recordedBy], references: [id])
+
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@index([cultivarId])
+  @@index([harvestDate])
+  @@map("grain_harvests")
+}
+
+// ─── Moisture Standards (EPIC-09 / US-084 CA3) ─────────────────────
+
+model MoistureStandard {
+  id              String    @id @default(uuid())
+  organizationId  String
+  crop            String    // ex: "Soja", "Milho" (normalizado uppercase)
+  moisturePct     Decimal   @db.Decimal(5, 2)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, crop])
+  @@index([organizationId])
+  @@map("moisture_standards")
+}
+
+// ─── Coffee Harvest (EPIC-09 / US-085) ──────────────────────────────
+
+model CoffeeHarvest {
+  id              String    @id @default(uuid())
+  farmId          String
+  fieldPlotId     String
+  cultivarId      String?
+
+  // CA1 — campos básicos
+  harvestDate     DateTime  @db.Date
+  harvestType     String    // MECANIZADA, DERRICA_MANUAL, SELETIVA_CATACAO
+
+  // CA2 — volume
+  volumeLiters    Decimal   @db.Decimal(14, 2) // litros colhidos
+  sacsBenefited   Decimal?  @db.Decimal(12, 2) // sacas de 60kg (café beneficiado)
+
+  // CA3 — rendimento (litros por saca)
+  yieldLitersPerSac Decimal? @db.Decimal(8, 2)
+
+  // CA4 — classificação (% de cada tipo)
+  cherryPct       Decimal   @default(0) @db.Decimal(5, 2) // % cereja
+  greenPct        Decimal   @default(0) @db.Decimal(5, 2) // % verde
+  floaterPct      Decimal   @default(0) @db.Decimal(5, 2) // % boia
+  dryPct          Decimal   @default(0) @db.Decimal(5, 2) // % seco
+
+  // CA5 — destino
+  destination     String?   // TERREIRO, SECADOR_MECANICO, LAVADOR_SEPARADOR
+  destinationName String?
+
+  // CA6 — equipe de colheita
+  numberOfHarvesters    Int?       // nº de colhedores
+  harvestersProductivity Decimal?  @db.Decimal(10, 2) // litros/pessoa/dia
+
+  // CA7 — café especial
+  isSpecialLot    Boolean   @default(false)
+  microlotCode    String?   // código de rastreabilidade do microlote
+
+  // common
+  notes           String?
+  recordedBy      String
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  farm          Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot     FieldPlot   @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  cultivar      Cultivar?   @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
+  recorder      User        @relation("CoffeeHarvestRecorder", fields: [recordedBy], references: [id])
+
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@index([cultivarId])
+  @@index([harvestDate])
+  @@index([microlotCode])
+  @@map("coffee_harvests")
 }

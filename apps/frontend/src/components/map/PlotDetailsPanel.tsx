@@ -1,4 +1,5 @@
-import { X, Pencil, Scissors, BookOpen, FileEdit, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { X, Pencil, Scissors, BookOpen, FileEdit, Trash2, Crosshair, Sprout } from 'lucide-react';
 import { getCropColor, formatArea } from './FarmMap';
 import type { FieldPlot } from '@/types/farm';
 import './PlotDetailsPanel.css';
@@ -11,6 +12,7 @@ interface PlotDetailsPanelProps {
   onSubdivide?: (plot: FieldPlot) => void;
   onViewHistory?: (plot: FieldPlot) => void;
   onDelete?: (plot: FieldPlot) => void;
+  onRegisterPlanting?: (plot: FieldPlot) => void;
 }
 
 function formatSoilType(soilType: string): string {
@@ -32,6 +34,7 @@ function PlotDetailsPanel({
   onSubdivide,
   onViewHistory,
   onDelete,
+  onRegisterPlanting,
 }: PlotDetailsPanelProps) {
   if (!plot) return null;
 
@@ -110,6 +113,13 @@ function PlotDetailsPanel({
         </div>
       </div>
 
+      {plot.status === 'PLANTADO' && (
+        <div className="plot-details__status-badge plot-details__status-badge--planted">
+          <Sprout size={14} aria-hidden="true" />
+          Plantado — {plot.currentCrop}
+        </div>
+      )}
+
       <dl className="plot-details__fields">
         {plot.code && (
           <>
@@ -148,6 +158,26 @@ function PlotDetailsPanel({
         <dt>Criado em</dt>
         <dd>{formatDate(plot.createdAt)}</dd>
       </dl>
+
+      <div className="plot-details__actions-footer">
+        {onRegisterPlanting && (
+          <button
+            type="button"
+            className="plot-details__action-link plot-details__action-link--planting"
+            onClick={() => onRegisterPlanting(plot)}
+          >
+            <Sprout size={16} aria-hidden="true" />
+            Registrar plantio
+          </button>
+        )}
+        <Link
+          to={`/farms/${plot.farmId}/plots/${plot.id}/monitoring-points`}
+          className="plot-details__action-link"
+        >
+          <Crosshair size={16} aria-hidden="true" />
+          Pontos de monitoramento MIP
+        </Link>
+      </div>
     </div>
   );
 }

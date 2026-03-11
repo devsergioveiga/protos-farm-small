@@ -164,8 +164,15 @@ function FarmMap({
     (plot: FieldPlot) => {
       return (_feature: GeoJSON.Feature, layer: L.Layer) => {
         const soilLabel = plot.soilType ? plot.soilType.replace(/_/g, ' ') : null;
+        const statusLabel =
+          plot.status === 'PLANTADO'
+            ? '🌱 Plantado'
+            : plot.status === 'ACTIVE'
+              ? 'Disponível'
+              : plot.status;
         const tooltipLines = [
           `<strong>${plot.name}</strong>`,
+          `Status: ${statusLabel}`,
           `Área: ${formatArea(plot.boundaryAreaHa)}`,
           plot.currentCrop ? `Cultura: ${plot.currentCrop}` : null,
           soilLabel ? `Solo: ${soilLabel}` : null,
@@ -316,7 +323,7 @@ function FarmMap({
           .filter((pb) => pb.boundary.hasBoundary && pb.boundary.boundaryGeoJSON)
           .map((pb) => (
             <GeoJSON
-              key={`plot-boundary-${pb.plotId}-${cropFilter?.size ?? 0}`}
+              key={`plot-boundary-${pb.plotId}-${pb.plot.currentCrop ?? 'none'}-${pb.plot.status}-${cropFilter?.size ?? 0}`}
               data={pb.boundary.boundaryGeoJSON!}
               style={getPlotStyle(pb.plot.currentCrop)}
               onEachFeature={makePlotEachFeature(pb.plot)}

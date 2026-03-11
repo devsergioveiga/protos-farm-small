@@ -7,6 +7,10 @@ import {
   createAnimalLotRepository,
   createAnimalRepository,
   createSyncMetaRepository,
+  createPestRepository,
+  createMonitoringPointRepository,
+  createFieldTeamRepository,
+  createCultivarRepository,
 } from './db';
 import type {
   OfflineFarm,
@@ -15,6 +19,11 @@ import type {
   OfflineAnimalLot,
   OfflineAnimal,
   OfflineAnimalBreedComposition,
+  OfflinePest,
+  OfflineMonitoringPoint,
+  OfflineFieldTeam,
+  OfflineFieldTeamMember,
+  OfflineCultivar,
   SyncEntity,
 } from '@/types/offline';
 
@@ -138,6 +147,64 @@ interface ApiAnimal {
     fraction?: number;
     percentage: number;
   }>;
+}
+
+interface ApiPest {
+  id: string;
+  commonName: string;
+  scientificName?: string;
+  category: string;
+  controlThreshold?: string;
+  recommendedProducts?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+interface ApiMonitoringPoint {
+  id: string;
+  farmId: string;
+  fieldPlotId: string;
+  code: string;
+  latitude: number;
+  longitude: number;
+  createdAt: string;
+}
+
+interface ApiFieldTeamMember {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  joinedAt: string;
+  leftAt: string | null;
+}
+
+interface ApiFieldTeam {
+  id: string;
+  farmId: string;
+  name: string;
+  teamType: string;
+  isTemporary: boolean;
+  leaderId: string;
+  leaderName: string;
+  notes: string | null;
+  memberCount: number;
+  members: ApiFieldTeamMember[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ApiCultivar {
+  id: string;
+  name: string;
+  crop: string;
+  obtainer?: string;
+  cycleDays?: number;
+  maturityGroup?: string;
+  technology?: string;
+  seedType?: string;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 // ─── Mappers: API → Offline ────────────────────────────────────────────────
@@ -278,6 +345,74 @@ function mapBreedCompositions(a: ApiAnimal): OfflineAnimalBreedComposition[] {
   }));
 }
 
+function mapPest(p: ApiPest): OfflinePest {
+  return {
+    id: p.id,
+    common_name: p.commonName,
+    scientific_name: p.scientificName ?? null,
+    category: p.category,
+    control_threshold: p.controlThreshold ? parseFloat(p.controlThreshold) : null,
+    recommended_products: p.recommendedProducts ?? null,
+    created_at: p.createdAt,
+    updated_at: p.updatedAt ?? p.createdAt,
+  };
+}
+
+function mapMonitoringPoint(mp: ApiMonitoringPoint): OfflineMonitoringPoint {
+  return {
+    id: mp.id,
+    farm_id: mp.farmId,
+    field_plot_id: mp.fieldPlotId,
+    code: mp.code,
+    latitude: mp.latitude,
+    longitude: mp.longitude,
+    created_at: mp.createdAt,
+  };
+}
+
+function mapFieldTeam(t: ApiFieldTeam): OfflineFieldTeam {
+  return {
+    id: t.id,
+    farm_id: t.farmId,
+    name: t.name,
+    team_type: t.teamType,
+    is_temporary: t.isTemporary ? 1 : 0,
+    leader_id: t.leaderId,
+    leader_name: t.leaderName,
+    notes: t.notes,
+    created_at: t.createdAt,
+    updated_at: t.updatedAt,
+  };
+}
+
+function mapFieldTeamMembers(t: ApiFieldTeam): OfflineFieldTeamMember[] {
+  return t.members
+    .filter((m) => !m.leftAt)
+    .map((m) => ({
+      id: m.id,
+      team_id: t.id,
+      user_id: m.userId,
+      user_name: m.userName,
+      joined_at: m.joinedAt,
+      left_at: m.leftAt,
+    }));
+}
+
+function mapCultivar(c: ApiCultivar): OfflineCultivar {
+  return {
+    id: c.id,
+    name: c.name,
+    crop: c.crop,
+    obtainer: c.obtainer ?? null,
+    cycle_days: c.cycleDays ?? null,
+    maturity_group: c.maturityGroup ?? null,
+    technology: c.technology ?? null,
+    seed_type: c.seedType ?? null,
+    created_at: c.createdAt,
+    updated_at: c.updatedAt ?? c.createdAt,
+  };
+}
+
 // ─── Paginated fetcher ─────────────────────────────────────────────────────
 
 async function fetchAllPages<T>(path: string, limit = 100): Promise<T[]> {
@@ -316,6 +451,10 @@ export function createSyncService(db: SQLiteDatabase) {
   const locationRepo = createFarmLocationRepository(db);
   const lotRepo = createAnimalLotRepository(db);
   const animalRepo = createAnimalRepository(db);
+  const pestRepo = createPestRepository(db);
+  const monitoringPointRepo = createMonitoringPointRepository(db);
+  const fieldTeamRepo = createFieldTeamRepository(db);
+  const cultivarRepo = createCultivarRepository(db);
   const syncMetaRepo = createSyncMetaRepository(db);
 
   const entities: SyncEntity[] = [
@@ -324,6 +463,10 @@ export function createSyncService(db: SQLiteDatabase) {
     'farm_locations',
     'animal_lots',
     'animals',
+    'pests',
+    'monitoring_points',
+    'field_teams',
+    'cultivars',
   ];
 
   function initProgress(): SyncProgress[] {
@@ -503,6 +646,101 @@ export function createSyncService(db: SQLiteDatabase) {
         updateProgress(progress, 'animals', { status: 'error', error: msg }, onProgress);
       }
 
+      // 6. Sync pests (org-level, not farm-specific)
+      try {
+        updateProgress(progress, 'pests', { status: 'syncing' }, onProgress);
+        const apiPests = await fetchAllPages<ApiPest>('/org/pests');
+        const offlinePests = apiPests.map(mapPest);
+        await pestRepo.clear();
+        await pestRepo.upsertMany(offlinePests);
+        await syncMetaRepo.upsert('pests', offlinePests.length);
+        updateProgress(
+          progress,
+          'pests',
+          { status: 'done', count: offlinePests.length },
+          onProgress,
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+        updateProgress(progress, 'pests', { status: 'error', error: msg }, onProgress);
+      }
+
+      // 7. Sync monitoring points for each field plot
+      try {
+        updateProgress(progress, 'monitoring_points', { status: 'syncing' }, onProgress);
+        const plotRepo2 = createFieldPlotRepository(db);
+        const plots = await plotRepo2.getByFarmId(farmId);
+        let totalPoints = 0;
+
+        await monitoringPointRepo.deleteByFarmId(farmId);
+        for (const plot of plots) {
+          try {
+            const apiPoints = await fetchAllPages<ApiMonitoringPoint>(
+              `/org/farms/${farmId}/field-plots/${plot.id}/monitoring-points`,
+            );
+            const offlinePoints = apiPoints.map(mapMonitoringPoint);
+            await monitoringPointRepo.upsertMany(offlinePoints);
+            totalPoints += offlinePoints.length;
+          } catch {
+            // Skip plots without monitoring points
+          }
+        }
+
+        await syncMetaRepo.upsert('monitoring_points', totalPoints);
+        updateProgress(
+          progress,
+          'monitoring_points',
+          { status: 'done', count: totalPoints },
+          onProgress,
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+        updateProgress(progress, 'monitoring_points', { status: 'error', error: msg }, onProgress);
+      }
+
+      // 8. Sync field teams for this farm
+      try {
+        updateProgress(progress, 'field_teams', { status: 'syncing' }, onProgress);
+        const apiTeams = await fetchAllPages<ApiFieldTeam>(`/org/farms/${farmId}/field-teams`);
+        const offlineTeams = apiTeams.map(mapFieldTeam);
+        const allMembers = apiTeams.flatMap(mapFieldTeamMembers);
+
+        await fieldTeamRepo.deleteByFarmId(farmId);
+        await fieldTeamRepo.upsertMany(offlineTeams);
+        if (allMembers.length > 0) {
+          await fieldTeamRepo.upsertMembers(allMembers);
+        }
+        await syncMetaRepo.upsert('field_teams', offlineTeams.length);
+        updateProgress(
+          progress,
+          'field_teams',
+          { status: 'done', count: offlineTeams.length },
+          onProgress,
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+        updateProgress(progress, 'field_teams', { status: 'error', error: msg }, onProgress);
+      }
+
+      // 9. Sync cultivars (org-level)
+      try {
+        updateProgress(progress, 'cultivars', { status: 'syncing' }, onProgress);
+        const apiCultivars = await fetchAllPages<ApiCultivar>('/org/cultivars');
+        const offlineCultivars = apiCultivars.map(mapCultivar);
+        await cultivarRepo.clear();
+        await cultivarRepo.upsertMany(offlineCultivars);
+        await syncMetaRepo.upsert('cultivars', offlineCultivars.length);
+        updateProgress(
+          progress,
+          'cultivars',
+          { status: 'done', count: offlineCultivars.length },
+          onProgress,
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+        updateProgress(progress, 'cultivars', { status: 'error', error: msg }, onProgress);
+      }
+
       return progress;
     },
 
@@ -533,6 +771,10 @@ export function createSyncService(db: SQLiteDatabase) {
      * Clear all offline data (used on logout or farm switch).
      */
     async clearAll(): Promise<void> {
+      await cultivarRepo.clear();
+      await fieldTeamRepo.clear();
+      await monitoringPointRepo.clear();
+      await pestRepo.clear();
       await animalRepo.clear();
       await lotRepo.clear();
       await locationRepo.clear();

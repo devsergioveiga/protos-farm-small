@@ -26,6 +26,19 @@ import { pesticideApplicationsRouter } from './modules/pesticide-applications/pe
 import { fertilizerApplicationsRouter } from './modules/fertilizer-applications/fertilizer-applications.routes';
 import { culturalOperationsRouter } from './modules/cultural-operations/cultural-operations.routes';
 import { fieldTeamsRouter } from './modules/field-teams/field-teams.routes';
+import { teamOperationsRouter } from './modules/team-operations/team-operations.routes';
+import { productivityTargetsRouter } from './modules/team-operations/productivity-targets.routes';
+import { pestsRouter } from './modules/pests/pests.routes';
+import { monitoringPointsRouter } from './modules/monitoring-points/monitoring-points.routes';
+import { monitoringRecordsRouter } from './modules/monitoring-records/monitoring-records.routes';
+import { monitoringReportsRouter } from './modules/monitoring-reports/monitoring-reports.routes';
+import { operationTypesRouter } from './modules/operation-types/operation-types.routes';
+import { phenologicalRecordsRouter } from './modules/phenological-records/phenological-records.routes';
+import { plantingRouter } from './modules/planting-operations/planting-operations.routes';
+import { soilPrepRouter } from './modules/soil-prep-operations/soil-prep-operations.routes';
+import { grainHarvestsRouter } from './modules/grain-harvests/grain-harvests.routes';
+import { moistureStandardsRouter } from './modules/grain-harvests/moisture-standards.routes';
+import { coffeeHarvestsRouter } from './modules/coffee-harvests/coffee-harvests.routes';
 
 const app = express();
 
@@ -59,5 +72,18 @@ app.use('/api', pesticideApplicationsRouter);
 app.use('/api', fertilizerApplicationsRouter);
 app.use('/api', culturalOperationsRouter);
 app.use('/api', fieldTeamsRouter);
+app.use('/api', teamOperationsRouter);
+app.use('/api', productivityTargetsRouter);
+app.use('/api', pestsRouter);
+app.use('/api', monitoringPointsRouter);
+app.use('/api', monitoringRecordsRouter);
+app.use('/api', monitoringReportsRouter);
+app.use('/api', operationTypesRouter);
+app.use('/api', phenologicalRecordsRouter);
+app.use('/api', plantingRouter);
+app.use('/api', soilPrepRouter);
+app.use('/api', grainHarvestsRouter);
+app.use('/api', moistureStandardsRouter);
+app.use('/api', coffeeHarvestsRouter);
 
 export { app };
