@@ -38,6 +38,7 @@ import { plantingRouter } from './modules/planting-operations/planting-operation
 import { soilPrepRouter } from './modules/soil-prep-operations/soil-prep-operations.routes';
 import { grainHarvestsRouter } from './modules/grain-harvests/grain-harvests.routes';
 import { moistureStandardsRouter } from './modules/grain-harvests/moisture-standards.routes';
+import { coffeeHarvestsRouter } from './modules/coffee-harvests/coffee-harvests.routes';
 
 const app = express();
 
@@ -83,5 +84,6 @@ app.use('/api', plantingRouter);
 app.use('/api', soilPrepRouter);
 app.use('/api', grainHarvestsRouter);
 app.use('/api', moistureStandardsRouter);
+app.use('/api', coffeeHarvestsRouter);
 
 export { app };

@@ -316,6 +316,7 @@ model User {
   phenologicalRecords        PlotPhenologicalRecord[]
   recordedPlantingOperations PlantingOperation[]      @relation("PlantingRecorder")
   recordedGrainHarvests      GrainHarvest[]           @relation("GrainHarvestRecorder")
+  recordedCoffeeHarvests     CoffeeHarvest[]          @relation("CoffeeHarvestRecorder")
 
   @@map("users")
 }
@@ -382,6 +383,7 @@ model Farm {
   monitoringRecords          MonitoringRecord[]
   plantingOperations         PlantingOperation[]
   grainHarvests              GrainHarvest[]
+  coffeeHarvests             CoffeeHarvest[]
 
   @@map("farms")
 }
@@ -679,6 +681,7 @@ model FieldPlot {
   phenologicalRecords    PlotPhenologicalRecord[]
   plantingOperations     PlantingOperation[]
   grainHarvests          GrainHarvest[]
+  coffeeHarvests         CoffeeHarvest[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -1182,6 +1185,7 @@ model Cultivar {
   plotCropSeasons    PlotCropSeason[]
   plantingOperations PlantingOperation[]
   grainHarvests      GrainHarvest[]
+  coffeeHarvests     CoffeeHarvest[]
 
   @@unique([name, crop, organizationId])
   @@index([organizationId])
@@ -2000,4 +2004,61 @@ model MoistureStandard {
   @@unique([organizationId, crop])
   @@index([organizationId])
   @@map("moisture_standards")
+}
+
+// ─── Coffee Harvest (EPIC-09 / US-085) ──────────────────────────────
+
+model CoffeeHarvest {
+  id              String    @id @default(uuid())
+  farmId          String
+  fieldPlotId     String
+  cultivarId      String?
+
+  // CA1 — campos básicos
+  harvestDate     DateTime  @db.Date
+  harvestType     String    // MECANIZADA, DERRICA_MANUAL, SELETIVA_CATACAO
+
+  // CA2 — volume
+  volumeLiters    Decimal   @db.Decimal(14, 2) // litros colhidos
+  sacsBenefited   Decimal?  @db.Decimal(12, 2) // sacas de 60kg (café beneficiado)
+
+  // CA3 — rendimento (litros por saca)
+  yieldLitersPerSac Decimal? @db.Decimal(8, 2)
+
+  // CA4 — classificação (% de cada tipo)
+  cherryPct       Decimal   @default(0) @db.Decimal(5, 2) // % cereja
+  greenPct        Decimal   @default(0) @db.Decimal(5, 2) // % verde
+  floaterPct      Decimal   @default(0) @db.Decimal(5, 2) // % boia
+  dryPct          Decimal   @default(0) @db.Decimal(5, 2) // % seco
+
+  // CA5 — destino
+  destination     String?   // TERREIRO, SECADOR_MECANICO, LAVADOR_SEPARADOR
+  destinationName String?
+
+  // CA6 — equipe de colheita
+  numberOfHarvesters    Int?       // nº de colhedores
+  harvestersProductivity Decimal?  @db.Decimal(10, 2) // litros/pessoa/dia
+
+  // CA7 — café especial
+  isSpecialLot    Boolean   @default(false)
+  microlotCode    String?   // código de rastreabilidade do microlote
+
+  // common
+  notes           String?
+  recordedBy      String
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  farm          Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot     FieldPlot   @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  cultivar      Cultivar?   @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
+  recorder      User        @relation("CoffeeHarvestRecorder", fields: [recordedBy], references: [id])
+
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@index([cultivarId])
+  @@index([harvestDate])
+  @@index([microlotCode])
+  @@map("coffee_harvests")
 }
