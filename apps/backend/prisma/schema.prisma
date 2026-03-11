@@ -271,6 +271,8 @@ model Organization {
   cropOperationSequences    CropOperationSequence[]
   operationTypeSchedules    OperationTypeSchedule[]
   cropPhenologicalStages    CropPhenologicalStage[]
+  measurementUnits          MeasurementUnit[]
+  unitConversions           UnitConversion[]
 
   @@map("organizations")
 }
@@ -2121,4 +2123,57 @@ model OrangeHarvest {
   @@index([harvestDate])
   @@index([saleContractRef])
   @@map("orange_harvests")
+}
+
+// ─── US-088: Unidades de Medida e Conversões ─────────────────────────
+
+enum UnitCategory {
+  WEIGHT
+  VOLUME
+  COUNT
+  AREA
+}
+
+model MeasurementUnit {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String       // kg, g, L, mL, unidade, saco, tonelada, arroba, caixa
+  abbreviation   String       // kg, g, L, mL, un, sc, t, @, cx
+  category       UnitCategory
+  isSystem       Boolean      @default(false) // pré-configuradas, não deletáveis
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  conversionsFrom UnitConversion[] @relation("ConversionFromUnit")
+  conversionsTo   UnitConversion[] @relation("ConversionToUnit")
+
+  @@unique([organizationId, abbreviation])
+  @@index([organizationId])
+  @@index([category])
+  @@map("measurement_units")
+}
+
+model UnitConversion {
+  id             String  @id @default(uuid())
+  organizationId String
+  fromUnitId     String
+  toUnitId       String
+  factor         Decimal @db.Decimal(20, 10) // fromUnit * factor = toUnit
+  isSystem       Boolean @default(false)
+  isActive       Boolean @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fromUnit     MeasurementUnit @relation("ConversionFromUnit", fields: [fromUnitId], references: [id], onDelete: Cascade)
+  toUnit       MeasurementUnit @relation("ConversionToUnit", fields: [toUnitId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, fromUnitId, toUnitId])
+  @@index([organizationId])
+  @@index([fromUnitId])
+  @@index([toUnitId])
+  @@map("unit_conversions")
 }

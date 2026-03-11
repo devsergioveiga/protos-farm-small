@@ -40,6 +40,7 @@ import { grainHarvestsRouter } from './modules/grain-harvests/grain-harvests.rou
 import { moistureStandardsRouter } from './modules/grain-harvests/moisture-standards.routes';
 import { coffeeHarvestsRouter } from './modules/coffee-harvests/coffee-harvests.routes';
 import { orangeHarvestsRouter } from './modules/orange-harvests/orange-harvests.routes';
+import { measurementUnitsRouter } from './modules/measurement-units/measurement-units.routes';
 
 const app = express();
 
@@ -87,5 +88,6 @@ app.use('/api', grainHarvestsRouter);
 app.use('/api', moistureStandardsRouter);
 app.use('/api', coffeeHarvestsRouter);
 app.use('/api', orangeHarvestsRouter);
+app.use('/api', measurementUnitsRouter);
 
 export { app };
