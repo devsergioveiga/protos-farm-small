@@ -317,6 +317,7 @@ model User {
   recordedPlantingOperations PlantingOperation[]      @relation("PlantingRecorder")
   recordedGrainHarvests      GrainHarvest[]           @relation("GrainHarvestRecorder")
   recordedCoffeeHarvests     CoffeeHarvest[]          @relation("CoffeeHarvestRecorder")
+  recordedOrangeHarvests     OrangeHarvest[]          @relation("OrangeHarvestRecorder")
 
   @@map("users")
 }
@@ -384,6 +385,7 @@ model Farm {
   plantingOperations         PlantingOperation[]
   grainHarvests              GrainHarvest[]
   coffeeHarvests             CoffeeHarvest[]
+  orangeHarvests             OrangeHarvest[]
 
   @@map("farms")
 }
@@ -682,6 +684,7 @@ model FieldPlot {
   plantingOperations     PlantingOperation[]
   grainHarvests          GrainHarvest[]
   coffeeHarvests         CoffeeHarvest[]
+  orangeHarvests         OrangeHarvest[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -1186,6 +1189,7 @@ model Cultivar {
   plantingOperations PlantingOperation[]
   grainHarvests      GrainHarvest[]
   coffeeHarvests     CoffeeHarvest[]
+  orangeHarvests     OrangeHarvest[]
 
   @@unique([name, crop, organizationId])
   @@index([organizationId])
@@ -2061,4 +2065,60 @@ model CoffeeHarvest {
   @@index([harvestDate])
   @@index([microlotCode])
   @@map("coffee_harvests")
+}
+
+model OrangeHarvest {
+  id              String    @id @default(uuid())
+  farmId          String
+  fieldPlotId     String
+  cultivarId      String?
+
+  // CA1 — campos básicos
+  harvestDate     DateTime  @db.Date
+  variety         String?   // variedade da laranja (ex: Pera, Valência, Natal)
+
+  // CA1 — produção
+  numberOfBoxes   Decimal   @db.Decimal(12, 2) // nº de caixas (40,8kg)
+  totalWeightKg   Decimal?  @db.Decimal(14, 2) // peso total em kg
+  treesHarvested  Int?      // nº de árvores colhidas
+
+  // CA2 — produtividade (calculados)
+  boxesPerTree    Decimal?  @db.Decimal(8, 2) // caixas/pé
+  boxesPerHa      Decimal?  @db.Decimal(10, 2) // cx/ha
+  tonsPerHa       Decimal?  @db.Decimal(10, 2) // t/ha
+
+  // CA3 — qualidade
+  ratioSS         Decimal?  @db.Decimal(5, 2) // ratio sólidos solúveis (°Brix/acidez)
+  acidityPct      Decimal?  @db.Decimal(5, 2) // acidez (%)
+  refusalPct      Decimal?  @db.Decimal(5, 2) // % de refugo
+
+  // CA4 — destino
+  destination     String?   // INDUSTRIA, IN_NATURA, DESCARTE
+  destinationName String?   // nome do comprador/indústria
+
+  // CA5 — equipe
+  numberOfHarvesters    Int?       // nº de colhedores
+  harvestersProductivity Decimal?  @db.Decimal(10, 2) // caixas/pessoa/dia
+
+  // CA6 — contrato de venda
+  saleContractRef String?   // referência ao contrato de venda
+
+  // common
+  notes           String?
+  recordedBy      String
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  farm          Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot     FieldPlot   @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  cultivar      Cultivar?   @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
+  recorder      User        @relation("OrangeHarvestRecorder", fields: [recordedBy], references: [id])
+
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@index([cultivarId])
+  @@index([harvestDate])
+  @@index([saleContractRef])
+  @@map("orange_harvests")
 }
