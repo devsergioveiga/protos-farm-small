@@ -4,6 +4,9 @@ import {
   TEAM_OPERATION_TYPES,
   TEAM_OPERATION_TYPE_LABELS,
   type CreateTeamOperationInput,
+  type AddMemberInput,
+  type RemoveMemberInput,
+  type UpdateEntryInput,
   type TeamOperationItem,
   type TeamOperationEntryItem,
   type PlotLaborCostItem,
@@ -213,6 +216,92 @@ export async function createTeamOperation(
   });
 }
 
+// ─── US-080 CA9: Export operations to Excel ───────────────────────
+
+export async function exportTeamOperationsXlsx(
+  ctx: RlsContext,
+  farmId: string,
+  options: {
+    dateFrom?: string;
+    dateTo?: string;
+    teamId?: string;
+    operationType?: string;
+    userId?: string;
+    userRole?: string;
+  } = {},
+): Promise<Buffer> {
+  const ExcelJS = await import('exceljs');
+
+  const result = await listTeamOperations(ctx, farmId, {
+    ...options,
+    limit: 1000,
+    page: 1,
+  });
+
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Operações em bloco');
+
+  // Summary
+  ws.addRow([`Total: ${result.data.length} operação(ões)`]);
+  ws.addRow([]);
+
+  // Headers
+  const headerRow = ws.addRow([
+    'Data',
+    'Tipo',
+    'Talhão',
+    'Equipe',
+    'Início',
+    'Fim',
+    'Duração (h)',
+    'Membro',
+    'Email',
+    'Horas',
+    'Produtividade',
+    'Unidade',
+    'Custo MO (R$)',
+    'Observações',
+  ]);
+  headerRow.font = { bold: true };
+
+  for (const op of result.data) {
+    for (const entry of op.entries) {
+      ws.addRow([
+        new Date(op.performedAt).toLocaleDateString('pt-BR'),
+        op.operationTypeLabel,
+        op.fieldPlotName,
+        op.teamName,
+        new Date(op.timeStart).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        new Date(op.timeEnd).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        op.durationHours,
+        entry.userName,
+        entry.userEmail,
+        entry.hoursWorked ?? op.durationHours,
+        entry.productivity ?? '',
+        entry.productivityUnit ?? '',
+        entry.laborCost ?? '',
+        entry.notes ?? '',
+      ]);
+    }
+  }
+
+  // Auto-fit
+  ws.columns.forEach((col) => {
+    let maxLen = 10;
+    col.eachCell?.({ includeEmpty: false }, (cell) => {
+      const len = String(cell.value ?? '').length;
+      if (len > maxLen) maxLen = Math.min(len, 40);
+    });
+    col.width = maxLen + 2;
+  });
+
+  const buffer = await wb.xlsx.writeBuffer();
+  return Buffer.from(buffer);
+}
+
+// Roles that see all operations (CA8 - visão gerente)
+const MANAGER_ROLES = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'AGRONOMIST', 'FINANCIAL', 'CONSULTANT'];
+
 export async function listTeamOperations(
   ctx: RlsContext,
   farmId: string,
@@ -224,6 +313,8 @@ export async function listTeamOperations(
     operationType?: string;
     dateFrom?: string;
     dateTo?: string;
+    userId?: string;
+    userRole?: string;
   } = {},
 ): Promise<{
   data: TeamOperationItem[];
@@ -247,6 +338,26 @@ export async function listTeamOperations(
       if (options.dateFrom) performedAt.gte = new Date(options.dateFrom);
       if (options.dateTo) performedAt.lte = new Date(options.dateTo);
       where.performedAt = performedAt;
+    }
+
+    // US-080 CA7/CA8: OPERATOR/COWBOY see only teams they lead
+    if (options.userId && options.userRole && !MANAGER_ROLES.includes(options.userRole)) {
+      const ledTeams = await tx.fieldTeam.findMany({
+        where: { farmId, leaderId: options.userId, deletedAt: null },
+        select: { id: true },
+      });
+      const ledTeamIds = ledTeams.map((t) => t.id);
+      if (ledTeamIds.length === 0) {
+        return { data: [], meta: { page, limit, total: 0, totalPages: 0 } };
+      }
+      // If already filtering by teamId, intersect; otherwise restrict to led teams
+      if (where.teamId) {
+        if (!ledTeamIds.includes(where.teamId as string)) {
+          return { data: [], meta: { page, limit, total: 0, totalPages: 0 } };
+        }
+      } else {
+        where.teamId = { in: ledTeamIds };
+      }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -299,6 +410,134 @@ export async function deleteTeamOperation(
       where: { id: operationId },
       data: { deletedAt: new Date() },
     });
+  });
+}
+
+// ─── US-080 CA3: Add member to operation ──────────────────────────
+
+export async function addMemberToOperation(
+  ctx: RlsContext,
+  farmId: string,
+  operationId: string,
+  input: AddMemberInput,
+): Promise<TeamOperationItem> {
+  if (!input.userId?.trim()) {
+    throw new TeamOperationError('Usuário é obrigatório', 400);
+  }
+  if (!input.justification?.trim()) {
+    throw new TeamOperationError('Justificativa é obrigatória', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    const operation = await tx.teamOperation.findFirst({
+      where: { id: operationId, farmId, deletedAt: null },
+      include: { entries: { select: { userId: true } } },
+    });
+    if (!operation) throw new TeamOperationError('Operação não encontrada', 404);
+
+    // Check if user is already in the operation
+    if (operation.entries.some((e) => e.userId === input.userId)) {
+      throw new TeamOperationError('Membro já participa desta operação', 409);
+    }
+
+    await tx.teamOperationEntry.create({
+      data: {
+        teamOperationId: operationId,
+        userId: input.userId,
+        hoursWorked: input.hoursWorked ?? null,
+        productivity: input.productivity ?? null,
+        productivityUnit: input.productivityUnit ?? null,
+        notes: input.notes?.trim() ?? null,
+      },
+    });
+
+    // Return updated operation
+    const updated = await tx.teamOperation.findFirst({
+      where: { id: operationId },
+      include: INCLUDE_RELATIONS,
+    });
+    return toItem(updated as unknown as Record<string, unknown>);
+  });
+}
+
+// ─── US-080 CA3: Remove member from operation ─────────────────────
+
+export async function removeMemberFromOperation(
+  ctx: RlsContext,
+  farmId: string,
+  operationId: string,
+  entryId: string,
+  input: RemoveMemberInput,
+): Promise<TeamOperationItem> {
+  if (!input.justification?.trim()) {
+    throw new TeamOperationError('Justificativa é obrigatória', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    const operation = await tx.teamOperation.findFirst({
+      where: { id: operationId, farmId, deletedAt: null },
+      include: { entries: { select: { id: true } } },
+    });
+    if (!operation) throw new TeamOperationError('Operação não encontrada', 404);
+
+    const entry = operation.entries.find((e) => e.id === entryId);
+    if (!entry) throw new TeamOperationError('Registro de membro não encontrado', 404);
+
+    if (operation.entries.length <= 1) {
+      throw new TeamOperationError(
+        'Não é possível remover o último membro. Use a exclusão da operação.',
+        400,
+      );
+    }
+
+    await tx.teamOperationEntry.delete({ where: { id: entryId } });
+
+    const updated = await tx.teamOperation.findFirst({
+      where: { id: operationId },
+      include: INCLUDE_RELATIONS,
+    });
+    return toItem(updated as unknown as Record<string, unknown>);
+  });
+}
+
+// ─── US-080 CA4-CA5: Update entry (hours/productivity) ────────────
+
+export async function updateOperationEntry(
+  ctx: RlsContext,
+  farmId: string,
+  operationId: string,
+  entryId: string,
+  input: UpdateEntryInput,
+): Promise<TeamOperationItem> {
+  if (!input.justification?.trim()) {
+    throw new TeamOperationError('Justificativa é obrigatória', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    const operation = await tx.teamOperation.findFirst({
+      where: { id: operationId, farmId, deletedAt: null },
+      include: { entries: { select: { id: true } } },
+    });
+    if (!operation) throw new TeamOperationError('Operação não encontrada', 404);
+
+    const entry = operation.entries.find((e) => e.id === entryId);
+    if (!entry) throw new TeamOperationError('Registro de membro não encontrado', 404);
+
+    const data: Record<string, unknown> = {};
+    if (input.hoursWorked !== undefined) data.hoursWorked = input.hoursWorked;
+    if (input.productivity !== undefined) data.productivity = input.productivity;
+    if (input.productivityUnit !== undefined) data.productivityUnit = input.productivityUnit;
+    if (input.notes !== undefined) data.notes = input.notes?.trim() ?? null;
+
+    if (Object.keys(data).length > 0) {
+      await tx.teamOperationEntry.update({ where: { id: entryId }, data });
+    }
+
+    const updated = await tx.teamOperation.findFirst({
+      where: { id: operationId },
+      include: INCLUDE_RELATIONS,
+    });
+    return toItem(updated as unknown as Record<string, unknown>);
   });
 }
 

@@ -145,6 +145,29 @@ export interface ProductivityHistoryEntry {
   operationCount: number;
 }
 
+// ─── Edit Types ────────────────────────────────────────────────────
+
+export interface AddMemberInput {
+  userId: string;
+  justification: string;
+  hoursWorked?: number | null;
+  productivity?: number | null;
+  productivityUnit?: string | null;
+  notes?: string | null;
+}
+
+export interface RemoveMemberInput {
+  justification: string;
+}
+
+export interface UpdateEntryInput {
+  hoursWorked?: number | null;
+  productivity?: number | null;
+  productivityUnit?: string | null;
+  notes?: string | null;
+  justification: string;
+}
+
 // ─── Response Types ─────────────────────────────────────────────────
 
 export interface TeamOperationEntryItem {

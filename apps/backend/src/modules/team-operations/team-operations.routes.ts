@@ -10,6 +10,10 @@ import {
   listTeamOperations,
   getTeamOperation,
   deleteTeamOperation,
+  addMemberToOperation,
+  removeMemberFromOperation,
+  updateOperationEntry,
+  exportTeamOperationsXlsx,
   getOperationTypes,
   getCostByPlot,
   getTimesheet,
@@ -169,6 +173,37 @@ teamOperationsRouter.get(
   },
 );
 
+// ─── US-080 CA9: EXPORT ─────────────────────────────────────────────
+
+teamOperationsRouter.get(
+  '/org/farms/:farmId/team-operations/export',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const buffer = await exportTeamOperationsXlsx(ctx, req.params.farmId as string, {
+        dateFrom: (req.query.dateFrom as string) || undefined,
+        dateTo: (req.query.dateTo as string) || undefined,
+        teamId: (req.query.teamId as string) || undefined,
+        operationType: (req.query.operationType as string) || undefined,
+        userId: req.user!.userId,
+        userRole: req.user!.role,
+      });
+      const date = new Date().toISOString().slice(0, 10);
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      );
+      res.setHeader('Content-Disposition', `attachment; filename="operacoes-bloco-${date}.xlsx"`);
+      res.send(buffer);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
 // ─── CREATE ─────────────────────────────────────────────────────────
 
 teamOperationsRouter.post(
@@ -227,6 +262,8 @@ teamOperationsRouter.get(
         operationType: (req.query.operationType as string) || undefined,
         dateFrom: (req.query.dateFrom as string) || undefined,
         dateTo: (req.query.dateTo as string) || undefined,
+        userId: req.user!.userId,
+        userRole: req.user!.role,
       });
       res.json(result);
     } catch (err) {
@@ -250,6 +287,126 @@ teamOperationsRouter.get(
         req.params.farmId as string,
         req.params.operationId as string,
       );
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── US-080 CA3: ADD MEMBER ─────────────────────────────────────────
+
+teamOperationsRouter.post(
+  '/org/farms/:farmId/team-operations/:operationId/entries',
+  authenticate,
+  checkPermission('farms:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await addMemberToOperation(
+        ctx,
+        req.params.farmId as string,
+        req.params.operationId as string,
+        req.body,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'ADD_TEAM_OPERATION_MEMBER',
+        targetType: 'team_operation_entry',
+        targetId: req.params.operationId as string,
+        metadata: {
+          farmId: req.params.farmId,
+          operationId: req.params.operationId,
+          addedUserId: req.body.userId,
+          justification: req.body.justification,
+        },
+        ipAddress: getClientIp(req),
+      });
+
+      res.status(201).json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── US-080 CA3: REMOVE MEMBER ─────────────────────────────────────
+
+teamOperationsRouter.delete(
+  '/org/farms/:farmId/team-operations/:operationId/entries/:entryId',
+  authenticate,
+  checkPermission('farms:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await removeMemberFromOperation(
+        ctx,
+        req.params.farmId as string,
+        req.params.operationId as string,
+        req.params.entryId as string,
+        req.body,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'REMOVE_TEAM_OPERATION_MEMBER',
+        targetType: 'team_operation_entry',
+        targetId: req.params.entryId as string,
+        metadata: {
+          farmId: req.params.farmId,
+          operationId: req.params.operationId,
+          justification: req.body.justification,
+        },
+        ipAddress: getClientIp(req),
+      });
+
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── US-080 CA4-CA5: UPDATE ENTRY ──────────────────────────────────
+
+teamOperationsRouter.patch(
+  '/org/farms/:farmId/team-operations/:operationId/entries/:entryId',
+  authenticate,
+  checkPermission('farms:update'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await updateOperationEntry(
+        ctx,
+        req.params.farmId as string,
+        req.params.operationId as string,
+        req.params.entryId as string,
+        req.body,
+      );
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'UPDATE_TEAM_OPERATION_ENTRY',
+        targetType: 'team_operation_entry',
+        targetId: req.params.entryId as string,
+        metadata: {
+          farmId: req.params.farmId,
+          operationId: req.params.operationId,
+          changes: req.body,
+        },
+        ipAddress: getClientIp(req),
+      });
+
       res.json(result);
     } catch (err) {
       handleError(err, res);

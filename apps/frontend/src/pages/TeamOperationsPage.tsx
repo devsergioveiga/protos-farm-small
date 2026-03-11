@@ -1,4 +1,4 @@
-import { useState, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import {
   ClipboardList,
   Plus,
@@ -12,13 +12,19 @@ import {
   DollarSign,
   BarChart3,
   TrendingUp,
+  FilterX,
+  Download,
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
 import { useTeamOperations } from '@/hooks/useTeamOperations';
+import { api } from '@/services/api';
 import PermissionGate from '@/components/auth/PermissionGate';
 import TeamOperationModal from '@/components/team-operations/TeamOperationModal';
+import TeamOperationDetailModal from '@/components/team-operations/TeamOperationDetailModal';
 import { TEAM_OPERATION_TYPES } from '@/types/team-operation';
 import type { TeamOperationItem } from '@/types/team-operation';
+import type { FieldPlot } from '@/types/farm';
+import type { FieldTeamItem } from '@/types/field-team';
 import './TeamOperationsPage.css';
 
 const CostByPlotTab = lazy(() => import('@/components/team-operations/CostByPlotTab'));
@@ -65,13 +71,86 @@ function TeamOperationsPage() {
   const [activeTab, setActiveTab] = useState<TabId>('operations');
   const [page, setPage] = useState(1);
   const [typeFilter, setTypeFilter] = useState('');
+  const [teamFilter, setTeamFilter] = useState('');
+  const [plotFilter, setPlotFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [selectedOp, setSelectedOp] = useState<TeamOperationItem | null>(null);
+
+  // Filter options data
+  const [filterTeams, setFilterTeams] = useState<Array<{ id: string; name: string }>>([]);
+  const [filterPlots, setFilterPlots] = useState<Array<{ id: string; name: string }>>([]);
+
+  useEffect(() => {
+    if (!selectedFarmId) return;
+    let cancelled = false;
+    api
+      .get<{ data: FieldTeamItem[] }>(`/org/farms/${selectedFarmId}/field-teams?limit=200`)
+      .then((result) => {
+        if (!cancelled) {
+          setFilterTeams(result.data.map((t) => ({ id: t.id, name: t.name })));
+        }
+      })
+      .catch(() => {});
+    api
+      .get<FieldPlot[]>(`/org/farms/${selectedFarmId}/plots`)
+      .then((result) => {
+        if (!cancelled) setFilterPlots(result.map((p) => ({ id: p.id, name: p.name })));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedFarmId]);
+
+  const hasFilters = typeFilter || teamFilter || plotFilter || dateFrom || dateTo;
+
+  const clearFilters = useCallback(() => {
+    setTypeFilter('');
+    setTeamFilter('');
+    setPlotFilter('');
+    setDateFrom('');
+    setDateTo('');
+    setPage(1);
+  }, []);
+
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = useCallback(async () => {
+    if (!selectedFarmId) return;
+    setIsExporting(true);
+    try {
+      const query = new URLSearchParams();
+      if (typeFilter) query.set('operationType', typeFilter);
+      if (teamFilter) query.set('teamId', teamFilter);
+      if (dateFrom) query.set('dateFrom', dateFrom);
+      if (dateTo) query.set('dateTo', dateTo);
+      const qs = query.toString();
+      const blob = await api.getBlob(
+        `/org/farms/${selectedFarmId}/team-operations/export${qs ? `?${qs}` : ''}`,
+      );
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `operacoes-bloco-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // silent — user can retry
+    } finally {
+      setIsExporting(false);
+    }
+  }, [selectedFarmId, typeFilter, teamFilter, dateFrom, dateTo]);
 
   const { operations, meta, isLoading, error, refetch } = useTeamOperations({
     farmId: selectedFarmId,
     page,
     operationType: typeFilter || undefined,
+    teamId: teamFilter || undefined,
+    fieldPlotId: plotFilter || undefined,
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
   });
 
   const handleSuccess = useCallback(() => {
@@ -118,6 +197,16 @@ function TeamOperationsPage() {
           </p>
         </div>
         <div className="team-ops__header-actions">
+          <button
+            type="button"
+            className="team-ops__btn team-ops__btn--ghost"
+            onClick={handleExport}
+            disabled={isExporting}
+            aria-label="Exportar operações para Excel"
+          >
+            <Download size={20} aria-hidden="true" />
+            {isExporting ? 'Exportando…' : 'Exportar'}
+          </button>
           <PermissionGate permission="farms:update">
             <button
               type="button"
@@ -172,6 +261,84 @@ function TeamOperationsPage() {
                 </option>
               ))}
             </select>
+
+            <select
+              className="team-ops__filter-select"
+              value={teamFilter}
+              onChange={(e) => {
+                setTeamFilter(e.target.value);
+                setPage(1);
+              }}
+              aria-label="Filtrar por equipe"
+            >
+              <option value="">Todas as equipes</option>
+              {filterTeams.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className="team-ops__filter-select"
+              value={plotFilter}
+              onChange={(e) => {
+                setPlotFilter(e.target.value);
+                setPage(1);
+              }}
+              aria-label="Filtrar por talhão"
+            >
+              <option value="">Todos os talhões</option>
+              {filterPlots.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+
+            <div className="team-ops__filter-date-group">
+              <label htmlFor="filter-date-from" className="team-ops__filter-date-label">
+                De
+              </label>
+              <input
+                id="filter-date-from"
+                type="date"
+                className="team-ops__filter-date"
+                value={dateFrom}
+                onChange={(e) => {
+                  setDateFrom(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </div>
+
+            <div className="team-ops__filter-date-group">
+              <label htmlFor="filter-date-to" className="team-ops__filter-date-label">
+                Até
+              </label>
+              <input
+                id="filter-date-to"
+                type="date"
+                className="team-ops__filter-date"
+                value={dateTo}
+                onChange={(e) => {
+                  setDateTo(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </div>
+
+            {hasFilters && (
+              <button
+                type="button"
+                className="team-ops__btn team-ops__btn--ghost"
+                onClick={clearFilters}
+                aria-label="Limpar filtros"
+              >
+                <FilterX size={16} aria-hidden="true" />
+                Limpar
+              </button>
+            )}
           </div>
 
           {/* Error */}
@@ -261,97 +428,20 @@ function TeamOperationsPage() {
             </div>
           )}
 
-          {/* Detail panel */}
+          {/* Detail modal */}
           {selectedOp && (
-            <div className="team-ops__detail-overlay" onClick={() => setSelectedOp(null)}>
-              <div
-                className="team-ops__detail"
-                onClick={(e) => e.stopPropagation()}
-                role="dialog"
-                aria-modal="true"
-                aria-label="Detalhes da operação"
-              >
-                <div className="team-ops__detail-header">
-                  <h2 className="team-ops__detail-title">{selectedOp.operationTypeLabel}</h2>
-                  <button
-                    type="button"
-                    className="to-modal__close"
-                    onClick={() => setSelectedOp(null)}
-                    aria-label="Fechar"
-                  >
-                    <span aria-hidden="true">✕</span>
-                  </button>
-                </div>
-                <div className="team-ops__detail-body">
-                  <dl className="team-ops__detail-dl">
-                    <div className="team-ops__detail-row">
-                      <dt>Talhão</dt>
-                      <dd>{selectedOp.fieldPlotName}</dd>
-                    </div>
-                    <div className="team-ops__detail-row">
-                      <dt>Equipe</dt>
-                      <dd>{selectedOp.teamName}</dd>
-                    </div>
-                    <div className="team-ops__detail-row">
-                      <dt>Data</dt>
-                      <dd>{formatDate(selectedOp.performedAt)}</dd>
-                    </div>
-                    <div className="team-ops__detail-row">
-                      <dt>Horário</dt>
-                      <dd>
-                        {formatTime(selectedOp.timeStart)} — {formatTime(selectedOp.timeEnd)} (
-                        {selectedOp.durationHours}h)
-                      </dd>
-                    </div>
-                    {selectedOp.notes && (
-                      <div className="team-ops__detail-row">
-                        <dt>Observações</dt>
-                        <dd>{selectedOp.notes}</dd>
-                      </div>
-                    )}
-                    {selectedOp.totalProductivity != null && selectedOp.productivityUnit && (
-                      <div className="team-ops__detail-row">
-                        <dt>Produção total</dt>
-                        <dd>
-                          {selectedOp.totalProductivity.toLocaleString('pt-BR')}{' '}
-                          {selectedOp.productivityUnit}
-                        </dd>
-                      </div>
-                    )}
-                    {selectedOp.totalLaborCost != null && (
-                      <div className="team-ops__detail-row">
-                        <dt>Custo MO</dt>
-                        <dd>{formatCurrency(selectedOp.totalLaborCost)}</dd>
-                      </div>
-                    )}
-                    <div className="team-ops__detail-row">
-                      <dt>Registrado por</dt>
-                      <dd>{selectedOp.recorderName}</dd>
-                    </div>
-                  </dl>
-
-                  <h3 className="team-ops__detail-subtitle">Membros ({selectedOp.entryCount})</h3>
-                  <ul className="team-ops__detail-members">
-                    {selectedOp.entries.map((entry) => (
-                      <li key={entry.id} className="team-ops__detail-member">
-                        <span className="team-ops__detail-member-name">{entry.userName}</span>
-                        {entry.productivity != null && entry.productivityUnit && (
-                          <span className="team-ops__detail-member-prod">
-                            {entry.productivity.toLocaleString('pt-BR')} {entry.productivityUnit}
-                          </span>
-                        )}
-                        {entry.laborCost != null && (
-                          <span className="team-ops__detail-member-cost">
-                            {formatCurrency(entry.laborCost)}
-                          </span>
-                        )}
-                        <span className="team-ops__detail-member-email">{entry.userEmail}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
+            <TeamOperationDetailModal
+              operation={selectedOp}
+              onClose={() => setSelectedOp(null)}
+              onUpdated={(updated) => {
+                setSelectedOp(updated);
+                void refetch();
+              }}
+              onDeleted={() => {
+                setSelectedOp(null);
+                void refetch();
+              }}
+            />
           )}
 
           {/* Pagination */}
