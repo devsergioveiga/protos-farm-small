@@ -98,6 +98,53 @@ export interface TimesheetEntry {
   }>;
 }
 
+// ─── Productivity Types ─────────────────────────────────────────────
+
+export type ProductivityStatus = 'above' | 'on_target' | 'below' | null;
+
+export interface ProductivityRankingEntry {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  totalProductivity: number;
+  productivityUnit: string;
+  totalHoursWorked: number;
+  productivityPerHour: number;
+  operationCount: number;
+  rank: number;
+  targetValue: number | null;
+  targetPercentage: number | null;
+  status: ProductivityStatus;
+}
+
+export interface BonificationEntry {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  operationType: string;
+  operationTypeLabel: string;
+  totalProductivity: number;
+  productivityUnit: string;
+  ratePerUnit: number;
+  bonificationValue: number;
+  operationCount: number;
+}
+
+export interface BonificationSummary {
+  entries: BonificationEntry[];
+  totalBonification: number;
+  period: { dateFrom: string | null; dateTo: string | null };
+}
+
+export interface ProductivityHistoryEntry {
+  period: string;
+  totalProductivity: number;
+  productivityUnit: string;
+  totalHoursWorked: number;
+  productivityPerHour: number;
+  operationCount: number;
+}
+
 // ─── Response Types ─────────────────────────────────────────────────
 
 export interface TeamOperationEntryItem {
@@ -133,6 +180,8 @@ export interface TeamOperationItem {
   entryCount: number;
   entries: TeamOperationEntryItem[];
   totalLaborCost: number | null;
+  totalProductivity: number | null;
+  productivityUnit: string | null;
   recordedBy: string;
   recorderName: string;
   createdAt: string;

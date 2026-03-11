@@ -8,6 +8,11 @@ import {
   type TeamOperationEntryItem,
   type PlotLaborCostItem,
   type TimesheetEntry,
+  type ProductivityRankingEntry,
+  type ProductivityStatus,
+  type BonificationEntry,
+  type BonificationSummary,
+  type ProductivityHistoryEntry,
 } from './team-operations.types';
 
 const INCLUDE_RELATIONS = {
@@ -58,6 +63,21 @@ function toItem(row: Record<string, unknown>): TeamOperationItem {
   const totalLaborCost =
     costs.length > 0 ? Math.round(costs.reduce((a, b) => a + b, 0) * 100) / 100 : null;
 
+  // Aggregate productivity — only if all entries share the same unit
+  const prodEntries = mappedEntries.filter(
+    (e) => e.productivity != null && e.productivityUnit != null,
+  );
+  let totalProductivity: number | null = null;
+  let productivityUnit: string | null = null;
+  if (prodEntries.length > 0) {
+    const units = new Set(prodEntries.map((e) => e.productivityUnit));
+    if (units.size === 1) {
+      productivityUnit = prodEntries[0].productivityUnit;
+      totalProductivity =
+        Math.round(prodEntries.reduce((sum, e) => sum + e.productivity!, 0) * 10000) / 10000;
+    }
+  }
+
   return {
     id: row.id as string,
     farmId: row.farmId as string,
@@ -78,6 +98,8 @@ function toItem(row: Record<string, unknown>): TeamOperationItem {
     entryCount: mappedEntries.length,
     entries: mappedEntries,
     totalLaborCost,
+    totalProductivity,
+    productivityUnit,
     recordedBy: row.recordedBy as string,
     recorderName: recorder?.name ?? '',
     createdAt: (row.createdAt as Date).toISOString(),
@@ -456,5 +478,384 @@ export async function getTimesheet(
         operations: entry.operations,
       };
     });
+  });
+}
+
+// ─── US-079 CA2: Productivity ranking ─────────────────────────────
+
+export async function getProductivityRanking(
+  ctx: RlsContext,
+  farmId: string,
+  options: {
+    dateFrom?: string;
+    dateTo?: string;
+    operationType?: string;
+    productivityUnit?: string;
+  } = {},
+): Promise<ProductivityRankingEntry[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = { farmId, deletedAt: null };
+    if (
+      options.operationType &&
+      (TEAM_OPERATION_TYPES as readonly string[]).includes(options.operationType)
+    ) {
+      where.operationType = options.operationType;
+    }
+    if (options.dateFrom || options.dateTo) {
+      const performedAt: Record<string, Date> = {};
+      if (options.dateFrom) performedAt.gte = new Date(options.dateFrom);
+      if (options.dateTo) performedAt.lte = new Date(options.dateTo);
+      where.performedAt = performedAt;
+    }
+
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const operations = await tx.teamOperation.findMany({
+      where: where as any,
+      include: {
+        entries: {
+          include: { user: { select: { name: true, email: true } } },
+        },
+      },
+    });
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+
+    // Accumulate per-user productivity grouped by unit
+    const userMap = new Map<
+      string,
+      {
+        userName: string;
+        userEmail: string;
+        totalProd: number;
+        totalHours: number;
+        opCount: number;
+        unit: string;
+      }
+    >();
+
+    for (const op of operations) {
+      const durationMs = (op.timeEnd as Date).getTime() - (op.timeStart as Date).getTime();
+      const durationHours = durationMs / 3_600_000;
+
+      for (const entry of op.entries as Array<Record<string, unknown>>) {
+        const prod = entry.productivity != null ? Number(entry.productivity) : null;
+        const unit = (entry.productivityUnit as string) ?? null;
+        if (prod == null || !unit) continue;
+
+        // Filter by unit if specified
+        if (options.productivityUnit && unit !== options.productivityUnit) continue;
+
+        const userId = entry.userId as string;
+        const user = entry.user as { name: string; email: string };
+        const hw = entry.hoursWorked != null ? Number(entry.hoursWorked) : durationHours;
+
+        const key = `${userId}|${unit}`;
+        let acc = userMap.get(key);
+        if (!acc) {
+          acc = {
+            userName: user.name,
+            userEmail: user.email,
+            totalProd: 0,
+            totalHours: 0,
+            opCount: 0,
+            unit,
+          };
+          userMap.set(key, acc);
+        }
+        acc.totalProd += prod;
+        acc.totalHours += hw;
+        acc.opCount += 1;
+      }
+    }
+
+    // Load productivity targets for this farm
+    const targets = await tx.productivityTarget.findMany({
+      where: { farmId },
+    });
+    const targetMap = new Map(
+      targets.map((t) => [`${t.operationType}|${t.targetUnit}`, Number(t.targetValue)]),
+    );
+
+    // Also build a unit-only fallback map for when operationType filter is applied
+    const unitTargetMap = new Map<string, number>();
+    if (options.operationType) {
+      for (const t of targets) {
+        if (t.operationType === options.operationType) {
+          unitTargetMap.set(t.targetUnit, Number(t.targetValue));
+        }
+      }
+    }
+
+    function getStatus(prodPerHour: number, targetVal: number | null): ProductivityStatus {
+      if (targetVal == null) return null;
+      if (targetVal <= 0) return null;
+      const pct = (prodPerHour / targetVal) * 100;
+      if (pct >= 110) return 'above';
+      if (pct >= 90) return 'on_target';
+      return 'below';
+    }
+
+    // Sort by total productivity descending, assign ranks
+    const entries = Array.from(userMap.entries())
+      .map(([key, data]) => {
+        const prodPerHour =
+          data.totalHours > 0 ? Math.round((data.totalProd / data.totalHours) * 10000) / 10000 : 0;
+
+        // Find target: try specific opType+unit, then unit-only
+        const targetVal =
+          unitTargetMap.get(data.unit) ??
+          targetMap.get(`${options.operationType ?? ''}|${data.unit}`) ??
+          null;
+
+        const targetPercentage =
+          targetVal != null && targetVal > 0
+            ? Math.round((prodPerHour / targetVal) * 10000) / 100
+            : null;
+
+        return {
+          userId: key.split('|')[0],
+          userName: data.userName,
+          userEmail: data.userEmail,
+          totalProductivity: Math.round(data.totalProd * 10000) / 10000,
+          productivityUnit: data.unit,
+          totalHoursWorked: Math.round(data.totalHours * 100) / 100,
+          productivityPerHour: prodPerHour,
+          operationCount: data.opCount,
+          rank: 0,
+          targetValue: targetVal,
+          targetPercentage,
+          status: getStatus(prodPerHour, targetVal),
+        };
+      })
+      .sort((a, b) => b.totalProductivity - a.totalProductivity);
+
+    entries.forEach((e, i) => {
+      e.rank = i + 1;
+    });
+
+    return entries;
+  });
+}
+
+// ─── US-079 CA5: Bonification calculation ─────────────────────────
+
+export async function calculateBonification(
+  ctx: RlsContext,
+  farmId: string,
+  options: {
+    dateFrom?: string;
+    dateTo?: string;
+    operationType?: string;
+  } = {},
+): Promise<BonificationSummary> {
+  return withRlsContext(ctx, async (tx) => {
+    // Load targets with rates
+    const targets = await tx.productivityTarget.findMany({
+      where: {
+        farmId,
+        ratePerUnit: { not: null },
+        ...(options.operationType && {
+          operationType: options.operationType as Parameters<
+            typeof tx.productivityTarget.findMany
+          >[0] extends { where?: infer W }
+            ? W extends { operationType?: infer O }
+              ? O
+              : never
+            : never,
+        }),
+      },
+    });
+
+    if (targets.length === 0) {
+      return {
+        entries: [],
+        totalBonification: 0,
+        period: { dateFrom: options.dateFrom ?? null, dateTo: options.dateTo ?? null },
+      };
+    }
+
+    // Build rate map: opType|unit -> rate
+    const rateMap = new Map<string, { rate: number; opType: string }>();
+    for (const t of targets) {
+      rateMap.set(`${t.operationType}|${t.targetUnit}`, {
+        rate: Number(t.ratePerUnit),
+        opType: t.operationType as string,
+      });
+    }
+
+    const where: Record<string, unknown> = { farmId, deletedAt: null };
+    if (options.operationType) {
+      where.operationType = options.operationType;
+    } else {
+      // Only load ops matching types that have bonification rules
+      const opTypes = [...new Set(targets.map((t) => t.operationType))];
+      where.operationType = { in: opTypes };
+    }
+    if (options.dateFrom || options.dateTo) {
+      const performedAt: Record<string, Date> = {};
+      if (options.dateFrom) performedAt.gte = new Date(options.dateFrom);
+      if (options.dateTo) performedAt.lte = new Date(options.dateTo);
+      where.performedAt = performedAt;
+    }
+
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const operations = await tx.teamOperation.findMany({
+      where: where as any,
+      include: {
+        entries: {
+          include: { user: { select: { name: true, email: true } } },
+        },
+      },
+    });
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+
+    // Accumulate bonification per user per opType
+    const bonusMap = new Map<
+      string,
+      {
+        userName: string;
+        userEmail: string;
+        opType: string;
+        totalProd: number;
+        unit: string;
+        rate: number;
+        opCount: number;
+      }
+    >();
+
+    for (const op of operations) {
+      const opType = op.operationType as string;
+      for (const entry of op.entries as Array<Record<string, unknown>>) {
+        const prod = entry.productivity != null ? Number(entry.productivity) : null;
+        const unit = (entry.productivityUnit as string) ?? null;
+        if (prod == null || !unit) continue;
+
+        const rateInfo = rateMap.get(`${opType}|${unit}`);
+        if (!rateInfo) continue;
+
+        const userId = entry.userId as string;
+        const user = entry.user as { name: string; email: string };
+        const key = `${userId}|${opType}|${unit}`;
+
+        let acc = bonusMap.get(key);
+        if (!acc) {
+          acc = {
+            userName: user.name,
+            userEmail: user.email,
+            opType,
+            totalProd: 0,
+            unit,
+            rate: rateInfo.rate,
+            opCount: 0,
+          };
+          bonusMap.set(key, acc);
+        }
+        acc.totalProd += prod;
+        acc.opCount += 1;
+      }
+    }
+
+    const entries: BonificationEntry[] = Array.from(bonusMap.entries())
+      .map(([key, data]) => ({
+        userId: key.split('|')[0],
+        userName: data.userName,
+        userEmail: data.userEmail,
+        operationType: data.opType,
+        operationTypeLabel: TEAM_OPERATION_TYPE_LABELS[data.opType] ?? data.opType,
+        totalProductivity: Math.round(data.totalProd * 10000) / 10000,
+        productivityUnit: data.unit,
+        ratePerUnit: data.rate,
+        bonificationValue: Math.round(data.totalProd * data.rate * 100) / 100,
+        operationCount: data.opCount,
+      }))
+      .sort((a, b) => b.bonificationValue - a.bonificationValue);
+
+    const totalBonification =
+      Math.round(entries.reduce((sum, e) => sum + e.bonificationValue, 0) * 100) / 100;
+
+    return {
+      entries,
+      totalBonification,
+      period: { dateFrom: options.dateFrom ?? null, dateTo: options.dateTo ?? null },
+    };
+  });
+}
+
+// ─── US-079 CA8: Individual productivity history ──────────────────
+
+export async function getProductivityHistory(
+  ctx: RlsContext,
+  farmId: string,
+  userId: string,
+  options: { groupBy?: 'month' | 'week' } = {},
+): Promise<ProductivityHistoryEntry[]> {
+  const groupBy = options.groupBy ?? 'month';
+
+  return withRlsContext(ctx, async (tx) => {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const operations = await tx.teamOperation.findMany({
+      where: { farmId, deletedAt: null } as any,
+      include: {
+        entries: {
+          where: { userId },
+        },
+      },
+      orderBy: { performedAt: 'asc' },
+    });
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+
+    const periodMap = new Map<
+      string,
+      { totalProd: number; totalHours: number; opCount: number; unit: string }
+    >();
+
+    for (const op of operations) {
+      const entries = op.entries as Array<Record<string, unknown>>;
+      if (entries.length === 0) continue;
+
+      const performedAt = op.performedAt as Date;
+      let periodKey: string;
+      if (groupBy === 'week') {
+        const d = new Date(performedAt);
+        const dayOfWeek = d.getDay();
+        const weekStart = new Date(d);
+        weekStart.setDate(d.getDate() - dayOfWeek);
+        periodKey = weekStart.toISOString().split('T')[0];
+      } else {
+        periodKey = `${performedAt.getFullYear()}-${String(performedAt.getMonth() + 1).padStart(2, '0')}`;
+      }
+
+      const durationMs = (op.timeEnd as Date).getTime() - (op.timeStart as Date).getTime();
+      const durationHours = durationMs / 3_600_000;
+
+      for (const entry of entries) {
+        const prod = entry.productivity != null ? Number(entry.productivity) : null;
+        const unit = (entry.productivityUnit as string) ?? null;
+        if (prod == null || !unit) continue;
+
+        const hw = entry.hoursWorked != null ? Number(entry.hoursWorked) : durationHours;
+        const key = `${periodKey}|${unit}`;
+
+        let acc = periodMap.get(key);
+        if (!acc) {
+          acc = { totalProd: 0, totalHours: 0, opCount: 0, unit };
+          periodMap.set(key, acc);
+        }
+        acc.totalProd += prod;
+        acc.totalHours += hw;
+        acc.opCount += 1;
+      }
+    }
+
+    return Array.from(periodMap.entries())
+      .map(([key, data]) => ({
+        period: key.split('|')[0],
+        totalProductivity: Math.round(data.totalProd * 10000) / 10000,
+        productivityUnit: data.unit,
+        totalHoursWorked: Math.round(data.totalHours * 100) / 100,
+        productivityPerHour:
+          data.totalHours > 0 ? Math.round((data.totalProd / data.totalHours) * 10000) / 10000 : 0,
+        operationCount: data.opCount,
+      }))
+      .sort((a, b) => a.period.localeCompare(b.period));
   });
 }

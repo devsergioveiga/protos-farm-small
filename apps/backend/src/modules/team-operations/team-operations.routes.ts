@@ -13,6 +13,9 @@ import {
   getOperationTypes,
   getCostByPlot,
   getTimesheet,
+  getProductivityRanking,
+  calculateBonification,
+  getProductivityHistory,
 } from './team-operations.service';
 
 export const teamOperationsRouter = Router();
@@ -49,6 +52,74 @@ teamOperationsRouter.get(
   async (_req, res) => {
     try {
       res.json(getOperationTypes());
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── US-079 CA2: PRODUCTIVITY RANKING ──────────────────────────────
+
+teamOperationsRouter.get(
+  '/org/farms/:farmId/team-operations/productivity-ranking',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await getProductivityRanking(ctx, req.params.farmId as string, {
+        dateFrom: (req.query.dateFrom as string) || undefined,
+        dateTo: (req.query.dateTo as string) || undefined,
+        operationType: (req.query.operationType as string) || undefined,
+        productivityUnit: (req.query.productivityUnit as string) || undefined,
+      });
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── US-079 CA8: PRODUCTIVITY HISTORY ──────────────────────────────
+
+teamOperationsRouter.get(
+  '/org/farms/:farmId/team-operations/productivity-history/:userId',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await getProductivityHistory(
+        ctx,
+        req.params.farmId as string,
+        req.params.userId as string,
+        { groupBy: (req.query.groupBy as 'month' | 'week') || undefined },
+      );
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── US-079 CA5: BONIFICATION ──────────────────────────────────────
+
+teamOperationsRouter.get(
+  '/org/farms/:farmId/team-operations/bonification',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await calculateBonification(ctx, req.params.farmId as string, {
+        dateFrom: (req.query.dateFrom as string) || undefined,
+        dateTo: (req.query.dateTo as string) || undefined,
+        operationType: (req.query.operationType as string) || undefined,
+      });
+      res.json(result);
     } catch (err) {
       handleError(err, res);
     }

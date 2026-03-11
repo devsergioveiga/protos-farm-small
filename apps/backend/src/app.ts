@@ -27,6 +27,7 @@ import { fertilizerApplicationsRouter } from './modules/fertilizer-applications/
 import { culturalOperationsRouter } from './modules/cultural-operations/cultural-operations.routes';
 import { fieldTeamsRouter } from './modules/field-teams/field-teams.routes';
 import { teamOperationsRouter } from './modules/team-operations/team-operations.routes';
+import { productivityTargetsRouter } from './modules/team-operations/productivity-targets.routes';
 import { pestsRouter } from './modules/pests/pests.routes';
 import { monitoringPointsRouter } from './modules/monitoring-points/monitoring-points.routes';
 import { monitoringRecordsRouter } from './modules/monitoring-records/monitoring-records.routes';
@@ -69,6 +70,7 @@ app.use('/api', fertilizerApplicationsRouter);
 app.use('/api', culturalOperationsRouter);
 app.use('/api', fieldTeamsRouter);
 app.use('/api', teamOperationsRouter);
+app.use('/api', productivityTargetsRouter);
 app.use('/api', pestsRouter);
 app.use('/api', monitoringPointsRouter);
 app.use('/api', monitoringRecordsRouter);

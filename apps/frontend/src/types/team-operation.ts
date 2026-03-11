@@ -31,6 +31,8 @@ export interface TeamOperationItem {
   entryCount: number;
   entries: TeamOperationEntryItem[];
   totalLaborCost: number | null;
+  totalProductivity: number | null;
+  productivityUnit: string | null;
   recordedBy: string;
   recorderName: string;
   createdAt: string;
@@ -69,6 +71,37 @@ export interface CreateTeamOperationInput {
   latitude?: number | null;
   longitude?: number | null;
 }
+
+export interface ProductivityTargetItem {
+  id: string;
+  farmId: string;
+  operationType: string;
+  operationTypeLabel: string;
+  targetValue: number;
+  targetUnit: string;
+  period: string;
+  ratePerUnit: number | null;
+  rateUnit: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProductivityTargetInput {
+  operationType: string;
+  targetValue: number;
+  targetUnit: string;
+  period?: string;
+  ratePerUnit?: number | null;
+  rateUnit?: string | null;
+}
+
+export const PRODUCTIVITY_UNITS = [
+  { value: 'kg', label: 'Quilogramas (kg)' },
+  { value: 'litros', label: 'Litros' },
+  { value: 'caixas', label: 'Caixas' },
+  { value: 'ha', label: 'Hectares (ha)' },
+  { value: 'animais', label: 'Animais' },
+] as const;
 
 export const TEAM_OPERATION_TYPES = [
   { value: 'PULVERIZACAO', label: 'Pulverização' },
