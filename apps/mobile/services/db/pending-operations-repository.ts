@@ -11,7 +11,8 @@ export type OperationEntity =
   | 'animal_lot_movements'
   | 'field_operations'
   | 'pesticide_applications'
-  | 'monitoring_records';
+  | 'monitoring_records'
+  | 'planting_operations';
 
 export interface PendingOperation {
   id: number;

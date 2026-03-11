@@ -13,6 +13,8 @@ interface PlantingModalProps {
   operation: PlantingItem | null;
   onClose: () => void;
   onSuccess: () => void;
+  preSelectedPlotId?: string | null;
+  farmId?: string | null;
 }
 
 const EMPTY_TREATMENT: SeedTreatmentItem = {
@@ -29,9 +31,17 @@ const EMPTY_FERTILIZATION: BaseFertilizationItem = {
   totalQuantity: null,
 };
 
-function PlantingModal({ isOpen, operation, onClose, onSuccess }: PlantingModalProps) {
+function PlantingModal({
+  isOpen,
+  operation,
+  onClose,
+  onSuccess,
+  preSelectedPlotId,
+  farmId: farmIdProp,
+}: PlantingModalProps) {
   const isEditing = !!operation;
-  const { selectedFarmId } = useFarmContext();
+  const { selectedFarmId: contextFarmId } = useFarmContext();
+  const selectedFarmId = farmIdProp ?? contextFarmId;
 
   // CA1 — Basic fields
   const [fieldPlotId, setFieldPlotId] = useState('');
@@ -132,6 +142,9 @@ function PlantingModal({ isOpen, operation, onClose, onSuccess }: PlantingModalP
       setSubmitError(null);
       return;
     }
+    if (!operation && preSelectedPlotId) {
+      setFieldPlotId(preSelectedPlotId);
+    }
     if (operation) {
       setFieldPlotId(operation.fieldPlotId);
       setCultivarId(operation.cultivarId ?? '');
@@ -159,7 +172,7 @@ function PlantingModal({ isOpen, operation, onClose, onSuccess }: PlantingModalP
       setOperationCost(operation.operationCost != null ? String(operation.operationCost) : '');
       setNotes(operation.notes ?? '');
     }
-  }, [isOpen, operation]);
+  }, [isOpen, operation, preSelectedPlotId]);
 
   // Escape key
   useEffect(() => {

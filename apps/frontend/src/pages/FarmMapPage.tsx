@@ -11,6 +11,7 @@ import {
   Users,
   Plus,
   Fence,
+  Sprout,
 } from 'lucide-react';
 import turfArea from '@turf/area';
 import { polygon as turfPolygon } from '@turf/helpers';
@@ -52,6 +53,7 @@ const CreatePlotModal = lazy(() => import('@/components/map/CreatePlotModal'));
 const EditPlotModal = lazy(() => import('@/components/map/EditPlotModal'));
 const ConfirmDeleteModal = lazy(() => import('@/components/confirm-delete/ConfirmDeleteModal'));
 const CreateLocationModal = lazy(() => import('@/components/farm-locations/CreateLocationModal'));
+const PlantingModal = lazy(() => import('@/components/planting/PlantingModal'));
 
 interface BoundaryVersionsTarget {
   registrationId?: string;
@@ -128,6 +130,9 @@ function FarmMapPage() {
   const [versionOverlay, setVersionOverlay] = useState<GeoJSON.Polygon | null>(null);
   const [isCreateLocationOpen, setIsCreateLocationOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<FarmLocationMapItem | null>(null);
+  const [isPlantingOpen, setIsPlantingOpen] = useState(false);
+  const [plantingPlotId, setPlantingPlotId] = useState<string | null>(null);
+  const [plantingToast, setPlantingToast] = useState<string | null>(null);
 
   const handleOpenRegForm = useCallback(
     (reg?: FarmRegistration) => {
@@ -223,6 +228,20 @@ function FarmMapPage() {
   const handleCreateLocationSuccess = useCallback(() => {
     setIsCreateLocationOpen(false);
     void refetch();
+  }, [refetch]);
+
+  const handleRegisterPlanting = useCallback((plot: FieldPlot) => {
+    setPlantingPlotId(plot.id);
+    setSelectedPlot(null);
+    setIsPlantingOpen(true);
+  }, []);
+
+  const handlePlantingSuccess = useCallback(() => {
+    setIsPlantingOpen(false);
+    setPlantingPlotId(null);
+    setPlantingToast('Plantio registrado! O talhão foi atualizado no mapa.');
+    void refetch();
+    setTimeout(() => setPlantingToast(null), 5000);
   }, [refetch]);
 
   const handleViewHistory = useCallback((plot: FieldPlot) => {
@@ -505,6 +524,7 @@ function FarmMapPage() {
           onSubdivide={handleSubdivide}
           onViewHistory={handleViewHistory}
           onDelete={canDeletePlot ? handleRequestDeletePlot : undefined}
+          onRegisterPlanting={handleRegisterPlanting}
         />
 
         {historyPlot && farmId && (
@@ -710,6 +730,29 @@ function FarmMapPage() {
             onSuccess={handleCreateLocationSuccess}
           />
         </Suspense>
+      )}
+
+      {isPlantingOpen && (
+        <Suspense fallback={null}>
+          <PlantingModal
+            isOpen={isPlantingOpen}
+            operation={null}
+            onClose={() => {
+              setIsPlantingOpen(false);
+              setPlantingPlotId(null);
+            }}
+            onSuccess={handlePlantingSuccess}
+            preSelectedPlotId={plantingPlotId}
+            farmId={farmId}
+          />
+        </Suspense>
+      )}
+
+      {plantingToast && (
+        <div className="farm-map-page__toast" role="status" aria-live="polite">
+          <Sprout size={16} aria-hidden="true" />
+          {plantingToast}
+        </div>
       )}
     </div>
   );
