@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { MapContainer, TileLayer, GeoJSON, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -13,10 +13,13 @@ import {
   Minus,
   HelpCircle,
   BarChart3,
+  Download,
+  GitCompareArrows,
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
 import { useFarmMap } from '@/hooks/useFarmMap';
 import { useProductivityMap } from '@/hooks/useProductivityMap';
+import { useSeasonComparison } from '@/hooks/useSeasonComparison';
 import MapAutoFit from '@/components/map/MapAutoFit';
 import { formatArea } from '@/components/map/FarmMap';
 import type { BaseMapType } from '@/components/map/BaseMapSelector';
@@ -161,6 +164,29 @@ function ProductivityMapPage() {
 
   const hasActiveFilters = cultureType !== '' || dateFrom !== '' || dateTo !== '';
 
+  // CA5 — Season comparison
+  const [showSeasons, setShowSeasons] = useState(false);
+  const { data: seasonData, isLoading: seasonLoading } = useSeasonComparison({
+    farmId: showSeasons ? selectedFarmId : null,
+  });
+
+  // CA6 — Export map as image
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const handleExportImage = useCallback(async () => {
+    const container = mapContainerRef.current;
+    if (!container) return;
+    try {
+      const { default: html2canvas } = await import('html2canvas');
+      const canvas = await html2canvas(container, { useCORS: true, allowTaint: true });
+      const link = document.createElement('a');
+      link.download = `mapa-produtividade-${selectedFarm?.name ?? 'fazenda'}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch {
+      alert('Não foi possível exportar o mapa. Tente novamente.');
+    }
+  }, [selectedFarm]);
+
   // ─── Ranking (CA4 data, shown alongside map) ──────────────────
   const ranking = useMemo(() => {
     if (!prodData) return [];
@@ -228,6 +254,24 @@ function ProductivityMapPage() {
               <ChevronDown size={16} aria-hidden="true" />
             )}
           </button>
+          <button
+            type="button"
+            className="prod-map__filter-toggle"
+            onClick={() => setShowSeasons(!showSeasons)}
+            aria-expanded={showSeasons}
+          >
+            <GitCompareArrows size={20} aria-hidden="true" />
+            Safras
+          </button>
+          <button
+            type="button"
+            className="prod-map__filter-toggle"
+            onClick={() => void handleExportImage()}
+            aria-label="Exportar mapa como imagem"
+          >
+            <Download size={20} aria-hidden="true" />
+            Exportar
+          </button>
         </div>
       </header>
 
@@ -290,7 +334,7 @@ function ProductivityMapPage() {
       )}
 
       <div className="prod-map__content">
-        <div className="prod-map__map-container">
+        <div className="prod-map__map-container" ref={mapContainerRef}>
           {isLoading ? (
             <div className="prod-map__skeleton" aria-busy="true">
               <div className="prod-map__skeleton-pulse" />
@@ -507,6 +551,85 @@ function ProductivityMapPage() {
           )}
         </aside>
       </div>
+
+      {/* CA5 — Season comparison */}
+      {showSeasons && (
+        <section className="prod-map__seasons" aria-label="Comparativo por safra">
+          <h2 className="prod-map__seasons-title">
+            <GitCompareArrows size={20} aria-hidden="true" />
+            Comparativo safra a safra
+          </h2>
+          {seasonLoading ? (
+            <div className="prod-map__ranking-loading" aria-busy="true">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="prod-map__ranking-skeleton" />
+              ))}
+            </div>
+          ) : seasonData.length === 0 ? (
+            <p className="prod-map__seasons-empty">
+              Nenhum dado de colheita encontrado para comparação entre safras.
+            </p>
+          ) : (
+            <div className="prod-map__seasons-grid">
+              {seasonData.map((plot) => (
+                <div key={plot.fieldPlotId} className="prod-map__season-card">
+                  <div className="prod-map__season-card-header">
+                    <strong>{plot.fieldPlotName}</strong>
+                    <span className="prod-map__ranking-detail">
+                      {formatArea(plot.fieldPlotAreaHa)}
+                    </span>
+                    {plot.variationPct != null && (
+                      <span
+                        className={`prod-map__ranking-badge prod-map__ranking-badge--${plot.variationPct >= 0 ? 'alta' : 'baixa'}`}
+                      >
+                        {plot.variationPct >= 0 ? (
+                          <TrendingUp size={14} aria-hidden="true" />
+                        ) : (
+                          <TrendingDown size={14} aria-hidden="true" />
+                        )}
+                        <span>
+                          {plot.variationPct > 0 ? '+' : ''}
+                          {plot.variationPct.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                  <table className="prod-map__season-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Safra</th>
+                        <th scope="col">Produtividade</th>
+                        <th scope="col">Produção</th>
+                        <th scope="col">Colheitas</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {plot.seasons.map((s) => (
+                        <tr key={s.season}>
+                          <td>{s.season}</td>
+                          <td>
+                            {s.productivityPerHa.toLocaleString('pt-BR', {
+                              maximumFractionDigits: 2,
+                            })}{' '}
+                            {s.productivityUnit}
+                          </td>
+                          <td>
+                            {s.totalProduction.toLocaleString('pt-BR', {
+                              maximumFractionDigits: 2,
+                            })}{' '}
+                            {s.productionUnit}
+                          </td>
+                          <td>{s.harvestCount}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

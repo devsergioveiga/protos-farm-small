@@ -8,6 +8,8 @@ import {
   type PlotProductivityWithLevel,
   type ProductivityLevel,
   type ProductivityMapResponse,
+  type PlotSeasonComparison,
+  type SeasonEntry,
 } from './productivity-map.types';
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -296,5 +298,146 @@ export async function getProductivityMap(
         dateTo: options.dateTo ?? null,
       },
     };
+  });
+}
+
+// ─── CA5: Season Comparison ─────────────────────────────────────
+
+function harvestYear(date: Date): string {
+  const month = date.getMonth();
+  const year = date.getFullYear();
+  // Brazilian harvest seasons: Jul-Jun cycle
+  if (month >= 6) return `${year}/${year + 1}`;
+  return `${year - 1}/${year}`;
+}
+
+export async function getSeasonComparison(
+  ctx: RlsContext,
+  farmId: string,
+  fieldPlotId?: string,
+): Promise<PlotSeasonComparison[]> {
+  return withRlsContext(ctx, async (tx) => {
+    const farm = await tx.farm.findFirst({
+      where: { id: farmId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!farm) throw new ProductivityMapError('Fazenda não encontrada', 404);
+
+    // Grain harvests
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const grainWhere: any = { farmId, deletedAt: null };
+    if (fieldPlotId) grainWhere.fieldPlotId = fieldPlotId;
+
+    const grainHarvests = await tx.grainHarvest.findMany({
+      where: grainWhere,
+      include: { fieldPlot: { select: { id: true, name: true, boundaryAreaHa: true } } },
+      orderBy: { harvestDate: 'asc' },
+    });
+
+    // Coffee harvests
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const coffeeWhere: any = { farmId, deletedAt: null };
+    if (fieldPlotId) coffeeWhere.fieldPlotId = fieldPlotId;
+
+    const coffeeHarvests = await tx.coffeeHarvest.findMany({
+      where: coffeeWhere,
+      include: { fieldPlot: { select: { id: true, name: true, boundaryAreaHa: true } } },
+      orderBy: { harvestDate: 'asc' },
+    });
+
+    // Accumulate: plotId -> season -> metrics
+    const plotSeasons = new Map<
+      string,
+      {
+        name: string;
+        areaHa: number;
+        seasons: Map<string, { totalSc: number; count: number }>;
+      }
+    >();
+
+    function ensurePlot(plotId: string, name: string, areaHa: number) {
+      if (!plotSeasons.has(plotId)) {
+        plotSeasons.set(plotId, { name, areaHa, seasons: new Map() });
+      }
+      return plotSeasons.get(plotId)!;
+    }
+
+    function ensureSeason(
+      acc: { seasons: Map<string, { totalSc: number; count: number }> },
+      season: string,
+    ) {
+      if (!acc.seasons.has(season)) acc.seasons.set(season, { totalSc: 0, count: 0 });
+      return acc.seasons.get(season)!;
+    }
+
+    for (const h of grainHarvests) {
+      const row = h as unknown as Record<string, unknown>;
+      const plotId = row.fieldPlotId as string;
+      const plotInfo = row.fieldPlot as { id: string; name: string; boundaryAreaHa: unknown };
+      const date = row.harvestDate as Date;
+      const season = harvestYear(date);
+      const crop = row.crop as string;
+      const stdMoisture = await resolveStandardMoisture(ctx, crop);
+      const sc = computeGrainProductivitySc(
+        Number(row.grossProductionKg),
+        Number(row.moisturePct),
+        Number(row.impurityPct),
+        stdMoisture,
+      );
+      const acc = ensurePlot(plotId, plotInfo.name, Number(plotInfo.boundaryAreaHa));
+      const s = ensureSeason(acc, season);
+      s.totalSc += sc;
+      s.count += 1;
+    }
+
+    for (const h of coffeeHarvests) {
+      const row = h as unknown as Record<string, unknown>;
+      const plotId = row.fieldPlotId as string;
+      const plotInfo = row.fieldPlot as { id: string; name: string; boundaryAreaHa: unknown };
+      const date = row.harvestDate as Date;
+      const season = harvestYear(date);
+      const vol = Number(row.volumeLiters);
+      const yld = row.yieldLitersPerSac != null ? Number(row.yieldLitersPerSac) : 480;
+      const sacs = yld > 0 ? vol / yld : 0;
+      const acc = ensurePlot(plotId, plotInfo.name, Number(plotInfo.boundaryAreaHa));
+      const s = ensureSeason(acc, season);
+      s.totalSc += sacs;
+      s.count += 1;
+    }
+
+    // Build response
+    const result: PlotSeasonComparison[] = [];
+    for (const [plotId, plotData] of plotSeasons) {
+      const areaHa = plotData.areaHa > 0 ? plotData.areaHa : 1;
+      const seasons: SeasonEntry[] = Array.from(plotData.seasons.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([season, data]) => ({
+          season,
+          productivityPerHa: Math.round((data.totalSc / areaHa) * 100) / 100,
+          productivityUnit: 'sc/ha',
+          totalProduction: Math.round(data.totalSc * 100) / 100,
+          productionUnit: 'sc',
+          harvestCount: data.count,
+        }));
+
+      let variationPct: number | null = null;
+      if (seasons.length >= 2) {
+        const prev = seasons[seasons.length - 2].productivityPerHa;
+        const curr = seasons[seasons.length - 1].productivityPerHa;
+        if (prev > 0) {
+          variationPct = Math.round(((curr - prev) / prev) * 1000) / 10;
+        }
+      }
+
+      result.push({
+        fieldPlotId: plotId,
+        fieldPlotName: plotData.name,
+        fieldPlotAreaHa: plotData.areaHa,
+        seasons,
+        variationPct,
+      });
+    }
+
+    return result.sort((a, b) => a.fieldPlotName.localeCompare(b.fieldPlotName));
   });
 }

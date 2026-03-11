@@ -38,3 +38,20 @@ export interface ProductivityMapResponse {
     dateTo: string | null;
   };
 }
+
+export interface SeasonEntry {
+  season: string;
+  productivityPerHa: number;
+  productivityUnit: string;
+  totalProduction: number;
+  productionUnit: string;
+  harvestCount: number;
+}
+
+export interface PlotSeasonComparison {
+  fieldPlotId: string;
+  fieldPlotName: string;
+  fieldPlotAreaHa: number;
+  seasons: SeasonEntry[];
+  variationPct: number | null;
+}

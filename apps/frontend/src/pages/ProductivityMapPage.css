@@ -464,6 +464,83 @@
   margin: 0;
 }
 
+/* ─── CA5: Season comparison ──────────────────────────────────── */
+.prod-map__seasons {
+  margin-top: 16px;
+  padding: 20px;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 12px;
+}
+
+.prod-map__seasons-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-neutral-800);
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prod-map__seasons-empty {
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  text-align: center;
+  padding: 24px;
+  margin: 0;
+}
+
+.prod-map__seasons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+}
+
+.prod-map__season-card {
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--color-neutral-50);
+}
+
+.prod-map__season-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.prod-map__season-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.prod-map__season-table th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.prod-map__season-table td {
+  padding: 8px;
+  color: var(--color-neutral-700);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+}
+
+.prod-map__season-table tbody tr:hover {
+  background: var(--color-neutral-100);
+}
+
 /* ─── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 1023px) {
   .prod-map__content {

@@ -152,6 +152,10 @@ vi.mock('@/hooks/useProductivityMap', () => ({
   useProductivityMap: (...args: unknown[]) => mockUseProductivityMap(...args),
 }));
 
+vi.mock('@/hooks/useSeasonComparison', () => ({
+  useSeasonComparison: () => ({ data: [], isLoading: false, error: null }),
+}));
+
 function renderPage() {
   return render(
     <MemoryRouter>

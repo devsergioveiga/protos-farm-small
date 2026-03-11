@@ -4,7 +4,7 @@ import { checkPermission } from '../../middleware/check-permission';
 import { checkFarmAccess } from '../../middleware/check-farm-access';
 import type { RlsContext } from '../../database/rls';
 import { ProductivityMapError, type CultureType } from './productivity-map.types';
-import { getProductivityMap } from './productivity-map.service';
+import { getProductivityMap, getSeasonComparison } from './productivity-map.service';
 
 export const productivityMapRouter = Router();
 
@@ -46,6 +46,28 @@ productivityMapRouter.get(
         dateFrom: (req.query.dateFrom as string) || undefined,
         dateTo: (req.query.dateTo as string) || undefined,
       });
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── CA5: Season Comparison ──────────────────────────────────────────
+
+productivityMapRouter.get(
+  '/org/farms/:farmId/productivity-map/seasons',
+  authenticate,
+  checkPermission('farms:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await getSeasonComparison(
+        ctx,
+        req.params.farmId as string,
+        (req.query.fieldPlotId as string) || undefined,
+      );
       res.json(result);
     } catch (err) {
       handleError(err, res);
