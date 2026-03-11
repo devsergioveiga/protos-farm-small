@@ -29,6 +29,9 @@ jest.mock('./team-operations.service', () => ({
   getOperationTypes: jest.fn(),
   getCostByPlot: jest.fn(),
   getTimesheet: jest.fn(),
+  getProductivityRanking: jest.fn(),
+  calculateBonification: jest.fn(),
+  getProductivityHistory: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -80,6 +83,8 @@ const SAMPLE_OPERATION = {
   longitude: null,
   entryCount: 3,
   totalLaborCost: 750,
+  totalProductivity: null,
+  productivityUnit: null,
   entries: [
     {
       id: 'e1',
@@ -394,6 +399,134 @@ describe('Team Operations Routes', () => {
         FARM_ID,
         expect.objectContaining({ userId: 'user-1' }),
       );
+    });
+  });
+
+  describe('GET productivity-ranking (US-079 CA2)', () => {
+    it('returns ranking sorted by total productivity', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.getProductivityRanking.mockResolvedValue([
+        {
+          userId: 'user-1',
+          userName: 'Maria',
+          userEmail: 'maria@org.com',
+          totalProductivity: 500,
+          productivityUnit: 'kg',
+          totalHoursWorked: 10,
+          productivityPerHour: 50,
+          operationCount: 3,
+          rank: 1,
+          targetValue: 40,
+          targetPercentage: 125,
+          status: 'above',
+        },
+        {
+          userId: 'user-2',
+          userName: 'Pedro',
+          userEmail: 'pedro@org.com',
+          totalProductivity: 350,
+          productivityUnit: 'kg',
+          totalHoursWorked: 10,
+          productivityPerHour: 35,
+          operationCount: 3,
+          rank: 2,
+          targetValue: 40,
+          targetPercentage: 87.5,
+          status: 'below',
+        },
+      ]);
+
+      const res = await request(app)
+        .get(
+          `/api/org/farms/${FARM_ID}/team-operations/productivity-ranking?operationType=COLHEITA&dateFrom=2026-03-01`,
+        )
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(2);
+      expect(res.body[0].rank).toBe(1);
+      expect(res.body[0].totalProductivity).toBe(500);
+      expect(res.body[1].rank).toBe(2);
+    });
+
+    it('returns empty array when no productivity data', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.getProductivityRanking.mockResolvedValue([]);
+
+      const res = await request(app)
+        .get(`/api/org/farms/${FARM_ID}/team-operations/productivity-ranking`)
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual([]);
+    });
+  });
+
+  describe('GET productivity-history (US-079 CA8)', () => {
+    it('returns monthly productivity history for a user', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.getProductivityHistory.mockResolvedValue([
+        {
+          period: '2026-01',
+          totalProductivity: 800,
+          productivityUnit: 'kg',
+          totalHoursWorked: 40,
+          productivityPerHour: 20,
+          operationCount: 5,
+        },
+        {
+          period: '2026-02',
+          totalProductivity: 950,
+          productivityUnit: 'kg',
+          totalHoursWorked: 42,
+          productivityPerHour: 22.619,
+          operationCount: 6,
+        },
+      ]);
+
+      const res = await request(app)
+        .get(`/api/org/farms/${FARM_ID}/team-operations/productivity-history/user-1`)
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(2);
+      expect(res.body[0].period).toBe('2026-01');
+      expect(res.body[1].totalProductivity).toBe(950);
+    });
+  });
+
+  describe('GET bonification (US-079 CA5)', () => {
+    it('returns bonification calculation', async () => {
+      authAs(ADMIN_PAYLOAD);
+      mockedService.calculateBonification.mockResolvedValue({
+        entries: [
+          {
+            userId: 'user-1',
+            userName: 'Maria',
+            userEmail: 'maria@org.com',
+            operationType: 'COLHEITA',
+            operationTypeLabel: 'Colheita',
+            totalProductivity: 500,
+            productivityUnit: 'litros',
+            ratePerUnit: 0.5,
+            bonificationValue: 250,
+            operationCount: 3,
+          },
+        ],
+        totalBonification: 250,
+        period: { dateFrom: '2026-03-01', dateTo: '2026-03-31' },
+      });
+
+      const res = await request(app)
+        .get(
+          `/api/org/farms/${FARM_ID}/team-operations/bonification?dateFrom=2026-03-01&dateTo=2026-03-31`,
+        )
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.totalBonification).toBe(250);
+      expect(res.body.entries).toHaveLength(1);
+      expect(res.body.entries[0].bonificationValue).toBe(250);
     });
   });
 

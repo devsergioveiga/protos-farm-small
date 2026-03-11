@@ -401,6 +401,13 @@
   color: var(--color-neutral-700);
 }
 
+.team-ops__detail-member-prod {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+  font-weight: 600;
+}
+
 .team-ops__detail-member-cost {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.8125rem;

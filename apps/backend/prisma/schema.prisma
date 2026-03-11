@@ -375,6 +375,7 @@ model Farm {
   soilPrepOperations         SoilPrepOperation[]
   fieldTeams                 FieldTeam[]
   teamOperations             TeamOperation[]
+  productivityTargets        ProductivityTarget[]
   monitoringPoints           MonitoringPoint[]
   monitoringRecords          MonitoringRecord[]
   plantingOperations         PlantingOperation[]
@@ -1691,6 +1692,27 @@ model TeamOperationEntry {
   @@index([teamOperationId])
   @@index([userId])
   @@map("team_operation_entries")
+}
+
+// ─── Productivity Targets (US-079 CA3) ─────────────────────────────
+
+model ProductivityTarget {
+  id              String          @id @default(uuid())
+  farmId          String
+  operationType   FieldOperationType
+  targetValue     Decimal         @db.Decimal(12, 4)
+  targetUnit      String
+  period          String          @default("day")
+  ratePerUnit     Decimal?        @db.Decimal(12, 4)
+  rateUnit        String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  farm Farm @relation(fields: [farmId], references: [id], onDelete: Cascade)
+
+  @@unique([farmId, operationType, targetUnit])
+  @@index([farmId])
+  @@map("productivity_targets")
 }
 
 // ─── Operation Types (US-081) ──────────────────────────────────────

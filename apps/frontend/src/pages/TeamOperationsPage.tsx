@@ -11,6 +11,7 @@ import {
   MapPin,
   DollarSign,
   BarChart3,
+  TrendingUp,
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
 import { useTeamOperations } from '@/hooks/useTeamOperations';
@@ -22,11 +23,17 @@ import './TeamOperationsPage.css';
 
 const CostByPlotTab = lazy(() => import('@/components/team-operations/CostByPlotTab'));
 const TimesheetTab = lazy(() => import('@/components/team-operations/TimesheetTab'));
+const ProductivityRankingTab = lazy(
+  () => import('@/components/team-operations/ProductivityRankingTab'),
+);
+const BonificationTab = lazy(() => import('@/components/team-operations/BonificationTab'));
 
-type TabId = 'operations' | 'cost-by-plot' | 'timesheet';
+type TabId = 'operations' | 'productivity' | 'bonification' | 'cost-by-plot' | 'timesheet';
 
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: 'operations', label: 'Operações' },
+  { id: 'productivity', label: 'Produtividade' },
+  { id: 'bonification', label: 'Bonificação' },
   { id: 'cost-by-plot', label: 'Custo por talhão' },
   { id: 'timesheet', label: 'Espelho de ponto' },
 ];
@@ -135,6 +142,8 @@ function TeamOperationsPage() {
             aria-current={activeTab === tab.id ? 'page' : undefined}
           >
             {tab.id === 'operations' && <ClipboardList size={16} aria-hidden="true" />}
+            {tab.id === 'productivity' && <TrendingUp size={16} aria-hidden="true" />}
+            {tab.id === 'bonification' && <DollarSign size={16} aria-hidden="true" />}
             {tab.id === 'cost-by-plot' && <BarChart3 size={16} aria-hidden="true" />}
             {tab.id === 'timesheet' && <Clock size={16} aria-hidden="true" />}
             {tab.label}
@@ -231,6 +240,13 @@ function TeamOperationsPage() {
                       <Clock size={14} aria-hidden="true" />
                       {formatTime(op.timeStart)} — {formatTime(op.timeEnd)} ({op.durationHours}h)
                     </span>
+                    {op.totalProductivity != null && op.productivityUnit && (
+                      <span className="team-ops__card-detail">
+                        <TrendingUp size={14} aria-hidden="true" />
+                        Produção: {op.totalProductivity.toLocaleString('pt-BR')}{' '}
+                        {op.productivityUnit}
+                      </span>
+                    )}
                     {op.totalLaborCost != null && (
                       <span className="team-ops__card-detail">
                         <DollarSign size={14} aria-hidden="true" />
@@ -293,6 +309,15 @@ function TeamOperationsPage() {
                         <dd>{selectedOp.notes}</dd>
                       </div>
                     )}
+                    {selectedOp.totalProductivity != null && selectedOp.productivityUnit && (
+                      <div className="team-ops__detail-row">
+                        <dt>Produção total</dt>
+                        <dd>
+                          {selectedOp.totalProductivity.toLocaleString('pt-BR')}{' '}
+                          {selectedOp.productivityUnit}
+                        </dd>
+                      </div>
+                    )}
                     {selectedOp.totalLaborCost != null && (
                       <div className="team-ops__detail-row">
                         <dt>Custo MO</dt>
@@ -310,6 +335,11 @@ function TeamOperationsPage() {
                     {selectedOp.entries.map((entry) => (
                       <li key={entry.id} className="team-ops__detail-member">
                         <span className="team-ops__detail-member-name">{entry.userName}</span>
+                        {entry.productivity != null && entry.productivityUnit && (
+                          <span className="team-ops__detail-member-prod">
+                            {entry.productivity.toLocaleString('pt-BR')} {entry.productivityUnit}
+                          </span>
+                        )}
                         {entry.laborCost != null && (
                           <span className="team-ops__detail-member-cost">
                             {formatCurrency(entry.laborCost)}
@@ -351,6 +381,18 @@ function TeamOperationsPage() {
             </nav>
           )}
         </>
+      )}
+
+      {activeTab === 'productivity' && (
+        <Suspense fallback={<TabSkeleton />}>
+          <ProductivityRankingTab />
+        </Suspense>
+      )}
+
+      {activeTab === 'bonification' && (
+        <Suspense fallback={<TabSkeleton />}>
+          <BonificationTab />
+        </Suspense>
       )}
 
       {activeTab === 'cost-by-plot' && (
