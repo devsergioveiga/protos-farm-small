@@ -8,6 +8,7 @@ interface UseTeamOperationsParams {
   page?: number;
   limit?: number;
   teamId?: string;
+  fieldPlotId?: string;
   operationType?: string;
   dateFrom?: string;
   dateTo?: string;
@@ -27,7 +28,7 @@ export function useTeamOperations(params: UseTeamOperationsParams): UseTeamOpera
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { farmId, page, limit, teamId, operationType, dateFrom, dateTo } = params;
+  const { farmId, page, limit, teamId, fieldPlotId, operationType, dateFrom, dateTo } = params;
 
   const fetchOperations = useCallback(async () => {
     if (!farmId) {
@@ -44,6 +45,7 @@ export function useTeamOperations(params: UseTeamOperationsParams): UseTeamOpera
       if (page) query.set('page', String(page));
       if (limit) query.set('limit', String(limit));
       if (teamId) query.set('teamId', teamId);
+      if (fieldPlotId) query.set('fieldPlotId', fieldPlotId);
       if (operationType) query.set('operationType', operationType);
       if (dateFrom) query.set('dateFrom', dateFrom);
       if (dateTo) query.set('dateTo', dateTo);
@@ -61,7 +63,7 @@ export function useTeamOperations(params: UseTeamOperationsParams): UseTeamOpera
     } finally {
       setIsLoading(false);
     }
-  }, [farmId, page, limit, teamId, operationType, dateFrom, dateTo]);
+  }, [farmId, page, limit, teamId, fieldPlotId, operationType, dateFrom, dateTo]);
 
   useEffect(() => {
     void fetchOperations();
