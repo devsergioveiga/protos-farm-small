@@ -36,6 +36,8 @@ import { operationTypesRouter } from './modules/operation-types/operation-types.
 import { phenologicalRecordsRouter } from './modules/phenological-records/phenological-records.routes';
 import { plantingRouter } from './modules/planting-operations/planting-operations.routes';
 import { soilPrepRouter } from './modules/soil-prep-operations/soil-prep-operations.routes';
+import { grainHarvestsRouter } from './modules/grain-harvests/grain-harvests.routes';
+import { moistureStandardsRouter } from './modules/grain-harvests/moisture-standards.routes';
 
 const app = express();
 
@@ -79,5 +81,7 @@ app.use('/api', operationTypesRouter);
 app.use('/api', phenologicalRecordsRouter);
 app.use('/api', plantingRouter);
 app.use('/api', soilPrepRouter);
+app.use('/api', grainHarvestsRouter);
+app.use('/api', moistureStandardsRouter);
 
 export { app };
