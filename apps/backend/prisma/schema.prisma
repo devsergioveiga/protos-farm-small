@@ -274,6 +274,8 @@ model Organization {
   measurementUnits          MeasurementUnit[]
   unitConversions           UnitConversion[]
   productUnitConfigs        ProductUnitConfig[]
+  products                  Product[]
+  manufacturers             Manufacturer[]
 
   @@map("organizations")
 }
@@ -1193,6 +1195,7 @@ model Cultivar {
   grainHarvests      GrainHarvest[]
   coffeeHarvests     CoffeeHarvest[]
   orangeHarvests     OrangeHarvest[]
+  seedProducts       Product[]
 
   @@unique([name, crop, organizationId])
   @@index([organizationId])
@@ -2156,6 +2159,7 @@ model MeasurementUnit {
   applicationUnitConfigs ProductUnitConfig[] @relation("ApplicationUnit")
   productConvsFrom       ProductConversion[] @relation("ProductConvFromUnit")
   productConvsTo         ProductConversion[] @relation("ProductConvToUnit")
+  products               Product[]
 
   @@unique([organizationId, abbreviation])
   @@index([organizationId])
@@ -2229,4 +2233,125 @@ model ProductConversion {
   @@unique([productUnitConfigId, fromUnitId, toUnitId])
   @@index([productUnitConfigId])
   @@map("product_conversions")
+}
+
+// ─── EPIC-10 US-089: Produtos, Insumos e Serviços ─────────────────
+
+enum ProductNature {
+  PRODUCT
+  SERVICE
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Product {
+  id               String        @id @default(uuid())
+  organizationId   String
+  nature           ProductNature
+  name             String
+  type             String        // semente, fertilizante, defensivo, consultoria agronômica, etc.
+  category         String?       // grupo/categoria livre
+  status           ProductStatus @default(ACTIVE)
+  notes            String?       // observações
+
+  // ── Campos adicionais para Produto (CA5) ──
+  commercialName   String?       // nome comercial
+  manufacturerId   String?       // FK para Manufacturer
+  measurementUnitId String?      // unidade de medida principal
+  barcode          String?       // código de barras / SKU
+  photoUrl         String?       // URL da foto
+  technicalSheetUrl String?      // URL da ficha técnica (PDF)
+
+  // ── Campos adicionais para Serviço (CA6) ──
+  chargeUnit       String?       // hora, diária, visita, hectare, etc.
+  unitCost         Decimal?      @db.Decimal(12, 2) // custo unitário padrão
+  typicalFrequency String?       // avulso, mensal, quinzenal, semanal, por demanda
+  requiresScheduling Boolean     @default(false)
+  linkedActivity   String?       // pecuária de leite, café, milho, todas
+
+  // ── CA8: Defensivos ──
+  toxicityClass      String?     // I, II, III, IV, V (não classificado)
+  mapaRegistration   String?     // nº registro MAPA
+  environmentalClass String?     // I, II, III, IV
+  actionMode         String?     // contato, sistêmico, translaminar, etc.
+  chemicalGroup      String?     // organofosforado, piretroide, triazol, etc.
+  withdrawalPeriods  Json?       // [{ crop, days }] — carência por cultura
+
+  // ── CA9: Fertilizantes ──
+  npkFormulation     String?     // ex: "04-14-08", "20-00-20"
+  nutrientForm       String?     // granulado, líquido, foliar, fertirrigação
+  solubility         String?     // alta, média, baixa, lenta liberação
+  nutrientComposition Json?      // { N: 4, P2O5: 14, K2O: 8, ... } — % nutrientes
+
+  // ── CA10: Foliares ──
+  nutritionalComposition Json?   // { N: 10, P: 0, K: 5, Ca: 2, ... } — % ou g/L
+  sprayCompatibility     Json?   // { compatible: [...], incompatible: [...] }
+
+  // ── CA11: Medicamentos veterinários ──
+  therapeuticClass     String?   // antibiótico, anti-inflamatório, antiparasitário, etc.
+  administrationRoute  String?   // IM, SC, IV, oral, intramamária, intravaginal
+  milkWithdrawalHours  Int?      // período de carência leite (horas)
+  slaughterWithdrawalDays Int?   // período de carência abate (dias)
+  vetMapaRegistration  String?   // registro MAPA vet
+  requiresPrescription Boolean   @default(false)
+  storageCondition     String?   // ambiente, refrigerado_2_8, congelado
+
+  // ── CA12: Sementes ──
+  cultivarId           String?   // FK para Cultivar
+  sieveSize            String?   // peneira
+  industrialTreatment  String?   // tratamento industrial
+  germinationPct       Decimal?  @db.Decimal(5, 2) // germinação %
+  purityPct            Decimal?  @db.Decimal(5, 2) // pureza %
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  deletedAt        DateTime?     // soft delete
+
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  manufacturer     Manufacturer?    @relation(fields: [manufacturerId], references: [id], onDelete: SetNull)
+  measurementUnit  MeasurementUnit? @relation(fields: [measurementUnitId], references: [id], onDelete: SetNull)
+  cultivar         Cultivar?        @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
+
+  compositions     ProductComposition[]
+
+  @@unique([organizationId, name, nature])
+  @@index([organizationId])
+  @@index([organizationId, nature])
+  @@index([organizationId, type])
+  @@index([organizationId, status])
+  @@index([manufacturerId])
+  @@map("products")
+}
+
+model Manufacturer {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String   // razão social
+  cnpj           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  products     Product[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("manufacturers")
+}
+
+// CA7: Composição / princípio ativo
+model ProductComposition {
+  id              String  @id @default(uuid())
+  productId       String
+  activeIngredient String  // nome do princípio ativo ou nutriente
+  concentration   String? // ex: "480 g/L", "10%", "150 mg/mL"
+  function        String? // ex: herbicida, bactericida, nutriente
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_compositions")
 }
