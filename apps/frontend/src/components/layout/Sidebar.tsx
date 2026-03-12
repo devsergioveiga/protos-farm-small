@@ -24,6 +24,7 @@ import {
   Ruler,
   Package,
   PackageOpen,
+  ArrowUpRight,
   X,
 } from 'lucide-react';
 import './Sidebar.css';
@@ -83,7 +84,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: 'ESTOQUE',
-    items: [{ to: '/stock-entries', icon: PackageOpen, label: 'Entradas de estoque' }],
+    items: [
+      { to: '/stock-entries', icon: PackageOpen, label: 'Entradas' },
+      { to: '/stock-outputs', icon: ArrowUpRight, label: 'Saídas' },
+    ],
   },
   {
     title: 'CONFIGURAÇÃO',
