@@ -6,6 +6,9 @@ import { WEATHER_CONDITIONS, DOSE_UNITS } from '@/types/soil-prep';
 import type { SoilPrepItem, SoilPrepInputItem } from '@/types/soil-prep';
 import type { FieldPlot } from '@/types/farm';
 import ConversionPreviewCard from '@/components/shared/ConversionPreviewCard';
+import ProductSearchInput from '@/components/shared/ProductSearchInput';
+import type { ProductSuggestion } from '@/components/shared/ProductSearchInput';
+import { suggestDoseUnit, getDosePlaceholder } from '@/utils/dose-conversion';
 import './SoilPrepModal.css';
 
 interface SoilPrepModalProps {
@@ -152,6 +155,26 @@ function SoilPrepModal({ isOpen, operation, onClose, onSuccess }: SoilPrepModalP
     },
     [],
   );
+
+  const handleInputProductSelect = useCallback((index: number, product: ProductSuggestion) => {
+    setInputs((prev) =>
+      prev.map((inp, i) => {
+        if (i !== index) return inp;
+        const suggested = suggestDoseUnit(product.type, product.nutrientForm);
+        const validUnit = DOSE_UNITS.some((u) => u.value === suggested) ? suggested : inp.doseUnit;
+        return {
+          ...inp,
+          productName: product.commercialName || product.name,
+          productId: product.id,
+          doseUnit: validUnit,
+        };
+      }),
+    );
+  }, []);
+
+  const handleInputProductClear = useCallback((index: number) => {
+    setInputs((prev) => prev.map((inp, i) => (i === index ? { ...inp, productId: null } : inp)));
+  }, []);
 
   const canSubmit = fieldPlotId && operationTypeName.trim() && startedAt && !isSubmitting;
 
@@ -438,16 +461,15 @@ function SoilPrepModal({ isOpen, operation, onClose, onSuccess }: SoilPrepModalP
             {inputs.map((inp, idx) => (
               <div key={idx} className="soilprep-modal__input-row">
                 <div className="soilprep-modal__field">
-                  <label htmlFor={`sp-inp-name-${idx}`} className="soilprep-modal__label">
-                    Produto
-                  </label>
-                  <input
+                  <ProductSearchInput
                     id={`sp-inp-name-${idx}`}
-                    type="text"
-                    className="soilprep-modal__input"
-                    placeholder="Ex.: Calcário dolomítico"
+                    label="Produto"
                     value={inp.productName}
-                    onChange={(e) => handleInputChange(idx, 'productName', e.target.value)}
+                    onChange={(val) => handleInputChange(idx, 'productName', val)}
+                    onProductSelect={(product) => handleInputProductSelect(idx, product)}
+                    onProductClear={() => handleInputProductClear(idx)}
+                    selectedProductId={inp.productId ?? null}
+                    placeholder="Ex.: Calcário dolomítico"
                   />
                 </div>
                 <div className="soilprep-modal__field">
@@ -460,6 +482,7 @@ function SoilPrepModal({ isOpen, operation, onClose, onSuccess }: SoilPrepModalP
                     className="soilprep-modal__input"
                     min="0"
                     step="0.01"
+                    placeholder={getDosePlaceholder(inp.doseUnit)}
                     value={inp.dose || ''}
                     onChange={(e) => handleInputChange(idx, 'dose', Number(e.target.value))}
                   />

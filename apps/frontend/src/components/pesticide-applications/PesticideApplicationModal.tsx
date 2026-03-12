@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import { api } from '@/services/api';
 import { useFarmContext } from '@/stores/FarmContext';
@@ -14,6 +14,9 @@ import type {
 } from '@/types/pesticide-application';
 import type { FieldPlot } from '@/types/farm';
 import ConversionPreviewCard from '@/components/shared/ConversionPreviewCard';
+import ProductSearchInput from '@/components/shared/ProductSearchInput';
+import type { ProductSuggestion } from '@/components/shared/ProductSearchInput';
+import { suggestDoseUnit, getDosePlaceholder } from '@/utils/dose-conversion';
 import './PesticideApplicationModal.css';
 
 interface PesticideApplicationModalProps {
@@ -57,10 +60,13 @@ function PesticideApplicationModal({
   const [tankMixPh, setTankMixPh] = useState('');
   const [withdrawalPeriodDays, setWithdrawalPeriodDays] = useState('');
   const [notes, setNotes] = useState('');
+  const [productId, setProductId] = useState<string | null>(null);
+  const [productType, setProductType] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [plots, setPlots] = useState<FieldPlot[]>([]);
   const [loadingPlots, setLoadingPlots] = useState(false);
+  const doseUnitAutoSetRef = useRef(false);
 
   const selectedPlotAreaHa = useMemo(() => {
     const plot = plots.find((p) => p.id === fieldPlotId);
@@ -90,6 +96,22 @@ function PesticideApplicationModal({
     }
     return alerts;
   }, [temperature, relativeHumidity, windSpeed]);
+
+  const handleProductSelect = useCallback((product: ProductSuggestion) => {
+    setProductId(product.id);
+    setProductType(product.type);
+    const suggested = suggestDoseUnit(product.type, product.nutrientForm);
+    if (DOSE_UNITS.some((u) => u.value === suggested)) {
+      setDoseUnit(suggested);
+      doseUnitAutoSetRef.current = true;
+    }
+  }, []);
+
+  const handleProductClear = useCallback(() => {
+    setProductId(null);
+    setProductType(null);
+    doseUnitAutoSetRef.current = false;
+  }, []);
 
   // Load field plots when modal opens
   useEffect(() => {
@@ -142,6 +164,9 @@ function PesticideApplicationModal({
       setTankMixPh('');
       setWithdrawalPeriodDays('');
       setNotes('');
+      setProductId(null);
+      setProductType(null);
+      doseUnitAutoSetRef.current = false;
       setSubmitError(null);
       setIsSubmitting(false);
     } else if (application) {
@@ -179,6 +204,8 @@ function PesticideApplicationModal({
         application.withdrawalPeriodDays != null ? String(application.withdrawalPeriodDays) : '',
       );
       setNotes(application.notes ?? '');
+      setProductId(application.productId ?? null);
+      setProductType(null); // not available from response
     }
   }, [isOpen, application]);
 
@@ -236,6 +263,7 @@ function PesticideApplicationModal({
         tankMixPh: tankMixPh ? Number(tankMixPh) : undefined,
         withdrawalPeriodDays: withdrawalPeriodDays ? Number(withdrawalPeriodDays) : undefined,
         notes: notes.trim() || undefined,
+        productId: productId || undefined,
       };
 
       if (isEditing) {
@@ -281,6 +309,7 @@ function PesticideApplicationModal({
     tankMixPh,
     withdrawalPeriodDays,
     notes,
+    productId,
     isEditing,
     application,
     onSuccess,
@@ -361,17 +390,17 @@ function PesticideApplicationModal({
 
             <div className="pesticide-modal__row">
               <div className="pesticide-modal__field">
-                <label htmlFor="pest-product" className="pesticide-modal__label">
-                  Produto comercial *
-                </label>
-                <input
+                <ProductSearchInput
                   id="pest-product"
-                  type="text"
-                  className="pesticide-modal__input"
+                  label="Produto comercial"
                   value={productName}
-                  onChange={(e) => setProductName(e.target.value)}
-                  placeholder="Ex: Roundup Ready"
-                  aria-required="true"
+                  onChange={setProductName}
+                  onProductSelect={handleProductSelect}
+                  onProductClear={handleProductClear}
+                  selectedProductId={productId}
+                  typeFilter=""
+                  placeholder="Digite para buscar no estoque..."
+                  required
                 />
               </div>
               <div className="pesticide-modal__field">
@@ -401,7 +430,7 @@ function PesticideApplicationModal({
                   className="pesticide-modal__input"
                   value={dose}
                   onChange={(e) => setDose(e.target.value)}
-                  placeholder="Ex: 2.5"
+                  placeholder={getDosePlaceholder(doseUnit, productType ?? undefined)}
                   min="0.001"
                   step="0.001"
                   aria-required="true"
