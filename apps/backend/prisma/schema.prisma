@@ -281,6 +281,7 @@ model Organization {
   stockOutputs              StockOutput[]
   stockInventories          StockInventory[]
   stockAdjustments          StockAdjustment[]
+  pesticidePrescriptions    PesticidePrescription[]
 
   @@map("organizations")
 }
@@ -328,6 +329,7 @@ model User {
   recordedGrainHarvests      GrainHarvest[]           @relation("GrainHarvestRecorder")
   recordedCoffeeHarvests     CoffeeHarvest[]          @relation("CoffeeHarvestRecorder")
   recordedOrangeHarvests     OrangeHarvest[]          @relation("OrangeHarvestRecorder")
+  createdPrescriptions       PesticidePrescription[]  @relation("PrescriptionCreator")
 
   @@map("users")
 }
@@ -400,6 +402,7 @@ model Farm {
   stockOutputsAsSource       StockOutput[] @relation("SourceFarmOutputs")
   stockOutputsAsDestination  StockOutput[] @relation("DestinationFarmOutputs")
   stockInventories           StockInventory[]
+  pesticidePrescriptions     PesticidePrescription[]
 
   @@map("farms")
 }
@@ -698,7 +701,8 @@ model FieldPlot {
   plantingOperations     PlantingOperation[]
   grainHarvests          GrainHarvest[]
   coffeeHarvests         CoffeeHarvest[]
-  orangeHarvests         OrangeHarvest[]
+  orangeHarvests             OrangeHarvest[]
+  pesticidePrescriptions     PesticidePrescription[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -2335,6 +2339,7 @@ model Product {
   stockBalance         StockBalance?
   stockInventoryItems  StockInventoryItem[]
   stockAdjustments     StockAdjustment[]
+  prescriptionProducts PesticidePrescriptionProduct[]
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -2648,6 +2653,92 @@ model StockInventoryItem {
   @@index([stockInventoryId])
   @@index([productId])
   @@map("stock_inventory_items")
+}
+
+// ── Receituário Agronômico (US-094) ──
+
+enum PrescriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+}
+
+model PesticidePrescription {
+  id                   String             @id @default(uuid())
+  organizationId       String
+  farmId               String
+  fieldPlotId          String
+  sequentialNumber     Int                // CA8: numeração sequencial por fazenda
+  issuedAt             DateTime           @default(now())
+
+  // CA2: auto-filled from context
+  farmName             String
+  fieldPlotName        String
+  cultureName          String             // cultura plantada no talhão
+  areaHa               Decimal            @db.Decimal(12, 4)
+  targetPest           String             // praga/doença alvo
+  targetType           PesticideTarget    // PRAGA, DOENCA, PLANTA_DANINHA
+
+  // CA3: dose info
+  sprayVolume          Decimal            @db.Decimal(10, 2) // volume de calda L/ha
+  numberOfApplications Int                @default(1)
+  applicationInterval  Int?               // intervalo entre aplicações (dias)
+
+  // CA4: dados do agrônomo
+  agronomistName       String
+  agronomistCrea       String
+  agronomistSignatureUrl String?          // URL da assinatura digital
+
+  // CA7: vinculação
+  pesticideApplicationId String?          // link to pesticide application
+  stockOutputId        String?            // link to stock output
+
+  // metadata
+  technicalJustification String?
+  notes                String?
+  status               PrescriptionStatus @default(ACTIVE)
+  createdBy            String
+  deletedAt            DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  farm         Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot    FieldPlot    @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  creator      User         @relation("PrescriptionCreator", fields: [createdBy], references: [id])
+  products     PesticidePrescriptionProduct[]
+
+  @@unique([farmId, sequentialNumber])
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@map("pesticide_prescriptions")
+}
+
+model PesticidePrescriptionProduct {
+  id                   String  @id @default(uuid())
+  prescriptionId       String
+  productId            String?
+  productName          String
+  activeIngredient     String
+  dose                 Decimal @db.Decimal(10, 4)
+  doseUnit             DoseUnit @default(L_HA)
+
+  // CA5: carência e segurança
+  withdrawalPeriodDays Int?
+  safetyIntervalDays   Int?    // intervalo de segurança (reentrada)
+
+  // product details (snapshot)
+  toxicityClass        String?
+  mapaRegistration     String?
+  environmentalClass   String?
+
+  prescription PesticidePrescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  product      Product?              @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([prescriptionId])
+  @@index([productId])
+  @@map("pesticide_prescription_products")
 }
 
 model StockAdjustment {

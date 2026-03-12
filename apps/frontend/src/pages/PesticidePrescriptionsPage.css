@@ -1,0 +1,556 @@
+/* ─── Prescriptions Page ─────────────────────────────────────────── */
+
+.prescriptions-page {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────── */
+
+.prescriptions-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.prescriptions-page .page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prescriptions-page .page-icon {
+  color: var(--color-primary-600);
+}
+
+.prescriptions-page .page-header h1 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.prescriptions-page .page-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  margin: 2px 0 0;
+}
+
+.prescriptions-page .page-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ─── Filters ────────────────────────────────────────────────────── */
+
+.prescriptions-page .filters-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.prescriptions-page .search-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.prescriptions-page .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-neutral-400);
+}
+
+.prescriptions-page .search-wrapper input {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  transition: border-color 200ms ease-out;
+}
+
+.prescriptions-page .search-wrapper input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 1px;
+  border-color: var(--color-primary-500);
+}
+
+.prescriptions-page .filters-bar select {
+  padding: 10px 12px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  min-width: 160px;
+}
+
+/* ─── Prescription Cards ─────────────────────────────────────────── */
+
+.prescriptions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prescription-card {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  transition: box-shadow 200ms ease-out;
+}
+
+.prescription-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.prescription-card.cancelled {
+  opacity: 0.7;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  cursor: pointer;
+  gap: 12px;
+}
+
+.card-header:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+  border-radius: 8px;
+}
+
+.card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.prescription-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.status-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.status-active {
+  background: var(--color-primary-50, #e8f5e9);
+  color: var(--color-primary-700, #1b5e20);
+}
+
+.status-cancelled {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-600, #c62828);
+}
+
+.status-expired {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+}
+
+.card-header-center {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.card-field,
+.card-culture,
+.card-target {
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-separator {
+  color: var(--color-neutral-300);
+}
+
+.card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.card-date {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+
+.expand-icon {
+  color: var(--color-neutral-400);
+  transition: transform 200ms ease-out;
+}
+
+.expand-icon.expanded {
+  transform: rotate(180deg);
+}
+
+/* ─── Card Details ───────────────────────────────────────────────── */
+
+.card-details {
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--color-neutral-100);
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.detail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detail-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-neutral-500);
+}
+
+.detail-value {
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+}
+
+/* Products */
+
+.products-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  margin: 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.product-card {
+  background: var(--color-neutral-50);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.product-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+}
+
+.product-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--color-neutral-500);
+}
+
+.product-details span {
+  background: var(--color-neutral-100);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Agronomist */
+
+.agronomist-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 12px 0;
+  padding: 12px;
+  background: var(--color-neutral-50);
+  border-radius: 6px;
+}
+
+.justification {
+  margin-bottom: 12px;
+}
+
+.justification p {
+  margin: 4px 0 0;
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+}
+
+/* Actions */
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-neutral-100);
+  flex-wrap: wrap;
+}
+
+.confirm-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+
+.btn-cancel {
+  color: var(--color-error-500);
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────── */
+
+.prescriptions-page .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  border: none;
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+
+.prescriptions-page .btn-primary:hover {
+  background: var(--color-primary-700);
+}
+
+.prescriptions-page .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 200ms ease-out;
+}
+
+.prescriptions-page .btn-secondary:hover {
+  background: var(--color-neutral-50);
+  border-color: var(--color-neutral-400);
+}
+
+.btn-sm {
+  padding: 6px 12px !important;
+  font-size: 0.8125rem !important;
+}
+
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: var(--color-error-500);
+  color: var(--color-neutral-0);
+  border: none;
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+/* ─── Pagination ─────────────────────────────────────────────────── */
+
+.prescriptions-page .pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+}
+
+/* ─── Empty / Error / Skeleton ───────────────────────────────────── */
+
+.prescriptions-page .empty-state {
+  text-align: center;
+  padding: 64px 24px;
+}
+
+.prescriptions-page .empty-icon {
+  color: var(--color-neutral-300);
+  margin-bottom: 16px;
+}
+
+.prescriptions-page .empty-state h2 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.25rem;
+  color: var(--color-neutral-700);
+  margin: 0 0 8px;
+}
+
+.prescriptions-page .empty-state p {
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  margin: 0 0 20px;
+}
+
+.error-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--color-error-600);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.skeleton-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-card {
+  height: 56px;
+  background: var(--color-neutral-100);
+  border-radius: 8px;
+  animation: skeleton-pulse 1.5s infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ─── Toast ──────────────────────────────────────────────────────── */
+
+.prescriptions-page .toast {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  z-index: 1000;
+  animation: toast-in 200ms ease-out;
+}
+
+.toast-success {
+  background: var(--color-primary-50, #e8f5e9);
+  color: var(--color-primary-700, #1b5e20);
+  border: 1px solid var(--color-primary-200, #a5d6a7);
+}
+
+.toast-error {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-600, #c62828);
+  border: 1px solid var(--color-error-200, #ef9a9a);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .prescriptions-page {
+    padding: 16px;
+  }
+
+  .prescriptions-page .page-header {
+    flex-direction: column;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .card-header-center {
+    flex-wrap: wrap;
+  }
+
+  .card-header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .details-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .card-actions {
+    flex-direction: column;
+  }
+}

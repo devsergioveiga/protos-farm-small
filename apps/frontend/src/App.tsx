@@ -26,6 +26,7 @@ const WeighingSessionPage = lazy(() => import('@/pages/WeighingSessionPage'));
 const AnimalDetailPage = lazy(() => import('@/pages/AnimalDetailPage'));
 const CultivarsPage = lazy(() => import('@/pages/CultivarsPage'));
 const PesticideApplicationsPage = lazy(() => import('@/pages/PesticideApplicationsPage'));
+const PesticidePrescriptionsPage = lazy(() => import('@/pages/PesticidePrescriptionsPage'));
 const FertilizerApplicationsPage = lazy(() => import('@/pages/FertilizerApplicationsPage'));
 const CulturalOperationsPage = lazy(() => import('@/pages/CulturalOperationsPage'));
 const FieldTeamsPage = lazy(() => import('@/pages/FieldTeamsPage'));
@@ -81,6 +82,7 @@ export function App() {
                 <Route path="/weighing-session" element={<WeighingSessionPage />} />
                 <Route path="/cultivars" element={<CultivarsPage />} />
                 <Route path="/pesticide-applications" element={<PesticideApplicationsPage />} />
+                <Route path="/pesticide-prescriptions" element={<PesticidePrescriptionsPage />} />
                 <Route path="/fertilizer-applications" element={<FertilizerApplicationsPage />} />
                 <Route path="/cultural-operations" element={<CulturalOperationsPage />} />
                 <Route path="/field-teams" element={<FieldTeamsPage />} />
