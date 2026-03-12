@@ -25,6 +25,7 @@ import {
   Package,
   PackageOpen,
   ArrowUpRight,
+  Bell,
   X,
 } from 'lucide-react';
 import './Sidebar.css';
@@ -87,6 +88,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: '/stock-entries', icon: PackageOpen, label: 'Entradas' },
       { to: '/stock-outputs', icon: ArrowUpRight, label: 'Saídas' },
+      { to: '/stock-alerts', icon: Bell, label: 'Alertas' },
     ],
   },
   {
