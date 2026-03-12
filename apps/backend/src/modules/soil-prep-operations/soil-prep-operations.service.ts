@@ -8,6 +8,11 @@ import {
   type SoilPrepItem,
   type SoilPrepInputItem,
 } from './soil-prep-operations.types';
+import {
+  createConsumptionOutput,
+  cancelConsumptionOutput,
+  type StockDeductionItem,
+} from '../stock-deduction/stock-deduction';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -143,6 +148,7 @@ function toItem(row: Record<string, unknown>): SoilPrepItem {
     recorderName: recorder?.name ?? '',
     createdAt: (row.createdAt as Date).toISOString(),
     updatedAt: (row.updatedAt as Date).toISOString(),
+    stockOutputId: (row.stockOutputId as string) ?? null,
   };
 }
 
@@ -223,6 +229,28 @@ export async function createSoilPrepOperation(
 
     if (input.id) {
       data.id = input.id;
+    }
+
+    // Stock deduction (CA4) — deduct inputs that have productId
+    const deductionItems: StockDeductionItem[] = processedInputs
+      .filter((inp) => inp.productId && inp.totalQuantity && inp.totalQuantity > 0)
+      .map((inp) => ({
+        productId: inp.productId!,
+        quantity: inp.totalQuantity!,
+      }));
+
+    if (deductionItems.length > 0) {
+      const deduction = await createConsumptionOutput(tx, {
+        organizationId: ctx.organizationId,
+        items: deductionItems,
+        fieldOperationRef: `soil-prep:${input.id ?? 'new'}`,
+        fieldPlotId: input.fieldPlotId,
+        outputDate: new Date(input.startedAt),
+        notes: `Baixa automática — Preparo de solo: ${input.operationTypeName.trim()}`,
+      });
+      if (deduction) {
+        data.stockOutputId = deduction.stockOutputId;
+      }
     }
 
     const row = await tx.soilPrepOperation.create({
@@ -441,11 +469,17 @@ export async function deleteSoilPrepOperation(
   return withRlsContext(ctx, async (tx) => {
     const row = await tx.soilPrepOperation.findFirst({
       where: { id: operationId, farmId, deletedAt: null },
-      select: { id: true },
+      select: { id: true, stockOutputId: true },
     });
     if (!row) {
       throw new SoilPrepError('Operação de preparo de solo não encontrada', 404);
     }
+
+    // Cancel linked stock output (reverse balances)
+    if (row.stockOutputId) {
+      await cancelConsumptionOutput(tx, ctx.organizationId, row.stockOutputId);
+    }
+
     await tx.soilPrepOperation.update({
       where: { id: operationId },
       data: { deletedAt: new Date() },

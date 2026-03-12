@@ -27,6 +27,9 @@ export interface FertilizerApplicationItem {
   recorderName: string;
   createdAt: string;
   updatedAt: string;
+  productId: string | null;
+  stockOutputId: string | null;
+  totalQuantityUsed: number | null;
 }
 
 export interface FertilizerApplicationsResponse {
@@ -58,6 +61,8 @@ export interface CreateFertilizerApplicationInput {
   plantsPerHa?: number;
   dosePerPlantG?: number;
   notes?: string;
+  productId?: string;
+  totalQuantityUsed?: number;
 }
 
 export interface NutrientSummaryItem {

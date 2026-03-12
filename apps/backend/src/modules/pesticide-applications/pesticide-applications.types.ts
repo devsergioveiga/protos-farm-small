@@ -61,6 +61,9 @@ export interface CreatePesticideApplicationInput {
   photoUrl?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  // Stock deduction (CA8)
+  productId?: string | null;
+  totalQuantityUsed?: number | null;
 }
 
 // ─── Response Types ─────────────────────────────────────────────────
@@ -102,4 +105,8 @@ export interface PesticideApplicationItem {
   recorderName: string;
   createdAt: string;
   updatedAt: string;
+  // Stock deduction (CA8)
+  productId: string | null;
+  stockOutputId: string | null;
+  totalQuantityUsed: number | null;
 }

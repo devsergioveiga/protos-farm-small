@@ -4,6 +4,7 @@ export interface SoilPrepInputItem {
   doseUnit: string;
   totalQuantity?: number | null;
   batchCode?: string | null;
+  productId?: string | null;
 }
 
 export interface SoilPrepItem {
@@ -38,6 +39,7 @@ export interface SoilPrepItem {
   recorderName: string;
   createdAt: string;
   updatedAt: string;
+  stockOutputId: string | null;
 }
 
 export interface SoilPrepResponse {

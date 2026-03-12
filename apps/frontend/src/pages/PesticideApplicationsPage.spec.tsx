@@ -38,6 +38,9 @@ const MOCK_APPLICATIONS: PesticideApplicationItem[] = [
     recorderName: 'Admin',
     createdAt: '2026-03-08T10:00:00.000Z',
     updatedAt: '2026-03-08T10:00:00.000Z',
+    productId: null,
+    stockOutputId: null,
+    totalQuantityUsed: null,
   },
   {
     id: 'pa-2',
@@ -73,6 +76,9 @@ const MOCK_APPLICATIONS: PesticideApplicationItem[] = [
     recorderName: 'Admin',
     createdAt: '2026-03-07T08:00:00.000Z',
     updatedAt: '2026-03-07T08:00:00.000Z',
+    productId: null,
+    stockOutputId: null,
+    totalQuantityUsed: null,
   },
 ];
 
