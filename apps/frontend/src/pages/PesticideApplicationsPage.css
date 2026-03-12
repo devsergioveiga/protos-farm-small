@@ -428,3 +428,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* CA11 — Conversion indicator */
+.pesticides__card-conversion {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--color-primary-700);
+}

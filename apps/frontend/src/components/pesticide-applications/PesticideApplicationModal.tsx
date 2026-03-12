@@ -13,6 +13,7 @@ import type {
   CreatePesticideApplicationInput,
 } from '@/types/pesticide-application';
 import type { FieldPlot } from '@/types/farm';
+import ConversionPreviewCard from '@/components/shared/ConversionPreviewCard';
 import './PesticideApplicationModal.css';
 
 interface PesticideApplicationModalProps {
@@ -60,6 +61,11 @@ function PesticideApplicationModal({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [plots, setPlots] = useState<FieldPlot[]>([]);
   const [loadingPlots, setLoadingPlots] = useState(false);
+
+  const selectedPlotAreaHa = useMemo(() => {
+    const plot = plots.find((p) => p.id === fieldPlotId);
+    return plot?.boundaryAreaHa ?? 0;
+  }, [plots, fieldPlotId]);
 
   const computedSafeHarvestDate = useMemo(() => {
     const days = Number(withdrawalPeriodDays);
@@ -435,6 +441,17 @@ function PesticideApplicationModal({
                 />
               </div>
             </div>
+
+            {/* Conversion preview (CA4/CA7/CA9) */}
+            {Number(dose) > 0 && selectedPlotAreaHa > 0 && (
+              <ConversionPreviewCard
+                dose={Number(dose)}
+                doseUnit={doseUnit}
+                areaHa={selectedPlotAreaHa}
+                productName={productName || undefined}
+                sprayVolumeLPerHa={Number(sprayVolume) > 0 ? Number(sprayVolume) : undefined}
+              />
+            )}
 
             {/* Alvo */}
             <h3 className="pesticide-modal__section-title">Alvo da aplicação</h3>

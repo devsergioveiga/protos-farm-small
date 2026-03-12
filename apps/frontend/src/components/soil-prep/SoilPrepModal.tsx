@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
 import { api } from '@/services/api';
 import { useFarmContext } from '@/stores/FarmContext';
 import { WEATHER_CONDITIONS, DOSE_UNITS } from '@/types/soil-prep';
 import type { SoilPrepItem, SoilPrepInputItem } from '@/types/soil-prep';
 import type { FieldPlot } from '@/types/farm';
+import ConversionPreviewCard from '@/components/shared/ConversionPreviewCard';
 import './SoilPrepModal.css';
 
 interface SoilPrepModalProps {
@@ -131,6 +132,11 @@ function SoilPrepModal({ isOpen, operation, onClose, onSuccess }: SoilPrepModalP
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
+
+  const selectedPlotAreaHa = useMemo(() => {
+    const plot = plots.find((p) => p.id === fieldPlotId);
+    return plot?.boundaryAreaHa ?? 0;
+  }, [plots, fieldPlotId]);
 
   const handleAddInput = useCallback(() => {
     setInputs((prev) => [...prev, { ...EMPTY_INPUT }]);
@@ -498,6 +504,21 @@ function SoilPrepModal({ isOpen, operation, onClose, onSuccess }: SoilPrepModalP
                 </button>
               </div>
             ))}
+            {/* Conversion preview for all inputs (CA4/CA9) */}
+            {inputs.some((inp) => inp.dose > 0 && inp.productName.trim()) &&
+              selectedPlotAreaHa > 0 &&
+              inputs
+                .filter((inp) => inp.dose > 0 && inp.productName.trim())
+                .map((inp, idx) => (
+                  <ConversionPreviewCard
+                    key={`preview-${idx}`}
+                    dose={inp.dose}
+                    doseUnit={inp.doseUnit}
+                    areaHa={selectedPlotAreaHa}
+                    productName={inp.productName}
+                  />
+                ))}
+
             <button
               type="button"
               className="soilprep-modal__add-input-btn"
