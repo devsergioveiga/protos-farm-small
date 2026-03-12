@@ -278,6 +278,7 @@ model Organization {
   manufacturers             Manufacturer[]
   stockEntries              StockEntry[]
   stockBalances             StockBalance[]
+  stockOutputs              StockOutput[]
 
   @@map("organizations")
 }
@@ -394,6 +395,8 @@ model Farm {
   coffeeHarvests             CoffeeHarvest[]
   orangeHarvests             OrangeHarvest[]
   stockEntries               StockEntry[]
+  stockOutputsAsSource       StockOutput[] @relation("SourceFarmOutputs")
+  stockOutputsAsDestination  StockOutput[] @relation("DestinationFarmOutputs")
 
   @@map("farms")
 }
@@ -2320,6 +2323,7 @@ model Product {
 
   compositions     ProductComposition[]
   stockEntryItems  StockEntryItem[]
+  stockOutputItems StockOutputItem[]
   stockBalance     StockBalance?
 
   @@unique([organizationId, name, nature])
@@ -2489,4 +2493,88 @@ model StockBalance {
   @@unique([organizationId, productId])
   @@index([organizationId])
   @@map("stock_balances")
+}
+
+// ─── EPIC-10 US-091: Saída de Insumos do Estoque ────────────────────
+
+enum StockOutputType {
+  CONSUMPTION
+  MANUAL_CONSUMPTION
+  TRANSFER
+  DISPOSAL
+}
+
+enum StockOutputStatus {
+  DRAFT
+  CONFIRMED
+  CANCELLED
+}
+
+enum DisposalReason {
+  EXPIRED
+  DAMAGED
+  CONTAMINATED
+  OTHER
+}
+
+model StockOutput {
+  id                  String            @id @default(uuid())
+  organizationId      String
+  outputDate          DateTime          @default(now())
+  type                StockOutputType
+  status              StockOutputStatus @default(DRAFT)
+
+  // CONSUMPTION / MANUAL_CONSUMPTION
+  fieldOperationRef   String?           // referência textual à operação de campo
+  fieldPlotId         String?           // talhão destino do consumo
+
+  // TRANSFER
+  sourceFarmId        String?
+  sourceLocation      String?           // depósito/galpão de origem
+  destinationFarmId   String?
+  destinationLocation String?           // depósito/galpão de destino
+
+  // DISPOSAL
+  disposalReason      DisposalReason?
+  disposalJustification String?         // justificativa detalhada
+  authorizedBy        String?           // quem autorizou o descarte
+
+  // Common
+  responsibleName     String?
+  notes               String?
+  totalCost           Decimal           @default(0) @db.Decimal(14, 2)
+  createdBy           String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  cancelledAt         DateTime?
+
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sourceFarm      Farm?             @relation("SourceFarmOutputs", fields: [sourceFarmId], references: [id], onDelete: SetNull)
+  destinationFarm Farm?             @relation("DestinationFarmOutputs", fields: [destinationFarmId], references: [id], onDelete: SetNull)
+  items           StockOutputItem[]
+
+  @@index([organizationId])
+  @@index([organizationId, type])
+  @@index([organizationId, status])
+  @@index([organizationId, outputDate])
+  @@map("stock_outputs")
+}
+
+model StockOutputItem {
+  id            String   @id @default(uuid())
+  stockOutputId String
+  productId     String
+  quantity      Decimal  @db.Decimal(14, 4)
+  unitCost      Decimal  @db.Decimal(14, 4) // custo médio no momento da saída
+  totalCost     Decimal  @db.Decimal(14, 2)
+  batchNumber   String?  // lote (FEFO)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  stockOutput StockOutput @relation(fields: [stockOutputId], references: [id], onDelete: Cascade)
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([stockOutputId])
+  @@index([productId])
+  @@map("stock_output_items")
 }
