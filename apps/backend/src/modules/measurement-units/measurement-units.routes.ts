@@ -17,6 +17,16 @@ import {
   deleteConversion,
   convert,
   importConversions,
+  createProductUnitConfig,
+  getProductUnitConfig,
+  updateProductUnitConfig,
+  deleteProductUnitConfig,
+  createProductConversion,
+  deleteProductConversion,
+  convertForProduct,
+  convertSeedRate,
+  convertCoffeeVolume,
+  validateConversion,
 } from './measurement-units.service';
 
 export const measurementUnitsRouter = Router();
@@ -348,6 +358,271 @@ measurementUnitsRouter.post(
         ipAddress: getClientIp(req),
       });
 
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ═══════════════════════════════════════════════════════════════════════
+// CA3/CA4: PRODUCT UNIT CONFIGS
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─── CREATE ─────────────────────────────────────────────────────────
+
+measurementUnitsRouter.post(
+  '/org/product-unit-configs',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await createProductUnitConfig(ctx, req.body);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'CREATE_PRODUCT_UNIT_CONFIG',
+        targetType: 'product_unit_config',
+        targetId: result.id,
+        metadata: { productId: result.productId },
+        ipAddress: getClientIp(req),
+      });
+
+      res.status(201).json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── GET by productId ───────────────────────────────────────────────
+
+measurementUnitsRouter.get(
+  '/org/product-unit-configs/:productId',
+  authenticate,
+  checkPermission('farms:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await getProductUnitConfig(ctx, req.params.productId as string);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── UPDATE ─────────────────────────────────────────────────────────
+
+measurementUnitsRouter.patch(
+  '/org/product-unit-configs/:productId',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await updateProductUnitConfig(ctx, req.params.productId as string, req.body);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'UPDATE_PRODUCT_UNIT_CONFIG',
+        targetType: 'product_unit_config',
+        targetId: result.id,
+        metadata: { productId: result.productId },
+        ipAddress: getClientIp(req),
+      });
+
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── DELETE ─────────────────────────────────────────────────────────
+
+measurementUnitsRouter.delete(
+  '/org/product-unit-configs/:productId',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      await deleteProductUnitConfig(ctx, req.params.productId as string);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'DELETE_PRODUCT_UNIT_CONFIG',
+        targetType: 'product_unit_config',
+        targetId: req.params.productId as string,
+        metadata: {},
+        ipAddress: getClientIp(req),
+      });
+
+      res.status(204).send();
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── Product Conversions (CA3) ──────────────────────────────────────
+
+measurementUnitsRouter.post(
+  '/org/product-conversions',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await createProductConversion(ctx, req.body);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'CREATE_PRODUCT_CONVERSION',
+        targetType: 'product_conversion',
+        targetId: result.id,
+        metadata: {
+          from: result.fromUnitAbbreviation,
+          to: result.toUnitAbbreviation,
+          factor: result.factor,
+        },
+        ipAddress: getClientIp(req),
+      });
+
+      res.status(201).json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+measurementUnitsRouter.delete(
+  '/org/product-conversions/:conversionId',
+  authenticate,
+  checkPermission('farms:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      await deleteProductConversion(ctx, req.params.conversionId as string);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'DELETE_PRODUCT_CONVERSION',
+        targetType: 'product_conversion',
+        targetId: req.params.conversionId as string,
+        metadata: {},
+        ipAddress: getClientIp(req),
+      });
+
+      res.status(204).send();
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── Product-aware convert ──────────────────────────────────────────
+
+measurementUnitsRouter.get(
+  '/org/product-unit-configs/:productId/convert',
+  authenticate,
+  checkPermission('farms:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const fromUnitId = req.query.fromUnitId as string;
+      const toUnitId = req.query.toUnitId as string;
+      const value = Number(req.query.value);
+
+      if (!fromUnitId || !toUnitId) {
+        throw new MeasurementUnitError('fromUnitId e toUnitId são obrigatórios', 400);
+      }
+      if (isNaN(value)) {
+        throw new MeasurementUnitError('value deve ser um número válido', 400);
+      }
+
+      const result = await convertForProduct(
+        ctx,
+        req.params.productId as string,
+        fromUnitId,
+        toUnitId,
+        value,
+      );
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ═══════════════════════════════════════════════════════════════════════
+// CA6: Seed Conversion
+// ═══════════════════════════════════════════════════════════════════════
+
+measurementUnitsRouter.post(
+  '/org/unit-conversions/seed',
+  authenticate,
+  checkPermission('farms:read'),
+  async (req, res) => {
+    try {
+      const result = convertSeedRate(req.body);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ═══════════════════════════════════════════════════════════════════════
+// CA7: Coffee Conversion
+// ═══════════════════════════════════════════════════════════════════════
+
+measurementUnitsRouter.post(
+  '/org/unit-conversions/coffee',
+  authenticate,
+  checkPermission('farms:read'),
+  async (req, res) => {
+    try {
+      const result = convertCoffeeVolume(req.body);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ═══════════════════════════════════════════════════════════════════════
+// CA8: Validate conversion exists
+// ═══════════════════════════════════════════════════════════════════════
+
+measurementUnitsRouter.get(
+  '/org/unit-conversions/validate',
+  authenticate,
+  checkPermission('farms:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const fromUnitId = req.query.fromUnitId as string;
+      const toUnitId = req.query.toUnitId as string;
+      const productId = (req.query.productId as string) || undefined;
+
+      if (!fromUnitId || !toUnitId) {
+        throw new MeasurementUnitError('fromUnitId e toUnitId são obrigatórios', 400);
+      }
+
+      const result = await validateConversion(ctx, fromUnitId, toUnitId, productId);
       res.json(result);
     } catch (err) {
       handleError(err, res);

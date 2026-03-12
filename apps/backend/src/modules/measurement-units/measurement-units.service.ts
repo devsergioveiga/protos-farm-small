@@ -13,6 +13,16 @@ import {
   type ListConversionsQuery,
   type ConversionItem,
   type ConvertResult,
+  type CreateProductUnitConfigInput,
+  type UpdateProductUnitConfigInput,
+  type ProductUnitConfigItem,
+  type ProductConversionItem,
+  type CreateProductConversionInput,
+  type SeedConversionInput,
+  type SeedConversionResult,
+  type CoffeeConversionInput,
+  type CoffeeConversionResult,
+  type ConversionValidationResult,
 } from './measurement-units.types';
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -704,5 +714,538 @@ export async function importConversions(
     }
 
     return { imported, skipped, errors };
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// CA3/CA4: Product Unit Config (per-product units & conversions)
+// ═══════════════════════════════════════════════════════════════════════
+
+const PRODUCT_UNIT_CONFIG_INCLUDE = {
+  purchaseUnit: { select: { id: true, name: true, abbreviation: true } },
+  stockUnit: { select: { id: true, name: true, abbreviation: true } },
+  applicationUnit: { select: { id: true, name: true, abbreviation: true } },
+  productConversions: {
+    include: {
+      fromUnit: { select: { abbreviation: true } },
+      toUnit: { select: { abbreviation: true } },
+    },
+    orderBy: { createdAt: 'asc' as const },
+  },
+};
+
+function toProductUnitConfigItem(row: Record<string, unknown>): ProductUnitConfigItem {
+  const purchase = row.purchaseUnit as Record<string, unknown> | null;
+  const stock = row.stockUnit as Record<string, unknown> | null;
+  const application = row.applicationUnit as Record<string, unknown> | null;
+  const conversions = (row.productConversions as Record<string, unknown>[]) ?? [];
+
+  return {
+    id: row.id as string,
+    organizationId: row.organizationId as string,
+    productId: row.productId as string,
+    purchaseUnitId: (row.purchaseUnitId as string) ?? null,
+    purchaseUnitAbbreviation: purchase ? (purchase.abbreviation as string) : null,
+    purchaseUnitName: purchase ? (purchase.name as string) : null,
+    stockUnitId: (row.stockUnitId as string) ?? null,
+    stockUnitAbbreviation: stock ? (stock.abbreviation as string) : null,
+    stockUnitName: stock ? (stock.name as string) : null,
+    applicationUnitId: (row.applicationUnitId as string) ?? null,
+    applicationUnitAbbreviation: application ? (application.abbreviation as string) : null,
+    applicationUnitName: application ? (application.name as string) : null,
+    densityGPerMl: row.densityGPerMl != null ? Number(row.densityGPerMl) : null,
+    productConversions: conversions.map((c) => toProductConversionItem(c)),
+    createdAt: (row.createdAt as Date).toISOString(),
+    updatedAt: (row.updatedAt as Date).toISOString(),
+  };
+}
+
+function toProductConversionItem(row: Record<string, unknown>): ProductConversionItem {
+  const from = row.fromUnit as Record<string, unknown>;
+  const to = row.toUnit as Record<string, unknown>;
+  return {
+    id: row.id as string,
+    productUnitConfigId: row.productUnitConfigId as string,
+    fromUnitId: row.fromUnitId as string,
+    fromUnitAbbreviation: from.abbreviation as string,
+    toUnitId: row.toUnitId as string,
+    toUnitAbbreviation: to.abbreviation as string,
+    factor: Number(row.factor),
+    description: (row.description as string) ?? null,
+    createdAt: (row.createdAt as Date).toISOString(),
+    updatedAt: (row.updatedAt as Date).toISOString(),
+  };
+}
+
+export async function createProductUnitConfig(
+  ctx: RlsContext,
+  input: CreateProductUnitConfigInput,
+): Promise<ProductUnitConfigItem> {
+  if (!input.productId?.trim()) {
+    throw new MeasurementUnitError('productId é obrigatório', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    const existing = await tx.productUnitConfig.findFirst({
+      where: { organizationId: ctx.organizationId, productId: input.productId },
+    });
+    if (existing) {
+      throw new MeasurementUnitError('Este produto já possui configuração de unidades', 409);
+    }
+
+    const row = await tx.productUnitConfig.create({
+      data: {
+        organizationId: ctx.organizationId,
+        productId: input.productId.trim(),
+        purchaseUnitId: input.purchaseUnitId ?? null,
+        stockUnitId: input.stockUnitId ?? null,
+        applicationUnitId: input.applicationUnitId ?? null,
+        densityGPerMl: input.densityGPerMl ?? null,
+      },
+      include: PRODUCT_UNIT_CONFIG_INCLUDE,
+    });
+
+    return toProductUnitConfigItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+export async function getProductUnitConfig(
+  ctx: RlsContext,
+  productId: string,
+): Promise<ProductUnitConfigItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const row = await tx.productUnitConfig.findFirst({
+      where: { organizationId: ctx.organizationId, productId },
+      include: PRODUCT_UNIT_CONFIG_INCLUDE,
+    });
+    if (!row) {
+      throw new MeasurementUnitError(
+        'Configuração de unidades não encontrada para este produto',
+        404,
+      );
+    }
+    return toProductUnitConfigItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+export async function updateProductUnitConfig(
+  ctx: RlsContext,
+  productId: string,
+  input: UpdateProductUnitConfigInput,
+): Promise<ProductUnitConfigItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const existing = await tx.productUnitConfig.findFirst({
+      where: { organizationId: ctx.organizationId, productId },
+    });
+    if (!existing) {
+      throw new MeasurementUnitError(
+        'Configuração de unidades não encontrada para este produto',
+        404,
+      );
+    }
+
+    const data: Record<string, unknown> = {};
+    if (input.purchaseUnitId !== undefined) data.purchaseUnitId = input.purchaseUnitId;
+    if (input.stockUnitId !== undefined) data.stockUnitId = input.stockUnitId;
+    if (input.applicationUnitId !== undefined) data.applicationUnitId = input.applicationUnitId;
+    if (input.densityGPerMl !== undefined) data.densityGPerMl = input.densityGPerMl;
+
+    const row = await tx.productUnitConfig.update({
+      where: { id: existing.id },
+      data: data as Parameters<typeof tx.productUnitConfig.update>[0]['data'],
+      include: PRODUCT_UNIT_CONFIG_INCLUDE,
+    });
+
+    return toProductUnitConfigItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+export async function deleteProductUnitConfig(ctx: RlsContext, productId: string): Promise<void> {
+  return withRlsContext(ctx, async (tx) => {
+    const existing = await tx.productUnitConfig.findFirst({
+      where: { organizationId: ctx.organizationId, productId },
+    });
+    if (!existing) {
+      throw new MeasurementUnitError(
+        'Configuração de unidades não encontrada para este produto',
+        404,
+      );
+    }
+    await tx.productUnitConfig.delete({ where: { id: existing.id } });
+  });
+}
+
+// ─── Product-specific conversions (CA3) ──────────────────────────────
+
+export async function createProductConversion(
+  ctx: RlsContext,
+  input: CreateProductConversionInput,
+): Promise<ProductConversionItem> {
+  if (!input.productUnitConfigId || !input.fromUnitId || !input.toUnitId) {
+    throw new MeasurementUnitError(
+      'productUnitConfigId, fromUnitId e toUnitId são obrigatórios',
+      400,
+    );
+  }
+  if (input.fromUnitId === input.toUnitId) {
+    throw new MeasurementUnitError('Unidades de origem e destino devem ser diferentes', 400);
+  }
+  if (input.factor == null || input.factor <= 0) {
+    throw new MeasurementUnitError('Fator de conversão deve ser um número positivo', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    // Verify config belongs to org
+    const config = await tx.productUnitConfig.findFirst({
+      where: { id: input.productUnitConfigId, organizationId: ctx.organizationId },
+    });
+    if (!config) {
+      throw new MeasurementUnitError('Configuração de produto não encontrada', 404);
+    }
+
+    // Check duplicate
+    const existing = await tx.productConversion.findFirst({
+      where: {
+        productUnitConfigId: input.productUnitConfigId,
+        fromUnitId: input.fromUnitId,
+        toUnitId: input.toUnitId,
+      },
+    });
+    if (existing) {
+      throw new MeasurementUnitError('Já existe conversão deste produto para estas unidades', 409);
+    }
+
+    const row = await tx.productConversion.create({
+      data: {
+        productUnitConfigId: input.productUnitConfigId,
+        fromUnitId: input.fromUnitId,
+        toUnitId: input.toUnitId,
+        factor: input.factor,
+        description: input.description?.trim() ?? null,
+      },
+      include: {
+        fromUnit: { select: { abbreviation: true } },
+        toUnit: { select: { abbreviation: true } },
+      },
+    });
+
+    // Create reverse (bidirectional)
+    const reverseExists = await tx.productConversion.findFirst({
+      where: {
+        productUnitConfigId: input.productUnitConfigId,
+        fromUnitId: input.toUnitId,
+        toUnitId: input.fromUnitId,
+      },
+    });
+    if (!reverseExists) {
+      await tx.productConversion.create({
+        data: {
+          productUnitConfigId: input.productUnitConfigId,
+          fromUnitId: input.toUnitId,
+          toUnitId: input.fromUnitId,
+          factor: 1 / input.factor,
+          description: input.description?.trim() ?? null,
+        },
+      });
+    }
+
+    return toProductConversionItem(row as unknown as Record<string, unknown>);
+  });
+}
+
+export async function deleteProductConversion(
+  ctx: RlsContext,
+  conversionId: string,
+): Promise<void> {
+  return withRlsContext(ctx, async (tx) => {
+    const row = await tx.productConversion.findFirst({
+      where: { id: conversionId },
+      include: { productUnitConfig: { select: { organizationId: true } } },
+    });
+    if (!row || row.productUnitConfig.organizationId !== ctx.organizationId) {
+      throw new MeasurementUnitError('Conversão de produto não encontrada', 404);
+    }
+
+    // Delete reverse too
+    await tx.productConversion.deleteMany({
+      where: {
+        productUnitConfigId: row.productUnitConfigId,
+        fromUnitId: row.toUnitId,
+        toUnitId: row.fromUnitId,
+      },
+    });
+
+    await tx.productConversion.delete({ where: { id: conversionId } });
+  });
+}
+
+// ─── Product-aware convert (uses product overrides, then global) ─────
+
+export async function convertForProduct(
+  ctx: RlsContext,
+  productId: string,
+  fromUnitId: string,
+  toUnitId: string,
+  value: number,
+): Promise<ConvertResult> {
+  if (fromUnitId === toUnitId) {
+    return convert(ctx, fromUnitId, toUnitId, value);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    // Check product-specific conversion first
+    const config = await tx.productUnitConfig.findFirst({
+      where: { organizationId: ctx.organizationId, productId },
+      include: {
+        productConversions: {
+          where: { fromUnitId, toUnitId },
+          include: {
+            fromUnit: { select: { abbreviation: true } },
+            toUnit: { select: { abbreviation: true } },
+          },
+        },
+      },
+    });
+
+    if (config?.productConversions.length) {
+      const pc = config.productConversions[0];
+      const factor = Number(pc.factor);
+      return {
+        fromValue: value,
+        fromUnit: pc.fromUnit.abbreviation,
+        toValue: Math.round(value * factor * 1e6) / 1e6,
+        toUnit: pc.toUnit.abbreviation,
+        factor,
+        path: [`${pc.fromUnit.abbreviation}(produto)`, pc.toUnit.abbreviation],
+      };
+    }
+
+    // Check density-based conversion (weight↔volume)
+    if (config?.densityGPerMl) {
+      const densityResult = await tryDensityConversion(
+        tx,
+        ctx.organizationId,
+        fromUnitId,
+        toUnitId,
+        value,
+        Number(config.densityGPerMl),
+      );
+      if (densityResult) return densityResult;
+    }
+
+    // Fallback to global conversion
+    return convert(ctx, fromUnitId, toUnitId, value);
+  });
+}
+
+async function tryDensityConversion(
+  tx: TxClient,
+  organizationId: string,
+  fromUnitId: string,
+  toUnitId: string,
+  value: number,
+  densityGPerMl: number,
+): Promise<ConvertResult | null> {
+  const [fromUnit, toUnit] = await Promise.all([
+    tx.measurementUnit.findFirst({ where: { id: fromUnitId, organizationId } }),
+    tx.measurementUnit.findFirst({ where: { id: toUnitId, organizationId } }),
+  ]);
+  if (!fromUnit || !toUnit) return null;
+
+  const isFromWeight = fromUnit.category === 'WEIGHT';
+  const isFromVolume = fromUnit.category === 'VOLUME';
+  const isToWeight = toUnit.category === 'WEIGHT';
+  const isToVolume = toUnit.category === 'VOLUME';
+
+  if (!((isFromWeight && isToVolume) || (isFromVolume && isToWeight))) return null;
+
+  // Normalize to g and mL using global conversions, then apply density
+  // density = g/mL, so: g = mL * density, mL = g / density
+  // For simplicity, we convert from → base (g or mL) → cross via density → base → to
+  // This is a simplified approach; the full version would chain through global conversions
+
+  if (isFromWeight && isToVolume) {
+    // weight → volume: value_in_g / density = value_in_mL
+    // Then convert mL to target volume unit
+    const factor = 1 / densityGPerMl; // g → mL
+    return {
+      fromValue: value,
+      fromUnit: fromUnit.abbreviation,
+      toValue: Math.round(value * factor * 1e6) / 1e6,
+      toUnit: toUnit.abbreviation,
+      factor,
+      path: [fromUnit.abbreviation, `densidade(${densityGPerMl}g/mL)`, toUnit.abbreviation],
+    };
+  }
+
+  // volume → weight: value_in_mL * density = value_in_g
+  const factor = densityGPerMl;
+  return {
+    fromValue: value,
+    fromUnit: fromUnit.abbreviation,
+    toValue: Math.round(value * factor * 1e6) / 1e6,
+    toUnit: toUnit.abbreviation,
+    factor,
+    path: [fromUnit.abbreviation, `densidade(${densityGPerMl}g/mL)`, toUnit.abbreviation],
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// CA6: Seed Conversion Formulas
+// ═══════════════════════════════════════════════════════════════════════
+
+export function convertSeedRate(input: SeedConversionInput): SeedConversionResult {
+  if (input.seedsPerLinearM <= 0) {
+    throw new MeasurementUnitError('Sementes por metro linear deve ser positivo', 400);
+  }
+  if (input.rowSpacingCm <= 0) {
+    throw new MeasurementUnitError('Espaçamento entre linhas deve ser positivo', 400);
+  }
+
+  const rowSpacingM = input.rowSpacingCm / 100;
+  // 1 ha = 10000 m², rows per ha = 10000 / rowSpacingM
+  const seedsPerHa = Math.round(input.seedsPerLinearM * (10000 / rowSpacingM));
+
+  let kgPerHa: number | null = null;
+  if (input.thousandSeedWeightG != null && input.thousandSeedWeightG > 0) {
+    // kg/ha = (seeds/ha * weightPerSeed_g) / 1000
+    const weightPerSeedG = input.thousandSeedWeightG / 1000;
+    kgPerHa = Math.round(((seedsPerHa * weightPerSeedG) / 1000) * 100) / 100; // divide by 1000 for g→kg
+  }
+
+  return { seedsPerHa, kgPerHa };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// CA7: Coffee Conversion Formula
+// ═══════════════════════════════════════════════════════════════════════
+
+const DEFAULT_COFFEE_YIELD_LITERS_PER_SAC = 480;
+
+export function convertCoffeeVolume(input: CoffeeConversionInput): CoffeeConversionResult {
+  if (input.volumeLiters <= 0) {
+    throw new MeasurementUnitError('Volume em litros deve ser positivo', 400);
+  }
+
+  const yieldLitersPerSac = input.yieldLitersPerSac ?? DEFAULT_COFFEE_YIELD_LITERS_PER_SAC;
+  if (yieldLitersPerSac <= 0) {
+    throw new MeasurementUnitError('Rendimento (L/saca) deve ser positivo', 400);
+  }
+
+  const sacsBenefited = Math.round((input.volumeLiters / yieldLitersPerSac) * 100) / 100;
+
+  return { sacsBenefited, yieldLitersPerSac };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// CA8: Validation — check if conversion exists before allowing operation
+// ═══════════════════════════════════════════════════════════════════════
+
+export async function validateConversion(
+  ctx: RlsContext,
+  fromUnitId: string,
+  toUnitId: string,
+  productId?: string,
+): Promise<ConversionValidationResult> {
+  if (fromUnitId === toUnitId) {
+    return withRlsContext(ctx, async (tx) => {
+      const unit = await tx.measurementUnit.findFirst({
+        where: { id: fromUnitId, organizationId: ctx.organizationId },
+      });
+      return {
+        valid: true,
+        fromUnit: unit?.abbreviation ?? fromUnitId,
+        toUnit: unit?.abbreviation ?? toUnitId,
+        message: null,
+      };
+    });
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    const [fromUnit, toUnit] = await Promise.all([
+      tx.measurementUnit.findFirst({
+        where: { id: fromUnitId, organizationId: ctx.organizationId },
+      }),
+      tx.measurementUnit.findFirst({
+        where: { id: toUnitId, organizationId: ctx.organizationId },
+      }),
+    ]);
+
+    if (!fromUnit || !toUnit) {
+      return {
+        valid: false,
+        fromUnit: fromUnit?.abbreviation ?? fromUnitId,
+        toUnit: toUnit?.abbreviation ?? toUnitId,
+        message: 'Unidade não encontrada',
+      };
+    }
+
+    // Check product-specific conversion
+    if (productId) {
+      const productConv = await tx.productConversion.findFirst({
+        where: {
+          productUnitConfig: { organizationId: ctx.organizationId, productId },
+          fromUnitId,
+          toUnitId,
+        },
+      });
+      if (productConv) {
+        return {
+          valid: true,
+          fromUnit: fromUnit.abbreviation,
+          toUnit: toUnit.abbreviation,
+          message: null,
+        };
+      }
+
+      // Check density
+      const config = await tx.productUnitConfig.findFirst({
+        where: { organizationId: ctx.organizationId, productId },
+      });
+      if (config?.densityGPerMl) {
+        const crossCategory =
+          (fromUnit.category === 'WEIGHT' && toUnit.category === 'VOLUME') ||
+          (fromUnit.category === 'VOLUME' && toUnit.category === 'WEIGHT');
+        if (crossCategory) {
+          return {
+            valid: true,
+            fromUnit: fromUnit.abbreviation,
+            toUnit: toUnit.abbreviation,
+            message: null,
+          };
+        }
+      }
+    }
+
+    // Check direct global conversion
+    const direct = await tx.unitConversion.findFirst({
+      where: { organizationId: ctx.organizationId, fromUnitId, toUnitId, isActive: true },
+    });
+    if (direct) {
+      return {
+        valid: true,
+        fromUnit: fromUnit.abbreviation,
+        toUnit: toUnit.abbreviation,
+        message: null,
+      };
+    }
+
+    // Check 2-hop
+    const twoHop = await findTwoHopConversion(tx, ctx.organizationId, fromUnitId, toUnitId, 1);
+    if (twoHop) {
+      return {
+        valid: true,
+        fromUnit: fromUnit.abbreviation,
+        toUnit: toUnit.abbreviation,
+        message: null,
+      };
+    }
+
+    return {
+      valid: false,
+      fromUnit: fromUnit.abbreviation,
+      toUnit: toUnit.abbreviation,
+      message: `Conversão de ${fromUnit.abbreviation} para ${toUnit.abbreviation} não configurada. Configure o fator de conversão antes de registrar a operação.`,
+    };
   });
 }

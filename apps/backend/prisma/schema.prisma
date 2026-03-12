@@ -273,6 +273,7 @@ model Organization {
   cropPhenologicalStages    CropPhenologicalStage[]
   measurementUnits          MeasurementUnit[]
   unitConversions           UnitConversion[]
+  productUnitConfigs        ProductUnitConfig[]
 
   @@map("organizations")
 }
@@ -2150,6 +2151,12 @@ model MeasurementUnit {
   conversionsFrom UnitConversion[] @relation("ConversionFromUnit")
   conversionsTo   UnitConversion[] @relation("ConversionToUnit")
 
+  purchaseUnitConfigs    ProductUnitConfig[] @relation("PurchaseUnit")
+  stockUnitConfigs       ProductUnitConfig[] @relation("StockUnit")
+  applicationUnitConfigs ProductUnitConfig[] @relation("ApplicationUnit")
+  productConvsFrom       ProductConversion[] @relation("ProductConvFromUnit")
+  productConvsTo         ProductConversion[] @relation("ProductConvToUnit")
+
   @@unique([organizationId, abbreviation])
   @@index([organizationId])
   @@index([category])
@@ -2176,4 +2183,50 @@ model UnitConversion {
   @@index([fromUnitId])
   @@index([toUnitId])
   @@map("unit_conversions")
+}
+
+// CA3: Conversões específicas por produto
+// CA4: Unidade de compra, estoque e aplicação por produto
+model ProductUnitConfig {
+  id                String  @id @default(uuid())
+  organizationId    String
+  productId         String  // FK será adicionada em US-089 (Product model)
+  purchaseUnitId    String? // unidade de compra (ex: tonelada)
+  stockUnitId       String? // unidade de estoque (ex: kg)
+  applicationUnitId String? // unidade de aplicação (ex: mL/ha)
+  densityGPerMl     Decimal? @db.Decimal(10, 4) // densidade para converter peso↔volume
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  purchaseUnit    MeasurementUnit? @relation("PurchaseUnit", fields: [purchaseUnitId], references: [id], onDelete: SetNull)
+  stockUnit       MeasurementUnit? @relation("StockUnit", fields: [stockUnitId], references: [id], onDelete: SetNull)
+  applicationUnit MeasurementUnit? @relation("ApplicationUnit", fields: [applicationUnitId], references: [id], onDelete: SetNull)
+
+  productConversions ProductConversion[]
+
+  @@unique([organizationId, productId])
+  @@index([organizationId])
+  @@index([productId])
+  @@map("product_unit_configs")
+}
+
+// CA3: Conversões específicas por produto (override das globais)
+model ProductConversion {
+  id                  String  @id @default(uuid())
+  productUnitConfigId String
+  fromUnitId          String
+  toUnitId            String
+  factor              Decimal @db.Decimal(20, 10)
+  description         String? // ex: "480 L cereja = 1 saca beneficiada"
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  productUnitConfig ProductUnitConfig @relation(fields: [productUnitConfigId], references: [id], onDelete: Cascade)
+  fromUnit          MeasurementUnit   @relation("ProductConvFromUnit", fields: [fromUnitId], references: [id], onDelete: Cascade)
+  toUnit            MeasurementUnit   @relation("ProductConvToUnit", fields: [toUnitId], references: [id], onDelete: Cascade)
+
+  @@unique([productUnitConfigId, fromUnitId, toUnitId])
+  @@index([productUnitConfigId])
+  @@map("product_conversions")
 }

@@ -144,3 +144,96 @@ export interface ConvertResult {
   factor: number;
   path: string[]; // chain of conversions used
 }
+
+// ─── CA3/CA4: Product Unit Config Types ─────────────────────────────
+
+export interface CreateProductUnitConfigInput {
+  productId: string;
+  purchaseUnitId?: string | null;
+  stockUnitId?: string | null;
+  applicationUnitId?: string | null;
+  densityGPerMl?: number | null;
+}
+
+export type UpdateProductUnitConfigInput = Partial<Omit<CreateProductUnitConfigInput, 'productId'>>;
+
+export interface ProductUnitConfigItem {
+  id: string;
+  organizationId: string;
+  productId: string;
+  purchaseUnitId: string | null;
+  purchaseUnitAbbreviation: string | null;
+  purchaseUnitName: string | null;
+  stockUnitId: string | null;
+  stockUnitAbbreviation: string | null;
+  stockUnitName: string | null;
+  applicationUnitId: string | null;
+  applicationUnitAbbreviation: string | null;
+  applicationUnitName: string | null;
+  densityGPerMl: number | null;
+  productConversions: ProductConversionItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProductConversionInput {
+  productUnitConfigId: string;
+  fromUnitId: string;
+  toUnitId: string;
+  factor: number;
+  description?: string | null;
+}
+
+export interface ProductConversionItem {
+  id: string;
+  productUnitConfigId: string;
+  fromUnitId: string;
+  fromUnitAbbreviation: string;
+  toUnitId: string;
+  toUnitAbbreviation: string;
+  factor: number;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── CA6/CA7: Seed & Coffee Conversion Formulas ─────────────────────
+
+/**
+ * CA6 — Seed conversion: seeds/m linear → seeds/ha
+ * Formula: seedsPerHa = seedsPerLinearM * (10000 / rowSpacingM)
+ */
+export interface SeedConversionInput {
+  seedsPerLinearM: number;
+  rowSpacingCm: number; // espaçamento entre linhas em cm
+  thousandSeedWeightG?: number; // peso de mil sementes em gramas
+}
+
+export interface SeedConversionResult {
+  seedsPerHa: number;
+  kgPerHa: number | null; // only if thousandSeedWeightG provided
+}
+
+/**
+ * CA7 — Coffee conversion: litros de cereja → sacas beneficiadas
+ * Formula: sacas = volumeLiters / yieldLitersPerSac
+ * Default: 480 L cereja = 1 saca beneficiada (configurable per plot/season)
+ */
+export interface CoffeeConversionInput {
+  volumeLiters: number;
+  yieldLitersPerSac?: number; // default 480
+}
+
+export interface CoffeeConversionResult {
+  sacsBenefited: number;
+  yieldLitersPerSac: number;
+}
+
+// ─── CA8: Validation ────────────────────────────────────────────────
+
+export interface ConversionValidationResult {
+  valid: boolean;
+  fromUnit: string;
+  toUnit: string;
+  message: string | null;
+}
