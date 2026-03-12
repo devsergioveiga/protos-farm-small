@@ -3,7 +3,7 @@ import { authenticate } from '../../middleware/auth';
 import { checkPermission } from '../../middleware/check-permission';
 import { logAudit } from '../../shared/audit/audit.service';
 import type { RlsContext } from '../../database/rls';
-import { StockEntryError } from './stock-entries.types';
+import { StockEntryError, type StockEntryStatusType } from './stock-entries.types';
 import {
   createStockEntry,
   listStockEntries,
@@ -84,7 +84,7 @@ stockEntriesRouter.get(
       const result = await listStockEntries(ctx, {
         page: req.query.page ? Number(req.query.page) : undefined,
         limit: req.query.limit ? Number(req.query.limit) : undefined,
-        status: req.query.status as string | undefined,
+        status: req.query.status as StockEntryStatusType | undefined,
         supplierName: req.query.supplierName as string | undefined,
         dateFrom: req.query.dateFrom as string | undefined,
         dateTo: req.query.dateTo as string | undefined,

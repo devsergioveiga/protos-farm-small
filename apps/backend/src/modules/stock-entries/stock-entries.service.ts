@@ -19,7 +19,7 @@ import {
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
-function toNumber(val: Decimal | number | null | undefined): number {
+function toNumber(val: unknown): number {
   if (val == null) return 0;
   return typeof val === 'number' ? val : Number(val);
 }
