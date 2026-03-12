@@ -1316,13 +1316,22 @@ model PesticideApplication {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
-  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
-  recorder  User      @relation("PesticideRecorder", fields: [recordedBy], references: [id])
+  // Stock deduction (CA8)
+  productId         String?
+  stockOutputId     String?
+  totalQuantityUsed Decimal?        @db.Decimal(14, 4)
+
+  farm        Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot   FieldPlot    @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  recorder    User         @relation("PesticideRecorder", fields: [recordedBy], references: [id])
+  product     Product?     @relation("PesticideProduct", fields: [productId], references: [id], onDelete: SetNull)
+  stockOutput StockOutput? @relation("PesticideStockOutput", fields: [stockOutputId], references: [id], onDelete: SetNull)
 
   @@index([farmId])
   @@index([fieldPlotId])
   @@index([appliedAt])
+  @@index([productId])
+  @@index([stockOutputId])
   @@map("pesticide_applications")
 }
 
@@ -1371,13 +1380,22 @@ model FertilizerApplication {
   createdAt         DateTime                  @default(now())
   updatedAt         DateTime                  @updatedAt
 
-  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
-  recorder  User      @relation("FertilizerRecorder", fields: [recordedBy], references: [id])
+  // Stock deduction
+  productId         String?
+  stockOutputId     String?
+  totalQuantityUsed Decimal?                  @db.Decimal(14, 4)
+
+  farm        Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot   FieldPlot    @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  recorder    User         @relation("FertilizerRecorder", fields: [recordedBy], references: [id])
+  product     Product?     @relation("FertilizerProduct", fields: [productId], references: [id], onDelete: SetNull)
+  stockOutput StockOutput? @relation("FertilizerStockOutput", fields: [stockOutputId], references: [id], onDelete: SetNull)
 
   @@index([farmId])
   @@index([fieldPlotId])
   @@index([appliedAt])
+  @@index([productId])
+  @@index([stockOutputId])
   @@map("fertilizer_applications")
 }
 
@@ -1489,15 +1507,20 @@ model SoilPrepOperation {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
-  farm          Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  fieldPlot     FieldPlot     @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  // Stock deduction (CA4)
+  stockOutputId       String?
+
+  farm          Farm           @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot     FieldPlot      @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
   operationType OperationType? @relation(fields: [operationTypeId], references: [id], onDelete: SetNull)
-  recorder      User          @relation("SoilPrepRecorder", fields: [recordedBy], references: [id])
+  recorder      User           @relation("SoilPrepRecorder", fields: [recordedBy], references: [id])
+  stockOutput   StockOutput?   @relation("SoilPrepStockOutput", fields: [stockOutputId], references: [id], onDelete: SetNull)
 
   @@index([farmId])
   @@index([fieldPlotId])
   @@index([startedAt])
   @@index([operationTypeId])
+  @@index([stockOutputId])
   @@map("soil_prep_operations")
 }
 
@@ -2340,6 +2363,8 @@ model Product {
   stockInventoryItems  StockInventoryItem[]
   stockAdjustments     StockAdjustment[]
   prescriptionProducts PesticidePrescriptionProduct[]
+  pesticideApplications  PesticideApplication[]  @relation("PesticideProduct")
+  fertilizerApplications FertilizerApplication[] @relation("FertilizerProduct")
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -2567,6 +2592,9 @@ model StockOutput {
   sourceFarm      Farm?             @relation("SourceFarmOutputs", fields: [sourceFarmId], references: [id], onDelete: SetNull)
   destinationFarm Farm?             @relation("DestinationFarmOutputs", fields: [destinationFarmId], references: [id], onDelete: SetNull)
   items           StockOutputItem[]
+  pesticideApplications  PesticideApplication[]  @relation("PesticideStockOutput")
+  fertilizerApplications FertilizerApplication[] @relation("FertilizerStockOutput")
+  soilPrepOperations     SoilPrepOperation[]     @relation("SoilPrepStockOutput")
 
   @@index([organizationId])
   @@index([organizationId, type])

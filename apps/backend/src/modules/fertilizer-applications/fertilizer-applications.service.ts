@@ -7,6 +7,11 @@ import {
   type FertilizerApplicationItem,
   type NutrientSummaryItem,
 } from './fertilizer-applications.types';
+import {
+  createConsumptionOutput,
+  cancelConsumptionOutput,
+  doseToAbsoluteQuantity,
+} from '../stock-deduction/stock-deduction';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -73,6 +78,9 @@ function toItem(row: Record<string, unknown>): FertilizerApplicationItem {
     recorderName: recorder?.name ?? '',
     createdAt: (row.createdAt as Date).toISOString(),
     updatedAt: (row.updatedAt as Date).toISOString(),
+    productId: (row.productId as string) ?? null,
+    stockOutputId: (row.stockOutputId as string) ?? null,
+    totalQuantityUsed: row.totalQuantityUsed != null ? Number(row.totalQuantityUsed) : null,
   };
 }
 
@@ -97,11 +105,23 @@ export async function createFertilizerApplication(
 
     const plot = await tx.fieldPlot.findFirst({
       where: { id: input.fieldPlotId, farmId, deletedAt: null },
-      select: { id: true },
+      select: { id: true, boundaryAreaHa: true },
     });
     if (!plot) {
       throw new FertilizerApplicationError('Talhão não encontrado nesta fazenda', 404);
     }
+
+    // Calculate total quantity for stock deduction
+    const doseUnit = input.doseUnit ?? 'KG_HA';
+    const areaHa = input.areaAppliedHa ?? Number(plot.boundaryAreaHa);
+    const totalQuantityUsed =
+      input.totalQuantityUsed ??
+      (input.productId
+        ? Math.round(
+            doseToAbsoluteQuantity(input.dose, doseUnit, areaHa, input.plantsPerHa ?? undefined) *
+              10000,
+          ) / 10000
+        : null);
 
     const data: Record<string, unknown> = {
       farmId,
@@ -111,7 +131,7 @@ export async function createFertilizerApplication(
       productName: input.productName.trim(),
       formulation: input.formulation?.trim() ?? null,
       dose: input.dose,
-      doseUnit: input.doseUnit ?? 'KG_HA',
+      doseUnit,
       nutrientSource: input.nutrientSource?.trim() ?? null,
       phenologicalStage: input.phenologicalStage?.trim() ?? null,
       nitrogenN: input.nitrogenN ?? null,
@@ -127,10 +147,27 @@ export async function createFertilizerApplication(
       latitude: input.latitude ?? null,
       longitude: input.longitude ?? null,
       recordedBy: userId,
+      productId: input.productId ?? null,
+      totalQuantityUsed: totalQuantityUsed ?? null,
     };
 
     if (input.id) {
       (data as Record<string, unknown>).id = input.id;
+    }
+
+    // Stock deduction — if productId is provided, create CONSUMPTION output
+    if (input.productId && totalQuantityUsed && totalQuantityUsed > 0) {
+      const deduction = await createConsumptionOutput(tx, {
+        organizationId: ctx.organizationId,
+        items: [{ productId: input.productId, quantity: totalQuantityUsed }],
+        fieldOperationRef: `fertilizer-application:${input.id ?? 'new'}`,
+        fieldPlotId: input.fieldPlotId,
+        outputDate: new Date(input.appliedAt),
+        notes: `Baixa automática — Adubação: ${input.productName.trim()}`,
+      });
+      if (deduction) {
+        data.stockOutputId = deduction.stockOutputId;
+      }
     }
 
     const row = await tx.fertilizerApplication.create({
@@ -316,11 +353,17 @@ export async function deleteFertilizerApplication(
   return withRlsContext(ctx, async (tx) => {
     const row = await tx.fertilizerApplication.findFirst({
       where: { id: applicationId, farmId, deletedAt: null },
-      select: { id: true },
+      select: { id: true, stockOutputId: true },
     });
     if (!row) {
       throw new FertilizerApplicationError('Aplicação não encontrada', 404);
     }
+
+    // Cancel linked stock output (reverse balances)
+    if (row.stockOutputId) {
+      await cancelConsumptionOutput(tx, ctx.organizationId, row.stockOutputId);
+    }
+
     await tx.fertilizerApplication.update({
       where: { id: applicationId },
       data: { deletedAt: new Date() },
