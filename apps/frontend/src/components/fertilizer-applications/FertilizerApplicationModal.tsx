@@ -11,6 +11,7 @@ import type {
   CreateFertilizerApplicationInput,
 } from '@/types/fertilizer-application';
 import type { FieldPlot } from '@/types/farm';
+import ConversionPreviewCard from '@/components/shared/ConversionPreviewCard';
 import './FertilizerApplicationModal.css';
 
 interface FertilizerApplicationModalProps {
@@ -51,6 +52,11 @@ function FertilizerApplicationModal({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [plots, setPlots] = useState<FieldPlot[]>([]);
   const [loadingPlots, setLoadingPlots] = useState(false);
+
+  const selectedPlotAreaHa = useMemo(() => {
+    const plot = plots.find((p) => p.id === fieldPlotId);
+    return plot?.boundaryAreaHa ?? 0;
+  }, [plots, fieldPlotId]);
 
   // Computed: g/planta → kg/ha conversion
   const computedDoseKgHa = useMemo(() => {
@@ -381,6 +387,17 @@ function FertilizerApplicationModal({
                 />
               </div>
             </div>
+
+            {/* Conversion preview (CA4/CA9) */}
+            {Number(dose) > 0 && selectedPlotAreaHa > 0 && (
+              <ConversionPreviewCard
+                dose={Number(dose)}
+                doseUnit={doseUnit}
+                areaHa={areaAppliedHa ? Number(areaAppliedHa) : selectedPlotAreaHa}
+                productName={productName || undefined}
+                plantsPerHa={plantsPerHa ? Number(plantsPerHa) : undefined}
+              />
+            )}
 
             <div className="fertilizer-modal__row">
               <div className="fertilizer-modal__field">

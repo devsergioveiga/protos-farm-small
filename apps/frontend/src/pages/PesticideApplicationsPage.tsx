@@ -28,6 +28,7 @@ import {
   NOZZLE_TYPES,
 } from '@/types/pesticide-application';
 import type { PesticideApplicationItem } from '@/types/pesticide-application';
+import { getBaseUnit, formatQuantity } from '@/utils/dose-conversion';
 import './PesticideApplicationsPage.css';
 
 function PesticideApplicationsPage() {
@@ -280,6 +281,12 @@ function PesticideApplicationsPage() {
                   <Droplets size={14} aria-hidden="true" />
                   {app.dose} {DOSE_UNIT_LABELS[app.doseUnit] ?? app.doseUnit} | Calda:{' '}
                   {app.sprayVolume} L/ha
+                  {app.totalQuantityUsed != null && (
+                    <span className="pesticides__card-conversion">
+                      {' '}
+                      &rarr; {formatQuantity(app.totalQuantityUsed)} {getBaseUnit(app.doseUnit)}
+                    </span>
+                  )}
                 </span>
               </div>
 
