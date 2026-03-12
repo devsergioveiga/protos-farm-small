@@ -118,6 +118,81 @@ export function calculateSprayMix(
   };
 }
 
+// ─── Dose unit suggestion by product type (CA6) ──────────────────
+
+/**
+ * Suggest the best dose unit based on product type and nutrient form.
+ * Maps product classifications to the most commonly used dose unit.
+ */
+export function suggestDoseUnit(productType: string, nutrientForm?: string | null): string {
+  switch (productType) {
+    // Defensivos líquidos → L/ha
+    case 'defensivo_herbicida':
+    case 'defensivo_inseticida':
+    case 'defensivo_fungicida':
+    case 'defensivo_acaricida':
+    case 'adjuvante':
+      return 'L_HA';
+
+    // Fertilizantes → depende da forma
+    case 'fertilizante':
+      if (nutrientForm === 'liquido' || nutrientForm === 'fertirrigacao') {
+        return 'L_HA';
+      }
+      if (nutrientForm === 'foliar') {
+        return 'ML_HA';
+      }
+      return 'KG_HA'; // granulado ou padrão
+
+    // Corretivos de solo → t/ha (calcário) ou kg/ha (gesso)
+    case 'corretivo_calcario':
+      return 'T_HA';
+    case 'corretivo_gesso':
+      return 'KG_HA';
+
+    // Sementes, inoculantes → kg/ha
+    case 'semente':
+    case 'inoculante':
+    case 'biologico':
+      return 'KG_HA';
+
+    default:
+      return 'KG_HA';
+  }
+}
+
+/**
+ * Returns a dose placeholder example based on the dose unit and product type.
+ * Used for CA10 — dynamic placeholder with suggested dose range.
+ */
+export function getDosePlaceholder(doseUnit: string, productType?: string): string {
+  switch (doseUnit) {
+    case 'L_HA':
+      if (productType?.startsWith('defensivo_') || productType === 'adjuvante') {
+        return 'Ex: 2,5';
+      }
+      return 'Ex: 3,0';
+    case 'ML_HA':
+      return 'Ex: 150';
+    case 'KG_HA':
+      if (productType === 'fertilizante') {
+        return 'Ex: 200';
+      }
+      if (productType === 'semente') {
+        return 'Ex: 60';
+      }
+      return 'Ex: 150';
+    case 'G_HA':
+      return 'Ex: 500';
+    case 'T_HA':
+      return 'Ex: 2,0';
+    case 'G_PLANTA':
+      return 'Ex: 50';
+    default:
+      return 'Ex: 2,5';
+  }
+}
+
 // ─── Format helpers ───────────────────────────────────────────────
 
 function round(value: number, decimals: number): number {
