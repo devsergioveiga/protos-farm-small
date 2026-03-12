@@ -21,6 +21,7 @@ import {
   Citrus,
   Users,
   Shield,
+  Ruler,
   X,
 } from 'lucide-react';
 import './Sidebar.css';
@@ -83,6 +84,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: '/users', icon: Users, label: 'Usuários' },
       { to: '/roles', icon: Shield, label: 'Papéis' },
+      { to: '/measurement-units', icon: Ruler, label: 'Unidades de medida' },
     ],
   },
 ];
