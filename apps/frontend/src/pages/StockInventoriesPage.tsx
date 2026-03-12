@@ -64,10 +64,13 @@ function StockInventoriesPage() {
   const lastInventoryIdRef = useRef<string | null>(null);
 
   // Reset edits when switching to a different inventory
-  if (currentInventory && currentInventory.id !== lastInventoryIdRef.current) {
-    lastInventoryIdRef.current = currentInventory.id;
-    setCountEdits({});
-  }
+  const currentInventoryId = currentInventory?.id ?? null;
+  useEffect(() => {
+    if (currentInventoryId && currentInventoryId !== lastInventoryIdRef.current) {
+      lastInventoryIdRef.current = currentInventoryId;
+      setCountEdits({});
+    }
+  }, [currentInventoryId]);
 
   const countData = useMemo(() => {
     const data: Record<string, { countedQuantity: string; reason: string }> = {};
