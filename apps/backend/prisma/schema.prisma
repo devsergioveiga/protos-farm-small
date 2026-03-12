@@ -279,6 +279,8 @@ model Organization {
   stockEntries              StockEntry[]
   stockBalances             StockBalance[]
   stockOutputs              StockOutput[]
+  stockInventories          StockInventory[]
+  stockAdjustments          StockAdjustment[]
 
   @@map("organizations")
 }
@@ -397,6 +399,7 @@ model Farm {
   stockEntries               StockEntry[]
   stockOutputsAsSource       StockOutput[] @relation("SourceFarmOutputs")
   stockOutputsAsDestination  StockOutput[] @relation("DestinationFarmOutputs")
+  stockInventories           StockInventory[]
 
   @@map("farms")
 }
@@ -2327,9 +2330,11 @@ model Product {
   cultivar         Cultivar?        @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
 
   compositions     ProductComposition[]
-  stockEntryItems  StockEntryItem[]
-  stockOutputItems StockOutputItem[]
-  stockBalance     StockBalance?
+  stockEntryItems      StockEntryItem[]
+  stockOutputItems     StockOutputItem[]
+  stockBalance         StockBalance?
+  stockInventoryItems  StockInventoryItem[]
+  stockAdjustments     StockAdjustment[]
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -2582,4 +2587,88 @@ model StockOutputItem {
   @@index([stockOutputId])
   @@index([productId])
   @@map("stock_output_items")
+}
+
+// ─── EPIC-10 US-093: Inventário e Conciliação de Estoque ────────────
+
+enum StockInventoryStatus {
+  OPEN
+  IN_PROGRESS
+  RECONCILED
+  CANCELLED
+}
+
+enum AdjustmentType {
+  INVENTORY_SURPLUS
+  INVENTORY_SHORTAGE
+}
+
+model StockInventory {
+  id               String               @id @default(uuid())
+  organizationId   String
+  inventoryDate    DateTime             @default(now())
+  status           StockInventoryStatus @default(OPEN)
+  storageFarmId    String?
+  storageLocation  String?              // depósito/galpão
+  notes            String?
+  reconciledAt     DateTime?
+  reconciledBy     String?
+  createdBy        String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  cancelledAt      DateTime?
+
+  organization Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  storageFarm  Farm?                  @relation(fields: [storageFarmId], references: [id], onDelete: SetNull)
+  items        StockInventoryItem[]
+  adjustments  StockAdjustment[]
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, inventoryDate])
+  @@map("stock_inventories")
+}
+
+model StockInventoryItem {
+  id               String   @id @default(uuid())
+  stockInventoryId String
+  productId        String
+  batchNumber      String?
+  systemQuantity   Decimal  @db.Decimal(14, 4) // saldo no momento da contagem
+  countedQuantity  Decimal? @db.Decimal(14, 4) // quantidade contada fisicamente
+  variance         Decimal? @db.Decimal(14, 4) // countedQuantity - systemQuantity
+  reason           String?  // motivo da divergência
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  stockInventory StockInventory @relation(fields: [stockInventoryId], references: [id], onDelete: Cascade)
+  product        Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([stockInventoryId, productId, batchNumber])
+  @@index([stockInventoryId])
+  @@index([productId])
+  @@map("stock_inventory_items")
+}
+
+model StockAdjustment {
+  id               String         @id @default(uuid())
+  organizationId   String
+  stockInventoryId String
+  productId        String
+  adjustmentType   AdjustmentType
+  previousQuantity Decimal        @db.Decimal(14, 4)
+  newQuantity      Decimal        @db.Decimal(14, 4)
+  adjustmentQty    Decimal        @db.Decimal(14, 4) // diferença absoluta
+  reason           String
+  createdBy        String?
+  createdAt        DateTime       @default(now())
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stockInventory StockInventory @relation(fields: [stockInventoryId], references: [id], onDelete: Cascade)
+  product        Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId])
+  @@index([stockInventoryId])
+  @@index([productId])
+  @@map("stock_adjustments")
 }

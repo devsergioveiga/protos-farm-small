@@ -45,6 +45,7 @@ import { productsRouter } from './modules/products/products.routes';
 import { stockEntriesRouter } from './modules/stock-entries/stock-entries.routes';
 import { stockOutputsRouter } from './modules/stock-outputs/stock-outputs.routes';
 import { stockAlertsRouter } from './modules/stock-alerts/stock-alerts.routes';
+import { stockInventoriesRouter } from './modules/stock-inventories/stock-inventories.routes';
 
 const app = express();
 
@@ -97,5 +98,6 @@ app.use('/api', productsRouter);
 app.use('/api', stockEntriesRouter);
 app.use('/api', stockOutputsRouter);
 app.use('/api', stockAlertsRouter);
+app.use('/api', stockInventoriesRouter);
 
 export { app };
