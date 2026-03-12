@@ -23,6 +23,7 @@ import {
   Shield,
   Ruler,
   Package,
+  PackageOpen,
   X,
 } from 'lucide-react';
 import './Sidebar.css';
@@ -79,6 +80,10 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/pests', icon: Bug, label: 'Pragas e doenças' },
       { to: '/operation-types', icon: FolderTree, label: 'Tipos de operação' },
     ],
+  },
+  {
+    title: 'ESTOQUE',
+    items: [{ to: '/stock-entries', icon: PackageOpen, label: 'Entradas de estoque' }],
   },
   {
     title: 'CONFIGURAÇÃO',
