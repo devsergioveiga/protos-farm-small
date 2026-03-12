@@ -89,6 +89,9 @@ const NULL_TYPE_FIELDS = {
   industrialTreatment: null,
   germinationPct: null,
   purityPct: null,
+  reorderPoint: null,
+  safetyStock: null,
+  expiryAlertDays: null,
 };
 
 const PRODUCT_ITEM = {

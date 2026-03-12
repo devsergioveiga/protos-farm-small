@@ -168,6 +168,10 @@ export interface CreateProductInput {
   industrialTreatment?: string | null;
   germinationPct?: number | null;
   purityPct?: number | null;
+  // US-092 CA1/CA2: Alertas de estoque
+  reorderPoint?: number | null;
+  safetyStock?: number | null;
+  expiryAlertDays?: number | null;
 }
 
 export interface WithdrawalPeriodInput {
@@ -263,6 +267,10 @@ export interface ProductItem {
   industrialTreatment: string | null;
   germinationPct: number | null;
   purityPct: number | null;
+  // US-092 CA1/CA2: Alertas de estoque
+  reorderPoint: number | null;
+  safetyStock: number | null;
+  expiryAlertDays: number | null;
   createdAt: string;
   updatedAt: string;
 }

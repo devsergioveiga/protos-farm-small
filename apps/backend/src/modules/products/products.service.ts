@@ -77,6 +77,20 @@ function validateCreate(input: CreateProductInput): void {
     }
   }
 
+  // US-092 CA1/CA2: Alertas de estoque
+  if (input.reorderPoint != null && input.reorderPoint < 0) {
+    throw new ProductError('Ponto de reposição não pode ser negativo', 400);
+  }
+  if (input.safetyStock != null && input.safetyStock < 0) {
+    throw new ProductError('Estoque de segurança não pode ser negativo', 400);
+  }
+  if (
+    input.expiryAlertDays != null &&
+    (input.expiryAlertDays < 1 || !Number.isInteger(input.expiryAlertDays))
+  ) {
+    throw new ProductError('Dias para alerta de validade deve ser um inteiro positivo', 400);
+  }
+
   // CA8-CA12: validações por tipo
   validateTypeSpecificFields(input);
 }
@@ -283,6 +297,10 @@ function toItem(row: Record<string, unknown>): ProductItem {
     industrialTreatment: (row.industrialTreatment as string) ?? null,
     germinationPct: row.germinationPct ? Number(row.germinationPct) : null,
     purityPct: row.purityPct ? Number(row.purityPct) : null,
+    // US-092 CA1/CA2
+    reorderPoint: row.reorderPoint != null ? Number(row.reorderPoint) : null,
+    safetyStock: row.safetyStock != null ? Number(row.safetyStock) : null,
+    expiryAlertDays: (row.expiryAlertDays as number) ?? null,
     createdAt: (row.createdAt as Date).toISOString(),
     updatedAt: (row.updatedAt as Date).toISOString(),
   };
@@ -414,6 +432,10 @@ export async function createProduct(
         industrialTreatment: input.industrialTreatment?.trim() || null,
         germinationPct: input.germinationPct != null ? input.germinationPct : null,
         purityPct: input.purityPct != null ? input.purityPct : null,
+        // US-092 CA1/CA2
+        reorderPoint: input.reorderPoint != null ? input.reorderPoint : null,
+        safetyStock: input.safetyStock != null ? input.safetyStock : null,
+        expiryAlertDays: input.expiryAlertDays != null ? input.expiryAlertDays : null,
         compositions: input.compositions?.length
           ? {
               create: input.compositions.map((c) => ({
@@ -635,6 +657,13 @@ export async function updateProduct(
       data.germinationPct = input.germinationPct != null ? input.germinationPct : null;
     if (input.purityPct !== undefined)
       data.purityPct = input.purityPct != null ? input.purityPct : null;
+    // US-092 CA1/CA2
+    if (input.reorderPoint !== undefined)
+      data.reorderPoint = input.reorderPoint != null ? input.reorderPoint : null;
+    if (input.safetyStock !== undefined)
+      data.safetyStock = input.safetyStock != null ? input.safetyStock : null;
+    if (input.expiryAlertDays !== undefined)
+      data.expiryAlertDays = input.expiryAlertDays != null ? input.expiryAlertDays : null;
 
     // Replace compositions if provided
     if (input.compositions !== undefined) {
