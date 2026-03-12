@@ -276,6 +276,8 @@ model Organization {
   productUnitConfigs        ProductUnitConfig[]
   products                  Product[]
   manufacturers             Manufacturer[]
+  stockEntries              StockEntry[]
+  stockBalances             StockBalance[]
 
   @@map("organizations")
 }
@@ -391,6 +393,7 @@ model Farm {
   grainHarvests              GrainHarvest[]
   coffeeHarvests             CoffeeHarvest[]
   orangeHarvests             OrangeHarvest[]
+  stockEntries               StockEntry[]
 
   @@map("farms")
 }
@@ -2316,6 +2319,8 @@ model Product {
   cultivar         Cultivar?        @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
 
   compositions     ProductComposition[]
+  stockEntryItems  StockEntryItem[]
+  stockBalance     StockBalance?
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -2354,4 +2359,134 @@ model ProductComposition {
 
   @@index([productId])
   @@map("product_compositions")
+}
+
+// ─── EPIC-10 US-090: Entrada de Insumos no Estoque ─────────────────
+
+enum StockEntryStatus {
+  DRAFT
+  CONFIRMED
+  CANCELLED
+}
+
+enum ExpenseType {
+  FREIGHT
+  INSURANCE
+  UNLOADING
+  TOLL
+  TEMPORARY_STORAGE
+  PACKAGING
+  PORT_FEE
+  ICMS_ST
+  IPI
+  OTHER
+}
+
+enum ApportionmentMethod {
+  BY_VALUE
+  BY_QUANTITY
+  BY_WEIGHT
+  FIXED
+}
+
+enum StockMovementType {
+  ENTRY
+  EXIT
+  ADJUSTMENT
+}
+
+model StockEntry {
+  id                   String           @id @default(uuid())
+  organizationId       String
+  entryDate            DateTime         @default(now())
+  status               StockEntryStatus @default(DRAFT)
+  supplierName         String?
+  invoiceNumber        String?
+  invoiceFileUrl       String?
+  storageFarmId        String?
+  storageLocation      String?          // depósito/galpão
+  storageSublocation   String?          // prateleira
+  notes                String?
+  totalMerchandiseCost Decimal          @default(0) @db.Decimal(14, 2)
+  totalExpensesCost    Decimal          @default(0) @db.Decimal(14, 2)
+  totalCost            Decimal          @default(0) @db.Decimal(14, 2)
+  createdBy            String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  cancelledAt          DateTime?
+
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  storageFarm  Farm?              @relation(fields: [storageFarmId], references: [id], onDelete: SetNull)
+  items        StockEntryItem[]
+  expenses     StockEntryExpense[]
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, entryDate])
+  @@index([organizationId, supplierName])
+  @@map("stock_entries")
+}
+
+model StockEntryItem {
+  id                  String   @id @default(uuid())
+  stockEntryId        String
+  productId           String
+  quantity            Decimal  @db.Decimal(14, 4)
+  unitCost            Decimal  @db.Decimal(14, 4)
+  totalCost           Decimal  @db.Decimal(14, 2)
+  batchNumber         String?
+  manufacturingDate   DateTime?
+  expirationDate      DateTime?
+  apportionedExpenses Decimal  @default(0) @db.Decimal(14, 4)
+  finalUnitCost       Decimal  @default(0) @db.Decimal(14, 4)
+  finalTotalCost      Decimal  @default(0) @db.Decimal(14, 2)
+  weightKg            Decimal? @db.Decimal(14, 4)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  stockEntry StockEntry @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([stockEntryId])
+  @@index([productId])
+  @@map("stock_entry_items")
+}
+
+model StockEntryExpense {
+  id                  String              @id @default(uuid())
+  stockEntryId        String
+  expenseType         ExpenseType
+  description         String?
+  supplierName        String?
+  invoiceNumber       String?
+  invoiceFileUrl      String?
+  amount              Decimal             @db.Decimal(14, 2)
+  apportionmentMethod ApportionmentMethod @default(BY_VALUE)
+  isRetroactive       Boolean             @default(false)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  stockEntry StockEntry @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
+
+  @@index([stockEntryId])
+  @@map("stock_entry_expenses")
+}
+
+model StockBalance {
+  id              String    @id @default(uuid())
+  organizationId  String
+  productId       String    @unique
+  currentQuantity Decimal   @default(0) @db.Decimal(14, 4)
+  averageCost     Decimal   @default(0) @db.Decimal(14, 4)
+  totalValue      Decimal   @default(0) @db.Decimal(14, 2)
+  lastEntryDate   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([organizationId, productId])
+  @@index([organizationId])
+  @@map("stock_balances")
 }

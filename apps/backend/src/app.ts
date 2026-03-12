@@ -42,6 +42,7 @@ import { coffeeHarvestsRouter } from './modules/coffee-harvests/coffee-harvests.
 import { orangeHarvestsRouter } from './modules/orange-harvests/orange-harvests.routes';
 import { measurementUnitsRouter } from './modules/measurement-units/measurement-units.routes';
 import { productsRouter } from './modules/products/products.routes';
+import { stockEntriesRouter } from './modules/stock-entries/stock-entries.routes';
 
 const app = express();
 
@@ -91,5 +92,6 @@ app.use('/api', coffeeHarvestsRouter);
 app.use('/api', orangeHarvestsRouter);
 app.use('/api', measurementUnitsRouter);
 app.use('/api', productsRouter);
+app.use('/api', stockEntriesRouter);
 
 export { app };
