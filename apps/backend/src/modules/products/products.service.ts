@@ -1,4 +1,3 @@
-import { Decimal } from '@prisma/client/runtime/library';
 import { withRlsContext, type RlsContext } from '../../database/rls';
 import {
   ProductError,
@@ -249,7 +248,7 @@ function toItem(row: Record<string, unknown>): ProductItem {
     photoUrl: (row.photoUrl as string) ?? null,
     technicalSheetUrl: (row.technicalSheetUrl as string) ?? null,
     chargeUnit: (row.chargeUnit as string) ?? null,
-    unitCost: row.unitCost ? Number(row.unitCost as Decimal) : null,
+    unitCost: row.unitCost ? Number(row.unitCost) : null,
     typicalFrequency: (row.typicalFrequency as string) ?? null,
     requiresScheduling: (row.requiresScheduling as boolean) ?? false,
     linkedActivity: (row.linkedActivity as string) ?? null,
@@ -282,8 +281,8 @@ function toItem(row: Record<string, unknown>): ProductItem {
     cultivarName: cultivar ? (cultivar.name as string) : null,
     sieveSize: (row.sieveSize as string) ?? null,
     industrialTreatment: (row.industrialTreatment as string) ?? null,
-    germinationPct: row.germinationPct ? Number(row.germinationPct as Decimal) : null,
-    purityPct: row.purityPct ? Number(row.purityPct as Decimal) : null,
+    germinationPct: row.germinationPct ? Number(row.germinationPct) : null,
+    purityPct: row.purityPct ? Number(row.purityPct) : null,
     createdAt: (row.createdAt as Date).toISOString(),
     updatedAt: (row.updatedAt as Date).toISOString(),
   };
@@ -299,18 +298,18 @@ const PRODUCT_INCLUDE = {
 // ─── Manufacturer helper ────────────────────────────────────────────
 
 async function findOrCreateManufacturer(
-  tx: Parameters<Parameters<typeof withRlsContext>[1]> extends (tx: infer T) => unknown ? T : never,
+  tx: any,
   organizationId: string,
   name: string,
   cnpj?: string | null,
 ): Promise<string> {
-  const existing = await (tx as any).manufacturer.findFirst({
+  const existing = await tx.manufacturer.findFirst({
     where: { organizationId, name: name.trim() },
     select: { id: true },
   });
   if (existing) return existing.id;
 
-  const created = await (tx as any).manufacturer.create({
+  const created = await tx.manufacturer.create({
     data: {
       organizationId,
       name: name.trim(),
@@ -358,7 +357,7 @@ export async function createProduct(
     let manufacturerId: string | null = null;
     if (input.manufacturerName?.trim()) {
       manufacturerId = await findOrCreateManufacturer(
-        tx as any,
+        tx,
         ctx.organizationId,
         input.manufacturerName,
         input.manufacturerCnpj,
@@ -381,8 +380,7 @@ export async function createProduct(
         photoUrl: input.photoUrl?.trim() || null,
         technicalSheetUrl: input.technicalSheetUrl?.trim() || null,
         chargeUnit: input.nature === 'SERVICE' ? input.chargeUnit || null : null,
-        unitCost:
-          input.nature === 'SERVICE' && input.unitCost != null ? new Decimal(input.unitCost) : null,
+        unitCost: input.nature === 'SERVICE' && input.unitCost != null ? input.unitCost : null,
         typicalFrequency: input.nature === 'SERVICE' ? input.typicalFrequency || null : null,
         requiresScheduling:
           input.nature === 'SERVICE' ? (input.requiresScheduling ?? false) : false,
@@ -393,15 +391,15 @@ export async function createProduct(
         environmentalClass: input.environmentalClass || null,
         actionMode: input.actionMode?.trim() || null,
         chemicalGroup: input.chemicalGroup?.trim() || null,
-        withdrawalPeriods: input.withdrawalPeriods ?? undefined,
+        withdrawalPeriods: (input.withdrawalPeriods as any) ?? undefined,
         // CA9: Fertilizantes
         npkFormulation: input.npkFormulation?.trim() || null,
         nutrientForm: input.nutrientForm || null,
         solubility: input.solubility || null,
-        nutrientComposition: input.nutrientComposition ?? undefined,
+        nutrientComposition: (input.nutrientComposition as any) ?? undefined,
         // CA10: Foliares
-        nutritionalComposition: input.nutritionalComposition ?? undefined,
-        sprayCompatibility: input.sprayCompatibility ?? undefined,
+        nutritionalComposition: (input.nutritionalComposition as any) ?? undefined,
+        sprayCompatibility: (input.sprayCompatibility as any) ?? undefined,
         // CA11: Medicamentos veterinários
         therapeuticClass: input.therapeuticClass || null,
         administrationRoute: input.administrationRoute || null,
@@ -414,8 +412,8 @@ export async function createProduct(
         cultivarId: input.cultivarId || null,
         sieveSize: input.sieveSize?.trim() || null,
         industrialTreatment: input.industrialTreatment?.trim() || null,
-        germinationPct: input.germinationPct != null ? new Decimal(input.germinationPct) : null,
-        purityPct: input.purityPct != null ? new Decimal(input.purityPct) : null,
+        germinationPct: input.germinationPct != null ? input.germinationPct : null,
+        purityPct: input.purityPct != null ? input.purityPct : null,
         compositions: input.compositions?.length
           ? {
               create: input.compositions.map((c) => ({
@@ -585,7 +583,7 @@ export async function updateProduct(
       data.technicalSheetUrl = input.technicalSheetUrl?.trim() || null;
     if (input.chargeUnit !== undefined) data.chargeUnit = input.chargeUnit || null;
     if (input.unitCost !== undefined)
-      data.unitCost = input.unitCost != null ? new Decimal(input.unitCost) : null;
+      data.unitCost = input.unitCost != null ? input.unitCost : null;
     if (input.typicalFrequency !== undefined)
       data.typicalFrequency = input.typicalFrequency || null;
     if (input.requiresScheduling !== undefined) data.requiresScheduling = input.requiresScheduling;
@@ -634,9 +632,9 @@ export async function updateProduct(
     if (input.industrialTreatment !== undefined)
       data.industrialTreatment = input.industrialTreatment?.trim() || null;
     if (input.germinationPct !== undefined)
-      data.germinationPct = input.germinationPct != null ? new Decimal(input.germinationPct) : null;
+      data.germinationPct = input.germinationPct != null ? input.germinationPct : null;
     if (input.purityPct !== undefined)
-      data.purityPct = input.purityPct != null ? new Decimal(input.purityPct) : null;
+      data.purityPct = input.purityPct != null ? input.purityPct : null;
 
     // Replace compositions if provided
     if (input.compositions !== undefined) {

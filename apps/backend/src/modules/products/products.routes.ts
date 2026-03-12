@@ -102,7 +102,7 @@ productsRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const result = await getProduct(ctx, req.params.id);
+      const result = await getProduct(ctx, req.params.id as string);
       res.json(result);
     } catch (err) {
       handleError(err, res);
@@ -119,7 +119,7 @@ productsRouter.put(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const result = await updateProduct(ctx, req.params.id, req.body);
+      const result = await updateProduct(ctx, req.params.id as string, req.body);
 
       void logAudit({
         actorId: req.user!.userId,
@@ -148,7 +148,7 @@ productsRouter.delete(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      await deleteProduct(ctx, req.params.id);
+      await deleteProduct(ctx, req.params.id as string);
 
       void logAudit({
         actorId: req.user!.userId,
@@ -156,7 +156,7 @@ productsRouter.delete(
         actorRole: req.user!.role,
         action: 'DELETE_PRODUCT',
         targetType: 'product',
-        targetId: req.params.id,
+        targetId: req.params.id as string,
         metadata: {},
         ipAddress: getClientIp(req),
       });
