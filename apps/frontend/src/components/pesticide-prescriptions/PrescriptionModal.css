@@ -1,0 +1,183 @@
+/* ─── Prescription Modal ─────────────────────────────────────────── */
+
+.prescription-modal {
+  max-width: 720px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.prescription-modal .modal-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ─── Form sections ──────────────────────────────────────────────── */
+
+.prescription-modal .form-section {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 0;
+}
+
+.prescription-modal .form-section-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+  padding: 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.prescription-modal .form-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.prescription-modal .form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prescription-modal .form-group-wide {
+  flex: 2;
+}
+
+.prescription-modal .form-hint {
+  margin-top: 8px;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+
+.prescription-modal label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+}
+
+.prescription-modal input,
+.prescription-modal select,
+.prescription-modal textarea {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  padding: 10px 12px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  transition: border-color 200ms ease-out;
+}
+
+.prescription-modal input:focus,
+.prescription-modal select:focus,
+.prescription-modal textarea:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 1px;
+  border-color: var(--color-primary-500);
+}
+
+.prescription-modal textarea {
+  resize: vertical;
+  min-height: 48px;
+}
+
+/* ─── Products ───────────────────────────────────────────────────── */
+
+.product-row {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 12px;
+  background: var(--color-neutral-50);
+}
+
+.product-row-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.product-number {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+
+.product-meta {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--color-neutral-500);
+}
+
+.product-meta span {
+  background: var(--color-neutral-100);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.btn-icon-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-error-500);
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+
+.btn-icon-danger:hover {
+  background: var(--color-error-50, #fef2f2);
+}
+
+.btn-add-product {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 0.8125rem;
+}
+
+/* ─── Error ──────────────────────────────────────────────────────── */
+
+.prescription-modal .form-error {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-600, #c62828);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-error-200, #ef9a9a);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .prescription-modal .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .prescription-modal {
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+    max-height: 100vh;
+  }
+}
