@@ -43,6 +43,7 @@ const SoilPrepPage = lazy(() => import('@/pages/SoilPrepPage'));
 const CoffeeHarvestsPage = lazy(() => import('@/pages/CoffeeHarvestsPage'));
 const OrangeHarvestsPage = lazy(() => import('@/pages/OrangeHarvestsPage'));
 const MeasurementUnitsPage = lazy(() => import('@/pages/MeasurementUnitsPage'));
+const ProductsPage = lazy(() => import('@/pages/ProductsPage'));
 
 export function App() {
   return (
@@ -87,6 +88,7 @@ export function App() {
                 <Route path="/orange-harvests" element={<OrangeHarvestsPage />} />
                 <Route path="/pests" element={<PestsPage />} />
                 <Route path="/measurement-units" element={<MeasurementUnitsPage />} />
+                <Route path="/products" element={<ProductsPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}
