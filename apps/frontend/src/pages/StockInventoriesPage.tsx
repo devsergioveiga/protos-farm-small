@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   ClipboardCheck,
   Plus,
@@ -57,10 +57,31 @@ function StockInventoriesPage() {
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [confirmReconcile, setConfirmReconcile] = useState(false);
 
-  // Count form state
-  const [countData, setCountData] = useState<
+  // Count form state — derive initial values from currentInventory, track user edits separately
+  const [countEdits, setCountEdits] = useState<
     Record<string, { countedQuantity: string; reason: string }>
   >({});
+  const lastInventoryIdRef = useRef<string | null>(null);
+
+  // Reset edits when switching to a different inventory
+  if (currentInventory && currentInventory.id !== lastInventoryIdRef.current) {
+    lastInventoryIdRef.current = currentInventory.id;
+    setCountEdits({});
+  }
+
+  const countData = useMemo(() => {
+    const data: Record<string, { countedQuantity: string; reason: string }> = {};
+    if (!currentInventory) return data;
+    for (const item of currentInventory.items) {
+      data[item.id] = countEdits[item.id] ?? {
+        countedQuantity: item.countedQuantity != null ? String(item.countedQuantity) : '',
+        reason: item.reason ?? '',
+      };
+    }
+    return data;
+  }, [currentInventory, countEdits]);
+
+  const setCountData = setCountEdits;
 
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -83,21 +104,6 @@ function StockInventoriesPage() {
   useEffect(() => {
     if (tab === 'list') loadList();
   }, [tab, loadList]);
-
-  // ─── Initialize count data when entering detail ─────────────────
-
-  useEffect(() => {
-    if (currentInventory) {
-      const data: Record<string, { countedQuantity: string; reason: string }> = {};
-      for (const item of currentInventory.items) {
-        data[item.id] = {
-          countedQuantity: item.countedQuantity != null ? String(item.countedQuantity) : '',
-          reason: item.reason ?? '',
-        };
-      }
-      setCountData(data);
-    }
-  }, [currentInventory]);
 
   // ─── Handlers ──────────────────────────────────────────────────
 
