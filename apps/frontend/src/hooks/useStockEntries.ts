@@ -17,6 +17,11 @@ export interface StockEntryItem {
   finalUnitCost: number;
   finalTotalCost: number;
   weightKg: number | null;
+  // US-097: conversão compra → estoque
+  purchaseUnitAbbreviation: string | null;
+  stockQuantity: number | null;
+  stockUnitAbbreviation: string | null;
+  conversionFactor: number | null;
 }
 
 export interface StockEntryExpense {

@@ -69,18 +69,11 @@ function ConversionPreviewCard({
   }, [dose, doseUnit, sprayVolumeLPerHa, areaHa, tankCapacityL]);
 
   // CA12: Validate conversion when productId is linked
-  useEffect(() => {
-    if (!productId || !doseUnit) {
-      setValidationWarning(null);
-      return;
-    }
+  const baseUnitAbbr = productId && doseUnit ? getBaseUnit(doseUnit) : null;
+  const shouldValidate = !!(productId && doseUnit && baseUnitAbbr);
 
-    // Map doseUnit to base unit abbreviation for validation
-    const baseUnitAbbr = getBaseUnit(doseUnit);
-    if (!baseUnitAbbr) {
-      setValidationWarning(null);
-      return;
-    }
+  useEffect(() => {
+    if (!shouldValidate || !productId || !baseUnitAbbr) return;
 
     let cancelled = false;
     const qs = new URLSearchParams({
@@ -104,11 +97,14 @@ function ConversionPreviewCard({
     return () => {
       cancelled = true;
     };
-  }, [productId, doseUnit]);
+  }, [shouldValidate, productId, doseUnit, baseUnitAbbr]);
+
+  // Clear warning when validation preconditions are not met
+  const effectiveWarning = shouldValidate ? validationWarning : null;
 
   if (totalQuantity == null || totalQuantity <= 0) {
     // Even if no quantity, show validation warning if present (CA12)
-    if (validationWarning) {
+    if (effectiveWarning) {
       return (
         <div
           className="conversion-preview conversion-preview--warning"
@@ -118,7 +114,7 @@ function ConversionPreviewCard({
           <div className="conversion-preview__warning">
             <AlertTriangle size={16} aria-hidden="true" />
             <div className="conversion-preview__warning-content">
-              <span>{validationWarning}</span>
+              <span>{effectiveWarning}</span>
               <button
                 type="button"
                 className="conversion-preview__configure-link"
@@ -147,11 +143,11 @@ function ConversionPreviewCard({
 
       <div className="conversion-preview__content">
         {/* CA12: Validation warning */}
-        {validationWarning && (
+        {effectiveWarning && (
           <div className="conversion-preview__warning" role="alert">
             <AlertTriangle size={16} aria-hidden="true" />
             <div className="conversion-preview__warning-content">
-              <span>{validationWarning}</span>
+              <span>{effectiveWarning}</span>
               <button
                 type="button"
                 className="conversion-preview__configure-link"

@@ -366,7 +366,14 @@ export default function StockEntriesPage() {
                   <span className="stock-page__mono">{formatBRL(item.finalTotalCost)}</span>
                 </div>
                 <div className="stock-page__detail-item-sub">
-                  {item.quantity} un × {formatBRL(item.unitCost)}
+                  {item.quantity} {item.purchaseUnitAbbreviation || 'un'} ×{' '}
+                  {formatBRL(item.unitCost)}
+                  {item.stockQuantity != null && item.stockUnitAbbreviation && (
+                    <>
+                      {' '}
+                      → {item.stockQuantity.toLocaleString('pt-BR')} {item.stockUnitAbbreviation}
+                    </>
+                  )}
                   {item.batchNumber && <> — Lote: {item.batchNumber}</>}
                   {item.expirationDate && <> — Val: {formatDate(item.expirationDate)}</>}
                   {item.apportionedExpenses > 0 && (

@@ -32,6 +32,7 @@ export function useMonitoringTimeline(
   const [error, setError] = useState<string | null>(null);
 
   const { farmId, fieldPlotId, pestIds, startDate, endDate, aggregation } = params;
+  const pestIdsKey = pestIds?.join(',') ?? '';
 
   const fetchTimeline = useCallback(async () => {
     if (!farmId || !fieldPlotId) return;
@@ -57,7 +58,7 @@ export function useMonitoringTimeline(
     } finally {
       setIsLoading(false);
     }
-  }, [farmId, fieldPlotId, pestIds?.join(','), startDate, endDate, aggregation]);
+  }, [farmId, fieldPlotId, pestIdsKey, startDate, endDate, aggregation]);
 
   useEffect(() => {
     void fetchTimeline();

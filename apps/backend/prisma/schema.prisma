@@ -2230,6 +2230,10 @@ model MeasurementUnit {
   productConvsTo         ProductConversion[] @relation("ProductConvToUnit")
   products               Product[]
 
+  // US-097: unidades de compra/estoque em itens de entrada
+  entryItemsPurchaseUnit StockEntryItem[] @relation("EntryItemPurchaseUnit")
+  entryItemsStockUnit    StockEntryItem[] @relation("EntryItemStockUnit")
+
   @@unique([organizationId, abbreviation])
   @@index([organizationId])
   @@index([category])
@@ -2509,9 +2513,9 @@ model StockEntryItem {
   id                  String   @id @default(uuid())
   stockEntryId        String
   productId           String
-  quantity            Decimal  @db.Decimal(14, 4)
-  unitCost            Decimal  @db.Decimal(14, 4)
-  totalCost           Decimal  @db.Decimal(14, 2)
+  quantity            Decimal  @db.Decimal(14, 4) // quantidade na unidade de compra
+  unitCost            Decimal  @db.Decimal(14, 4) // custo por unidade de compra
+  totalCost           Decimal  @db.Decimal(14, 2) // quantity * unitCost
   batchNumber         String?
   manufacturingDate   DateTime?
   expirationDate      DateTime?
@@ -2519,11 +2523,20 @@ model StockEntryItem {
   finalUnitCost       Decimal  @default(0) @db.Decimal(14, 4)
   finalTotalCost      Decimal  @default(0) @db.Decimal(14, 2)
   weightKg            Decimal? @db.Decimal(14, 4)
+
+  // US-097: conversão automática compra → estoque
+  purchaseUnitId      String?  // unidade em que foi comprado (ex: tonelada)
+  stockQuantity       Decimal? @db.Decimal(14, 4) // quantidade convertida para unidade de estoque
+  stockUnitId         String?  // unidade de estoque (ex: kg)
+  conversionFactor    Decimal? @db.Decimal(20, 10) // fator usado na conversão
+
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  stockEntry StockEntry @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
-  product    Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+  stockEntry   StockEntry       @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
+  product      Product          @relation(fields: [productId], references: [id], onDelete: Restrict)
+  purchaseUnit MeasurementUnit? @relation("EntryItemPurchaseUnit", fields: [purchaseUnitId], references: [id], onDelete: SetNull)
+  stockUnit    MeasurementUnit? @relation("EntryItemStockUnit", fields: [stockUnitId], references: [id], onDelete: SetNull)
 
   @@index([stockEntryId])
   @@index([productId])

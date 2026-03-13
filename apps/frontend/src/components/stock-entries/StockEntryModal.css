@@ -108,6 +108,23 @@
   grid-template-columns: 1fr 1fr 1fr;
 }
 
+.stock-modal__row--4 {
+  grid-template-columns: 1fr 0.8fr 1fr 0.8fr;
+}
+
+/* US-097: Conversion preview */
+.stock-modal__conversion-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--color-neutral-50);
+  border-left: 3px solid var(--color-primary-600);
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+
 .stock-modal__field {
   display: flex;
   flex-direction: column;
@@ -302,7 +319,8 @@
 /* Mobile */
 @media (max-width: 640px) {
   .stock-modal__row,
-  .stock-modal__row--3 {
+  .stock-modal__row--3,
+  .stock-modal__row--4 {
     grid-template-columns: 1fr;
   }
 

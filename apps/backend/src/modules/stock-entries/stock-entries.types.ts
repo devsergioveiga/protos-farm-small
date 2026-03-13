@@ -51,6 +51,8 @@ export interface StockEntryItemInput {
   productId: string;
   quantity: number;
   unitCost: number;
+  /** Unidade de compra (abbreviation do MeasurementUnit, ex: 't', 'sc'). Opcional — se omitido, usa unidade padrão do produto */
+  purchaseUnitAbbreviation?: string;
   batchNumber?: string;
   manufacturingDate?: string;
   expirationDate?: string;
@@ -113,6 +115,11 @@ export interface StockEntryItemOutput {
   finalUnitCost: number;
   finalTotalCost: number;
   weightKg: number | null;
+  // US-097: conversão compra → estoque
+  purchaseUnitAbbreviation: string | null;
+  stockQuantity: number | null;
+  stockUnitAbbreviation: string | null;
+  conversionFactor: number | null;
 }
 
 export interface StockEntryExpenseOutput {

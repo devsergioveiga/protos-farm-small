@@ -24,6 +24,184 @@ function toNumber(val: unknown): number {
   return typeof val === 'number' ? val : Number(val);
 }
 
+function round(value: number, decimals: number): number {
+  const factor = Math.pow(10, decimals);
+  return Math.round(value * factor) / factor;
+}
+
+// ─── US-097: Purchase → Stock Unit Conversion ────────────────────────
+
+interface PurchaseConversionResult {
+  purchaseUnitId: string | null;
+  stockQuantity: number | null;
+  stockUnitId: string | null;
+  conversionFactor: number | null;
+  /** Quantity to use for StockBalance (stockQuantity if converted, else original quantity) */
+  balanceQuantity: number;
+}
+
+/**
+ * Converts a purchase quantity to stock unit using product configuration.
+ * If no conversion is needed (same unit or no config), returns original quantity.
+ */
+async function convertPurchaseToStock(
+  tx: TxClient,
+  organizationId: string,
+  productId: string,
+  purchaseQuantity: number,
+  purchaseUnitAbbrev: string | undefined,
+): Promise<PurchaseConversionResult> {
+  // Look up product's unit config
+  const config = await (tx as any).productUnitConfig.findFirst({
+    where: { organizationId, productId },
+    include: {
+      purchaseUnit: { select: { id: true, abbreviation: true, category: true } },
+      stockUnit: { select: { id: true, abbreviation: true, category: true } },
+      productConversions: {
+        include: {
+          fromUnit: { select: { id: true, abbreviation: true, category: true } },
+          toUnit: { select: { id: true, abbreviation: true, category: true } },
+        },
+      },
+    },
+  });
+
+  // No config → no conversion
+  if (!config?.stockUnit) {
+    return {
+      purchaseUnitId: null,
+      stockQuantity: null,
+      stockUnitId: null,
+      conversionFactor: null,
+      balanceQuantity: purchaseQuantity,
+    };
+  }
+
+  // Determine the purchase unit — from input or from config
+  const purchaseAbbrev = purchaseUnitAbbrev || config.purchaseUnit?.abbreviation;
+  const stockAbbrev = config.stockUnit.abbreviation as string;
+
+  // If no purchase unit or same as stock → no conversion needed
+  if (!purchaseAbbrev || purchaseAbbrev === stockAbbrev) {
+    // Still store the units for clarity
+    const purchaseUnit = purchaseAbbrev
+      ? await (tx as any).measurementUnit.findFirst({
+          where: { organizationId, abbreviation: purchaseAbbrev, isActive: true },
+          select: { id: true },
+        })
+      : null;
+    return {
+      purchaseUnitId: purchaseUnit?.id ?? config.purchaseUnit?.id ?? null,
+      stockQuantity: null,
+      stockUnitId: config.stockUnit.id,
+      conversionFactor: null,
+      balanceQuantity: purchaseQuantity,
+    };
+  }
+
+  // Find the purchase unit's MeasurementUnit ID
+  const purchaseUnit = await (tx as any).measurementUnit.findFirst({
+    where: { organizationId, abbreviation: purchaseAbbrev, isActive: true },
+    select: { id: true, abbreviation: true, category: true },
+  });
+
+  if (!purchaseUnit) {
+    // Purchase unit not found → no conversion
+    return {
+      purchaseUnitId: null,
+      stockQuantity: null,
+      stockUnitId: config.stockUnit.id,
+      conversionFactor: null,
+      balanceQuantity: purchaseQuantity,
+    };
+  }
+
+  const stockUnitId = config.stockUnit.id as string;
+  const purchaseUnitId = purchaseUnit.id as string;
+
+  // Try product-specific conversion
+  const productConversion = config.productConversions?.find(
+    (pc: any) => pc.fromUnitId === purchaseUnitId && pc.toUnitId === stockUnitId,
+  );
+  if (productConversion) {
+    const factor = toNumber(productConversion.factor);
+    return {
+      purchaseUnitId,
+      stockQuantity: round(purchaseQuantity * factor, 4),
+      stockUnitId,
+      conversionFactor: factor,
+      balanceQuantity: round(purchaseQuantity * factor, 4),
+    };
+  }
+
+  // Try density-based conversion
+  if (config.densityGPerMl) {
+    const density = toNumber(config.densityGPerMl);
+    const fromCat = purchaseUnit.category as string;
+    const toCat = config.stockUnit.category as string;
+
+    if (
+      (fromCat === 'WEIGHT' && toCat === 'VOLUME') ||
+      (fromCat === 'VOLUME' && toCat === 'WEIGHT')
+    ) {
+      const factor = fromCat === 'WEIGHT' ? 1 / density : density;
+      return {
+        purchaseUnitId,
+        stockQuantity: round(purchaseQuantity * factor, 4),
+        stockUnitId,
+        conversionFactor: factor,
+        balanceQuantity: round(purchaseQuantity * factor, 4),
+      };
+    }
+  }
+
+  // Try global direct conversion
+  const directConversion = await (tx as any).unitConversion.findFirst({
+    where: { organizationId, fromUnitId: purchaseUnitId, toUnitId: stockUnitId, isActive: true },
+  });
+  if (directConversion) {
+    const factor = toNumber(directConversion.factor);
+    return {
+      purchaseUnitId,
+      stockQuantity: round(purchaseQuantity * factor, 4),
+      stockUnitId,
+      conversionFactor: factor,
+      balanceQuantity: round(purchaseQuantity * factor, 4),
+    };
+  }
+
+  // Try 2-hop conversion
+  const fromConversions = await (tx as any).unitConversion.findMany({
+    where: { organizationId, fromUnitId: purchaseUnitId, isActive: true },
+    select: { toUnitId: true, factor: true },
+  });
+  for (const first of fromConversions) {
+    const second = await (tx as any).unitConversion.findFirst({
+      where: { organizationId, fromUnitId: first.toUnitId, toUnitId: stockUnitId, isActive: true },
+      select: { factor: true },
+    });
+    if (second) {
+      const factor = toNumber(first.factor) * toNumber(second.factor);
+      return {
+        purchaseUnitId,
+        stockQuantity: round(purchaseQuantity * factor, 4),
+        stockUnitId,
+        conversionFactor: factor,
+        balanceQuantity: round(purchaseQuantity * factor, 4),
+      };
+    }
+  }
+
+  // No conversion path found → use purchase quantity as-is
+  return {
+    purchaseUnitId,
+    stockQuantity: null,
+    stockUnitId: config.stockUnit.id,
+    conversionFactor: null,
+    balanceQuantity: purchaseQuantity,
+  };
+}
+
 function validateItems(items: CreateStockEntryInput['items']): void {
   if (!items || items.length === 0) {
     throw new StockEntryError('Pelo menos um item é obrigatório', 400);
@@ -250,6 +428,11 @@ function formatItem(item: any): StockEntryItemOutput {
     finalUnitCost: toNumber(item.finalUnitCost),
     finalTotalCost: toNumber(item.finalTotalCost),
     weightKg: item.weightKg != null ? toNumber(item.weightKg) : null,
+    // US-097
+    purchaseUnitAbbreviation: item.purchaseUnit?.abbreviation ?? null,
+    stockQuantity: item.stockQuantity != null ? toNumber(item.stockQuantity) : null,
+    stockUnitAbbreviation: item.stockUnit?.abbreviation ?? null,
+    conversionFactor: item.conversionFactor != null ? toNumber(item.conversionFactor) : null,
   };
 }
 
@@ -294,7 +477,11 @@ function formatEntry(entry: any): StockEntryOutput {
 
 const entryInclude = {
   items: {
-    include: { product: { select: { name: true } } },
+    include: {
+      product: { select: { name: true } },
+      purchaseUnit: { select: { abbreviation: true } },
+      stockUnit: { select: { abbreviation: true } },
+    },
     orderBy: { createdAt: 'asc' as const },
   },
   expenses: { orderBy: { createdAt: 'asc' as const } },
@@ -349,6 +536,19 @@ export async function createStockEntry(
     // Check cost divergence alerts (CA9)
     const costAlerts = await checkCostDivergence(tx, ctx.organizationId, input.items);
 
+    // US-097: Convert purchase quantities to stock quantities
+    const conversions = await Promise.all(
+      input.items.map((item) =>
+        convertPurchaseToStock(
+          tx,
+          ctx.organizationId,
+          item.productId,
+          item.quantity,
+          item.purchaseUnitAbbreviation,
+        ),
+      ),
+    );
+
     // Calculate item totals
     const itemsWithTotals = input.items.map((item) => ({
       ...item,
@@ -396,6 +596,7 @@ export async function createStockEntry(
             const apportioned = apportionments[idx];
             const finalTotal = item.totalCost + apportioned;
             const finalUnit = item.quantity > 0 ? finalTotal / item.quantity : 0;
+            const conv = conversions[idx];
             return {
               productId: item.productId,
               quantity: item.quantity,
@@ -408,6 +609,11 @@ export async function createStockEntry(
               apportionedExpenses: apportioned,
               finalUnitCost: finalUnit,
               finalTotalCost: finalTotal,
+              // US-097: unit conversion fields
+              purchaseUnitId: conv.purchaseUnitId,
+              stockQuantity: conv.stockQuantity,
+              stockUnitId: conv.stockUnitId,
+              conversionFactor: conv.conversionFactor,
             };
           }),
         },
@@ -428,13 +634,13 @@ export async function createStockEntry(
       include: entryInclude,
     });
 
-    // Update stock balances (CA5)
+    // Update stock balances (CA5) — use converted quantity for balance
     await updateStockBalances(
       tx,
       ctx.organizationId,
       itemsWithTotals.map((item, idx) => ({
         productId: item.productId,
-        quantity: item.quantity,
+        quantity: conversions[idx].balanceQuantity,
         finalTotalCost: item.totalCost + apportionments[idx],
       })),
       entryDate,
@@ -465,10 +671,10 @@ export async function addRetroactiveExpense(
       throw new StockEntryError('Não é possível adicionar despesa a uma entrada cancelada', 400);
     }
 
-    // Revert previous stock balances for this entry
+    // Revert previous stock balances for this entry (use stockQuantity if converted)
     const prevItems = entry.items.map((i: any) => ({
       productId: i.productId,
-      quantity: toNumber(i.quantity),
+      quantity: i.stockQuantity != null ? toNumber(i.stockQuantity) : toNumber(i.quantity),
       finalTotalCost: toNumber(i.finalTotalCost),
     }));
     await revertStockBalances(tx, ctx.organizationId, prevItems);
@@ -537,10 +743,10 @@ export async function addRetroactiveExpense(
       },
     });
 
-    // Recalculate stock balances
+    // Recalculate stock balances (use stockQuantity if converted)
     const newItems = entry.items.map((item: any, idx: number) => ({
       productId: item.productId,
-      quantity: toNumber(item.quantity),
+      quantity: item.stockQuantity != null ? toNumber(item.stockQuantity) : toNumber(item.quantity),
       finalTotalCost: toNumber(item.totalCost) + apportionments[idx],
     }));
     await updateStockBalances(tx, ctx.organizationId, newItems, entry.entryDate);
@@ -632,10 +838,10 @@ export async function cancelStockEntry(ctx: RlsContext, id: string): Promise<Sto
       throw new StockEntryError('Entrada já está cancelada', 400);
     }
 
-    // Revert stock balances
+    // Revert stock balances — use stockQuantity if conversion was applied
     const items = entry.items.map((i: any) => ({
       productId: i.productId,
-      quantity: toNumber(i.quantity),
+      quantity: i.stockQuantity != null ? toNumber(i.stockQuantity) : toNumber(i.quantity),
       finalTotalCost: toNumber(i.finalTotalCost),
     }));
     await revertStockBalances(tx, ctx.organizationId, items);
