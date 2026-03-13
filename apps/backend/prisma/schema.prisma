@@ -2373,9 +2373,9 @@ model Product {
   storageCondition     String?   // ambiente, refrigerado_2_8, congelado
 
   // ── US-092 CA1/CA2: Alertas de estoque ──
-  reorderPoint       Decimal?  @db.Decimal(14, 4) // ponto de reposição (quantidade mínima)
-  safetyStock        Decimal?  @db.Decimal(14, 4) // estoque de segurança (quantidade ideal)
-  expiryAlertDays    Int?      // dias antes do vencimento para alertar (padrão: 30)
+  reorderPoint       Decimal?  @map("reorder_point") @db.Decimal(14, 4) // ponto de reposição (quantidade mínima)
+  safetyStock        Decimal?  @map("safety_stock") @db.Decimal(14, 4) // estoque de segurança (quantidade ideal)
+  expiryAlertDays    Int?      @map("expiry_alert_days") // dias antes do vencimento para alertar (padrão: 30)
 
   // ── CA12: Sementes ──
   cultivarId           String?   // FK para Cultivar
