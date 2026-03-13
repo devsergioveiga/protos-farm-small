@@ -11,8 +11,10 @@ import {
 import {
   createConsumptionOutput,
   cancelConsumptionOutput,
+  doseToAbsoluteQuantity,
   type StockDeductionItem,
 } from '../stock-deduction/stock-deduction';
+import { convertToStockUnit } from '../stock-deduction/unit-conversion-bridge';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -106,7 +108,9 @@ function autoCalculateInputTotals(
 ): SoilPrepInputItem[] {
   return inputs.map((inp) => ({
     ...inp,
-    totalQuantity: inp.totalQuantity ?? Math.round(inp.dose * areaHa * 100) / 100,
+    totalQuantity:
+      inp.totalQuantity ??
+      Math.round(doseToAbsoluteQuantity(inp.dose, inp.doseUnit ?? 'KG_HA', areaHa) * 10000) / 10000,
   }));
 }
 
@@ -231,13 +235,23 @@ export async function createSoilPrepOperation(
       data.id = input.id;
     }
 
-    // Stock deduction (CA4) — deduct inputs that have productId
-    const deductionItems: StockDeductionItem[] = processedInputs
-      .filter((inp) => inp.productId && inp.totalQuantity && inp.totalQuantity > 0)
-      .map((inp) => ({
-        productId: inp.productId!,
-        quantity: inp.totalQuantity!,
-      }));
+    // Stock deduction (CA4 + US-096) — deduct inputs that have productId
+    // Convert quantities to stock units using product-specific conversions
+    const deductionItems: StockDeductionItem[] = [];
+    for (const inp of processedInputs) {
+      if (!inp.productId || !inp.totalQuantity || inp.totalQuantity <= 0) continue;
+      const conversion = await convertToStockUnit(
+        tx,
+        ctx.organizationId,
+        inp.productId,
+        inp.totalQuantity,
+        inp.doseUnit ?? 'KG_HA',
+      );
+      deductionItems.push({
+        productId: inp.productId,
+        quantity: Math.round(conversion.stockQuantity * 10000) / 10000,
+      });
+    }
 
     if (deductionItems.length > 0) {
       const deduction = await createConsumptionOutput(tx, {

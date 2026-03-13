@@ -79,6 +79,9 @@ export interface CreatePlantingInput {
   photoUrl?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  // Stock deduction (US-096 CA3)
+  seedProductId?: string | null;
+  totalSeedQuantityUsed?: number | null;
 }
 
 // ─── Response Types ─────────────────────────────────────────────────
@@ -121,4 +124,8 @@ export interface PlantingItem {
   recorderName: string;
   createdAt: string;
   updatedAt: string;
+  // Stock deduction (US-096 CA3)
+  seedProductId: string | null;
+  stockOutputId: string | null;
+  totalSeedQuantityUsed: number | null;
 }

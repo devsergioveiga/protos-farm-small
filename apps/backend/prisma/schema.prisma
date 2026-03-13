@@ -1976,6 +1976,11 @@ model PlantingOperation {
   treatmentCost       Decimal?  @db.Decimal(12, 2)
   operationCost       Decimal?  @db.Decimal(12, 2)
 
+  // Stock deduction (US-096 CA3)
+  seedProductId           String?   @map("seed_product_id")
+  stockOutputId           String?   @map("stock_output_id")
+  totalSeedQuantityUsed   Decimal?  @map("total_seed_quantity_used") @db.Decimal(14, 4)
+
   // common
   notes               String?
   photoUrl            String?
@@ -1991,12 +1996,16 @@ model PlantingOperation {
   cultivar      Cultivar?      @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
   operationType OperationType? @relation(fields: [operationTypeId], references: [id], onDelete: SetNull)
   recorder      User           @relation("PlantingRecorder", fields: [recordedBy], references: [id])
+  seedProduct   Product?       @relation("PlantingSeedProduct", fields: [seedProductId], references: [id], onDelete: SetNull)
+  stockOutput   StockOutput?   @relation("PlantingStockOutput", fields: [stockOutputId], references: [id], onDelete: SetNull)
 
   @@index([farmId])
   @@index([fieldPlotId])
   @@index([cultivarId])
   @@index([plantingDate])
   @@index([operationTypeId])
+  @@index([seedProductId])
+  @@index([stockOutputId])
   @@map("planting_operations")
 }
 
@@ -2389,6 +2398,7 @@ model Product {
   prescriptionProducts PesticidePrescriptionProduct[]
   pesticideApplications  PesticideApplication[]  @relation("PesticideProduct")
   fertilizerApplications FertilizerApplication[] @relation("FertilizerProduct")
+  plantingOperations     PlantingOperation[]     @relation("PlantingSeedProduct")
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -2619,6 +2629,7 @@ model StockOutput {
   pesticideApplications  PesticideApplication[]  @relation("PesticideStockOutput")
   fertilizerApplications FertilizerApplication[] @relation("FertilizerStockOutput")
   soilPrepOperations     SoilPrepOperation[]     @relation("SoilPrepStockOutput")
+  plantingOperations     PlantingOperation[]     @relation("PlantingStockOutput")
 
   @@index([organizationId])
   @@index([organizationId, type])

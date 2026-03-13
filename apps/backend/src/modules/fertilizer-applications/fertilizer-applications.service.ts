@@ -12,6 +12,7 @@ import {
   cancelConsumptionOutput,
   doseToAbsoluteQuantity,
 } from '../stock-deduction/stock-deduction';
+import { convertToStockUnit } from '../stock-deduction/unit-conversion-bridge';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -111,17 +112,28 @@ export async function createFertilizerApplication(
       throw new FertilizerApplicationError('Talhão não encontrado nesta fazenda', 404);
     }
 
-    // Calculate total quantity for stock deduction
+    // Calculate total quantity for stock deduction (US-096 CA2)
     const doseUnit = input.doseUnit ?? 'KG_HA';
     const areaHa = input.areaAppliedHa ?? Number(plot.boundaryAreaHa);
-    const totalQuantityUsed =
-      input.totalQuantityUsed ??
-      (input.productId
-        ? Math.round(
-            doseToAbsoluteQuantity(input.dose, doseUnit, areaHa, input.plantsPerHa ?? undefined) *
-              10000,
-          ) / 10000
-        : null);
+    let totalQuantityUsed: number | null = input.totalQuantityUsed ?? null;
+
+    if (totalQuantityUsed == null && input.productId) {
+      const baseQuantity = doseToAbsoluteQuantity(
+        input.dose,
+        doseUnit,
+        areaHa,
+        input.plantsPerHa ?? undefined,
+      );
+      // US-096 CA2: Convert to product's configured stock unit
+      const conversion = await convertToStockUnit(
+        tx,
+        ctx.organizationId,
+        input.productId,
+        baseQuantity,
+        doseUnit,
+      );
+      totalQuantityUsed = Math.round(conversion.stockQuantity * 10000) / 10000;
+    }
 
     const data: Record<string, unknown> = {
       farmId,
