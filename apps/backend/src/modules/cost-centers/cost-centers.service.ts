@@ -66,7 +66,7 @@ export async function listCostCenters(
     if (options.activeOnly) where.isActive = true;
 
     const rows = await tx.costCenter.findMany({
-      where: where as Parameters<typeof tx.costCenter.findMany>[0]['where'],
+      where: where as NonNullable<Parameters<typeof tx.costCenter.findMany>[0]>['where'],
       orderBy: { code: 'asc' },
       include: { _count: { select: { fieldTeams: true } } },
     });
