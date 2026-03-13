@@ -50,6 +50,7 @@ import { pesticidePrescriptionsRouter } from './modules/pesticide-prescriptions/
 import { conversionHistoryRouter } from './modules/conversion-history/conversion-history.routes';
 import { costCentersRouter } from './modules/cost-centers/cost-centers.routes';
 import { harvestConversionRouter } from './modules/harvest-commercial-conversion/harvest-commercial-conversion.routes';
+import { grainDiscountsRouter } from './modules/grain-discounts/grain-discounts.routes';
 
 const app = express();
 
@@ -107,5 +108,6 @@ app.use('/api', pesticidePrescriptionsRouter);
 app.use('/api', conversionHistoryRouter);
 app.use('/api', costCentersRouter);
 app.use('/api', harvestConversionRouter);
+app.use('/api', grainDiscountsRouter);
 
 export { app };

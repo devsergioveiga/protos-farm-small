@@ -50,6 +50,7 @@ const StockOutputsPage = lazy(() => import('@/pages/StockOutputsPage'));
 const StockAlertsPage = lazy(() => import('@/pages/StockAlertsPage'));
 const StockInventoriesPage = lazy(() => import('@/pages/StockInventoriesPage'));
 const ConversionHistoryPage = lazy(() => import('@/pages/ConversionHistoryPage'));
+const GrainDiscountsPage = lazy(() => import('@/pages/GrainDiscountsPage'));
 
 export function App() {
   return (
@@ -101,6 +102,7 @@ export function App() {
                 <Route path="/stock-alerts" element={<StockAlertsPage />} />
                 <Route path="/stock-inventories" element={<StockInventoriesPage />} />
                 <Route path="/conversion-history" element={<ConversionHistoryPage />} />
+                <Route path="/grain-discounts" element={<GrainDiscountsPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}

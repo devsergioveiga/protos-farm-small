@@ -216,7 +216,8 @@ function OrangeHarvestsPage() {
                   {h.commercialUnits && (
                     <span>
                       {' '}
-                      · {h.commercialUnits.t.toLocaleString('pt-BR', {
+                      ·{' '}
+                      {h.commercialUnits.t.toLocaleString('pt-BR', {
                         maximumFractionDigits: 4,
                       })}{' '}
                       t

@@ -1,0 +1,589 @@
+/* ─── Grain Discounts Page ────────────────────────────────────────── */
+
+.grain-discounts-page {
+  padding: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.grain-discounts-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.grain-discounts-page__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--color-neutral-800);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ─── Tabs ───────────────────────────────────────────────────────── */
+
+.grain-discounts-page__tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--color-neutral-200);
+  margin-bottom: 24px;
+}
+
+.grain-discounts-page__tab {
+  padding: 12px 20px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition:
+    color 200ms ease-out,
+    border-color 200ms ease-out;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.grain-discounts-page__tab:hover {
+  color: var(--color-neutral-700);
+}
+
+.grain-discounts-page__tab--active {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+
+/* ─── Toolbar ────────────────────────────────────────────────────── */
+
+.grain-discounts__toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.grain-discounts__search-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 360px;
+}
+
+.grain-discounts__search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-neutral-400);
+  pointer-events: none;
+}
+
+.grain-discounts__search {
+  width: 100%;
+  padding: 10px 12px 10px 40px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  transition: border-color 200ms ease-out;
+}
+
+.grain-discounts__search:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.15);
+}
+
+.grain-discounts__select {
+  padding: 10px 12px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  cursor: pointer;
+  min-width: 160px;
+}
+
+.grain-discounts__btn-primary {
+  padding: 12px 20px;
+  background: var(--color-primary-600);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 200ms ease-out;
+  white-space: nowrap;
+}
+
+.grain-discounts__btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+}
+
+.grain-discounts__btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Table ──────────────────────────────────────────────────────── */
+
+.grain-discounts__table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+}
+
+.grain-discounts__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+}
+
+.grain-discounts__table th {
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--color-neutral-50);
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  border-bottom: 1px solid var(--color-neutral-200);
+  white-space: nowrap;
+}
+
+.grain-discounts__table td {
+  padding: 12px 16px;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.grain-discounts__table tr:last-child td {
+  border-bottom: none;
+}
+
+.grain-discounts__mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.grain-discounts__mono--negative {
+  color: var(--color-error-500, #c62828);
+  font-weight: 600;
+}
+
+/* ─── Actions ────────────────────────────────────────────────────── */
+
+.grain-discounts__actions {
+  display: flex;
+  gap: 4px;
+}
+
+.grain-discounts__action-btn {
+  background: none;
+  border: none;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
+  transition: background 200ms ease-out;
+}
+
+.grain-discounts__action-btn:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.grain-discounts__action-btn--danger:hover {
+  background: var(--color-error-100, #fbe9e7);
+  color: var(--color-error-600, #c62828);
+}
+
+/* ─── Grade badges ───────────────────────────────────────────────── */
+
+.grain-discounts__grade-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.grain-discounts__grade-badge--TIPO_1 {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.grain-discounts__grade-badge--TIPO_2 {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.grain-discounts__grade-badge--TIPO_3 {
+  background: #fce4ec;
+  color: #c62828;
+}
+
+.grain-discounts__grade-badge--FORA_DE_TIPO {
+  background: var(--color-error-100, #fbe9e7);
+  color: var(--color-error-600, #c62828);
+  font-weight: 700;
+}
+
+/* ─── Defaults section ───────────────────────────────────────────── */
+
+.grain-discounts__defaults {
+  margin-top: 32px;
+}
+
+.grain-discounts__defaults-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-neutral-600);
+  margin: 0 0 16px;
+}
+
+.grain-discounts__defaults-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.grain-discounts__default-card {
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grain-discounts__default-crop {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-800);
+}
+
+.grain-discounts__default-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.grain-discounts__default-type {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+
+.grain-discounts__default-value {
+  font-size: 0.75rem;
+  color: var(--color-neutral-600);
+}
+
+/* ─── Calculator ─────────────────────────────────────────────────── */
+
+.grain-discounts__calculator {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.grain-discounts__calc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 640px;
+}
+
+.grain-discounts__calc-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.grain-discounts__calc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.grain-discounts__calc-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.grain-discounts__calc-input {
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  transition: border-color 200ms ease-out;
+}
+
+.grain-discounts__calc-input:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.15);
+}
+
+/* ─── Breakdown ──────────────────────────────────────────────────── */
+
+.grain-discounts__breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.grain-discounts__breakdown-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.grain-discounts__breakdown-card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.grain-discounts__breakdown-card--discount {
+  border-left: 4px solid var(--color-error-500, #c62828);
+}
+
+.grain-discounts__breakdown-card--net {
+  border-left: 4px solid var(--color-primary-600);
+}
+
+.grain-discounts__breakdown-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.grain-discounts__breakdown-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+}
+
+/* ─── Warnings ───────────────────────────────────────────────────── */
+
+.grain-discounts__warnings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grain-discounts__warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #fff3e0;
+  color: #e65100;
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* ─── Empty / Error / Loading ────────────────────────────────────── */
+
+.grain-discounts__empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--color-neutral-500);
+}
+
+.grain-discounts__empty-icon {
+  color: var(--color-neutral-300);
+  margin-bottom: 12px;
+}
+
+.grain-discounts__empty-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-neutral-700);
+  margin: 0 0 8px;
+}
+
+.grain-discounts__empty-desc {
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+.grain-discounts__error {
+  background: var(--color-error-100, #fbe9e7);
+  color: var(--color-error-600, #c62828);
+  padding: 12px 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+}
+
+.grain-discounts__loading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grain-discounts__skeleton {
+  animation: grain-skeleton-pulse 1.5s ease-in-out infinite;
+  background: var(--color-neutral-100);
+  border-radius: 6px;
+  height: 48px;
+}
+
+@keyframes grain-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ─── Checkbox label (for future filters) ────────────────────────── */
+
+.grain-discounts__checkbox-label {
+  display: flex;
+  align-items: center;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  min-height: 48px;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .grain-discounts-page {
+    padding: 16px;
+  }
+
+  .grain-discounts__toolbar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .grain-discounts__search-wrapper {
+    max-width: none;
+  }
+
+  .grain-discounts__select {
+    width: 100%;
+  }
+
+  .grain-discounts__btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .grain-discounts__calc-row {
+    grid-template-columns: 1fr;
+  }
+
+  .grain-discounts__breakdown-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Card view for tables on mobile */
+  .grain-discounts__table-wrapper {
+    border: none;
+    background: none;
+  }
+
+  .grain-discounts__table thead {
+    display: none;
+  }
+
+  .grain-discounts__table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .grain-discounts__table tr {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-neutral-0);
+    border: 1px solid var(--color-neutral-200);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .grain-discounts__table td {
+    padding: 4px 0;
+    border-bottom: none;
+  }
+
+  .grain-discounts__table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--color-neutral-500);
+    font-size: 0.8125rem;
+    display: block;
+    margin-bottom: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grain-discounts__breakdown-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .grain-discounts__defaults-grid {
+    grid-template-columns: 1fr;
+  }
+}
