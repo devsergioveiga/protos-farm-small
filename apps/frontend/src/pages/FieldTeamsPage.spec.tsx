@@ -41,6 +41,9 @@ const MOCK_TEAMS: FieldTeamItem[] = [
         leftAt: null,
       },
     ],
+    costCenterId: null,
+    costCenterName: null,
+    costCenterCode: null,
     createdBy: 'user-1',
     creatorName: 'João Silva',
     createdAt: '2026-03-01T10:00:00.000Z',
@@ -56,6 +59,9 @@ const MOCK_TEAMS: FieldTeamItem[] = [
     leaderId: 'user-5',
     leaderName: 'Carlos Souza',
     notes: null,
+    costCenterId: null,
+    costCenterName: null,
+    costCenterCode: null,
     memberCount: 1,
     members: [
       {

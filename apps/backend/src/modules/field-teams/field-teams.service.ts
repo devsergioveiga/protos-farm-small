@@ -11,6 +11,7 @@ import {
 const INCLUDE_RELATIONS = {
   leader: { select: { name: true } },
   creator: { select: { name: true } },
+  costCenter: { select: { id: true, code: true, name: true } },
   members: {
     where: { leftAt: null },
     include: { user: { select: { name: true, email: true } } },
@@ -33,6 +34,7 @@ function toMemberItem(row: Record<string, unknown>): FieldTeamMemberItem {
 function toItem(row: Record<string, unknown>): FieldTeamItem {
   const leader = row.leader as { name: string } | undefined;
   const creator = row.creator as { name: string } | undefined;
+  const costCenter = row.costCenter as { id: string; code: string; name: string } | null;
   const members = (row.members as Record<string, unknown>[]) ?? [];
   const teamType = row.teamType as string;
   return {
@@ -44,6 +46,9 @@ function toItem(row: Record<string, unknown>): FieldTeamItem {
     isTemporary: row.isTemporary as boolean,
     leaderId: row.leaderId as string,
     leaderName: leader?.name ?? '',
+    costCenterId: costCenter?.id ?? null,
+    costCenterName: costCenter?.name ?? null,
+    costCenterCode: costCenter?.code ?? null,
     notes: (row.notes as string) ?? null,
     memberCount: members.length,
     members: members.map((m) => toMemberItem(m)),
@@ -87,6 +92,14 @@ export async function createFieldTeam(
     });
     if (!leader) throw new FieldTeamError('Responsável não encontrado', 404);
 
+    if (input.costCenterId) {
+      const cc = await tx.costCenter.findFirst({
+        where: { id: input.costCenterId, farmId, isActive: true },
+        select: { id: true },
+      });
+      if (!cc) throw new FieldTeamError('Centro de custo não encontrado ou inativo', 404);
+    }
+
     const team = await tx.fieldTeam.create({
       data: {
         farmId,
@@ -94,6 +107,7 @@ export async function createFieldTeam(
         teamType: input.teamType as Parameters<typeof tx.fieldTeam.create>[0]['data']['teamType'],
         isTemporary: input.isTemporary ?? false,
         leaderId: input.leaderId,
+        costCenterId: input.costCenterId ?? null,
         notes: input.notes?.trim() ?? null,
         createdBy: userId,
       },
@@ -200,11 +214,20 @@ export async function updateFieldTeam(
       if (!leader) throw new FieldTeamError('Responsável não encontrado', 404);
     }
 
+    if (input.costCenterId) {
+      const cc = await tx.costCenter.findFirst({
+        where: { id: input.costCenterId, farmId, isActive: true },
+        select: { id: true },
+      });
+      if (!cc) throw new FieldTeamError('Centro de custo não encontrado ou inativo', 404);
+    }
+
     const data: Record<string, unknown> = {};
     if (input.name) data.name = input.name.trim();
     if (input.teamType) data.teamType = input.teamType;
     if (input.isTemporary !== undefined) data.isTemporary = input.isTemporary;
     if (input.leaderId) data.leaderId = input.leaderId;
+    if (input.costCenterId !== undefined) data.costCenterId = input.costCenterId ?? null;
     if (input.notes !== undefined) data.notes = input.notes?.trim() ?? null;
 
     await tx.fieldTeam.update({

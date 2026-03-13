@@ -403,6 +403,7 @@ model Farm {
   stockOutputsAsDestination  StockOutput[] @relation("DestinationFarmOutputs")
   stockInventories           StockInventory[]
   pesticidePrescriptions     PesticidePrescription[]
+  costCenters                CostCenter[]
 
   @@map("farms")
 }
@@ -1317,9 +1318,9 @@ model PesticideApplication {
   updatedAt         DateTime        @updatedAt
 
   // Stock deduction (CA8)
-  productId         String?
-  stockOutputId     String?
-  totalQuantityUsed Decimal?        @db.Decimal(14, 4)
+  productId         String?  @map("product_id")
+  stockOutputId     String?  @map("stock_output_id")
+  totalQuantityUsed Decimal? @map("total_quantity_used") @db.Decimal(14, 4)
 
   farm        Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
   fieldPlot   FieldPlot    @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
@@ -1381,9 +1382,9 @@ model FertilizerApplication {
   updatedAt         DateTime                  @updatedAt
 
   // Stock deduction
-  productId         String?
-  stockOutputId     String?
-  totalQuantityUsed Decimal?                  @db.Decimal(14, 4)
+  productId         String?  @map("product_id")
+  stockOutputId     String?  @map("stock_output_id")
+  totalQuantityUsed Decimal? @map("total_quantity_used") @db.Decimal(14, 4)
 
   farm        Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
   fieldPlot   FieldPlot    @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
@@ -1508,7 +1509,7 @@ model SoilPrepOperation {
   updatedAt           DateTime  @updatedAt
 
   // Stock deduction (CA4)
-  stockOutputId       String?
+  stockOutputId       String?  @map("stock_output_id")
 
   farm          Farm           @relation(fields: [farmId], references: [id], onDelete: Cascade)
   fieldPlot     FieldPlot      @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
@@ -1538,28 +1539,51 @@ enum FieldTeamType {
   GENERICA
 }
 
-model FieldTeam {
-  id          String        @id @default(uuid())
-  farmId      String
-  name        String
-  teamType    FieldTeamType
-  isTemporary Boolean       @default(false)
-  leaderId    String
-  notes       String?
-  createdBy   String
-  deletedAt   DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+// ─── Cost Centers (US-041 CA8) ────────────────────────────────────────────
 
-  farm    Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  leader  User            @relation("TeamLeader", fields: [leaderId], references: [id])
-  creator User            @relation("TeamCreator", fields: [createdBy], references: [id])
+model CostCenter {
+  id             String    @id @default(uuid())
+  farmId         String
+  code           String
+  name           String
+  description    String?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  farm       Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldTeams FieldTeam[]
+
+  @@unique([farmId, code])
+  @@index([farmId])
+  @@map("cost_centers")
+}
+
+model FieldTeam {
+  id           String        @id @default(uuid())
+  farmId       String
+  name         String
+  teamType     FieldTeamType
+  isTemporary  Boolean       @default(false)
+  leaderId     String
+  costCenterId String?
+  notes        String?
+  createdBy    String
+  deletedAt    DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  farm       Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  leader     User            @relation("TeamLeader", fields: [leaderId], references: [id])
+  creator    User            @relation("TeamCreator", fields: [createdBy], references: [id])
+  costCenter CostCenter?     @relation(fields: [costCenterId], references: [id])
   members        FieldTeamMember[]
   teamOperations TeamOperation[]
 
   @@index([farmId])
   @@index([leaderId])
   @@index([teamType])
+  @@index([costCenterId])
   @@map("field_teams")
 }
 

@@ -141,7 +141,7 @@ async function queryPesticideConversions(
     where,
     include: {
       farm: { select: { name: true } },
-      fieldPlot: { select: { name: true, areaHectares: true } },
+      fieldPlot: { select: { name: true, boundaryAreaHa: true } },
       recorder: { select: { name: true } },
     },
     orderBy: { appliedAt: 'desc' },
@@ -150,7 +150,7 @@ async function queryPesticideConversions(
   return rows.map((r: any) => {
     const dose = toNumber(r.dose);
     const totalQty = toNumber(r.totalQuantityUsed);
-    const areaHa = toNumber(r.fieldPlot.areaHectares);
+    const areaHa = toNumber(r.fieldPlot.boundaryAreaHa);
     const doseUnit = r.doseUnit as string;
 
     return {
@@ -203,7 +203,7 @@ async function queryFertilizerConversions(
     where,
     include: {
       farm: { select: { name: true } },
-      fieldPlot: { select: { name: true, areaHectares: true } },
+      fieldPlot: { select: { name: true, boundaryAreaHa: true } },
       recorder: { select: { name: true } },
     },
     orderBy: { appliedAt: 'desc' },
@@ -212,7 +212,7 @@ async function queryFertilizerConversions(
   return rows.map((r: any) => {
     const dose = toNumber(r.dose);
     const totalQty = toNumber(r.totalQuantityUsed);
-    const areaHa = toNumber(r.fieldPlot.areaHectares);
+    const areaHa = toNumber(r.fieldPlot.boundaryAreaHa);
     const doseUnit = r.doseUnit as string;
 
     return {
@@ -262,7 +262,7 @@ async function querySoilPrepConversions(
     where,
     include: {
       farm: { select: { name: true } },
-      fieldPlot: { select: { name: true, areaHectares: true } },
+      fieldPlot: { select: { name: true, boundaryAreaHa: true } },
       recorder: { select: { name: true } },
       stockOutput: {
         select: {
@@ -279,7 +279,7 @@ async function querySoilPrepConversions(
 
   for (const r of rows) {
     const inputs = Array.isArray(r.inputs) ? r.inputs : [];
-    const areaHa = toNumber(r.fieldPlot.areaHectares);
+    const areaHa = toNumber(r.fieldPlot.boundaryAreaHa);
     const outputItems = r.stockOutput?.items || [];
 
     // If there are stock output items, use them as the source of truth
