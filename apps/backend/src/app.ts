@@ -47,6 +47,7 @@ import { stockOutputsRouter } from './modules/stock-outputs/stock-outputs.routes
 import { stockAlertsRouter } from './modules/stock-alerts/stock-alerts.routes';
 import { stockInventoriesRouter } from './modules/stock-inventories/stock-inventories.routes';
 import { pesticidePrescriptionsRouter } from './modules/pesticide-prescriptions/pesticide-prescriptions.routes';
+import { conversionHistoryRouter } from './modules/conversion-history/conversion-history.routes';
 
 const app = express();
 
@@ -101,5 +102,6 @@ app.use('/api', stockOutputsRouter);
 app.use('/api', stockAlertsRouter);
 app.use('/api', stockInventoriesRouter);
 app.use('/api', pesticidePrescriptionsRouter);
+app.use('/api', conversionHistoryRouter);
 
 export { app };
