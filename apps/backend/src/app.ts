@@ -49,6 +49,7 @@ import { stockInventoriesRouter } from './modules/stock-inventories/stock-invent
 import { pesticidePrescriptionsRouter } from './modules/pesticide-prescriptions/pesticide-prescriptions.routes';
 import { conversionHistoryRouter } from './modules/conversion-history/conversion-history.routes';
 import { costCentersRouter } from './modules/cost-centers/cost-centers.routes';
+import { harvestConversionRouter } from './modules/harvest-commercial-conversion/harvest-commercial-conversion.routes';
 
 const app = express();
 
@@ -105,5 +106,6 @@ app.use('/api', stockInventoriesRouter);
 app.use('/api', pesticidePrescriptionsRouter);
 app.use('/api', conversionHistoryRouter);
 app.use('/api', costCentersRouter);
+app.use('/api', harvestConversionRouter);
 
 export { app };

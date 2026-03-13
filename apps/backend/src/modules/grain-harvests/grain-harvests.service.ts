@@ -3,11 +3,13 @@ import {
   GrainHarvestError,
   STANDARD_MOISTURE,
   SACA_KG,
+  ARROBA_KG,
   DESTINATIONS,
   DESTINATION_LABELS,
   WEIGHING_METHODS,
   type CreateGrainHarvestInput,
   type GrainHarvestItem,
+  type CommercialUnits,
   type PlotHarvestSummary,
   type PlotCostSummary,
 } from './grain-harvests.types';
@@ -118,6 +120,16 @@ function computeProductivity(
   return { netProductionKg, correctedProductionKg, productionSc, productivityScHa };
 }
 
+/** US-098 CA1 — Compute commercial unit conversions from corrected production (kg) */
+function computeCommercialUnits(correctedProductionKg: number): CommercialUnits {
+  return {
+    kg: Math.round(correctedProductionKg * 100) / 100,
+    sc: Math.round((correctedProductionKg / SACA_KG) * 100) / 100,
+    arroba: Math.round((correctedProductionKg / ARROBA_KG) * 100) / 100,
+    t: Math.round((correctedProductionKg / 1000) * 10000) / 10000,
+  };
+}
+
 /** CA9 — compute total harvest cost from components */
 function computeTotalCost(
   harvesterHours: number | null,
@@ -196,6 +208,8 @@ function toItem(row: Record<string, unknown>, standardMoistureOverride?: number)
       row.transhipmentCost != null ? Number(row.transhipmentCost) : null,
       row.transportCost != null ? Number(row.transportCost) : null,
     ),
+    // US-098 CA1 — commercial unit conversions
+    commercialUnits: computeCommercialUnits(productivity.correctedProductionKg),
     notes: (row.notes as string) ?? null,
     recordedBy: row.recordedBy as string,
     recorderName: recorder?.name ?? '',

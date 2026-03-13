@@ -33,6 +33,9 @@ export const DESTINATION_LABELS: Record<string, string> = {
 /** CA2 — Peso de 1 saca em kg */
 export const SACA_KG = 60;
 
+/** Peso de 1 arroba em kg */
+export const ARROBA_KG = 15;
+
 /** CA3 — Rendimento padrão (litros de café cereja para 1 saca beneficiada) */
 export const DEFAULT_YIELD_LITERS_PER_SAC = 480;
 
@@ -100,11 +103,22 @@ export interface CoffeeHarvestItem {
   // CA7
   isSpecialLot: boolean;
   microlotCode: string | null;
+  // US-098 CA2 — commercial conversions
+  commercialUnits: CoffeeCommercialUnits;
   notes: string | null;
   recordedBy: string;
   recorderName: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// US-098 CA2 — commercial unit conversions for coffee
+export interface CoffeeCommercialUnits {
+  L: number;
+  sc: number;
+  kg: number;
+  arroba: number;
+  t: number;
 }
 
 // CA6 — daily summary by plot

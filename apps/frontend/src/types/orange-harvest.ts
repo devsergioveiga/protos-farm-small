@@ -23,6 +23,12 @@ export interface OrangeHarvestItem {
   numberOfHarvesters: number | null;
   harvestersProductivity: number | null;
   saleContractRef: string | null;
+  // US-098 CA3 — commercial conversions
+  commercialUnits?: {
+    cx: number;
+    kg: number;
+    t: number;
+  };
   notes: string | null;
   recordedBy: string;
   recorderName: string;

@@ -111,6 +111,7 @@ const SAMPLE_HARVEST = {
   transportCost: null,
   totalHarvestCost: null,
   notes: null,
+  commercialUnits: { kg: 0, sc: 0, arroba: 0, t: 0 },
   recordedBy: 'admin-1',
   recorderName: 'Admin',
   createdAt: '2026-03-10T10:00:00.000Z',

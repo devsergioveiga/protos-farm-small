@@ -101,6 +101,7 @@ const SAMPLE_HARVEST = {
   harvestersProductivity: 50,
   // CA6
   saleContractRef: 'CT-2026-045',
+  commercialUnits: { cx: 0, kg: 0, t: 0 },
   notes: null,
   recordedBy: 'admin-1',
   recorderName: 'Admin',

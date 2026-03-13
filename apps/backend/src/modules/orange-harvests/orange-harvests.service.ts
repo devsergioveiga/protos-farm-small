@@ -6,6 +6,7 @@ import {
   BOX_WEIGHT_KG,
   type CreateOrangeHarvestInput,
   type OrangeHarvestItem,
+  type OrangeCommercialUnits,
   type PlotDailySummary,
 } from './orange-harvests.types';
 
@@ -75,6 +76,18 @@ function computeTonsPerHa(totalWeightKg: number, areaHa: number | null): number 
   return Math.round((totalWeightKg / 1000 / areaHa) * 100) / 100;
 }
 
+/** US-098 CA3 — Compute commercial unit conversions for orange */
+function computeOrangeCommercialUnits(
+  numberOfBoxes: number,
+  totalWeightKg: number,
+): OrangeCommercialUnits {
+  return {
+    cx: Math.round(numberOfBoxes * 100) / 100,
+    kg: Math.round(totalWeightKg * 100) / 100,
+    t: Math.round((totalWeightKg / 1000) * 10000) / 10000,
+  };
+}
+
 /** CA5 — Compute productivity (caixas/pessoa/dia) */
 function computeProductivity(
   numberOfBoxes: number,
@@ -131,6 +144,8 @@ function toItem(row: Record<string, unknown>): OrangeHarvestItem {
         : computeProductivity(numberOfBoxes, row.numberOfHarvesters as number | null),
     // CA6
     saleContractRef: (row.saleContractRef as string) ?? null,
+    // US-098 CA3 — commercial conversions
+    commercialUnits: computeOrangeCommercialUnits(numberOfBoxes, totalWeightKg),
     notes: (row.notes as string) ?? null,
     recordedBy: row.recordedBy as string,
     recorderName: recorder?.name ?? '',

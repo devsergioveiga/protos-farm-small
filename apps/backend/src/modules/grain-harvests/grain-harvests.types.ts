@@ -26,6 +26,9 @@ export const STANDARD_MOISTURE: Record<string, number> = {
 /** Peso de 1 saca em kg */
 export const SACA_KG = 60;
 
+/** Peso de 1 arroba em kg */
+export const ARROBA_KG = 15;
+
 /** CA5 — Destinos válidos */
 export const DESTINATIONS = ['SILO_PROPRIO', 'ARMAZEM_TERCEIRO', 'VENDA_DIRETA'] as const;
 
@@ -115,11 +118,21 @@ export interface GrainHarvestItem {
   transhipmentCost: number | null;
   transportCost: number | null;
   totalHarvestCost: number | null;
+  // US-098 CA1 — commercial conversions
+  commercialUnits: CommercialUnits;
   notes: string | null;
   recordedBy: string;
   recorderName: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// US-098 CA1 — commercial unit conversions
+export interface CommercialUnits {
+  kg: number;
+  sc: number;
+  arroba: number;
+  t: number;
 }
 
 // CA7 — plot accumulation summary
