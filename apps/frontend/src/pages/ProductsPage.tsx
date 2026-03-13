@@ -1,8 +1,18 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Plus, Package, Wrench, Search, AlertCircle, Pencil, Trash2 } from 'lucide-react';
+import {
+  Plus,
+  Package,
+  Wrench,
+  Search,
+  AlertCircle,
+  Pencil,
+  Trash2,
+  ArrowRightLeft,
+} from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
 import type { ProductItem } from '@/hooks/useProducts';
 import ProductModal from '@/components/products/ProductModal';
+import ProductConversionsModal from '@/components/products/ProductConversionsModal';
 import { api } from '@/services/api';
 import './ProductsPage.css';
 
@@ -60,6 +70,7 @@ export default function ProductsPage() {
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [convProduct, setConvProduct] = useState<ProductItem | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -267,6 +278,19 @@ export default function ProductsPage() {
                     </td>
                     <td>
                       <div className="products-page__actions">
+                        {product.nature === 'PRODUCT' && (
+                          <button
+                            className="products-page__icon-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConvProduct(product);
+                            }}
+                            aria-label={`Conversões de ${product.name}`}
+                            title="Conversões"
+                          >
+                            <ArrowRightLeft size={16} aria-hidden="true" />
+                          </button>
+                        )}
                         <button
                           className="products-page__icon-btn"
                           onClick={(e) => {
@@ -318,6 +342,15 @@ export default function ProductsPage() {
         }}
         onSuccess={handleSuccess}
       />
+
+      {convProduct && (
+        <ProductConversionsModal
+          isOpen={!!convProduct}
+          productId={convProduct.id}
+          productName={convProduct.name}
+          onClose={() => setConvProduct(null)}
+        />
+      )}
     </div>
   );
 }

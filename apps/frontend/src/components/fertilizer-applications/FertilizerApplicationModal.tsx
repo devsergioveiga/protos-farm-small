@@ -424,6 +424,7 @@ function FertilizerApplicationModal({
                 areaHa={areaAppliedHa ? Number(areaAppliedHa) : selectedPlotAreaHa}
                 productName={productName || undefined}
                 plantsPerHa={plantsPerHa ? Number(plantsPerHa) : undefined}
+                productId={productId}
               />
             )}
 

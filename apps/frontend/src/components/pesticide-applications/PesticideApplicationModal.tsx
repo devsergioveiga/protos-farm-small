@@ -479,6 +479,7 @@ function PesticideApplicationModal({
                 areaHa={selectedPlotAreaHa}
                 productName={productName || undefined}
                 sprayVolumeLPerHa={Number(sprayVolume) > 0 ? Number(sprayVolume) : undefined}
+                productId={productId}
               />
             )}
 

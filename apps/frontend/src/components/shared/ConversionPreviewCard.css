@@ -103,3 +103,46 @@
   color: var(--color-neutral-700);
   font-weight: 600;
 }
+
+/* CA12: Warning state when conversion is not configured */
+.conversion-preview--warning {
+  border-color: var(--color-warning-200, #fbbf24);
+  background: var(--color-warning-50, #fffbeb);
+}
+
+.conversion-preview__warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--color-warning-700, #92400e);
+  font-size: 0.8125rem;
+}
+
+.conversion-preview__warning svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.conversion-preview__warning-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.conversion-preview__configure-link {
+  background: none;
+  border: none;
+  color: var(--color-primary-600);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-align: left;
+}
+
+.conversion-preview__configure-link:hover {
+  color: var(--color-primary-700);
+}

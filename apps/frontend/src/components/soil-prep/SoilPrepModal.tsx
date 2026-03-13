@@ -539,6 +539,7 @@ function SoilPrepModal({ isOpen, operation, onClose, onSuccess }: SoilPrepModalP
                     doseUnit={inp.doseUnit}
                     areaHa={selectedPlotAreaHa}
                     productName={inp.productName}
+                    productId={inp.productId}
                   />
                 ))}
 
