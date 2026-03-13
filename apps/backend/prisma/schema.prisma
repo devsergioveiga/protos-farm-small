@@ -266,6 +266,8 @@ model Organization {
   breeds      Breed[]
   cultivars           Cultivar[]
   moistureStandards   MoistureStandard[]
+  grainDiscountTables GrainDiscountTable[]
+  grainClassifications GrainClassification[]
   pests           Pest[]
   operationTypes            OperationType[]
   cropOperationSequences    CropOperationSequence[]
@@ -2083,6 +2085,47 @@ model MoistureStandard {
   @@unique([organizationId, crop])
   @@index([organizationId])
   @@map("moisture_standards")
+}
+
+// ─── Grain Discount Table (US-099 CA1+CA2) ──────────────────────────
+
+model GrainDiscountTable {
+  id              String    @id @default(uuid())
+  organizationId  String
+  crop            String    // ex: "SOJA", "MILHO" (normalizado uppercase)
+  discountType    String    // MOISTURE, IMPURITY, DAMAGED
+  thresholdPct    Decimal   @db.Decimal(5, 2) // limite de tolerância (ex: 14% umidade)
+  discountPctPerPoint Decimal @db.Decimal(5, 4) // desconto % por ponto acima do threshold
+  maxPct          Decimal?  @db.Decimal(5, 2) // limite máximo aceito (acima = rejeitado)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, crop, discountType])
+  @@index([organizationId])
+  @@map("grain_discount_tables")
+}
+
+// ─── Grain Classification (US-099 CA3) ──────────────────────────────
+
+model GrainClassification {
+  id              String    @id @default(uuid())
+  organizationId  String
+  crop            String    // ex: "SOJA", "MILHO"
+  gradeType       String    // TIPO_1, TIPO_2, TIPO_3, FORA_DE_TIPO
+  maxMoisturePct  Decimal   @db.Decimal(5, 2) // umidade máxima para esse tipo
+  maxImpurityPct  Decimal   @db.Decimal(5, 2) // impureza máxima
+  maxDamagedPct   Decimal   @db.Decimal(5, 2) // grãos avariados máximo
+  maxBrokenPct    Decimal   @db.Decimal(5, 2) // quebrados/partidos máximo
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, crop, gradeType])
+  @@index([organizationId])
+  @@map("grain_classifications")
 }
 
 // ─── Coffee Harvest (EPIC-09 / US-085) ──────────────────────────────

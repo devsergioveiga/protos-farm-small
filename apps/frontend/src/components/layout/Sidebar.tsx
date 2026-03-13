@@ -29,6 +29,7 @@ import {
   ClipboardCheck,
   FileText,
   ArrowRightLeft,
+  TrendingDown,
   X,
 } from 'lucide-react';
 import './Sidebar.css';
@@ -95,6 +96,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/stock-alerts', icon: Bell, label: 'Alertas' },
       { to: '/stock-inventories', icon: ClipboardCheck, label: 'Inventário' },
       { to: '/conversion-history', icon: ArrowRightLeft, label: 'Conversões' },
+      { to: '/grain-discounts', icon: TrendingDown, label: 'Descontos de grãos' },
     ],
   },
   {
