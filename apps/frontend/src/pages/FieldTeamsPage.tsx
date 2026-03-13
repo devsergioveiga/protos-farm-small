@@ -8,6 +8,7 @@ import {
   AlertCircle,
   UserCheck,
   Clock,
+  Wallet,
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
 import { useFieldTeams } from '@/hooks/useFieldTeams';
@@ -200,6 +201,15 @@ function FieldTeamsPage() {
                   {team.memberCount} {team.memberCount === 1 ? 'membro' : 'membros'}
                 </span>
               </div>
+
+              {team.costCenterName && (
+                <div className="field-teams__card-extra">
+                  <Wallet size={14} aria-hidden="true" />
+                  <span>
+                    {team.costCenterCode} — {team.costCenterName}
+                  </span>
+                </div>
+              )}
 
               {team.isTemporary && (
                 <div className="field-teams__card-extra">

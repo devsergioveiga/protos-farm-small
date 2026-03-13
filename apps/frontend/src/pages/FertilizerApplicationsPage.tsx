@@ -23,6 +23,7 @@ import {
   DOSE_UNIT_LABELS,
 } from '@/types/fertilizer-application';
 import type { FertilizerApplicationItem } from '@/types/fertilizer-application';
+import { getBaseUnit, formatQuantity } from '@/utils/dose-conversion';
 import './FertilizerApplicationsPage.css';
 
 function FertilizerApplicationsPage() {
@@ -298,6 +299,12 @@ function FertilizerApplicationsPage() {
                 <span className="fertilizers__card-detail">
                   <Droplets size={14} aria-hidden="true" />
                   {app.dose} {DOSE_UNIT_LABELS[app.doseUnit] ?? app.doseUnit}
+                  {app.totalQuantityUsed != null && (
+                    <span className="fertilizers__card-conversion">
+                      {' '}
+                      &rarr; {formatQuantity(app.totalQuantityUsed)} {getBaseUnit(app.doseUnit)}
+                    </span>
+                  )}
                 </span>
               </div>
 

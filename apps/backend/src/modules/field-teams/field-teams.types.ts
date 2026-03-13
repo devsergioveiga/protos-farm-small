@@ -37,6 +37,7 @@ export interface CreateFieldTeamInput {
   teamType: string;
   isTemporary?: boolean;
   leaderId: string;
+  costCenterId?: string | null;
   memberIds?: string[];
   notes?: string | null;
 }
@@ -59,6 +60,9 @@ export interface FieldTeamItem {
   isTemporary: boolean;
   leaderId: string;
   leaderName: string;
+  costCenterId: string | null;
+  costCenterName: string | null;
+  costCenterCode: string | null;
   notes: string | null;
   memberCount: number;
   members: FieldTeamMemberItem[];

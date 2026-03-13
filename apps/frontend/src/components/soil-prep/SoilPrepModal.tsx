@@ -1,10 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
 import { api } from '@/services/api';
 import { useFarmContext } from '@/stores/FarmContext';
 import { WEATHER_CONDITIONS, DOSE_UNITS } from '@/types/soil-prep';
 import type { SoilPrepItem, SoilPrepInputItem } from '@/types/soil-prep';
 import type { FieldPlot } from '@/types/farm';
+import ConversionPreviewCard from '@/components/shared/ConversionPreviewCard';
+import ProductSearchInput from '@/components/shared/ProductSearchInput';
+import type { ProductSuggestion } from '@/components/shared/ProductSearchInput';
+import { suggestDoseUnit, getDosePlaceholder } from '@/utils/dose-conversion';
 import './SoilPrepModal.css';
 
 interface SoilPrepModalProps {
@@ -132,6 +136,11 @@ function SoilPrepModal({ isOpen, operation, onClose, onSuccess }: SoilPrepModalP
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
+  const selectedPlotAreaHa = useMemo(() => {
+    const plot = plots.find((p) => p.id === fieldPlotId);
+    return plot?.boundaryAreaHa ?? 0;
+  }, [plots, fieldPlotId]);
+
   const handleAddInput = useCallback(() => {
     setInputs((prev) => [...prev, { ...EMPTY_INPUT }]);
   }, []);
@@ -146,6 +155,26 @@ function SoilPrepModal({ isOpen, operation, onClose, onSuccess }: SoilPrepModalP
     },
     [],
   );
+
+  const handleInputProductSelect = useCallback((index: number, product: ProductSuggestion) => {
+    setInputs((prev) =>
+      prev.map((inp, i) => {
+        if (i !== index) return inp;
+        const suggested = suggestDoseUnit(product.type, product.nutrientForm);
+        const validUnit = DOSE_UNITS.some((u) => u.value === suggested) ? suggested : inp.doseUnit;
+        return {
+          ...inp,
+          productName: product.commercialName || product.name,
+          productId: product.id,
+          doseUnit: validUnit,
+        };
+      }),
+    );
+  }, []);
+
+  const handleInputProductClear = useCallback((index: number) => {
+    setInputs((prev) => prev.map((inp, i) => (i === index ? { ...inp, productId: null } : inp)));
+  }, []);
 
   const canSubmit = fieldPlotId && operationTypeName.trim() && startedAt && !isSubmitting;
 
@@ -432,16 +461,15 @@ function SoilPrepModal({ isOpen, operation, onClose, onSuccess }: SoilPrepModalP
             {inputs.map((inp, idx) => (
               <div key={idx} className="soilprep-modal__input-row">
                 <div className="soilprep-modal__field">
-                  <label htmlFor={`sp-inp-name-${idx}`} className="soilprep-modal__label">
-                    Produto
-                  </label>
-                  <input
+                  <ProductSearchInput
                     id={`sp-inp-name-${idx}`}
-                    type="text"
-                    className="soilprep-modal__input"
-                    placeholder="Ex.: Calcário dolomítico"
+                    label="Produto"
                     value={inp.productName}
-                    onChange={(e) => handleInputChange(idx, 'productName', e.target.value)}
+                    onChange={(val) => handleInputChange(idx, 'productName', val)}
+                    onProductSelect={(product) => handleInputProductSelect(idx, product)}
+                    onProductClear={() => handleInputProductClear(idx)}
+                    selectedProductId={inp.productId ?? null}
+                    placeholder="Ex.: Calcário dolomítico"
                   />
                 </div>
                 <div className="soilprep-modal__field">
@@ -454,6 +482,7 @@ function SoilPrepModal({ isOpen, operation, onClose, onSuccess }: SoilPrepModalP
                     className="soilprep-modal__input"
                     min="0"
                     step="0.01"
+                    placeholder={getDosePlaceholder(inp.doseUnit)}
                     value={inp.dose || ''}
                     onChange={(e) => handleInputChange(idx, 'dose', Number(e.target.value))}
                   />
@@ -498,6 +527,22 @@ function SoilPrepModal({ isOpen, operation, onClose, onSuccess }: SoilPrepModalP
                 </button>
               </div>
             ))}
+            {/* Conversion preview for all inputs (CA4/CA9) */}
+            {inputs.some((inp) => inp.dose > 0 && inp.productName.trim()) &&
+              selectedPlotAreaHa > 0 &&
+              inputs
+                .filter((inp) => inp.dose > 0 && inp.productName.trim())
+                .map((inp, idx) => (
+                  <ConversionPreviewCard
+                    key={`preview-${idx}`}
+                    dose={inp.dose}
+                    doseUnit={inp.doseUnit}
+                    areaHa={selectedPlotAreaHa}
+                    productName={inp.productName}
+                    productId={inp.productId}
+                  />
+                ))}
+
             <button
               type="button"
               className="soilprep-modal__add-input-btn"

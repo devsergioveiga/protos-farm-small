@@ -33,6 +33,9 @@ const MOCK_APPLICATIONS: FertilizerApplicationItem[] = [
     recorderName: 'Admin',
     createdAt: '2026-03-08T10:00:00.000Z',
     updatedAt: '2026-03-08T10:00:00.000Z',
+    productId: null,
+    stockOutputId: null,
+    totalQuantityUsed: null,
   },
   {
     id: 'fa-2',
@@ -63,6 +66,9 @@ const MOCK_APPLICATIONS: FertilizerApplicationItem[] = [
     recorderName: 'Admin',
     createdAt: '2026-03-07T08:00:00.000Z',
     updatedAt: '2026-03-07T08:00:00.000Z',
+    productId: null,
+    stockOutputId: null,
+    totalQuantityUsed: null,
   },
 ];
 

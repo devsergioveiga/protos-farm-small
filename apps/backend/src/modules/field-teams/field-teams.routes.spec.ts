@@ -69,6 +69,9 @@ const SAMPLE_TEAM = {
   isTemporary: false,
   leaderId: 'user-1',
   leaderName: 'João Silva',
+  costCenterId: null,
+  costCenterName: null,
+  costCenterCode: null,
   notes: null,
   memberCount: 2,
   members: [

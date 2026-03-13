@@ -465,3 +465,10 @@
     padding: 8px 12px;
   }
 }
+
+/* CA11 — Conversion indicator */
+.fertilizers__card-conversion {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--color-primary-700);
+}

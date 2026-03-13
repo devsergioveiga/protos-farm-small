@@ -32,6 +32,9 @@ export interface PesticideApplicationItem {
   recorderName: string;
   createdAt: string;
   updatedAt: string;
+  productId: string | null;
+  stockOutputId: string | null;
+  totalQuantityUsed: number | null;
 }
 
 export interface PesticideApplicationsResponse {
@@ -70,6 +73,8 @@ export interface CreatePesticideApplicationInput {
   tankMixPh?: number;
   withdrawalPeriodDays?: number;
   notes?: string;
+  productId?: string;
+  totalQuantityUsed?: number;
 }
 
 export interface WithdrawalAlert {
