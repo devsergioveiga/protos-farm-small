@@ -19,6 +19,7 @@ import {
   Tractor,
   Coffee,
   Citrus,
+  HeartPulse,
   Users,
   Shield,
   Ruler,
@@ -68,6 +69,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/animals', icon: Beef, label: 'Animais' },
       { to: '/lots', icon: Layers, label: 'Lotes' },
       { to: '/weighing-session', icon: Scale, label: 'Pesagem' },
+      { to: '/diseases', icon: HeartPulse, label: 'Doenças' },
     ],
   },
   {

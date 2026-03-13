@@ -284,6 +284,7 @@ model Organization {
   stockInventories          StockInventory[]
   stockAdjustments          StockAdjustment[]
   pesticidePrescriptions    PesticidePrescription[]
+  diseases                  Disease[]
 
   @@map("organizations")
 }
@@ -2881,4 +2882,57 @@ model StockAdjustment {
   @@index([stockInventoryId])
   @@index([productId])
   @@map("stock_adjustments")
+}
+
+// ─── Disease Catalog (EPIC-11 / US-103) ─────────────────────────────
+
+enum DiseaseCategory {
+  INFECTIOUS
+  METABOLIC
+  REPRODUCTIVE
+  LOCOMOTOR
+  PARASITIC
+  NUTRITIONAL
+  OTHER
+}
+
+enum DiseaseSeverity {
+  MILD
+  MODERATE
+  SEVERE
+}
+
+enum AffectedSystem {
+  DIGESTIVE
+  REPRODUCTIVE
+  LOCOMOTOR
+  MAMMARY
+  RESPIRATORY
+  SYSTEMIC
+}
+
+model Disease {
+  id                   String           @id @default(uuid())
+  organizationId       String           @map("organization_id")
+  name                 String
+  scientificName       String?          @map("scientific_name")
+  code                 String?
+  category             DiseaseCategory
+  severity             DiseaseSeverity?
+  affectedSystem       AffectedSystem?  @map("affected_system")
+  symptoms             String?
+  quarantineDays       Int?             @map("quarantine_days")
+  isNotifiable         Boolean          @default(false) @map("is_notifiable")
+  photoUrl             String?          @map("photo_url")
+  notes                String?
+  deletedAt            DateTime?        @map("deleted_at")
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@index([category])
+  @@map("diseases")
 }
