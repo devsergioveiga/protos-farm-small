@@ -1,10 +1,13 @@
 import { Router } from 'express';
+import multer, { memoryStorage } from 'multer';
+import path from 'path';
 import { authenticate } from '../../middleware/auth';
 import { checkPermission } from '../../middleware/check-permission';
 import { checkFarmAccess } from '../../middleware/check-farm-access';
 import { logAudit } from '../../shared/audit/audit.service';
 import type { RlsContext } from '../../database/rls';
 import { AnimalExamError } from './animal-exams.types';
+import { MAX_EXAM_FILE_SIZE, ACCEPTED_EXAM_EXTENSIONS } from './exam-file-parser';
 import {
   createExamType,
   listExamTypes,
@@ -20,6 +23,9 @@ import {
   recordResults,
   getExamIndicators,
   exportExamsCsv,
+  uploadExamReport,
+  getExamReportFile,
+  importExamResults,
 } from './animal-exams.service';
 
 export const animalExamsRouter = Router();
@@ -464,5 +470,187 @@ animalExamsRouter.delete(
     } catch (err) {
       handleError(err, res);
     }
+  },
+);
+
+// ═══════════════════════════════════════════════════════════════════
+// CA6: UPLOAD / DOWNLOAD REPORT
+// ═══════════════════════════════════════════════════════════════════
+
+const ACCEPTED_REPORT_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png'];
+const MAX_REPORT_SIZE = 10 * 1024 * 1024; // 10 MB
+
+const reportUpload = multer({
+  storage: memoryStorage(),
+  limits: { fileSize: MAX_REPORT_SIZE },
+  fileFilter: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ACCEPTED_REPORT_EXTENSIONS.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Formato não suportado. Aceitos: ${ACCEPTED_REPORT_EXTENSIONS.join(', ')}`));
+    }
+  },
+});
+
+animalExamsRouter.post(
+  '/org/farms/:farmId/animal-exams/:examId/report',
+  authenticate,
+  checkPermission('animals:update'),
+  checkFarmAccess(),
+  (req, res) => {
+    reportUpload.single('file')(req, res, async (uploadErr: unknown) => {
+      if (uploadErr) {
+        if (uploadErr instanceof multer.MulterError) {
+          res.status(400).json({
+            error:
+              uploadErr.code === 'LIMIT_FILE_SIZE'
+                ? 'Arquivo excede o limite de 10 MB'
+                : uploadErr.message,
+          });
+        } else if (uploadErr instanceof Error) {
+          res.status(400).json({ error: uploadErr.message });
+        } else {
+          res.status(400).json({ error: 'Erro no upload do arquivo' });
+        }
+        return;
+      }
+
+      if (!req.file) {
+        res.status(400).json({ error: 'Arquivo é obrigatório' });
+        return;
+      }
+
+      try {
+        const ctx = buildRlsContext(req);
+        const result = await uploadExamReport(
+          ctx,
+          req.params.farmId as string,
+          req.params.examId as string,
+          req.file,
+        );
+
+        void logAudit({
+          actorId: req.user!.userId,
+          actorEmail: req.user!.email,
+          actorRole: req.user!.role,
+          action: 'UPLOAD_EXAM_REPORT',
+          targetType: 'animal_exam',
+          targetId: result.id,
+          metadata: { fileName: req.file.originalname, farmId: req.params.farmId as string },
+          ipAddress: getClientIp(req),
+          farmId: req.params.farmId as string,
+          organizationId: ctx.organizationId,
+        });
+
+        res.json(result);
+      } catch (err) {
+        handleError(err, res);
+      }
+    });
+  },
+);
+
+animalExamsRouter.get(
+  '/org/farms/:farmId/animal-exams/:examId/report',
+  authenticate,
+  checkPermission('animals:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const { buffer, filename, mimetype } = await getExamReportFile(
+        ctx,
+        req.params.farmId as string,
+        req.params.examId as string,
+      );
+
+      res.setHeader('Content-Type', mimetype);
+      res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+      res.send(buffer);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ═══════════════════════════════════════════════════════════════════
+// CA11: IMPORT RESULTS FROM CSV/EXCEL
+// ═══════════════════════════════════════════════════════════════════
+
+const examImportUpload = multer({
+  storage: memoryStorage(),
+  limits: { fileSize: MAX_EXAM_FILE_SIZE },
+  fileFilter: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if ((ACCEPTED_EXAM_EXTENSIONS as readonly string[]).includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`Formato não suportado. Aceitos: ${ACCEPTED_EXAM_EXTENSIONS.join(', ')}`));
+    }
+  },
+});
+
+animalExamsRouter.post(
+  '/org/farms/:farmId/animal-exams/import-results',
+  authenticate,
+  checkPermission('animals:update'),
+  checkFarmAccess(),
+  (req, res) => {
+    examImportUpload.single('file')(req, res, async (uploadErr: unknown) => {
+      if (uploadErr) {
+        if (uploadErr instanceof multer.MulterError) {
+          res.status(400).json({
+            error:
+              uploadErr.code === 'LIMIT_FILE_SIZE'
+                ? 'Arquivo excede o limite de 5 MB'
+                : uploadErr.message,
+          });
+        } else if (uploadErr instanceof Error) {
+          res.status(400).json({ error: uploadErr.message });
+        } else {
+          res.status(400).json({ error: 'Erro no upload do arquivo' });
+        }
+        return;
+      }
+
+      if (!req.file) {
+        res.status(400).json({ error: 'Arquivo é obrigatório' });
+        return;
+      }
+
+      try {
+        const ctx = buildRlsContext(req);
+        const resultDate = (req.body as Record<string, string>).resultDate;
+        const result = await importExamResults(
+          ctx,
+          req.params.farmId as string,
+          req.file,
+          resultDate,
+        );
+
+        void logAudit({
+          actorId: req.user!.userId,
+          actorEmail: req.user!.email,
+          actorRole: req.user!.role,
+          action: 'IMPORT_EXAM_RESULTS',
+          targetType: 'animal_exam',
+          targetId: 'bulk-import',
+          metadata: {
+            fileName: req.file.originalname,
+            imported: result.imported,
+            skipped: result.skipped,
+            farmId: req.params.farmId as string,
+          },
+          ipAddress: getClientIp(req),
+          farmId: req.params.farmId as string,
+          organizationId: ctx.organizationId,
+        });
+
+        res.json(result);
+      } catch (err) {
+        handleError(err, res);
+      }
+    });
   },
 );

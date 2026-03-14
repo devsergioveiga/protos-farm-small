@@ -64,6 +64,9 @@ export interface AnimalExamItem {
   animalLotId: string | null;
   campaignId: string | null;
   linkedTreatmentId: string | null;
+  reportFileName: string | null;
+  reportMimeType: string | null;
+  reportUrl: string | null;
   notes: string | null;
   recordedBy: string;
   recorderName: string;

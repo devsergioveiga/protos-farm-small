@@ -249,6 +249,9 @@ export interface AnimalExamItem {
   animalLotId: string | null;
   campaignId: string | null;
   linkedTreatmentId: string | null;
+  reportFileName: string | null;
+  reportMimeType: string | null;
+  reportUrl: string | null;
   notes: string | null;
   recordedBy: string;
   recorderName: string;
@@ -273,4 +276,10 @@ export interface ExamIndicators {
   pendingResults: number;
   expiredRegulatory: number;
   positivityRates: PositivityRate[];
+}
+
+export interface ImportExamResultsResult {
+  imported: number;
+  skipped: number;
+  errors: string[];
 }

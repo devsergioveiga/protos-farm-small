@@ -30,7 +30,9 @@ import {
   type ExamResultItem,
   type BulkExamResult,
   type ExamIndicators,
+  type ImportExamResultsResult,
 } from './animal-exams.types';
+import { parseExamFile, type ParsedExamResultRow } from './exam-file-parser';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -119,6 +121,9 @@ function toAnimalExamItem(row: any): AnimalExamItem {
     animalLotId: row.animalLotId ?? null,
     campaignId: row.campaignId ?? null,
     linkedTreatmentId: row.linkedTreatmentId ?? null,
+    reportFileName: row.reportFileName ?? null,
+    reportMimeType: row.reportMimeType ?? null,
+    reportUrl: row.reportPath ? `/api/org/farms/${row.farmId}/animal-exams/${row.id}/report` : null,
     notes: row.notes ?? null,
     recordedBy: row.recordedBy,
     recorderName: row.recorder?.name ?? '',
@@ -865,5 +870,191 @@ export async function exportExamsCsv(
     });
 
     return '\uFEFF' + [header, ...lines].join('\n');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CA6: UPLOAD REPORT
+// ═══════════════════════════════════════════════════════════════════
+
+export async function uploadExamReport(
+  ctx: RlsContext,
+  farmId: string,
+  examId: string,
+  file: { originalname: string; mimetype: string; buffer: Buffer },
+): Promise<AnimalExamItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const exam = await tx.animalExam.findFirst({
+      where: { id: examId, farmId, organizationId: ctx.organizationId },
+    });
+    if (!exam) {
+      throw new AnimalExamError('Exame não encontrado', 404);
+    }
+
+    // Store file on disk
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const uploadsDir = path.join(process.cwd(), 'uploads', 'exam-reports');
+    await fs.mkdir(uploadsDir, { recursive: true });
+
+    const ext = path.extname(file.originalname) || '.pdf';
+    const filename = `${examId}${ext}`;
+    const filePath = path.join(uploadsDir, filename);
+    await fs.writeFile(filePath, file.buffer);
+
+    const updated = await tx.animalExam.update({
+      where: { id: examId },
+      data: {
+        reportFileName: file.originalname,
+        reportMimeType: file.mimetype,
+        reportPath: filePath,
+      },
+      include: examInclude,
+    });
+
+    return toAnimalExamItem(updated);
+  });
+}
+
+export async function getExamReportFile(
+  ctx: RlsContext,
+  farmId: string,
+  examId: string,
+): Promise<{ buffer: Buffer; filename: string; mimetype: string }> {
+  return withRlsContext(ctx, async (tx) => {
+    const exam = await tx.animalExam.findFirst({
+      where: { id: examId, farmId, organizationId: ctx.organizationId },
+    });
+    if (!exam || !exam.reportPath) {
+      throw new AnimalExamError('Laudo não encontrado', 404);
+    }
+
+    const fs = await import('node:fs/promises');
+    const buffer = await fs.readFile(exam.reportPath);
+    return {
+      buffer,
+      filename: exam.reportFileName ?? 'laudo.pdf',
+      mimetype: exam.reportMimeType ?? 'application/octet-stream',
+    };
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CA11: IMPORT RESULTS FROM CSV/EXCEL
+// ═══════════════════════════════════════════════════════════════════
+
+export async function importExamResults(
+  ctx: RlsContext,
+  farmId: string,
+  file: { originalname: string; buffer: Buffer },
+  resultDate: string,
+): Promise<ImportExamResultsResult> {
+  const parsed = await parseExamFile(file.buffer, file.originalname);
+
+  if (parsed.errors.length > 0 && parsed.rows.length === 0) {
+    throw new AnimalExamError(parsed.errors.join('; '), 400);
+  }
+
+  if (parsed.rows.length === 0) {
+    throw new AnimalExamError('Nenhum resultado encontrado no arquivo', 400);
+  }
+
+  if (!resultDate) {
+    throw new AnimalExamError('Data do resultado é obrigatória', 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    // Group rows by earTag
+    const byEarTag = new Map<string, ParsedExamResultRow[]>();
+    for (const row of parsed.rows) {
+      const existing = byEarTag.get(row.earTag) ?? [];
+      existing.push(row);
+      byEarTag.set(row.earTag, existing);
+    }
+
+    // Load animals by earTag
+    const animals = await tx.animal.findMany({
+      where: {
+        farmId,
+        earTag: { in: [...byEarTag.keys()] },
+        deletedAt: null,
+      },
+      select: { id: true, earTag: true },
+    });
+    const animalMap = new Map(animals.map((a) => [a.earTag, a.id]));
+
+    let imported = 0;
+    let skipped = 0;
+    const errors: string[] = [...parsed.errors];
+
+    for (const [earTag, rows] of byEarTag.entries()) {
+      const animalId = animalMap.get(earTag);
+      if (!animalId) {
+        errors.push(`Brinco "${earTag}" não encontrado na fazenda`);
+        skipped += rows.length;
+        continue;
+      }
+
+      // Find the most recent PENDING/IN_PROGRESS exam for this animal
+      const exam = await tx.animalExam.findFirst({
+        where: {
+          animalId,
+          farmId,
+          organizationId: ctx.organizationId,
+          status: { in: ['PENDING', 'IN_PROGRESS'] },
+        },
+        include: { examType: { include: { referenceParams: true } } },
+        orderBy: { collectionDate: 'desc' },
+      });
+
+      if (!exam) {
+        errors.push(`Nenhum exame pendente para brinco "${earTag}"`);
+        skipped += rows.length;
+        continue;
+      }
+
+      // Build reference map
+      const refMap = new Map<string, { min: number | null; max: number | null }>();
+      for (const p of exam.examType.referenceParams) {
+        refMap.set(p.paramName, { min: p.minReference, max: p.maxReference });
+      }
+
+      // Delete existing results
+      await tx.examResult.deleteMany({ where: { examId: exam.id } });
+
+      // Create results
+      const resultsData = rows.map((r) => {
+        const ref = refMap.get(r.paramName);
+        const indicator = calcIndicator(
+          r.numericValue,
+          r.booleanValue,
+          ref?.min ?? null,
+          ref?.max ?? null,
+        );
+        return {
+          examId: exam.id,
+          paramName: r.paramName,
+          numericValue: r.numericValue,
+          booleanValue: r.booleanValue,
+          textValue: r.textValue,
+          unit: r.unit,
+          minReference: ref?.min ?? null,
+          maxReference: ref?.max ?? null,
+          indicator: indicator as any,
+        };
+      });
+
+      await tx.examResult.createMany({ data: resultsData });
+
+      // Update exam status
+      await tx.animalExam.update({
+        where: { id: exam.id },
+        data: { status: 'COMPLETED', resultDate: new Date(resultDate) },
+      });
+
+      imported += rows.length;
+    }
+
+    return { imported, skipped, errors };
   });
 }

@@ -3476,6 +3476,9 @@ model AnimalExam {
   animalLotId           String?
   campaignId            String?
   linkedTreatmentId     String?
+  reportFileName        String?
+  reportMimeType        String?
+  reportPath            String?
   notes                 String?
   recordedBy            String
   createdAt             DateTime     @default(now())

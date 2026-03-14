@@ -15,6 +15,9 @@ import {
   BarChart3,
   FileText,
   Shield,
+  Upload,
+  FileUp,
+  Paperclip,
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
 import { useAnimalExams } from '@/hooks/useAnimalExams';
@@ -167,6 +170,74 @@ export default function AnimalExamsPage() {
     [refetchTypes],
   );
 
+  const handleImportResults = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file || !selectedFarm) return;
+      e.target.value = '';
+
+      const resultDate = prompt('Data do resultado (AAAA-MM-DD):');
+      if (!resultDate) return;
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('resultDate', resultDate);
+
+        const response = await fetch(
+          `/api/org/farms/${selectedFarm.id}/animal-exams/import-results`,
+          {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+            body: formData,
+          },
+        );
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error ?? 'Erro na importação');
+
+        setSuccessMsg(
+          `Importação concluída: ${result.imported} resultado(s) importado(s)${result.skipped > 0 ? `, ${result.skipped} ignorado(s)` : ''}`,
+        );
+        if (result.errors?.length > 0) {
+          setDeleteError(result.errors.slice(0, 3).join('; '));
+        }
+        void refetch();
+        setTimeout(() => setSuccessMsg(null), 8000);
+      } catch (err: unknown) {
+        setDeleteError(err instanceof Error ? err.message : 'Erro ao importar resultados');
+      }
+    },
+    [selectedFarm, refetch],
+  );
+
+  const handleUploadReport = useCallback(
+    async (examItem: AnimalExamItem, file: File) => {
+      if (!selectedFarm) return;
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch(
+          `/api/org/farms/${selectedFarm.id}/animal-exams/${examItem.id}/report`,
+          {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` },
+            body: formData,
+          },
+        );
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error ?? 'Erro no upload');
+
+        setSuccessMsg('Laudo anexado com sucesso');
+        void refetch();
+        setTimeout(() => setSuccessMsg(null), 5000);
+      } catch (err: unknown) {
+        setDeleteError(err instanceof Error ? err.message : 'Erro ao anexar laudo');
+      }
+    },
+    [selectedFarm, refetch],
+  );
+
   const statusTagClass = (status: string) => {
     switch (status) {
       case 'PENDING':
@@ -230,6 +301,17 @@ export default function AnimalExamsPage() {
               <Layers size={20} aria-hidden="true" />
               Examinar lote
             </button>
+            <label className="animal-exams-page__btn-secondary" style={{ cursor: 'pointer' }}>
+              <FileUp size={20} aria-hidden="true" />
+              Importar resultados
+              <input
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                style={{ display: 'none' }}
+                onChange={(e) => void handleImportResults(e)}
+                aria-label="Importar resultados de exames"
+              />
+            </label>
             <button
               type="button"
               className="animal-exams-page__btn-primary"
@@ -396,6 +478,36 @@ export default function AnimalExamsPage() {
                         >
                           <CheckCircle size={16} aria-hidden="true" />
                         </button>
+                      )}
+                      <label
+                        className="animal-exams-page__card-btn"
+                        style={{ cursor: 'pointer' }}
+                        aria-label={`Anexar laudo de ${e.animalEarTag}`}
+                        onClick={(ev) => ev.stopPropagation()}
+                      >
+                        <Upload size={16} aria-hidden="true" />
+                        <input
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          style={{ display: 'none' }}
+                          onChange={(ev) => {
+                            const file = ev.target.files?.[0];
+                            if (file) void handleUploadReport(e, file);
+                            ev.target.value = '';
+                          }}
+                        />
+                      </label>
+                      {e.reportUrl && (
+                        <a
+                          href={e.reportUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="animal-exams-page__card-btn"
+                          onClick={(ev) => ev.stopPropagation()}
+                          aria-label={`Ver laudo de ${e.animalEarTag}`}
+                        >
+                          <Paperclip size={16} aria-hidden="true" />
+                        </a>
                       )}
                       <button
                         type="button"
