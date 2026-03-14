@@ -1,0 +1,102 @@
+/* ─── Ad-hoc Products Section ────────────────────────────────────── */
+.tt-adhoc {
+  margin-top: 12px;
+}
+
+.tt-adhoc__product {
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.tt-adhoc__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.tt-adhoc__label {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.tt-adhoc__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+
+.tt-adhoc__remove:hover {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-600, #dc2626);
+}
+
+.tt-adhoc__add {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px dashed var(--color-neutral-300);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-primary-600);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+
+.tt-adhoc__add:hover {
+  background: var(--color-primary-50, #f0fdf4);
+}
+
+/* ─── Radio group ────────────────────────────────────────────────── */
+.modal__radio-group {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.modal__radio-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+}
+
+.modal__radio-group input[type='radio'] {
+  accent-color: var(--color-primary-600);
+}
+
+/* ─── Fieldset ───────────────────────────────────────────────────── */
+.modal__fieldset {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 0;
+}
+
+.modal__fieldset legend {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  padding: 0 8px;
+}

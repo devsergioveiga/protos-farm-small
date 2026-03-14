@@ -10,6 +10,7 @@ import {
   Sprout,
   SprayCan,
   Droplet,
+  Stethoscope,
   Shovel,
   UsersRound,
   ClipboardList,
@@ -76,6 +77,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/sanitary-protocols', icon: ShieldPlus, label: 'Protocolos sanitários' },
       { to: '/vaccinations', icon: Syringe, label: 'Vacinações' },
       { to: '/dewormings', icon: Droplet, label: 'Vermifugações' },
+      { to: '/therapeutic-treatments', icon: Stethoscope, label: 'Tratamentos' },
     ],
   },
   {

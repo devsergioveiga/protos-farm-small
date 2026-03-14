@@ -289,6 +289,7 @@ model Organization {
   sanitaryProtocols         SanitaryProtocol[]
   vaccinations              Vaccination[]
   dewormings                Deworming[]
+  therapeuticTreatments     TherapeuticTreatment[]
 
   @@map("organizations")
 }
@@ -339,6 +340,8 @@ model User {
   createdPrescriptions       PesticidePrescription[]  @relation("PrescriptionCreator")
   recordedVaccinations       Vaccination[]            @relation("VaccinationRecorder")
   recordedDewormings         Deworming[]              @relation("DewormingRecorder")
+  recordedTreatments         TherapeuticTreatment[]   @relation("TreatmentRecorder")
+  recordedEvolutions         ClinicalEvolution[]      @relation("EvolutionRecorder")
 
   @@map("users")
 }
@@ -415,6 +418,7 @@ model Farm {
   costCenters                CostCenter[]
   vaccinations               Vaccination[]
   dewormings                 Deworming[]
+  therapeuticTreatments      TherapeuticTreatment[]
 
   @@map("farms")
 }
@@ -943,6 +947,7 @@ model Animal {
   calfRecords             AnimalReproductiveRecord[] @relation("CalfRecord")
   vaccinations            Vaccination[]
   dewormings              Deworming[]
+  therapeuticTreatments   TherapeuticTreatment[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -2461,6 +2466,7 @@ model Product {
   sanitaryProtocolItems  SanitaryProtocolItem[]
   vaccinations           Vaccination[]
   dewormings             Deworming[]
+  treatmentApplications  TreatmentApplication[]
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -2703,6 +2709,7 @@ model StockOutput {
   plantingOperations     PlantingOperation[]     @relation("PlantingStockOutput")
   vaccinations           Vaccination[]
   dewormings             Deworming[]
+  treatmentApplications  TreatmentApplication[]
 
   @@index([organizationId])
   @@index([organizationId, type])
@@ -2947,6 +2954,7 @@ model Disease {
 
   organization Organization @relation(fields: [organizationId], references: [id])
   treatmentProtocolDiseases TreatmentProtocolDisease[]
+  therapeuticTreatments     TherapeuticTreatment[]
 
   @@unique([name, organizationId])
   @@index([organizationId])
@@ -2999,6 +3007,7 @@ model TreatmentProtocol {
   versions     TreatmentProtocol[]    @relation("ProtocolVersions")
   diseases     TreatmentProtocolDisease[]
   steps        TreatmentProtocolStep[]
+  therapeuticTreatments TherapeuticTreatment[]
 
   @@unique([name, organizationId, version])
   @@index([organizationId])
@@ -3246,4 +3255,126 @@ model Deworming {
   @@index([protocolItemId])
   @@index([animalId, chemicalGroup])
   @@map("dewormings")
+}
+
+// ─── EPIC-11 US-105: Tratamentos Terapêuticos ──────────────────────
+
+enum TreatmentStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+enum TreatmentOutcome {
+  CURED
+  PARTIAL_IMPROVEMENT
+  DEATH
+  CHRONIC
+  REFERRED_DISPOSAL
+}
+
+enum EvolutionType {
+  IMPROVEMENT
+  STABLE
+  WORSENING
+}
+
+enum ApplicationStatus {
+  PENDING
+  DONE
+  NOT_DONE
+}
+
+model TherapeuticTreatment {
+  id                     String              @id @default(uuid())
+  organizationId         String
+  farmId                 String
+  animalId               String
+  diseaseId              String?
+  diseaseName            String
+  diagnosisDate          DateTime            @db.Date
+  observedSeverity       String              // MILD, MODERATE, SEVERE
+  clinicalObservations   String?
+  veterinaryName         String
+  responsibleName        String
+  treatmentProtocolId    String?
+  treatmentProtocolName  String?
+  withdrawalMeatDays     Int?
+  withdrawalMilkDays     Int?
+  withdrawalEndDate      DateTime?           @db.Date
+  status                 TreatmentStatus     @default(OPEN)
+  outcome                TreatmentOutcome?
+  closedAt               DateTime?
+  closingNotes           String?
+  totalCostCents         Int                 @default(0)
+  notes                  String?
+  recordedBy             String
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  organization  Organization        @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm                @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal              @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  disease       Disease?            @relation(fields: [diseaseId], references: [id], onDelete: SetNull)
+  protocol      TreatmentProtocol?  @relation(fields: [treatmentProtocolId], references: [id], onDelete: SetNull)
+  recorder      User                @relation("TreatmentRecorder", fields: [recordedBy], references: [id])
+  applications  TreatmentApplication[]
+  evolutions    ClinicalEvolution[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([status])
+  @@index([diagnosisDate])
+  @@index([diseaseId])
+  @@map("therapeutic_treatments")
+}
+
+model TreatmentApplication {
+  id                    String              @id @default(uuid())
+  treatmentId           String
+  productId             String?
+  productName           String
+  dosage                Float
+  dosageUnit            String              // MG_KG, ML_ANIMAL, FIXED_DOSE
+  administrationRoute   AdministrationRoute
+  scheduledDate         DateTime            @db.Date
+  scheduledTime         String?             // "08:00"
+  applicationDate       DateTime?           @db.Date
+  applicationTime       String?
+  status                ApplicationStatus   @default(PENDING)
+  notDoneReason         String?
+  responsibleName       String?
+  stockOutputId         String?
+  costCents             Int                 @default(0)
+  notes                 String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  treatment     TherapeuticTreatment @relation(fields: [treatmentId], references: [id], onDelete: Cascade)
+  product       Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
+  stockOutput   StockOutput?         @relation(fields: [stockOutputId], references: [id], onDelete: SetNull)
+
+  @@index([treatmentId])
+  @@index([scheduledDate])
+  @@index([status])
+  @@map("treatment_applications")
+}
+
+model ClinicalEvolution {
+  id                    String    @id @default(uuid())
+  treatmentId           String
+  evolutionDate         DateTime  @db.Date
+  evolutionType         EvolutionType
+  temperature           Float?
+  observations          String?
+  veterinaryName        String?
+  recordedBy            String
+  createdAt             DateTime  @default(now())
+
+  treatment     TherapeuticTreatment @relation(fields: [treatmentId], references: [id], onDelete: Cascade)
+  recorder      User                 @relation("EvolutionRecorder", fields: [recordedBy], references: [id])
+
+  @@index([treatmentId])
+  @@map("clinical_evolutions")
 }
