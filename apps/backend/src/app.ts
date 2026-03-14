@@ -57,6 +57,7 @@ import { sanitaryProtocolsRouter } from './modules/sanitary-protocols/sanitary-p
 import { vaccinationsRouter } from './modules/vaccinations/vaccinations.routes';
 import { dewormingsRouter } from './modules/dewormings/dewormings.routes';
 import { therapeuticTreatmentsRouter } from './modules/therapeutic-treatments/therapeutic-treatments.routes';
+import { animalExamsRouter } from './modules/animal-exams/animal-exams.routes';
 
 const app = express();
 
@@ -121,5 +122,6 @@ app.use('/api', sanitaryProtocolsRouter);
 app.use('/api', vaccinationsRouter);
 app.use('/api', dewormingsRouter);
 app.use('/api', therapeuticTreatmentsRouter);
+app.use('/api', animalExamsRouter);
 
 export { app };

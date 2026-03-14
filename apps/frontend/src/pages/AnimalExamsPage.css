@@ -1,0 +1,580 @@
+.animal-exams-page {
+  padding: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.animal-exams-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.animal-exams-page__header h1 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.animal-exams-page__header p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  margin: 4px 0 0;
+}
+
+.animal-exams-page__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.animal-exams-page__btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary-600);
+  color: white;
+  cursor: pointer;
+  min-height: 48px;
+  white-space: nowrap;
+}
+
+.animal-exams-page__btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  padding: 12px 20px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  min-height: 48px;
+  white-space: nowrap;
+}
+
+.animal-exams-page__btn-secondary:hover {
+  background: var(--color-neutral-50);
+}
+
+/* Tabs */
+.animal-exams-page__tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--color-neutral-100);
+  margin-bottom: 20px;
+}
+
+.animal-exams-page__tab {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  position: relative;
+  min-height: 48px;
+}
+
+.animal-exams-page__tab--active {
+  color: var(--color-primary-600);
+}
+
+.animal-exams-page__tab--active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-primary-600);
+}
+
+/* Success / Error */
+.animal-exams-page__success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(46, 125, 50, 0.08);
+  border: 1px solid rgba(46, 125, 50, 0.2);
+  border-radius: 8px;
+  color: var(--color-primary-600);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.animal-exams-page__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(198, 40, 40, 0.08);
+  border: 1px solid rgba(198, 40, 40, 0.2);
+  border-radius: 8px;
+  color: var(--color-error-500);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+/* Toolbar */
+.animal-exams-page__toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.animal-exams-page__search {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.animal-exams-page__search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-neutral-400);
+}
+
+.animal-exams-page__search input {
+  width: 100%;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  padding: 12px 16px 12px 36px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  color: var(--color-neutral-700);
+}
+
+.animal-exams-page__search input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.animal-exams-page__filter select {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  color: var(--color-neutral-700);
+  min-height: 48px;
+}
+
+/* Loading / Empty */
+.animal-exams-page__loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--color-neutral-500);
+  font-size: 0.9375rem;
+}
+
+.animal-exams-page__empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--color-neutral-500);
+}
+
+.animal-exams-page__empty svg {
+  color: var(--color-neutral-300);
+  margin-bottom: 16px;
+}
+
+.animal-exams-page__empty h2 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  margin: 0 0 8px;
+}
+
+.animal-exams-page__empty p {
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Grid */
+.animal-exams-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+/* Card */
+.animal-exams-page__card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out;
+}
+
+.animal-exams-page__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.animal-exams-page__card:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.animal-exams-page__card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.animal-exams-page__card-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.animal-exams-page__card-subtitle {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  margin: 2px 0 0;
+}
+
+.animal-exams-page__card-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.animal-exams-page__card-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  min-width: 48px;
+  min-height: 48px;
+  justify-content: center;
+}
+
+.animal-exams-page__card-btn:hover {
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-700);
+}
+
+.animal-exams-page__card-btn--delete:hover {
+  color: var(--color-error-500);
+  background: rgba(198, 40, 40, 0.08);
+}
+
+.animal-exams-page__card-btn--results {
+  color: var(--color-primary-600);
+}
+
+.animal-exams-page__card-btn--results:hover {
+  background: rgba(46, 125, 50, 0.08);
+}
+
+/* Tags */
+.animal-exams-page__card-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.animal-exams-page__tag {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.animal-exams-page__tag--pending {
+  background: rgba(245, 124, 0, 0.1);
+  color: #f57c00;
+}
+
+.animal-exams-page__tag--in-progress {
+  background: rgba(21, 101, 192, 0.1);
+  color: #1565c0;
+}
+
+.animal-exams-page__tag--completed {
+  background: rgba(46, 125, 50, 0.1);
+  color: var(--color-primary-600);
+}
+
+.animal-exams-page__tag--cancelled {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-500);
+}
+
+.animal-exams-page__tag--regulatory {
+  background: rgba(198, 40, 40, 0.08);
+  color: var(--color-error-500);
+}
+
+.animal-exams-page__tag--category {
+  background: rgba(21, 101, 192, 0.08);
+  color: #1565c0;
+}
+
+/* Details */
+.animal-exams-page__card-details {
+  display: flex;
+  gap: 16px;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+  flex-wrap: wrap;
+}
+
+.animal-exams-page__detail {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.animal-exams-page__detail--mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+}
+
+/* Results summary */
+.animal-exams-page__card-results {
+  margin-top: 8px;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.animal-exams-page__result-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.animal-exams-page__result-badge--normal {
+  background: rgba(46, 125, 50, 0.1);
+  color: var(--color-primary-600);
+}
+
+.animal-exams-page__result-badge--above {
+  background: rgba(198, 40, 40, 0.1);
+  color: var(--color-error-500);
+}
+
+.animal-exams-page__result-badge--below {
+  background: rgba(245, 124, 0, 0.1);
+  color: #f57c00;
+}
+
+.animal-exams-page__result-badge--positive {
+  background: rgba(198, 40, 40, 0.1);
+  color: var(--color-error-500);
+}
+
+.animal-exams-page__result-badge--negative {
+  background: rgba(46, 125, 50, 0.1);
+  color: var(--color-primary-600);
+}
+
+/* Pagination */
+.animal-exams-page__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.animal-exams-page__pagination button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  padding: 8px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  min-height: 48px;
+}
+
+.animal-exams-page__pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.animal-exams-page__pagination span {
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+}
+
+/* Indicators */
+.animal-exams-page__indicators {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.animal-exams-page__stat-card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.animal-exams-page__stat-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  margin: 0 0 4px;
+}
+
+.animal-exams-page__stat-value {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.animal-exams-page__stat-value--warning {
+  color: #f57c00;
+}
+
+.animal-exams-page__stat-value--error {
+  color: var(--color-error-500);
+}
+
+.animal-exams-page__rates-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.animal-exams-page__rates-table th {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-neutral-500);
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.animal-exams-page__rates-table td {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.animal-exams-page__rates-table td:last-child {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+}
+
+/* Exam Types list */
+.animal-exams-page__types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.animal-exams-page__type-card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out;
+}
+
+.animal-exams-page__type-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.animal-exams-page__type-card:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.animal-exams-page__type-name {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0 0 8px;
+}
+
+.animal-exams-page__type-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+
+@media (max-width: 639px) {
+  .animal-exams-page {
+    padding: 16px;
+  }
+  .animal-exams-page__header {
+    flex-direction: column;
+  }
+  .animal-exams-page__actions {
+    width: 100%;
+  }
+  .animal-exams-page__actions button {
+    flex: 1;
+  }
+  .animal-exams-page__grid {
+    grid-template-columns: 1fr;
+  }
+  .animal-exams-page__types-grid {
+    grid-template-columns: 1fr;
+  }
+}

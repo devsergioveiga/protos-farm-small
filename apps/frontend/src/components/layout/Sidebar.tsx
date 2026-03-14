@@ -34,6 +34,7 @@ import {
   ArrowRightLeft,
   TrendingDown,
   ShieldPlus,
+  FlaskConical,
   X,
 } from 'lucide-react';
 import './Sidebar.css';
@@ -78,6 +79,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/vaccinations', icon: Syringe, label: 'Vacinações' },
       { to: '/dewormings', icon: Droplet, label: 'Vermifugações' },
       { to: '/therapeutic-treatments', icon: Stethoscope, label: 'Tratamentos' },
+      { to: '/animal-exams', icon: FlaskConical, label: 'Exames' },
     ],
   },
   {

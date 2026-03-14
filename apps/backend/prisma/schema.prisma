@@ -290,6 +290,8 @@ model Organization {
   vaccinations              Vaccination[]
   dewormings                Deworming[]
   therapeuticTreatments     TherapeuticTreatment[]
+  examTypes                ExamType[]
+  animalExams              AnimalExam[]
 
   @@map("organizations")
 }
@@ -342,6 +344,7 @@ model User {
   recordedDewormings         Deworming[]              @relation("DewormingRecorder")
   recordedTreatments         TherapeuticTreatment[]   @relation("TreatmentRecorder")
   recordedEvolutions         ClinicalEvolution[]      @relation("EvolutionRecorder")
+  recordedExams              AnimalExam[]             @relation("ExamRecorder")
 
   @@map("users")
 }
@@ -419,6 +422,7 @@ model Farm {
   vaccinations               Vaccination[]
   dewormings                 Deworming[]
   therapeuticTreatments      TherapeuticTreatment[]
+  animalExams                AnimalExam[]
 
   @@map("farms")
 }
@@ -948,6 +952,7 @@ model Animal {
   vaccinations            Vaccination[]
   dewormings              Deworming[]
   therapeuticTreatments   TherapeuticTreatment[]
+  animalExams             AnimalExam[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -3377,4 +3382,138 @@ model ClinicalEvolution {
 
   @@index([treatmentId])
   @@map("clinical_evolutions")
+}
+
+// ─── EPIC-11 US-106: Registro de Exames ─────────────────────────────
+
+enum ExamCategory {
+  MANDATORY
+  DIAGNOSTIC
+  ROUTINE
+}
+
+enum ExamMethod {
+  LABORATORY
+  FIELD
+  IMAGING
+}
+
+enum ExamStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ResultIndicator {
+  NORMAL
+  ABOVE
+  BELOW
+  POSITIVE
+  NEGATIVE
+}
+
+model ExamType {
+  id                   String          @id @default(uuid())
+  organizationId       String
+  name                 String
+  category             ExamCategory
+  method               ExamMethod
+  material             String?
+  defaultLab           String?
+  isRegulatory         Boolean         @default(false)
+  validityDays         Int?
+  notes                String?
+  deletedAt            DateTime?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  referenceParams ExamTypeParam[]
+  animalExams     AnimalExam[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@index([category])
+  @@map("exam_types")
+}
+
+model ExamTypeParam {
+  id              String    @id @default(uuid())
+  examTypeId      String
+  paramName       String
+  unit            String?
+  minReference    Float?
+  maxReference    Float?
+  isBooleanResult Boolean   @default(false)
+  sortOrder       Int       @default(0)
+  createdAt       DateTime  @default(now())
+
+  examType  ExamType  @relation(fields: [examTypeId], references: [id], onDelete: Cascade)
+
+  @@index([examTypeId])
+  @@map("exam_type_params")
+}
+
+model AnimalExam {
+  id                    String       @id @default(uuid())
+  organizationId        String
+  farmId                String
+  animalId              String
+  examTypeId            String
+  examTypeName          String
+  collectionDate        DateTime     @db.Date
+  sendDate              DateTime?    @db.Date
+  laboratory            String?
+  protocolNumber        String?
+  status                ExamStatus   @default(PENDING)
+  resultDate            DateTime?    @db.Date
+  responsibleName       String
+  veterinaryName        String?
+  veterinaryCrmv        String?
+  certificateNumber     String?
+  certificateValidity   DateTime?    @db.Date
+  animalLotId           String?
+  campaignId            String?
+  linkedTreatmentId     String?
+  notes                 String?
+  recordedBy            String
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  organization  Organization  @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal        @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  examType      ExamType      @relation(fields: [examTypeId], references: [id], onDelete: Restrict)
+  recorder      User          @relation("ExamRecorder", fields: [recordedBy], references: [id])
+  results       ExamResult[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([examTypeId])
+  @@index([collectionDate])
+  @@index([status])
+  @@index([campaignId])
+  @@index([certificateValidity])
+  @@map("animal_exams")
+}
+
+model ExamResult {
+  id              String           @id @default(uuid())
+  examId          String
+  paramName       String
+  numericValue    Float?
+  booleanValue    Boolean?
+  textValue       String?
+  unit            String?
+  minReference    Float?
+  maxReference    Float?
+  indicator       ResultIndicator?
+  createdAt       DateTime         @default(now())
+
+  exam  AnimalExam  @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@index([examId])
+  @@map("exam_results")
 }
