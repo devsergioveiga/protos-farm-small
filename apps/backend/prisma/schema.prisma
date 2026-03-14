@@ -286,6 +286,7 @@ model Organization {
   pesticidePrescriptions    PesticidePrescription[]
   diseases                  Disease[]
   treatmentProtocols        TreatmentProtocol[]
+  sanitaryProtocols         SanitaryProtocol[]
 
   @@map("organizations")
 }
@@ -2449,6 +2450,7 @@ model Product {
   fertilizerApplications FertilizerApplication[] @relation("FertilizerProduct")
   plantingOperations     PlantingOperation[]     @relation("PlantingSeedProduct")
   treatmentProtocolSteps TreatmentProtocolStep[]
+  sanitaryProtocolItems  SanitaryProtocolItem[]
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -3028,4 +3030,103 @@ model TreatmentProtocolStep {
 
   @@index([protocolId])
   @@map("treatment_protocol_steps")
+}
+
+// ─── EPIC-11 US-100: Protocolos Sanitários ─────────────────────────
+
+enum SanitaryProcedureType {
+  VACCINATION
+  DEWORMING
+  EXAM
+  MEDICATION
+  OTHER
+}
+
+enum SanitaryTriggerType {
+  AGE
+  EVENT
+  CALENDAR
+}
+
+enum SanitaryEventTrigger {
+  BIRTH
+  WEANING
+  REPRODUCTIVE_RELEASE
+  PRE_IATF
+  DRYING
+  PRE_PARTUM
+  POST_PARTUM
+  TRANSITION
+  FARM_ENTRY
+  FARM_EXIT
+}
+
+enum CalendarFrequency {
+  MONTHLY
+  QUARTERLY
+  BIANNUAL
+  ANNUAL
+}
+
+enum SanitaryProtocolStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model SanitaryProtocol {
+  id             String                  @id @default(uuid())
+  organizationId String                  @map("organization_id")
+  name           String
+  description    String?
+  authorName     String                  @map("author_name")
+  status         SanitaryProtocolStatus  @default(ACTIVE)
+  version        Int                     @default(1)
+  originalId     String?                 @map("original_id")
+  isObligatory   Boolean                 @default(false) @map("is_obligatory")
+  targetCategories AnimalCategory[]      @map("target_categories")
+  deletedAt      DateTime?               @map("deleted_at")
+  createdAt      DateTime                @default(now()) @map("created_at")
+  updatedAt      DateTime                @updatedAt @map("updated_at")
+
+  organization Organization              @relation(fields: [organizationId], references: [id])
+  original     SanitaryProtocol?          @relation("SanitaryProtocolVersions", fields: [originalId], references: [id])
+  versions     SanitaryProtocol[]         @relation("SanitaryProtocolVersions")
+  items        SanitaryProtocolItem[]
+
+  @@unique([name, organizationId, version])
+  @@index([organizationId])
+  @@index([originalId])
+  @@index([status])
+  @@map("sanitary_protocols")
+}
+
+model SanitaryProtocolItem {
+  id                  String                @id @default(uuid())
+  protocolId          String                @map("protocol_id")
+  order               Int
+  procedureType       SanitaryProcedureType @map("procedure_type")
+  productId           String?               @map("product_id")
+  productName         String                @map("product_name")
+  dosage              Float?
+  dosageUnit          DosageUnit?           @map("dosage_unit")
+  administrationRoute AdministrationRoute?  @map("administration_route")
+  triggerType         SanitaryTriggerType   @map("trigger_type")
+  triggerAgeDays      Int?                  @map("trigger_age_days")
+  triggerAgeMaxDays   Int?                  @map("trigger_age_max_days")
+  triggerEvent        SanitaryEventTrigger? @map("trigger_event")
+  triggerEventOffsetDays Int?               @map("trigger_event_offset_days")
+  calendarFrequency   CalendarFrequency?    @map("calendar_frequency")
+  calendarMonths      Int[]                 @map("calendar_months")
+  isReinforcement     Boolean               @default(false) @map("is_reinforcement")
+  reinforcementIntervalDays Int?            @map("reinforcement_interval_days")
+  reinforcementDoseNumber   Int?            @map("reinforcement_dose_number")
+  withdrawalMeatDays  Int?                  @map("withdrawal_meat_days")
+  withdrawalMilkDays  Int?                  @map("withdrawal_milk_days")
+  notes               String?
+
+  protocol SanitaryProtocol @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+  product  Product?         @relation(fields: [productId], references: [id])
+
+  @@index([protocolId])
+  @@map("sanitary_protocol_items")
 }
