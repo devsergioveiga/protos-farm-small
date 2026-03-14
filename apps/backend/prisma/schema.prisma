@@ -287,6 +287,7 @@ model Organization {
   diseases                  Disease[]
   treatmentProtocols        TreatmentProtocol[]
   sanitaryProtocols         SanitaryProtocol[]
+  vaccinations              Vaccination[]
 
   @@map("organizations")
 }
@@ -335,6 +336,7 @@ model User {
   recordedCoffeeHarvests     CoffeeHarvest[]          @relation("CoffeeHarvestRecorder")
   recordedOrangeHarvests     OrangeHarvest[]          @relation("OrangeHarvestRecorder")
   createdPrescriptions       PesticidePrescription[]  @relation("PrescriptionCreator")
+  recordedVaccinations       Vaccination[]            @relation("VaccinationRecorder")
 
   @@map("users")
 }
@@ -409,6 +411,7 @@ model Farm {
   stockInventories           StockInventory[]
   pesticidePrescriptions     PesticidePrescription[]
   costCenters                CostCenter[]
+  vaccinations               Vaccination[]
 
   @@map("farms")
 }
@@ -935,6 +938,7 @@ model Animal {
   plannedSireRecords      AnimalReproductiveRecord[] @relation("PlannedSire")
   sireReproductiveRecords AnimalReproductiveRecord[] @relation("SireReproductive")
   calfRecords             AnimalReproductiveRecord[] @relation("CalfRecord")
+  vaccinations            Vaccination[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -2451,6 +2455,7 @@ model Product {
   plantingOperations     PlantingOperation[]     @relation("PlantingSeedProduct")
   treatmentProtocolSteps TreatmentProtocolStep[]
   sanitaryProtocolItems  SanitaryProtocolItem[]
+  vaccinations           Vaccination[]
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -2691,6 +2696,7 @@ model StockOutput {
   fertilizerApplications FertilizerApplication[] @relation("FertilizerStockOutput")
   soilPrepOperations     SoilPrepOperation[]     @relation("SoilPrepStockOutput")
   plantingOperations     PlantingOperation[]     @relation("PlantingStockOutput")
+  vaccinations           Vaccination[]
 
   @@index([organizationId])
   @@index([organizationId, type])
@@ -3127,6 +3133,56 @@ model SanitaryProtocolItem {
   protocol SanitaryProtocol @relation(fields: [protocolId], references: [id], onDelete: Cascade)
   product  Product?         @relation(fields: [productId], references: [id])
 
+  vaccinations Vaccination[]
+
   @@index([protocolId])
   @@map("sanitary_protocol_items")
+}
+
+// ─── EPIC-11 US-101: Vacinação ──────────────────────────────────────
+
+model Vaccination {
+  id                    String              @id @default(uuid())
+  organizationId        String
+  farmId                String
+  animalId              String
+  productId             String?
+  productName           String
+  dosageMl              Float
+  administrationRoute   AdministrationRoute
+  productBatchNumber    String?
+  productExpiryDate     DateTime?           @db.Date
+  vaccinationDate       DateTime            @db.Date
+  responsibleName       String
+  veterinaryName        String?
+  protocolItemId        String?
+  campaignId            String?
+  doseNumber            Int                 @default(1)
+  nextDoseDate          DateTime?           @db.Date
+  withdrawalMeatDays    Int?
+  withdrawalMilkDays    Int?
+  withdrawalEndDate     DateTime?           @db.Date
+  stockOutputId         String?
+  animalLotId           String?
+  notes                 String?
+  recordedBy            String
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  organization  Organization         @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm                 @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal               @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  product       Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
+  protocolItem  SanitaryProtocolItem? @relation(fields: [protocolItemId], references: [id], onDelete: SetNull)
+  stockOutput   StockOutput?         @relation(fields: [stockOutputId], references: [id], onDelete: SetNull)
+  recorder      User                 @relation("VaccinationRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([productId])
+  @@index([vaccinationDate])
+  @@index([campaignId])
+  @@index([protocolItemId])
+  @@map("vaccinations")
 }
