@@ -15,6 +15,8 @@ import {
   ShieldCheck,
   AlertTriangle,
   Calendar,
+  CalendarDays,
+  List,
 } from 'lucide-react';
 import { useSanitaryProtocols } from '@/hooks/useSanitaryProtocols';
 import type { SanitaryProtocol } from '@/types/sanitary-protocol';
@@ -24,11 +26,13 @@ import {
   TARGET_CATEGORIES,
 } from '@/types/sanitary-protocol';
 import SanitaryProtocolModal from '@/components/sanitary-protocols/SanitaryProtocolModal';
+import SanitaryCalendarView from '@/components/sanitary-protocols/SanitaryCalendarView';
 import { api } from '@/services/api';
 import './SanitaryProtocolsPage.css';
 
 export default function SanitaryProtocolsPage() {
   // ─── State ──────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState<'list' | 'calendar'>('list');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -60,6 +64,14 @@ export default function SanitaryProtocolsPage() {
     search: search || undefined,
   });
 
+  // All protocols for calendar view (no pagination)
+  const {
+    protocols: allProtocols,
+    isLoading: calendarLoading,
+    error: calendarError,
+    refetch: refetchCalendar,
+  } = useSanitaryProtocols({ limit: 200 });
+
   // ─── Callbacks ──────────────────────────────────────────
   const handleSuccess = useCallback(() => {
     setShowModal(false);
@@ -68,8 +80,9 @@ export default function SanitaryProtocolsPage() {
       selectedProtocol ? 'Protocolo atualizado com sucesso' : 'Protocolo cadastrado com sucesso',
     );
     void refetch();
+    void refetchCalendar();
     setTimeout(() => setSuccessMsg(null), 5000);
-  }, [refetch, selectedProtocol]);
+  }, [refetch, refetchCalendar, selectedProtocol]);
 
   const handleEdit = useCallback((p: SanitaryProtocol) => {
     setSelectedProtocol(p);
@@ -85,6 +98,7 @@ export default function SanitaryProtocolsPage() {
         await api.delete(`/org/sanitary-protocols/${p.id}`);
         setSuccessMsg('Protocolo excluído com sucesso');
         void refetch();
+        void refetchCalendar();
         setTimeout(() => setSuccessMsg(null), 5000);
       } catch (err: unknown) {
         setDeleteError(err instanceof Error ? err.message : 'Erro ao excluir protocolo.');
@@ -101,6 +115,7 @@ export default function SanitaryProtocolsPage() {
         await api.post(`/org/sanitary-protocols/${p.id}/duplicate`, {});
         setSuccessMsg('Protocolo duplicado com sucesso');
         void refetch();
+        void refetchCalendar();
         setTimeout(() => setSuccessMsg(null), 5000);
       } catch (err: unknown) {
         setDeleteError(err instanceof Error ? err.message : 'Erro ao duplicar protocolo.');
@@ -119,6 +134,7 @@ export default function SanitaryProtocolsPage() {
       );
       setSuccessMsg(`${result.created} protocolos pré-carregados com sucesso`);
       void refetch();
+      void refetchCalendar();
       setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err: unknown) {
       setDeleteError(err instanceof Error ? err.message : 'Erro ao carregar protocolos padrão.');
@@ -180,209 +196,248 @@ export default function SanitaryProtocolsPage() {
         </div>
       )}
 
-      {/* Toolbar */}
-      <div className="sp-page__toolbar">
-        <div className="sp-page__search">
-          <Search size={16} aria-hidden="true" className="sp-page__search-icon" />
-          <input
-            type="text"
-            placeholder="Buscar por nome, descrição ou autor..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            aria-label="Buscar protocolos sanitários"
-          />
-        </div>
-        <div className="sp-page__filter">
-          <select
-            value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setPage(1);
-            }}
-            aria-label="Filtrar por status"
-          >
-            <option value="">Todos os status</option>
-            {SANITARY_PROTOCOL_STATUSES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="sp-page__filter">
-          <select
-            value={procedureFilter}
-            onChange={(e) => {
-              setProcedureFilter(e.target.value);
-              setPage(1);
-            }}
-            aria-label="Filtrar por tipo de procedimento"
-          >
-            <option value="">Todos os procedimentos</option>
-            {PROCEDURE_TYPES.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="sp-page__filter">
-          <select
-            value={categoryFilter}
-            onChange={(e) => {
-              setCategoryFilter(e.target.value);
-              setPage(1);
-            }}
-            aria-label="Filtrar por categoria animal"
-          >
-            <option value="">Todas as categorias</option>
-            {TARGET_CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+      {/* Tabs */}
+      <nav className="sp-page__tabs" aria-label="Visualização de protocolos">
+        <button
+          className={activeTab === 'list' ? 'sp-page__tab--active' : 'sp-page__tab'}
+          onClick={() => setActiveTab('list')}
+          aria-current={activeTab === 'list' ? 'page' : undefined}
+        >
+          <List size={16} aria-hidden="true" />
+          Protocolos
+        </button>
+        <button
+          className={activeTab === 'calendar' ? 'sp-page__tab--active' : 'sp-page__tab'}
+          onClick={() => setActiveTab('calendar')}
+          aria-current={activeTab === 'calendar' ? 'page' : undefined}
+        >
+          <CalendarDays size={16} aria-hidden="true" />
+          Calendário
+        </button>
+      </nav>
 
-      {/* Loading */}
-      {isLoading && <div className="sp-page__loading">Carregando protocolos...</div>}
-
-      {/* Empty */}
-      {!isLoading && protocols.length === 0 && (
-        <div className="sp-page__empty">
-          <ShieldPlus size={48} aria-hidden="true" />
-          <h2>Nenhum protocolo sanitário cadastrado</h2>
-          <p>
-            Cadastre protocolos manualmente ou use o botão &quot;Pré-carregar&quot; para importar
-            protocolos comuns (vacinação, vermifugação, secagem).
-          </p>
-        </div>
-      )}
-
-      {/* Grid */}
-      {!isLoading && protocols.length > 0 && (
-        <div className="sp-page__grid">
-          {protocols.map((p) => (
-            <div
-              key={p.id}
-              className="sp-page__card"
-              onClick={() => handleEdit(p)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleEdit(p);
-                }
-              }}
-            >
-              <div className="sp-page__card-header">
-                <div>
-                  <h3 className="sp-page__card-title">{p.name}</h3>
-                  <p className="sp-page__card-author">por {p.authorName}</p>
-                </div>
-                <div className="sp-page__card-actions">
-                  <button
-                    type="button"
-                    className="sp-page__card-btn"
-                    onClick={(e) => void handleDuplicate(p, e)}
-                    aria-label={`Duplicar ${p.name}`}
-                  >
-                    <Copy size={16} aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    className="sp-page__card-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(p);
-                    }}
-                    aria-label={`Editar ${p.name}`}
-                  >
-                    <Pencil size={16} aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    className="sp-page__card-btn sp-page__card-btn--delete"
-                    onClick={(e) => void handleDelete(p, e)}
-                    aria-label={`Excluir ${p.name}`}
-                  >
-                    <Trash2 size={16} aria-hidden="true" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="sp-page__card-tags">
-                <span className={`sp-page__tag sp-page__tag--status-${p.status}`}>
-                  <ShieldCheck size={12} aria-hidden="true" />
-                  {p.statusLabel}
-                </span>
-                {p.isObligatory && (
-                  <span className="sp-page__tag sp-page__tag--obligatory">
-                    <AlertTriangle size={12} aria-hidden="true" />
-                    Obrigatório
-                  </span>
-                )}
-                {p.version > 1 && (
-                  <span className="sp-page__tag sp-page__tag--version">v{p.version}</span>
-                )}
-              </div>
-
-              {/* Target categories */}
-              {p.targetCategoryLabels.length > 0 && (
-                <div className="sp-page__card-categories">
-                  {p.targetCategoryLabels.map((label, idx) => (
-                    <span key={idx} className="sp-page__category-badge">
-                      {label}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Items summary */}
-              <div className="sp-page__card-meta">
-                <span className="sp-page__card-meta-item">
-                  <Syringe size={14} aria-hidden="true" />
-                  {p.items.length} procedimento{p.items.length !== 1 ? 's' : ''}
-                </span>
-                <span className="sp-page__card-meta-item">
-                  <Calendar size={14} aria-hidden="true" />
-                  {formatTrigger(p)}
-                </span>
-              </div>
-
-              {p.description && <p className="sp-page__card-description">{p.description}</p>}
+      {/* Calendar View */}
+      {activeTab === 'calendar' && (
+        <>
+          {calendarLoading && <div className="sp-page__loading">Carregando calendário...</div>}
+          {calendarError && (
+            <div className="sp-page__error" role="alert">
+              <AlertCircle size={16} aria-hidden="true" />
+              {calendarError}
             </div>
-          ))}
-        </div>
+          )}
+          {!calendarLoading && !calendarError && <SanitaryCalendarView protocols={allProtocols} />}
+        </>
       )}
 
-      {/* Pagination */}
-      {meta && meta.totalPages > 1 && (
-        <nav className="sp-page__pagination" aria-label="Paginação">
-          <button
-            type="button"
-            onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-            disabled={page <= 1}
-            aria-label="Página anterior"
-          >
-            <ChevronLeft size={16} aria-hidden="true" />
-            Anterior
-          </button>
-          <span>
-            {page} de {meta.totalPages}
-          </span>
-          <button
-            type="button"
-            onClick={() => setPage((prev) => prev + 1)}
-            disabled={page >= meta.totalPages}
-            aria-label="Próxima página"
-          >
-            Próxima
-            <ChevronRight size={16} aria-hidden="true" />
-          </button>
-        </nav>
+      {/* List View */}
+      {activeTab === 'list' && (
+        <>
+          {/* Toolbar */}
+          <div className="sp-page__toolbar">
+            <div className="sp-page__search">
+              <Search size={16} aria-hidden="true" className="sp-page__search-icon" />
+              <input
+                type="text"
+                placeholder="Buscar por nome, descrição ou autor..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                aria-label="Buscar protocolos sanitários"
+              />
+            </div>
+            <div className="sp-page__filter">
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setPage(1);
+                }}
+                aria-label="Filtrar por status"
+              >
+                <option value="">Todos os status</option>
+                {SANITARY_PROTOCOL_STATUSES.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="sp-page__filter">
+              <select
+                value={procedureFilter}
+                onChange={(e) => {
+                  setProcedureFilter(e.target.value);
+                  setPage(1);
+                }}
+                aria-label="Filtrar por tipo de procedimento"
+              >
+                <option value="">Todos os procedimentos</option>
+                {PROCEDURE_TYPES.map((p) => (
+                  <option key={p.value} value={p.value}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="sp-page__filter">
+              <select
+                value={categoryFilter}
+                onChange={(e) => {
+                  setCategoryFilter(e.target.value);
+                  setPage(1);
+                }}
+                aria-label="Filtrar por categoria animal"
+              >
+                <option value="">Todas as categorias</option>
+                {TARGET_CATEGORIES.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Loading */}
+          {isLoading && <div className="sp-page__loading">Carregando protocolos...</div>}
+
+          {/* Empty */}
+          {!isLoading && protocols.length === 0 && (
+            <div className="sp-page__empty">
+              <ShieldPlus size={48} aria-hidden="true" />
+              <h2>Nenhum protocolo sanitário cadastrado</h2>
+              <p>
+                Cadastre protocolos manualmente ou use o botão &quot;Pré-carregar&quot; para
+                importar protocolos comuns (vacinação, vermifugação, secagem).
+              </p>
+            </div>
+          )}
+
+          {/* Grid */}
+          {!isLoading && protocols.length > 0 && (
+            <div className="sp-page__grid">
+              {protocols.map((p) => (
+                <div
+                  key={p.id}
+                  className="sp-page__card"
+                  onClick={() => handleEdit(p)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleEdit(p);
+                    }
+                  }}
+                >
+                  <div className="sp-page__card-header">
+                    <div>
+                      <h3 className="sp-page__card-title">{p.name}</h3>
+                      <p className="sp-page__card-author">por {p.authorName}</p>
+                    </div>
+                    <div className="sp-page__card-actions">
+                      <button
+                        type="button"
+                        className="sp-page__card-btn"
+                        onClick={(e) => void handleDuplicate(p, e)}
+                        aria-label={`Duplicar ${p.name}`}
+                      >
+                        <Copy size={16} aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        className="sp-page__card-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(p);
+                        }}
+                        aria-label={`Editar ${p.name}`}
+                      >
+                        <Pencil size={16} aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        className="sp-page__card-btn sp-page__card-btn--delete"
+                        onClick={(e) => void handleDelete(p, e)}
+                        aria-label={`Excluir ${p.name}`}
+                      >
+                        <Trash2 size={16} aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="sp-page__card-tags">
+                    <span className={`sp-page__tag sp-page__tag--status-${p.status}`}>
+                      <ShieldCheck size={12} aria-hidden="true" />
+                      {p.statusLabel}
+                    </span>
+                    {p.isObligatory && (
+                      <span className="sp-page__tag sp-page__tag--obligatory">
+                        <AlertTriangle size={12} aria-hidden="true" />
+                        Obrigatório
+                      </span>
+                    )}
+                    {p.version > 1 && (
+                      <span className="sp-page__tag sp-page__tag--version">v{p.version}</span>
+                    )}
+                  </div>
+
+                  {/* Target categories */}
+                  {p.targetCategoryLabels.length > 0 && (
+                    <div className="sp-page__card-categories">
+                      {p.targetCategoryLabels.map((label, idx) => (
+                        <span key={idx} className="sp-page__category-badge">
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Items summary */}
+                  <div className="sp-page__card-meta">
+                    <span className="sp-page__card-meta-item">
+                      <Syringe size={14} aria-hidden="true" />
+                      {p.items.length} procedimento{p.items.length !== 1 ? 's' : ''}
+                    </span>
+                    <span className="sp-page__card-meta-item">
+                      <Calendar size={14} aria-hidden="true" />
+                      {formatTrigger(p)}
+                    </span>
+                  </div>
+
+                  {p.description && <p className="sp-page__card-description">{p.description}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {meta && meta.totalPages > 1 && (
+            <nav className="sp-page__pagination" aria-label="Paginação">
+              <button
+                type="button"
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                disabled={page <= 1}
+                aria-label="Página anterior"
+              >
+                <ChevronLeft size={16} aria-hidden="true" />
+                Anterior
+              </button>
+              <span>
+                {page} de {meta.totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((prev) => prev + 1)}
+                disabled={page >= meta.totalPages}
+                aria-label="Próxima página"
+              >
+                Próxima
+                <ChevronRight size={16} aria-hidden="true" />
+              </button>
+            </nav>
+          )}
+        </>
       )}
 
       {/* Modal */}

@@ -77,6 +77,51 @@
   background: var(--color-neutral-50);
 }
 
+/* ─── Tabs ────────────────────────────────────────────────────────── */
+.sp-page__tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--color-neutral-100);
+  padding-bottom: 0;
+}
+
+.sp-page__tab,
+.sp-page__tab--active {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--color-neutral-500);
+  transition:
+    color 200ms ease-out,
+    border-color 200ms ease-out;
+}
+
+.sp-page__tab:hover {
+  color: var(--color-neutral-700);
+}
+
+.sp-page__tab--active {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+
+.sp-page__tab:focus-visible,
+.sp-page__tab--active:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+
 /* ─── Toolbar ─────────────────────────────────────────────────────── */
 .sp-page__toolbar {
   display: flex;
