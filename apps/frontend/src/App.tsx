@@ -53,6 +53,7 @@ const ConversionHistoryPage = lazy(() => import('@/pages/ConversionHistoryPage')
 const GrainDiscountsPage = lazy(() => import('@/pages/GrainDiscountsPage'));
 const DiseasesPage = lazy(() => import('@/pages/DiseasesPage'));
 const TreatmentProtocolsPage = lazy(() => import('@/pages/TreatmentProtocolsPage'));
+const SanitaryProtocolsPage = lazy(() => import('@/pages/SanitaryProtocolsPage'));
 
 export function App() {
   return (
@@ -107,6 +108,7 @@ export function App() {
                 <Route path="/grain-discounts" element={<GrainDiscountsPage />} />
                 <Route path="/diseases" element={<DiseasesPage />} />
                 <Route path="/treatment-protocols" element={<TreatmentProtocolsPage />} />
+                <Route path="/sanitary-protocols" element={<SanitaryProtocolsPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}

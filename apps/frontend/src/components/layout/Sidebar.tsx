@@ -32,6 +32,7 @@ import {
   FileText,
   ArrowRightLeft,
   TrendingDown,
+  ShieldPlus,
   X,
 } from 'lucide-react';
 import './Sidebar.css';
@@ -71,7 +72,8 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/lots', icon: Layers, label: 'Lotes' },
       { to: '/weighing-session', icon: Scale, label: 'Pesagem' },
       { to: '/diseases', icon: HeartPulse, label: 'Doenças' },
-      { to: '/treatment-protocols', icon: Syringe, label: 'Protocolos' },
+      { to: '/treatment-protocols', icon: Syringe, label: 'Protocolos tratamento' },
+      { to: '/sanitary-protocols', icon: ShieldPlus, label: 'Protocolos sanitários' },
     ],
   },
   {
