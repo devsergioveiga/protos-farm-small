@@ -199,6 +199,72 @@ export interface SanitaryProtocolResponse {
   updatedAt: string;
 }
 
+// ─── Alert Types (CA12) ──────────────────────────────────────────────
+
+export type AlertUrgency = 'OVERDUE' | 'DUE_7_DAYS' | 'DUE_15_DAYS' | 'DUE_30_DAYS';
+
+export const ALERT_URGENCY_LABELS: Record<AlertUrgency, string> = {
+  OVERDUE: 'Atrasado',
+  DUE_7_DAYS: 'Próximos 7 dias',
+  DUE_15_DAYS: 'Próximos 15 dias',
+  DUE_30_DAYS: 'Próximos 30 dias',
+};
+
+export interface SanitaryAlertItem {
+  protocolId: string;
+  protocolName: string;
+  protocolItemId: string;
+  procedureType: string;
+  procedureTypeLabel: string;
+  productName: string;
+  triggerType: string;
+  triggerTypeLabel: string;
+  urgency: AlertUrgency;
+  urgencyLabel: string;
+  isObligatory: boolean;
+  targetCategories: string[];
+  targetCategoryLabels: string[];
+  /** For AGE triggers: number of matching animals */
+  animalCount: number;
+  /** For AGE triggers: list of sample animals (first 5) */
+  sampleAnimals: {
+    id: string;
+    earTag: string;
+    name: string | null;
+    farmName: string;
+    ageDays: number;
+  }[];
+  /** For CALENDAR triggers: the target month(s) */
+  calendarMonths: number[];
+  /** Estimated due date or period description */
+  dueDescription: string;
+  dosage: number | null;
+  dosageUnit: string | null;
+  dosageUnitLabel: string | null;
+  administrationRoute: string | null;
+  administrationRouteLabel: string | null;
+  notes: string | null;
+}
+
+export interface SanitaryAlertsResponse {
+  summary: {
+    overdue: number;
+    due7Days: number;
+    due15Days: number;
+    due30Days: number;
+    total: number;
+  };
+  alerts: SanitaryAlertItem[];
+}
+
+export interface SanitaryAlertsQuery {
+  farmId?: string;
+  daysAhead?: number;
+  urgency?: AlertUrgency;
+  procedureType?: string;
+  targetCategory?: string;
+}
+
 // ─── Seed Data (CA8, CA9, CA10) ─────────────────────────────────────
 
 export interface SeedSanitaryProtocol {

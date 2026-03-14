@@ -84,6 +84,64 @@ export interface CreateSanitaryProtocolInput {
   items: ItemInput[];
 }
 
+// ─── Alert Types (CA12) ──────────────────────────────────────────────
+
+export type AlertUrgency = 'OVERDUE' | 'DUE_7_DAYS' | 'DUE_15_DAYS' | 'DUE_30_DAYS';
+
+export interface SanitaryAlertSampleAnimal {
+  id: string;
+  earTag: string;
+  name: string | null;
+  farmName: string;
+  ageDays: number;
+}
+
+export interface SanitaryAlertItem {
+  protocolId: string;
+  protocolName: string;
+  protocolItemId: string;
+  procedureType: string;
+  procedureTypeLabel: string;
+  productName: string;
+  triggerType: string;
+  triggerTypeLabel: string;
+  urgency: AlertUrgency;
+  urgencyLabel: string;
+  isObligatory: boolean;
+  targetCategories: string[];
+  targetCategoryLabels: string[];
+  animalCount: number;
+  sampleAnimals: SanitaryAlertSampleAnimal[];
+  calendarMonths: number[];
+  dueDescription: string;
+  dosage: number | null;
+  dosageUnit: string | null;
+  dosageUnitLabel: string | null;
+  administrationRoute: string | null;
+  administrationRouteLabel: string | null;
+  notes: string | null;
+}
+
+export interface SanitaryAlertsSummary {
+  overdue: number;
+  due7Days: number;
+  due15Days: number;
+  due30Days: number;
+  total: number;
+}
+
+export interface SanitaryAlertsResponse {
+  summary: SanitaryAlertsSummary;
+  alerts: SanitaryAlertItem[];
+}
+
+export const ALERT_URGENCIES = [
+  { value: 'OVERDUE' as AlertUrgency, label: 'Atrasado' },
+  { value: 'DUE_7_DAYS' as AlertUrgency, label: 'Próximos 7 dias' },
+  { value: 'DUE_15_DAYS' as AlertUrgency, label: 'Próximos 15 dias' },
+  { value: 'DUE_30_DAYS' as AlertUrgency, label: 'Próximos 30 dias' },
+] as const;
+
 export const PROCEDURE_TYPES = [
   { value: 'VACCINATION', label: 'Vacinação' },
   { value: 'DEWORMING', label: 'Vermifugação' },

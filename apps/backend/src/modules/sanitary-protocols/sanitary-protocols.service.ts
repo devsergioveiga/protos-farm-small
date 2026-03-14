@@ -23,12 +23,17 @@ import {
   SANITARY_PROTOCOL_STATUS_LABELS,
   TARGET_CATEGORIES,
   TARGET_CATEGORY_LABELS,
+  ALERT_URGENCY_LABELS,
   type CreateSanitaryProtocolInput,
   type UpdateSanitaryProtocolInput,
   type ListSanitaryProtocolsQuery,
   type SanitaryProtocolResponse,
   type ProtocolItemResponse,
   type ItemInput,
+  type SanitaryAlertsQuery,
+  type SanitaryAlertsResponse,
+  type SanitaryAlertItem,
+  type AlertUrgency,
   SEED_SANITARY_PROTOCOLS,
 } from './sanitary-protocols.types';
 import {
@@ -614,6 +619,334 @@ export async function seedSanitaryProtocols(
   }
 
   return { created, total: SEED_SANITARY_PROTOCOLS.length };
+}
+
+// ─── ALERTS (CA12) ──────────────────────────────────────────────────
+
+function classifyUrgency(daysUntilDue: number): AlertUrgency | null {
+  if (daysUntilDue < 0) return 'OVERDUE';
+  if (daysUntilDue <= 7) return 'DUE_7_DAYS';
+  if (daysUntilDue <= 15) return 'DUE_15_DAYS';
+  if (daysUntilDue <= 30) return 'DUE_30_DAYS';
+  return null;
+}
+
+function getMonthLabel(month: number): string {
+  const labels = [
+    '',
+    'janeiro',
+    'fevereiro',
+    'março',
+    'abril',
+    'maio',
+    'junho',
+    'julho',
+    'agosto',
+    'setembro',
+    'outubro',
+    'novembro',
+    'dezembro',
+  ];
+  return labels[month] ?? String(month);
+}
+
+export async function getSanitaryAlerts(
+  ctx: RlsContext,
+  query: SanitaryAlertsQuery,
+): Promise<SanitaryAlertsResponse> {
+  const daysAhead = Math.min(90, Math.max(1, query.daysAhead ?? 30));
+
+  return withRlsContext(ctx, async (tx) => {
+    // Load active protocols with items
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const protocolWhere: Record<string, any> = {
+      organizationId: ctx.organizationId,
+      status: 'ACTIVE',
+      deletedAt: null,
+    };
+    if (query.procedureType) {
+      protocolWhere.items = { some: { procedureType: query.procedureType } };
+    }
+    if (query.targetCategory) {
+      protocolWhere.targetCategories = { has: query.targetCategory };
+    }
+
+    const protocols = await tx.sanitaryProtocol.findMany({
+      where: protocolWhere,
+      include: { items: { orderBy: { order: 'asc' as const } } },
+    });
+
+    // Load animals from org's farms
+    const animalWhere: Record<string, any> = {
+      farm: { organizationId: ctx.organizationId },
+      deletedAt: null,
+    };
+    if (query.farmId) {
+      animalWhere.farmId = query.farmId;
+    }
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+
+    const animals = await tx.animal.findMany({
+      where: animalWhere,
+      select: {
+        id: true,
+        earTag: true,
+        name: true,
+        birthDate: true,
+        category: true,
+        farm: { select: { name: true } },
+      },
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const currentMonth = today.getMonth() + 1; // 1-based
+    const alerts: SanitaryAlertItem[] = [];
+
+    for (const protocol of protocols) {
+      const targetCats = protocol.targetCategories as string[];
+      const targetCatLabels = targetCats.map((c) => TARGET_CATEGORY_LABELS[c] ?? c);
+
+      for (const item of protocol.items) {
+        const itemProcType = item.procedureType as string;
+        if (query.procedureType && itemProcType !== query.procedureType) continue;
+
+        const dosageUnit = (item.dosageUnit as string) ?? null;
+        const adminRoute = (item.administrationRoute as string) ?? null;
+
+        // ─── AGE-based alerts ──────────────────────────────────
+        if (item.triggerType === 'AGE' && item.triggerAgeDays != null) {
+          const matchingAnimals: {
+            id: string;
+            earTag: string;
+            name: string | null;
+            farmName: string;
+            ageDays: number;
+            daysUntilDue: number;
+          }[] = [];
+
+          for (const animal of animals) {
+            if (!animal.birthDate) continue;
+            if (!targetCats.includes(animal.category)) continue;
+
+            const birthDate = new Date(animal.birthDate);
+            birthDate.setHours(0, 0, 0, 0);
+            const ageDays = Math.floor(
+              (today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24),
+            );
+            const dueAtAge = item.triggerAgeDays;
+            const maxAge = item.triggerAgeMaxDays ?? dueAtAge;
+            const daysUntilDue = dueAtAge - ageDays;
+
+            // Animal is within window: from (daysAhead) days before due to (maxAge - dueAtAge) days after due
+            if (daysUntilDue <= daysAhead && ageDays <= maxAge + 30) {
+              matchingAnimals.push({
+                id: animal.id,
+                earTag: animal.earTag,
+                name: animal.name,
+                farmName: animal.farm.name,
+                ageDays,
+                daysUntilDue,
+              });
+            }
+          }
+
+          if (matchingAnimals.length > 0) {
+            // Group urgency by the most urgent animal
+            const mostUrgentDays = Math.min(...matchingAnimals.map((a) => a.daysUntilDue));
+            const urgency = classifyUrgency(mostUrgentDays);
+            if (!urgency) continue;
+            if (query.urgency && urgency !== query.urgency) continue;
+
+            const dueDesc =
+              mostUrgentDays < 0
+                ? `${Math.abs(mostUrgentDays)} dia(s) atrasado para ${matchingAnimals.length} animal(is)`
+                : mostUrgentDays === 0
+                  ? `Vence hoje para ${matchingAnimals.length} animal(is)`
+                  : `Em ${mostUrgentDays} dia(s) para ${matchingAnimals.length} animal(is)`;
+
+            alerts.push({
+              protocolId: protocol.id,
+              protocolName: protocol.name,
+              protocolItemId: item.id,
+              procedureType: itemProcType,
+              procedureTypeLabel: PROCEDURE_TYPE_LABELS[itemProcType] ?? itemProcType,
+              productName: item.productName,
+              triggerType: 'AGE',
+              triggerTypeLabel: TRIGGER_TYPE_LABELS['AGE'],
+              urgency,
+              urgencyLabel: ALERT_URGENCY_LABELS[urgency],
+              isObligatory: protocol.isObligatory,
+              targetCategories: targetCats,
+              targetCategoryLabels: targetCatLabels,
+              animalCount: matchingAnimals.length,
+              sampleAnimals: matchingAnimals
+                .sort((a, b) => a.daysUntilDue - b.daysUntilDue)
+                .slice(0, 5)
+                .map(({ id, earTag, name, farmName, ageDays }) => ({
+                  id,
+                  earTag,
+                  name,
+                  farmName,
+                  ageDays,
+                })),
+              calendarMonths: [],
+              dueDescription: dueDesc,
+              dosage: item.dosage,
+              dosageUnit,
+              dosageUnitLabel: dosageUnit ? (DOSAGE_UNIT_LABELS[dosageUnit] ?? dosageUnit) : null,
+              administrationRoute: adminRoute,
+              administrationRouteLabel: adminRoute
+                ? (ADMINISTRATION_ROUTE_LABELS[adminRoute] ?? adminRoute)
+                : null,
+              notes: item.notes,
+            });
+          }
+        }
+
+        // ─── CALENDAR-based alerts ─────────────────────────────
+        if (item.triggerType === 'CALENDAR' && item.calendarMonths.length > 0) {
+          for (const targetMonth of item.calendarMonths) {
+            // Calculate days until target month's 1st day
+            let targetDate: Date;
+            if (targetMonth >= currentMonth) {
+              targetDate = new Date(today.getFullYear(), targetMonth - 1, 1);
+            } else {
+              targetDate = new Date(today.getFullYear() + 1, targetMonth - 1, 1);
+            }
+            const daysUntilMonth = Math.floor(
+              (targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+            );
+
+            // Check if we're in the target month (overdue if past mid-month)
+            const isCurrentMonth = targetMonth === currentMonth;
+            const dayOfMonth = today.getDate();
+
+            let daysUntilDue: number;
+            if (isCurrentMonth) {
+              // If we're in the target month, consider it due
+              daysUntilDue = dayOfMonth > 15 ? -(dayOfMonth - 15) : 15 - dayOfMonth;
+            } else {
+              daysUntilDue = daysUntilMonth;
+            }
+
+            const urgency = classifyUrgency(daysUntilDue);
+            if (!urgency) continue;
+            if (query.urgency && urgency !== query.urgency) continue;
+
+            // Count animals in target categories
+            const matchingCount = animals.filter((a) => targetCats.includes(a.category)).length;
+
+            const dueDesc = isCurrentMonth
+              ? `Campanha de ${getMonthLabel(targetMonth)} em andamento — ${matchingCount} animal(is)`
+              : `Campanha de ${getMonthLabel(targetMonth)} — ${matchingCount} animal(is)`;
+
+            alerts.push({
+              protocolId: protocol.id,
+              protocolName: protocol.name,
+              protocolItemId: item.id,
+              procedureType: itemProcType,
+              procedureTypeLabel: PROCEDURE_TYPE_LABELS[itemProcType] ?? itemProcType,
+              productName: item.productName,
+              triggerType: 'CALENDAR',
+              triggerTypeLabel: TRIGGER_TYPE_LABELS['CALENDAR'],
+              urgency,
+              urgencyLabel: ALERT_URGENCY_LABELS[urgency],
+              isObligatory: protocol.isObligatory,
+              targetCategories: targetCats,
+              targetCategoryLabels: targetCatLabels,
+              animalCount: matchingCount,
+              sampleAnimals: [],
+              calendarMonths: [targetMonth],
+              dueDescription: dueDesc,
+              dosage: item.dosage,
+              dosageUnit,
+              dosageUnitLabel: dosageUnit ? (DOSAGE_UNIT_LABELS[dosageUnit] ?? dosageUnit) : null,
+              administrationRoute: adminRoute,
+              administrationRouteLabel: adminRoute
+                ? (ADMINISTRATION_ROUTE_LABELS[adminRoute] ?? adminRoute)
+                : null,
+              notes: item.notes,
+            });
+          }
+        }
+
+        // ─── EVENT-based alerts ────────────────────────────────
+        // Events are triggered when they happen (birth, weaning, etc.)
+        // We show them as informational: "pendente de evento"
+        if (item.triggerType === 'EVENT') {
+          const matchingCount = animals.filter((a) => targetCats.includes(a.category)).length;
+          if (matchingCount === 0) continue;
+
+          const triggerEvent = (item.triggerEvent as string) ?? '';
+          const eventLabel = EVENT_TRIGGER_LABELS[triggerEvent] ?? triggerEvent;
+          const offsetDays = item.triggerEventOffsetDays ?? 0;
+          const offsetDesc =
+            offsetDays > 0
+              ? `${offsetDays} dia(s) após`
+              : offsetDays < 0
+                ? `${Math.abs(offsetDays)} dia(s) antes`
+                : 'no momento';
+
+          // Event-based alerts are always DUE_30_DAYS (informational)
+          if (query.urgency && query.urgency !== 'DUE_30_DAYS') continue;
+
+          alerts.push({
+            protocolId: protocol.id,
+            protocolName: protocol.name,
+            protocolItemId: item.id,
+            procedureType: itemProcType,
+            procedureTypeLabel: PROCEDURE_TYPE_LABELS[itemProcType] ?? itemProcType,
+            productName: item.productName,
+            triggerType: 'EVENT',
+            triggerTypeLabel: TRIGGER_TYPE_LABELS['EVENT'],
+            urgency: 'DUE_30_DAYS',
+            urgencyLabel: 'Aguardando evento',
+            isObligatory: protocol.isObligatory,
+            targetCategories: targetCats,
+            targetCategoryLabels: targetCatLabels,
+            animalCount: matchingCount,
+            sampleAnimals: [],
+            calendarMonths: [],
+            dueDescription: `${offsetDesc} do evento "${eventLabel}" — ${matchingCount} animal(is) na categoria`,
+            dosage: item.dosage,
+            dosageUnit,
+            dosageUnitLabel: dosageUnit ? (DOSAGE_UNIT_LABELS[dosageUnit] ?? dosageUnit) : null,
+            administrationRoute: adminRoute,
+            administrationRouteLabel: adminRoute
+              ? (ADMINISTRATION_ROUTE_LABELS[adminRoute] ?? adminRoute)
+              : null,
+            notes: item.notes,
+          });
+        }
+      }
+    }
+
+    // Sort: overdue first, then by urgency
+    const urgencyOrder: Record<AlertUrgency, number> = {
+      OVERDUE: 0,
+      DUE_7_DAYS: 1,
+      DUE_15_DAYS: 2,
+      DUE_30_DAYS: 3,
+    };
+    alerts.sort((a, b) => {
+      const diff = urgencyOrder[a.urgency] - urgencyOrder[b.urgency];
+      if (diff !== 0) return diff;
+      // Obligatory first within same urgency
+      if (a.isObligatory !== b.isObligatory) return a.isObligatory ? -1 : 1;
+      return b.animalCount - a.animalCount;
+    });
+
+    const summary = {
+      overdue: alerts.filter((a) => a.urgency === 'OVERDUE').length,
+      due7Days: alerts.filter((a) => a.urgency === 'DUE_7_DAYS').length,
+      due15Days: alerts.filter((a) => a.urgency === 'DUE_15_DAYS').length,
+      due30Days: alerts.filter((a) => a.urgency === 'DUE_30_DAYS').length,
+      total: alerts.length,
+    };
+
+    return { summary, alerts };
+  });
 }
 
 // ─── METADATA ──────────────────────────────────────────────────────

@@ -30,6 +30,7 @@ jest.mock('./sanitary-protocols.service', () => ({
   duplicateSanitaryProtocol: jest.fn(),
   listSanitaryProtocolVersions: jest.fn(),
   seedSanitaryProtocols: jest.fn(),
+  getSanitaryAlerts: jest.fn(),
   listProcedureTypes: jest.fn(),
   listTriggerTypes: jest.fn(),
   listEventTriggers: jest.fn(),
@@ -529,6 +530,114 @@ describe('POST /api/org/sanitary-protocols/seed', () => {
       .set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(403);
+  });
+});
+
+// ─── ALERTS (CA12) ──────────────────────────────────────────────────
+
+const SAMPLE_ALERTS_RESPONSE = {
+  summary: { overdue: 1, due7Days: 1, due15Days: 0, due30Days: 1, total: 3 },
+  alerts: [
+    {
+      protocolId: 'sp-1',
+      protocolName: 'Protocolo Vacinal Bezerras',
+      protocolItemId: 'item-1',
+      procedureType: 'VACCINATION',
+      procedureTypeLabel: 'Vacinação',
+      productName: 'Vacina clostridioses',
+      triggerType: 'AGE',
+      triggerTypeLabel: 'Por idade',
+      urgency: 'OVERDUE',
+      urgencyLabel: 'Atrasado',
+      isObligatory: false,
+      targetCategories: ['BEZERRA'],
+      targetCategoryLabels: ['Bezerra'],
+      animalCount: 3,
+      sampleAnimals: [
+        { id: 'a-1', earTag: '001', name: 'Mimosa', farmName: 'Fazenda A', ageDays: 130 },
+      ],
+      calendarMonths: [],
+      dueDescription: '10 dia(s) atrasado para 3 animal(is)',
+      dosage: 5,
+      dosageUnit: 'ML_ANIMAL',
+      dosageUnitLabel: 'mL/animal',
+      administrationRoute: 'SC',
+      administrationRouteLabel: 'Subcutâneo',
+      notes: null,
+    },
+  ],
+};
+
+describe('GET /api/org/sanitary-protocols/alerts', () => {
+  it('returns alerts with default params', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.getSanitaryAlerts.mockResolvedValue(SAMPLE_ALERTS_RESPONSE);
+
+    const res = await request(app)
+      .get('/api/org/sanitary-protocols/alerts')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.body.summary).toBeDefined();
+    expect(res.body.summary.total).toBe(3);
+    expect(res.body.alerts).toHaveLength(1);
+    expect(mockedService.getSanitaryAlerts).toHaveBeenCalledWith(
+      { organizationId: 'org-1' },
+      {
+        farmId: undefined,
+        daysAhead: undefined,
+        urgency: undefined,
+        procedureType: undefined,
+        targetCategory: undefined,
+      },
+    );
+  });
+
+  it('passes query params to service', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.getSanitaryAlerts.mockResolvedValue({
+      summary: { overdue: 0, due7Days: 0, due15Days: 0, due30Days: 0, total: 0 },
+      alerts: [],
+    });
+
+    await request(app)
+      .get('/api/org/sanitary-protocols/alerts')
+      .query({
+        farmId: 'farm-1',
+        daysAhead: '15',
+        urgency: 'OVERDUE',
+        procedureType: 'VACCINATION',
+        targetCategory: 'BEZERRA',
+      })
+      .set('Authorization', 'Bearer token');
+
+    expect(mockedService.getSanitaryAlerts).toHaveBeenCalledWith(
+      { organizationId: 'org-1' },
+      {
+        farmId: 'farm-1',
+        daysAhead: 15,
+        urgency: 'OVERDUE',
+        procedureType: 'VACCINATION',
+        targetCategory: 'BEZERRA',
+      },
+    );
+  });
+
+  it('returns 401 without auth', async () => {
+    const res = await request(app).get('/api/org/sanitary-protocols/alerts');
+    expect(res.status).toBe(401);
+  });
+
+  it('handles service errors', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.getSanitaryAlerts.mockRejectedValue(new Error('db error'));
+
+    const res = await request(app)
+      .get('/api/org/sanitary-protocols/alerts')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('Erro interno do servidor');
   });
 });
 

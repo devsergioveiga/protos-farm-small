@@ -17,6 +17,7 @@ import {
   Calendar,
   CalendarDays,
   List,
+  Bell,
 } from 'lucide-react';
 import { useSanitaryProtocols } from '@/hooks/useSanitaryProtocols';
 import type { SanitaryProtocol } from '@/types/sanitary-protocol';
@@ -27,12 +28,13 @@ import {
 } from '@/types/sanitary-protocol';
 import SanitaryProtocolModal from '@/components/sanitary-protocols/SanitaryProtocolModal';
 import SanitaryCalendarView from '@/components/sanitary-protocols/SanitaryCalendarView';
+import SanitaryAlertsView from '@/components/sanitary-protocols/SanitaryAlertsView';
 import { api } from '@/services/api';
 import './SanitaryProtocolsPage.css';
 
 export default function SanitaryProtocolsPage() {
   // ─── State ──────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<'list' | 'calendar'>('list');
+  const [activeTab, setActiveTab] = useState<'list' | 'calendar' | 'alerts'>('list');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -214,6 +216,14 @@ export default function SanitaryProtocolsPage() {
           <CalendarDays size={16} aria-hidden="true" />
           Calendário
         </button>
+        <button
+          className={activeTab === 'alerts' ? 'sp-page__tab--active' : 'sp-page__tab'}
+          onClick={() => setActiveTab('alerts')}
+          aria-current={activeTab === 'alerts' ? 'page' : undefined}
+        >
+          <Bell size={16} aria-hidden="true" />
+          Alertas
+        </button>
       </nav>
 
       {/* Calendar View */}
@@ -229,6 +239,9 @@ export default function SanitaryProtocolsPage() {
           {!calendarLoading && !calendarError && <SanitaryCalendarView protocols={allProtocols} />}
         </>
       )}
+
+      {/* Alerts View */}
+      {activeTab === 'alerts' && <SanitaryAlertsView />}
 
       {/* List View */}
       {activeTab === 'list' && (

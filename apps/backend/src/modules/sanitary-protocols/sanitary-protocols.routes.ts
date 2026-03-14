@@ -13,6 +13,7 @@ import {
   duplicateSanitaryProtocol,
   listSanitaryProtocolVersions,
   seedSanitaryProtocols,
+  getSanitaryAlerts,
   listProcedureTypes,
   listTriggerTypes,
   listEventTriggers,
@@ -99,6 +100,29 @@ sanitaryProtocolsRouter.get(
   checkPermission('farms:read'),
   (_req, res) => {
     res.json(listTargetCategories());
+  },
+);
+
+// ─── ALERTS (CA12) ──────────────────────────────────────────────────
+
+sanitaryProtocolsRouter.get(
+  '/org/sanitary-protocols/alerts',
+  authenticate,
+  checkPermission('farms:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await getSanitaryAlerts(ctx, {
+        farmId: req.query.farmId as string | undefined,
+        daysAhead: req.query.daysAhead ? Number(req.query.daysAhead) : undefined,
+        urgency: req.query.urgency as import('./sanitary-protocols.types').AlertUrgency | undefined,
+        procedureType: req.query.procedureType as string | undefined,
+        targetCategory: req.query.targetCategory as string | undefined,
+      });
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
   },
 );
 
