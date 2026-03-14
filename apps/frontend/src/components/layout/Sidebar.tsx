@@ -74,6 +74,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/diseases', icon: HeartPulse, label: 'Doenças' },
       { to: '/treatment-protocols', icon: Syringe, label: 'Protocolos tratamento' },
       { to: '/sanitary-protocols', icon: ShieldPlus, label: 'Protocolos sanitários' },
+      { to: '/vaccinations', icon: Syringe, label: 'Vacinações' },
     ],
   },
   {

@@ -53,6 +53,33 @@ EPIC-11 Manejo Sanitário Pecuário. Permite registrar vacinações individualme
 - **Campanhas (CA2/CA6)**: `campaignId` (UUID) agrupa vacinações em lote. O relatório/CSV usa esse ID para listar todos os animais vacinados.
 - **Permissões**: `animals:update` para criar/editar/excluir, `animals:read` para consultar.
 
+## Frontend
+
+### Página: VaccinationsPage (`/vaccinations`)
+
+- Lista vacinações em cards com filtro por busca textual
+- Seletor de campanhas para acesso aos relatórios (CA6)
+- Paginação completa
+- Empty state e loading state
+
+### Modais
+
+| Componente           | Arquivo                                            | Função                                         |
+| -------------------- | -------------------------------------------------- | ---------------------------------------------- |
+| VaccinationModal     | `components/vaccinations/VaccinationModal.tsx`     | CA1: registro/edição individual                |
+| BulkVaccinationModal | `components/vaccinations/BulkVaccinationModal.tsx` | CA2: vacinação em lote com resultado e alertas |
+| CampaignReportModal  | `components/vaccinations/CampaignReportModal.tsx`  | CA6: relatório campanha + export CSV           |
+
+### Hook
+
+- `useVaccinations(params)` — fetch com paginação, filtros por animal/campanha/produto/datas
+
+### Rota e Navegação
+
+- Rota: `/vaccinations` em `App.tsx` (lazy loaded)
+- Sidebar: grupo REBANHO, ícone `Syringe`, label "Vacinações"
+
 ## Testes
 
-- 20 testes (1 suite) cobrindo todos os endpoints, erros, permissões e CSV export.
+- 20 testes backend (1 suite) cobrindo todos os endpoints, erros, permissões e CSV export.
+- 883 testes frontend passando (89 suites) — sem regressão.
