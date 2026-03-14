@@ -285,6 +285,7 @@ model Organization {
   stockAdjustments          StockAdjustment[]
   pesticidePrescriptions    PesticidePrescription[]
   diseases                  Disease[]
+  treatmentProtocols        TreatmentProtocol[]
 
   @@map("organizations")
 }
@@ -2447,6 +2448,7 @@ model Product {
   pesticideApplications  PesticideApplication[]  @relation("PesticideProduct")
   fertilizerApplications FertilizerApplication[] @relation("FertilizerProduct")
   plantingOperations     PlantingOperation[]     @relation("PlantingSeedProduct")
+  treatmentProtocolSteps TreatmentProtocolStep[]
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -2930,9 +2932,100 @@ model Disease {
   updatedAt            DateTime         @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id])
+  treatmentProtocolDiseases TreatmentProtocolDisease[]
 
   @@unique([name, organizationId])
   @@index([organizationId])
   @@index([category])
   @@map("diseases")
+}
+
+// ─── EPIC-11 US-104: Protocolos de Tratamento ──────────────────────
+
+enum AdministrationRoute {
+  IM
+  SC
+  IV
+  ORAL
+  INTRAMMARY
+  TOPICAL
+}
+
+enum DosageUnit {
+  MG_KG
+  ML_ANIMAL
+  FIXED_DOSE
+}
+
+enum ProtocolStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model TreatmentProtocol {
+  id                 String           @id @default(uuid())
+  organizationId     String           @map("organization_id")
+  name               String
+  description        String?
+  notes              String?
+  severity           DiseaseSeverity?
+  authorName         String           @map("author_name")
+  status             ProtocolStatus   @default(ACTIVE)
+  version            Int              @default(1)
+  originalId         String?          @map("original_id")
+  withdrawalMeatDays Int?             @map("withdrawal_meat_days")
+  withdrawalMilkDays Int?             @map("withdrawal_milk_days")
+  estimatedCostCents Int?             @map("estimated_cost_cents")
+  deletedAt          DateTime?        @map("deleted_at")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+
+  organization Organization          @relation(fields: [organizationId], references: [id])
+  original     TreatmentProtocol?     @relation("ProtocolVersions", fields: [originalId], references: [id])
+  versions     TreatmentProtocol[]    @relation("ProtocolVersions")
+  diseases     TreatmentProtocolDisease[]
+  steps        TreatmentProtocolStep[]
+
+  @@unique([name, organizationId, version])
+  @@index([organizationId])
+  @@index([originalId])
+  @@index([status])
+  @@map("treatment_protocols")
+}
+
+model TreatmentProtocolDisease {
+  id         String            @id @default(uuid())
+  protocolId String            @map("protocol_id")
+  diseaseId  String            @map("disease_id")
+
+  protocol   TreatmentProtocol @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+  disease    Disease           @relation(fields: [diseaseId], references: [id])
+
+  @@unique([protocolId, diseaseId])
+  @@index([protocolId])
+  @@index([diseaseId])
+  @@map("treatment_protocol_diseases")
+}
+
+model TreatmentProtocolStep {
+  id                  String              @id @default(uuid())
+  protocolId          String              @map("protocol_id")
+  order               Int
+  productId           String?             @map("product_id")
+  productName         String              @map("product_name")
+  dosage              Float
+  dosageUnit          DosageUnit          @map("dosage_unit")
+  administrationRoute AdministrationRoute @map("administration_route")
+  frequencyPerDay     Int                 @default(1) @map("frequency_per_day")
+  startDay            Int                 @default(1) @map("start_day")
+  durationDays        Int                 @map("duration_days")
+  withdrawalMeatDays  Int?                @map("withdrawal_meat_days")
+  withdrawalMilkDays  Int?                @map("withdrawal_milk_days")
+  notes               String?
+
+  protocol TreatmentProtocol @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+  product  Product?          @relation(fields: [productId], references: [id])
+
+  @@index([protocolId])
+  @@map("treatment_protocol_steps")
 }

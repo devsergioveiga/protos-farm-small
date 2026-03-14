@@ -52,6 +52,7 @@ import { costCentersRouter } from './modules/cost-centers/cost-centers.routes';
 import { harvestConversionRouter } from './modules/harvest-commercial-conversion/harvest-commercial-conversion.routes';
 import { grainDiscountsRouter } from './modules/grain-discounts/grain-discounts.routes';
 import { diseasesRouter } from './modules/diseases/diseases.routes';
+import { treatmentProtocolsRouter } from './modules/treatment-protocols/treatment-protocols.routes';
 
 const app = express();
 
@@ -111,5 +112,6 @@ app.use('/api', costCentersRouter);
 app.use('/api', harvestConversionRouter);
 app.use('/api', grainDiscountsRouter);
 app.use('/api', diseasesRouter);
+app.use('/api', treatmentProtocolsRouter);
 
 export { app };

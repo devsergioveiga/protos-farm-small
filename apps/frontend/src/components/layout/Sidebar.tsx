@@ -20,6 +20,7 @@ import {
   Coffee,
   Citrus,
   HeartPulse,
+  Syringe,
   Users,
   Shield,
   Ruler,
@@ -70,6 +71,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/lots', icon: Layers, label: 'Lotes' },
       { to: '/weighing-session', icon: Scale, label: 'Pesagem' },
       { to: '/diseases', icon: HeartPulse, label: 'Doenças' },
+      { to: '/treatment-protocols', icon: Syringe, label: 'Protocolos' },
     ],
   },
   {
