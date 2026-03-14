@@ -69,19 +69,18 @@ export async function getSanitaryDashboard(
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
-    const vaccinatedAnimalIds =
-      animalIds.length > 0
-        ? await tx.vaccination.findMany({
-            where: {
-              animalId: { in: animalIds },
-              vaccinationDate: { gte: oneYearAgo },
-            },
-            select: { animalId: true },
-            distinct: ['animalId'],
-          })
-        : [];
-    const vaccinationCoveragePercent =
-      animalIds.length > 0 ? Math.round((vaccinatedAnimalIds.length / animalIds.length) * 100) : 0;
+    let vaccinationCoveragePercent = 0;
+    if (animalIds.length > 0) {
+      const vaccinations = await tx.vaccination.findMany({
+        where: {
+          animalId: { in: animalIds },
+          vaccinationDate: { gte: oneYearAgo },
+        },
+        select: { animalId: true },
+      });
+      const uniqueVaccinated = new Set(vaccinations.map((v) => v.animalId));
+      vaccinationCoveragePercent = Math.round((uniqueVaccinated.size / animalIds.length) * 100);
+    }
 
     // CA1: Animals in treatment
     const animalsInTreatment =
