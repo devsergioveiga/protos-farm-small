@@ -3,7 +3,7 @@ import { app } from '../../app';
 import * as sanitaryService from './sanitary-protocols.service';
 import * as authService from '../auth/auth.service';
 import * as auditService from '../../shared/audit/audit.service';
-import { SanitaryProtocolError } from './sanitary-protocols.types';
+import { SanitaryProtocolError, SanitaryAlertsResponse } from './sanitary-protocols.types';
 
 jest.mock('../../shared/audit/audit.service', () => ({
   logAudit: jest.fn().mockResolvedValue(undefined),
@@ -535,7 +535,7 @@ describe('POST /api/org/sanitary-protocols/seed', () => {
 
 // ─── ALERTS (CA12) ──────────────────────────────────────────────────
 
-const SAMPLE_ALERTS_RESPONSE = {
+const SAMPLE_ALERTS_RESPONSE: SanitaryAlertsResponse = {
   summary: { overdue: 1, due7Days: 1, due15Days: 0, due30Days: 1, total: 3 },
   alerts: [
     {
