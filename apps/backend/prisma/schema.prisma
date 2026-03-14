@@ -292,6 +292,7 @@ model Organization {
   therapeuticTreatments     TherapeuticTreatment[]
   examTypes                ExamType[]
   animalExams              AnimalExam[]
+  compositeProductions     CompositeProduction[]
 
   @@map("organizations")
 }
@@ -345,6 +346,7 @@ model User {
   recordedTreatments         TherapeuticTreatment[]   @relation("TreatmentRecorder")
   recordedEvolutions         ClinicalEvolution[]      @relation("EvolutionRecorder")
   recordedExams              AnimalExam[]             @relation("ExamRecorder")
+  recordedCompositeProductions CompositeProduction[]  @relation("CompositeProductionRecorder")
 
   @@map("users")
 }
@@ -2441,6 +2443,12 @@ model Product {
   safetyStock        Decimal?  @map("safety_stock") @db.Decimal(14, 4) // estoque de segurança (quantidade ideal)
   expiryAlertDays    Int?      @map("expiry_alert_days") // dias antes do vencimento para alertar (padrão: 30)
 
+  // ── CA13-17: Produto Composto ──
+  isComposite          Boolean   @default(false)
+  compositeType        String?   // calda, mistura_fertilizante, racao_concentrado, pre_mistura_mineral, outro
+  batchSize            Float?    // tamanho do lote padrão (ex: 1000 kg)
+  batchUnit            String?   // unidade do lote (kg, L, etc.)
+
   // ── CA12: Sementes ──
   cultivarId           String?   // FK para Cultivar
   sieveSize            String?   // peneira
@@ -2458,6 +2466,10 @@ model Product {
   cultivar         Cultivar?        @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
 
   compositions     ProductComposition[]
+  compositeIngredients  CompositeIngredient[] @relation("CompositeIngredients")
+  ingredientOf          CompositeIngredient[] @relation("IngredientOf")
+  compositeProductions  CompositeProduction[] @relation("CompositeProductions")
+  productionIngredients CompositeProductionItem[] @relation("ProductionIngredient")
   stockEntryItems      StockEntryItem[]
   stockOutputItems     StockOutputItem[]
   stockBalance         StockBalance?
@@ -2510,6 +2522,70 @@ model ProductComposition {
 
   @@index([productId])
   @@map("product_compositions")
+}
+
+// ─── EPIC-10 US-089 CA13-CA17: Produto Composto ────────────────────
+
+model CompositeIngredient {
+  id                String    @id @default(uuid())
+  compositeProductId String
+  ingredientProductId String
+  quantityPerBatch  Float     // quantity of ingredient per batch
+  sortOrder         Int       @default(0)
+  notes             String?
+  createdAt         DateTime  @default(now())
+
+  compositeProduct   Product  @relation("CompositeIngredients", fields: [compositeProductId], references: [id], onDelete: Cascade)
+  ingredientProduct  Product  @relation("IngredientOf", fields: [ingredientProductId], references: [id], onDelete: Restrict)
+
+  @@index([compositeProductId])
+  @@index([ingredientProductId])
+  @@map("composite_ingredients")
+}
+
+model CompositeProduction {
+  id                  String    @id @default(uuid())
+  organizationId      String
+  compositeProductId  String
+  productionDate      DateTime  @db.Date
+  batchNumber         String?
+  quantityProduced    Float
+  totalCostCents      Int       @default(0)
+  responsibleName     String
+  notes               String?
+  stockEntryId        String?   // stock entry for produced composite
+  stockOutputId       String?   // stock output for ingredients consumed
+  recordedBy          String
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  compositeProduct  Product      @relation("CompositeProductions", fields: [compositeProductId], references: [id], onDelete: Cascade)
+  recorder          User         @relation("CompositeProductionRecorder", fields: [recordedBy], references: [id])
+  items             CompositeProductionItem[]
+
+  @@index([organizationId])
+  @@index([compositeProductId])
+  @@index([productionDate])
+  @@map("composite_productions")
+}
+
+model CompositeProductionItem {
+  id                    String    @id @default(uuid())
+  productionId          String
+  ingredientProductId   String
+  ingredientProductName String
+  quantityUsed          Float
+  unitCostCents         Int       @default(0)
+  totalCostCents        Int       @default(0)
+  sourceBatchNumber     String?
+  createdAt             DateTime  @default(now())
+
+  production        CompositeProduction @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  ingredientProduct Product             @relation("ProductionIngredient", fields: [ingredientProductId], references: [id], onDelete: Restrict)
+
+  @@index([productionId])
+  @@map("composite_production_items")
 }
 
 // ─── EPIC-10 US-090: Entrada de Insumos no Estoque ─────────────────
