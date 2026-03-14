@@ -288,6 +288,7 @@ model Organization {
   treatmentProtocols        TreatmentProtocol[]
   sanitaryProtocols         SanitaryProtocol[]
   vaccinations              Vaccination[]
+  dewormings                Deworming[]
 
   @@map("organizations")
 }
@@ -337,6 +338,7 @@ model User {
   recordedOrangeHarvests     OrangeHarvest[]          @relation("OrangeHarvestRecorder")
   createdPrescriptions       PesticidePrescription[]  @relation("PrescriptionCreator")
   recordedVaccinations       Vaccination[]            @relation("VaccinationRecorder")
+  recordedDewormings         Deworming[]              @relation("DewormingRecorder")
 
   @@map("users")
 }
@@ -412,6 +414,7 @@ model Farm {
   pesticidePrescriptions     PesticidePrescription[]
   costCenters                CostCenter[]
   vaccinations               Vaccination[]
+  dewormings                 Deworming[]
 
   @@map("farms")
 }
@@ -939,6 +942,7 @@ model Animal {
   sireReproductiveRecords AnimalReproductiveRecord[] @relation("SireReproductive")
   calfRecords             AnimalReproductiveRecord[] @relation("CalfRecord")
   vaccinations            Vaccination[]
+  dewormings              Deworming[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -2456,6 +2460,7 @@ model Product {
   treatmentProtocolSteps TreatmentProtocolStep[]
   sanitaryProtocolItems  SanitaryProtocolItem[]
   vaccinations           Vaccination[]
+  dewormings             Deworming[]
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -2697,6 +2702,7 @@ model StockOutput {
   soilPrepOperations     SoilPrepOperation[]     @relation("SoilPrepStockOutput")
   plantingOperations     PlantingOperation[]     @relation("PlantingStockOutput")
   vaccinations           Vaccination[]
+  dewormings             Deworming[]
 
   @@index([organizationId])
   @@index([organizationId, type])
@@ -3134,6 +3140,7 @@ model SanitaryProtocolItem {
   product  Product?         @relation(fields: [productId], references: [id])
 
   vaccinations Vaccination[]
+  dewormings   Deworming[]
 
   @@index([protocolId])
   @@map("sanitary_protocol_items")
@@ -3185,4 +3192,58 @@ model Vaccination {
   @@index([campaignId])
   @@index([protocolItemId])
   @@map("vaccinations")
+}
+
+// ─── EPIC-11 US-102: Vermifugação ───────────────────────────────────
+
+model Deworming {
+  id                    String              @id @default(uuid())
+  organizationId        String
+  farmId                String
+  animalId              String
+  productId             String?
+  productName           String
+  activeIngredient      String?             // princípio ativo
+  chemicalGroup         String?             // grupo químico (rotação)
+  dosageMl              Float
+  administrationRoute   AdministrationRoute
+  productBatchNumber    String?
+  productExpiryDate     DateTime?           @db.Date
+  dewormingDate         DateTime            @db.Date
+  responsibleName       String
+  veterinaryName        String?
+  protocolItemId        String?
+  campaignId            String?
+  opgPre                Int?                // OPG pré-vermifugação (CA3)
+  opgPost               Int?                // OPG pós-vermifugação (CA3)
+  opgPostDate           DateTime?           @db.Date
+  efficacyPercentage    Float?              // % redução OPG (CA4)
+  withdrawalMeatDays    Int?
+  withdrawalMilkDays    Int?
+  withdrawalEndDate     DateTime?           @db.Date
+  nextDewormingDate     DateTime?           @db.Date  // CA6
+  stockOutputId         String?
+  animalLotId           String?
+  notes                 String?
+  recordedBy            String
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  organization  Organization         @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm                 @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal               @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  product       Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
+  protocolItem  SanitaryProtocolItem? @relation(fields: [protocolItemId], references: [id], onDelete: SetNull)
+  stockOutput   StockOutput?         @relation(fields: [stockOutputId], references: [id], onDelete: SetNull)
+  recorder      User                 @relation("DewormingRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([productId])
+  @@index([dewormingDate])
+  @@index([campaignId])
+  @@index([protocolItemId])
+  @@index([animalId, chemicalGroup])
+  @@map("dewormings")
 }

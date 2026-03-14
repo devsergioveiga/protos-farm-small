@@ -55,6 +55,7 @@ import { diseasesRouter } from './modules/diseases/diseases.routes';
 import { treatmentProtocolsRouter } from './modules/treatment-protocols/treatment-protocols.routes';
 import { sanitaryProtocolsRouter } from './modules/sanitary-protocols/sanitary-protocols.routes';
 import { vaccinationsRouter } from './modules/vaccinations/vaccinations.routes';
+import { dewormingsRouter } from './modules/dewormings/dewormings.routes';
 
 const app = express();
 
@@ -117,5 +118,6 @@ app.use('/api', diseasesRouter);
 app.use('/api', treatmentProtocolsRouter);
 app.use('/api', sanitaryProtocolsRouter);
 app.use('/api', vaccinationsRouter);
+app.use('/api', dewormingsRouter);
 
 export { app };
