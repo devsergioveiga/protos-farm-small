@@ -293,6 +293,8 @@ model Organization {
   examTypes                ExamType[]
   animalExams              AnimalExam[]
   compositeProductions     CompositeProduction[]
+  bulls                    Bull[]
+  semenBatches             SemenBatch[]
 
   @@map("organizations")
 }
@@ -425,6 +427,7 @@ model Farm {
   dewormings                 Deworming[]
   therapeuticTreatments      TherapeuticTreatment[]
   animalExams                AnimalExam[]
+  bulls                      Bull[]
 
   @@map("farms")
 }
@@ -955,6 +958,7 @@ model Animal {
   dewormings              Deworming[]
   therapeuticTreatments   TherapeuticTreatment[]
   animalExams             AnimalExam[]
+  bullRecord              Bull?                      @relation("BullAnimal")
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -3595,4 +3599,87 @@ model ExamResult {
 
   @@index([examId])
   @@map("exam_results")
+}
+
+// ─── EPIC-12 US-108: Touros e Sêmen ────────────────────────────────
+
+enum BullStatus {
+  ACTIVE
+  RESTING
+  DISCARDED
+}
+
+enum SemenEntryType {
+  PURCHASE
+  DONATION
+  TRANSFER
+}
+
+model Bull {
+  id                  String      @id @default(uuid())
+  organizationId      String
+  farmId              String
+  name                String
+  registryNumber      String?
+  registryAssociation String?
+  breedName           String
+  breedComposition    Json?
+  isOwnAnimal         Boolean     @default(false)
+  animalId            String?     @unique
+  ownerName           String?
+  ownerContact        String?
+  stayStartDate       DateTime?   @db.Date
+  stayEndDate         DateTime?   @db.Date
+  status              BullStatus  @default(ACTIVE)
+  ptaMilkKg           Float?
+  ptaFatKg            Float?
+  ptaFatPct           Float?
+  ptaProteinKg        Float?
+  ptaProteinPct       Float?
+  typeScore           Float?
+  productiveLife      Float?
+  calvingEase         Float?
+  scc                 Float?
+  geneticProofs       Json?
+  photoUrl            String?
+  notes               String?
+  deletedAt           DateTime?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal?      @relation("BullAnimal", fields: [animalId], references: [id], onDelete: SetNull)
+  semenBatches  SemenBatch[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([status])
+  @@map("bulls")
+}
+
+model SemenBatch {
+  id                String         @id @default(uuid())
+  organizationId    String
+  bullId            String
+  batchNumber       String
+  centralName       String?
+  entryType         SemenEntryType @default(PURCHASE)
+  entryDate         DateTime       @db.Date
+  expiryDate        DateTime?      @db.Date
+  initialDoses      Int
+  currentDoses      Int
+  costPerDose       Int            @default(0)
+  notes             String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  bull          Bull         @relation(fields: [bullId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([bullId])
+  @@index([expiryDate])
+  @@map("semen_batches")
 }

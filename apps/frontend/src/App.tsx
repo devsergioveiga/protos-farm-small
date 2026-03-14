@@ -59,6 +59,7 @@ const DewormingsPage = lazy(() => import('@/pages/DewormingsPage'));
 const TherapeuticTreatmentsPage = lazy(() => import('@/pages/TherapeuticTreatmentsPage'));
 const AnimalExamsPage = lazy(() => import('@/pages/AnimalExamsPage'));
 const SanitaryDashboardPage = lazy(() => import('@/pages/SanitaryDashboardPage'));
+const BullsPage = lazy(() => import('@/pages/BullsPage'));
 
 export function App() {
   return (
@@ -119,6 +120,7 @@ export function App() {
                 <Route path="/therapeutic-treatments" element={<TherapeuticTreatmentsPage />} />
                 <Route path="/animal-exams" element={<AnimalExamsPage />} />
                 <Route path="/sanitary-dashboard" element={<SanitaryDashboardPage />} />
+                <Route path="/bulls" element={<BullsPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}

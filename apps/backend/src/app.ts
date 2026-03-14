@@ -60,6 +60,7 @@ import { therapeuticTreatmentsRouter } from './modules/therapeutic-treatments/th
 import { animalExamsRouter } from './modules/animal-exams/animal-exams.routes';
 import { sanitaryDashboardRouter } from './modules/sanitary-dashboard/sanitary-dashboard.routes';
 import { compositeProductsRouter } from './modules/composite-products/composite-products.routes';
+import { bullsRouter } from './modules/bulls/bulls.routes';
 
 const app = express();
 
@@ -127,5 +128,6 @@ app.use('/api', therapeuticTreatmentsRouter);
 app.use('/api', animalExamsRouter);
 app.use('/api', sanitaryDashboardRouter);
 app.use('/api', compositeProductsRouter);
+app.use('/api', bullsRouter);
 
 export { app };
