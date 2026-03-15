@@ -300,6 +300,8 @@ model Organization {
   heatRecords              HeatRecord[]
   matingPlans              MatingPlan[]
   iatfProtocols            IatfProtocol[]
+  reproductiveLots         ReproductiveLot[]
+  inseminations            Insemination[]
 
   @@map("organizations")
 }
@@ -358,6 +360,8 @@ model User {
   recordedHeats                HeatRecord[]           @relation("HeatRecorder")
   createdMatingPlans           MatingPlan[]           @relation("MatingPlanCreator")
   createdIatfProtocols         IatfProtocol[]         @relation("IatfProtocolCreator")
+  createdReproductiveLots      ReproductiveLot[]      @relation("ReproductiveLotCreator")
+  recordedInseminations        Insemination[]         @relation("InseminationRecorder")
 
   @@map("users")
 }
@@ -440,6 +444,8 @@ model Farm {
   reproductiveReleases       ReproductiveRelease[]
   heatRecords                HeatRecord[]
   matingPlans                MatingPlan[]
+  reproductiveLots           ReproductiveLot[]
+  inseminations              Insemination[]
 
   @@map("farms")
 }
@@ -975,6 +981,8 @@ model Animal {
   reproductiveReleases    ReproductiveRelease[]
   heatRecords             HeatRecord[]
   matingPairs             MatingPair[]
+  reproductiveLotAnimals  ReproductiveLotAnimal[]
+  inseminations           Insemination[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -3672,6 +3680,7 @@ model Bull {
   secondaryMatingPairs  MatingPair[] @relation("SecondaryBull")
   tertiaryMatingPairs   MatingPair[] @relation("TertiaryBull")
   executedMatingPairs   MatingPair[] @relation("ExecutedBull")
+  inseminations         Insemination[] @relation("InseminationBull")
 
   @@unique([organizationId, name])
   @@index([organizationId])
@@ -3698,6 +3707,7 @@ model SemenBatch {
 
   organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   bull          Bull         @relation(fields: [bullId], references: [id], onDelete: Cascade)
+  inseminations Insemination[]
 
   @@index([organizationId])
   @@index([bullId])
@@ -3906,6 +3916,7 @@ model IatfProtocol {
   parent        IatfProtocol?   @relation("IatfProtocolVersions", fields: [parentId], references: [id], onDelete: SetNull)
   versions      IatfProtocol[]  @relation("IatfProtocolVersions")
   steps         IatfProtocolStep[]
+  reproductiveLots ReproductiveLot[]
 
   @@index([organizationId])
   @@index([status])
@@ -3945,4 +3956,127 @@ model IatfProtocolStepProduct {
 
   @@index([stepId])
   @@map("iatf_protocol_step_products")
+}
+
+// ─── EPIC-12 US-113: Execução de IATF ───────────────────────────────
+
+enum ReproductiveLotStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum LotStepStatus {
+  PENDING
+  DONE
+  SKIPPED
+}
+
+model ReproductiveLot {
+  id                  String                @id @default(uuid())
+  organizationId      String
+  farmId              String
+  name                String
+  protocolId          String
+  d0Date              DateTime              @db.Date
+  status              ReproductiveLotStatus @default(ACTIVE)
+  totalCostCents      Int                   @default(0)
+  notes               String?
+  createdBy           String
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  organization  Organization       @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm               @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  protocol      IatfProtocol       @relation(fields: [protocolId], references: [id], onDelete: Restrict)
+  creator       User               @relation("ReproductiveLotCreator", fields: [createdBy], references: [id])
+  animals       ReproductiveLotAnimal[]
+  steps         ReproductiveLotStep[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([protocolId])
+  @@index([status])
+  @@map("reproductive_lots")
+}
+
+model ReproductiveLotAnimal {
+  id            String    @id @default(uuid())
+  lotId         String
+  animalId      String
+  removedAt     DateTime?
+  removalReason String?
+  createdAt     DateTime  @default(now())
+
+  lot     ReproductiveLot @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  animal  Animal          @relation(fields: [animalId], references: [id], onDelete: Cascade)
+
+  @@unique([lotId, animalId])
+  @@index([lotId])
+  @@index([animalId])
+  @@map("reproductive_lot_animals")
+}
+
+model ReproductiveLotStep {
+  id                String        @id @default(uuid())
+  lotId             String
+  protocolStepId    String?
+  dayNumber         Int
+  scheduledDate     DateTime      @db.Date
+  description       String
+  isAiDay           Boolean       @default(false)
+  status            LotStepStatus @default(PENDING)
+  executedAt        DateTime?
+  responsibleName   String?
+  notes             String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  lot       ReproductiveLot          @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  inseminations Insemination[]
+
+  @@index([lotId])
+  @@index([scheduledDate])
+  @@map("reproductive_lot_steps")
+}
+
+model Insemination {
+  id                    String    @id @default(uuid())
+  organizationId        String
+  farmId                String
+  animalId              String
+  lotStepId             String?
+  inseminationType      String    // IATF, NATURAL_HEAT, HEAT_DURING_PROTOCOL
+  bullId                String?
+  semenBatchId          String?
+  dosesUsed             Int       @default(1)
+  inseminatorName       String
+  inseminationDate      DateTime  @db.Date
+  inseminationTime      String?   // HH:MM or period
+  cervicalMucus         String?   // CRYSTALLINE, CLOUDY, BLOODY, PURULENT, ABSENT
+  heatRecordId          String?   // link to heat record if natural heat
+  matingPairId          String?   // link to mating plan pair
+  plannedBullId         String?   // from mating plan
+  wasPlannedBull        Boolean?  // did they use the planned bull?
+  substitutionReason    String?
+  observations          String?
+  stockOutputId         String?   // semen + hormone stock deduction
+  recordedBy            String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization  Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm             @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal           @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  lotStep       ReproductiveLotStep? @relation(fields: [lotStepId], references: [id], onDelete: SetNull)
+  bull          Bull?            @relation("InseminationBull", fields: [bullId], references: [id], onDelete: SetNull)
+  semenBatch    SemenBatch?      @relation(fields: [semenBatchId], references: [id], onDelete: SetNull)
+  recorder      User             @relation("InseminationRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([lotStepId])
+  @@index([inseminationDate])
+  @@map("inseminations")
 }

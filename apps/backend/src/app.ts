@@ -65,6 +65,7 @@ import { reproductiveReleasesRouter } from './modules/reproductive-releases/repr
 import { heatRecordsRouter } from './modules/heat-records/heat-records.routes';
 import { matingPlansRouter } from './modules/mating-plans/mating-plans.routes';
 import { iatfProtocolsRouter } from './modules/iatf-protocols/iatf-protocols.routes';
+import { iatfExecutionRouter } from './modules/iatf-execution/iatf-execution.routes';
 
 const app = express();
 
@@ -137,5 +138,6 @@ app.use('/api', reproductiveReleasesRouter);
 app.use('/api', heatRecordsRouter);
 app.use('/api', matingPlansRouter);
 app.use('/api', iatfProtocolsRouter);
+app.use('/api', iatfExecutionRouter);
 
 export { app };

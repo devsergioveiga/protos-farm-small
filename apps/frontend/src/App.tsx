@@ -64,6 +64,7 @@ const ReproductiveReleasesPage = lazy(() => import('@/pages/ReproductiveReleases
 const HeatRecordsPage = lazy(() => import('@/pages/HeatRecordsPage'));
 const MatingPlansPage = lazy(() => import('@/pages/MatingPlansPage'));
 const IatfProtocolsPage = lazy(() => import('@/pages/IatfProtocolsPage'));
+const IatfExecutionPage = lazy(() => import('@/pages/IatfExecutionPage'));
 
 export function App() {
   return (
@@ -129,6 +130,7 @@ export function App() {
                 <Route path="/heat-records" element={<HeatRecordsPage />} />
                 <Route path="/mating-plans" element={<MatingPlansPage />} />
                 <Route path="/iatf-protocols" element={<IatfProtocolsPage />} />
+                <Route path="/iatf-execution" element={<IatfExecutionPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}

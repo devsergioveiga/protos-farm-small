@@ -41,6 +41,7 @@ import {
   FlaskConical,
   Activity,
   CalendarClock,
+  Zap,
   X,
 } from 'lucide-react';
 import './Sidebar.css';
@@ -91,6 +92,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/heat-records', icon: Flame, label: 'Detecção de cio' },
       { to: '/mating-plans', icon: HeartHandshake, label: 'Acasalamento' },
       { to: '/iatf-protocols', icon: CalendarClock, label: 'Protocolos IATF' },
+      { to: '/iatf-execution', icon: Zap, label: 'Execução IATF' },
       { to: '/sanitary-dashboard', icon: Activity, label: 'Dashboard sanitário' },
     ],
   },

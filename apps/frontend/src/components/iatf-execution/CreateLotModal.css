@@ -1,0 +1,379 @@
+/* ─── Overlay ─────────────────────────────────────────────────────── */
+.create-lot-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+/* ─── Modal ──────────────────────────────────────────────────────── */
+.create-lot-modal {
+  background: var(--color-neutral-0);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.16);
+}
+
+/* ─── Header ─────────────────────────────────────────────────────── */
+.create-lot-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-neutral-100);
+  flex-shrink: 0;
+}
+.create-lot-modal__header h2 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+.create-lot-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  transition: background 200ms ease-out;
+}
+.create-lot-modal__close:hover {
+  background: var(--color-neutral-100);
+}
+
+/* ─── Body ───────────────────────────────────────────────────────── */
+.create-lot-modal__body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.create-lot-modal__error {
+  padding: 12px 16px;
+  background: var(--color-error-50, #fef2f2);
+  border: 1px solid var(--color-error-200, #fecaca);
+  border-radius: 8px;
+  color: var(--color-error-700, #b91c1c);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.create-lot-modal__field {
+  margin-bottom: 16px;
+}
+.create-lot-modal__field label {
+  display: block;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  margin-bottom: 4px;
+}
+.create-lot-modal__field label span {
+  color: var(--color-error-500, #c62828);
+}
+.create-lot-modal__field input,
+.create-lot-modal__field select,
+.create-lot-modal__field textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  transition: border-color 200ms ease-out;
+}
+.create-lot-modal__field input:focus,
+.create-lot-modal__field select:focus,
+.create-lot-modal__field textarea:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+.create-lot-modal__field textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.create-lot-modal__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ─── Schedule Preview ───────────────────────────────────────────── */
+.create-lot-modal__schedule-preview {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--color-neutral-50);
+  border-radius: 8px;
+  border: 1px solid var(--color-neutral-100);
+}
+.create-lot-modal__schedule-preview h3 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0 0 12px;
+}
+.create-lot-modal__schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.create-lot-modal__schedule-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--color-neutral-0);
+  border-radius: 8px;
+  border: 1px solid var(--color-neutral-100);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+}
+.create-lot-modal__schedule-item--ai {
+  border-color: var(--color-primary-300, #86efac);
+  background: var(--color-primary-50, #f0fdf4);
+}
+.create-lot-modal__schedule-day {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  min-width: 32px;
+}
+.create-lot-modal__schedule-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-neutral-500);
+  font-size: 0.8125rem;
+  min-width: 96px;
+}
+.create-lot-modal__schedule-desc {
+  flex: 1;
+  color: var(--color-neutral-700);
+}
+.create-lot-modal__ai-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ─── Animal Selection ───────────────────────────────────────────── */
+.create-lot-modal__animals-section {
+  margin-bottom: 16px;
+}
+.create-lot-modal__animals-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0 0 12px;
+}
+.create-lot-modal__animals-section h3 span:first-of-type {
+  color: var(--color-error-500, #c62828);
+}
+.create-lot-modal__animal-count {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--color-neutral-500);
+  margin-left: auto;
+}
+.create-lot-modal__animal-search {
+  position: relative;
+  margin-bottom: 8px;
+}
+.create-lot-modal__animal-search svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-neutral-400);
+  pointer-events: none;
+}
+.create-lot-modal__animal-search input {
+  width: 100%;
+  padding: 12px 16px 12px 40px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  transition: border-color 200ms ease-out;
+}
+.create-lot-modal__animal-search input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.create-lot-modal__animal-list-header {
+  margin-bottom: 4px;
+}
+.create-lot-modal__select-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-primary-700, #15803d);
+  border-radius: 8px;
+  transition: background 200ms ease-out;
+}
+.create-lot-modal__select-all:hover {
+  background: var(--color-neutral-50);
+}
+
+.create-lot-modal__animal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+}
+.create-lot-modal__animal-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--color-neutral-400);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+}
+.create-lot-modal__animal-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 100ms ease-out;
+  border-bottom: 1px solid var(--color-neutral-50);
+  color: var(--color-neutral-500);
+}
+.create-lot-modal__animal-item:last-child {
+  border-bottom: none;
+}
+.create-lot-modal__animal-item:hover {
+  background: var(--color-neutral-50);
+}
+.create-lot-modal__animal-item:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+.create-lot-modal__animal-item--selected {
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-600);
+}
+.create-lot-modal__animal-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+}
+.create-lot-modal__animal-name {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────── */
+.create-lot-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-neutral-100);
+  flex-shrink: 0;
+}
+.create-lot-modal__btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+.create-lot-modal__btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+}
+.create-lot-modal__btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.create-lot-modal__btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+.create-lot-modal__btn-secondary:hover {
+  background: var(--color-neutral-50);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .create-lot-modal__overlay {
+    padding: 16px;
+  }
+  .create-lot-modal {
+    max-height: 95vh;
+  }
+  .create-lot-modal__row {
+    grid-template-columns: 1fr;
+  }
+  .create-lot-modal__body {
+    padding: 16px;
+  }
+  .create-lot-modal__footer {
+    padding: 12px 16px;
+  }
+}
