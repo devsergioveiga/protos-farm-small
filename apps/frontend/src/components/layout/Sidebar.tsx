@@ -93,6 +93,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/mating-plans', icon: HeartHandshake, label: 'Acasalamento' },
       { to: '/iatf-protocols', icon: CalendarClock, label: 'Protocolos IATF' },
       { to: '/iatf-execution', icon: Zap, label: 'Execução IATF' },
+      { to: '/natural-matings', icon: Beef, label: 'Monta natural' },
       { to: '/sanitary-dashboard', icon: Activity, label: 'Dashboard sanitário' },
     ],
   },

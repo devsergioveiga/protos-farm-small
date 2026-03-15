@@ -302,6 +302,7 @@ model Organization {
   iatfProtocols            IatfProtocol[]
   reproductiveLots         ReproductiveLot[]
   inseminations            Insemination[]
+  naturalMatings           NaturalMating[]
 
   @@map("organizations")
 }
@@ -362,6 +363,7 @@ model User {
   createdIatfProtocols         IatfProtocol[]         @relation("IatfProtocolCreator")
   createdReproductiveLots      ReproductiveLot[]      @relation("ReproductiveLotCreator")
   recordedInseminations        Insemination[]         @relation("InseminationRecorder")
+  recordedNaturalMatings       NaturalMating[]        @relation("NaturalMatingRecorder")
 
   @@map("users")
 }
@@ -446,6 +448,7 @@ model Farm {
   matingPlans                MatingPlan[]
   reproductiveLots           ReproductiveLot[]
   inseminations              Insemination[]
+  naturalMatings             NaturalMating[]
 
   @@map("farms")
 }
@@ -983,6 +986,7 @@ model Animal {
   matingPairs             MatingPair[]
   reproductiveLotAnimals  ReproductiveLotAnimal[]
   inseminations           Insemination[]
+  naturalMatingAnimals    NaturalMatingAnimal[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -3681,6 +3685,7 @@ model Bull {
   tertiaryMatingPairs   MatingPair[] @relation("TertiaryBull")
   executedMatingPairs   MatingPair[] @relation("ExecutedBull")
   inseminations         Insemination[] @relation("InseminationBull")
+  naturalMatings        NaturalMating[] @relation("NaturalMatingBull")
 
   @@unique([organizationId, name])
   @@index([organizationId])
@@ -4079,4 +4084,61 @@ model Insemination {
   @@index([lotStepId])
   @@index([inseminationDate])
   @@map("inseminations")
+}
+
+// ─── EPIC-12 US-114: Monta Natural ──────────────────────────────────
+
+enum NaturalMatingReason {
+  POST_IATF_REPASSE
+  DIRECT_COVERAGE
+}
+
+enum PaternityType {
+  PROBABLE_NATURAL
+  UNKNOWN_BREED_ONLY
+}
+
+model NaturalMating {
+  id                  String              @id @default(uuid())
+  organizationId      String
+  farmId              String
+  bullId              String?             // null if unknown bull
+  bullBreedName       String?             // breed when bull unknown
+  reason              NaturalMatingReason
+  entryDate           DateTime            @db.Date
+  exitDate            DateTime?           @db.Date
+  maxStayDays         Int?                @default(60)
+  isOverstay          Boolean             @default(false)
+  paternityType       PaternityType
+  notes               String?
+  recordedBy          String
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  bull          Bull?        @relation("NaturalMatingBull", fields: [bullId], references: [id], onDelete: SetNull)
+  recorder      User         @relation("NaturalMatingRecorder", fields: [recordedBy], references: [id])
+  animals       NaturalMatingAnimal[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([bullId])
+  @@index([entryDate])
+  @@map("natural_matings")
+}
+
+model NaturalMatingAnimal {
+  id          String    @id @default(uuid())
+  matingId    String
+  animalId    String
+  createdAt   DateTime  @default(now())
+
+  mating  NaturalMating @relation(fields: [matingId], references: [id], onDelete: Cascade)
+  animal  Animal        @relation(fields: [animalId], references: [id], onDelete: Cascade)
+
+  @@unique([matingId, animalId])
+  @@index([matingId])
+  @@index([animalId])
+  @@map("natural_mating_animals")
 }
