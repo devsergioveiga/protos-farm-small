@@ -52,6 +52,9 @@ import {
   TestTube,
   ShieldAlert,
   Container,
+  Salad,
+  UtensilsCrossed,
+  Cookie,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -118,6 +121,14 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/milk-tanks', icon: Container, label: 'Tanque e entregas' },
       { to: '/lactations', icon: Droplets, label: 'Lactação' },
       { to: '/milk-dashboard', icon: BarChart3, label: 'Dashboard leite' },
+    ],
+  },
+  {
+    title: 'NUTRIÇÃO',
+    items: [
+      { to: '/feed-ingredients', icon: Salad, label: 'Ingredientes' },
+      { to: '/diets', icon: UtensilsCrossed, label: 'Dietas' },
+      { to: '/feeding-records', icon: Cookie, label: 'Trato/Fornecimento' },
     ],
   },
   {

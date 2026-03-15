@@ -315,6 +315,10 @@ model Organization {
   coolingTanks             CoolingTank[]
   milkCollections          MilkCollection[]
   lactations               Lactation[]
+  feedIngredients          FeedIngredient[]
+  bromatologicalAnalyses   BromatologicalAnalysis[]
+  diets                    Diet[]
+  feedingRecords           FeedingRecord[]
 
   @@map("organizations")
 }
@@ -386,6 +390,9 @@ model User {
   recordedTankMeasurements     TankMeasurement[]      @relation("TankMeasurementRecorder")
   recordedMilkCollections      MilkCollection[]       @relation("MilkCollectionRecorder")
   recordedLactations           Lactation[]            @relation("LactationRecorder")
+  recordedBromatologicalAnalyses BromatologicalAnalysis[] @relation("BromatologicalRecorder")
+  createdDiets                   Diet[]                   @relation("DietCreator")
+  recordedFeedings               FeedingRecord[]          @relation("FeedingRecorder")
 
   @@map("users")
 }
@@ -481,6 +488,7 @@ model Farm {
   coolingTanks               CoolingTank[]
   milkCollections            MilkCollection[]
   lactations                 Lactation[]
+  feedingRecords             FeedingRecord[]
 
   @@map("farms")
 }
@@ -1128,6 +1136,8 @@ model AnimalLot {
   animals               Animal[]
   movements             AnimalLotMovement[] @relation("LotMovements")
   incomingMovements     AnimalLotMovement[] @relation("PreviousLotMovements")
+  dietAssignments       DietLotAssignment[]
+  feedingRecords        FeedingRecord[]
 
   @@index([farmId])
   @@index([predominantCategory])
@@ -4837,4 +4847,236 @@ model Lactation {
   @@index([status])
   @@index([startDate])
   @@map("lactations")
+}
+
+// ─── EPIC-15 US-124: Alimentos e Análise Bromatológica ──────────────
+
+enum FeedIngredientType {
+  ROUGHAGE
+  CONCENTRATE
+  MINERAL
+  ADDITIVE
+  BYPRODUCT
+}
+
+model FeedIngredient {
+  id                String              @id @default(uuid())
+  organizationId    String
+  name              String
+  type              FeedIngredientType
+  subtype           String?
+  measurementUnit   String              @default("kg")
+  costPerKg         Float?
+  // Reference nutritional composition (CA2)
+  refDmPercent      Float?
+  refCpPercent      Float?
+  refNdfPercent     Float?
+  refAdfPercent     Float?
+  refEePercent      Float?
+  refMmPercent      Float?
+  refTdnPercent     Float?
+  refNelMcalKg      Float?
+  refNfcPercent     Float?
+  refCaPercent      Float?
+  refPPercent       Float?
+  refMgPercent      Float?
+  refKPercent       Float?
+  refNaPercent      Float?
+  notes             String?
+  deletedAt         DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  organization      Organization          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  analyses          BromatologicalAnalysis[]
+  dietIngredients      DietIngredient[]
+  feedingRecordItems   FeedingRecordItem[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([type])
+  @@map("feed_ingredients")
+}
+
+model BromatologicalAnalysis {
+  id                String    @id @default(uuid())
+  organizationId    String
+  feedIngredientId  String
+  batchNumber       String?
+  collectionDate    DateTime  @db.Date
+  resultDate        DateTime? @db.Date
+  laboratory        String?
+  protocolNumber    String?
+  responsibleName   String
+  // Results
+  dmPercent         Float?
+  cpPercent         Float?
+  ndfPercent        Float?
+  adfPercent        Float?
+  eePercent         Float?
+  mmPercent         Float?
+  tdnPercent        Float?
+  nelMcalKg         Float?
+  nfcPercent        Float?
+  caPercent         Float?
+  pPercent          Float?
+  mgPercent         Float?
+  kPercent          Float?
+  naPercent         Float?
+  // File
+  reportFileName    String?
+  reportPath        String?
+  notes             String?
+  recordedBy        String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  feedIngredient  FeedIngredient @relation(fields: [feedIngredientId], references: [id], onDelete: Cascade)
+  recorder        User           @relation("BromatologicalRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([feedIngredientId])
+  @@index([collectionDate])
+  @@map("bromatological_analyses")
+}
+
+// ─── EPIC-15 US-125: Dietas ─────────────────────────────────────────
+
+model Diet {
+  id                  String    @id @default(uuid())
+  organizationId      String
+  name                String
+  targetCategory      String
+  startDate           DateTime? @db.Date
+  endDate             DateTime? @db.Date
+  nutritionist        String?
+  objective           String?
+  version             Int       @default(1)
+  parentId            String?
+  isActive            Boolean   @default(true)
+  // Calculated fields (CA3)
+  totalDmKgDay        Float?
+  totalCpGDay         Float?
+  cpPercentDm         Float?
+  ndfPercentDm        Float?
+  adfPercentDm        Float?
+  eePercentDm         Float?
+  tdnPercentDm        Float?
+  nelMcalDay          Float?
+  nelMcalKgDm         Float?
+  caGDay              Float?
+  pGDay               Float?
+  roughageConcentrateRatio Float?
+  costPerAnimalDay    Float?
+  costPerKgDm         Float?
+  notes               String?
+  createdBy           String
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  organization  Organization    @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  creator       User            @relation("DietCreator", fields: [createdBy], references: [id])
+  parent        Diet?           @relation("DietVersions", fields: [parentId], references: [id], onDelete: SetNull)
+  versions      Diet[]          @relation("DietVersions")
+  ingredients   DietIngredient[]
+  lotAssignments DietLotAssignment[]
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@map("diets")
+}
+
+model DietIngredient {
+  id                  String    @id @default(uuid())
+  dietId              String
+  feedIngredientId    String
+  quantityKgDay       Float
+  sortOrder           Int       @default(0)
+  notes               String?
+  createdAt           DateTime  @default(now())
+
+  diet            Diet           @relation(fields: [dietId], references: [id], onDelete: Cascade)
+  feedIngredient  FeedIngredient @relation(fields: [feedIngredientId], references: [id], onDelete: Restrict)
+
+  @@index([dietId])
+  @@map("diet_ingredients")
+}
+
+model DietLotAssignment {
+  id          String    @id @default(uuid())
+  dietId      String
+  lotId       String
+  startDate   DateTime  @db.Date
+  endDate     DateTime? @db.Date
+  createdAt   DateTime  @default(now())
+
+  diet  Diet       @relation(fields: [dietId], references: [id], onDelete: Cascade)
+  lot   AnimalLot  @relation(fields: [lotId], references: [id], onDelete: Cascade)
+
+  @@index([dietId])
+  @@index([lotId])
+  @@map("diet_lot_assignments")
+}
+
+// ─── EPIC-15 US-126: Trato/Fornecimento ──────────────────────────────
+
+enum FeedingShift {
+  MORNING
+  AFTERNOON
+  NIGHT
+}
+
+model FeedingRecord {
+  id                String        @id @default(uuid())
+  organizationId    String
+  farmId            String
+  lotId             String
+  feedingDate       DateTime      @db.Date
+  shift             FeedingShift
+  dietId            String?
+  dietName          String?
+  animalCount       Int
+  totalProvidedKg   Float
+  totalLeftoverKg   Float?
+  totalConsumedKg   Float?
+  leftoverPercent   Float?
+  leftoverAlert     Boolean       @default(false)
+  consumptionPerAnimalKg Float?
+  responsibleName   String
+  stockOutputId     String?
+  notes             String?
+  recordedBy        String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  lot           AnimalLot    @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("FeedingRecorder", fields: [recordedBy], references: [id])
+  items         FeedingRecordItem[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([lotId])
+  @@index([feedingDate])
+  @@map("feeding_records")
+}
+
+model FeedingRecordItem {
+  id                  String    @id @default(uuid())
+  feedingRecordId     String
+  feedIngredientId    String
+  feedIngredientName  String
+  productId           String?
+  quantityProvidedKg  Float
+  quantityLeftoverKg  Float?
+  quantityConsumedKg  Float?
+  createdAt           DateTime  @default(now())
+
+  feedingRecord   FeedingRecord  @relation(fields: [feedingRecordId], references: [id], onDelete: Cascade)
+  feedIngredient  FeedIngredient @relation(fields: [feedIngredientId], references: [id], onDelete: Restrict)
+
+  @@index([feedingRecordId])
+  @@map("feeding_record_items")
 }
