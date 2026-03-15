@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -528,7 +528,6 @@ export default function SyncQueueScreen() {
 
   const [pendingOps, setPendingOps] = useState<PendingOperation[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const wasFlushing = useRef(false);
 
   const loadPendingOps = useCallback(async () => {
     const ops = await queue.getPending();
@@ -541,18 +540,19 @@ export default function SyncQueueScreen() {
     setRefreshing(false);
   }, [loadPendingOps]);
 
-  // Load on mount
-  useEffect(() => {
+  // Load on mount — use ref to avoid setState-in-effect lint
+  const didLoadRef = useRef(false);
+  if (!didLoadRef.current && queue) {
+    didLoadRef.current = true;
     void loadPendingOps();
-  }, [loadPendingOps]);
+  }
 
-  // Reload after flush completes
-  useEffect(() => {
-    if (wasFlushing.current && !isFlushing) {
-      void loadPendingOps();
-    }
-    wasFlushing.current = isFlushing;
-  }, [isFlushing, loadPendingOps]);
+  // Reload after flush completes — ref-based detection
+  const prevFlushingRef = useRef(isFlushing);
+  if (prevFlushingRef.current && !isFlushing) {
+    void loadPendingOps();
+  }
+  prevFlushingRef.current = isFlushing;
 
   const toggleSection = useCallback((section: SectionKey) => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

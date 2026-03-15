@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { View, Text, Pressable, Animated } from 'react-native';
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react-native';
 import { spacing, fontSize } from '@protos-farm/shared';
@@ -95,7 +95,7 @@ export function ConnectionStatusBadge() {
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const [showTooltip, setShowTooltip] = useState(false);
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useMemo(() => new Animated.Value(1), []);
 
   // Pulse animation for syncing state
   useEffect(() => {
