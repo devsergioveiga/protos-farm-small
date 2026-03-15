@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import {
   Plus,
   AlertCircle,
@@ -73,10 +73,12 @@ export default function NaturalMatingsPage() {
   const totalPages = Math.ceil(total / 20) || 1;
 
   // ─── Reset page on farm change ────────────────────────────
-  useEffect(() => {
-    setPage(1);
-    setDetailMatingId(null);
-  }, [farmId]);
+  const prevFarmIdRef = useRef(farmId);
+  if (prevFarmIdRef.current !== farmId) {
+    prevFarmIdRef.current = farmId;
+    if (page !== 1) setPage(1);
+    if (detailMatingId) setDetailMatingId(null);
+  }
 
   // ─── Callbacks ──────────────────────────────────────────
   const handleSuccess = useCallback(() => {
