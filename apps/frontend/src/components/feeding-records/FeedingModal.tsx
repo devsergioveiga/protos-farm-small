@@ -16,16 +16,6 @@ interface LotOption {
   animalCount: number;
 }
 
-interface DietOption {
-  id: string;
-  name: string;
-  ingredients: Array<{
-    feedIngredientId: string;
-    feedIngredientName: string;
-    quantityKgDay: number;
-  }>;
-}
-
 interface IngredientOption {
   id: string;
   name: string;
@@ -77,15 +67,17 @@ export default function FeedingModal({ isOpen, onClose, farmId, onSuccess, feedi
           ),
           api.get<{ data: IngredientOption[] }>(`/org/feed-ingredients?limit=200`),
         ]);
+        const lotsArr = lotsRes.data ?? [];
         setLots(
-          (lotsRes.data ?? lotsRes).map((l: Record<string, unknown>) => ({
+          lotsArr.map((l) => ({
             id: l.id,
             name: l.name,
-            animalCount: l._count?.animals ?? l.animalCount ?? 0,
+            animalCount: l._count?.animals ?? 0,
           })),
         );
+        const ingredientsArr = ingredientsRes.data ?? [];
         setIngredients(
-          (ingredientsRes.data ?? ingredientsRes).map((i: Record<string, unknown>) => ({
+          ingredientsArr.map((i) => ({
             id: i.id,
             name: i.name,
             type: i.type,
@@ -103,19 +95,27 @@ export default function FeedingModal({ isOpen, onClose, farmId, onSuccess, feedi
     async (selectedLotId: string) => {
       if (!selectedLotId || !farmId) return;
       try {
-        const assignments = await api.get<Record<string, unknown>[]>(
+        interface AssignmentResponse {
+          endDate: string | null;
+          diet?: {
+            id: string;
+            name: string;
+            ingredients: Array<{
+              feedIngredientId: string;
+              feedIngredientName?: string;
+              feedIngredient?: { name: string };
+              quantityKgDay: number;
+            }>;
+          };
+        }
+        const assignments = await api.get<AssignmentResponse[]>(
           `/org/farms/${farmId}/diets/lot-assignments?lotId=${selectedLotId}`,
         );
-        const active = Array.isArray(assignments)
-          ? assignments.find((a: Record<string, unknown>) => !a.endDate)
-          : null;
+        const active = Array.isArray(assignments) ? assignments.find((a) => !a.endDate) : null;
         if (active?.diet) {
-          const diet: DietOption = active.diet;
+          const diet = active.diet;
           const dietItems = (diet.ingredients ?? []).map(
-            (
-              ing: Record<string, unknown>,
-              idx: number,
-            ): FeedingRecordItemInput & { key: number } => ({
+            (ing, idx): FeedingRecordItemInput & { key: number } => ({
               key: idx,
               feedIngredientId: ing.feedIngredientId,
               feedIngredientName: ing.feedIngredientName ?? ing.feedIngredient?.name ?? '',
