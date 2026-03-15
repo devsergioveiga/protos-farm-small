@@ -480,8 +480,7 @@ export default function MilkingRecordsPage() {
               <Milk size={48} aria-hidden="true" />
               <h2>Nenhum registro de ordenha</h2>
               <p>
-                Registre a primeira ordenha usando a aba "Ordenha rápida" ou o botão "Novo
-                registro".
+                Registre a primeira ordenha usando a aba Ordenha rápida ou o botão Novo registro.
               </p>
             </div>
           )}
