@@ -1,0 +1,704 @@
+/* ─── Page Layout ─────────────────────────────────────────────────── */
+.diets-page {
+  padding: 24px 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────── */
+.diets-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+.diets-page__header h1 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+.diets-page__header p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 4px 0 0;
+}
+.diets-page__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.diets-page__btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+  white-space: nowrap;
+}
+.diets-page__btn-primary:hover {
+  background: var(--color-primary-700);
+}
+
+/* ─── Toast ──────────────────────────────────────────────────────── */
+.diets-page__toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+}
+.diets-page__toast--success {
+  background: var(--color-success-50, #f0fdf4);
+  color: var(--color-success-700, #15803d);
+}
+.diets-page__toast--error {
+  background: var(--color-error-50);
+  color: var(--color-error-700);
+}
+.diets-page__toast-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  padding: 4px;
+}
+
+/* ─── Tabs ───────────────────────────────────────────────────────── */
+.diets-page__tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--color-neutral-200);
+  padding-bottom: 0;
+}
+.diets-page__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 200ms ease-out;
+}
+.diets-page__tab:hover:not(:disabled) {
+  color: var(--color-neutral-700);
+}
+.diets-page__tab--active {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+.diets-page__tab:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─── Filters ────────────────────────────────────────────────────── */
+.diets-page__filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.diets-page__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  flex: 1;
+  min-width: 200px;
+  color: var(--color-neutral-500);
+}
+.diets-page__search input {
+  border: none;
+  outline: none;
+  padding: 12px 0;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: transparent;
+  width: 100%;
+}
+.diets-page__filter-select {
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  min-width: 180px;
+}
+.diets-page__filter-select:focus,
+.diets-page__search:focus-within {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Error ──────────────────────────────────────────────────────── */
+.diets-page__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--color-error-50);
+  color: var(--color-error-700);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+}
+
+/* ─── Skeleton ───────────────────────────────────────────────────── */
+.diets-page__skeleton {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.diets-page__skeleton-card {
+  height: 180px;
+  border-radius: 12px;
+  background: var(--color-neutral-100);
+  animation: diets-pulse 1.5s ease-in-out infinite;
+}
+@keyframes diets-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ─── Empty ──────────────────────────────────────────────────────── */
+.diets-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--color-neutral-400);
+}
+.diets-page__empty h3 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+.diets-page__empty p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 0;
+  max-width: 400px;
+}
+
+/* ─── Cards Grid ─────────────────────────────────────────────────── */
+.diets-page__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* ─── Card ───────────────────────────────────────────────────────── */
+.diets-page__card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 200ms ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.diets-page__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--color-primary-300);
+}
+.diets-page__card:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+.diets-page__card--inactive {
+  opacity: 0.6;
+}
+.diets-page__card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.diets-page__card-header h3 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+.diets-page__card-category {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+.diets-page__card-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.diets-page__version-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--color-primary-100);
+  color: var(--color-primary-700);
+}
+.diets-page__inactive-badge {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-600);
+}
+
+/* ─── Card Nutrients ─────────────────────────────────────────────── */
+.diets-page__card-nutrients {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.diets-page__card-nutrient {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+}
+.diets-page__card-nutrient-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.diets-page__card-nutrient-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-700);
+  font-weight: 700;
+}
+
+/* ─── Card Footer ────────────────────────────────────────────────── */
+.diets-page__card-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-neutral-100);
+}
+.diets-page__card-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+.diets-page__card-btn-group {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.diets-page__icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: all 200ms ease-out;
+}
+.diets-page__icon-btn:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+.diets-page__icon-btn--danger:hover {
+  background: var(--color-error-50);
+  border-color: var(--color-error-300);
+  color: var(--color-error-600);
+}
+
+/* ─── Pagination ─────────────────────────────────────────────────── */
+.diets-page__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+}
+.diets-page__pagination button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-600);
+  cursor: pointer;
+  transition: all 200ms ease-out;
+}
+.diets-page__pagination button:hover:not(:disabled) {
+  background: var(--color-neutral-100);
+}
+.diets-page__pagination button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ═══ DETAIL TAB ═══ */
+
+.diets-page__detail {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.diets-page__detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.diets-page__detail-header h2 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+.diets-page__detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 4px;
+}
+.diets-page__detail-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+.diets-page__detail-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.diets-page__btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 200ms ease-out;
+  white-space: nowrap;
+}
+.diets-page__btn-outline:hover {
+  background: var(--color-neutral-100);
+}
+.diets-page__btn-outline--sm {
+  padding: 8px 12px;
+  font-size: 0.8125rem;
+}
+
+/* ─── Detail sections ────────────────────────────────────────────── */
+.diets-page__detail-section {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 12px;
+  padding: 20px;
+}
+.diets-page__detail-section h3 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0 0 16px;
+}
+.diets-page__detail-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.diets-page__detail-section-header h3 {
+  margin: 0;
+}
+.diets-page__no-data {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+/* ─── Table ──────────────────────────────────────────────────────── */
+.diets-page__table-wrapper {
+  overflow-x: auto;
+}
+.diets-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+}
+.diets-page__table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  border-bottom: 2px solid var(--color-neutral-200);
+  white-space: nowrap;
+}
+.diets-page__table td {
+  padding: 10px 12px;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+.diets-page__td-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+}
+.diets-page__type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.diets-page__type-badge--roughage {
+  background: #dcfce7;
+  color: #166534;
+}
+.diets-page__type-badge--concentrate {
+  background: #fef3c7;
+  color: #92400e;
+}
+.diets-page__type-badge--mineral {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.diets-page__type-badge--additive {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+.diets-page__type-badge--byproduct {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+/* ─── Lot cards ──────────────────────────────────────────────────── */
+.diets-page__lot-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.diets-page__lot-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  gap: 12px;
+}
+.diets-page__lot-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+}
+.diets-page__lot-info strong {
+  color: var(--color-neutral-800);
+}
+.diets-page__lot-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ─── Versions modal ─────────────────────────────────────────────── */
+.diets-page__versions-modal {
+  background: var(--color-neutral-0);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+.diets-page__versions-body {
+  padding: 24px;
+  overflow-y: auto;
+}
+.diets-page__versions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.diets-page__version-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+}
+.diets-page__version-item--active {
+  border-color: var(--color-primary-300);
+  background: var(--color-primary-50);
+}
+.diets-page__version-date {
+  color: var(--color-neutral-500);
+  font-size: 0.8125rem;
+  margin-left: 8px;
+}
+.diets-page__active-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: var(--color-primary-100);
+  color: var(--color-primary-700);
+  margin-left: 8px;
+}
+
+/* ─── Lot assign modal ───────────────────────────────────────────── */
+.diets-page__lot-assign-modal {
+  background: var(--color-neutral-0);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+.diets-page__lot-assign-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .diets-page {
+    padding: 16px;
+  }
+  .diets-page__header {
+    flex-direction: column;
+  }
+  .diets-page__cards {
+    grid-template-columns: 1fr;
+  }
+  .diets-page__card-nutrients {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .diets-page__detail-header {
+    flex-direction: column;
+  }
+  .diets-page__detail-actions {
+    flex-wrap: wrap;
+  }
+  /* Table -> cards on mobile */
+  .diets-page__table thead {
+    display: none;
+  }
+  .diets-page__table tr {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-neutral-200);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    padding: 12px;
+  }
+  .diets-page__table td {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: none;
+    padding: 4px 0;
+  }
+  .diets-page__table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--color-neutral-600);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .diets-page__card:hover {
+    transform: none;
+  }
+  .diets-page__skeleton-card {
+    animation: none;
+    opacity: 0.5;
+  }
+}

@@ -53,6 +53,8 @@ import {
   ShieldAlert,
   Container,
   Salad,
+  UtensilsCrossed,
+  Cookie,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -123,7 +125,11 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: 'NUTRIÇÃO',
-    items: [{ to: '/feed-ingredients', icon: Salad, label: 'Ingredientes' }],
+    items: [
+      { to: '/feed-ingredients', icon: Salad, label: 'Ingredientes' },
+      { to: '/diets', icon: UtensilsCrossed, label: 'Dietas' },
+      { to: '/feeding-records', icon: Cookie, label: 'Trato/Fornecimento' },
+    ],
   },
   {
     title: 'LAVOURA',
