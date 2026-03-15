@@ -45,6 +45,7 @@ import {
   Zap,
   ScanLine,
   X,
+  CupSoda,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -98,6 +99,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/natural-matings', icon: Beef, label: 'Monta natural' },
       { to: '/pregnancy-diagnosis', icon: ScanLine, label: 'Diagnóstico gestação' },
       { to: '/calving-events', icon: Milestone, label: 'Partos e crias' },
+      { to: '/weaning', icon: CupSoda, label: 'Desmama' },
       { to: '/sanitary-dashboard', icon: Activity, label: 'Dashboard sanitário' },
     ],
   },

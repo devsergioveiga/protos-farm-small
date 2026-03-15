@@ -305,6 +305,9 @@ model Organization {
   naturalMatings           NaturalMating[]
   pregnancyDiagnoses       PregnancyDiagnosis[]
   calvingEvents            CalvingEvent[]
+  calfSeparations          CalfSeparation[]
+  weaningRecords           WeaningRecord[]
+  weaningCriteria          WeaningCriteria?
 
   @@map("organizations")
 }
@@ -368,6 +371,8 @@ model User {
   recordedNaturalMatings       NaturalMating[]        @relation("NaturalMatingRecorder")
   recordedDiagnoses            PregnancyDiagnosis[]   @relation("DgRecorder")
   recordedCalvings             CalvingEvent[]         @relation("CalvingRecorder")
+  recordedSeparations          CalfSeparation[]       @relation("SeparationRecorder")
+  recordedWeanings             WeaningRecord[]        @relation("WeaningRecorder")
 
   @@map("users")
 }
@@ -455,6 +460,8 @@ model Farm {
   naturalMatings             NaturalMating[]
   pregnancyDiagnoses         PregnancyDiagnosis[]
   calvingEvents              CalvingEvent[]
+  calfSeparations            CalfSeparation[]
+  weaningRecords             WeaningRecord[]
 
   @@map("farms")
 }
@@ -997,6 +1004,9 @@ model Animal {
   calvingsAsMother        CalvingEvent[]         @relation("CalvingMother")
   calvingsAsFather        CalvingEvent[]         @relation("CalvingFather")
   calfRecord              CalvingCalf?           @relation("CalfAnimal")
+  calfSeparations         CalfSeparation[]       @relation("SeparatedCalf")
+  motherSeparations       CalfSeparation[]       @relation("SeparationMother")
+  weaningRecords          WeaningRecord[]        @relation("WeanedCalf")
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -4322,4 +4332,106 @@ model CalvingCalf {
 
   @@index([calvingEventId])
   @@map("calving_calves")
+}
+
+// ─── EPIC-12 US-117: Desmama e Desaleitamento ───────────────────────
+
+enum FeedType {
+  WHOLE_MILK
+  PASTEURIZED_DISCARD_MILK
+  MILK_REPLACER
+}
+
+enum FeedingMethod {
+  BUCKET_NIPPLE
+  BOTTLE
+  FOSTER_COLLECTIVE
+}
+
+model CalfSeparation {
+  id                String    @id @default(uuid())
+  organizationId    String
+  farmId            String
+  calfId            String
+  motherId          String
+  separationDate    DateTime  @db.Date
+  reason            String?
+  destination       String?
+  recordedBy        String
+  createdAt         DateTime  @default(now())
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  calf          Animal       @relation("SeparatedCalf", fields: [calfId], references: [id], onDelete: Cascade)
+  mother        Animal       @relation("SeparationMother", fields: [motherId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("SeparationRecorder", fields: [recordedBy], references: [id])
+  feedingProtocol CalfFeedingProtocol?
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([calfId])
+  @@map("calf_separations")
+}
+
+model CalfFeedingProtocol {
+  id                    String        @id @default(uuid())
+  separationId          String        @unique
+  feedType              FeedType
+  dailyVolumeLiters     Float
+  frequencyPerDay       Int           @default(2)
+  feedingMethod         FeedingMethod
+  concentrateStartDate  DateTime?     @db.Date
+  concentrateGramsPerDay Float?
+  roughageType          String?
+  targetWeaningWeightKg Float?
+  notes                 String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  separation  CalfSeparation @relation(fields: [separationId], references: [id], onDelete: Cascade)
+
+  @@map("calf_feeding_protocols")
+}
+
+model WeaningRecord {
+  id                          String    @id @default(uuid())
+  organizationId              String
+  farmId                      String
+  calfId                      String
+  weaningDate                 DateTime  @db.Date
+  weightKg                    Float?
+  ageMonths                   Int?
+  concentrateConsumptionGrams Float?
+  previousCategory            String?
+  targetLotId                 String?
+  observations                String?
+  recordedBy                  String
+  createdAt                   DateTime  @default(now())
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  calf          Animal       @relation("WeanedCalf", fields: [calfId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("WeaningRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([calfId])
+  @@index([weaningDate])
+  @@map("weaning_records")
+}
+
+model WeaningCriteria {
+  id                  String   @id @default(uuid())
+  organizationId      String   @unique
+  minAgeDays          Int?
+  minWeightKg         Float?
+  minConcentrateGrams Float?
+  consecutiveDays     Int?     @default(3)
+  targetLotId         String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("weaning_criteria")
 }
