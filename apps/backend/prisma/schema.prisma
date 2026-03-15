@@ -297,6 +297,7 @@ model Organization {
   semenBatches             SemenBatch[]
   reproductiveReleases     ReproductiveRelease[]
   reproductiveCriteria     ReproductiveCriteria?
+  heatRecords              HeatRecord[]
 
   @@map("organizations")
 }
@@ -352,6 +353,7 @@ model User {
   recordedExams              AnimalExam[]             @relation("ExamRecorder")
   recordedCompositeProductions CompositeProduction[]  @relation("CompositeProductionRecorder")
   recordedReleases             ReproductiveRelease[]  @relation("ReleaseRecorder")
+  recordedHeats                HeatRecord[]           @relation("HeatRecorder")
 
   @@map("users")
 }
@@ -432,6 +434,7 @@ model Farm {
   animalExams                AnimalExam[]
   bulls                      Bull[]
   reproductiveReleases       ReproductiveRelease[]
+  heatRecords                HeatRecord[]
 
   @@map("farms")
 }
@@ -965,6 +968,7 @@ model Animal {
   animalExams             AnimalExam[]
   bullRecord              Bull?                      @relation("BullAnimal")
   reproductiveReleases    ReproductiveRelease[]
+  heatRecords             HeatRecord[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -3733,4 +3737,60 @@ model ReproductiveCriteria {
   organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("reproductive_criteria")
+}
+
+// ─── EPIC-12 US-110: Detecção de Cio ────────────────────────────────
+
+enum HeatDetectionMethod {
+  VISUAL
+  MARKER_PAINT
+  PEDOMETER
+  TEASER
+}
+
+enum HeatStatus {
+  AWAITING_AI
+  AI_DONE
+  NOT_INSEMINATED
+}
+
+model HeatRecord {
+  id                    String              @id @default(uuid())
+  organizationId        String
+  farmId                String
+  animalId              String
+  heatDate              DateTime            @db.Date
+  heatTime              String?             // "08:30" or period
+  heatPeriod            String?             // MORNING, AFTERNOON, NIGHT
+  intensity             HeatIntensity
+  signs                 Json                // string array: ["mount_accepted", "mucus", ...]
+  detectionMethod       HeatDetectionMethod
+  status                HeatStatus          @default(AWAITING_AI)
+  // AI alert (CA3)
+  recommendedAiTime     DateTime?
+  recommendedBullId     String?
+  // Cyclicity (CA7)
+  cyclicityStatus       String?             // CYCLING, ANESTRUS, FOLLICULAR_CYST, etc.
+  // Inter-heat (CA4)
+  previousHeatDate      DateTime?           @db.Date
+  interHeatDays         Int?
+  isIntervalIrregular   Boolean             @default(false)
+  inseminationId        String?             // link to future insemination record
+  notInseminatedReason  String?
+  notes                 String?
+  recordedBy            String
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal       @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("HeatRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([heatDate])
+  @@index([status])
+  @@map("heat_records")
 }

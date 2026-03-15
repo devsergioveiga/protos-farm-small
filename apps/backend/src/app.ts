@@ -62,6 +62,7 @@ import { sanitaryDashboardRouter } from './modules/sanitary-dashboard/sanitary-d
 import { compositeProductsRouter } from './modules/composite-products/composite-products.routes';
 import { bullsRouter } from './modules/bulls/bulls.routes';
 import { reproductiveReleasesRouter } from './modules/reproductive-releases/reproductive-releases.routes';
+import { heatRecordsRouter } from './modules/heat-records/heat-records.routes';
 
 const app = express();
 
@@ -131,5 +132,6 @@ app.use('/api', sanitaryDashboardRouter);
 app.use('/api', compositeProductsRouter);
 app.use('/api', bullsRouter);
 app.use('/api', reproductiveReleasesRouter);
+app.use('/api', heatRecordsRouter);
 
 export { app };
