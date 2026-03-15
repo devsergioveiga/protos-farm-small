@@ -1,0 +1,100 @@
+/* ─── Quarter selection grid ─────────────────────────────────────── */
+.mast-modal__quarters-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.mast-modal__quarter-check {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  padding: 12px 16px;
+  transition:
+    border-color 200ms ease-out,
+    background 200ms ease-out;
+}
+
+.mast-modal__quarter-check--active {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-50, #f0fdf4);
+}
+
+.mast-modal__quarter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  min-height: 48px;
+}
+
+.mast-modal__quarter-label input[type='checkbox'] {
+  accent-color: var(--color-primary-600);
+  width: 18px;
+  height: 18px;
+}
+
+/* ─── Per-quarter detail ─────────────────────────────────────────── */
+.mast-modal__quarter-detail {
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.mast-modal__quarter-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0 0 12px;
+}
+
+/* ─── Temperature alert ──────────────────────────────────────────── */
+.mast-modal__temp-alert {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-700, #b91c1c);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.mast-modal__input--alert {
+  border-color: var(--color-error-500, #ef4444) !important;
+}
+
+/* ─── Culture checkbox ───────────────────────────────────────────── */
+.mast-modal__culture-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  margin-bottom: 12px;
+  min-height: 48px;
+}
+
+.mast-modal__culture-check input[type='checkbox'] {
+  accent-color: var(--color-primary-600);
+  width: 18px;
+  height: 18px;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .mast-modal__quarters-grid {
+    grid-template-columns: 1fr;
+  }
+}

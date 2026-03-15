@@ -308,6 +308,13 @@ model Organization {
   calfSeparations          CalfSeparation[]
   weaningRecords           WeaningRecord[]
   weaningCriteria          WeaningCriteria?
+  milkingRecords           MilkingRecord[]
+  milkAnalyses             MilkAnalysis[]
+  milkQualityConfig        MilkQualityConfig?
+  mastitisCases            MastitisCase[]
+  coolingTanks             CoolingTank[]
+  milkCollections          MilkCollection[]
+  lactations               Lactation[]
 
   @@map("organizations")
 }
@@ -373,6 +380,12 @@ model User {
   recordedCalvings             CalvingEvent[]         @relation("CalvingRecorder")
   recordedSeparations          CalfSeparation[]       @relation("SeparationRecorder")
   recordedWeanings             WeaningRecord[]        @relation("WeaningRecorder")
+  recordedMilkings             MilkingRecord[]        @relation("MilkingRecorder")
+  recordedMilkAnalyses         MilkAnalysis[]         @relation("MilkAnalysisRecorder")
+  recordedMastitisCases        MastitisCase[]         @relation("MastitisRecorder")
+  recordedTankMeasurements     TankMeasurement[]      @relation("TankMeasurementRecorder")
+  recordedMilkCollections      MilkCollection[]       @relation("MilkCollectionRecorder")
+  recordedLactations           Lactation[]            @relation("LactationRecorder")
 
   @@map("users")
 }
@@ -462,6 +475,12 @@ model Farm {
   calvingEvents              CalvingEvent[]
   calfSeparations            CalfSeparation[]
   weaningRecords             WeaningRecord[]
+  milkingRecords             MilkingRecord[]
+  milkAnalyses               MilkAnalysis[]
+  mastitisCases              MastitisCase[]
+  coolingTanks               CoolingTank[]
+  milkCollections            MilkCollection[]
+  lactations                 Lactation[]
 
   @@map("farms")
 }
@@ -1007,6 +1026,10 @@ model Animal {
   calfSeparations         CalfSeparation[]       @relation("SeparatedCalf")
   motherSeparations       CalfSeparation[]       @relation("SeparationMother")
   weaningRecords          WeaningRecord[]        @relation("WeanedCalf")
+  milkingRecords          MilkingRecord[]
+  milkAnalyses            MilkAnalysis[]
+  mastitisCases           MastitisCase[]
+  lactations              Lactation[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -2537,6 +2560,7 @@ model Product {
   dewormings             Deworming[]
   treatmentApplications  TreatmentApplication[]
   iatfStepProducts       IatfProtocolStepProduct[] @relation("IatfStepProduct")
+  mastitisApplications   MastitisApplication[]    @relation("MastitisProduct")
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -4434,4 +4458,383 @@ model WeaningCriteria {
   organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("weaning_criteria")
+}
+
+// ─── EPIC-13 US-118: Registro de Ordenha ─────────────────────────────
+
+enum MilkingShift {
+  MORNING
+  AFTERNOON
+  NIGHT
+}
+
+model MilkingRecord {
+  id                String        @id @default(uuid())
+  organizationId    String
+  farmId            String
+  animalId          String
+  milkingDate       DateTime      @db.Date
+  shift             MilkingShift
+  liters            Float
+  variationPercent  Float?        // vs previous day same shift
+  variationAlert    Boolean       @default(false) // >30% variation
+  notes             String?
+  recordedBy        String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal       @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("MilkingRecorder", fields: [recordedBy], references: [id])
+
+  @@unique([animalId, milkingDate, shift])
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([milkingDate])
+  @@map("milking_records")
+}
+
+// ─── EPIC-13 US-119: Análise de Leite ────────────────────────────────
+
+enum MilkAnalysisType {
+  INDIVIDUAL_CMT
+  INDIVIDUAL_LAB
+  TANK
+  OFFICIAL_RECORDING
+}
+
+model MilkAnalysis {
+  id                  String            @id @default(uuid())
+  organizationId      String
+  farmId              String
+  analysisType        MilkAnalysisType
+  animalId            String?           // null for tank analysis
+  analysisDate        DateTime          @db.Date
+  laboratory          String?
+  dairyCompany        String?           // for tank analysis
+  // CMT results (CA2)
+  cmtFrontLeft        String?           // NEGATIVE, TRACE, PLUS_1, PLUS_2, PLUS_3
+  cmtFrontRight       String?
+  cmtRearLeft         String?
+  cmtRearRight        String?
+  cmtAlert            Boolean           @default(false) // any quarter ++ or +++
+  // Lab/Tank results (CA3, CA4)
+  scc                 Float?            // cells/mL
+  tbc                 Float?            // UFC/mL (tank only)
+  fatPercent          Float?
+  proteinPercent      Float?
+  lactosePercent      Float?
+  caseinPercent       Float?
+  totalSolidsPercent  Float?
+  snfPercent          Float?           // solids non-fat
+  munMgDl             Float?            // milk urea nitrogen
+  fatProteinRatio     Float?
+  antibioticResidue   Boolean?          // tank only
+  temperature         Float?            // tank only
+  acidityDornic       Float?            // tank only
+  cryoscopy           Float?            // tank only
+  // Official recording (CA5)
+  productionAmLiters  Float?
+  productionPmLiters  Float?
+  projected305Liters  Float?
+  // Alerts (CA6)
+  sccAlert            String?           // GREEN, YELLOW, RED
+  tbcAlert            String?           // GREEN, YELLOW, RED
+  // File
+  reportFileName      String?
+  reportPath          String?
+  notes               String?
+  recordedBy          String
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal?      @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("MilkAnalysisRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([analysisDate])
+  @@index([analysisType])
+  @@map("milk_analyses")
+}
+
+model MilkQualityConfig {
+  id                 String  @id @default(uuid())
+  organizationId     String  @unique
+  sccLimit           Float?  @default(500000)
+  sccWarning         Float?  @default(400000)
+  tbcLimit           Float?  @default(300000)
+  tbcWarning         Float?  @default(200000)
+  individualSccLimit Float?  @default(200000)
+  // Bonus/penalty table (CA9)
+  bonusTable         Json?   // [{parameter, ranges: [{min, max, bonusPerLiter}]}]
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("milk_quality_configs")
+}
+
+// ─── EPIC-13 US-120: Mastite ─────────────────────────────────────────
+
+enum MastitisGrade {
+  GRADE_1_MILD
+  GRADE_2_MODERATE
+  GRADE_3_SEVERE
+}
+
+enum MastitisClassification {
+  CLINICAL
+  SUBCLINICAL
+  RECURRENT
+  CHRONIC
+}
+
+enum MastitisQuarterStatus {
+  IN_TREATMENT
+  IN_WITHDRAWAL
+  CURED
+  CHRONIC
+  QUARTER_LOST
+}
+
+enum MastitisCaseStatus {
+  OPEN
+  CLOSED
+}
+
+model MastitisCase {
+  id                    String                  @id @default(uuid())
+  organizationId        String
+  farmId                String
+  animalId              String
+  occurrenceDate        DateTime                @db.Date
+  occurrenceTime        String?
+  identifiedBy          String
+  delAtOccurrence       Int?
+  rectalTemperature     Float?
+  temperatureAlert      Boolean                 @default(false)
+  classification        MastitisClassification  @default(CLINICAL)
+  status                MastitisCaseStatus      @default(OPEN)
+  cultureSampleCollected Boolean                @default(false)
+  cultureLab            String?
+  cultureSampleNumber   String?
+  cultureAgent          String?
+  cultureAntibiogram    Json?
+  treatmentProtocolName String?
+  withdrawalEndDate     DateTime?               @db.Date
+  closedAt              DateTime?
+  closureOutcome        String?
+  totalCostCents        Int                     @default(0)
+  notes                 String?
+  recordedBy            String
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  organization  Organization          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm                  @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal                @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  recorder      User                  @relation("MastitisRecorder", fields: [recordedBy], references: [id])
+  quarters      MastitisQuarter[]
+  applications  MastitisApplication[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([occurrenceDate])
+  @@index([status])
+  @@map("mastitis_cases")
+}
+
+model MastitisQuarter {
+  id                String                @id @default(uuid())
+  caseId            String
+  quarter           String
+  grade             MastitisGrade
+  milkAppearance    String?
+  cmtResult         String?
+  status            MastitisQuarterStatus @default(IN_TREATMENT)
+  withdrawalEndDate DateTime?             @db.Date
+  notes             String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  case  MastitisCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId])
+  @@map("mastitis_quarters")
+}
+
+model MastitisApplication {
+  id                  String    @id @default(uuid())
+  caseId              String
+  applicationDate     DateTime  @db.Date
+  applicationTime     String?
+  productName         String
+  productId           String?
+  dose                String
+  administrationRoute String
+  quarterTreated      String?
+  responsibleName     String
+  costCents           Int       @default(0)
+  notes               String?
+  createdAt           DateTime  @default(now())
+
+  case    MastitisCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  product Product?     @relation("MastitisProduct", fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([caseId])
+  @@index([applicationDate])
+  @@map("mastitis_applications")
+}
+
+// ─── EPIC-13 US-121: Tanque de Resfriamento e Entregas ───────────
+
+model CoolingTank {
+  id              String    @id @default(uuid())
+  organizationId  String
+  farmId          String
+  name            String
+  capacityLiters  Float
+  location        String?
+  serialNumber    String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  organization  Organization    @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  measurements  TankMeasurement[]
+  collections   MilkCollection[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@map("cooling_tanks")
+}
+
+model TankMeasurement {
+  id          String    @id @default(uuid())
+  tankId      String
+  measureDate DateTime  @db.Date
+  volumeLiters Float
+  recordedBy  String
+  createdAt   DateTime  @default(now())
+
+  tank      CoolingTank @relation(fields: [tankId], references: [id], onDelete: Cascade)
+  recorder  User        @relation("TankMeasurementRecorder", fields: [recordedBy], references: [id])
+
+  @@unique([tankId, measureDate])
+  @@index([tankId])
+  @@index([measureDate])
+  @@map("tank_measurements")
+}
+
+model MilkCollection {
+  id                String    @id @default(uuid())
+  organizationId    String
+  farmId            String
+  tankId            String?
+  collectionDate    DateTime  @db.Date
+  collectionTime    String?
+  dairyCompany      String
+  driverName        String?
+  volumeLiters      Float
+  sampleCollected   Boolean   @default(false)
+  milkTemperature   Float?
+  ticketNumber      String?
+  ticketPhotoPath   String?
+  ticketPhotoName   String?
+  productionLiters  Float?
+  divergencePercent Float?
+  divergenceAlert   Boolean   @default(false)
+  pricePerLiter     Float?
+  grossValue        Float?
+  qualityDiscount   Float?
+  freightDiscount   Float?
+  otherDiscounts    Float?
+  netValue          Float?
+  notes             String?
+  recordedBy        String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  tank          CoolingTank? @relation(fields: [tankId], references: [id], onDelete: SetNull)
+  recorder      User         @relation("MilkCollectionRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([collectionDate])
+  @@map("milk_collections")
+}
+
+// ─── EPIC-13 US-122: Lactação ────────────────────────────────────────
+
+enum LactationOrigin {
+  BIRTH
+  INDUCTION
+}
+
+enum LactationStatus {
+  IN_PROGRESS
+  DRIED
+}
+
+enum DryingReason {
+  SCHEDULED
+  LOW_PRODUCTION
+  TREATMENT
+  ADVANCED_GESTATION
+}
+
+model Lactation {
+  id                  String           @id @default(uuid())
+  organizationId      String
+  farmId              String
+  animalId            String
+  lactationNumber     Int
+  startDate           DateTime         @db.Date
+  endDate             DateTime?        @db.Date
+  origin              LactationOrigin
+  status              LactationStatus  @default(IN_PROGRESS)
+  // Induction (CA3)
+  inductionProtocol   String?
+  inductionReason     String?
+  inductionVet        String?
+  firstMilkingDate    DateTime?        @db.Date
+  // Drying (CA8)
+  dryingReason        DryingReason?
+  dryingProtocol      String?
+  dryingVet           String?
+  // Indicators (CA6)
+  peakLiters          Float?
+  peakDel             Int?
+  accumulated305      Float?
+  totalAccumulated    Float?
+  durationDays        Int?
+  // Linkage
+  calvingEventId      String?
+  notes               String?
+  recordedBy          String
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal       @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("LactationRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([status])
+  @@index([startDate])
+  @@map("lactations")
 }

@@ -10,6 +10,7 @@ import {
   Sprout,
   SprayCan,
   Droplet,
+  Droplets,
   Stethoscope,
   Shovel,
   UsersRound,
@@ -41,11 +42,16 @@ import {
   ShieldPlus,
   FlaskConical,
   Activity,
+  BarChart3,
   CalendarClock,
   Zap,
   ScanLine,
   X,
   CupSoda,
+  Milk,
+  TestTube,
+  ShieldAlert,
+  Container,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -101,6 +107,17 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/calving-events', icon: Milestone, label: 'Partos e crias' },
       { to: '/weaning', icon: CupSoda, label: 'Desmama' },
       { to: '/sanitary-dashboard', icon: Activity, label: 'Dashboard sanitário' },
+    ],
+  },
+  {
+    title: 'LEITE',
+    items: [
+      { to: '/milking-records', icon: Milk, label: 'Ordenha' },
+      { to: '/milk-analysis', icon: TestTube, label: 'Análise de leite' },
+      { to: '/mastitis', icon: ShieldAlert, label: 'Mastite' },
+      { to: '/milk-tanks', icon: Container, label: 'Tanque e entregas' },
+      { to: '/lactations', icon: Droplets, label: 'Lactação' },
+      { to: '/milk-dashboard', icon: BarChart3, label: 'Dashboard leite' },
     ],
   },
   {

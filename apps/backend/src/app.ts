@@ -70,6 +70,12 @@ import { naturalMatingsRouter } from './modules/natural-matings/natural-matings.
 import { pregnancyDiagnosisRouter } from './modules/pregnancy-diagnosis/pregnancy-diagnosis.routes';
 import { calvingEventsRouter } from './modules/calving-events/calving-events.routes';
 import { weaningRouter } from './modules/weaning/weaning.routes';
+import { milkingRecordsRouter } from './modules/milking-records/milking-records.routes';
+import { milkAnalysisRouter } from './modules/milk-analysis/milk-analysis.routes';
+import { mastitisRouter } from './modules/mastitis/mastitis.routes';
+import { milkTanksRouter } from './modules/milk-tanks/milk-tanks.routes';
+import { lactationsRouter } from './modules/lactations/lactations.routes';
+import { milkDashboardRouter } from './modules/milk-dashboard/milk-dashboard.routes';
 
 const app = express();
 
@@ -147,5 +153,11 @@ app.use('/api', naturalMatingsRouter);
 app.use('/api', pregnancyDiagnosisRouter);
 app.use('/api', calvingEventsRouter);
 app.use('/api', weaningRouter);
+app.use('/api', milkingRecordsRouter);
+app.use('/api', milkAnalysisRouter);
+app.use('/api', mastitisRouter);
+app.use('/api', milkTanksRouter);
+app.use('/api', lactationsRouter);
+app.use('/api', milkDashboardRouter);
 
 export { app };
