@@ -11,7 +11,9 @@ import {
   createMonitoringPointRepository,
   createFieldTeamRepository,
   createCultivarRepository,
+  createReferenceDataRepository,
 } from './db';
+import type { ReferenceEntityType } from './db';
 import type {
   OfflineFarm,
   OfflineFieldPlot,
@@ -445,6 +447,63 @@ export type SyncProgressCallback = (progress: SyncProgress[]) => void;
 
 // ─── Initial sync service ──────────────────────────────────────────────────
 
+// ─── Reference data sync mapping ────────────────────────────────────────────
+
+interface ReferenceDataSyncConfig {
+  syncEntity: SyncEntity;
+  refType: ReferenceEntityType;
+  label: string;
+  /** If true, uses /org/farms/:farmId/ prefix. Otherwise uses /org/ prefix. */
+  farmScoped: boolean;
+  path: string;
+}
+
+const REFERENCE_DATA_SYNC_CONFIGS: ReferenceDataSyncConfig[] = [
+  { syncEntity: 'ref_bulls', refType: 'bulls', label: 'Touros', farmScoped: true, path: 'bulls' },
+  {
+    syncEntity: 'ref_iatf_protocols',
+    refType: 'iatf_protocols',
+    label: 'Protocolos IATF',
+    farmScoped: false,
+    path: 'iatf-protocols',
+  },
+  {
+    syncEntity: 'ref_diseases',
+    refType: 'diseases',
+    label: 'Doenças',
+    farmScoped: false,
+    path: 'diseases',
+  },
+  {
+    syncEntity: 'ref_treatment_protocols',
+    refType: 'treatment_protocols',
+    label: 'Protocolos tratamento',
+    farmScoped: false,
+    path: 'treatment-protocols',
+  },
+  {
+    syncEntity: 'ref_exam_types',
+    refType: 'exam_types',
+    label: 'Tipos de exame',
+    farmScoped: false,
+    path: 'exam-types',
+  },
+  {
+    syncEntity: 'ref_feed_ingredients',
+    refType: 'feed_ingredients',
+    label: 'Ingredientes ração',
+    farmScoped: false,
+    path: 'feed-ingredients',
+  },
+  {
+    syncEntity: 'ref_products',
+    refType: 'products',
+    label: 'Produtos',
+    farmScoped: false,
+    path: 'products',
+  },
+];
+
 export function createSyncService(db: SQLiteDatabase) {
   const farmRepo = createFarmRepository(db);
   const plotRepo = createFieldPlotRepository(db);
@@ -456,6 +515,7 @@ export function createSyncService(db: SQLiteDatabase) {
   const fieldTeamRepo = createFieldTeamRepository(db);
   const cultivarRepo = createCultivarRepository(db);
   const syncMetaRepo = createSyncMetaRepository(db);
+  const refDataRepo = createReferenceDataRepository(db);
 
   const entities: SyncEntity[] = [
     'farms',
@@ -467,6 +527,7 @@ export function createSyncService(db: SQLiteDatabase) {
     'monitoring_points',
     'field_teams',
     'cultivars',
+    ...REFERENCE_DATA_SYNC_CONFIGS.map((c) => c.syncEntity),
   ];
 
   function initProgress(): SyncProgress[] {
@@ -741,6 +802,39 @@ export function createSyncService(db: SQLiteDatabase) {
         updateProgress(progress, 'cultivars', { status: 'error', error: msg }, onProgress);
       }
 
+      // 10. Sync reference data (bulls, protocols, diseases, products, etc.)
+      await refDataRepo.init();
+      for (const config of REFERENCE_DATA_SYNC_CONFIGS) {
+        try {
+          updateProgress(progress, config.syncEntity, { status: 'syncing' }, onProgress);
+          const apiPath = config.farmScoped
+            ? `/org/farms/${farmId}/${config.path}`
+            : `/org/${config.path}`;
+          let items: unknown[];
+          try {
+            items = await fetchAllPages<unknown>(apiPath);
+          } catch {
+            // Some endpoints may return non-paginated arrays
+            try {
+              items = await api.get<unknown[]>(apiPath);
+            } catch {
+              items = [];
+            }
+          }
+          await refDataRepo.upsertReferenceData(farmId, config.refType, items);
+          await syncMetaRepo.upsert(config.syncEntity, items.length);
+          updateProgress(
+            progress,
+            config.syncEntity,
+            { status: 'done', count: items.length },
+            onProgress,
+          );
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+          updateProgress(progress, config.syncEntity, { status: 'error', error: msg }, onProgress);
+        }
+      }
+
       return progress;
     },
 
@@ -771,6 +865,7 @@ export function createSyncService(db: SQLiteDatabase) {
      * Clear all offline data (used on logout or farm switch).
      */
     async clearAll(): Promise<void> {
+      await refDataRepo.clearAll();
       await cultivarRepo.clear();
       await fieldTeamRepo.clear();
       await monitoringPointRepo.clear();
@@ -781,6 +876,13 @@ export function createSyncService(db: SQLiteDatabase) {
       await plotRepo.clear();
       await farmRepo.clear();
       await syncMetaRepo.clear();
+    },
+
+    /**
+     * Get reference data repository for cache management.
+     */
+    get referenceData() {
+      return refDataRepo;
     },
   };
 }

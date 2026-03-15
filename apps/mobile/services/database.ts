@@ -4,7 +4,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
  * Database version — increment when adding new migrations.
  * Each version maps to a migration function in the migrations array.
  */
-const DATABASE_VERSION = 10;
+const DATABASE_VERSION = 11;
 
 /**
  * Run migrations on database init (called by SQLiteProvider onInit).
@@ -68,6 +68,11 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase): Promise<void> {
   if (currentVersion === 9) {
     await migrationV10(db);
     currentVersion = 10;
+  }
+
+  if (currentVersion === 10) {
+    await migrationV11(db);
+    currentVersion = 11;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
@@ -567,6 +572,31 @@ async function migrationV10(db: SQLiteDatabase): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_planting_ops_farm ON planting_operations(farm_id);
     CREATE INDEX IF NOT EXISTS idx_planting_ops_synced ON planting_operations(synced);
     CREATE INDEX IF NOT EXISTS idx_planting_ops_date ON planting_operations(planting_date);
+  `);
+}
+
+/**
+ * V11 — Priority column for pending operations (US-128) + sync_metrics table (US-127).
+ */
+async function migrationV11(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
+    ALTER TABLE pending_operations ADD COLUMN priority INTEGER NOT NULL DEFAULT 0;
+
+    CREATE INDEX IF NOT EXISTS idx_pending_ops_priority ON pending_operations(priority DESC, created_at ASC);
+
+    CREATE TABLE IF NOT EXISTS sync_metrics (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      started_at TEXT NOT NULL,
+      finished_at TEXT,
+      payload_bytes_up INTEGER NOT NULL DEFAULT 0,
+      payload_bytes_down INTEGER NOT NULL DEFAULT 0,
+      operations_processed INTEGER NOT NULL DEFAULT 0,
+      operations_failed INTEGER NOT NULL DEFAULT 0,
+      conflicts_count INTEGER NOT NULL DEFAULT 0,
+      duration_ms INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_sync_metrics_started ON sync_metrics(started_at DESC);
   `);
 }
 
