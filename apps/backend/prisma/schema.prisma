@@ -303,6 +303,7 @@ model Organization {
   reproductiveLots         ReproductiveLot[]
   inseminations            Insemination[]
   naturalMatings           NaturalMating[]
+  pregnancyDiagnoses       PregnancyDiagnosis[]
 
   @@map("organizations")
 }
@@ -364,6 +365,7 @@ model User {
   createdReproductiveLots      ReproductiveLot[]      @relation("ReproductiveLotCreator")
   recordedInseminations        Insemination[]         @relation("InseminationRecorder")
   recordedNaturalMatings       NaturalMating[]        @relation("NaturalMatingRecorder")
+  recordedDiagnoses            PregnancyDiagnosis[]   @relation("DgRecorder")
 
   @@map("users")
 }
@@ -449,6 +451,7 @@ model Farm {
   reproductiveLots           ReproductiveLot[]
   inseminations              Insemination[]
   naturalMatings             NaturalMating[]
+  pregnancyDiagnoses         PregnancyDiagnosis[]
 
   @@map("farms")
 }
@@ -987,6 +990,7 @@ model Animal {
   reproductiveLotAnimals  ReproductiveLotAnimal[]
   inseminations           Insemination[]
   naturalMatingAnimals    NaturalMatingAnimal[]
+  pregnancyDiagnoses      PregnancyDiagnosis[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -4141,4 +4145,82 @@ model NaturalMatingAnimal {
   @@index([matingId])
   @@index([animalId])
   @@map("natural_mating_animals")
+}
+
+// ─── EPIC-12 US-115: Diagnóstico de Gestação ────────────────────────
+
+enum DgResult {
+  PREGNANT
+  EMPTY
+  LOSS
+  CYCLING
+}
+
+enum DgMethod {
+  PALPATION
+  ULTRASOUND
+  BLOOD_TEST
+  OBSERVATION
+}
+
+enum UterineCondition {
+  NONE
+  PLACENTA_RETENTION
+  METRITIS_GRADE_1
+  METRITIS_GRADE_2
+  METRITIS_GRADE_3
+  ENDOMETRITIS_CLINICAL
+  ENDOMETRITIS_SUBCLINICAL
+  PYOMETRA
+}
+
+model PregnancyDiagnosis {
+  id                      String            @id @default(uuid())
+  organizationId          String
+  farmId                  String
+  animalId                String
+  diagnosisDate           DateTime          @db.Date
+  result                  DgResult
+  method                  DgMethod
+  gestationDays           Int?
+  fetalSex                String?           // MALE, FEMALE, UNKNOWN
+  cyclicityStatus         String?           // when EMPTY
+  expectedCalvingDate     DateTime?         @db.Date
+  // Uterine health (CA2)
+  uterineCondition        UterineCondition  @default(NONE)
+  placentaRetentionHours  Int?
+  reproductiveRestriction Boolean           @default(false)
+  restrictionEndDate      DateTime?         @db.Date
+  // Linkage
+  inseminationId          String?           // link to IA that caused pregnancy
+  naturalMatingId         String?           // link to natural mating
+  linkedTreatmentId       String?           // link to therapeutic treatment (CA3)
+  bullId                  String?           // bull (known or from IA)
+  bullBreedName           String?           // breed when bull unknown (CA5)
+  // Follow-up (CA12)
+  isConfirmed             Boolean           @default(false)
+  confirmationDate        DateTime?         @db.Date
+  lossDate                DateTime?         @db.Date
+  lossReason              String?
+  // IATF referral (CA11)
+  referredToIatf          Boolean           @default(false)
+  referredProtocolId      String?
+  veterinaryName          String
+  notes                   String?
+  recordedBy              String
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal       @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("DgRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([diagnosisDate])
+  @@index([result])
+  @@index([expectedCalvingDate])
+  @@map("pregnancy_diagnoses")
 }

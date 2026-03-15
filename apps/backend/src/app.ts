@@ -67,6 +67,7 @@ import { matingPlansRouter } from './modules/mating-plans/mating-plans.routes';
 import { iatfProtocolsRouter } from './modules/iatf-protocols/iatf-protocols.routes';
 import { iatfExecutionRouter } from './modules/iatf-execution/iatf-execution.routes';
 import { naturalMatingsRouter } from './modules/natural-matings/natural-matings.routes';
+import { pregnancyDiagnosisRouter } from './modules/pregnancy-diagnosis/pregnancy-diagnosis.routes';
 
 const app = express();
 
@@ -141,5 +142,6 @@ app.use('/api', matingPlansRouter);
 app.use('/api', iatfProtocolsRouter);
 app.use('/api', iatfExecutionRouter);
 app.use('/api', naturalMatingsRouter);
+app.use('/api', pregnancyDiagnosisRouter);
 
 export { app };

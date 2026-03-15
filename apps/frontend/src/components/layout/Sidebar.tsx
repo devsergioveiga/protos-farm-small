@@ -42,6 +42,7 @@ import {
   Activity,
   CalendarClock,
   Zap,
+  ScanLine,
   X,
 } from 'lucide-react';
 import './Sidebar.css';
@@ -94,6 +95,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/iatf-protocols', icon: CalendarClock, label: 'Protocolos IATF' },
       { to: '/iatf-execution', icon: Zap, label: 'Execução IATF' },
       { to: '/natural-matings', icon: Beef, label: 'Monta natural' },
+      { to: '/pregnancy-diagnosis', icon: ScanLine, label: 'Diagnóstico gestação' },
       { to: '/sanitary-dashboard', icon: Activity, label: 'Dashboard sanitário' },
     ],
   },
