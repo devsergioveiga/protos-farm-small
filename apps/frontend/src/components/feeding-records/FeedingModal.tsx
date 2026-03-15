@@ -61,30 +61,23 @@ export default function FeedingModal({ isOpen, onClose, farmId, onSuccess, feedi
     if (!isOpen || !farmId) return;
     const fetchLookups = async () => {
       try {
-        interface LotApiItem {
-          id: string;
-          name: string;
-          _count?: { animals: number };
-          animalCount?: number;
-        }
         const [lotsRes, ingredientsRes] = await Promise.all([
-          api.get<{ data: LotApiItem[] }>(`/org/farms/${farmId}/animal-lots?limit=200`),
+          api.get<{ data: Array<{ id: string; name: string; _count?: { animals: number } }> }>(
+            `/org/farms/${farmId}/animal-lots?limit=200`,
+          ),
           api.get<{ data: IngredientOption[] }>(`/org/feed-ingredients?limit=200`),
         ]);
-        const lotsData: LotApiItem[] =
-          (lotsRes as { data: LotApiItem[] }).data ?? (lotsRes as unknown as LotApiItem[]);
+        const lotsArr = lotsRes.data ?? [];
         setLots(
-          lotsData.map((l) => ({
+          lotsArr.map((l) => ({
             id: l.id,
             name: l.name,
-            animalCount: l._count?.animals ?? l.animalCount ?? 0,
+            animalCount: l._count?.animals ?? 0,
           })),
         );
-        const ingredientsData: IngredientOption[] =
-          (ingredientsRes as { data: IngredientOption[] }).data ??
-          (ingredientsRes as unknown as IngredientOption[]);
+        const ingredientsArr = ingredientsRes.data ?? [];
         setIngredients(
-          ingredientsData.map((i) => ({
+          ingredientsArr.map((i) => ({
             id: i.id,
             name: i.name,
             type: i.type,
@@ -102,21 +95,20 @@ export default function FeedingModal({ isOpen, onClose, farmId, onSuccess, feedi
     async (selectedLotId: string) => {
       if (!selectedLotId || !farmId) return;
       try {
-        interface DietIngredientApi {
-          feedIngredientId: string;
-          feedIngredientName?: string;
-          feedIngredient?: { name: string };
-          quantityKgDay?: number;
-        }
-        interface DietAssignment {
-          endDate?: string | null;
+        interface AssignmentResponse {
+          endDate: string | null;
           diet?: {
             id: string;
             name: string;
-            ingredients?: DietIngredientApi[];
+            ingredients: Array<{
+              feedIngredientId: string;
+              feedIngredientName?: string;
+              feedIngredient?: { name: string };
+              quantityKgDay: number;
+            }>;
           };
         }
-        const assignments = await api.get<DietAssignment[]>(
+        const assignments = await api.get<AssignmentResponse[]>(
           `/org/farms/${farmId}/diets/lot-assignments?lotId=${selectedLotId}`,
         );
         const active = Array.isArray(assignments) ? assignments.find((a) => !a.endDate) : null;

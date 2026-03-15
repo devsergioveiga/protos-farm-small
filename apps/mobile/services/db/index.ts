@@ -17,10 +17,18 @@ export { createQuickServiceRepository } from './quick-service-repository';
 export { createTeamOperationsRepository } from './team-operations-repository';
 export { createCultivarRepository } from './cultivar-repository';
 export { createPlantingOperationRepository } from './planting-operation-repository';
+export { createReferenceDataRepository } from './reference-data-repository';
 export type { AnimalWithBreeds } from './animal-repository';
+export type { ReferenceEntityType } from './reference-data-repository';
 export type {
   PendingOperation,
   OperationType,
   OperationEntity,
+  OperationPriority,
+} from './pending-operations-repository';
+export {
+  PRIORITY_NORMAL,
+  PRIORITY_CRITICAL,
+  getDefaultPriority,
 } from './pending-operations-repository';
 export type { ConflictLogEntry } from './conflict-log-repository';

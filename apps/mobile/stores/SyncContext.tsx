@@ -3,6 +3,8 @@ import { useFarmContext } from '@/stores/FarmContext';
 import { useInitialSync } from '@/hooks/useInitialSync';
 import { usePendingOperations } from '@/hooks/usePendingOperations';
 import type { SyncProgress } from '@/services/sync';
+import type { SyncMetrics } from '@/services/offline-queue';
+import type { ConflictLogEntry } from '@/services/db/conflict-log-repository';
 
 interface SyncContextValue {
   isSyncing: boolean;
@@ -14,6 +16,14 @@ interface SyncContextValue {
   isFlushing: boolean;
   flushProgress: { processed: number; total: number; failed: number };
   flushNow: () => Promise<void>;
+  conflictCount: number;
+  conflicts: ConflictLogEntry[];
+  refreshConflicts: () => Promise<void>;
+  reviewConflict: (id: number) => Promise<void>;
+  reviewAllConflicts: () => Promise<void>;
+  syncMetrics: SyncMetrics | null;
+  latestMetrics: SyncMetrics[];
+  priorityCounts: { critical: number; normal: number };
 }
 
 const SyncContext = createContext<SyncContextValue | null>(null);
@@ -23,7 +33,20 @@ function SyncProvider({ children }: { children: ReactNode }) {
   const { isSyncing, progress, lastSyncedAt, error, retrySync } = useInitialSync({
     farmId: selectedFarmId,
   });
-  const { pendingCount, isFlushing, flushProgress, flushNow } = usePendingOperations();
+  const {
+    pendingCount,
+    isFlushing,
+    flushProgress,
+    flushNow,
+    conflictCount,
+    conflicts,
+    refreshConflicts,
+    reviewConflict,
+    reviewAllConflicts,
+    syncMetrics,
+    latestMetrics,
+    priorityCounts,
+  } = usePendingOperations();
 
   const value = useMemo<SyncContextValue>(
     () => ({
@@ -36,6 +59,14 @@ function SyncProvider({ children }: { children: ReactNode }) {
       isFlushing,
       flushProgress,
       flushNow,
+      conflictCount,
+      conflicts,
+      refreshConflicts,
+      reviewConflict,
+      reviewAllConflicts,
+      syncMetrics,
+      latestMetrics,
+      priorityCounts,
     }),
     [
       isSyncing,
@@ -47,6 +78,14 @@ function SyncProvider({ children }: { children: ReactNode }) {
       isFlushing,
       flushProgress,
       flushNow,
+      conflictCount,
+      conflicts,
+      refreshConflicts,
+      reviewConflict,
+      reviewAllConflicts,
+      syncMetrics,
+      latestMetrics,
+      priorityCounts,
     ],
   );
 

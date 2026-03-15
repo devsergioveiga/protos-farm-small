@@ -2,7 +2,15 @@ import { useCallback, useState, useEffect } from 'react';
 import { View, Text, FlatList, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeftRight, Settings, Info, LogOut, RefreshCw } from 'lucide-react-native';
+import {
+  ArrowLeftRight,
+  Settings,
+  Info,
+  LogOut,
+  RefreshCw,
+  Database,
+  ListChecks,
+} from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { spacing, fontSize } from '@protos-farm/shared';
 import { useAuth } from '@/stores/AuthContext';
@@ -87,7 +95,7 @@ function formatRelativeTime(isoDate: string): string {
 export default function MoreScreen() {
   const { user, logout } = useAuth();
   const { selectedFarm } = useFarmContext();
-  const { lastSyncedAt, retrySync, isSyncing } = useSyncContext();
+  const { lastSyncedAt, retrySync, isSyncing, pendingCount, conflictCount } = useSyncContext();
   const { colors } = useTheme();
   const styles = useThemedStyles(createStyles);
   const router = useRouter();
@@ -124,6 +132,12 @@ export default function MoreScreen() {
       onPress: retrySync,
     },
     {
+      id: 'sync-queue',
+      label: `Fila de sincronizacao${pendingCount > 0 ? ` (${pendingCount})` : ''}${conflictCount > 0 ? ` - ${conflictCount} conflito${conflictCount > 1 ? 's' : ''}` : ''}`,
+      icon: ListChecks,
+      onPress: () => router.push('/(app)/sync-queue'),
+    },
+    {
       id: 'switch-farm',
       label: 'Trocar Fazenda',
       icon: ArrowLeftRight,
@@ -134,6 +148,12 @@ export default function MoreScreen() {
       label: `Cache do mapa (${cacheLimitMB} MB)`,
       icon: Settings,
       onPress: handleCacheLimitPress,
+    },
+    {
+      id: 'data-cache',
+      label: 'Cache de dados',
+      icon: Database,
+      onPress: () => router.push('/(app)/cache-settings'),
     },
     { id: 'settings', label: 'Configurações', icon: Settings, onPress: () => {} },
     { id: 'about', label: 'Sobre', icon: Info, onPress: () => {} },
