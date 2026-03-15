@@ -1,0 +1,400 @@
+/* ─── Composite Products Tab ──────────────────────────────────── */
+
+.composite-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.composite-tab__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.composite-tab__header h2 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.composite-tab__header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.composite-tab__btn--outline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 1px solid var(--color-primary-600);
+  color: var(--color-primary-600);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  min-height: 48px;
+  transition: all 200ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.composite-tab__btn--outline:hover {
+  background: var(--color-primary-50, #e8f5e9);
+}
+
+/* ─── Card grid ──────────────────────────────────────────────── */
+
+.composite-tab__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.composite-tab__card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.33, 1, 0.68, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.composite-tab__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--color-primary-600);
+}
+
+.composite-tab__card:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.composite-tab__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.composite-tab__card-name {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.composite-tab__card-type {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+  white-space: nowrap;
+}
+
+.composite-tab__card-meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.composite-tab__card-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.composite-tab__card-stat-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.composite-tab__card-stat-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+}
+
+.composite-tab__card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.composite-tab__card-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid var(--color-neutral-300);
+  color: var(--color-neutral-600);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 40px;
+  transition: all 200ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.composite-tab__card-btn:hover {
+  background: var(--color-neutral-50);
+  border-color: var(--color-neutral-400);
+}
+
+.composite-tab__card-btn--primary {
+  border-color: var(--color-primary-600);
+  color: var(--color-primary-600);
+}
+
+.composite-tab__card-btn--primary:hover {
+  background: var(--color-primary-50, #e8f5e9);
+}
+
+/* ─── Production history ─────────────────────────────────────── */
+
+.composite-tab__section-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.composite-tab__table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-neutral-0);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--color-neutral-200);
+}
+
+.composite-tab__table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.composite-tab__table td {
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.composite-tab__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.composite-tab__table tbody tr:hover {
+  background: var(--color-neutral-50);
+}
+
+.composite-tab__table .composite-tab__mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.composite-tab__table-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.composite-tab__icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  padding: 8px;
+  border-radius: 6px;
+  min-width: 48px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.composite-tab__icon-btn:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.composite-tab__icon-btn--danger:hover {
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+}
+
+/* ─── Empty / Loading / Error / Pagination ────────────────────── */
+
+.composite-tab__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 64px 24px;
+  color: var(--color-neutral-500);
+  text-align: center;
+}
+
+.composite-tab__empty h3 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.composite-tab__empty p {
+  font-size: 0.875rem;
+  margin: 0;
+  max-width: 400px;
+}
+
+.composite-tab__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.composite-tab__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.composite-tab__skeleton-row {
+  height: 56px;
+  background: var(--color-neutral-100);
+  border-radius: 8px;
+  animation: comp-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes comp-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.composite-tab__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.composite-tab__pagination button {
+  background: none;
+  border: 1px solid var(--color-neutral-300);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  min-height: 48px;
+  color: var(--color-neutral-700);
+}
+
+.composite-tab__pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.composite-tab__pagination span {
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+}
+
+/* ─── Mobile ─────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .composite-tab__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .composite-tab__header-actions {
+    flex-direction: column;
+  }
+
+  .composite-tab__grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Table → cards */
+  .composite-tab__table thead {
+    display: none;
+  }
+
+  .composite-tab__table,
+  .composite-tab__table tbody,
+  .composite-tab__table tr,
+  .composite-tab__table td {
+    display: block;
+  }
+
+  .composite-tab__table tr {
+    padding: 16px;
+    border-bottom: 1px solid var(--color-neutral-200);
+  }
+
+  .composite-tab__table td {
+    padding: 4px 0;
+    border: none;
+  }
+
+  .composite-tab__table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--color-neutral-500);
+    text-transform: uppercase;
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .composite-tab__card,
+  .composite-tab__btn--outline,
+  .composite-tab__card-btn {
+    transition: none;
+  }
+
+  .composite-tab__card:hover {
+    transform: none;
+  }
+
+  .composite-tab__skeleton-row {
+    animation: none;
+    opacity: 0.5;
+  }
+}

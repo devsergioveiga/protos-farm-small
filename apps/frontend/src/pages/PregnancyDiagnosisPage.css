@@ -1,0 +1,786 @@
+/* ─── Page Layout ─────────────────────────────────────────────────── */
+.dg-page {
+  padding: 24px 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────── */
+.dg-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+.dg-page__header h1 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+.dg-page__header p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 4px 0 0;
+}
+.dg-page__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.dg-page__btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+  white-space: nowrap;
+}
+.dg-page__btn-primary:hover {
+  background: var(--color-primary-700);
+}
+
+/* ─── Tabs ────────────────────────────────────────────────────────── */
+.dg-page__tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--color-neutral-100);
+  padding-bottom: 0;
+  overflow-x: auto;
+}
+.dg-page__tab,
+.dg-page__tab--active {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  color: var(--color-neutral-500);
+  white-space: nowrap;
+  transition:
+    color 200ms ease-out,
+    border-color 200ms ease-out;
+}
+.dg-page__tab:hover {
+  color: var(--color-neutral-700);
+}
+.dg-page__tab--active {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+.dg-page__tab:focus-visible,
+.dg-page__tab--active:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+
+/* ─── Toolbar ─────────────────────────────────────────────────────── */
+.dg-page__toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.dg-page__search {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+.dg-page__search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-neutral-400);
+  pointer-events: none;
+}
+.dg-page__search input {
+  width: 100%;
+  padding: 12px 16px 12px 40px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  transition: border-color 200ms ease-out;
+}
+.dg-page__search input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+.dg-page__result-filter {
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  cursor: pointer;
+  min-width: 180px;
+}
+.dg-page__result-filter:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Messages ────────────────────────────────────────────────────── */
+.dg-page__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-error-50, #fef2f2);
+  border: 1px solid var(--color-error-200, #fecaca);
+  border-radius: 8px;
+  color: var(--color-error-700, #b91c1c);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+.dg-page__success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-primary-50, #f0fdf4);
+  border: 1px solid var(--color-primary-200, #bbf7d0);
+  border-radius: 8px;
+  color: var(--color-primary-700, #15803d);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+.dg-page__loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--color-neutral-500);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+}
+.dg-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--color-neutral-400);
+}
+.dg-page__empty h2 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  margin: 8px 0 0;
+}
+.dg-page__empty p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+/* ─── Grid ────────────────────────────────────────────────────────── */
+.dg-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+/* ─── Card ────────────────────────────────────────────────────────── */
+.dg-page__card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out;
+}
+.dg-page__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+.dg-page__card:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Restriction warning banner */
+.dg-page__card-restriction {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  margin: -20px -20px 12px;
+  border-radius: 12px 12px 0 0;
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-700, #b91c1c);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.dg-page__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.dg-page__card-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+.dg-page__card-subtitle {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  margin: 2px 0 0;
+}
+.dg-page__card-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.dg-page__card-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  transition: background 200ms ease-out;
+}
+.dg-page__card-btn:hover {
+  background: var(--color-neutral-100);
+}
+.dg-page__card-btn--delete:hover {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-600, #dc2626);
+}
+
+/* ─── Tags / Badges ──────────────────────────────────────────────── */
+.dg-page__card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.dg-page__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Result badges */
+.dg-badge--pregnant {
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-700, #15803d);
+}
+.dg-badge--empty {
+  background: #fff7ed;
+  color: #c2410c;
+}
+.dg-badge--loss {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-700, #b91c1c);
+}
+.dg-badge--cycling {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+.dg-page__tag--confirmed {
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-700, #15803d);
+}
+.dg-page__tag--iatf {
+  background: #faf5ff;
+  color: #7c3aed;
+}
+
+/* Uterine severity */
+.dg-uterine--warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+.dg-uterine--grade1 {
+  background: #fef3c7;
+  color: #92400e;
+}
+.dg-uterine--grade2 {
+  background: #fff7ed;
+  color: #c2410c;
+}
+.dg-uterine--grade3 {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-700, #b91c1c);
+}
+
+/* ─── Card details ────────────────────────────────────────────────── */
+.dg-page__card-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+.dg-page__detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.dg-page__detail--mono,
+.dg-page__mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+.dg-page__card-calving {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-neutral-100);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-primary-700, #15803d);
+  font-weight: 600;
+}
+.dg-page__card-bull {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  margin-top: 4px;
+}
+
+/* ─── Card Footer (Action Buttons) ───────────────────────────────── */
+.dg-page__card-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-neutral-100);
+}
+.dg-page__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+  min-height: 36px;
+}
+.dg-page__action-btn:hover {
+  background: var(--color-neutral-50);
+}
+.dg-page__action-btn--confirm {
+  color: var(--color-primary-700, #15803d);
+  border-color: var(--color-primary-200, #bbf7d0);
+}
+.dg-page__action-btn--confirm:hover {
+  background: var(--color-primary-50, #f0fdf4);
+}
+.dg-page__action-btn--loss {
+  color: var(--color-error-700, #b91c1c);
+  border-color: var(--color-error-200, #fecaca);
+}
+.dg-page__action-btn--loss:hover {
+  background: var(--color-error-50, #fef2f2);
+}
+.dg-page__action-btn--iatf {
+  color: #7c3aed;
+  border-color: #e9d5ff;
+}
+.dg-page__action-btn--iatf:hover {
+  background: #faf5ff;
+}
+
+/* ─── Pagination ──────────────────────────────────────────────────── */
+.dg-page__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+.dg-page__pagination button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+.dg-page__pagination button:hover:not(:disabled) {
+  background: var(--color-neutral-50);
+}
+.dg-page__pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.dg-page__pagination span {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  padding: 0 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Calving Calendar
+   ═══════════════════════════════════════════════════════════════════ */
+.dg-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dg-calendar__month {
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.dg-calendar__month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  background: var(--color-neutral-0);
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+.dg-calendar__month-header:hover {
+  background: var(--color-neutral-50);
+}
+.dg-calendar__month-header:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+.dg-calendar__month-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.dg-calendar__month-info h3 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+.dg-calendar__count-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-700, #15803d);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.dg-calendar__animal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--color-neutral-100);
+}
+.dg-calendar__animal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--color-neutral-50);
+  gap: 12px;
+}
+.dg-calendar__animal-item:last-child {
+  border-bottom: none;
+}
+.dg-calendar__animal-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dg-calendar__animal-tag {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+}
+.dg-calendar__animal-name {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+.dg-calendar__animal-details {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+.dg-calendar__gestation {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--color-neutral-500);
+}
+.dg-calendar__bull {
+  font-size: 0.75rem;
+  color: var(--color-neutral-500);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Empty Females Table
+   ═══════════════════════════════════════════════════════════════════ */
+.dg-empty__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+}
+.dg-empty__table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+.dg-empty__table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-50);
+  color: var(--color-neutral-700);
+}
+.dg-empty__table tr:hover td {
+  background: var(--color-neutral-50);
+}
+.dg-empty__tag {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+}
+.dg-empty__actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Mobile cards for empty females (hidden on desktop) */
+.dg-empty__cards {
+  display: none;
+}
+.dg-empty__card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 16px;
+}
+.dg-empty__card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.dg-empty__card-tag {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+}
+.dg-empty__card-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+  margin-bottom: 12px;
+}
+.dg-empty__card-actions {
+  padding-top: 12px;
+  border-top: 1px solid var(--color-neutral-100);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Indicators
+   ═══════════════════════════════════════════════════════════════════ */
+.dg-indicators__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.dg-indicators__card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dg-indicators__label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.dg-indicators__value {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+}
+.dg-indicators__card--primary {
+  border-color: var(--color-primary-200, #bbf7d0);
+  background: var(--color-primary-50, #f0fdf4);
+}
+.dg-indicators__card--primary .dg-indicators__value {
+  color: var(--color-primary-700, #15803d);
+}
+.dg-indicators__card--warning {
+  border-color: #fed7aa;
+  background: #fff7ed;
+}
+.dg-indicators__card--warning .dg-indicators__value {
+  color: #c2410c;
+}
+.dg-indicators__card--danger {
+  border-color: var(--color-error-200, #fecaca);
+  background: var(--color-error-50, #fef2f2);
+}
+.dg-indicators__card--danger .dg-indicators__value {
+  color: var(--color-error-700, #b91c1c);
+}
+
+/* ─── Screen reader only ─────────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Hide desktop table, show mobile cards */
+  .dg-empty__table {
+    display: none;
+  }
+  .dg-empty__cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .dg-calendar__animal-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .dg-calendar__animal-details {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dg-page {
+    padding: 16px;
+  }
+  .dg-page__header {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .dg-page__actions {
+    width: 100%;
+  }
+  .dg-page__btn-primary {
+    flex: 1;
+    justify-content: center;
+  }
+  .dg-page__toolbar {
+    flex-direction: column;
+  }
+  .dg-page__grid {
+    grid-template-columns: 1fr;
+  }
+  .dg-indicators__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .dg-page__tabs {
+    gap: 0;
+  }
+  .dg-page__tab,
+  .dg-page__tab--active {
+    padding: 12px 12px;
+    font-size: 0.8125rem;
+  }
+}
+
+/* ─── Reduced motion ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .dg-page__card,
+  .dg-page__card-btn,
+  .dg-page__action-btn,
+  .dg-calendar__month-header {
+    transition: none;
+  }
+  .dg-page__card:hover {
+    transform: none;
+  }
+}

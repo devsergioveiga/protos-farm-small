@@ -284,6 +284,30 @@ model Organization {
   stockInventories          StockInventory[]
   stockAdjustments          StockAdjustment[]
   pesticidePrescriptions    PesticidePrescription[]
+  diseases                  Disease[]
+  treatmentProtocols        TreatmentProtocol[]
+  sanitaryProtocols         SanitaryProtocol[]
+  vaccinations              Vaccination[]
+  dewormings                Deworming[]
+  therapeuticTreatments     TherapeuticTreatment[]
+  examTypes                ExamType[]
+  animalExams              AnimalExam[]
+  compositeProductions     CompositeProduction[]
+  bulls                    Bull[]
+  semenBatches             SemenBatch[]
+  reproductiveReleases     ReproductiveRelease[]
+  reproductiveCriteria     ReproductiveCriteria?
+  heatRecords              HeatRecord[]
+  matingPlans              MatingPlan[]
+  iatfProtocols            IatfProtocol[]
+  reproductiveLots         ReproductiveLot[]
+  inseminations            Insemination[]
+  naturalMatings           NaturalMating[]
+  pregnancyDiagnoses       PregnancyDiagnosis[]
+  calvingEvents            CalvingEvent[]
+  calfSeparations          CalfSeparation[]
+  weaningRecords           WeaningRecord[]
+  weaningCriteria          WeaningCriteria?
 
   @@map("organizations")
 }
@@ -332,6 +356,23 @@ model User {
   recordedCoffeeHarvests     CoffeeHarvest[]          @relation("CoffeeHarvestRecorder")
   recordedOrangeHarvests     OrangeHarvest[]          @relation("OrangeHarvestRecorder")
   createdPrescriptions       PesticidePrescription[]  @relation("PrescriptionCreator")
+  recordedVaccinations       Vaccination[]            @relation("VaccinationRecorder")
+  recordedDewormings         Deworming[]              @relation("DewormingRecorder")
+  recordedTreatments         TherapeuticTreatment[]   @relation("TreatmentRecorder")
+  recordedEvolutions         ClinicalEvolution[]      @relation("EvolutionRecorder")
+  recordedExams              AnimalExam[]             @relation("ExamRecorder")
+  recordedCompositeProductions CompositeProduction[]  @relation("CompositeProductionRecorder")
+  recordedReleases             ReproductiveRelease[]  @relation("ReleaseRecorder")
+  recordedHeats                HeatRecord[]           @relation("HeatRecorder")
+  createdMatingPlans           MatingPlan[]           @relation("MatingPlanCreator")
+  createdIatfProtocols         IatfProtocol[]         @relation("IatfProtocolCreator")
+  createdReproductiveLots      ReproductiveLot[]      @relation("ReproductiveLotCreator")
+  recordedInseminations        Insemination[]         @relation("InseminationRecorder")
+  recordedNaturalMatings       NaturalMating[]        @relation("NaturalMatingRecorder")
+  recordedDiagnoses            PregnancyDiagnosis[]   @relation("DgRecorder")
+  recordedCalvings             CalvingEvent[]         @relation("CalvingRecorder")
+  recordedSeparations          CalfSeparation[]       @relation("SeparationRecorder")
+  recordedWeanings             WeaningRecord[]        @relation("WeaningRecorder")
 
   @@map("users")
 }
@@ -406,6 +447,21 @@ model Farm {
   stockInventories           StockInventory[]
   pesticidePrescriptions     PesticidePrescription[]
   costCenters                CostCenter[]
+  vaccinations               Vaccination[]
+  dewormings                 Deworming[]
+  therapeuticTreatments      TherapeuticTreatment[]
+  animalExams                AnimalExam[]
+  bulls                      Bull[]
+  reproductiveReleases       ReproductiveRelease[]
+  heatRecords                HeatRecord[]
+  matingPlans                MatingPlan[]
+  reproductiveLots           ReproductiveLot[]
+  inseminations              Insemination[]
+  naturalMatings             NaturalMating[]
+  pregnancyDiagnoses         PregnancyDiagnosis[]
+  calvingEvents              CalvingEvent[]
+  calfSeparations            CalfSeparation[]
+  weaningRecords             WeaningRecord[]
 
   @@map("farms")
 }
@@ -910,6 +966,7 @@ model Animal {
   photoUrl               String?
   notes                  String?
   isCompositionEstimated Boolean         @default(false)
+  reproductivelyReleased Boolean        @default(false)
   deletedAt              DateTime?
   createdBy              String
   createdAt              DateTime        @default(now())
@@ -932,6 +989,24 @@ model Animal {
   plannedSireRecords      AnimalReproductiveRecord[] @relation("PlannedSire")
   sireReproductiveRecords AnimalReproductiveRecord[] @relation("SireReproductive")
   calfRecords             AnimalReproductiveRecord[] @relation("CalfRecord")
+  vaccinations            Vaccination[]
+  dewormings              Deworming[]
+  therapeuticTreatments   TherapeuticTreatment[]
+  animalExams             AnimalExam[]
+  bullRecord              Bull?                      @relation("BullAnimal")
+  reproductiveReleases    ReproductiveRelease[]
+  heatRecords             HeatRecord[]
+  matingPairs             MatingPair[]
+  reproductiveLotAnimals  ReproductiveLotAnimal[]
+  inseminations           Insemination[]
+  naturalMatingAnimals    NaturalMatingAnimal[]
+  pregnancyDiagnoses      PregnancyDiagnosis[]
+  calvingsAsMother        CalvingEvent[]         @relation("CalvingMother")
+  calvingsAsFather        CalvingEvent[]         @relation("CalvingFather")
+  calfRecord              CalvingCalf?           @relation("CalfAnimal")
+  calfSeparations         CalfSeparation[]       @relation("SeparatedCalf")
+  motherSeparations       CalfSeparation[]       @relation("SeparationMother")
+  weaningRecords          WeaningRecord[]        @relation("WeanedCalf")
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -2420,6 +2495,12 @@ model Product {
   safetyStock        Decimal?  @map("safety_stock") @db.Decimal(14, 4) // estoque de segurança (quantidade ideal)
   expiryAlertDays    Int?      @map("expiry_alert_days") // dias antes do vencimento para alertar (padrão: 30)
 
+  // ── CA13-17: Produto Composto ──
+  isComposite          Boolean   @default(false)
+  compositeType        String?   // calda, mistura_fertilizante, racao_concentrado, pre_mistura_mineral, outro
+  batchSize            Float?    // tamanho do lote padrão (ex: 1000 kg)
+  batchUnit            String?   // unidade do lote (kg, L, etc.)
+
   // ── CA12: Sementes ──
   cultivarId           String?   // FK para Cultivar
   sieveSize            String?   // peneira
@@ -2437,6 +2518,10 @@ model Product {
   cultivar         Cultivar?        @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
 
   compositions     ProductComposition[]
+  compositeIngredients  CompositeIngredient[] @relation("CompositeIngredients")
+  ingredientOf          CompositeIngredient[] @relation("IngredientOf")
+  compositeProductions  CompositeProduction[] @relation("CompositeProductions")
+  productionIngredients CompositeProductionItem[] @relation("ProductionIngredient")
   stockEntryItems      StockEntryItem[]
   stockOutputItems     StockOutputItem[]
   stockBalance         StockBalance?
@@ -2446,6 +2531,12 @@ model Product {
   pesticideApplications  PesticideApplication[]  @relation("PesticideProduct")
   fertilizerApplications FertilizerApplication[] @relation("FertilizerProduct")
   plantingOperations     PlantingOperation[]     @relation("PlantingSeedProduct")
+  treatmentProtocolSteps TreatmentProtocolStep[]
+  sanitaryProtocolItems  SanitaryProtocolItem[]
+  vaccinations           Vaccination[]
+  dewormings             Deworming[]
+  treatmentApplications  TreatmentApplication[]
+  iatfStepProducts       IatfProtocolStepProduct[] @relation("IatfStepProduct")
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -2484,6 +2575,70 @@ model ProductComposition {
 
   @@index([productId])
   @@map("product_compositions")
+}
+
+// ─── EPIC-10 US-089 CA13-CA17: Produto Composto ────────────────────
+
+model CompositeIngredient {
+  id                String    @id @default(uuid())
+  compositeProductId String
+  ingredientProductId String
+  quantityPerBatch  Float     // quantity of ingredient per batch
+  sortOrder         Int       @default(0)
+  notes             String?
+  createdAt         DateTime  @default(now())
+
+  compositeProduct   Product  @relation("CompositeIngredients", fields: [compositeProductId], references: [id], onDelete: Cascade)
+  ingredientProduct  Product  @relation("IngredientOf", fields: [ingredientProductId], references: [id], onDelete: Restrict)
+
+  @@index([compositeProductId])
+  @@index([ingredientProductId])
+  @@map("composite_ingredients")
+}
+
+model CompositeProduction {
+  id                  String    @id @default(uuid())
+  organizationId      String
+  compositeProductId  String
+  productionDate      DateTime  @db.Date
+  batchNumber         String?
+  quantityProduced    Float
+  totalCostCents      Int       @default(0)
+  responsibleName     String
+  notes               String?
+  stockEntryId        String?   // stock entry for produced composite
+  stockOutputId       String?   // stock output for ingredients consumed
+  recordedBy          String
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  compositeProduct  Product      @relation("CompositeProductions", fields: [compositeProductId], references: [id], onDelete: Cascade)
+  recorder          User         @relation("CompositeProductionRecorder", fields: [recordedBy], references: [id])
+  items             CompositeProductionItem[]
+
+  @@index([organizationId])
+  @@index([compositeProductId])
+  @@index([productionDate])
+  @@map("composite_productions")
+}
+
+model CompositeProductionItem {
+  id                    String    @id @default(uuid())
+  productionId          String
+  ingredientProductId   String
+  ingredientProductName String
+  quantityUsed          Float
+  unitCostCents         Int       @default(0)
+  totalCostCents        Int       @default(0)
+  sourceBatchNumber     String?
+  createdAt             DateTime  @default(now())
+
+  production        CompositeProduction @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  ingredientProduct Product             @relation("ProductionIngredient", fields: [ingredientProductId], references: [id], onDelete: Restrict)
+
+  @@index([productionId])
+  @@map("composite_production_items")
 }
 
 // ─── EPIC-10 US-090: Entrada de Insumos no Estoque ─────────────────
@@ -2686,6 +2841,9 @@ model StockOutput {
   fertilizerApplications FertilizerApplication[] @relation("FertilizerStockOutput")
   soilPrepOperations     SoilPrepOperation[]     @relation("SoilPrepStockOutput")
   plantingOperations     PlantingOperation[]     @relation("PlantingStockOutput")
+  vaccinations           Vaccination[]
+  dewormings             Deworming[]
+  treatmentApplications  TreatmentApplication[]
 
   @@index([organizationId])
   @@index([organizationId, type])
@@ -2881,4 +3039,1399 @@ model StockAdjustment {
   @@index([stockInventoryId])
   @@index([productId])
   @@map("stock_adjustments")
+}
+
+// ─── Disease Catalog (EPIC-11 / US-103) ─────────────────────────────
+
+enum DiseaseCategory {
+  INFECTIOUS
+  METABOLIC
+  REPRODUCTIVE
+  LOCOMOTOR
+  PARASITIC
+  NUTRITIONAL
+  OTHER
+}
+
+enum DiseaseSeverity {
+  MILD
+  MODERATE
+  SEVERE
+}
+
+enum AffectedSystem {
+  DIGESTIVE
+  REPRODUCTIVE
+  LOCOMOTOR
+  MAMMARY
+  RESPIRATORY
+  SYSTEMIC
+}
+
+model Disease {
+  id                   String           @id @default(uuid())
+  organizationId       String           @map("organization_id")
+  name                 String
+  scientificName       String?          @map("scientific_name")
+  code                 String?
+  category             DiseaseCategory
+  severity             DiseaseSeverity?
+  affectedSystem       AffectedSystem?  @map("affected_system")
+  symptoms             String?
+  quarantineDays       Int?             @map("quarantine_days")
+  isNotifiable         Boolean          @default(false) @map("is_notifiable")
+  photoUrl             String?          @map("photo_url")
+  notes                String?
+  deletedAt            DateTime?        @map("deleted_at")
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  treatmentProtocolDiseases TreatmentProtocolDisease[]
+  therapeuticTreatments     TherapeuticTreatment[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@index([category])
+  @@map("diseases")
+}
+
+// ─── EPIC-11 US-104: Protocolos de Tratamento ──────────────────────
+
+enum AdministrationRoute {
+  IM
+  SC
+  IV
+  ORAL
+  INTRAMMARY
+  TOPICAL
+}
+
+enum DosageUnit {
+  MG_KG
+  ML_ANIMAL
+  FIXED_DOSE
+}
+
+enum ProtocolStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model TreatmentProtocol {
+  id                 String           @id @default(uuid())
+  organizationId     String           @map("organization_id")
+  name               String
+  description        String?
+  notes              String?
+  severity           DiseaseSeverity?
+  authorName         String           @map("author_name")
+  status             ProtocolStatus   @default(ACTIVE)
+  version            Int              @default(1)
+  originalId         String?          @map("original_id")
+  withdrawalMeatDays Int?             @map("withdrawal_meat_days")
+  withdrawalMilkDays Int?             @map("withdrawal_milk_days")
+  estimatedCostCents Int?             @map("estimated_cost_cents")
+  deletedAt          DateTime?        @map("deleted_at")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+
+  organization Organization          @relation(fields: [organizationId], references: [id])
+  original     TreatmentProtocol?     @relation("ProtocolVersions", fields: [originalId], references: [id])
+  versions     TreatmentProtocol[]    @relation("ProtocolVersions")
+  diseases     TreatmentProtocolDisease[]
+  steps        TreatmentProtocolStep[]
+  therapeuticTreatments TherapeuticTreatment[]
+
+  @@unique([name, organizationId, version])
+  @@index([organizationId])
+  @@index([originalId])
+  @@index([status])
+  @@map("treatment_protocols")
+}
+
+model TreatmentProtocolDisease {
+  id         String            @id @default(uuid())
+  protocolId String            @map("protocol_id")
+  diseaseId  String            @map("disease_id")
+
+  protocol   TreatmentProtocol @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+  disease    Disease           @relation(fields: [diseaseId], references: [id])
+
+  @@unique([protocolId, diseaseId])
+  @@index([protocolId])
+  @@index([diseaseId])
+  @@map("treatment_protocol_diseases")
+}
+
+model TreatmentProtocolStep {
+  id                  String              @id @default(uuid())
+  protocolId          String              @map("protocol_id")
+  order               Int
+  productId           String?             @map("product_id")
+  productName         String              @map("product_name")
+  dosage              Float
+  dosageUnit          DosageUnit          @map("dosage_unit")
+  administrationRoute AdministrationRoute @map("administration_route")
+  frequencyPerDay     Int                 @default(1) @map("frequency_per_day")
+  startDay            Int                 @default(1) @map("start_day")
+  durationDays        Int                 @map("duration_days")
+  withdrawalMeatDays  Int?                @map("withdrawal_meat_days")
+  withdrawalMilkDays  Int?                @map("withdrawal_milk_days")
+  notes               String?
+
+  protocol TreatmentProtocol @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+  product  Product?          @relation(fields: [productId], references: [id])
+
+  @@index([protocolId])
+  @@map("treatment_protocol_steps")
+}
+
+// ─── EPIC-11 US-100: Protocolos Sanitários ─────────────────────────
+
+enum SanitaryProcedureType {
+  VACCINATION
+  DEWORMING
+  EXAM
+  MEDICATION
+  OTHER
+}
+
+enum SanitaryTriggerType {
+  AGE
+  EVENT
+  CALENDAR
+}
+
+enum SanitaryEventTrigger {
+  BIRTH
+  WEANING
+  REPRODUCTIVE_RELEASE
+  PRE_IATF
+  DRYING
+  PRE_PARTUM
+  POST_PARTUM
+  TRANSITION
+  FARM_ENTRY
+  FARM_EXIT
+}
+
+enum CalendarFrequency {
+  MONTHLY
+  QUARTERLY
+  BIANNUAL
+  ANNUAL
+}
+
+enum SanitaryProtocolStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model SanitaryProtocol {
+  id             String                  @id @default(uuid())
+  organizationId String                  @map("organization_id")
+  name           String
+  description    String?
+  authorName     String                  @map("author_name")
+  status         SanitaryProtocolStatus  @default(ACTIVE)
+  version        Int                     @default(1)
+  originalId     String?                 @map("original_id")
+  isObligatory   Boolean                 @default(false) @map("is_obligatory")
+  targetCategories AnimalCategory[]      @map("target_categories")
+  deletedAt      DateTime?               @map("deleted_at")
+  createdAt      DateTime                @default(now()) @map("created_at")
+  updatedAt      DateTime                @updatedAt @map("updated_at")
+
+  organization Organization              @relation(fields: [organizationId], references: [id])
+  original     SanitaryProtocol?          @relation("SanitaryProtocolVersions", fields: [originalId], references: [id])
+  versions     SanitaryProtocol[]         @relation("SanitaryProtocolVersions")
+  items        SanitaryProtocolItem[]
+
+  @@unique([name, organizationId, version])
+  @@index([organizationId])
+  @@index([originalId])
+  @@index([status])
+  @@map("sanitary_protocols")
+}
+
+model SanitaryProtocolItem {
+  id                  String                @id @default(uuid())
+  protocolId          String                @map("protocol_id")
+  order               Int
+  procedureType       SanitaryProcedureType @map("procedure_type")
+  productId           String?               @map("product_id")
+  productName         String                @map("product_name")
+  dosage              Float?
+  dosageUnit          DosageUnit?           @map("dosage_unit")
+  administrationRoute AdministrationRoute?  @map("administration_route")
+  triggerType         SanitaryTriggerType   @map("trigger_type")
+  triggerAgeDays      Int?                  @map("trigger_age_days")
+  triggerAgeMaxDays   Int?                  @map("trigger_age_max_days")
+  triggerEvent        SanitaryEventTrigger? @map("trigger_event")
+  triggerEventOffsetDays Int?               @map("trigger_event_offset_days")
+  calendarFrequency   CalendarFrequency?    @map("calendar_frequency")
+  calendarMonths      Int[]                 @map("calendar_months")
+  isReinforcement     Boolean               @default(false) @map("is_reinforcement")
+  reinforcementIntervalDays Int?            @map("reinforcement_interval_days")
+  reinforcementDoseNumber   Int?            @map("reinforcement_dose_number")
+  withdrawalMeatDays  Int?                  @map("withdrawal_meat_days")
+  withdrawalMilkDays  Int?                  @map("withdrawal_milk_days")
+  notes               String?
+
+  protocol SanitaryProtocol @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+  product  Product?         @relation(fields: [productId], references: [id])
+
+  vaccinations Vaccination[]
+  dewormings   Deworming[]
+
+  @@index([protocolId])
+  @@map("sanitary_protocol_items")
+}
+
+// ─── EPIC-11 US-101: Vacinação ──────────────────────────────────────
+
+model Vaccination {
+  id                    String              @id @default(uuid())
+  organizationId        String
+  farmId                String
+  animalId              String
+  productId             String?
+  productName           String
+  dosageMl              Float
+  administrationRoute   AdministrationRoute
+  productBatchNumber    String?
+  productExpiryDate     DateTime?           @db.Date
+  vaccinationDate       DateTime            @db.Date
+  responsibleName       String
+  veterinaryName        String?
+  protocolItemId        String?
+  campaignId            String?
+  doseNumber            Int                 @default(1)
+  nextDoseDate          DateTime?           @db.Date
+  withdrawalMeatDays    Int?
+  withdrawalMilkDays    Int?
+  withdrawalEndDate     DateTime?           @db.Date
+  stockOutputId         String?
+  animalLotId           String?
+  notes                 String?
+  recordedBy            String
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  organization  Organization         @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm                 @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal               @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  product       Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
+  protocolItem  SanitaryProtocolItem? @relation(fields: [protocolItemId], references: [id], onDelete: SetNull)
+  stockOutput   StockOutput?         @relation(fields: [stockOutputId], references: [id], onDelete: SetNull)
+  recorder      User                 @relation("VaccinationRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([productId])
+  @@index([vaccinationDate])
+  @@index([campaignId])
+  @@index([protocolItemId])
+  @@map("vaccinations")
+}
+
+// ─── EPIC-11 US-102: Vermifugação ───────────────────────────────────
+
+model Deworming {
+  id                    String              @id @default(uuid())
+  organizationId        String
+  farmId                String
+  animalId              String
+  productId             String?
+  productName           String
+  activeIngredient      String?             // princípio ativo
+  chemicalGroup         String?             // grupo químico (rotação)
+  dosageMl              Float
+  administrationRoute   AdministrationRoute
+  productBatchNumber    String?
+  productExpiryDate     DateTime?           @db.Date
+  dewormingDate         DateTime            @db.Date
+  responsibleName       String
+  veterinaryName        String?
+  protocolItemId        String?
+  campaignId            String?
+  opgPre                Int?                // OPG pré-vermifugação (CA3)
+  opgPost               Int?                // OPG pós-vermifugação (CA3)
+  opgPostDate           DateTime?           @db.Date
+  efficacyPercentage    Float?              // % redução OPG (CA4)
+  withdrawalMeatDays    Int?
+  withdrawalMilkDays    Int?
+  withdrawalEndDate     DateTime?           @db.Date
+  nextDewormingDate     DateTime?           @db.Date  // CA6
+  stockOutputId         String?
+  animalLotId           String?
+  notes                 String?
+  recordedBy            String
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  organization  Organization         @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm                 @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal               @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  product       Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
+  protocolItem  SanitaryProtocolItem? @relation(fields: [protocolItemId], references: [id], onDelete: SetNull)
+  stockOutput   StockOutput?         @relation(fields: [stockOutputId], references: [id], onDelete: SetNull)
+  recorder      User                 @relation("DewormingRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([productId])
+  @@index([dewormingDate])
+  @@index([campaignId])
+  @@index([protocolItemId])
+  @@index([animalId, chemicalGroup])
+  @@map("dewormings")
+}
+
+// ─── EPIC-11 US-105: Tratamentos Terapêuticos ──────────────────────
+
+enum TreatmentStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+enum TreatmentOutcome {
+  CURED
+  PARTIAL_IMPROVEMENT
+  DEATH
+  CHRONIC
+  REFERRED_DISPOSAL
+}
+
+enum EvolutionType {
+  IMPROVEMENT
+  STABLE
+  WORSENING
+}
+
+enum ApplicationStatus {
+  PENDING
+  DONE
+  NOT_DONE
+}
+
+model TherapeuticTreatment {
+  id                     String              @id @default(uuid())
+  organizationId         String
+  farmId                 String
+  animalId               String
+  diseaseId              String?
+  diseaseName            String
+  diagnosisDate          DateTime            @db.Date
+  observedSeverity       String              // MILD, MODERATE, SEVERE
+  clinicalObservations   String?
+  veterinaryName         String
+  responsibleName        String
+  treatmentProtocolId    String?
+  treatmentProtocolName  String?
+  withdrawalMeatDays     Int?
+  withdrawalMilkDays     Int?
+  withdrawalEndDate      DateTime?           @db.Date
+  status                 TreatmentStatus     @default(OPEN)
+  outcome                TreatmentOutcome?
+  closedAt               DateTime?
+  closingNotes           String?
+  totalCostCents         Int                 @default(0)
+  notes                  String?
+  recordedBy             String
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  organization  Organization        @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm                @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal              @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  disease       Disease?            @relation(fields: [diseaseId], references: [id], onDelete: SetNull)
+  protocol      TreatmentProtocol?  @relation(fields: [treatmentProtocolId], references: [id], onDelete: SetNull)
+  recorder      User                @relation("TreatmentRecorder", fields: [recordedBy], references: [id])
+  applications  TreatmentApplication[]
+  evolutions    ClinicalEvolution[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([status])
+  @@index([diagnosisDate])
+  @@index([diseaseId])
+  @@map("therapeutic_treatments")
+}
+
+model TreatmentApplication {
+  id                    String              @id @default(uuid())
+  treatmentId           String
+  productId             String?
+  productName           String
+  dosage                Float
+  dosageUnit            String              // MG_KG, ML_ANIMAL, FIXED_DOSE
+  administrationRoute   AdministrationRoute
+  scheduledDate         DateTime            @db.Date
+  scheduledTime         String?             // "08:00"
+  applicationDate       DateTime?           @db.Date
+  applicationTime       String?
+  status                ApplicationStatus   @default(PENDING)
+  notDoneReason         String?
+  responsibleName       String?
+  stockOutputId         String?
+  costCents             Int                 @default(0)
+  notes                 String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  treatment     TherapeuticTreatment @relation(fields: [treatmentId], references: [id], onDelete: Cascade)
+  product       Product?             @relation(fields: [productId], references: [id], onDelete: SetNull)
+  stockOutput   StockOutput?         @relation(fields: [stockOutputId], references: [id], onDelete: SetNull)
+
+  @@index([treatmentId])
+  @@index([scheduledDate])
+  @@index([status])
+  @@map("treatment_applications")
+}
+
+model ClinicalEvolution {
+  id                    String    @id @default(uuid())
+  treatmentId           String
+  evolutionDate         DateTime  @db.Date
+  evolutionType         EvolutionType
+  temperature           Float?
+  observations          String?
+  veterinaryName        String?
+  recordedBy            String
+  createdAt             DateTime  @default(now())
+
+  treatment     TherapeuticTreatment @relation(fields: [treatmentId], references: [id], onDelete: Cascade)
+  recorder      User                 @relation("EvolutionRecorder", fields: [recordedBy], references: [id])
+
+  @@index([treatmentId])
+  @@map("clinical_evolutions")
+}
+
+// ─── EPIC-11 US-106: Registro de Exames ─────────────────────────────
+
+enum ExamCategory {
+  MANDATORY
+  DIAGNOSTIC
+  ROUTINE
+}
+
+enum ExamMethod {
+  LABORATORY
+  FIELD
+  IMAGING
+}
+
+enum ExamStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ResultIndicator {
+  NORMAL
+  ABOVE
+  BELOW
+  POSITIVE
+  NEGATIVE
+}
+
+model ExamType {
+  id                   String          @id @default(uuid())
+  organizationId       String
+  name                 String
+  category             ExamCategory
+  method               ExamMethod
+  material             String?
+  defaultLab           String?
+  isRegulatory         Boolean         @default(false)
+  validityDays         Int?
+  notes                String?
+  deletedAt            DateTime?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  referenceParams ExamTypeParam[]
+  animalExams     AnimalExam[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@index([category])
+  @@map("exam_types")
+}
+
+model ExamTypeParam {
+  id              String    @id @default(uuid())
+  examTypeId      String
+  paramName       String
+  unit            String?
+  minReference    Float?
+  maxReference    Float?
+  isBooleanResult Boolean   @default(false)
+  sortOrder       Int       @default(0)
+  createdAt       DateTime  @default(now())
+
+  examType  ExamType  @relation(fields: [examTypeId], references: [id], onDelete: Cascade)
+
+  @@index([examTypeId])
+  @@map("exam_type_params")
+}
+
+model AnimalExam {
+  id                    String       @id @default(uuid())
+  organizationId        String
+  farmId                String
+  animalId              String
+  examTypeId            String
+  examTypeName          String
+  collectionDate        DateTime     @db.Date
+  sendDate              DateTime?    @db.Date
+  laboratory            String?
+  protocolNumber        String?
+  status                ExamStatus   @default(PENDING)
+  resultDate            DateTime?    @db.Date
+  responsibleName       String
+  veterinaryName        String?
+  veterinaryCrmv        String?
+  certificateNumber     String?
+  certificateValidity   DateTime?    @db.Date
+  animalLotId           String?
+  campaignId            String?
+  linkedTreatmentId     String?
+  reportFileName        String?
+  reportMimeType        String?
+  reportPath            String?
+  notes                 String?
+  recordedBy            String
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  organization  Organization  @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal        @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  examType      ExamType      @relation(fields: [examTypeId], references: [id], onDelete: Restrict)
+  recorder      User          @relation("ExamRecorder", fields: [recordedBy], references: [id])
+  results       ExamResult[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([examTypeId])
+  @@index([collectionDate])
+  @@index([status])
+  @@index([campaignId])
+  @@index([certificateValidity])
+  @@map("animal_exams")
+}
+
+model ExamResult {
+  id              String           @id @default(uuid())
+  examId          String
+  paramName       String
+  numericValue    Float?
+  booleanValue    Boolean?
+  textValue       String?
+  unit            String?
+  minReference    Float?
+  maxReference    Float?
+  indicator       ResultIndicator?
+  createdAt       DateTime         @default(now())
+
+  exam  AnimalExam  @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@index([examId])
+  @@map("exam_results")
+}
+
+// ─── EPIC-12 US-108: Touros e Sêmen ────────────────────────────────
+
+enum BullStatus {
+  ACTIVE
+  RESTING
+  DISCARDED
+}
+
+enum SemenEntryType {
+  PURCHASE
+  DONATION
+  TRANSFER
+}
+
+model Bull {
+  id                  String      @id @default(uuid())
+  organizationId      String
+  farmId              String
+  name                String
+  registryNumber      String?
+  registryAssociation String?
+  breedName           String
+  breedComposition    Json?
+  isOwnAnimal         Boolean     @default(false)
+  animalId            String?     @unique
+  ownerName           String?
+  ownerContact        String?
+  stayStartDate       DateTime?   @db.Date
+  stayEndDate         DateTime?   @db.Date
+  status              BullStatus  @default(ACTIVE)
+  ptaMilkKg           Float?
+  ptaFatKg            Float?
+  ptaFatPct           Float?
+  ptaProteinKg        Float?
+  ptaProteinPct       Float?
+  typeScore           Float?
+  productiveLife      Float?
+  calvingEase         Float?
+  scc                 Float?
+  geneticProofs       Json?
+  photoUrl            String?
+  notes               String?
+  deletedAt           DateTime?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal?      @relation("BullAnimal", fields: [animalId], references: [id], onDelete: SetNull)
+  semenBatches          SemenBatch[]
+  primaryMatingPairs    MatingPair[] @relation("PrimaryBull")
+  secondaryMatingPairs  MatingPair[] @relation("SecondaryBull")
+  tertiaryMatingPairs   MatingPair[] @relation("TertiaryBull")
+  executedMatingPairs   MatingPair[] @relation("ExecutedBull")
+  inseminations         Insemination[] @relation("InseminationBull")
+  naturalMatings        NaturalMating[] @relation("NaturalMatingBull")
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([status])
+  @@map("bulls")
+}
+
+model SemenBatch {
+  id                String         @id @default(uuid())
+  organizationId    String
+  bullId            String
+  batchNumber       String
+  centralName       String?
+  entryType         SemenEntryType @default(PURCHASE)
+  entryDate         DateTime       @db.Date
+  expiryDate        DateTime?      @db.Date
+  initialDoses      Int
+  currentDoses      Int
+  costPerDose       Int            @default(0)
+  notes             String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  bull          Bull         @relation(fields: [bullId], references: [id], onDelete: Cascade)
+  inseminations Insemination[]
+
+  @@index([organizationId])
+  @@index([bullId])
+  @@index([expiryDate])
+  @@map("semen_batches")
+}
+
+// ─── EPIC-12 US-109: Liberação Reprodutiva ──────────────────────────
+
+model ReproductiveRelease {
+  id                  String    @id @default(uuid())
+  organizationId      String
+  farmId              String
+  animalId            String
+  releaseDate         DateTime  @db.Date
+  weightKg            Float?
+  ageMonths           Int?
+  bodyConditionScore  Float?
+  responsibleName     String
+  previousCategory    String?
+  previousLotId       String?
+  targetLotId         String?
+  notes               String?
+  recordedBy          String
+  createdAt           DateTime  @default(now())
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal       @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("ReleaseRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@map("reproductive_releases")
+}
+
+model ReproductiveCriteria {
+  id              String   @id @default(uuid())
+  organizationId  String   @unique
+  minWeightKg     Float?
+  minAgeMonths    Int?
+  minBodyScore    Float?
+  targetLotId     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("reproductive_criteria")
+}
+
+// ─── EPIC-12 US-110: Detecção de Cio ────────────────────────────────
+
+enum HeatDetectionMethod {
+  VISUAL
+  MARKER_PAINT
+  PEDOMETER
+  TEASER
+}
+
+enum HeatStatus {
+  AWAITING_AI
+  AI_DONE
+  NOT_INSEMINATED
+}
+
+model HeatRecord {
+  id                    String              @id @default(uuid())
+  organizationId        String
+  farmId                String
+  animalId              String
+  heatDate              DateTime            @db.Date
+  heatTime              String?             // "08:30" or period
+  heatPeriod            String?             // MORNING, AFTERNOON, NIGHT
+  intensity             HeatIntensity
+  signs                 Json                // string array: ["mount_accepted", "mucus", ...]
+  detectionMethod       HeatDetectionMethod
+  status                HeatStatus          @default(AWAITING_AI)
+  // AI alert (CA3)
+  recommendedAiTime     DateTime?
+  recommendedBullId     String?
+  // Cyclicity (CA7)
+  cyclicityStatus       String?             // CYCLING, ANESTRUS, FOLLICULAR_CYST, etc.
+  // Inter-heat (CA4)
+  previousHeatDate      DateTime?           @db.Date
+  interHeatDays         Int?
+  isIntervalIrregular   Boolean             @default(false)
+  inseminationId        String?             // link to future insemination record
+  notInseminatedReason  String?
+  notes                 String?
+  recordedBy            String
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal       @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("HeatRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([heatDate])
+  @@index([status])
+  @@map("heat_records")
+}
+
+// ─── EPIC-12 US-111: Plano de Acasalamento ──────────────────────────
+
+enum MatingPlanStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum MatingPairStatus {
+  PLANNED
+  EXECUTED
+  CONFIRMED_PREGNANT
+  EMPTY
+  CANCELLED
+}
+
+model MatingPlan {
+  id                String           @id @default(uuid())
+  organizationId    String
+  farmId            String
+  name              String
+  season            String?          // "Safra 2026/27"
+  objective         String?
+  status            MatingPlanStatus @default(DRAFT)
+  startDate         DateTime?        @db.Date
+  endDate           DateTime?        @db.Date
+  notes             String?
+  createdBy         String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  organization  Organization  @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  creator       User          @relation("MatingPlanCreator", fields: [createdBy], references: [id])
+  pairs         MatingPair[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([status])
+  @@map("mating_plans")
+}
+
+model MatingPair {
+  id                 String           @id @default(uuid())
+  planId             String
+  animalId           String           // female
+  primaryBullId      String?
+  secondaryBullId    String?
+  tertiaryBullId     String?
+  status             MatingPairStatus @default(PLANNED)
+  executedBullId     String?          // actual bull used
+  executionDate      DateTime?        @db.Date
+  substitutionReason String?
+  notes              String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  plan            MatingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  animal          Animal     @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  primaryBull     Bull?      @relation("PrimaryBull", fields: [primaryBullId], references: [id], onDelete: SetNull)
+  secondaryBull   Bull?      @relation("SecondaryBull", fields: [secondaryBullId], references: [id], onDelete: SetNull)
+  tertiaryBull    Bull?      @relation("TertiaryBull", fields: [tertiaryBullId], references: [id], onDelete: SetNull)
+  executedBull    Bull?      @relation("ExecutedBull", fields: [executedBullId], references: [id], onDelete: SetNull)
+
+  @@index([planId])
+  @@index([animalId])
+  @@index([status])
+  @@map("mating_pairs")
+}
+
+// ─── EPIC-12 US-112: Protocolos de IATF ─────────────────────────────
+
+enum IatfProtocolStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model IatfProtocol {
+  id                  String              @id @default(uuid())
+  organizationId      String
+  name                String
+  description         String?
+  targetCategory      String              // COWS, HEIFERS, BOTH
+  veterinaryAuthor    String?
+  status              IatfProtocolStatus   @default(ACTIVE)
+  version             Int                 @default(1)
+  parentId            String?             // original protocol (for versioning)
+  estimatedCostCents  Int                 @default(0)
+  notes               String?
+  deletedAt           DateTime?
+  createdBy           String
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  organization  Organization    @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  creator       User            @relation("IatfProtocolCreator", fields: [createdBy], references: [id])
+  parent        IatfProtocol?   @relation("IatfProtocolVersions", fields: [parentId], references: [id], onDelete: SetNull)
+  versions      IatfProtocol[]  @relation("IatfProtocolVersions")
+  steps         IatfProtocolStep[]
+  reproductiveLots ReproductiveLot[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([parentId])
+  @@map("iatf_protocols")
+}
+
+model IatfProtocolStep {
+  id                  String    @id @default(uuid())
+  protocolId          String
+  dayNumber           Int       // D0, D8, D10 etc.
+  description         String
+  isAiDay             Boolean   @default(false)  // marks insemination day
+  sortOrder           Int       @default(0)
+  createdAt           DateTime  @default(now())
+
+  protocol  IatfProtocol          @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+  products  IatfProtocolStepProduct[]
+
+  @@index([protocolId])
+  @@map("iatf_protocol_steps")
+}
+
+model IatfProtocolStepProduct {
+  id                  String    @id @default(uuid())
+  stepId              String
+  productId           String?   // FK to Product (optional for manual entry)
+  productName         String
+  dose                Float
+  doseUnit            String    // mg, mL, UI
+  administrationRoute String?   // IM, SC, IV, intravaginal
+  notes               String?
+  createdAt           DateTime  @default(now())
+
+  step      IatfProtocolStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  product   Product?         @relation("IatfStepProduct", fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([stepId])
+  @@map("iatf_protocol_step_products")
+}
+
+// ─── EPIC-12 US-113: Execução de IATF ───────────────────────────────
+
+enum ReproductiveLotStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum LotStepStatus {
+  PENDING
+  DONE
+  SKIPPED
+}
+
+model ReproductiveLot {
+  id                  String                @id @default(uuid())
+  organizationId      String
+  farmId              String
+  name                String
+  protocolId          String
+  d0Date              DateTime              @db.Date
+  status              ReproductiveLotStatus @default(ACTIVE)
+  totalCostCents      Int                   @default(0)
+  notes               String?
+  createdBy           String
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  organization  Organization       @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm               @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  protocol      IatfProtocol       @relation(fields: [protocolId], references: [id], onDelete: Restrict)
+  creator       User               @relation("ReproductiveLotCreator", fields: [createdBy], references: [id])
+  animals       ReproductiveLotAnimal[]
+  steps         ReproductiveLotStep[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([protocolId])
+  @@index([status])
+  @@map("reproductive_lots")
+}
+
+model ReproductiveLotAnimal {
+  id            String    @id @default(uuid())
+  lotId         String
+  animalId      String
+  removedAt     DateTime?
+  removalReason String?
+  createdAt     DateTime  @default(now())
+
+  lot     ReproductiveLot @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  animal  Animal          @relation(fields: [animalId], references: [id], onDelete: Cascade)
+
+  @@unique([lotId, animalId])
+  @@index([lotId])
+  @@index([animalId])
+  @@map("reproductive_lot_animals")
+}
+
+model ReproductiveLotStep {
+  id                String        @id @default(uuid())
+  lotId             String
+  protocolStepId    String?
+  dayNumber         Int
+  scheduledDate     DateTime      @db.Date
+  description       String
+  isAiDay           Boolean       @default(false)
+  status            LotStepStatus @default(PENDING)
+  executedAt        DateTime?
+  responsibleName   String?
+  notes             String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  lot       ReproductiveLot          @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  inseminations Insemination[]
+
+  @@index([lotId])
+  @@index([scheduledDate])
+  @@map("reproductive_lot_steps")
+}
+
+model Insemination {
+  id                    String    @id @default(uuid())
+  organizationId        String
+  farmId                String
+  animalId              String
+  lotStepId             String?
+  inseminationType      String    // IATF, NATURAL_HEAT, HEAT_DURING_PROTOCOL
+  bullId                String?
+  semenBatchId          String?
+  dosesUsed             Int       @default(1)
+  inseminatorName       String
+  inseminationDate      DateTime  @db.Date
+  inseminationTime      String?   // HH:MM or period
+  cervicalMucus         String?   // CRYSTALLINE, CLOUDY, BLOODY, PURULENT, ABSENT
+  heatRecordId          String?   // link to heat record if natural heat
+  matingPairId          String?   // link to mating plan pair
+  plannedBullId         String?   // from mating plan
+  wasPlannedBull        Boolean?  // did they use the planned bull?
+  substitutionReason    String?
+  observations          String?
+  stockOutputId         String?   // semen + hormone stock deduction
+  recordedBy            String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  organization  Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm             @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal           @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  lotStep       ReproductiveLotStep? @relation(fields: [lotStepId], references: [id], onDelete: SetNull)
+  bull          Bull?            @relation("InseminationBull", fields: [bullId], references: [id], onDelete: SetNull)
+  semenBatch    SemenBatch?      @relation(fields: [semenBatchId], references: [id], onDelete: SetNull)
+  recorder      User             @relation("InseminationRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([lotStepId])
+  @@index([inseminationDate])
+  @@map("inseminations")
+}
+
+// ─── EPIC-12 US-114: Monta Natural ──────────────────────────────────
+
+enum NaturalMatingReason {
+  POST_IATF_REPASSE
+  DIRECT_COVERAGE
+}
+
+enum PaternityType {
+  PROBABLE_NATURAL
+  UNKNOWN_BREED_ONLY
+}
+
+model NaturalMating {
+  id                  String              @id @default(uuid())
+  organizationId      String
+  farmId              String
+  bullId              String?             // null if unknown bull
+  bullBreedName       String?             // breed when bull unknown
+  reason              NaturalMatingReason
+  entryDate           DateTime            @db.Date
+  exitDate            DateTime?           @db.Date
+  maxStayDays         Int?                @default(60)
+  isOverstay          Boolean             @default(false)
+  paternityType       PaternityType
+  notes               String?
+  recordedBy          String
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  bull          Bull?        @relation("NaturalMatingBull", fields: [bullId], references: [id], onDelete: SetNull)
+  recorder      User         @relation("NaturalMatingRecorder", fields: [recordedBy], references: [id])
+  animals       NaturalMatingAnimal[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([bullId])
+  @@index([entryDate])
+  @@map("natural_matings")
+}
+
+model NaturalMatingAnimal {
+  id          String    @id @default(uuid())
+  matingId    String
+  animalId    String
+  createdAt   DateTime  @default(now())
+
+  mating  NaturalMating @relation(fields: [matingId], references: [id], onDelete: Cascade)
+  animal  Animal        @relation(fields: [animalId], references: [id], onDelete: Cascade)
+
+  @@unique([matingId, animalId])
+  @@index([matingId])
+  @@index([animalId])
+  @@map("natural_mating_animals")
+}
+
+// ─── EPIC-12 US-115: Diagnóstico de Gestação ────────────────────────
+
+enum DgResult {
+  PREGNANT
+  EMPTY
+  LOSS
+  CYCLING
+}
+
+enum DgMethod {
+  PALPATION
+  ULTRASOUND
+  BLOOD_TEST
+  OBSERVATION
+}
+
+enum UterineCondition {
+  NONE
+  PLACENTA_RETENTION
+  METRITIS_GRADE_1
+  METRITIS_GRADE_2
+  METRITIS_GRADE_3
+  ENDOMETRITIS_CLINICAL
+  ENDOMETRITIS_SUBCLINICAL
+  PYOMETRA
+}
+
+model PregnancyDiagnosis {
+  id                      String            @id @default(uuid())
+  organizationId          String
+  farmId                  String
+  animalId                String
+  diagnosisDate           DateTime          @db.Date
+  result                  DgResult
+  method                  DgMethod
+  gestationDays           Int?
+  fetalSex                String?           // MALE, FEMALE, UNKNOWN
+  cyclicityStatus         String?           // when EMPTY
+  expectedCalvingDate     DateTime?         @db.Date
+  // Uterine health (CA2)
+  uterineCondition        UterineCondition  @default(NONE)
+  placentaRetentionHours  Int?
+  reproductiveRestriction Boolean           @default(false)
+  restrictionEndDate      DateTime?         @db.Date
+  // Linkage
+  inseminationId          String?           // link to IA that caused pregnancy
+  naturalMatingId         String?           // link to natural mating
+  linkedTreatmentId       String?           // link to therapeutic treatment (CA3)
+  bullId                  String?           // bull (known or from IA)
+  bullBreedName           String?           // breed when bull unknown (CA5)
+  // Follow-up (CA12)
+  isConfirmed             Boolean           @default(false)
+  confirmationDate        DateTime?         @db.Date
+  lossDate                DateTime?         @db.Date
+  lossReason              String?
+  // IATF referral (CA11)
+  referredToIatf          Boolean           @default(false)
+  referredProtocolId      String?
+  veterinaryName          String
+  notes                   String?
+  recordedBy              String
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal       @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("DgRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([diagnosisDate])
+  @@index([result])
+  @@index([expectedCalvingDate])
+  @@map("pregnancy_diagnoses")
+}
+
+// ─── EPIC-12 US-116: Parto, Aborto e Cria ───────────────────────────
+
+enum CalvingEventType {
+  BIRTH
+  ABORTION
+}
+
+enum BirthType {
+  NORMAL
+  ASSISTED_EASY
+  ASSISTED_DIFFICULT
+  CESAREAN
+}
+
+enum CalfCondition {
+  ALIVE
+  STILLBORN
+}
+
+enum AbortionCause {
+  INFECTIOUS
+  TRAUMATIC
+  NUTRITIONAL
+  UNKNOWN
+  OTHER
+}
+
+model CalvingEvent {
+  id                    String            @id @default(uuid())
+  organizationId        String
+  farmId                String
+  motherId              String
+  fatherId              String?
+  fatherBreedName       String?
+  eventType             CalvingEventType
+  eventDate             DateTime          @db.Date
+  eventTime             String?
+  eventPeriod           String?
+  // Birth-specific (CA3)
+  birthType             BirthType?
+  presentation          String?
+  // Abortion-specific (CA4)
+  abortionGestationDays Int?
+  abortionCause         AbortionCause?
+  abortionCauseDetail   String?
+  fetusFound            Boolean?
+  // Mother data (CA7, CA8, CA9)
+  motherWeightKg        Float?
+  placentaRetention     Boolean           @default(false)
+  retentionHours        Int?
+  retentionIntervention Boolean           @default(false)
+  // Linkage
+  pregnancyDiagnosisId  String?
+  attendantName         String
+  notes                 String?
+  recordedBy            String
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  mother        Animal       @relation("CalvingMother", fields: [motherId], references: [id], onDelete: Cascade)
+  father        Animal?      @relation("CalvingFather", fields: [fatherId], references: [id], onDelete: SetNull)
+  recorder      User         @relation("CalvingRecorder", fields: [recordedBy], references: [id])
+  calves        CalvingCalf[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([motherId])
+  @@index([eventDate])
+  @@index([eventType])
+  @@map("calving_events")
+}
+
+model CalvingCalf {
+  id              String        @id @default(uuid())
+  calvingEventId  String
+  sex             String
+  birthWeightKg   Float?
+  condition       CalfCondition
+  stillbornReason String?
+  createdAnimalId String?       @unique
+  earTag          String?
+  notes           String?
+  createdAt       DateTime      @default(now())
+
+  calvingEvent  CalvingEvent @relation(fields: [calvingEventId], references: [id], onDelete: Cascade)
+  createdAnimal Animal?      @relation("CalfAnimal", fields: [createdAnimalId], references: [id], onDelete: SetNull)
+
+  @@index([calvingEventId])
+  @@map("calving_calves")
+}
+
+// ─── EPIC-12 US-117: Desmama e Desaleitamento ───────────────────────
+
+enum FeedType {
+  WHOLE_MILK
+  PASTEURIZED_DISCARD_MILK
+  MILK_REPLACER
+}
+
+enum FeedingMethod {
+  BUCKET_NIPPLE
+  BOTTLE
+  FOSTER_COLLECTIVE
+}
+
+model CalfSeparation {
+  id                String    @id @default(uuid())
+  organizationId    String
+  farmId            String
+  calfId            String
+  motherId          String
+  separationDate    DateTime  @db.Date
+  reason            String?
+  destination       String?
+  recordedBy        String
+  createdAt         DateTime  @default(now())
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  calf          Animal       @relation("SeparatedCalf", fields: [calfId], references: [id], onDelete: Cascade)
+  mother        Animal       @relation("SeparationMother", fields: [motherId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("SeparationRecorder", fields: [recordedBy], references: [id])
+  feedingProtocol CalfFeedingProtocol?
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([calfId])
+  @@map("calf_separations")
+}
+
+model CalfFeedingProtocol {
+  id                    String        @id @default(uuid())
+  separationId          String        @unique
+  feedType              FeedType
+  dailyVolumeLiters     Float
+  frequencyPerDay       Int           @default(2)
+  feedingMethod         FeedingMethod
+  concentrateStartDate  DateTime?     @db.Date
+  concentrateGramsPerDay Float?
+  roughageType          String?
+  targetWeaningWeightKg Float?
+  notes                 String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  separation  CalfSeparation @relation(fields: [separationId], references: [id], onDelete: Cascade)
+
+  @@map("calf_feeding_protocols")
+}
+
+model WeaningRecord {
+  id                          String    @id @default(uuid())
+  organizationId              String
+  farmId                      String
+  calfId                      String
+  weaningDate                 DateTime  @db.Date
+  weightKg                    Float?
+  ageMonths                   Int?
+  concentrateConsumptionGrams Float?
+  previousCategory            String?
+  targetLotId                 String?
+  observations                String?
+  recordedBy                  String
+  createdAt                   DateTime  @default(now())
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  calf          Animal       @relation("WeanedCalf", fields: [calfId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("WeaningRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([calfId])
+  @@index([weaningDate])
+  @@map("weaning_records")
+}
+
+model WeaningCriteria {
+  id                  String   @id @default(uuid())
+  organizationId      String   @unique
+  minAgeDays          Int?
+  minWeightKg         Float?
+  minConcentrateGrams Float?
+  consecutiveDays     Int?     @default(3)
+  targetLotId         String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("weaning_criteria")
 }

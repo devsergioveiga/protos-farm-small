@@ -3,6 +3,7 @@ import {
   Plus,
   Package,
   Wrench,
+  Layers,
   Search,
   AlertCircle,
   Pencil,
@@ -13,6 +14,7 @@ import { useProducts } from '@/hooks/useProducts';
 import type { ProductItem } from '@/hooks/useProducts';
 import ProductModal from '@/components/products/ProductModal';
 import ProductConversionsModal from '@/components/products/ProductConversionsModal';
+import CompositeProductsTab from '@/components/composite-products/CompositeProductsTab';
 import { api } from '@/services/api';
 import './ProductsPage.css';
 
@@ -60,7 +62,7 @@ function getTypeLabel(nature: string, type: string): string {
 }
 
 export default function ProductsPage() {
-  const [activeTab, setActiveTab] = useState<'PRODUCT' | 'SERVICE'>('PRODUCT');
+  const [activeTab, setActiveTab] = useState<'PRODUCT' | 'SERVICE' | 'COMPOSITE'>('PRODUCT');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -82,7 +84,7 @@ export default function ProductsPage() {
 
   const { products, meta, isLoading, error, refetch } = useProducts({
     page,
-    nature: activeTab,
+    nature: activeTab === 'COMPOSITE' ? 'PRODUCT' : activeTab,
     type: typeFilter || undefined,
     status: statusFilter || undefined,
     search: search || undefined,
@@ -114,7 +116,7 @@ export default function ProductsPage() {
     [refetch],
   );
 
-  const handleTabChange = useCallback((tab: 'PRODUCT' | 'SERVICE') => {
+  const handleTabChange = useCallback((tab: 'PRODUCT' | 'SERVICE' | 'COMPOSITE') => {
     setActiveTab(tab);
     setTypeFilter('');
     setPage(1);
@@ -129,16 +131,18 @@ export default function ProductsPage() {
           <h1>Produtos e Serviços</h1>
           <p>Gerencie insumos, produtos e serviços da propriedade</p>
         </div>
-        <button
-          className="products-page__btn-primary"
-          onClick={() => {
-            setSelectedProduct(null);
-            setShowModal(true);
-          }}
-        >
-          <Plus size={20} aria-hidden="true" />
-          {activeTab === 'PRODUCT' ? 'Novo produto' : 'Novo serviço'}
-        </button>
+        {activeTab !== 'COMPOSITE' && (
+          <button
+            className="products-page__btn-primary"
+            onClick={() => {
+              setSelectedProduct(null);
+              setShowModal(true);
+            }}
+          >
+            <Plus size={20} aria-hidden="true" />
+            {activeTab === 'PRODUCT' ? 'Novo produto' : 'Novo serviço'}
+          </button>
+        )}
       </header>
 
       <nav className="products-page__tabs" aria-label="Tipo de cadastro">
@@ -158,184 +162,200 @@ export default function ProductsPage() {
           <Wrench size={16} aria-hidden="true" />
           Serviços
         </button>
+        <button
+          className={
+            activeTab === 'COMPOSITE' ? 'products-page__tab--active' : 'products-page__tab'
+          }
+          onClick={() => handleTabChange('COMPOSITE')}
+          aria-current={activeTab === 'COMPOSITE' ? 'page' : undefined}
+        >
+          <Layers size={16} aria-hidden="true" />
+          Composição
+        </button>
       </nav>
 
-      <div className="products-page__toolbar">
-        <div className="products-page__search">
-          <Search size={16} aria-hidden="true" />
-          <input
-            type="text"
-            placeholder="Buscar por nome..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            aria-label="Buscar produtos"
-          />
-        </div>
-        <select
-          value={typeFilter}
-          onChange={(e) => {
-            setTypeFilter(e.target.value);
-            setPage(1);
-          }}
-          aria-label="Filtrar por tipo"
-        >
-          <option value="">Todos os tipos</option>
-          {Object.entries(typeOptions).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-        <select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setPage(1);
-          }}
-          aria-label="Filtrar por status"
-        >
-          <option value="">Todos os status</option>
-          <option value="ACTIVE">Ativo</option>
-          <option value="INACTIVE">Inativo</option>
-        </select>
-      </div>
+      {activeTab === 'COMPOSITE' && <CompositeProductsTab />}
 
-      {(error || deleteError) && (
-        <div className="products-page__error" role="alert">
-          <AlertCircle size={16} aria-hidden="true" />
-          {error || deleteError}
-        </div>
-      )}
-
-      {isLoading && (
-        <div className="products-page__skeleton-table">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="products-page__skeleton-row" />
-          ))}
-        </div>
-      )}
-
-      {!isLoading && !error && (
+      {activeTab !== 'COMPOSITE' && (
         <>
-          {products.length === 0 ? (
-            <div className="products-page__empty">
-              {activeTab === 'PRODUCT' ? (
-                <Package size={48} aria-hidden="true" />
-              ) : (
-                <Wrench size={48} aria-hidden="true" />
-              )}
-              <h3>Nenhum {activeTab === 'PRODUCT' ? 'produto' : 'serviço'} encontrado</h3>
-              <p>
-                {search || typeFilter || statusFilter
-                  ? 'Tente alterar os filtros de busca.'
-                  : `Cadastre ${activeTab === 'PRODUCT' ? 'seu primeiro produto ou insumo' : 'seu primeiro serviço'}.`}
-              </p>
+          <div className="products-page__toolbar">
+            <div className="products-page__search">
+              <Search size={16} aria-hidden="true" />
+              <input
+                type="text"
+                placeholder="Buscar por nome..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                aria-label="Buscar produtos"
+              />
             </div>
-          ) : (
-            <table className="products-page__table">
-              <thead>
-                <tr>
-                  <th scope="col">Nome</th>
-                  <th scope="col">Tipo</th>
-                  {activeTab === 'PRODUCT' && <th scope="col">Fabricante</th>}
-                  {activeTab === 'PRODUCT' && <th scope="col">Unidade</th>}
-                  {activeTab === 'SERVICE' && <th scope="col">Cobrança</th>}
-                  {activeTab === 'SERVICE' && <th scope="col">Custo</th>}
-                  <th scope="col">Status</th>
-                  <th scope="col">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((product) => (
-                  <tr key={product.id} onClick={() => handleEdit(product)}>
-                    <td data-label="Nome">
-                      <div className="products-page__name-cell">
-                        <strong>{product.name}</strong>
-                        {product.commercialName && <span>{product.commercialName}</span>}
-                      </div>
-                    </td>
-                    <td data-label="Tipo">{getTypeLabel(product.nature, product.type)}</td>
-                    {activeTab === 'PRODUCT' && (
-                      <td data-label="Fabricante">{product.manufacturer?.name ?? '—'}</td>
-                    )}
-                    {activeTab === 'PRODUCT' && (
-                      <td data-label="Unidade">{product.measurementUnitAbbreviation ?? '—'}</td>
-                    )}
-                    {activeTab === 'SERVICE' && (
-                      <td data-label="Cobrança">{product.chargeUnit ?? '—'}</td>
-                    )}
-                    {activeTab === 'SERVICE' && (
-                      <td data-label="Custo">
-                        {product.unitCost != null ? `R$ ${product.unitCost.toFixed(2)}` : '—'}
-                      </td>
-                    )}
-                    <td data-label="Status">
-                      <span
-                        className={`products-page__badge products-page__badge--${product.status === 'ACTIVE' ? 'active' : 'inactive'}`}
-                      >
-                        {product.status === 'ACTIVE' ? 'Ativo' : 'Inativo'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="products-page__actions">
-                        {product.nature === 'PRODUCT' && (
-                          <button
-                            className="products-page__icon-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setConvProduct(product);
-                            }}
-                            aria-label={`Conversões de ${product.name}`}
-                            title="Conversões"
-                          >
-                            <ArrowRightLeft size={16} aria-hidden="true" />
-                          </button>
+            <select
+              value={typeFilter}
+              onChange={(e) => {
+                setTypeFilter(e.target.value);
+                setPage(1);
+              }}
+              aria-label="Filtrar por tipo"
+            >
+              <option value="">Todos os tipos</option>
+              {Object.entries(typeOptions).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              aria-label="Filtrar por status"
+            >
+              <option value="">Todos os status</option>
+              <option value="ACTIVE">Ativo</option>
+              <option value="INACTIVE">Inativo</option>
+            </select>
+          </div>
+
+          {(error || deleteError) && (
+            <div className="products-page__error" role="alert">
+              <AlertCircle size={16} aria-hidden="true" />
+              {error || deleteError}
+            </div>
+          )}
+
+          {isLoading && (
+            <div className="products-page__skeleton-table">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="products-page__skeleton-row" />
+              ))}
+            </div>
+          )}
+
+          {!isLoading && !error && (
+            <>
+              {products.length === 0 ? (
+                <div className="products-page__empty">
+                  {activeTab === 'PRODUCT' ? (
+                    <Package size={48} aria-hidden="true" />
+                  ) : (
+                    <Wrench size={48} aria-hidden="true" />
+                  )}
+                  <h3>Nenhum {activeTab === 'PRODUCT' ? 'produto' : 'serviço'} encontrado</h3>
+                  <p>
+                    {search || typeFilter || statusFilter
+                      ? 'Tente alterar os filtros de busca.'
+                      : `Cadastre ${activeTab === 'PRODUCT' ? 'seu primeiro produto ou insumo' : 'seu primeiro serviço'}.`}
+                  </p>
+                </div>
+              ) : (
+                <table className="products-page__table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Nome</th>
+                      <th scope="col">Tipo</th>
+                      {activeTab === 'PRODUCT' && <th scope="col">Fabricante</th>}
+                      {activeTab === 'PRODUCT' && <th scope="col">Unidade</th>}
+                      {activeTab === 'SERVICE' && <th scope="col">Cobrança</th>}
+                      {activeTab === 'SERVICE' && <th scope="col">Custo</th>}
+                      <th scope="col">Status</th>
+                      <th scope="col">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.map((product) => (
+                      <tr key={product.id} onClick={() => handleEdit(product)}>
+                        <td data-label="Nome">
+                          <div className="products-page__name-cell">
+                            <strong>{product.name}</strong>
+                            {product.commercialName && <span>{product.commercialName}</span>}
+                          </div>
+                        </td>
+                        <td data-label="Tipo">{getTypeLabel(product.nature, product.type)}</td>
+                        {activeTab === 'PRODUCT' && (
+                          <td data-label="Fabricante">{product.manufacturer?.name ?? '—'}</td>
                         )}
-                        <button
-                          className="products-page__icon-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(product);
-                          }}
-                          aria-label={`Editar ${product.name}`}
-                        >
-                          <Pencil size={16} aria-hidden="true" />
-                        </button>
-                        <button
-                          className="products-page__icon-btn products-page__icon-btn--danger"
-                          onClick={(e) => handleDelete(product, e)}
-                          aria-label={`Excluir ${product.name}`}
-                        >
-                          <Trash2 size={16} aria-hidden="true" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        {activeTab === 'PRODUCT' && (
+                          <td data-label="Unidade">{product.measurementUnitAbbreviation ?? '—'}</td>
+                        )}
+                        {activeTab === 'SERVICE' && (
+                          <td data-label="Cobrança">{product.chargeUnit ?? '—'}</td>
+                        )}
+                        {activeTab === 'SERVICE' && (
+                          <td data-label="Custo">
+                            {product.unitCost != null ? `R$ ${product.unitCost.toFixed(2)}` : '—'}
+                          </td>
+                        )}
+                        <td data-label="Status">
+                          <span
+                            className={`products-page__badge products-page__badge--${product.status === 'ACTIVE' ? 'active' : 'inactive'}`}
+                          >
+                            {product.status === 'ACTIVE' ? 'Ativo' : 'Inativo'}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="products-page__actions">
+                            {product.nature === 'PRODUCT' && (
+                              <button
+                                className="products-page__icon-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setConvProduct(product);
+                                }}
+                                aria-label={`Conversões de ${product.name}`}
+                                title="Conversões"
+                              >
+                                <ArrowRightLeft size={16} aria-hidden="true" />
+                              </button>
+                            )}
+                            <button
+                              className="products-page__icon-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEdit(product);
+                              }}
+                              aria-label={`Editar ${product.name}`}
+                            >
+                              <Pencil size={16} aria-hidden="true" />
+                            </button>
+                            <button
+                              className="products-page__icon-btn products-page__icon-btn--danger"
+                              onClick={(e) => handleDelete(product, e)}
+                              aria-label={`Excluir ${product.name}`}
+                            >
+                              <Trash2 size={16} aria-hidden="true" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </>
+          )}
+
+          {meta && meta.totalPages > 1 && (
+            <div className="products-page__pagination">
+              <button disabled={page <= 1} onClick={() => setPage(page - 1)}>
+                Anterior
+              </button>
+              <span>
+                Página {meta.page} de {meta.totalPages}
+              </span>
+              <button disabled={page >= meta.totalPages} onClick={() => setPage(page + 1)}>
+                Próxima
+              </button>
+            </div>
           )}
         </>
-      )}
-
-      {meta && meta.totalPages > 1 && (
-        <div className="products-page__pagination">
-          <button disabled={page <= 1} onClick={() => setPage(page - 1)}>
-            Anterior
-          </button>
-          <span>
-            Página {meta.page} de {meta.totalPages}
-          </span>
-          <button disabled={page >= meta.totalPages} onClick={() => setPage(page + 1)}>
-            Próxima
-          </button>
-        </div>
       )}
 
       <ProductModal
         isOpen={showModal}
         product={selectedProduct}
-        defaultNature={activeTab}
+        defaultNature={activeTab === 'COMPOSITE' ? 'PRODUCT' : activeTab}
         onClose={() => {
           setShowModal(false);
           setSelectedProduct(null);

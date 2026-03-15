@@ -51,6 +51,24 @@ const StockAlertsPage = lazy(() => import('@/pages/StockAlertsPage'));
 const StockInventoriesPage = lazy(() => import('@/pages/StockInventoriesPage'));
 const ConversionHistoryPage = lazy(() => import('@/pages/ConversionHistoryPage'));
 const GrainDiscountsPage = lazy(() => import('@/pages/GrainDiscountsPage'));
+const DiseasesPage = lazy(() => import('@/pages/DiseasesPage'));
+const TreatmentProtocolsPage = lazy(() => import('@/pages/TreatmentProtocolsPage'));
+const SanitaryProtocolsPage = lazy(() => import('@/pages/SanitaryProtocolsPage'));
+const VaccinationsPage = lazy(() => import('@/pages/VaccinationsPage'));
+const DewormingsPage = lazy(() => import('@/pages/DewormingsPage'));
+const TherapeuticTreatmentsPage = lazy(() => import('@/pages/TherapeuticTreatmentsPage'));
+const AnimalExamsPage = lazy(() => import('@/pages/AnimalExamsPage'));
+const SanitaryDashboardPage = lazy(() => import('@/pages/SanitaryDashboardPage'));
+const BullsPage = lazy(() => import('@/pages/BullsPage'));
+const ReproductiveReleasesPage = lazy(() => import('@/pages/ReproductiveReleasesPage'));
+const HeatRecordsPage = lazy(() => import('@/pages/HeatRecordsPage'));
+const MatingPlansPage = lazy(() => import('@/pages/MatingPlansPage'));
+const IatfProtocolsPage = lazy(() => import('@/pages/IatfProtocolsPage'));
+const IatfExecutionPage = lazy(() => import('@/pages/IatfExecutionPage'));
+const NaturalMatingsPage = lazy(() => import('@/pages/NaturalMatingsPage'));
+const PregnancyDiagnosisPage = lazy(() => import('@/pages/PregnancyDiagnosisPage'));
+const CalvingEventsPage = lazy(() => import('@/pages/CalvingEventsPage'));
+const WeaningPage = lazy(() => import('@/pages/WeaningPage'));
 
 export function App() {
   return (
@@ -103,6 +121,24 @@ export function App() {
                 <Route path="/stock-inventories" element={<StockInventoriesPage />} />
                 <Route path="/conversion-history" element={<ConversionHistoryPage />} />
                 <Route path="/grain-discounts" element={<GrainDiscountsPage />} />
+                <Route path="/diseases" element={<DiseasesPage />} />
+                <Route path="/treatment-protocols" element={<TreatmentProtocolsPage />} />
+                <Route path="/sanitary-protocols" element={<SanitaryProtocolsPage />} />
+                <Route path="/vaccinations" element={<VaccinationsPage />} />
+                <Route path="/dewormings" element={<DewormingsPage />} />
+                <Route path="/therapeutic-treatments" element={<TherapeuticTreatmentsPage />} />
+                <Route path="/animal-exams" element={<AnimalExamsPage />} />
+                <Route path="/sanitary-dashboard" element={<SanitaryDashboardPage />} />
+                <Route path="/bulls" element={<BullsPage />} />
+                <Route path="/reproductive-releases" element={<ReproductiveReleasesPage />} />
+                <Route path="/heat-records" element={<HeatRecordsPage />} />
+                <Route path="/mating-plans" element={<MatingPlansPage />} />
+                <Route path="/iatf-protocols" element={<IatfProtocolsPage />} />
+                <Route path="/iatf-execution" element={<IatfExecutionPage />} />
+                <Route path="/natural-matings" element={<NaturalMatingsPage />} />
+                <Route path="/pregnancy-diagnosis" element={<PregnancyDiagnosisPage />} />
+                <Route path="/calving-events" element={<CalvingEventsPage />} />
+                <Route path="/weaning" element={<WeaningPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}

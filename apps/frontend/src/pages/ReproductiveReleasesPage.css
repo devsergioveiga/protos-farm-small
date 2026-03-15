@@ -1,0 +1,765 @@
+/* ─── Page Layout ─────────────────────────────────────────────────── */
+.reproductive-releases-page {
+  padding: 24px 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────── */
+.reproductive-releases-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.reproductive-releases-page__header h1 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.reproductive-releases-page__header p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 4px 0 0;
+}
+
+.reproductive-releases-page__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.reproductive-releases-page__btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+  white-space: nowrap;
+}
+
+.reproductive-releases-page__btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+}
+
+.reproductive-releases-page__btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── Tabs ────────────────────────────────────────────────────────── */
+.reproductive-releases-page__tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--color-neutral-100);
+  padding-bottom: 0;
+}
+
+.reproductive-releases-page__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition:
+    color 200ms ease-out,
+    border-color 200ms ease-out;
+}
+
+.reproductive-releases-page__tab:hover {
+  color: var(--color-neutral-700);
+}
+
+.reproductive-releases-page__tab--active {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+
+.reproductive-releases-page__tab:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Panel ──────────────────────────────────────────────────────── */
+.reproductive-releases-page__panel {
+  min-height: 200px;
+}
+
+/* ─── Error / Success / Loading / Empty ──────────────────────────── */
+.reproductive-releases-page__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-error-50, #fef2f2);
+  border: 1px solid var(--color-error-200, #fecaca);
+  border-radius: 8px;
+  color: var(--color-error-700, #b91c1c);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.reproductive-releases-page__success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-primary-50, #f0fdf4);
+  border: 1px solid var(--color-primary-200, #bbf7d0);
+  border-radius: 8px;
+  color: var(--color-primary-700, #15803d);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.reproductive-releases-page__loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--color-neutral-500);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+}
+
+.reproductive-releases-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--color-neutral-400);
+}
+
+.reproductive-releases-page__empty h2 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  margin: 8px 0 0;
+}
+
+.reproductive-releases-page__empty p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 0 0 16px;
+}
+
+/* ─── Toolbar ─────────────────────────────────────────────────────── */
+.reproductive-releases-page__toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.reproductive-releases-page__search {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.reproductive-releases-page__search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-neutral-400);
+  pointer-events: none;
+}
+
+.reproductive-releases-page__search input {
+  width: 100%;
+  padding: 12px 16px 12px 40px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  transition: border-color 200ms ease-out;
+}
+
+.reproductive-releases-page__search input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+/* ─── Candidates Table ───────────────────────────────────────────── */
+.reproductive-releases-page__table-container {
+  overflow-x: auto;
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  background: var(--color-neutral-0);
+}
+
+.reproductive-releases-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+}
+
+.reproductive-releases-page__table thead {
+  background: var(--color-neutral-50);
+}
+
+.reproductive-releases-page__table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.reproductive-releases-page__table-subheader {
+  display: none;
+}
+
+.reproductive-releases-page__criteria-label {
+  text-align: center;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-neutral-400);
+}
+
+.reproductive-releases-page__table td {
+  padding: 12px 16px;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-50);
+  vertical-align: middle;
+}
+
+.reproductive-releases-page__table tbody tr:hover {
+  background: var(--color-neutral-50);
+}
+
+.reproductive-releases-page__row--eligible {
+  background: rgba(46, 125, 50, 0.04);
+}
+
+.reproductive-releases-page__cell--mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.reproductive-releases-page__table input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--color-primary-600);
+}
+
+.reproductive-releases-page__table input[type='checkbox']:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─── Criteria check/x icons ─────────────────────────────────────── */
+.reproductive-releases-page__check {
+  color: var(--color-primary-600);
+}
+
+.reproductive-releases-page__x {
+  color: var(--color-error-500, #c62828);
+}
+
+/* ─── Body score badge ───────────────────────────────────────────── */
+.reproductive-releases-page__score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.reproductive-releases-page__score--low {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-700, #b91c1c);
+}
+
+.reproductive-releases-page__score--medium {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.reproductive-releases-page__score--high {
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-700, #15803d);
+}
+
+/* ─── Release button in table ────────────────────────────────────── */
+.reproductive-releases-page__btn-release {
+  padding: 8px 16px;
+  border: 1px solid var(--color-primary-200, #bbf7d0);
+  border-radius: 8px;
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-700, #15803d);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+  white-space: nowrap;
+}
+
+.reproductive-releases-page__btn-release:hover {
+  background: var(--color-primary-100, #dcfce7);
+}
+
+.reproductive-releases-page__btn-release:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Bulk bar ───────────────────────────────────────────────────── */
+.reproductive-releases-page__bulk-bar {
+  position: sticky;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.reproductive-releases-page__bulk-count {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 600;
+  color: var(--color-primary-700, #15803d);
+  white-space: nowrap;
+}
+
+.reproductive-releases-page__bulk-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+}
+
+.reproductive-releases-page__bulk-input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+/* ─── Release Cards Grid ─────────────────────────────────────────── */
+.reproductive-releases-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.reproductive-releases-page__card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 20px;
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out;
+}
+
+.reproductive-releases-page__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.reproductive-releases-page__card-header {
+  margin-bottom: 12px;
+}
+
+.reproductive-releases-page__card-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.reproductive-releases-page__card-subtitle {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  margin: 2px 0 0;
+}
+
+.reproductive-releases-page__card-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+
+.reproductive-releases-page__detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.reproductive-releases-page__detail--mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.reproductive-releases-page__card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+  padding-top: 8px;
+  border-top: 1px solid var(--color-neutral-100);
+}
+
+.reproductive-releases-page__card-recorder {
+  color: var(--color-neutral-400);
+  font-size: 0.75rem;
+}
+
+.reproductive-releases-page__card-notes {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--color-neutral-50);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+
+/* ─── Pagination ──────────────────────────────────────────────────── */
+.reproductive-releases-page__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.reproductive-releases-page__pagination button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+
+.reproductive-releases-page__pagination button:hover:not(:disabled) {
+  background: var(--color-neutral-50);
+}
+
+.reproductive-releases-page__pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reproductive-releases-page__pagination span {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  padding: 0 8px;
+}
+
+/* ─── Config: Indicators ─────────────────────────────────────────── */
+.reproductive-releases-page__indicators {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.reproductive-releases-page__indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+}
+
+.reproductive-releases-page__indicator-value {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  line-height: 1;
+}
+
+.reproductive-releases-page__indicator-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ─── Config: Section ────────────────────────────────────────────── */
+.reproductive-releases-page__config-section {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.reproductive-releases-page__section-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0 0 4px;
+}
+
+.reproductive-releases-page__section-desc {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 0 0 20px;
+}
+
+/* ─── Config: Criteria form ──────────────────────────────────────── */
+.reproductive-releases-page__criteria-form {
+  max-width: 800px;
+}
+
+.reproductive-releases-page__criteria-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.reproductive-releases-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reproductive-releases-page__field label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.reproductive-releases-page__field input,
+.reproductive-releases-page__field select {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  transition: border-color 200ms ease-out;
+}
+
+.reproductive-releases-page__field input:focus,
+.reproductive-releases-page__field select:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.reproductive-releases-page__criteria-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ─── Screen reader only ─────────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────── */
+/* ─── Mobile candidate cards (shown <768px) ─────────────────────── */
+.reproductive-releases-page__mobile-candidates {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .reproductive-releases-page__table-container {
+    display: none;
+  }
+
+  .reproductive-releases-page__mobile-candidates {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .reproductive-releases-page__candidate-card {
+    background: var(--color-neutral-0);
+    border: 1px solid var(--color-neutral-100);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .reproductive-releases-page__candidate-card--eligible {
+    border-left: 3px solid var(--color-primary-600);
+  }
+
+  .reproductive-releases-page__candidate-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+
+  .reproductive-releases-page__candidate-card-header input[type='checkbox'] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--color-primary-600);
+    flex-shrink: 0;
+  }
+
+  .reproductive-releases-page__candidate-card-info {
+    flex: 1;
+  }
+
+  .reproductive-releases-page__candidate-card-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-neutral-800);
+  }
+
+  .reproductive-releases-page__candidate-card-name {
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 0.8125rem;
+    color: var(--color-neutral-500);
+  }
+
+  .reproductive-releases-page__candidate-card-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 0.8125rem;
+    color: var(--color-neutral-600);
+  }
+
+  .reproductive-releases-page__candidate-card-criteria {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  .reproductive-releases-page__criterion {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 0.8125rem;
+    color: var(--color-neutral-600);
+  }
+
+  .reproductive-releases-page__candidate-card-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 640px) {
+  .reproductive-releases-page {
+    padding: 16px;
+  }
+
+  .reproductive-releases-page__header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .reproductive-releases-page__actions {
+    width: 100%;
+  }
+
+  .reproductive-releases-page__btn-primary {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .reproductive-releases-page__tabs {
+    overflow-x: auto;
+  }
+
+  .reproductive-releases-page__toolbar {
+    flex-direction: column;
+  }
+
+  .reproductive-releases-page__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reproductive-releases-page__criteria-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reproductive-releases-page__indicators {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .reproductive-releases-page__bulk-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

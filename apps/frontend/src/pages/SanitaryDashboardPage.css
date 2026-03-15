@@ -1,0 +1,371 @@
+.sanitary-dashboard {
+  padding: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.sanitary-dashboard__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.sanitary-dashboard__header h1 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.sanitary-dashboard__header p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  margin: 4px 0 0;
+}
+
+.sanitary-dashboard__btn-export {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  padding: 12px 20px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  min-height: 48px;
+  white-space: nowrap;
+}
+
+.sanitary-dashboard__btn-export:hover {
+  background: var(--color-neutral-50);
+}
+
+/* Filters */
+.sanitary-dashboard__filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.sanitary-dashboard__filters select {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  color: var(--color-neutral-700);
+  min-height: 48px;
+  min-width: 160px;
+}
+
+.sanitary-dashboard__filters select:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* KPI cards */
+.sanitary-dashboard__kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.sanitary-dashboard__kpi {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.sanitary-dashboard__kpi-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  margin: 0 auto 12px;
+}
+
+.sanitary-dashboard__kpi-icon--green {
+  background: rgba(46, 125, 50, 0.1);
+  color: var(--color-primary-600);
+}
+
+.sanitary-dashboard__kpi-icon--orange {
+  background: rgba(245, 124, 0, 0.1);
+  color: #f57c00;
+}
+
+.sanitary-dashboard__kpi-icon--red {
+  background: rgba(198, 40, 40, 0.1);
+  color: var(--color-error-500);
+}
+
+.sanitary-dashboard__kpi-icon--blue {
+  background: rgba(21, 101, 192, 0.1);
+  color: #1565c0;
+}
+
+.sanitary-dashboard__kpi-value {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.sanitary-dashboard__kpi-value--warning {
+  color: #f57c00;
+}
+
+.sanitary-dashboard__kpi-value--error {
+  color: var(--color-error-500);
+}
+
+.sanitary-dashboard__kpi-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  margin: 4px 0 0;
+}
+
+/* Sections */
+.sanitary-dashboard__section {
+  margin-bottom: 32px;
+}
+
+.sanitary-dashboard__section-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0 0 16px;
+}
+
+/* Pending animals table */
+.sanitary-dashboard__table-wrapper {
+  overflow-x: auto;
+}
+
+.sanitary-dashboard__table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.sanitary-dashboard__table th {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-neutral-500);
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.sanitary-dashboard__table td {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.sanitary-dashboard__pending-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sanitary-dashboard__pending-tag--treatment {
+  background: rgba(198, 40, 40, 0.1);
+  color: var(--color-error-500);
+}
+
+.sanitary-dashboard__pending-tag--booster {
+  background: rgba(245, 124, 0, 0.1);
+  color: #f57c00;
+}
+
+.sanitary-dashboard__pending-tag--withdrawal {
+  background: rgba(21, 101, 192, 0.1);
+  color: #1565c0;
+}
+
+.sanitary-dashboard__pending-tag--exam {
+  background: rgba(156, 39, 176, 0.1);
+  color: #9c27b0;
+}
+
+/* Cost cards */
+.sanitary-dashboard__costs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.sanitary-dashboard__cost-list {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.sanitary-dashboard__cost-header {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  padding: 16px;
+  background: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-neutral-100);
+  margin: 0;
+}
+
+.sanitary-dashboard__cost-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.sanitary-dashboard__cost-item:last-child {
+  border-bottom: none;
+}
+
+.sanitary-dashboard__cost-label {
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+}
+
+.sanitary-dashboard__cost-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+}
+
+/* Incidence chart (simple bar representation) */
+.sanitary-dashboard__chart {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.sanitary-dashboard__chart-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0 0 16px;
+}
+
+.sanitary-dashboard__bar-group {
+  margin-bottom: 12px;
+}
+
+.sanitary-dashboard__bar-label {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.sanitary-dashboard__bar {
+  height: 24px;
+  border-radius: 4px;
+  background: rgba(46, 125, 50, 0.2);
+  position: relative;
+  min-width: 2px;
+}
+
+.sanitary-dashboard__bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--color-primary-600);
+  transition: width 500ms ease-out;
+}
+
+.sanitary-dashboard__bar-fill--disease {
+  background: var(--color-error-500);
+}
+
+/* Loading / Empty / Error */
+.sanitary-dashboard__loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--color-neutral-500);
+}
+
+.sanitary-dashboard__empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--color-neutral-500);
+}
+
+.sanitary-dashboard__empty svg {
+  color: var(--color-neutral-300);
+  margin-bottom: 16px;
+}
+
+.sanitary-dashboard__empty h2 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  margin: 0 0 8px;
+}
+
+.sanitary-dashboard__empty p {
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.sanitary-dashboard__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(198, 40, 40, 0.08);
+  border: 1px solid rgba(198, 40, 40, 0.2);
+  border-radius: 8px;
+  color: var(--color-error-500);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 767px) {
+  .sanitary-dashboard {
+    padding: 16px;
+  }
+  .sanitary-dashboard__header {
+    flex-direction: column;
+  }
+  .sanitary-dashboard__kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .sanitary-dashboard__costs {
+    grid-template-columns: 1fr;
+  }
+}
