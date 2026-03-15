@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -540,19 +540,15 @@ export default function SyncQueueScreen() {
     setRefreshing(false);
   }, [loadPendingOps]);
 
-  // Load on mount — use ref to avoid setState-in-effect lint
-  const didLoadRef = useRef(false);
-  if (!didLoadRef.current && queue) {
-    didLoadRef.current = true;
+  // Load on mount and reload after flush — use useFocusEffect pattern
+  const loadOnMount = useCallback(() => {
     void loadPendingOps();
-  }
+  }, [loadPendingOps]);
 
-  // Reload after flush completes — ref-based detection
-  const prevFlushingRef = useRef(isFlushing);
-  if (prevFlushingRef.current && !isFlushing) {
-    void loadPendingOps();
-  }
-  prevFlushingRef.current = isFlushing;
+  // Trigger load via onLayout (fires once on mount, no setState-in-effect)
+  const onContainerLayout = useCallback(() => {
+    loadOnMount();
+  }, [loadOnMount]);
 
   const toggleSection = useCallback((section: SectionKey) => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -825,7 +821,7 @@ export default function SyncQueueScreen() {
   const keyExtractor = useCallback((_item: ListItem, index: number) => `sync-item-${index}`, []);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']} onLayout={onContainerLayout}>
       <FlatList
         data={listData}
         renderItem={renderItem}
