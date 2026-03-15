@@ -71,31 +71,31 @@ Deferred to future milestones. Tracked but not in current roadmap.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase | Status  |
-| ----------- | ----- | ------- |
-| FN-01       | —     | Pending |
-| FN-02       | —     | Pending |
-| FN-03       | —     | Pending |
-| FN-04       | —     | Pending |
-| FN-05       | —     | Pending |
-| FN-06       | —     | Pending |
-| FN-07       | —     | Pending |
-| FN-08       | —     | Pending |
-| FN-09       | —     | Pending |
-| FN-10       | —     | Pending |
-| FN-11       | —     | Pending |
-| FN-12       | —     | Pending |
-| FN-13       | —     | Pending |
-| FN-14       | —     | Pending |
-| FN-15       | —     | Pending |
+| Requirement | Phase   | Status  |
+| ----------- | ------- | ------- |
+| FN-01       | Phase 1 | Pending |
+| FN-02       | Phase 4 | Pending |
+| FN-03       | Phase 1 | Pending |
+| FN-04       | Phase 4 | Pending |
+| FN-05       | Phase 4 | Pending |
+| FN-06       | Phase 5 | Pending |
+| FN-07       | Phase 2 | Pending |
+| FN-08       | Phase 2 | Pending |
+| FN-09       | Phase 4 | Pending |
+| FN-10       | Phase 2 | Pending |
+| FN-11       | Phase 2 | Pending |
+| FN-12       | Phase 2 | Pending |
+| FN-13       | Phase 5 | Pending |
+| FN-14       | Phase 6 | Pending |
+| FN-15       | Phase 3 | Pending |
 
 **Coverage:**
 
 - v1 requirements: 15 total
-- Mapped to phases: 0
-- Unmapped: 15 ⚠️
+- Mapped to phases: 15
+- Unmapped: 0 ✓
 
 ---
 
 _Requirements defined: 2026-03-15_
-_Last updated: 2026-03-15 after initial definition_
+_Last updated: 2026-03-15 after roadmap creation_
