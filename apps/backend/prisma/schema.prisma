@@ -304,6 +304,7 @@ model Organization {
   inseminations            Insemination[]
   naturalMatings           NaturalMating[]
   pregnancyDiagnoses       PregnancyDiagnosis[]
+  calvingEvents            CalvingEvent[]
 
   @@map("organizations")
 }
@@ -366,6 +367,7 @@ model User {
   recordedInseminations        Insemination[]         @relation("InseminationRecorder")
   recordedNaturalMatings       NaturalMating[]        @relation("NaturalMatingRecorder")
   recordedDiagnoses            PregnancyDiagnosis[]   @relation("DgRecorder")
+  recordedCalvings             CalvingEvent[]         @relation("CalvingRecorder")
 
   @@map("users")
 }
@@ -452,6 +454,7 @@ model Farm {
   inseminations              Insemination[]
   naturalMatings             NaturalMating[]
   pregnancyDiagnoses         PregnancyDiagnosis[]
+  calvingEvents              CalvingEvent[]
 
   @@map("farms")
 }
@@ -991,6 +994,9 @@ model Animal {
   inseminations           Insemination[]
   naturalMatingAnimals    NaturalMatingAnimal[]
   pregnancyDiagnoses      PregnancyDiagnosis[]
+  calvingsAsMother        CalvingEvent[]         @relation("CalvingMother")
+  calvingsAsFather        CalvingEvent[]         @relation("CalvingFather")
+  calfRecord              CalvingCalf?           @relation("CalfAnimal")
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -4223,4 +4229,97 @@ model PregnancyDiagnosis {
   @@index([result])
   @@index([expectedCalvingDate])
   @@map("pregnancy_diagnoses")
+}
+
+// ─── EPIC-12 US-116: Parto, Aborto e Cria ───────────────────────────
+
+enum CalvingEventType {
+  BIRTH
+  ABORTION
+}
+
+enum BirthType {
+  NORMAL
+  ASSISTED_EASY
+  ASSISTED_DIFFICULT
+  CESAREAN
+}
+
+enum CalfCondition {
+  ALIVE
+  STILLBORN
+}
+
+enum AbortionCause {
+  INFECTIOUS
+  TRAUMATIC
+  NUTRITIONAL
+  UNKNOWN
+  OTHER
+}
+
+model CalvingEvent {
+  id                    String            @id @default(uuid())
+  organizationId        String
+  farmId                String
+  motherId              String
+  fatherId              String?
+  fatherBreedName       String?
+  eventType             CalvingEventType
+  eventDate             DateTime          @db.Date
+  eventTime             String?
+  eventPeriod           String?
+  // Birth-specific (CA3)
+  birthType             BirthType?
+  presentation          String?
+  // Abortion-specific (CA4)
+  abortionGestationDays Int?
+  abortionCause         AbortionCause?
+  abortionCauseDetail   String?
+  fetusFound            Boolean?
+  // Mother data (CA7, CA8, CA9)
+  motherWeightKg        Float?
+  placentaRetention     Boolean           @default(false)
+  retentionHours        Int?
+  retentionIntervention Boolean           @default(false)
+  // Linkage
+  pregnancyDiagnosisId  String?
+  attendantName         String
+  notes                 String?
+  recordedBy            String
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  mother        Animal       @relation("CalvingMother", fields: [motherId], references: [id], onDelete: Cascade)
+  father        Animal?      @relation("CalvingFather", fields: [fatherId], references: [id], onDelete: SetNull)
+  recorder      User         @relation("CalvingRecorder", fields: [recordedBy], references: [id])
+  calves        CalvingCalf[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([motherId])
+  @@index([eventDate])
+  @@index([eventType])
+  @@map("calving_events")
+}
+
+model CalvingCalf {
+  id              String        @id @default(uuid())
+  calvingEventId  String
+  sex             String
+  birthWeightKg   Float?
+  condition       CalfCondition
+  stillbornReason String?
+  createdAnimalId String?       @unique
+  earTag          String?
+  notes           String?
+  createdAt       DateTime      @default(now())
+
+  calvingEvent  CalvingEvent @relation(fields: [calvingEventId], references: [id], onDelete: Cascade)
+  createdAnimal Animal?      @relation("CalfAnimal", fields: [createdAnimalId], references: [id], onDelete: SetNull)
+
+  @@index([calvingEventId])
+  @@map("calving_calves")
 }
