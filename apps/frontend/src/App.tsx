@@ -70,6 +70,7 @@ const PregnancyDiagnosisPage = lazy(() => import('@/pages/PregnancyDiagnosisPage
 const CalvingEventsPage = lazy(() => import('@/pages/CalvingEventsPage'));
 const WeaningPage = lazy(() => import('@/pages/WeaningPage'));
 const MilkingRecordsPage = lazy(() => import('@/pages/MilkingRecordsPage'));
+const MilkAnalysisPage = lazy(() => import('@/pages/MilkAnalysisPage'));
 
 export function App() {
   return (
@@ -141,6 +142,7 @@ export function App() {
                 <Route path="/calving-events" element={<CalvingEventsPage />} />
                 <Route path="/weaning" element={<WeaningPage />} />
                 <Route path="/milking-records" element={<MilkingRecordsPage />} />
+                <Route path="/milk-analysis" element={<MilkAnalysisPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}

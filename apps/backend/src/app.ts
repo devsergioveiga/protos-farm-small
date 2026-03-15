@@ -71,6 +71,7 @@ import { pregnancyDiagnosisRouter } from './modules/pregnancy-diagnosis/pregnanc
 import { calvingEventsRouter } from './modules/calving-events/calving-events.routes';
 import { weaningRouter } from './modules/weaning/weaning.routes';
 import { milkingRecordsRouter } from './modules/milking-records/milking-records.routes';
+import { milkAnalysisRouter } from './modules/milk-analysis/milk-analysis.routes';
 
 const app = express();
 
@@ -149,5 +150,6 @@ app.use('/api', pregnancyDiagnosisRouter);
 app.use('/api', calvingEventsRouter);
 app.use('/api', weaningRouter);
 app.use('/api', milkingRecordsRouter);
+app.use('/api', milkAnalysisRouter);
 
 export { app };

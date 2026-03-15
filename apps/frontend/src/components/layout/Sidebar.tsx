@@ -47,6 +47,7 @@ import {
   X,
   CupSoda,
   Milk,
+  TestTube,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -106,7 +107,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: 'LEITE',
-    items: [{ to: '/milking-records', icon: Milk, label: 'Ordenha' }],
+    items: [
+      { to: '/milking-records', icon: Milk, label: 'Ordenha' },
+      { to: '/milk-analysis', icon: TestTube, label: 'Análise de leite' },
+    ],
   },
   {
     title: 'LAVOURA',
