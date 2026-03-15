@@ -10,6 +10,7 @@ import {
   Sprout,
   SprayCan,
   Droplet,
+  Droplets,
   Stethoscope,
   Shovel,
   UsersRound,
@@ -114,6 +115,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/milk-analysis', icon: TestTube, label: 'Análise de leite' },
       { to: '/mastitis', icon: ShieldAlert, label: 'Mastite' },
       { to: '/milk-tanks', icon: Container, label: 'Tanque e entregas' },
+      { to: '/lactations', icon: Droplets, label: 'Lactação' },
     ],
   },
   {

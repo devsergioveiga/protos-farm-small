@@ -314,6 +314,7 @@ model Organization {
   mastitisCases            MastitisCase[]
   coolingTanks             CoolingTank[]
   milkCollections          MilkCollection[]
+  lactations               Lactation[]
 
   @@map("organizations")
 }
@@ -384,6 +385,7 @@ model User {
   recordedMastitisCases        MastitisCase[]         @relation("MastitisRecorder")
   recordedTankMeasurements     TankMeasurement[]      @relation("TankMeasurementRecorder")
   recordedMilkCollections      MilkCollection[]       @relation("MilkCollectionRecorder")
+  recordedLactations           Lactation[]            @relation("LactationRecorder")
 
   @@map("users")
 }
@@ -478,6 +480,7 @@ model Farm {
   mastitisCases              MastitisCase[]
   coolingTanks               CoolingTank[]
   milkCollections            MilkCollection[]
+  lactations                 Lactation[]
 
   @@map("farms")
 }
@@ -1026,6 +1029,7 @@ model Animal {
   milkingRecords          MilkingRecord[]
   milkAnalyses            MilkAnalysis[]
   mastitisCases           MastitisCase[]
+  lactations              Lactation[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -4769,4 +4773,68 @@ model MilkCollection {
   @@index([farmId])
   @@index([collectionDate])
   @@map("milk_collections")
+}
+
+// ─── EPIC-13 US-122: Lactação ────────────────────────────────────────
+
+enum LactationOrigin {
+  BIRTH
+  INDUCTION
+}
+
+enum LactationStatus {
+  IN_PROGRESS
+  DRIED
+}
+
+enum DryingReason {
+  SCHEDULED
+  LOW_PRODUCTION
+  TREATMENT
+  ADVANCED_GESTATION
+}
+
+model Lactation {
+  id                  String           @id @default(uuid())
+  organizationId      String
+  farmId              String
+  animalId            String
+  lactationNumber     Int
+  startDate           DateTime         @db.Date
+  endDate             DateTime?        @db.Date
+  origin              LactationOrigin
+  status              LactationStatus  @default(IN_PROGRESS)
+  // Induction (CA3)
+  inductionProtocol   String?
+  inductionReason     String?
+  inductionVet        String?
+  firstMilkingDate    DateTime?        @db.Date
+  // Drying (CA8)
+  dryingReason        DryingReason?
+  dryingProtocol      String?
+  dryingVet           String?
+  // Indicators (CA6)
+  peakLiters          Float?
+  peakDel             Int?
+  accumulated305      Float?
+  totalAccumulated    Float?
+  durationDays        Int?
+  // Linkage
+  calvingEventId      String?
+  notes               String?
+  recordedBy          String
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal       @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("LactationRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([status])
+  @@index([startDate])
+  @@map("lactations")
 }
