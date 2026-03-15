@@ -295,6 +295,8 @@ model Organization {
   compositeProductions     CompositeProduction[]
   bulls                    Bull[]
   semenBatches             SemenBatch[]
+  reproductiveReleases     ReproductiveRelease[]
+  reproductiveCriteria     ReproductiveCriteria?
 
   @@map("organizations")
 }
@@ -349,6 +351,7 @@ model User {
   recordedEvolutions         ClinicalEvolution[]      @relation("EvolutionRecorder")
   recordedExams              AnimalExam[]             @relation("ExamRecorder")
   recordedCompositeProductions CompositeProduction[]  @relation("CompositeProductionRecorder")
+  recordedReleases             ReproductiveRelease[]  @relation("ReleaseRecorder")
 
   @@map("users")
 }
@@ -428,6 +431,7 @@ model Farm {
   therapeuticTreatments      TherapeuticTreatment[]
   animalExams                AnimalExam[]
   bulls                      Bull[]
+  reproductiveReleases       ReproductiveRelease[]
 
   @@map("farms")
 }
@@ -932,6 +936,7 @@ model Animal {
   photoUrl               String?
   notes                  String?
   isCompositionEstimated Boolean         @default(false)
+  reproductivelyReleased Boolean        @default(false)
   deletedAt              DateTime?
   createdBy              String
   createdAt              DateTime        @default(now())
@@ -959,6 +964,7 @@ model Animal {
   therapeuticTreatments   TherapeuticTreatment[]
   animalExams             AnimalExam[]
   bullRecord              Bull?                      @relation("BullAnimal")
+  reproductiveReleases    ReproductiveRelease[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -3682,4 +3688,49 @@ model SemenBatch {
   @@index([bullId])
   @@index([expiryDate])
   @@map("semen_batches")
+}
+
+// ─── EPIC-12 US-109: Liberação Reprodutiva ──────────────────────────
+
+model ReproductiveRelease {
+  id                  String    @id @default(uuid())
+  organizationId      String
+  farmId              String
+  animalId            String
+  releaseDate         DateTime  @db.Date
+  weightKg            Float?
+  ageMonths           Int?
+  bodyConditionScore  Float?
+  responsibleName     String
+  previousCategory    String?
+  previousLotId       String?
+  targetLotId         String?
+  notes               String?
+  recordedBy          String
+  createdAt           DateTime  @default(now())
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal       @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("ReleaseRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@map("reproductive_releases")
+}
+
+model ReproductiveCriteria {
+  id              String   @id @default(uuid())
+  organizationId  String   @unique
+  minWeightKg     Float?
+  minAgeMonths    Int?
+  minBodyScore    Float?
+  targetLotId     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("reproductive_criteria")
 }
