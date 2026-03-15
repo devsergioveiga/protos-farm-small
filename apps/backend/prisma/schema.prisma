@@ -298,6 +298,7 @@ model Organization {
   reproductiveReleases     ReproductiveRelease[]
   reproductiveCriteria     ReproductiveCriteria?
   heatRecords              HeatRecord[]
+  matingPlans              MatingPlan[]
 
   @@map("organizations")
 }
@@ -354,6 +355,7 @@ model User {
   recordedCompositeProductions CompositeProduction[]  @relation("CompositeProductionRecorder")
   recordedReleases             ReproductiveRelease[]  @relation("ReleaseRecorder")
   recordedHeats                HeatRecord[]           @relation("HeatRecorder")
+  createdMatingPlans           MatingPlan[]           @relation("MatingPlanCreator")
 
   @@map("users")
 }
@@ -435,6 +437,7 @@ model Farm {
   bulls                      Bull[]
   reproductiveReleases       ReproductiveRelease[]
   heatRecords                HeatRecord[]
+  matingPlans                MatingPlan[]
 
   @@map("farms")
 }
@@ -969,6 +972,7 @@ model Animal {
   bullRecord              Bull?                      @relation("BullAnimal")
   reproductiveReleases    ReproductiveRelease[]
   heatRecords             HeatRecord[]
+  matingPairs             MatingPair[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -3660,7 +3664,11 @@ model Bull {
   organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
   animal        Animal?      @relation("BullAnimal", fields: [animalId], references: [id], onDelete: SetNull)
-  semenBatches  SemenBatch[]
+  semenBatches          SemenBatch[]
+  primaryMatingPairs    MatingPair[] @relation("PrimaryBull")
+  secondaryMatingPairs  MatingPair[] @relation("SecondaryBull")
+  tertiaryMatingPairs   MatingPair[] @relation("TertiaryBull")
+  executedMatingPairs   MatingPair[] @relation("ExecutedBull")
 
   @@unique([organizationId, name])
   @@index([organizationId])
@@ -3793,4 +3801,75 @@ model HeatRecord {
   @@index([heatDate])
   @@index([status])
   @@map("heat_records")
+}
+
+// ─── EPIC-12 US-111: Plano de Acasalamento ──────────────────────────
+
+enum MatingPlanStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum MatingPairStatus {
+  PLANNED
+  EXECUTED
+  CONFIRMED_PREGNANT
+  EMPTY
+  CANCELLED
+}
+
+model MatingPlan {
+  id                String           @id @default(uuid())
+  organizationId    String
+  farmId            String
+  name              String
+  season            String?          // "Safra 2026/27"
+  objective         String?
+  status            MatingPlanStatus @default(DRAFT)
+  startDate         DateTime?        @db.Date
+  endDate           DateTime?        @db.Date
+  notes             String?
+  createdBy         String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  organization  Organization  @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  creator       User          @relation("MatingPlanCreator", fields: [createdBy], references: [id])
+  pairs         MatingPair[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([status])
+  @@map("mating_plans")
+}
+
+model MatingPair {
+  id                 String           @id @default(uuid())
+  planId             String
+  animalId           String           // female
+  primaryBullId      String?
+  secondaryBullId    String?
+  tertiaryBullId     String?
+  status             MatingPairStatus @default(PLANNED)
+  executedBullId     String?          // actual bull used
+  executionDate      DateTime?        @db.Date
+  substitutionReason String?
+  notes              String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  plan            MatingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  animal          Animal     @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  primaryBull     Bull?      @relation("PrimaryBull", fields: [primaryBullId], references: [id], onDelete: SetNull)
+  secondaryBull   Bull?      @relation("SecondaryBull", fields: [secondaryBullId], references: [id], onDelete: SetNull)
+  tertiaryBull    Bull?      @relation("TertiaryBull", fields: [tertiaryBullId], references: [id], onDelete: SetNull)
+  executedBull    Bull?      @relation("ExecutedBull", fields: [executedBullId], references: [id], onDelete: SetNull)
+
+  @@index([planId])
+  @@index([animalId])
+  @@index([status])
+  @@map("mating_pairs")
 }

@@ -62,6 +62,7 @@ const SanitaryDashboardPage = lazy(() => import('@/pages/SanitaryDashboardPage')
 const BullsPage = lazy(() => import('@/pages/BullsPage'));
 const ReproductiveReleasesPage = lazy(() => import('@/pages/ReproductiveReleasesPage'));
 const HeatRecordsPage = lazy(() => import('@/pages/HeatRecordsPage'));
+const MatingPlansPage = lazy(() => import('@/pages/MatingPlansPage'));
 
 export function App() {
   return (
@@ -125,6 +126,7 @@ export function App() {
                 <Route path="/bulls" element={<BullsPage />} />
                 <Route path="/reproductive-releases" element={<ReproductiveReleasesPage />} />
                 <Route path="/heat-records" element={<HeatRecordsPage />} />
+                <Route path="/mating-plans" element={<MatingPlansPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}

@@ -63,6 +63,7 @@ import { compositeProductsRouter } from './modules/composite-products/composite-
 import { bullsRouter } from './modules/bulls/bulls.routes';
 import { reproductiveReleasesRouter } from './modules/reproductive-releases/reproductive-releases.routes';
 import { heatRecordsRouter } from './modules/heat-records/heat-records.routes';
+import { matingPlansRouter } from './modules/mating-plans/mating-plans.routes';
 
 const app = express();
 
@@ -133,5 +134,6 @@ app.use('/api', compositeProductsRouter);
 app.use('/api', bullsRouter);
 app.use('/api', reproductiveReleasesRouter);
 app.use('/api', heatRecordsRouter);
+app.use('/api', matingPlansRouter);
 
 export { app };
