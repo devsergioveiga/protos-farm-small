@@ -16,6 +16,16 @@ interface LotOption {
   animalCount: number;
 }
 
+interface DietOption {
+  id: string;
+  name: string;
+  ingredients: Array<{
+    feedIngredientId: string;
+    feedIngredientName: string;
+    quantityKgDay: number;
+  }>;
+}
+
 interface IngredientOption {
   id: string;
   name: string;
@@ -61,30 +71,21 @@ export default function FeedingModal({ isOpen, onClose, farmId, onSuccess, feedi
     if (!isOpen || !farmId) return;
     const fetchLookups = async () => {
       try {
-        interface LotApiItem {
-          id: string;
-          name: string;
-          _count?: { animals: number };
-          animalCount?: number;
-        }
         const [lotsRes, ingredientsRes] = await Promise.all([
-          api.get<{ data: LotApiItem[] }>(`/org/farms/${farmId}/animal-lots?limit=200`),
+          api.get<{ data: Array<{ id: string; name: string; _count?: { animals: number } }> }>(
+            `/org/farms/${farmId}/animal-lots?limit=200`,
+          ),
           api.get<{ data: IngredientOption[] }>(`/org/feed-ingredients?limit=200`),
         ]);
-        const lotsData: LotApiItem[] =
-          (lotsRes as { data: LotApiItem[] }).data ?? (lotsRes as unknown as LotApiItem[]);
         setLots(
-          lotsData.map((l) => ({
+          (lotsRes.data ?? lotsRes).map((l: Record<string, unknown>) => ({
             id: l.id,
             name: l.name,
             animalCount: l._count?.animals ?? l.animalCount ?? 0,
           })),
         );
-        const ingredientsData: IngredientOption[] =
-          (ingredientsRes as { data: IngredientOption[] }).data ??
-          (ingredientsRes as unknown as IngredientOption[]);
         setIngredients(
-          ingredientsData.map((i) => ({
+          (ingredientsRes.data ?? ingredientsRes).map((i: Record<string, unknown>) => ({
             id: i.id,
             name: i.name,
             type: i.type,
@@ -102,28 +103,19 @@ export default function FeedingModal({ isOpen, onClose, farmId, onSuccess, feedi
     async (selectedLotId: string) => {
       if (!selectedLotId || !farmId) return;
       try {
-        interface DietIngredientApi {
-          feedIngredientId: string;
-          feedIngredientName?: string;
-          feedIngredient?: { name: string };
-          quantityKgDay?: number;
-        }
-        interface DietAssignment {
-          endDate?: string | null;
-          diet?: {
-            id: string;
-            name: string;
-            ingredients?: DietIngredientApi[];
-          };
-        }
-        const assignments = await api.get<DietAssignment[]>(
+        const assignments = await api.get<Record<string, unknown>[]>(
           `/org/farms/${farmId}/diets/lot-assignments?lotId=${selectedLotId}`,
         );
-        const active = Array.isArray(assignments) ? assignments.find((a) => !a.endDate) : null;
+        const active = Array.isArray(assignments)
+          ? assignments.find((a: Record<string, unknown>) => !a.endDate)
+          : null;
         if (active?.diet) {
-          const diet = active.diet;
+          const diet: DietOption = active.diet;
           const dietItems = (diet.ingredients ?? []).map(
-            (ing, idx): FeedingRecordItemInput & { key: number } => ({
+            (
+              ing: Record<string, unknown>,
+              idx: number,
+            ): FeedingRecordItemInput & { key: number } => ({
               key: idx,
               feedIngredientId: ing.feedIngredientId,
               feedIngredientName: ing.feedIngredientName ?? ing.feedIngredient?.name ?? '',
