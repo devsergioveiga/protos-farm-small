@@ -311,6 +311,7 @@ model Organization {
   milkingRecords           MilkingRecord[]
   milkAnalyses             MilkAnalysis[]
   milkQualityConfig        MilkQualityConfig?
+  mastitisCases            MastitisCase[]
 
   @@map("organizations")
 }
@@ -378,6 +379,7 @@ model User {
   recordedWeanings             WeaningRecord[]        @relation("WeaningRecorder")
   recordedMilkings             MilkingRecord[]        @relation("MilkingRecorder")
   recordedMilkAnalyses         MilkAnalysis[]         @relation("MilkAnalysisRecorder")
+  recordedMastitisCases        MastitisCase[]         @relation("MastitisRecorder")
 
   @@map("users")
 }
@@ -469,6 +471,7 @@ model Farm {
   weaningRecords             WeaningRecord[]
   milkingRecords             MilkingRecord[]
   milkAnalyses               MilkAnalysis[]
+  mastitisCases              MastitisCase[]
 
   @@map("farms")
 }
@@ -1016,6 +1019,7 @@ model Animal {
   weaningRecords          WeaningRecord[]        @relation("WeanedCalf")
   milkingRecords          MilkingRecord[]
   milkAnalyses            MilkAnalysis[]
+  mastitisCases           MastitisCase[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -2546,6 +2550,7 @@ model Product {
   dewormings             Deworming[]
   treatmentApplications  TreatmentApplication[]
   iatfStepProducts       IatfProtocolStepProduct[] @relation("IatfStepProduct")
+  mastitisApplications   MastitisApplication[]    @relation("MastitisProduct")
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -4564,4 +4569,117 @@ model MilkQualityConfig {
   organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("milk_quality_configs")
+}
+
+// ─── EPIC-13 US-120: Mastite ─────────────────────────────────────────
+
+enum MastitisGrade {
+  GRADE_1_MILD
+  GRADE_2_MODERATE
+  GRADE_3_SEVERE
+}
+
+enum MastitisClassification {
+  CLINICAL
+  SUBCLINICAL
+  RECURRENT
+  CHRONIC
+}
+
+enum MastitisQuarterStatus {
+  IN_TREATMENT
+  IN_WITHDRAWAL
+  CURED
+  CHRONIC
+  QUARTER_LOST
+}
+
+enum MastitisCaseStatus {
+  OPEN
+  CLOSED
+}
+
+model MastitisCase {
+  id                    String                  @id @default(uuid())
+  organizationId        String
+  farmId                String
+  animalId              String
+  occurrenceDate        DateTime                @db.Date
+  occurrenceTime        String?
+  identifiedBy          String
+  delAtOccurrence       Int?
+  rectalTemperature     Float?
+  temperatureAlert      Boolean                 @default(false)
+  classification        MastitisClassification  @default(CLINICAL)
+  status                MastitisCaseStatus      @default(OPEN)
+  cultureSampleCollected Boolean                @default(false)
+  cultureLab            String?
+  cultureSampleNumber   String?
+  cultureAgent          String?
+  cultureAntibiogram    Json?
+  treatmentProtocolName String?
+  withdrawalEndDate     DateTime?               @db.Date
+  closedAt              DateTime?
+  closureOutcome        String?
+  totalCostCents        Int                     @default(0)
+  notes                 String?
+  recordedBy            String
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  organization  Organization          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm                  @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal                @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  recorder      User                  @relation("MastitisRecorder", fields: [recordedBy], references: [id])
+  quarters      MastitisQuarter[]
+  applications  MastitisApplication[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([occurrenceDate])
+  @@index([status])
+  @@map("mastitis_cases")
+}
+
+model MastitisQuarter {
+  id                String                @id @default(uuid())
+  caseId            String
+  quarter           String
+  grade             MastitisGrade
+  milkAppearance    String?
+  cmtResult         String?
+  status            MastitisQuarterStatus @default(IN_TREATMENT)
+  withdrawalEndDate DateTime?             @db.Date
+  notes             String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  case  MastitisCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId])
+  @@map("mastitis_quarters")
+}
+
+model MastitisApplication {
+  id                  String    @id @default(uuid())
+  caseId              String
+  applicationDate     DateTime  @db.Date
+  applicationTime     String?
+  productName         String
+  productId           String?
+  dose                String
+  administrationRoute String
+  quarterTreated      String?
+  responsibleName     String
+  costCents           Int       @default(0)
+  notes               String?
+  createdAt           DateTime  @default(now())
+
+  case    MastitisCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  product Product?     @relation("MastitisProduct", fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([caseId])
+  @@index([applicationDate])
+  @@map("mastitis_applications")
 }
