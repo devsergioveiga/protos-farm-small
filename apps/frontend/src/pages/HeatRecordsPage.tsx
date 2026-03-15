@@ -304,7 +304,7 @@ function DailyTab({
     return <div className="heat-records-page__loading">Carregando cios do dia...</div>;
   }
 
-  const totalHeats = groups.reduce((sum, g) => sum + g.heats.length, 0);
+  const totalHeats = (groups ?? []).reduce((sum, g) => sum + g.heats.length, 0);
 
   if (totalHeats === 0) {
     return (

@@ -299,6 +299,7 @@ model Organization {
   reproductiveCriteria     ReproductiveCriteria?
   heatRecords              HeatRecord[]
   matingPlans              MatingPlan[]
+  iatfProtocols            IatfProtocol[]
 
   @@map("organizations")
 }
@@ -356,6 +357,7 @@ model User {
   recordedReleases             ReproductiveRelease[]  @relation("ReleaseRecorder")
   recordedHeats                HeatRecord[]           @relation("HeatRecorder")
   createdMatingPlans           MatingPlan[]           @relation("MatingPlanCreator")
+  createdIatfProtocols         IatfProtocol[]         @relation("IatfProtocolCreator")
 
   @@map("users")
 }
@@ -2502,6 +2504,7 @@ model Product {
   vaccinations           Vaccination[]
   dewormings             Deworming[]
   treatmentApplications  TreatmentApplication[]
+  iatfStepProducts       IatfProtocolStepProduct[] @relation("IatfStepProduct")
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -3872,4 +3875,74 @@ model MatingPair {
   @@index([animalId])
   @@index([status])
   @@map("mating_pairs")
+}
+
+// ─── EPIC-12 US-112: Protocolos de IATF ─────────────────────────────
+
+enum IatfProtocolStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model IatfProtocol {
+  id                  String              @id @default(uuid())
+  organizationId      String
+  name                String
+  description         String?
+  targetCategory      String              // COWS, HEIFERS, BOTH
+  veterinaryAuthor    String?
+  status              IatfProtocolStatus   @default(ACTIVE)
+  version             Int                 @default(1)
+  parentId            String?             // original protocol (for versioning)
+  estimatedCostCents  Int                 @default(0)
+  notes               String?
+  deletedAt           DateTime?
+  createdBy           String
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  organization  Organization    @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  creator       User            @relation("IatfProtocolCreator", fields: [createdBy], references: [id])
+  parent        IatfProtocol?   @relation("IatfProtocolVersions", fields: [parentId], references: [id], onDelete: SetNull)
+  versions      IatfProtocol[]  @relation("IatfProtocolVersions")
+  steps         IatfProtocolStep[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([parentId])
+  @@map("iatf_protocols")
+}
+
+model IatfProtocolStep {
+  id                  String    @id @default(uuid())
+  protocolId          String
+  dayNumber           Int       // D0, D8, D10 etc.
+  description         String
+  isAiDay             Boolean   @default(false)  // marks insemination day
+  sortOrder           Int       @default(0)
+  createdAt           DateTime  @default(now())
+
+  protocol  IatfProtocol          @relation(fields: [protocolId], references: [id], onDelete: Cascade)
+  products  IatfProtocolStepProduct[]
+
+  @@index([protocolId])
+  @@map("iatf_protocol_steps")
+}
+
+model IatfProtocolStepProduct {
+  id                  String    @id @default(uuid())
+  stepId              String
+  productId           String?   // FK to Product (optional for manual entry)
+  productName         String
+  dose                Float
+  doseUnit            String    // mg, mL, UI
+  administrationRoute String?   // IM, SC, IV, intravaginal
+  notes               String?
+  createdAt           DateTime  @default(now())
+
+  step      IatfProtocolStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  product   Product?         @relation("IatfStepProduct", fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([stepId])
+  @@map("iatf_protocol_step_products")
 }

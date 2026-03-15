@@ -475,7 +475,7 @@ export default function MatingPlansPage() {
             </div>
           )}
 
-          {meta.totalPages > 1 && (
+          {meta && meta.totalPages > 1 && (
             <nav className="mating-plans-page__pagination" aria-label="Paginacao">
               <button
                 type="button"
