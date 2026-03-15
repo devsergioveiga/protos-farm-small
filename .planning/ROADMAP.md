@@ -34,7 +34,14 @@ Decimal phases appear between their surrounding integers in numeric order.
 3. Gerente consegue ver extrato de uma conta com filtro por período e exportar em PDF ou Excel
 4. Dashboard de contas mostra todas as contas lado a lado com saldo atual e saldo projetado (7/15/30/60/90 dias)
 5. Nenhum valor monetário no sistema usa aritmética de ponto flutuante nativo — todos os cálculos passam pelo tipo Money (decimal.js)
-   **Plans**: TBD
+
+**Plans:** 3 plans
+
+Plans:
+
+- [ ] 01-01-PLAN.md — Money type, FEBRABAN bank list, Prisma schema e migration
+- [ ] 01-02-PLAN.md — Backend module: CRUD, statement, export, dashboard endpoints
+- [ ] 01-03-PLAN.md — Frontend: page com cards, modal, sidebar, statement view
 
 ### Phase 2: Núcleo AP/AR
 
@@ -109,11 +116,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase                           | Plans Complete | Status      | Completed |
 | ------------------------------- | -------------- | ----------- | --------- |
-| 1. Fundação Financeira          | 0/TBD          | Not started | -         |
+| 1. Fundação Financeira          | 0/3            | Not started | -         |
 | 2. Núcleo AP/AR                 | 0/TBD          | Not started | -         |
 | 3. Dashboard Financeiro         | 0/TBD          | Not started | -         |
 | 4. Instrumentos de Pagamento    | 0/TBD          | Not started | -         |
