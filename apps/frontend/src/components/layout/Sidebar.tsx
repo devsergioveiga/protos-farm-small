@@ -52,6 +52,7 @@ import {
   TestTube,
   ShieldAlert,
   Container,
+  Salad,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -119,6 +120,10 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/lactations', icon: Droplets, label: 'Lactação' },
       { to: '/milk-dashboard', icon: BarChart3, label: 'Dashboard leite' },
     ],
+  },
+  {
+    title: 'NUTRIÇÃO',
+    items: [{ to: '/feed-ingredients', icon: Salad, label: 'Ingredientes' }],
   },
   {
     title: 'LAVOURA',

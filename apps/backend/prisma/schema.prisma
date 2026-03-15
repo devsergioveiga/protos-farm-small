@@ -315,6 +315,8 @@ model Organization {
   coolingTanks             CoolingTank[]
   milkCollections          MilkCollection[]
   lactations               Lactation[]
+  feedIngredients          FeedIngredient[]
+  bromatologicalAnalyses   BromatologicalAnalysis[]
 
   @@map("organizations")
 }
@@ -386,6 +388,7 @@ model User {
   recordedTankMeasurements     TankMeasurement[]      @relation("TankMeasurementRecorder")
   recordedMilkCollections      MilkCollection[]       @relation("MilkCollectionRecorder")
   recordedLactations           Lactation[]            @relation("LactationRecorder")
+  recordedBromatologicalAnalyses BromatologicalAnalysis[] @relation("BromatologicalRecorder")
 
   @@map("users")
 }
@@ -4837,4 +4840,94 @@ model Lactation {
   @@index([status])
   @@index([startDate])
   @@map("lactations")
+}
+
+// ─── EPIC-15 US-124: Alimentos e Análise Bromatológica ──────────────
+
+enum FeedIngredientType {
+  ROUGHAGE
+  CONCENTRATE
+  MINERAL
+  ADDITIVE
+  BYPRODUCT
+}
+
+model FeedIngredient {
+  id                String              @id @default(uuid())
+  organizationId    String
+  name              String
+  type              FeedIngredientType
+  subtype           String?
+  measurementUnit   String              @default("kg")
+  costPerKg         Float?
+  // Reference nutritional composition (CA2)
+  refDmPercent      Float?
+  refCpPercent      Float?
+  refNdfPercent     Float?
+  refAdfPercent     Float?
+  refEePercent      Float?
+  refMmPercent      Float?
+  refTdnPercent     Float?
+  refNelMcalKg      Float?
+  refNfcPercent     Float?
+  refCaPercent      Float?
+  refPPercent       Float?
+  refMgPercent      Float?
+  refKPercent       Float?
+  refNaPercent      Float?
+  notes             String?
+  deletedAt         DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  organization  Organization          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  analyses      BromatologicalAnalysis[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([type])
+  @@map("feed_ingredients")
+}
+
+model BromatologicalAnalysis {
+  id                String    @id @default(uuid())
+  organizationId    String
+  feedIngredientId  String
+  batchNumber       String?
+  collectionDate    DateTime  @db.Date
+  resultDate        DateTime? @db.Date
+  laboratory        String?
+  protocolNumber    String?
+  responsibleName   String
+  // Results
+  dmPercent         Float?
+  cpPercent         Float?
+  ndfPercent        Float?
+  adfPercent        Float?
+  eePercent         Float?
+  mmPercent         Float?
+  tdnPercent        Float?
+  nelMcalKg         Float?
+  nfcPercent        Float?
+  caPercent         Float?
+  pPercent          Float?
+  mgPercent         Float?
+  kPercent          Float?
+  naPercent         Float?
+  // File
+  reportFileName    String?
+  reportPath        String?
+  notes             String?
+  recordedBy        String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  organization    Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  feedIngredient  FeedIngredient @relation(fields: [feedIngredientId], references: [id], onDelete: Cascade)
+  recorder        User           @relation("BromatologicalRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([feedIngredientId])
+  @@index([collectionDate])
+  @@map("bromatological_analyses")
 }
