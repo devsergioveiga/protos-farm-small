@@ -75,6 +75,7 @@ import { milkAnalysisRouter } from './modules/milk-analysis/milk-analysis.routes
 import { mastitisRouter } from './modules/mastitis/mastitis.routes';
 import { milkTanksRouter } from './modules/milk-tanks/milk-tanks.routes';
 import { lactationsRouter } from './modules/lactations/lactations.routes';
+import { milkDashboardRouter } from './modules/milk-dashboard/milk-dashboard.routes';
 
 const app = express();
 
@@ -157,5 +158,6 @@ app.use('/api', milkAnalysisRouter);
 app.use('/api', mastitisRouter);
 app.use('/api', milkTanksRouter);
 app.use('/api', lactationsRouter);
+app.use('/api', milkDashboardRouter);
 
 export { app };

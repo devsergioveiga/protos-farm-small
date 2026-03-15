@@ -42,6 +42,7 @@ import {
   ShieldPlus,
   FlaskConical,
   Activity,
+  BarChart3,
   CalendarClock,
   Zap,
   ScanLine,
@@ -116,6 +117,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/mastitis', icon: ShieldAlert, label: 'Mastite' },
       { to: '/milk-tanks', icon: Container, label: 'Tanque e entregas' },
       { to: '/lactations', icon: Droplets, label: 'Lactação' },
+      { to: '/milk-dashboard', icon: BarChart3, label: 'Dashboard leite' },
     ],
   },
   {
