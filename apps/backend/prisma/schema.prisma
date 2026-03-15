@@ -312,6 +312,8 @@ model Organization {
   milkAnalyses             MilkAnalysis[]
   milkQualityConfig        MilkQualityConfig?
   mastitisCases            MastitisCase[]
+  coolingTanks             CoolingTank[]
+  milkCollections          MilkCollection[]
 
   @@map("organizations")
 }
@@ -380,6 +382,8 @@ model User {
   recordedMilkings             MilkingRecord[]        @relation("MilkingRecorder")
   recordedMilkAnalyses         MilkAnalysis[]         @relation("MilkAnalysisRecorder")
   recordedMastitisCases        MastitisCase[]         @relation("MastitisRecorder")
+  recordedTankMeasurements     TankMeasurement[]      @relation("TankMeasurementRecorder")
+  recordedMilkCollections      MilkCollection[]       @relation("MilkCollectionRecorder")
 
   @@map("users")
 }
@@ -472,6 +476,8 @@ model Farm {
   milkingRecords             MilkingRecord[]
   milkAnalyses               MilkAnalysis[]
   mastitisCases              MastitisCase[]
+  coolingTanks               CoolingTank[]
+  milkCollections            MilkCollection[]
 
   @@map("farms")
 }
@@ -4682,4 +4688,85 @@ model MastitisApplication {
   @@index([caseId])
   @@index([applicationDate])
   @@map("mastitis_applications")
+}
+
+// ─── EPIC-13 US-121: Tanque de Resfriamento e Entregas ───────────
+
+model CoolingTank {
+  id              String    @id @default(uuid())
+  organizationId  String
+  farmId          String
+  name            String
+  capacityLiters  Float
+  location        String?
+  serialNumber    String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  organization  Organization    @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  measurements  TankMeasurement[]
+  collections   MilkCollection[]
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@map("cooling_tanks")
+}
+
+model TankMeasurement {
+  id          String    @id @default(uuid())
+  tankId      String
+  measureDate DateTime  @db.Date
+  volumeLiters Float
+  recordedBy  String
+  createdAt   DateTime  @default(now())
+
+  tank      CoolingTank @relation(fields: [tankId], references: [id], onDelete: Cascade)
+  recorder  User        @relation("TankMeasurementRecorder", fields: [recordedBy], references: [id])
+
+  @@unique([tankId, measureDate])
+  @@index([tankId])
+  @@index([measureDate])
+  @@map("tank_measurements")
+}
+
+model MilkCollection {
+  id                String    @id @default(uuid())
+  organizationId    String
+  farmId            String
+  tankId            String?
+  collectionDate    DateTime  @db.Date
+  collectionTime    String?
+  dairyCompany      String
+  driverName        String?
+  volumeLiters      Float
+  sampleCollected   Boolean   @default(false)
+  milkTemperature   Float?
+  ticketNumber      String?
+  ticketPhotoPath   String?
+  ticketPhotoName   String?
+  productionLiters  Float?
+  divergencePercent Float?
+  divergenceAlert   Boolean   @default(false)
+  pricePerLiter     Float?
+  grossValue        Float?
+  qualityDiscount   Float?
+  freightDiscount   Float?
+  otherDiscounts    Float?
+  netValue          Float?
+  notes             String?
+  recordedBy        String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  tank          CoolingTank? @relation(fields: [tankId], references: [id], onDelete: SetNull)
+  recorder      User         @relation("MilkCollectionRecorder", fields: [recordedBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([collectionDate])
+  @@map("milk_collections")
 }

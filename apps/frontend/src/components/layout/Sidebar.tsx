@@ -49,6 +49,7 @@ import {
   Milk,
   TestTube,
   ShieldAlert,
+  Container,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -112,6 +113,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/milking-records', icon: Milk, label: 'Ordenha' },
       { to: '/milk-analysis', icon: TestTube, label: 'Análise de leite' },
       { to: '/mastitis', icon: ShieldAlert, label: 'Mastite' },
+      { to: '/milk-tanks', icon: Container, label: 'Tanque e entregas' },
     ],
   },
   {
