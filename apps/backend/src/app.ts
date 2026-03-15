@@ -70,6 +70,7 @@ import { naturalMatingsRouter } from './modules/natural-matings/natural-matings.
 import { pregnancyDiagnosisRouter } from './modules/pregnancy-diagnosis/pregnancy-diagnosis.routes';
 import { calvingEventsRouter } from './modules/calving-events/calving-events.routes';
 import { weaningRouter } from './modules/weaning/weaning.routes';
+import { milkingRecordsRouter } from './modules/milking-records/milking-records.routes';
 
 const app = express();
 
@@ -147,5 +148,6 @@ app.use('/api', naturalMatingsRouter);
 app.use('/api', pregnancyDiagnosisRouter);
 app.use('/api', calvingEventsRouter);
 app.use('/api', weaningRouter);
+app.use('/api', milkingRecordsRouter);
 
 export { app };

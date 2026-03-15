@@ -308,6 +308,7 @@ model Organization {
   calfSeparations          CalfSeparation[]
   weaningRecords           WeaningRecord[]
   weaningCriteria          WeaningCriteria?
+  milkingRecords           MilkingRecord[]
 
   @@map("organizations")
 }
@@ -373,6 +374,7 @@ model User {
   recordedCalvings             CalvingEvent[]         @relation("CalvingRecorder")
   recordedSeparations          CalfSeparation[]       @relation("SeparationRecorder")
   recordedWeanings             WeaningRecord[]        @relation("WeaningRecorder")
+  recordedMilkings             MilkingRecord[]        @relation("MilkingRecorder")
 
   @@map("users")
 }
@@ -462,6 +464,7 @@ model Farm {
   calvingEvents              CalvingEvent[]
   calfSeparations            CalfSeparation[]
   weaningRecords             WeaningRecord[]
+  milkingRecords             MilkingRecord[]
 
   @@map("farms")
 }
@@ -1007,6 +1010,7 @@ model Animal {
   calfSeparations         CalfSeparation[]       @relation("SeparatedCalf")
   motherSeparations       CalfSeparation[]       @relation("SeparationMother")
   weaningRecords          WeaningRecord[]        @relation("WeanedCalf")
+  milkingRecords          MilkingRecord[]
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -4434,4 +4438,40 @@ model WeaningCriteria {
   organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("weaning_criteria")
+}
+
+// ─── EPIC-13 US-118: Registro de Ordenha ─────────────────────────────
+
+enum MilkingShift {
+  MORNING
+  AFTERNOON
+  NIGHT
+}
+
+model MilkingRecord {
+  id                String        @id @default(uuid())
+  organizationId    String
+  farmId            String
+  animalId          String
+  milkingDate       DateTime      @db.Date
+  shift             MilkingShift
+  liters            Float
+  variationPercent  Float?        // vs previous day same shift
+  variationAlert    Boolean       @default(false) // >30% variation
+  notes             String?
+  recordedBy        String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm          Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  animal        Animal       @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  recorder      User         @relation("MilkingRecorder", fields: [recordedBy], references: [id])
+
+  @@unique([animalId, milkingDate, shift])
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([animalId])
+  @@index([milkingDate])
+  @@map("milking_records")
 }

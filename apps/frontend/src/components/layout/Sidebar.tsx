@@ -46,6 +46,7 @@ import {
   ScanLine,
   X,
   CupSoda,
+  Milk,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -102,6 +103,10 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/weaning', icon: CupSoda, label: 'Desmama' },
       { to: '/sanitary-dashboard', icon: Activity, label: 'Dashboard sanitário' },
     ],
+  },
+  {
+    title: 'LEITE',
+    items: [{ to: '/milking-records', icon: Milk, label: 'Ordenha' }],
   },
   {
     title: 'LAVOURA',
