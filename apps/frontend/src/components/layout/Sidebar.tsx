@@ -58,6 +58,7 @@ import {
   Building2,
   Receipt,
   ReceiptText,
+  ArrowLeftRight,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import './Sidebar.css';
@@ -171,6 +172,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/bank-accounts', icon: Building2, label: 'Contas bancárias' },
       { to: '/payables', icon: Receipt, label: 'Contas a pagar' },
       { to: '/receivables', icon: ReceiptText, label: 'Contas a receber' },
+      { to: '/transfers', icon: ArrowLeftRight, label: 'Transferências' },
     ],
   },
   {
