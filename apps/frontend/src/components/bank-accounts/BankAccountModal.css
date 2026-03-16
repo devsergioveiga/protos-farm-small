@@ -100,6 +100,16 @@
   color: var(--color-neutral-700, #3e3833);
 }
 
+/* ─── Form (flex child of panel) ──────────────────────────────────── */
+
+.ba-modal__panel form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 /* ─── Body ────────────────────────────────────────────────────────── */
 
 .ba-modal__body {
