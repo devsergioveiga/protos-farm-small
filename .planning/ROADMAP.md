@@ -55,7 +55,18 @@ Plans:
 3. Gerente consegue gerar arquivo CNAB 240/400 de borderô de pagamentos e importar retorno bancário para baixa automática
 4. Gerente consegue lançar conta a receber com cliente, categoria rural (venda grãos/gado/leite/arrendamento) e campo FUNRURAL preenchível
 5. Gerente vê aging de CP por faixas 7/15/30/60/90/>90/vencidas e recebe alertas configuráveis antes do vencimento
-   **Plans**: TBD
+
+**Plans:** 7 plans
+
+Plans:
+
+- [ ] 02-01-PLAN.md — Schema migration (AP/AR models + CNAB fields) e utilitarios compartilhados (installments, rateio)
+- [ ] 02-02-PLAN.md — Payables backend: CRUD, parcelamento, rateio, settlement, batch, estorno, recorrencia
+- [ ] 02-03-PLAN.md — Receivables backend: CRUD, FUNRURAL, settlement, renegociacao, aging
+- [ ] 02-04-PLAN.md — CNAB module (BB + Sicoob adapters) e payables aging/calendario/alertas
+- [ ] 02-05-PLAN.md — PayablesPage frontend: lista, aging, calendario, modais (CP, baixa, bordero, CNAB retorno)
+- [ ] 02-06-PLAN.md — ReceivablesPage frontend: lista, aging, modais (CR, recebimento, renegociacao)
+- [ ] 02-07-PLAN.md — Sidebar integration, rotas lazy, badge overdue e human-verify
 
 ### Phase 3: Dashboard Financeiro
 
@@ -121,7 +132,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | Phase                           | Plans Complete | Status      | Completed  |
 | ------------------------------- | -------------- | ----------- | ---------- |
 | 1. Fundação Financeira          | 3/3            | Complete    | 2026-03-16 |
-| 2. Núcleo AP/AR                 | 0/TBD          | Not started | -          |
+| 2. Núcleo AP/AR                 | 0/7            | Not started | -          |
 | 3. Dashboard Financeiro         | 0/TBD          | Not started | -          |
 | 4. Instrumentos de Pagamento    | 0/TBD          | Not started | -          |
 | 5. Conciliação e Fluxo de Caixa | 0/TBD          | Not started | -          |
