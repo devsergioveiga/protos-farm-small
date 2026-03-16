@@ -319,6 +319,9 @@ model Organization {
   bromatologicalAnalyses   BromatologicalAnalysis[]
   diets                    Diet[]
   feedingRecords           FeedingRecord[]
+  bankAccounts             BankAccount[]
+  bankAccountBalances      BankAccountBalance[]
+  financialTransactions    FinancialTransaction[]
 
   @@map("organizations")
 }
@@ -489,6 +492,7 @@ model Farm {
   milkCollections            MilkCollection[]
   lactations                 Lactation[]
   feedingRecords             FeedingRecord[]
+  bankAccountFarms           BankAccountFarm[]
 
   @@map("farms")
 }
@@ -650,6 +654,7 @@ model Producer {
   stateRegistrations ProducerStateRegistration[]
   farmLinks          ProducerFarmLink[]
   documents          ProducerDocument[]
+  bankAccounts       BankAccount[]
 
   @@unique([document, organizationId])
   @@index([organizationId])
@@ -5079,4 +5084,87 @@ model FeedingRecordItem {
 
   @@index([feedingRecordId])
   @@map("feeding_record_items")
+}
+
+// ─── EPIC Financial Foundation — Bank Accounts ────────────────────────────────
+
+enum BankAccountType {
+  CHECKING
+  SAVINGS
+  INVESTMENT
+  RURAL_CREDIT
+}
+
+model BankAccount {
+  id             String          @id @default(uuid())
+  organizationId String
+  name           String
+  type           BankAccountType
+  bankCode       String
+  agency         String
+  agencyDigit    String?
+  accountNumber  String
+  accountDigit   String?
+  producerId     String?
+  notes          String?
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  organization   Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  producer       Producer?             @relation(fields: [producerId], references: [id], onDelete: SetNull)
+  farms          BankAccountFarm[]
+  balance        BankAccountBalance?
+  transactions   FinancialTransaction[]
+
+  @@index([organizationId])
+  @@index([organizationId, type])
+  @@map("bank_accounts")
+}
+
+model BankAccountFarm {
+  id            String @id @default(uuid())
+  bankAccountId String
+  farmId        String
+
+  bankAccount BankAccount @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+  farm        Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
+
+  @@unique([bankAccountId, farmId])
+  @@map("bank_account_farms")
+}
+
+model BankAccountBalance {
+  id             String   @id @default(uuid())
+  bankAccountId  String   @unique
+  organizationId String
+  initialBalance Decimal  @default(0) @db.Decimal(15, 2)
+  currentBalance Decimal  @default(0) @db.Decimal(15, 2)
+  updatedAt      DateTime @updatedAt
+
+  bankAccount  BankAccount  @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("bank_account_balances")
+}
+
+model FinancialTransaction {
+  id              String    @id @default(uuid())
+  organizationId  String
+  bankAccountId   String
+  type            String
+  amount          Decimal   @db.Decimal(15, 2)
+  description     String
+  referenceType   String?
+  referenceId     String?
+  transactionDate DateTime
+  createdAt       DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  bankAccount  BankAccount  @relation(fields: [bankAccountId], references: [id])
+
+  @@index([organizationId, bankAccountId])
+  @@index([organizationId, bankAccountId, transactionDate])
+  @@map("financial_transactions")
 }
