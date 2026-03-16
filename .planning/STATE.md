@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-funda-o-financeira-01-PLAN.md
-last_updated: '2026-03-16T00:12:00.864Z'
-last_activity: 2026-03-15 — Roadmap criado com 6 fases cobrindo 15 requirements (FN-01 a FN-15)
+stopped_at: Completed 01-funda-o-financeira-02-PLAN.md
+last_updated: '2026-03-16T00:20:00.000Z'
+last_activity: 2026-03-16 — Bank accounts backend module complete (8 endpoints, 19 tests)
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 0
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 ## Current Position
 
 Phase: 1 of 6 (Fundação Financeira)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-15 — Roadmap criado com 6 fases cobrindo 15 requirements (FN-01 a FN-15)
+Plan: 2 of 3 in current phase
+Status: executing
+Last activity: 2026-03-16 — Bank accounts backend module complete (8 endpoints, 19 tests)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████░░░░] 67% (phase 01: 2/3 plans)
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 
 _Updated after each plan completion_
 | Phase 01-funda-o-financeira P01 | 6min | 2 tasks | 9 files |
+| Phase 01-funda-o-financeira P02 | 6min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,8 @@ Recent decisions affecting current work:
 - [Phase 01-funda-o-financeira]: Money implemented as factory function (not class) so Money(100) works without new keyword
 - [Phase 01-funda-o-financeira]: BankAccount.producerId nullable: org-level accounts have no producer, rural producer accounts have FK
 - [Phase 01-funda-o-financeira]: Migration created manually via db push + migrate resolve due to shadow database stale cultivar issue
+- [Phase 01-funda-o-financeira P02]: RBAC uses existing financial:\* PermissionModule — no changes to permissions.ts required; FINANCIAL role already has full access
+- [Phase 01-funda-o-financeira P02]: Route ordering critical — /dashboard and /:id/statement/export must precede /:id and /:id/statement to avoid param capture
 
 ### Pending Todos
 
@@ -84,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T00:12:00.861Z
-Stopped at: Completed 01-funda-o-financeira-01-PLAN.md
+Last session: 2026-03-16T00:20:00Z
+Stopped at: Completed 01-funda-o-financeira-02-PLAN.md
 Resume file: None
