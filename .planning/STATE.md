@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 1 context gathered
-last_updated: '2026-03-15T22:54:39.339Z'
+stopped_at: Completed 01-funda-o-financeira-01-PLAN.md
+last_updated: '2026-03-16T00:12:00.864Z'
 last_activity: 2026-03-15 — Roadmap criado com 6 fases cobrindo 15 requirements (FN-01 a FN-15)
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
   percent: 0
 ---
 
@@ -52,6 +52,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: —
 
 _Updated after each plan completion_
+| Phase 01-funda-o-financeira P01 | 6min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,9 @@ Recent decisions affecting current work:
 - [Phase 4]: Cheques pré-datados são entidade de primeira classe com máquina de estados — não campo metadata em pagamento
 - [Phase 5]: Horizonte de fluxo de caixa é 12 meses obrigatório — sazonalidade agrícola torna 90 dias inútil
 - [Phase 5]: Antes de implementar, verificar status do ofx-js no npm; fallback: @xmldom/xmldom (já instalado) + parser SGML customizado
+- [Phase 01-funda-o-financeira]: Money implemented as factory function (not class) so Money(100) works without new keyword
+- [Phase 01-funda-o-financeira]: BankAccount.producerId nullable: org-level accounts have no producer, rural producer accounts have FK
+- [Phase 01-funda-o-financeira]: Migration created manually via db push + migrate resolve due to shadow database stale cultivar issue
 
 ### Pending Todos
 
@@ -80,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-15T22:54:39.334Z
-Stopped at: Phase 1 context gathered
-Resume file: .planning/phases/01-funda-o-financeira/01-CONTEXT.md
+Last session: 2026-03-16T00:12:00.861Z
+Stopped at: Completed 01-funda-o-financeira-01-PLAN.md
+Resume file: None

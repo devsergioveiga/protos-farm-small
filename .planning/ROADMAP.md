@@ -35,7 +35,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 4. Dashboard de contas mostra todas as contas lado a lado com saldo atual e saldo projetado (7/15/30/60/90 dias)
 5. Nenhum valor monetário no sistema usa aritmética de ponto flutuante nativo — todos os cálculos passam pelo tipo Money (decimal.js)
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 
@@ -120,7 +120,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase                           | Plans Complete | Status      | Completed |
 | ------------------------------- | -------------- | ----------- | --------- |
-| 1. Fundação Financeira          | 0/3            | Not started | -         |
+| 1. Fundação Financeira          | 1/3            | In Progress |           |
 | 2. Núcleo AP/AR                 | 0/TBD          | Not started | -         |
 | 3. Dashboard Financeiro         | 0/TBD          | Not started | -         |
 | 4. Instrumentos de Pagamento    | 0/TBD          | Not started | -         |

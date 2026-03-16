@@ -9,7 +9,7 @@ Requirements for Financeiro Base milestone. Each maps to roadmap phases.
 
 ### Contas Bancárias
 
-- [ ] **FN-01**: Gerente pode cadastrar contas bancárias com tipo (corrente, poupança, investimento, crédito rural), dados FEBRABAN, vinculação a fazenda(s) e produtor rural, saldo inicial e convênio CNAB
+- [x] **FN-01**: Gerente pode cadastrar contas bancárias com tipo (corrente, poupança, investimento, crédito rural), dados FEBRABAN, vinculação a fazenda(s) e produtor rural, saldo inicial e convênio CNAB
 - [ ] **FN-02**: Gerente pode cadastrar cartões de crédito corporativos com bandeira, limite, dia de fechamento/vencimento, conta de débito vinculada e portador
 - [ ] **FN-03**: Gerente pode visualizar saldo atual (real-time) e extrato de cada conta com filtros, saldo projetado (7/15/30/60/90 dias) e dashboard de todas as contas lado a lado
 - [ ] **FN-04**: Gerente pode registrar transferências entre contas (espelhada), incluindo tarifa, aplicação/resgate de investimento e transferências entre fazendas
@@ -71,23 +71,23 @@ Deferred to future milestones. Tracked but not in current roadmap.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase   | Status  |
-| ----------- | ------- | ------- |
-| FN-01       | Phase 1 | Pending |
-| FN-02       | Phase 4 | Pending |
-| FN-03       | Phase 1 | Pending |
-| FN-04       | Phase 4 | Pending |
-| FN-05       | Phase 4 | Pending |
-| FN-06       | Phase 5 | Pending |
-| FN-07       | Phase 2 | Pending |
-| FN-08       | Phase 2 | Pending |
-| FN-09       | Phase 4 | Pending |
-| FN-10       | Phase 2 | Pending |
-| FN-11       | Phase 2 | Pending |
-| FN-12       | Phase 2 | Pending |
-| FN-13       | Phase 5 | Pending |
-| FN-14       | Phase 6 | Pending |
-| FN-15       | Phase 3 | Pending |
+| Requirement | Phase   | Status   |
+| ----------- | ------- | -------- |
+| FN-01       | Phase 1 | Complete |
+| FN-02       | Phase 4 | Pending  |
+| FN-03       | Phase 1 | Pending  |
+| FN-04       | Phase 4 | Pending  |
+| FN-05       | Phase 4 | Pending  |
+| FN-06       | Phase 5 | Pending  |
+| FN-07       | Phase 2 | Pending  |
+| FN-08       | Phase 2 | Pending  |
+| FN-09       | Phase 4 | Pending  |
+| FN-10       | Phase 2 | Pending  |
+| FN-11       | Phase 2 | Pending  |
+| FN-12       | Phase 2 | Pending  |
+| FN-13       | Phase 5 | Pending  |
+| FN-14       | Phase 6 | Pending  |
+| FN-15       | Phase 3 | Pending  |
 
 **Coverage:**
 
