@@ -59,8 +59,10 @@ import {
   Receipt,
   ReceiptText,
   ArrowLeftRight,
+  CheckSquare,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
+import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
 import './Sidebar.css';
 
 interface SidebarProps {
@@ -173,6 +175,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/payables', icon: Receipt, label: 'Contas a pagar' },
       { to: '/receivables', icon: ReceiptText, label: 'Contas a receber' },
       { to: '/transfers', icon: ArrowLeftRight, label: 'Transferências' },
+      { to: '/checks', icon: CheckSquare, label: 'Cheques' },
     ],
   },
   {
@@ -191,6 +194,7 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
   const isActive = (path: string) => location.pathname.startsWith(path);
   const onCloseRef = useRef(onClose);
   const { count: overdueCount } = useOverdueCount();
+  const { count: checkAlertCount } = useCheckAlertCount();
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
@@ -247,6 +251,7 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                   const Icon = item.icon;
                   const active = isActive(item.to);
                   const showOverdueBadge = item.to === '/payables' && overdueCount > 0;
+                  const showCheckBadge = item.to === '/checks' && checkAlertCount > 0;
                   return (
                     <li key={item.to}>
                       <Link
@@ -273,6 +278,24 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                             aria-label={`${overdueCount} títulos vencidos`}
                           >
                             {overdueCount > 99 ? '99+' : overdueCount}
+                          </span>
+                        )}
+                        {showCheckBadge && (
+                          <span
+                            style={{
+                              marginLeft: 'auto',
+                              background: 'var(--color-warning-500, #ffc107)',
+                              color: '#fff',
+                              borderRadius: 100,
+                              padding: '1px 7px',
+                              fontSize: '0.6875rem',
+                              fontWeight: 700,
+                              fontFamily: "'JetBrains Mono', monospace",
+                              flexShrink: 0,
+                            }}
+                            aria-label={`${checkAlertCount} cheques aguardando atenção`}
+                          >
+                            {checkAlertCount > 99 ? '99+' : checkAlertCount}
                           </span>
                         )}
                       </Link>
