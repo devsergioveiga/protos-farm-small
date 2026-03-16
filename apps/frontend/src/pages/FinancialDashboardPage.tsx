@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useRef, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Building2,
@@ -11,6 +11,8 @@ import {
   AlertTriangle,
   CheckCircle,
   Info,
+  CreditCard,
+  CheckSquare,
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
 import {
@@ -171,6 +173,8 @@ export default function FinancialDashboardPage() {
   // Local filter state — NOT using FarmContext.selectedFarmId
   const [localFarmId, setLocalFarmId] = useState<string | null>(null);
   const [periodValue, setPeriodValue] = useState<string>('current');
+  const [showAccountingTooltip, setShowAccountingTooltip] = useState(false);
+  const tooltipTriggerRef = useRef<HTMLButtonElement>(null);
 
   const period = resolvePeriod(periodValue);
 
@@ -287,6 +291,46 @@ export default function FinancialDashboardPage() {
                   current={data.totalBankBalance}
                   prevYear={data.totalBankBalancePrevYear}
                 />
+
+                {/* Saldo contábil */}
+                <div className="fin-dashboard__accounting-balance">
+                  <span className="fin-dashboard__accounting-label">Saldo contábil:</span>
+                  <span
+                    className={`fin-dashboard__accounting-value${data.accountingBalance < 0 ? ' fin-dashboard__accounting-value--negative' : ''}`}
+                    aria-label={`Saldo contábil: ${formatBRL(data.accountingBalance)}`}
+                  >
+                    {formatBRL(data.accountingBalance)}
+                  </span>
+                  {data.accountingBalance < 0 && (
+                    <AlertCircle size={16} color="var(--color-error-500)" aria-hidden="true" />
+                  )}
+                  <div className="fin-dashboard__tooltip-wrapper">
+                    <button
+                      ref={tooltipTriggerRef}
+                      type="button"
+                      className="fin-dashboard__tooltip-trigger"
+                      aria-label="Entender saldo contábil"
+                      aria-describedby="accounting-tooltip"
+                      onMouseEnter={() => setShowAccountingTooltip(true)}
+                      onMouseLeave={() => setShowAccountingTooltip(false)}
+                      onFocus={() => setShowAccountingTooltip(true)}
+                      onBlur={() => setShowAccountingTooltip(false)}
+                    >
+                      <Info size={16} aria-hidden="true" />
+                    </button>
+                    {showAccountingTooltip && (
+                      <div
+                        id="accounting-tooltip"
+                        role="tooltip"
+                        className="fin-dashboard__tooltip"
+                      >
+                        O saldo bancário real não inclui cheques pendentes de compensação. O saldo
+                        contábil projeta o impacto dos cheques emitidos e recebidos ainda não
+                        compensados.
+                      </div>
+                    )}
+                  </div>
+                </div>
               </article>
 
               {/* KPI 2: A pagar 30d */}
@@ -467,7 +511,10 @@ export default function FinancialDashboardPage() {
           <section className="fin-dashboard__alerts" aria-label="Alertas financeiros" role="status">
             <h2 className="fin-dashboard__alerts-title">Alertas financeiros</h2>
 
-            {!data.alerts.overduePayablesCount && !data.alerts.projectedBalanceNegative ? (
+            {!data.alerts.overduePayablesCount &&
+            !data.alerts.projectedBalanceNegative &&
+            !data.openBillsCount &&
+            !data.checksNearCompensation ? (
               <div className="fin-dashboard__alert-row fin-dashboard__alert-row--success">
                 <CheckCircle size={24} color="var(--color-success-500)" aria-hidden="true" />
                 <span>Nenhum alerta financeiro no momento.</span>
@@ -487,6 +534,20 @@ export default function FinancialDashboardPage() {
                   <div className="fin-dashboard__alert-row fin-dashboard__alert-row--warning">
                     <AlertTriangle size={20} color="var(--color-warning-500)" aria-hidden="true" />
                     <span>O saldo bancário pode ficar negativo nos próximos 30 dias.</span>
+                  </div>
+                )}
+                {data.openBillsCount > 0 && (
+                  <div className="fin-dashboard__alert-row fin-dashboard__alert-row--warning">
+                    <CreditCard size={20} color="var(--color-warning-500)" aria-hidden="true" />
+                    <span>{data.openBillsCount} fatura(s) de cartão aguardando fechamento.</span>
+                  </div>
+                )}
+                {data.checksNearCompensation > 0 && (
+                  <div className="fin-dashboard__alert-row fin-dashboard__alert-row--warning">
+                    <CheckSquare size={20} color="var(--color-warning-500)" aria-hidden="true" />
+                    <span>
+                      {data.checksNearCompensation} cheque(s) a compensar nos próximos 7 dias.
+                    </span>
                   </div>
                 )}
               </>

@@ -46,6 +46,11 @@ export interface FinancialDashboardOutput {
     overduePayablesTotal: number;
     projectedBalanceNegative: boolean;
   };
+  accountingBalance: number; // saldo real - emitidos A_COMPENSAR + recebidos A_COMPENSAR
+  pendingEmitidos: number; // sum of A_COMPENSAR EMITIDO checks
+  pendingRecebidos: number; // sum of A_COMPENSAR RECEBIDO checks
+  openBillsCount: number; // count of OPEN credit card bills
+  checksNearCompensation: number; // count of checks A_COMPENSAR with expectedCompensationDate within 7 days
 }
 
 // ─── Error ───────────────────────────────────────────────────────────

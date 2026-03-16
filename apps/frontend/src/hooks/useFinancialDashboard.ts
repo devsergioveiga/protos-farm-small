@@ -35,6 +35,11 @@ export interface FinancialDashboardData {
     overduePayablesTotal: number;
     projectedBalanceNegative: boolean;
   };
+  accountingBalance: number;
+  pendingEmitidos: number;
+  pendingRecebidos: number;
+  openBillsCount: number;
+  checksNearCompensation: number;
 }
 
 export interface FinancialDashboardPeriod {

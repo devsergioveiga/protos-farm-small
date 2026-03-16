@@ -441,6 +441,68 @@ export async function getFinancialDashboard(
     const overduePayablesTotalNum = overduePayablesTotal.toNumber();
     const projectedBalanceNegative = totalBankBalance.toNumber() - payablesDue30d.toNumber() < 0;
 
+    // ── Accounting Balance (saldo contabil) ──────────────────────────
+    // Inline logic (avoids nested withRlsContext)
+    const checkAccountingWhere: any = {
+      organizationId: ctx.organizationId,
+      status: 'A_COMPENSAR',
+    };
+    if (farmId) {
+      checkAccountingWhere.bankAccount = { farms: { some: { farmId } } };
+    }
+
+    const accountingChecks = await (tx as any).check.findMany({
+      where: checkAccountingWhere,
+      select: { type: true, amount: true },
+    });
+
+    let pendingEmitidosMoney = Money(0);
+    let pendingRecebidosMoney = Money(0);
+    for (const ch of accountingChecks) {
+      const amt = Money.fromPrismaDecimal(ch.amount);
+      if (ch.type === 'EMITIDO') {
+        pendingEmitidosMoney = pendingEmitidosMoney.add(amt);
+      } else {
+        pendingRecebidosMoney = pendingRecebidosMoney.add(amt);
+      }
+    }
+
+    const pendingEmitidos = pendingEmitidosMoney.toNumber();
+    const pendingRecebidos = pendingRecebidosMoney.toNumber();
+    const accountingBalance = totalBankBalance
+      .subtract(pendingEmitidosMoney)
+      .add(pendingRecebidosMoney)
+      .toNumber();
+
+    // ── Open Bills Count ─────────────────────────────────────────────
+    const openBillsWhere: any = {
+      organizationId: ctx.organizationId,
+      status: 'OPEN',
+      expenses: { some: {} },
+    };
+    if (farmId) {
+      openBillsWhere.creditCard = { farmId };
+    }
+
+    const openBillsCount = await (tx as any).creditCardBill.count({
+      where: openBillsWhere,
+    });
+
+    // ── Checks Near Compensation (7 days) ────────────────────────────
+    const sevenDaysFromNow = new Date(todayUtc.getTime() + 7 * 86400000);
+    const checksNearCompWhere: any = {
+      organizationId: ctx.organizationId,
+      status: 'A_COMPENSAR',
+      expectedCompensationDate: { gte: todayUtc, lte: sevenDaysFromNow },
+    };
+    if (farmId) {
+      checksNearCompWhere.bankAccount = { farms: { some: { farmId } } };
+    }
+
+    const checksNearCompensation = await (tx as any).check.count({
+      where: checksNearCompWhere,
+    });
+
     return {
       totalBankBalance: totalBankBalance.toNumber(),
       totalBankBalancePrevYear,
@@ -459,6 +521,11 @@ export async function getFinancialDashboard(
         overduePayablesTotal: overduePayablesTotalNum,
         projectedBalanceNegative,
       },
+      accountingBalance,
+      pendingEmitidos,
+      pendingRecebidos,
+      openBillsCount,
+      checksNearCompensation,
     };
   });
 }

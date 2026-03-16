@@ -96,6 +96,11 @@ const DASHBOARD_OUTPUT = {
     overduePayablesTotal: 1500,
     projectedBalanceNegative: false,
   },
+  accountingBalance: 47000,
+  pendingEmitidos: 5000,
+  pendingRecebidos: 2000,
+  openBillsCount: 1,
+  checksNearCompensation: 2,
 };
 
 // ─── Setup ────────────────────────────────────────────────────────────
