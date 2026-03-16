@@ -86,6 +86,7 @@ import { payablesAgingRouter } from './modules/payables-aging/payables-aging.rou
 import { financialDashboardRouter } from './modules/financial-dashboard/financial-dashboard.routes';
 import { transfersRouter } from './modules/transfers/transfers.routes';
 import { checksRouter } from './modules/checks/checks.routes';
+import { creditCardsRouter } from './modules/credit-cards/credit-cards.routes';
 
 const app = express();
 
@@ -179,5 +180,6 @@ app.use('/api', payablesAgingRouter);
 app.use('/api', financialDashboardRouter);
 app.use('/api', transfersRouter);
 app.use('/api', checksRouter);
+app.use('/api', creditCardsRouter);
 
 export { app };
