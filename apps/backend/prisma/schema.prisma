@@ -322,6 +322,8 @@ model Organization {
   bankAccounts             BankAccount[]
   bankAccountBalances      BankAccountBalance[]
   financialTransactions    FinancialTransaction[]
+  payables                 Payable[]
+  receivables              Receivable[]
 
   @@map("organizations")
 }
@@ -493,6 +495,10 @@ model Farm {
   lactations                 Lactation[]
   feedingRecords             FeedingRecord[]
   bankAccountFarms           BankAccountFarm[]
+  payables                   Payable[]
+  receivables                Receivable[]
+  payableCostCenterItems     PayableCostCenterItem[]
+  receivableCostCenterItems  ReceivableCostCenterItem[]
 
   @@map("farms")
 }
@@ -655,6 +661,8 @@ model Producer {
   farmLinks          ProducerFarmLink[]
   documents          ProducerDocument[]
   bankAccounts       BankAccount[]
+  payables           Payable[]
+  receivables        Receivable[]
 
   @@unique([document, organizationId])
   @@index([organizationId])
@@ -1668,6 +1676,8 @@ model CostCenter {
 
   farm       Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
   fieldTeams FieldTeam[]
+  payableCostCenterItems    PayableCostCenterItem[]
+  receivableCostCenterItems ReceivableCostCenterItem[]
 
   @@unique([farmId, code])
   @@index([farmId])
@@ -5108,6 +5118,10 @@ model BankAccount {
   producerId     String?
   notes          String?
   isActive       Boolean         @default(true)
+  // CNAB convenience fields
+  convenioCode   String?
+  carteira       String?
+  variacao       String?
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
@@ -5116,6 +5130,8 @@ model BankAccount {
   farms          BankAccountFarm[]
   balance        BankAccountBalance?
   transactions   FinancialTransaction[]
+  payables       Payable[]
+  receivables    Receivable[]
 
   @@index([organizationId])
   @@index([organizationId, type])
@@ -5167,4 +5183,205 @@ model FinancialTransaction {
   @@index([organizationId, bankAccountId])
   @@index([organizationId, bankAccountId, transactionDate])
   @@map("financial_transactions")
+}
+
+// ─── EPIC AP/AR — Contas a Pagar / Contas a Receber ──────────────────────────
+
+enum PayableStatus {
+  PENDING
+  PAID
+  PARTIAL
+  OVERDUE
+  CANCELLED
+}
+
+enum ReceivableStatus {
+  PENDING
+  RECEIVED
+  PARTIAL
+  OVERDUE
+  CANCELLED
+  RENEGOTIATED
+}
+
+enum RecurrenceFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+}
+
+enum PayableCategory {
+  INPUTS
+  MAINTENANCE
+  PAYROLL
+  RENT
+  SERVICES
+  TAXES
+  FINANCING
+  OTHER
+}
+
+enum ReceivableCategory {
+  GRAIN_SALE
+  CATTLE_SALE
+  MILK_SALE
+  LEASE
+  SERVICES
+  OTHER
+}
+
+enum CostCenterAllocMode {
+  PERCENTAGE
+  FIXED_VALUE
+}
+
+model Payable {
+  id                  String              @id @default(uuid())
+  organizationId      String
+  farmId              String
+  producerId          String?
+  supplierName        String
+  category            PayableCategory
+  description         String
+  totalAmount         Decimal             @db.Decimal(15, 2)
+  dueDate             DateTime
+  status              PayableStatus       @default(PENDING)
+  documentNumber      String?
+  originType          String?
+  originId            String?
+  recurrenceFrequency RecurrenceFrequency?
+  recurrenceEndDate   DateTime?
+  recurrenceParentId  String?
+  installmentCount    Int                 @default(1)
+  paidAt              DateTime?
+  amountPaid          Decimal?            @db.Decimal(15, 2)
+  bankAccountId       String?
+  interestAmount      Decimal?            @db.Decimal(15, 2)
+  fineAmount          Decimal?            @db.Decimal(15, 2)
+  discountAmount      Decimal?            @db.Decimal(15, 2)
+  notes               String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  organization       Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  farm               Farm                   @relation(fields: [farmId], references: [id], onDelete: Restrict)
+  producer           Producer?              @relation(fields: [producerId], references: [id], onDelete: SetNull)
+  bankAccount        BankAccount?           @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+  installments       PayableInstallment[]
+  costCenterItems    PayableCostCenterItem[]
+  recurrenceChildren Payable[]              @relation("PayableRecurrence")
+  recurrenceParent   Payable?               @relation("PayableRecurrence", fields: [recurrenceParentId], references: [id])
+
+  @@index([organizationId, status, dueDate])
+  @@index([organizationId, farmId])
+  @@map("payables")
+}
+
+model PayableInstallment {
+  id         String        @id @default(uuid())
+  payableId  String
+  number     Int
+  amount     Decimal       @db.Decimal(15, 2)
+  dueDate    DateTime
+  status     PayableStatus @default(PENDING)
+  paidAt     DateTime?
+  amountPaid Decimal?      @db.Decimal(15, 2)
+
+  payable Payable @relation(fields: [payableId], references: [id], onDelete: Cascade)
+
+  @@index([payableId])
+  @@map("payable_installments")
+}
+
+model PayableCostCenterItem {
+  id           String              @id @default(uuid())
+  payableId    String
+  costCenterId String
+  farmId       String
+  allocMode    CostCenterAllocMode
+  percentage   Decimal?            @db.Decimal(5, 2)
+  fixedAmount  Decimal?            @db.Decimal(15, 2)
+
+  payable    Payable    @relation(fields: [payableId], references: [id], onDelete: Cascade)
+  costCenter CostCenter @relation(fields: [costCenterId], references: [id], onDelete: Restrict)
+  farm       Farm       @relation(fields: [farmId], references: [id], onDelete: Restrict)
+
+  @@map("payable_cost_center_items")
+}
+
+model Receivable {
+  id                  String             @id @default(uuid())
+  organizationId      String
+  farmId              String
+  producerId          String?
+  clientName          String
+  category            ReceivableCategory
+  description         String
+  totalAmount         Decimal            @db.Decimal(15, 2)
+  dueDate             DateTime
+  status              ReceivableStatus   @default(PENDING)
+  documentNumber      String?
+  nfeKey              String?
+  funruralRate        Decimal?           @db.Decimal(5, 4)
+  funruralAmount      Decimal?           @db.Decimal(15, 2)
+  originType          String?
+  originId            String?
+  recurrenceFrequency RecurrenceFrequency?
+  recurrenceEndDate   DateTime?
+  recurrenceParentId  String?
+  installmentCount    Int                @default(1)
+  receivedAt          DateTime?
+  amountReceived      Decimal?           @db.Decimal(15, 2)
+  bankAccountId       String?
+  interestAmount      Decimal?           @db.Decimal(15, 2)
+  fineAmount          Decimal?           @db.Decimal(15, 2)
+  discountAmount      Decimal?           @db.Decimal(15, 2)
+  notes               String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  organization         Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  farm                 Farm                      @relation(fields: [farmId], references: [id], onDelete: Restrict)
+  producer             Producer?                 @relation(fields: [producerId], references: [id], onDelete: SetNull)
+  bankAccount          BankAccount?              @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+  installments         ReceivableInstallment[]
+  costCenterItems      ReceivableCostCenterItem[]
+  recurrenceChildren   Receivable[]              @relation("ReceivableRecurrence")
+  recurrenceParent     Receivable?               @relation("ReceivableRecurrence", fields: [recurrenceParentId], references: [id])
+
+  @@index([organizationId, status, dueDate])
+  @@index([organizationId, farmId])
+  @@map("receivables")
+}
+
+model ReceivableInstallment {
+  id             String           @id @default(uuid())
+  receivableId   String
+  number         Int
+  amount         Decimal          @db.Decimal(15, 2)
+  dueDate        DateTime
+  status         ReceivableStatus @default(PENDING)
+  receivedAt     DateTime?
+  amountReceived Decimal?         @db.Decimal(15, 2)
+
+  receivable Receivable @relation(fields: [receivableId], references: [id], onDelete: Cascade)
+
+  @@index([receivableId])
+  @@map("receivable_installments")
+}
+
+model ReceivableCostCenterItem {
+  id           String              @id @default(uuid())
+  receivableId String
+  costCenterId String
+  farmId       String
+  allocMode    CostCenterAllocMode
+  percentage   Decimal?            @db.Decimal(5, 2)
+  fixedAmount  Decimal?            @db.Decimal(15, 2)
+
+  receivable Receivable @relation(fields: [receivableId], references: [id], onDelete: Cascade)
+  costCenter CostCenter @relation(fields: [costCenterId], references: [id], onDelete: Restrict)
+  farm       Farm       @relation(fields: [farmId], references: [id], onDelete: Restrict)
+
+  @@map("receivable_cost_center_items")
 }
