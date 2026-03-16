@@ -57,6 +57,7 @@ import {
   Cookie,
   Building2,
   Receipt,
+  ReceiptText,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import './Sidebar.css';
