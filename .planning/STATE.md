@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-n-cleo-ap-ar/02-03-PLAN.md
-last_updated: '2026-03-16T14:14:25.560Z'
+stopped_at: Completed 02-n-cleo-ap-ar/02-04-PLAN.md
+last_updated: '2026-03-16T14:33:35.355Z'
 last_activity: 2026-03-16 — AP/AR schema foundation complete (6 models, 6 enums, 2 migrations, shared installment utilities)
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 10
-  completed_plans: 6
+  completed_plans: 7
   percent: 57
 ---
 
@@ -57,6 +57,7 @@ _Updated after each plan completion_
 | Phase 01-funda-o-financeira P03 | 30min | 2 tasks | 7 files |
 | Phase 02-n-cleo-ap-ar P01 | 9min | 2 tasks | 6 files |
 | Phase 02-n-cleo-ap-ar P03 | 20min | 2 tasks | 4 files |
+| Phase 02-n-cleo-ap-ar P04 | 14min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,8 @@ Recent decisions affecting current work:
 - [Phase 02-n-cleo-ap-ar P01]: PERCENTAGE tolerance 0.01% in validateCostCenterItems to handle floating-point near-100 sums without rejecting valid inputs
 - [Phase 02-n-cleo-ap-ar]: FUNRURAL recalculated in renegotiation from original funruralRate field, preserving stored-at-creation invariant for new CR
 - [Phase 02-n-cleo-ap-ar]: CR settlement = BankAccountBalance INCREMENT (CREDIT) vs CP settlement = DECREMENT (DEBIT) — symmetric opposite operations
+- [Phase 02-n-cleo-ap-ar]: BB (001) uses segments P+Q in CNAB 240; Sicoob (756) uses A+B with Banco Cooperado field at positions 53-57 — enforced via adapter pattern
+- [Phase 02-n-cleo-ap-ar]: CNAB retorno ourNumber = payableId with dashes removed, truncated — deterministic matching without extra DB column
 
 ### Pending Todos
 
@@ -97,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T14:14:25.557Z
-Stopped at: Completed 02-n-cleo-ap-ar/02-03-PLAN.md
+Last session: 2026-03-16T14:33:35.352Z
+Stopped at: Completed 02-n-cleo-ap-ar/02-04-PLAN.md
 Resume file: None

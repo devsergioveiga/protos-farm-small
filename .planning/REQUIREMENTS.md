@@ -19,9 +19,9 @@ Requirements for Financeiro Base milestone. Each maps to roadmap phases.
 ### Contas a Pagar
 
 - [x] **FN-07**: Gerente pode registrar contas a pagar com fornecedor, categoria, forma de pagamento, conta bancária, centro de custo, rateio por múltiplos CCs, parcelamento e recorrência
-- [ ] **FN-08**: Gerente pode dar baixa de pagamento individual ou em lote (bordero) com juros/multa/desconto, gerar arquivo CNAB 240/400, importar retorno bancário para baixa automática e estornar pagamento
+- [x] **FN-08**: Gerente pode dar baixa de pagamento individual ou em lote (bordero) com juros/multa/desconto, gerar arquivo CNAB 240/400, importar retorno bancário para baixa automática e estornar pagamento
 - [ ] **FN-09**: Gerente pode controlar cheques emitidos e recebidos com datas de emissão/entrega/compensação, status do cheque, saldo contábil vs bancário, alertas de compensação e folha de cheques
-- [ ] **FN-10**: Gerente pode visualizar aging de CP por faixas de vencimento (7/15/30/60/90/>90/vencidas), receber alertas configuráveis de vencimento e ver calendário financeiro
+- [x] **FN-10**: Gerente pode visualizar aging de CP por faixas de vencimento (7/15/30/60/90/>90/vencidas), receber alertas configuráveis de vencimento e ver calendário financeiro
 
 ### Contas a Receber
 
@@ -80,9 +80,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FN-05       | Phase 4 | Pending  |
 | FN-06       | Phase 5 | Pending  |
 | FN-07       | Phase 2 | Complete |
-| FN-08       | Phase 2 | Pending  |
+| FN-08       | Phase 2 | Complete |
 | FN-09       | Phase 4 | Pending  |
-| FN-10       | Phase 2 | Pending  |
+| FN-10       | Phase 2 | Complete |
 | FN-11       | Phase 2 | Complete |
 | FN-12       | Phase 2 | Complete |
 | FN-13       | Phase 5 | Pending  |

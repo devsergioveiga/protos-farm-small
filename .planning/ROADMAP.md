@@ -56,7 +56,7 @@ Plans:
 4. Gerente consegue lançar conta a receber com cliente, categoria rural (venda grãos/gado/leite/arrendamento) e campo FUNRURAL preenchível
 5. Gerente vê aging de CP por faixas 7/15/30/60/90/>90/vencidas e recebe alertas configuráveis antes do vencimento
 
-**Plans:** 1/7 plans executed
+**Plans:** 4/7 plans executed
 
 Plans:
 
@@ -132,7 +132,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | Phase                           | Plans Complete | Status      | Completed  |
 | ------------------------------- | -------------- | ----------- | ---------- |
 | 1. Fundação Financeira          | 3/3            | Complete    | 2026-03-16 |
-| 2. Núcleo AP/AR                 | 1/7            | In Progress |            |
+| 2. Núcleo AP/AR                 | 4/7            | In Progress |            |
 | 3. Dashboard Financeiro         | 0/TBD          | Not started | -          |
 | 4. Instrumentos de Pagamento    | 0/TBD          | Not started | -          |
 | 5. Conciliação e Fluxo de Caixa | 0/TBD          | Not started | -          |
