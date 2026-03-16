@@ -39,3 +39,7 @@ export type { IMoney, MoneyFactory } from './types/money';
 // FEBRABAN bank list
 export { FEBRABAN_BANKS, FEBRABAN_BANK_MAP } from './constants/febraban-banks';
 export type { FebrabanBank } from './constants/febraban-banks';
+
+// AP/AR utilities
+export { generateInstallments, validateCostCenterItems } from './utils/installments';
+export type { CostCenterItemInput, Installment } from './utils/installments';
