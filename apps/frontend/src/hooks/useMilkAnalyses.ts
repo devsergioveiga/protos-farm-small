@@ -57,7 +57,7 @@ export function useMilkAnalyses(params: UseMilkAnalysesParams): UseMilkAnalysesR
       if (dateTo) query.set('dateTo', dateTo);
 
       const qs = query.toString();
-      const path = `/org/farms/${farmId}/milk-analyses${qs ? `?${qs}` : ''}`;
+      const path = `/org/farms/${farmId}/milk-analysis${qs ? `?${qs}` : ''}`;
       const result = await api.get<MilkAnalysesResponse>(path);
       setAnalyses(result.data);
       setMeta(result.meta);
@@ -101,7 +101,7 @@ export function useHighScc(farmId: string | null): UseHighSccResult {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await api.get<HighSccItem[]>(`/org/farms/${farmId}/milk-analyses/high-scc`);
+      const result = await api.get<HighSccItem[]>(`/org/farms/${farmId}/milk-analysis/high-scc`);
       setCows(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar vacas com CCS elevada');
@@ -142,7 +142,7 @@ export function useQualityTrend(farmId: string | null): UseQualityTrendResult {
     setError(null);
     try {
       const result = await api.get<QualityTrendItem[]>(
-        `/org/farms/${farmId}/milk-analyses/quality-trend`,
+        `/org/farms/${farmId}/milk-analysis/quality-trend`,
       );
       setTrend(result);
     } catch (err) {
@@ -182,7 +182,7 @@ export function useQualityConfig(): UseQualityConfigResult {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await api.get<MilkQualityConfig>('/org/milk-quality-config');
+      const result = await api.get<MilkQualityConfig>('/org/milk-analysis/quality-config');
       setConfig(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar configuração');
@@ -199,7 +199,7 @@ export function useQualityConfig(): UseQualityConfigResult {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await api.put<MilkQualityConfig>('/org/milk-quality-config', data);
+      const result = await api.put<MilkQualityConfig>('/org/milk-analysis/quality-config', data);
       setConfig(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao salvar configuração');
@@ -211,7 +211,7 @@ export function useQualityConfig(): UseQualityConfigResult {
 
   const fetchBonus = useCallback(async (farmId: string) => {
     try {
-      const result = await api.get<BonusResult>(`/org/farms/${farmId}/milk-analyses/bonus`);
+      const result = await api.get<BonusResult>(`/org/farms/${farmId}/milk-analysis/bonus`);
       setBonus(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao calcular bonificação');

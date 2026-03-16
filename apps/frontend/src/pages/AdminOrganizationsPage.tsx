@@ -98,7 +98,7 @@ function AdminOrganizationsPage() {
     setModalSuccess(null);
   };
 
-  const openDetailModal = useCallback((org: Organization) => {
+  const openDetailModal = useCallback(async (org: Organization) => {
     setSelectedOrg(org);
     setNewStatus(org.status);
     setNewPlan(org.plan);
@@ -108,6 +108,12 @@ function AdminOrganizationsPage() {
     setModalSuccess(null);
     setShowAdminForm(false);
     setAdminForm({ name: '', email: '', phone: '' });
+    try {
+      const detail = await api.get<Organization>(`/admin/organizations/${org.id}`);
+      setSelectedOrg(detail);
+    } catch {
+      // keep list data if detail fetch fails
+    }
   }, []);
 
   const handleCreate = async () => {
@@ -225,6 +231,9 @@ function AdminOrganizationsPage() {
       setModalSuccess('Admin criado com sucesso. Um email de convite foi enviado.');
       setShowAdminForm(false);
       setAdminForm({ name: '', email: '', phone: '' });
+      const updated = await api.get<Organization>(`/admin/organizations/${selectedOrg.id}`);
+      setSelectedOrg(updated);
+      await refetch();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Não foi possível criar o admin.';
       setModalError(message);
@@ -896,6 +905,39 @@ function AdminOrganizationsPage() {
             {/* Actions: Admin User */}
             <div className="admin-orgs__modal-section">
               <h3 className="admin-orgs__modal-section-title">Admin da organização</h3>
+
+              {selectedOrg.users && selectedOrg.users.length > 0 && (
+                <div style={{ marginBottom: '16px' }}>
+                  <table className="admin-orgs__table" style={{ width: '100%', fontSize: '14px' }}>
+                    <thead>
+                      <tr>
+                        <th scope="col" style={{ textAlign: 'left', padding: '8px 12px' }}>
+                          Nome
+                        </th>
+                        <th scope="col" style={{ textAlign: 'left', padding: '8px 12px' }}>
+                          Email
+                        </th>
+                        <th scope="col" style={{ textAlign: 'left', padding: '8px 12px' }}>
+                          Perfil
+                        </th>
+                        <th scope="col" style={{ textAlign: 'left', padding: '8px 12px' }}>
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedOrg.users.map((u) => (
+                        <tr key={u.id}>
+                          <td style={{ padding: '8px 12px' }}>{u.name}</td>
+                          <td style={{ padding: '8px 12px' }}>{u.email}</td>
+                          <td style={{ padding: '8px 12px' }}>{u.role}</td>
+                          <td style={{ padding: '8px 12px' }}>{u.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
               {!showAdminForm ? (
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>

@@ -122,9 +122,9 @@ export default function MilkAnalysisModal({ isOpen, onClose, analysis, farmId, o
         const updatePayload = { ...payload };
         delete (updatePayload as Record<string, unknown>).analysisType;
         delete (updatePayload as Record<string, unknown>).animalId;
-        await api.patch(`/org/farms/${farmId}/milk-analyses/${analysis.id}`, updatePayload);
+        await api.patch(`/org/farms/${farmId}/milk-analysis/${analysis.id}`, updatePayload);
       } else {
-        await api.post(`/org/farms/${farmId}/milk-analyses`, payload);
+        await api.post(`/org/farms/${farmId}/milk-analysis`, payload);
       }
       onSuccess();
     } catch (err: unknown) {

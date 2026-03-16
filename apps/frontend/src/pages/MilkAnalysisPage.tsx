@@ -158,7 +158,7 @@ export default function MilkAnalysisPage() {
       if (!window.confirm('Excluir esta análise de leite? Esta ação não pode ser desfeita.'))
         return;
       try {
-        await api.delete(`/org/farms/${selectedFarm!.id}/milk-analyses/${a.id}`);
+        await api.delete(`/org/farms/${selectedFarm!.id}/milk-analysis/${a.id}`);
         showToast('Análise excluída com sucesso');
         void refetch();
       } catch (err: unknown) {
@@ -177,7 +177,7 @@ export default function MilkAnalysisPage() {
       if (dateTo) query.set('dateTo', dateTo);
       const qs = query.toString();
       const blob = await api.getBlob(
-        `/org/farms/${selectedFarm.id}/milk-analyses/export${qs ? `?${qs}` : ''}`,
+        `/org/farms/${selectedFarm.id}/milk-analysis/export${qs ? `?${qs}` : ''}`,
       );
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -200,7 +200,7 @@ export default function MilkAnalysisPage() {
       try {
         const formData = new FormData();
         formData.append('file', file);
-        await api.postFormData(`/org/farms/${selectedFarm.id}/milk-analyses/import`, formData);
+        await api.postFormData(`/org/farms/${selectedFarm.id}/milk-analysis/import`, formData);
         showToast('Análises importadas com sucesso');
         void refetch();
       } catch (err: unknown) {

@@ -289,6 +289,7 @@ organizationsRouter.post('/admin/organizations/:id/users', ...adminOnly, async (
       res.status(err.statusCode).json({ error: err.message });
       return;
     }
+    console.error('createOrgAdmin error:', err);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
