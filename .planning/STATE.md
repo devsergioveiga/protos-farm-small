@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-n-cleo-ap-ar/02-01-PLAN.md
-last_updated: '2026-03-16T11:28:11.000Z'
+stopped_at: Completed 02-n-cleo-ap-ar/02-03-PLAN.md
+last_updated: '2026-03-16T14:14:25.560Z'
 last_activity: 2026-03-16 — AP/AR schema foundation complete (6 models, 6 enums, 2 migrations, shared installment utilities)
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 67
+  total_plans: 10
+  completed_plans: 6
+  percent: 57
 ---
 
 # Project State
@@ -56,6 +56,7 @@ _Updated after each plan completion_
 | Phase 01-funda-o-financeira P02 | 6min | 2 tasks | 5 files |
 | Phase 01-funda-o-financeira P03 | 30min | 2 tasks | 7 files |
 | Phase 02-n-cleo-ap-ar P01 | 9min | 2 tasks | 6 files |
+| Phase 02-n-cleo-ap-ar P03 | 20min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,8 @@ Recent decisions affecting current work:
 - [Phase 01-funda-o-financeira]: Saldo projetado shows '--' placeholder — interface prepared for future AR/AP integration without blocking plan 03
 - [Phase 02-n-cleo-ap-ar P01]: UTC date methods (setUTCMonth/getUTCMonth) in generateInstallments to avoid timezone-shift bug with midnight UTC base dates
 - [Phase 02-n-cleo-ap-ar P01]: PERCENTAGE tolerance 0.01% in validateCostCenterItems to handle floating-point near-100 sums without rejecting valid inputs
+- [Phase 02-n-cleo-ap-ar]: FUNRURAL recalculated in renegotiation from original funruralRate field, preserving stored-at-creation invariant for new CR
+- [Phase 02-n-cleo-ap-ar]: CR settlement = BankAccountBalance INCREMENT (CREDIT) vs CP settlement = DECREMENT (DEBIT) — symmetric opposite operations
 
 ### Pending Todos
 
@@ -94,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T11:28:11.000Z
-Stopped at: Completed 02-n-cleo-ap-ar/02-01-PLAN.md
-Resume file: .planning/phases/02-n-cleo-ap-ar/02-02-PLAN.md
+Last session: 2026-03-16T14:14:25.557Z
+Stopped at: Completed 02-n-cleo-ap-ar/02-03-PLAN.md
+Resume file: None

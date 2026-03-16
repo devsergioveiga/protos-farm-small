@@ -26,7 +26,7 @@ Requirements for Financeiro Base milestone. Each maps to roadmap phases.
 ### Contas a Receber
 
 - [x] **FN-11**: Gerente pode registrar contas a receber com cliente, categoria (venda grãos/gado/leite/arrendamento), vinculação a NF-e, parcelamento, recorrência e produtor rural emitente
-- [ ] **FN-12**: Gerente pode dar baixa de recebimento com juros/multa/glosa, registrar inadimplência com PDD automática por faixa de aging, renegociar títulos vencidos e visualizar aging de recebíveis
+- [x] **FN-12**: Gerente pode dar baixa de recebimento com juros/multa/glosa, registrar inadimplência com PDD automática por faixa de aging, renegociar títulos vencidos e visualizar aging de recebíveis
 
 ### Fluxo de Caixa e Crédito Rural
 
@@ -84,7 +84,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FN-09       | Phase 4 | Pending  |
 | FN-10       | Phase 2 | Pending  |
 | FN-11       | Phase 2 | Complete |
-| FN-12       | Phase 2 | Pending  |
+| FN-12       | Phase 2 | Complete |
 | FN-13       | Phase 5 | Pending  |
 | FN-14       | Phase 6 | Pending  |
 | FN-15       | Phase 3 | Pending  |
