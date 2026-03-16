@@ -101,7 +101,7 @@ Plans:
 4. Gerente consegue registrar cheque pré-datado (emitido ou recebido) com data prevista de compensação e ver status (EMITIDO / A_COMPENSAR / COMPENSADO / DEVOLVIDO / CANCELADO) atualizado conforme ações
 5. Saldo bancário real e saldo contábil divergem corretamente quando há cheques A_COMPENSAR — e o dashboard mostra ambos com labels distintos
 
-**Plans:** 7 plans
+**Plans:** 1/7 plans executed
 
 Plans:
 
@@ -151,6 +151,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Fundação Financeira          | 3/3            | Complete    | 2026-03-16 |
 | 2. Núcleo AP/AR                 | 7/7            | Complete    | 2026-03-16 |
 | 3. Dashboard Financeiro         | 2/2            | Complete    | 2026-03-16 |
-| 4. Instrumentos de Pagamento    | 0/7            | Not started | -          |
+| 4. Instrumentos de Pagamento    | 1/7            | In Progress |            |
 | 5. Conciliação e Fluxo de Caixa | 0/TBD          | Not started | -          |
 | 6. Crédito Rural                | 0/TBD          | Not started | -          |
