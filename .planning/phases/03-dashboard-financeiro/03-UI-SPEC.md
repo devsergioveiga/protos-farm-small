@@ -27,6 +27,12 @@ created: 2026-03-16
 
 ---
 
+## Visual Focal Point
+
+**Primary visual anchor:** The 4-card KPI grid at the top of the page — specifically the KPI values in JetBrains Mono 28px bold — is the primary entry point for the user's eye and conveys the most critical financial position at a glance.
+
+---
+
 ## Spacing Scale
 
 Declared values (multiples of 4 only — from `--space-*` tokens in tokens.css):
@@ -56,17 +62,19 @@ Input padding: 12px vertical / 16px horizontal on filter selects.
 
 All values derived from `tokens.css`. Fonts: DM Sans (headings), Source Sans 3 (body/UI), JetBrains Mono (monetary data).
 
-| Role               | Size                     | Weight                  | Line Height              | Font                                                  | Usage                                                     |
-| ------------------ | ------------------------ | ----------------------- | ------------------------ | ----------------------------------------------------- | --------------------------------------------------------- |
-| Page heading       | 24px (`--text-xl`)       | 700 (`--font-bold`)     | 1.2 (`--leading-tight`)  | DM Sans                                               | `<h1>Dashboard Financeiro</h1>`                           |
-| Section heading    | 18px (`--text-md`)       | 500 (`--font-medium`)   | 1.3 (`--leading-snug`)   | DM Sans                                               | Chart titles ("Receitas vs Despesas", "Top 5 Categorias") |
-| KPI value          | 28px (`--text-2xl`)      | 700 (`--font-bold`)     | 1.2 (`--leading-tight`)  | JetBrains Mono                                        | Monetary KPI amount (R$ 1.234,56)                         |
-| KPI label          | 14px (`--text-sm`)       | 600 (`--font-semibold`) | 1.5 (`--leading-normal`) | Source Sans 3                                         | "Saldo bancário total", "CP próximos 30 dias"             |
-| Body / description | 14px (`--text-sm`)       | 400 (`--font-regular`)  | 1.5 (`--leading-normal`) | Source Sans 3                                         | Alert text, filter labels, page subtitle                  |
-| YoY badge          | 13px (`--text-xs` + 1px) | 600 (`--font-semibold`) | 1.2                      | Source Sans 3                                         | "↑ 12,4% vs ano anterior" or "—"                          |
-| Rank number        | 14px (`--text-sm`)       | 700 (`--font-bold`)     | 1.0                      | DM Sans                                               | "1º", "2º" in Top 5 rows                                  |
-| Chart axis         | 12px (`--text-xs`)       | 400 (`--font-regular`)  | —                        | Source Sans 3 (XAxis) / JetBrains Mono (YAxis values) | Recharts tick labels                                      |
-| Button / CTA       | 15px (0.9375rem)         | 600 (`--font-semibold`) | —                        | Source Sans 3                                         | Consistent with MilkDashboardPage button sizing           |
+Declared scale: **4 sizes** × **2 weights**.
+
+| Role            | Size                | Weight                 | Line Height              | Font                                                  | Usage                                                                                                          |
+| --------------- | ------------------- | ---------------------- | ------------------------ | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| KPI display     | 28px (`--text-2xl`) | 700 (`--font-bold`)    | 1.2 (`--leading-tight`)  | JetBrains Mono                                        | Monetary KPI amount (R$ 1.234,56); page `<h1>` merged here                                                     |
+| Section heading | 18px (`--text-md`)  | 700 (`--font-bold`)    | 1.3 (`--leading-snug`)   | DM Sans                                               | Chart titles ("Receitas vs Despesas", "Top 5 Categorias")                                                      |
+| Body / labels   | 14px (`--text-sm`)  | 400 (`--font-regular`) | 1.5 (`--leading-normal`) | Source Sans 3                                         | KPI labels, alert text, filter labels, page subtitle, button/CTA, rank numbers, Top 5 rows, YoY badges, legend |
+| Chart axis      | 12px (`--text-xs`)  | 400 (`--font-regular`) | —                        | Source Sans 3 (XAxis) / JetBrains Mono (YAxis values) | Recharts tick labels                                                                                           |
+
+Weight mapping decisions:
+
+- 500 → 400 (section heading weight upgraded to 700 for contrast; other 500 usages collapsed to 400)
+- 600 → 700 (KPI labels, YoY badges, rank numbers)
 
 Minimum size enforced: 12px (tokens.css `--text-xs`). Nothing smaller.
 ALL CAPS usage: only short labels like "SALDO REAL" / "SALDO CONTÁBIL" badges on the Saldo KPI card — never full sentences.
@@ -121,9 +129,9 @@ All values from `apps/frontend/src/styles/tokens.css`.
 KPI card anatomy:
 
 - Icon in 32×32 circle with `--color-primary-50` background, icon `--color-primary-600`, 20px icon size
-- Label: Source Sans 3 14px semibold, `--color-neutral-500`
-- Value: JetBrains Mono 28px bold, `--color-neutral-800`; if negative use `--color-error-500`
-- YoY badge below value: Source Sans 3 13px semibold, color per table above
+- Label: Source Sans 3 14px regular (400), `--color-neutral-500`
+- Value: JetBrains Mono 28px bold (700), `--color-neutral-800`; if negative use `--color-error-500`
+- YoY badge below value: Source Sans 3 12px regular (400), color per table above
 - Card: white bg, 1px `--color-neutral-200` border, `--radius-lg` (12px), `--shadow-sm`, 24px padding
 
 **Saldo card label distinction:** Two micro-labels below the main value:
@@ -148,17 +156,17 @@ Mês anterior
 Último trimestre
 ```
 
-Both selects: `<select>` native element (not custom dropdown) — consistent with MilkDashboardPage. Style: Source Sans 3 15px, 12px vertical / 16px horizontal padding, 1px `--color-neutral-200` border, `--radius-md` (8px), `--color-neutral-0` background, min-height 48px.
+Both selects: `<select>` native element (not custom dropdown) — consistent with MilkDashboardPage. Style: Source Sans 3 14px regular (400), 12px vertical / 16px horizontal padding, 1px `--color-neutral-200` border, `--radius-md` (8px), `--color-neutral-0` background, min-height 48px.
 
 ### BarChart — Receitas vs Despesas
 
 Container: white card, 24px padding, `--shadow-sm`, `--radius-lg`.
 Recharts `ResponsiveContainer` width="100%" height={240} on desktop, height={200} on mobile (<768px).
 Two bars per month: Receitas (`--color-primary-600`) + Despesas (`--color-neutral-400`).
-XAxis: month name abbreviation (e.g. "Jan", "Fev"), Source Sans 3 12px.
-YAxis: BRL compact (e.g. "50k", "100k"), JetBrains Mono 12px.
-Tooltip: Source Sans 3 14px, formatted as `R$ 1.234,56`.
-Legend: below chart, Source Sans 3 13px.
+XAxis: month name abbreviation (e.g. "Jan", "Fev"), Source Sans 3 12px regular (400).
+YAxis: BRL compact (e.g. "50k", "100k"), JetBrains Mono 12px regular (400).
+Tooltip: Source Sans 3 14px regular (400), formatted as `R$ 1.234,56`.
+Legend: below chart, Source Sans 3 12px regular (400).
 No onClick handler — read-only.
 `aria-label` on the container div: "Gráfico de barras: receitas e despesas por mês".
 Lazy import via inner component `RevenueExpenseChart.tsx` (do not import recharts at page level).
@@ -183,9 +191,9 @@ Two side-by-side panels on desktop (≥768px), stacked on mobile:
 
 Each row:
 
-- Rank badge: DM Sans 14px bold, `--color-neutral-700`, min-width 28px
-- Label: Source Sans 3 14px regular, `--color-neutral-700`
-- Value: JetBrains Mono 14px, `--color-neutral-800`, right-aligned
+- Rank badge: DM Sans 14px bold (700), `--color-neutral-700`, min-width 28px
+- Label: Source Sans 3 14px regular (400), `--color-neutral-700`
+- Value: JetBrains Mono 14px regular (400), `--color-neutral-800`, right-aligned
 - Progress bar: full width, height 4px, `--color-neutral-100` bg + `--color-primary-400` fill at `relativePercent`%
 - Row gap: 12px vertical
 
@@ -197,7 +205,7 @@ Single card below the Top 5 section.
 
 Three states:
 
-1. **No alerts:** CheckCircle icon (`--color-success-500`, 24px) + "Nenhum alerta financeiro no momento" (Source Sans 3 16px, `--color-neutral-600`)
+1. **No alerts:** CheckCircle icon (`--color-success-500`, 24px) + "Nenhum alerta financeiro no momento" (Source Sans 3 14px regular, `--color-neutral-600`)
 
 2. **Overdue CP:** AlertCircle icon (`--color-error-500`, 20px) + text pattern:
    "N conta(s) a pagar vencida(s), totalizando R$ X,XX" — Source Sans 3 14px, `--color-neutral-700`; N in bold.
@@ -225,15 +233,15 @@ Skeleton pulse: opacity 0.4 → 0.7, 1.5s infinite, `ease-in-out`. Honor `prefer
 Full-width card with:
 
 - `AlertCircle` icon 48px, `--color-error-500`
-- Heading: "Não foi possível carregar o dashboard" — DM Sans 20px 500
-- Body: "Verifique sua conexão e tente novamente." — Source Sans 3 14px `--color-neutral-600`
+- Heading: "Não foi possível carregar o dashboard" — DM Sans 18px bold (700)
+- Body: "Verifique sua conexão e tente novamente." — Source Sans 3 14px regular (400), `--color-neutral-600`
 - Button: "Tentar novamente" — secondary style (neutral border, 48px height)
 
 ### Endividamento Placeholder
 
 Not a 5th KPI card. A small info banner below the KPI grid:
 
-- `Info` icon (`--color-info-500`, 16px) + "Endividamento: crédito rural disponível na Fase 6" — Source Sans 3 13px `--color-neutral-500`
+- `Info` icon (`--color-info-500`, 16px) + "Endividamento: crédito rural disponível na Fase 6" — Source Sans 3 12px regular (400), `--color-neutral-500`
 - Subtle appearance: `--color-info-100` background, 8px padding, `--radius-md`
 
 ---
