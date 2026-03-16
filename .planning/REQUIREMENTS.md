@@ -32,7 +32,7 @@ Requirements for Financeiro Base milestone. Each maps to roadmap phases.
 
 - [ ] **FN-13**: Gerente pode visualizar fluxo de caixa realizado e projetado com cenários (otimista/realista/pessimista), gráfico de evolução com alerta de saldo negativo, classificação DFC e export
 - [ ] **FN-14**: Gerente pode cadastrar operações de crédito rural (PRONAF/PRONAMP/funcafé/CPR/crédito livre) com cronograma de parcelas automático (SAC/Price/Bullet + carência), saldo devedor e alertas
-- [ ] **FN-15**: Proprietário pode ver dashboard financeiro consolidado com saldo total, CP vs CR 7/30 dias, resultado do mês, endividamento, top despesas/receitas e comparativo ano anterior
+- [x] **FN-15**: Proprietário pode ver dashboard financeiro consolidado com saldo total, CP vs CR 7/30 dias, resultado do mês, endividamento, top despesas/receitas e comparativo ano anterior
 
 ## v2 Requirements
 
@@ -87,7 +87,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FN-12       | Phase 2 | Complete |
 | FN-13       | Phase 5 | Pending  |
 | FN-14       | Phase 6 | Pending  |
-| FN-15       | Phase 3 | Pending  |
+| FN-15       | Phase 3 | Complete |
 
 **Coverage:**
 

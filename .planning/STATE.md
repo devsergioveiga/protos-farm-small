@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 3 context gathered
-last_updated: '2026-03-16T15:24:51.713Z'
+stopped_at: Completed 03-dashboard-financeiro-01-PLAN.md
+last_updated: '2026-03-16T16:35:39.463Z'
 last_activity: 2026-03-16 — PayablesPage complete (3 tabs, 4 modals, aging, calendar, CNAB retorno, sidebar badge)
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 12
+  completed_plans: 11
   percent: 80
 ---
 
@@ -60,6 +60,7 @@ _Updated after each plan completion_
 | Phase 02-n-cleo-ap-ar P04 | 14min | 2 tasks | 11 files |
 | Phase 02-n-cleo-ap-ar P05 | 35min | 2 tasks | 10 files |
 | Phase 02-n-cleo-ap-ar P07 | 5min | 2 tasks | 0 files |
+| Phase 03-dashboard-financeiro P01 | 4min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,8 @@ Recent decisions affecting current work:
 - [Phase 02-n-cleo-ap-ar]: useOverdueCount hook polled at sidebar mount — lightweight, no global state store needed
 - [Phase 02-n-cleo-ap-ar]: CnabRetornoModal uses direct fetch() with FormData for multipart upload — api service only handles JSON
 - [Phase 02-n-cleo-ap-ar]: Plan 02-07 acted as final human-verify gate for complete AP/AR module — sidebar integration and routes were completed in plans 02-05/02-06, human verification approved full CP+CR end-to-end flow
+- [Phase 03-dashboard-financeiro]: totalBankBalance only from BankAccountBalance.currentBalance — never add pending CP/CR
+- [Phase 03-dashboard-financeiro]: totalBankBalancePrevYear always null — no historical balance snapshot table exists
 
 ### Pending Todos
 
@@ -105,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T15:24:51.708Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-dashboard-financeiro/03-CONTEXT.md
+Last session: 2026-03-16T16:35:39.461Z
+Stopped at: Completed 03-dashboard-financeiro-01-PLAN.md
+Resume file: None
