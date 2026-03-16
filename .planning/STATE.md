@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 context gathered
-last_updated: '2026-03-16T10:35:49.233Z'
-last_activity: 2026-03-16 — Bank accounts backend module complete (8 endpoints, 19 tests)
+stopped_at: Completed 02-n-cleo-ap-ar/02-01-PLAN.md
+last_updated: '2026-03-16T11:28:11.000Z'
+last_activity: 2026-03-16 — AP/AR schema foundation complete (6 models, 6 enums, 2 migrations, shared installment utilities)
 progress:
   total_phases: 6
   completed_phases: 1
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 
 ## Current Position
 
-Phase: 1 of 6 (Fundação Financeira)
-Plan: 2 of 3 in current phase
+Phase: 2 of 6 (Núcleo AP/AR)
+Plan: 1 of 7 in current phase
 Status: executing
-Last activity: 2026-03-16 — Bank accounts backend module complete (8 endpoints, 19 tests)
+Last activity: 2026-03-16 — AP/AR schema foundation complete (6 models, 6 enums, 2 migrations, shared installment utilities)
 
-Progress: [██████░░░░] 67% (phase 01: 2/3 plans)
+Progress: [████████░░] 57% (phase 02: 1/7 plans started)
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ _Updated after each plan completion_
 | Phase 01-funda-o-financeira P01 | 6min | 2 tasks | 9 files |
 | Phase 01-funda-o-financeira P02 | 6min | 2 tasks | 5 files |
 | Phase 01-funda-o-financeira P03 | 30min | 2 tasks | 7 files |
+| Phase 02-n-cleo-ap-ar P01 | 9min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,8 @@ Recent decisions affecting current work:
 - [Phase 01-funda-o-financeira]: Backend returns arrays directly (not { data: [] }) — useBankAccounts hooks corrected after human-verify
 - [Phase 01-funda-o-financeira]: Statement view is inline expanded panel per account card — stays within 3-level navigation depth
 - [Phase 01-funda-o-financeira]: Saldo projetado shows '--' placeholder — interface prepared for future AR/AP integration without blocking plan 03
+- [Phase 02-n-cleo-ap-ar P01]: UTC date methods (setUTCMonth/getUTCMonth) in generateInstallments to avoid timezone-shift bug with midnight UTC base dates
+- [Phase 02-n-cleo-ap-ar P01]: PERCENTAGE tolerance 0.01% in validateCostCenterItems to handle floating-point near-100 sums without rejecting valid inputs
 
 ### Pending Todos
 
@@ -91,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T10:35:49.228Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-n-cleo-ap-ar/02-CONTEXT.md
+Last session: 2026-03-16T11:28:11.000Z
+Stopped at: Completed 02-n-cleo-ap-ar/02-01-PLAN.md
+Resume file: .planning/phases/02-n-cleo-ap-ar/02-02-PLAN.md
