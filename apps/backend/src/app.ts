@@ -80,6 +80,8 @@ import { feedIngredientsRouter } from './modules/feed-ingredients/feed-ingredien
 import { dietsRouter } from './modules/diets/diets.routes';
 import { feedingRecordsRouter } from './modules/feeding-records/feeding-records.routes';
 import { bankAccountsRouter } from './modules/bank-accounts/bank-accounts.routes';
+import { payablesRouter } from './modules/payables/payables.routes';
+import { receivablesRouter } from './modules/receivables/receivables.routes';
 
 const app = express();
 
@@ -167,5 +169,7 @@ app.use('/api', feedIngredientsRouter);
 app.use('/api', dietsRouter);
 app.use('/api', feedingRecordsRouter);
 app.use('/api', bankAccountsRouter);
+app.use('/api', payablesRouter);
+app.use('/api', receivablesRouter);
 
 export { app };
