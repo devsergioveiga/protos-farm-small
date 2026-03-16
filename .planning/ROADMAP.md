@@ -14,7 +14,7 @@ O módulo financeiro base é construído em seis fases ordenadas por dependênci
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Fundação Financeira** - Contas bancárias, saldo real-time, extrato, tipo Money e producerId estabelecidos (completed 2026-03-16)
-- [ ] **Phase 2: Núcleo AP/AR** - Contas a pagar e receber com ciclo completo, baixa, aging e alertas
+- [x] **Phase 2: Núcleo AP/AR** - Contas a pagar e receber com ciclo completo, baixa, aging e alertas (completed 2026-03-16)
 - [ ] **Phase 3: Dashboard Financeiro** - Visão consolidada de saldo, CP/CR e resultado do mês
 - [ ] **Phase 4: Instrumentos de Pagamento** - Transferências entre contas, cartões corporativos e cheques pré-datados
 - [ ] **Phase 5: Conciliação e Fluxo de Caixa** - Import OFX/CSV com matching por score e projeção 12 meses
@@ -56,7 +56,7 @@ Plans:
 4. Gerente consegue lançar conta a receber com cliente, categoria rural (venda grãos/gado/leite/arrendamento) e campo FUNRURAL preenchível
 5. Gerente vê aging de CP por faixas 7/15/30/60/90/>90/vencidas e recebe alertas configuráveis antes do vencimento
 
-**Plans:** 4/7 plans executed
+**Plans:** 7/7 plans complete
 
 Plans:
 
@@ -132,7 +132,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | Phase                           | Plans Complete | Status      | Completed  |
 | ------------------------------- | -------------- | ----------- | ---------- |
 | 1. Fundação Financeira          | 3/3            | Complete    | 2026-03-16 |
-| 2. Núcleo AP/AR                 | 4/7            | In Progress |            |
+| 2. Núcleo AP/AR                 | 7/7            | Complete    | 2026-03-16 |
 | 3. Dashboard Financeiro         | 0/TBD          | Not started | -          |
 | 4. Instrumentos de Pagamento    | 0/TBD          | Not started | -          |
 | 5. Conciliação e Fluxo de Caixa | 0/TBD          | Not started | -          |
