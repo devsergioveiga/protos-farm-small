@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-n-cleo-ap-ar/02-04-PLAN.md
-last_updated: '2026-03-16T14:33:35.355Z'
+stopped_at: Completed 02-n-cleo-ap-ar/02-05-PLAN.md
+last_updated: '2026-03-16T14:49:19.136Z'
 last_activity: 2026-03-16 — AP/AR schema foundation complete (6 models, 6 enums, 2 migrations, shared installment utilities)
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 10
-  completed_plans: 7
-  percent: 57
+  completed_plans: 8
+  percent: 80
 ---
 
 # Project State
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 Phase: 2 of 6 (Núcleo AP/AR)
 Plan: 1 of 7 in current phase
 Status: executing
-Last activity: 2026-03-16 — AP/AR schema foundation complete (6 models, 6 enums, 2 migrations, shared installment utilities)
+Last activity: 2026-03-16 — PayablesPage complete (3 tabs, 4 modals, aging, calendar, CNAB retorno, sidebar badge)
 
-Progress: [████████░░] 57% (phase 02: 1/7 plans started)
+Progress: [████████░░] 80% (phase 02: 5/7 plans complete)
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ _Updated after each plan completion_
 | Phase 02-n-cleo-ap-ar P01 | 9min | 2 tasks | 6 files |
 | Phase 02-n-cleo-ap-ar P03 | 20min | 2 tasks | 4 files |
 | Phase 02-n-cleo-ap-ar P04 | 14min | 2 tasks | 11 files |
+| Phase 02-n-cleo-ap-ar P05 | 35min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Recent decisions affecting current work:
 - [Phase 02-n-cleo-ap-ar]: CR settlement = BankAccountBalance INCREMENT (CREDIT) vs CP settlement = DECREMENT (DEBIT) — symmetric opposite operations
 - [Phase 02-n-cleo-ap-ar]: BB (001) uses segments P+Q in CNAB 240; Sicoob (756) uses A+B with Banco Cooperado field at positions 53-57 — enforced via adapter pattern
 - [Phase 02-n-cleo-ap-ar]: CNAB retorno ourNumber = payableId with dashes removed, truncated — deterministic matching without extra DB column
+- [Phase 02-n-cleo-ap-ar]: useOverdueCount hook polled at sidebar mount — lightweight, no global state store needed
+- [Phase 02-n-cleo-ap-ar]: CnabRetornoModal uses direct fetch() with FormData for multipart upload — api service only handles JSON
 
 ### Pending Todos
 
@@ -100,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T14:33:35.352Z
-Stopped at: Completed 02-n-cleo-ap-ar/02-04-PLAN.md
+Last session: 2026-03-16T14:49:19.134Z
+Stopped at: Completed 02-n-cleo-ap-ar/02-05-PLAN.md
 Resume file: None
