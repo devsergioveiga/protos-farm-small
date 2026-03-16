@@ -80,7 +80,13 @@ Plans:
 3. Dashboard exibe resultado do mês (receitas realizadas menos despesas realizadas) e endividamento total atual
 4. Comparativo com mesmo período do ano anterior é visível quando há dados históricos suficientes
 5. Dashboard sempre distingue "saldo bancário real" de "saldo contábil" — nunca mistura os dois valores num único número
-   **Plans**: TBD
+
+**Plans:** 2 plans
+
+Plans:
+
+- [ ] 03-01-PLAN.md — Backend: endpoint agregador GET /api/org/financial-dashboard (types, service, routes, spec)
+- [ ] 03-02-PLAN.md — Frontend: FinancialDashboardPage com KPIs, graficos, top 5, alertas, sidebar e human-verify
 
 ### Phase 4: Instrumentos de Pagamento
 
@@ -133,7 +139,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | ------------------------------- | -------------- | ----------- | ---------- |
 | 1. Fundação Financeira          | 3/3            | Complete    | 2026-03-16 |
 | 2. Núcleo AP/AR                 | 7/7            | Complete    | 2026-03-16 |
-| 3. Dashboard Financeiro         | 0/TBD          | Not started | -          |
+| 3. Dashboard Financeiro         | 0/2            | Not started | -          |
 | 4. Instrumentos de Pagamento    | 0/TBD          | Not started | -          |
 | 5. Conciliação e Fluxo de Caixa | 0/TBD          | Not started | -          |
 | 6. Crédito Rural                | 0/TBD          | Not started | -          |
