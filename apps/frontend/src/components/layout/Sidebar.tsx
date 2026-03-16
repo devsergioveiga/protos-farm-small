@@ -167,6 +167,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'FINANCEIRO',
     items: [
+      { to: '/financial-dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { to: '/bank-accounts', icon: Building2, label: 'Contas bancárias' },
       { to: '/payables', icon: Receipt, label: 'Contas a pagar' },
       { to: '/receivables', icon: ReceiptText, label: 'Contas a receber' },

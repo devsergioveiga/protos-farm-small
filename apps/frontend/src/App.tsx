@@ -81,6 +81,7 @@ const FeedingRecordsPage = lazy(() => import('@/pages/FeedingRecordsPage'));
 const BankAccountsPage = lazy(() => import('@/pages/BankAccountsPage'));
 const PayablesPage = lazy(() => import('@/pages/PayablesPage'));
 const ReceivablesPage = lazy(() => import('@/pages/ReceivablesPage'));
+const FinancialDashboardPage = lazy(() => import('@/pages/FinancialDashboardPage'));
 
 export function App() {
   return (
@@ -160,6 +161,7 @@ export function App() {
                 <Route path="/feed-ingredients" element={<FeedIngredientsPage />} />
                 <Route path="/diets" element={<DietsPage />} />
                 <Route path="/feeding-records" element={<FeedingRecordsPage />} />
+                <Route path="/financial-dashboard" element={<FinancialDashboardPage />} />
                 <Route path="/bank-accounts" element={<BankAccountsPage />} />
                 <Route path="/payables" element={<PayablesPage />} />
                 <Route path="/receivables" element={<ReceivablesPage />} />
