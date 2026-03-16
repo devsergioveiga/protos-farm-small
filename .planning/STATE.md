@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-instrumentos-de-pagamento/04-03-PLAN.md
-last_updated: '2026-03-16T23:26:09.267Z'
+stopped_at: Completed 04-instrumentos-de-pagamento/04-06-PLAN.md
+last_updated: '2026-03-16T23:35:05.316Z'
 last_activity: 2026-03-16 — PayablesPage complete (3 tabs, 4 modals, aging, calendar, CNAB retorno, sidebar badge)
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 19
-  completed_plans: 16
+  completed_plans: 17
   percent: 80
 ---
 
@@ -66,6 +66,7 @@ _Updated after each plan completion_
 | Phase 04-instrumentos-de-pagamento P05 | 5min | 2 tasks | 5 files |
 | Phase 04-instrumentos-de-pagamento P02 | 11min | 2 tasks | 7 files |
 | Phase 04-instrumentos-de-pagamento P03 | 12min | 2 tasks | 5 files |
+| Phase 04-instrumentos-de-pagamento P06 | 7min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,8 @@ Recent decisions affecting current work:
 - [Phase 04-instrumentos-de-pagamento]: Same-account validation in TransferModal renders as error banner — applies to both fields simultaneously
 - [Phase 04-instrumentos-de-pagamento]: Delete confirmation in TransfersPage uses inline popover — proportional to risk, no full destructive modal needed
 - [Phase 04-instrumentos-de-pagamento]: Floor-division for installment splitting (not ROUND_HALF_UP) — residual on first installment; closeBill calls createPayable() directly to preserve RLS atomicity; route ordering critical for /open-bills-count and /bills/:billId/close before /:id
+- [Phase 04-instrumentos-de-pagamento]: Inline cancel confirmation as table row expansion — proportional to risk without blocking full modal
+- [Phase 04-instrumentos-de-pagamento]: CheckAlertCount badge uses warning amber (not error red) — checks A_COMPENSAR/DEVOLVIDO need attention but are not failures
 
 ### Pending Todos
 
@@ -123,6 +126,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T23:26:09.265Z
-Stopped at: Completed 04-instrumentos-de-pagamento/04-03-PLAN.md
+Last session: 2026-03-16T23:34:57.282Z
+Stopped at: Completed 04-instrumentos-de-pagamento/04-06-PLAN.md
 Resume file: None
