@@ -79,6 +79,7 @@ import { milkDashboardRouter } from './modules/milk-dashboard/milk-dashboard.rou
 import { feedIngredientsRouter } from './modules/feed-ingredients/feed-ingredients.routes';
 import { dietsRouter } from './modules/diets/diets.routes';
 import { feedingRecordsRouter } from './modules/feeding-records/feeding-records.routes';
+import { bankAccountsRouter } from './modules/bank-accounts/bank-accounts.routes';
 
 const app = express();
 
@@ -165,5 +166,6 @@ app.use('/api', milkDashboardRouter);
 app.use('/api', feedIngredientsRouter);
 app.use('/api', dietsRouter);
 app.use('/api', feedingRecordsRouter);
+app.use('/api', bankAccountsRouter);
 
 export { app };
