@@ -23,6 +23,7 @@ export const PAYABLE_CATEGORY_LABELS: Record<PayableCategory, string> = {
   TAXES: 'Impostos e Taxas',
   FINANCING: 'Financiamento',
   OTHER: 'Outros',
+  CARTAO_CREDITO: 'Cartão de Crédito',
 };
 
 // ─── Input types ─────────────────────────────────────────────────────
