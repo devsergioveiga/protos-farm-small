@@ -61,13 +61,9 @@ export interface BankTransaction {
   referenceType?: string;
 }
 
-interface BankAccountsResponse {
-  data: BankAccount[];
-}
+type BankAccountsResponse = BankAccount[];
 
-interface BankAccountStatementResponse {
-  data: BankTransaction[];
-}
+type BankAccountStatementResponse = BankTransaction[];
 
 // ─── useBankAccounts ─────────────────────────────────────────────────
 
@@ -96,7 +92,7 @@ export function useBankAccounts(filters: UseBankAccountsFilters = {}) {
       const result = await api.get<BankAccountsResponse>(
         `/org/bank-accounts${query ? `?${query}` : ''}`,
       );
-      setAccounts(result.data);
+      setAccounts(result ?? []);
     } catch {
       setError('Não foi possível carregar as contas bancárias.');
       setAccounts([]);
@@ -171,7 +167,7 @@ export function useBankAccountStatement(
       const result = await api.get<BankAccountStatementResponse>(
         `/org/bank-accounts/${accountId}/statement${queryStr ? `?${queryStr}` : ''}`,
       );
-      setTransactions(result.data);
+      setTransactions(result ?? []);
     } catch {
       setError('Não foi possível carregar o extrato.');
       setTransactions([]);
