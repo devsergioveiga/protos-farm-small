@@ -100,7 +100,18 @@ Plans:
 3. Fechamento de fatura do cartão gera automaticamente uma conta a pagar no módulo CP vinculada ao cartão
 4. Gerente consegue registrar cheque pré-datado (emitido ou recebido) com data prevista de compensação e ver status (EMITIDO / A_COMPENSAR / COMPENSADO / DEVOLVIDO / CANCELADO) atualizado conforme ações
 5. Saldo bancário real e saldo contábil divergem corretamente quando há cheques A_COMPENSAR — e o dashboard mostra ambos com labels distintos
-   **Plans**: TBD
+
+**Plans:** 7 plans
+
+Plans:
+
+- [ ] 04-01-PLAN.md — Prisma migration (all models + enums) e transfers backend (CRUD, ledger espelhado, tarifa)
+- [ ] 04-02-PLAN.md — Transfers frontend: page, modal, hook, sidebar entry
+- [ ] 04-03-PLAN.md — Credit cards backend: CRUD, despesas parceladas, fechamento fatura gerando CP
+- [ ] 04-04-PLAN.md — Credit cards frontend: page two-panel, 3 modais, hook, sidebar entry
+- [ ] 04-05-PLAN.md — Checks backend: CRUD, maquina de estados, compensacao com saldo, alert count
+- [ ] 04-06-PLAN.md — Checks frontend: page com badges status, modais, hook alert count, sidebar badge
+- [ ] 04-07-PLAN.md — Dashboard saldo contabil + alertas cartao/cheque + human-verify
 
 ### Phase 5: Conciliação e Fluxo de Caixa
 
@@ -140,6 +151,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Fundação Financeira          | 3/3            | Complete    | 2026-03-16 |
 | 2. Núcleo AP/AR                 | 7/7            | Complete    | 2026-03-16 |
 | 3. Dashboard Financeiro         | 2/2            | Complete    | 2026-03-16 |
-| 4. Instrumentos de Pagamento    | 0/TBD          | Not started | -          |
+| 4. Instrumentos de Pagamento    | 0/7            | Not started | -          |
 | 5. Conciliação e Fluxo de Caixa | 0/TBD          | Not started | -          |
 | 6. Crédito Rural                | 0/TBD          | Not started | -          |
