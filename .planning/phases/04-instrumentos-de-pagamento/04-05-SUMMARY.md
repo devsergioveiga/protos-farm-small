@@ -40,13 +40,13 @@ key-files:
     - apps/backend/src/app.ts
 
 key-decisions:
-  - "Route ordering: /alert-count and /accounting-balance registered before /:id to avoid Express param capture"
-  - "compensateCheck uses single withRlsContext transaction for FinancialTransaction creation + BankAccountBalance update atomicity"
-  - "EMITIDO check compensation = DEBIT (we paid); RECEBIDO check compensation = CREDIT (we received) — referenceType CHECK_COMPENSATION"
+  - 'Route ordering: /alert-count and /accounting-balance registered before /:id to avoid Express param capture'
+  - 'compensateCheck uses single withRlsContext transaction for FinancialTransaction creation + BankAccountBalance update atomicity'
+  - 'EMITIDO check compensation = DEBIT (we paid); RECEBIDO check compensation = CREDIT (we received) — referenceType CHECK_COMPENSATION'
 
 patterns-established:
-  - "Pattern: VALID_TRANSITIONS map + validateTransition helper for state machines — reuse in future entities with status workflows"
-  - "Pattern: Static sub-paths before /:id in route files — always register /alert-count, /summary, /export etc. first"
+  - 'Pattern: VALID_TRANSITIONS map + validateTransition helper for state machines — reuse in future entities with status workflows'
+  - 'Pattern: Static sub-paths before /:id in route files — always register /alert-count, /summary, /export etc. first'
 
 requirements-completed: [FN-09]
 
@@ -99,6 +99,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Fixed unused import ESLint error in checks.routes.ts**
+
 - **Found during:** Task 2 (route creation)
 - **Issue:** `withRlsContext` imported but not directly used in routes (service handles RLS internally)
 - **Fix:** Removed `withRlsContext` import from checks.routes.ts, kept only `RlsContext` type import
@@ -107,6 +108,7 @@ Each task was committed atomically:
 - **Committed in:** cba0159 (Task 2 commit)
 
 **2. [Rule 1 - Bug] Fixed `toHaveBeenCalledOnce` unavailable in Jest version**
+
 - **Found during:** Task 2 (test execution)
 - **Issue:** Jest version in project does not support `toHaveBeenCalledOnce()` matcher
 - **Fix:** Replaced with `toHaveBeenCalledTimes(1)` which is standard Jest
@@ -131,8 +133,9 @@ Each task was committed atomically:
 - Phase 04 plan 06+ can build frontend check management UI
 
 ---
-*Phase: 04-instrumentos-de-pagamento*
-*Completed: 2026-03-16*
+
+_Phase: 04-instrumentos-de-pagamento_
+_Completed: 2026-03-16_
 
 ## Self-Check: PASSED
 

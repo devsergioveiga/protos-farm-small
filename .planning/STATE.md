@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 04-instrumentos-de-pagamento/04-05-PLAN.md
-last_updated: "2026-03-16T23:20:27.770Z"
+last_updated: '2026-03-16T23:20:27.770Z'
 last_activity: 2026-03-16 — PayablesPage complete (3 tabs, 4 modals, aging, calendar, CNAB retorno, sidebar badge)
 progress:
   total_phases: 6

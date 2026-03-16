@@ -151,6 +151,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Fundação Financeira          | 3/3            | Complete    | 2026-03-16 |
 | 2. Núcleo AP/AR                 | 7/7            | Complete    | 2026-03-16 |
 | 3. Dashboard Financeiro         | 2/2            | Complete    | 2026-03-16 |
-| 4. Instrumentos de Pagamento    | 2/7 | In Progress|  |
+| 4. Instrumentos de Pagamento    | 2/7            | In Progress |            |
 | 5. Conciliação e Fluxo de Caixa | 0/TBD          | Not started | -          |
 | 6. Crédito Rural                | 0/TBD          | Not started | -          |
