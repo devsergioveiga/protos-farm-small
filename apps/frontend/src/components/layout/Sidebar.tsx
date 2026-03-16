@@ -55,6 +55,7 @@ import {
   Salad,
   UtensilsCrossed,
   Cookie,
+  Building2,
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -159,6 +160,10 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/conversion-history', icon: ArrowRightLeft, label: 'Conversões' },
       { to: '/grain-discounts', icon: TrendingDown, label: 'Descontos de grãos' },
     ],
+  },
+  {
+    title: 'FINANCEIRO',
+    items: [{ to: '/bank-accounts', icon: Building2, label: 'Contas bancárias' }],
   },
   {
     title: 'CONFIGURAÇÃO',
