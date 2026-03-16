@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-instrumentos-de-pagamento/04-02-PLAN.md
-last_updated: '2026-03-16T23:26:01.341Z'
+stopped_at: Completed 04-instrumentos-de-pagamento/04-03-PLAN.md
+last_updated: '2026-03-16T23:26:09.267Z'
 last_activity: 2026-03-16 — PayablesPage complete (3 tabs, 4 modals, aging, calendar, CNAB retorno, sidebar badge)
 progress:
   total_phases: 6
@@ -108,6 +108,7 @@ Recent decisions affecting current work:
 - [Phase 04-instrumentos-de-pagamento]: CHECK_COMPENSATION referenceType distinguishes check compensation from other FinancialTransactions in bank statement
 - [Phase 04-instrumentos-de-pagamento]: Same-account validation in TransferModal renders as error banner — applies to both fields simultaneously
 - [Phase 04-instrumentos-de-pagamento]: Delete confirmation in TransfersPage uses inline popover — proportional to risk, no full destructive modal needed
+- [Phase 04-instrumentos-de-pagamento]: Floor-division for installment splitting (not ROUND_HALF_UP) — residual on first installment; closeBill calls createPayable() directly to preserve RLS atomicity; route ordering critical for /open-bills-count and /bills/:billId/close before /:id
 
 ### Pending Todos
 
@@ -122,6 +123,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T23:25:49.640Z
-Stopped at: Completed 04-instrumentos-de-pagamento/04-02-PLAN.md
+Last session: 2026-03-16T23:26:09.265Z
+Stopped at: Completed 04-instrumentos-de-pagamento/04-03-PLAN.md
 Resume file: None

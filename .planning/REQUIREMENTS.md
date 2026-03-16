@@ -10,10 +10,10 @@ Requirements for Financeiro Base milestone. Each maps to roadmap phases.
 ### Contas Bancárias
 
 - [x] **FN-01**: Gerente pode cadastrar contas bancárias com tipo (corrente, poupança, investimento, crédito rural), dados FEBRABAN, vinculação a fazenda(s) e produtor rural, saldo inicial e convênio CNAB
-- [ ] **FN-02**: Gerente pode cadastrar cartões de crédito corporativos com bandeira, limite, dia de fechamento/vencimento, conta de débito vinculada e portador
+- [x] **FN-02**: Gerente pode cadastrar cartões de crédito corporativos com bandeira, limite, dia de fechamento/vencimento, conta de débito vinculada e portador
 - [x] **FN-03**: Gerente pode visualizar saldo atual (real-time) e extrato de cada conta com filtros, saldo projetado (7/15/30/60/90 dias) e dashboard de todas as contas lado a lado
 - [x] **FN-04**: Gerente pode registrar transferências entre contas (espelhada), incluindo tarifa, aplicação/resgate de investimento e transferências entre fazendas
-- [ ] **FN-05**: Gerente pode registrar despesas no cartão (com parcelas), visualizar fatura por período de fechamento, e fechamento gera CP automaticamente com pagamento debitando da conta vinculada
+- [x] **FN-05**: Gerente pode registrar despesas no cartão (com parcelas), visualizar fatura por período de fechamento, e fechamento gera CP automaticamente com pagamento debitando da conta vinculada
 - [ ] **FN-06**: Gerente pode importar extrato bancário (OFX/CSV) e conciliar automaticamente com lançamentos do sistema, com graus de confiança (exato/provável/sem match) e ações manuais
 
 ### Contas a Pagar
@@ -74,10 +74,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase   | Status   |
 | ----------- | ------- | -------- |
 | FN-01       | Phase 1 | Complete |
-| FN-02       | Phase 4 | Pending  |
+| FN-02       | Phase 4 | Complete |
 | FN-03       | Phase 1 | Complete |
 | FN-04       | Phase 4 | Complete |
-| FN-05       | Phase 4 | Pending  |
+| FN-05       | Phase 4 | Complete |
 | FN-06       | Phase 5 | Pending  |
 | FN-07       | Phase 2 | Complete |
 | FN-08       | Phase 2 | Complete |
