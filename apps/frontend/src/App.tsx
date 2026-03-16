@@ -83,6 +83,7 @@ const PayablesPage = lazy(() => import('@/pages/PayablesPage'));
 const ReceivablesPage = lazy(() => import('@/pages/ReceivablesPage'));
 const FinancialDashboardPage = lazy(() => import('@/pages/FinancialDashboardPage'));
 const TransfersPage = lazy(() => import('@/pages/TransfersPage'));
+const CreditCardsPage = lazy(() => import('@/pages/CreditCardsPage'));
 const ChecksPage = lazy(() => import('@/pages/ChecksPage'));
 
 export function App() {
@@ -168,6 +169,7 @@ export function App() {
                 <Route path="/payables" element={<PayablesPage />} />
                 <Route path="/receivables" element={<ReceivablesPage />} />
                 <Route path="/transfers" element={<TransfersPage />} />
+                <Route path="/credit-cards" element={<CreditCardsPage />} />
                 <Route path="/checks" element={<ChecksPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
