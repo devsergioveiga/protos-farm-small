@@ -56,7 +56,9 @@ import {
   UtensilsCrossed,
   Cookie,
   Building2,
+  Receipt,
 } from 'lucide-react';
+import { useOverdueCount } from '@/hooks/usePayables';
 import './Sidebar.css';
 
 interface SidebarProps {
@@ -163,7 +165,11 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: 'FINANCEIRO',
-    items: [{ to: '/bank-accounts', icon: Building2, label: 'Contas bancárias' }],
+    items: [
+      { to: '/bank-accounts', icon: Building2, label: 'Contas bancárias' },
+      { to: '/payables', icon: Receipt, label: 'Contas a pagar' },
+      { to: '/receivables', icon: ReceiptText, label: 'Contas a receber' },
+    ],
   },
   {
     title: 'CONFIGURAÇÃO',
@@ -180,6 +186,7 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
   const isActive = (path: string) => location.pathname.startsWith(path);
   const onCloseRef = useRef(onClose);
+  const { count: overdueCount } = useOverdueCount();
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
@@ -235,6 +242,7 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.to);
+                  const showOverdueBadge = item.to === '/payables' && overdueCount > 0;
                   return (
                     <li key={item.to}>
                       <Link
@@ -245,6 +253,24 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                       >
                         <Icon size={20} aria-hidden="true" className="sidebar__icon" />
                         <span className="sidebar__label">{item.label}</span>
+                        {showOverdueBadge && (
+                          <span
+                            style={{
+                              marginLeft: 'auto',
+                              background: 'var(--color-error-600, #c62828)',
+                              color: '#fff',
+                              borderRadius: 100,
+                              padding: '1px 7px',
+                              fontSize: '0.6875rem',
+                              fontWeight: 700,
+                              fontFamily: "'Source Sans 3', system-ui, sans-serif",
+                              flexShrink: 0,
+                            }}
+                            aria-label={`${overdueCount} títulos vencidos`}
+                          >
+                            {overdueCount > 99 ? '99+' : overdueCount}
+                          </span>
+                        )}
                       </Link>
                     </li>
                   );

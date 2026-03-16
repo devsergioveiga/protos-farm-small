@@ -79,6 +79,7 @@ const FeedIngredientsPage = lazy(() => import('@/pages/FeedIngredientsPage'));
 const DietsPage = lazy(() => import('@/pages/DietsPage'));
 const FeedingRecordsPage = lazy(() => import('@/pages/FeedingRecordsPage'));
 const BankAccountsPage = lazy(() => import('@/pages/BankAccountsPage'));
+const PayablesPage = lazy(() => import('@/pages/PayablesPage'));
 
 export function App() {
   return (
@@ -159,6 +160,7 @@ export function App() {
                 <Route path="/diets" element={<DietsPage />} />
                 <Route path="/feeding-records" element={<FeedingRecordsPage />} />
                 <Route path="/bank-accounts" element={<BankAccountsPage />} />
+                <Route path="/payables" element={<PayablesPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}
