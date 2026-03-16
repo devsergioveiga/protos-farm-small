@@ -85,6 +85,7 @@ import { receivablesRouter } from './modules/receivables/receivables.routes';
 import { payablesAgingRouter } from './modules/payables-aging/payables-aging.routes';
 import { financialDashboardRouter } from './modules/financial-dashboard/financial-dashboard.routes';
 import { transfersRouter } from './modules/transfers/transfers.routes';
+import { checksRouter } from './modules/checks/checks.routes';
 
 const app = express();
 
@@ -177,5 +178,6 @@ app.use('/api', receivablesRouter);
 app.use('/api', payablesAgingRouter);
 app.use('/api', financialDashboardRouter);
 app.use('/api', transfersRouter);
+app.use('/api', checksRouter);
 
 export { app };
