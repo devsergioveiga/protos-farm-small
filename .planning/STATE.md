@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Completed 01-funda-o-financeira-02-PLAN.md
-last_updated: '2026-03-16T00:20:00.000Z'
+status: executing
+stopped_at: Completed 01-funda-o-financeira-03-PLAN.md
+last_updated: '2026-03-16T00:49:47.119Z'
 last_activity: 2026-03-16 — Bank accounts backend module complete (8 endpoints, 19 tests)
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 67
 ---
 
@@ -54,6 +54,7 @@ Progress: [██████░░░░] 67% (phase 01: 2/3 plans)
 _Updated after each plan completion_
 | Phase 01-funda-o-financeira P01 | 6min | 2 tasks | 9 files |
 | Phase 01-funda-o-financeira P02 | 6min | 2 tasks | 5 files |
+| Phase 01-funda-o-financeira P03 | 30min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,9 @@ Recent decisions affecting current work:
 - [Phase 01-funda-o-financeira]: Migration created manually via db push + migrate resolve due to shadow database stale cultivar issue
 - [Phase 01-funda-o-financeira P02]: RBAC uses existing financial:\* PermissionModule — no changes to permissions.ts required; FINANCIAL role already has full access
 - [Phase 01-funda-o-financeira P02]: Route ordering critical — /dashboard and /:id/statement/export must precede /:id and /:id/statement to avoid param capture
+- [Phase 01-funda-o-financeira]: Backend returns arrays directly (not { data: [] }) — useBankAccounts hooks corrected after human-verify
+- [Phase 01-funda-o-financeira]: Statement view is inline expanded panel per account card — stays within 3-level navigation depth
+- [Phase 01-funda-o-financeira]: Saldo projetado shows '--' placeholder — interface prepared for future AR/AP integration without blocking plan 03
 
 ### Pending Todos
 
@@ -87,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-16T00:20:00Z
-Stopped at: Completed 01-funda-o-financeira-02-PLAN.md
+Last session: 2026-03-16T00:49:47.116Z
+Stopped at: Completed 01-funda-o-financeira-03-PLAN.md
 Resume file: None
