@@ -48,7 +48,7 @@ export default function ApprovalRulesPage() {
   const [toast, setToast] = useState<string | null>(null);
 
   // Check if current user has an active delegation
-  const activeDelegation = delegations.find((d) => d.isActive && d.delegatorId === user?.id);
+  const activeDelegation = delegations.find((d) => d.isActive && d.delegatorId === user?.userId);
 
   function showToast(msg: string) {
     setToast(msg);

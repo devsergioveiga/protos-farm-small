@@ -10,7 +10,7 @@ progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 10
-  completed_plans: 8
+  completed_plans: 9
   percent: 0
 ---
 
@@ -55,6 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-requisi-o-e-aprova-o P02 | 4min | 2 tasks | 4 files |
 | Phase 08-requisi-o-e-aprova-o P03 | 21min | 2 tasks | 9 files |
 | Phase 08-requisi-o-e-aprova-o P06 | 18 | 2 tasks | 8 files |
+| Phase 08-requisi-o-e-aprova-o P04 | 90min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,7 @@ Key decisions for v1.1:
 - [Phase 08-requisi-o-e-aprova-o]: dispatchPushNotification uses fire-and-forget void pattern to prevent push failures rolling back the Prisma transaction
 - [Phase 08-06]: purchase_requests OperationEntity priority is NORMAL (not critical) — purchase orders are not safety-critical like health/reproductive records
 - [Phase 08-06]: expo-notifications NotificationBehavior requires shouldShowBanner+shouldShowList alongside shouldShowAlert for Expo SDK 54+ compatibility
+- [Phase 08-04]: Key-remount pattern used for PurchaseRequestModal — outer wrapper renders inner form with key=rc.id+rc.updatedAt, avoids setState-in-useEffect rule violation
 
 ### Pending Todos
 
@@ -98,5 +100,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-17T21:29:44.257Z
-Stopped at: Completed 08-06-PLAN.md
+Stopped at: Completed 08-04-PLAN.md
 Resume file: None
