@@ -10,6 +10,9 @@ import {
   RefreshCw,
   Database,
   ListChecks,
+  ShoppingCart,
+  ClipboardCheck,
+  PlusCircle,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { spacing, fontSize } from '@protos-farm/shared';
@@ -125,6 +128,24 @@ export default function MoreScreen() {
       : 'Sincronizar dados';
 
   const menuItems: MenuItem[] = [
+    {
+      id: 'new-request',
+      label: 'Nova Requisicao',
+      icon: PlusCircle,
+      onPress: () => router.push('/(app)/purchase-request'),
+    },
+    {
+      id: 'my-requests',
+      label: 'Minhas Requisicoes',
+      icon: ShoppingCart,
+      onPress: () => router.push('/(app)/my-requests'),
+    },
+    {
+      id: 'pending-approvals',
+      label: 'Aprovacoes Pendentes',
+      icon: ClipboardCheck,
+      onPress: () => router.push('/(app)/pending-approvals'),
+    },
     {
       id: 'sync',
       label: syncLabel,
