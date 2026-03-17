@@ -18,6 +18,8 @@ const FarmsPage = lazy(() => import('@/pages/FarmsPage'));
 const FarmMapPage = lazy(() => import('@/pages/FarmMapPage'));
 const FarmDetailPage = lazy(() => import('@/pages/FarmDetailPage'));
 const RuralPropertiesPage = lazy(() => import('@/pages/RuralPropertiesPage'));
+const CarRegistrationsPage = lazy(() => import('@/pages/CarRegistrationsPage'));
+const RegistrationsPage = lazy(() => import('@/pages/RegistrationsPage'));
 const AdminDashboardPage = lazy(() => import('@/pages/AdminDashboardPage'));
 const AdminOrganizationsPage = lazy(() => import('@/pages/AdminOrganizationsPage'));
 const AdminAuditLogsPage = lazy(() => import('@/pages/AdminAuditLogsPage'));
@@ -89,6 +91,8 @@ const CreditCardsPage = lazy(() => import('@/pages/CreditCardsPage'));
 const ChecksPage = lazy(() => import('@/pages/ChecksPage'));
 const CashflowPage = lazy(() => import('@/pages/CashflowPage'));
 const ReconciliationPage = lazy(() => import('@/pages/ReconciliationPage'));
+const RuralCreditPage = lazy(() => import('@/pages/RuralCreditPage'));
+const RuralCreditDetailPage = lazy(() => import('@/pages/RuralCreditDetailPage'));
 
 export function App() {
   return (
@@ -117,6 +121,8 @@ export function App() {
                 <Route path="/farms/:farmId" element={<FarmDetailPage />} />
                 <Route path="/farms/:farmId/map" element={<FarmMapPage />} />
                 <Route path="/rural-properties" element={<RuralPropertiesPage />} />
+                <Route path="/car-registrations" element={<CarRegistrationsPage />} />
+                <Route path="/registrations" element={<RegistrationsPage />} />
                 <Route path="/producers" element={<ProducersPage />} />
                 <Route path="/animals" element={<AnimalsPage />} />
                 <Route path="/animals/:animalId" element={<AnimalDetailPage />} />
@@ -179,6 +185,8 @@ export function App() {
                 <Route path="/checks" element={<ChecksPage />} />
                 <Route path="/cashflow" element={<CashflowPage />} />
                 <Route path="/reconciliation" element={<ReconciliationPage />} />
+                <Route path="/rural-credit" element={<RuralCreditPage />} />
+                <Route path="/rural-credit/:id" element={<RuralCreditDetailPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}

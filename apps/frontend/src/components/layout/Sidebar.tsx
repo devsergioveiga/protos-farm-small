@@ -62,6 +62,7 @@ import {
   CreditCard,
   CheckSquare,
   Landmark,
+  TreePine,
   TrendingUp,
   GitMerge,
 } from 'lucide-react';
@@ -95,6 +96,8 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: '/farms', icon: MapPin, label: 'Fazendas' },
       { to: '/rural-properties', icon: Landmark, label: 'Imóveis rurais' },
+      { to: '/registrations', icon: FileText, label: 'Matrículas' },
+      { to: '/car-registrations', icon: TreePine, label: 'CAR' },
       { to: '/producers', icon: UserCheck, label: 'Produtores' },
     ],
   },
@@ -184,6 +187,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/checks', icon: CheckSquare, label: 'Cheques' },
       { to: '/cashflow', icon: TrendingUp, label: 'Fluxo de caixa' },
       { to: '/reconciliation', icon: GitMerge, label: 'Conciliação bancária' },
+      { to: '/rural-credit', icon: Landmark, label: 'Crédito Rural' },
     ],
   },
   {
