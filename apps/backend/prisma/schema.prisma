@@ -358,6 +358,7 @@ model Organization {
   bankStatementImports     BankStatementImport[]
   bankStatementLines       BankStatementLine[]
   reconciliations          Reconciliation[]
+  ruralCreditContracts     RuralCreditContract[]
 
   @@map("organizations")
 }
@@ -535,6 +536,7 @@ model Farm {
   receivableCostCenterItems  ReceivableCostCenterItem[]
   creditCards                CreditCard[]
   ruralProperties            RuralProperty[]
+  ruralCreditContracts       RuralCreditContract[]
 
   @@map("farms")
 }
@@ -5272,8 +5274,9 @@ model BankAccount {
   transfersTo    AccountTransfer[]     @relation("TransferTo")
   creditCards    CreditCard[]          @relation("CardDebitAccount")
   checks         Check[]
-  statementImports BankStatementImport[]
-  statementLines   BankStatementLine[]
+  statementImports    BankStatementImport[]
+  statementLines      BankStatementLine[]
+  ruralCreditContracts RuralCreditContract[]
 
   @@index([organizationId])
   @@index([organizationId, type])
@@ -5452,7 +5455,8 @@ model Payable {
   costCenterItems    PayableCostCenterItem[]
   recurrenceChildren Payable[]              @relation("PayableRecurrence")
   recurrenceParent   Payable?               @relation("PayableRecurrence", fields: [recurrenceParentId], references: [id])
-  creditCardBill     CreditCardBill?
+  creditCardBill         CreditCardBill?
+  ruralCreditInstallment RuralCreditInstallment?
 
   @@index([organizationId, status, dueDate])
   @@index([organizationId, farmId])
@@ -5766,4 +5770,84 @@ model Reconciliation {
 
   @@index([organizationId, statementLineId])
   @@map("reconciliations")
+}
+
+// ─── EPIC Crédito Rural ──────────────────────────────────────────────────────
+
+enum RuralCreditLine {
+  PRONAF
+  PRONAMP
+  FUNCAFE
+  CPR
+  CREDITO_LIVRE
+}
+
+enum AmortizationSystem {
+  SAC
+  PRICE
+  BULLET
+}
+
+enum RuralCreditStatus {
+  ATIVO
+  QUITADO
+  INADIMPLENTE
+  CANCELADO
+}
+
+model RuralCreditContract {
+  id                   String             @id @default(uuid())
+  organizationId       String
+  farmId               String
+  bankAccountId        String
+  contractNumber       String?
+  creditLine           RuralCreditLine
+  amortizationSystem   AmortizationSystem
+  principalAmount      Decimal            @db.Decimal(15, 2)
+  annualRate           Decimal            @db.Decimal(8, 6)
+  termMonths           Int
+  gracePeriodMonths    Int                @default(0)
+  firstPaymentYear     Int
+  firstPaymentMonth    Int
+  paymentDayOfMonth    Int                @default(1)
+  releasedAt           DateTime
+  iofAmount            Decimal?           @db.Decimal(15, 2)
+  tacAmount            Decimal?           @db.Decimal(15, 2)
+  guaranteeDescription String?
+  alertDaysBefore      Int                @default(15)
+  status               RuralCreditStatus  @default(ATIVO)
+  outstandingBalance   Decimal            @db.Decimal(15, 2)
+  totalPrincipalPaid   Decimal            @default(0) @db.Decimal(15, 2)
+  totalInterestPaid    Decimal            @default(0) @db.Decimal(15, 2)
+  notes                String?
+  cancelledAt          DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  organization  Organization             @relation(fields: [organizationId], references: [id])
+  farm          Farm                     @relation(fields: [farmId], references: [id])
+  bankAccount   BankAccount              @relation(fields: [bankAccountId], references: [id])
+  installments  RuralCreditInstallment[]
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, farmId])
+  @@map("rural_credit_contracts")
+}
+
+model RuralCreditInstallment {
+  id                      String   @id @default(uuid())
+  contractId              String
+  payableId               String   @unique
+  installmentNumber       Int
+  principal               Decimal  @db.Decimal(15, 2)
+  interest                Decimal  @db.Decimal(15, 2)
+  outstandingBalanceAfter Decimal  @db.Decimal(15, 2)
+  createdAt               DateTime @default(now())
+
+  contract RuralCreditContract @relation(fields: [contractId], references: [id])
+  payable  Payable              @relation(fields: [payableId], references: [id])
+
+  @@index([contractId])
+  @@map("rural_credit_installments")
 }
