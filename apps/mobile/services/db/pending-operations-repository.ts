@@ -20,7 +20,8 @@ export type OperationEntity =
   | 'inseminations'
   | 'pregnancy_diagnoses'
   | 'calving_events'
-  | 'mastitis_cases';
+  | 'mastitis_cases'
+  | 'purchase_requests';
 
 export type OperationPriority = 0 | 1;
 export const PRIORITY_NORMAL: OperationPriority = 0;

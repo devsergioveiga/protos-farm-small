@@ -18,6 +18,8 @@ export { createTeamOperationsRepository } from './team-operations-repository';
 export { createCultivarRepository } from './cultivar-repository';
 export { createPlantingOperationRepository } from './planting-operation-repository';
 export { createReferenceDataRepository } from './reference-data-repository';
+export { createPurchaseRequestRepository } from './purchase-request-repository';
+export type { LocalPurchaseRequest } from './purchase-request-repository';
 export type { AnimalWithBreeds } from './animal-repository';
 export type { ReferenceEntityType } from './reference-data-repository';
 export type {
