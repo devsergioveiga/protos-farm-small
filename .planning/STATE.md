@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 08-02-PLAN.md
-last_updated: '2026-03-17T19:39:40.301Z'
+stopped_at: Completed 08-03-PLAN.md
+last_updated: '2026-03-17T21:08:31.383Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 10
-  completed_plans: 6
+  completed_plans: 7
   percent: 0
 ---
 
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 07-cadastro-de-fornecedores P04 | 7min | 3 tasks | 7 files |
 | Phase 08-requisi-o-e-aprova-o P01 | 5min | 2 tasks | 5 files |
 | Phase 08-requisi-o-e-aprova-o P02 | 4min | 2 tasks | 4 files |
+| Phase 08-requisi-o-e-aprova-o P03 | 21min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,8 @@ Key decisions for v1.1:
 - [Phase 08-requisi-o-e-aprova-o]: Notification model uses purchaseRequestId FK (optional) for direct relation — cleaner than relying only on referenceId/referenceType strings
 - [Phase 08-requisi-o-e-aprova-o]: All 7 Phase 8 models use cuid() as ID following RESEARCH.md recommendation and Phase 7 pattern
 - [Phase 08-requisi-o-e-aprova-o]: createPurchaseRequest context type extended to RlsContext & { userId: string } — createdBy field must be persisted in the RC row
+- [Phase 08-requisi-o-e-aprova-o]: Decimal type for Prisma Decimal fields requires Number() cast before arithmetic comparisons in TypeScript strict mode
+- [Phase 08-requisi-o-e-aprova-o]: dispatchPushNotification uses fire-and-forget void pattern to prevent push failures rolling back the Prisma transaction
 
 ### Pending Todos
 
@@ -91,6 +94,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T19:39:40.299Z
-Stopped at: Completed 08-02-PLAN.md
+Last session: 2026-03-17T21:08:31.381Z
+Stopped at: Completed 08-03-PLAN.md
 Resume file: None
