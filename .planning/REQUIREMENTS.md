@@ -15,9 +15,9 @@ Requirements for milestone v1.1. Each maps to roadmap phases.
 
 ### Requisição de Compra
 
-- [ ] **REQC-01**: Usuário pode criar requisição de compra com tipo (insumo agrícola, pecuário, peça, combustível, EPI, ativo, serviço), itens do catálogo ou descrição livre, quantidade, urgência (normal/urgente/emergencial), justificativa, centro de custo, fazenda, data de necessidade, anexos, e número sequencial automático
-- [ ] **REQC-02**: Operador de campo pode criar requisição simplificada via mobile com produto, quantidade, urgência, foto e observação, com geolocalização automática, funcionamento offline, e acompanhamento de status pelo app
-- [ ] **REQC-03**: Gerente pode configurar fluxo de aprovação por valor (até R$ X gerente de campo, acima gerente geral, acima de R$ Y aprovação dupla) e por tipo, com tela de aprovação com pendências, ações aprovar/rejeitar/devolver, notificação ao solicitante, aprovação via mobile, delegação temporária, SLA configurável, e histórico para auditoria
+- [x] **REQC-01**: Usuário pode criar requisição de compra com tipo (insumo agrícola, pecuário, peça, combustível, EPI, ativo, serviço), itens do catálogo ou descrição livre, quantidade, urgência (normal/urgente/emergencial), justificativa, centro de custo, fazenda, data de necessidade, anexos, e número sequencial automático
+- [x] **REQC-02**: Operador de campo pode criar requisição simplificada via mobile com produto, quantidade, urgência, foto e observação, com geolocalização automática, funcionamento offline, e acompanhamento de status pelo app
+- [x] **REQC-03**: Gerente pode configurar fluxo de aprovação por valor (até R$ X gerente de campo, acima gerente geral, acima de R$ Y aprovação dupla) e por tipo, com tela de aprovação com pendências, ações aprovar/rejeitar/devolver, notificação ao solicitante, aprovação via mobile, delegação temporária, SLA configurável, e histórico para auditoria
 
 ### Cotação
 
@@ -84,9 +84,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FORN-01     | Phase 7  | Complete |
 | FORN-02     | Phase 7  | Complete |
 | FORN-03     | Phase 7  | Complete |
-| REQC-01     | Phase 8  | Pending  |
-| REQC-02     | Phase 8  | Pending  |
-| REQC-03     | Phase 8  | Pending  |
+| REQC-01     | Phase 8  | Complete |
+| REQC-02     | Phase 8  | Complete |
+| REQC-03     | Phase 8  | Complete |
 | COTA-01     | Phase 9  | Pending  |
 | COTA-02     | Phase 9  | Pending  |
 | COTA-03     | Phase 9  | Pending  |
