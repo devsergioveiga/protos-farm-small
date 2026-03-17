@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-concilia-o-e-fluxo-de-caixa-02-PLAN.md
-last_updated: '2026-03-17T08:29:12.292Z'
+stopped_at: Completed 05-concilia-o-e-fluxo-de-caixa-04-PLAN.md
+last_updated: '2026-03-17T08:52:00.375Z'
 last_activity: 2026-03-16 — PayablesPage complete (3 tabs, 4 modals, aging, calendar, CNAB retorno, sidebar badge)
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 25
-  completed_plans: 23
+  completed_plans: 24
   percent: 80
 ---
 
@@ -73,6 +73,7 @@ _Updated after each plan completion_
 | Phase 05-concilia-o-e-fluxo-de-caixa P01 | 9min | 2 tasks | 9 files |
 | Phase 05-concilia-o-e-fluxo-de-caixa P05 | 10min | 2 tasks | 7 files |
 | Phase 05-concilia-o-e-fluxo-de-caixa P02 | 15min | 1 tasks | 3 files |
+| Phase 05-concilia-o-e-fluxo-de-caixa P04 | 17min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -130,6 +131,8 @@ Recent decisions affecting current work:
 - [Phase 05-concilia-o-e-fluxo-de-caixa]: DfcTable uses max-height CSS transition (200ms ease-out) for expand/collapse — simpler than JS-measured height, prefers-reduced-motion handled by tokens.css global rule
 - [Phase 05-concilia-o-e-fluxo-de-caixa]: scoreMatch pure function tests use inline algorithm replication — jest.isolateModulesAsync unreliable with global module mocks
 - [Phase 05-concilia-o-e-fluxo-de-caixa]: N:N sum validation uses Money(amount).equals() for floating-point safe comparison; manualLink throws ReconciliationError on mismatch
+- [Phase 05-concilia-o-e-fluxo-de-caixa]: ReconciliationPage uses URL query param ?importId=xxx for deep-link — keeps router state; useSearchParams from react-router-dom
+- [Phase 05-concilia-o-e-fluxo-de-caixa]: N:N sum validation uses Math.abs tolerance < 0.01 — avoids floating-point false negatives vs Money.equals() pure comparison
 
 ### Pending Todos
 
@@ -144,6 +147,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T08:29:12.290Z
-Stopped at: Completed 05-concilia-o-e-fluxo-de-caixa-02-PLAN.md
+Last session: 2026-03-17T08:51:47.966Z
+Stopped at: Completed 05-concilia-o-e-fluxo-de-caixa-04-PLAN.md
 Resume file: None
