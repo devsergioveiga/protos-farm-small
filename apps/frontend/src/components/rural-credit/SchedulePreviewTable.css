@@ -1,0 +1,173 @@
+/* ─── Container ──────────────────────────────────────────────────── */
+
+.spt {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+}
+
+/* ─── Grace period banner ────────────────────────────────────────── */
+
+.spt__grace-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-warning-100, #fff8e1);
+  color: var(--color-warning-500, #f57f17);
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  border-bottom: 1px solid var(--color-neutral-200, #e8e4dd);
+}
+
+/* ─── Table wrapper ──────────────────────────────────────────────── */
+
+.spt__table-wrap {
+  overflow-x: auto;
+}
+
+/* Desktop: show table */
+.spt__cards {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .spt__table-wrap {
+    display: none;
+  }
+
+  .spt__cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+  }
+}
+
+/* ─── Table ──────────────────────────────────────────────────────── */
+
+.spt__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.spt__table caption {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-neutral-700, #3e3833);
+  text-align: left;
+  padding: 12px 16px 8px;
+}
+
+.spt__table thead tr {
+  background: var(--color-neutral-50, #fafaf8);
+}
+
+.spt__table th {
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-neutral-500, #7a7267);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  border-bottom: 2px solid var(--color-neutral-200, #e8e4dd);
+}
+
+.spt__table td {
+  padding: 8px 12px;
+  color: var(--color-neutral-700, #3e3833);
+  border-bottom: 1px solid var(--color-neutral-100, #f5f3ef);
+}
+
+.spt__table tbody tr:hover {
+  background: var(--color-neutral-50, #fafaf8);
+}
+
+.spt__col-num {
+  width: 40px;
+  text-align: center;
+}
+
+.spt__col-right {
+  text-align: right;
+}
+
+.spt__col-nowrap {
+  white-space: nowrap;
+}
+
+.spt__col-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.spt__col-bold {
+  font-weight: 700;
+}
+
+/* ─── Footer row ─────────────────────────────────────────────────── */
+
+.spt__tfoot-row td {
+  padding: 10px 12px;
+  background: var(--color-neutral-50, #fafaf8);
+  border-top: 2px solid var(--color-neutral-200, #e8e4dd);
+  border-bottom: none;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ─── Mobile cards ───────────────────────────────────────────────── */
+
+.spt__card {
+  background: var(--color-neutral-0, #fff);
+  border: 1px solid var(--color-neutral-200, #e8e4dd);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.spt__card--summary {
+  background: var(--color-neutral-50, #fafaf8);
+  border-color: var(--color-neutral-300, #d4cec4);
+}
+
+.spt__card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.spt__card-num {
+  font-weight: 700;
+  color: var(--color-neutral-700, #3e3833);
+  font-size: 0.875rem;
+}
+
+.spt__card-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500, #7a7267);
+}
+
+.spt__card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.spt__card-label {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500, #7a7267);
+}
+
+.spt__card-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-700, #3e3833);
+}
+
+.spt__card-value--bold {
+  font-weight: 700;
+  color: var(--color-neutral-800, #2a2520);
+}

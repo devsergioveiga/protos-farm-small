@@ -113,12 +113,18 @@ export default function ReproductiveReleasesPage() {
     setCriteriaError(null);
     try {
       const result = await api.get<CriteriaItem>('/org/reproductive-criteria');
-      setCriteria(result);
+      const safe = result ?? {
+        minWeightKg: null,
+        minAgeMonths: null,
+        minBodyScore: null,
+        targetLotId: null,
+      };
+      setCriteria(safe);
       setCriteriaForm({
-        minWeightKg: result.minWeightKg,
-        minAgeMonths: result.minAgeMonths,
-        minBodyScore: result.minBodyScore,
-        targetLotId: result.targetLotId,
+        minWeightKg: safe.minWeightKg,
+        minAgeMonths: safe.minAgeMonths,
+        minBodyScore: safe.minBodyScore,
+        targetLotId: safe.targetLotId,
       });
     } catch (err) {
       // If criteria not set yet, that's OK

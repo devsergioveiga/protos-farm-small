@@ -1,0 +1,441 @@
+/* ─── Page Layout ─────────────────────────────────────────────────── */
+
+.reconciliation-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  position: relative;
+}
+
+/* ─── Toast ───────────────────────────────────────────────────────── */
+
+.reconciliation-page__toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  background: var(--color-neutral-800, #2a2520);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  z-index: 2000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: recon-toast-in 200ms ease-out;
+}
+
+@keyframes recon-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Header ──────────────────────────────────────────────────────── */
+
+.reconciliation-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.reconciliation-page__breadcrumb {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500, #9e9e9e);
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.reconciliation-page__breadcrumb a {
+  color: var(--color-neutral-500, #9e9e9e);
+  text-decoration: none;
+}
+
+.reconciliation-page__breadcrumb a:hover {
+  color: var(--color-neutral-700, #3e3833);
+}
+
+.reconciliation-page__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-neutral-800, #2a2520);
+  margin: 0;
+}
+
+.reconciliation-page__subtitle {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500, #9e9e9e);
+  margin: 4px 0 0;
+}
+
+.reconciliation-page__btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-primary-600, #2e7d32);
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  min-height: 48px;
+  white-space: nowrap;
+  transition: background 200ms ease-out;
+}
+
+.reconciliation-page__btn-primary:hover {
+  background: var(--color-primary-700, #1b5e20);
+}
+
+.reconciliation-page__btn-primary:focus-visible {
+  outline: 2px solid var(--color-primary-500, #388e3c);
+  outline-offset: 2px;
+}
+
+/* ─── Back button ─────────────────────────────────────────────────── */
+
+.reconciliation-page__back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 1px solid var(--color-neutral-200, #e0e0e0);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700, #3e3833);
+  cursor: pointer;
+  min-height: 40px;
+  transition:
+    background 200ms ease-out,
+    border-color 200ms ease-out;
+}
+
+.reconciliation-page__back-btn:hover {
+  background: var(--color-neutral-50, #fafaf8);
+  border-color: var(--color-neutral-300, #d0d0d0);
+}
+
+.reconciliation-page__back-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500, #388e3c);
+  outline-offset: 2px;
+}
+
+/* ─── Session header ──────────────────────────────────────────────── */
+
+.reconciliation-page__session-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.reconciliation-page__session-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-neutral-800, #2a2520);
+  margin: 0;
+}
+
+.reconciliation-page__session-meta {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500, #9e9e9e);
+  margin: 2px 0 0;
+}
+
+/* ─── History Table ───────────────────────────────────────────────── */
+
+.recon-history__table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-neutral-200, #e0e0e0);
+  border-radius: 12px;
+  background: var(--color-neutral-0, #ffffff);
+}
+
+.recon-history__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+}
+
+.recon-history__table thead {
+  background: var(--color-neutral-100, #f5f3ef);
+}
+
+.recon-history__table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-neutral-500, #9e9e9e);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--color-neutral-200, #e0e0e0);
+  white-space: nowrap;
+}
+
+.recon-history__table tbody tr {
+  border-bottom: 1px solid var(--color-neutral-100, #f5f3ef);
+  cursor: pointer;
+  transition: background 150ms ease-out;
+}
+
+.recon-history__table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.recon-history__table tbody tr:hover {
+  background: var(--color-neutral-50, #fafaf8);
+}
+
+.recon-history__table td {
+  padding: 16px;
+  color: var(--color-neutral-700, #3e3833);
+  vertical-align: middle;
+}
+
+.recon-history__col-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.recon-history__col-right {
+  text-align: right;
+}
+
+/* ─── Import Status badges ────────────────────────────────────────── */
+
+.recon-history__status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  white-space: nowrap;
+}
+
+.recon-history__status-badge--completed {
+  background: var(--color-primary-50, #e8f5e9);
+  color: var(--color-primary-700, #1b5e20);
+}
+
+.recon-history__status-badge--in-progress {
+  background: #fff8e1;
+  color: #f57f17;
+}
+
+.recon-history__status-badge--ignored {
+  background: var(--color-neutral-100, #f5f3ef);
+  color: var(--color-neutral-500, #9e9e9e);
+}
+
+/* ─── Confidence badges (shared) ──────────────────────────────────── */
+
+.confidence-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.confidence-badge--exato {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.confidence-badge--provavel {
+  background: #fff8e1;
+  color: #f57f17;
+}
+
+.confidence-badge--sem-match {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* ─── Status badges for lines ─────────────────────────────────────── */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  white-space: nowrap;
+}
+
+.status-badge--pending {
+  background: #fff8e1;
+  color: #f57f17;
+}
+
+.status-badge--reconciled {
+  background: var(--color-primary-50, #e8f5e9);
+  color: var(--color-primary-700, #1b5e20);
+}
+
+.status-badge--ignored {
+  background: var(--color-neutral-100, #f5f3ef);
+  color: var(--color-neutral-500, #9e9e9e);
+}
+
+/* ─── Skeleton rows ───────────────────────────────────────────────── */
+
+.recon-history__skeleton-row td {
+  padding: 16px;
+}
+
+.recon-skeleton-cell {
+  height: 16px;
+  background: var(--color-neutral-100, #f5f3ef);
+  border-radius: 4px;
+  animation: recon-skeleton-pulse 1500ms ease-in-out infinite;
+}
+
+@keyframes recon-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ─── Empty state ─────────────────────────────────────────────────── */
+
+.recon-history__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  gap: 16px;
+  text-align: center;
+}
+
+.recon-history__empty-icon {
+  color: var(--color-neutral-300, #d0d0d0);
+}
+
+.recon-history__empty-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-neutral-700, #3e3833);
+  margin: 0;
+}
+
+.recon-history__empty-desc {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500, #9e9e9e);
+  margin: 0;
+  max-width: 360px;
+}
+
+/* ─── Error state ─────────────────────────────────────────────────── */
+
+.reconciliation-page__error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--color-error-50, #ffebee);
+  border-radius: 8px;
+  color: var(--color-error-600, #c62828);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  margin-bottom: 24px;
+}
+
+/* ─── Mobile: cards ───────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .recon-history__table-wrap {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .recon-history__table thead {
+    display: none;
+  }
+
+  .recon-history__table tbody tr {
+    display: block;
+    background: var(--color-neutral-0, #ffffff);
+    border: 1px solid var(--color-neutral-200, #e0e0e0);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    padding: 16px;
+    cursor: pointer;
+  }
+
+  .recon-history__table tbody tr:last-child {
+    border-bottom: 1px solid var(--color-neutral-200, #e0e0e0);
+  }
+
+  .recon-history__table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border: none;
+  }
+
+  .recon-history__table td::before {
+    content: attr(data-label);
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-neutral-500, #9e9e9e);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .recon-history__table td[data-label=''],
+  .recon-history__table td:not([data-label]) {
+    display: none;
+  }
+
+  .reconciliation-page__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

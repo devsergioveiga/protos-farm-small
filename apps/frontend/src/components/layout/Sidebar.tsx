@@ -55,7 +55,23 @@ import {
   Salad,
   UtensilsCrossed,
   Cookie,
+  Building2,
+  Receipt,
+  ReceiptText,
+  ArrowLeftRight,
+  CreditCard,
+  CheckSquare,
+  Landmark,
+  TreePine,
+  TrendingUp,
+  GitMerge,
+  Handshake,
+  ShoppingCart,
+  Settings2,
 } from 'lucide-react';
+import { useOverdueCount } from '@/hooks/usePayables';
+import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
+import { useRuralCreditAlertCount } from '@/hooks/useRuralCredit';
 import './Sidebar.css';
 
 interface SidebarProps {
@@ -83,6 +99,9 @@ const NAV_GROUPS: NavGroup[] = [
     title: 'PROPRIEDADE',
     items: [
       { to: '/farms', icon: MapPin, label: 'Fazendas' },
+      { to: '/rural-properties', icon: Landmark, label: 'Imóveis rurais' },
+      { to: '/registrations', icon: FileText, label: 'Matrículas' },
+      { to: '/car-registrations', icon: TreePine, label: 'CAR' },
       { to: '/producers', icon: UserCheck, label: 'Produtores' },
     ],
   },
@@ -161,6 +180,29 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    title: 'FINANCEIRO',
+    items: [
+      { to: '/financial-dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      { to: '/bank-accounts', icon: Building2, label: 'Contas bancárias' },
+      { to: '/payables', icon: Receipt, label: 'Contas a pagar' },
+      { to: '/receivables', icon: ReceiptText, label: 'Contas a receber' },
+      { to: '/transfers', icon: ArrowLeftRight, label: 'Transferências' },
+      { to: '/credit-cards', icon: CreditCard, label: 'Cartões' },
+      { to: '/checks', icon: CheckSquare, label: 'Cheques' },
+      { to: '/cashflow', icon: TrendingUp, label: 'Fluxo de caixa' },
+      { to: '/reconciliation', icon: GitMerge, label: 'Conciliação bancária' },
+      { to: '/rural-credit', icon: Landmark, label: 'Crédito Rural' },
+    ],
+  },
+  {
+    title: 'COMPRAS',
+    items: [
+      { to: '/suppliers', icon: Handshake, label: 'Fornecedores' },
+      { to: '/purchase-requests', icon: ShoppingCart, label: 'Requisicoes' },
+      { to: '/approval-rules', icon: Settings2, label: 'Alcadas' },
+    ],
+  },
+  {
     title: 'CONFIGURAÇÃO',
     items: [
       { to: '/users', icon: Users, label: 'Usuários' },
@@ -175,6 +217,9 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
   const isActive = (path: string) => location.pathname.startsWith(path);
   const onCloseRef = useRef(onClose);
+  const { count: overdueCount } = useOverdueCount();
+  const { count: checkAlertCount } = useCheckAlertCount();
+  const { count: ruralCreditAlertCount } = useRuralCreditAlertCount();
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
@@ -230,6 +275,10 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.to);
+                  const showOverdueBadge = item.to === '/payables' && overdueCount > 0;
+                  const showCheckBadge = item.to === '/checks' && checkAlertCount > 0;
+                  const showRuralCreditBadge =
+                    item.to === '/rural-credit' && ruralCreditAlertCount > 0;
                   return (
                     <li key={item.to}>
                       <Link
@@ -240,6 +289,60 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                       >
                         <Icon size={20} aria-hidden="true" className="sidebar__icon" />
                         <span className="sidebar__label">{item.label}</span>
+                        {showOverdueBadge && (
+                          <span
+                            style={{
+                              marginLeft: 'auto',
+                              background: 'var(--color-error-600, #c62828)',
+                              color: '#fff',
+                              borderRadius: 100,
+                              padding: '1px 7px',
+                              fontSize: '0.6875rem',
+                              fontWeight: 700,
+                              fontFamily: "'Source Sans 3', system-ui, sans-serif",
+                              flexShrink: 0,
+                            }}
+                            aria-label={`${overdueCount} títulos vencidos`}
+                          >
+                            {overdueCount > 99 ? '99+' : overdueCount}
+                          </span>
+                        )}
+                        {showCheckBadge && (
+                          <span
+                            style={{
+                              marginLeft: 'auto',
+                              background: 'var(--color-warning-500, #ffc107)',
+                              color: '#fff',
+                              borderRadius: 100,
+                              padding: '1px 7px',
+                              fontSize: '0.6875rem',
+                              fontWeight: 700,
+                              fontFamily: "'JetBrains Mono', monospace",
+                              flexShrink: 0,
+                            }}
+                            aria-label={`${checkAlertCount} cheques aguardando atenção`}
+                          >
+                            {checkAlertCount > 99 ? '99+' : checkAlertCount}
+                          </span>
+                        )}
+                        {showRuralCreditBadge && (
+                          <span
+                            style={{
+                              marginLeft: 'auto',
+                              background: 'var(--color-error-600, #c62828)',
+                              color: '#fff',
+                              borderRadius: 100,
+                              padding: '1px 7px',
+                              fontSize: '0.6875rem',
+                              fontWeight: 700,
+                              fontFamily: "'Source Sans 3', system-ui, sans-serif",
+                              flexShrink: 0,
+                            }}
+                            aria-label={`${ruralCreditAlertCount} parcela(s) de crédito rural vencendo em breve`}
+                          >
+                            {ruralCreditAlertCount > 99 ? '99+' : ruralCreditAlertCount}
+                          </span>
+                        )}
                       </Link>
                     </li>
                   );

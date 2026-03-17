@@ -5,6 +5,7 @@ import { useAuth } from '@/stores/AuthContext';
 import { FarmProvider } from '@/stores/FarmContext';
 import FarmSelector from '@/components/farm-selector/FarmSelector';
 import FarmLimitBadge from '@/components/farm-limit-badge/FarmLimitBadge';
+import NotificationBell from '@/components/notifications/NotificationBell';
 import Sidebar from './Sidebar';
 import './AppLayout.css';
 
@@ -59,6 +60,8 @@ function AppLayout() {
             )}
 
             {!isPlatformAdmin && <FarmLimitBadge />}
+
+            {!isPlatformAdmin && <NotificationBell />}
 
             <div className="app-topbar__separator" role="separator" />
 

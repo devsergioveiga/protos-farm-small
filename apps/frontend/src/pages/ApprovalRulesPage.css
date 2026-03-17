@@ -1,0 +1,494 @@
+/* ─── Page container ──────────────────────────────────────────────────── */
+
+.arp-page {
+  padding: var(--space-6);
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* ─── Breadcrumb ──────────────────────────────────────────────────────── */
+
+.arp-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+  margin-bottom: var(--space-4);
+}
+
+.arp-breadcrumb__link {
+  color: var(--color-primary-600);
+  text-decoration: none;
+}
+
+.arp-breadcrumb__link:hover {
+  text-decoration: underline;
+}
+
+.arp-breadcrumb__sep {
+  color: var(--color-neutral-400);
+}
+
+/* ─── Page header ─────────────────────────────────────────────────────── */
+
+.arp-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.arp-page__title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.arp-page__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* ─── Delegation banner ───────────────────────────────────────────────── */
+
+.arp-delegation-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--color-info-100);
+  border: 1px solid var(--color-info-500);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-6);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-info-500);
+  flex-wrap: wrap;
+}
+
+.arp-delegation-banner > span {
+  flex: 1;
+}
+
+/* ─── Error / Loading states ──────────────────────────────────────────── */
+
+.arp-error-banner {
+  background: var(--color-error-100);
+  border: 1px solid var(--color-error-500);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-error-500);
+  margin-bottom: var(--space-6);
+}
+
+.arp-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-12);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+}
+
+.arp-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arp-spin {
+    animation: none;
+  }
+}
+
+/* ─── Empty state ─────────────────────────────────────────────────────── */
+
+.arp-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-16) var(--space-8);
+  gap: var(--space-4);
+}
+
+.arp-empty-state__icon {
+  color: var(--color-neutral-300);
+}
+
+.arp-empty-state__title {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.arp-empty-state__body {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+  margin: 0;
+  max-width: 420px;
+}
+
+/* ─── Rules list ──────────────────────────────────────────────────────── */
+
+.arp-rules-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ─── Rule card ───────────────────────────────────────────────────────── */
+
+.arp-rule-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.arp-rule-card:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.arp-rule-card--dragging {
+  opacity: 0.5;
+  box-shadow: var(--shadow-lg);
+}
+
+.arp-rule-card--inactive {
+  background: var(--color-neutral-50);
+  opacity: 0.8;
+}
+
+/* Drag handle */
+.arp-rule-card__drag-handle {
+  display: flex;
+  align-items: center;
+  color: var(--color-neutral-400);
+  cursor: grab;
+  padding-top: var(--space-1);
+  flex-shrink: 0;
+}
+
+.arp-rule-card__drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Priority badge */
+.arp-rule-card__priority {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-200);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-primary-700);
+  flex-shrink: 0;
+}
+
+/* Content */
+.arp-rule-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.arp-rule-card__top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.arp-rule-card__name {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+/* Meta DL */
+.arp-rule-card__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+}
+
+.arp-rule-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.arp-rule-meta-item__label {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.arp-rule-meta-item__value {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+}
+
+.arp-rule-meta-item__value--mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.arp-rule-meta-item--approvers {
+  grid-column: 1 / -1;
+}
+
+/* Approver chain */
+.arp-rule-card__approver-chain {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.arp-approver-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-neutral-100);
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-700);
+}
+
+.arp-approver-arrow {
+  color: var(--color-neutral-400);
+  flex-shrink: 0;
+}
+
+/* Rule badge */
+.arp-rule-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.arp-rule-badge--inactive {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-500);
+}
+
+/* Card actions */
+.arp-rule-card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+/* ─── Icon buttons ────────────────────────────────────────────────────── */
+
+.arp-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--color-neutral-500);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.arp-icon-btn:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-800);
+}
+
+.arp-icon-btn--danger:hover {
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+}
+
+.arp-icon-btn__icon--active {
+  color: var(--color-primary-600);
+}
+
+.arp-icon-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────────── */
+
+.arp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  min-height: 48px;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.arp-btn--sm {
+  min-height: 36px;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.arp-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.arp-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.arp-btn--primary {
+  background: var(--color-primary-600);
+  border: 1px solid var(--color-primary-600);
+  color: var(--color-neutral-0);
+}
+
+.arp-btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+  border-color: var(--color-primary-700);
+}
+
+.arp-btn--secondary {
+  background: transparent;
+  border: 1px solid var(--color-primary-600);
+  color: var(--color-primary-600);
+}
+
+.arp-btn--secondary:hover:not(:disabled) {
+  background: var(--color-primary-50);
+}
+
+.arp-btn--ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--color-neutral-600);
+}
+
+.arp-btn--ghost:hover:not(:disabled) {
+  background: var(--color-neutral-100);
+}
+
+/* ─── Toast ───────────────────────────────────────────────────────────── */
+
+.arp-toast {
+  position: fixed;
+  top: var(--space-6);
+  right: var(--space-6);
+  background: var(--color-neutral-800);
+  color: var(--color-neutral-0);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  box-shadow: var(--shadow-lg);
+  z-index: 1100;
+  animation: toast-in var(--duration-normal) var(--ease-out);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arp-toast {
+    animation: none;
+  }
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .arp-page {
+    padding: var(--space-4);
+  }
+
+  .arp-page__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .arp-rule-card {
+    flex-wrap: wrap;
+  }
+
+  .arp-rule-card__actions {
+    width: 100%;
+    justify-content: flex-end;
+    border-top: 1px solid var(--color-neutral-100);
+    padding-top: var(--space-3);
+    margin-top: var(--space-2);
+  }
+
+  .arp-rule-card__meta {
+    grid-template-columns: 1fr;
+  }
+}

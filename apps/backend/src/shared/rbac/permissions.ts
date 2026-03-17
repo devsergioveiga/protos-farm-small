@@ -11,9 +11,11 @@ export type PermissionModule =
   | 'operations'
   | 'financial'
   | 'reports'
-  | 'settings';
+  | 'settings'
+  | 'reconciliation'
+  | 'purchases';
 
-export type PermissionAction = 'create' | 'read' | 'update' | 'delete';
+export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage';
 
 export type Permission = `${PermissionModule}:${PermissionAction}`;
 
@@ -29,9 +31,11 @@ export const ALL_MODULES: PermissionModule[] = [
   'financial',
   'reports',
   'settings',
+  'reconciliation',
+  'purchases',
 ];
 
-export const ALL_ACTIONS: PermissionAction[] = ['create', 'read', 'update', 'delete'];
+export const ALL_ACTIONS: PermissionAction[] = ['create', 'read', 'update', 'delete', 'manage'];
 
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
   SUPER_ADMIN: 100,
@@ -81,8 +85,10 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...p('animals', 'create', 'read', 'update'),
     ...p('users', 'read'),
     ...modulePermissions('operations'),
+    ...modulePermissions('purchases'),
     ...p('reports', 'read'),
     ...p('settings', 'read'),
+    ...p('reconciliation', 'manage'),
   ],
 
   AGRONOMIST: [
@@ -90,6 +96,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...p('producers', 'read'),
     ...p('animals', 'read'),
     ...p('operations', 'create', 'read', 'update'),
+    ...p('purchases', 'read'),
     ...p('reports', 'read'),
   ],
 
@@ -97,7 +104,9 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...modulePermissions('financial'),
     ...p('farms', 'read'),
     ...p('producers', 'read'),
+    ...p('purchases', 'read'),
     ...p('reports', 'read'),
+    ...p('reconciliation', 'manage'),
   ],
 
   OPERATOR: [
@@ -118,6 +127,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...p('producers', 'read'),
     ...p('animals', 'read'),
     ...p('operations', 'read'),
+    ...p('purchases', 'read'),
     ...p('reports', 'read'),
   ],
 };

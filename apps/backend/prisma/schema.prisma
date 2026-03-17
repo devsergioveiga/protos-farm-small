@@ -95,6 +95,32 @@ enum CarStatus {
   SUSPENSO
 }
 
+enum PropertyDocumentType {
+  CAFIR
+  CCIR
+  CNIR
+  DITR
+  CAR_RECEIPT
+  MATRICULA
+  OTHER
+}
+
+enum ExtractionStatus {
+  PENDING
+  EXTRACTED
+  FAILED
+  MANUAL
+}
+
+enum OwnerType {
+  PROPRIETARIO
+  USUFRUTUARIO
+  POSSUIDOR
+  CESSIONARIO
+  HERDEIRO
+  CONDOMINO
+}
+
 enum AnimalSex {
   MALE
   FEMALE
@@ -243,6 +269,21 @@ enum PregnancyConfirmation {
   OBSERVATION
 }
 
+enum PurchaseRequestStatus {
+  RASCUNHO
+  PENDENTE
+  APROVADA
+  REJEITADA
+  DEVOLVIDA
+  CANCELADA
+}
+
+enum PurchaseRequestUrgency {
+  NORMAL
+  URGENTE
+  EMERGENCIAL
+}
+
 // ─── Core Models ─────────────────────────────────────────────────────
 
 model Organization {
@@ -319,6 +360,26 @@ model Organization {
   bromatologicalAnalyses   BromatologicalAnalysis[]
   diets                    Diet[]
   feedingRecords           FeedingRecord[]
+  bankAccounts             BankAccount[]
+  bankAccountBalances      BankAccountBalance[]
+  financialTransactions    FinancialTransaction[]
+  payables                 Payable[]
+  receivables              Receivable[]
+  accountTransfers         AccountTransfer[]
+  creditCards              CreditCard[]
+  creditCardBills          CreditCardBill[]
+  creditCardExpenses       CreditCardExpense[]
+  checks                   Check[]
+  bankStatementImports     BankStatementImport[]
+  bankStatementLines       BankStatementLine[]
+  reconciliations          Reconciliation[]
+  ruralCreditContracts     RuralCreditContract[]
+  suppliers                Supplier[]
+  purchaseRequests         PurchaseRequest[]
+  approvalRules            ApprovalRule[]
+  approvalActions          ApprovalAction[]
+  delegations              Delegation[]
+  notifications            Notification[]
 
   @@map("organizations")
 }
@@ -393,6 +454,13 @@ model User {
   recordedBromatologicalAnalyses BromatologicalAnalysis[] @relation("BromatologicalRecorder")
   createdDiets                   Diet[]                   @relation("DietCreator")
   recordedFeedings               FeedingRecord[]          @relation("FeedingRecorder")
+  createdPurchaseRequests        PurchaseRequest[]        @relation("RCCreator")
+  approvalRules1                 ApprovalRule[]           @relation("ApprovalRule1")
+  approvalRules2                 ApprovalRule[]           @relation("ApprovalRule2")
+  approvalActions                ApprovalAction[]         @relation("ApprovalAssignee")
+  delegationsFrom                Delegation[]             @relation("DelegationFrom")
+  delegationsTo                  Delegation[]             @relation("DelegationTo")
+  notifications                  Notification[]           @relation("NotificationRecipient")
 
   @@map("users")
 }
@@ -424,7 +492,7 @@ model Farm {
   organizationId       String
   boundaryAreaHa       Decimal?                              @db.Decimal(12, 4)
   location             Unsupported("geometry(Point, 4326)")?
-  boundary             Unsupported("geometry(Polygon, 4326)")?
+  boundary             Unsupported("geometry(MultiPolygon, 4326)")?
   deletedAt            DateTime?
   createdAt            DateTime                              @default(now())
   updatedAt            DateTime                              @updatedAt
@@ -489,6 +557,15 @@ model Farm {
   milkCollections            MilkCollection[]
   lactations                 Lactation[]
   feedingRecords             FeedingRecord[]
+  bankAccountFarms           BankAccountFarm[]
+  payables                   Payable[]
+  receivables                Receivable[]
+  payableCostCenterItems     PayableCostCenterItem[]
+  receivableCostCenterItems  ReceivableCostCenterItem[]
+  creditCards                CreditCard[]
+  ruralProperties            RuralProperty[]
+  ruralCreditContracts       RuralCreditContract[]
+  purchaseRequests           PurchaseRequest[]
 
   @@map("farms")
 }
@@ -496,6 +573,7 @@ model Farm {
 model FarmRegistration {
   id               String    @id @default(uuid())
   farmId           String
+  ruralPropertyId  String?
   number           String
   cnsCode          String?
   cartorioName     String
@@ -510,12 +588,14 @@ model FarmRegistration {
   updatedAt        DateTime  @updatedAt
 
   farm              Farm                      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  ruralProperty     RuralProperty?            @relation(fields: [ruralPropertyId], references: [id], onDelete: SetNull)
   producerLinks     ProducerRegistrationLink[]
   boundaryVersions  FarmBoundaryVersion[]
   fieldPlots        FieldPlot[]
   carLinks          CarRegistrationLink[]
 
   @@index([farmId])
+  @@index([ruralPropertyId])
   @@map("farm_registrations")
 }
 
@@ -604,19 +684,22 @@ model FarmBoundaryVersion {
   id              String    @id @default(uuid())
   farmId          String
   registrationId  String?
-  boundary        Unsupported("geometry(Polygon, 4326)")
+  ruralPropertyId String?
+  boundary        Unsupported("geometry(MultiPolygon, 4326)")
   boundaryAreaHa  Decimal   @db.Decimal(12, 4)
   uploadedBy      String
   uploadedAt      DateTime  @default(now())
   filename        String?
   version         Int       @default(1)
 
-  farm         Farm              @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  registration FarmRegistration? @relation(fields: [registrationId], references: [id], onDelete: Cascade)
-  uploader     User              @relation(fields: [uploadedBy], references: [id])
+  farm          Farm              @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  registration  FarmRegistration? @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  ruralProperty RuralProperty?    @relation(fields: [ruralPropertyId], references: [id], onDelete: SetNull)
+  uploader      User              @relation(fields: [uploadedBy], references: [id])
 
   @@index([farmId])
   @@index([registrationId])
+  @@index([ruralPropertyId])
   @@map("farm_boundary_versions")
 }
 
@@ -650,6 +733,9 @@ model Producer {
   stateRegistrations ProducerStateRegistration[]
   farmLinks          ProducerFarmLink[]
   documents          ProducerDocument[]
+  bankAccounts       BankAccount[]
+  payables           Payable[]
+  receivables        Receivable[]
 
   @@unique([document, organizationId])
   @@index([organizationId])
@@ -758,6 +844,7 @@ model FieldPlot {
   id              String    @id @default(uuid())
   farmId          String
   registrationId  String?
+  ruralPropertyId String?
   name            String
   code            String?
   soilType        SoilType?
@@ -773,6 +860,7 @@ model FieldPlot {
 
   farm              Farm              @relation(fields: [farmId], references: [id], onDelete: Cascade)
   registration      FarmRegistration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
+  ruralProperty     RuralProperty?    @relation(fields: [ruralPropertyId], references: [id], onDelete: SetNull)
   boundaryVersions  FieldPlotBoundaryVersion[]
   cropSeasons            PlotCropSeason[]
   soilAnalyses           PlotSoilAnalysis[]
@@ -792,6 +880,7 @@ model FieldPlot {
 
   @@index([farmId])
   @@index([registrationId])
+  @@index([ruralPropertyId])
   @@map("field_plots")
 }
 
@@ -887,6 +976,7 @@ model PlotSoilAnalysis {
 model CarRegistration {
   id                          String     @id @default(uuid())
   farmId                      String
+  ruralPropertyId             String?
   carCode                     String
   status                      CarStatus  @default(ATIVO)
   inscriptionDate             DateTime?  @db.Date
@@ -929,10 +1019,12 @@ model CarRegistration {
   createdAt                   DateTime   @default(now())
   updatedAt                   DateTime   @updatedAt
 
-  farm                        Farm       @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  farm                        Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  ruralProperty               RuralProperty?  @relation(fields: [ruralPropertyId], references: [id], onDelete: SetNull)
   registrationLinks           CarRegistrationLink[]
 
   @@index([farmId])
+  @@index([ruralPropertyId])
   @@index([carCode])
   @@map("car_registrations")
 }
@@ -950,6 +1042,106 @@ model CarRegistrationLink {
   @@index([carRegistrationId])
   @@index([farmRegistrationId])
   @@map("car_registration_links")
+}
+
+// ─── Rural Property Models ──────────────────────────────────────────
+
+model RuralProperty {
+  id                   String    @id @default(uuid())
+  farmId               String
+  denomination         String
+  cib                  String?
+  incraCode            String?
+  ccirCode             String?
+  ccirValidUntil       DateTime? @db.Date
+  ccirIssuedAt         DateTime? @db.Date
+  ccirGeneratedAt      DateTime? @db.Date
+  ccirPaymentStatus    String?
+  carCode              String?
+  totalAreaHa          Decimal?  @db.Decimal(12, 4)
+  registeredAreaHa     Decimal?  @db.Decimal(12, 4)
+  possessionByTitleHa  Decimal?  @db.Decimal(12, 4)
+  possessionByOccupationHa Decimal? @db.Decimal(12, 4)
+  measuredAreaHa       Decimal?  @db.Decimal(12, 4)
+  certifiedAreaHa      Decimal?  @db.Decimal(12, 4)
+  landClassification   String?
+  productive           Boolean?
+  locationDirections   String?
+  lastProcessingDate   DateTime? @db.Date
+
+  // Fiscal
+  fiscalModuleHa       Decimal?  @db.Decimal(12, 4)
+  fiscalModulesCount   Decimal?  @db.Decimal(12, 4)
+  ruralModuleHa        Decimal?  @db.Decimal(12, 4)
+  ruralModulesCount    Decimal?  @db.Decimal(12, 4)
+  minPartitionFraction Decimal?  @db.Decimal(12, 4)
+  vtnPerHa             Decimal?  @db.Decimal(12, 2)
+
+  // Ambiental
+  appAreaHa            Decimal?  @db.Decimal(12, 4)
+  legalReserveHa       Decimal?  @db.Decimal(12, 4)
+  taxableAreaHa        Decimal?  @db.Decimal(12, 4)
+  usableAreaHa         Decimal?  @db.Decimal(12, 4)
+  utilizationDegree    Decimal?  @db.Decimal(5, 2)
+
+  // Geo
+  municipality         String?
+  state                String?   @db.VarChar(2)
+  location             Unsupported("geometry(Point, 4326)")?
+  boundary             Unsupported("geometry(MultiPolygon, 4326)")?
+  boundaryAreaHa       Decimal?  @db.Decimal(12, 4)
+
+  deletedAt            DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  farm              Farm                @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  titles            FarmRegistration[]
+  owners            PropertyOwner[]
+  documents         PropertyDocument[]
+  fieldPlots        FieldPlot[]
+  boundaryVersions  FarmBoundaryVersion[]
+  carRegistrations  CarRegistration[]
+
+  @@index([farmId])
+  @@map("rural_properties")
+}
+
+model PropertyOwner {
+  id              String    @id @default(uuid())
+  ruralPropertyId String
+  name            String
+  document        String?
+  documentType    String?
+  fractionPct     Decimal?  @db.Decimal(5, 2)
+  ownerType       OwnerType @default(PROPRIETARIO)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  ruralProperty RuralProperty @relation(fields: [ruralPropertyId], references: [id], onDelete: Cascade)
+
+  @@index([ruralPropertyId])
+  @@map("property_owners")
+}
+
+model PropertyDocument {
+  id               String               @id @default(uuid())
+  ruralPropertyId  String
+  type             PropertyDocumentType
+  filename         String
+  mimeType         String?
+  sizeBytes        Int?
+  fileData         Bytes?
+  extractedData    Json?
+  extractionStatus ExtractionStatus     @default(PENDING)
+  uploadedAt       DateTime             @default(now())
+  uploadedBy       String?
+
+  ruralProperty RuralProperty @relation(fields: [ruralPropertyId], references: [id], onDelete: Cascade)
+
+  @@index([ruralPropertyId])
+  @@index([type])
+  @@map("property_documents")
 }
 
 // ─── Animal Models ──────────────────────────────────────────────────
@@ -1663,6 +1855,9 @@ model CostCenter {
 
   farm       Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
   fieldTeams FieldTeam[]
+  payableCostCenterItems    PayableCostCenterItem[]
+  receivableCostCenterItems ReceivableCostCenterItem[]
+  purchaseRequests          PurchaseRequest[]
 
   @@unique([farmId, code])
   @@index([farmId])
@@ -5079,4 +5274,882 @@ model FeedingRecordItem {
 
   @@index([feedingRecordId])
   @@map("feeding_record_items")
+}
+
+// ─── EPIC Financial Foundation — Bank Accounts ────────────────────────────────
+
+enum BankAccountType {
+  CHECKING
+  SAVINGS
+  INVESTMENT
+  RURAL_CREDIT
+}
+
+model BankAccount {
+  id             String          @id @default(uuid())
+  organizationId String
+  name           String
+  type           BankAccountType
+  bankCode       String
+  agency         String
+  agencyDigit    String?
+  accountNumber  String
+  accountDigit   String?
+  producerId     String?
+  notes          String?
+  isActive       Boolean         @default(true)
+  // CNAB convenience fields
+  convenioCode   String?
+  carteira       String?
+  variacao       String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  organization   Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  producer       Producer?             @relation(fields: [producerId], references: [id], onDelete: SetNull)
+  farms          BankAccountFarm[]
+  balance        BankAccountBalance?
+  transactions   FinancialTransaction[]
+  payables       Payable[]
+  receivables    Receivable[]
+  transfersFrom  AccountTransfer[]     @relation("TransferFrom")
+  transfersTo    AccountTransfer[]     @relation("TransferTo")
+  creditCards    CreditCard[]          @relation("CardDebitAccount")
+  checks         Check[]
+  statementImports    BankStatementImport[]
+  statementLines      BankStatementLine[]
+  ruralCreditContracts RuralCreditContract[]
+
+  @@index([organizationId])
+  @@index([organizationId, type])
+  @@map("bank_accounts")
+}
+
+model BankAccountFarm {
+  id            String @id @default(uuid())
+  bankAccountId String
+  farmId        String
+
+  bankAccount BankAccount @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+  farm        Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
+
+  @@unique([bankAccountId, farmId])
+  @@map("bank_account_farms")
+}
+
+model BankAccountBalance {
+  id             String   @id @default(uuid())
+  bankAccountId  String   @unique
+  organizationId String
+  initialBalance Decimal  @default(0) @db.Decimal(15, 2)
+  currentBalance Decimal  @default(0) @db.Decimal(15, 2)
+  updatedAt      DateTime @updatedAt
+
+  bankAccount  BankAccount  @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("bank_account_balances")
+}
+
+model FinancialTransaction {
+  id              String    @id @default(uuid())
+  organizationId  String
+  bankAccountId   String
+  type            String
+  amount          Decimal   @db.Decimal(15, 2)
+  description     String
+  referenceType   String?
+  referenceId     String?
+  transactionDate DateTime
+  createdAt       DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  bankAccount  BankAccount  @relation(fields: [bankAccountId], references: [id])
+
+  @@index([organizationId, bankAccountId])
+  @@index([organizationId, bankAccountId, transactionDate])
+  @@map("financial_transactions")
+}
+
+// ─── EPIC AP/AR — Contas a Pagar / Contas a Receber ──────────────────────────
+
+enum PayableStatus {
+  PENDING
+  PAID
+  PARTIAL
+  OVERDUE
+  CANCELLED
+}
+
+enum ReceivableStatus {
+  PENDING
+  RECEIVED
+  PARTIAL
+  OVERDUE
+  CANCELLED
+  RENEGOTIATED
+}
+
+enum RecurrenceFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+}
+
+enum PayableCategory {
+  INPUTS
+  MAINTENANCE
+  PAYROLL
+  RENT
+  SERVICES
+  TAXES
+  FINANCING
+  OTHER
+  CARTAO_CREDITO
+}
+
+// ─── Phase 4: Payment Instruments Enums ──────────────────────────────
+
+enum TransferType {
+  INTERNA
+  TED
+  APLICACAO
+  RESGATE
+}
+
+enum CardBrand {
+  VISA
+  MASTERCARD
+  ELO
+  AMEX
+  HIPERCARD
+  OTHER
+}
+
+enum BillStatus {
+  OPEN
+  CLOSED
+}
+
+enum CheckType {
+  EMITIDO
+  RECEBIDO
+}
+
+enum CheckStatus {
+  EMITIDO
+  A_COMPENSAR
+  COMPENSADO
+  DEVOLVIDO
+  CANCELADO
+}
+
+enum ReceivableCategory {
+  GRAIN_SALE
+  CATTLE_SALE
+  MILK_SALE
+  LEASE
+  SERVICES
+  OTHER
+}
+
+enum CostCenterAllocMode {
+  PERCENTAGE
+  FIXED_VALUE
+}
+
+model Payable {
+  id                  String              @id @default(uuid())
+  organizationId      String
+  farmId              String
+  producerId          String?
+  supplierName        String
+  category            PayableCategory
+  description         String
+  totalAmount         Decimal             @db.Decimal(15, 2)
+  dueDate             DateTime
+  status              PayableStatus       @default(PENDING)
+  documentNumber      String?
+  originType          String?
+  originId            String?
+  recurrenceFrequency RecurrenceFrequency?
+  recurrenceEndDate   DateTime?
+  recurrenceParentId  String?
+  installmentCount    Int                 @default(1)
+  paidAt              DateTime?
+  amountPaid          Decimal?            @db.Decimal(15, 2)
+  bankAccountId       String?
+  interestAmount      Decimal?            @db.Decimal(15, 2)
+  fineAmount          Decimal?            @db.Decimal(15, 2)
+  discountAmount      Decimal?            @db.Decimal(15, 2)
+  notes               String?
+  reconciled          Boolean             @default(false)
+  reconciledAt        DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  organization       Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  farm               Farm                   @relation(fields: [farmId], references: [id], onDelete: Restrict)
+  producer           Producer?              @relation(fields: [producerId], references: [id], onDelete: SetNull)
+  bankAccount        BankAccount?           @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+  installments       PayableInstallment[]
+  costCenterItems    PayableCostCenterItem[]
+  recurrenceChildren Payable[]              @relation("PayableRecurrence")
+  recurrenceParent   Payable?               @relation("PayableRecurrence", fields: [recurrenceParentId], references: [id])
+  creditCardBill         CreditCardBill?
+  ruralCreditInstallment RuralCreditInstallment?
+
+  @@index([organizationId, status, dueDate])
+  @@index([organizationId, farmId])
+  @@map("payables")
+}
+
+model PayableInstallment {
+  id         String        @id @default(uuid())
+  payableId  String
+  number     Int
+  amount     Decimal       @db.Decimal(15, 2)
+  dueDate    DateTime
+  status     PayableStatus @default(PENDING)
+  paidAt     DateTime?
+  amountPaid Decimal?      @db.Decimal(15, 2)
+
+  payable Payable @relation(fields: [payableId], references: [id], onDelete: Cascade)
+
+  @@index([payableId])
+  @@map("payable_installments")
+}
+
+model PayableCostCenterItem {
+  id           String              @id @default(uuid())
+  payableId    String
+  costCenterId String
+  farmId       String
+  allocMode    CostCenterAllocMode
+  percentage   Decimal?            @db.Decimal(5, 2)
+  fixedAmount  Decimal?            @db.Decimal(15, 2)
+
+  payable    Payable    @relation(fields: [payableId], references: [id], onDelete: Cascade)
+  costCenter CostCenter @relation(fields: [costCenterId], references: [id], onDelete: Restrict)
+  farm       Farm       @relation(fields: [farmId], references: [id], onDelete: Restrict)
+
+  @@map("payable_cost_center_items")
+}
+
+model Receivable {
+  id                  String             @id @default(uuid())
+  organizationId      String
+  farmId              String
+  producerId          String?
+  clientName          String
+  category            ReceivableCategory
+  description         String
+  totalAmount         Decimal            @db.Decimal(15, 2)
+  dueDate             DateTime
+  status              ReceivableStatus   @default(PENDING)
+  documentNumber      String?
+  nfeKey              String?
+  funruralRate        Decimal?           @db.Decimal(5, 4)
+  funruralAmount      Decimal?           @db.Decimal(15, 2)
+  originType          String?
+  originId            String?
+  recurrenceFrequency RecurrenceFrequency?
+  recurrenceEndDate   DateTime?
+  recurrenceParentId  String?
+  installmentCount    Int                @default(1)
+  receivedAt          DateTime?
+  amountReceived      Decimal?           @db.Decimal(15, 2)
+  bankAccountId       String?
+  interestAmount      Decimal?           @db.Decimal(15, 2)
+  fineAmount          Decimal?           @db.Decimal(15, 2)
+  discountAmount      Decimal?           @db.Decimal(15, 2)
+  notes               String?
+  reconciled          Boolean            @default(false)
+  reconciledAt        DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  organization         Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  farm                 Farm                      @relation(fields: [farmId], references: [id], onDelete: Restrict)
+  producer             Producer?                 @relation(fields: [producerId], references: [id], onDelete: SetNull)
+  bankAccount          BankAccount?              @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+  installments         ReceivableInstallment[]
+  costCenterItems      ReceivableCostCenterItem[]
+  recurrenceChildren   Receivable[]              @relation("ReceivableRecurrence")
+  recurrenceParent     Receivable?               @relation("ReceivableRecurrence", fields: [recurrenceParentId], references: [id])
+
+  @@index([organizationId, status, dueDate])
+  @@index([organizationId, farmId])
+  @@map("receivables")
+}
+
+model ReceivableInstallment {
+  id             String           @id @default(uuid())
+  receivableId   String
+  number         Int
+  amount         Decimal          @db.Decimal(15, 2)
+  dueDate        DateTime
+  status         ReceivableStatus @default(PENDING)
+  receivedAt     DateTime?
+  amountReceived Decimal?         @db.Decimal(15, 2)
+
+  receivable Receivable @relation(fields: [receivableId], references: [id], onDelete: Cascade)
+
+  @@index([receivableId])
+  @@map("receivable_installments")
+}
+
+model ReceivableCostCenterItem {
+  id           String              @id @default(uuid())
+  receivableId String
+  costCenterId String
+  farmId       String
+  allocMode    CostCenterAllocMode
+  percentage   Decimal?            @db.Decimal(5, 2)
+  fixedAmount  Decimal?            @db.Decimal(15, 2)
+
+  receivable Receivable @relation(fields: [receivableId], references: [id], onDelete: Cascade)
+  costCenter CostCenter @relation(fields: [costCenterId], references: [id], onDelete: Restrict)
+  farm       Farm       @relation(fields: [farmId], references: [id], onDelete: Restrict)
+
+  @@map("receivable_cost_center_items")
+}
+
+// ─── Phase 4: Payment Instruments Models ─────────────────────────────
+
+model AccountTransfer {
+  id             String       @id @default(uuid())
+  organizationId String
+  fromAccountId  String
+  toAccountId    String
+  type           TransferType
+  amount         Decimal      @db.Decimal(15, 2)
+  feeAmount      Decimal?     @db.Decimal(15, 2)
+  description    String
+  transferDate   DateTime
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  fromAccount  BankAccount  @relation("TransferFrom", fields: [fromAccountId], references: [id])
+  toAccount    BankAccount  @relation("TransferTo", fields: [toAccountId], references: [id])
+
+  @@index([organizationId, transferDate])
+  @@map("account_transfers")
+}
+
+model CreditCard {
+  id             String    @id @default(uuid())
+  organizationId String
+  name           String
+  brand          CardBrand
+  lastFourDigits String?
+  creditLimit    Decimal   @db.Decimal(15, 2)
+  closingDay     Int
+  dueDay         Int
+  debitAccountId String
+  farmId         String
+  holder         String
+  isActive       Boolean   @default(true)
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization        @relation(fields: [organizationId], references: [id])
+  debitAccount BankAccount         @relation("CardDebitAccount", fields: [debitAccountId], references: [id])
+  farm         Farm                @relation(fields: [farmId], references: [id])
+  expenses     CreditCardExpense[]
+  bills        CreditCardBill[]
+
+  @@index([organizationId])
+  @@map("credit_cards")
+}
+
+model CreditCardBill {
+  id             String     @id @default(uuid())
+  creditCardId   String
+  organizationId String
+  periodStart    DateTime
+  periodEnd      DateTime
+  dueDate        DateTime
+  totalAmount    Decimal    @default(0) @db.Decimal(15, 2)
+  status         BillStatus @default(OPEN)
+  payableId      String?    @unique
+  closedAt       DateTime?
+  createdAt      DateTime   @default(now())
+
+  creditCard   CreditCard          @relation(fields: [creditCardId], references: [id])
+  organization Organization        @relation(fields: [organizationId], references: [id])
+  expenses     CreditCardExpense[]
+  payable      Payable?            @relation(fields: [payableId], references: [id])
+
+  @@index([creditCardId, periodStart])
+  @@map("credit_card_bills")
+}
+
+model CreditCardExpense {
+  id                String   @id @default(uuid())
+  organizationId    String
+  creditCardId      String
+  billId            String?
+  description       String
+  amount            Decimal  @db.Decimal(15, 2)
+  expenseDate       DateTime
+  installmentNumber Int      @default(1)
+  totalInstallments Int      @default(1)
+  category          String?
+  notes             String?
+  createdAt         DateTime @default(now())
+
+  organization Organization    @relation(fields: [organizationId], references: [id])
+  creditCard   CreditCard      @relation(fields: [creditCardId], references: [id])
+  bill         CreditCardBill? @relation(fields: [billId], references: [id])
+
+  @@index([creditCardId, expenseDate])
+  @@map("credit_card_expenses")
+}
+
+model Check {
+  id                       String      @id @default(uuid())
+  organizationId           String
+  type                     CheckType
+  status                   CheckStatus @default(EMITIDO)
+  checkNumber              String
+  amount                   Decimal     @db.Decimal(15, 2)
+  bankAccountId            String
+  issueDate                DateTime
+  deliveryDate             DateTime?
+  expectedCompensationDate DateTime?
+  compensationDate         DateTime?
+  payeeName                String
+  description              String?
+  notes                    String?
+  createdAt                DateTime    @default(now())
+  updatedAt                DateTime    @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  bankAccount  BankAccount  @relation(fields: [bankAccountId], references: [id])
+
+  @@index([organizationId, status])
+  @@index([organizationId, expectedCompensationDate])
+  @@map("checks")
+}
+
+// ─── Phase 5: Conciliação Bancária ───────────────────────────────────────────
+
+enum BankStatementLineStatus {
+  PENDING
+  RECONCILED
+  IGNORED
+}
+
+enum ReconciliationConfidence {
+  EXATO
+  PROVAVEL
+  SEM_MATCH
+}
+
+model BankStatementImport {
+  id             String   @id @default(uuid())
+  organizationId String
+  bankAccountId  String
+  fileName       String
+  fileType       String
+  importedBy     String
+  totalLines     Int
+  importedLines  Int
+  skippedLines   Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  bankAccount  BankAccount         @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+  lines        BankStatementLine[]
+
+  @@index([organizationId, bankAccountId])
+  @@map("bank_statement_imports")
+}
+
+model BankStatementLine {
+  id             String                  @id @default(uuid())
+  organizationId String
+  importId       String
+  bankAccountId  String
+  fitId          String?
+  lineHash       String
+  trnType        String
+  amount         Decimal                 @db.Decimal(15, 2)
+  date           DateTime
+  memo           String
+  status         BankStatementLineStatus @default(PENDING)
+  createdAt      DateTime                @default(now())
+
+  organization    Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  import          BankStatementImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+  bankAccount     BankAccount         @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+  reconciliations Reconciliation[]
+
+  @@unique([bankAccountId, lineHash])
+  @@index([organizationId, bankAccountId, status])
+  @@map("bank_statement_lines")
+}
+
+model Reconciliation {
+  id              String                   @id @default(uuid())
+  organizationId  String
+  statementLineId String
+  referenceType   String
+  referenceId     String
+  confidenceScore Int
+  confidenceLevel ReconciliationConfidence
+  confirmedBy     String?
+  confirmedAt     DateTime?
+  createdAt       DateTime                 @default(now())
+
+  organization  Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  statementLine BankStatementLine @relation(fields: [statementLineId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, statementLineId])
+  @@map("reconciliations")
+}
+
+// ─── EPIC Crédito Rural ──────────────────────────────────────────────────────
+
+enum RuralCreditLine {
+  PRONAF
+  PRONAMP
+  FUNCAFE
+  CPR
+  CREDITO_LIVRE
+}
+
+enum AmortizationSystem {
+  SAC
+  PRICE
+  BULLET
+}
+
+enum RuralCreditStatus {
+  ATIVO
+  QUITADO
+  INADIMPLENTE
+  CANCELADO
+}
+
+model RuralCreditContract {
+  id                   String             @id @default(uuid())
+  organizationId       String
+  farmId               String
+  bankAccountId        String
+  contractNumber       String?
+  creditLine           RuralCreditLine
+  amortizationSystem   AmortizationSystem
+  principalAmount      Decimal            @db.Decimal(15, 2)
+  annualRate           Decimal            @db.Decimal(8, 6)
+  termMonths           Int
+  gracePeriodMonths    Int                @default(0)
+  firstPaymentYear     Int
+  firstPaymentMonth    Int
+  paymentDayOfMonth    Int                @default(1)
+  releasedAt           DateTime
+  iofAmount            Decimal?           @db.Decimal(15, 2)
+  tacAmount            Decimal?           @db.Decimal(15, 2)
+  guaranteeDescription String?
+  alertDaysBefore      Int                @default(15)
+  status               RuralCreditStatus  @default(ATIVO)
+  outstandingBalance   Decimal            @db.Decimal(15, 2)
+  totalPrincipalPaid   Decimal            @default(0) @db.Decimal(15, 2)
+  totalInterestPaid    Decimal            @default(0) @db.Decimal(15, 2)
+  notes                String?
+  cancelledAt          DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  organization  Organization             @relation(fields: [organizationId], references: [id])
+  farm          Farm                     @relation(fields: [farmId], references: [id])
+  bankAccount   BankAccount              @relation(fields: [bankAccountId], references: [id])
+  installments  RuralCreditInstallment[]
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, farmId])
+  @@map("rural_credit_contracts")
+}
+
+model RuralCreditInstallment {
+  id                      String   @id @default(uuid())
+  contractId              String
+  payableId               String   @unique
+  installmentNumber       Int
+  principal               Decimal  @db.Decimal(15, 2)
+  interest                Decimal  @db.Decimal(15, 2)
+  outstandingBalanceAfter Decimal  @db.Decimal(15, 2)
+  createdAt               DateTime @default(now())
+
+  contract RuralCreditContract @relation(fields: [contractId], references: [id])
+  payable  Payable              @relation(fields: [payableId], references: [id])
+
+  @@index([contractId])
+  @@map("rural_credit_installments")
+}
+
+// ─── EPIC Fornecedores ───────────────────────────────────────────────────────
+
+enum SupplierType {
+  PF
+  PJ
+}
+
+enum SupplierStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum SupplierCategory {
+  INSUMO_AGRICOLA
+  PECUARIO
+  PECAS
+  COMBUSTIVEL
+  EPI
+  SERVICOS
+  OUTROS
+}
+
+enum SupplierDocumentType {
+  CONTRATO
+  CERTIDAO
+  ALVARA
+  OUTRO
+}
+
+model Supplier {
+  id                String            @id @default(uuid())
+  organizationId    String
+  type              SupplierType
+  name              String
+  tradeName         String?
+  document          String            // stored clean (digits only)
+  stateRegistration String?           // IE
+  address           String?
+  city              String?
+  state             String?           @db.VarChar(2)
+  zipCode           String?
+  contactName       String?
+  contactPhone      String?
+  contactEmail      String?
+  paymentTerms      String?           // free text with autocomplete
+  freightType       String?           // "CIF" | "FOB"
+  notes             String?
+  status            SupplierStatus    @default(ACTIVE)
+  categories        SupplierCategory[]
+  createdBy         String
+  deletedAt         DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  organization Organization       @relation(fields: [organizationId], references: [id])
+  documents    SupplierDocument[]
+  ratings      SupplierRating[]
+
+  @@unique([document, organizationId])
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@map("suppliers")
+}
+
+model SupplierDocument {
+  id         String               @id @default(uuid())
+  supplierId String
+  type       SupplierDocumentType
+  filename   String
+  url        String               @default("")
+  mimeType   String?
+  sizeBytes  Int?
+  uploadedAt DateTime             @default(now())
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId])
+  @@map("supplier_documents")
+}
+
+model SupplierRating {
+  id             String   @id @default(uuid())
+  supplierId     String
+  organizationId String
+  deadline       Int      // 1-5
+  quality        Int      // 1-5
+  price          Int      // 1-5
+  service        Int      // 1-5
+  comment        String?
+  ratedBy        String
+  createdAt      DateTime @default(now())
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId])
+  @@index([organizationId])
+  @@map("supplier_ratings")
+}
+
+// ─── Purchase Request Module (Phase 8) ───────────────────────────────
+
+model PurchaseRequest {
+  id               String                 @id @default(cuid())
+  organizationId   String
+  farmId           String
+  sequentialNumber String
+  requestType      String
+  urgency          PurchaseRequestUrgency
+  status           PurchaseRequestStatus  @default(RASCUNHO)
+  justification    String?
+  costCenterId     String?
+  neededBy         DateTime?
+  geolat           Float?
+  geolon           Float?
+  photoUrl         String?
+  createdBy        String
+  submittedAt      DateTime?
+  slaDeadline      DateTime?
+  slaNotifiedAt    DateTime?
+  cancelledAt      DateTime?
+  deletedAt        DateTime?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  organization    Organization               @relation(fields: [organizationId], references: [id])
+  farm            Farm                       @relation(fields: [farmId], references: [id])
+  creator         User                       @relation("RCCreator", fields: [createdBy], references: [id])
+  costCenter      CostCenter?                @relation(fields: [costCenterId], references: [id])
+  items           PurchaseRequestItem[]
+  attachments     PurchaseRequestAttachment[]
+  approvalActions ApprovalAction[]
+  notifications   Notification[]
+
+  @@unique([organizationId, sequentialNumber])
+  @@index([organizationId, status])
+  @@index([farmId, status])
+  @@index([createdBy, status])
+  @@map("purchase_requests")
+}
+
+model PurchaseRequestItem {
+  id                 String          @id @default(cuid())
+  purchaseRequestId  String
+  productId          String?
+  productName        String
+  quantity           Decimal
+  unitId             String?
+  unitName           String
+  estimatedUnitPrice Decimal?
+  notes              String?
+
+  purchaseRequest PurchaseRequest @relation(fields: [purchaseRequestId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseRequestId])
+  @@map("purchase_request_items")
+}
+
+model PurchaseRequestAttachment {
+  id                String   @id @default(cuid())
+  purchaseRequestId String
+  fileName          String
+  filePath          String
+  mimeType          String
+  sizeBytes         Int
+  uploadedBy        String
+  createdAt         DateTime @default(now())
+
+  purchaseRequest PurchaseRequest @relation(fields: [purchaseRequestId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseRequestId])
+  @@map("purchase_request_attachments")
+}
+
+model ApprovalRule {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  requestType    String?
+  minAmount      Decimal  @default(0)
+  maxAmount      Decimal?
+  approverCount  Int      @default(1)
+  approver1Id    String
+  approver2Id    String?
+  priority       Int      @default(0)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  approver1    User         @relation("ApprovalRule1", fields: [approver1Id], references: [id])
+  approver2    User?        @relation("ApprovalRule2", fields: [approver2Id], references: [id])
+
+  @@index([organizationId, active])
+  @@map("approval_rules")
+}
+
+model ApprovalAction {
+  id                String    @id @default(cuid())
+  purchaseRequestId String
+  organizationId    String
+  step              Int
+  assignedTo        String
+  originalAssignee  String?
+  status            String    @default("PENDING")
+  comment           String?
+  decidedAt         DateTime?
+  createdAt         DateTime  @default(now())
+
+  purchaseRequest PurchaseRequest @relation(fields: [purchaseRequestId], references: [id])
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  assignee        User            @relation("ApprovalAssignee", fields: [assignedTo], references: [id])
+
+  @@index([purchaseRequestId, step])
+  @@index([assignedTo, status])
+  @@index([organizationId])
+  @@map("approval_actions")
+}
+
+model Delegation {
+  id             String   @id @default(cuid())
+  organizationId String
+  delegatorId    String
+  delegateId     String
+  startDate      DateTime
+  endDate        DateTime
+  active         Boolean  @default(true)
+  notes          String?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  delegator    User         @relation("DelegationFrom", fields: [delegatorId], references: [id])
+  delegate     User         @relation("DelegationTo", fields: [delegateId], references: [id])
+
+  @@index([delegatorId, active])
+  @@map("delegations")
+}
+
+model Notification {
+  id                String    @id @default(cuid())
+  organizationId    String
+  recipientId       String
+  purchaseRequestId String?
+  type              String
+  title             String
+  body              String
+  referenceId       String?
+  referenceType     String?
+  readAt            DateTime?
+  createdAt         DateTime  @default(now())
+
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  recipient       User             @relation("NotificationRecipient", fields: [recipientId], references: [id])
+  purchaseRequest PurchaseRequest? @relation(fields: [purchaseRequestId], references: [id])
+
+  @@index([recipientId, readAt])
+  @@index([organizationId, recipientId])
+  @@map("notifications")
 }

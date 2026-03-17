@@ -16,6 +16,10 @@ const RolesPage = lazy(() => import('@/pages/RolesPage'));
 const OrgUsersPage = lazy(() => import('@/pages/OrgUsersPage'));
 const FarmsPage = lazy(() => import('@/pages/FarmsPage'));
 const FarmMapPage = lazy(() => import('@/pages/FarmMapPage'));
+const FarmDetailPage = lazy(() => import('@/pages/FarmDetailPage'));
+const RuralPropertiesPage = lazy(() => import('@/pages/RuralPropertiesPage'));
+const CarRegistrationsPage = lazy(() => import('@/pages/CarRegistrationsPage'));
+const RegistrationsPage = lazy(() => import('@/pages/RegistrationsPage'));
 const AdminDashboardPage = lazy(() => import('@/pages/AdminDashboardPage'));
 const AdminOrganizationsPage = lazy(() => import('@/pages/AdminOrganizationsPage'));
 const AdminAuditLogsPage = lazy(() => import('@/pages/AdminAuditLogsPage'));
@@ -78,6 +82,20 @@ const MilkDashboardPage = lazy(() => import('@/pages/MilkDashboardPage'));
 const FeedIngredientsPage = lazy(() => import('@/pages/FeedIngredientsPage'));
 const DietsPage = lazy(() => import('@/pages/DietsPage'));
 const FeedingRecordsPage = lazy(() => import('@/pages/FeedingRecordsPage'));
+const BankAccountsPage = lazy(() => import('@/pages/BankAccountsPage'));
+const PayablesPage = lazy(() => import('@/pages/PayablesPage'));
+const ReceivablesPage = lazy(() => import('@/pages/ReceivablesPage'));
+const FinancialDashboardPage = lazy(() => import('@/pages/FinancialDashboardPage'));
+const TransfersPage = lazy(() => import('@/pages/TransfersPage'));
+const CreditCardsPage = lazy(() => import('@/pages/CreditCardsPage'));
+const ChecksPage = lazy(() => import('@/pages/ChecksPage'));
+const CashflowPage = lazy(() => import('@/pages/CashflowPage'));
+const ReconciliationPage = lazy(() => import('@/pages/ReconciliationPage'));
+const RuralCreditPage = lazy(() => import('@/pages/RuralCreditPage'));
+const RuralCreditDetailPage = lazy(() => import('@/pages/RuralCreditDetailPage'));
+const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
+const PurchaseRequestsPage = lazy(() => import('@/pages/PurchaseRequestsPage'));
+const ApprovalRulesPage = lazy(() => import('@/pages/ApprovalRulesPage'));
 
 export function App() {
   return (
@@ -103,7 +121,11 @@ export function App() {
                 <Route path="/users" element={<OrgUsersPage />} />
                 <Route path="/roles" element={<RolesPage />} />
                 <Route path="/farms" element={<FarmsPage />} />
+                <Route path="/farms/:farmId" element={<FarmDetailPage />} />
                 <Route path="/farms/:farmId/map" element={<FarmMapPage />} />
+                <Route path="/rural-properties" element={<RuralPropertiesPage />} />
+                <Route path="/car-registrations" element={<CarRegistrationsPage />} />
+                <Route path="/registrations" element={<RegistrationsPage />} />
                 <Route path="/producers" element={<ProducersPage />} />
                 <Route path="/animals" element={<AnimalsPage />} />
                 <Route path="/animals/:animalId" element={<AnimalDetailPage />} />
@@ -157,6 +179,20 @@ export function App() {
                 <Route path="/feed-ingredients" element={<FeedIngredientsPage />} />
                 <Route path="/diets" element={<DietsPage />} />
                 <Route path="/feeding-records" element={<FeedingRecordsPage />} />
+                <Route path="/financial-dashboard" element={<FinancialDashboardPage />} />
+                <Route path="/bank-accounts" element={<BankAccountsPage />} />
+                <Route path="/payables" element={<PayablesPage />} />
+                <Route path="/receivables" element={<ReceivablesPage />} />
+                <Route path="/transfers" element={<TransfersPage />} />
+                <Route path="/credit-cards" element={<CreditCardsPage />} />
+                <Route path="/checks" element={<ChecksPage />} />
+                <Route path="/cashflow" element={<CashflowPage />} />
+                <Route path="/reconciliation" element={<ReconciliationPage />} />
+                <Route path="/rural-credit" element={<RuralCreditPage />} />
+                <Route path="/rural-credit/:id" element={<RuralCreditDetailPage />} />
+                <Route path="/suppliers" element={<SuppliersPage />} />
+                <Route path="/purchase-requests" element={<PurchaseRequestsPage />} />
+                <Route path="/approval-rules" element={<ApprovalRulesPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}
