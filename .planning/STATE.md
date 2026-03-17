@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 07-01-PLAN.md
-last_updated: '2026-03-17T17:16:52.024Z'
+stopped_at: Completed 07-03-PLAN.md
+last_updated: '2026-03-17T17:26:30.316Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
+  completed_plans: 3
   percent: 0
 ---
 
@@ -47,6 +47,8 @@ Progress: [░░░░░░░░░░] 0%
 
 **Total v1.0:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
 | Phase 07-cadastro-de-fornecedores P01 | 7 | 2 tasks | 8 files |
+| Phase 07-cadastro-de-fornecedores P02 | 7min | 2 tasks | 6 files |
+| Phase 07-cadastro-de-fornecedores P03 | 7 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -63,6 +65,10 @@ Key decisions for v1.1:
 - **Saving analysis deferred to v1.2**: Requires 2-3 months of production price data to be meaningful
 - [Phase 07-cadastro-de-fornecedores]: Used db push + migrate resolve due to pre-existing shadow DB failure; migration file created manually and marked as applied
 - [Phase 07-cadastro-de-fornecedores]: purchases module added to RBAC: manage for MANAGER, read for FINANCIAL/AGRONOMIST/CONSULTANT
+- [Phase 07-cadastro-de-fornecedores]: Import routes placed BEFORE /:id routes to prevent Express from matching 'import' as an ID parameter
+- [Phase 07-cadastro-de-fornecedores]: Category label mapping uses bidirectional lookup so CSV can use both English enum values and Portuguese display labels
+- [Phase 07-cadastro-de-fornecedores]: COMPRAS sidebar group positioned between FINANCEIRO and CONFIGURACAO
+- [Phase 07-cadastro-de-fornecedores]: Import/Export/Rate buttons rendered as no-op stubs in SuppliersPage (Plan 04 wires them)
 
 ### Pending Todos
 
@@ -76,6 +82,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T17:16:52.022Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-03-17T17:26:30.314Z
+Stopped at: Completed 07-03-PLAN.md
 Resume file: None

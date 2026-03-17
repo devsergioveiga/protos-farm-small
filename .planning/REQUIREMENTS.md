@@ -9,9 +9,9 @@ Requirements for milestone v1.1. Each maps to roadmap phases.
 
 ### Fornecedores
 
-- [ ] **FORN-01**: Gerente pode cadastrar fornecedor com dados fiscais (razão social, CNPJ/CPF, IE, endereço), dados comerciais (contato principal, condição de pagamento padrão, frete CIF/FOB), classificação por categorias, vinculação a produtos do catálogo, upload de documentação, avaliação (rating 1-5), e status (ativo/inativo/bloqueado)
-- [ ] **FORN-02**: Gerente pode importar fornecedores em massa via CSV/Excel, consultar CNPJ para preencher dados automaticamente, buscar por nome/CNPJ/categoria/produto/cidade, e exportar listagem (CSV, PDF)
-- [ ] **FORN-03**: Gerente pode avaliar fornecedor após cada entrega (prazo, qualidade, preço, atendimento), ver ranking automático por média ponderada, histórico de avaliações, top 3 por categoria, alerta ao cotar com fornecedor rating < 3, e relatório de performance por período
+- [x] **FORN-01**: Gerente pode cadastrar fornecedor com dados fiscais (razão social, CNPJ/CPF, IE, endereço), dados comerciais (contato principal, condição de pagamento padrão, frete CIF/FOB), classificação por categorias, vinculação a produtos do catálogo, upload de documentação, avaliação (rating 1-5), e status (ativo/inativo/bloqueado)
+- [x] **FORN-02**: Gerente pode importar fornecedores em massa via CSV/Excel, consultar CNPJ para preencher dados automaticamente, buscar por nome/CNPJ/categoria/produto/cidade, e exportar listagem (CSV, PDF)
+- [x] **FORN-03**: Gerente pode avaliar fornecedor após cada entrega (prazo, qualidade, preço, atendimento), ver ranking automático por média ponderada, histórico de avaliações, top 3 por categoria, alerta ao cotar com fornecedor rating < 3, e relatório de performance por período
 
 ### Requisição de Compra
 
@@ -79,28 +79,28 @@ Deferred to future release. Tracked but not in current roadmap.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase    | Status  |
-| ----------- | -------- | ------- |
-| FORN-01     | Phase 7  | Pending |
-| FORN-02     | Phase 7  | Pending |
-| FORN-03     | Phase 7  | Pending |
-| REQC-01     | Phase 8  | Pending |
-| REQC-02     | Phase 8  | Pending |
-| REQC-03     | Phase 8  | Pending |
-| COTA-01     | Phase 9  | Pending |
-| COTA-02     | Phase 9  | Pending |
-| COTA-03     | Phase 9  | Pending |
-| PEDI-01     | Phase 9  | Pending |
-| RECE-01     | Phase 10 | Pending |
-| RECE-02     | Phase 10 | Pending |
-| RECE-03     | Phase 10 | Pending |
-| FINC-01     | Phase 10 | Pending |
-| DEVO-01     | Phase 11 | Pending |
-| FINC-02     | Phase 11 | Pending |
-| FINC-03     | Phase 11 | Pending |
-| DASH-01     | Phase 12 | Pending |
-| DASH-02     | Phase 12 | Pending |
-| DASH-03     | Phase 12 | Pending |
+| Requirement | Phase    | Status   |
+| ----------- | -------- | -------- |
+| FORN-01     | Phase 7  | Complete |
+| FORN-02     | Phase 7  | Complete |
+| FORN-03     | Phase 7  | Complete |
+| REQC-01     | Phase 8  | Pending  |
+| REQC-02     | Phase 8  | Pending  |
+| REQC-03     | Phase 8  | Pending  |
+| COTA-01     | Phase 9  | Pending  |
+| COTA-02     | Phase 9  | Pending  |
+| COTA-03     | Phase 9  | Pending  |
+| PEDI-01     | Phase 9  | Pending  |
+| RECE-01     | Phase 10 | Pending  |
+| RECE-02     | Phase 10 | Pending  |
+| RECE-03     | Phase 10 | Pending  |
+| FINC-01     | Phase 10 | Pending  |
+| DEVO-01     | Phase 11 | Pending  |
+| FINC-02     | Phase 11 | Pending  |
+| FINC-03     | Phase 11 | Pending  |
+| DASH-01     | Phase 12 | Pending  |
+| DASH-02     | Phase 12 | Pending  |
+| DASH-03     | Phase 12 | Pending  |
 
 **Coverage:**
 
