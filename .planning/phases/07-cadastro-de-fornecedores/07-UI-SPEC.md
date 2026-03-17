@@ -284,7 +284,7 @@ Each card:
   - Rank badge: #1 with Trophy icon (sun-500), #2 with Medal icon (neutral-400), #3 with Medal icon (earth-500)
   - Supplier name: DM Sans 500, `--text-base`
   - Star row: 5 stars, 16px each
-  - Average: `--text-xl`, DM Sans 700
+  - Average: `--text-lg` (20px), DM Sans 700
   - Count: "(N avaliações)", `--text-sm`, neutral-500
 
 ### SupplierModal (create/edit)
