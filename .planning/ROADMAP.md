@@ -26,7 +26,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 **Milestone Goal:** Implementar o ciclo completo de procurement — da requisição de compra até o recebimento e geração automática de contas a pagar.
 
 - [x] **Phase 7: Cadastro de Fornecedores** — Fundação do módulo: entidade raiz de todo o ciclo P2P (completed 2026-03-17)
-- [ ] **Phase 8: Requisição e Aprovação** — Entrada do ciclo: RC com fluxo de aprovação configurável por alçada
+- [x] **Phase 8: Requisição e Aprovação** — Entrada do ciclo: RC com fluxo de aprovação configurável por alçada (completed 2026-03-17)
 - [ ] **Phase 9: Cotação e Pedido de Compra** — Seleção de fornecedor e emissão formal da OC com PDF
 - [ ] **Phase 10: Recebimento de Mercadorias** — Hub de integração: entrada no estoque + geração automática de CP
 - [ ] **Phase 11: Devolução, Orçamento e Saving** — Reversão de estoque/financeiro e controle orçamentário
@@ -67,7 +67,7 @@ Plans:
 3. Gerente pode configurar alçadas de aprovação por valor e tipo, aprovar/rejeitar/devolver RCs pendentes e delegar temporariamente
 4. Solicitante recebe notificação ao ter RC aprovada ou rejeitada, com histórico disponível para auditoria
 5. Aprovador pode aprovar RC pelo mobile sem precisar acessar o desktop
-   **Plans:** 5/6 plans executed
+   **Plans:** 6/6 plans complete
 
 Plans:
 
@@ -144,7 +144,7 @@ Plans:
 | 5. Conciliação e Fluxo de Caixa      | v1.0      | 6/6            | Complete    | 2026-03-17 |
 | 6. Crédito Rural                     | v1.0      | 5/5            | Complete    | 2026-03-17 |
 | 7. Cadastro de Fornecedores          | 4/4       | Complete       | 2026-03-17  | -          |
-| 8. Requisição e Aprovação            | 5/6       | In Progress    |             | -          |
+| 8. Requisição e Aprovação            | 6/6       | Complete       | 2026-03-17  | -          |
 | 9. Cotação e Pedido de Compra        | v1.1      | 0/TBD          | Not started | -          |
 | 10. Recebimento de Mercadorias       | v1.1      | 0/TBD          | Not started | -          |
 | 11. Devolução, Orçamento e Saving    | v1.1      | 0/TBD          | Not started | -          |
