@@ -1,5 +1,5 @@
 import { withRlsContext, type RlsContext } from '../../database/rls';
-// prisma imported via RLS context
+import type { OwnerType, PropertyDocumentType, ExtractionStatus } from '@prisma/client';
 import { extractFromDocument } from './document-parsers/extract';
 import { parseGeoFile, validateGeometry } from '../farms/geo-parser';
 import { logger } from '../../shared/utils/logger';
@@ -67,8 +67,9 @@ function toNumber(val: unknown): number | null {
   return Number(val);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatProperty(
-  rp: Record<string, unknown> & { _count?: Record<string, number> },
+  rp: any,
   counts?: { titlesCount: number; ownersCount: number; documentsCount: number },
 ): RuralPropertyItem {
   return {
@@ -95,13 +96,8 @@ function formatProperty(
   };
 }
 
-function formatDetail(
-  rp: Record<string, unknown> & {
-    owners?: Record<string, unknown>[];
-    titles?: Record<string, unknown>[];
-    _count?: Record<string, number>;
-  },
-): RuralPropertyDetail {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function formatDetail(rp: any): RuralPropertyDetail {
   const base = formatProperty(rp);
   return {
     ...base,
@@ -130,7 +126,8 @@ function formatDetail(
     taxableAreaHa: toNumber(rp.taxableAreaHa),
     usableAreaHa: toNumber(rp.usableAreaHa),
     utilizationDegree: toNumber(rp.utilizationDegree),
-    owners: (rp.owners ?? []).map((o: Record<string, unknown>) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    owners: (rp.owners ?? []).map((o: any) => ({
       id: o.id,
       name: o.name,
       document: o.document,
@@ -138,7 +135,8 @@ function formatDetail(
       fractionPct: toNumber(o.fractionPct),
       ownerType: o.ownerType,
     })),
-    titles: (rp.titles ?? []).map((t: Record<string, unknown>) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    titles: (rp.titles ?? []).map((t: any) => ({
       id: t.id,
       number: t.number,
       cartorioName: t.cartorioName,
@@ -432,7 +430,7 @@ export async function addOwner(
         document: input.document || null,
         documentType: input.documentType || null,
         fractionPct: input.fractionPct ?? null,
-        ownerType: (input.ownerType as string) || 'PROPRIETARIO',
+        ownerType: (input.ownerType as OwnerType) || 'PROPRIETARIO',
       },
     });
 
@@ -538,11 +536,11 @@ export async function uploadDocument(
     const doc = await tx.propertyDocument.create({
       data: {
         ruralPropertyId: propertyId,
-        type: input.type as string,
+        type: input.type as PropertyDocumentType,
         filename: input.filename,
         mimeType: input.mimeType,
         sizeBytes: input.sizeBytes,
-        fileData: input.fileData,
+        fileData: new Uint8Array(input.fileData),
         extractionStatus: 'PENDING',
         uploadedBy: actorId,
       },
@@ -561,7 +559,7 @@ export async function uploadDocument(
       await tx.propertyDocument.update({
         where: { id: doc.id },
         data: {
-          extractionStatus: result.status as string,
+          extractionStatus: result.status as ExtractionStatus,
           extractedData: result.data as object,
         },
       });

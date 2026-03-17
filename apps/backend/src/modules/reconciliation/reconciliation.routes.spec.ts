@@ -533,13 +533,13 @@ describe('GET /api/org/reconciliation/imports/:id/lines', () => {
       status: 'PENDING',
       matches: [
         {
-          type: 'PAYABLE',
+          type: 'PAYABLE' as const,
           referenceId: 'payable-1',
           description: 'COMPRA INSUMOS',
           amount: 500,
           date: new Date('2026-03-05'),
           score: 100,
-          confidence: 'EXATO',
+          confidence: 'EXATO' as const,
         },
       ],
     },
@@ -762,18 +762,22 @@ describe('POST /api/org/reconciliation/imports/:id/lines/:lineId/ignore', () => 
 describe('GET /api/org/reconciliation/imports/:id/search', () => {
   const CANDIDATES = [
     {
-      type: 'PAYABLE',
+      type: 'PAYABLE' as const,
       referenceId: 'payable-1',
       description: 'COMPRA TRATOR',
       amount: 5000,
       date: new Date('2026-03-10'),
+      score: 0,
+      confidence: 'SEM_MATCH' as const,
     },
     {
-      type: 'RECEIVABLE',
+      type: 'RECEIVABLE' as const,
       referenceId: 'receivable-1',
       description: 'VENDA GADO',
       amount: 1000,
       date: new Date('2026-03-01'),
+      score: 0,
+      confidence: 'SEM_MATCH' as const,
     },
   ];
 

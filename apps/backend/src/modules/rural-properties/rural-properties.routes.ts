@@ -353,15 +353,13 @@ ruralPropertiesRouter.post(
 
       const docType = req.body.type;
       if (!docType || !(DOCUMENT_TYPES as readonly string[]).includes(docType)) {
-        res
-          .status(400)
-          .json({
-            error: `Tipo de documento inválido. Valores permitidos: ${DOCUMENT_TYPES.join(', ')}`,
-          });
+        res.status(400).json({
+          error: `Tipo de documento inválido. Valores permitidos: ${DOCUMENT_TYPES.join(', ')}`,
+        });
         return;
       }
 
-      if (!ALLOWED_DOCUMENT_MIMES.includes(req.file.mimetype as string)) {
+      if (!(ALLOWED_DOCUMENT_MIMES as readonly string[]).includes(req.file.mimetype)) {
         res
           .status(400)
           .json({ error: 'Formato de arquivo não suportado. Aceitos: PDF, JPEG, PNG' });
