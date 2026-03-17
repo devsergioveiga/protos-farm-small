@@ -88,6 +88,7 @@ const TransfersPage = lazy(() => import('@/pages/TransfersPage'));
 const CreditCardsPage = lazy(() => import('@/pages/CreditCardsPage'));
 const ChecksPage = lazy(() => import('@/pages/ChecksPage'));
 const CashflowPage = lazy(() => import('@/pages/CashflowPage'));
+const ReconciliationPage = lazy(() => import('@/pages/ReconciliationPage'));
 
 export function App() {
   return (
@@ -177,6 +178,7 @@ export function App() {
                 <Route path="/credit-cards" element={<CreditCardsPage />} />
                 <Route path="/checks" element={<ChecksPage />} />
                 <Route path="/cashflow" element={<CashflowPage />} />
+                <Route path="/reconciliation" element={<ReconciliationPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}
