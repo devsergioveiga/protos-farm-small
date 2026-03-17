@@ -121,7 +121,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
 
 1. Gerente consegue importar arquivo OFX ou CSV do banco (incluindo arquivos em ISO-8859-1 com vírgula como separador decimal) e ver preview dos lançamentos antes de confirmar
-2. Sistema apresenta cada linha do extrato com grau de confiança do match (exato / provável / sem match) usando critérios de valor, proximidade de data e tolerância FUNRURAL — e gerente pode aceitar, recusar ou vincular manualmente
+2. Sistema apresenta cada linha do extrato com grau de confiança do match (exato / provável / sem match) usando critérios de valor e proximidade de data — e gerente pode aceitar, recusar ou vincular manualmente
 3. Gerente visualiza fluxo de caixa projetado para os próximos 12 meses (não apenas 90 dias) com cenários otimista, realista e pessimista
 4. Alerta de saldo negativo dispara nas datas futuras projetadas onde o saldo cairia abaixo de zero — não apenas na data atual
 5. Projeção inclui cheques A_COMPENSAR na data prevista de compensação e parcelas de CP/CR em aberto nas suas datas de vencimento
@@ -130,7 +130,7 @@ Plans:
 
 Plans:
 
-- [ ] 05-01-PLAN.md — Schema + migration + OFX/CSV parsers + import service + routes
+- [ ] 05-01-PLAN.md — Schema + migration + OFX/CSV parsers + import service + reconciliation:manage permission + routes
 - [ ] 05-02-PLAN.md — Matching engine + reconciliation actions (accept/reject/link/ignore/report)
 - [ ] 05-03-PLAN.md — Cashflow projection service + DFC classification + export + routes
 - [ ] 05-04-PLAN.md — ReconciliationPage frontend (import history, preview modal, line list, manual link)
