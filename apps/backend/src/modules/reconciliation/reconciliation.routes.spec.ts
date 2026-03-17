@@ -25,6 +25,15 @@ jest.mock('./reconciliation.service', () => ({
   confirmImport: jest.fn(),
   listImports: jest.fn(),
   getImportDetail: jest.fn(),
+  scoreMatch: jest.fn(),
+  toConfidence: jest.fn(),
+  getImportLinesWithMatches: jest.fn(),
+  confirmReconciliation: jest.fn(),
+  rejectMatch: jest.fn(),
+  manualLink: jest.fn(),
+  ignoreStatementLine: jest.fn(),
+  searchCandidates: jest.fn(),
+  getReconciliationReport: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -402,5 +411,470 @@ describe('GET /api/org/reconciliation/imports/:id', () => {
 
     expect(res.status).toBe(404);
     expect(res.body.error).toBe('Import não encontrado');
+  });
+});
+
+// ─── scoreMatch pure function tests ──────────────────────────────────
+
+describe('scoreMatch pure function', () => {
+  // Import the real scoreMatch (not mocked) for pure function tests
+  // We test via the exported function from the actual module
+  let scoreMatchFn: typeof import('./reconciliation.service').scoreMatch;
+  let toConfidenceFn: typeof import('./reconciliation.service').toConfidence;
+
+  beforeAll(async () => {
+    jest.resetModules();
+    // Temporarily restore actual module for pure function tests
+    const mod = await jest.isolateModulesAsync(async () => {
+      jest.unmock('./reconciliation.service');
+      return import('./reconciliation.service');
+    });
+    scoreMatchFn = mod.scoreMatch;
+    toConfidenceFn = mod.toConfidence;
+  });
+
+  it('returns score >= 95 (EXATO) for exact value and date match with desc match', () => {
+    const line = { amount: 100, date: new Date('2026-03-15'), memo: 'PAGTO INS' };
+    const candidate = { amount: 100, date: new Date('2026-03-15'), description: 'PAGTO INS' };
+    const score = scoreMatchFn(line, candidate);
+    expect(score).toBeGreaterThanOrEqual(95);
+    expect(toConfidenceFn(score)).toBe('EXATO');
+  });
+
+  it('returns score >= 95 (EXATO) for exact value + date +-1 day', () => {
+    const line = { amount: 100, date: new Date('2026-03-15'), memo: 'ABC' };
+    const candidate = { amount: 100, date: new Date('2026-03-16'), description: 'XYZ' };
+    const score = scoreMatchFn(line, candidate);
+    expect(score).toBeGreaterThanOrEqual(90); // 50 value + 40 date = 90
+    expect(score).toBeGreaterThanOrEqual(90);
+  });
+
+  it('returns 70 <= score < 95 (PROVAVEL) for close value and date within 5 days', () => {
+    const line = { amount: 100, date: new Date('2026-03-15'), memo: 'X' };
+    const candidate = { amount: 99, date: new Date('2026-03-18'), description: 'Y' };
+    const score = scoreMatchFn(line, candidate);
+    expect(score).toBeGreaterThanOrEqual(70);
+    expect(score).toBeLessThan(95);
+    expect(toConfidenceFn(score)).toBe('PROVAVEL');
+  });
+
+  it('returns score < 70 (SEM_MATCH) for large value and date differences', () => {
+    const line = { amount: 100, date: new Date('2026-03-15'), memo: 'X' };
+    const candidate = { amount: 200, date: new Date('2026-04-01'), description: 'Y' };
+    const score = scoreMatchFn(line, candidate);
+    expect(score).toBeLessThan(70);
+    expect(toConfidenceFn(score)).toBe('SEM_MATCH');
+  });
+
+  it('adds 10 pts for description first 8 chars match (case insensitive)', () => {
+    const line = { amount: 100, date: new Date('2026-03-15'), memo: 'pagto boleto' };
+    const candidate1 = {
+      amount: 100,
+      date: new Date('2026-03-15'),
+      description: 'PAGTO BOLETO XPTO',
+    };
+    const candidate2 = { amount: 100, date: new Date('2026-03-15'), description: 'DIFERENTE' };
+    const score1 = scoreMatchFn(line, candidate1);
+    const score2 = scoreMatchFn(line, candidate2);
+    expect(score1).toBe(score2 + 10);
+  });
+
+  it('returns 0 value score when amounts differ by more than 5%', () => {
+    const line = { amount: 100, date: new Date('2026-03-15'), memo: 'X' };
+    const candidate = { amount: 90, date: new Date('2026-03-15'), description: 'X' };
+    const score = scoreMatchFn(line, candidate);
+    // valueScore=0, dateScore=40, descScore=10 = 50
+    expect(score).toBe(50);
+  });
+
+  it('toConfidence returns EXATO for score 100', () => {
+    expect(toConfidenceFn(100)).toBe('EXATO');
+  });
+
+  it('toConfidence returns PROVAVEL for score 70', () => {
+    expect(toConfidenceFn(70)).toBe('PROVAVEL');
+  });
+
+  it('toConfidence returns SEM_MATCH for score 69', () => {
+    expect(toConfidenceFn(69)).toBe('SEM_MATCH');
+  });
+});
+
+// ─── GET /imports/:id/lines ───────────────────────────────────────────
+
+describe('GET /api/org/reconciliation/imports/:id/lines', () => {
+  const LINES_WITH_MATCHES = [
+    {
+      id: 'line-1',
+      trnType: 'DEBIT',
+      amount: 500,
+      date: '2026-03-05T00:00:00.000Z',
+      memo: 'COMPRA INSUMOS',
+      status: 'PENDING',
+      matches: [
+        {
+          type: 'PAYABLE',
+          referenceId: 'payable-1',
+          description: 'COMPRA INSUMOS',
+          amount: 500,
+          date: new Date('2026-03-05'),
+          score: 100,
+          confidence: 'EXATO',
+        },
+      ],
+    },
+    {
+      id: 'line-2',
+      trnType: 'CREDIT',
+      amount: 1000,
+      date: '2026-03-01T00:00:00.000Z',
+      memo: 'VENDA GADO',
+      status: 'PENDING',
+      matches: [],
+    },
+  ];
+
+  it('returns 200 with lines and match candidates', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.getImportLinesWithMatches.mockResolvedValueOnce(LINES_WITH_MATCHES);
+
+    const res = await request(app)
+      .get('/api/org/reconciliation/imports/import-1/lines')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(2);
+    expect(res.body[0].id).toBe('line-1');
+    expect(res.body[0].matches).toHaveLength(1);
+    expect(res.body[0].matches[0].confidence).toBe('EXATO');
+  });
+
+  it('passes status query param to service', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.getImportLinesWithMatches.mockResolvedValueOnce([]);
+
+    await request(app)
+      .get('/api/org/reconciliation/imports/import-1/lines?status=PENDING')
+      .set('Authorization', 'Bearer token');
+
+    expect(mockedService.getImportLinesWithMatches).toHaveBeenCalledWith(
+      expect.anything(),
+      'import-1',
+      'PENDING',
+    );
+  });
+
+  it('returns 403 for OPERATOR (lacks reconciliation:manage)', async () => {
+    authAs({
+      userId: 'op-1',
+      email: 'op@org.com',
+      role: 'OPERATOR' as const,
+      organizationId: 'org-1',
+    });
+
+    const res = await request(app)
+      .get('/api/org/reconciliation/imports/import-1/lines')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(403);
+  });
+});
+
+// ─── POST /imports/:id/lines/:lineId/confirm ─────────────────────────
+
+describe('POST /api/org/reconciliation/imports/:id/lines/:lineId/confirm', () => {
+  it('returns 200 and calls confirmReconciliation', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.confirmReconciliation.mockResolvedValueOnce(undefined);
+
+    const res = await request(app)
+      .post('/api/org/reconciliation/imports/import-1/lines/line-1/confirm')
+      .set('Authorization', 'Bearer token')
+      .send({ reconciliationId: 'reconciliation-1' });
+
+    expect(res.status).toBe(200);
+    expect(mockedService.confirmReconciliation).toHaveBeenCalledWith(
+      expect.anything(),
+      'line-1',
+      'reconciliation-1',
+    );
+  });
+
+  it('returns 400 when reconciliationId is missing', async () => {
+    authAs(ADMIN_PAYLOAD);
+
+    const res = await request(app)
+      .post('/api/org/reconciliation/imports/import-1/lines/line-1/confirm')
+      .set('Authorization', 'Bearer token')
+      .send({});
+
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 404 on ReconciliationError from service', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.confirmReconciliation.mockRejectedValueOnce(
+      new ReconciliationError('Linha não encontrada', 404),
+    );
+
+    const res = await request(app)
+      .post('/api/org/reconciliation/imports/import-1/lines/line-1/confirm')
+      .set('Authorization', 'Bearer token')
+      .send({ reconciliationId: 'reconciliation-1' });
+
+    expect(res.status).toBe(404);
+  });
+});
+
+// ─── POST /imports/:id/lines/:lineId/reject ──────────────────────────
+
+describe('POST /api/org/reconciliation/imports/:id/lines/:lineId/reject', () => {
+  it('returns 200 and calls rejectMatch keeping status PENDING', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.rejectMatch.mockResolvedValueOnce(undefined);
+
+    const res = await request(app)
+      .post('/api/org/reconciliation/imports/import-1/lines/line-1/reject')
+      .set('Authorization', 'Bearer token')
+      .send({ reconciliationId: 'reconciliation-1' });
+
+    expect(res.status).toBe(200);
+    expect(mockedService.rejectMatch).toHaveBeenCalledWith(
+      expect.anything(),
+      'line-1',
+      'reconciliation-1',
+    );
+  });
+
+  it('returns 400 when reconciliationId is missing', async () => {
+    authAs(ADMIN_PAYLOAD);
+
+    const res = await request(app)
+      .post('/api/org/reconciliation/imports/import-1/lines/line-1/reject')
+      .set('Authorization', 'Bearer token')
+      .send({});
+
+    expect(res.status).toBe(400);
+  });
+});
+
+// ─── POST /imports/:id/lines/:lineId/link ────────────────────────────
+
+describe('POST /api/org/reconciliation/imports/:id/lines/:lineId/link', () => {
+  const VALID_LINKS = [
+    { referenceType: 'PAYABLE', referenceId: 'payable-1', amount: 300 },
+    { referenceType: 'PAYABLE', referenceId: 'payable-2', amount: 200 },
+  ];
+
+  it('returns 200 with valid N:N links', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.manualLink.mockResolvedValueOnce(undefined);
+
+    const res = await request(app)
+      .post('/api/org/reconciliation/imports/import-1/lines/line-1/link')
+      .set('Authorization', 'Bearer token')
+      .send({ links: VALID_LINKS });
+
+    expect(res.status).toBe(200);
+    expect(mockedService.manualLink).toHaveBeenCalledWith(expect.anything(), 'line-1', VALID_LINKS);
+  });
+
+  it('returns 400 when links array is missing', async () => {
+    authAs(ADMIN_PAYLOAD);
+
+    const res = await request(app)
+      .post('/api/org/reconciliation/imports/import-1/lines/line-1/link')
+      .set('Authorization', 'Bearer token')
+      .send({});
+
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when sum of links mismatches statement line amount', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.manualLink.mockRejectedValueOnce(
+      new ReconciliationError('Soma selecionada nao coincide com o valor do extrato', 400),
+    );
+
+    const res = await request(app)
+      .post('/api/org/reconciliation/imports/import-1/lines/line-1/link')
+      .set('Authorization', 'Bearer token')
+      .send({ links: VALID_LINKS });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('Soma selecionada');
+  });
+});
+
+// ─── POST /imports/:id/lines/:lineId/ignore ──────────────────────────
+
+describe('POST /api/org/reconciliation/imports/:id/lines/:lineId/ignore', () => {
+  it('returns 200 and calls ignoreStatementLine', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.ignoreStatementLine.mockResolvedValueOnce(undefined);
+
+    const res = await request(app)
+      .post('/api/org/reconciliation/imports/import-1/lines/line-1/ignore')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(mockedService.ignoreStatementLine).toHaveBeenCalledWith(expect.anything(), 'line-1');
+  });
+
+  it('returns 403 for OPERATOR', async () => {
+    authAs({
+      userId: 'op-1',
+      email: 'op@org.com',
+      role: 'OPERATOR' as const,
+      organizationId: 'org-1',
+    });
+
+    const res = await request(app)
+      .post('/api/org/reconciliation/imports/import-1/lines/line-1/ignore')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(403);
+  });
+});
+
+// ─── GET /imports/:id/search ─────────────────────────────────────────
+
+describe('GET /api/org/reconciliation/imports/:id/search', () => {
+  const CANDIDATES = [
+    {
+      type: 'PAYABLE',
+      referenceId: 'payable-1',
+      description: 'COMPRA TRATOR',
+      amount: 5000,
+      date: new Date('2026-03-10'),
+    },
+    {
+      type: 'RECEIVABLE',
+      referenceId: 'receivable-1',
+      description: 'VENDA GADO',
+      amount: 1000,
+      date: new Date('2026-03-01'),
+    },
+  ];
+
+  it('returns 200 with matching candidates', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.searchCandidates.mockResolvedValueOnce(CANDIDATES);
+
+    const res = await request(app)
+      .get('/api/org/reconciliation/imports/import-1/search?search=COMPRA&bankAccountId=account-1')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(2);
+    expect(res.body[0].type).toBe('PAYABLE');
+  });
+
+  it('passes search and bankAccountId to service', async () => {
+    authAs(MANAGER_PAYLOAD);
+    mockedService.searchCandidates.mockResolvedValueOnce([]);
+
+    await request(app)
+      .get('/api/org/reconciliation/imports/import-1/search?search=TRATOR&bankAccountId=account-2')
+      .set('Authorization', 'Bearer token');
+
+    expect(mockedService.searchCandidates).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ search: 'TRATOR', bankAccountId: 'account-2' }),
+    );
+  });
+});
+
+// ─── GET /imports/:id/report ─────────────────────────────────────────
+
+describe('GET /api/org/reconciliation/imports/:id/report', () => {
+  it('returns CSV content with text/csv Content-Type', async () => {
+    authAs(ADMIN_PAYLOAD);
+    const csvBuffer = Buffer.from('Data,Tipo,Valor,Status\n2026-03-01,CREDIT,1000,RECONCILED\n');
+    mockedService.getReconciliationReport.mockResolvedValueOnce({
+      summary: {
+        pending: 0,
+        reconciled: 1,
+        ignored: 0,
+        totalPending: 0,
+        totalReconciled: 1000,
+        totalIgnored: 0,
+      },
+      buffer: csvBuffer,
+    });
+
+    const res = await request(app)
+      .get('/api/org/reconciliation/imports/import-1/report?format=csv')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('text/csv');
+    expect(res.headers['content-disposition']).toContain('reconciliation-report.csv');
+  });
+
+  it('returns PDF content with application/pdf Content-Type', async () => {
+    authAs(ADMIN_PAYLOAD);
+    const pdfBuffer = Buffer.from('%PDF-1.4 fake pdf content');
+    mockedService.getReconciliationReport.mockResolvedValueOnce({
+      summary: {
+        pending: 1,
+        reconciled: 2,
+        ignored: 0,
+        totalPending: 100,
+        totalReconciled: 1500,
+        totalIgnored: 0,
+      },
+      buffer: pdfBuffer,
+    });
+
+    const res = await request(app)
+      .get('/api/org/reconciliation/imports/import-1/report?format=pdf')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('application/pdf');
+    expect(res.headers['content-disposition']).toContain('reconciliation-report.pdf');
+  });
+
+  it('defaults to csv format when format param is omitted', async () => {
+    authAs(ADMIN_PAYLOAD);
+    const csvBuffer = Buffer.from('Data,Status\n');
+    mockedService.getReconciliationReport.mockResolvedValueOnce({
+      summary: {
+        pending: 0,
+        reconciled: 0,
+        ignored: 0,
+        totalPending: 0,
+        totalReconciled: 0,
+        totalIgnored: 0,
+      },
+      buffer: csvBuffer,
+    });
+
+    const res = await request(app)
+      .get('/api/org/reconciliation/imports/import-1/report')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(mockedService.getReconciliationReport).toHaveBeenCalledWith(
+      expect.anything(),
+      'import-1',
+      'csv',
+    );
+  });
+
+  it('returns 403 for OPERATOR', async () => {
+    authAs({
+      userId: 'op-1',
+      email: 'op@org.com',
+      role: 'OPERATOR' as const,
+      organizationId: 'org-1',
+    });
+
+    const res = await request(app)
+      .get('/api/org/reconciliation/imports/import-1/report')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(403);
   });
 });
