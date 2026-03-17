@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 07-03-PLAN.md
-last_updated: '2026-03-17T17:26:30.316Z'
+stopped_at: 'Completed 07-04-PLAN.md (checkpoint:human-verify pending)'
+last_updated: '2026-03-17T17:35:49.285Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -49,6 +49,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 07-cadastro-de-fornecedores P01 | 7 | 2 tasks | 8 files |
 | Phase 07-cadastro-de-fornecedores P02 | 7min | 2 tasks | 6 files |
 | Phase 07-cadastro-de-fornecedores P03 | 7 | 2 tasks | 9 files |
+| Phase 07-cadastro-de-fornecedores P04 | 7min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,8 @@ Key decisions for v1.1:
 - [Phase 07-cadastro-de-fornecedores]: Category label mapping uses bidirectional lookup so CSV can use both English enum values and Portuguese display labels
 - [Phase 07-cadastro-de-fornecedores]: COMPRAS sidebar group positioned between FINANCEIRO and CONFIGURACAO
 - [Phase 07-cadastro-de-fornecedores]: Import/Export/Rate buttons rendered as no-op stubs in SuppliersPage (Plan 04 wires them)
+- [Phase 07-cadastro-de-fornecedores]: Export uses api.getBlob() rather than window.open — preserves auth header and enables loading state
+- [Phase 07-cadastro-de-fornecedores]: SupplierRatingModal form uses id/form attribute pattern so footer submit button is outside form element
 
 ### Pending Todos
 
@@ -82,6 +85,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T17:26:30.314Z
-Stopped at: Completed 07-03-PLAN.md
+Last session: 2026-03-17T17:35:49.283Z
+Stopped at: Completed 07-04-PLAN.md (checkpoint:human-verify pending)
 Resume file: None

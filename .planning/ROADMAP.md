@@ -25,7 +25,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 **Milestone Goal:** Implementar o ciclo completo de procurement — da requisição de compra até o recebimento e geração automática de contas a pagar.
 
-- [ ] **Phase 7: Cadastro de Fornecedores** — Fundação do módulo: entidade raiz de todo o ciclo P2P
+- [x] **Phase 7: Cadastro de Fornecedores** — Fundação do módulo: entidade raiz de todo o ciclo P2P (completed 2026-03-17)
 - [ ] **Phase 8: Requisição e Aprovação** — Entrada do ciclo: RC com fluxo de aprovação configurável por alçada
 - [ ] **Phase 9: Cotação e Pedido de Compra** — Seleção de fornecedor e emissão formal da OC com PDF
 - [ ] **Phase 10: Recebimento de Mercadorias** — Hub de integração: entrada no estoque + geração automática de CP
@@ -46,7 +46,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 3. Gerente pode avaliar um fornecedor (prazo, qualidade, preço, atendimento) e ver o ranking automático por média ponderada
 4. O sistema alerta ao iniciar cotação com fornecedor com rating abaixo de 3
 5. Gerente pode exportar a listagem de fornecedores em CSV ou PDF
-   **Plans:** 3/4 plans executed
+   **Plans:** 4/4 plans complete
 
 Plans:
 
@@ -134,7 +134,7 @@ Plans:
 | 4. Instrumentos de Pagamento         | v1.0      | 7/7            | Complete    | 2026-03-17 |
 | 5. Conciliação e Fluxo de Caixa      | v1.0      | 6/6            | Complete    | 2026-03-17 |
 | 6. Crédito Rural                     | v1.0      | 5/5            | Complete    | 2026-03-17 |
-| 7. Cadastro de Fornecedores          | 3/4       | In Progress    |             | -          |
+| 7. Cadastro de Fornecedores          | 4/4       | Complete       | 2026-03-17  | -          |
 | 8. Requisição e Aprovação            | v1.1      | 0/TBD          | Not started | -          |
 | 9. Cotação e Pedido de Compra        | v1.1      | 0/TBD          | Not started | -          |
 | 10. Recebimento de Mercadorias       | v1.1      | 0/TBD          | Not started | -          |
