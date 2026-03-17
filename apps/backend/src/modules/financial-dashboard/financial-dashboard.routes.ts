@@ -3,7 +3,10 @@ import { authenticate } from '../../middleware/auth';
 import { checkPermission } from '../../middleware/check-permission';
 import type { RlsContext } from '../../database/rls';
 import { FinancialDashboardError, type FinancialDashboardQuery } from './financial-dashboard.types';
-import { getFinancialDashboard } from './financial-dashboard.service';
+import {
+  getFinancialDashboard,
+  getNegativeBalanceAlertForDashboard,
+} from './financial-dashboard.service';
 
 export const financialDashboardRouter = Router();
 
@@ -25,6 +28,28 @@ function handleError(err: unknown, res: import('express').Response): void {
   console.error('FinancialDashboardError não tratado:', err);
   res.status(500).json({ error: 'Erro interno do servidor' });
 }
+
+// ─── GET /org/financial-dashboard/negative-balance-alert ─────────────
+
+financialDashboardRouter.get(
+  '/org/financial-dashboard/negative-balance-alert',
+  authenticate,
+  checkPermission('financial:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const farmId = req.query.farmId as string | undefined;
+      const result = await getNegativeBalanceAlertForDashboard(ctx, farmId);
+      if (result === null) {
+        res.json({ negativeBalanceDate: null, negativeBalanceAmount: null });
+      } else {
+        res.json(result);
+      }
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
 
 // ─── GET /org/financial-dashboard ────────────────────────────────────
 

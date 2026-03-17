@@ -19,6 +19,7 @@ import {
   useFinancialDashboard,
   type FinancialDashboardPeriod,
 } from '@/hooks/useFinancialDashboard';
+import { useNegativeBalanceAlert } from '@/hooks/useCashflow';
 import './FinancialDashboardPage.css';
 
 const RevenueExpenseChart = lazy(
@@ -182,6 +183,8 @@ export default function FinancialDashboardPage() {
     farmId: localFarmId,
     period,
   });
+
+  const { alert: negativeBalanceAlert } = useNegativeBalanceAlert(localFarmId ?? undefined);
 
   const isQuarter = periodValue === 'quarter';
 
@@ -506,6 +509,29 @@ export default function FinancialDashboardPage() {
               </div>
             </div>
           </section>
+
+          {/* Negative balance projected alert card */}
+          {negativeBalanceAlert !== null && (
+            <section
+              className="fin-dashboard__alert-card--negative"
+              aria-label="Alerta de saldo negativo previsto"
+              role="alert"
+            >
+              <div className="fin-dashboard__alert-card-header">
+                <AlertCircle size={20} aria-hidden="true" />
+                <strong>Saldo negativo previsto</strong>
+              </div>
+              <p className="fin-dashboard__alert-card-body">
+                em {negativeBalanceAlert.date} —{' '}
+                <span className="fin-dashboard__alert-card-amount">
+                  {formatBRL(negativeBalanceAlert.amount)}
+                </span>
+              </p>
+              <Link to="/cashflow" className="fin-dashboard__alert-card-link">
+                Ver projeção
+              </Link>
+            </section>
+          )}
 
           {/* Alerts panel */}
           <section className="fin-dashboard__alerts" aria-label="Alertas financeiros" role="status">

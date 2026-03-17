@@ -1,12 +1,27 @@
 import { Money } from '@protos-farm/shared';
 import { withRlsContext, type RlsContext } from '../../database/rls';
 import { PAYABLE_CATEGORY_LABELS } from '../payables/payables.types';
+import { getNegativeBalanceAlert } from '../cashflow/cashflow.service';
 import {
   type FinancialDashboardQuery,
   type FinancialDashboardOutput,
 } from './financial-dashboard.types';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+// ─── getNegativeBalanceAlertForDashboard ──────────────────────────────
+
+export async function getNegativeBalanceAlertForDashboard(
+  ctx: RlsContext,
+  farmId?: string,
+): Promise<{ negativeBalanceDate: string; negativeBalanceAmount: number } | null> {
+  const result = await getNegativeBalanceAlert(ctx, farmId);
+  if (result === null) return null;
+  return {
+    negativeBalanceDate: result.date,
+    negativeBalanceAmount: result.amount,
+  };
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
