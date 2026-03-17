@@ -65,6 +65,7 @@ import {
   TreePine,
   TrendingUp,
   GitMerge,
+  Handshake,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -190,6 +191,10 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/reconciliation', icon: GitMerge, label: 'Conciliação bancária' },
       { to: '/rural-credit', icon: Landmark, label: 'Crédito Rural' },
     ],
+  },
+  {
+    title: 'COMPRAS',
+    items: [{ to: '/suppliers', icon: Handshake, label: 'Fornecedores' }],
   },
   {
     title: 'CONFIGURAÇÃO',

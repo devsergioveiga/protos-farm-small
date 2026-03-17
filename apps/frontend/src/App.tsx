@@ -93,6 +93,7 @@ const CashflowPage = lazy(() => import('@/pages/CashflowPage'));
 const ReconciliationPage = lazy(() => import('@/pages/ReconciliationPage'));
 const RuralCreditPage = lazy(() => import('@/pages/RuralCreditPage'));
 const RuralCreditDetailPage = lazy(() => import('@/pages/RuralCreditDetailPage'));
+const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
 
 export function App() {
   return (
@@ -187,6 +188,7 @@ export function App() {
                 <Route path="/reconciliation" element={<ReconciliationPage />} />
                 <Route path="/rural-credit" element={<RuralCreditPage />} />
                 <Route path="/rural-credit/:id" element={<RuralCreditDetailPage />} />
+                <Route path="/suppliers" element={<SuppliersPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}
