@@ -22,6 +22,14 @@ jest.mock('./suppliers.service', () => ({
   listSuppliers: jest.fn(),
   updateSupplier: jest.fn(),
   deleteSupplier: jest.fn(),
+  importSuppliersPreview: jest.fn(),
+  importSuppliersExecute: jest.fn(),
+  getImportTemplate: jest.fn(),
+  exportSuppliersCsv: jest.fn(),
+  exportSuppliersPdf: jest.fn(),
+  createRating: jest.fn(),
+  listRatings: jest.fn(),
+  getTop3ByCategory: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -438,6 +446,287 @@ describe('Suppliers endpoints', () => {
 
       expect(response.status).toBe(404);
       expect(response.body.error).toContain('não encontrado');
+    });
+  });
+
+  // ─── GET /api/org/suppliers/export/csv ───────────────────────────
+
+  describe('GET /api/org/suppliers/export/csv', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return text/csv with BOM', async () => {
+      const csvContent = '\uFEFFNome;CNPJ/CPF\nAgro Ltda;12345678000195';
+      mockedService.exportSuppliersCsv.mockResolvedValue(csvContent as never);
+
+      const response = await request(app)
+        .get('/api/org/suppliers/export/csv')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toContain('text/csv');
+      expect(response.headers['content-disposition']).toContain('fornecedores.csv');
+      expect(mockedService.exportSuppliersCsv).toHaveBeenCalled();
+    });
+  });
+
+  // ─── GET /api/org/suppliers/export/pdf ───────────────────────────
+
+  describe('GET /api/org/suppliers/export/pdf', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return application/pdf', async () => {
+      const pdfBuffer = Buffer.from('%PDF-1.4 fake pdf content');
+      mockedService.exportSuppliersPdf.mockResolvedValue(pdfBuffer as never);
+
+      const response = await request(app)
+        .get('/api/org/suppliers/export/pdf')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toContain('application/pdf');
+      expect(response.headers['content-disposition']).toContain('fornecedores.pdf');
+    });
+  });
+
+  // ─── POST /api/org/suppliers/import/preview ───────────────────────
+
+  describe('POST /api/org/suppliers/import/preview', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return valid and invalid rows from uploaded file', async () => {
+      mockedService.importSuppliersPreview.mockResolvedValue({
+        valid: [
+          { type: 'PJ', name: 'Agro Ltda', document: '11222333000181', categories: ['OUTROS'] },
+        ],
+        invalid: [],
+        existing: [],
+      } as never);
+
+      const csvContent =
+        'Tipo;Nome/Razão Social;Nome Fantasia;CNPJ/CPF;IE;Endereço;Cidade;UF;CEP;Contato Nome;Contato Telefone;Contato Email;Condição Pagamento;Frete;Categorias\nPJ;Agro Ltda;;11222333000181;;;;;;;;;;;OUTROS';
+      const csvBuffer = Buffer.from(csvContent);
+
+      const response = await request(app)
+        .post('/api/org/suppliers/import/preview')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', csvBuffer, { filename: 'test.csv', contentType: 'text/csv' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.valid).toHaveLength(1);
+      expect(response.body.invalid).toHaveLength(0);
+    });
+
+    it('should return 400 when no file is provided', async () => {
+      const response = await request(app)
+        .post('/api/org/suppliers/import/preview')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should return 403 for OPERATOR', async () => {
+      authAs(OPERATOR_PAYLOAD);
+      const response = await request(app)
+        .post('/api/org/suppliers/import/preview')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(403);
+    });
+  });
+
+  // ─── POST /api/org/suppliers/import/execute ──────────────────────
+
+  describe('POST /api/org/suppliers/import/execute', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should import valid rows and skip existing', async () => {
+      mockedService.importSuppliersExecute.mockResolvedValue({
+        imported: 2,
+        skipped: 1,
+        failed: 0,
+        errors: [],
+      } as never);
+
+      const csvContent =
+        'Tipo;Nome/Razão Social;Nome Fantasia;CNPJ/CPF;IE;Endereço;Cidade;UF;CEP;Contato Nome;Contato Telefone;Contato Email;Condição Pagamento;Frete;Categorias\nPJ;Agro Ltda;;11222333000181;;;;;;;;;;;OUTROS';
+      const csvBuffer = Buffer.from(csvContent);
+
+      const response = await request(app)
+        .post('/api/org/suppliers/import/execute')
+        .set('Authorization', 'Bearer valid-token')
+        .attach('file', csvBuffer, { filename: 'test.csv', contentType: 'text/csv' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.imported).toBe(2);
+      expect(response.body.skipped).toBe(1);
+    });
+  });
+
+  // ─── GET /api/org/suppliers/import/template ──────────────────────
+
+  describe('GET /api/org/suppliers/import/template', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return a downloadable CSV template', async () => {
+      const template = '\uFEFFTipo;Nome/Razão Social;...';
+      mockedService.getImportTemplate.mockReturnValue(template as never);
+
+      const response = await request(app)
+        .get('/api/org/suppliers/import/template')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toContain('text/csv');
+      expect(response.headers['content-disposition']).toContain('template');
+    });
+  });
+
+  // ─── POST /api/org/suppliers/:id/ratings ─────────────────────────
+
+  describe('POST /api/org/suppliers/:id/ratings', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    const VALID_RATING = { deadline: 5, quality: 4, price: 3, service: 4, comment: 'Bom' };
+
+    it('should add rating with valid criteria and return 201', async () => {
+      const createdRating = {
+        id: 'rat-1',
+        supplierId: 'sup-1',
+        organizationId: 'org-1',
+        ...VALID_RATING,
+        ratedBy: 'admin-1',
+        createdAt: new Date(),
+      };
+      mockedService.createRating.mockResolvedValue(createdRating as never);
+
+      const response = await request(app)
+        .post('/api/org/suppliers/sup-1/ratings')
+        .set('Authorization', 'Bearer valid-token')
+        .send(VALID_RATING);
+
+      expect(response.status).toBe(201);
+      expect(response.body.id).toBe('rat-1');
+      expect(mockedService.createRating).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        'sup-1',
+        expect.objectContaining({ deadline: 5 }),
+        'admin-1',
+      );
+    });
+
+    it('should return 400 for invalid rating values', async () => {
+      mockedService.createRating.mockRejectedValue(
+        new SupplierError('Critério "deadline" deve ser um número inteiro entre 1 e 5.', 400),
+      );
+
+      const response = await request(app)
+        .post('/api/org/suppliers/sup-1/ratings')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ deadline: 6, quality: 3, price: 3, service: 3 });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toContain('Critério');
+    });
+
+    it('should return 404 if supplier not found', async () => {
+      mockedService.createRating.mockRejectedValue(
+        new SupplierError('Fornecedor não encontrado', 404),
+      );
+
+      const response = await request(app)
+        .post('/api/org/suppliers/nonexistent/ratings')
+        .set('Authorization', 'Bearer valid-token')
+        .send(VALID_RATING);
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  // ─── GET /api/org/suppliers/:id/ratings ──────────────────────────
+
+  describe('GET /api/org/suppliers/:id/ratings', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return rating history', async () => {
+      const ratings = [
+        {
+          id: 'rat-2',
+          deadline: 4,
+          quality: 4,
+          price: 3,
+          service: 4,
+          comment: null,
+          individualAverage: 3.75,
+          createdAt: new Date('2026-02-01'),
+        },
+        {
+          id: 'rat-1',
+          deadline: 5,
+          quality: 5,
+          price: 4,
+          service: 5,
+          comment: 'Excelente',
+          individualAverage: 4.75,
+          createdAt: new Date('2026-01-01'),
+        },
+      ];
+      mockedService.listRatings.mockResolvedValue(ratings as never);
+
+      const response = await request(app)
+        .get('/api/org/suppliers/sup-1/ratings')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(2);
+      expect(mockedService.listRatings).toHaveBeenCalledWith({ organizationId: 'org-1' }, 'sup-1');
+    });
+  });
+
+  // ─── GET /api/org/suppliers/top3 ─────────────────────────────────
+
+  describe('GET /api/org/suppliers/top3', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('should return top 3 suppliers by category', async () => {
+      const top3 = [
+        { ...VALID_SUPPLIER, id: 'sup-1', averageRating: 4.8, ratingCount: 5 },
+        { ...VALID_SUPPLIER, id: 'sup-2', averageRating: 4.2, ratingCount: 3 },
+        { ...VALID_SUPPLIER, id: 'sup-3', averageRating: 3.5, ratingCount: 2 },
+      ];
+      mockedService.getTop3ByCategory.mockResolvedValue(top3 as never);
+
+      const response = await request(app)
+        .get('/api/org/suppliers/top3?category=PECUARIO')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(3);
+      expect(response.body[0].averageRating).toBe(4.8);
+      expect(mockedService.getTop3ByCategory).toHaveBeenCalledWith(
+        { organizationId: 'org-1' },
+        'PECUARIO',
+      );
+    });
+
+    it('should return 400 if category is missing', async () => {
+      const response = await request(app)
+        .get('/api/org/suppliers/top3')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toContain('category');
+    });
+
+    it('should return 400 for invalid category', async () => {
+      mockedService.getTop3ByCategory.mockRejectedValue(
+        new SupplierError('Categoria inválida: INVALIDO.', 400),
+      );
+
+      const response = await request(app)
+        .get('/api/org/suppliers/top3?category=INVALIDO')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(400);
     });
   });
 });
