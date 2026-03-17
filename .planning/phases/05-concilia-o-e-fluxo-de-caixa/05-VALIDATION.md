@@ -39,7 +39,7 @@ created: 2026-03-16
 | Task ID  | Plan | Wave | Requirement | Test Type  | Automated Command                                       | File Exists | Status     |
 | -------- | ---- | ---- | ----------- | ---------- | ------------------------------------------------------- | ----------- | ---------- |
 | 05-01-T1 | 01   | 1    | FN-06       | unit       | `prisma validate && prisma generate`                    | ✅          | ⬜ pending |
-| 05-01-T2 | 01   | 1    | FN-06       | unit+route | `pnpm test -- --testPathPattern=bank-statement-imports` | ❌ W0       | ⬜ pending |
+| 05-01-T2 | 01   | 1    | FN-06       | unit+route | `pnpm test -- --testPathPattern=reconciliation`         | ❌ W0       | ⬜ pending |
 | 05-02-T1 | 02   | 2    | FN-06       | unit+route | `pnpm test -- --testPathPattern=reconciliation`         | ❌ W0       | ⬜ pending |
 | 05-03-T1 | 03   | 2    | FN-13       | unit+route | `pnpm test -- --testPathPattern=cashflow`               | ❌ W0       | ⬜ pending |
 | 05-04-T1 | 04   | 3    | FN-06       | tsc        | `pnpm --filter @protos-farm/frontend exec tsc --noEmit` | ✅          | ⬜ pending |
@@ -52,8 +52,7 @@ _Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
 
 ## Wave 0 Requirements
 
-- [ ] `bank-statement-imports.routes.spec.ts` — stubs for import endpoints
-- [ ] `reconciliation.routes.spec.ts` — stubs for reconciliation endpoints
+- [ ] `reconciliation.routes.spec.ts` — stubs for import + reconciliation endpoints (used by both 05-01-T2 and 05-02-T1)
 - [ ] `cashflow.routes.spec.ts` — stubs for cashflow projection endpoints
 
 _These will be created as TDD tasks within their respective plans._
