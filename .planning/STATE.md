@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-concilia-o-e-fluxo-de-caixa-01-PLAN.md
-last_updated: '2026-03-17T08:14:31.530Z'
+stopped_at: Completed 05-concilia-o-e-fluxo-de-caixa-02-PLAN.md
+last_updated: '2026-03-17T08:29:12.292Z'
 last_activity: 2026-03-16 — PayablesPage complete (3 tabs, 4 modals, aging, calendar, CNAB retorno, sidebar badge)
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 25
-  completed_plans: 21
+  completed_plans: 23
   percent: 80
 ---
 
@@ -71,6 +71,8 @@ _Updated after each plan completion_
 | Phase 04-instrumentos-de-pagamento P07 | 4min | 1 tasks | 6 files |
 | Phase 05-concilia-o-e-fluxo-de-caixa P03 | 7min | 2 tasks | 5 files |
 | Phase 05-concilia-o-e-fluxo-de-caixa P01 | 9min | 2 tasks | 9 files |
+| Phase 05-concilia-o-e-fluxo-de-caixa P05 | 10min | 2 tasks | 7 files |
+| Phase 05-concilia-o-e-fluxo-de-caixa P02 | 15min | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -124,6 +126,10 @@ Recent decisions affecting current work:
 - [Phase 05-concilia-o-e-fluxo-de-caixa]: reconciliation:manage uses dedicated PermissionModule 'reconciliation' + PermissionAction 'manage' — not financial:\* per CONTEXT.md locked decision
 - [Phase 05-concilia-o-e-fluxo-de-caixa]: OFX 1.x parsed with custom SGML regex extractor (not ofx-js): low maintenance library, custom parser mirrors CNAB pattern
 - [Phase 05-concilia-o-e-fluxo-de-caixa]: lineHash = sha256(bankAccountId+date+amount+memo) — dedup works for both OFX (complements FITID) and CSV (no FITID)
+- [Phase 05-concilia-o-e-fluxo-de-caixa]: CashflowChart uses React.lazy + Suspense — chart is heavy (Recharts) and hidden on mobile <640px, avoids loading chart code when user will never see it on small screens
+- [Phase 05-concilia-o-e-fluxo-de-caixa]: DfcTable uses max-height CSS transition (200ms ease-out) for expand/collapse — simpler than JS-measured height, prefers-reduced-motion handled by tokens.css global rule
+- [Phase 05-concilia-o-e-fluxo-de-caixa]: scoreMatch pure function tests use inline algorithm replication — jest.isolateModulesAsync unreliable with global module mocks
+- [Phase 05-concilia-o-e-fluxo-de-caixa]: N:N sum validation uses Money(amount).equals() for floating-point safe comparison; manualLink throws ReconciliationError on mismatch
 
 ### Pending Todos
 
@@ -138,6 +144,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T08:14:31.528Z
-Stopped at: Completed 05-concilia-o-e-fluxo-de-caixa-01-PLAN.md
+Last session: 2026-03-17T08:29:12.290Z
+Stopped at: Completed 05-concilia-o-e-fluxo-de-caixa-02-PLAN.md
 Resume file: None
