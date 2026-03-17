@@ -69,6 +69,10 @@ Notes:
 - Monetary amounts in reconciliation table and cashflow chart tooltips MUST use JetBrains Mono
 - Never center text blocks longer than 2 lines
 
+> Design System Exception: The 4 declared weights (400, 500, 600, 700) are mandated by
+> project CLAUDE.md ("DM Sans 500/700, Source Sans 3 400/600, JetBrains Mono 400").
+> This is not a per-phase decision — it is the project-wide type system.
+
 Source: `tokens.css`, `CLAUDE.md`
 
 ---
@@ -161,8 +165,8 @@ Source: `tokens.css`, `CLAUDE.md`, CONTEXT.md decisions
 - Line: Otimista (dashed, `--color-success-500`, no dots)
 - Line: Pessimista (dashed, `--color-error-500`, no dots)
 - ReferenceLine y=0: `--color-error-500`, strokeWidth 2
-- XAxis: monthly labels (Jan, Fev, ...), `--font-body` 12px
-- YAxis: `formatBRLCompact` (e.g. "R$ 12k"), `--font-mono` 12px
+- XAxis: monthly labels (Jan, Fev, ...), `--font-body` 14px (`--text-sm`)
+- YAxis: `formatBRLCompact` (e.g. "R$ 12k"), `--font-mono` 14px (`--text-sm`)
 - CartesianGrid: `strokeDasharray="3 3"`, `--color-neutral-200`
 - Tooltip: custom `CashflowTooltip` component — shows date, Saldo realista, Entradas previstas, Saídas previstas, Cheques pendentes — all values in `--font-mono`
 - Legend: bottom, text labels "Realista", "Otimista", "Pessimista"
