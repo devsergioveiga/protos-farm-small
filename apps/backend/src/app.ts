@@ -90,6 +90,7 @@ import { creditCardsRouter } from './modules/credit-cards/credit-cards.routes';
 import { ruralPropertiesRouter } from './modules/rural-properties/rural-properties.routes';
 import { cashflowRouter } from './modules/cashflow/cashflow.routes';
 import { reconciliationRouter } from './modules/reconciliation/reconciliation.routes';
+import { ruralCreditRouter } from './modules/rural-credit/rural-credit.routes';
 
 const app = express();
 
@@ -187,5 +188,6 @@ app.use('/api', checksRouter);
 app.use('/api', creditCardsRouter);
 app.use('/api', cashflowRouter);
 app.use('/api', reconciliationRouter);
+app.use('/api', ruralCreditRouter);
 
 export { app };
