@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Phase 7 context gathered
-last_updated: '2026-03-17T13:36:15.075Z'
+stopped_at: Completed 07-01-PLAN.md
+last_updated: '2026-03-17T17:16:52.024Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 4
+  completed_plans: 1
   percent: 0
 ---
 
@@ -46,6 +46,7 @@ Progress: [░░░░░░░░░░] 0%
 | 06-cr-dito-rural               | 5     | 62min      | 12min    |
 
 **Total v1.0:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
+| Phase 07-cadastro-de-fornecedores P01 | 7 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -60,6 +61,8 @@ Key decisions for v1.1:
 - **BullMQ for async email**: Never await emailService.send() inside Prisma transaction — enqueue BullMQ job after commit
 - **VALID_TRANSITIONS map**: Approval and receiving state machines follow checks.types.ts pattern — no inline status checks
 - **Saving analysis deferred to v1.2**: Requires 2-3 months of production price data to be meaningful
+- [Phase 07-cadastro-de-fornecedores]: Used db push + migrate resolve due to pre-existing shadow DB failure; migration file created manually and marked as applied
+- [Phase 07-cadastro-de-fornecedores]: purchases module added to RBAC: manage for MANAGER, read for FINANCIAL/AGRONOMIST/CONSULTANT
 
 ### Pending Todos
 
@@ -73,6 +76,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T13:36:15.073Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-cadastro-de-fornecedores/07-CONTEXT.md
+Last session: 2026-03-17T17:16:52.022Z
+Stopped at: Completed 07-01-PLAN.md
+Resume file: None
