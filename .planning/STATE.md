@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
-status: defining_requirements
+status: ready_to_plan
 stopped_at: null
-last_updated: '2026-03-17T13:00:00.000Z'
-last_activity: 2026-03-17 — Milestone v1.1 started
+last_updated: '2026-03-17T14:00:00.000Z'
+last_activity: 2026-03-17 — Roadmap v1.1 created (6 phases, 20 requirements mapped)
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,18 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** v1.1 Gestão de Compras — defining requirements
+**Current focus:** v1.1 Gestão de Compras — Phase 7: Cadastro de Fornecedores
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-17 — Milestone v1.1 started
+Phase: 7 of 12 (Phase 7 — Cadastro de Fornecedores)
+Plan: — (not started)
+Status: Ready to plan
+Last activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
-**Velocity (v1.0):**
+**Velocity (v1.0 baseline):**
 
 | Phase                          | Plans | Total Time | Avg/Plan |
 | ------------------------------ | ----- | ---------- | -------- |
@@ -43,13 +45,21 @@ Last activity: 2026-03-17 — Milestone v1.1 started
 | 05-concilia-o-e-fluxo-de-caixa | 6     | 64min      | 11min    |
 | 06-cr-dito-rural               | 5     | 62min      | 12min    |
 
-**Total:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
+**Total v1.0:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions archived in PROJECT.md Key Decisions table.
+Full log: PROJECT.md Key Decisions table.
+
+Key decisions for v1.1:
+
+- **GoodsReceipt is integration hub**: CP creation fires only from ReceivingConfirmed event — never from PO approval (avoids duplicate CP on partial shipments)
+- **Price snapshot on PO**: PurchaseOrder snapshots unitPrice/quantity/total at issuance; quotation transitions to CLOSED (prices frozen)
+- **BullMQ for async email**: Never await emailService.send() inside Prisma transaction — enqueue BullMQ job after commit
+- **VALID_TRANSITIONS map**: Approval and receiving state machines follow checks.types.ts pattern — no inline status checks
+- **Saving analysis deferred to v1.2**: Requires 2-3 months of production price data to be meaningful
 
 ### Pending Todos
 
@@ -57,10 +67,12 @@ None.
 
 ### Blockers/Concerns
 
-None.
+- **Phase 10 (Recebimento) needs research-phase before planning**: 6-scenario state machine + atomic 3-table transaction (StockEntry + Payable) + NF desynchronization handling warrant dedicated implementation plan before code
+- **validation-br API**: Function signature (validateCNPJ vs cnpj.isValid) not confirmed — verify during Phase 7 implementation before committing to call sites
+- **PayableCredit model**: Inspect payables schema during Phase 11 planning to determine correct partial CP reduction pattern
 
 ## Session Continuity
 
 Last session: 2026-03-17
-Stopped at: Defining requirements for v1.1
+Stopped at: Roadmap created — ready to plan Phase 7
 Resume file: None

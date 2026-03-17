@@ -79,36 +79,36 @@ Deferred to future release. Tracked but not in current roadmap.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase | Status  |
-| ----------- | ----- | ------- |
-| FORN-01     | —     | Pending |
-| FORN-02     | —     | Pending |
-| FORN-03     | —     | Pending |
-| REQC-01     | —     | Pending |
-| REQC-02     | —     | Pending |
-| REQC-03     | —     | Pending |
-| COTA-01     | —     | Pending |
-| COTA-02     | —     | Pending |
-| COTA-03     | —     | Pending |
-| PEDI-01     | —     | Pending |
-| RECE-01     | —     | Pending |
-| RECE-02     | —     | Pending |
-| RECE-03     | —     | Pending |
-| DEVO-01     | —     | Pending |
-| FINC-01     | —     | Pending |
-| FINC-02     | —     | Pending |
-| FINC-03     | —     | Pending |
-| DASH-01     | —     | Pending |
-| DASH-02     | —     | Pending |
-| DASH-03     | —     | Pending |
+| Requirement | Phase    | Status  |
+| ----------- | -------- | ------- |
+| FORN-01     | Phase 7  | Pending |
+| FORN-02     | Phase 7  | Pending |
+| FORN-03     | Phase 7  | Pending |
+| REQC-01     | Phase 8  | Pending |
+| REQC-02     | Phase 8  | Pending |
+| REQC-03     | Phase 8  | Pending |
+| COTA-01     | Phase 9  | Pending |
+| COTA-02     | Phase 9  | Pending |
+| COTA-03     | Phase 9  | Pending |
+| PEDI-01     | Phase 9  | Pending |
+| RECE-01     | Phase 10 | Pending |
+| RECE-02     | Phase 10 | Pending |
+| RECE-03     | Phase 10 | Pending |
+| FINC-01     | Phase 10 | Pending |
+| DEVO-01     | Phase 11 | Pending |
+| FINC-02     | Phase 11 | Pending |
+| FINC-03     | Phase 11 | Pending |
+| DASH-01     | Phase 12 | Pending |
+| DASH-02     | Phase 12 | Pending |
+| DASH-03     | Phase 12 | Pending |
 
 **Coverage:**
 
 - v1.1 requirements: 20 total
-- Mapped to phases: 0
-- Unmapped: 20 ⚠️
+- Mapped to phases: 20
+- Unmapped: 0 ✓
 
 ---
 
 _Requirements defined: 2026-03-17_
-_Last updated: 2026-03-17 after initial definition_
+_Last updated: 2026-03-17 after roadmap creation_
