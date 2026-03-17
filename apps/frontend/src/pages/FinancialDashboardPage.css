@@ -265,24 +265,95 @@
   white-space: normal;
 }
 
-/* Debt placeholder */
-.fin-dashboard__debt-placeholder {
-  background: var(--color-info-100);
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
+/* Rural Credit card */
+.fin-dashboard__rural-credit-card {
+  background: var(--color-neutral-0, #fff);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
   margin-top: var(--space-4);
   margin-bottom: var(--space-8);
+}
+
+.fin-dashboard__rural-credit-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
-  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
-  color: var(--color-neutral-500);
+  margin-bottom: var(--space-4);
+  color: var(--color-neutral-700);
 }
 
-.fin-dashboard__debt-placeholder svg {
-  color: var(--color-info-500);
-  flex-shrink: 0;
+.fin-dashboard__rural-credit-title {
+  font-family: var(--font-display, 'DM Sans', system-ui, sans-serif);
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.fin-dashboard__rural-credit-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.fin-dashboard__rural-credit-empty p {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+}
+
+.fin-dashboard__rural-credit-list {
+  margin: 0 0 var(--space-3) 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-8);
+}
+
+.fin-dashboard__rural-credit-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+}
+
+.fin-dashboard__rural-credit-row dt {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fin-dashboard__rural-credit-row dd {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.fin-dashboard__rural-credit-link {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-primary-600);
+  text-decoration: none;
+}
+
+.fin-dashboard__rural-credit-link:hover {
+  text-decoration: underline;
+  color: var(--color-primary-700);
+}
+
+.fin-dashboard__rural-credit-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
 /* Charts section */

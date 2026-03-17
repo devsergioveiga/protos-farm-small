@@ -40,6 +40,13 @@ export interface FinancialDashboardData {
   pendingRecebidos: number;
   openBillsCount: number;
   checksNearCompensation: number;
+  ruralCredit?: {
+    totalContracted: number;
+    outstandingBalance: number;
+    activeContracts: number;
+    nextPaymentDate: string | null;
+    nextPaymentAmount: number | null;
+  };
 }
 
 export interface FinancialDashboardPeriod {

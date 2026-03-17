@@ -51,6 +51,13 @@ export interface FinancialDashboardOutput {
   pendingRecebidos: number; // sum of A_COMPENSAR RECEBIDO checks
   openBillsCount: number; // count of OPEN credit card bills
   checksNearCompensation: number; // count of checks A_COMPENSAR with expectedCompensationDate within 7 days
+  ruralCredit?: {
+    totalContracted: number;
+    outstandingBalance: number;
+    activeContracts: number;
+    nextPaymentDate: string | null;
+    nextPaymentAmount: number | null;
+  };
 }
 
 // ─── Error ───────────────────────────────────────────────────────────

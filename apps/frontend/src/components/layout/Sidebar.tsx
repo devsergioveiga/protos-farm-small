@@ -68,6 +68,7 @@ import {
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
+import { useRuralCreditAlertCount } from '@/hooks/useRuralCredit';
 import './Sidebar.css';
 
 interface SidebarProps {
@@ -207,6 +208,7 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
   const onCloseRef = useRef(onClose);
   const { count: overdueCount } = useOverdueCount();
   const { count: checkAlertCount } = useCheckAlertCount();
+  const { count: ruralCreditAlertCount } = useRuralCreditAlertCount();
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
@@ -264,6 +266,8 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                   const active = isActive(item.to);
                   const showOverdueBadge = item.to === '/payables' && overdueCount > 0;
                   const showCheckBadge = item.to === '/checks' && checkAlertCount > 0;
+                  const showRuralCreditBadge =
+                    item.to === '/rural-credit' && ruralCreditAlertCount > 0;
                   return (
                     <li key={item.to}>
                       <Link
@@ -308,6 +312,24 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                             aria-label={`${checkAlertCount} cheques aguardando atenção`}
                           >
                             {checkAlertCount > 99 ? '99+' : checkAlertCount}
+                          </span>
+                        )}
+                        {showRuralCreditBadge && (
+                          <span
+                            style={{
+                              marginLeft: 'auto',
+                              background: 'var(--color-error-600, #c62828)',
+                              color: '#fff',
+                              borderRadius: 100,
+                              padding: '1px 7px',
+                              fontSize: '0.6875rem',
+                              fontWeight: 700,
+                              fontFamily: "'Source Sans 3', system-ui, sans-serif",
+                              flexShrink: 0,
+                            }}
+                            aria-label={`${ruralCreditAlertCount} parcela(s) de crédito rural vencendo em breve`}
+                          >
+                            {ruralCreditAlertCount > 99 ? '99+' : ruralCreditAlertCount}
                           </span>
                         )}
                       </Link>

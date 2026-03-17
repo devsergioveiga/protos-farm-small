@@ -13,6 +13,7 @@ import {
   Info,
   CreditCard,
   CheckSquare,
+  Landmark,
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
 import {
@@ -399,11 +400,58 @@ export default function FinancialDashboardPage() {
             </div>
           </section>
 
-          {/* Endividamento placeholder */}
-          <div className="fin-dashboard__debt-placeholder" role="note">
-            <Info size={16} aria-hidden="true" />
-            <span>Endividamento: crédito rural disponível na Fase 6</span>
-          </div>
+          {/* Rural Credit card */}
+          <section className="fin-dashboard__rural-credit-card" aria-label="Crédito Rural">
+            <div className="fin-dashboard__rural-credit-header">
+              <Landmark size={20} aria-hidden="true" />
+              <h2 className="fin-dashboard__rural-credit-title">Crédito Rural</h2>
+            </div>
+            {!data.ruralCredit || data.ruralCredit.activeContracts === 0 ? (
+              <div className="fin-dashboard__rural-credit-empty">
+                <p>Nenhum contrato ativo.</p>
+                <Link to="/rural-credit" className="fin-dashboard__rural-credit-link">
+                  Cadastrar contrato
+                </Link>
+              </div>
+            ) : (
+              <div className="fin-dashboard__rural-credit-body">
+                <dl className="fin-dashboard__rural-credit-list">
+                  <div className="fin-dashboard__rural-credit-row">
+                    <dt>Total contratado</dt>
+                    <dd>{formatBRL(data.ruralCredit.totalContracted)}</dd>
+                  </div>
+                  <div className="fin-dashboard__rural-credit-row">
+                    <dt>Saldo devedor</dt>
+                    <dd
+                      style={
+                        data.ruralCredit.outstandingBalance > 0
+                          ? { color: 'var(--color-error-700)', fontWeight: 600 }
+                          : undefined
+                      }
+                    >
+                      {formatBRL(data.ruralCredit.outstandingBalance)}
+                    </dd>
+                  </div>
+                  <div className="fin-dashboard__rural-credit-row">
+                    <dt>Contratos ativos</dt>
+                    <dd>{data.ruralCredit.activeContracts}</dd>
+                  </div>
+                  <div className="fin-dashboard__rural-credit-row">
+                    <dt>Próxima parcela</dt>
+                    <dd>
+                      {data.ruralCredit.nextPaymentDate &&
+                      data.ruralCredit.nextPaymentAmount !== null
+                        ? `${new Date(data.ruralCredit.nextPaymentDate).toLocaleDateString('pt-BR')} — ${formatBRL(data.ruralCredit.nextPaymentAmount)}`
+                        : 'Sem parcelas pendentes'}
+                    </dd>
+                  </div>
+                </dl>
+                <Link to="/rural-credit" className="fin-dashboard__rural-credit-link">
+                  Ver contratos
+                </Link>
+              </div>
+            )}
+          </section>
 
           {/* Charts */}
           <section aria-label="Gráficos financeiros">

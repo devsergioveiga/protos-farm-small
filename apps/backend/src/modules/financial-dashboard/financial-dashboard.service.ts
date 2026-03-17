@@ -518,6 +518,40 @@ export async function getFinancialDashboard(
       where: checksNearCompWhere,
     });
 
+    // ── Rural Credit aggregation ──────────────────────────────────────
+    const ruralCreditAgg = await (tx as any).ruralCreditContract.aggregate({
+      where: {
+        organizationId: ctx.organizationId,
+        ...(farmId ? { farmId } : {}),
+        status: 'ATIVO',
+      },
+      _sum: { principalAmount: true, outstandingBalance: true },
+      _count: true,
+    });
+
+    // Next payment: earliest PENDING PayableInstallment from RURAL_CREDIT origin
+    const nextPayment = await (tx as any).payableInstallment.findFirst({
+      where: {
+        payable: {
+          organizationId: ctx.organizationId,
+          ...(farmId ? { farmId } : {}),
+          originType: 'RURAL_CREDIT',
+          status: 'PENDING',
+        },
+        status: 'PENDING',
+      },
+      orderBy: { dueDate: 'asc' },
+      select: { dueDate: true, amount: true },
+    });
+
+    const ruralCredit = {
+      totalContracted: Number(ruralCreditAgg._sum.principalAmount ?? 0),
+      outstandingBalance: Number(ruralCreditAgg._sum.outstandingBalance ?? 0),
+      activeContracts: ruralCreditAgg._count,
+      nextPaymentDate: nextPayment?.dueDate?.toISOString() ?? null,
+      nextPaymentAmount: nextPayment ? Number(nextPayment.amount) : null,
+    };
+
     return {
       totalBankBalance: totalBankBalance.toNumber(),
       totalBankBalancePrevYear,
@@ -541,6 +575,7 @@ export async function getFinancialDashboard(
       pendingRecebidos,
       openBillsCount,
       checksNearCompensation,
+      ruralCredit,
     };
   });
 }
