@@ -12,7 +12,7 @@ const BulkPreviewMap = lazy(() => import('./BulkPreviewMap'));
 interface BulkImportModalProps {
   isOpen: boolean;
   farmId: string;
-  farmBoundary?: GeoJSON.Polygon | null;
+  farmBoundary?: GeoJSON.Polygon | GeoJSON.MultiPolygon | null;
   onClose: () => void;
   onImportComplete: () => void;
 }

@@ -14,7 +14,7 @@ interface PlotBoundaryRef {
 
 interface PlotMergeEditorProps {
   plotBoundaries: PlotBoundaryRef[];
-  farmBoundary: GeoJSON.Polygon | null;
+  farmBoundary: GeoJSON.Polygon | GeoJSON.MultiPolygon | null;
   farmId: string;
   onComplete: () => void;
   onCancel: () => void;

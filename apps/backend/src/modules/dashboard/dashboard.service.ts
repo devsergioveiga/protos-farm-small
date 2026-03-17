@@ -5,18 +5,19 @@ import type { OrgDashboardStats } from './dashboard.types';
 export async function getOrgDashboardStats(ctx: RlsContext): Promise<OrgDashboardStats> {
   // Summary + farmsByUf via RLS context (scoped to org)
   const rlsData = await withRlsContext(ctx, async (tx) => {
-    const totalFarms = await tx.farm.count({ where: { deletedAt: null } });
-    const totalPlots = await tx.fieldPlot.count({ where: { deletedAt: null } });
+    const orgFilter = { organizationId: ctx.organizationId, deletedAt: null };
+    const totalFarms = await tx.farm.count({ where: orgFilter });
+    const totalPlots = await tx.fieldPlot.count({ where: { farm: orgFilter } });
     const areaResult = await tx.farm.aggregate({
       _sum: { totalAreaHa: true },
-      where: { deletedAt: null },
+      where: orgFilter,
     });
     const totalAreaHa = areaResult._sum.totalAreaHa ? Number(areaResult._sum.totalAreaHa) : 0;
 
     const farmsByUfRaw = await tx.farm.groupBy({
       by: ['state'],
       _count: { state: true },
-      where: { deletedAt: null },
+      where: orgFilter,
       orderBy: { _count: { state: 'desc' } },
     });
 

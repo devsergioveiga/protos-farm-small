@@ -391,3 +391,50 @@ export async function unlockOrgUser(orgId: string, userId: string) {
     return updated;
   });
 }
+
+export async function deactivateOrgUser(orgId: string, userId: string) {
+  return withRlsBypass(async (tx) => {
+    const org = await tx.organization.findUnique({ where: { id: orgId } });
+    if (!org) {
+      throw new OrgError('Organização não encontrada', 404);
+    }
+
+    const user = await tx.user.findUnique({ where: { id: userId } });
+    if (!user || user.organizationId !== orgId) {
+      throw new OrgError('Usuário não encontrado nesta organização', 404);
+    }
+
+    if (user.status === 'INACTIVE') {
+      throw new OrgError('Usuário já está inativo', 422);
+    }
+
+    const updated = await tx.user.update({
+      where: { id: userId },
+      data: { status: 'INACTIVE' },
+    });
+
+    logger.info({ userId, orgId }, 'Org user deactivated');
+
+    return updated;
+  });
+}
+
+export async function deleteOrgUser(orgId: string, userId: string) {
+  return withRlsBypass(async (tx) => {
+    const org = await tx.organization.findUnique({ where: { id: orgId } });
+    if (!org) {
+      throw new OrgError('Organização não encontrada', 404);
+    }
+
+    const user = await tx.user.findUnique({ where: { id: userId } });
+    if (!user || user.organizationId !== orgId) {
+      throw new OrgError('Usuário não encontrado nesta organização', 404);
+    }
+
+    await tx.user.delete({ where: { id: userId } });
+
+    logger.info({ userId, orgId }, 'Org user deleted');
+
+    return { message: 'Usuário removido com sucesso' };
+  });
+}

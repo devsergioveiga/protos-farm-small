@@ -6,6 +6,9 @@ import { useAuth } from '@/stores/AuthContext';
 import PasswordStrengthIndicator, {
   isPasswordValid,
 } from '@/components/ui/PasswordStrengthIndicator';
+import './LoginPage.css';
+import './ForgotPasswordPage.css';
+import './ResetPasswordPage.css';
 import './AcceptInvitePage.css';
 
 type PageState = 'idle' | 'submitting' | 'error';

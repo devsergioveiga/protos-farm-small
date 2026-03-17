@@ -19,7 +19,7 @@ interface PlotBoundaryRef {
 interface PlotGeometryEditorProps {
   plot: FieldPlot;
   plotBoundary: GeoJSON.Polygon;
-  farmBoundary: GeoJSON.Polygon | null;
+  farmBoundary: GeoJSON.Polygon | GeoJSON.MultiPolygon | null;
   otherPlots: PlotBoundaryRef[];
   onSave: (geojson: GeoJSON.Polygon, previousAreaHa: number) => void;
   onCancel: () => void;

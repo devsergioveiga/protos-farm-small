@@ -18,7 +18,7 @@ interface PlotBoundaryRef {
 interface PlotSubdivideEditorProps {
   plot: FieldPlot;
   plotBoundary: GeoJSON.Polygon;
-  farmBoundary: GeoJSON.Polygon | null;
+  farmBoundary: GeoJSON.Polygon | GeoJSON.MultiPolygon | null;
   otherPlots: PlotBoundaryRef[];
   farmId: string;
   onComplete: () => void;

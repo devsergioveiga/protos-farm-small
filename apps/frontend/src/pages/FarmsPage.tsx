@@ -16,6 +16,7 @@ import {
   Pencil,
   Plus,
   CheckCircle2,
+  Eye,
 } from 'lucide-react';
 import { useFarms } from '@/hooks/useFarms';
 import { useAuth } from '@/stores/AuthContext';
@@ -81,6 +82,14 @@ function FarmCard({ farm, canDelete, canEdit, onDelete, onEdit }: FarmCardProps)
       </div>
 
       <div className="farm-card__actions">
+        <Link
+          to={`/farms/${farm.id}`}
+          className="farm-card__detail-link"
+          aria-label={`Ver detalhes de ${farm.name}`}
+        >
+          <Eye size={16} aria-hidden="true" />
+          Ver detalhes
+        </Link>
         <Link
           to={`/farms/${farm.id}/map`}
           className="farm-card__map-link"
@@ -148,6 +157,14 @@ function FarmListRow({ farm, canEdit, onEdit }: FarmListRowProps) {
         </span>
       </div>
       <div className="farm-list-row__actions">
+        <Link
+          to={`/farms/${farm.id}`}
+          className="farm-card__detail-link"
+          aria-label={`Ver detalhes de ${farm.name}`}
+        >
+          <Eye size={16} aria-hidden="true" />
+          Ver detalhes
+        </Link>
         <Link
           to={`/farms/${farm.id}/map`}
           className="farm-card__map-link"

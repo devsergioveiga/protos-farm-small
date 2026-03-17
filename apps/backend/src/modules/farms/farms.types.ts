@@ -127,6 +127,7 @@ export interface CreateRegistrationInput {
   livro?: string;
   registrationDate?: string;
   areaHa: number;
+  ruralPropertyId?: string;
 }
 
 export interface UpdateRegistrationInput {
@@ -138,6 +139,7 @@ export interface UpdateRegistrationInput {
   livro?: string;
   registrationDate?: string;
   areaHa?: number;
+  ruralPropertyId?: string;
 }
 
 export interface DeleteFarmInput {
@@ -179,7 +181,7 @@ export interface BoundaryUploadResult {
 export interface BoundaryInfo {
   hasBoundary: boolean;
   boundaryAreaHa: number | null;
-  boundaryGeoJSON: GeoJSON.Polygon | null;
+  boundaryGeoJSON: GeoJSON.Polygon | GeoJSON.MultiPolygon | null;
 }
 
 // ─── Field Plots ────────────────────────────────────────────────────

@@ -132,7 +132,7 @@ export default function MilkTanksPage() {
       setDeleteError(null);
       if (!window.confirm(`Excluir o tanque "${t.name}"? Esta ação não pode ser desfeita.`)) return;
       try {
-        await api.delete(`/org/farms/${farmId}/cooling-tanks/${t.id}`);
+        await api.delete(`/org/farms/${farmId}/milk-tanks/${t.id}`);
         showSuccess('Tanque excluído com sucesso');
         void refetchTanks();
       } catch (err: unknown) {

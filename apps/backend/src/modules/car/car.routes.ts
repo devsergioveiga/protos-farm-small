@@ -15,6 +15,7 @@ import {
   uploadCarBoundary,
   getCarBoundary,
   deleteCarBoundary,
+  listAllCarRegistrations,
 } from './car.service';
 import { CarError, ALLOWED_GEO_EXTENSIONS, MAX_GEO_FILE_SIZE } from './car.types';
 
@@ -75,6 +76,22 @@ function handleGeoUpload(
     });
   });
 }
+
+// ─── GET /org/car — list all CARs org-wide ──────────────────────────
+
+carRouter.get('/org/car', authenticate, checkPermission('farms:read'), async (req, res) => {
+  try {
+    const ctx: RlsContext = { organizationId: req.user!.organizationId! };
+    const result = await listAllCarRegistrations(ctx);
+    res.json(result);
+  } catch (err) {
+    if (err instanceof CarError) {
+      res.status(err.statusCode).json({ error: err.message });
+      return;
+    }
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
 
 // ─── POST /org/farms/:farmId/car ─────────────────────────────────────
 

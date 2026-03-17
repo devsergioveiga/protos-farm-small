@@ -1,18 +1,28 @@
 import { useEffect, useCallback } from 'react';
-import { X, AlertCircle, Check, ChevronRight, Loader2 } from 'lucide-react';
-import { useFarmForm, LAND_CLASSIFICATIONS, TOTAL_STEPS } from '@/hooks/useFarmForm';
+import { X, AlertCircle, Check, ChevronRight, Loader2, Info } from 'lucide-react';
+import { useFarmForm, TOTAL_STEPS } from '@/hooks/useFarmForm';
 import type { FormFields } from '@/hooks/useFarmForm';
 import { VALID_UF } from '@/constants/states';
 import './FarmFormModal.css';
 
-const STEP_LABELS = ['Dados Básicos', 'Identificadores', 'Dados Ambientais', 'Confirmação'];
+const STEP_LABELS = ['Dados Básicos', 'Confirmação'];
 
-const CLASSIFICATION_LABELS: Record<string, string> = {
-  MINIFUNDIO: 'Minifúndio',
-  PEQUENA: 'Pequena propriedade',
-  MEDIA: 'Média propriedade',
-  GRANDE: 'Grande propriedade',
-};
+function maskArea(value: string): string {
+  const digits = value.replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.length <= 4) return '0,' + digits.padStart(4, '0');
+  const intPart = digits.slice(0, digits.length - 4).replace(/^0+/, '') || '0';
+  const decPart = digits.slice(digits.length - 4);
+  // Format integer part with dot as thousands separator
+  const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return intFormatted + ',' + decPart;
+}
+
+function maskCep(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+}
 
 interface FarmFormModalProps {
   isOpen: boolean;
@@ -33,6 +43,8 @@ interface FieldInputProps {
   min?: string;
   max?: string;
   step?: string;
+  maxLength?: number;
+  tooltip?: string;
   onChange: (value: string) => void;
   onBlur: () => void;
 }
@@ -49,6 +61,8 @@ function FieldInput({
   min,
   max,
   step,
+  maxLength,
+  tooltip,
   onChange,
   onBlur,
 }: FieldInputProps) {
@@ -58,6 +72,19 @@ function FieldInput({
       <label htmlFor={id} className="farm-form-modal__label">
         {label}
         {required && <span className="farm-form-modal__required"> *</span>}
+        {tooltip && (
+          <span className="farm-form-modal__tooltip-wrapper">
+            <Info
+              size={14}
+              aria-hidden="true"
+              tabIndex={0}
+              className="farm-form-modal__tooltip-icon"
+            />
+            <span className="farm-form-modal__tooltip" role="tooltip">
+              {tooltip}
+            </span>
+          </span>
+        )}
       </label>
       <input
         id={id}
@@ -68,6 +95,7 @@ function FieldInput({
         min={min}
         max={max}
         step={step}
+        maxLength={maxLength}
         aria-required={required}
         aria-invalid={hasError}
         aria-describedby={hasError ? `${id}-error` : undefined}
@@ -273,8 +301,9 @@ function Step0({ formData, errors, touched, setField, touchField }: StepProps) {
         value={formData.zipCode}
         error={errors.zipCode}
         touched={touched.zipCode}
-        placeholder="XXXXX-XXX"
-        onChange={(v) => setField('zipCode', v)}
+        placeholder="00000-000"
+        maxLength={9}
+        onChange={(v) => setField('zipCode', maskCep(v))}
         onBlur={() => touchField('zipCode')}
       />
       <FieldInput
@@ -284,154 +313,15 @@ function Step0({ formData, errors, touched, setField, touchField }: StepProps) {
         error={errors.totalAreaHa}
         touched={touched.totalAreaHa}
         required
-        type="number"
-        placeholder="Ex: 150.5"
-        min="0.01"
-        step="0.01"
-        onChange={(v) => setField('totalAreaHa', v)}
+        placeholder="Ex: 150,0000"
+        onChange={(v) => setField('totalAreaHa', maskArea(v))}
         onBlur={() => touchField('totalAreaHa')}
       />
     </div>
   );
 }
 
-function Step1({ formData, errors, touched, setField, touchField }: StepProps) {
-  return (
-    <div className="farm-form-modal__fields">
-      <FieldInput
-        id="cib"
-        label="CIB"
-        value={formData.cib}
-        error={errors.cib}
-        touched={touched.cib}
-        placeholder="XXX.XXX.XXX-X"
-        onChange={(v) => setField('cib', v)}
-        onBlur={() => touchField('cib')}
-      />
-      <FieldInput
-        id="incraCode"
-        label="Código INCRA"
-        value={formData.incraCode}
-        onChange={(v) => setField('incraCode', v)}
-        onBlur={() => touchField('incraCode')}
-      />
-      <FieldInput
-        id="ccirCode"
-        label="Código CCIR"
-        value={formData.ccirCode}
-        onChange={(v) => setField('ccirCode', v)}
-        onBlur={() => touchField('ccirCode')}
-      />
-      <FieldInput
-        id="carCode"
-        label="Código CAR"
-        value={formData.carCode}
-        onChange={(v) => setField('carCode', v)}
-        onBlur={() => touchField('carCode')}
-      />
-    </div>
-  );
-}
-
-function Step2({ formData, errors, touched, setField, touchField }: StepProps) {
-  return (
-    <div className="farm-form-modal__fields">
-      <FieldSelect
-        id="landClassification"
-        label="Classificação fundiária"
-        value={formData.landClassification}
-        error={errors.landClassification}
-        touched={touched.landClassification}
-        placeholder="Selecione..."
-        options={LAND_CLASSIFICATIONS.map((c) => ({
-          value: c,
-          label: CLASSIFICATION_LABELS[c] || c,
-        }))}
-        onChange={(v) => setField('landClassification', v)}
-        onBlur={() => touchField('landClassification')}
-      />
-      <div className="farm-form-modal__field farm-form-modal__field--checkbox">
-        <label className="farm-form-modal__checkbox-label">
-          <input
-            type="checkbox"
-            className="farm-form-modal__checkbox"
-            checked={formData.productive === 'true'}
-            onChange={(e) => setField('productive', String(e.target.checked))}
-          />
-          Produtiva
-        </label>
-      </div>
-      <FieldInput
-        id="appAreaHa"
-        label="Área APP (ha)"
-        value={formData.appAreaHa}
-        error={errors.appAreaHa}
-        touched={touched.appAreaHa}
-        type="number"
-        placeholder="0"
-        min="0"
-        step="0.01"
-        onChange={(v) => setField('appAreaHa', v)}
-        onBlur={() => touchField('appAreaHa')}
-      />
-      <FieldInput
-        id="legalReserveHa"
-        label="Reserva legal (ha)"
-        value={formData.legalReserveHa}
-        error={errors.legalReserveHa}
-        touched={touched.legalReserveHa}
-        type="number"
-        placeholder="0"
-        min="0"
-        step="0.01"
-        onChange={(v) => setField('legalReserveHa', v)}
-        onBlur={() => touchField('legalReserveHa')}
-      />
-      <FieldInput
-        id="taxableAreaHa"
-        label="Área tributável (ha)"
-        value={formData.taxableAreaHa}
-        error={errors.taxableAreaHa}
-        touched={touched.taxableAreaHa}
-        type="number"
-        placeholder="0"
-        min="0"
-        step="0.01"
-        onChange={(v) => setField('taxableAreaHa', v)}
-        onBlur={() => touchField('taxableAreaHa')}
-      />
-      <FieldInput
-        id="usableAreaHa"
-        label="Área utilizável (ha)"
-        value={formData.usableAreaHa}
-        error={errors.usableAreaHa}
-        touched={touched.usableAreaHa}
-        type="number"
-        placeholder="0"
-        min="0"
-        step="0.01"
-        onChange={(v) => setField('usableAreaHa', v)}
-        onBlur={() => touchField('usableAreaHa')}
-      />
-      <FieldInput
-        id="utilizationDegree"
-        label="Grau de utilização (%)"
-        value={formData.utilizationDegree}
-        error={errors.utilizationDegree}
-        touched={touched.utilizationDegree}
-        type="number"
-        placeholder="0-100"
-        min="0"
-        max="100"
-        step="0.1"
-        onChange={(v) => setField('utilizationDegree', v)}
-        onBlur={() => touchField('utilizationDegree')}
-      />
-    </div>
-  );
-}
-
-function Step3({ formData }: { formData: FormFields }) {
+function Step1({ formData }: { formData: FormFields }) {
   return (
     <div className="farm-form-modal__confirmation">
       <SummarySection title="Dados Básicos">
@@ -442,29 +332,6 @@ function Step3({ formData }: { formData: FormFields }) {
         <SummaryItem label="UF" value={formData.state} />
         <SummaryItem label="CEP" value={formData.zipCode} />
         <SummaryItem label="Área total" value={formatArea(formData.totalAreaHa)} />
-      </SummarySection>
-
-      <SummarySection title="Identificadores">
-        <SummaryItem label="CIB" value={formData.cib} />
-        <SummaryItem label="Código INCRA" value={formData.incraCode} />
-        <SummaryItem label="Código CCIR" value={formData.ccirCode} />
-        <SummaryItem label="Código CAR" value={formData.carCode} />
-      </SummarySection>
-
-      <SummarySection title="Dados Ambientais">
-        <SummaryItem
-          label="Classificação"
-          value={CLASSIFICATION_LABELS[formData.landClassification] || ''}
-        />
-        <SummaryItem label="Produtiva" value={formData.productive === 'true' ? 'Sim' : 'Não'} />
-        <SummaryItem label="Área APP" value={formatArea(formData.appAreaHa)} />
-        <SummaryItem label="Reserva legal" value={formatArea(formData.legalReserveHa)} />
-        <SummaryItem label="Área tributável" value={formatArea(formData.taxableAreaHa)} />
-        <SummaryItem label="Área utilizável" value={formatArea(formData.usableAreaHa)} />
-        <SummaryItem
-          label="Grau de utilização"
-          value={formData.utilizationDegree ? `${formData.utilizationDegree}%` : ''}
-        />
       </SummarySection>
     </div>
   );
@@ -578,9 +445,7 @@ function FarmFormModal({ isOpen, onClose, onSuccess, farmId }: FarmFormModalProp
               <h3 className="farm-form-modal__step-title">{STEP_LABELS[currentStep]}</h3>
 
               {currentStep === 0 && <Step0 {...stepProps} />}
-              {currentStep === 1 && <Step1 {...stepProps} />}
-              {currentStep === 2 && <Step2 {...stepProps} />}
-              {currentStep === 3 && <Step3 formData={formData} />}
+              {currentStep === 1 && <Step1 formData={formData} />}
 
               {submitError && (
                 <div className="farm-form-modal__submit-error" role="alert">

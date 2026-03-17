@@ -1,47 +1,51 @@
 .farm-map-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: calc(100vh - 64px);
+  overflow: hidden;
 }
+
+/* ─── Header ─── */
 
 .farm-map-page__header {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
   background: var(--color-neutral-0);
   border-bottom: 1px solid var(--color-neutral-200);
-  min-height: var(--topbar-height);
   flex-shrink: 0;
-  flex-wrap: wrap;
+  min-height: 0;
 }
 
 @media (min-width: 1024px) {
   .farm-map-page__header {
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-6);
-    flex-wrap: nowrap;
+    padding: var(--space-2) var(--space-6);
   }
 }
 
-@media (min-width: 1280px) {
-  .farm-map-page__header {
-    gap: var(--space-4);
-  }
+/* Left: back + title — fixed width, never shrinks */
+.farm-map-page__header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 .farm-map-page__back {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border: none;
   background: transparent;
   border-radius: var(--radius-md);
   color: var(--color-neutral-700);
   cursor: pointer;
   text-decoration: none;
+  flex-shrink: 0;
   transition: background var(--duration-fast) var(--ease-out);
 }
 
@@ -58,14 +62,29 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  flex: 1 1 0;
+}
+
+/* Right: action buttons — scrollable */
+.farm-map-page__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.farm-map-page__actions::-webkit-scrollbar {
+  display: none;
 }
 
 .farm-map-page__header-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
   background: var(--color-neutral-0);
   border: 1px solid var(--color-neutral-300);
   border-radius: var(--radius-md);
@@ -74,7 +93,7 @@
   font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
-  min-height: 48px;
+  min-height: 36px;
   white-space: nowrap;
   flex-shrink: 0;
   transition:

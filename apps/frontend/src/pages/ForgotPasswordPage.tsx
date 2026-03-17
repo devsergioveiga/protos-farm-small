@@ -2,6 +2,7 @@ import { useState, type FormEvent, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 import { api } from '@/services/api';
+import './LoginPage.css';
 import './ForgotPasswordPage.css';
 
 type PageState = 'idle' | 'submitting' | 'success' | 'error';

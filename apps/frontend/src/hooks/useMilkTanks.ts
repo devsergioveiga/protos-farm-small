@@ -2,11 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/services/api';
 import type {
   TankItem,
-  TanksResponse,
   CollectionItem,
   CollectionsResponse,
   ReconciliationItem,
-  ReconciliationResponse,
   MonthlyReportItem,
 } from '@/types/milk-tank';
 import type { PaginationMeta } from '@/types/admin';
@@ -38,8 +36,8 @@ export function useTanks({ farmId }: UseTanksParams): UseTanksResult {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await api.get<TanksResponse>(`/org/farms/${farmId}/cooling-tanks`);
-      setTanks(result.data);
+      const result = await api.get<TankItem[]>(`/org/farms/${farmId}/milk-tanks`);
+      setTanks(result);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao carregar tanques';
       setError(message);
@@ -143,7 +141,7 @@ export function useReconciliation(params: UseReconciliationParams): UseReconcili
   const { farmId, dateFrom, dateTo } = params;
 
   const fetchReconciliation = useCallback(async () => {
-    if (!farmId) {
+    if (!farmId || !dateFrom || !dateTo) {
       setRows([]);
       setIsLoading(false);
       return;
@@ -157,8 +155,8 @@ export function useReconciliation(params: UseReconciliationParams): UseReconcili
 
       const qs = query.toString();
       const path = `/org/farms/${farmId}/milk-collections/reconciliation${qs ? `?${qs}` : ''}`;
-      const result = await api.get<ReconciliationResponse>(path);
-      setRows(result.data);
+      const result = await api.get<ReconciliationItem[]>(path);
+      setRows(result);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao carregar conciliação';
       setError(message);

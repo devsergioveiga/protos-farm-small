@@ -279,7 +279,7 @@ function FarmMapPage() {
       if (!data) return;
       const pb = data.plotBoundaries.find((p) => p.plotId === plot.id);
       if (!pb?.boundary.boundaryGeoJSON) return;
-      setEditingPlot({ plot, boundary: pb.boundary.boundaryGeoJSON });
+      setEditingPlot({ plot, boundary: pb.boundary.boundaryGeoJSON as GeoJSON.Polygon });
       setSelectedPlot(null);
     },
     [data],
@@ -290,7 +290,7 @@ function FarmMapPage() {
       if (!data) return;
       const pb = data.plotBoundaries.find((p) => p.plotId === plot.id);
       if (!pb?.boundary.boundaryGeoJSON) return;
-      setSubdividingPlot({ plot, boundary: pb.boundary.boundaryGeoJSON });
+      setSubdividingPlot({ plot, boundary: pb.boundary.boundaryGeoJSON as GeoJSON.Polygon });
       setSelectedPlot(null);
     },
     [data],
@@ -375,100 +375,103 @@ function FarmMapPage() {
   return (
     <div className="farm-map-page">
       <header className="farm-map-page__header">
-        <Link to="/farms" className="farm-map-page__back" aria-label="Voltar para fazendas">
-          <ArrowLeft size={20} aria-hidden="true" />
-        </Link>
-
-        <div className="farm-map-page__title-area">
-          <nav className="farm-map-page__breadcrumb" aria-label="Breadcrumb">
-            <Link to="/dashboard">Início</Link>
-            <span aria-hidden="true">/</span>
-            <Link to="/farms">Fazendas</Link>
-            <span aria-hidden="true">/</span>
-            <span aria-current="page">{data.farm.name}</span>
-          </nav>
-          <h1 className="farm-map-page__title">{data.farm.name}</h1>
+        <div className="farm-map-page__header-left">
+          <Link to="/farms" className="farm-map-page__back" aria-label="Voltar para fazendas">
+            <ArrowLeft size={20} aria-hidden="true" />
+          </Link>
+          <div className="farm-map-page__title-area">
+            <nav className="farm-map-page__breadcrumb" aria-label="Breadcrumb">
+              <Link to="/dashboard">Início</Link>
+              <span aria-hidden="true">/</span>
+              <Link to="/farms">Fazendas</Link>
+              <span aria-hidden="true">/</span>
+              <span aria-current="page">{data.farm.name}</span>
+            </nav>
+            <h1 className="farm-map-page__title">{data.farm.name}</h1>
+          </div>
         </div>
 
-        <button
-          type="button"
-          className="farm-map-page__header-btn"
-          onClick={() => setIsBoundaryUploadOpen(true)}
-          aria-label="Perímetro"
-        >
-          <MapPin size={20} aria-hidden="true" />
-          <span className="farm-map-page__header-btn-label">Perímetro</span>
-        </button>
+        <nav className="farm-map-page__actions" aria-label="Ações do mapa">
+          <button
+            type="button"
+            className="farm-map-page__header-btn"
+            onClick={() => setIsBoundaryUploadOpen(true)}
+            aria-label="Perímetro"
+          >
+            <MapPin size={18} aria-hidden="true" />
+            <span className="farm-map-page__header-btn-label">Perímetro</span>
+          </button>
 
-        <button
-          type="button"
-          className="farm-map-page__header-btn"
-          onClick={handleOpenFarmBoundaryHistory}
-          aria-label="Histórico de perímetro"
-        >
-          <Clock size={20} aria-hidden="true" />
-          <span className="farm-map-page__header-btn-label">Histórico</span>
-        </button>
+          <button
+            type="button"
+            className="farm-map-page__header-btn"
+            onClick={handleOpenFarmBoundaryHistory}
+            aria-label="Histórico de perímetro"
+          >
+            <Clock size={18} aria-hidden="true" />
+            <span className="farm-map-page__header-btn-label">Histórico</span>
+          </button>
 
-        <button
-          type="button"
-          className="farm-map-page__header-btn"
-          onClick={() => setShowRegistrations(true)}
-          aria-label="Matrículas"
-        >
-          <FileText size={20} aria-hidden="true" />
-          <span className="farm-map-page__header-btn-label">Matrículas</span>
-        </button>
+          <button
+            type="button"
+            className="farm-map-page__header-btn"
+            onClick={() => setShowRegistrations(true)}
+            aria-label="Matrículas"
+          >
+            <FileText size={18} aria-hidden="true" />
+            <span className="farm-map-page__header-btn-label">Matrículas</span>
+          </button>
 
-        <button
-          type="button"
-          className="farm-map-page__header-btn"
-          onClick={() => setShowProducers(true)}
-          aria-label="Produtores"
-        >
-          <Users size={20} aria-hidden="true" />
-          <span className="farm-map-page__header-btn-label">Produtores</span>
-        </button>
+          <button
+            type="button"
+            className="farm-map-page__header-btn"
+            onClick={() => setShowProducers(true)}
+            aria-label="Produtores"
+          >
+            <Users size={18} aria-hidden="true" />
+            <span className="farm-map-page__header-btn-label">Produtores</span>
+          </button>
 
-        <button
-          type="button"
-          className="farm-map-page__header-btn"
-          onClick={() => setIsCreatePlotOpen(true)}
-          aria-label="Novo talhão"
-        >
-          <Plus size={20} aria-hidden="true" />
-          <span className="farm-map-page__header-btn-label">Novo talhão</span>
-        </button>
+          <button
+            type="button"
+            className="farm-map-page__header-btn"
+            onClick={() => setIsCreatePlotOpen(true)}
+            aria-label="Novo talhão"
+          >
+            <Plus size={18} aria-hidden="true" />
+            <span className="farm-map-page__header-btn-label">Novo talhão</span>
+          </button>
 
-        <button
-          type="button"
-          className="farm-map-page__header-btn"
-          onClick={() => setIsMergeMode(true)}
-          aria-label="Mesclar talhões"
-        >
-          <Combine size={20} aria-hidden="true" />
-          <span className="farm-map-page__header-btn-label">Mesclar talhões</span>
-        </button>
+          <button
+            type="button"
+            className="farm-map-page__header-btn"
+            onClick={() => setIsMergeMode(true)}
+            aria-label="Mesclar talhões"
+          >
+            <Combine size={18} aria-hidden="true" />
+            <span className="farm-map-page__header-btn-label">Mesclar talhões</span>
+          </button>
 
-        <button
-          type="button"
-          className="farm-map-page__header-btn"
-          onClick={() => setIsBulkImportOpen(true)}
-          aria-label="Importar talhões"
-        >
-          <Upload size={20} aria-hidden="true" />
-          <span className="farm-map-page__header-btn-label">Importar talhões</span>
-        </button>
+          <button
+            type="button"
+            className="farm-map-page__header-btn"
+            onClick={() => setIsBulkImportOpen(true)}
+            aria-label="Importar talhões"
+          >
+            <Upload size={18} aria-hidden="true" />
+            <span className="farm-map-page__header-btn-label">Importar talhões</span>
+          </button>
 
-        <button
-          type="button"
-          className="farm-map-page__header-btn"
-          onClick={() => setIsCreateLocationOpen(true)}
-          aria-label="Novo local"
-        >
-          <Fence size={20} aria-hidden="true" />
-          <span className="farm-map-page__header-btn-label">Novo local</span>
-        </button>
+          <button
+            type="button"
+            className="farm-map-page__header-btn"
+            onClick={() => setIsCreateLocationOpen(true)}
+            aria-label="Novo local"
+          >
+            <Fence size={18} aria-hidden="true" />
+            <span className="farm-map-page__header-btn-label">Novo local</span>
+          </button>
+        </nav>
       </header>
 
       <div className="farm-map-page__map-wrapper">

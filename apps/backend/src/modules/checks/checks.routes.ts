@@ -173,7 +173,7 @@ checksRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const check = await getCheck(ctx, req.params.id);
+      const check = await getCheck(ctx, req.params.id as string);
       res.json(check);
     } catch (err) {
       handleError(err, res);
@@ -190,7 +190,7 @@ checksRouter.post(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const check = await markACompensar(ctx, req.params.id);
+      const check = await markACompensar(ctx, req.params.id as string);
       res.json(check);
     } catch (err) {
       handleError(err, res);
@@ -207,7 +207,7 @@ checksRouter.post(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const check = await compensateCheck(ctx, req.params.id, req.body.compensationDate);
+      const check = await compensateCheck(ctx, req.params.id as string, req.body.compensationDate);
       res.json(check);
     } catch (err) {
       handleError(err, res);
@@ -224,7 +224,7 @@ checksRouter.post(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const check = await returnCheck(ctx, req.params.id);
+      const check = await returnCheck(ctx, req.params.id as string);
       res.json(check);
     } catch (err) {
       handleError(err, res);
@@ -241,7 +241,11 @@ checksRouter.post(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const check = await resubmitCheck(ctx, req.params.id, req.body.expectedCompensationDate);
+      const check = await resubmitCheck(
+        ctx,
+        req.params.id as string,
+        req.body.expectedCompensationDate,
+      );
       res.json(check);
     } catch (err) {
       handleError(err, res);
@@ -258,7 +262,7 @@ checksRouter.post(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const check = await cancelCheck(ctx, req.params.id);
+      const check = await cancelCheck(ctx, req.params.id as string);
       res.json(check);
     } catch (err) {
       handleError(err, res);

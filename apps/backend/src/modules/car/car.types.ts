@@ -54,6 +54,7 @@ export const MAX_GEO_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 export interface CreateCarInput {
   carCode: string;
+  ruralPropertyId?: string | null;
   status?: string;
   inscriptionDate?: string;
   lastRectificationDate?: string;
@@ -80,6 +81,7 @@ export interface CreateCarInput {
 
 export interface UpdateCarInput {
   carCode?: string;
+  ruralPropertyId?: string | null;
   status?: string;
   inscriptionDate?: string;
   lastRectificationDate?: string;

@@ -9,6 +9,16 @@ import { kml } from '@tmcw/togeojson';
 import JSZip from 'jszip';
 import { DOMParser } from '@xmldom/xmldom';
 
+// ─── Helpers ────────────────────────────────────────────────────────
+
+/** Strip Z (and M) coordinates, keeping only [lng, lat] per vertex */
+function stripZ(polygon: GeoJSON.Polygon): GeoJSON.Polygon {
+  return {
+    type: 'Polygon',
+    coordinates: polygon.coordinates.map((ring) => ring.map(([x, y]) => [x, y])),
+  };
+}
+
 // ─── Types ──────────────────────────────────────────────────────────
 
 export type GeoFormat = 'geojson' | 'kml' | 'kmz' | 'shapefile';
@@ -389,16 +399,25 @@ export async function parseGeoFile(buffer: Buffer, filename: string): Promise<Pa
     throw new Error(`Formato não suportado: ${filename}`);
   }
 
+  let result: ParseResult;
   switch (format) {
     case 'geojson':
-      return parseGeoJSON(buffer);
+      result = await parseGeoJSON(buffer);
+      break;
     case 'kml':
-      return parseKML(buffer);
+      result = await parseKML(buffer);
+      break;
     case 'kmz':
-      return parseKMZ(buffer);
+      result = await parseKMZ(buffer);
+      break;
     case 'shapefile':
-      return parseShapefileZip(buffer);
+      result = await parseShapefileZip(buffer);
+      break;
   }
+
+  // Strip Z/M dimensions — columns are 2D geometry(Polygon, 4326)
+  result.boundaries = result.boundaries.map(stripZ);
+  return result;
 }
 
 export async function parseGeoFileWithFeatures(
@@ -410,14 +429,23 @@ export async function parseGeoFileWithFeatures(
     throw new Error(`Formato não suportado: ${filename}`);
   }
 
+  let result: ParseResultWithFeatures;
   switch (format) {
     case 'geojson':
-      return parseGeoJSONWithFeatures(buffer);
+      result = await parseGeoJSONWithFeatures(buffer);
+      break;
     case 'kml':
-      return parseKMLStringWithFeatures(buffer.toString('utf-8'));
+      result = await parseKMLStringWithFeatures(buffer.toString('utf-8'));
+      break;
     case 'kmz':
-      return parseKMZWithFeatures(buffer);
+      result = await parseKMZWithFeatures(buffer);
+      break;
     case 'shapefile':
-      return parseShapefileZipWithFeatures(buffer);
+      result = await parseShapefileZipWithFeatures(buffer);
+      break;
   }
+
+  // Strip Z/M dimensions — columns are 2D geometry(Polygon, 4326)
+  result.features = result.features.map((f) => ({ ...f, polygon: stripZ(f.polygon) }));
+  return result;
 }

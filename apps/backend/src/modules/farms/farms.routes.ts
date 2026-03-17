@@ -41,6 +41,7 @@ import {
   executeSubdivide,
   previewMerge,
   executeMerge,
+  listAllRegistrations,
 } from './farms.service';
 import { FarmError, ALLOWED_GEO_EXTENSIONS, MAX_GEO_FILE_SIZE } from './farms.types';
 import { plotHistoryRouter } from './plot-history.routes';
@@ -297,6 +298,26 @@ farmsRouter.delete(
         return;
       }
       res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// GET /org/registrations — list all registrations org-wide
+farmsRouter.get(
+  '/org/registrations',
+  authenticate,
+  checkPermission('farms:read'),
+  async (req, res) => {
+    try {
+      const ctx: RlsContext = { organizationId: req.user!.organizationId! };
+      const result = await listAllRegistrations(ctx);
+      res.json(result);
+    } catch (err) {
+      if (err instanceof FarmError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno' });
     }
   },
 );

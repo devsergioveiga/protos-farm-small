@@ -7,6 +7,10 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  UserX,
+  Trash2,
+  RotateCcw,
+  KeyRound,
 } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAdminOrganizations } from '@/hooks/useAdminOrganizations';
@@ -35,6 +39,18 @@ const STATUS_TRANSITIONS: Record<string, string[]> = {
   SUSPENDED: ['ACTIVE', 'CANCELLED'],
   CANCELLED: [],
 };
+
+function formatDocument(doc: string | null, type: string): string {
+  if (!doc) return '—';
+  const digits = doc.replace(/\D/g, '');
+  if (type === 'PJ' && digits.length === 14) {
+    return digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+  }
+  if (digits.length === 11) {
+    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  }
+  return doc;
+}
 
 function AdminOrganizationsPage() {
   const [page, setPage] = useState(1);
@@ -91,6 +107,7 @@ function AdminOrganizationsPage() {
     email: '',
     phone: '',
   });
+  const [adminFormError, setAdminFormError] = useState<string | null>(null);
 
   const resetCreateForm = () => {
     setCreateForm({ name: '', type: 'PJ', document: '', plan: 'basic', maxUsers: 10, maxFarms: 5 });
@@ -108,6 +125,7 @@ function AdminOrganizationsPage() {
     setModalSuccess(null);
     setShowAdminForm(false);
     setAdminForm({ name: '', email: '', phone: '' });
+    setAdminFormError(null);
     try {
       const detail = await api.get<Organization>(`/admin/organizations/${org.id}`);
       setSelectedOrg(detail);
@@ -222,7 +240,7 @@ function AdminOrganizationsPage() {
     if (!selectedOrg || !adminForm.name.trim() || !adminForm.email.trim()) return;
     try {
       setSubmitting(true);
-      setModalError(null);
+      setAdminFormError(null);
       await api.post<OrgUser>(`/admin/organizations/${selectedOrg.id}/users`, {
         name: adminForm.name.trim(),
         email: adminForm.email.trim(),
@@ -231,11 +249,56 @@ function AdminOrganizationsPage() {
       setModalSuccess('Admin criado com sucesso. Um email de convite foi enviado.');
       setShowAdminForm(false);
       setAdminForm({ name: '', email: '', phone: '' });
+      setAdminFormError(null);
       const updated = await api.get<Organization>(`/admin/organizations/${selectedOrg.id}`);
       setSelectedOrg(updated);
       await refetch();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Não foi possível criar o admin.';
+      setAdminFormError(message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Delete confirmation
+  const [deleteConfirmUser, setDeleteConfirmUser] = useState<{ id: string; name: string } | null>(
+    null,
+  );
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState('');
+
+  const handleDeactivateUser = async (userId: string) => {
+    if (!selectedOrg) return;
+    try {
+      setSubmitting(true);
+      setModalError(null);
+      await api.patch(`/admin/organizations/${selectedOrg.id}/users/${userId}/deactivate`);
+      setModalSuccess('Usuário inativado com sucesso.');
+      const updated = await api.get<Organization>(`/admin/organizations/${selectedOrg.id}`);
+      setSelectedOrg(updated);
+      await refetch();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao inativar usuário.';
+      setModalError(message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!selectedOrg) return;
+    try {
+      setSubmitting(true);
+      setModalError(null);
+      await api.delete(`/admin/organizations/${selectedOrg.id}/users/${userId}`);
+      setModalSuccess('Usuário removido com sucesso.');
+      setDeleteConfirmUser(null);
+      setDeleteConfirmInput('');
+      const updated = await api.get<Organization>(`/admin/organizations/${selectedOrg.id}`);
+      setSelectedOrg(updated);
+      await refetch();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao remover usuário.';
       setModalError(message);
     } finally {
       setSubmitting(false);
@@ -409,7 +472,9 @@ function AdminOrganizationsPage() {
                     </td>
                     <td>{org.type}</td>
                     <td>
-                      <span className="admin-orgs__org-doc">{org.document}</span>
+                      <span className="admin-orgs__org-doc">
+                        {formatDocument(org.document, org.type)}
+                      </span>
                     </td>
                     <td>{PLAN_LABELS[org.plan] ?? org.plan}</td>
                     <td>
@@ -454,7 +519,9 @@ function AdminOrganizationsPage() {
                 </div>
                 <div className="admin-orgs__card-row">
                   <span className="admin-orgs__card-label">Documento</span>
-                  <span className="admin-orgs__card-value">{org.document}</span>
+                  <span className="admin-orgs__card-value">
+                    {formatDocument(org.document, org.type)}
+                  </span>
                 </div>
                 <div className="admin-orgs__card-row">
                   <span className="admin-orgs__card-label">Plano</span>
@@ -737,7 +804,7 @@ function AdminOrganizationsPage() {
                   className="admin-orgs__info-value"
                   style={{ fontFamily: "'JetBrains Mono', monospace" }}
                 >
-                  {selectedOrg.document}
+                  {formatDocument(selectedOrg.document, selectedOrg.type)}
                 </p>
               </div>
               <div>
@@ -818,23 +885,23 @@ function AdminOrganizationsPage() {
             {/* Actions: Plan */}
             <div className="admin-orgs__modal-section">
               <h3 className="admin-orgs__modal-section-title">Alterar plano</h3>
-              <div className="admin-orgs__action-row">
-                <label htmlFor="detail-plan" className="sr-only">
-                  Novo plano
-                </label>
-                <select
-                  id="detail-plan"
-                  className="admin-orgs__select"
-                  value={newPlan}
-                  onChange={(e) => setNewPlan(e.target.value)}
-                >
-                  <option value="basic">Básico</option>
-                  <option value="professional">Profissional</option>
-                  <option value="enterprise">Enterprise</option>
-                </select>
-              </div>
-              <div className="admin-orgs__form-row" style={{ marginTop: '12px' }}>
-                <div className="admin-orgs__form-group">
+              <div className="admin-orgs__plan-row">
+                <div className="admin-orgs__form-group" style={{ flex: 2 }}>
+                  <label htmlFor="detail-plan" className="admin-orgs__label">
+                    Plano
+                  </label>
+                  <select
+                    id="detail-plan"
+                    className="admin-orgs__select"
+                    value={newPlan}
+                    onChange={(e) => setNewPlan(e.target.value)}
+                  >
+                    <option value="basic">Básico</option>
+                    <option value="professional">Profissional</option>
+                    <option value="enterprise">Enterprise</option>
+                  </select>
+                </div>
+                <div className="admin-orgs__form-group" style={{ flex: 1 }}>
                   <label htmlFor="detail-max-users" className="admin-orgs__label">
                     Máx. usuários
                   </label>
@@ -847,7 +914,7 @@ function AdminOrganizationsPage() {
                     min={1}
                   />
                 </div>
-                <div className="admin-orgs__form-group">
+                <div className="admin-orgs__form-group" style={{ flex: 1 }}>
                   <label htmlFor="detail-max-farms" className="admin-orgs__label">
                     Máx. fazendas
                   </label>
@@ -860,16 +927,19 @@ function AdminOrganizationsPage() {
                     min={1}
                   />
                 </div>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                <button
-                  type="button"
-                  className="admin-orgs__btn admin-orgs__btn--secondary admin-orgs__btn--small"
-                  onClick={() => void handlePlanChange()}
-                  disabled={submitting}
+                <div
+                  className="admin-orgs__form-group"
+                  style={{ flex: 'none', alignSelf: 'flex-end' }}
                 >
-                  {submitting ? 'Salvando...' : 'Atualizar plano'}
-                </button>
+                  <button
+                    type="button"
+                    className="admin-orgs__btn admin-orgs__btn--secondary admin-orgs__btn--small"
+                    onClick={() => void handlePlanChange()}
+                    disabled={submitting}
+                  >
+                    {submitting ? 'Salvando...' : 'Atualizar'}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -918,20 +988,80 @@ function AdminOrganizationsPage() {
                           Email
                         </th>
                         <th scope="col" style={{ textAlign: 'left', padding: '8px 12px' }}>
-                          Perfil
-                        </th>
-                        <th scope="col" style={{ textAlign: 'left', padding: '8px 12px' }}>
                           Status
+                        </th>
+                        <th scope="col" style={{ textAlign: 'right', padding: '8px 12px' }}>
+                          Ações
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       {selectedOrg.users.map((u) => (
                         <tr key={u.id}>
-                          <td style={{ padding: '8px 12px' }}>{u.name}</td>
+                          <td style={{ padding: '8px 12px' }}>
+                            <span style={{ fontWeight: 600 }}>{u.name}</span>
+                            <br />
+                            <span
+                              style={{ fontSize: '0.75rem', color: 'var(--color-neutral-500)' }}
+                            >
+                              {u.role}
+                            </span>
+                          </td>
                           <td style={{ padding: '8px 12px' }}>{u.email}</td>
-                          <td style={{ padding: '8px 12px' }}>{u.role}</td>
-                          <td style={{ padding: '8px 12px' }}>{u.status}</td>
+                          <td style={{ padding: '8px 12px' }}>
+                            <span
+                              className={`admin-orgs__badge admin-orgs__badge--${u.status === 'ACTIVE' ? 'active' : 'cancelled'}`}
+                            >
+                              {u.status === 'ACTIVE' ? 'Ativo' : 'Inativo'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                            <div className="admin-orgs__user-actions">
+                              <button
+                                type="button"
+                                className="admin-orgs__icon-btn"
+                                onClick={() => void handleResetPassword(u.id)}
+                                disabled={submitting}
+                                aria-label={`Resetar senha de ${u.name}`}
+                                title="Resetar senha"
+                              >
+                                <KeyRound aria-hidden="true" size={16} />
+                              </button>
+                              {u.status === 'ACTIVE' ? (
+                                <button
+                                  type="button"
+                                  className="admin-orgs__icon-btn admin-orgs__icon-btn--warn"
+                                  onClick={() => void handleDeactivateUser(u.id)}
+                                  disabled={submitting}
+                                  aria-label={`Inativar ${u.name}`}
+                                  title="Inativar"
+                                >
+                                  <UserX aria-hidden="true" size={16} />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="admin-orgs__icon-btn"
+                                  onClick={() => void handleUnlock(u.id)}
+                                  disabled={submitting}
+                                  aria-label={`Reativar ${u.name}`}
+                                  title="Reativar"
+                                >
+                                  <RotateCcw aria-hidden="true" size={16} />
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                className="admin-orgs__icon-btn admin-orgs__icon-btn--danger"
+                                onClick={() => setDeleteConfirmUser({ id: u.id, name: u.name })}
+                                disabled={submitting}
+                                aria-label={`Excluir ${u.name}`}
+                                title="Excluir"
+                              >
+                                <Trash2 aria-hidden="true" size={16} />
+                              </button>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -974,14 +1104,28 @@ function AdminOrganizationsPage() {
                       <input
                         id="admin-email"
                         type="email"
-                        className="admin-orgs__input"
+                        className={`admin-orgs__input${adminFormError ? ' admin-orgs__input--error' : ''}`}
                         value={adminForm.email}
-                        onChange={(e) =>
-                          setAdminForm((prev) => ({ ...prev, email: e.target.value }))
-                        }
+                        onChange={(e) => {
+                          setAdminForm((prev) => ({ ...prev, email: e.target.value }));
+                          if (adminFormError) setAdminFormError(null);
+                        }}
                         placeholder="email@exemplo.com"
                         aria-required="true"
+                        aria-invalid={!!adminFormError}
+                        aria-describedby={adminFormError ? 'admin-email-error' : undefined}
                       />
+                      {adminFormError && (
+                        <span
+                          id="admin-email-error"
+                          className="admin-orgs__field-error"
+                          role="alert"
+                          aria-live="polite"
+                        >
+                          <AlertCircle aria-hidden="true" size={14} />
+                          {adminFormError}
+                        </span>
+                      )}
                     </div>
                     <div className="admin-orgs__form-group">
                       <label htmlFor="admin-phone" className="admin-orgs__label">
@@ -1018,62 +1162,84 @@ function AdminOrganizationsPage() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
 
-              {/* Quick actions: reset password / unlock — shown as placeholder inputs */}
-              <div
-                style={{
-                  marginTop: '16px',
-                  paddingTop: '16px',
-                  borderTop: '1px solid var(--color-neutral-100)',
+      {/* ─── Delete User Confirmation Modal ────────────────────── */}
+      {deleteConfirmUser && (
+        <div
+          className="admin-orgs__modal-overlay"
+          style={{ zIndex: 60 }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setDeleteConfirmUser(null);
+              setDeleteConfirmInput('');
+            }
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-user-title"
+        >
+          <div className="admin-orgs__modal" style={{ maxWidth: '480px' }}>
+            <h2
+              id="delete-user-title"
+              className="admin-orgs__modal-title"
+              style={{ color: 'var(--color-error-500)' }}
+            >
+              <Trash2
+                aria-hidden="true"
+                size={20}
+                style={{ marginRight: '8px', verticalAlign: 'text-bottom' }}
+              />
+              Excluir usuário
+            </h2>
+            <p
+              style={{
+                fontFamily: "'Source Sans 3', system-ui, sans-serif",
+                fontSize: '0.9375rem',
+                color: 'var(--color-neutral-700)',
+                marginBottom: '16px',
+                lineHeight: 1.5,
+              }}
+            >
+              Esta ação é irreversível. Para confirmar, digite o nome do usuário:{' '}
+              <strong>{deleteConfirmUser.name}</strong>
+            </p>
+            <div className="admin-orgs__form-group" style={{ marginBottom: '16px' }}>
+              <label htmlFor="delete-confirm-input" className="admin-orgs__label">
+                Nome do usuário
+              </label>
+              <input
+                id="delete-confirm-input"
+                type="text"
+                className="admin-orgs__input"
+                value={deleteConfirmInput}
+                onChange={(e) => setDeleteConfirmInput(e.target.value)}
+                placeholder={deleteConfirmUser.name}
+                autoFocus
+              />
+            </div>
+            <div className="admin-orgs__modal-actions">
+              <button
+                type="button"
+                className="admin-orgs__btn admin-orgs__btn--secondary"
+                onClick={() => {
+                  setDeleteConfirmUser(null);
+                  setDeleteConfirmInput('');
                 }}
               >
-                <p
-                  style={{
-                    fontFamily: "'Source Sans 3', system-ui, sans-serif",
-                    fontSize: '0.875rem',
-                    fontWeight: 600,
-                    color: 'var(--color-neutral-700)',
-                    marginBottom: '8px',
-                  }}
-                >
-                  Ações de usuário
-                </p>
-                <div className="admin-orgs__action-row">
-                  <label htmlFor="user-id-action" className="sr-only">
-                    ID do usuário
-                  </label>
-                  <input
-                    id="user-id-action"
-                    type="text"
-                    className="admin-orgs__input"
-                    placeholder="ID do usuário"
-                    style={{ flex: 1 }}
-                    data-testid="user-id-input"
-                  />
-                  <button
-                    type="button"
-                    className="admin-orgs__btn admin-orgs__btn--secondary admin-orgs__btn--small"
-                    onClick={() => {
-                      const input = document.getElementById('user-id-action') as HTMLInputElement;
-                      if (input?.value.trim()) void handleResetPassword(input.value.trim());
-                    }}
-                    disabled={submitting}
-                  >
-                    Resetar senha
-                  </button>
-                  <button
-                    type="button"
-                    className="admin-orgs__btn admin-orgs__btn--secondary admin-orgs__btn--small"
-                    onClick={() => {
-                      const input = document.getElementById('user-id-action') as HTMLInputElement;
-                      if (input?.value.trim()) void handleUnlock(input.value.trim());
-                    }}
-                    disabled={submitting}
-                  >
-                    Desbloquear
-                  </button>
-                </div>
-              </div>
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="admin-orgs__btn admin-orgs__btn--danger"
+                onClick={() => void handleDeleteUser(deleteConfirmUser.id)}
+                disabled={submitting || deleteConfirmInput !== deleteConfirmUser.name}
+              >
+                {submitting ? 'Excluindo...' : 'Excluir usuário'}
+              </button>
             </div>
           </div>
         </div>

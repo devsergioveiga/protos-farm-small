@@ -57,7 +57,7 @@ transfersRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const result = await getTransfer(ctx, req.params.id);
+      const result = await getTransfer(ctx, req.params.id as string);
       res.json(result);
     } catch (err) {
       handleError(err, res);
@@ -100,7 +100,7 @@ transfersRouter.delete(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      await deleteTransfer(ctx, req.params.id);
+      await deleteTransfer(ctx, req.params.id as string);
       res.status(204).send();
     } catch (err) {
       handleError(err, res);

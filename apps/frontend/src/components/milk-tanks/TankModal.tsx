@@ -62,9 +62,9 @@ export default function TankModal({ isOpen, onClose, tank, farmId, onSuccess }: 
 
     try {
       if (tank) {
-        await api.patch(`/org/farms/${farmId}/cooling-tanks/${tank.id}`, payload);
+        await api.patch(`/org/farms/${farmId}/milk-tanks/${tank.id}`, payload);
       } else {
-        await api.post(`/org/farms/${farmId}/cooling-tanks`, payload);
+        await api.post(`/org/farms/${farmId}/milk-tanks`, payload);
       }
       onSuccess();
     } catch (err: unknown) {
