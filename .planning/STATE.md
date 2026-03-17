@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 08-01-PLAN.md
-last_updated: '2026-03-17T19:33:01.028Z'
+stopped_at: Completed 08-02-PLAN.md
+last_updated: '2026-03-17T19:39:40.301Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 10
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -52,6 +52,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 07-cadastro-de-fornecedores P04 | 7min | 2 tasks | 7 files |
 | Phase 07-cadastro-de-fornecedores P04 | 7min | 3 tasks | 7 files |
 | Phase 08-requisi-o-e-aprova-o P01 | 5min | 2 tasks | 5 files |
+| Phase 08-requisi-o-e-aprova-o P02 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,7 @@ Key decisions for v1.1:
 - [Phase 07-cadastro-de-fornecedores]: SupplierRatingModal form uses id/form attribute pattern so footer submit button is outside form element
 - [Phase 08-requisi-o-e-aprova-o]: Notification model uses purchaseRequestId FK (optional) for direct relation — cleaner than relying only on referenceId/referenceType strings
 - [Phase 08-requisi-o-e-aprova-o]: All 7 Phase 8 models use cuid() as ID following RESEARCH.md recommendation and Phase 7 pattern
+- [Phase 08-requisi-o-e-aprova-o]: createPurchaseRequest context type extended to RlsContext & { userId: string } — createdBy field must be persisted in the RC row
 
 ### Pending Todos
 
@@ -89,6 +91,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T19:33:01.025Z
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-03-17T19:39:40.299Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
