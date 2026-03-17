@@ -93,6 +93,8 @@ import { reconciliationRouter } from './modules/reconciliation/reconciliation.ro
 import { ruralCreditRouter } from './modules/rural-credit/rural-credit.routes';
 import { suppliersRouter } from './modules/suppliers/suppliers.routes';
 import { purchaseRequestsRouter } from './modules/purchase-requests/purchase-requests.routes';
+import { approvalRulesRouter } from './modules/approval-rules/approval-rules.routes';
+import { notificationsRouter } from './modules/notifications/notifications.routes';
 
 const app = express();
 
@@ -193,5 +195,7 @@ app.use('/api', reconciliationRouter);
 app.use('/api', ruralCreditRouter);
 app.use('/api', suppliersRouter);
 app.use('/api', purchaseRequestsRouter);
+app.use('/api', approvalRulesRouter);
+app.use('/api', notificationsRouter);
 
 export { app };
