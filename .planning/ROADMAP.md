@@ -67,7 +67,16 @@ Plans:
 3. Gerente pode configurar alçadas de aprovação por valor e tipo, aprovar/rejeitar/devolver RCs pendentes e delegar temporariamente
 4. Solicitante recebe notificação ao ter RC aprovada ou rejeitada, com histórico disponível para auditoria
 5. Aprovador pode aprovar RC pelo mobile sem precisar acessar o desktop
-   **Plans**: TBD
+   **Plans:** 6 plans
+
+Plans:
+
+- [ ] 08-01-PLAN.md — Backend foundation: Prisma schema (7 models), migration, types, state machine
+- [ ] 08-02-PLAN.md — Backend RC CRUD: service, routes, sequential numbering, attachment upload, tests
+- [ ] 08-03-PLAN.md — Backend approval rules + workflow transitions + notifications + tests
+- [ ] 08-04-PLAN.md — Frontend RC page + modal: types, hooks, PurchaseRequestsPage, PurchaseRequestModal, sidebar
+- [ ] 08-05-PLAN.md — Frontend detail modal + approval rules page + notification bell
+- [ ] 08-06-PLAN.md — Mobile RC creation (offline) + my requests + pending approvals + push notifications
 
 ### Phase 9: Cotação e Pedido de Compra
 
@@ -135,7 +144,7 @@ Plans:
 | 5. Conciliação e Fluxo de Caixa      | v1.0      | 6/6            | Complete    | 2026-03-17 |
 | 6. Crédito Rural                     | v1.0      | 5/5            | Complete    | 2026-03-17 |
 | 7. Cadastro de Fornecedores          | 4/4       | Complete       | 2026-03-17  | -          |
-| 8. Requisição e Aprovação            | v1.1      | 0/TBD          | Not started | -          |
+| 8. Requisição e Aprovação            | v1.1      | 0/6            | Planned     | -          |
 | 9. Cotação e Pedido de Compra        | v1.1      | 0/TBD          | Not started | -          |
 | 10. Recebimento de Mercadorias       | v1.1      | 0/TBD          | Not started | -          |
 | 11. Devolução, Orçamento e Saving    | v1.1      | 0/TBD          | Not started | -          |
