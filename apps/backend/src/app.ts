@@ -92,6 +92,7 @@ import { cashflowRouter } from './modules/cashflow/cashflow.routes';
 import { reconciliationRouter } from './modules/reconciliation/reconciliation.routes';
 import { ruralCreditRouter } from './modules/rural-credit/rural-credit.routes';
 import { suppliersRouter } from './modules/suppliers/suppliers.routes';
+import { purchaseRequestsRouter } from './modules/purchase-requests/purchase-requests.routes';
 
 const app = express();
 
@@ -191,5 +192,6 @@ app.use('/api', cashflowRouter);
 app.use('/api', reconciliationRouter);
 app.use('/api', ruralCreditRouter);
 app.use('/api', suppliersRouter);
+app.use('/api', purchaseRequestsRouter);
 
 export { app };
