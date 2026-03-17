@@ -2,7 +2,7 @@ import request from 'supertest';
 import { app } from '../../app';
 import * as cashflowService from './cashflow.service';
 import * as authService from '../auth/auth.service';
-import { CashflowError } from './cashflow.types';
+import { CashflowError, type DfcCategory } from './cashflow.types';
 
 jest.mock('../../shared/audit/audit.service', () => ({
   logAudit: jest.fn().mockResolvedValue(undefined),
@@ -245,8 +245,8 @@ describe('GET /api/org/cashflow/projection', () => {
         outflows: [
           {
             category: 'INPUTS',
-            dfcClass: 'OPERACIONAL',
-            monthlyAmounts: Array(12).fill(0),
+            dfcClass: 'OPERACIONAL' as DfcCategory,
+            monthlyAmounts: Array(12).fill(0) as number[],
             total: 1000,
           },
         ],
@@ -278,8 +278,8 @@ describe('GET /api/org/cashflow/projection', () => {
         inflows: [
           {
             category: 'GRAIN_SALE',
-            dfcClass: 'OPERACIONAL',
-            monthlyAmounts: Array(12).fill(0),
+            dfcClass: 'OPERACIONAL' as DfcCategory,
+            monthlyAmounts: Array(12).fill(0) as number[],
             total: 5000,
           },
         ],

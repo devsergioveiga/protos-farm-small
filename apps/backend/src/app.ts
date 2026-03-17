@@ -87,6 +87,9 @@ import { financialDashboardRouter } from './modules/financial-dashboard/financia
 import { transfersRouter } from './modules/transfers/transfers.routes';
 import { checksRouter } from './modules/checks/checks.routes';
 import { creditCardsRouter } from './modules/credit-cards/credit-cards.routes';
+import { ruralPropertiesRouter } from './modules/rural-properties/rural-properties.routes';
+import { cashflowRouter } from './modules/cashflow/cashflow.routes';
+import { reconciliationRouter } from './modules/reconciliation/reconciliation.routes';
 
 const app = express();
 
@@ -104,6 +107,7 @@ app.use('/api', adminRouter);
 app.use('/api', orgUsersRouter);
 app.use('/api', rolesRouter);
 app.use('/api', farmsRouter);
+app.use('/api', ruralPropertiesRouter);
 app.use('/api', producersRouter);
 app.use('/api', carRouter);
 app.use('/api', dashboardRouter);
@@ -181,5 +185,7 @@ app.use('/api', financialDashboardRouter);
 app.use('/api', transfersRouter);
 app.use('/api', checksRouter);
 app.use('/api', creditCardsRouter);
+app.use('/api', cashflowRouter);
+app.use('/api', reconciliationRouter);
 
 export { app };
