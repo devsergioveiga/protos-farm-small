@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 08-03-PLAN.md
-last_updated: '2026-03-17T21:08:31.383Z'
+stopped_at: Completed 08-06-PLAN.md
+last_updated: '2026-03-17T21:29:44.259Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 10
-  completed_plans: 7
+  completed_plans: 8
   percent: 0
 ---
 
@@ -54,6 +54,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-requisi-o-e-aprova-o P01 | 5min | 2 tasks | 5 files |
 | Phase 08-requisi-o-e-aprova-o P02 | 4min | 2 tasks | 4 files |
 | Phase 08-requisi-o-e-aprova-o P03 | 21min | 2 tasks | 9 files |
+| Phase 08-requisi-o-e-aprova-o P06 | 18 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,8 @@ Key decisions for v1.1:
 - [Phase 08-requisi-o-e-aprova-o]: createPurchaseRequest context type extended to RlsContext & { userId: string } — createdBy field must be persisted in the RC row
 - [Phase 08-requisi-o-e-aprova-o]: Decimal type for Prisma Decimal fields requires Number() cast before arithmetic comparisons in TypeScript strict mode
 - [Phase 08-requisi-o-e-aprova-o]: dispatchPushNotification uses fire-and-forget void pattern to prevent push failures rolling back the Prisma transaction
+- [Phase 08-06]: purchase_requests OperationEntity priority is NORMAL (not critical) — purchase orders are not safety-critical like health/reproductive records
+- [Phase 08-06]: expo-notifications NotificationBehavior requires shouldShowBanner+shouldShowList alongside shouldShowAlert for Expo SDK 54+ compatibility
 
 ### Pending Todos
 
@@ -94,6 +97,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T21:08:31.381Z
-Stopped at: Completed 08-03-PLAN.md
+Last session: 2026-03-17T21:29:44.257Z
+Stopped at: Completed 08-06-PLAN.md
 Resume file: None
