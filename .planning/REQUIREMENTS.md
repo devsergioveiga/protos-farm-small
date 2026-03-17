@@ -14,7 +14,7 @@ Requirements for Financeiro Base milestone. Each maps to roadmap phases.
 - [x] **FN-03**: Gerente pode visualizar saldo atual (real-time) e extrato de cada conta com filtros, saldo projetado (7/15/30/60/90 dias) e dashboard de todas as contas lado a lado
 - [x] **FN-04**: Gerente pode registrar transferências entre contas (espelhada), incluindo tarifa, aplicação/resgate de investimento e transferências entre fazendas
 - [x] **FN-05**: Gerente pode registrar despesas no cartão (com parcelas), visualizar fatura por período de fechamento, e fechamento gera CP automaticamente com pagamento debitando da conta vinculada
-- [ ] **FN-06**: Gerente pode importar extrato bancário (OFX/CSV) e conciliar automaticamente com lançamentos do sistema, com graus de confiança (exato/provável/sem match) e ações manuais
+- [x] **FN-06**: Gerente pode importar extrato bancário (OFX/CSV) e conciliar automaticamente com lançamentos do sistema, com graus de confiança (exato/provável/sem match) e ações manuais
 
 ### Contas a Pagar
 
@@ -30,7 +30,7 @@ Requirements for Financeiro Base milestone. Each maps to roadmap phases.
 
 ### Fluxo de Caixa e Crédito Rural
 
-- [ ] **FN-13**: Gerente pode visualizar fluxo de caixa realizado e projetado com cenários (otimista/realista/pessimista), gráfico de evolução com alerta de saldo negativo, classificação DFC e export
+- [x] **FN-13**: Gerente pode visualizar fluxo de caixa realizado e projetado com cenários (otimista/realista/pessimista), gráfico de evolução com alerta de saldo negativo, classificação DFC e export
 - [ ] **FN-14**: Gerente pode cadastrar operações de crédito rural (PRONAF/PRONAMP/funcafé/CPR/crédito livre) com cronograma de parcelas automático (SAC/Price/Bullet + carência), saldo devedor e alertas
 - [x] **FN-15**: Proprietário pode ver dashboard financeiro consolidado com saldo total, CP vs CR 7/30 dias, resultado do mês, endividamento, top despesas/receitas e comparativo ano anterior
 
@@ -78,14 +78,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FN-03       | Phase 1 | Complete |
 | FN-04       | Phase 4 | Complete |
 | FN-05       | Phase 4 | Complete |
-| FN-06       | Phase 5 | Pending  |
+| FN-06       | Phase 5 | Complete |
 | FN-07       | Phase 2 | Complete |
 | FN-08       | Phase 2 | Complete |
 | FN-09       | Phase 4 | Complete |
 | FN-10       | Phase 2 | Complete |
 | FN-11       | Phase 2 | Complete |
 | FN-12       | Phase 2 | Complete |
-| FN-13       | Phase 5 | Pending  |
+| FN-13       | Phase 5 | Complete |
 | FN-14       | Phase 6 | Pending  |
 | FN-15       | Phase 3 | Complete |
 
