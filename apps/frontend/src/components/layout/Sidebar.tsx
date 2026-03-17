@@ -61,6 +61,9 @@ import {
   ArrowLeftRight,
   CreditCard,
   CheckSquare,
+  Landmark,
+  TrendingUp,
+  GitMerge,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -91,6 +94,7 @@ const NAV_GROUPS: NavGroup[] = [
     title: 'PROPRIEDADE',
     items: [
       { to: '/farms', icon: MapPin, label: 'Fazendas' },
+      { to: '/rural-properties', icon: Landmark, label: 'Imóveis rurais' },
       { to: '/producers', icon: UserCheck, label: 'Produtores' },
     ],
   },
@@ -178,6 +182,8 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/transfers', icon: ArrowLeftRight, label: 'Transferências' },
       { to: '/credit-cards', icon: CreditCard, label: 'Cartões' },
       { to: '/checks', icon: CheckSquare, label: 'Cheques' },
+      { to: '/cashflow', icon: TrendingUp, label: 'Fluxo de caixa' },
+      { to: '/reconciliation', icon: GitMerge, label: 'Conciliação bancária' },
     ],
   },
   {
