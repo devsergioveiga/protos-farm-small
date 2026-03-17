@@ -1,8 +1,23 @@
 # Feature Research
 
-**Domain:** Brazilian agricultural financial management module (Financeiro Base)
-**Researched:** 2026-03-15
-**Confidence:** MEDIUM (training data + rich PROJECT.md context; WebSearch unavailable)
+**Domain:** Procurement / Purchasing Module (Gestao de Compras) — Farm Management ERP Brazil
+**Researched:** 2026-03-17
+**Confidence:** HIGH — ERP procurement is a mature domain with well-established patterns; verified against ERPNext, SAP, NetSuite, Dynamics 365 documentation.
+
+---
+
+## Context: What Already Exists
+
+The system already ships:
+
+- `payables` module — CP with installments, cost center rateio, CNAB, aging, alerts
+- `stock-entries` module — entries with accessory expense rateio, custo medio ponderado
+- `stock-outputs` module — FEFO, historical movements, CSV export
+- `products` module — product catalog with measurement units and conversions
+- `producers` module — fiscal entity (CNPJ/CPF) linked to bank accounts
+- `cost-centers` module — fazenda/setor rateio
+
+The procurement module is NOT building financial infrastructure from scratch. It is building the upstream P2P (Purchase-to-Pay) flow that feeds the existing `payables` and `stock-entries` modules. The most important integration point is GRN confirmation: one action creates both a CP and a stock entry automatically.
 
 ---
 
@@ -10,243 +25,289 @@
 
 ### Table Stakes (Users Expect These)
 
-Features that any farm financial manager assumes exist. Missing these causes immediate rejection — users will not adopt the system without them.
+Features a procurement module must have. Missing any of these makes the module feel broken or incomplete to a purchasing or finance manager.
 
-| Feature                                                                   | Why Expected                                                                  | Complexity | Notes                                                                                               |
-| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------- |
-| Cadastro de contas bancárias (nome, banco FEBRABAN, agência, conta, tipo) | Toda fazenda tem 2+ contas. Sem isso não há base para nenhuma movimentação    | LOW        | FEBRABAN lista ~200 bancos; incluir PIX (chaves) e convênio CNAB como campos opcionais              |
-| Saldo atual por conta (em tempo real do sistema)                          | Primeira coisa que gerente abre de manhã                                      | LOW        | "Tempo real do sistema" = saldo calculado das movimentações cadastradas, não integração bancária    |
-| Lançamento de contas a pagar (fornecedor, valor, vencimento, categoria)   | Qualquer sistema contábil básico tem isso                                     | LOW        | Multi-parcela e recorrência elevam para MEDIUM                                                      |
-| Lançamento de contas a receber (cliente, valor, vencimento, categoria)    | Simétrico ao AP; ausência é incompreensível                                   | LOW        | Categorias específicas rurais: venda de grãos, leite, boi, café, cana                               |
-| Baixa de pagamento (marcar como pago, data, valor efetivo)                | Sem isso a tela de CP é uma lista estática inútil                             | LOW        | Deve suportar valor diferente do original (juros, desconto, multa)                                  |
-| Baixa de recebimento                                                      | Simétrico à baixa de CP                                                       | LOW        | Glosa (desconto sobre NF pelo comprador) é expectativa específica do rural                          |
-| Extrato por conta (cronológico, filtros por data)                         | Usuário precisa reconciliar mentalmente antes de confiar                      | MEDIUM     | Export PDF e Excel obrigatório para auditor/contador                                                |
-| Categorias / plano de contas simplificado                                 | Sem categorias não há relatório útil                                          | LOW        | Pré-popular com categorias rurais típicas (custeio, colheita, insumos, funcionários, crédito rural) |
-| Filtros e buscas em CP/CR                                                 | Fazendas grandes têm 200+ lançamentos/mês                                     | LOW        | Filtrar por: vencimento, fornecedor/cliente, status, fazenda, categoria                             |
-| Aging de contas a pagar (vencidas, vencendo em 7/15/30 dias)              | Gerente financeiro precisa saber o que pagar antes de virar                   | MEDIUM     | Faixas: atrasado, hoje, 1-7d, 8-15d, 16-30d, 31-60d, 60d+                                           |
-| Aging de contas a receber com inadimplência                               | Receita concentrada em safra; saber quem não pagou é crítico                  | MEDIUM     | Flag de inadimplência + PDD (provisão para devedores duvidosos) mesmo que simples                   |
-| Saldo projetado (CP vs CR nos próximos 30/60/90 dias)                     | Sazonalidade forte exige forward view                                         | MEDIUM     | Cruzar CR esperado vs CP a vencer; alertar quando projeção < 0                                      |
-| Rateio por fazenda / centro de custo                                      | Múltiplas fazendas por organização — custo sem centro de custo é inutilizável | MEDIUM     | Rateio proporcional ou manual; obrigatório em CP e CR conforme PROJECT.md                           |
-| Export de dados (Excel, PDF, CSV)                                         | Contador e banco pedem planilhas                                              | LOW        | Mínimo: export filtrado de CP, CR, extrato por conta                                                |
-| Dashboard financeiro resumido                                             | Landing page do módulo; sem isso parece inacabado                             | MEDIUM     | Saldo total, CP vencendo 7d, CR esperado 30d, resultado do mês                                      |
+| Feature                                                | Why Expected                                                                                                                                                  | Complexity | Notes                                                                                                                                                                                          |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Supplier registration with fiscal data                 | Every purchase has a fiscal counterpart (CNPJ/CPF, IE). Without structured supplier data, CP generation is manual and error-prone.                            | MEDIUM     | Fields: razao social, nome fantasia, CNPJ/CPF, inscricao estadual, endereco, contatos, payment terms. Same fiscal entity pattern as `producers`.                                               |
+| Multiple contacts per supplier                         | Farms deal with sales reps, billing contacts, and logistics contacts at the same supplier simultaneously                                                      | LOW        | Contact fields: name, role, phone, email. At least one contact marked as "principal".                                                                                                          |
+| Supplier search and filtering                          | Supplier list grows fast; without search the module is unusable at 50+ suppliers                                                                              | LOW        | Filter by: name, CNPJ fragment, product category, status (active/inactive)                                                                                                                     |
+| Supplier payment terms defaults                        | Each supplier has preferred terms (30/60/90 dias); default on OC avoids repeated manual entry                                                                 | LOW        | Stored on supplier, copied to OC at creation, editable per OC                                                                                                                                  |
+| Purchase Requisition (RC) creation                     | Entry point of any traceable procurement workflow. Without it, purchases are ad-hoc and unauditable.                                                          | MEDIUM     | Fields: requester, date needed, items (product + qty + estimated unit price), cost center, farm, justification, urgency flag (normal/urgente)                                                  |
+| RC items linked to existing product catalog            | Requisitions must reference real products for stock integration to work automatically                                                                         | LOW        | Search from existing `products` module; allow free-text for items not yet cataloged (flagged for product creation)                                                                             |
+| RC approval workflow with value thresholds             | Core financial control requirement. No approval = no accountability or budget protection.                                                                     | HIGH       | Configurable alcadas: up to R$X = auto-approve, R$X to R$Y = supervisor, above R$Y = director. State machine: RASCUNHO -> SUBMETIDA -> APROVADA / REJEITADA. Rejection requires comment.       |
+| Request for Quotation (Cotacao) to multiple suppliers  | Required for fiscal compliance and cost control in any structured farm operation. Brazilian agro law mandates competitive quotation above certain thresholds. | MEDIUM     | Attach RC items, select 2-5 suppliers, set response deadline, record via email or manual entry                                                                                                 |
+| Manual supplier quotation registration                 | Not all agro suppliers have email or a portal. Manual entry is the baseline that must work without any external dependency.                                   | LOW        | Per-item registration: unit price, available quantity, delivery time, payment terms, validity date                                                                                             |
+| Quotation comparison map (mapa comparativo)            | Core decision support tool. Buyers need side-by-side item-level comparison across all responding suppliers to justify winner selection.                       | MEDIUM     | Matrix view: rows = items, columns = suppliers, highlight lowest price per item, show non-responding suppliers, compute line totals and grand total per supplier                               |
+| Winner selection with justification                    | Must formalize which supplier was chosen and why, creating an audit trail.                                                                                    | LOW        | Mark winning supplier per item (can split order across suppliers), record approval user + timestamp + optional justification note                                                              |
+| Purchase Order (OC) generation from approved quotation | Formal purchase commitment document required before receiving goods.                                                                                          | MEDIUM     | Generate OC with: supplier, items, agreed prices, delivery date, payment terms, cost center rateio, OC number (sequential per org)                                                             |
+| OC PDF export                                          | Suppliers expect a formal document; required for email dispatch.                                                                                              | LOW        | Use existing pdfkit pattern. Include: OC number, farm CNPJ, items, unit prices, totals, payment terms, delivery address, signature line                                                        |
+| OC status tracking                                     | Managers need to know which OCs are open, partially received, or closed                                                                                       | LOW        | States: EMITIDA -> RECEBIMENTO_PARCIAL -> ENCERRADA / CANCELADA                                                                                                                                |
+| Goods Receiving (Recebimento / GRN)                    | Physical confirmation that goods arrived. This is the most critical event: it triggers both stock update and CP generation.                                   | HIGH       | 6 explicit scenarios (see below). 3-way match against OC. Captures NF data (numero, serie, data, valor total, chave NF-e).                                                                     |
+| Automatic CP generation from GRN + NF data             | Core P2P integration with the existing `payables` module. Eliminates double-entry and ensures every receipt creates a payable.                                | MEDIUM     | On GRN confirmation: create CP with supplier as vendor, NF value as amount, installments from OC payment terms (reuse existing installmentGenerator from packages/shared), cost center from OC |
+| Automatic stock entry from GRN                         | Core integration with the existing `stock-entries` module. Eliminates double-entry and ensures received goods enter stock at the correct cost.                | MEDIUM     | On GRN confirmation: create stock entry with received items, quantities, unit costs calculated from NF value                                                                                   |
+| GRN with discrepancy handling                          | Quantities or prices frequently differ from OC in agro purchasing (weight-based products, price updates). Must not block legitimate receipts.                 | MEDIUM     | Tolerance bands configurable per org (default ±3%). Within tolerance: auto-accept. Outside tolerance: flag for buyer review before closing.                                                    |
+| Purchase return (Devolucao) with supplier credit       | Goods rejected at receiving or after quality check must be returned with financial credit from supplier.                                                      | HIGH       | Reverse stock entry, generate credit note linked to original CP. States: SOLICITADA -> APROVADA -> ENVIADA -> CREDITO_RECEBIDO                                                                 |
+| Kanban / pipeline view of procurement flow             | Managers and buyers need a real-time view of what is pending approval, awaiting delivery, or blocked.                                                         | MEDIUM     | Columns: RC Pendente -> Cotacao -> Aprovacao OC -> OC Emitida -> Aguardando Recebimento -> Encerrada. Filter by farm, buyer, date range.                                                       |
+| Purchasing history per supplier                        | Buyers need price history to negotiate; auditors need traceability per supplier relationship.                                                                 | LOW        | List of all OCs + GRNs per supplier with items, values, delivery performance, and return history                                                                                               |
+| Email notifications at each workflow step              | Users not logged in must be notified when action is required from them (approval, quotation response deadline, OC sent).                                      | MEDIUM     | Triggered by: RC submitted for approval, RC approved/rejected, OC emitted to supplier, GRN created                                                                                             |
+
+### Goods Receiving Scenarios (Detail)
+
+The 6 receiving scenarios are a well-known ERP pattern (SAP MIGO, ERPNext GRN). Each creates different state machine paths and must be explicitly designed.
+
+| Scenario                              | Description                                              | Handling                                                                                                                                |
+| ------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. NF antecipada                      | Supplier sends NF before delivering goods                | Register NF data and park. No stock entry until physical receipt confirmed. GRN in state AGUARDANDO_ENTREGA.                            |
+| 2. Recebimento normal                 | Standard: truck arrives with goods and NF simultaneously | GRN creation + stock entry + CP generation in one confirmed flow. Most common scenario.                                                 |
+| 3. Recebimento parcial                | Supplier delivers part of OC; remainder is pending       | GRN for received items only, OC stays open for remainder, CP created for received portion value. OC status becomes RECEBIMENTO_PARCIAL. |
+| 4. Compra emergencial                 | Goods must enter stock immediately; no OC exists         | Open GRN flagged as "sem OC", requires post-hoc approval within 48h. Retroactive OC created or exception noted.                         |
+| 5. Divergencia de quantidade ou preco | Quantities or prices differ from OC                      | Within tolerance (±3%): auto-accept with note. Outside tolerance: flag for buyer review. Buyer resolves before GRN is confirmed.        |
+| 6. Devolucao no ato do recebimento    | Goods rejected during physical inspection at dock        | No stock entry created. Generate return document against supplier immediately. No CP generated. OC item stays open.                     |
 
 ### Differentiators (Competitive Advantage)
 
-Features that Brazilian agricultural ERPs (Agrosoft, Aegro, Siagri, FarmGEO) tipicamente não entregam bem, ou entregam como módulos pagos separados.
+Features that go beyond basic procurement software. These are the ones that justify Protos Farm over a generic ERP for Brazilian farm operators.
 
-| Feature                                                                                        | Value Proposition                                                                                           | Complexity | Notes                                                                                                  |
-| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------ |
-| Gestão de crédito rural (PRONAF, PRONAMP, Funcafé, CPR de troca) com cronograma de amortização | Crédito rural subsidiado é central para 70%+ dos produtores; nenhum ERP integra bem com a operação agrícola | HIGH       | Suportar SAC, Price e Bullet; vincular ao plano safra; alertar vencimentos de parcelas                 |
-| Conciliação bancária com import OFX/CSV/PDF                                                    | Reduz 4-8 horas/mês de trabalho manual por fazenda                                                          | HIGH       | Matching por valor+data com score de confiança; workflow de aprovação de itens não conciliados         |
-| Fluxo de caixa com cenários (otimista/realista/pessimista) e sazonalidade agrícola             | Produtor precisa de visão de 12 meses considerando safra; não é calendário gregoriano padrão                | HIGH       | Projeção baseada em CP/CR cadastrados + recorrências; exportar para banco (sustenta pedido de crédito) |
-| Gestão de cartão corporativo com integração ao CP (fatura vira lançamento)                     | Cartão de crédito corporativo cresceu muito em fazendas; gestor perde controle de gastos facilmente         | MEDIUM     | Import CSV/OFX da fatura; parcelamento automático; portador e CC obrigatórios                          |
-| Transferências entre contas com tarifa e aplicações/resgates                                   | Fazenda com 4+ contas precisa de visão consolidada de caixa; transferência sem registro distorce saldo      | MEDIUM     | Suporte a aplicação financeira (rendimento) e resgate; tarifa bancária como lançamento automático      |
-| Integração upstream com estoque: saída de insumos gera pré-lançamento de CP                    | Protos Farm já tem módulo de estoque — link automático elimina dupla entrada                                | MEDIUM     | Rascunho de CP gerado quando StockEntry é criada; usuário confirma/edita antes de aprovar              |
-| Gestão de cheques pré-datados (emitidos e recebidos)                                           | Cheque pré-datado ainda é padrão em transações rurais no interior do Brasil                                 | HIGH       | Carteira de cheques com data de compensação; saldo bancário real vs contábil; alerta de compensação    |
-| Alertas proativos configuráveis (digest matinal por email/notificação)                         | Gestor financeiro não fica no sistema o dia todo                                                            | MEDIUM     | "Vence hoje: R$ 45k em 3 títulos"; configurável por threshold e frequência                             |
-| DFC (Demonstração de Fluxo de Caixa) por classificação contábil                                | Pré-requisito para integração com contabilidade (próximo milestone)                                         | HIGH       | Classificar movimentos em Operacional, Investimento, Financiamento desde agora                         |
-| FUNRURAL: cálculo e registro automático da contribuição descontada pelo comprador              | Produtor rural não é optante de Simples; FUNRURAL é descontado na NF e raramente registrado corretamente    | MEDIUM     | Campo "desconto FUNRURAL" no CR de venda rural; relatório anual para DITR                              |
+| Feature                                                         | Value Proposition                                                                                                                                                                                               | Complexity | Notes                                                                                                                                                                                                |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Saving analysis (economia realizada)                            | Shows exactly how much was saved vs. last purchase price and vs. the highest quote received. Proves procurement team value and justifies the tool ROI.                                                          | MEDIUM     | Compare winning quote to: (a) last purchase price for same product+supplier, (b) highest quote in the same cotacao. Display saving in R$ and %. Aggregate by period, product category, and supplier. |
+| Price history per product across all suppliers                  | Buyers see price trends and seasonality — critical for agro inputs (defensivos, fertilizantes, racoes) that have significant price volatility tied to USD exchange rate and harvest seasons.                    | LOW        | Time-series of unit prices per product per supplier. Flag price increase >10% vs last purchase as alert. Visible from product detail and from supplier profile.                                      |
+| Supplier scorecard / ranking                                    | Quantified supplier performance enables data-driven negotiation and reduces dependence on a single supplier. Rarely available in farm ERP tools.                                                                | MEDIUM     | Computed score from: on-time delivery rate, quote response rate, price competitiveness rank, return rate. Displayed on supplier profile and in dashboard supplier ranking.                           |
+| Procurement dashboard (executive view)                          | CFO or fazenda owner needs one screen showing: spend by category, by supplier, by farm, pending approvals, savings achieved, and open OC value. Reuses existing dashboard tab pattern.                          | MEDIUM     | KPIs: total spend MTD/YTD, open OC value, pending approvals count, savings realized, top 5 suppliers by spend, spend by product category chart                                                       |
+| CP generation with automatic installments from OC payment terms | If OC specifies "30/60/90 dias", CP is automatically created with 3 installments. Reuses the existing installmentGenerator from packages/shared — zero duplication.                                             | LOW        | Payment terms on OC (a_vista, 30d, 30_60d, 30_60_90d, safra) drive installment schedule on CP. Safra term is flagged specially for visibility in cash flow.                                          |
+| Supplier import (CNPJ lookup)                                   | Pre-populate supplier registration from public CNPJ data (Receita Federal API) to reduce manual data entry errors on fiscal data.                                                                               | LOW        | Hit public Receita Federal CNPJ API (free, no auth) to fill razao social, endereco, situacao. User confirms and saves.                                                                               |
+| Mobile requisition (RC from campo)                              | Field workers or farm managers can create emergency purchase requisitions from the farm using the mobile app. Manager approves from web. Closes the loop on "I called the buyer on WhatsApp" informal requests. | MEDIUM     | Simplified mobile RC form: product search, quantity, urgency flag, photo attachment (e.g., damaged equipment part). Push notification to web approver.                                               |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
-Features que parecem óbvias mas criam complexidade desproporcional ao valor neste milestone.
-
-| Feature                                                             | Why Requested                                                                | Why Problematic                                                                                                                                                                                     | Alternative                                                                                                                         |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Open Finance / integração bancária automática (API Banco Central)   | "Não preciso importar arquivo, busca do banco direto"                        | Requer certificado digital ICP-Brasil, cadastro no BACEN como TPP, compliance LGPD específico, e os bancos rurais menores (Sicoob, Sicredi) têm suporte limitado. Prazo de homologação: 6-12 meses. | Manter import OFX/CSV — cobre 95% dos casos com 5% do esforço. Deixar Open Finance para Fase 5.                                     |
-| Emissão de boleto bancário                                          | "Quero cobrar meu comprador por boleto"                                      | Exige convênio bancário individual por banco, homologação de certificados, e contratos com a CIP/FEBRABAN. Cada banco tem API diferente.                                                            | Registrar CR com código de barras importado; integração de emissão fica em Fase 5.                                                  |
-| NF-e import / SPED automático                                       | "Já que pago a NF, por que digitar de novo?"                                 | NF-e import é módulo fiscal completo (XML, DANFE, chave de acesso, validação SEFAZ). Scope creep enorme.                                                                                            | Vincular campo "número NF" e "chave de acesso" em CP/CR para rastreio; import real em Fase 5 (módulo fiscal).                       |
-| Barter (troca de insumo por produção futura)                        | Comum em cerealistas — "pago defensivo com soja"                             | Tratamento contábil é complexo (CPR física, reconhecimento de receita, hedge implícito). Distorce CP/CR convencionais.                                                                              | Registrar barter como CP (insumo) + CR (produção futura) independentes; link manual. Módulo específico em Fase 5.                   |
-| Conciliação de leite (produção vs coleta vs pagamento cooperativa)  | Gestor de leite quer ver diferença entre o que foi coletado e o que foi pago | Requer integração com módulo de produção de leite (EPIC-13) e regras específicas de cooperativa (bonificações, descontos, cotas).                                                                   | CR de leite com campo "borderô cooperativa"; reconciliação específica em milestone futuro.                                          |
-| Emissão de CPR (Cédula de Produto Rural)                            | "Quero emitir a CPR diretamente no sistema"                                  | CPR exige assinatura digital ICP-Brasil e registro em cartório. Complexidade jurídica e técnica elevada.                                                                                            | Registrar crédito rural CPR como operação de financiamento (US-FN14) sem emissão; emissão em Fase 5.                                |
-| App mobile completo para financeiro                                 | "Quero aprovar pagamentos pelo celular"                                      | Financeiro é operação de escritório com documentos físicos, verificação bancária, assinaturas. Mobile-first cria workflow incompleto.                                                               | Web responsivo que funciona em tablet; PROJECT.md já decidiu: web-only neste milestone.                                             |
-| Contabilidade automática (lançamentos contábeis por débito/crédito) | "Gera o SPED automaticamente"                                                | Plano de contas contábil, partidas dobradas, e SPED são módulo separado com 30+ stories (Fase 3 Contabilidade).                                                                                     | Preparar campos DFC (classificação de fluxo) e centro de custo agora para facilitar integração futura; não gerar lançamentos ainda. |
-| Previsão de caixa com IA / machine learning                         | "Que a IA preveja a receita da safra"                                        | Dados históricos insuficientes nos primeiros 2 anos; safra depende de fatores não-financeiros (clima, preço de commodity). ML sem dados é pior que planilha.                                        | Cenários manuais (otimista/realista/pessimista) com recorrências configuráveis. Melhor controle e mais confiável.                   |
+| Feature                                          | Why Requested                                                | Why Problematic                                                                                                                                                                                                                                              | Alternative                                                                                                                                                 |
+| ------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NF-e XML import for automatic GRN                | Eliminates manual NF data entry at receiving                 | NF-e XML parsing requires SEFAZ integration, digital certificate validation, schema versioning, and fiscal rule interpretation. This is a full fiscal module (out of scope per PROJECT.md). One edge case breaks the entire flow.                            | Manual NF data entry on GRN form: NF number, series, date, total value, chave NF-e (as future hook). Takes 30 seconds, always works.                        |
+| Supplier portal (suppliers submit quotes online) | Reduces back-and-forth in quotation collection               | High development cost for a feature that serves suppliers, not farm staff. Brazilian agro suppliers (small distributors, local vendors) won't adopt a portal login.                                                                                          | Email RFQ with manual response registration covers 90% of cases at 10% of the development cost.                                                             |
+| Automated 3-way match with hard payment block    | Prevents paying wrong invoices                               | If tolerance is strict and blocks CP creation, it generates constant support burden. Rural suppliers often round weights and prices differently from the OC. Blocking breaks operations.                                                                     | Tolerance bands (±3%) with warning-not-block. Outside tolerance triggers buyer review, not payment block. Buyer resolves discrepancy before confirming GRN. |
+| Auction / reverse bidding                        | Competitive price discovery for large purchases              | Excessive complexity for farm context. Suppliers are often local and relationship-based. Adds significant UX complexity for a scenario that happens rarely.                                                                                                  | Standard RFQ with comparison map achieves the same outcome at a fraction of the complexity.                                                                 |
+| Supplier credit scoring via Serasa/SPC API       | Risk management for new suppliers                            | API cost, legal consent requirements under LGPD, and overkill for farm-scale supplier relationships (typically 10-30 known suppliers).                                                                                                                       | Manual risk flag field on supplier profile + qualitative notes field. Sufficient for farm scale.                                                            |
+| Blanket Purchase Orders / frame contracts        | Long-term volume commitments to lock in prices               | Adds contract lifecycle management complexity. Brazilian farms rarely have formal frame agreements; they operate on relationship and phone call.                                                                                                             | Recurring OC from template (copy OC feature) covers the practical use case without contract management overhead.                                            |
+| Full EDI / e-procurement integration             | Large enterprise capability for automated order transmission | Cost vs. benefit wrong for farm scale. No local agro suppliers have EDI capability.                                                                                                                                                                          | Email dispatch of OC PDF covers the practical need.                                                                                                         |
+| Budget control (orcamento de compras)            | Enforce spend limits per cost center                         | Requires a budget planning module as a prerequisite — a separate complex process. Budget entities, period management, and carryover rules are a milestone on their own. Block-on-budget without proper budget setup creates false alarms and user hostility. | Mark as P3 (future milestone). For v1.1, the dashboard spend-vs-period visualization provides informal budget awareness without enforcement.                |
 
 ---
 
 ## Feature Dependencies
 
 ```
-[Cadastro de Contas Bancárias]
-    └──required by──> [Extrato por Conta]
-    └──required by──> [Transferências entre Contas]
-    └──required by──> [Conciliação Bancária]
-    └──required by──> [Saldo Projetado]
+[Supplier Registration]
+    required-by --> [RFQ / Cotacao]
+    required-by --> [Purchase Order (OC)]
+    required-by --> [CP generation]
 
-[Lançamento CP]
-    └──required by──> [Baixa de Pagamento]
-    └──required by──> [Aging CP]
-    └──required by──> [CNAB Remessa]
-    └──enhances──> [Gestão de Cheques Emitidos]
-    └──enhances──> [Fluxo de Caixa Projetado]
+[Product Catalog (existing)]
+    required-by --> [RC items]
+    required-by --> [GRN items]
+    required-by --> [Stock Entry (existing)]
 
-[Lançamento CR]
-    └──required by──> [Baixa de Recebimento]
-    └──required by──> [Aging CR / Inadimplência]
-    └──enhances──> [Fluxo de Caixa Projetado]
+[Purchase Requisition (RC)]
+    required-by --> [RC Approval Workflow]
+                        required-by --> [RFQ / Cotacao]
+                                            required-by --> [Quotation Comparison Map]
+                                                                required-by --> [Winner Selection]
+                                                                                    required-by --> [Purchase Order (OC)]
+                                                                                                        required-by --> [Goods Receiving (GRN)]
+                                                                                                                            feeds --> [CP (payables module, existing)]
+                                                                                                                            feeds --> [Stock Entry (stock-entries module, existing)]
 
-[Categorias / Centro de Custo]
-    └──required by──> [Dashboard Financeiro]
-    └──required by──> [Relatório por Categoria]
-    └──required by──> [DFC por Classificação]
+[Price History]
+    accumulated-by --> [GRN confirmation]
+    required-by --> [Saving Analysis]
 
-[Gestão de Cartão Corporativo]
-    └──requires──> [Lançamento CP]  (fatura vira CP)
-    └──requires──> [Categorias]
+[Saving Analysis]
+    enhances --> [Procurement Dashboard]
 
-[Conciliação Bancária]
-    └──requires──> [Cadastro de Contas]
-    └──requires──> [Extrato / Movimentações]
-    └──enhances──> [Baixa de Pagamento]  (conciliação pode disparar baixa)
+[Supplier Scorecard]
+    requires --> [multiple completed GRN cycles]
+    enhances --> [Quotation Comparison Map]
 
-[Gestão de Crédito Rural]
-    └──requires──> [Lançamento CP]  (parcelas viram CP)
-    └──enhances──> [Fluxo de Caixa Projetado]  (cronograma alimenta projeção)
+[Purchase Return]
+    requires --> [GRN] (must reference a received GRN line)
+    feeds --> [CP credit note or CP reduction]
+    feeds --> [Stock Output reversal]
 
-[Fluxo de Caixa Projetado]
-    └──requires──> [Lançamento CP]
-    └──requires──> [Lançamento CR]
-    └──enhances with──> [Gestão de Crédito Rural]  (parcelas futuras)
+[Mobile RC]
+    simplified-version-of --> [RC]
+    feeds --> [RC Approval Workflow] (same flow)
 
-[Dashboard Financeiro]
-    └──requires──> [Cadastro de Contas]
-    └──requires──> [Lançamento CP]
-    └──requires──> [Lançamento CR]
-    └──requires──> [Saldo por Conta]
+[installmentGenerator (packages/shared, existing)]
+    reused-by --> [CP generation from GRN]
 
-[Estoque (EPIC-10)] ──future integration──> [Lançamento CP]
-    (StockEntry gera pré-lançamento de CP — preparar interface)
-
-[Contabilidade (Fase 3)] ──future integration──> [DFC por Classificação]
-    (campos DFC em CP/CR alimentam razão contábil — preparar desde agora)
+[Cost Centers (existing)]
+    required-by --> [RC cost center rateio]
+    required-by --> [OC cost center rateio]
+    required-by --> [CP cost center rateio]
 ```
 
 ### Dependency Notes
 
-- **Contas bancárias required by extrato:** Extrato não pode existir sem conta — implementar US-FN01 antes de US-FN03.
-- **CP required by gestão de cheques:** Cheque emitido é um CP com tipo especial e data de compensação futura — não é entidade separada.
-- **CP+CR required by fluxo de caixa:** Projeção de caixa só tem valor quando há volume suficiente de lançamentos — implementar FN13 depois de FN07+FN11.
-- **Categorias required by dashboard:** Dashboard sem categorias é só saldo total — sem insight. Categorias devem ser pré-populadas na seed.
-- **Crédito rural enhances fluxo de caixa:** Cronograma SAC/Price alimenta CP futuras automaticamente — integrar no modelo de projeção.
-- **CNAB depends on CP:** Remessa CNAB (pagamento em lote) é operação sobre conjunto de CP aprovados — implementar depois de US-FN07+FN08.
-- **Conciliação bancária conflicts with saldo manual:** Se o usuário edita saldo manual E importa OFX, pode ter dupla contagem. Bloquear edição de saldo após primeira conciliação.
+- **Supplier Registration is the root dependency.** Nothing in procurement works without a clean supplier entity. It must be the first story in any phase ordering.
+- **RC -> Approval -> RFQ -> OC -> GRN is the critical path.** The entire P2P lifecycle must be implemented in order. You cannot skip steps without breaking auditability.
+- **GRN is the most critical integration point.** A single GRN confirmation event must atomically create a CP (in `payables`) and a stock entry (in `stock-entries`). Get the data model and transaction boundary right before building UI.
+- **Price history accumulates naturally.** No extra data model is needed for price history — it is a query over GRN items grouped by product + supplier + date. Saving analysis is built on top of this at zero extra storage cost.
+- **Saving analysis needs data before it is meaningful.** Do not prioritize saving analysis UI in the first sprint; there will be no historical data to show.
+- **Purchase Return requires GRN to exist first.** Cannot return goods that have not been received. Return is always a reference to one or more GRN line items.
+- **installmentGenerator from packages/shared must be reused.** Creating a separate installment logic for procurement would be duplication and drift. OC payment terms drive the same installment schedule as manual CP creation.
+- **Budget control is a separate prerequisite.** It requires a `purchase_budgets` entity with period + cost center + amount. This is an org process change (someone must set budgets) before enforcement makes sense. Defer to v2.
 
 ---
 
 ## MVP Definition
 
-### Launch With (v1)
+### Launch With (v1.1 — the full milestone)
 
-Minimum para que o módulo seja adotável por um gerente financeiro real.
+This milestone is not decomposable into sub-MVPs. A procurement module that has requisitions but no GRN is useless. A GRN without CP auto-generation defeats the purpose. The minimum coherent unit is the complete P2P cycle.
 
-- [ ] US-FN01: Cadastro de contas bancárias — base de tudo; sem isso nenhum outro recurso faz sentido
-- [ ] US-FN03: Saldo e extrato por conta — primeira coisa verificada; cria confiança no sistema
-- [ ] US-FN07: Lançamento de contas a pagar — fluxo operacional mais crítico; pagamentos não param
-- [ ] US-FN08: Baixa de pagamento — sem baixa, CP é lista estática sem utilidade
-- [ ] US-FN10: Aging e alertas CP — principal motivo de adoção; substitui planilha de controle
-- [ ] US-FN11: Lançamento de contas a receber — receita sem controle = não saber se está lucrando
-- [ ] US-FN12: Baixa de recebimento e inadimplência — CR sem baixa tem mesmo problema que CP
-- [ ] US-FN15: Dashboard financeiro consolidado — landing page do módulo; primeiro impacto
+- [ ] Supplier CRUD with fiscal data, contacts, and payment terms — root dependency for everything
+- [ ] Purchase Requisition (RC) with items, cost center, and urgency flag — entry point of cycle
+- [ ] RC approval workflow (configurable value thresholds, state machine, rejection with comment) — control requirement
+- [ ] RFQ to multiple suppliers, manual quotation registration — price discovery
+- [ ] Quotation comparison map (mapa comparativo) with winner selection — decision support
+- [ ] Purchase Order (OC) generation with PDF export — formal commitment
+- [ ] Goods Receiving (6 scenarios) with NF data capture and 3-way match tolerance — stock + finance trigger
+- [ ] Automatic CP generation from GRN + NF — eliminates double-entry (core value)
+- [ ] Automatic stock entry from GRN — eliminates double-entry (core value)
+- [ ] Purchase return (devolucao) with credit note — required for complete financial cycle
+- [ ] Kanban / pipeline view of procurement flow — operational visibility
+- [ ] Procurement dashboard (executive view) — management visibility
+- [ ] Email notifications at key workflow transitions — keeps process moving
 
-### Add After Validation (v1.x)
+### Add After Validation (v1.2)
 
-Adicionar quando o núcleo estiver estável e com dados reais (1-2 sprints depois do v1).
+Add after the core P2P cycle has 2-3 months of real data and user feedback.
 
-- [ ] US-FN02: Cartões de crédito corporativos — alto valor mas complexidade adicional; esperar v1 estável
-- [ ] US-FN04: Transferências entre contas — necessário quando usuário tem 2+ contas cadastradas
-- [ ] US-FN05: Gestão de fatura de cartão — depende de US-FN02
-- [ ] US-FN06: Conciliação bancária automática — alto ROI mas alto risco de matching incorreto; validar com dados reais
-- [ ] US-FN09: Gestão de cheques — ainda relevante no interior; depende de volume de demanda real
-- [ ] US-FN13: Fluxo de caixa projetado com cenários — valioso mas só com 3+ meses de dados históricos
+- [ ] Saving analysis — needs historical price data to be meaningful; ship UI after data accumulates
+- [ ] Supplier scorecard / ranking — needs multiple completed purchase cycles before scores are reliable
+- [ ] Price history visualization per product — data exists after v1.1 runs; UI is the only addition
+- [ ] Mobile requisition (RC from campo) — validate web flow and approval process first; mobile is an accelerator
+- [ ] CNPJ lookup for supplier registration — quality-of-life improvement, not blocking
 
 ### Future Consideration (v2+)
 
-Defer até que o módulo base esteja consolidado e validado.
-
-- [ ] US-FN14: Gestão de crédito rural (PRONAF, SAC/Price/Bullet) — alta complexidade; implementar quando CP/CR estável
-- [ ] CNAB 240/400 remessa/retorno — integração bancária batch; requer testes com banco real
-- [ ] Open Finance — complexidade regulatória; Fase 5
-- [ ] Emissão de boletos — requer convênio bancário; Fase 5
-- [ ] Módulo fiscal / NF-e — escopo separado; Fase 5
+- [ ] Budget control (orcamento de compras) — requires budget planning module as prerequisite; organizational process change
+- [ ] Email RFQ sending with supplier response tracking — higher fidelity workflow; email + manual covers day-1
+- [ ] Frame contracts / blanket orders — enterprise feature, farm scale does not need it
+- [ ] NF-e XML import — full fiscal module, explicitly out of scope per PROJECT.md
+- [ ] Supplier portal — high cost, low ROI at farm scale
 
 ---
 
 ## Feature Prioritization Matrix
 
-| Feature                               | User Value | Implementation Cost | Priority |
-| ------------------------------------- | ---------- | ------------------- | -------- |
-| Cadastro contas bancárias (US-FN01)   | HIGH       | LOW                 | P1       |
-| Saldo e extrato (US-FN03)             | HIGH       | LOW                 | P1       |
-| Lançamento CP (US-FN07)               | HIGH       | MEDIUM              | P1       |
-| Baixa de pagamento (US-FN08)          | HIGH       | MEDIUM              | P1       |
-| Aging + alertas CP (US-FN10)          | HIGH       | MEDIUM              | P1       |
-| Lançamento CR (US-FN11)               | HIGH       | MEDIUM              | P1       |
-| Baixa de recebimento (US-FN12)        | HIGH       | MEDIUM              | P1       |
-| Dashboard financeiro (US-FN15)        | HIGH       | MEDIUM              | P1       |
-| Cartão corporativo (US-FN02)          | MEDIUM     | MEDIUM              | P2       |
-| Transferências entre contas (US-FN04) | MEDIUM     | LOW                 | P2       |
-| Gestão de fatura cartão (US-FN05)     | MEDIUM     | HIGH                | P2       |
-| Conciliação bancária (US-FN06)        | HIGH       | HIGH                | P2       |
-| Gestão de cheques (US-FN09)           | MEDIUM     | HIGH                | P2       |
-| Fluxo de caixa projetado (US-FN13)    | HIGH       | HIGH                | P2       |
-| Crédito rural (US-FN14)               | HIGH       | HIGH                | P3       |
-| CNAB remessa/retorno                  | MEDIUM     | HIGH                | P3       |
-| Open Finance                          | HIGH       | VERY HIGH           | P3       |
+| Feature                       | User Value | Implementation Cost | Priority     |
+| ----------------------------- | ---------- | ------------------- | ------------ |
+| Supplier registration         | HIGH       | LOW                 | P1           |
+| Purchase Requisition (RC)     | HIGH       | MEDIUM              | P1           |
+| RC approval workflow          | HIGH       | HIGH                | P1           |
+| RFQ + quotation registration  | HIGH       | MEDIUM              | P1           |
+| Quotation comparison map      | HIGH       | MEDIUM              | P1           |
+| Purchase Order (OC) + PDF     | HIGH       | MEDIUM              | P1           |
+| Goods Receiving — 6 scenarios | HIGH       | HIGH                | P1           |
+| Auto CP generation from GRN   | HIGH       | MEDIUM              | P1           |
+| Auto stock entry from GRN     | HIGH       | MEDIUM              | P1           |
+| Purchase return (devolucao)   | HIGH       | HIGH                | P1           |
+| Kanban pipeline view          | HIGH       | MEDIUM              | P1           |
+| Procurement dashboard         | HIGH       | MEDIUM              | P1           |
+| Email notifications           | MEDIUM     | MEDIUM              | P1           |
+| Price history per product     | MEDIUM     | LOW                 | P2           |
+| Saving analysis               | HIGH       | MEDIUM              | P2           |
+| Supplier scorecard            | MEDIUM     | MEDIUM              | P2           |
+| Mobile requisition            | MEDIUM     | MEDIUM              | P2           |
+| CNPJ lookup on supplier       | LOW        | LOW                 | P2           |
+| Budget control                | HIGH       | HIGH                | P3           |
+| Email RFQ with tracking       | MEDIUM     | HIGH                | P3           |
+| NF-e XML import               | MEDIUM     | VERY HIGH           | Out of scope |
+| Supplier portal               | LOW        | HIGH                | Out of scope |
 
 **Priority key:**
 
-- P1: Must have for launch
-- P2: Should have, add when possible
-- P3: Nice to have, future consideration
+- P1: Must have for v1.1 milestone launch
+- P2: Add after core P2P cycle is stable, when data exists (v1.2)
+- P3: Future milestone
 
 ---
 
 ## Competitor Feature Analysis
 
-Análise baseada em conhecimento de treinamento dos principais ERPs rurais brasileiros (Aegro, Siagri, AgroSoft, GestãoAgro, Agromax). Confidence: MEDIUM.
+Reference systems analyzed to inform patterns and scope decisions.
 
-| Feature                            | Aegro / Siagri (market leaders)     | Sistemas genéricos (ContaAzul, Omie adaptados) | Protos Farm — Nossa abordagem                             |
-| ---------------------------------- | ----------------------------------- | ---------------------------------------------- | --------------------------------------------------------- |
-| Contas a pagar/receber             | Completo, mas UI complexa e legada  | Básico, sem especificidades rurais             | CP/CR com categorias rurais pré-populadas, UI moderna     |
-| Conciliação bancária               | OFX manual, sem matching automático | OFX básico ou pago em módulo extra             | Matching por score com workflow de aprovação              |
-| Crédito rural                      | Presente no Siagri, básico no Aegro | Ausente — tratado como qualquer empréstimo     | Cronograma SAC/Price/Bullet com vínculo ao plano safra    |
-| Cheques pré-datados                | Presente mas pouco mantido          | Ausente ou como CP comum                       | Carteira de cheques com saldo bancário vs contábil        |
-| FUNRURAL                           | Cálculo manual externo              | Ausente                                        | Campo nativo no CR rural com relatório anual              |
-| Dashboard financeiro               | Genérico, sem visão por fazenda     | Genérico                                       | Consolidado por fazenda + por conta + resultado do mês    |
-| Integração com operações agrícolas | Fraca — módulos desconectados       | Inexistente                                    | StockEntry → CP pré-lançamento (preparar interface agora) |
-| Fluxo de caixa com sazonalidade    | Presente mas calendário gregoriano  | Ausente ou básico                              | Cenários com visão por safra + alertas de saldo negativo  |
+| Feature               | ERPNext (open source reference)                | SAP S/4HANA (enterprise reference)                  | Our Approach                                                                                                    |
+| --------------------- | ---------------------------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Supplier registration | Full master data with optional supplier portal | Full master with credit management and risk scoring | Simplified: fiscal data + contacts + payment terms + quality flag. No portal. CNPJ lookup from Receita Federal. |
+| RC workflow           | Configurable approval chains                   | Complex org hierarchy with role-based routing       | Value-threshold alcadas (3 levels max, configurable per org). Mobile approval for web approvers.                |
+| RFQ                   | Email to supplier portal                       | Formal sourcing event with sourcing cockpit         | Email dispatch + manual response registration. No portal. Comparison map included.                              |
+| Quotation comparison  | Line-item supplier quotation report            | SRM analytics with scoring                          | Visual matrix with lowest-price highlight per item. Winner selection with audit trail.                          |
+| PO / OC               | Full document with conditions and approval     | Formal contract with release strategy               | OC document with PDF + email dispatch. Linked to RFQ winner.                                                    |
+| Goods receiving       | Multiple GRN scenarios + warehouse movements   | MIGO with warehouse management integration          | 6 explicit scenarios with tolerance bands. No warehouse management.                                             |
+| 3-way match           | Automated with tolerance                       | Automated + ML anomaly detection                    | Tolerance bands (±3%) with warning-not-block. Buyer resolves before GRN confirmed.                              |
+| CP generation         | Manual AP link after GRN                       | Automatic via MIRO with FI integration              | Automatic on GRN confirmation using existing installmentGenerator. Zero double-entry.                           |
+| Saving analysis       | Basic quotation savings report                 | Advanced spend analytics platform                   | Saving vs. last price + vs. max quote. Aggregate by period, category, supplier.                                 |
+| Budget control        | Yes, linked to cost centers                    | Yes, complex (commitment accounting)                | P3 — not in v1.1 scope. Dashboard spend visualization provides informal awareness.                              |
 
 ---
 
-## Brazilian Rural Financial Domain Notes
+## Brazilian Agricultural Context — Specific Notes
 
-Observações específicas do domínio financeiro rural brasileiro que afetam a modelagem das features:
+### Supplier Types Common in Brazilian Agro
 
-**Sazonalidade extrema:** Receita de grãos concentrada em fev-maio (soja/milho 1a safra) e jun-ago (milho 2a safra). Café em jun-nov. Laranja é mais distribuída. Fluxo de caixa precisa de visão de 12+ meses, não 30/60/90 dias.
+1. **Insumos (defensivos, fertilizantes, sementes)** — typically large regional distributors (Nutrien, Mosaic dealers, AgroGalaxy). Issue NF-e. Have formal quotation processes. High value purchases.
+2. **Servicos agricolas (calcario, aviacao agricola, manutencao de maquinas)** — smaller, may issue NFS-e or nota de produtor. Less formal quotation.
+3. **Veterinarios e produtos veterinarios** — regulated products. Some items require receituario agronômico (already built in EPIC-10).
+4. **Manutencao e pecas (implementos, tratores, equipamentos de irrigacao)** — mix of large dealers and small workshops.
+5. **Alimentos e insumos pecuarios (racoes, minerais, sal)** — regular recurring purchases with seasonal price variation. Good candidates for recurring OC templates.
 
-**Múltiplos CPFs por fazenda:** Uma fazenda grande pode ter 2-4 produtores rurais como "donos fiscais" diferentes. Cada um tem contas bancárias e crédito rural próprios. O sistema já modela isso (producer → farm_link), mas o financeiro deve vincular conta bancária ao produtor (entidade existente), não apenas à fazenda.
+### NF Data Capture Strategy
 
-**FUNRURAL obrigatório:** Produtor rural pessoa física paga 2,3% sobre receita bruta. Esse valor é descontado pelo comprador na NF (comprador retém e recolhe). O CR precisa registrar o valor bruto e a dedução FUNRURAL. Sem isso, o resultado financeiro parece maior do que é.
+NF-e XML parsing is out of scope. The GRN receiving form must capture manually:
 
-**Crédito rural como instrumento de planejamento:** PRONAF/PRONAMP têm taxas de 5-12% a.a. vs 30%+ do mercado livre. Produtor precisa saber quanto de crédito rural ainda pode contratar (limite por categoria) e quando vencem as parcelas. Esse é um diferencial real do Protos Farm.
+- Numero NF
+- Serie NF
+- Data de emissao NF
+- Valor total NF (drives CP amount)
+- Chave NF-e (optional 44-digit key, stored as future hook for fiscal module integration)
 
-**CNAB ainda em uso:** Apesar do PIX, grandes fazendas pagam folha e fornecedores via CNAB 240 (remessa) e recebem confirmação via retorno bancário. Bancos cooperativos (Sicoob, Sicredi) que dominam o rural exigem CNAB para pagamentos em lote.
+This manual entry is sufficient for CP generation and audit trail. Takes under 30 seconds. Chave NF-e field is the integration interface for the future fiscal module.
 
-**Cheque pré-datado:** Em regiões do interior (Mato Grosso, Goiás, Minas Gerais), fornecedor de insumo aceita cheque pré-datado de 90-180 dias no início da safra. Sistema deve tratar cheque como CP com data de compensação separada da emissão, e calcular saldo bancário vs saldo contábil.
+### Payment Terms in Brazilian Agro
+
+Common terms that must be modeled on OC:
+
+- A vista (immediate)
+- 30 dias
+- 30/60 dias
+- 30/60/90 dias
+- Safra (linked to harvest date — common for large input purchases at planting time, paid at harvest)
+
+"Safra" payment term requires special treatment in CP: due date is "estimada colheita" not a fixed calendar date. This is a known agro-specific requirement that generic ERPs miss.
+
+### Price Volatility Context
+
+Defensivos agricolas (herbicides, fungicides, insecticides) and fertilizantes are priced in USD. Price can swing 15-30% between planting seasons. Price history and saving analysis are therefore not vanity features — they are legitimate procurement intelligence tools that help buyers time purchases and demonstrate performance.
 
 ---
 
 ## Sources
 
-- `PROJECT.md` — Requirements validated and active stories (FN01–FN15), constraints, out-of-scope items. Confidence: HIGH (primary source).
-- `MEMORY.md` — Existing modules (EPIC-10 Estoque, EPIC-11–EPIC-15) as integration context. Confidence: HIGH.
-- `.planning/codebase/INTEGRATIONS.md` — Tech stack and existing integrations. Confidence: HIGH.
-- Training data on Brazilian rural ERP landscape (Aegro, Siagri, AgroSoft, GestãoAgro) — Confidence: MEDIUM (knowledge cutoff Aug 2025; market may have shifted).
-- Training data on FEBRABAN CNAB layouts 240/400, BACEN Open Finance regulations, FUNRURAL legislation — Confidence: MEDIUM (stable regulatory frameworks but verify current rates).
-- WebSearch unavailable during research — market claims on competitors not independently verified.
+- [ERPNext Open Source Procurement](https://frappe.io/erpnext/open-source-procurement) — RFQ, comparison map, PO generation patterns. Confidence: HIGH.
+- [NetSuite Procurement Module](https://www.netsuite.com/portal/resource/articles/erp/procurement-module.shtml) — lifecycle and integration patterns. Confidence: HIGH.
+- [Three-Way Matching — NetSuite](https://www.netsuite.com/portal/resource/articles/accounting/three-way-matching.shtml) — 3-way match definition and tolerance patterns. Confidence: HIGH.
+- [Goods Receipt Definition and Process — Ramp](https://ramp.com/blog/accounts-payable/goods-receipt) — receiving scenarios and GRN workflow. Confidence: HIGH.
+- [Purchase Requisition Best Practices — Stampli](https://www.stampli.com/blog/accounts-payable/purchase-requisition-best-practices/) — approval workflow patterns and threshold configuration. Confidence: HIGH.
+- [Procurement Dashboard KPIs — Upsolve](https://upsolve.ai/blog/procurement-dashboard) — dashboard metrics and KPI selection. Confidence: MEDIUM.
+- [Supplier Scorecard Guide — HighRadius](https://www.highradius.com/resources/Blog/supplier-scorecard/) — scorecard metrics and computation methodology. Confidence: HIGH.
+- [Procurement Savings Analysis — Sievo](https://sievo.com/resources/procurement-analytics-demystified) — saving analysis methodology. Confidence: HIGH.
+- [Purchase Return — Microsoft Dynamics 365](https://learn.microsoft.com/en-us/dynamics365/supply-chain/procurement/tasks/create-purchase-return-order) — return order workflow and credit note process. Confidence: HIGH.
+- [NFP-e for Rural Producers — Aegro](https://aegro.com.br/blog/nota-fiscal-eletronica-produtor-rural/) — Brazilian fiscal context for agricultural suppliers. Confidence: HIGH.
+- PROJECT.md — milestone requirements, out-of-scope items, existing module inventory. Confidence: HIGH (primary source).
 
 ---
 
-_Feature research for: Protos Farm — Módulo Financeiro Base (Fase 3)_
-_Researched: 2026-03-15_
+_Feature research for: Protos Farm v1.1 — Gestao de Compras (Procurement)_
+_Researched: 2026-03-17_

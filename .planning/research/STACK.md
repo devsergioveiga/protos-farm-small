@@ -1,213 +1,234 @@
 # Stack Research
 
-**Domain:** Brazilian Agricultural Financial Management Module
-**Researched:** 2026-03-15
-**Confidence:** MEDIUM (training data + project inspection; live npm/web search unavailable in this session)
+**Domain:** Procurement / Purchasing Module (v1.1 Gestão de Compras)
+**Researched:** 2026-03-17
+**Confidence:** HIGH for backend additions; MEDIUM for frontend kanban
 
-## Context: What Already Exists
+---
 
-The following libraries are already installed and must be reused — do not introduce redundant alternatives:
+## Context: What Already Exists (Do Not Re-Add)
 
-| Library          | Version    | Already Used For                                    |
-| ---------------- | ---------- | --------------------------------------------------- |
-| `exceljs`        | ^4.4.0     | XLSX export (estoque, colheita)                     |
-| `pdfkit`         | ^0.17.2    | PDF generation (receituário agronômico)             |
-| `multer`         | ^2.1.0     | File upload handling                                |
-| `@xmldom/xmldom` | ^0.8.11    | XML parsing                                         |
-| `decimal.js`     | transitive | Arbitrary precision (available, not yet direct dep) |
-| `dayjs`          | transitive | Date handling (available, not yet direct dep)       |
+The following are already installed and must be reused:
 
-## Recommended Stack
+| Library          | Version  | Already Covers                                                         |
+| ---------------- | -------- | ---------------------------------------------------------------------- |
+| `nodemailer`     | ^8.0.1   | Email sending — `src/shared/mail/mail.service.ts` already wraps it     |
+| `pdfkit`         | ^0.17.2  | PDF generation — reuse pattern from `modules/pesticide-prescriptions/` |
+| `exceljs`        | ^4.4.0   | Excel/CSV export — reuse pattern from `modules/stock-outputs/`         |
+| `decimal.js`     | ^10.6.0  | Monetary arithmetic — Money type already established                   |
+| `ioredis`        | ^5.9.3   | Redis client — already connected at `src/database/redis.ts`            |
+| `multer`         | ^2.1.0   | File upload — already in use for NF-e XML                              |
+| `@xmldom/xmldom` | ^0.8.11  | XML parsing — already used for NF-e                                    |
+| `recharts`       | ^3.7.0   | Charts — already in frontend for dashboards                            |
+| `lucide-react`   | ^0.575.0 | Icons — design system standard                                         |
 
-### Core Technologies (New Dependencies Required)
+---
 
-| Technology   | Version | Purpose                              | Why Recommended                                                                                                                                                                                                                                                                                                                               |
-| ------------ | ------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ofx-js`     | ^1.0.7  | OFX bank statement parsing           | Pure JS, no native deps, handles OFX 1.x SGML and 2.x XML variants; most starred OFX parser on npm for Node. CNAB banks (Bradesco, Itaú, BB) all export OFX. MEDIUM confidence — training data, unverified current version.                                                                                                                   |
-| `decimal.js` | ^10.4.3 | Arbitrary precision arithmetic       | Already a transitive dep. Financial calculations MUST avoid IEEE 754 floating point. `decimal.js` is the standard Node.js choice for monetary math — more widely used than `big.js`, better API than `bignumber.js`. Add as explicit direct dep. HIGH confidence.                                                                             |
-| `date-fns`   | ^4.1.0  | Date arithmetic for aging/scheduling | Installable, tree-shakeable, no prototype mutation. Superior to `dayjs` for complex operations (installment schedules, business days, FGTS/INSS due dates). `date-fns-tz` companion handles BR timezone (America/Sao_Paulo). `dayjs` is already transitive but `date-fns` has better TypeScript support and richer locale. MEDIUM confidence. |
+## New Dependencies Required
 
-### Supporting Libraries
+### Backend: 3 new packages
 
-| Library      | Version        | Purpose                       | When to Use                                                                                                                                                                                                                                                                             |
-| ------------ | -------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `papaparse`  | ^5.4.1         | CSV parsing (bank exports)    | Bank OFX import also ships as CSV (Nubank, C6, fintechs). `papaparse` handles encoding issues (latin1 from legacy banks), header detection, and streaming. Use in: US-FN05 (cartão CSV), US-FN06 (conciliação CSV). MEDIUM confidence.                                                  |
-| `iconv-lite` | ^0.6.3         | Character encoding conversion | Brazilian bank CSV exports are frequently ISO-8859-1 / Windows-1252, not UTF-8. `iconv-lite` converts before CSV parse. Already a transitive dep (used by many packages). Use whenever reading bank-originated files. HIGH confidence — this is a known production issue with BR banks. |
-| `node-cnab`  | ~2.x or custom | CNAB 240/400 remessa/retorno  | See CNAB section below.                                                                                                                                                                                                                                                                 |
+#### 1. BullMQ — Async Job Queue for Approval Workflows and Notifications
 
-### CNAB 240/400 — Special Handling
+| Attribute    | Value                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Package      | `bullmq`                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Version      | `^5.71.0` (latest as of March 2026, verified via npm)                                                                                                                                                                                                                                                                                                                                                              |
+| Purpose      | Background jobs: approval escalation timers, notification dispatch, email sending async                                                                                                                                                                                                                                                                                                                            |
+| Why          | Already have Redis (`ioredis ^5.9.3` installed). BullMQ uses ioredis internally at the exact same version — zero new Redis infrastructure needed. BullMQ is the successor to `bull` (which is in maintenance mode), written in TypeScript, MIT licensed. Supports delayed jobs (approval timeout escalation), job prioritization, retries, and job events (`completed`/`failed`/`stalled`) for notification hooks. |
+| Why not cron | Cron-based notifications miss the event-driven model needed here: "send email when quotation status changes to APPROVED" is a job, not a schedule                                                                                                                                                                                                                                                                  |
+| Confidence   | HIGH — npm-verified, ioredis peer dep matches existing version                                                                                                                                                                                                                                                                                                                                                     |
 
-**Situation:** No single actively-maintained TypeScript-native CNAB library dominates the npm ecosystem as of 2025. The main candidates are:
+**Use for:**
 
-| Package               | Status         | Notes                                                                                                                                                                                                                                 |
-| --------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cnab240` (npm)       | LOW CONFIDENCE | Small package, unverified maintenance. CNAB layout varies per bank (BB, Bradesco, Itaú, Caixa each have layout variants).                                                                                                             |
-| `node-cnab` (npm)     | LOW CONFIDENCE | Handles CNAB 240/400 but may not cover all bank-specific segments (A, B, C, J, O).                                                                                                                                                    |
-| Custom implementation | Recommended    | Given the complexity of bank-specific CNAB variants, most Brazilian fintech teams implement a custom parser/generator using the official FEBRABAN layout specs. This is not as hard as it sounds — CNAB is a fixed-width text format. |
+- Send "cotação solicitada" email to supplier 30 seconds after quotation request is saved (fire-and-forget, retry on SMTP failure)
+- Escalate unanswered approval requests after configurable timeout
+- Generate PDF + email delivery of purchase order (OC) without blocking the HTTP response
 
-**Recommendation:** Implement CNAB as an internal service module (`modules/cnab/`) rather than depending on a third-party package. The format is fixed-width positional text — a well-typed record definition + string slice parser is 300-500 lines and gives full control over the bank-specific variants needed (Bradesco CNAB 240 for remessa, BB for crédito rural). This is the approach used by major Brazilian ERP vendors (TOTVS, Sankhya, etc.).
+**Do NOT use for:**
 
-**Implementation approach:**
+- Real-time UI push — use SSE for that (see below)
+- Recurring reports — not in v1.1 scope
 
-```typescript
-// modules/cnab/layouts/bradesco-240.ts
-// modules/cnab/layouts/bb-240.ts
-// modules/cnab/layouts/itau-400.ts
-// modules/cnab/parser.ts   — reads fixed-width text → typed records
-// modules/cnab/generator.ts — typed records → fixed-width text
+#### 2. validation-br — CNPJ/CPF Validation for Supplier Cadastro
+
+| Attribute              | Value                                                                                                                                                                                                                                                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Package                | `validation-br`                                                                                                                                                                                                                                                                                   |
+| Version                | `^1.6.4` (latest as of March 2026, verified via npm; last published 2026-01-18)                                                                                                                                                                                                                   |
+| Purpose                | Validate CNPJ, CPF, IE (Inscrição Estadual) on supplier registration                                                                                                                                                                                                                              |
+| Why                    | Supports alphanumeric CNPJ (effective July 2026 per Receita Federal Technical Note COCAD/SUARA/RFB nº 49) — critical since the codebase must be compliant before the switch date. Covers CNPJ + CPF + IE + RENAVAM in one package, actively maintained (published Jan 2026). Ships its own types. |
+| Why not `cnpj` (npm)   | `cnpj@5.0.0` only handles CNPJ, not the full supplier document set. `validation-br` is broader                                                                                                                                                                                                    |
+| Why not `@fnando/cnpj` | Also only CNPJ, version 2.0.0, less actively maintained for the 2026 alphanumeric transition                                                                                                                                                                                                      |
+| Confidence             | MEDIUM — npm-verified version and recent publish date; alphanumeric support confirmed in description but specific function API not verified via official docs                                                                                                                                     |
+
+**Use on:**
+
+- Backend: supplier CNPJ/CPF validation in `modules/suppliers/suppliers.service.ts`
+- Shared: expose in `packages/shared/src/utils/br-document.ts` so frontend can reuse without duplicating logic
+
+#### 3. Handlebars — HTML Email Templates for Purchase Orders
+
+| Attribute                    | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Package                      | `handlebars`                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Version                      | `^4.7.8` (latest as of March 2026, verified via npm)                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Purpose                      | Render HTML email bodies for: quotation request to supplier, purchase order (OC) delivery, approval notifications                                                                                                                                                                                                                                                                                                                                            |
+| Why                          | The existing `mail.service.ts` accepts raw HTML string — it has no templating. Purchase orders sent to external suppliers need branded, data-rich HTML email (company logo, line items, totals, payment terms). Handlebars is logic-less enough to stay safe (no arbitrary code execution), ships TypeScript types, integrates with nodemailer by generating the `html` string passed to `sendMail()`. 4.7.8 is a long-standing stable release with no CVEs. |
+| Why not MJML                 | MJML (4.18.0) produces responsive email HTML but adds 4–8MB to bundle and build complexity. For internal B2B procurement emails (not marketing), standard HTML is sufficient.                                                                                                                                                                                                                                                                                |
+| Why not string interpolation | Purchase orders have 10–50 line items — template literals become unmaintainable.                                                                                                                                                                                                                                                                                                                                                                             |
+| Confidence                   | HIGH — widely used, stable, well-known fit for nodemailer integration                                                                                                                                                                                                                                                                                                                                                                                        |
+
+**Pattern:**
+
+```
+apps/backend/src/shared/mail/templates/
+  quotation-request.hbs
+  purchase-order.hbs
+  approval-request.hbs
+  approval-approved.hbs
+  approval-rejected.hbs
 ```
 
-MEDIUM confidence — based on ecosystem survey and FEBRABAN specification structure.
+---
 
-### PDF/Excel Export (Already Covered)
+### Frontend: 1 new package
 
-| Library   | Version | Purpose                 | Notes                                                                                                                                                      |
-| --------- | ------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pdfkit`  | ^0.17.2 | PDF financial reports   | Already installed. Use for: extrato PDF, relatório fluxo de caixa, boleto layout (future).                                                                 |
-| `exceljs` | ^4.4.0  | Excel financial reports | Already installed. Use for: aging export, extrato Excel, DFC export. Supports cell styles, formulas, freezing rows — necessary for financial spreadsheets. |
+#### 4. @dnd-kit/core + @dnd-kit/sortable — Kanban Board for Procurement Flow
 
-No new libraries needed for export — extend existing patterns from `modules/pesticide-prescriptions/` (pdfkit) and `modules/stock-outputs/` (exceljs).
+| Attribute                 | Value                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Packages                  | `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`                                                                                                                                                                                                                                                                                            |
+| Versions                  | `@dnd-kit/core@^6.3.1`, `@dnd-kit/sortable@^10.0.0`, `@dnd-kit/utilities@^3.2.2` (verified via npm)                                                                                                                                                                                                                                                   |
+| Purpose                   | Drag-and-drop kanban board for procurement flow (Requisição → Cotação → Aprovação → Pedido → Recebimento)                                                                                                                                                                                                                                             |
+| Why                       | `react-beautiful-dnd` is unmaintained (Atlassian stopped development). `dnd-kit` is the established modern successor: 12KB gzipped core, 60fps with virtualization, accessible (keyboard + screen reader support), active maintenance (last @dnd-kit/react published 25 days ago per search). Peer deps `react >= 16.8.0` — compatible with React 19. |
+| Why not react-dnd         | `react-dnd` has an open issue for React 19 support (#3655 on GitHub) — risky given this codebase uses React 19                                                                                                                                                                                                                                        |
+| Why not @hello-pangea/dnd | Fork of react-beautiful-dnd; good for lists but less flexible than dnd-kit for multi-column boards                                                                                                                                                                                                                                                    |
+| Confidence                | MEDIUM — React 19 compatibility confirmed via npm peer deps check; one open issue about `use client` in @dnd-kit/react (not relevant here, we use @dnd-kit/core)                                                                                                                                                                                      |
 
-### Financial Calculations (No Library Needed)
+**Use only for** the kanban page. All other list interactions (sortable tables, filters) do not need drag-and-drop.
 
-**Amortization (SAC, Price/French, Bullet):** Implement as pure TypeScript functions in `packages/shared/src/utils/amortization.ts`. These are well-defined mathematical formulas, not complex enough to warrant a dependency.
+---
 
-```typescript
-// SAC: fixed principal, declining interest
-// Price (French): fixed installment (PMT formula)
-// Bullet: interest only until maturity, full principal at end
-// PRONAF/rural credit: carência period before amortization begins
-```
+## No New Infrastructure Required
 
-**Interest calculation:** Use `decimal.js` for all monetary arithmetic. The Brazilian SELIC-based corrections use compound interest — standard formula, no library needed.
+### Notifications: SSE via Express (Zero Dependencies)
 
-**Aging buckets:** Pure date arithmetic with `date-fns`. Standard financial aging: current, 1-30, 31-60, 61-90, 91-180, 180+ days overdue.
-
-**Currency formatting:** Use the native `Intl.NumberFormat` API — it is built into Node.js and browsers:
+The procurement flow needs real-time UI feedback ("sua cotação foi aprovada"). **Use Server-Sent Events (SSE) over standard Express responses** — no new package needed:
 
 ```typescript
-const brl = new Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
-  minimumFractionDigits: 2,
+// modules/notifications/notifications.routes.ts
+router.get('/stream', authenticate, (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  // Store res in memory map keyed by userId
+  // BullMQ job completions write to this map
 });
-brl.format(1234.56); // "R$ 1.234,56"
 ```
 
-No external library needed for formatting. Do NOT use `numeral.js` (unmaintained) or `accounting.js` (abandoned).
+SSE is unidirectional (server → client) which is exactly what procurement notifications require. No WebSocket library needed. Redis pub/sub (already available via ioredis) coordinates across multiple Express processes if horizontally scaled.
 
-### Development Tools
+**Why not socket.io or ws:** Bidirectional is overkill for notifications. SSE reconnects automatically on connection loss (mobile-friendly), works through HTTP/2, no CORS complications beyond standard headers.
 
-| Tool                       | Purpose                               | Notes                                                                                                                                         |
-| -------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Existing Jest setup        | Unit tests for financial calculations | Amortization, interest, aging math must be unit tested exhaustively — financial bugs are high-stakes. Follow existing `**/*.spec.ts` pattern. |
-| Existing Prisma migrations | Financial schema                      | All new tables need migrations. Naming: `20260400100000_financial_bank_accounts.ts` (continue existing sequence).                             |
+### PDF Purchase Order: pdfkit (Already Installed)
+
+Reuse the pattern from `modules/pesticide-prescriptions/` for purchase order (OC) PDF generation. No new library needed. The OC PDF requires: company header, supplier details, line items table, totals, payment terms, authorization signature line — all achievable with existing pdfkit.
+
+### Budget Control: Pure PostgreSQL + decimal.js
+
+Budget vs. committed vs. actual spend is a SQL aggregation problem. No specialized library needed. Use existing Prisma patterns with `decimal.js` for precision.
+
+---
 
 ## Installation
 
 ```bash
-# Direct financial dependencies to add to apps/backend/package.json
-cd apps/backend
-pnpm add ofx-js papaparse iconv-lite
+# Backend additions (run from apps/backend/)
+pnpm add bullmq validation-br handlebars
+pnpm add -D @types/handlebars
 
-# Promote transitive deps to direct (for explicit version control)
-pnpm add decimal.js date-fns date-fns-tz
-
-# Types (papaparse ships its own types; others need @types)
-pnpm add -D @types/papaparse
+# Frontend additions (run from apps/frontend/)
+pnpm add @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
 ```
 
-CNAB: no package to install — implement internally as described above.
-
-## Alternatives Considered
-
-| Recommended         | Alternative      | Why Not                                                                                                                                                                           |
-| ------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ofx-js`            | `node-ofx`       | `node-ofx` is older, less actively maintained. `ofx-js` handles both OFX 1.x SGML and 2.x XML. MEDIUM confidence — verify before pinning.                                         |
-| `decimal.js`        | `big.js`         | `big.js` is simpler but lacks `toDecimalPlaces()` rounding modes needed for financial rounding (HALF_UP, HALF_EVEN/Banker's rounding).                                            |
-| `decimal.js`        | `bignumber.js`   | `bignumber.js` is fine but API is less ergonomic. `decimal.js` is already a transitive dep — fewer install bytes.                                                                 |
-| `date-fns`          | `dayjs`          | `dayjs` is already transitive but plugin-heavy for business-day operations. `date-fns` has `addBusinessDays`, `differenceInCalendarDays`, better TypeScript inference out of box. |
-| `papaparse`         | custom CSV split | Bank CSV files have irregular quoting, BOM markers, encoding issues. `papaparse` is battle-tested for these edge cases.                                                           |
-| Custom CNAB         | `node-cnab`      | `node-cnab` and similar packages have uncertain maintenance and don't cover all bank-specific segment variants. Custom implementation gives full control and is simpler to test.  |
-| `Intl.NumberFormat` | `numeral.js`     | `numeral.js` is unmaintained (last release 2021). Native `Intl` is built-in, zero bytes, always current.                                                                          |
-
-## What NOT to Use
-
-| Avoid                                                    | Why                                                                     | Use Instead                                                          |
-| -------------------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `numeral.js`                                             | Last release 2021, no TypeScript types, unmaintained                    | `Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })` |
-| `accounting.js`                                          | Abandoned, no TypeScript, not on npm                                    | `Intl.NumberFormat`                                                  |
-| `money.js`                                               | Abandoned, no TypeScript                                                | `decimal.js` with manual currency tracking                           |
-| `dinero.js` v1                                           | v1 is deprecated; v2 (alpha since 2021) still unstable as of last check | `decimal.js` + `Intl.NumberFormat`                                   |
-| Any CNAB npm package without verified active maintenance | Brazilian bank CNAB layouts change annually and packages may lag        | Custom implementation against official FEBRABAN specs                |
-| `moment.js`                                              | 67kB bundle, mutable API, officially in maintenance mode                | `date-fns`                                                           |
-| `xlsx` (SheetJS community)                               | License changed to AGPL in 2023, commercial use requires paid license   | `exceljs` (MIT, already installed)                                   |
-
-## Stack Patterns by Variant
-
-**For OFX files from traditional banks (Bradesco, Itaú, BB, Santander):**
-
-- Use `ofx-js` — these banks produce OFX 1.x SGML or 2.x XML
-- Validate character encoding with `iconv-lite` before parsing (may be latin1)
-
-**For CSV from neobanks (Nubank, Inter, C6):**
-
-- Use `papaparse` with `dynamicTyping: true` and `skipEmptyLines: true`
-- Headers vary per bank — normalize to internal `BankTransaction` schema in parser
-
-**For CNAB 240 remessa (boleto/pagamento):**
-
-- Implement per-bank layout in `modules/cnab/layouts/`
-- Start with Bradesco 240 (most common rural credit bank) + BB 240 (PRONAF)
-- CNAB 400 for legacy Itaú/Bradesco cobrança
-
-**For amortization (rural credit US-FN14):**
-
-- SAC (Sistema de Amortização Constante): constant principal, declining interest — most PRONAF/PRONAMP
-- Price/French: constant installment — some rural equipment financing (CDC rural)
-- Bullet: interest-only + full principal — CPR (Cédula de Produto Rural), short-term crop loans
-
-**For financial report PDF (US-FN03, US-FN13):**
-
-- Extend existing `pdfkit` patterns from `modules/pesticide-prescriptions/`
-- Add A4 portrait layout with BRL formatting header, page numbers, org logo placeholder
-
-## Version Compatibility
-
-| Package             | Compatible With                                 | Notes                                                                                                                                                                                       |
-| ------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `decimal.js ^10.x`  | Node.js ≥ 12, TypeScript ≥ 4                    | Ships own types. No peer deps.                                                                                                                                                              |
-| `date-fns ^4.x`     | Node.js ≥ 18, TypeScript ≥ 5                    | v4 is a significant refactor from v3 — pure ESM. Verify CommonJS compat with backend CJS config before upgrading. Use v3.x (`^3.6.0`) if backend CommonJS causes issues. MEDIUM confidence. |
-| `papaparse ^5.x`    | Node.js ≥ 12, TypeScript (via @types/papaparse) | Stable, wide compat.                                                                                                                                                                        |
-| `ofx-js ^1.x`       | Node.js ≥ 14                                    | Verify current version on npm before pinning — package may have newer major. LOW confidence on exact version.                                                                               |
-| `iconv-lite ^0.6.x` | All Node.js versions                            | Already transitive, safe to promote.                                                                                                                                                        |
-| `exceljs ^4.x`      | Node.js ≥ 12                                    | Already installed, no change.                                                                                                                                                               |
-| `pdfkit ^0.17.x`    | Node.js ≥ 12                                    | Already installed, no change.                                                                                                                                                               |
-
-## Confidence Assessment
-
-| Library                     | Confidence | Reason                                                                                                                                                                                                                                           |
-| --------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `decimal.js`                | HIGH       | Already transitive dep, well-established for financial math, no alternative controversy                                                                                                                                                          |
-| `Intl.NumberFormat` for BRL | HIGH       | Native API, no library needed, pt-BR locale verified in Node.js                                                                                                                                                                                  |
-| `exceljs` + `pdfkit` reuse  | HIGH       | Already installed and working in project                                                                                                                                                                                                         |
-| `iconv-lite`                | HIGH       | Known production issue with BR bank encodings, widely documented                                                                                                                                                                                 |
-| Custom CNAB module          | MEDIUM     | Architecture recommendation based on ecosystem fragmentation — verify available packages before committing                                                                                                                                       |
-| `papaparse` for CSV         | MEDIUM     | Strong reputation, but verify latest version supports Node.js 20+ streaming                                                                                                                                                                      |
-| `date-fns` v4 vs v3         | MEDIUM     | v4 is pure ESM — check compatibility with backend CommonJS before choosing v4; fall back to v3                                                                                                                                                   |
-| `ofx-js`                    | LOW        | Training data only, cannot verify current npm status or maintenance. Validate on npm before adopting. Alternative: parse OFX manually using `@xmldom/xmldom` (already installed) for XML variant + regex for SGML variant — zero new dependency. |
-| SAC/Price/Bullet formulas   | HIGH       | Well-defined mathematical formulas, no library uncertainty                                                                                                                                                                                       |
-
-## Sources
-
-- Project inspection: `/apps/backend/package.json`, `/apps/frontend/package.json`, root `node_modules/` listing — HIGH confidence on existing deps
-- Training data: npm ecosystem knowledge through August 2025 — MEDIUM confidence
-- FEBRABAN CNAB 240/400 specs (public, available at febraban.org.br) — HIGH confidence on format structure, LOW on specific library support
-- SheetJS AGPL relicense: confirmed in training data — HIGH confidence (widely documented community event 2023)
-- Brazilian bank OFX encoding issues: known production pattern, HIGH confidence on `iconv-lite` need
+Note: BullMQ ships its own TypeScript types. `validation-br` ships its own types. No `@types/*` needed for those two.
 
 ---
 
-_Stack research for: Brazilian Agricultural Financial Module (Fase 3 — EPIC-FN1 to FN4)_
-_Researched: 2026-03-15_
-_Note: WebSearch and WebFetch tools unavailable in this session. Verify LOW-confidence items (ofx-js version, date-fns v4 ESM compat) with `npm info <package>` before implementation._
+## Alternatives Considered
+
+| Recommended   | Alternative            | Why Not                                                                                                             |
+| ------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| BullMQ        | node-cron              | Cron doesn't model event-triggered jobs (approval → email). BullMQ's delayed jobs handle escalation timeouts better |
+| BullMQ        | Agenda (MongoDB-based) | Project uses PostgreSQL + Redis, not MongoDB. Adding MongoDB is out of scope                                        |
+| validation-br | Custom regex           | CNPJ check-digit algorithm is non-trivial; alphanumeric variant adds complexity. Package cost is negligible         |
+| Handlebars    | Template literals      | Unmaintainable for 5+ email templates with 10–50 dynamic line items                                                 |
+| Handlebars    | MJML                   | MJML adds 4–8MB, builds HTML from its own DSL, overkill for B2B procurement emails                                  |
+| @dnd-kit      | react-beautiful-dnd    | Unmaintained since 2022                                                                                             |
+| @dnd-kit      | @hello-pangea/dnd      | Community fork, less flexible for multi-column kanban                                                               |
+| @dnd-kit      | react-dnd              | React 19 support issue open (GitHub #3655)                                                                          |
+| SSE (native)  | socket.io              | socket.io adds 60KB+ bundle, requires separate server, bidirectional overkill                                       |
+| SSE (native)  | Pusher/Ably            | External SaaS cost, data leaves system — not appropriate for procurement data                                       |
+
+---
+
+## What NOT to Use
+
+| Avoid                     | Why                                                                        | Use Instead               |
+| ------------------------- | -------------------------------------------------------------------------- | ------------------------- |
+| `bull` (original)         | Maintenance mode since BullMQ launch; no new features                      | `bullmq`                  |
+| `cnpj` npm package alone  | Only validates CNPJ numeric, misses CPF/IE, no 2026 alphanumeric support   | `validation-br`           |
+| MJML                      | 4–8MB bundle, DSL learning curve, overkill for B2B procurement email       | `handlebars` + inline CSS |
+| `react-dnd`               | React 19 support gap (open GitHub issue #3655)                             | `@dnd-kit/core`           |
+| `socket.io`               | Bidirectional overhead for unidirectional notifications                    | Native SSE in Express     |
+| New PostgreSQL extensions | PostGIS already installed; no additional extensions needed for procurement | Existing setup            |
+
+---
+
+## Integration Points
+
+| New Capability    | Integrates With                   | Notes                                                          |
+| ----------------- | --------------------------------- | -------------------------------------------------------------- |
+| Supplier creation | `modules/payables/`               | Supplier becomes `payeeId` on CP auto-generated from receiving |
+| Receiving + NF    | `modules/payables/`               | Receipt → auto-create Payable (existing service pattern)       |
+| Purchase budget   | `modules/cost-centers/`           | Budget rateio uses existing cost center structure              |
+| BullMQ workers    | `src/database/redis.ts`           | Reuse existing Redis connection; create `src/queue/` directory |
+| Supplier email    | `src/shared/mail/mail.service.ts` | Add `sendMailWithAttachment()` variant for OC PDF              |
+| SSE notifications | `src/shared/`                     | New `notifications/` directory under shared                    |
+
+---
+
+## Version Compatibility
+
+| Package                     | Node.js | TypeScript | Peer Deps                   | Notes                    |
+| --------------------------- | ------- | ---------- | --------------------------- | ------------------------ |
+| `bullmq ^5.71.0`            | >=18    | >=4.7      | ioredis 5.9.3 (exact match) | Ships own types          |
+| `validation-br ^1.6.4`      | >=14    | >=4        | none                        | Ships own types          |
+| `handlebars ^4.7.8`         | >=6     | >=4        | none                        | Needs @types/handlebars  |
+| `@dnd-kit/core ^6.3.1`      | N/A     | >=4        | react >=16.8.0              | Compatible with React 19 |
+| `@dnd-kit/sortable ^10.0.0` | N/A     | >=4        | @dnd-kit/core               | Same peer req            |
+
+---
+
+## Sources
+
+- `apps/backend/package.json` — existing dependencies (HIGH confidence)
+- `apps/frontend/package.json` — existing frontend dependencies (HIGH confidence)
+- `src/database/redis.ts`, `src/shared/mail/mail.service.ts` — existing infrastructure patterns (HIGH confidence)
+- npm registry via `npm info bullmq version` → 5.71.0 (HIGH confidence, verified)
+- npm registry via `npm info validation-br version` → 1.6.4, time.modified 2026-01-18 (HIGH confidence, verified)
+- npm registry via `npm info handlebars version` → 4.7.8 (HIGH confidence, verified)
+- npm registry via `npm info @dnd-kit/core version` → 6.3.1 (HIGH confidence, verified)
+- npm registry via `npm info @dnd-kit/sortable version` → 10.0.0 (HIGH confidence, verified)
+- WebSearch: BullMQ ioredis dep confirmed 5.9.3 (matches existing) (HIGH confidence)
+- WebSearch: react-beautiful-dnd unmaintained, dnd-kit React 19 peer dep check (MEDIUM confidence)
+- WebSearch: SSE vs WebSocket — SSE confirmed sufficient for unidirectional notifications (HIGH confidence)
+- WebSearch: CNPJ alphanumeric July 2026 — Receita Federal Technical Note COCAD/SUARA/RFB nº 49 (MEDIUM confidence — source via web, not official Receita Federal site directly)
+- [BullMQ official docs](https://docs.bullmq.io/) — job events, delayed jobs (MEDIUM confidence, training data + web search)
+- [dnd-kit GitHub React 19 issue](https://github.com/clauderic/dnd-kit/issues/1654) — `use client` issue exists for @dnd-kit/react (not @dnd-kit/core) (MEDIUM confidence)
+
+---
+
+_Stack research for: v1.1 Gestão de Compras — Procurement Module_
+_Researched: 2026-03-17_

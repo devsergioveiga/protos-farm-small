@@ -1,212 +1,215 @@
 # Project Research Summary
 
-**Project:** Protos Farm — Módulo Financeiro Base (EPIC-FN1 a FN4)
-**Domain:** Brazilian agricultural financial management (ERP rural)
-**Researched:** 2026-03-15
-**Confidence:** MEDIUM
+**Project:** Protos Farm — v1.1 Gestao de Compras (Procurement Module)
+**Domain:** P2P (Purchase-to-Pay) procurement module added to a live agricultural ERP
+**Researched:** 2026-03-17
+**Confidence:** HIGH
 
 ## Executive Summary
 
-This module introduces financial management capabilities into an existing, mature agricultural monorepo. The product domain is Brazilian rural ERP — a specialized niche where generic financial software fails because of regulatory instruments unique to Brazil: FUNRURAL withholding, CNAB 240/400 bank file formats, crédito rural with Plano Safra rates, and pre-dated cheques (cheques pré-datados) that remain standard in the interior. The recommended approach is to extend the existing codebase patterns faithfully — collocated modules, Prisma transactions for balance integrity, React Query for frontend state — while layering financial-specific correctness on top: `decimal.js` for all monetary arithmetic, a double-entry ledger design that separates document records (payables/receivables) from ledger movements (financial_transactions), and `producerId` as a first-class dimension on every financial record.
+This milestone adds a complete Purchase-to-Pay (P2P) procurement cycle to a system that already has live financial (payables, cost centers) and inventory (stock-entries, stock-outputs) modules. The research confirms this is not a greenfield procurement build — it is an upstream feeder module whose single most valuable action is a GoodsReceipt confirmation that atomically creates both a stock entry and a conta a pagar (CP), eliminating all double-entry. Every architecture and feature decision in this module must be evaluated against that core integration contract.
 
-The core risk is building a system that looks complete but fails under Brazilian rural conditions. Eight identified pitfalls fall into two categories: fiscal compliance failures (float arithmetic, missing `producerId` isolation, incorrect crédito rural amortization) that cannot be retrofitted without expensive data migrations, and operational misfires (CNAB layout variance, OFX encoding, 90-day cash flow horizon, strict reconciliation matching) that cause user abandonment. The float arithmetic and `producerId` pitfalls must be addressed in the very first story — US-FN01 and US-FN07 — before any financial data is written. Retrofitting them later requires a full audit of all financial records and a multi-step migration.
+The recommended approach follows the dependency-driven sequence established by ERP procurement best practice and validated against the existing codebase: Suppliers first (root dependency for everything), then Requisition + Approval, then Quotation + Comparison Map, then Purchase Order, then Goods Receiving (the integration hub), then Purchase Return. The kanban pipeline view and procurement dashboard are pure aggregations that come last. Four new packages are needed: `bullmq` for async job queuing (reuses existing Redis), `validation-br` for CNPJ/CPF check-digit validation, `handlebars` for HTML email templates, and `@dnd-kit/core + sortable` for the kanban board. No new infrastructure is required.
 
-The recommended MVP scope is eight stories (US-FN01, FN03, FN07, FN08, FN10, FN11, FN12, FN15) covering bank accounts, core AP/AR lifecycle with aging, and the financial dashboard. This delivers a fully usable financial module for a farm manager. A second wave (FN02, FN04, FN05, FN06, FN09, FN13) adds bank reconciliation, credit cards, and cash flow projection — features with higher ROI but also higher implementation risk. Crédito rural (FN14) and CNAB integration are intentionally deferred to a third wave: they require specialized domain implementation that should not block the core module going live.
+The highest-risk area is the Goods Receiving implementation. Three pitfalls cluster around receiving: duplicate CP generation on partial shipments, stock/NF desynchronization across the 6 receiving scenarios, and return reversals that use the wrong stock output type. All three are recoverable but expensive if discovered in production. The mitigation is straightforward: define the `GoodsReceipt` data model and its atomic transaction contract before writing any service code, and require that CP creation fires only from the `ReceivingConfirmed` event — never from PO approval.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The project already has the critical libraries installed. No new front-end dependencies are needed. On the backend, three libraries must be added: `decimal.js` (promote from transitive to explicit direct dependency — all monetary arithmetic), `date-fns` (richer business-day and aging arithmetic than the `dayjs` transitive dep), and `ofx-js` (OFX file parsing for bank reconciliation). For CSV from neobanks, add `papaparse`; for character encoding of legacy bank exports, add `iconv-lite`. CNAB 240/400 must be implemented as a custom internal module (`modules/cnab/`) rather than depending on an npm package — no actively maintained TypeScript-native CNAB library covers all bank-specific segment variants for rural banks (Sicoob, Sicredi, BB, Bradesco).
+The project already ships all core infrastructure needed for procurement. The existing `ioredis`, `pdfkit`, `exceljs`, `decimal.js`, `nodemailer`, `recharts`, `multer`, and `lucide-react` are all reused at zero additional cost. The four new packages add specific missing capabilities: `bullmq` for event-driven async email dispatch without blocking HTTP responses, `validation-br` for backend CNPJ/CPF check-digit validation with support for the July 2026 alphanumeric CNPJ transition (Receita Federal Technical Note COCAD/SUARA/RFB no 49), `handlebars` for maintainable HTML email templates covering 5 workflow events, and `@dnd-kit` for the accessible kanban board (chosen over the unmaintained `react-beautiful-dnd` and the React 19-incompatible `react-dnd`). Real-time UI notifications use native SSE over Express — zero additional dependencies.
 
 **Core technologies:**
 
-- `decimal.js` (^10.4.3): all monetary arithmetic — avoids IEEE 754 errors that break CNAB checksums and bank reconciliation
-- `date-fns` (^3.x for CommonJS compat): aging buckets, installment scheduling, business-day calculations
-- `ofx-js`: OFX 1.x SGML and 2.x XML parsing for bank reconciliation import (LOW confidence on exact version — verify on npm before adopting; fallback is custom parser using already-installed `@xmldom/xmldom`)
-- `papaparse` + `iconv-lite`: CSV import from neobanks and legacy BR bank encodings
-- `pdfkit` + `exceljs`: already installed — extend existing patterns for financial report PDF and Excel export
-- `Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })`: native BRL formatting — do not add `numeral.js` (unmaintained) or `dinero.js` v2 (unstable)
-- Custom CNAB module (`modules/cnab/layouts/`): bank-specific layouts for BB-240, Bradesco-240, Itaú-400 — fixed-width positional format, ~300-500 lines per bank, testable in isolation
+- `bullmq ^5.71.0`: Async job queue for email dispatch and approval escalation timers — reuses existing `ioredis ^5.9.3`, no new infrastructure, ships own types
+- `validation-br ^1.6.4`: CNPJ/CPF/IE backend validation — covers July 2026 alphanumeric CNPJ transition, actively maintained (published Jan 2026)
+- `handlebars ^4.7.8`: HTML email templates for 5 workflow notification events — integrates with existing `nodemailer` via `mail.service.ts`, stable with no CVEs
+- `@dnd-kit/core ^6.3.1` + `@dnd-kit/sortable ^10.0.0`: Kanban board — React 19 compatible, keyboard and screen reader accessible, 12KB gzipped core
+- SSE (native Express): Real-time UI notifications — unidirectional, zero dependencies, works through HTTP/2, auto-reconnects
 
 ### Expected Features
 
-**Must have (table stakes) — v1:**
+**Must have (table stakes — v1.1 launch):**
 
-- Cadastro de contas bancárias com saldo em tempo real do sistema (US-FN01)
-- Extrato por conta com export PDF/Excel (US-FN03)
-- Lançamento de contas a pagar com parcelamento e rateio por centro de custo (US-FN07)
-- Baixa de pagamento com valor efetivo diferente do original (juros, desconto, multa) (US-FN08)
-- Aging de CP com faixas de vencimento e alertas proativos (US-FN10)
-- Lançamento de contas a receber com FUNRURAL e categorias rurais (US-FN11)
-- Baixa de recebimento com flag de inadimplência e PDD simplificado (US-FN12)
-- Dashboard financeiro: saldo total, aging CP, CR esperado 30d, resultado do mês (US-FN15)
+- Supplier CRUD with fiscal data (CNPJ/CPF, IE, fiscal regime), contacts, and payment terms — root dependency for all downstream features
+- Purchase Requisition (RC) with product catalog items, cost center rateio, and urgency flag — entry point of P2P cycle
+- RC approval workflow with configurable value thresholds (alcadas), sequential state machine, and rejection with mandatory comment
+- RFQ to multiple suppliers with manual quotation registration — covers 90% of agro suppliers who have no portal
+- Quotation comparison map (mapa comparativo) — matrix view with per-item lowest-price highlight and winner selection audit trail
+- Purchase Order (OC) generation with PDF export (pdfkit) and email dispatch
+- Goods Receiving — 6 explicit scenarios with 3-way match tolerance bands (±3%): NF antecipada, standard, parcial, emergencial, divergencia, devolucao no ato
+- Automatic CP generation from GRN + NF data — fires from ReceivingConfirmed event only, uses existing `generateInstallments` from `@protos-farm/shared`
+- Automatic stock entry from GRN — inside same Prisma transaction as CP creation (atomic)
+- Purchase return (devolucao) with stock reversal (`RETURN_TO_SUPPLIER` type) and payable credit note
+- Kanban pipeline view (RC Pendente -> Cotacao -> Aprovacao OC -> OC Emitida -> Aguardando Recebimento -> Encerrada)
+- Procurement dashboard: total spend MTD/YTD, open OC value, pending approvals count, savings realized, top 5 suppliers, spend by category
+- Email notifications at key workflow transitions via BullMQ async queue
 
-**Should have (differentiators) — v1.x:**
+**Should have (v1.2 — after data accumulates):**
 
-- Conciliação bancária com import OFX/CSV e score de confiança no matching (US-FN06)
-- Gestão de cartão corporativo: fatura vira lançamento de CP (US-FN02 + FN05)
-- Transferências entre contas com tarifa e aplicações/resgates (US-FN04)
-- Gestão de cheques pré-datados como entidade de primeira classe (US-FN09)
-- Fluxo de caixa projetado com horizon de 12 meses e cenários (US-FN13)
+- Saving analysis (economia realizada) — needs 2-3 months of historical price data to be meaningful; comparing prices without data produces misleading results
+- Supplier scorecard / ranking — needs multiple completed purchase cycles before scores are reliable
+- Price history visualization per product — data exists after v1.1 runs; only UI addition required
+- Mobile requisition (RC from campo) — validate web flow and approval process first
+- CNPJ lookup from Receita Federal API for supplier registration pre-fill
 
 **Defer (v2+):**
 
-- Gestão de crédito rural com cronograma SAC/Price/Bullet e carência (US-FN14)
-- CNAB 240/400 remessa/retorno
-- Open Finance / integração bancária automática (Fase 5)
-- Emissão de boletos e CPR
-- Módulo fiscal / NF-e import
-
-**Anti-features to avoid explicitly:** Open Finance (6-12 meses de homologação BACEN), emissão de boleto (convênio bancário individual), NF-e import (módulo fiscal separado), previsão de caixa com IA (dados históricos insuficientes nos primeiros 2 anos).
+- Budget control (orcamento de compras) — requires budget planning module as prerequisite; organizational process change before enforcement makes sense
+- Email RFQ with supplier response tracking — email + manual entry covers day-1 needs
+- NF-e XML import — explicitly out of scope (full fiscal module)
+- Supplier portal — high cost, low ROI at farm scale (Brazilian agro suppliers will not adopt a portal login)
+- Frame contracts / blanket orders — enterprise feature, farm scale does not need it
 
 ### Architecture Approach
 
-The financial module follows the established collocated-module pattern of the existing 69 backend modules: one directory per subdomain, each with `routes.ts`, `service.ts`, and `types.ts`. The critical architectural decision is separating the document layer (payable/receivable records) from the ledger layer (`FinancialTransaction` table as audit trail) and the balance aggregate (`BankAccountBalance` updated atomically in every Prisma transaction that moves money). This mirrors the existing `StockBalance` pattern in `modules/stock-entries/` and avoids the "recompute balance from transaction history" anti-pattern. Every balance mutation runs inside a single `withRlsContext` Prisma transaction to guarantee consistency. Frontend follows the existing React Query + invalidation pattern — no financial state in React Context.
+Procurement integrates as 8 new backend modules and 8 new frontend pages into the existing modular monolith, with additive-only modifications to `stock-entries` and `payables` (nullable FK additions, no breaking changes to existing data). The design follows the proven `modules/{domain}/routes+service+types` colocation pattern. All new modules use `withRlsContext` for multitenancy. The `Payable.originType = 'PURCHASE'` and `Payable.originId` fields are already stubbed in the existing schema — the integration interface was designed in advance. The `Supplier` entity replaces the denormalized `supplierName: String` on both `Payable` and `StockEntry` via nullable FK additions, with no backfill required for historical records. Approval workflow uses the existing `VALID_TRANSITIONS` map pattern from `checks.types.ts` — no new pattern introduction.
 
 **Major components:**
 
-1. `bank-accounts` — BankAccount + BankAccountBalance + FinancialTransaction ledger foundation; required by all other modules
-2. `payables` + `receivables` — AP/AR document lifecycle: create → approve → settle; cost center apportionment as child rows; FUNRURAL on receivables
-3. `payables-aging` — read-only aggregation service on payables; isolated to prevent coupling with write path
-4. `bank-reconciliation` — OFX/CSV parse → preview → confirm flow; scored matching engine
-5. `credit-cards` + `card-invoices` — corporate card lifecycle; closing invoice generates a payable
-6. `cash-flow` — read-only projection service; must consume open AP, open AR, cheques in A_COMPENSAR state, and crédito rural installments across a 12-month horizon
-7. `credit-rural` — amortization schedule generator (SAC/Price/Bullet with carência); generates installment payables on contract creation
-8. `fin-dashboard` — pure aggregation across all modules; read-only, no service-to-service calls
-9. `cheques` — pre-dated cheque entity with state machine (EMITIDO → A_COMPENSAR → COMPENSADO/DEVOLVIDO/CANCELADO)
-10. Custom `cnab` utility — bank-specific adapters for CNAB 240/400 remessa/retorno generation and parsing
+1. `suppliers/` — Supplier CRUD with fiscal data, contacts, payment terms, evaluations; root dependency for all procurement documents; CNPJ/CPF validated backend via `validation-br`
+2. `purchase-requisitions/` + approval workflow — RC state machine using existing `VALID_TRANSITIONS` map pattern; `ApprovalStep` records per approver level; `ApprovalPolicy` per org; in-app `Notification` table for badge counter
+3. `purchase-quotations/` — `QuotationRequest` + `QuotationResponse` + items; mapa comparativo matrix UI; quotation transitions to `CLOSED` on PO issuance (prices frozen by snapshot)
+4. `purchase-orders/` — OC document with sequential org-scoped number; PDF via pdfkit (same pattern as `pesticide-prescriptions`); email via BullMQ + Handlebars template
+5. `goods-receipts/` — Integration hub: single `withRlsContext` transaction creates `StockEntry` + `Payable` on CONFIRM; 6-scenario state machine; tolerance bands ±3%; `PurchaseOrder.payableStatus` tracking
+6. `purchase-returns/` — `PurchaseReturn` -> `StockOutput (RETURN_TO_SUPPLIER)` + `PayableCredit`; `RETURN_TO_SUPPLIER` type added to `StockOutput` enum during receiving phase
+7. `purchase-budget/` — `PurchaseBudgetLine` with `softCommitted`/`hardCommitted`/`consumed` columns; schema initialized in Phase 2 (Requisition) even though enforcement is v2
+8. `purchase-dashboard/` — Pure aggregation (read-only); KPIs + kanban summary; composite indexes on `(organizationId, status, createdAt)` on purchase_orders and goods_receipts
 
 ### Critical Pitfalls
 
-1. **Float monetary arithmetic** — Use `decimal.js` for every monetary calculation from day one. Establish a `Money` type in `packages/shared/src/types/money.ts` before US-FN07 ships. Call `toNumber()` only at serialization boundaries. CNAB files represent amounts as integers in centavos — convert only at I/O boundary. Cost: HIGH to fix in production.
+1. **Duplicate CP on partial receiving** — CP amount must come from `receiving.confirmedAmount`, never from `purchaseOrder.totalAmount`. CP creation fires only from the `ReceivingConfirmed` event — not from PO approval. Add `PurchaseOrder.payableStatus` enum (`NOT_GENERATED | PARTIAL | FULLY_GENERATED`) to prevent duplicate generation on second shipment. Highest recovery cost if discovered in production.
 
-2. **Missing `producerId` on financial records** — Brazilian rural farms have multiple fiscal entities (proprietário, meeiro, arrendatário) sharing one physical farm. Bank accounts and AP/CR must carry `producerId` as a required FK from the first migration. Attaching only to `farmId` causes fiscal compliance failure and is expensive to backfill. Address in US-FN01.
+2. **NF/goods desynchronization across 6 receiving scenarios** — Two receiving scenarios involve goods arriving before NF or NF before goods. Stock entry fires on goods arrival; CP fires on NF arrival. Never create both from the same code path. The current `invoiceNumber: String` on `StockEntry` is insufficient — must be upgraded before any receiving code is written.
 
-3. **CNAB layout variance per bank** — FEBRABAN CNAB 240 is a standard that every major bank overrides with proprietary extensions. Implement a `CnabAdapter` interface per bank code from the start. Do not write a single `generateCnab240()` function. Start with BB (341) and Caixa (104) for PRONAF/PRONAMP coverage. Address in US-FN08.
+3. **Approval state machine without explicit transitions** — Use `VALID_TRANSITIONS` map pattern already established in `checks.types.ts`. One `validateTransition(current, next)` function at service boundary. Never inline `if (status === 'DRAFT')` checks scattered across service methods. Rejection requires mandatory `rejectionReason`. Multi-level approval is modeled as ordered `ApprovalStep` records, not flags on the requisition.
 
-4. **Cheques pré-datados as balance distortion** — Pre-dated cheques must be a first-class entity with `dataPrevista`, not a metadata field on a payment. The cash flow projection must consume cheques in `A_COMPENSAR` state at `dataPrevista`, not at issue date. Dashboard must always label "saldo bancário real" vs "saldo contábil". Address in US-FN09.
+4. **Synchronous email blocking workflow mutations** — Never `await emailService.send()` inside a Prisma transaction. BullMQ job is enqueued after transaction commits; HTTP response returns before email delivery. If SMTP fails, workflow state is already saved. Show UI distinction between success notification and notification failure.
 
-5. **Crédito rural amortization ignoring carência and Plano Safra rates** — PRONAF/PRONAMP contracts have subsidized rates, grace periods (carência), and agricultural-year-aligned payment schedules. Store the Plano Safra reference year on each contract; store rates as database records with effective date ranges, not hardcoded. Address in US-FN14.
-
-6. **Reconciliation matching too strict** — OFX bank descriptions never match internal AP descriptions exactly. A scored matching engine with weighted criteria (amount exact match, date proximity within 3 business days, FUNRURAL net-vs-gross tolerance) is required. Exact-string matching produces near-zero auto-match rates and user abandonment. Address in US-FN06.
-
-7. **OFX encoding failure** — Brazilian banks export OFX files in ISO-8859-1 with comma as decimal separator. Generic OFX parsers target North American banks (UTF-8, period decimal). Use `iconv-lite` for encoding detection and normalize decimal separators before parsing. Address in US-FN06.
-
-8. **Seasonal cash flow horizon too short** — Agricultural income is concentrated in 2-3 months per year. A 90-day projection is useless for farm finance. US-FN13 must explicitly require a 12-month forward projection horizon. The saldo-negativo alert must fire at future projected dates.
+5. **Quotation prices not frozen at PO issuance** — `PurchaseOrder` must snapshot `unitPrice`/`quantity`/`totalAmount` at issuance time, not store only a quotation FK. Quotation transitions to `CLOSED` status when PO is issued. Editing a closed quotation returns 409. CP amount is computed from the PO snapshot, not from live quotation or live product prices.
 
 ## Implications for Roadmap
 
-Based on the dependency analysis in ARCHITECTURE.md and FEATURES.md, the build order is strictly data-model-driven. No financial feature can exist without bank accounts; no projection can exist without AP/AR data. This maps cleanly to six phases.
+Based on dependency analysis, the P2P cycle must be implemented in strict upstream-to-downstream order. No phase can be skipped without breaking the next. The minimum coherent unit is the complete cycle — a procurement module with requisitions but no GRN is useless; a GRN without CP auto-generation defeats the purpose.
 
-### Phase 1: Fundacao Financeira (Foundation)
+### Phase 1: Cadastro de Fornecedores (Supplier Foundation)
 
-**Rationale:** All other financial modules reference `BankAccount`, `BankAccountBalance`, and `FinancialTransaction`. These must exist first. This phase also establishes the `Money` type and `producerId` FK — the two pitfalls that cannot be retrofitted.
-**Delivers:** Bank account CRUD with real-time balance, account statement with export, `Money` type in shared package, `producerId` required on all financial entities, categories/chart of accounts pre-seeded.
-**Addresses:** US-FN01 (contas bancárias), US-FN03 (extrato e saldo)
-**Avoids:** Float arithmetic pitfall, `producerId` isolation pitfall — both must be established here before any financial data is written
+**Rationale:** Supplier is the root dependency for every procurement document. No quotation, PO, or CP can be generated without a valid `supplierId`. Must be phase 1 with no exceptions.
+**Delivers:** Supplier CRUD with fiscal data, multiple contacts, payment terms; backend CNPJ/CPF/IE validation via `validation-br`; `fiscalRegime` enum (SIMPLES_NACIONAL, LUCRO_PRESUMIDO, LUCRO_REAL, PESSOA_FISICA, RURAL_PRODUCER); `SupplierEvaluation` sub-resource; supplier search and filtering; purchasing history per supplier view.
+**Addresses:** All table-stakes supplier features (registration, contacts, search, payment term defaults).
+**Avoids:** Pitfall 8 — CNPJ stored without backend check-digit validation causes SEFAZ reconciliation failures discovered only months later.
+**Research flag:** Standard CRUD patterns — no additional research needed.
 
-### Phase 2: Nucleo AP/AR (Core Payables and Receivables)
+### Phase 2: Requisicao de Compra e Aprovacao (Requisition + Approval Workflow)
 
-**Rationale:** The AP/AR document lifecycle is the operational core of the module. This is what users interact with daily. It depends only on bank accounts (Phase 1). Aging queries are included here as a read-only service over payables — not a separate phase, as the data is already present.
-**Delivers:** Full AP lifecycle (create, approve, settle, multi-instalment with correct `decimal.js` rounding, cost center apportionment), full AR lifecycle (create, receive, FUNRURAL deduction field, PDD flag), aging report with 7 due-date buckets and configurable alerts, export CSV/PDF/Excel.
-**Addresses:** US-FN07 (contas a pagar + baixa), US-FN08 (baixa pagamento), US-FN10 (aging CP alertas), US-FN11 (contas a receber), US-FN12 (baixa recebimento inadimplência)
-**Avoids:** Float arithmetic must be enforced here with `decimal.js`; FUNRURAL field introduced on AR from the start
+**Rationale:** RC is the entry point of the P2P cycle. The approval workflow is the new architectural element with no existing precedent in this codebase — it must be designed completely before any downstream phase uses its output. The `VALID_TRANSITIONS` map and `Notification` model introduced here are reused by Kanban (Phase 6).
+**Delivers:** `PurchaseRequisition` + `PurchaseRequisitionItem` + `ApprovalStep` + `ApprovalPolicy` + `Notification` models; `VALID_TRANSITIONS` state machine (DRAFT -> PENDING_APPROVAL -> APPROVED -> REJECTED -> RECALLED -> CANCELLED); in-app badge counter via `GET /api/notifications/unread-count`; BullMQ queue infrastructure for async email dispatch; `purchase_budget_lines` schema with `softCommitted`/`hardCommitted`/`consumed` columns (initialized here, enforcement v2).
+**Addresses:** RC creation, RC approval workflow with configurable alcadas, rejection with mandatory comment, in-app notifications.
+**Avoids:** Pitfall 3 (approval state machine without explicit transitions — VALID_TRANSITIONS map is the feature, not an implementation detail); pitfall 5 (synchronous email — BullMQ queue established here before first notification fires).
+**Research flag:** Standard ERP patterns — no additional research needed.
 
-### Phase 3: Dashboard Financeiro (Financial Dashboard)
+### Phase 3: Cotacao e Pedido de Compra (Quotation + Purchase Order)
 
-**Rationale:** With Phase 1 (balances) and Phase 2 (AP/AR data) complete, the dashboard has all the data it needs. Releasing dashboard at this point gives users an immediately valuable landing page and validates the data model with real usage before building more complex features.
-**Delivers:** Dashboard page with total balance across accounts, AP aging summary, AR expected 30d, monthly result, top expense categories, multi-farm aggregation toggle.
-**Addresses:** US-FN15 (dashboard financeiro consolidado)
-**Avoids:** Dashboard must show "saldo bancário real" vs "saldo contábil" labeling from day one — never merge them
+**Rationale:** RFQ flows from an APPROVED requisition. Quotation comparison map is the key decision-support UI. PO issuance must freeze prices — data model must snapshot prices, not reference live quotation records. Email dispatch to supplier uses Handlebars templates + BullMQ from Phase 2.
+**Delivers:** `QuotationRequest` + `QuotationResponse` + `QuotationResponseItem`; mapa comparativo UI (matrix: rows = items, cols = suppliers, lowest price highlighted per item); winner selection with audit trail; `PurchaseOrder` with sequential org-scoped number, price snapshot fields, and `CLOSED` quotation status on issuance; OC PDF via pdfkit; email via BullMQ + Handlebars `purchase-order.hbs` template.
+**Addresses:** RFQ to multiple suppliers, manual quotation registration, quotation comparison map, winner selection, OC generation, OC PDF export, OC email dispatch to supplier.
+**Avoids:** Pitfall 6 (quotation price not frozen at PO issuance — snapshot prices on PO creation, transition quotation to CLOSED); pitfall 9 (saving analysis deferred to v1.2 when actual price data accumulates).
+**Uses:** `handlebars` for OC email template; `pdfkit` existing pattern from `pesticide-prescriptions`.
+**Research flag:** Standard patterns — no additional research needed.
 
-### Phase 4: Instrumentos de Pagamento (Payment Instruments)
+### Phase 4: Recebimento de Mercadorias (Goods Receiving — Integration Hub)
 
-**Rationale:** Bank transfers, credit cards, and pre-dated cheques are extensions of the AP/AR core. They depend on payables and bank accounts being solid. Cheques must be its own entity (not a metadata field) to correctly feed the Phase 5 cash flow projection.
-**Delivers:** Transfers between accounts (with tariff and investment/redemption), corporate credit card CRUD, card invoice import and closing (closing generates a payable), pre-dated cheque entity with state machine and state transitions, cheque integration into bank balance labels.
-**Addresses:** US-FN04 (transferências), US-FN02 (cartões corporativos), US-FN05 (fatura cartão), US-FN09 (cheques pré-datados)
-**Avoids:** Cheques-as-balance-distortion pitfall — data model must be correct here for cash flow to work in Phase 5
+**Rationale:** This is the highest-value and highest-risk phase. A single CONFIRM action must atomically create a `StockEntry` (existing module) and a `Payable` (existing module) via `withRlsContext`. The 6 receiving scenarios require careful state machine design before implementation begins. The `RETURN_TO_SUPPLIER` stock output type must be added to the `StockOutput` enum here (not in Phase 5) to avoid migrating a live enum in production.
+**Delivers:** `GoodsReceipt` + `GoodsReceiptItem` with 6-scenario state machine; 3-way match with ±3% tolerance bands (warning-not-block); atomic transaction: StockEntry + Payable creation on CONFIRM; `PurchaseOrder.payableStatus` tracking (NOT_GENERATED -> PARTIAL -> FULLY_GENERATED); NF data capture (manual: number, serie, date, total, chave NF-e as future fiscal hook); modifications to `stock-entries` (add `supplierId`, `purchaseOrderId`, `goodsReceiptId` FKs) and `payables` (add `supplierId` FK, expose `POST /api/payables/from-purchase` route); `RETURN_TO_SUPPLIER` added to `StockOutput` type enum (used in Phase 5).
+**Addresses:** Goods Receiving (all 6 scenarios), automatic CP generation, automatic stock entry, discrepancy handling, OC status tracking (EMITIDA -> RECEBIMENTO_PARCIAL -> ENCERRADA).
+**Avoids:** Pitfall 1 (duplicate CP on partial receiving — `payableStatus` + event-driven CP from ReceivingConfirmed only); pitfall 2 (NF/goods desync — explicit two-phase state machine for goods vs NF arrival, not a flag on StockEntry).
+**Research flag:** Needs implementation plan before coding — the atomic transaction across 3 tables and the 6-scenario state machine benefit from a dedicated phase planning document. Recommend `/gsd:research-phase` before implementation starts.
 
-### Phase 5: Conciliacao e Fluxo de Caixa (Reconciliation and Cash Flow)
+### Phase 5: Devolucao e Troca (Purchase Returns)
 
-**Rationale:** Reconciliation needs bank accounts (Phase 1), payables/receivables (Phase 2), and real transaction history. Cash flow projection needs all open AP/AR, cheques, and recurring entries — requiring Phases 2 and 4 to be complete first. Both features have higher implementation risk and should be validated against real bank data.
-**Delivers:** OFX/CSV bank statement import with parse → preview → confirm flow, scored matching engine (amount+date+FUNRURAL tolerance), 12-month cash flow projection with scenarios (optimistic/realistic/pessimistic), negative-balance-at-future-date alerts, harvest income planning fields.
-**Addresses:** US-FN06 (conciliação bancária), US-FN13 (fluxo de caixa projetado)
-**Avoids:** OFX encoding pitfall (iconv-lite + decimal normalization), reconciliation strict-matching pitfall (confidence-scored engine), seasonal-horizon pitfall (12-month mandatory)
+**Rationale:** Returns reference a confirmed GoodsReceipt and must reverse both stock and payable correctly. The `RETURN_TO_SUPPLIER` stock output type was added in Phase 4. A partial return against a partially-paid CP requires a `PayableCredit` model (not direct CP amount mutation) to preserve audit trail.
+**Delivers:** `PurchaseReturn` + `PurchaseReturnItem`; `StockOutput (RETURN_TO_SUPPLIER)` reversal (FEFO preserved); `PayableCredit` record reducing outstanding CP (or `Receivable` generation if CP already paid); return reasons (DEFECT, WRONG_PRODUCT, EXCESS, QUALITY); resolution types (CREDIT_NOTE, EXCHANGE, REFUND); return status machine (PENDING -> CONFIRMED -> RESOLVED).
+**Addresses:** Purchase return (devolucao) with supplier credit note; complete financial cycle closure.
+**Avoids:** Pitfall 7 (return using DISPOSAL stock type — `RETURN_TO_SUPPLIER` ready from Phase 4; partial CP credit modeled as `PayableCredit` not direct amount mutation).
+**Research flag:** Verify `PayableCredit` model fits existing payables schema before implementation — inspect `payables.service.ts` and `payables.types.ts` during Phase 5 planning.
 
-### Phase 6: Credito Rural (Rural Credit)
+### Phase 6: Kanban, Dashboard e Notificacoes (Visibility + Operations)
 
-**Rationale:** Rural credit is a high-value differentiator but also the most domain-specific and highest-complexity feature. It depends on payables (generates installment CP records). Deferring it allows the core module to go live and accumulate real data before implementing amortization schedules. This is the only phase that should have deeper research during planning.
-**Delivers:** PRONAF/PRONAMP/Funcafé/CPR operation registration, SAC/Price/Bullet amortization schedule generator with carência, Plano Safra rate database (updated annually), installment payables auto-generated on contract creation, crop-calendar-aligned due dates, crédito rural installments feeding into Phase 5 cash flow projection.
-**Addresses:** US-FN14 (gestão de operações de crédito rural)
-**Avoids:** Crédito rural amortization pitfall — carência, rate equalization, agricultural-year alignment must all be explicit acceptance criteria
+**Rationale:** Pure aggregation reads from all upstream tables. Kanban uses `@dnd-kit` with drag actions wired to the same service methods as form buttons (not a generic status override). Dashboard KPIs need composite indexes on `(organizationId, status, createdAt)` to perform at scale.
+**Delivers:** Procurement kanban (5 columns, `@dnd-kit`, drag validates via existing `VALID_TRANSITIONS`); `PurchaseDashboardPage` with KPIs (total spend MTD/YTD, open OC value, pending approvals count, top 5 suppliers by spend, spend by category via recharts); SSE endpoint for real-time Kanban updates; composite DB indexes on `purchase_orders` and `goods_receipts`; Kanban server-side pagination per column (default: last 90 days); full BullMQ email notification suite for all 5 workflow templates.
+**Addresses:** Kanban pipeline view, procurement dashboard (executive view), email notifications at all workflow steps, real-time UI feedback.
+**Avoids:** Pitfall 10 (kanban drag bypassing state machine — reuse `validateTransition()` from Phase 2, card snaps back on invalid drag); performance trap (kanban without pagination; dashboard aggregation without indexes).
+**Uses:** `@dnd-kit/core` + `@dnd-kit/sortable`; SSE native Express; existing `recharts` for dashboard charts; existing `Notification` table from Phase 2.
+**Research flag:** Standard patterns — no additional research needed.
 
 ### Phase Ordering Rationale
 
-- Phases 1 → 2 → 3 are strict data-model dependencies: accounts must exist before transactions, transactions must exist before aggregations.
-- Phase 4 is isolated enough to begin in parallel with Phase 3 after Phase 2 is stable, but cheques must precede Phase 5 cash flow.
-- Phase 5 requires real historical data (3+ months from Phases 2-3) for reconciliation validation; starting it early with synthetic data produces false confidence.
-- Phase 6 is intentionally last — it is the most complex, most domain-specific, and least blocking for initial user adoption.
+- Supplier -> Requisition -> Quotation -> PurchaseOrder -> GoodsReceipt -> PurchaseReturn is the strict topological order of P2P dependencies. No entity at level N can exist without entities at level N-1.
+- `PurchaseBudgetLine` schema is initialized during Phase 2 (Requisition) — even though budget enforcement is v2 — to avoid retroactive migrations when approval records are already live in production.
+- `RETURN_TO_SUPPLIER` stock output type is added to the enum during Phase 4 (Receiving) schema work, not Phase 5 (Returns), to avoid migrating a live production enum with existing records.
+- `VALID_TRANSITIONS` map and `Notification` table from Phase 2 are reused directly by Phase 6 (Kanban). This cross-cutting dependency is satisfied by the ordering.
+- Saving analysis, supplier scorecard, and price history visualization are v1.2 — these features require real historical data from 2-3 months of production use to be meaningful.
 
 ### Research Flags
 
-Phases needing deeper research during planning:
+Phases needing `/gsd:research-phase` before implementation tasks are written:
 
-- **Phase 6 (Crédito Rural):** BCB MCR amortization rules, Plano Safra rate equalization tables, carência modeling for each credit line type (Custeio, Investimento, Comercialização). This is specialist domain knowledge — research before implementation.
-- **Phase 5 (Conciliação):** Validate `ofx-js` current npm status and maintenance before adopting; if unmaintained, fall back to custom OFX parser using already-installed `@xmldom/xmldom`. Collect real OFX samples from BB, Bradesco, Sicoob before designing matching engine.
+- **Phase 4 (Goods Receiving):** The 6-scenario state machine, the atomic 3-table transaction contract, and the NF desynchronization handling are the most complex implementation in this milestone. The interaction between `GoodsReceipt` scenarios, `payableStatus` tracking, and `generateInstallments` rural calendar handling warrants a dedicated implementation plan before any code is written.
 
-Phases with established patterns (skip research-phase):
+Phases with well-documented patterns (skip research-phase):
 
-- **Phase 1 (Fundação):** Direct extension of existing `StockBalance` pattern — well-documented in codebase. No new patterns.
-- **Phase 2 (AP/AR):** Standard payables/receivables with existing module structure. FUNRURAL is a field, not a new subsystem.
-- **Phase 3 (Dashboard):** Pure read aggregation, existing `fin-dashboard` aggregation pattern documented in ARCHITECTURE.md.
-- **Phase 4 (Instrumentos):** Extends existing AP patterns. Cheques are a new entity but straightforward state machine.
+- **Phase 1 (Suppliers):** Standard entity CRUD + CNPJ validation. Established module pattern in this codebase.
+- **Phase 2 (Requisition + Approval):** State machine follows existing `VALID_TRANSITIONS` pattern from `checks.types.ts`. `ApprovalStep` ordered list is a well-known ERP pattern.
+- **Phase 3 (Quotation + PO):** PDF reuses `pesticide-prescriptions` pattern. Email reuses `mail.service.ts` with BullMQ queue. Quotation comparison is a standard matrix UI.
+- **Phase 5 (Returns):** Standard reversal pattern dependent only on confirmed GRN records.
+- **Phase 6 (Dashboard + Kanban):** Pure read aggregation. `@dnd-kit` integration is well-documented.
 
 ## Confidence Assessment
 
-| Area         | Confidence | Notes                                                                                                                                                                                                                                                                                                                                      |
-| ------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Stack        | MEDIUM     | Existing libs (pdfkit, exceljs, iconv-lite) are HIGH confidence — already in project. `ofx-js` is LOW confidence — verify on npm. `date-fns` v4 vs v3 CommonJS compat needs verification. Custom CNAB is the correct call but requires upfront investment.                                                                                 |
-| Features     | HIGH       | US-FN01 to US-FN15 are taken directly from PROJECT.md (primary source). Competitor analysis (Aegro, Siagri) is MEDIUM — training data, not verified. FUNRURAL and CNAB domain claims are HIGH — stable regulations.                                                                                                                        |
-| Architecture | HIGH       | Derived from direct codebase analysis of 69 existing modules. Patterns (StockBalance, cost center apportionment, BulkImport flow) are confirmed implementations, not suggestions.                                                                                                                                                          |
-| Pitfalls     | MEDIUM     | Float arithmetic, producerId isolation, CNAB variance, cheque balance distortion, and crédito rural amortization are HIGH confidence — domain-grounded. OFX encoding specifics for each bank and Plano Safra current rates are MEDIUM — training data, should be verified against current documentation before Phase 5 and 6 respectively. |
+| Area         | Confidence                                                                                                                                                                          | Notes                                                                                                                                                                                                                                                               |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stack        | HIGH                                                                                                                                                                                | All 4 new packages npm-verified with exact versions and peer dep compatibility confirmed. `validation-br` alphanumeric CNPJ support is MEDIUM — specific function API not verified from official Receita Federal docs directly.                                     |
+| Features     | HIGH                                                                                                                                                                                | ERP procurement is a mature domain. ERPNext, SAP, NetSuite, Dynamics 365 patterns verified. Brazilian agro-specific requirements (safra payment terms, NF-e manual entry, 6 receiving scenarios) confirmed against industry sources.                                |
+| Architecture | HIGH                                                                                                                                                                                | Derived from direct codebase analysis of 5500+ line Prisma schema. `Payable.originType = 'PURCHASE'` integration interface pre-confirmed. `VALID_TRANSITIONS` pattern confirmed in `checks.types.ts`. `invoiceNumber: String` limitation on `StockEntry` confirmed. |
+| Pitfalls     | HIGH for integration pitfalls (codebase-derived); MEDIUM for Brazilian fiscal NF workflow specifics (agribusiness ERP literature, not verified against current SEFAZ documentation) |                                                                                                                                                                                                                                                                     |
 
-**Overall confidence:** MEDIUM-HIGH — architecture and features are solid; stack has two items needing npm verification; pitfall prevention is actionable.
+**Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **`ofx-js` npm status:** Run `npm info ofx-js` before Phase 5 implementation. If unmaintained, use `@xmldom/xmldom` (already installed) for OFX 2.x XML and a custom SGML parser for OFX 1.x. Document decision before starting US-FN06.
-- **`date-fns` v4 ESM compat:** Run `node -e "require('date-fns')"` after install to verify CommonJS compat with backend. Fall back to `date-fns` v3 (`^3.6.0`) if v4 pure ESM causes bundling issues.
-- **Plano Safra current rates:** Before Phase 6, fetch current PRONAF/PRONAMP rates from BCB MCR (febraban.org.br or bcb.gov.br) for 2025/2026 Plano Safra. Rates in training data reflect 2024 Plano Safra — likely changed.
-- **Sicoob/Sicredi CNAB layouts:** These cooperatives dominate rural banking in Brazil but have non-standard CNAB layouts not covered in FEBRABAN base spec. Obtain their layout manuals before implementing Phase 6 CNAB adapters.
-- **Real OFX samples from BR banks:** Reconciliation matching engine cannot be designed in the abstract. Collect real (anonymized) OFX exports from BB, Bradesco, Itaú, and Sicoob before Phase 5 implementation.
+- **`validation-br` alphanumeric CNPJ function API:** Support confirmed via package description and recent publish date, but the specific function signature (e.g., `validateCNPJ(str)` vs `cnpj.isValid(str)`) was not verified. Validate API during Phase 1 implementation before committing to the package call sites.
+- **`PayableCredit` model for partial CP reduction:** The current `payables.service.ts` has no model for reducing a partially-settled payable. Inspect the payables schema during Phase 5 planning to determine whether a `PayableCredit` record or a `Payable` amount adjustment with audit trail is the better fit for the existing system.
+- **`generateInstallments` rural calendar handling:** The existing shared helper must be verified for "safra" payment term (harvest-date-relative due date, not fixed calendar). Validate during Phase 4 planning before relying on it for GRN-triggered CP installment generation.
+- **Saving analysis inflation adjustment (v1.2):** When Phase 6+ saving analysis is planned, the nominal vs IPCA-adjusted comparison must be addressed explicitly. For MVP v1.2, manual inflation adjustment percentage input is acceptable. Label all saving figures as "comparacao nominal (sem ajuste IPCA)" until inflation adjustment is implemented.
 
 ## Sources
 
 ### Primary (HIGH confidence)
 
-- `PROJECT.md` — US-FN01 to US-FN15 requirements, acceptance criteria, out-of-scope items
-- `apps/backend/src/modules/` (69 modules) — existing architectural patterns, confirmed implementations
-- `apps/backend/prisma/schema.prisma` — ProducerFarmBond types, RLS architecture, StockBalance pattern reference
-- `apps/backend/src/database/rls.ts` — organizationId isolation model
-- `packages/shared/src/constants/design-tokens.ts` — design system token contracts
-- FEBRABAN CNAB 240/400 standard structure — widely documented, HIGH confidence on format
-- BCB Manual de Crédito Rural (MCR) — PRONAF/PRONAMP amortization rules
-- Lei 8.212/1991, art. 25 — FUNRURAL 1.5% on gross rural revenue
+- `apps/backend/prisma/schema.prisma` — existing data models, `Payable.originType`/`originId` integration interface, `StockEntry.supplierName` as plain string
+- `apps/backend/src/modules/checks/checks.types.ts` — `VALID_TRANSITIONS` pattern adopted for approval state machine
+- `apps/backend/src/modules/payables/payables.service.ts` — `Money` factory, `generateInstallments` import confirmed
+- `apps/backend/src/modules/stock-outputs/stock-outputs.types.ts` — `RETURN_TO_SUPPLIER` type absence confirmed
+- `apps/backend/src/modules/pesticide-prescriptions/` — PDF generation pattern reused for OC
+- `apps/backend/src/database/redis.ts` + `src/shared/mail/mail.service.ts` — BullMQ and email infrastructure
+- npm registry: `bullmq@5.71.0`, `validation-br@1.6.4`, `handlebars@4.7.8`, `@dnd-kit/core@6.3.1`, `@dnd-kit/sortable@10.0.0` — versions verified
+- ERPNext open source procurement documentation — RFQ, comparison map, PO generation patterns
+- NetSuite procurement and three-way matching documentation — lifecycle and tolerance patterns
 
 ### Secondary (MEDIUM confidence)
 
-- npm ecosystem knowledge through August 2025 — `ofx-js`, `papaparse`, `date-fns` v4 ESM compat
-- Brazilian rural ERP landscape (Aegro, Siagri, AgroSoft, GestãoAgro) — competitor feature analysis
-- Brazilian OFX file encoding practices from major banks — training data, not verified against current bank documentation
-- Plano Safra 2024/2025 interest rates — may be stale for current Plano Safra
+- BullMQ official docs — job events, delayed jobs, ioredis peer dep compatibility
+- dnd-kit GitHub — React 19 compatibility (confirmed for `@dnd-kit/core`; one open issue for `@dnd-kit/react`, which is not used here)
+- Ramp, Stampli, HighRadius procurement guides — GRN scenarios, approval workflow patterns, supplier scorecard methodology
+- Receita Federal Technical Note COCAD/SUARA/RFB no 49 — alphanumeric CNPJ July 2026 (via web search, not official Receita Federal site directly)
+- Aegro blog — NF-e context for Brazilian agro suppliers, receituario agronômico integration context
 
 ### Tertiary (LOW confidence)
 
-- `ofx-js` current npm version and maintenance status — verify with `npm info ofx-js` before adoption
-- Sicoob/Sicredi specific CNAB layout extensions — obtain official layout manuals before implementation
+- IPCA agricultural price adjustment for saving analysis — common practice in agribusiness, not formally verified for this project's specific saving analysis requirements
+- NF-e receiving scenarios per Brazilian fiscal law — derived from agribusiness ERP literature, not verified against current SEFAZ documentation for this project's specific 6 scenarios
 
 ---
 
-_Research completed: 2026-03-15_
+_Research completed: 2026-03-17_
 _Ready for roadmap: yes_
