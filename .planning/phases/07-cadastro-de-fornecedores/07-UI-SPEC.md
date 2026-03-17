@@ -52,22 +52,21 @@ Exceptions:
 
 ## Typography
 
-| Role              | Font           | Size                 | Weight                 | Line Height              | Usage                                                           |
-| ----------------- | -------------- | -------------------- | ---------------------- | ------------------------ | --------------------------------------------------------------- |
-| Body              | Source Sans 3  | 16px (`--text-base`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) | Table cells, form field values, descriptions                    |
-| Label             | Source Sans 3  | 14px (`--text-sm`)   | 400 (`--font-regular`) | 1.5                      | Form labels, filter labels, column headers                      |
-| Heading (section) | DM Sans        | 20px (`--text-lg`)   | 500 (`--font-medium`)  | 1.4                      | Modal section headers, card headings (e.g., "Top Fornecedores") |
-| Heading (page)    | DM Sans        | 30px (`--text-2xl`)  | 700 (`--font-bold`)    | 1.25                     | Page H1: "Fornecedores"                                         |
-| Caption           | Source Sans 3  | 12px (`--text-xs`)   | 400 (`--font-regular`) | 1.5                      | Upload file name, attachment date, timestamp, rating count      |
-| Data/Mono         | JetBrains Mono | 14px (`--text-sm`)   | 400 (`--font-regular`) | 1.5                      | CNPJ/CPF values in table and form                               |
+| Role              | Font          | Size                 | Weight                 | Line Height              | Usage                                                                                                  |
+| ----------------- | ------------- | -------------------- | ---------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------ |
+| Body              | Source Sans 3 | 16px (`--text-base`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) | Table cells, form field values, descriptions                                                           |
+| Label             | Source Sans 3 | 14px (`--text-sm`)   | 400 (`--font-regular`) | 1.5                      | Form labels, filter labels, column headers, upload file name, attachment date, timestamp, rating count |
+| Heading (section) | DM Sans       | 20px (`--text-lg`)   | 500 (`--font-medium`)  | 1.4                      | Modal section headers, card headings (e.g., "Top Fornecedores")                                        |
+| Heading (page)    | DM Sans       | 30px (`--text-2xl`)  | 700 (`--font-bold`)    | 1.25                     | Page H1: "Fornecedores"                                                                                |
 
 Rules:
 
 - Maximum 2 font weights per font family on any single screen (DM Sans: 500+700; Source Sans 3: 400+600)
-- CNPJ/CPF displayed with formatting mask (XX.XXX.XXX/XXXX-XX or XXX.XXX.XXX-XX) using JetBrains Mono
-- Status and category badge labels: ALL CAPS, `--text-xs`, Source Sans 3 weight 600
-- Star rating count: `--text-xs`, Source Sans 3, neutral-500, e.g., "(12 avaliações)"
+- CNPJ/CPF displayed with formatting mask (XX.XXX.XXX/XXXX-XX or XXX.XXX.XXX-XX) using JetBrains Mono at 14px (`--text-sm`)
+- Status and category badge labels: ALL CAPS, `--text-sm` (14px), Source Sans 3 weight 600
+- Star rating count: `--text-sm`, Source Sans 3, neutral-500, e.g., "(12 avaliações)"
 - Average rating numeric: `--text-base`, DM Sans, weight 700
+- Caption-style text (upload file name, timestamps, rating counts): use Label size (14px), not a separate caption size
 
 ---
 
@@ -197,10 +196,10 @@ Color rules enforced:
 
 ### Destructive Actions
 
-| Action                        | Criticality | Modal Variant                    | Confirmation Copy                                                                                                                                                 |
-| ----------------------------- | ----------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Excluir fornecedor            | Medium      | `ConfirmModal variant="danger"`  | Title: "Excluir fornecedor?" / Body: "Esta ação não pode ser desfeita. O fornecedor e suas avaliações serão removidos." / Confirm: "Excluir" / Cancel: "Cancelar" |
-| Alterar status para BLOQUEADO | Medium      | `ConfirmModal variant="warning"` | Title: "Bloquear fornecedor?" / Body: "Fornecedor bloqueado não aparecerá na seleção ao criar cotações." / Confirm: "Bloquear" / Cancel: "Cancelar"               |
+| Action                        | Criticality | Modal Variant                    | Confirmation Copy                                                                                                                                                            |
+| ----------------------------- | ----------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Excluir fornecedor            | Medium      | `ConfirmModal variant="danger"`  | Title: "Excluir fornecedor?" / Body: "Esta ação não pode ser desfeita. O fornecedor e suas avaliações serão removidos." / Confirm: "Excluir fornecedor" / Cancel: "Cancelar" |
+| Alterar status para BLOQUEADO | Medium      | `ConfirmModal variant="warning"` | Title: "Bloquear fornecedor?" / Body: "Fornecedor bloqueado não aparecerá na seleção ao criar cotações." / Confirm: "Bloquear fornecedor" / Cancel: "Cancelar"               |
 
 Note: Excluir fornecedor uses `ConfirmModal` with `variant="danger"` (not `ConfirmDeleteModal` with name typing) — medium criticality per CLAUDE.md guidelines, as supplier deletion is reversible via re-import and does not cascade to financial data in Phase 7 scope.
 
@@ -236,6 +235,8 @@ Note: Excluir fornecedor uses `ConfirmModal` with `variant="danger"` (not `Confi
 ## Component Inventory
 
 ### SuppliersPage
+
+Primary visual anchor: H1 "Fornecedores" (30px, DM Sans 700) paired with the "+ Novo Fornecedor" primary CTA button in the same row — this header/CTA row is the first focal point the eye lands on, establishing page identity and the single available primary action before any other content.
 
 Layout:
 
@@ -284,7 +285,7 @@ Each card:
   - Supplier name: DM Sans 500, `--text-base`
   - Star row: 5 stars, 16px each
   - Average: `--text-xl`, DM Sans 700
-  - Count: "(N avaliações)", `--text-xs`, neutral-500
+  - Count: "(N avaliações)", `--text-sm`, neutral-500
 
 ### SupplierModal (create/edit)
 
@@ -318,7 +319,7 @@ PF/PJ Toggle behavior:
 - Body: 4 criteria, each with label + 5-star interactive selector
   - Star selector: clickable stars 24px each, filled on hover/selected (`--color-sun-500`)
   - Unselected stars: `--color-neutral-300`
-  - Each criterion shows selected value as text "(N/5)" in `--text-xs` neutral-500
+  - Each criterion shows selected value as text "(N/5)" in `--text-sm` neutral-500
 - Comment textarea: optional, 3 rows
 - Footer: "Cancelar" (ghost) + "Registrar Avaliação" (primary)
 - Previous ratings: link "Ver histórico de avaliações" below criteria (opens inline list below modal body, no separate modal)
@@ -335,15 +336,15 @@ PF/PJ Toggle behavior:
   - Summary bar: "X prontos · Y com erro · Z já cadastrados" with colored counts
   - Scrollable table, max 400px height: rows with row-number, name, CNPJ/CPF, categories, status (valid/invalid/skip)
   - Valid rows: `--color-success-100` background + CheckCircle2 icon
-  - Invalid rows: `--color-error-100` background + XCircle icon + error reason in `--text-xs`
+  - Invalid rows: `--color-error-100` background + XCircle icon + error reason in `--text-sm`
   - Skip rows: `--color-neutral-100` background + MinusCircle icon + "CNPJ já cadastrado" label
 - Footer: "Cancelar" (ghost) + "Importar X fornecedores" (primary, disabled if X=0) + back arrow to re-upload
 
 ### SupplierRatingHistoryList (inline in supplier detail area)
 
 - List of past ratings, chronological desc
-- Each item: date (text-xs, neutral-500) + 4 star rows + comment (text-sm, neutral-600) + divider
-- Rating criteria labels in text-xs neutral-500, stars 12px
+- Each item: date (`--text-sm`, neutral-500) + 4 star rows + comment (`--text-sm`, neutral-600) + divider
+- Rating criteria labels in `--text-sm` neutral-500, stars 12px
 
 ### Filter Bar
 
@@ -361,12 +362,12 @@ PF/PJ Toggle behavior:
 | INATIVO   | `--color-neutral-100` | `--color-neutral-600` | MinusCircle 14px  |
 | BLOQUEADO | `--color-error-100`   | `--color-error-500`   | Ban 14px          |
 
-Badge: `--radius-full`, 6px vertical padding, 10px horizontal padding, `--text-xs` weight 600 ALL CAPS.
+Badge: `--radius-full`, 6px vertical padding, 10px horizontal padding, `--text-sm` weight 600 ALL CAPS.
 Always pair icon with text — never color alone.
 
 ### Category Badge Spec
 
-Background: `--color-earth-100`, text: `--color-earth-500`, `--radius-sm`, `--text-xs` weight 600.
+Background: `--color-earth-100`, text: `--color-earth-500`, `--radius-sm`, `--text-sm` weight 600.
 
 Category display labels (pt-BR):
 | Enum | Display |
@@ -429,7 +430,7 @@ New group "COMPRAS" inserted before "CONFIGURACAO":
 ### Destructive Delete Flow
 
 1. User clicks Trash2 icon → ConfirmModal opens (variant="danger")
-2. User clicks "Excluir" → DELETE call, loading state on button
+2. User clicks "Excluir fornecedor" → DELETE call, loading state on button
 3. Success: modal closes + toast "Fornecedor excluído" + row removed from table
 4. Error: toast "Não foi possível excluir. Tente novamente."
 
@@ -437,7 +438,7 @@ New group "COMPRAS" inserted before "CONFIGURACAO":
 
 1. Inline status selector in edit modal → user selects "BLOQUEADO"
 2. ConfirmModal (variant="warning") appears before saving
-3. User confirms → status saved
+3. User confirms "Bloquear fornecedor" → status saved
 
 ### Keyboard Navigation
 
