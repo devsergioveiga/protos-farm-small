@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-07-PLAN.md — Phase 4 complete, all 7 plans done
-last_updated: '2026-03-17T00:41:01.014Z'
+stopped_at: Completed 05-concilia-o-e-fluxo-de-caixa-03-PLAN.md
+last_updated: '2026-03-17T08:12:18.162Z'
 last_activity: 2026-03-16 — PayablesPage complete (3 tabs, 4 modals, aging, calendar, CNAB retorno, sidebar badge)
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 19
-  completed_plans: 19
+  total_plans: 25
+  completed_plans: 20
   percent: 80
 ---
 
@@ -69,6 +69,7 @@ _Updated after each plan completion_
 | Phase 04-instrumentos-de-pagamento P06 | 7min | 2 tasks | 10 files |
 | Phase 04-instrumentos-de-pagamento P04 | 9min | 2 tasks | 11 files |
 | Phase 04-instrumentos-de-pagamento P07 | 4min | 1 tasks | 6 files |
+| Phase 05-concilia-o-e-fluxo-de-caixa P03 | 7min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -117,6 +118,8 @@ Recent decisions affecting current work:
 - [Phase 04-instrumentos-de-pagamento]: useCreditCards fetchCard uses Promise.all for card + bills — single loading state
 - [Phase 04-instrumentos-de-pagamento]: CloseBillModal receives bill and isSubmitting as props — page owns close-bill loading state
 - [Phase Phase 04-instrumentos-de-pagamento]: Accounting balance computed inline within withRlsContext transaction to avoid nested RLS context calls from getAccountingBalanceData
+- [Phase 05-concilia-o-e-fluxo-de-caixa]: PAYABLE_DFC_MAP uses only actual PayableCategory schema values — CARTAO_CREDITO -> OPERACIONAL, FINANCING -> FINANCIAMENTO; no EQUIPMENT/VEHICLES/LAND
+- [Phase 05-concilia-o-e-fluxo-de-caixa]: Recurring CP/CR virtual projection uses last installment dueDate as anchor, advances by interval without DB writes
 
 ### Pending Todos
 
@@ -131,6 +134,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T00:30:56.374Z
-Stopped at: Completed 04-07-PLAN.md — Phase 4 complete, all 7 plans done
+Last session: 2026-03-17T08:12:18.160Z
+Stopped at: Completed 05-concilia-o-e-fluxo-de-caixa-03-PLAN.md
 Resume file: None
