@@ -31,7 +31,7 @@ decisions:
 metrics:
   duration: 7min
   completed: 2026-03-17
-  tasks_completed: 2
+  tasks_completed: 3
   tasks_total: 3
   files_created: 5
   files_modified: 2
@@ -47,10 +47,7 @@ Complete supplier management module UI — import CSV/XLSX with preview, export 
 | ---- | ------------------------------------------------ | ------- | -------------------------------------------------- |
 | 1    | SupplierImportModal + useSupplierRating hook     | eb69f81 | SupplierImportModal.tsx/css, useSupplierRating.ts  |
 | 2    | SupplierRatingModal + Top 3 + wire SuppliersPage | 5779ee3 | SupplierRatingModal.tsx/css, SuppliersPage.tsx/css |
-
-## Task 3 (Checkpoint)
-
-Human verification pending — user must confirm end-to-end flow.
+| 3    | Human verification — complete supplier flow      | —       | checkpoint approved                                |
 
 ## What Was Built
 
