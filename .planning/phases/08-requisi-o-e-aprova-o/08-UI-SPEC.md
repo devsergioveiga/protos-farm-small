@@ -15,13 +15,13 @@ created: 2026-03-17
 
 ## Design System
 
-| Property          | Value                                                                                              |
-| ----------------- | -------------------------------------------------------------------------------------------------- |
-| Tool              | none (custom CSS + design tokens)                                                                  |
-| Preset            | not applicable                                                                                     |
-| Component library | none (custom components following existing Phase 7 patterns)                                       |
-| Icon library      | lucide-react (web), lucide-react-native (mobile)                                                   |
-| Font              | DM Sans (headings, 500/700) + Source Sans 3 (body/UI, 400/600) + JetBrains Mono (data/coords, 400) |
+| Property          | Value                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| Tool              | none (custom CSS + design tokens)                                                          |
+| Preset            | not applicable                                                                             |
+| Component library | none (custom components following existing Phase 7 patterns)                               |
+| Icon library      | lucide-react (web), lucide-react-native (mobile)                                           |
+| Font              | DM Sans (headings, 700) + Source Sans 3 (body/UI, 400) + JetBrains Mono (data/coords, 400) |
 
 No shadcn. Project uses CSS custom properties from `apps/frontend/src/styles/tokens.css` consumed as `var(--token)`. This is established across all 7 prior phases — do not change approach. shadcn gate: N/A (project explicitly uses custom token system).
 
@@ -54,18 +54,18 @@ Exceptions:
 
 Source: `apps/frontend/src/styles/tokens.css` + CLAUDE.md — pre-populated.
 
-| Role       | CSS Var       | Size            | Font          | Weight                  | Line Height              | Usage                                                            |
-| ---------- | ------------- | --------------- | ------------- | ----------------------- | ------------------------ | ---------------------------------------------------------------- |
-| Body       | `--text-sm`   | 14px (0.875rem) | Source Sans 3 | 400 (`--font-regular`)  | 1.5 (`--leading-normal`) | Table cell content, notification body, modal field values        |
-| Label      | `--text-base` | 16px (1rem)     | Source Sans 3 | 400 (`--font-regular`)  | 1.5                      | Form labels, sidebar items, tab labels                           |
-| Subheading | `--text-md`   | 18px (1.125rem) | Source Sans 3 | 600 (`--font-semibold`) | 1.3 (`--leading-snug`)   | Modal section headers (Dados Gerais, Itens, Anexos), card titles |
-| Heading    | `--text-xl`   | 24px (1.5rem)   | DM Sans       | 700 (`--font-bold`)     | 1.2 (`--leading-tight`)  | Modal title (RC-2026/0001), page title ("Requisições de Compra") |
+| Role       | CSS Var       | Size            | Font          | Weight                 | Line Height              | Usage                                                            |
+| ---------- | ------------- | --------------- | ------------- | ---------------------- | ------------------------ | ---------------------------------------------------------------- |
+| Body       | `--text-sm`   | 14px (0.875rem) | Source Sans 3 | 400 (`--font-regular`) | 1.5 (`--leading-normal`) | Table cell content, notification body, modal field values        |
+| Label      | `--text-base` | 16px (1rem)     | Source Sans 3 | 400 (`--font-regular`) | 1.5                      | Form labels, sidebar items, tab labels                           |
+| Subheading | `--text-md`   | 18px (1.125rem) | DM Sans       | 700 (`--font-bold`)    | 1.3 (`--leading-snug`)   | Modal section headers (Dados Gerais, Itens, Anexos), card titles |
+| Heading    | `--text-xl`   | 24px (1.5rem)   | DM Sans       | 700 (`--font-bold`)    | 1.2 (`--leading-tight`)  | Modal title (RC-2026/0001), page title ("Requisições de Compra") |
 
 Additional rules:
 
 - Sequential number (RC-2026/0001): `--font-mono` (JetBrains Mono, 400) at `--text-sm` — monospace for scannable alignment in lists
-- Status badges: `--text-xs` (12px), Source Sans 3 400, ALL CAPS (STATUS labels only, never full phrases)
-- Minimum font size: 12px (`--text-xs`) — nothing smaller
+- Status badges: 12px (`--text-xs`), Source Sans 3 400, ALL CAPS (STATUS labels only, never full phrases) — this is a one-off exception for badge copy only, not a scale step
+- Minimum font size: 12px — nothing smaller (badge exception only)
 - Never center text blocks longer than 2 lines (CLAUDE.md rule)
 - ALL CAPS only on status badge labels: RASCUNHO, PENDENTE, APROVADA, REJEITADA, DEVOLVIDA, CANCELADA; urgency badges: NORMAL, URGENTE, EMERGENCIAL
 
@@ -154,7 +154,7 @@ All components follow the established Phase 7 pattern: `Page + Modal + hook`.
 
 - Vertical left-aligned timeline (source: CONTEXT.md Claude's Discretion — this is the chosen format)
 - Track: 2px border-left, `--color-neutral-200`, positioned at left edge of icon column
-- Each event: circle icon (16px filled) on the track line + actor name (semibold) + action label + relative time ("há 2 horas") + absolute datetime on hover tooltip
+- Each event: circle icon (16px filled) on the track line + actor name (DM Sans 700, bold) + action label + relative time ("há 2 horas") + absolute datetime on hover tooltip
 - Event icon colors by action type: criada (#7A7267 neutral) | enviada (#F57F17 warning) | aprovada (#2E7D32 success) | rejeitada (#C62828 error) | devolvida (#0288D1 sky) | cancelada (#7A7267 neutral)
 - Comment (if present): indented block below the event row, italic, `--color-neutral-600`
 - Delegation indicator: small badge "por delegação de [nome]" in `--color-neutral-400` below the actor name
@@ -179,11 +179,11 @@ All components follow the established Phase 7 pattern: `Page + Modal + hook`.
 
 - Position: in `app-topbar__right`, before existing separator
 - Icon: Bell (Lucide, 24px), `--color-neutral-600`
-- Unread badge: red filled circle (`--color-error-500`) with white count number (`--text-xs`), positioned top-right of bell icon, hidden when count is 0
+- Unread badge: red filled circle (`--color-error-500`) with white count number (12px badge exception), positioned top-right of bell icon, hidden when count is 0
 - Click: opens dropdown panel (300ms ease-out scale + fade from top-right origin)
 - Dropdown: max-width 380px, max-height 480px scrollable, `--shadow-xl`, `--radius-lg`
 - Dropdown header: "Notificações" (heading) + "Marcar todas como lidas" link (right-aligned)
-- Each notification item: clickable row with 12px vertical / 16px horizontal padding, `--color-neutral-0` background → `--color-neutral-50` on hover; unread items have 3px left border `--color-primary-600`; layout: icon (notification type, 20px) | title (semibold, 14px) + body (14px, 2-line truncation) | time (relative, 12px, `--color-neutral-500`)
+- Each notification item: clickable row with 12px vertical / 16px horizontal padding, `--color-neutral-0` background → `--color-neutral-50` on hover; unread items have 3px left border `--color-primary-600`; layout: icon (notification type, 20px) | title (DM Sans 700, bold, 14px) + body (14px, 2-line truncation) | time (relative, 12px, `--color-neutral-500`)
 - Notification type icons: CheckCircle (RC_APPROVED, success color) | XCircle (RC_REJECTED, error color) | RotateCcw (RC_RETURNED, warning color) | Clock (SLA_REMINDER, warning color) | ShoppingCart (RC_PENDING, neutral)
 - Empty state (no notifications): Bell icon 40px muted, "Nenhuma notificação" centered, no CTA
 - Polling: 30-second interval — bell re-fetches `GET /org/notifications?unread=true&limit=20`; no loading indicator during poll (background update, only show new count when changed)
@@ -244,7 +244,7 @@ All components follow the established Phase 7 pattern: `Page + Modal + hook`.
 | DEVOLVIDA | `--color-sky-100`     | `--color-sky-500`     | RotateCcw 12px   |
 | CANCELADA | `--color-neutral-100` | `--color-neutral-400` | Ban 12px         |
 
-Text is ALL CAPS at 12px (`--text-xs`). Icon always present (never color alone).
+Text is ALL CAPS at 12px (badge exception — not a scale step). Icon always present (never color alone).
 
 ### Urgency Chips
 
