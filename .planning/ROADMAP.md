@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Fundação Financeira** - Contas bancárias, saldo real-time, extrato, tipo Money e producerId estabelecidos (completed 2026-03-16)
 - [x] **Phase 2: Núcleo AP/AR** - Contas a pagar e receber com ciclo completo, baixa, aging e alertas (completed 2026-03-16)
 - [x] **Phase 3: Dashboard Financeiro** - Visão consolidada de saldo, CP/CR e resultado do mês (completed 2026-03-16)
-- [ ] **Phase 4: Instrumentos de Pagamento** - Transferências entre contas, cartões corporativos e cheques pré-datados
+- [x] **Phase 4: Instrumentos de Pagamento** - Transferências entre contas, cartões corporativos e cheques pré-datados (completed 2026-03-17)
 - [ ] **Phase 5: Conciliação e Fluxo de Caixa** - Import OFX/CSV com matching por score e projeção 12 meses
 - [ ] **Phase 6: Crédito Rural** - Operações PRONAF/PRONAMP/Funcafé com cronograma SAC/Price/Bullet
 
@@ -101,7 +101,7 @@ Plans:
 4. Gerente consegue registrar cheque pré-datado (emitido ou recebido) com data prevista de compensação e ver status (EMITIDO / A_COMPENSAR / COMPENSADO / DEVOLVIDO / CANCELADO) atualizado conforme ações
 5. Saldo bancário real e saldo contábil divergem corretamente quando há cheques A_COMPENSAR — e o dashboard mostra ambos com labels distintos
 
-**Plans:** 6/7 plans executed
+**Plans:** 7/7 plans complete
 
 Plans:
 
@@ -151,6 +151,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Fundação Financeira          | 3/3            | Complete    | 2026-03-16 |
 | 2. Núcleo AP/AR                 | 7/7            | Complete    | 2026-03-16 |
 | 3. Dashboard Financeiro         | 2/2            | Complete    | 2026-03-16 |
-| 4. Instrumentos de Pagamento    | 6/7            | In Progress |            |
+| 4. Instrumentos de Pagamento    | 7/7            | Complete    | 2026-03-17 |
 | 5. Conciliação e Fluxo de Caixa | 0/TBD          | Not started | -          |
 | 6. Crédito Rural                | 0/TBD          | Not started | -          |
