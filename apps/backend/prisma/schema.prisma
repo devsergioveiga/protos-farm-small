@@ -95,6 +95,32 @@ enum CarStatus {
   SUSPENSO
 }
 
+enum PropertyDocumentType {
+  CAFIR
+  CCIR
+  CNIR
+  DITR
+  CAR_RECEIPT
+  MATRICULA
+  OTHER
+}
+
+enum ExtractionStatus {
+  PENDING
+  EXTRACTED
+  FAILED
+  MANUAL
+}
+
+enum OwnerType {
+  PROPRIETARIO
+  USUFRUTUARIO
+  POSSUIDOR
+  CESSIONARIO
+  HERDEIRO
+  CONDOMINO
+}
+
 enum AnimalSex {
   MALE
   FEMALE
@@ -329,6 +355,9 @@ model Organization {
   creditCardBills          CreditCardBill[]
   creditCardExpenses       CreditCardExpense[]
   checks                   Check[]
+  bankStatementImports     BankStatementImport[]
+  bankStatementLines       BankStatementLine[]
+  reconciliations          Reconciliation[]
 
   @@map("organizations")
 }
@@ -505,6 +534,7 @@ model Farm {
   payableCostCenterItems     PayableCostCenterItem[]
   receivableCostCenterItems  ReceivableCostCenterItem[]
   creditCards                CreditCard[]
+  ruralProperties            RuralProperty[]
 
   @@map("farms")
 }
@@ -512,6 +542,7 @@ model Farm {
 model FarmRegistration {
   id               String    @id @default(uuid())
   farmId           String
+  ruralPropertyId  String?
   number           String
   cnsCode          String?
   cartorioName     String
@@ -526,12 +557,14 @@ model FarmRegistration {
   updatedAt        DateTime  @updatedAt
 
   farm              Farm                      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  ruralProperty     RuralProperty?            @relation(fields: [ruralPropertyId], references: [id], onDelete: SetNull)
   producerLinks     ProducerRegistrationLink[]
   boundaryVersions  FarmBoundaryVersion[]
   fieldPlots        FieldPlot[]
   carLinks          CarRegistrationLink[]
 
   @@index([farmId])
+  @@index([ruralPropertyId])
   @@map("farm_registrations")
 }
 
@@ -620,6 +653,7 @@ model FarmBoundaryVersion {
   id              String    @id @default(uuid())
   farmId          String
   registrationId  String?
+  ruralPropertyId String?
   boundary        Unsupported("geometry(Polygon, 4326)")
   boundaryAreaHa  Decimal   @db.Decimal(12, 4)
   uploadedBy      String
@@ -627,12 +661,14 @@ model FarmBoundaryVersion {
   filename        String?
   version         Int       @default(1)
 
-  farm         Farm              @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  registration FarmRegistration? @relation(fields: [registrationId], references: [id], onDelete: Cascade)
-  uploader     User              @relation(fields: [uploadedBy], references: [id])
+  farm          Farm              @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  registration  FarmRegistration? @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  ruralProperty RuralProperty?    @relation(fields: [ruralPropertyId], references: [id], onDelete: SetNull)
+  uploader      User              @relation(fields: [uploadedBy], references: [id])
 
   @@index([farmId])
   @@index([registrationId])
+  @@index([ruralPropertyId])
   @@map("farm_boundary_versions")
 }
 
@@ -777,6 +813,7 @@ model FieldPlot {
   id              String    @id @default(uuid())
   farmId          String
   registrationId  String?
+  ruralPropertyId String?
   name            String
   code            String?
   soilType        SoilType?
@@ -792,6 +829,7 @@ model FieldPlot {
 
   farm              Farm              @relation(fields: [farmId], references: [id], onDelete: Cascade)
   registration      FarmRegistration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
+  ruralProperty     RuralProperty?    @relation(fields: [ruralPropertyId], references: [id], onDelete: SetNull)
   boundaryVersions  FieldPlotBoundaryVersion[]
   cropSeasons            PlotCropSeason[]
   soilAnalyses           PlotSoilAnalysis[]
@@ -811,6 +849,7 @@ model FieldPlot {
 
   @@index([farmId])
   @@index([registrationId])
+  @@index([ruralPropertyId])
   @@map("field_plots")
 }
 
@@ -906,6 +945,7 @@ model PlotSoilAnalysis {
 model CarRegistration {
   id                          String     @id @default(uuid())
   farmId                      String
+  ruralPropertyId             String?
   carCode                     String
   status                      CarStatus  @default(ATIVO)
   inscriptionDate             DateTime?  @db.Date
@@ -948,10 +988,12 @@ model CarRegistration {
   createdAt                   DateTime   @default(now())
   updatedAt                   DateTime   @updatedAt
 
-  farm                        Farm       @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  farm                        Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  ruralProperty               RuralProperty?  @relation(fields: [ruralPropertyId], references: [id], onDelete: SetNull)
   registrationLinks           CarRegistrationLink[]
 
   @@index([farmId])
+  @@index([ruralPropertyId])
   @@index([carCode])
   @@map("car_registrations")
 }
@@ -969,6 +1011,94 @@ model CarRegistrationLink {
   @@index([carRegistrationId])
   @@index([farmRegistrationId])
   @@map("car_registration_links")
+}
+
+// ─── Rural Property Models ──────────────────────────────────────────
+
+model RuralProperty {
+  id                   String    @id @default(uuid())
+  farmId               String
+  denomination         String
+  cib                  String?
+  incraCode            String?
+  ccirCode             String?
+  ccirValidUntil       DateTime? @db.Date
+  carCode              String?
+  totalAreaHa          Decimal?  @db.Decimal(12, 4)
+  landClassification   String?
+  productive           Boolean?
+
+  // Fiscal
+  fiscalModuleHa       Decimal?  @db.Decimal(12, 4)
+  fiscalModulesCount   Decimal?  @db.Decimal(12, 4)
+  minPartitionFraction Decimal?  @db.Decimal(12, 4)
+  vtnPerHa             Decimal?  @db.Decimal(12, 2)
+
+  // Ambiental
+  appAreaHa            Decimal?  @db.Decimal(12, 4)
+  legalReserveHa       Decimal?  @db.Decimal(12, 4)
+  taxableAreaHa        Decimal?  @db.Decimal(12, 4)
+  usableAreaHa         Decimal?  @db.Decimal(12, 4)
+  utilizationDegree    Decimal?  @db.Decimal(5, 2)
+
+  // Geo
+  municipality         String?
+  state                String?   @db.VarChar(2)
+  location             Unsupported("geometry(Point, 4326)")?
+  boundary             Unsupported("geometry(Polygon, 4326)")?
+  boundaryAreaHa       Decimal?  @db.Decimal(12, 4)
+
+  deletedAt            DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  farm              Farm                @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  titles            FarmRegistration[]
+  owners            PropertyOwner[]
+  documents         PropertyDocument[]
+  fieldPlots        FieldPlot[]
+  boundaryVersions  FarmBoundaryVersion[]
+  carRegistrations  CarRegistration[]
+
+  @@index([farmId])
+  @@map("rural_properties")
+}
+
+model PropertyOwner {
+  id              String    @id @default(uuid())
+  ruralPropertyId String
+  name            String
+  document        String?
+  documentType    String?
+  fractionPct     Decimal?  @db.Decimal(5, 2)
+  ownerType       OwnerType @default(PROPRIETARIO)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  ruralProperty RuralProperty @relation(fields: [ruralPropertyId], references: [id], onDelete: Cascade)
+
+  @@index([ruralPropertyId])
+  @@map("property_owners")
+}
+
+model PropertyDocument {
+  id               String               @id @default(uuid())
+  ruralPropertyId  String
+  type             PropertyDocumentType
+  filename         String
+  mimeType         String?
+  sizeBytes        Int?
+  fileData         Bytes?
+  extractedData    Json?
+  extractionStatus ExtractionStatus     @default(PENDING)
+  uploadedAt       DateTime             @default(now())
+  uploadedBy       String?
+
+  ruralProperty RuralProperty @relation(fields: [ruralPropertyId], references: [id], onDelete: Cascade)
+
+  @@index([ruralPropertyId])
+  @@index([type])
+  @@map("property_documents")
 }
 
 // ─── Animal Models ──────────────────────────────────────────────────
@@ -5142,6 +5272,8 @@ model BankAccount {
   transfersTo    AccountTransfer[]     @relation("TransferTo")
   creditCards    CreditCard[]          @relation("CardDebitAccount")
   checks         Check[]
+  statementImports BankStatementImport[]
+  statementLines   BankStatementLine[]
 
   @@index([organizationId])
   @@index([organizationId, type])
@@ -5307,6 +5439,8 @@ model Payable {
   fineAmount          Decimal?            @db.Decimal(15, 2)
   discountAmount      Decimal?            @db.Decimal(15, 2)
   notes               String?
+  reconciled          Boolean             @default(false)
+  reconciledAt        DateTime?
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
 
@@ -5385,6 +5519,8 @@ model Receivable {
   fineAmount          Decimal?           @db.Decimal(15, 2)
   discountAmount      Decimal?           @db.Decimal(15, 2)
   notes               String?
+  reconciled          Boolean            @default(false)
+  reconciledAt        DateTime?
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
@@ -5553,4 +5689,81 @@ model Check {
   @@index([organizationId, status])
   @@index([organizationId, expectedCompensationDate])
   @@map("checks")
+}
+
+// ─── Phase 5: Conciliação Bancária ───────────────────────────────────────────
+
+enum BankStatementLineStatus {
+  PENDING
+  RECONCILED
+  IGNORED
+}
+
+enum ReconciliationConfidence {
+  EXATO
+  PROVAVEL
+  SEM_MATCH
+}
+
+model BankStatementImport {
+  id             String   @id @default(uuid())
+  organizationId String
+  bankAccountId  String
+  fileName       String
+  fileType       String
+  importedBy     String
+  totalLines     Int
+  importedLines  Int
+  skippedLines   Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  bankAccount  BankAccount         @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+  lines        BankStatementLine[]
+
+  @@index([organizationId, bankAccountId])
+  @@map("bank_statement_imports")
+}
+
+model BankStatementLine {
+  id             String                  @id @default(uuid())
+  organizationId String
+  importId       String
+  bankAccountId  String
+  fitId          String?
+  lineHash       String
+  trnType        String
+  amount         Decimal                 @db.Decimal(15, 2)
+  date           DateTime
+  memo           String
+  status         BankStatementLineStatus @default(PENDING)
+  createdAt      DateTime                @default(now())
+
+  organization    Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  import          BankStatementImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+  bankAccount     BankAccount         @relation(fields: [bankAccountId], references: [id], onDelete: Cascade)
+  reconciliations Reconciliation[]
+
+  @@unique([bankAccountId, lineHash])
+  @@index([organizationId, bankAccountId, status])
+  @@map("bank_statement_lines")
+}
+
+model Reconciliation {
+  id              String                   @id @default(uuid())
+  organizationId  String
+  statementLineId String
+  referenceType   String
+  referenceId     String
+  confidenceScore Int
+  confidenceLevel ReconciliationConfidence
+  confirmedBy     String?
+  confirmedAt     DateTime?
+  createdAt       DateTime                 @default(now())
+
+  organization  Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  statementLine BankStatementLine @relation(fields: [statementLineId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, statementLineId])
+  @@map("reconciliations")
 }
