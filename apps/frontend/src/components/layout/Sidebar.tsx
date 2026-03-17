@@ -66,6 +66,8 @@ import {
   TrendingUp,
   GitMerge,
   Handshake,
+  ShoppingCart,
+  Settings2,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -194,7 +196,11 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: 'COMPRAS',
-    items: [{ to: '/suppliers', icon: Handshake, label: 'Fornecedores' }],
+    items: [
+      { to: '/suppliers', icon: Handshake, label: 'Fornecedores' },
+      { to: '/purchase-requests', icon: ShoppingCart, label: 'Requisicoes' },
+      { to: '/approval-rules', icon: Settings2, label: 'Alcadas' },
+    ],
   },
   {
     title: 'CONFIGURAÇÃO',
