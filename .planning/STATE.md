@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 06-cr-dito-rural-03-PLAN.md
-last_updated: '2026-03-17T10:44:02.475Z'
+stopped_at: Completed 06-cr-dito-rural-04-PLAN.md
+last_updated: '2026-03-17T11:03:46.919Z'
 last_activity: 2026-03-16 — PayablesPage complete (3 tabs, 4 modals, aging, calendar, CNAB retorno, sidebar badge)
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 30
-  completed_plans: 28
+  completed_plans: 29
   percent: 80
 ---
 
@@ -78,6 +78,7 @@ _Updated after each plan completion_
 | Phase 06-cr-dito-rural P01 | 3min | 2 tasks | 2 files |
 | Phase 06-cr-dito-rural PP02 | 4min | 2 tasks | 2 files |
 | Phase 06-cr-dito-rural P03 | 9min | 2 tasks | 5 files |
+| Phase 06-cr-dito-rural P04 | 15min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -144,6 +145,8 @@ Recent decisions affecting current work:
 - [Phase 06-cr-dito-rural]: Migration applied manually via psql + migrate resolve — shadow database fails on stale cultivar migration (known pattern from Phase 01)
 - [Phase 06-cr-dito-rural]: RuralCreditInstallment uses payableId @unique — one installment record per Payable enabling atomic balance tracking on settlement
 - [Phase 06-cr-dito-rural]: simulateSchedule is pure function (no DB access) — no RlsContext needed, direct module call from route
+- [Phase 06-cr-dito-rural]: Save button disabled until simulation runs once in create mode — enforces locked spec decision: preview obrigatorio
+- [Phase 06-cr-dito-rural]: Settlement form is inline table row expansion (not modal) — proportional to risk, keeps user in installment list context
 
 ### Pending Todos
 
@@ -158,6 +161,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T10:44:02.473Z
-Stopped at: Completed 06-cr-dito-rural-03-PLAN.md
+Last session: 2026-03-17T11:03:38.900Z
+Stopped at: Completed 06-cr-dito-rural-04-PLAN.md
 Resume file: None
