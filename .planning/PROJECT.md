@@ -1,8 +1,8 @@
-# Protos Farm — Fase 3: Módulo Financeiro Base
+# Protos Farm — Fase 3: Módulos Administrativos
 
 ## What This Is
 
-Módulo financeiro base do Protos Farm, cobrindo contas bancárias, cartões de crédito corporativos, contas a pagar, contas a receber, conciliação bancária, fluxo de caixa e gestão de crédito rural. Pré-requisito para integração financeira de compras, folha, patrimônio e contabilidade. Destinado a gerentes financeiros e proprietários de fazendas.
+Sistema de gestão agrícola completo com módulo financeiro base já operacional (contas bancárias, CP/CR, conciliação, fluxo de caixa, crédito rural). Próximos milestones cobrem compras, patrimônio, RH e contabilidade. Destinado a gerentes financeiros e proprietários de fazendas.
 
 ## Core Value
 
@@ -27,51 +27,44 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 - ✓ Produção de leite: ordenha, análise, mastite, tanque, lactação — EPIC-13
 - ✓ Sincronização offline avançada — EPIC-14
 - ✓ Nutrição animal: alimentos, dietas, trato/fornecimento — EPIC-15
+- ✓ Contas bancárias com saldo real-time, extrato, tipo Money (decimal.js), FEBRABAN — v1.0
+- ✓ Contas a pagar com parcelamento, rateio CC, CNAB 240/400, aging e alertas — v1.0
+- ✓ Contas a receber com FUNRURAL, renegociação, PDD, aging — v1.0
+- ✓ Cartões corporativos com fatura→CP, cheques pré-datados com máquina de estados — v1.0
+- ✓ Transferências entre contas com ledger espelhado — v1.0
+- ✓ Conciliação bancária (OFX/CSV) com score matching e ações manuais — v1.0
+- ✓ Fluxo de caixa 12 meses com 3 cenários, classificação DFC, alerta saldo negativo — v1.0
+- ✓ Crédito rural (PRONAF/PRONAMP/Funcafé/CPR) com amortização SAC/Price/Bullet — v1.0
+- ✓ Dashboard financeiro consolidado com saldo, CP/CR, resultado, endividamento — v1.0
 
 ### Active
 
-<!-- Milestone: Financeiro Base (EPIC-FN1 a FN4) — 15 stories, 110 pts -->
+<!-- Next milestone requirements will be defined via /gsd:new-milestone -->
 
-#### EPIC-FN1: Contas Bancárias (6 stories, 44 pts)
-
-- [ ] US-FN01: Cadastro de contas bancárias (tipos, dados FEBRABAN, vinculação fazenda, saldo inicial, convênio CNAB)
-- [ ] US-FN02: Cadastro de cartões de crédito corporativos (bandeira, limite, fechamento, portador, centro de custo)
-- [ ] US-FN03: Saldo e extrato por conta bancária (saldo real-time, projetado, dashboard contas, export PDF/Excel)
-- [ ] US-FN04: Transferências entre contas (espelhada, tarifa, aplicação/resgate, entre fazendas)
-- [ ] US-FN05: Gestão de fatura de cartão (lançamentos, parcelamento, fechamento → CP, pagamento, import CSV/OFX)
-- [ ] US-FN06: Conciliação bancária automática (import OFX/CSV/PDF, pareamento com confiança, conciliação mensal)
-
-#### EPIC-FN2: Contas a Pagar (4 stories, 29 pts)
-
-- [ ] US-FN07: Lançamento de contas a pagar (fornecedor, categoria, rateio CC, parcelamento, recorrência, multi-origem)
-- [ ] US-FN08: Baixa de pagamento individual e em lote (juros/multa/desconto, CNAB 240/400, retorno bancário, estorno)
-- [ ] US-FN09: Gestão de cheques emitidos e recebidos (pré-datados, compensação, saldo contábil vs bancário, folha de cheques)
-- [ ] US-FN10: Aging e alertas de contas a pagar (faixas vencimento, alertas configuráveis, digest matinal, calendário)
-
-#### EPIC-FN3: Contas a Receber (2 stories, 16 pts)
-
-- [ ] US-FN11: Lançamento de contas a receber (cliente, categorias rurais, vinculação NF-e, parcelamento, recorrência)
-- [ ] US-FN12: Baixa de recebimento e inadimplência (juros/multa/glosa, PDD automática, renegociação, aging)
-
-#### EPIC-FN4: Fluxo de Caixa e Crédito Rural (3 stories, 21 pts)
-
-- [ ] US-FN13: Fluxo de caixa realizado e projetado (cenários otimista/realista/pessimista, alerta saldo negativo, classificação DFC)
-- [ ] US-FN14: Gestão de operações de crédito rural (PRONAF/PRONAMP/funcafé/CPR, cronograma parcelas, amortização SAC/Price/Bullet)
-- [ ] US-FN15: Dashboard financeiro consolidado (saldo total, CP vs CR 7/30d, resultado mês, endividamento, top despesas/receitas)
+(Awaiting next milestone definition)
 
 ### Out of Scope
 
 <!-- Explícito para evitar scope creep -->
 
 - Open Finance API (integração bancária automática) — complexidade regulatória, futuro
-- Emissão de boletos bancários — requer homologação por banco, Fase 5
-- NF-e emissão/importação — módulo fiscal separado (Fase 5)
+- Emissão de boletos bancários — requer homologação por banco
+- NF-e emissão/importação — módulo fiscal separado
 - Barter (troca de produção por insumos) — complexidade contábil, futuro
-- CPR emissão — módulo de comercialização avançada (Fase 5)
+- CPR emissão — módulo de comercialização avançada
 - Conciliação de leite (produção vs coleta vs pagamento) — módulo específico, futuro
-- Mobile: funcionalidades financeiras no app mobile — escopo web-only neste milestone
+- Mobile: funcionalidades financeiras no app mobile — web-only por enquanto
+- PDF parsing para conciliação bancária — layouts inconsistentes entre bancos
 
 ## Context
+
+### Current State (v1.0 shipped)
+
+Shipped v1.0 Financeiro Base com ~71,600 LOC across 236 files.
+Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
+10 financial pages in sidebar (Contas, CP, CR, Transferências, Cartões, Cheques, Conciliação, Fluxo de Caixa, Crédito Rural, Dashboard Financeiro).
+13 cross-phase integration flows verified.
+6 minor tech debt items (see v1.0 audit).
 
 ### Particularidades do Financeiro Rural
 
@@ -83,36 +76,43 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 
 ### Integrações Futuras (preparar interfaces)
 
-- Compras (Fase 3 próximo milestone): recebimento + NF gera CP automaticamente
-- Folha (Fase 3): processamento gera CP (salários, encargos)
-- Patrimônio (Fase 3): compra gera CP, venda gera CR
-- Contabilidade (Fase 3): toda baixa gera lançamento contábil
+- Compras (próximo milestone): recebimento + NF gera CP automaticamente
+- Folha (futuro): processamento gera CP (salários, encargos)
+- Patrimônio (futuro): compra gera CP, venda gera CR
+- Contabilidade (futuro): toda baixa gera lançamento contábil
 
 ### Padrões Existentes Reutilizáveis
 
 - Módulos backend colocalizados: `modules/{domínio}/controller+service+routes+types`
 - Frontend: modais para CRUD, páginas com tabs, sidebar com grupos
-- Estoque de insumos como referência arquitetural (CRUD + movimentações + alertas + dashboard)
+- Money type (decimal.js) para aritmética financeira
+- CnabAdapter pattern por banco para CNAB 240/400
+- Installment generator + cost center rateio validator em packages/shared
 
 ## Constraints
 
 - **Tech stack**: Mesmo monorepo — Express 5, React 19, Prisma 7, PostgreSQL
-- **Multitenancy**: Todas as entidades financeiras devem respeitar RLS por organização
+- **Multitenancy**: Todas as entidades devem respeitar RLS por organização
 - **Centro de custo**: Rateio por fazenda/setor obrigatório em CP e CR
-- **Produtor rural**: Contas vinculadas ao produtor (entidade já existente no sistema)
-- **CNAB**: Suporte a layouts 240 e 400 para remessa/retorno bancário
+- **Produtor rural**: Contas vinculadas ao produtor (entidade já existente)
+- **CNAB**: Layouts 240 e 400 para remessa/retorno bancário (BB + Sicoob)
 - **OFX/CSV**: Importação de extratos para conciliação
 
 ## Key Decisions
 
-| Decision                                     | Rationale                                                       | Outcome   |
-| -------------------------------------------- | --------------------------------------------------------------- | --------- |
-| Financeiro Base primeiro na Fase 3           | Pré-requisito para Compras, Patrimônio, RH, Contabilidade       | — Pending |
-| 5 milestones separados para Fase 3           | Fase 3 tem 126 stories/865 pts — muito grande para um milestone | — Pending |
-| Manter prefixos de módulo (FN, CP, C, P, RH) | Seguir numeração da documentação original                       | — Pending |
-| Web-only neste milestone                     | Financeiro é operação de escritório, não de campo               | — Pending |
-| Preparar interfaces para integrações futuras | Compras, Folha, Patrimônio vão gerar CP/CR automaticamente      | — Pending |
+| Decision                                     | Rationale                                                       | Outcome                                |
+| -------------------------------------------- | --------------------------------------------------------------- | -------------------------------------- |
+| Financeiro Base primeiro na Fase 3           | Pré-requisito para Compras, Patrimônio, RH, Contabilidade       | ✓ Good — shipped v1.0, fundação sólida |
+| 5 milestones separados para Fase 3           | Fase 3 tem 126 stories/865 pts — muito grande para um milestone | ✓ Good — v1.0 completo em 2 dias       |
+| Web-only neste milestone                     | Financeiro é operação de escritório, não de campo               | ✓ Good — decisão correta               |
+| Money factory (not class)                    | Money(100) funciona sem new keyword                             | ✓ Good — ergonômico                    |
+| producerId nullable em BankAccount           | Contas de org não têm produtor, rural sim                       | ✓ Good — flexível                      |
+| CnabAdapter pattern por banco                | BB e Sicoob têm extensões proprietárias                         | ✓ Good — extensível                    |
+| Cheques como entidade com máquina de estados | Não campo metadata em pagamento                                 | ✓ Good — rastreável                    |
+| OFX parser custom (regex SGML, não ofx-js)   | Baixa manutenção, mirrors CNAB pattern                          | ✓ Good — funciona                      |
+| Fluxo de caixa 12 meses (não 90 dias)        | Sazonalidade agrícola                                           | ✓ Good — essential                     |
+| reconciliation:manage permission separada    | Não financial:\* per spec                                       | ✓ Good — granular                      |
 
 ---
 
-_Last updated: 2026-03-15 after initialization_
+_Last updated: 2026-03-17 after v1.0 milestone_

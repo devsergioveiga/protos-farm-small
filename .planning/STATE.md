@@ -1,172 +1,66 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
-status: executing
-stopped_at: Completed 06-cr-dito-rural-05-PLAN.md — Phase 06 fully complete
-last_updated: '2026-03-17T11:55:00.026Z'
-last_activity: 2026-03-16 — PayablesPage complete (3 tabs, 4 modals, aging, calendar, CNAB retorno, sidebar badge)
+milestone_name: Financeiro Base
+status: complete
+stopped_at: Milestone v1.0 archived
+last_updated: '2026-03-17T12:30:00.000Z'
+last_activity: 2026-03-17 — Milestone v1.0 Financeiro Base archived
 progress:
   total_phases: 6
   completed_phases: 6
   total_plans: 30
   completed_plans: 30
-  percent: 80
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-15)
+See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 1 — Fundação Financeira
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 2 of 6 (Núcleo AP/AR)
-Plan: 1 of 7 in current phase
-Status: executing
-Last activity: 2026-03-16 — PayablesPage complete (3 tabs, 4 modals, aging, calendar, CNAB retorno, sidebar badge)
+Milestone v1.0 Financeiro Base: SHIPPED 2026-03-17
+All 6 phases, 30 plans complete.
 
-Progress: [████████░░] 80% (phase 02: 5/7 plans complete)
+Next: `/gsd:new-milestone` to define next milestone.
 
 ## Performance Metrics
 
-**Velocity:**
+**Velocity (v1.0):**
 
-- Total plans completed: 0
-- Average duration: —
-- Total execution time: —
+| Phase                          | Plans | Total Time | Avg/Plan |
+| ------------------------------ | ----- | ---------- | -------- |
+| 01-funda-o-financeira          | 3     | 42min      | 14min    |
+| 02-n-cleo-ap-ar                | 7     | 83min      | 12min    |
+| 03-dashboard-financeiro        | 2     | 11min      | 6min     |
+| 04-instrumentos-de-pagamento   | 7     | 58min      | 8min     |
+| 05-concilia-o-e-fluxo-de-caixa | 6     | 64min      | 11min    |
+| 06-cr-dito-rural               | 5     | 62min      | 12min    |
 
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-| ----- | ----- | ----- | -------- |
-| -     | -     | -     | -        |
-
-**Recent Trend:**
-
-- Last 5 plans: —
-- Trend: —
-
-_Updated after each plan completion_
-| Phase 01-funda-o-financeira P01 | 6min | 2 tasks | 9 files |
-| Phase 01-funda-o-financeira P02 | 6min | 2 tasks | 5 files |
-| Phase 01-funda-o-financeira P03 | 30min | 2 tasks | 7 files |
-| Phase 02-n-cleo-ap-ar P01 | 9min | 2 tasks | 6 files |
-| Phase 02-n-cleo-ap-ar P03 | 20min | 2 tasks | 4 files |
-| Phase 02-n-cleo-ap-ar P04 | 14min | 2 tasks | 11 files |
-| Phase 02-n-cleo-ap-ar P05 | 35min | 2 tasks | 10 files |
-| Phase 02-n-cleo-ap-ar P07 | 5min | 2 tasks | 0 files |
-| Phase 03-dashboard-financeiro P01 | 4min | 2 tasks | 5 files |
-| Phase 03-dashboard-financeiro P02 | 7min | 1 tasks | 7 files |
-| Phase 04-instrumentos-de-pagamento P01 | 10min | 2 tasks | 8 files |
-| Phase 04-instrumentos-de-pagamento P05 | 5min | 2 tasks | 5 files |
-| Phase 04-instrumentos-de-pagamento P02 | 11min | 2 tasks | 7 files |
-| Phase 04-instrumentos-de-pagamento P03 | 12min | 2 tasks | 5 files |
-| Phase 04-instrumentos-de-pagamento P06 | 7min | 2 tasks | 10 files |
-| Phase 04-instrumentos-de-pagamento P04 | 9min | 2 tasks | 11 files |
-| Phase 04-instrumentos-de-pagamento P07 | 4min | 1 tasks | 6 files |
-| Phase 05-concilia-o-e-fluxo-de-caixa P03 | 7min | 2 tasks | 5 files |
-| Phase 05-concilia-o-e-fluxo-de-caixa P01 | 9min | 2 tasks | 9 files |
-| Phase 05-concilia-o-e-fluxo-de-caixa P05 | 10min | 2 tasks | 7 files |
-| Phase 05-concilia-o-e-fluxo-de-caixa P02 | 15min | 1 tasks | 3 files |
-| Phase 05-concilia-o-e-fluxo-de-caixa P04 | 17min | 2 tasks | 10 files |
-| Phase 05-concilia-o-e-fluxo-de-caixa PP06 | 6min | 2 tasks | 4 files |
-| Phase 06-cr-dito-rural P01 | 3min | 2 tasks | 2 files |
-| Phase 06-cr-dito-rural PP02 | 4min | 2 tasks | 2 files |
-| Phase 06-cr-dito-rural P03 | 9min | 2 tasks | 5 files |
-| Phase 06-cr-dito-rural P04 | 15min | 2 tasks | 14 files |
-| Phase 06-cr-dito-rural P05 | 8min | 1 tasks | 6 files |
-| Phase 06-cr-dito-rural P05 | 23min | 2 tasks | 6 files |
+**Total:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
-
-- [Phase 1]: producerId obrigatório como FK em BankAccount desde a primeira migration — sem isso não há isolamento fiscal por produtor rural
-- [Phase 1]: Tipo Money (decimal.js) deve ser estabelecido em packages/shared antes de qualquer dado financeiro ser gravado — retrofitting exige auditoria completa
-- [Phase 2]: CNAB deve usar padrão CnabAdapter por banco (não uma função genérica) — bancos rurais (Sicoob, Sicredi, BB) têm extensões proprietárias
-- [Phase 4]: Cheques pré-datados são entidade de primeira classe com máquina de estados — não campo metadata em pagamento
-- [Phase 5]: Horizonte de fluxo de caixa é 12 meses obrigatório — sazonalidade agrícola torna 90 dias inútil
-- [Phase 5]: Antes de implementar, verificar status do ofx-js no npm; fallback: @xmldom/xmldom (já instalado) + parser SGML customizado
-- [Phase 01-funda-o-financeira]: Money implemented as factory function (not class) so Money(100) works without new keyword
-- [Phase 01-funda-o-financeira]: BankAccount.producerId nullable: org-level accounts have no producer, rural producer accounts have FK
-- [Phase 01-funda-o-financeira]: Migration created manually via db push + migrate resolve due to shadow database stale cultivar issue
-- [Phase 01-funda-o-financeira P02]: RBAC uses existing financial:\* PermissionModule — no changes to permissions.ts required; FINANCIAL role already has full access
-- [Phase 01-funda-o-financeira P02]: Route ordering critical — /dashboard and /:id/statement/export must precede /:id and /:id/statement to avoid param capture
-- [Phase 01-funda-o-financeira]: Backend returns arrays directly (not { data: [] }) — useBankAccounts hooks corrected after human-verify
-- [Phase 01-funda-o-financeira]: Statement view is inline expanded panel per account card — stays within 3-level navigation depth
-- [Phase 01-funda-o-financeira]: Saldo projetado shows '--' placeholder — interface prepared for future AR/AP integration without blocking plan 03
-- [Phase 02-n-cleo-ap-ar P01]: UTC date methods (setUTCMonth/getUTCMonth) in generateInstallments to avoid timezone-shift bug with midnight UTC base dates
-- [Phase 02-n-cleo-ap-ar P01]: PERCENTAGE tolerance 0.01% in validateCostCenterItems to handle floating-point near-100 sums without rejecting valid inputs
-- [Phase 02-n-cleo-ap-ar]: FUNRURAL recalculated in renegotiation from original funruralRate field, preserving stored-at-creation invariant for new CR
-- [Phase 02-n-cleo-ap-ar]: CR settlement = BankAccountBalance INCREMENT (CREDIT) vs CP settlement = DECREMENT (DEBIT) — symmetric opposite operations
-- [Phase 02-n-cleo-ap-ar]: BB (001) uses segments P+Q in CNAB 240; Sicoob (756) uses A+B with Banco Cooperado field at positions 53-57 — enforced via adapter pattern
-- [Phase 02-n-cleo-ap-ar]: CNAB retorno ourNumber = payableId with dashes removed, truncated — deterministic matching without extra DB column
-- [Phase 02-n-cleo-ap-ar]: useOverdueCount hook polled at sidebar mount — lightweight, no global state store needed
-- [Phase 02-n-cleo-ap-ar]: CnabRetornoModal uses direct fetch() with FormData for multipart upload — api service only handles JSON
-- [Phase 02-n-cleo-ap-ar]: Plan 02-07 acted as final human-verify gate for complete AP/AR module — sidebar integration and routes were completed in plans 02-05/02-06, human verification approved full CP+CR end-to-end flow
-- [Phase 03-dashboard-financeiro]: totalBankBalance only from BankAccountBalance.currentBalance — never add pending CP/CR
-- [Phase 03-dashboard-financeiro]: totalBankBalancePrevYear always null — no historical balance snapshot table exists
-- [Phase 03-dashboard-financeiro]: Recharts Formatter type requires value and name params typed as T | undefined — typed accordingly to match generic overload
-- [Phase 03-dashboard-financeiro]: Financial Dashboard uses local farmId state (not FarmContext.selectedFarmId) — avoids polluting global farm selection per spec
-- [Phase 04-instrumentos-de-pagamento]: Permission actions are create/read/update/delete (not write) — transfers routes use financial:create for POST, financial:delete for DELETE, financial:read for GET
-- [Phase 04-instrumentos-de-pagamento]: TRANSFER and TRANSFER_FEE as separate referenceTypes in FinancialTransaction — enables filtering fee transactions from principal ledger entries in statements
-- [Phase 04-instrumentos-de-pagamento]: deleteTransfer reverses BankAccountBalance atomically (increment fromAccount, decrement toAccount, add fee back) and removes FinancialTransactions — preserves BankAccountBalance integrity
-- [Phase 04-instrumentos-de-pagamento]: Route ordering: /alert-count and /accounting-balance registered before /:id in checksRouter to avoid Express param capture
-- [Phase 04-instrumentos-de-pagamento]: CHECK_COMPENSATION referenceType distinguishes check compensation from other FinancialTransactions in bank statement
-- [Phase 04-instrumentos-de-pagamento]: Same-account validation in TransferModal renders as error banner — applies to both fields simultaneously
-- [Phase 04-instrumentos-de-pagamento]: Delete confirmation in TransfersPage uses inline popover — proportional to risk, no full destructive modal needed
-- [Phase 04-instrumentos-de-pagamento]: Floor-division for installment splitting (not ROUND_HALF_UP) — residual on first installment; closeBill calls createPayable() directly to preserve RLS atomicity; route ordering critical for /open-bills-count and /bills/:billId/close before /:id
-- [Phase 04-instrumentos-de-pagamento]: Inline cancel confirmation as table row expansion — proportional to risk without blocking full modal
-- [Phase 04-instrumentos-de-pagamento]: CheckAlertCount badge uses warning amber (not error red) — checks A_COMPENSAR/DEVOLVIDO need attention but are not failures
-- [Phase 04-instrumentos-de-pagamento]: useCreditCards fetchCard uses Promise.all for card + bills — single loading state
-- [Phase 04-instrumentos-de-pagamento]: CloseBillModal receives bill and isSubmitting as props — page owns close-bill loading state
-- [Phase Phase 04-instrumentos-de-pagamento]: Accounting balance computed inline within withRlsContext transaction to avoid nested RLS context calls from getAccountingBalanceData
-- [Phase 05-concilia-o-e-fluxo-de-caixa]: PAYABLE_DFC_MAP uses only actual PayableCategory schema values — CARTAO_CREDITO -> OPERACIONAL, FINANCING -> FINANCIAMENTO; no EQUIPMENT/VEHICLES/LAND
-- [Phase 05-concilia-o-e-fluxo-de-caixa]: Recurring CP/CR virtual projection uses last installment dueDate as anchor, advances by interval without DB writes
-- [Phase 05-concilia-o-e-fluxo-de-caixa]: reconciliation:manage uses dedicated PermissionModule 'reconciliation' + PermissionAction 'manage' — not financial:\* per CONTEXT.md locked decision
-- [Phase 05-concilia-o-e-fluxo-de-caixa]: OFX 1.x parsed with custom SGML regex extractor (not ofx-js): low maintenance library, custom parser mirrors CNAB pattern
-- [Phase 05-concilia-o-e-fluxo-de-caixa]: lineHash = sha256(bankAccountId+date+amount+memo) — dedup works for both OFX (complements FITID) and CSV (no FITID)
-- [Phase 05-concilia-o-e-fluxo-de-caixa]: CashflowChart uses React.lazy + Suspense — chart is heavy (Recharts) and hidden on mobile <640px, avoids loading chart code when user will never see it on small screens
-- [Phase 05-concilia-o-e-fluxo-de-caixa]: DfcTable uses max-height CSS transition (200ms ease-out) for expand/collapse — simpler than JS-measured height, prefers-reduced-motion handled by tokens.css global rule
-- [Phase 05-concilia-o-e-fluxo-de-caixa]: scoreMatch pure function tests use inline algorithm replication — jest.isolateModulesAsync unreliable with global module mocks
-- [Phase 05-concilia-o-e-fluxo-de-caixa]: N:N sum validation uses Money(amount).equals() for floating-point safe comparison; manualLink throws ReconciliationError on mismatch
-- [Phase 05-concilia-o-e-fluxo-de-caixa]: ReconciliationPage uses URL query param ?importId=xxx for deep-link — keeps router state; useSearchParams from react-router-dom
-- [Phase 05-concilia-o-e-fluxo-de-caixa]: N:N sum validation uses Math.abs tolerance < 0.01 — avoids floating-point false negatives vs Money.equals() pure comparison
-- [Phase 05-concilia-o-e-fluxo-de-caixa]: App.tsx and Sidebar.tsx already had lazy routes and sidebar entries pre-built from prior planning; only backend endpoint and dashboard alert card required new work
-- [Phase 05-concilia-o-e-fluxo-de-caixa]: useNegativeBalanceAlert from useCashflow.ts reused directly in FinancialDashboardPage — no duplicate hook needed
-- [Phase 06-cr-dito-rural]: SAC residual (ROUND_DOWN \* n != principal) applied to installment #1 — consistent with installments.ts pattern from Phase 02
-- [Phase 06-cr-dito-rural]: PRICE PMT formula uses Decimal.js for intermediate computation to avoid floating-point drift in denominator
-- [Phase 06-cr-dito-rural]: Migration applied manually via psql + migrate resolve — shadow database fails on stale cultivar migration (known pattern from Phase 01)
-- [Phase 06-cr-dito-rural]: RuralCreditInstallment uses payableId @unique — one installment record per Payable enabling atomic balance tracking on settlement
-- [Phase 06-cr-dito-rural]: simulateSchedule is pure function (no DB access) — no RlsContext needed, direct module call from route
-- [Phase 06-cr-dito-rural]: Save button disabled until simulation runs once in create mode — enforces locked spec decision: preview obrigatorio
-- [Phase 06-cr-dito-rural]: Settlement form is inline table row expansion (not modal) — proportional to risk, keeps user in installment list context
-- [Phase 06-cr-dito-rural]: App.tsx and Sidebar.tsx already had lazy routes and nav entry pre-built from prior planning; only badge hook wiring, backend aggregation, and dashboard card required new work
-- [Phase 06-cr-dito-rural]: ruralCredit field added as optional in both backend FinancialDashboardOutput and frontend FinancialDashboardData to avoid breaking existing consumers
-- [Phase 06-cr-dito-rural]: App.tsx and Sidebar.tsx already had lazy routes and nav entry pre-built from prior planning; only badge hook wiring, backend aggregation, and dashboard card required new work
-- [Phase 06-cr-dito-rural]: ruralCredit field added as optional in both backend FinancialDashboardOutput and frontend FinancialDashboardData to avoid breaking existing consumers
+Decisions archived in PROJECT.md Key Decisions table.
 
 ### Pending Todos
 
-None yet.
+None.
 
 ### Blockers/Concerns
 
-- [Phase 5]: ofx-js — verificar manutenção ativa no npm antes de adotar. Fallback documentado: @xmldom/xmldom
-- [Phase 5]: Coletar amostras reais de OFX de BB, Bradesco, Sicoob antes de projetar o motor de matching
-- [Phase 6]: Verificar rates atuais do Plano Safra 2025/2026 no BCB MCR antes de implementar — dados de treino podem estar desatualizados
-- [Phase 6]: Obter manuais de layout CNAB Sicoob/Sicredi antes de implementar adapters para crédito rural
+None — all v1.0 blockers resolved.
 
 ## Session Continuity
 
-Last session: 2026-03-17T11:35:20.122Z
-Stopped at: Completed 06-cr-dito-rural-05-PLAN.md — Phase 06 fully complete
+Last session: 2026-03-17
+Stopped at: Milestone v1.0 archived
 Resume file: None
