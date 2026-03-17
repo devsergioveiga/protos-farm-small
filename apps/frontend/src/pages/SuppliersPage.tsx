@@ -15,13 +15,19 @@ import {
   AlertCircle,
   Plus,
   X,
+  Trophy,
+  Medal,
+  Loader2,
 } from 'lucide-react';
 import { useSuppliers } from '@/hooks/useSuppliers';
 import { useSupplierForm } from '@/hooks/useSupplierForm';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import SupplierModal from '@/components/suppliers/SupplierModal';
+import SupplierImportModal from '@/components/suppliers/SupplierImportModal';
+import SupplierRatingModal from '@/components/suppliers/SupplierRatingModal';
 import type { Supplier, SupplierCategory } from '@/types/supplier';
 import { SUPPLIER_CATEGORY_LABELS, SUPPLIER_STATUS_LABELS } from '@/types/supplier';
+import { api } from '@/services/api';
 import './SuppliersPage.css';
 
 // ─── Debounce hook ───────────────────────────────────────────────────
@@ -155,10 +161,12 @@ function SupplierCard({
   supplier,
   onEdit,
   onDelete,
+  onRate,
 }: {
   supplier: Supplier;
   onEdit: (s: Supplier) => void;
   onDelete: (s: Supplier) => void;
+  onRate: (s: Supplier) => void;
 }) {
   const location = [supplier.city, supplier.state].filter(Boolean).join(' / ');
   return (
@@ -193,6 +201,14 @@ function SupplierCard({
         </button>
         <button
           type="button"
+          className="supplier-card__action-btn"
+          onClick={() => onRate(supplier)}
+          aria-label={`Avaliar ${supplier.name}`}
+        >
+          Avaliar
+        </button>
+        <button
+          type="button"
           className="supplier-card__action-btn supplier-card__action-btn--danger"
           onClick={() => onDelete(supplier)}
           aria-label={`Excluir ${supplier.name}`}
@@ -200,6 +216,60 @@ function SupplierCard({
           Excluir
         </button>
       </div>
+    </article>
+  );
+}
+
+// ─── Top Fornecedores ─────────────────────────────────────────────────
+
+interface Top3Supplier extends Supplier {
+  averageRating: number;
+  ratingCount: number;
+}
+
+function RankIcon({ rank }: { rank: number }) {
+  if (rank === 1) {
+    return (
+      <Trophy
+        size={20}
+        className="top-supplier-card__rank-icon top-supplier-card__rank-icon--1"
+        aria-hidden="true"
+      />
+    );
+  }
+  return (
+    <Medal
+      size={20}
+      className={`top-supplier-card__rank-icon top-supplier-card__rank-icon--${rank}`}
+      aria-hidden="true"
+    />
+  );
+}
+
+function TopSupplierCard({ supplier, rank }: { supplier: Top3Supplier; rank: number }) {
+  return (
+    <article className={`top-supplier-card top-supplier-card--${rank}`}>
+      <div className="top-supplier-card__rank">
+        <RankIcon rank={rank} />
+        <span className="top-supplier-card__rank-label">#{rank}</span>
+      </div>
+      <p className="top-supplier-card__name">{supplier.name}</p>
+      <div className="top-supplier-card__stars">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <Star
+            key={n}
+            size={16}
+            aria-hidden="true"
+            className={
+              n <= Math.round(supplier.averageRating)
+                ? 'suppliers-table__star suppliers-table__star--filled'
+                : 'suppliers-table__star suppliers-table__star--empty'
+            }
+          />
+        ))}
+      </div>
+      <p className="top-supplier-card__average">{supplier.averageRating.toFixed(1)}</p>
+      <p className="top-supplier-card__count">({supplier.ratingCount} avaliacoes)</p>
     </article>
   );
 }
@@ -214,9 +284,20 @@ function SuppliersPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [supplierToEdit, setSupplierToEdit] = useState<Supplier | null>(null);
   const [supplierToDelete, setSupplierToDelete] = useState<Supplier | null>(null);
+  const [supplierToRate, setSupplierToRate] = useState<Supplier | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Top 3 section
+  const [top3Category, setTop3Category] = useState('');
+  const [top3Suppliers, setTop3Suppliers] = useState<Top3Supplier[]>([]);
+  const [isLoadingTop3, setIsLoadingTop3] = useState(false);
+
+  // Export loading
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [isExportingCsv, setIsExportingCsv] = useState(false);
 
   const debouncedSearch = useDebounce(searchInput, 400);
   const debouncedCity = useDebounce(cityFilter, 400);
@@ -235,6 +316,70 @@ function SuppliersPage() {
   const totalPages = Math.ceil(total / LIMIT);
   const hasFilters = !!(debouncedSearch || categoryFilter || statusFilter || debouncedCity);
 
+  // Build query string reflecting current filters for export
+  function buildFilterQuery(): string {
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set('search', debouncedSearch);
+    if (statusFilter) params.set('status', statusFilter);
+    if (categoryFilter) params.set('category', categoryFilter);
+    if (debouncedCity) params.set('city', debouncedCity);
+    return params.toString();
+  }
+
+  // Load Top 3 when category changes
+  useEffect(() => {
+    let cancelled = false;
+    async function loadTop3() {
+      setIsLoadingTop3(true);
+      try {
+        const qs = top3Category ? `?category=${top3Category}` : '';
+        const data = await api.get<Top3Supplier[]>(`/org/suppliers/top3${qs}`);
+        if (!cancelled) setTop3Suppliers(data);
+      } catch {
+        if (!cancelled) setTop3Suppliers([]);
+      } finally {
+        if (!cancelled) setIsLoadingTop3(false);
+      }
+    }
+    void loadTop3();
+    return () => {
+      cancelled = true;
+    };
+  }, [top3Category]);
+
+  function refetchTop3() {
+    setTop3Category((prev) => {
+      // toggle trick to re-trigger the effect with same value
+      // Instead, use a dedicated refetch counter
+      return prev;
+    });
+    // Re-run by modifying a counter state
+    setTop3RefetchCounter((c) => c + 1);
+  }
+
+  const [top3RefetchCounter, setTop3RefetchCounter] = useState(0);
+
+  useEffect(() => {
+    if (top3RefetchCounter === 0) return;
+    let cancelled = false;
+    async function loadTop3() {
+      setIsLoadingTop3(true);
+      try {
+        const qs = top3Category ? `?category=${top3Category}` : '';
+        const data = await api.get<Top3Supplier[]>(`/org/suppliers/top3${qs}`);
+        if (!cancelled) setTop3Suppliers(data);
+      } catch {
+        if (!cancelled) setTop3Suppliers([]);
+      } finally {
+        if (!cancelled) setIsLoadingTop3(false);
+      }
+    }
+    void loadTop3();
+    return () => {
+      cancelled = true;
+    };
+  }, [top3RefetchCounter, top3Category]);
+
   const handleSuccess = useCallback(
     (message: string) => {
       setShowModal(false);
@@ -247,12 +392,15 @@ function SuppliersPage() {
     [refetch],
   );
 
+  function showToast(message: string) {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(null), 4000);
+  }
+
   const { deleteSupplier, isSubmitting: isDeleting } = useSupplierForm(() => {
     setSupplierToDelete(null);
-    setSuccessMessage('Fornecedor excluido com sucesso');
-    const timer = setTimeout(() => setSuccessMessage(null), 4000);
+    showToast('Fornecedor excluido com sucesso');
     void refetch();
-    return () => clearTimeout(timer);
   });
 
   async function handleDelete() {
@@ -266,6 +414,46 @@ function SuppliersPage() {
     setStatusFilter('');
     setCityFilter('');
     setCurrentPage(1);
+  }
+
+  async function handleExportCsv() {
+    setIsExportingCsv(true);
+    try {
+      const qs = buildFilterQuery();
+      const blob = await api.getBlob(`/org/suppliers/export/csv${qs ? `?${qs}` : ''}`);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'fornecedores.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      showToast('Nao foi possivel gerar o arquivo. Tente novamente.');
+    } finally {
+      setIsExportingCsv(false);
+    }
+  }
+
+  async function handleExportPdf() {
+    setIsExportingPdf(true);
+    try {
+      const qs = buildFilterQuery();
+      const blob = await api.getBlob(`/org/suppliers/export/pdf${qs ? `?${qs}` : ''}`);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'fornecedores.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      showToast('Nao foi possivel gerar o arquivo. Tente novamente.');
+    } finally {
+      setIsExportingPdf(false);
+    }
   }
 
   const categoryOptions = Object.entries(SUPPLIER_CATEGORY_LABELS) as [
@@ -318,7 +506,7 @@ function SuppliersPage() {
         <button
           type="button"
           className="suppliers-page__action-btn"
-          onClick={() => console.log('TODO: import')}
+          onClick={() => setShowImportModal(true)}
         >
           <Upload size={20} aria-hidden="true" />
           Importar
@@ -326,17 +514,29 @@ function SuppliersPage() {
         <button
           type="button"
           className="suppliers-page__action-btn"
-          onClick={() => console.log('TODO: export CSV')}
+          onClick={() => void handleExportCsv()}
+          disabled={isExportingCsv}
+          aria-busy={isExportingCsv}
         >
-          <Download size={20} aria-hidden="true" />
+          {isExportingCsv ? (
+            <Loader2 size={20} aria-hidden="true" className="suppliers-page__spin" />
+          ) : (
+            <Download size={20} aria-hidden="true" />
+          )}
           Exportar CSV
         </button>
         <button
           type="button"
           className="suppliers-page__action-btn"
-          onClick={() => console.log('TODO: export PDF')}
+          onClick={() => void handleExportPdf()}
+          disabled={isExportingPdf}
+          aria-busy={isExportingPdf}
         >
-          <FileText size={20} aria-hidden="true" />
+          {isExportingPdf ? (
+            <Loader2 size={20} aria-hidden="true" className="suppliers-page__spin" />
+          ) : (
+            <FileText size={20} aria-hidden="true" />
+          )}
           Exportar PDF
         </button>
       </div>
@@ -345,7 +545,12 @@ function SuppliersPage() {
       <section className="suppliers-page__top-section" aria-label="Top Fornecedores">
         <div className="suppliers-page__top-header">
           <h2 className="suppliers-page__top-title">Top Fornecedores</h2>
-          <select className="suppliers-page__top-select" aria-label="Filtrar por categoria">
+          <select
+            className="suppliers-page__top-select"
+            aria-label="Filtrar top fornecedores por categoria"
+            value={top3Category}
+            onChange={(e) => setTop3Category(e.target.value)}
+          >
             <option value="">Todas as categorias</option>
             {categoryOptions.map(([val, label]) => (
               <option key={val} value={val}>
@@ -354,10 +559,36 @@ function SuppliersPage() {
             ))}
           </select>
         </div>
-        <div className="suppliers-page__top-empty">
-          <Star size={24} aria-hidden="true" />
-          <span>Sem avaliacoes nesta categoria</span>
-        </div>
+
+        {isLoadingTop3 && (
+          <div className="suppliers-page__top-loading">
+            <div className="skeleton-line skeleton-line--top3-card" />
+            <div className="skeleton-line skeleton-line--top3-card" />
+            <div className="skeleton-line skeleton-line--top3-card" />
+          </div>
+        )}
+
+        {!isLoadingTop3 && top3Suppliers.length === 0 && (
+          <div className="suppliers-page__top-empty">
+            <Star size={24} aria-hidden="true" />
+            <div>
+              <span className="suppliers-page__top-empty-title">
+                Sem avaliacoes nesta categoria
+              </span>
+              <span className="suppliers-page__top-empty-desc">
+                Avalie fornecedores apos receber pedidos para ver o ranking.
+              </span>
+            </div>
+          </div>
+        )}
+
+        {!isLoadingTop3 && top3Suppliers.length > 0 && (
+          <div className="suppliers-page__top-cards">
+            {top3Suppliers.slice(0, 3).map((s, i) => (
+              <TopSupplierCard key={s.id} supplier={s} rank={i + 1} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Filter bar */}
@@ -556,7 +787,7 @@ function SuppliersPage() {
                       type="button"
                       className="suppliers-table__icon-btn"
                       aria-label={`Avaliar ${supplier.name}`}
-                      onClick={() => console.log('TODO: rate supplier', supplier.id)}
+                      onClick={() => setSupplierToRate(supplier)}
                     >
                       <Star size={20} aria-hidden="true" />
                     </button>
@@ -588,6 +819,7 @@ function SuppliersPage() {
                 setShowModal(true);
               }}
               onDelete={(s) => setSupplierToDelete(s)}
+              onRate={(s) => setSupplierToRate(s)}
             />
           ))}
         </div>
@@ -667,6 +899,32 @@ function SuppliersPage() {
         }}
         onSuccess={(msg) => handleSuccess(msg)}
       />
+
+      {/* Import Modal */}
+      <SupplierImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={(msg) => {
+          setShowImportModal(false);
+          showToast(msg);
+          void refetch();
+        }}
+      />
+
+      {/* Rating Modal */}
+      {supplierToRate && (
+        <SupplierRatingModal
+          isOpen={!!supplierToRate}
+          supplier={supplierToRate}
+          onClose={() => setSupplierToRate(null)}
+          onSuccess={() => {
+            setSupplierToRate(null);
+            showToast('Avaliacao registrada com sucesso');
+            void refetch();
+            refetchTop3();
+          }}
+        />
+      )}
 
       {/* Delete Confirm */}
       <ConfirmModal
