@@ -22,6 +22,7 @@ jest.mock('./purchase-requests.service', () => ({
   listPurchaseRequests: jest.fn(),
   updatePurchaseRequest: jest.fn(),
   deletePurchaseRequest: jest.fn(),
+  transitionPurchaseRequest: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -34,6 +35,9 @@ jest.mock('../auth/auth.service', () => {
 
 const mockedService = jest.mocked(purchaseRequestsService);
 const mockedAuth = jest.mocked(authService);
+
+// ─── Additional import for PurchaseRequestError ────────────────────
+// (already imported above)
 
 const ADMIN_PAYLOAD = {
   userId: 'admin-1',
@@ -420,6 +424,248 @@ describe('PurchaseRequests endpoints', () => {
       const response = await request(app).delete('/api/org/purchase-requests/rc-1');
 
       expect(response.status).toBe(401);
+    });
+  });
+
+  // ─── POST /api/org/purchase-requests/:id/transition ───────────────
+
+  describe('POST /api/org/purchase-requests/:id/transition', () => {
+    beforeEach(() => authAs(MANAGER_PAYLOAD));
+
+    const PENDENTE_RC = {
+      ...VALID_RC,
+      status: 'PENDENTE',
+      submittedAt: new Date('2026-01-02'),
+      slaDeadline: new Date('2026-01-03'),
+      approvalActions: [
+        {
+          id: 'action-1',
+          purchaseRequestId: 'rc-1',
+          organizationId: 'org-1',
+          step: 1,
+          assignedTo: 'manager-1',
+          originalAssignee: null,
+          status: 'APPROVED',
+          comment: null,
+          decidedAt: new Date('2026-01-02'),
+          createdAt: new Date('2026-01-02'),
+          assignee: { id: 'manager-1', name: 'Gerente' },
+        },
+      ],
+      attachments: [],
+      costCenter: null,
+    };
+
+    it('should transition SUBMIT: moves RC to PENDENTE and creates ApprovalAction', async () => {
+      const result = {
+        ...VALID_RC,
+        status: 'PENDENTE',
+        attachments: [],
+        approvalActions: [],
+        costCenter: null,
+      };
+      mockedService.transitionPurchaseRequest.mockResolvedValue(result as never);
+
+      const response = await request(app)
+        .post('/api/org/purchase-requests/rc-1/transition')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ action: 'SUBMIT' });
+
+      expect(response.status).toBe(200);
+      expect(mockedService.transitionPurchaseRequest).toHaveBeenCalledWith(
+        expect.objectContaining({ organizationId: 'org-1', userId: 'manager-1' }),
+        'rc-1',
+        expect.objectContaining({ action: 'SUBMIT' }),
+      );
+    });
+
+    it('should return 400 SUBMIT when no approval rule configured', async () => {
+      mockedService.transitionPurchaseRequest.mockRejectedValue(
+        new PurchaseRequestError('Nenhuma regra de alcada configurada para este tipo e valor', 400),
+      );
+
+      const response = await request(app)
+        .post('/api/org/purchase-requests/rc-1/transition')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ action: 'SUBMIT' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toContain('regra de alcada');
+    });
+
+    it('should compute slaDeadline for URGENTE RC on SUBMIT', async () => {
+      const urgentRc = {
+        ...VALID_RC,
+        urgency: 'URGENTE',
+        status: 'PENDENTE',
+        slaDeadline: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        attachments: [],
+        approvalActions: [],
+        costCenter: null,
+      };
+      mockedService.transitionPurchaseRequest.mockResolvedValue(urgentRc as never);
+
+      const response = await request(app)
+        .post('/api/org/purchase-requests/rc-1/transition')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ action: 'SUBMIT' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.slaDeadline).toBeTruthy();
+    });
+
+    it('should transition APPROVE: approves step 1 and creates notification', async () => {
+      mockedService.transitionPurchaseRequest.mockResolvedValue(PENDENTE_RC as never);
+
+      const response = await request(app)
+        .post('/api/org/purchase-requests/rc-1/transition')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ action: 'APPROVE', comment: 'OK' });
+
+      expect(response.status).toBe(200);
+      expect(mockedService.transitionPurchaseRequest).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: 'manager-1' }),
+        'rc-1',
+        expect.objectContaining({ action: 'APPROVE' }),
+      );
+    });
+
+    it('should double approval: step 1 APPROVE does not change RC status to APROVADA', async () => {
+      // After step 1 approve, RC is still PENDENTE waiting for step 2
+      const afterStep1 = {
+        ...VALID_RC,
+        status: 'PENDENTE',
+        attachments: [],
+        costCenter: null,
+        approvalActions: [
+          {
+            id: 'action-1',
+            purchaseRequestId: 'rc-1',
+            organizationId: 'org-1',
+            step: 1,
+            assignedTo: 'manager-1',
+            originalAssignee: null,
+            status: 'APPROVED',
+            comment: 'OK',
+            decidedAt: new Date(),
+            createdAt: new Date(),
+            assignee: { id: 'manager-1', name: 'Gerente' },
+          },
+          {
+            id: 'action-2',
+            purchaseRequestId: 'rc-1',
+            organizationId: 'org-1',
+            step: 2,
+            assignedTo: 'user-2',
+            originalAssignee: null,
+            status: 'PENDING',
+            comment: null,
+            decidedAt: null,
+            createdAt: new Date(),
+            assignee: { id: 'user-2', name: 'Aprovador 2' },
+          },
+        ],
+      };
+      mockedService.transitionPurchaseRequest.mockResolvedValue(afterStep1 as never);
+
+      const response = await request(app)
+        .post('/api/org/purchase-requests/rc-1/transition')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ action: 'APPROVE' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.status).toBe('PENDENTE');
+    });
+
+    it('should double approval: step 2 APPROVE sets RC to APROVADA', async () => {
+      const approved = {
+        ...VALID_RC,
+        status: 'APROVADA',
+        attachments: [],
+        approvalActions: [],
+        costCenter: null,
+      };
+      mockedService.transitionPurchaseRequest.mockResolvedValue(approved as never);
+
+      const response = await request(app)
+        .post('/api/org/purchase-requests/rc-1/transition')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ action: 'APPROVE' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.status).toBe('APROVADA');
+    });
+
+    it('should REJECT: requires comment, returns 400 if missing', async () => {
+      mockedService.transitionPurchaseRequest.mockRejectedValue(
+        new PurchaseRequestError('Motivo obrigatorio ao rejeitar', 400),
+      );
+
+      const response = await request(app)
+        .post('/api/org/purchase-requests/rc-1/transition')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ action: 'REJECT' });
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toContain('Motivo obrigatorio');
+    });
+
+    it('should REJECT: transitions to REJEITADA and notifies creator', async () => {
+      const rejected = {
+        ...VALID_RC,
+        status: 'REJEITADA',
+        attachments: [],
+        approvalActions: [],
+        costCenter: null,
+      };
+      mockedService.transitionPurchaseRequest.mockResolvedValue(rejected as never);
+
+      const response = await request(app)
+        .post('/api/org/purchase-requests/rc-1/transition')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ action: 'REJECT', comment: 'Fora do orcamento' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.status).toBe('REJEITADA');
+    });
+
+    it('should RETURN: transitions RC to DEVOLVIDA', async () => {
+      const returned = {
+        ...VALID_RC,
+        status: 'DEVOLVIDA',
+        attachments: [],
+        approvalActions: [],
+        costCenter: null,
+      };
+      mockedService.transitionPurchaseRequest.mockResolvedValue(returned as never);
+
+      const response = await request(app)
+        .post('/api/org/purchase-requests/rc-1/transition')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ action: 'RETURN', comment: 'Faltam informacoes' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.status).toBe('DEVOLVIDA');
+    });
+
+    it('should CANCEL: transitions APROVADA RC to CANCELADA', async () => {
+      const cancelled = {
+        ...VALID_RC,
+        status: 'CANCELADA',
+        cancelledAt: new Date(),
+        attachments: [],
+        approvalActions: [],
+        costCenter: null,
+      };
+      mockedService.transitionPurchaseRequest.mockResolvedValue(cancelled as never);
+
+      const response = await request(app)
+        .post('/api/org/purchase-requests/rc-1/transition')
+        .set('Authorization', 'Bearer valid-token')
+        .send({ action: 'CANCEL' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.status).toBe('CANCELADA');
     });
   });
 });

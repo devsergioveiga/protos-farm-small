@@ -13,6 +13,7 @@ import {
   listPurchaseRequests,
   updatePurchaseRequest,
   deletePurchaseRequest,
+  transitionPurchaseRequest,
 } from './purchase-requests.service';
 import { prisma } from '../../database/prisma';
 
@@ -94,6 +95,23 @@ purchaseRequestsRouter.get(
       };
       const result = await listPurchaseRequests(ctx, query as never);
       res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── POST /org/purchase-requests/:id/transition (BEFORE /:id) ────────
+
+purchaseRequestsRouter.post(
+  `${base}/:id/transition`,
+  authenticate,
+  checkPermission('purchases:manage'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const rc = await transitionPurchaseRequest(ctx, req.params.id as string, req.body);
+      res.json(rc);
     } catch (err) {
       handleError(err, res);
     }

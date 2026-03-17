@@ -1,12 +1,21 @@
 import { withRlsContext, type RlsContext } from '../../database/rls';
+import { prisma } from '../../database/prisma';
 import {
   PurchaseRequestError,
   RC_TYPES,
   RC_URGENCY_LEVELS,
+  SLA_HOURS,
+  canTransition,
   type CreatePurchaseRequestInput,
   type UpdatePurchaseRequestInput,
   type ListPurchaseRequestsQuery,
+  type TransitionInput,
 } from './purchase-requests.types';
+import { matchApprovalRule, resolveApprover } from '../approval-rules/approval-rules.service';
+import {
+  createNotification,
+  dispatchPushNotification,
+} from '../notifications/notifications.service';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TxClient = any;
@@ -284,4 +293,327 @@ export async function deletePurchaseRequest(ctx: RlsContext, id: string) {
 
     return { success: true };
   });
+}
+
+// ─── Transition Purchase Request ─────────────────────────────────────
+
+export async function transitionPurchaseRequest(
+  ctx: RlsContext & { userId: string },
+  id: string,
+  input: TransitionInput,
+) {
+  return withRlsContext(ctx, async (tx) => {
+    const rc = await tx.purchaseRequest.findFirst({
+      where: { id, organizationId: ctx.organizationId, deletedAt: null },
+      include: {
+        items: true,
+        approvalActions: { orderBy: { step: 'asc' } },
+      },
+    });
+
+    if (!rc) {
+      throw new PurchaseRequestError('Requisicao nao encontrada', 404);
+    }
+
+    if (input.action === 'SUBMIT') {
+      if (!canTransition(rc.status, 'PENDENTE')) {
+        throw new PurchaseRequestError(`Transicao invalida: ${rc.status} -> PENDENTE`, 400);
+      }
+
+      // Calculate total (both quantity and estimatedUnitPrice are Decimal)
+      const total = rc.items.reduce((sum, item) => {
+        if (item.estimatedUnitPrice !== null) {
+          return sum + Number(item.estimatedUnitPrice) * Number(item.quantity);
+        }
+        return sum;
+      }, 0);
+
+      // Match approval rule
+      const rule = await matchApprovalRule(tx, ctx.organizationId, rc.requestType, total);
+      if (!rule) {
+        throw new PurchaseRequestError(
+          'Nenhuma regra de alcada configurada para este tipo e valor',
+          400,
+        );
+      }
+
+      // Resolve approver1
+      const resolved1 = await resolveApprover(tx, rule.approver1Id, ctx.organizationId);
+
+      // Create ApprovalAction step 1
+      await tx.approvalAction.create({
+        data: {
+          purchaseRequestId: id,
+          organizationId: ctx.organizationId,
+          step: 1,
+          assignedTo: resolved1,
+          originalAssignee: resolved1 !== rule.approver1Id ? rule.approver1Id : null,
+          status: 'PENDING',
+        },
+      });
+
+      // Create ApprovalAction step 2 if double approval
+      if (rule.approverCount === 2 && rule.approver2Id) {
+        const resolved2 = await resolveApprover(tx, rule.approver2Id, ctx.organizationId);
+        await tx.approvalAction.create({
+          data: {
+            purchaseRequestId: id,
+            organizationId: ctx.organizationId,
+            step: 2,
+            assignedTo: resolved2,
+            originalAssignee: resolved2 !== rule.approver2Id ? rule.approver2Id : null,
+            status: 'PENDING',
+          },
+        });
+      }
+
+      // Compute SLA deadline
+      const slaHours = SLA_HOURS[rc.urgency];
+      const slaDeadline =
+        slaHours !== null ? new Date(Date.now() + slaHours * 60 * 60 * 1000) : null;
+
+      // Update RC to PENDENTE
+      await tx.purchaseRequest.update({
+        where: { id },
+        data: {
+          status: 'PENDENTE',
+          submittedAt: new Date(),
+          slaDeadline,
+        },
+      });
+
+      // Create notification for step 1 approver
+      const notification = await createNotification(tx, ctx.organizationId, {
+        recipientId: resolved1,
+        type: 'RC_PENDING',
+        title: 'Nova requisicao para aprovar',
+        body: `${rc.sequentialNumber} aguarda sua aprovacao.`,
+        referenceId: id,
+        referenceType: 'purchase_request',
+      });
+
+      // Fire-and-forget push dispatch
+      void dispatchPushNotification(notification).catch((err: Error) => {
+        console.warn('Push dispatch failed', err);
+      });
+
+      return tx.purchaseRequest.findFirst({
+        where: { id },
+        include: RC_INCLUDE,
+      });
+    }
+
+    if (input.action === 'APPROVE') {
+      // Find current user's pending ApprovalAction
+      const currentAction = rc.approvalActions.find(
+        (a) => a.assignedTo === ctx.userId && a.status === 'PENDING',
+      );
+      if (!currentAction) {
+        throw new PurchaseRequestError('Voce nao tem permissao para aprovar esta requisicao', 403);
+      }
+
+      // Update ApprovalAction
+      await tx.approvalAction.update({
+        where: { id: currentAction.id },
+        data: {
+          status: 'APPROVED',
+          comment: input.comment ?? null,
+          decidedAt: new Date(),
+        },
+      });
+
+      // Check for remaining pending steps
+      const nextPending = rc.approvalActions.find(
+        (a) => a.step > currentAction.step && a.status === 'PENDING',
+      );
+
+      if (nextPending) {
+        // Notify next approver
+        const notification = await createNotification(tx, ctx.organizationId, {
+          recipientId: nextPending.assignedTo,
+          type: 'RC_PENDING',
+          title: 'Nova requisicao para aprovar',
+          body: `${rc.sequentialNumber} aguarda sua aprovacao.`,
+          referenceId: id,
+          referenceType: 'purchase_request',
+        });
+        void dispatchPushNotification(notification).catch((err: Error) => {
+          console.warn('Push dispatch failed', err);
+        });
+      } else {
+        // All steps resolved — approve RC
+        await tx.purchaseRequest.update({
+          where: { id },
+          data: { status: 'APROVADA' },
+        });
+
+        // Notify creator
+        const notification = await createNotification(tx, ctx.organizationId, {
+          recipientId: rc.createdBy,
+          type: 'RC_APPROVED',
+          title: 'Requisicao aprovada',
+          body: `${rc.sequentialNumber} foi aprovada.`,
+          referenceId: id,
+          referenceType: 'purchase_request',
+        });
+        void dispatchPushNotification(notification).catch((err: Error) => {
+          console.warn('Push dispatch failed', err);
+        });
+      }
+
+      return tx.purchaseRequest.findFirst({
+        where: { id },
+        include: RC_INCLUDE,
+      });
+    }
+
+    if (input.action === 'REJECT') {
+      if (!input.comment) {
+        throw new PurchaseRequestError('Motivo obrigatorio ao rejeitar', 400);
+      }
+
+      const currentAction = rc.approvalActions.find(
+        (a) => a.assignedTo === ctx.userId && a.status === 'PENDING',
+      );
+      if (!currentAction) {
+        throw new PurchaseRequestError('Voce nao tem permissao para rejeitar esta requisicao', 403);
+      }
+
+      await tx.approvalAction.update({
+        where: { id: currentAction.id },
+        data: {
+          status: 'REJECTED',
+          comment: input.comment,
+          decidedAt: new Date(),
+        },
+      });
+
+      await tx.purchaseRequest.update({
+        where: { id },
+        data: { status: 'REJEITADA' },
+      });
+
+      const notification = await createNotification(tx, ctx.organizationId, {
+        recipientId: rc.createdBy,
+        type: 'RC_REJECTED',
+        title: 'Requisicao rejeitada',
+        body: `${rc.sequentialNumber} foi rejeitada. Motivo: ${input.comment}`,
+        referenceId: id,
+        referenceType: 'purchase_request',
+      });
+      void dispatchPushNotification(notification).catch((err: Error) => {
+        console.warn('Push dispatch failed', err);
+      });
+
+      return tx.purchaseRequest.findFirst({
+        where: { id },
+        include: RC_INCLUDE,
+      });
+    }
+
+    if (input.action === 'RETURN') {
+      if (!input.comment) {
+        throw new PurchaseRequestError('Motivo obrigatorio ao devolver', 400);
+      }
+
+      const currentAction = rc.approvalActions.find(
+        (a) => a.assignedTo === ctx.userId && a.status === 'PENDING',
+      );
+      if (!currentAction) {
+        throw new PurchaseRequestError('Voce nao tem permissao para devolver esta requisicao', 403);
+      }
+
+      await tx.approvalAction.update({
+        where: { id: currentAction.id },
+        data: {
+          status: 'RETURNED',
+          comment: input.comment,
+          decidedAt: new Date(),
+        },
+      });
+
+      await tx.purchaseRequest.update({
+        where: { id },
+        data: { status: 'DEVOLVIDA' },
+      });
+
+      const notification = await createNotification(tx, ctx.organizationId, {
+        recipientId: rc.createdBy,
+        type: 'RC_RETURNED',
+        title: 'Requisicao devolvida',
+        body: `${rc.sequentialNumber} foi devolvida. Motivo: ${input.comment}`,
+        referenceId: id,
+        referenceType: 'purchase_request',
+      });
+      void dispatchPushNotification(notification).catch((err: Error) => {
+        console.warn('Push dispatch failed', err);
+      });
+
+      return tx.purchaseRequest.findFirst({
+        where: { id },
+        include: RC_INCLUDE,
+      });
+    }
+
+    if (input.action === 'CANCEL') {
+      if (!canTransition(rc.status, 'CANCELADA')) {
+        throw new PurchaseRequestError(`Transicao invalida: ${rc.status} -> CANCELADA`, 400);
+      }
+
+      await tx.purchaseRequest.update({
+        where: { id },
+        data: { status: 'CANCELADA', cancelledAt: new Date() },
+      });
+
+      return tx.purchaseRequest.findFirst({
+        where: { id },
+        include: RC_INCLUDE,
+      });
+    }
+
+    throw new PurchaseRequestError(`Acao invalida: ${input.action}`, 400);
+  });
+}
+
+// ─── Process SLA Reminders ────────────────────────────────────────────
+
+export async function processSlaReminders(): Promise<number> {
+  // Find PENDENTE RCs where slaDeadline is within 1 hour and slaNotifiedAt is null
+  const rcs = await prisma.purchaseRequest.findMany({
+    where: {
+      status: 'PENDENTE',
+      slaDeadline: { lte: new Date(Date.now() + 60 * 60 * 1000) },
+      slaNotifiedAt: null,
+      deletedAt: null,
+    },
+    include: { approvalActions: { where: { status: 'PENDING' } } },
+  });
+
+  let count = 0;
+
+  for (const rc of rcs) {
+    // Create SLA_REMINDER notification for each pending approver
+    for (const action of rc.approvalActions) {
+      await prisma.notification.create({
+        data: {
+          organizationId: rc.organizationId,
+          recipientId: action.assignedTo,
+          type: 'SLA_REMINDER',
+          title: 'Prazo de aprovacao se aproximando',
+          body: `${rc.sequentialNumber} vence em breve.`,
+          referenceId: rc.id,
+          referenceType: 'purchase_request',
+        },
+      });
+      count++;
+    }
+
+    // Mark slaNotifiedAt
+    await prisma.purchaseRequest.update({
+      where: { id: rc.id },
+      data: { slaNotifiedAt: new Date() },
+    });
+  }
+
+  return count;
 }
