@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 6 context gathered
-last_updated: '2026-03-17T09:42:00.532Z'
+stopped_at: Completed 06-cr-dito-rural-01-PLAN.md
+last_updated: '2026-03-17T10:31:26.965Z'
 last_activity: 2026-03-16 — PayablesPage complete (3 tabs, 4 modals, aging, calendar, CNAB retorno, sidebar badge)
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 25
-  completed_plans: 25
+  total_plans: 30
+  completed_plans: 27
   percent: 80
 ---
 
@@ -75,6 +75,8 @@ _Updated after each plan completion_
 | Phase 05-concilia-o-e-fluxo-de-caixa P02 | 15min | 1 tasks | 3 files |
 | Phase 05-concilia-o-e-fluxo-de-caixa P04 | 17min | 2 tasks | 10 files |
 | Phase 05-concilia-o-e-fluxo-de-caixa PP06 | 6min | 2 tasks | 4 files |
+| Phase 06-cr-dito-rural P01 | 3min | 2 tasks | 2 files |
+| Phase 06-cr-dito-rural PP02 | 4min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -136,6 +138,8 @@ Recent decisions affecting current work:
 - [Phase 05-concilia-o-e-fluxo-de-caixa]: N:N sum validation uses Math.abs tolerance < 0.01 — avoids floating-point false negatives vs Money.equals() pure comparison
 - [Phase 05-concilia-o-e-fluxo-de-caixa]: App.tsx and Sidebar.tsx already had lazy routes and sidebar entries pre-built from prior planning; only backend endpoint and dashboard alert card required new work
 - [Phase 05-concilia-o-e-fluxo-de-caixa]: useNegativeBalanceAlert from useCashflow.ts reused directly in FinancialDashboardPage — no duplicate hook needed
+- [Phase 06-cr-dito-rural]: SAC residual (ROUND_DOWN \* n != principal) applied to installment #1 — consistent with installments.ts pattern from Phase 02
+- [Phase 06-cr-dito-rural]: PRICE PMT formula uses Decimal.js for intermediate computation to avoid floating-point drift in denominator
 
 ### Pending Todos
 
@@ -150,6 +154,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T09:42:00.527Z
-Stopped at: Phase 6 context gathered
-Resume file: .planning/phases/06-cr-dito-rural/06-CONTEXT.md
+Last session: 2026-03-17T10:31:08.836Z
+Stopped at: Completed 06-cr-dito-rural-01-PLAN.md
+Resume file: None

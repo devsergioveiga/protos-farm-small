@@ -150,7 +150,7 @@ Plans:
 4. Projeção de fluxo de caixa da Phase 5 inclui as parcelas futuras do crédito rural nas datas corretas
 5. Gerente recebe alertas de vencimento de parcelas de crédito rural com antecedência configurável
 
-**Plans:** 5 plans
+**Plans:** 2/5 plans executed
 
 Plans:
 
@@ -172,4 +172,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Dashboard Financeiro         | 2/2            | Complete    | 2026-03-16 |
 | 4. Instrumentos de Pagamento    | 7/7            | Complete    | 2026-03-17 |
 | 5. Conciliação e Fluxo de Caixa | 5/6            | In Progress |            |
-| 6. Crédito Rural                | 0/5            | Not started | -          |
+| 6. Crédito Rural                | 2/5            | In Progress |            |
