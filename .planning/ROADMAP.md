@@ -149,7 +149,16 @@ Plans:
 3. Saldo devedor atualizado é visível após cada amortização, com discriminação de principal e juros pagos
 4. Projeção de fluxo de caixa da Phase 5 inclui as parcelas futuras do crédito rural nas datas corretas
 5. Gerente recebe alertas de vencimento de parcelas de crédito rural com antecedência configurável
-   **Plans**: TBD
+
+**Plans:** 5 plans
+
+Plans:
+
+- [ ] 06-01-PLAN.md — Amortization engine TDD (SAC/Price/Bullet + grace period) in packages/shared
+- [ ] 06-02-PLAN.md — Prisma schema (RuralCreditContract + RuralCreditInstallment) + migration
+- [ ] 06-03-PLAN.md — Backend module: CRUD, simulate, settle, amortize, cancel, alerts + integration tests
+- [ ] 06-04-PLAN.md — Frontend: RuralCreditPage (cards), RuralCreditDetailPage (tabs), modals, hooks
+- [ ] 06-05-PLAN.md — Sidebar + lazy routes + dashboard card + human-verify
 
 ## Progress
 
@@ -163,4 +172,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Dashboard Financeiro         | 2/2            | Complete    | 2026-03-16 |
 | 4. Instrumentos de Pagamento    | 7/7            | Complete    | 2026-03-17 |
 | 5. Conciliação e Fluxo de Caixa | 5/6            | In Progress |            |
-| 6. Crédito Rural                | 0/TBD          | Not started | -          |
+| 6. Crédito Rural                | 0/5            | Not started | -          |
