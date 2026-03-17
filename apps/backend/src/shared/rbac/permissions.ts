@@ -11,9 +11,10 @@ export type PermissionModule =
   | 'operations'
   | 'financial'
   | 'reports'
-  | 'settings';
+  | 'settings'
+  | 'reconciliation';
 
-export type PermissionAction = 'create' | 'read' | 'update' | 'delete';
+export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage';
 
 export type Permission = `${PermissionModule}:${PermissionAction}`;
 
@@ -29,9 +30,10 @@ export const ALL_MODULES: PermissionModule[] = [
   'financial',
   'reports',
   'settings',
+  'reconciliation',
 ];
 
-export const ALL_ACTIONS: PermissionAction[] = ['create', 'read', 'update', 'delete'];
+export const ALL_ACTIONS: PermissionAction[] = ['create', 'read', 'update', 'delete', 'manage'];
 
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
   SUPER_ADMIN: 100,
@@ -83,6 +85,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...modulePermissions('operations'),
     ...p('reports', 'read'),
     ...p('settings', 'read'),
+    ...p('reconciliation', 'manage'),
   ],
 
   AGRONOMIST: [
@@ -98,6 +101,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...p('farms', 'read'),
     ...p('producers', 'read'),
     ...p('reports', 'read'),
+    ...p('reconciliation', 'manage'),
   ],
 
   OPERATOR: [
