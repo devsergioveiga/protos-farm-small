@@ -125,7 +125,17 @@ Plans:
 3. Gerente visualiza fluxo de caixa projetado para os próximos 12 meses (não apenas 90 dias) com cenários otimista, realista e pessimista
 4. Alerta de saldo negativo dispara nas datas futuras projetadas onde o saldo cairia abaixo de zero — não apenas na data atual
 5. Projeção inclui cheques A_COMPENSAR na data prevista de compensação e parcelas de CP/CR em aberto nas suas datas de vencimento
-   **Plans**: TBD
+
+**Plans:** 6 plans
+
+Plans:
+
+- [ ] 05-01-PLAN.md — Schema + migration + OFX/CSV parsers + import service + routes
+- [ ] 05-02-PLAN.md — Matching engine + reconciliation actions (accept/reject/link/ignore/report)
+- [ ] 05-03-PLAN.md — Cashflow projection service + DFC classification + export + routes
+- [ ] 05-04-PLAN.md — ReconciliationPage frontend (import history, preview modal, line list, manual link)
+- [ ] 05-05-PLAN.md — CashflowPage frontend (chart 3 cenarios, DFC table, alerta, export)
+- [ ] 05-06-PLAN.md — Sidebar integration + lazy routes + dashboard alert + human-verify
 
 ### Phase 6: Crédito Rural
 
@@ -152,5 +162,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Núcleo AP/AR                 | 7/7            | Complete    | 2026-03-16 |
 | 3. Dashboard Financeiro         | 2/2            | Complete    | 2026-03-16 |
 | 4. Instrumentos de Pagamento    | 7/7            | Complete    | 2026-03-17 |
-| 5. Conciliação e Fluxo de Caixa | 0/TBD          | Not started | -          |
+| 5. Conciliação e Fluxo de Caixa | 0/6            | Not started | -          |
 | 6. Crédito Rural                | 0/TBD          | Not started | -          |
