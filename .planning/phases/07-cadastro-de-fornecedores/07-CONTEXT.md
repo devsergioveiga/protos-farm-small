@@ -127,7 +127,7 @@ Cadastro completo de fornecedores com dados fiscais validados, importacao em mas
 - `App.tsx`: registrar rota /suppliers com lazy load + ProtectedRoute
 - Sidebar: adicionar grupo COMPRAS com item Fornecedores
 - Prisma schema: novo modelo Supplier + SupplierCategory + SupplierRating + SupplierDocument
-- RBAC: nova permission `suppliers:manage` e `suppliers:view`
+- RBAC: nova permission `purchases:manage` e `purchases:read`
 
 </code_context>
 
