@@ -46,7 +46,14 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 3. Gerente pode avaliar um fornecedor (prazo, qualidade, preço, atendimento) e ver o ranking automático por média ponderada
 4. O sistema alerta ao iniciar cotação com fornecedor com rating abaixo de 3
 5. Gerente pode exportar a listagem de fornecedores em CSV ou PDF
-   **Plans**: TBD
+   **Plans:** 4 plans
+
+Plans:
+
+- [ ] 07-01-PLAN.md — Backend foundation: schema, types, RBAC, CRUD service+routes+tests
+- [ ] 07-02-PLAN.md — Backend import/export/rating: file parser, CSV/PDF export, rating endpoints
+- [ ] 07-03-PLAN.md — Frontend page + CRUD modal: types, hooks, SuppliersPage, SupplierModal, sidebar
+- [ ] 07-04-PLAN.md — Frontend import/rating modals: SupplierImportModal, SupplierRatingModal, Top 3
 
 ### Phase 8: Requisição e Aprovação
 
@@ -127,7 +134,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 | 4. Instrumentos de Pagamento         | v1.0      | 7/7            | Complete    | 2026-03-17 |
 | 5. Conciliação e Fluxo de Caixa      | v1.0      | 6/6            | Complete    | 2026-03-17 |
 | 6. Crédito Rural                     | v1.0      | 5/5            | Complete    | 2026-03-17 |
-| 7. Cadastro de Fornecedores          | v1.1      | 0/TBD          | Not started | -          |
+| 7. Cadastro de Fornecedores          | v1.1      | 0/4            | Planning    | -          |
 | 8. Requisição e Aprovação            | v1.1      | 0/TBD          | Not started | -          |
 | 9. Cotação e Pedido de Compra        | v1.1      | 0/TBD          | Not started | -          |
 | 10. Recebimento de Mercadorias       | v1.1      | 0/TBD          | Not started | -          |
