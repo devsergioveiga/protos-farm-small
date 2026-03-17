@@ -1,5 +1,23 @@
 # Protos Farm — Fase 3: Módulos Administrativos
 
+## Current Milestone: v1.1 Gestão de Compras
+
+**Goal:** Implementar o ciclo completo de procurement — da requisição de compra até o recebimento e geração automática de contas a pagar.
+
+**Target features:**
+
+- Cadastro de fornecedores com dados fiscais, avaliação e ranking
+- Requisição de compra (web + mobile) com fluxo de aprovação configurável
+- Cotação a múltiplos fornecedores com mapa comparativo
+- Pedido de compra formal com PDF e envio por email
+- Recebimento e conferência com 6 cenários (NF antecipada, parcial, emergencial etc.)
+- Devolução e troca de mercadorias
+- Geração automática de CP a partir do recebimento + NF
+- Orçamento de compras e controle orçamentário
+- Análise de saving e histórico de preços
+- Dashboard executivo e kanban do fluxo de compras
+- Notificações em cada etapa do processo
+
 ## What This Is
 
 Sistema de gestão agrícola completo com módulo financeiro base já operacional (contas bancárias, CP/CR, conciliação, fluxo de caixa, crédito rural). Próximos milestones cobrem compras, patrimônio, RH e contabilidade. Destinado a gerentes financeiros e proprietários de fazendas.
@@ -39,9 +57,26 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 
 ### Active
 
-<!-- Next milestone requirements will be defined via /gsd:new-milestone -->
+<!-- v1.1 Gestão de Compras — 18 stories, 115 points, 6 épicos -->
 
-(Awaiting next milestone definition)
+- [ ] Cadastro completo de fornecedores (dados fiscais, comerciais, avaliação)
+- [ ] Importação e busca de fornecedores
+- [ ] Avaliação e ranking de fornecedores
+- [ ] Requisição de compra (web) com tipos, itens, centro de custo
+- [ ] Requisição de compra via mobile (campo)
+- [ ] Fluxo de aprovação de requisição (alçada por valor e tipo)
+- [ ] Solicitação de cotação a fornecedores
+- [ ] Registro e comparação de cotações (mapa comparativo)
+- [ ] Aprovação da cotação vencedora
+- [ ] Emissão de pedido de compra (OC/PC)
+- [ ] Recebimento e conferência de mercadorias (6 cenários)
+- [ ] Devolução e troca de mercadorias
+- [ ] Geração automática de CP a partir do recebimento
+- [ ] Orçamento de compras e controle orçamentário
+- [ ] Análise de saving e histórico de preços
+- [ ] Kanban do fluxo de compras
+- [ ] Dashboard executivo de compras
+- [ ] Notificações e alertas do fluxo de compras
 
 ### Out of Scope
 
@@ -115,4 +150,4 @@ Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
 
 ---
 
-_Last updated: 2026-03-17 after v1.0 milestone_
+_Last updated: 2026-03-17 after v1.1 milestone start_
