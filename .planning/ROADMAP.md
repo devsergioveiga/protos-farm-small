@@ -126,7 +126,7 @@ Plans:
 4. Alerta de saldo negativo dispara nas datas futuras projetadas onde o saldo cairia abaixo de zero — não apenas na data atual
 5. Projeção inclui cheques A_COMPENSAR na data prevista de compensação e parcelas de CP/CR em aberto nas suas datas de vencimento
 
-**Plans:** 6 plans
+**Plans:** 2/6 plans executed
 
 Plans:
 
@@ -162,5 +162,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 2. Núcleo AP/AR                 | 7/7            | Complete    | 2026-03-16 |
 | 3. Dashboard Financeiro         | 2/2            | Complete    | 2026-03-16 |
 | 4. Instrumentos de Pagamento    | 7/7            | Complete    | 2026-03-17 |
-| 5. Conciliação e Fluxo de Caixa | 0/6            | Not started | -          |
+| 5. Conciliação e Fluxo de Caixa | 2/6            | In Progress |            |
 | 6. Crédito Rural                | 0/TBD          | Not started | -          |

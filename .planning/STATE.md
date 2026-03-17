@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-concilia-o-e-fluxo-de-caixa-03-PLAN.md
-last_updated: '2026-03-17T08:12:18.162Z'
+stopped_at: Completed 05-concilia-o-e-fluxo-de-caixa-01-PLAN.md
+last_updated: '2026-03-17T08:14:31.530Z'
 last_activity: 2026-03-16 — PayablesPage complete (3 tabs, 4 modals, aging, calendar, CNAB retorno, sidebar badge)
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 25
-  completed_plans: 20
+  completed_plans: 21
   percent: 80
 ---
 
@@ -70,6 +70,7 @@ _Updated after each plan completion_
 | Phase 04-instrumentos-de-pagamento P04 | 9min | 2 tasks | 11 files |
 | Phase 04-instrumentos-de-pagamento P07 | 4min | 1 tasks | 6 files |
 | Phase 05-concilia-o-e-fluxo-de-caixa P03 | 7min | 2 tasks | 5 files |
+| Phase 05-concilia-o-e-fluxo-de-caixa P01 | 9min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,9 @@ Recent decisions affecting current work:
 - [Phase Phase 04-instrumentos-de-pagamento]: Accounting balance computed inline within withRlsContext transaction to avoid nested RLS context calls from getAccountingBalanceData
 - [Phase 05-concilia-o-e-fluxo-de-caixa]: PAYABLE_DFC_MAP uses only actual PayableCategory schema values — CARTAO_CREDITO -> OPERACIONAL, FINANCING -> FINANCIAMENTO; no EQUIPMENT/VEHICLES/LAND
 - [Phase 05-concilia-o-e-fluxo-de-caixa]: Recurring CP/CR virtual projection uses last installment dueDate as anchor, advances by interval without DB writes
+- [Phase 05-concilia-o-e-fluxo-de-caixa]: reconciliation:manage uses dedicated PermissionModule 'reconciliation' + PermissionAction 'manage' — not financial:\* per CONTEXT.md locked decision
+- [Phase 05-concilia-o-e-fluxo-de-caixa]: OFX 1.x parsed with custom SGML regex extractor (not ofx-js): low maintenance library, custom parser mirrors CNAB pattern
+- [Phase 05-concilia-o-e-fluxo-de-caixa]: lineHash = sha256(bankAccountId+date+amount+memo) — dedup works for both OFX (complements FITID) and CSV (no FITID)
 
 ### Pending Todos
 
@@ -134,6 +138,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T08:12:18.160Z
-Stopped at: Completed 05-concilia-o-e-fluxo-de-caixa-03-PLAN.md
+Last session: 2026-03-17T08:14:31.528Z
+Stopped at: Completed 05-concilia-o-e-fluxo-de-caixa-01-PLAN.md
 Resume file: None
