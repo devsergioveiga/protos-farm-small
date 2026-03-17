@@ -359,6 +359,7 @@ model Organization {
   bankStatementLines       BankStatementLine[]
   reconciliations          Reconciliation[]
   ruralCreditContracts     RuralCreditContract[]
+  suppliers                Supplier[]
 
   @@map("organizations")
 }
@@ -1025,8 +1026,13 @@ model RuralProperty {
   incraCode            String?
   ccirCode             String?
   ccirValidUntil       DateTime? @db.Date
+  ccirPaymentStatus    String?
   carCode              String?
   totalAreaHa          Decimal?  @db.Decimal(12, 4)
+  registeredAreaHa     Decimal?  @db.Decimal(12, 4)
+  possessionByTitleHa  Decimal?  @db.Decimal(12, 4)
+  possessionByOccupationHa Decimal? @db.Decimal(12, 4)
+  measuredAreaHa       Decimal?  @db.Decimal(12, 4)
   landClassification   String?
   productive           Boolean?
 
@@ -5850,4 +5856,104 @@ model RuralCreditInstallment {
 
   @@index([contractId])
   @@map("rural_credit_installments")
+}
+
+// ─── EPIC Fornecedores ───────────────────────────────────────────────────────
+
+enum SupplierType {
+  PF
+  PJ
+}
+
+enum SupplierStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum SupplierCategory {
+  INSUMO_AGRICOLA
+  PECUARIO
+  PECAS
+  COMBUSTIVEL
+  EPI
+  SERVICOS
+  OUTROS
+}
+
+enum SupplierDocumentType {
+  CONTRATO
+  CERTIDAO
+  ALVARA
+  OUTRO
+}
+
+model Supplier {
+  id                String            @id @default(uuid())
+  organizationId    String
+  type              SupplierType
+  name              String
+  tradeName         String?
+  document          String            // stored clean (digits only)
+  stateRegistration String?           // IE
+  address           String?
+  city              String?
+  state             String?           @db.VarChar(2)
+  zipCode           String?
+  contactName       String?
+  contactPhone      String?
+  contactEmail      String?
+  paymentTerms      String?           // free text with autocomplete
+  freightType       String?           // "CIF" | "FOB"
+  notes             String?
+  status            SupplierStatus    @default(ACTIVE)
+  categories        SupplierCategory[]
+  createdBy         String
+  deletedAt         DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  organization Organization       @relation(fields: [organizationId], references: [id])
+  documents    SupplierDocument[]
+  ratings      SupplierRating[]
+
+  @@unique([document, organizationId])
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@map("suppliers")
+}
+
+model SupplierDocument {
+  id         String               @id @default(uuid())
+  supplierId String
+  type       SupplierDocumentType
+  filename   String
+  url        String               @default("")
+  mimeType   String?
+  sizeBytes  Int?
+  uploadedAt DateTime             @default(now())
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId])
+  @@map("supplier_documents")
+}
+
+model SupplierRating {
+  id             String   @id @default(uuid())
+  supplierId     String
+  organizationId String
+  deadline       Int      // 1-5
+  quality        Int      // 1-5
+  price          Int      // 1-5
+  service        Int      // 1-5
+  comment        String?
+  ratedBy        String
+  createdAt      DateTime @default(now())
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId])
+  @@index([organizationId])
+  @@map("supplier_ratings")
 }
