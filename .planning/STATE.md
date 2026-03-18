@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 10-recebimento-de-mercadorias-05-PLAN.md
-last_updated: '2026-03-18T02:32:42.499Z'
+stopped_at: Phase 11 context gathered
+last_updated: '2026-03-18T07:57:33.668Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
-  total_phases: 6
+  total_phases: 7
   completed_phases: 4
   total_plans: 20
   completed_plans: 20
@@ -130,6 +130,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T02:28:34.847Z
-Stopped at: Completed 10-recebimento-de-mercadorias-05-PLAN.md
-Resume file: None
+Last session: 2026-03-18T07:57:33.663Z
+Stopped at: Phase 11 context gathered
+Resume file: .planning/phases/11-devolu-o-or-amento-e-saving/11-CONTEXT.md
