@@ -105,6 +105,25 @@ export async function getUnreadCount(ctx: RlsContext & { userId: string }) {
   });
 }
 
+// ─── Create Notification If Enabled ──────────────────────────────────
+
+export async function createNotificationIfEnabled(
+  tx: TxClient,
+  organizationId: string,
+  input: CreateNotificationInput,
+): Promise<void> {
+  const { isNotificationEnabled } = await import('./notification-preferences.service');
+  const enabled = await isNotificationEnabled(
+    tx,
+    organizationId,
+    input.recipientId,
+    input.type,
+    'IN_APP',
+  );
+  if (!enabled) return;
+  await createNotification(tx, organizationId, input);
+}
+
 // ─── Dispatch Push Notification (placeholder) ────────────────────────
 
 export async function dispatchPushNotification(notification: {

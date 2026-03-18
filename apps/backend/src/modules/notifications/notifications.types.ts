@@ -10,8 +10,22 @@ export const NOTIFICATION_TYPES = [
   'QUOTATION_APPROVED',
   'PO_OVERDUE',
   'QUOTATION_DEADLINE_NEAR',
+  'GR_CONFIRMED',
+  'DELIVERY_CONFIRMED',
+  'DAILY_DIGEST',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+export const NOTIFICATION_CHANNELS = ['IN_APP', 'PUSH', 'DIGEST'] as const;
+export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
+
+export const NOTIFICATION_EVENT_GROUPS = {
+  SOLICITANTE: ['RC_APPROVED', 'RC_REJECTED', 'DELIVERY_CONFIRMED'],
+  APROVADOR: ['RC_PENDING', 'SLA_REMINDER'],
+  COMPRADOR: ['RC_APPROVED', 'QUOTATION_DEADLINE_NEAR', 'PO_OVERDUE'],
+  FINANCEIRO: ['GR_CONFIRMED'],
+  GERENTE: ['DAILY_DIGEST'],
+} as const;
 
 // ─── Error ───────────────────────────────────────────────────────────
 

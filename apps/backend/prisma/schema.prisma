@@ -380,6 +380,7 @@ model Organization {
   approvalActions          ApprovalAction[]
   delegations              Delegation[]
   notifications            Notification[]
+  notificationPreferences  NotificationPreference[]
   quotations               Quotation[]
   purchaseOrders           PurchaseOrder[]
   goodsReceipts            GoodsReceipt[]
@@ -466,6 +467,7 @@ model User {
   delegationsFrom                Delegation[]             @relation("DelegationFrom")
   delegationsTo                  Delegation[]             @relation("DelegationTo")
   notifications                  Notification[]           @relation("NotificationRecipient")
+  notificationPreferences        NotificationPreference[]
   quotationsCreated              Quotation[]              @relation("QuotationCreator")
   quotationsApproved             Quotation[]              @relation("QuotationApprover")
   purchaseOrdersCreated          PurchaseOrder[]          @relation("POCreator")
@@ -6176,6 +6178,24 @@ model Notification {
   @@index([recipientId, readAt])
   @@index([organizationId, recipientId])
   @@map("notifications")
+}
+
+model NotificationPreference {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  eventType      String
+  channel        String
+  enabled        Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@unique([organizationId, userId, eventType, channel])
+  @@index([userId, organizationId])
+  @@map("notification_preferences")
 }
 
 // ─── Quotation & Purchase Order Module (Phase 9) ─────────────────────
