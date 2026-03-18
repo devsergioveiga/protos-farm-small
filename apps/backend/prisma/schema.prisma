@@ -380,6 +380,8 @@ model Organization {
   approvalActions          ApprovalAction[]
   delegations              Delegation[]
   notifications            Notification[]
+  quotations               Quotation[]
+  purchaseOrders           PurchaseOrder[]
 
   @@map("organizations")
 }
@@ -461,6 +463,9 @@ model User {
   delegationsFrom                Delegation[]             @relation("DelegationFrom")
   delegationsTo                  Delegation[]             @relation("DelegationTo")
   notifications                  Notification[]           @relation("NotificationRecipient")
+  quotationsCreated              Quotation[]              @relation("QuotationCreator")
+  quotationsApproved             Quotation[]              @relation("QuotationApprover")
+  purchaseOrdersCreated          PurchaseOrder[]          @relation("POCreator")
 
   @@map("users")
 }
@@ -5949,9 +5954,11 @@ model Supplier {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  organization Organization       @relation(fields: [organizationId], references: [id])
-  documents    SupplierDocument[]
-  ratings      SupplierRating[]
+  organization      Organization        @relation(fields: [organizationId], references: [id])
+  documents         SupplierDocument[]
+  ratings           SupplierRating[]
+  quotationSuppliers QuotationSupplier[]
+  purchaseOrders    PurchaseOrder[]
 
   @@unique([document, organizationId])
   @@index([organizationId])
@@ -6027,6 +6034,7 @@ model PurchaseRequest {
   attachments     PurchaseRequestAttachment[]
   approvalActions ApprovalAction[]
   notifications   Notification[]
+  quotations      Quotation[]
 
   @@unique([organizationId, sequentialNumber])
   @@index([organizationId, status])
@@ -6046,7 +6054,9 @@ model PurchaseRequestItem {
   estimatedUnitPrice Decimal?
   notes              String?
 
-  purchaseRequest PurchaseRequest @relation(fields: [purchaseRequestId], references: [id], onDelete: Cascade)
+  purchaseRequest          PurchaseRequest          @relation(fields: [purchaseRequestId], references: [id], onDelete: Cascade)
+  quotationProposalItems   QuotationProposalItem[]
+  quotationItemSelections  QuotationItemSelection[]
 
   @@index([purchaseRequestId])
   @@map("purchase_request_items")
@@ -6152,4 +6162,174 @@ model Notification {
   @@index([recipientId, readAt])
   @@index([organizationId, recipientId])
   @@map("notifications")
+}
+
+// ─── Quotation & Purchase Order Module (Phase 9) ─────────────────────
+
+enum QuotationStatus {
+  RASCUNHO
+  AGUARDANDO_PROPOSTA
+  EM_ANALISE
+  APROVADA
+  CANCELADA
+  FECHADA
+}
+
+enum PurchaseOrderStatus {
+  RASCUNHO
+  EMITIDA
+  CONFIRMADA
+  EM_TRANSITO
+  ENTREGUE
+  CANCELADA
+}
+
+model Quotation {
+  id                    String          @id @default(cuid())
+  organizationId        String
+  purchaseRequestId     String
+  sequentialNumber      String
+  status                QuotationStatus @default(RASCUNHO)
+  responseDeadline      DateTime?
+  notes                 String?
+  approvedBy            String?
+  approvalJustification String?
+  approvedAt            DateTime?
+  createdBy             String
+  deletedAt             DateTime?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  organization    Organization        @relation(fields: [organizationId], references: [id])
+  purchaseRequest PurchaseRequest     @relation(fields: [purchaseRequestId], references: [id])
+  creator         User                @relation("QuotationCreator", fields: [createdBy], references: [id])
+  approver        User?               @relation("QuotationApprover", fields: [approvedBy], references: [id])
+  suppliers       QuotationSupplier[]
+  purchaseOrders  PurchaseOrder[]
+  itemSelections  QuotationItemSelection[]
+
+  @@unique([organizationId, sequentialNumber])
+  @@index([organizationId, status])
+  @@index([purchaseRequestId])
+  @@map("quotations")
+}
+
+model QuotationSupplier {
+  id          String    @id @default(cuid())
+  quotationId String
+  supplierId  String
+  isSelected  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  quotation      Quotation          @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  supplier       Supplier           @relation(fields: [supplierId], references: [id])
+  proposal       QuotationProposal?
+  itemSelections QuotationItemSelection[]
+
+  @@unique([quotationId, supplierId])
+  @@index([quotationId])
+  @@map("quotation_suppliers")
+}
+
+model QuotationProposal {
+  id                  String    @id @default(cuid())
+  quotationSupplierId String    @unique
+  freightTotal        Decimal?  @db.Decimal(12, 2)
+  taxTotal            Decimal?  @db.Decimal(12, 2)
+  paymentTerms        String?
+  validUntil          DateTime?
+  deliveryDays        Int?
+  fileUrl             String?
+  fileName            String?
+  notes               String?
+  registeredAt        DateTime  @default(now())
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  quotationSupplier QuotationSupplier      @relation(fields: [quotationSupplierId], references: [id], onDelete: Cascade)
+  items             QuotationProposalItem[]
+
+  @@map("quotation_proposals")
+}
+
+model QuotationProposalItem {
+  id                    String  @id @default(cuid())
+  proposalId            String
+  purchaseRequestItemId String
+  unitPrice             Decimal @db.Decimal(12, 4)
+  quantity              Decimal @db.Decimal(12, 3)
+  totalPrice            Decimal @db.Decimal(14, 2)
+  notes                 String?
+
+  proposal            QuotationProposal   @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  purchaseRequestItem PurchaseRequestItem @relation(fields: [purchaseRequestItemId], references: [id])
+
+  @@unique([proposalId, purchaseRequestItemId])
+  @@index([proposalId])
+  @@map("quotation_proposal_items")
+}
+
+model QuotationItemSelection {
+  id                    String @id @default(cuid())
+  quotationId           String
+  purchaseRequestItemId String
+  quotationSupplierId   String
+
+  quotation           Quotation           @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  purchaseRequestItem PurchaseRequestItem @relation(fields: [purchaseRequestItemId], references: [id])
+  quotationSupplier   QuotationSupplier   @relation(fields: [quotationSupplierId], references: [id])
+
+  @@unique([quotationId, purchaseRequestItemId])
+  @@index([quotationId])
+  @@map("quotation_item_selections")
+}
+
+model PurchaseOrder {
+  id                     String              @id @default(cuid())
+  organizationId         String
+  quotationId            String?
+  supplierId             String
+  sequentialNumber       String
+  status                 PurchaseOrderStatus @default(RASCUNHO)
+  isEmergency            Boolean             @default(false)
+  emergencyJustification String?
+  notes                  String?
+  internalReference      String?
+  expectedDeliveryDate   DateTime?
+  confirmedAt            DateTime?
+  issuedAt               DateTime?
+  overdueNotifiedAt      DateTime?
+  cancelledAt            DateTime?
+  createdBy              String
+  deletedAt              DateTime?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  organization Organization        @relation(fields: [organizationId], references: [id])
+  quotation    Quotation?          @relation(fields: [quotationId], references: [id])
+  supplier     Supplier            @relation(fields: [supplierId], references: [id])
+  creator      User                @relation("POCreator", fields: [createdBy], references: [id])
+  items        PurchaseOrderItem[]
+
+  @@unique([organizationId, sequentialNumber])
+  @@index([organizationId, status])
+  @@index([supplierId])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id                    String  @id @default(cuid())
+  purchaseOrderId       String
+  purchaseRequestItemId String?
+  productName           String
+  unitName              String
+  quantity              Decimal @db.Decimal(12, 3)
+  unitPrice             Decimal @db.Decimal(12, 4)
+  totalPrice            Decimal @db.Decimal(14, 2)
+  notes                 String?
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseOrderId])
+  @@map("purchase_order_items")
 }
