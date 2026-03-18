@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 09-01-PLAN.md
-last_updated: '2026-03-18T00:40:50.660Z'
+stopped_at: Completed 09-03-PLAN.md
+last_updated: '2026-03-18T00:51:57.553Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 15
-  completed_plans: 11
+  completed_plans: 12
   percent: 0
 ---
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-requisi-o-e-aprova-o P04 | 90min | 2 tasks | 11 files |
 | Phase 08-requisi-o-e-aprova-o P05 | 45min | 2 tasks | 14 files |
 | Phase 09-cota-o-e-pedido-de-compra P01 | 4 | 2 tasks | 4 files |
+| Phase 09-cota-o-e-pedido-de-compra P03 | 10min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,7 @@ Key decisions for v1.1:
 - [Phase 08-requisi-o-e-aprova-o]: HTML5 native drag events for rule reorder in ApprovalRulesPage — avoids adding dnd library for single use case
 - [Phase 09-cota-o-e-pedido-de-compra]: QuotationItemSelection model added for per-item split supplier selection
 - [Phase 09-cota-o-e-pedido-de-compra]: Named User relations used: QuotationCreator, QuotationApprover, POCreator
+- [Phase 09-cota-o-e-pedido-de-compra]: purchaseOrdersRouter registered after quotationsRouter; /duplicate and /:id/pdf before /:id to prevent Express ID collision; generatePurchaseOrderPdf streams directly to Response; static PDFDocument import used
 
 ### Pending Todos
 
@@ -105,6 +107,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T00:40:50.658Z
-Stopped at: Completed 09-01-PLAN.md
+Last session: 2026-03-18T00:51:57.540Z
+Stopped at: Completed 09-03-PLAN.md
 Resume file: None
