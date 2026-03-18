@@ -271,6 +271,17 @@ model Organization {
   cropOperationSequences    CropOperationSequence[]
   operationTypeSchedules    OperationTypeSchedule[]
   cropPhenologicalStages    CropPhenologicalStage[]
+  measurementUnits          MeasurementUnit[]
+  unitConversions           UnitConversion[]
+  productUnitConfigs        ProductUnitConfig[]
+  products                  Product[]
+  manufacturers             Manufacturer[]
+  stockEntries              StockEntry[]
+  stockBalances             StockBalance[]
+  stockOutputs              StockOutput[]
+  stockInventories          StockInventory[]
+  stockAdjustments          StockAdjustment[]
+  pesticidePrescriptions    PesticidePrescription[]
 
   @@map("organizations")
 }
@@ -317,6 +328,8 @@ model User {
   recordedPlantingOperations PlantingOperation[]      @relation("PlantingRecorder")
   recordedGrainHarvests      GrainHarvest[]           @relation("GrainHarvestRecorder")
   recordedCoffeeHarvests     CoffeeHarvest[]          @relation("CoffeeHarvestRecorder")
+  recordedOrangeHarvests     OrangeHarvest[]          @relation("OrangeHarvestRecorder")
+  createdPrescriptions       PesticidePrescription[]  @relation("PrescriptionCreator")
 
   @@map("users")
 }
@@ -384,6 +397,13 @@ model Farm {
   plantingOperations         PlantingOperation[]
   grainHarvests              GrainHarvest[]
   coffeeHarvests             CoffeeHarvest[]
+  orangeHarvests             OrangeHarvest[]
+  stockEntries               StockEntry[]
+  stockOutputsAsSource       StockOutput[] @relation("SourceFarmOutputs")
+  stockOutputsAsDestination  StockOutput[] @relation("DestinationFarmOutputs")
+  stockInventories           StockInventory[]
+  pesticidePrescriptions     PesticidePrescription[]
+  costCenters                CostCenter[]
 
   @@map("farms")
 }
@@ -682,6 +702,8 @@ model FieldPlot {
   plantingOperations     PlantingOperation[]
   grainHarvests          GrainHarvest[]
   coffeeHarvests         CoffeeHarvest[]
+  orangeHarvests             OrangeHarvest[]
+  pesticidePrescriptions     PesticidePrescription[]
 
   @@index([farmId])
   @@index([registrationId])
@@ -1186,6 +1208,8 @@ model Cultivar {
   plantingOperations PlantingOperation[]
   grainHarvests      GrainHarvest[]
   coffeeHarvests     CoffeeHarvest[]
+  orangeHarvests     OrangeHarvest[]
+  seedProducts       Product[]
 
   @@unique([name, crop, organizationId])
   @@index([organizationId])
@@ -1293,13 +1317,22 @@ model PesticideApplication {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
-  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
-  recorder  User      @relation("PesticideRecorder", fields: [recordedBy], references: [id])
+  // Stock deduction (CA8)
+  productId         String?  @map("product_id")
+  stockOutputId     String?  @map("stock_output_id")
+  totalQuantityUsed Decimal? @map("total_quantity_used") @db.Decimal(14, 4)
+
+  farm        Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot   FieldPlot    @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  recorder    User         @relation("PesticideRecorder", fields: [recordedBy], references: [id])
+  product     Product?     @relation("PesticideProduct", fields: [productId], references: [id], onDelete: SetNull)
+  stockOutput StockOutput? @relation("PesticideStockOutput", fields: [stockOutputId], references: [id], onDelete: SetNull)
 
   @@index([farmId])
   @@index([fieldPlotId])
   @@index([appliedAt])
+  @@index([productId])
+  @@index([stockOutputId])
   @@map("pesticide_applications")
 }
 
@@ -1348,13 +1381,22 @@ model FertilizerApplication {
   createdAt         DateTime                  @default(now())
   updatedAt         DateTime                  @updatedAt
 
-  farm      Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  fieldPlot FieldPlot @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
-  recorder  User      @relation("FertilizerRecorder", fields: [recordedBy], references: [id])
+  // Stock deduction
+  productId         String?  @map("product_id")
+  stockOutputId     String?  @map("stock_output_id")
+  totalQuantityUsed Decimal? @map("total_quantity_used") @db.Decimal(14, 4)
+
+  farm        Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot   FieldPlot    @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  recorder    User         @relation("FertilizerRecorder", fields: [recordedBy], references: [id])
+  product     Product?     @relation("FertilizerProduct", fields: [productId], references: [id], onDelete: SetNull)
+  stockOutput StockOutput? @relation("FertilizerStockOutput", fields: [stockOutputId], references: [id], onDelete: SetNull)
 
   @@index([farmId])
   @@index([fieldPlotId])
   @@index([appliedAt])
+  @@index([productId])
+  @@index([stockOutputId])
   @@map("fertilizer_applications")
 }
 
@@ -1466,15 +1508,20 @@ model SoilPrepOperation {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
-  farm          Farm          @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  fieldPlot     FieldPlot     @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  // Stock deduction (CA4)
+  stockOutputId       String?  @map("stock_output_id")
+
+  farm          Farm           @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot     FieldPlot      @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
   operationType OperationType? @relation(fields: [operationTypeId], references: [id], onDelete: SetNull)
-  recorder      User          @relation("SoilPrepRecorder", fields: [recordedBy], references: [id])
+  recorder      User           @relation("SoilPrepRecorder", fields: [recordedBy], references: [id])
+  stockOutput   StockOutput?   @relation("SoilPrepStockOutput", fields: [stockOutputId], references: [id], onDelete: SetNull)
 
   @@index([farmId])
   @@index([fieldPlotId])
   @@index([startedAt])
   @@index([operationTypeId])
+  @@index([stockOutputId])
   @@map("soil_prep_operations")
 }
 
@@ -1492,28 +1539,51 @@ enum FieldTeamType {
   GENERICA
 }
 
-model FieldTeam {
-  id          String        @id @default(uuid())
-  farmId      String
-  name        String
-  teamType    FieldTeamType
-  isTemporary Boolean       @default(false)
-  leaderId    String
-  notes       String?
-  createdBy   String
-  deletedAt   DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+// ─── Cost Centers (US-041 CA8) ────────────────────────────────────────────
 
-  farm    Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
-  leader  User            @relation("TeamLeader", fields: [leaderId], references: [id])
-  creator User            @relation("TeamCreator", fields: [createdBy], references: [id])
+model CostCenter {
+  id             String    @id @default(uuid())
+  farmId         String
+  code           String
+  name           String
+  description    String?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  farm       Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldTeams FieldTeam[]
+
+  @@unique([farmId, code])
+  @@index([farmId])
+  @@map("cost_centers")
+}
+
+model FieldTeam {
+  id           String        @id @default(uuid())
+  farmId       String
+  name         String
+  teamType     FieldTeamType
+  isTemporary  Boolean       @default(false)
+  leaderId     String
+  costCenterId String?
+  notes        String?
+  createdBy    String
+  deletedAt    DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  farm       Farm            @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  leader     User            @relation("TeamLeader", fields: [leaderId], references: [id])
+  creator    User            @relation("TeamCreator", fields: [createdBy], references: [id])
+  costCenter CostCenter?     @relation(fields: [costCenterId], references: [id])
   members        FieldTeamMember[]
   teamOperations TeamOperation[]
 
   @@index([farmId])
   @@index([leaderId])
   @@index([teamType])
+  @@index([costCenterId])
   @@map("field_teams")
 }
 
@@ -2061,4 +2131,687 @@ model CoffeeHarvest {
   @@index([harvestDate])
   @@index([microlotCode])
   @@map("coffee_harvests")
+}
+
+model OrangeHarvest {
+  id              String    @id @default(uuid())
+  farmId          String
+  fieldPlotId     String
+  cultivarId      String?
+
+  // CA1 — campos básicos
+  harvestDate     DateTime  @db.Date
+  variety         String?   // variedade da laranja (ex: Pera, Valência, Natal)
+
+  // CA1 — produção
+  numberOfBoxes   Decimal   @db.Decimal(12, 2) // nº de caixas (40,8kg)
+  totalWeightKg   Decimal?  @db.Decimal(14, 2) // peso total em kg
+  treesHarvested  Int?      // nº de árvores colhidas
+
+  // CA2 — produtividade (calculados)
+  boxesPerTree    Decimal?  @db.Decimal(8, 2) // caixas/pé
+  boxesPerHa      Decimal?  @db.Decimal(10, 2) // cx/ha
+  tonsPerHa       Decimal?  @db.Decimal(10, 2) // t/ha
+
+  // CA3 — qualidade
+  ratioSS         Decimal?  @db.Decimal(5, 2) // ratio sólidos solúveis (°Brix/acidez)
+  acidityPct      Decimal?  @db.Decimal(5, 2) // acidez (%)
+  refusalPct      Decimal?  @db.Decimal(5, 2) // % de refugo
+
+  // CA4 — destino
+  destination     String?   // INDUSTRIA, IN_NATURA, DESCARTE
+  destinationName String?   // nome do comprador/indústria
+
+  // CA5 — equipe
+  numberOfHarvesters    Int?       // nº de colhedores
+  harvestersProductivity Decimal?  @db.Decimal(10, 2) // caixas/pessoa/dia
+
+  // CA6 — contrato de venda
+  saleContractRef String?   // referência ao contrato de venda
+
+  // common
+  notes           String?
+  recordedBy      String
+  deletedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  farm          Farm        @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot     FieldPlot   @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  cultivar      Cultivar?   @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
+  recorder      User        @relation("OrangeHarvestRecorder", fields: [recordedBy], references: [id])
+
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@index([cultivarId])
+  @@index([harvestDate])
+  @@index([saleContractRef])
+  @@map("orange_harvests")
+}
+
+// ─── US-088: Unidades de Medida e Conversões ─────────────────────────
+
+enum UnitCategory {
+  WEIGHT
+  VOLUME
+  COUNT
+  AREA
+}
+
+model MeasurementUnit {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String       // kg, g, L, mL, unidade, saco, tonelada, arroba, caixa
+  abbreviation   String       // kg, g, L, mL, un, sc, t, @, cx
+  category       UnitCategory
+  isSystem       Boolean      @default(false) // pré-configuradas, não deletáveis
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  conversionsFrom UnitConversion[] @relation("ConversionFromUnit")
+  conversionsTo   UnitConversion[] @relation("ConversionToUnit")
+
+  purchaseUnitConfigs    ProductUnitConfig[] @relation("PurchaseUnit")
+  stockUnitConfigs       ProductUnitConfig[] @relation("StockUnit")
+  applicationUnitConfigs ProductUnitConfig[] @relation("ApplicationUnit")
+  productConvsFrom       ProductConversion[] @relation("ProductConvFromUnit")
+  productConvsTo         ProductConversion[] @relation("ProductConvToUnit")
+  products               Product[]
+
+  @@unique([organizationId, abbreviation])
+  @@index([organizationId])
+  @@index([category])
+  @@map("measurement_units")
+}
+
+model UnitConversion {
+  id             String  @id @default(uuid())
+  organizationId String
+  fromUnitId     String
+  toUnitId       String
+  factor         Decimal @db.Decimal(20, 10) // fromUnit * factor = toUnit
+  isSystem       Boolean @default(false)
+  isActive       Boolean @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fromUnit     MeasurementUnit @relation("ConversionFromUnit", fields: [fromUnitId], references: [id], onDelete: Cascade)
+  toUnit       MeasurementUnit @relation("ConversionToUnit", fields: [toUnitId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, fromUnitId, toUnitId])
+  @@index([organizationId])
+  @@index([fromUnitId])
+  @@index([toUnitId])
+  @@map("unit_conversions")
+}
+
+// CA3: Conversões específicas por produto
+// CA4: Unidade de compra, estoque e aplicação por produto
+model ProductUnitConfig {
+  id                String  @id @default(uuid())
+  organizationId    String
+  productId         String  // FK será adicionada em US-089 (Product model)
+  purchaseUnitId    String? // unidade de compra (ex: tonelada)
+  stockUnitId       String? // unidade de estoque (ex: kg)
+  applicationUnitId String? // unidade de aplicação (ex: mL/ha)
+  densityGPerMl     Decimal? @db.Decimal(10, 4) // densidade para converter peso↔volume
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  purchaseUnit    MeasurementUnit? @relation("PurchaseUnit", fields: [purchaseUnitId], references: [id], onDelete: SetNull)
+  stockUnit       MeasurementUnit? @relation("StockUnit", fields: [stockUnitId], references: [id], onDelete: SetNull)
+  applicationUnit MeasurementUnit? @relation("ApplicationUnit", fields: [applicationUnitId], references: [id], onDelete: SetNull)
+
+  productConversions ProductConversion[]
+
+  @@unique([organizationId, productId])
+  @@index([organizationId])
+  @@index([productId])
+  @@map("product_unit_configs")
+}
+
+// CA3: Conversões específicas por produto (override das globais)
+model ProductConversion {
+  id                  String  @id @default(uuid())
+  productUnitConfigId String
+  fromUnitId          String
+  toUnitId            String
+  factor              Decimal @db.Decimal(20, 10)
+  description         String? // ex: "480 L cereja = 1 saca beneficiada"
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  productUnitConfig ProductUnitConfig @relation(fields: [productUnitConfigId], references: [id], onDelete: Cascade)
+  fromUnit          MeasurementUnit   @relation("ProductConvFromUnit", fields: [fromUnitId], references: [id], onDelete: Cascade)
+  toUnit            MeasurementUnit   @relation("ProductConvToUnit", fields: [toUnitId], references: [id], onDelete: Cascade)
+
+  @@unique([productUnitConfigId, fromUnitId, toUnitId])
+  @@index([productUnitConfigId])
+  @@map("product_conversions")
+}
+
+// ─── EPIC-10 US-089: Produtos, Insumos e Serviços ─────────────────
+
+enum ProductNature {
+  PRODUCT
+  SERVICE
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Product {
+  id               String        @id @default(uuid())
+  organizationId   String
+  nature           ProductNature
+  name             String
+  type             String        // semente, fertilizante, defensivo, consultoria agronômica, etc.
+  category         String?       // grupo/categoria livre
+  status           ProductStatus @default(ACTIVE)
+  notes            String?       // observações
+
+  // ── Campos adicionais para Produto (CA5) ──
+  commercialName   String?       // nome comercial
+  manufacturerId   String?       // FK para Manufacturer
+  measurementUnitId String?      // unidade de medida principal
+  barcode          String?       // código de barras / SKU
+  photoUrl         String?       // URL da foto
+  technicalSheetUrl String?      // URL da ficha técnica (PDF)
+
+  // ── Campos adicionais para Serviço (CA6) ──
+  chargeUnit       String?       // hora, diária, visita, hectare, etc.
+  unitCost         Decimal?      @db.Decimal(12, 2) // custo unitário padrão
+  typicalFrequency String?       // avulso, mensal, quinzenal, semanal, por demanda
+  requiresScheduling Boolean     @default(false)
+  linkedActivity   String?       // pecuária de leite, café, milho, todas
+
+  // ── CA8: Defensivos ──
+  toxicityClass      String?     // I, II, III, IV, V (não classificado)
+  mapaRegistration   String?     // nº registro MAPA
+  environmentalClass String?     // I, II, III, IV
+  actionMode         String?     // contato, sistêmico, translaminar, etc.
+  chemicalGroup      String?     // organofosforado, piretroide, triazol, etc.
+  withdrawalPeriods  Json?       // [{ crop, days }] — carência por cultura
+
+  // ── CA9: Fertilizantes ──
+  npkFormulation     String?     // ex: "04-14-08", "20-00-20"
+  nutrientForm       String?     // granulado, líquido, foliar, fertirrigação
+  solubility         String?     // alta, média, baixa, lenta liberação
+  nutrientComposition Json?      // { N: 4, P2O5: 14, K2O: 8, ... } — % nutrientes
+
+  // ── CA10: Foliares ──
+  nutritionalComposition Json?   // { N: 10, P: 0, K: 5, Ca: 2, ... } — % ou g/L
+  sprayCompatibility     Json?   // { compatible: [...], incompatible: [...] }
+
+  // ── CA11: Medicamentos veterinários ──
+  therapeuticClass     String?   // antibiótico, anti-inflamatório, antiparasitário, etc.
+  administrationRoute  String?   // IM, SC, IV, oral, intramamária, intravaginal
+  milkWithdrawalHours  Int?      // período de carência leite (horas)
+  slaughterWithdrawalDays Int?   // período de carência abate (dias)
+  vetMapaRegistration  String?   // registro MAPA vet
+  requiresPrescription Boolean   @default(false)
+  storageCondition     String?   // ambiente, refrigerado_2_8, congelado
+
+  // ── US-092 CA1/CA2: Alertas de estoque ──
+  reorderPoint       Decimal?  @db.Decimal(14, 4) // ponto de reposição (quantidade mínima)
+  safetyStock        Decimal?  @db.Decimal(14, 4) // estoque de segurança (quantidade ideal)
+  expiryAlertDays    Int?      // dias antes do vencimento para alertar (padrão: 30)
+
+  // ── CA12: Sementes ──
+  cultivarId           String?   // FK para Cultivar
+  sieveSize            String?   // peneira
+  industrialTreatment  String?   // tratamento industrial
+  germinationPct       Decimal?  @db.Decimal(5, 2) // germinação %
+  purityPct            Decimal?  @db.Decimal(5, 2) // pureza %
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  deletedAt        DateTime?     // soft delete
+
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  manufacturer     Manufacturer?    @relation(fields: [manufacturerId], references: [id], onDelete: SetNull)
+  measurementUnit  MeasurementUnit? @relation(fields: [measurementUnitId], references: [id], onDelete: SetNull)
+  cultivar         Cultivar?        @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
+
+  compositions     ProductComposition[]
+  stockEntryItems      StockEntryItem[]
+  stockOutputItems     StockOutputItem[]
+  stockBalance         StockBalance?
+  stockInventoryItems  StockInventoryItem[]
+  stockAdjustments     StockAdjustment[]
+  prescriptionProducts PesticidePrescriptionProduct[]
+  pesticideApplications  PesticideApplication[]  @relation("PesticideProduct")
+  fertilizerApplications FertilizerApplication[] @relation("FertilizerProduct")
+
+  @@unique([organizationId, name, nature])
+  @@index([organizationId])
+  @@index([organizationId, nature])
+  @@index([organizationId, type])
+  @@index([organizationId, status])
+  @@index([manufacturerId])
+  @@map("products")
+}
+
+model Manufacturer {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String   // razão social
+  cnpj           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  products     Product[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("manufacturers")
+}
+
+// CA7: Composição / princípio ativo
+model ProductComposition {
+  id              String  @id @default(uuid())
+  productId       String
+  activeIngredient String  // nome do princípio ativo ou nutriente
+  concentration   String? // ex: "480 g/L", "10%", "150 mg/mL"
+  function        String? // ex: herbicida, bactericida, nutriente
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_compositions")
+}
+
+// ─── EPIC-10 US-090: Entrada de Insumos no Estoque ─────────────────
+
+enum StockEntryStatus {
+  DRAFT
+  CONFIRMED
+  CANCELLED
+}
+
+enum ExpenseType {
+  FREIGHT
+  INSURANCE
+  UNLOADING
+  TOLL
+  TEMPORARY_STORAGE
+  PACKAGING
+  PORT_FEE
+  ICMS_ST
+  IPI
+  OTHER
+}
+
+enum ApportionmentMethod {
+  BY_VALUE
+  BY_QUANTITY
+  BY_WEIGHT
+  FIXED
+}
+
+enum StockMovementType {
+  ENTRY
+  EXIT
+  ADJUSTMENT
+}
+
+model StockEntry {
+  id                   String           @id @default(uuid())
+  organizationId       String
+  entryDate            DateTime         @default(now())
+  status               StockEntryStatus @default(DRAFT)
+  supplierName         String?
+  invoiceNumber        String?
+  invoiceFileUrl       String?
+  storageFarmId        String?
+  storageLocation      String?          // depósito/galpão
+  storageSublocation   String?          // prateleira
+  notes                String?
+  totalMerchandiseCost Decimal          @default(0) @db.Decimal(14, 2)
+  totalExpensesCost    Decimal          @default(0) @db.Decimal(14, 2)
+  totalCost            Decimal          @default(0) @db.Decimal(14, 2)
+  createdBy            String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  cancelledAt          DateTime?
+
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  storageFarm  Farm?              @relation(fields: [storageFarmId], references: [id], onDelete: SetNull)
+  items        StockEntryItem[]
+  expenses     StockEntryExpense[]
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, entryDate])
+  @@index([organizationId, supplierName])
+  @@map("stock_entries")
+}
+
+model StockEntryItem {
+  id                  String   @id @default(uuid())
+  stockEntryId        String
+  productId           String
+  quantity            Decimal  @db.Decimal(14, 4)
+  unitCost            Decimal  @db.Decimal(14, 4)
+  totalCost           Decimal  @db.Decimal(14, 2)
+  batchNumber         String?
+  manufacturingDate   DateTime?
+  expirationDate      DateTime?
+  apportionedExpenses Decimal  @default(0) @db.Decimal(14, 4)
+  finalUnitCost       Decimal  @default(0) @db.Decimal(14, 4)
+  finalTotalCost      Decimal  @default(0) @db.Decimal(14, 2)
+  weightKg            Decimal? @db.Decimal(14, 4)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  stockEntry StockEntry @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([stockEntryId])
+  @@index([productId])
+  @@map("stock_entry_items")
+}
+
+model StockEntryExpense {
+  id                  String              @id @default(uuid())
+  stockEntryId        String
+  expenseType         ExpenseType
+  description         String?
+  supplierName        String?
+  invoiceNumber       String?
+  invoiceFileUrl      String?
+  amount              Decimal             @db.Decimal(14, 2)
+  apportionmentMethod ApportionmentMethod @default(BY_VALUE)
+  isRetroactive       Boolean             @default(false)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  stockEntry StockEntry @relation(fields: [stockEntryId], references: [id], onDelete: Cascade)
+
+  @@index([stockEntryId])
+  @@map("stock_entry_expenses")
+}
+
+model StockBalance {
+  id              String    @id @default(uuid())
+  organizationId  String
+  productId       String    @unique
+  currentQuantity Decimal   @default(0) @db.Decimal(14, 4)
+  averageCost     Decimal   @default(0) @db.Decimal(14, 4)
+  totalValue      Decimal   @default(0) @db.Decimal(14, 2)
+  lastEntryDate   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([organizationId, productId])
+  @@index([organizationId])
+  @@map("stock_balances")
+}
+
+// ─── EPIC-10 US-091: Saída de Insumos do Estoque ────────────────────
+
+enum StockOutputType {
+  CONSUMPTION
+  MANUAL_CONSUMPTION
+  TRANSFER
+  DISPOSAL
+}
+
+enum StockOutputStatus {
+  DRAFT
+  CONFIRMED
+  CANCELLED
+}
+
+enum DisposalReason {
+  EXPIRED
+  DAMAGED
+  CONTAMINATED
+  OTHER
+}
+
+model StockOutput {
+  id                  String            @id @default(uuid())
+  organizationId      String
+  outputDate          DateTime          @default(now())
+  type                StockOutputType
+  status              StockOutputStatus @default(DRAFT)
+
+  // CONSUMPTION / MANUAL_CONSUMPTION
+  fieldOperationRef   String?           // referência textual à operação de campo
+  fieldPlotId         String?           // talhão destino do consumo
+
+  // TRANSFER
+  sourceFarmId        String?
+  sourceLocation      String?           // depósito/galpão de origem
+  destinationFarmId   String?
+  destinationLocation String?           // depósito/galpão de destino
+
+  // DISPOSAL
+  disposalReason      DisposalReason?
+  disposalJustification String?         // justificativa detalhada
+  authorizedBy        String?           // quem autorizou o descarte
+
+  // Common
+  responsibleName     String?
+  notes               String?
+  totalCost           Decimal           @default(0) @db.Decimal(14, 2)
+  createdBy           String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  cancelledAt         DateTime?
+
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sourceFarm      Farm?             @relation("SourceFarmOutputs", fields: [sourceFarmId], references: [id], onDelete: SetNull)
+  destinationFarm Farm?             @relation("DestinationFarmOutputs", fields: [destinationFarmId], references: [id], onDelete: SetNull)
+  items           StockOutputItem[]
+  pesticideApplications  PesticideApplication[]  @relation("PesticideStockOutput")
+  fertilizerApplications FertilizerApplication[] @relation("FertilizerStockOutput")
+  soilPrepOperations     SoilPrepOperation[]     @relation("SoilPrepStockOutput")
+
+  @@index([organizationId])
+  @@index([organizationId, type])
+  @@index([organizationId, status])
+  @@index([organizationId, outputDate])
+  @@map("stock_outputs")
+}
+
+model StockOutputItem {
+  id            String   @id @default(uuid())
+  stockOutputId String
+  productId     String
+  quantity      Decimal  @db.Decimal(14, 4)
+  unitCost      Decimal  @db.Decimal(14, 4) // custo médio no momento da saída
+  totalCost     Decimal  @db.Decimal(14, 2)
+  batchNumber   String?  // lote (FEFO)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  stockOutput StockOutput @relation(fields: [stockOutputId], references: [id], onDelete: Cascade)
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([stockOutputId])
+  @@index([productId])
+  @@map("stock_output_items")
+}
+
+// ─── EPIC-10 US-093: Inventário e Conciliação de Estoque ────────────
+
+enum StockInventoryStatus {
+  OPEN
+  IN_PROGRESS
+  RECONCILED
+  CANCELLED
+}
+
+enum AdjustmentType {
+  INVENTORY_SURPLUS
+  INVENTORY_SHORTAGE
+}
+
+model StockInventory {
+  id               String               @id @default(uuid())
+  organizationId   String
+  inventoryDate    DateTime             @default(now())
+  status           StockInventoryStatus @default(OPEN)
+  storageFarmId    String?
+  storageLocation  String?              // depósito/galpão
+  notes            String?
+  reconciledAt     DateTime?
+  reconciledBy     String?
+  createdBy        String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  cancelledAt      DateTime?
+
+  organization Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  storageFarm  Farm?                  @relation(fields: [storageFarmId], references: [id], onDelete: SetNull)
+  items        StockInventoryItem[]
+  adjustments  StockAdjustment[]
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, inventoryDate])
+  @@map("stock_inventories")
+}
+
+model StockInventoryItem {
+  id               String   @id @default(uuid())
+  stockInventoryId String
+  productId        String
+  batchNumber      String?
+  systemQuantity   Decimal  @db.Decimal(14, 4) // saldo no momento da contagem
+  countedQuantity  Decimal? @db.Decimal(14, 4) // quantidade contada fisicamente
+  variance         Decimal? @db.Decimal(14, 4) // countedQuantity - systemQuantity
+  reason           String?  // motivo da divergência
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  stockInventory StockInventory @relation(fields: [stockInventoryId], references: [id], onDelete: Cascade)
+  product        Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([stockInventoryId, productId, batchNumber])
+  @@index([stockInventoryId])
+  @@index([productId])
+  @@map("stock_inventory_items")
+}
+
+// ── Receituário Agronômico (US-094) ──
+
+enum PrescriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+}
+
+model PesticidePrescription {
+  id                   String             @id @default(uuid())
+  organizationId       String
+  farmId               String
+  fieldPlotId          String
+  sequentialNumber     Int                // CA8: numeração sequencial por fazenda
+  issuedAt             DateTime           @default(now())
+
+  // CA2: auto-filled from context
+  farmName             String
+  fieldPlotName        String
+  cultureName          String             // cultura plantada no talhão
+  areaHa               Decimal            @db.Decimal(12, 4)
+  targetPest           String             // praga/doença alvo
+  targetType           PesticideTarget    // PRAGA, DOENCA, PLANTA_DANINHA
+
+  // CA3: dose info
+  sprayVolume          Decimal            @db.Decimal(10, 2) // volume de calda L/ha
+  numberOfApplications Int                @default(1)
+  applicationInterval  Int?               // intervalo entre aplicações (dias)
+
+  // CA4: dados do agrônomo
+  agronomistName       String
+  agronomistCrea       String
+  agronomistSignatureUrl String?          // URL da assinatura digital
+
+  // CA7: vinculação
+  pesticideApplicationId String?          // link to pesticide application
+  stockOutputId        String?            // link to stock output
+
+  // metadata
+  technicalJustification String?
+  notes                String?
+  status               PrescriptionStatus @default(ACTIVE)
+  createdBy            String
+  deletedAt            DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  farm         Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  fieldPlot    FieldPlot    @relation(fields: [fieldPlotId], references: [id], onDelete: Cascade)
+  creator      User         @relation("PrescriptionCreator", fields: [createdBy], references: [id])
+  products     PesticidePrescriptionProduct[]
+
+  @@unique([farmId, sequentialNumber])
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([fieldPlotId])
+  @@map("pesticide_prescriptions")
+}
+
+model PesticidePrescriptionProduct {
+  id                   String  @id @default(uuid())
+  prescriptionId       String
+  productId            String?
+  productName          String
+  activeIngredient     String
+  dose                 Decimal @db.Decimal(10, 4)
+  doseUnit             DoseUnit @default(L_HA)
+
+  // CA5: carência e segurança
+  withdrawalPeriodDays Int?
+  safetyIntervalDays   Int?    // intervalo de segurança (reentrada)
+
+  // product details (snapshot)
+  toxicityClass        String?
+  mapaRegistration     String?
+  environmentalClass   String?
+
+  prescription PesticidePrescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  product      Product?              @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([prescriptionId])
+  @@index([productId])
+  @@map("pesticide_prescription_products")
+}
+
+model StockAdjustment {
+  id               String         @id @default(uuid())
+  organizationId   String
+  stockInventoryId String
+  productId        String
+  adjustmentType   AdjustmentType
+  previousQuantity Decimal        @db.Decimal(14, 4)
+  newQuantity      Decimal        @db.Decimal(14, 4)
+  adjustmentQty    Decimal        @db.Decimal(14, 4) // diferença absoluta
+  reason           String
+  createdBy        String?
+  createdAt        DateTime       @default(now())
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stockInventory StockInventory @relation(fields: [stockInventoryId], references: [id], onDelete: Cascade)
+  product        Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId])
+  @@index([stockInventoryId])
+  @@index([productId])
+  @@map("stock_adjustments")
 }

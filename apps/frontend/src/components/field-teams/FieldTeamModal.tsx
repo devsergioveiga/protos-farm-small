@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { api } from '@/services/api';
 import { useFarmContext } from '@/stores/FarmContext';
 import { FIELD_TEAM_TYPES } from '@/types/field-team';
-import type { FieldTeamItem, CreateFieldTeamInput } from '@/types/field-team';
+import type { FieldTeamItem, CreateFieldTeamInput, CostCenterItem } from '@/types/field-team';
 import type { OrgUserListItem } from '@/types/org-user';
 import './FieldTeamModal.css';
 
@@ -27,33 +27,46 @@ function FieldTeamModal({ isOpen, team, onClose, onSuccess }: FieldTeamModalProp
   const [teamType, setTeamType] = useState('');
   const [isTemporary, setIsTemporary] = useState(false);
   const [leaderId, setLeaderId] = useState('');
+  const [costCenterId, setCostCenterId] = useState('');
   const [memberIds, setMemberIds] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [users, setUsers] = useState<OrgUserListItem[]>([]);
+  const [costCenters, setCostCenters] = useState<CostCenterItem[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
-  // Load org users filtered by farm when modal opens
+  // Load org users and cost centers when modal opens
   useEffect(() => {
     if (!isOpen || !selectedFarmId) return;
 
     let cancelled = false;
     setLoadingUsers(true);
-    api
+
+    const usersPromise = api
       .get<UsersResponse>(`/org/users?limit=100&status=ACTIVE&farmId=${selectedFarmId}`)
       .then((result) => {
         if (!cancelled) setUsers(result.data);
       })
       .catch(() => {
         if (!cancelled) setUsers([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingUsers(false);
       });
+
+    const costCentersPromise = api
+      .get<CostCenterItem[]>(`/org/farms/${selectedFarmId}/cost-centers?activeOnly=true`)
+      .then((result) => {
+        if (!cancelled) setCostCenters(result);
+      })
+      .catch(() => {
+        if (!cancelled) setCostCenters([]);
+      });
+
+    Promise.all([usersPromise, costCentersPromise]).finally(() => {
+      if (!cancelled) setLoadingUsers(false);
+    });
 
     return () => {
       cancelled = true;
@@ -67,6 +80,7 @@ function FieldTeamModal({ isOpen, team, onClose, onSuccess }: FieldTeamModalProp
       setTeamType('');
       setIsTemporary(false);
       setLeaderId('');
+      setCostCenterId('');
       setMemberIds([]);
       setNotes('');
       setSubmitError(null);
@@ -78,6 +92,7 @@ function FieldTeamModal({ isOpen, team, onClose, onSuccess }: FieldTeamModalProp
       setTeamType(team.teamType);
       setIsTemporary(team.isTemporary);
       setLeaderId(team.leaderId);
+      setCostCenterId(team.costCenterId ?? '');
       setMemberIds(team.members.map((m) => m.userId));
       setNotes(team.notes ?? '');
     }
@@ -113,6 +128,7 @@ function FieldTeamModal({ isOpen, team, onClose, onSuccess }: FieldTeamModalProp
         teamType,
         isTemporary,
         leaderId,
+        costCenterId: costCenterId || null,
         memberIds: isEditing ? memberIds : memberIds.length > 0 ? memberIds : undefined,
         notes: notes.trim() || null,
       };
@@ -136,6 +152,7 @@ function FieldTeamModal({ isOpen, team, onClose, onSuccess }: FieldTeamModalProp
     teamType,
     isTemporary,
     leaderId,
+    costCenterId,
     memberIds,
     notes,
     isEditing,
@@ -271,6 +288,30 @@ function FieldTeamModal({ isOpen, team, onClose, onSuccess }: FieldTeamModalProp
                 </label>
               </div>
             </div>
+
+            {/* Centro de custo */}
+            {costCenters.length > 0 && (
+              <div className="ft-modal__row">
+                <div className="ft-modal__field">
+                  <label htmlFor="ft-cost-center" className="ft-modal__label">
+                    Centro de custo
+                  </label>
+                  <select
+                    id="ft-cost-center"
+                    className="ft-modal__select"
+                    value={costCenterId}
+                    onChange={(e) => setCostCenterId(e.target.value)}
+                  >
+                    <option value="">Nenhum</option>
+                    {costCenters.map((cc) => (
+                      <option key={cc.id} value={cc.id}>
+                        {cc.code} — {cc.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
 
             {/* Membros */}
             <h3 className="ft-modal__section-title">

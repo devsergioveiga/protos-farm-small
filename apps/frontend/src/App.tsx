@@ -26,6 +26,7 @@ const WeighingSessionPage = lazy(() => import('@/pages/WeighingSessionPage'));
 const AnimalDetailPage = lazy(() => import('@/pages/AnimalDetailPage'));
 const CultivarsPage = lazy(() => import('@/pages/CultivarsPage'));
 const PesticideApplicationsPage = lazy(() => import('@/pages/PesticideApplicationsPage'));
+const PesticidePrescriptionsPage = lazy(() => import('@/pages/PesticidePrescriptionsPage'));
 const FertilizerApplicationsPage = lazy(() => import('@/pages/FertilizerApplicationsPage'));
 const CulturalOperationsPage = lazy(() => import('@/pages/CulturalOperationsPage'));
 const FieldTeamsPage = lazy(() => import('@/pages/FieldTeamsPage'));
@@ -42,6 +43,14 @@ const PlantingPage = lazy(() => import('@/pages/PlantingPage'));
 const SoilPrepPage = lazy(() => import('@/pages/SoilPrepPage'));
 const CoffeeHarvestsPage = lazy(() => import('@/pages/CoffeeHarvestsPage'));
 const ProductivityMapPage = lazy(() => import('@/pages/ProductivityMapPage'));
+const OrangeHarvestsPage = lazy(() => import('@/pages/OrangeHarvestsPage'));
+const MeasurementUnitsPage = lazy(() => import('@/pages/MeasurementUnitsPage'));
+const ProductsPage = lazy(() => import('@/pages/ProductsPage'));
+const StockEntriesPage = lazy(() => import('@/pages/StockEntriesPage'));
+const StockOutputsPage = lazy(() => import('@/pages/StockOutputsPage'));
+const StockAlertsPage = lazy(() => import('@/pages/StockAlertsPage'));
+const StockInventoriesPage = lazy(() => import('@/pages/StockInventoriesPage'));
+const ConversionHistoryPage = lazy(() => import('@/pages/ConversionHistoryPage'));
 
 export function App() {
   return (
@@ -75,6 +84,7 @@ export function App() {
                 <Route path="/weighing-session" element={<WeighingSessionPage />} />
                 <Route path="/cultivars" element={<CultivarsPage />} />
                 <Route path="/pesticide-applications" element={<PesticideApplicationsPage />} />
+                <Route path="/pesticide-prescriptions" element={<PesticidePrescriptionsPage />} />
                 <Route path="/fertilizer-applications" element={<FertilizerApplicationsPage />} />
                 <Route path="/cultural-operations" element={<CulturalOperationsPage />} />
                 <Route path="/field-teams" element={<FieldTeamsPage />} />
@@ -84,7 +94,15 @@ export function App() {
                 <Route path="/soil-prep" element={<SoilPrepPage />} />
                 <Route path="/coffee-harvests" element={<CoffeeHarvestsPage />} />
                 <Route path="/productivity-map" element={<ProductivityMapPage />} />
+                <Route path="/orange-harvests" element={<OrangeHarvestsPage />} />
                 <Route path="/pests" element={<PestsPage />} />
+                <Route path="/measurement-units" element={<MeasurementUnitsPage />} />
+                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/stock-entries" element={<StockEntriesPage />} />
+                <Route path="/stock-outputs" element={<StockOutputsPage />} />
+                <Route path="/stock-alerts" element={<StockAlertsPage />} />
+                <Route path="/stock-inventories" element={<StockInventoriesPage />} />
+                <Route path="/conversion-history" element={<ConversionHistoryPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}

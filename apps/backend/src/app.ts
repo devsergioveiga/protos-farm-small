@@ -40,6 +40,16 @@ import { grainHarvestsRouter } from './modules/grain-harvests/grain-harvests.rou
 import { moistureStandardsRouter } from './modules/grain-harvests/moisture-standards.routes';
 import { coffeeHarvestsRouter } from './modules/coffee-harvests/coffee-harvests.routes';
 import { productivityMapRouter } from './modules/productivity-map/productivity-map.routes';
+import { orangeHarvestsRouter } from './modules/orange-harvests/orange-harvests.routes';
+import { measurementUnitsRouter } from './modules/measurement-units/measurement-units.routes';
+import { productsRouter } from './modules/products/products.routes';
+import { stockEntriesRouter } from './modules/stock-entries/stock-entries.routes';
+import { stockOutputsRouter } from './modules/stock-outputs/stock-outputs.routes';
+import { stockAlertsRouter } from './modules/stock-alerts/stock-alerts.routes';
+import { stockInventoriesRouter } from './modules/stock-inventories/stock-inventories.routes';
+import { pesticidePrescriptionsRouter } from './modules/pesticide-prescriptions/pesticide-prescriptions.routes';
+import { conversionHistoryRouter } from './modules/conversion-history/conversion-history.routes';
+import { costCentersRouter } from './modules/cost-centers/cost-centers.routes';
 
 const app = express();
 
@@ -87,5 +97,15 @@ app.use('/api', grainHarvestsRouter);
 app.use('/api', moistureStandardsRouter);
 app.use('/api', coffeeHarvestsRouter);
 app.use('/api', productivityMapRouter);
+app.use('/api', orangeHarvestsRouter);
+app.use('/api', measurementUnitsRouter);
+app.use('/api', productsRouter);
+app.use('/api', stockEntriesRouter);
+app.use('/api', stockOutputsRouter);
+app.use('/api', stockAlertsRouter);
+app.use('/api', stockInventoriesRouter);
+app.use('/api', pesticidePrescriptionsRouter);
+app.use('/api', conversionHistoryRouter);
+app.use('/api', costCentersRouter);
 
 export { app };

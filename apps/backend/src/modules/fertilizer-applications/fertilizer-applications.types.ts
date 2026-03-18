@@ -63,6 +63,9 @@ export interface CreateFertilizerApplicationInput {
   photoUrl?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  // Stock deduction
+  productId?: string | null;
+  totalQuantityUsed?: number | null;
 }
 
 // ─── Response Types ─────────────────────────────────────────────────
@@ -96,6 +99,10 @@ export interface FertilizerApplicationItem {
   recorderName: string;
   createdAt: string;
   updatedAt: string;
+  // Stock deduction
+  productId: string | null;
+  stockOutputId: string | null;
+  totalQuantityUsed: number | null;
 }
 
 export interface NutrientSummaryItem {

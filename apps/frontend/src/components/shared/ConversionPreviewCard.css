@@ -1,0 +1,148 @@
+/* ConversionPreviewCard — US-095 CA4/CA7/CA9 */
+
+.conversion-preview {
+  border: 1px solid var(--color-primary-200);
+  border-radius: 8px;
+  background: var(--color-primary-50);
+  padding: 12px 16px;
+  margin: 8px 0 16px;
+}
+
+.conversion-preview__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: var(--color-primary-700);
+}
+
+.conversion-preview__title {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.conversion-preview__content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.conversion-preview__calculation {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.conversion-preview__formula {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+}
+
+.conversion-preview__equals {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  color: var(--color-neutral-400);
+}
+
+.conversion-preview__result {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-primary-700);
+}
+
+/* Spray mix section (CA7) */
+.conversion-preview__spray {
+  border-top: 1px solid var(--color-primary-100);
+  padding-top: 8px;
+}
+
+.conversion-preview__spray-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-primary-700);
+  margin-bottom: 8px;
+}
+
+.conversion-preview__spray-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .conversion-preview__spray-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.conversion-preview__spray-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.conversion-preview__spray-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  color: var(--color-neutral-500);
+}
+
+.conversion-preview__spray-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-700);
+  font-weight: 600;
+}
+
+/* CA12: Warning state when conversion is not configured */
+.conversion-preview--warning {
+  border-color: var(--color-warning-200, #fbbf24);
+  background: var(--color-warning-50, #fffbeb);
+}
+
+.conversion-preview__warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--color-warning-700, #92400e);
+  font-size: 0.8125rem;
+}
+
+.conversion-preview__warning svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.conversion-preview__warning-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.conversion-preview__configure-link {
+  background: none;
+  border: none;
+  color: var(--color-primary-600);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-align: left;
+}
+
+.conversion-preview__configure-link:hover {
+  color: var(--color-primary-700);
+}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { X, Info } from 'lucide-react';
 import { api } from '@/services/api';
 import { useFarmContext } from '@/stores/FarmContext';
@@ -11,6 +11,10 @@ import type {
   CreateFertilizerApplicationInput,
 } from '@/types/fertilizer-application';
 import type { FieldPlot } from '@/types/farm';
+import ConversionPreviewCard from '@/components/shared/ConversionPreviewCard';
+import ProductSearchInput from '@/components/shared/ProductSearchInput';
+import type { ProductSuggestion } from '@/components/shared/ProductSearchInput';
+import { suggestDoseUnit, getDosePlaceholder } from '@/utils/dose-conversion';
 import './FertilizerApplicationModal.css';
 
 interface FertilizerApplicationModalProps {
@@ -47,10 +51,18 @@ function FertilizerApplicationModal({
   const [plantsPerHa, setPlantsPerHa] = useState('');
   const [dosePerPlantG, setDosePerPlantG] = useState('');
   const [notes, setNotes] = useState('');
+  const [productId, setProductId] = useState<string | null>(null);
+  const [productType, setProductType] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [plots, setPlots] = useState<FieldPlot[]>([]);
   const [loadingPlots, setLoadingPlots] = useState(false);
+  const doseUnitAutoSetRef = useRef(false);
+
+  const selectedPlotAreaHa = useMemo(() => {
+    const plot = plots.find((p) => p.id === fieldPlotId);
+    return plot?.boundaryAreaHa ?? 0;
+  }, [plots, fieldPlotId]);
 
   // Computed: g/planta → kg/ha conversion
   const computedDoseKgHa = useMemo(() => {
@@ -67,6 +79,22 @@ function FertilizerApplicationModal({
       return null;
     return ((doseG * plants) / 1000).toFixed(2);
   }, [plantsPerHa, dosePerPlantG]);
+
+  const handleProductSelect = useCallback((product: ProductSuggestion) => {
+    setProductId(product.id);
+    setProductType(product.type);
+    const suggested = suggestDoseUnit(product.type, product.nutrientForm);
+    if (FERTILIZER_DOSE_UNITS.some((u) => u.value === suggested)) {
+      setDoseUnit(suggested);
+      doseUnitAutoSetRef.current = true;
+    }
+  }, []);
+
+  const handleProductClear = useCallback(() => {
+    setProductId(null);
+    setProductType(null);
+    doseUnitAutoSetRef.current = false;
+  }, []);
 
   // Load field plots when modal opens
   useEffect(() => {
@@ -112,6 +140,9 @@ function FertilizerApplicationModal({
       setPlantsPerHa('');
       setDosePerPlantG('');
       setNotes('');
+      setProductId(null);
+      setProductType(null);
+      doseUnitAutoSetRef.current = false;
       setSubmitError(null);
       setIsSubmitting(false);
     } else if (application) {
@@ -134,6 +165,8 @@ function FertilizerApplicationModal({
       setPlantsPerHa(application.plantsPerHa != null ? String(application.plantsPerHa) : '');
       setDosePerPlantG(application.dosePerPlantG != null ? String(application.dosePerPlantG) : '');
       setNotes(application.notes ?? '');
+      setProductId(application.productId ?? null);
+      setProductType(null);
     }
   }, [isOpen, application]);
 
@@ -181,6 +214,7 @@ function FertilizerApplicationModal({
         plantsPerHa: plantsPerHa ? Number(plantsPerHa) : undefined,
         dosePerPlantG: dosePerPlantG ? Number(dosePerPlantG) : undefined,
         notes: notes.trim() || undefined,
+        productId: productId || undefined,
       };
 
       if (isEditing) {
@@ -219,6 +253,7 @@ function FertilizerApplicationModal({
     plantsPerHa,
     dosePerPlantG,
     notes,
+    productId,
     isEditing,
     application,
     onSuccess,
@@ -318,17 +353,16 @@ function FertilizerApplicationModal({
                 </select>
               </div>
               <div className="fertilizer-modal__field">
-                <label htmlFor="fert-product" className="fertilizer-modal__label">
-                  Produto *
-                </label>
-                <input
+                <ProductSearchInput
                   id="fert-product"
-                  type="text"
-                  className="fertilizer-modal__input"
+                  label="Produto"
                   value={productName}
-                  onChange={(e) => setProductName(e.target.value)}
+                  onChange={setProductName}
+                  onProductSelect={handleProductSelect}
+                  onProductClear={handleProductClear}
+                  selectedProductId={productId}
                   placeholder="Ex: Ureia, MAP, KCl, NPK 04-14-08"
-                  aria-required="true"
+                  required
                 />
               </div>
             </div>
@@ -344,7 +378,7 @@ function FertilizerApplicationModal({
                   className="fertilizer-modal__input"
                   value={dose}
                   onChange={(e) => setDose(e.target.value)}
-                  placeholder="Ex: 200"
+                  placeholder={getDosePlaceholder(doseUnit, productType ?? 'fertilizante')}
                   min="0.001"
                   step="0.001"
                   aria-required="true"
@@ -381,6 +415,18 @@ function FertilizerApplicationModal({
                 />
               </div>
             </div>
+
+            {/* Conversion preview (CA4/CA9) */}
+            {Number(dose) > 0 && selectedPlotAreaHa > 0 && (
+              <ConversionPreviewCard
+                dose={Number(dose)}
+                doseUnit={doseUnit}
+                areaHa={areaAppliedHa ? Number(areaAppliedHa) : selectedPlotAreaHa}
+                productName={productName || undefined}
+                plantsPerHa={plantsPerHa ? Number(plantsPerHa) : undefined}
+                productId={productId}
+              />
+            )}
 
             <div className="fertilizer-modal__row">
               <div className="fertilizer-modal__field">

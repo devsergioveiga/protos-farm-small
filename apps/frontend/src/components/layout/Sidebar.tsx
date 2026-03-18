@@ -19,8 +19,17 @@ import {
   Tractor,
   Coffee,
   Map,
+  Citrus,
   Users,
   Shield,
+  Ruler,
+  Package,
+  PackageOpen,
+  ArrowUpRight,
+  Bell,
+  ClipboardCheck,
+  FileText,
+  ArrowRightLeft,
   X,
 } from 'lucide-react';
 import './Sidebar.css';
@@ -68,14 +77,26 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/soil-prep', icon: Tractor, label: 'Preparo de solo' },
       { to: '/cultivars', icon: Sprout, label: 'Cultivares' },
       { to: '/pesticide-applications', icon: SprayCan, label: 'Defensivos' },
+      { to: '/pesticide-prescriptions', icon: FileText, label: 'Receituários' },
       { to: '/fertilizer-applications', icon: Droplet, label: 'Adubação' },
       { to: '/cultural-operations', icon: Shovel, label: 'Tratos culturais' },
       { to: '/field-teams', icon: UsersRound, label: 'Equipes de campo' },
       { to: '/team-operations', icon: ClipboardList, label: 'Operações em bloco' },
       { to: '/coffee-harvests', icon: Coffee, label: 'Colheita de café' },
       { to: '/productivity-map', icon: Map, label: 'Mapa produtividade' },
+      { to: '/orange-harvests', icon: Citrus, label: 'Colheita de laranja' },
       { to: '/pests', icon: Bug, label: 'Pragas e doenças' },
       { to: '/operation-types', icon: FolderTree, label: 'Tipos de operação' },
+    ],
+  },
+  {
+    title: 'ESTOQUE',
+    items: [
+      { to: '/stock-entries', icon: PackageOpen, label: 'Entradas' },
+      { to: '/stock-outputs', icon: ArrowUpRight, label: 'Saídas' },
+      { to: '/stock-alerts', icon: Bell, label: 'Alertas' },
+      { to: '/stock-inventories', icon: ClipboardCheck, label: 'Inventário' },
+      { to: '/conversion-history', icon: ArrowRightLeft, label: 'Conversões' },
     ],
   },
   {
@@ -83,6 +104,8 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: '/users', icon: Users, label: 'Usuários' },
       { to: '/roles', icon: Shield, label: 'Papéis' },
+      { to: '/measurement-units', icon: Ruler, label: 'Unidades de medida' },
+      { to: '/products', icon: Package, label: 'Produtos e serviços' },
     ],
   },
 ];

@@ -110,6 +110,7 @@ const SAMPLE_OPERATION = {
   recorderName: 'Admin',
   createdAt: '2026-03-15T08:00:00.000Z',
   updatedAt: '2026-03-15T12:00:00.000Z',
+  stockOutputId: null,
 };
 
 beforeEach(() => {

@@ -46,6 +46,8 @@ export interface SoilPrepInputItem {
   doseUnit: string;
   totalQuantity?: number | null;
   batchCode?: string | null;
+  // Stock deduction (CA4)
+  productId?: string | null;
 }
 
 export interface CreateSoilPrepInput {
@@ -107,4 +109,6 @@ export interface SoilPrepItem {
   recorderName: string;
   createdAt: string;
   updatedAt: string;
+  // Stock deduction (CA4)
+  stockOutputId: string | null;
 }
