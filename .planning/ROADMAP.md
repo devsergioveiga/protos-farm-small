@@ -134,7 +134,7 @@ Plans:
 3. O sistema alerta ao aprovar requisição ou pedido que ultrapasse o orçamento definido
 4. Gerente pode ver saving por cotação (diferença maior preço vs vencedor) e saving acumulado por período
 5. Gerente pode ver histórico de preço por produto e indicadores de ciclo (% compras com cotação formal, % emergenciais, prazo médio)
-   **Plans:** 2/6 plans executed
+   **Plans:** 4/6 plans executed
 
 Plans:
 
@@ -172,5 +172,5 @@ Plans:
 | 8. Requisição e Aprovação            | 6/6       | Complete       | 2026-03-17  | -          |
 | 9. Cotação e Pedido de Compra        | 4/5       | In Progress    |             | -          |
 | 10. Recebimento de Mercadorias       | 5/5       | Complete       | 2026-03-18  | -          |
-| 11. Devolução, Orçamento e Saving    | 2/6       | In Progress    |             | -          |
+| 11. Devolução, Orçamento e Saving    | 4/6       | In Progress    |             | -          |
 | 12. Kanban, Dashboard e Notificações | v1.1      | 0/TBD          | Not started | -          |

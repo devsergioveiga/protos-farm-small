@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 11-devolu-o-or-amento-e-saving/11-02-PLAN.md
-last_updated: '2026-03-18T08:35:51.826Z'
+stopped_at: Completed 11-devolu-o-or-amento-e-saving/11-03-PLAN.md
+last_updated: '2026-03-18T08:44:37.513Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 7
   completed_phases: 4
   total_plans: 26
-  completed_plans: 22
+  completed_plans: 24
   percent: 0
 ---
 
@@ -69,6 +69,8 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 10-recebimento-de-mercadorias P05 | 506s | 2 tasks | 3 files |
 | Phase 11-devolu-o-or-amento-e-saving P01 | 287s | 2 tasks | 6 files |
 | Phase 11-devolu-o-or-amento-e-saving P02 | 15min | 2 tasks | 4 files |
+| Phase 11-devolu-o-or-amento-e-saving P04 | 9min | 2 tasks | 4 files |
+| Phase 11-devolu-o-or-amento-e-saving P03 | 18min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -124,6 +126,9 @@ Key decisions for v1.1:
 - [Phase 11-devolu-o-or-amento-e-saving]: budgetExceeded is a non-blocking boolean flag on RC/OC — set via service injection in plans 02/03, never blocks the operation
 - [Phase 11-02]: stockOutputId stored on GoodsReturn (not goodsReturnId on StockOutput) — avoids schema changes since StockOutput has no goodsReturnId field
 - [Phase 11-02]: creditPayable uses farmId from original payable falling back to goodsReceipt.storageFarmId — farmId is required on Payable model
+- [Phase 11-04]: Saving excludes quotations with < 2 proposals; winner determined via QuotationItemSelection with fallback to min price
+- [Phase 11-04]: getPriceHistory queries via purchaseRequestItem.productId join — PurchaseOrderItem has no direct productId field
+- [Phase 11-devolu-o-or-amento-e-saving]: checkBudgetExceeded injected into RC approval and OC EMITIDA — non-blocking flag, never prevents the operation
 
 ### Pending Todos
 
@@ -137,6 +142,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T08:35:51.823Z
-Stopped at: Completed 11-devolu-o-or-amento-e-saving/11-02-PLAN.md
+Last session: 2026-03-18T08:44:37.511Z
+Stopped at: Completed 11-devolu-o-or-amento-e-saving/11-03-PLAN.md
 Resume file: None
