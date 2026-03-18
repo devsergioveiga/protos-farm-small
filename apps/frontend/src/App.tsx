@@ -99,6 +99,7 @@ const QuotationsPage = lazy(() => import('@/pages/QuotationsPage'));
 const ApprovalRulesPage = lazy(() => import('@/pages/ApprovalRulesPage'));
 const PurchaseOrdersPage = lazy(() => import('@/pages/PurchaseOrdersPage'));
 const GoodsReceiptsPage = lazy(() => import('@/pages/GoodsReceiptsPage'));
+const DevolucoesPage = lazy(() => import('@/pages/DevolucoesPage'));
 const OrcamentoComprasPage = lazy(() => import('@/pages/OrcamentoComprasPage'));
 const SavingAnalysisPage = lazy(() => import('@/pages/SavingAnalysisPage'));
 
@@ -201,6 +202,7 @@ export function App() {
                 <Route path="/approval-rules" element={<ApprovalRulesPage />} />
                 <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
                 <Route path="/goods-receipts" element={<GoodsReceiptsPage />} />
+                <Route path="/goods-returns" element={<DevolucoesPage />} />
                 <Route path="/purchase-budgets" element={<OrcamentoComprasPage />} />
                 <Route path="/saving-analysis" element={<SavingAnalysisPage />} />
                 <Route
