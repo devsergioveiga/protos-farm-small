@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 11-devolu-o-or-amento-e-saving/11-06-PLAN.md
-last_updated: '2026-03-18T09:04:19.389Z'
+stopped_at: Completed 11-devolu-o-or-amento-e-saving/11-05-PLAN.md
+last_updated: '2026-03-18T09:06:06.126Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 7
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 26
-  completed_plans: 25
+  completed_plans: 26
   percent: 0
 ---
 
@@ -72,6 +72,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 11-devolu-o-or-amento-e-saving P04 | 9min | 2 tasks | 4 files |
 | Phase 11-devolu-o-or-amento-e-saving P03 | 18min | 2 tasks | 6 files |
 | Phase 11-devolu-o-or-amento-e-saving P06 | 580 | 2 tasks | 10 files |
+| Phase 11-devolu-o-or-amento-e-saving P05 | 1052s | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,8 @@ Key decisions for v1.1:
 - [Phase 11-06]: Lazy-loaded PriceHistoryChart and TopItemsChart follow FinancialDashboardPage pattern — avoids recharts in main bundle
 - [Phase 11-06]: useSavingDashboard uses /dashboard endpoint (single request) to avoid 5 parallel API calls on page load
 - [Phase 11-06]: TopItemsChart is a generic shared component for both top-products and top-suppliers (items prop)
+- [Phase 11-05]: Lazy Suspense import for GoodsReturnModal in DevolucoesPage avoids circular dep while keeping TSC clean
+- [Phase 11-05]: Wallet icon used for Orçamento sidebar entry — better semantic fit than TrendingUp
 
 ### Pending Todos
 
@@ -146,6 +149,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T09:04:12.965Z
-Stopped at: Completed 11-devolu-o-or-amento-e-saving/11-06-PLAN.md
+Last session: 2026-03-18T09:06:06.123Z
+Stopped at: Completed 11-devolu-o-or-amento-e-saving/11-05-PLAN.md
 Resume file: None

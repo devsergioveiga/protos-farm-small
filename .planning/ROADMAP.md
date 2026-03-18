@@ -29,7 +29,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 8: Requisição e Aprovação** — Entrada do ciclo: RC com fluxo de aprovação configurável por alçada (completed 2026-03-17)
 - [ ] **Phase 9: Cotação e Pedido de Compra** — Seleção de fornecedor e emissão formal da OC com PDF
 - [x] **Phase 10: Recebimento de Mercadorias** — Hub de integração: entrada no estoque + geração automática de CP (completed 2026-03-18)
-- [ ] **Phase 11: Devolução, Orçamento e Saving** — Reversão de estoque/financeiro e controle orçamentário
+- [x] **Phase 11: Devolução, Orçamento e Saving** — Reversão de estoque/financeiro e controle orçamentário (completed 2026-03-18)
 - [ ] **Phase 12: Kanban, Dashboard e Notificações** — Visibilidade operacional e execução do fluxo completo
 
 ## Phase Details
@@ -134,7 +134,7 @@ Plans:
 3. O sistema alerta ao aprovar requisição ou pedido que ultrapasse o orçamento definido
 4. Gerente pode ver saving por cotação (diferença maior preço vs vencedor) e saving acumulado por período
 5. Gerente pode ver histórico de preço por produto e indicadores de ciclo (% compras com cotação formal, % emergenciais, prazo médio)
-   **Plans:** 5/6 plans executed
+   **Plans:** 6/6 plans complete
 
 Plans:
 
@@ -172,5 +172,5 @@ Plans:
 | 8. Requisição e Aprovação            | 6/6       | Complete       | 2026-03-17  | -          |
 | 9. Cotação e Pedido de Compra        | 4/5       | In Progress    |             | -          |
 | 10. Recebimento de Mercadorias       | 5/5       | Complete       | 2026-03-18  | -          |
-| 11. Devolução, Orçamento e Saving    | 5/6       | In Progress    |             | -          |
+| 11. Devolução, Orçamento e Saving    | 6/6       | Complete       | 2026-03-18  | -          |
 | 12. Kanban, Dashboard e Notificações | v1.1      | 0/TBD          | Not started | -          |
