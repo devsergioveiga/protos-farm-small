@@ -16,6 +16,7 @@ import {
   createNotification,
   dispatchPushNotification,
 } from '../notifications/notifications.service';
+import { checkBudgetExceeded } from '../purchase-budgets/purchase-budgets.service';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TxClient = any;
@@ -442,9 +443,29 @@ export async function transitionPurchaseRequest(
         });
       } else {
         // All steps resolved — approve RC
+
+        // Budget check (non-blocking)
+        const rcTotal = rc.items.reduce((sum, item) => {
+          if (item.estimatedUnitPrice !== null) {
+            return sum + Number(item.estimatedUnitPrice) * Number(item.quantity);
+          }
+          return sum;
+        }, 0);
+
+        const budgetCheck = await checkBudgetExceeded(
+          tx,
+          ctx.organizationId,
+          rc.requestType,
+          rc.farmId,
+          rcTotal,
+        );
+
         await tx.purchaseRequest.update({
           where: { id },
-          data: { status: 'APROVADA' },
+          data: {
+            status: 'APROVADA',
+            budgetExceeded: budgetCheck.exceeded,
+          },
         });
 
         // Notify creator

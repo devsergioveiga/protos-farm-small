@@ -13,6 +13,7 @@ import {
   type ListPurchaseOrdersQuery,
 } from './purchase-orders.types';
 import { createNotification } from '../notifications/notifications.service';
+import { checkBudgetExceeded } from '../purchase-budgets/purchase-budgets.service';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TxClient = any;
@@ -322,6 +323,45 @@ export async function transitionPO(ctx: RlsContext, id: string, input: Transitio
 
     if (input.status === 'EMITIDA') {
       data.issuedAt = new Date();
+
+      // Budget check on EMITIDA (non-blocking)
+      const poItems = await tx.purchaseOrderItem.findMany({
+        where: { purchaseOrderId: id },
+        select: { totalPrice: true, purchaseRequestItemId: true },
+      });
+
+      const poTotal = poItems.reduce(
+        (sum: number, item: TxClient) => sum + Number(item.totalPrice),
+        0,
+      );
+
+      // Determine category from first item with a linked RC
+      let category: string | null = null;
+      for (const item of poItems) {
+        if (item.purchaseRequestItemId) {
+          const rcItem = await tx.purchaseRequestItem.findFirst({
+            where: { id: item.purchaseRequestItemId },
+            include: { purchaseRequest: { select: { requestType: true } } },
+          });
+          if (rcItem?.purchaseRequest?.requestType) {
+            category = rcItem.purchaseRequest.requestType;
+            break;
+          }
+        }
+      }
+
+      if (category) {
+        const budgetCheck = await checkBudgetExceeded(
+          tx,
+          ctx.organizationId,
+          category,
+          null,
+          poTotal,
+        );
+        if (budgetCheck.exceeded) {
+          data.budgetExceeded = true;
+        }
+      }
     } else if (input.status === 'CONFIRMADA') {
       data.confirmedAt = new Date();
     } else if (input.status === 'CANCELADA') {
