@@ -80,7 +80,7 @@ quotationsRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const result = await getComparativeMap(ctx, req.params.id);
+      const result = await getComparativeMap(ctx, req.params.id as string);
       res.status(200).json(result);
     } catch (err) {
       handleError(err, res);
@@ -97,7 +97,7 @@ quotationsRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const quotation = await getQuotationById(ctx, req.params.id);
+      const quotation = await getQuotationById(ctx, req.params.id as string);
       res.status(200).json(quotation);
     } catch (err) {
       handleError(err, res);
@@ -119,7 +119,7 @@ quotationsRouter.patch(
         res.status(400).json({ error: 'Campo status e obrigatorio.' });
         return;
       }
-      const quotation = await transitionQuotation(ctx, req.params.id, status);
+      const quotation = await transitionQuotation(ctx, req.params.id as string, status);
       res.status(200).json(quotation);
     } catch (err) {
       handleError(err, res);
@@ -138,7 +138,13 @@ quotationsRouter.post(
     try {
       const ctx = buildRlsContext(req);
       const file = req.file ? { url: req.file.path, name: req.file.originalname } : undefined;
-      const quotation = await registerProposal(ctx, req.params.id, req.params.qsId, req.body, file);
+      const quotation = await registerProposal(
+        ctx,
+        req.params.id as string,
+        req.params.qsId as string,
+        req.body,
+        file,
+      );
       res.status(200).json(quotation);
     } catch (err) {
       handleError(err, res);
@@ -155,7 +161,7 @@ quotationsRouter.patch(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const result = await approveQuotation(ctx, req.params.id, req.body);
+      const result = await approveQuotation(ctx, req.params.id as string, req.body);
       res.status(200).json(result);
     } catch (err) {
       handleError(err, res);
@@ -172,7 +178,7 @@ quotationsRouter.delete(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      await deleteQuotation(ctx, req.params.id);
+      await deleteQuotation(ctx, req.params.id as string);
       res.status(204).send();
     } catch (err) {
       handleError(err, res);
