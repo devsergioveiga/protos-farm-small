@@ -382,6 +382,7 @@ model Organization {
   notifications            Notification[]
   quotations               Quotation[]
   purchaseOrders           PurchaseOrder[]
+  goodsReceipts            GoodsReceipt[]
 
   @@map("organizations")
 }
@@ -466,6 +467,7 @@ model User {
   quotationsCreated              Quotation[]              @relation("QuotationCreator")
   quotationsApproved             Quotation[]              @relation("QuotationApprover")
   purchaseOrdersCreated          PurchaseOrder[]          @relation("POCreator")
+  goodsReceiptsCreated           GoodsReceipt[]           @relation("GRCreator")
 
   @@map("users")
 }
@@ -2925,6 +2927,7 @@ model StockEntry {
   totalExpensesCost    Decimal          @default(0) @db.Decimal(14, 2)
   totalCost            Decimal          @default(0) @db.Decimal(14, 2)
   createdBy            String?
+  goodsReceiptId       String?
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
   cancelledAt          DateTime?
@@ -5491,6 +5494,7 @@ model Payable {
   notes               String?
   reconciled          Boolean             @default(false)
   reconciledAt        DateTime?
+  goodsReceiptId      String?
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
 
@@ -5959,6 +5963,7 @@ model Supplier {
   ratings           SupplierRating[]
   quotationSuppliers QuotationSupplier[]
   purchaseOrders    PurchaseOrder[]
+  goodsReceipts     GoodsReceipt[]
 
   @@unique([document, organizationId])
   @@index([organizationId])
@@ -6305,11 +6310,12 @@ model PurchaseOrder {
   createdAt              DateTime            @default(now())
   updatedAt              DateTime            @updatedAt
 
-  organization Organization        @relation(fields: [organizationId], references: [id])
-  quotation    Quotation?          @relation(fields: [quotationId], references: [id])
-  supplier     Supplier            @relation(fields: [supplierId], references: [id])
-  creator      User                @relation("POCreator", fields: [createdBy], references: [id])
-  items        PurchaseOrderItem[]
+  organization  Organization        @relation(fields: [organizationId], references: [id])
+  quotation     Quotation?          @relation(fields: [quotationId], references: [id])
+  supplier      Supplier            @relation(fields: [supplierId], references: [id])
+  creator       User                @relation("POCreator", fields: [createdBy], references: [id])
+  items         PurchaseOrderItem[]
+  goodsReceipts GoodsReceipt[]
 
   @@unique([organizationId, sequentialNumber])
   @@index([organizationId, status])
@@ -6326,10 +6332,130 @@ model PurchaseOrderItem {
   quantity              Decimal @db.Decimal(12, 3)
   unitPrice             Decimal @db.Decimal(12, 4)
   totalPrice            Decimal @db.Decimal(14, 2)
+  receivedQuantity      Decimal @default(0) @db.Decimal(12, 3)
   notes                 String?
 
   purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
 
   @@index([purchaseOrderId])
   @@map("purchase_order_items")
+}
+
+// ─── Goods Receipts (Recebimento de Mercadorias) ──────────────────────────────
+
+enum GoodsReceiptStatus {
+  PENDENTE
+  EM_CONFERENCIA
+  CONFERIDO
+  CONFIRMADO
+  REJEITADO
+}
+
+enum ReceivingType {
+  STANDARD
+  NF_ANTECIPADA
+  MERCADORIA_ANTECIPADA
+  PARCIAL
+  NF_FRACIONADA
+  EMERGENCIAL
+}
+
+enum DivergenceType {
+  A_MAIS
+  A_MENOS
+  SUBSTITUIDO
+  DANIFICADO
+  ERRADO
+}
+
+enum DivergenceAction {
+  DEVOLVER
+  ACEITAR_COM_DESCONTO
+  REGISTRAR_PENDENCIA
+}
+
+model GoodsReceipt {
+  id                     String              @id @default(cuid())
+  organizationId         String
+  sequentialNumber       String
+  purchaseOrderId        String?
+  supplierId             String
+  status                 GoodsReceiptStatus  @default(PENDENTE)
+  receivingType          ReceivingType       @default(STANDARD)
+  invoiceNumber          String?
+  invoiceSerie           String?
+  invoiceCfop            String?
+  invoiceDate            DateTime?
+  invoiceTotal           Decimal?            @db.Decimal(14, 2)
+  invoiceKey             String?
+  isProvisional          Boolean             @default(false)
+  stockEntryId           String?
+  payableId              String?
+  storageFarmId          String?
+  notes                  String?
+  emergencyJustification String?
+  receivedAt             DateTime?
+  conferredAt            DateTime?
+  confirmedAt            DateTime?
+  rejectedAt             DateTime?
+  rejectionReason        String?
+  createdBy              String
+  deletedAt              DateTime?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  organization  Organization             @relation(fields: [organizationId], references: [id])
+  purchaseOrder PurchaseOrder?           @relation(fields: [purchaseOrderId], references: [id])
+  supplier      Supplier                 @relation(fields: [supplierId], references: [id])
+  creator       User                     @relation("GRCreator", fields: [createdBy], references: [id])
+  items         GoodsReceiptItem[]
+  divergences   GoodsReceiptDivergence[]
+
+  @@unique([organizationId, sequentialNumber])
+  @@index([organizationId, status])
+  @@index([purchaseOrderId])
+  @@map("goods_receipts")
+}
+
+model GoodsReceiptItem {
+  id                  String       @id @default(cuid())
+  goodsReceiptId      String
+  purchaseOrderItemId String?
+  productId           String?
+  productName         String
+  unitName            String
+  orderedQty          Decimal      @db.Decimal(12, 3)
+  invoiceQty          Decimal?     @db.Decimal(12, 3)
+  receivedQty         Decimal      @db.Decimal(12, 3)
+  unitPrice           Decimal      @db.Decimal(12, 4)
+  totalPrice          Decimal      @db.Decimal(14, 2)
+  qualityVisualOk     Boolean?
+  batchNumber         String?
+  expirationDate      DateTime?
+  qualityNotes        String?
+  hasDivergence       Boolean      @default(false)
+  divergencePct       Decimal?     @db.Decimal(6, 2)
+  createdAt           DateTime     @default(now())
+
+  goodsReceipt GoodsReceipt @relation(fields: [goodsReceiptId], references: [id], onDelete: Cascade)
+
+  @@index([goodsReceiptId])
+  @@map("goods_receipt_items")
+}
+
+model GoodsReceiptDivergence {
+  id              String          @id @default(cuid())
+  goodsReceiptId  String
+  itemId          String
+  divergenceType  DivergenceType
+  action          DivergenceAction
+  observation     String?
+  photoUrl        String?
+  photoFileName   String?
+  createdAt       DateTime        @default(now())
+
+  goodsReceipt GoodsReceipt @relation(fields: [goodsReceiptId], references: [id], onDelete: Cascade)
+
+  @@index([goodsReceiptId])
+  @@map("goods_receipt_divergences")
 }
