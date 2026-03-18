@@ -97,15 +97,16 @@ const mockFarmMapData = {
   locationBoundaries: [],
 };
 
-const mockUseFarmMap = vi.fn(() => ({
-  data: mockFarmMapData,
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const mockUseFarmMap = vi.fn((_farmId?: string) => ({
+  data: mockFarmMapData as typeof mockFarmMapData | null,
   isLoading: false,
-  error: null,
+  error: null as string | null,
   refetch: vi.fn(),
 }));
 
 vi.mock('@/hooks/useFarmMap', () => ({
-  useFarmMap: (...args: unknown[]) => mockUseFarmMap(...args),
+  useFarmMap: (farmId: string | undefined) => mockUseFarmMap(farmId),
 }));
 
 const mockProductivityData = {
@@ -141,15 +142,16 @@ const mockProductivityData = {
   },
 };
 
-const mockUseProductivityMap = vi.fn(() => ({
-  data: mockProductivityData,
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const mockUseProductivityMap = vi.fn((_params?: Record<string, unknown>) => ({
+  data: mockProductivityData as typeof mockProductivityData | null,
   isLoading: false,
-  error: null,
+  error: null as string | null,
   refetch: vi.fn(),
 }));
 
 vi.mock('@/hooks/useProductivityMap', () => ({
-  useProductivityMap: (...args: unknown[]) => mockUseProductivityMap(...args),
+  useProductivityMap: (params: Record<string, unknown>) => mockUseProductivityMap(params),
 }));
 
 vi.mock('@/hooks/useSeasonComparison', () => ({
