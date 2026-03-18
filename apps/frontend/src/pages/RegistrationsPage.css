@@ -288,6 +288,69 @@
   text-decoration: underline;
 }
 
+/* Action buttons */
+
+.reg-card__actions {
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.reg-card__action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-neutral-400);
+  cursor: pointer;
+  transition:
+    background 200ms ease-out,
+    color 200ms ease-out;
+}
+
+.reg-card__action-btn:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.reg-card__action-btn--danger:hover {
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+}
+
+/* Toast */
+
+.reg-page__toast {
+  position: fixed;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  animation: reg-toast-in 200ms ease-out;
+}
+
+@keyframes reg-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reg-card {
     transition: none;
