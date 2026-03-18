@@ -131,7 +131,15 @@ Plans:
 2. Gerente pode ver dashboard executivo com volume total, prazo médio do ciclo, % entrega no prazo, saving acumulado, e comparativo com período anterior
 3. Participantes recebem notificações push/email/badge nas etapas relevantes (aprovação, rejeição, entrega confirmada, lembrete SLA)
 4. Gerente pode configurar preferências de notificação por canal (push, email, badge)
-   **Plans**: TBD
+   **Plans:** 5 plans
+
+Plans:
+
+- [ ] 12-01-PLAN.md — Backend foundation: schema (NotificationPreference), migration, notification types expansion, kanban endpoint
+- [ ] 12-02-PLAN.md — Backend dashboard endpoint + notification preferences CRUD + digest cron
+- [ ] 12-03-PLAN.md — Frontend kanban board with dnd-kit (DnD, ConfirmModal, filters)
+- [ ] 12-04-PLAN.md — Frontend purchasing dashboard (KPIs, Recharts charts, alerts, drill-down)
+- [ ] 12-05-PLAN.md — Frontend preferences page + NotificationBell expansion + Sidebar + route wiring
 
 ## Progress
 
@@ -148,4 +156,4 @@ Plans:
 | 9. Cotação e Pedido de Compra        | v1.1      | 0/TBD          | Not started | -          |
 | 10. Recebimento de Mercadorias       | v1.1      | 0/TBD          | Not started | -          |
 | 11. Devolução, Orçamento e Saving    | v1.1      | 0/TBD          | Not started | -          |
-| 12. Kanban, Dashboard e Notificações | v1.1      | 0/TBD          | Not started | -          |
+| 12. Kanban, Dashboard e Notificações | v1.1      | 0/5            | Planning    | -          |
