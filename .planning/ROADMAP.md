@@ -112,7 +112,7 @@ Plans:
 3. Ao confirmar recebimento+NF, o sistema cria automaticamente entrada no estoque e conta a pagar com fornecedor, valor, vencimento e centro de custo corretos
 4. CP gerado referencia a cadeia completa (pedido→cotação→requisição) com drill-down navegável
 5. Recebimentos parciais geram CPs separados por entrega, sem duplicar o total do pedido
-   **Plans:** 5 plans
+   **Plans:** 1/5 plans executed
 
 Plans:
 
@@ -162,6 +162,6 @@ Plans:
 | 7. Cadastro de Fornecedores          | 4/4       | Complete       | 2026-03-17  | -          |
 | 8. Requisição e Aprovação            | 6/6       | Complete       | 2026-03-17  | -          |
 | 9. Cotação e Pedido de Compra        | 4/5       | In Progress    |             | -          |
-| 10. Recebimento de Mercadorias       | v1.1      | 0/5            | Planned     | -          |
+| 10. Recebimento de Mercadorias       | 1/5       | In Progress    |             | -          |
 | 11. Devolução, Orçamento e Saving    | v1.1      | 0/TBD          | Not started | -          |
 | 12. Kanban, Dashboard e Notificações | v1.1      | 0/TBD          | Not started | -          |
