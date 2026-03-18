@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, CheckCircle, XCircle, RotateCcw, Clock, ShoppingCart } from 'lucide-react';
+import { Bell, CheckCircle, XCircle, RotateCcw, Clock, ShoppingCart, Settings } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 import type { NotificationType } from '@/hooks/useNotifications';
+import NotificationPreferencesModal from './NotificationPreferencesModal';
 import './NotificationBell.css';
 
 function getRelativeTime(dateStr: string): string {
@@ -58,6 +59,7 @@ export default function NotificationBell() {
   const navigate = useNavigate();
   const { notifications, unreadCount, isOpen, setIsOpen, markAsRead, markAllAsRead } =
     useNotifications();
+  const [showPrefs, setShowPrefs] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -178,8 +180,26 @@ export default function NotificationBell() {
               ))}
             </ul>
           )}
+
+          {/* Preferences link */}
+          <div className="notification-dropdown__footer">
+            <button
+              type="button"
+              className="notification-dropdown__prefs-btn"
+              onClick={() => {
+                setShowPrefs(true);
+                setIsOpen(false);
+              }}
+              aria-label="Configurar notificacoes"
+            >
+              <Settings size={16} aria-hidden="true" />
+              <span>Preferencias</span>
+            </button>
+          </div>
         </div>
       )}
+
+      <NotificationPreferencesModal isOpen={showPrefs} onClose={() => setShowPrefs(false)} />
     </div>
   );
 }

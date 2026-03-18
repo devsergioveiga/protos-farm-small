@@ -214,6 +214,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/goods-returns', icon: Undo2, label: 'Devoluções' },
       { to: '/purchase-budgets', icon: Wallet, label: 'Orçamento' },
       { to: '/saving-analysis', icon: BarChart3, label: 'Análise de Saving' },
+      { to: '/purchase-dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     ],
   },
   {
