@@ -89,6 +89,6 @@ GoodsReceiptsPage with two tabs (Recebimentos list + Pendencias), useGoodsReceip
 - **Files modified:** apps/frontend/src/pages/GoodsReceiptsPage.tsx
 - **Commit:** 482c037 (auto-fixed before commit succeeded)
 
-## Self-Check
+## Self-Check: PASSED
 
-Checking created files exist and commits are present.
+All 4 created files found on disk. Both task commits (9cd7ab5, 482c037) confirmed in git log.
