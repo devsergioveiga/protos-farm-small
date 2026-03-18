@@ -73,6 +73,7 @@ import {
   PackageCheck,
   Undo2,
   Wallet,
+  Columns3,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -203,6 +204,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'COMPRAS',
     items: [
+      { to: '/purchasing-kanban', icon: Columns3, label: 'Kanban' },
       { to: '/suppliers', icon: Handshake, label: 'Fornecedores' },
       { to: '/purchase-requests', icon: ShoppingCart, label: 'Requisicoes' },
       { to: '/quotations', icon: FileSearch, label: 'Cotacoes' },

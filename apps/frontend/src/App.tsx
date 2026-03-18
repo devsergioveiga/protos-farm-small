@@ -103,6 +103,7 @@ const GoodsReceiptsPage = lazy(() => import('@/pages/GoodsReceiptsPage'));
 const DevolucoesPage = lazy(() => import('@/pages/DevolucoesPage'));
 const OrcamentoComprasPage = lazy(() => import('@/pages/OrcamentoComprasPage'));
 const SavingAnalysisPage = lazy(() => import('@/pages/SavingAnalysisPage'));
+const PurchasingKanbanPage = lazy(() => import('@/pages/PurchasingKanbanPage'));
 
 export function App() {
   return (
@@ -207,6 +208,7 @@ export function App() {
                 <Route path="/goods-returns" element={<DevolucoesPage />} />
                 <Route path="/purchase-budgets" element={<OrcamentoComprasPage />} />
                 <Route path="/saving-analysis" element={<SavingAnalysisPage />} />
+                <Route path="/purchasing-kanban" element={<PurchasingKanbanPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}
