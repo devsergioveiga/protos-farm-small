@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 10-recebimento-de-mercadorias-04-PLAN.md
-last_updated: '2026-03-18T02:17:31.778Z'
+stopped_at: Completed 10-recebimento-de-mercadorias-03-PLAN.md
+last_updated: '2026-03-18T02:17:47.722Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
@@ -65,6 +65,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 10-recebimento-de-mercadorias P01 | 229s | 2 tasks | 3 files |
 | Phase 10-recebimento-de-mercadorias P02 | 296s | 2 tasks | 4 files |
 | Phase 10-recebimento-de-mercadorias P04 | 362s | 2 tasks | 6 files |
+| Phase 10-recebimento-de-mercadorias P03 | 20min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,8 @@ Key decisions for v1.1:
 - [Phase 10-recebimento-de-mercadorias]: goodsReceiptsRouter /pending registered before /:id in routes file; CONFIRMADO transition blocked in service — Plan 03 handles atomic StockEntry+Payable; multer diskStorage at uploads/goods-receipts/{orgId}/{grId}/
 - [Phase 10-recebimento-de-mercadorias]: GrStatusBadge reads statusLabel from list item (backend-computed) rather than doing local lookup in GoodsReceiptsPage
 - [Phase 10-recebimento-de-mercadorias]: RecebimentosTab and PendenciasTab extracted as sub-components to isolate hook usage and keep main page clean
+- [Phase Phase 10-03]: Direct tx.stockEntry.create and tx.payable.create inside withRlsContext — never call wrapper functions that start their own transactions
+- [Phase Phase 10-03]: MERCADORIA_ANTECIPADA creates DRAFT StockEntry with no balance update; NF_ANTECIPADA creates Payable only
 
 ### Pending Todos
 
@@ -124,6 +127,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T02:17:22.719Z
-Stopped at: Completed 10-recebimento-de-mercadorias-04-PLAN.md
+Last session: 2026-03-18T02:17:47.720Z
+Stopped at: Completed 10-recebimento-de-mercadorias-03-PLAN.md
 Resume file: None
