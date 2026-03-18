@@ -96,6 +96,12 @@ import { suppliersRouter } from './modules/suppliers/suppliers.routes';
 import { purchaseRequestsRouter } from './modules/purchase-requests/purchase-requests.routes';
 import { approvalRulesRouter } from './modules/approval-rules/approval-rules.routes';
 import { notificationsRouter } from './modules/notifications/notifications.routes';
+import { quotationsRouter } from './modules/quotations/quotations.routes';
+import { purchaseOrdersRouter } from './modules/purchase-orders/purchase-orders.routes';
+import { goodsReceiptsRouter } from './modules/goods-receipts/goods-receipts.routes';
+import { goodsReturnsRouter } from './modules/goods-returns/goods-returns.routes';
+import { purchaseBudgetsRouter } from './modules/purchase-budgets/purchase-budgets.routes';
+import { savingAnalysisRouter } from './modules/saving-analysis/saving-analysis.routes';
 
 const app = express();
 
@@ -199,5 +205,11 @@ app.use('/api', suppliersRouter);
 app.use('/api', purchaseRequestsRouter);
 app.use('/api', approvalRulesRouter);
 app.use('/api', notificationsRouter);
+app.use('/api', quotationsRouter);
+app.use('/api', purchaseOrdersRouter);
+app.use('/api', goodsReceiptsRouter);
+app.use('/api', goodsReturnsRouter);
+app.use('/api', purchaseBudgetsRouter);
+app.use('/api', savingAnalysisRouter);
 
 export { app };

@@ -6,6 +6,10 @@ export const NOTIFICATION_TYPES = [
   'RC_RETURNED',
   'RC_PENDING',
   'SLA_REMINDER',
+  'QUOTATION_PENDING_APPROVAL',
+  'QUOTATION_APPROVED',
+  'PO_OVERDUE',
+  'QUOTATION_DEADLINE_NEAR',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

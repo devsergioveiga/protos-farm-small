@@ -636,16 +636,19 @@ export async function createStockEntry(
     });
 
     // Update stock balances (CA5) — use converted quantity for balance
-    await updateStockBalances(
-      tx,
-      ctx.organizationId,
-      itemsWithTotals.map((item, idx) => ({
-        productId: item.productId,
-        quantity: conversions[idx].balanceQuantity,
-        finalTotalCost: item.totalCost + apportionments[idx],
-      })),
-      entryDate,
-    );
+    // Skip for DRAFT entries (e.g., MERCADORIA_ANTECIPADA) — balances updated when confirmed
+    if ((input.initialStatus ?? 'CONFIRMED') !== 'DRAFT') {
+      await updateStockBalances(
+        tx,
+        ctx.organizationId,
+        itemsWithTotals.map((item, idx) => ({
+          productId: item.productId,
+          quantity: conversions[idx].balanceQuantity,
+          finalTotalCost: item.totalCost + apportionments[idx],
+        })),
+        entryDate,
+      );
+    }
 
     return { entry: formatEntry(entry), costAlerts };
   });

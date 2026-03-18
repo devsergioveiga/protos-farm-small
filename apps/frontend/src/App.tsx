@@ -96,7 +96,13 @@ const RuralCreditPage = lazy(() => import('@/pages/RuralCreditPage'));
 const RuralCreditDetailPage = lazy(() => import('@/pages/RuralCreditDetailPage'));
 const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
 const PurchaseRequestsPage = lazy(() => import('@/pages/PurchaseRequestsPage'));
+const QuotationsPage = lazy(() => import('@/pages/QuotationsPage'));
 const ApprovalRulesPage = lazy(() => import('@/pages/ApprovalRulesPage'));
+const PurchaseOrdersPage = lazy(() => import('@/pages/PurchaseOrdersPage'));
+const GoodsReceiptsPage = lazy(() => import('@/pages/GoodsReceiptsPage'));
+const DevolucoesPage = lazy(() => import('@/pages/DevolucoesPage'));
+const OrcamentoComprasPage = lazy(() => import('@/pages/OrcamentoComprasPage'));
+const SavingAnalysisPage = lazy(() => import('@/pages/SavingAnalysisPage'));
 
 export function App() {
   return (
@@ -194,7 +200,13 @@ export function App() {
                 <Route path="/rural-credit/:id" element={<RuralCreditDetailPage />} />
                 <Route path="/suppliers" element={<SuppliersPage />} />
                 <Route path="/purchase-requests" element={<PurchaseRequestsPage />} />
+                <Route path="/quotations" element={<QuotationsPage />} />
                 <Route path="/approval-rules" element={<ApprovalRulesPage />} />
+                <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
+                <Route path="/goods-receipts" element={<GoodsReceiptsPage />} />
+                <Route path="/goods-returns" element={<DevolucoesPage />} />
+                <Route path="/purchase-budgets" element={<OrcamentoComprasPage />} />
+                <Route path="/saving-analysis" element={<SavingAnalysisPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}
