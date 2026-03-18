@@ -383,6 +383,8 @@ model Organization {
   quotations               Quotation[]
   purchaseOrders           PurchaseOrder[]
   goodsReceipts            GoodsReceipt[]
+  goodsReturns             GoodsReturn[]
+  purchaseBudgets          PurchaseBudget[]
 
   @@map("organizations")
 }
@@ -468,6 +470,8 @@ model User {
   quotationsApproved             Quotation[]              @relation("QuotationApprover")
   purchaseOrdersCreated          PurchaseOrder[]          @relation("POCreator")
   goodsReceiptsCreated           GoodsReceipt[]           @relation("GRCreator")
+  goodsReturnsCreated            GoodsReturn[]            @relation("GRReturnCreator")
+  purchaseBudgetsCreated         PurchaseBudget[]         @relation("PBCreator")
 
   @@map("users")
 }
@@ -3024,6 +3028,7 @@ enum StockOutputType {
   MANUAL_CONSUMPTION
   TRANSFER
   DISPOSAL
+  RETURN
 }
 
 enum StockOutputStatus {
@@ -5495,6 +5500,8 @@ model Payable {
   reconciled          Boolean             @default(false)
   reconciledAt        DateTime?
   goodsReceiptId      String?
+  goodsReturnId       String?
+  isCredit            Boolean             @default(false)
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
 
@@ -5964,6 +5971,7 @@ model Supplier {
   quotationSuppliers QuotationSupplier[]
   purchaseOrders    PurchaseOrder[]
   goodsReceipts     GoodsReceipt[]
+  goodsReturns      GoodsReturn[]
 
   @@unique([document, organizationId])
   @@index([organizationId])
@@ -6022,6 +6030,7 @@ model PurchaseRequest {
   geolat           Float?
   geolon           Float?
   photoUrl         String?
+  budgetExceeded   Boolean                @default(false)
   createdBy        String
   submittedAt      DateTime?
   slaDeadline      DateTime?
@@ -6305,6 +6314,7 @@ model PurchaseOrder {
   issuedAt               DateTime?
   overdueNotifiedAt      DateTime?
   cancelledAt            DateTime?
+  budgetExceeded         Boolean             @default(false)
   createdBy              String
   deletedAt              DateTime?
   createdAt              DateTime            @default(now())
@@ -6410,6 +6420,7 @@ model GoodsReceipt {
   creator       User                     @relation("GRCreator", fields: [createdBy], references: [id])
   items         GoodsReceiptItem[]
   divergences   GoodsReceiptDivergence[]
+  goodsReturns  GoodsReturn[]
 
   @@unique([organizationId, sequentialNumber])
   @@index([organizationId, status])
@@ -6458,4 +6469,118 @@ model GoodsReceiptDivergence {
 
   @@index([goodsReceiptId])
   @@map("goods_receipt_divergences")
+}
+
+// ─── Goods Returns (Devolucao de Mercadorias) ─────────────────────────────────
+
+enum GoodsReturnStatus {
+  PENDENTE
+  EM_ANALISE
+  APROVADA
+  CONCLUIDA
+  CANCELADA
+}
+
+enum GoodsReturnReason {
+  DEFEITO
+  VALIDADE
+  PRODUTO_ERRADO
+  EXCEDENTE
+  ESPECIFICACAO_DIVERGENTE
+}
+
+enum GoodsReturnAction {
+  TROCA
+  CREDITO
+  ESTORNO
+}
+
+enum GoodsReturnResolutionStatus {
+  PENDING
+  RESOLVED
+  EXPIRED
+}
+
+model GoodsReturn {
+  id                  String                      @id @default(cuid())
+  organizationId      String
+  sequentialNumber    String
+  goodsReceiptId      String
+  supplierId          String
+  status              GoodsReturnStatus           @default(PENDENTE)
+  reason              GoodsReturnReason
+  expectedAction      GoodsReturnAction
+  resolutionStatus    GoodsReturnResolutionStatus @default(PENDING)
+  resolutionDeadline  DateTime?
+  returnInvoiceNumber String?
+  returnInvoiceDate   DateTime?
+  notes               String?
+  stockOutputId       String?
+  creditPayableId     String?
+  createdBy           String
+  deletedAt           DateTime?
+  createdAt           DateTime                    @default(now())
+  updatedAt           DateTime                    @updatedAt
+
+  organization Organization      @relation(fields: [organizationId], references: [id])
+  goodsReceipt GoodsReceipt      @relation(fields: [goodsReceiptId], references: [id])
+  supplier     Supplier          @relation(fields: [supplierId], references: [id])
+  creator      User              @relation("GRReturnCreator", fields: [createdBy], references: [id])
+  items        GoodsReturnItem[]
+
+  @@unique([organizationId, sequentialNumber])
+  @@index([organizationId, status])
+  @@index([goodsReceiptId])
+  @@map("goods_returns")
+}
+
+model GoodsReturnItem {
+  id            String      @id @default(cuid())
+  goodsReturnId String
+  productId     String?
+  productName   String
+  unitName      String
+  returnQty     Decimal     @db.Decimal(12, 3)
+  unitPrice     Decimal     @db.Decimal(12, 4)
+  totalPrice    Decimal     @db.Decimal(14, 2)
+  batchNumber   String?
+  photoUrl      String?
+  photoFileName String?
+  createdAt     DateTime    @default(now())
+
+  goodsReturn GoodsReturn @relation(fields: [goodsReturnId], references: [id], onDelete: Cascade)
+
+  @@index([goodsReturnId])
+  @@map("goods_return_items")
+}
+
+// ─── Purchase Budgets (Orcamento de Compras) ──────────────────────────────────
+
+enum BudgetPeriodType {
+  MENSAL
+  TRIMESTRAL
+  SAFRA
+}
+
+model PurchaseBudget {
+  id             String           @id @default(cuid())
+  organizationId String
+  farmId         String?
+  costCenterId   String?
+  category       SupplierCategory
+  periodType     BudgetPeriodType
+  periodStart    DateTime
+  periodEnd      DateTime
+  budgetedAmount Decimal          @db.Decimal(14, 2)
+  notes          String?
+  createdBy      String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  creator      User         @relation("PBCreator", fields: [createdBy], references: [id])
+
+  @@index([organizationId, periodStart, periodEnd])
+  @@index([organizationId, category])
+  @@map("purchase_budgets")
 }
