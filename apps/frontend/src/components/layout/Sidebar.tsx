@@ -69,6 +69,7 @@ import {
   ShoppingCart,
   Settings2,
   FileSearch,
+  PackageCheck,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -203,6 +204,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/quotations', icon: FileSearch, label: 'Cotacoes' },
       { to: '/approval-rules', icon: Settings2, label: 'Alcadas' },
       { to: '/purchase-orders', icon: ClipboardList, label: 'Pedidos' },
+      { to: '/goods-receipts', icon: PackageCheck, label: 'Recebimentos' },
     ],
   },
   {
