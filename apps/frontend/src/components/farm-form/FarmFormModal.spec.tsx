@@ -34,17 +34,6 @@ const mockFarmDetail = {
   zipCode: '38400-000',
   totalAreaHa: 250,
   boundaryAreaHa: null,
-  cib: '123.456.789-0',
-  incraCode: 'INC001',
-  carCode: 'CAR001',
-  ccirCode: 'CCIR001',
-  landClassification: 'MEDIA',
-  productive: true,
-  appAreaHa: 30,
-  legalReserveHa: 50,
-  taxableAreaHa: 170,
-  usableAreaHa: 200,
-  utilizationDegree: 85,
   latitude: null,
   longitude: null,
   status: 'ACTIVE' as const,
@@ -83,12 +72,9 @@ describe('FarmFormModal', () => {
       const user = userEvent.setup();
       await renderCreateModal();
 
-      // Navigate to step 3
       await user.type(screen.getByLabelText(/Nome da fazenda/), 'Test');
       await user.selectOptions(screen.getByLabelText(/UF/), 'MG');
       await user.type(screen.getByLabelText(/Área total/), '150');
-      await user.click(screen.getByRole('button', { name: /Próximo/ }));
-      await user.click(screen.getByRole('button', { name: /Próximo/ }));
       await user.click(screen.getByRole('button', { name: /Próximo/ }));
 
       expect(screen.getByRole('button', { name: /Cadastrar fazenda/ })).toBeDefined();
@@ -103,13 +89,11 @@ describe('FarmFormModal', () => {
       await user.selectOptions(screen.getByLabelText(/UF/), 'MG');
       await user.type(screen.getByLabelText(/Área total/), '150');
       await user.click(screen.getByRole('button', { name: /Próximo/ }));
-      await user.click(screen.getByRole('button', { name: /Próximo/ }));
-      await user.click(screen.getByRole('button', { name: /Próximo/ }));
       await user.click(screen.getByRole('button', { name: /Cadastrar fazenda/ }));
 
       expect(mockApiPost).toHaveBeenCalledWith(
         '/org/farms',
-        expect.objectContaining({ name: 'Test', state: 'MG', totalAreaHa: 150 }),
+        expect.objectContaining({ name: 'Test', state: 'MG' }),
       );
       expect(onSuccess).toHaveBeenCalled();
     });
@@ -165,7 +149,6 @@ describe('FarmFormModal', () => {
       });
 
       expect((screen.getByLabelText(/UF/) as HTMLSelectElement).value).toBe('MG');
-      expect(screen.getByLabelText(/Área total/)).toHaveProperty('value', '250');
     });
 
     it('should show "Salvar alterações" button on last step', async () => {
@@ -179,9 +162,6 @@ describe('FarmFormModal', () => {
         );
       });
 
-      // Navigate to step 3 — all steps are visited in edit mode
-      await user.click(screen.getByRole('button', { name: /Próximo/ }));
-      await user.click(screen.getByRole('button', { name: /Próximo/ }));
       await user.click(screen.getByRole('button', { name: /Próximo/ }));
 
       expect(screen.getByRole('button', { name: /Salvar alterações/ })).toBeDefined();
@@ -199,9 +179,6 @@ describe('FarmFormModal', () => {
         );
       });
 
-      // Navigate to last step and submit
-      await user.click(screen.getByRole('button', { name: /Próximo/ }));
-      await user.click(screen.getByRole('button', { name: /Próximo/ }));
       await user.click(screen.getByRole('button', { name: /Próximo/ }));
       await user.click(screen.getByRole('button', { name: /Salvar alterações/ }));
 
@@ -210,7 +187,6 @@ describe('FarmFormModal', () => {
         expect.objectContaining({
           name: 'Fazenda Santa Helena',
           state: 'MG',
-          totalAreaHa: 250,
         }),
       );
       expect(onSuccess).toHaveBeenCalled();
@@ -243,7 +219,7 @@ describe('FarmFormModal', () => {
       expect(await screen.findByText('Fazenda não encontrada')).toBeDefined();
     });
 
-    it('should allow navigating to any step in edit mode (all visited)', async () => {
+    it('should allow navigating to confirmation step in edit mode (all visited)', async () => {
       const user = userEvent.setup();
       await renderEditModal();
 
@@ -254,12 +230,12 @@ describe('FarmFormModal', () => {
         );
       });
 
-      // Click step 3 directly (Dados Ambientais)
-      const step3Btn = screen.getByRole('button', { name: /Etapa 3/ });
-      expect((step3Btn as HTMLButtonElement).disabled).toBe(false);
-      await user.click(step3Btn);
+      // Click step 2 directly (Confirmação)
+      const step2Btn = screen.getByRole('button', { name: /Etapa 2/ });
+      expect((step2Btn as HTMLButtonElement).disabled).toBe(false);
+      await user.click(step2Btn);
 
-      expect(screen.getByRole('heading', { name: 'Dados Ambientais' })).toBeDefined();
+      expect(screen.getByRole('heading', { name: 'Confirmação' })).toBeDefined();
     });
   });
 });
