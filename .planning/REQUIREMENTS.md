@@ -33,7 +33,7 @@ Requirements for milestone v1.1. Each maps to roadmap phases.
 
 - [x] **RECE-01**: Conferente pode registrar recebimento com 6 cenários: (1) NF+mercadoria simultânea, (2) NF antecipada aguardando mercadoria, (3) mercadoria antecipada aguardando NF com entrada provisória/bloqueada, (4) recebimento parcial com saldo pendente e NFs parciais, (5) NF fracionada por fornecedor, (6) compra emergencial sem pedido formal
 - [x] **RECE-02**: Conferente pode fazer conferência física item a item (recebido vs pedido vs NF), registrar divergências (a mais, a menos, substituído, danificado, errado) com foto e ação (devolver/aceitar com desconto/registrar pendência), conferência de qualidade (visual, lote/validade, amostragem), vincular NF (digitação ou import XML/CTE), alerta de divergência >5%, e registro via mobile com foto
-- [ ] **RECE-03**: Ao confirmar recebimento+NF: entrada automática no estoque (insumos) ou cadastro de ativo (equipamentos), com suporte a despesas acessórias de fornecedores diferentes, datas registradas separadamente (pedido, recebimento, NF, conferência), status do recebimento, e dashboard de pendências
+- [x] **RECE-03**: Ao confirmar recebimento+NF: entrada automática no estoque (insumos) ou cadastro de ativo (equipamentos), com suporte a despesas acessórias de fornecedores diferentes, datas registradas separadamente (pedido, recebimento, NF, conferência), status do recebimento, e dashboard de pendências
 
 ### Devolução
 
@@ -93,7 +93,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PEDI-01     | Phase 9  | Complete |
 | RECE-01     | Phase 10 | Complete |
 | RECE-02     | Phase 10 | Complete |
-| RECE-03     | Phase 10 | Pending  |
+| RECE-03     | Phase 10 | Complete |
 | FINC-01     | Phase 10 | Pending  |
 | DEVO-01     | Phase 11 | Pending  |
 | FINC-02     | Phase 11 | Pending  |

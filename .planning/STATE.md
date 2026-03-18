@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 10-recebimento-de-mercadorias-02-PLAN.md
-last_updated: '2026-03-18T02:08:49.066Z'
+stopped_at: Completed 10-recebimento-de-mercadorias-04-PLAN.md
+last_updated: '2026-03-18T02:17:31.778Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 20
-  completed_plans: 17
+  completed_plans: 19
   percent: 0
 ---
 
@@ -64,6 +64,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 09-cota-o-e-pedido-de-compra P04 | 975s | 2 tasks | 12 files |
 | Phase 10-recebimento-de-mercadorias P01 | 229s | 2 tasks | 3 files |
 | Phase 10-recebimento-de-mercadorias P02 | 296s | 2 tasks | 4 files |
+| Phase 10-recebimento-de-mercadorias P04 | 362s | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -108,6 +109,8 @@ Key decisions for v1.1:
 - [Phase 10-recebimento-de-mercadorias]: goodsReceiptId FKs on StockEntry and Payable are plain String? fields — avoids Prisma requiring reverse relations; service layer handles lookup
 - [Phase 10-recebimento-de-mercadorias]: Migration applied via db push + migrate resolve — consistent with Phase 7/9 approach (no shadow DB in dev)
 - [Phase 10-recebimento-de-mercadorias]: goodsReceiptsRouter /pending registered before /:id in routes file; CONFIRMADO transition blocked in service — Plan 03 handles atomic StockEntry+Payable; multer diskStorage at uploads/goods-receipts/{orgId}/{grId}/
+- [Phase 10-recebimento-de-mercadorias]: GrStatusBadge reads statusLabel from list item (backend-computed) rather than doing local lookup in GoodsReceiptsPage
+- [Phase 10-recebimento-de-mercadorias]: RecebimentosTab and PendenciasTab extracted as sub-components to isolate hook usage and keep main page clean
 
 ### Pending Todos
 
@@ -121,6 +124,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T02:08:49.063Z
-Stopped at: Completed 10-recebimento-de-mercadorias-02-PLAN.md
+Last session: 2026-03-18T02:17:22.719Z
+Stopped at: Completed 10-recebimento-de-mercadorias-04-PLAN.md
 Resume file: None
