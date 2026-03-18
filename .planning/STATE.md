@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 12-kanban-dashboard-e-notifica-es 12-01-PLAN.md
-last_updated: '2026-03-18T21:04:22.891Z'
+stopped_at: Completed 12-kanban-dashboard-e-notifica-es 12-03-PLAN.md
+last_updated: "2026-03-18T21:16:48.873Z"
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 31
-  completed_plans: 27
+  completed_plans: 28
   percent: 0
 ---
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-requisi-o-e-aprova-o P04 | 90min | 2 tasks | 11 files |
 | Phase 08-requisi-o-e-aprova-o P05 | 45min | 2 tasks | 14 files |
 | Phase 12-kanban-dashboard-e-notifica-es PP01 | 20min | 2 tasks | 8 files |
+| Phase 12-kanban-dashboard-e-notifica-es P03 | 10min | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,8 @@ Key decisions for v1.1:
 - [Phase 08-requisi-o-e-aprova-o]: HTML5 native drag events for rule reorder in ApprovalRulesPage — avoids adding dnd library for single use case
 - [Phase 12-kanban-dashboard-e-notifica-es]: RC with existing quotation placed in EM_COTACAO not RC_APROVADA — checked via quotations count in RC query
 - [Phase 12-kanban-dashboard-e-notifica-es]: PAGO column: Payable.status=PAID + paidAt >= 30 days ago + goodsReceiptId not null
+- [Phase 12-kanban-dashboard-e-notifica-es]: KanbanFilters type aliased to KanbanFiltersState in page to avoid naming collision with KanbanFilters component
+- [Phase 12-kanban-dashboard-e-notifica-es]: AGUARDANDO_ENTREGA->RECEBIDO transition navigates to /goods-receipts?poId= instead of API call
 
 ### Pending Todos
 
@@ -105,6 +108,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T21:04:22.889Z
-Stopped at: Completed 12-kanban-dashboard-e-notifica-es 12-01-PLAN.md
+Last session: 2026-03-18T21:16:48.868Z
+Stopped at: Completed 12-kanban-dashboard-e-notifica-es 12-03-PLAN.md
 Resume file: None
