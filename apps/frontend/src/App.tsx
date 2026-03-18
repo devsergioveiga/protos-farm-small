@@ -95,6 +95,7 @@ const RuralCreditPage = lazy(() => import('@/pages/RuralCreditPage'));
 const RuralCreditDetailPage = lazy(() => import('@/pages/RuralCreditDetailPage'));
 const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
 const PurchaseRequestsPage = lazy(() => import('@/pages/PurchaseRequestsPage'));
+const QuotationsPage = lazy(() => import('@/pages/QuotationsPage'));
 const ApprovalRulesPage = lazy(() => import('@/pages/ApprovalRulesPage'));
 const PurchaseOrdersPage = lazy(() => import('@/pages/PurchaseOrdersPage'));
 
@@ -193,6 +194,7 @@ export function App() {
                 <Route path="/rural-credit/:id" element={<RuralCreditDetailPage />} />
                 <Route path="/suppliers" element={<SuppliersPage />} />
                 <Route path="/purchase-requests" element={<PurchaseRequestsPage />} />
+                <Route path="/quotations" element={<QuotationsPage />} />
                 <Route path="/approval-rules" element={<ApprovalRulesPage />} />
                 <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
                 <Route
