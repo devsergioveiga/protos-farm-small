@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 12-kanban-dashboard-e-notifica-es 12-04-PLAN.md
-last_updated: '2026-03-18T21:26:20.985Z'
+stopped_at: Completed 12-kanban-dashboard-e-notifica-es 12-05-PLAN.md
+last_updated: '2026-03-18T21:28:55.432Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 31
-  completed_plans: 30
+  completed_plans: 31
   percent: 0
 ---
 
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 12-kanban-dashboard-e-notifica-es P03 | 10min | 2 tasks | 13 files |
 | Phase 12-kanban-dashboard-e-notifica-es P02 | 18min | 2 tasks | 13 files |
 | Phase 12-kanban-dashboard-e-notifica-es P04 | 5min | 2 tasks | 7 files |
+| Phase 12-kanban-dashboard-e-notifica-es P05 | 7min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,8 @@ Key decisions for v1.1:
 - [Phase 12-kanban-dashboard-e-notifica-es]: shouldNotify called inside existing tx for BADGE; EMAIL dispatch uses withRlsBypass fire-and-forget
 - [Phase 12-kanban-dashboard-e-notifica-es]: Digest only sends when pending items > 0 (no empty digest emails)
 - [Phase 12-kanban-dashboard-e-notifica-es]: Recharts Tooltip labelFormatter+content cannot coexist — use content custom renderer only for multi-value tooltips
+- [Phase 12-kanban-dashboard-e-notifica-es]: useNotificationPreferences uses /org/notification-preferences without explicit orgId — consistent with /org/notifications pattern, org extracted from JWT server-side
+- [Phase 12-kanban-dashboard-e-notifica-es]: NotificationBell handleItemClick is now type-aware — routes to quotations/goods-receipts/purchase-budgets/goods-returns per notification type
 
 ### Pending Todos
 
@@ -114,6 +117,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T21:26:20.983Z
-Stopped at: Completed 12-kanban-dashboard-e-notifica-es 12-04-PLAN.md
+Last session: 2026-03-18T21:28:55.430Z
+Stopped at: Completed 12-kanban-dashboard-e-notifica-es 12-05-PLAN.md
 Resume file: None
