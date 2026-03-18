@@ -165,6 +165,8 @@ export default function SupplierModal({
   const [pendingStatus, setPendingStatus] = useState<Supplier['status'] | null>(null);
 
   const firstInputRef = useRef<HTMLInputElement>(null);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  const [prevSupplier, setPrevSupplier] = useState(supplier);
 
   const {
     createSupplier,
@@ -176,13 +178,15 @@ export default function SupplierModal({
     onSuccess(msg);
   });
 
-  // Reset form when modal opens/closes or supplier changes
-  useEffect(() => {
+  // Reset form when modal opens or supplier changes (render-time derivation)
+  if (isOpen !== prevIsOpen || supplier !== prevSupplier) {
+    setPrevIsOpen(isOpen);
+    setPrevSupplier(supplier);
     if (isOpen) {
       setForm(supplier ? supplierToForm(supplier) : INITIAL_STATE);
       setTouched({});
     }
-  }, [isOpen, supplier]);
+  }
 
   // Focus first input when modal opens
   useEffect(() => {
