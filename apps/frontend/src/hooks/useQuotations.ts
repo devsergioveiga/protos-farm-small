@@ -11,11 +11,6 @@ import type {
 
 // ─── useQuotations (list) ─────────────────────────────────────────────────
 
-interface UseQuotationsFilters {
-  status?: string;
-  search?: string;
-}
-
 interface UseQuotationsResult {
   quotations: Quotation[];
   total: number;
@@ -29,8 +24,7 @@ interface UseQuotationsResult {
   refresh: () => void;
 }
 
-export function useQuotations(filters?: UseQuotationsFilters): UseQuotationsResult {
-  void filters; // filters applied via setStatus/setSearch; kept for API symmetry
+export function useQuotations(): UseQuotationsResult {
   const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);

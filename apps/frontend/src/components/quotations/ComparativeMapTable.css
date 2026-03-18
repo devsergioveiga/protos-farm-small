@@ -1,0 +1,245 @@
+/* ─── Scroll container ─── */
+
+.cmt-scroll-wrapper {
+  position: relative;
+}
+
+.cmt-scroll-hint {
+  display: none;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-400);
+  text-align: center;
+  padding: var(--space-2) 0;
+}
+
+@media (max-width: 767px) {
+  .cmt-scroll-hint {
+    display: block;
+  }
+}
+
+.cmt-container {
+  overflow-x: auto;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+}
+
+/* ─── Table ─── */
+
+.cmt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  min-width: 600px;
+}
+
+/* ─── Header row ─── */
+
+.cmt-th {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-600);
+  background: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-neutral-200);
+  vertical-align: top;
+}
+
+.cmt-th--item {
+  min-width: 180px;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--color-neutral-50);
+  border-right: 1px solid var(--color-neutral-200);
+}
+
+.cmt-th--supplier {
+  min-width: 180px;
+  border-right: 1px solid var(--color-neutral-100);
+}
+
+.cmt-supplier-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.cmt-supplier-header__name {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-800);
+}
+
+.cmt-supplier-header__meta {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+  font-weight: var(--font-normal);
+}
+
+/* ─── Item column (sticky) ─── */
+
+.cmt-item-col {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-0);
+  border-bottom: 1px solid var(--color-neutral-100);
+  border-right: 1px solid var(--color-neutral-200);
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  text-align: left;
+  vertical-align: top;
+}
+
+.cmt-item-col__name {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-800);
+  margin-bottom: var(--space-1);
+}
+
+.cmt-item-col__meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+}
+
+.cmt-last-price {
+  display: inline-block;
+  margin-top: var(--space-1);
+  padding: 1px var(--space-2);
+  background: var(--color-neutral-100);
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-600);
+}
+
+/* ─── Price cells ─── */
+
+.cmt-cell {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-neutral-100);
+  border-right: 1px solid var(--color-neutral-100);
+  vertical-align: middle;
+  transition: background var(--duration-instant) var(--ease-out);
+}
+
+.cmt-cell--editable {
+  cursor: pointer;
+}
+
+.cmt-cell--editable:hover {
+  background: var(--color-primary-50) !important;
+}
+
+.cmt-cell--selected {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+
+.cmt-cell--empty {
+  text-align: center;
+  color: var(--color-neutral-300);
+}
+
+.cmt-cell__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+}
+
+.cmt-cell__price {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+.cmt-cell__diff {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  margin-left: var(--space-1);
+}
+
+.cmt-cell__total {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.cmt-cell__no-price {
+  font-family: var(--font-body);
+  color: var(--color-neutral-400);
+}
+
+.cmt-cell__check {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-neutral-0);
+}
+
+.cmt-cell__check--active {
+  background: var(--color-primary-600);
+  border-color: var(--color-primary-600);
+  color: white;
+}
+
+/* ─── Footer / totals ─── */
+
+.cmt-total-label {
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-50);
+  border-top: 2px solid var(--color-neutral-200);
+  text-align: left;
+  position: sticky;
+  left: 0;
+  border-right: 1px solid var(--color-neutral-200);
+}
+
+.cmt-total-cell {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-50);
+  border-top: 2px solid var(--color-neutral-200);
+  border-right: 1px solid var(--color-neutral-100);
+}
+
+.cmt-total-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-800);
+}
+
+/* ─── Stars ─── */
+
+.cmt-stars {
+  display: block;
+  line-height: 1;
+}
+
+/* ─── Empty ─── */
+
+.cmt-empty {
+  padding: var(--space-8);
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+}
