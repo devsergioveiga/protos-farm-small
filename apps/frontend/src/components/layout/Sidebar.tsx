@@ -68,6 +68,7 @@ import {
   GitMerge,
   Handshake,
   ShoppingCart,
+  Kanban,
   Settings2,
   FileSearch,
   PackageCheck,
@@ -203,6 +204,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'COMPRAS',
     items: [
+      { to: '/purchase-kanban', icon: Kanban, label: 'Kanban' },
       { to: '/suppliers', icon: Handshake, label: 'Fornecedores' },
       { to: '/purchase-requests', icon: ShoppingCart, label: 'Requisicoes' },
       { to: '/quotations', icon: FileSearch, label: 'Cotacoes' },
