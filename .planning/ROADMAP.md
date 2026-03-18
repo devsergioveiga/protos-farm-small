@@ -30,7 +30,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [ ] **Phase 9: Cotação e Pedido de Compra** — Seleção de fornecedor e emissão formal da OC com PDF
 - [ ] **Phase 10: Recebimento de Mercadorias** — Hub de integração: entrada no estoque + geração automática de CP
 - [ ] **Phase 11: Devolução, Orçamento e Saving** — Reversão de estoque/financeiro e controle orçamentário
-- [ ] **Phase 12: Kanban, Dashboard e Notificações** — Visibilidade operacional e execução do fluxo completo
+- [x] **Phase 12: Kanban, Dashboard e Notificações** — Visibilidade operacional e execução do fluxo completo (completed 2026-03-18)
 
 ## Phase Details
 
@@ -131,7 +131,7 @@ Plans:
 2. Gerente pode ver dashboard executivo com volume total, prazo médio do ciclo, % entrega no prazo, saving acumulado, e comparativo com período anterior
 3. Participantes recebem notificações push/email/badge nas etapas relevantes (aprovação, rejeição, entrega confirmada, lembrete SLA)
 4. Gerente pode configurar preferências de notificação por canal (push, email, badge)
-   **Plans:** 3/4 plans executed
+   **Plans:** 4/4 plans complete
 
 Plans:
 
@@ -155,4 +155,4 @@ Plans:
 | 9. Cotação e Pedido de Compra        | v1.1      | 0/TBD          | Not started | -          |
 | 10. Recebimento de Mercadorias       | v1.1      | 0/TBD          | Not started | -          |
 | 11. Devolução, Orçamento e Saving    | v1.1      | 0/TBD          | Not started | -          |
-| 12. Kanban, Dashboard e Notificações | 3/4       | In Progress    |             | -          |
+| 12. Kanban, Dashboard e Notificações | 4/4       | Complete       | 2026-03-18  | -          |

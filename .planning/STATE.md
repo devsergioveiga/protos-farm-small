@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 12-02-PLAN.md
-last_updated: '2026-03-18T14:12:22.753Z'
+stopped_at: Completed 12-04-PLAN.md
+last_updated: '2026-03-18T14:23:13.470Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 30
-  completed_plans: 28
+  completed_plans: 30
   percent: 0
 ---
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-requisi-o-e-aprova-o P05 | 45min | 2 tasks | 14 files |
 | Phase 12-kanban-dashboard-e-notifica-es P01 | 6min | 2 tasks | 5 files |
 | Phase 12 P02 | 501 | 2 tasks | 10 files |
+| Phase 12-kanban-dashboard-e-notifica-es P04 | 18min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,8 @@ Key decisions for v1.1:
 - [Phase 12]: Dynamic import used in createNotificationIfEnabled to avoid circular dependency between notifications.service.ts and notification-preferences.service.ts
 - [Phase 12]: NotificationPreference uses opt-out model: absence of record = enabled (returns true)
 - [Phase 12]: Preference routes placed BEFORE /:id/read in notifications.routes.ts to prevent Express matching 'preferences' as :id param
+- [Phase 12-kanban-dashboard-e-notifica-es]: Chart components lazy-loaded via React.lazy to keep Recharts bundle out of initial page load
+- [Phase 12-kanban-dashboard-e-notifica-es]: ChangeBadge accepts invertColors prop so cycle time (lower is better) shows green for negative change
 
 ### Pending Todos
 
@@ -109,6 +112,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T14:12:22.750Z
-Stopped at: Completed 12-02-PLAN.md
+Last session: 2026-03-18T14:23:13.468Z
+Stopped at: Completed 12-04-PLAN.md
 Resume file: None
