@@ -38,7 +38,7 @@ const MOCK_ORGS: Organization[] = [
 
 const mockUseAdminOrganizations = vi.fn();
 vi.mock('@/hooks/useAdminOrganizations', () => ({
-  useAdminOrganizations: (...args: unknown[]) => mockUseAdminOrganizations(...args),
+  useAdminOrganizations: () => mockUseAdminOrganizations(),
 }));
 
 const mockPost = vi.fn();
@@ -124,13 +124,14 @@ describe('AdminOrganizationsPage', () => {
   it('should open detail modal when clicking a row', async () => {
     const user = userEvent.setup();
     mockUseAdminOrganizations.mockReturnValue(defaultReturn());
+    mockApiGet.mockResolvedValue(MOCK_ORGS[0]);
 
     await renderPage();
 
     const row = screen.getAllByLabelText('Ver detalhes de Agro Corp')[0];
     await user.click(row);
 
-    expect(screen.getByText('Alterar status')).toBeDefined();
+    expect(await screen.findByText('Alterar status')).toBeDefined();
     expect(screen.getByText('Alterar plano')).toBeDefined();
     expect(screen.getByText('Políticas')).toBeDefined();
   });
