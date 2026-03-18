@@ -37,13 +37,13 @@ Requirements for milestone v1.1. Each maps to roadmap phases.
 
 ### Devolução
 
-- [ ] **DEVO-01**: Gerente de estoque pode registrar devolução total ou parcial vinculada ao recebimento, com motivo obrigatório (defeito, validade, produto errado, excedente, especificação divergente), fotos/laudo, ação esperada (troca/crédito/estorno), saída automática do estoque, referência de NF de devolução, notificação ao fornecedor, e acompanhamento da resolução
+- [x] **DEVO-01**: Gerente de estoque pode registrar devolução total ou parcial vinculada ao recebimento, com motivo obrigatório (defeito, validade, produto errado, excedente, especificação divergente), fotos/laudo, ação esperada (troca/crédito/estorno), saída automática do estoque, referência de NF de devolução, notificação ao fornecedor, e acompanhamento da resolução
 
 ### Integração Financeira
 
 - [x] **FINC-01**: Ao confirmar recebimento+NF: lançamento automático no Contas a Pagar com fornecedor, valor, vencimento(s), centro de custo; suporte a despesas acessórias com CPs separados por fornecedor; cenários NF antecipada (CP provisório), recebimento antecipado (CP só com NF), parcial (CP por recebimento); parcelas automáticas da condição do pedido (30/60/90); classificação contábil sugerida; referência cruzada completa (CP→pedido→cotação→requisição); tela de revisão e navegação drill-down
-- [ ] **FINC-02**: Gerente financeiro pode definir orçamento de compras por categoria e período (mensal/trimestral/safra), por centro de custo/fazenda, vinculado ao planejamento de safra, com acompanhamento orçado vs requisitado vs comprado vs pago, alerta ao aprovar se ultrapassar orçamento, dashboard de execução orçamentária, projeção de gasto, e relatório de desvios
-- [ ] **FINC-03**: Gerente pode ver saving por cotação (diferença maior vs vencedora), saving acumulado por período, histórico de preço por produto (gráfico evolução), indicadores (% compras com cotação formal, % emergenciais, prazo médio ciclo), top 10 produtos por gasto, e top 5 fornecedores por volume
+- [x] **FINC-02**: Gerente financeiro pode definir orçamento de compras por categoria e período (mensal/trimestral/safra), por centro de custo/fazenda, vinculado ao planejamento de safra, com acompanhamento orçado vs requisitado vs comprado vs pago, alerta ao aprovar se ultrapassar orçamento, dashboard de execução orçamentária, projeção de gasto, e relatório de desvios
+- [x] **FINC-03**: Gerente pode ver saving por cotação (diferença maior vs vencedora), saving acumulado por período, histórico de preço por produto (gráfico evolução), indicadores (% compras com cotação formal, % emergenciais, prazo médio ciclo), top 10 produtos por gasto, e top 5 fornecedores por volume
 
 ### Dashboard e Acompanhamento
 
@@ -95,9 +95,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RECE-02     | Phase 10 | Complete |
 | RECE-03     | Phase 10 | Complete |
 | FINC-01     | Phase 10 | Complete |
-| DEVO-01     | Phase 11 | Pending  |
-| FINC-02     | Phase 11 | Pending  |
-| FINC-03     | Phase 11 | Pending  |
+| DEVO-01     | Phase 11 | Complete |
+| FINC-02     | Phase 11 | Complete |
+| FINC-03     | Phase 11 | Complete |
 | DASH-01     | Phase 12 | Pending  |
 | DASH-02     | Phase 12 | Pending  |
 | DASH-03     | Phase 12 | Pending  |
