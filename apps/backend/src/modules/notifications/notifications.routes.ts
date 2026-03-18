@@ -81,6 +81,37 @@ notificationsRouter.get(base, authenticate, checkPermission('purchases:read'), a
   }
 });
 
+// GET /org/notifications/preferences
+notificationsRouter.get(`${base}/preferences`, authenticate, async (req, res) => {
+  try {
+    const ctx = buildRlsContext(req);
+    const { getPreferences } = await import('./notification-preferences.service');
+    const prefs = await getPreferences(ctx);
+    res.json(prefs);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
+// PATCH /org/notifications/preferences
+notificationsRouter.patch(`${base}/preferences`, authenticate, async (req, res) => {
+  try {
+    const ctx = buildRlsContext(req);
+    const { preferences } = req.body as {
+      preferences: { eventType: string; channel: string; enabled: boolean }[];
+    };
+    if (!Array.isArray(preferences)) {
+      res.status(400).json({ error: 'Campo preferences deve ser um array' });
+      return;
+    }
+    const { updatePreferences } = await import('./notification-preferences.service');
+    await updatePreferences(ctx, preferences);
+    res.json({ success: true });
+  } catch (err) {
+    handleError(err, res);
+  }
+});
+
 // PATCH /org/notifications/:id/read
 notificationsRouter.patch(`${base}/:id/read`, authenticate, async (req, res) => {
   try {

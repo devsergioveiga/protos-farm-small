@@ -103,6 +103,7 @@ import { goodsReturnsRouter } from './modules/goods-returns/goods-returns.routes
 import { purchaseBudgetsRouter } from './modules/purchase-budgets/purchase-budgets.routes';
 import { savingAnalysisRouter } from './modules/saving-analysis/saving-analysis.routes';
 import { purchaseKanbanRouter } from './modules/purchase-kanban/purchase-kanban.routes';
+import { purchaseDashboardRouter } from './modules/purchase-dashboard/purchase-dashboard.routes';
 
 const app = express();
 
@@ -213,5 +214,6 @@ app.use('/api', goodsReturnsRouter);
 app.use('/api', purchaseBudgetsRouter);
 app.use('/api', savingAnalysisRouter);
 app.use('/api', purchaseKanbanRouter);
+app.use('/api', purchaseDashboardRouter);
 
 export { app };
