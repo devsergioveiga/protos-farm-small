@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 12-kanban-dashboard-e-notifica-es 12-03-PLAN.md
-last_updated: "2026-03-18T21:16:48.873Z"
+stopped_at: Completed 12-kanban-dashboard-e-notifica-es 12-02-PLAN.md
+last_updated: '2026-03-18T21:18:45.874Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 31
-  completed_plans: 28
+  completed_plans: 29
   percent: 0
 ---
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-requisi-o-e-aprova-o P05 | 45min | 2 tasks | 14 files |
 | Phase 12-kanban-dashboard-e-notifica-es PP01 | 20min | 2 tasks | 8 files |
 | Phase 12-kanban-dashboard-e-notifica-es P03 | 10min | 2 tasks | 13 files |
+| Phase 12-kanban-dashboard-e-notifica-es P02 | 18min | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,9 @@ Key decisions for v1.1:
 - [Phase 12-kanban-dashboard-e-notifica-es]: PAGO column: Payable.status=PAID + paidAt >= 30 days ago + goodsReceiptId not null
 - [Phase 12-kanban-dashboard-e-notifica-es]: KanbanFilters type aliased to KanbanFiltersState in page to avoid naming collision with KanbanFilters component
 - [Phase 12-kanban-dashboard-e-notifica-es]: AGUARDANDO_ENTREGA->RECEBIDO transition navigates to /goods-receipts?poId= instead of API call
+- [Phase 12-kanban-dashboard-e-notifica-es]: ADMIN role used for digest recipients (UserRole has no OWNER value)
+- [Phase 12-kanban-dashboard-e-notifica-es]: shouldNotify called inside existing tx for BADGE; EMAIL dispatch uses withRlsBypass fire-and-forget
+- [Phase 12-kanban-dashboard-e-notifica-es]: Digest only sends when pending items > 0 (no empty digest emails)
 
 ### Pending Todos
 
@@ -108,6 +112,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T21:16:48.868Z
-Stopped at: Completed 12-kanban-dashboard-e-notifica-es 12-03-PLAN.md
+Last session: 2026-03-18T21:18:45.871Z
+Stopped at: Completed 12-kanban-dashboard-e-notifica-es 12-02-PLAN.md
 Resume file: None
