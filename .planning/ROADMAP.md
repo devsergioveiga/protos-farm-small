@@ -131,7 +131,7 @@ Plans:
 2. Gerente pode ver dashboard executivo com volume total, prazo médio do ciclo, % entrega no prazo, saving acumulado, e comparativo com período anterior
 3. Participantes recebem notificações push/email/badge nas etapas relevantes (aprovação, rejeição, entrega confirmada, lembrete SLA)
 4. Gerente pode configurar preferências de notificação por canal (push, email, badge)
-   **Plans:** 3/5 plans executed
+   **Plans:** 4/5 plans executed
 
 Plans:
 
@@ -156,4 +156,4 @@ Plans:
 | 9. Cotação e Pedido de Compra        | v1.1      | 0/TBD          | Not started | -          |
 | 10. Recebimento de Mercadorias       | v1.1      | 0/TBD          | Not started | -          |
 | 11. Devolução, Orçamento e Saving    | v1.1      | 0/TBD          | Not started | -          |
-| 12. Kanban, Dashboard e Notificações | 3/5       | In Progress    |             | -          |
+| 12. Kanban, Dashboard e Notificações | 4/5       | In Progress    |             | -          |

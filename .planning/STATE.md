@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 12-kanban-dashboard-e-notifica-es 12-02-PLAN.md
-last_updated: '2026-03-18T21:18:45.874Z'
+stopped_at: Completed 12-kanban-dashboard-e-notifica-es 12-04-PLAN.md
+last_updated: '2026-03-18T21:26:20.985Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 31
-  completed_plans: 29
+  completed_plans: 30
   percent: 0
 ---
 
@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 12-kanban-dashboard-e-notifica-es PP01 | 20min | 2 tasks | 8 files |
 | Phase 12-kanban-dashboard-e-notifica-es P03 | 10min | 2 tasks | 13 files |
 | Phase 12-kanban-dashboard-e-notifica-es P02 | 18min | 2 tasks | 13 files |
+| Phase 12-kanban-dashboard-e-notifica-es P04 | 5min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,7 @@ Key decisions for v1.1:
 - [Phase 12-kanban-dashboard-e-notifica-es]: ADMIN role used for digest recipients (UserRole has no OWNER value)
 - [Phase 12-kanban-dashboard-e-notifica-es]: shouldNotify called inside existing tx for BADGE; EMAIL dispatch uses withRlsBypass fire-and-forget
 - [Phase 12-kanban-dashboard-e-notifica-es]: Digest only sends when pending items > 0 (no empty digest emails)
+- [Phase 12-kanban-dashboard-e-notifica-es]: Recharts Tooltip labelFormatter+content cannot coexist — use content custom renderer only for multi-value tooltips
 
 ### Pending Todos
 
@@ -112,6 +114,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T21:18:45.871Z
-Stopped at: Completed 12-kanban-dashboard-e-notifica-es 12-02-PLAN.md
+Last session: 2026-03-18T21:26:20.983Z
+Stopped at: Completed 12-kanban-dashboard-e-notifica-es 12-04-PLAN.md
 Resume file: None
