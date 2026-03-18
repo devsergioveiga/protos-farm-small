@@ -97,6 +97,7 @@ import { approvalRulesRouter } from './modules/approval-rules/approval-rules.rou
 import { notificationsRouter } from './modules/notifications/notifications.routes';
 import { quotationsRouter } from './modules/quotations/quotations.routes';
 import { purchaseOrdersRouter } from './modules/purchase-orders/purchase-orders.routes';
+import { goodsReceiptsRouter } from './modules/goods-receipts/goods-receipts.routes';
 
 const app = express();
 
@@ -201,5 +202,6 @@ app.use('/api', approvalRulesRouter);
 app.use('/api', notificationsRouter);
 app.use('/api', quotationsRouter);
 app.use('/api', purchaseOrdersRouter);
+app.use('/api', goodsReceiptsRouter);
 
 export { app };
