@@ -36,8 +36,9 @@ export interface FarmListItem {
   longitude: number | null;
   createdAt: string;
   _count: {
-    registrations: number;
+    ruralProperties: number;
     fieldPlots: number;
+    registrations: number;
   };
 }
 

@@ -1,6 +1,18 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, CheckCircle, XCircle, RotateCcw, Clock, ShoppingCart } from 'lucide-react';
+import {
+  Bell,
+  CheckCircle,
+  XCircle,
+  RotateCcw,
+  Clock,
+  ShoppingCart,
+  FileCheck,
+  PackageCheck,
+  AlertTriangle,
+  Undo2,
+  FileSearch,
+} from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 import type { NotificationType } from '@/hooks/useNotifications';
 import './NotificationBell.css';
@@ -41,6 +53,59 @@ function NotificationIcon({ type }: NotificationIconProps) {
     case 'SLA_REMINDER':
       return (
         <Clock size={20} aria-hidden="true" className="nb-item__icon nb-item__icon--warning" />
+      );
+    case 'QUOTATION_PENDING_APPROVAL':
+    case 'QUOTATION_APPROVED':
+      return (
+        <CheckCircle
+          size={20}
+          aria-hidden="true"
+          className="nb-item__icon nb-item__icon--success"
+        />
+      );
+    case 'QUOTATION_RECEIVED':
+      return (
+        <FileCheck size={20} aria-hidden="true" className="nb-item__icon nb-item__icon--info" />
+      );
+    case 'QUOTATION_DEADLINE_NEAR':
+      return (
+        <FileSearch size={20} aria-hidden="true" className="nb-item__icon nb-item__icon--warning" />
+      );
+    case 'PO_OVERDUE':
+      return (
+        <AlertTriangle
+          size={20}
+          aria-hidden="true"
+          className="nb-item__icon nb-item__icon--error"
+        />
+      );
+    case 'PO_GOODS_RECEIVED':
+      return (
+        <PackageCheck
+          size={20}
+          aria-hidden="true"
+          className="nb-item__icon nb-item__icon--success"
+        />
+      );
+    case 'BUDGET_EXCEEDED':
+      return (
+        <AlertTriangle
+          size={20}
+          aria-hidden="true"
+          className="nb-item__icon nb-item__icon--warning"
+        />
+      );
+    case 'RETURN_REGISTERED':
+      return (
+        <Undo2 size={20} aria-hidden="true" className="nb-item__icon nb-item__icon--warning" />
+      );
+    case 'RETURN_RESOLVED':
+      return (
+        <CheckCircle
+          size={20}
+          aria-hidden="true"
+          className="nb-item__icon nb-item__icon--success"
+        />
       );
     case 'RC_PENDING':
     default:
@@ -92,12 +157,31 @@ export default function NotificationBell() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, setIsOpen]);
 
-  async function handleItemClick(id: string, referenceId?: string) {
+  function getNavigationTarget(type: NotificationType, referenceId?: string): string {
+    switch (type) {
+      case 'QUOTATION_PENDING_APPROVAL':
+      case 'QUOTATION_APPROVED':
+      case 'QUOTATION_RECEIVED':
+      case 'QUOTATION_DEADLINE_NEAR':
+        return referenceId ? `/quotations?highlight=${referenceId}` : '/quotations';
+      case 'PO_OVERDUE':
+        return referenceId ? `/purchase-orders?highlight=${referenceId}` : '/purchase-orders';
+      case 'PO_GOODS_RECEIVED':
+        return referenceId ? `/goods-receipts?highlight=${referenceId}` : '/goods-receipts';
+      case 'BUDGET_EXCEEDED':
+        return '/purchase-budgets';
+      case 'RETURN_REGISTERED':
+      case 'RETURN_RESOLVED':
+        return referenceId ? `/goods-returns?highlight=${referenceId}` : '/goods-returns';
+      default:
+        return referenceId ? `/purchase-requests?highlight=${referenceId}` : '/purchase-requests';
+    }
+  }
+
+  async function handleItemClick(id: string, type: NotificationType, referenceId?: string) {
     await markAsRead(id);
     setIsOpen(false);
-    if (referenceId) {
-      navigate(`/purchase-requests?highlight=${referenceId}`);
-    }
+    navigate(getNavigationTarget(type, referenceId));
   }
 
   const ariaLabel = unreadCount > 0 ? `${unreadCount} notificacoes nao lidas` : 'Notificacoes';
@@ -159,7 +243,7 @@ export default function NotificationBell() {
                     type="button"
                     className={`notification-item${!n.isRead ? ' notification-item--unread' : ''}`}
                     role="menuitem"
-                    onClick={() => void handleItemClick(n.id, n.referenceId)}
+                    onClick={() => void handleItemClick(n.id, n.type, n.referenceId)}
                   >
                     <NotificationIcon type={n.type} />
                     <div className="notification-item__content">
