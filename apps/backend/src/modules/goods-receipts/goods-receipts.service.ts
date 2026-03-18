@@ -1,3 +1,5 @@
+import { Money } from '@protos-farm/shared';
+import { generateInstallments } from '@protos-farm/shared';
 import { withRlsContext, type RlsContext } from '../../database/rls';
 import {
   GoodsReceiptError,
@@ -18,6 +20,7 @@ import {
   type DivergenceTypeValue,
   type DivergenceActionValue,
 } from './goods-receipts.types';
+import { canOcTransition } from '../purchase-orders/purchase-orders.types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TxClient = any;
@@ -450,6 +453,373 @@ export async function listPendingDeliveries(ctx: RlsContext): Promise<PendingDel
     }
 
     return result;
+  });
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────
+
+/**
+ * Parse paymentTerms string (e.g. "30/60/90" or "A vista") into installmentCount and firstDueDays.
+ * Returns { installmentCount, firstDueDays } where firstDueDays is days until first due date.
+ */
+function parsePaymentTerms(paymentTerms: string | null | undefined): {
+  installmentCount: number;
+  firstDueDays: number;
+} {
+  if (!paymentTerms || paymentTerms.trim().toLowerCase() === 'a vista') {
+    return { installmentCount: 1, firstDueDays: 30 };
+  }
+
+  // Try parsing "30/60/90" style terms
+  const parts = paymentTerms.split('/').map((p) => parseInt(p.trim(), 10));
+  if (parts.length > 0 && parts.every((p) => !isNaN(p) && p >= 0)) {
+    return {
+      installmentCount: parts.length,
+      firstDueDays: parts[0] || 30,
+    };
+  }
+
+  // Fallback
+  return { installmentCount: 1, firstDueDays: 30 };
+}
+
+// ─── confirmGoodsReceipt ─────────────────────────────────────────────
+
+export async function confirmGoodsReceipt(
+  ctx: RlsContext & { userId: string },
+  id: string,
+): Promise<GoodsReceiptOutput> {
+  return withRlsContext(ctx, async (tx) => {
+    // Step 1 — Load and validate
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const gr = await (tx as any).goodsReceipt.findFirst({
+      where: { id, organizationId: ctx.organizationId, deletedAt: null },
+      include: {
+        ...GR_FULL_INCLUDE,
+        supplier: { select: { id: true, name: true, tradeName: true } },
+        purchaseOrder: {
+          select: {
+            sequentialNumber: true,
+            status: true,
+            quotationId: true,
+            quotation: {
+              select: {
+                purchaseRequestId: true,
+                purchaseRequest: {
+                  select: { farmId: true, costCenterId: true },
+                },
+                suppliers: {
+                  where: { isSelected: true },
+                  include: {
+                    proposal: { select: { paymentTerms: true } },
+                  },
+                  take: 1,
+                },
+              },
+            },
+            items: {
+              select: {
+                id: true,
+                quantity: true,
+                receivedQuantity: true,
+              },
+            },
+          },
+        },
+        items: true,
+        divergences: true,
+      },
+    });
+
+    if (!gr) {
+      throw new GoodsReceiptError('Recebimento nao encontrado', 404);
+    }
+
+    if (!canGrTransition(gr.status, 'CONFIRMADO')) {
+      throw new GoodsReceiptError(
+        `Transicao invalida: ${gr.status} -> CONFIRMADO. Recebimento deve estar CONFERIDO.`,
+        400,
+      );
+    }
+
+    // Require invoiceNumber for types that must have NF
+    const requiresInvoice = ['STANDARD', 'PARCIAL', 'NF_FRACIONADA'].includes(gr.receivingType);
+    if (requiresInvoice && (!gr.invoiceNumber || !gr.invoiceTotal)) {
+      throw new GoodsReceiptError(
+        'Numero e total da nota fiscal sao obrigatorios para confirmacao',
+        400,
+      );
+    }
+
+    // NF_ANTECIPADA: goods must have arrived (receivedAt set)
+    if (gr.receivingType === 'NF_ANTECIPADA' && !gr.receivedAt) {
+      throw new GoodsReceiptError(
+        'Mercadoria deve ter sido recebida antes de confirmar NF antecipada',
+        400,
+      );
+    }
+
+    // Step 2 — Derive farmId and costCenter
+    let farmId: string | null = null;
+    let costCenterId: string | null = null;
+
+    if (gr.purchaseOrder?.quotation?.purchaseRequest) {
+      farmId = gr.purchaseOrder.quotation.purchaseRequest.farmId ?? null;
+      costCenterId = gr.purchaseOrder.quotation.purchaseRequest.costCenterId ?? null;
+    }
+
+    // Fallback to storageFarmId if no farmId from PO chain
+    if (!farmId) {
+      farmId = gr.storageFarmId ?? null;
+    }
+
+    // EMERGENCIAL (no PO): storageFarmId is required
+    if (gr.receivingType === 'EMERGENCIAL' && !farmId) {
+      throw new GoodsReceiptError(
+        'Fazenda de armazenamento e obrigatoria para recebimento emergencial',
+        400,
+      );
+    }
+
+    // If still no farmId, we can't create a payable — but we can still proceed without it
+    // (Some scenarios may not need a payable, e.g., MERCADORIA_ANTECIPADA)
+    const canCreatePayable = farmId !== null && gr.receivingType !== 'MERCADORIA_ANTECIPADA';
+
+    // Step 3 — Build StockEntry using tx directly (avoid nested withRlsContext)
+    const isAnticipatedGoods = gr.receivingType === 'MERCADORIA_ANTECIPADA';
+    const stockEntryStatus = isAnticipatedGoods ? 'DRAFT' : 'CONFIRMED';
+
+    // Map GR items to stock entry items, skipping items without productId
+
+    const stockItems = gr.items
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((item: any) => !!item.productId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((item: any) => ({
+        productId: item.productId as string,
+        quantity: Number(item.receivedQty),
+        unitCost: Number(item.unitPrice),
+        batchNumber: item.batchNumber ?? null,
+        expirationDate: item.expirationDate ? (item.expirationDate as Date).toISOString() : null,
+      }));
+
+    // Only create stock entry if there are items with productId
+    let stockEntryId: string | null = null;
+
+    if (stockItems.length > 0) {
+      const entryDate = gr.invoiceDate ?? new Date();
+      const totalMerchandiseCost = stockItems.reduce(
+        (sum: number, item: { quantity: number; unitCost: number }) =>
+          sum + item.quantity * item.unitCost,
+        0,
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const stockEntry = await (tx as any).stockEntry.create({
+        data: {
+          organizationId: ctx.organizationId,
+          entryDate,
+          status: stockEntryStatus,
+          supplierName: gr.supplier.name,
+          invoiceNumber: gr.invoiceNumber ?? null,
+          storageFarmId: gr.storageFarmId ?? null,
+          totalMerchandiseCost,
+          totalExpensesCost: 0,
+          totalCost: totalMerchandiseCost,
+          createdBy: ctx.userId,
+          goodsReceiptId: gr.id,
+          items: {
+            create: stockItems.map(
+              (item: {
+                productId: string;
+                quantity: number;
+                unitCost: number;
+                batchNumber: string | null;
+                expirationDate: string | null;
+              }) => {
+                const totalCost = item.quantity * item.unitCost;
+                return {
+                  productId: item.productId,
+                  quantity: item.quantity,
+                  unitCost: item.unitCost,
+                  totalCost,
+                  apportionedExpenses: 0,
+                  finalUnitCost: item.unitCost,
+                  finalTotalCost: totalCost,
+                  batchNumber: item.batchNumber,
+                  expirationDate: item.expirationDate ? new Date(item.expirationDate) : null,
+                };
+              },
+            ),
+          },
+        },
+        select: { id: true },
+      });
+
+      stockEntryId = stockEntry.id as string;
+
+      // Update stock balances for CONFIRMED entries
+      if (stockEntryStatus === 'CONFIRMED') {
+        for (const item of stockItems) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const existing = await (tx as any).stockBalance.findUnique({
+            where: {
+              organizationId_productId: {
+                organizationId: ctx.organizationId,
+                productId: item.productId,
+              },
+            },
+          });
+
+          const finalTotalCost = item.quantity * item.unitCost;
+
+          if (existing) {
+            const prevQty = Number(existing.currentQuantity);
+            const prevAvg = Number(existing.averageCost);
+            const prevTotal = prevQty * prevAvg;
+            const newTotal = prevTotal + finalTotalCost;
+            const newQty = prevQty + item.quantity;
+            const newAvgCost = newQty > 0 ? newTotal / newQty : 0;
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (tx as any).stockBalance.update({
+              where: { id: existing.id },
+              data: {
+                currentQuantity: newQty,
+                averageCost: newAvgCost,
+                totalValue: newTotal,
+                lastEntryDate: entryDate,
+              },
+            });
+          } else {
+            const avgCost = item.quantity > 0 ? finalTotalCost / item.quantity : 0;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (tx as any).stockBalance.create({
+              data: {
+                organizationId: ctx.organizationId,
+                productId: item.productId,
+                currentQuantity: item.quantity,
+                averageCost: avgCost,
+                totalValue: finalTotalCost,
+                lastEntryDate: entryDate,
+              },
+            });
+          }
+        }
+      }
+    }
+
+    // Step 4 — Build Payable using tx directly
+    let payableId: string | null = null;
+
+    if (canCreatePayable && gr.invoiceTotal && farmId) {
+      // Get payment terms from the QuotationProposal for this supplier
+      const selectedSupplier = gr.purchaseOrder?.quotation?.suppliers?.[0];
+      const paymentTerms = selectedSupplier?.proposal?.paymentTerms ?? null;
+      const { installmentCount, firstDueDays } = parsePaymentTerms(paymentTerms);
+
+      const invoiceDate = gr.invoiceDate ?? new Date();
+      const firstDueDate = new Date(invoiceDate.getTime() + firstDueDays * 24 * 60 * 60 * 1000);
+      const totalAmount = Number(gr.invoiceTotal);
+      const totalMoney = Money(totalAmount);
+
+      const installments = generateInstallments(totalMoney, installmentCount, firstDueDate);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const payable = await (tx as any).payable.create({
+        data: {
+          organizationId: ctx.organizationId,
+          farmId,
+          supplierName: gr.supplier.name,
+          category: 'INPUTS',
+          description: `NF ${gr.invoiceNumber ?? 'S/N'} - ${gr.sequentialNumber}`,
+          totalAmount: totalMoney.toDecimal(),
+          dueDate: firstDueDate,
+          documentNumber: gr.invoiceNumber ?? null,
+          installmentCount,
+          originType: 'GOODS_RECEIPT',
+          originId: gr.id,
+          goodsReceiptId: gr.id,
+        },
+        select: { id: true },
+      });
+
+      payableId = payable.id as string;
+
+      // Create installments
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (tx as any).payableInstallment.createMany({
+        data: installments.map((inst) => ({
+          payableId: payableId!,
+          number: inst.number,
+          amount: inst.amount.toDecimal(),
+          dueDate: inst.dueDate,
+        })),
+      });
+
+      // Create cost center item
+      if (costCenterId) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (tx as any).payableCostCenterItem.create({
+          data: {
+            payableId: payableId,
+            costCenterId,
+            farmId,
+            allocMode: 'PERCENTAGE',
+            percentage: 100,
+          },
+        });
+      }
+    }
+
+    // Step 5 — Update PO receivedQuantity (partial delivery tracking)
+    if (gr.purchaseOrderId && gr.purchaseOrder) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      for (const grItem of gr.items as any[]) {
+        if (grItem.purchaseOrderItemId) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (tx as any).purchaseOrderItem.update({
+            where: { id: grItem.purchaseOrderItemId },
+            data: { receivedQuantity: { increment: Number(grItem.receivedQty) } },
+          });
+        }
+      }
+
+      // Reload PO items and check if fully received
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updatedPoItems = await (tx as any).purchaseOrderItem.findMany({
+        where: { purchaseOrderId: gr.purchaseOrderId },
+        select: { quantity: true, receivedQuantity: true },
+      });
+
+      const fullyReceived =
+        updatedPoItems.length > 0 &&
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        updatedPoItems.every((item: any) => Number(item.receivedQuantity) >= Number(item.quantity));
+
+      if (fullyReceived && canOcTransition(gr.purchaseOrder.status, 'ENTREGUE')) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (tx as any).purchaseOrder.update({
+          where: { id: gr.purchaseOrderId },
+          data: { status: 'ENTREGUE' },
+        });
+      }
+    }
+
+    // Step 6 — Update GR record
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updated = await (tx as any).goodsReceipt.update({
+      where: { id },
+      data: {
+        status: 'CONFIRMADO',
+        confirmedAt: new Date(),
+        stockEntryId: stockEntryId ?? null,
+        payableId: payableId ?? null,
+      },
+      include: GR_FULL_INCLUDE,
+    });
+
+    return formatGoodsReceipt(updated);
   });
 }
 

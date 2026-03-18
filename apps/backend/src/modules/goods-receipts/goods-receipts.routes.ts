@@ -14,6 +14,7 @@ import {
   transitionGoodsReceipt,
   listPendingDeliveries,
   updateGoodsReceiptDivergencePhoto,
+  confirmGoodsReceipt,
 } from './goods-receipts.service';
 
 export const goodsReceiptsRouter = Router();
@@ -123,6 +124,23 @@ goodsReceiptsRouter.post(
       const ctx = buildRlsContext(req);
       const gr = await createGoodsReceipt(ctx, req.body);
       res.status(201).json(gr);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── PUT /org/goods-receipts/:id/confirm ──────────────────────────────
+
+goodsReceiptsRouter.put(
+  `${base}/:id/confirm`,
+  authenticate,
+  checkPermission('purchases:manage'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const gr = await confirmGoodsReceipt(ctx, req.params.id as string);
+      res.json(gr);
     } catch (err) {
       handleError(err, res);
     }
