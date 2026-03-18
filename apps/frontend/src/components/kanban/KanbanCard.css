@@ -1,0 +1,143 @@
+/* ============================================================
+   KanbanCard — BEM CSS
+   All values from tokens.css custom properties
+   ============================================================ */
+
+.kanban-card {
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  min-height: 80px;
+  cursor: grab;
+  transition:
+    transform var(--duration-fast) ease-out,
+    box-shadow var(--duration-fast) ease-out;
+  border-left: 3px solid transparent;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  user-select: none;
+}
+
+.kanban-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.kanban-card--dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+.kanban-card--overlay {
+  box-shadow: var(--shadow-xl);
+  cursor: grabbing;
+  opacity: 1;
+}
+
+.kanban-card--overdue {
+  border-left-color: var(--color-error-500);
+}
+
+/* Row layout */
+.kanban-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.kanban-card__number {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.875rem;
+  color: var(--color-neutral-800);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+/* Urgency badges */
+.kanban-card__urgency {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.kanban-card__urgency--NORMAL {
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-700);
+}
+
+.kanban-card__urgency--URGENTE {
+  background: var(--color-sun-100);
+  color: #7a5800;
+}
+
+.kanban-card__urgency--EMERGENCIAL {
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+}
+
+/* Entity type + farm row */
+.kanban-card__type {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+}
+
+.kanban-card__farm {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--color-neutral-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}
+
+/* Requester name */
+.kanban-card__requester {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--color-neutral-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Value + days row */
+.kanban-card__value {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--color-neutral-800);
+}
+
+.kanban-card__days {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  white-space: nowrap;
+}
+
+.kanban-card__overdue-icon {
+  color: var(--color-error-500);
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kanban-card {
+    transition-duration: 0.01ms;
+  }
+}
