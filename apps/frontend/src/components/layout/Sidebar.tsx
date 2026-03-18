@@ -68,6 +68,7 @@ import {
   Handshake,
   ShoppingCart,
   Settings2,
+  FileSearch,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -199,7 +200,9 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: '/suppliers', icon: Handshake, label: 'Fornecedores' },
       { to: '/purchase-requests', icon: ShoppingCart, label: 'Requisicoes' },
+      { to: '/quotations', icon: FileSearch, label: 'Cotacoes' },
       { to: '/approval-rules', icon: Settings2, label: 'Alcadas' },
+      { to: '/purchase-orders', icon: ClipboardList, label: 'Pedidos' },
     ],
   },
   {
