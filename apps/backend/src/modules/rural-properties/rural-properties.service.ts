@@ -67,8 +67,8 @@ function toNumber(val: unknown): number | null {
   return Number(val);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatProperty(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rp: any,
   counts?: { titlesCount: number; ownersCount: number; documentsCount: number },
 ): RuralPropertyItem {
