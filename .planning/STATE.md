@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 11-devolu-o-or-amento-e-saving/11-05-PLAN.md
-last_updated: '2026-03-18T09:10:58.431Z'
+stopped_at: Completed 08-05-PLAN.md
+last_updated: '2026-03-17T22:23:36.312Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
-  total_phases: 7
-  completed_phases: 5
-  total_plans: 26
-  completed_plans: 26
+  total_phases: 6
+  completed_phases: 2
+  total_plans: 10
+  completed_plans: 10
   percent: 0
 ---
 
@@ -57,22 +57,6 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-requisi-o-e-aprova-o P06 | 18 | 2 tasks | 8 files |
 | Phase 08-requisi-o-e-aprova-o P04 | 90min | 2 tasks | 11 files |
 | Phase 08-requisi-o-e-aprova-o P05 | 45min | 2 tasks | 14 files |
-| Phase 09-cota-o-e-pedido-de-compra P01 | 4 | 2 tasks | 4 files |
-| Phase 09-cota-o-e-pedido-de-compra P03 | 10min | 2 tasks | 4 files |
-| Phase 09-cota-o-e-pedido-de-compra P02 | 10 | 2 tasks | 5 files |
-| Phase 09-cota-o-e-pedido-de-compra P05 | 10min | 2 tasks | 11 files |
-| Phase 09-cota-o-e-pedido-de-compra P04 | 975s | 2 tasks | 12 files |
-| Phase 10-recebimento-de-mercadorias P01 | 229s | 2 tasks | 3 files |
-| Phase 10-recebimento-de-mercadorias P02 | 296s | 2 tasks | 4 files |
-| Phase 10-recebimento-de-mercadorias P04 | 362s | 2 tasks | 6 files |
-| Phase 10-recebimento-de-mercadorias P03 | 20min | 2 tasks | 5 files |
-| Phase 10-recebimento-de-mercadorias P05 | 506s | 2 tasks | 3 files |
-| Phase 11-devolu-o-or-amento-e-saving P01 | 287s | 2 tasks | 6 files |
-| Phase 11-devolu-o-or-amento-e-saving P02 | 15min | 2 tasks | 4 files |
-| Phase 11-devolu-o-or-amento-e-saving P04 | 9min | 2 tasks | 4 files |
-| Phase 11-devolu-o-or-amento-e-saving P03 | 18min | 2 tasks | 6 files |
-| Phase 11-devolu-o-or-amento-e-saving P06 | 580 | 2 tasks | 10 files |
-| Phase 11-devolu-o-or-amento-e-saving P05 | 1052s | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -105,37 +89,6 @@ Key decisions for v1.1:
 - [Phase 08-04]: Key-remount pattern used for PurchaseRequestModal — outer wrapper renders inner form with key=rc.id+rc.updatedAt, avoids setState-in-useEffect rule violation
 - [Phase 08-requisi-o-e-aprova-o]: NotificationBell uses click-outside mousedown handler + Escape key — no library needed for simple dropdown
 - [Phase 08-requisi-o-e-aprova-o]: HTML5 native drag events for rule reorder in ApprovalRulesPage — avoids adding dnd library for single use case
-- [Phase 09-cota-o-e-pedido-de-compra]: QuotationItemSelection model added for per-item split supplier selection
-- [Phase 09-cota-o-e-pedido-de-compra]: Named User relations used: QuotationCreator, QuotationApprover, POCreator
-- [Phase 09-cota-o-e-pedido-de-compra]: purchaseOrdersRouter registered after quotationsRouter; /duplicate and /:id/pdf before /:id to prevent Express ID collision; generatePurchaseOrderPdf streams directly to Response; static PDFDocument import used
-- [Phase 09-cota-o-e-pedido-de-compra]: approveQuotation reads prices from DB inside transaction — never from request body (security)
-- [Phase 09-cota-o-e-pedido-de-compra]: Per-supplier PurchaseOrder created in single transaction, SC transitions to FECHADA after all OCs created
-- [Phase 09-cota-o-e-pedido-de-compra]: Email send in PurchaseOrderDetailModal is placeholder — shows toast per CONTEXT.md guidance
-- [Phase 09-cota-o-e-pedido-de-compra]: QuotationDetailModal full implementation auto-created by linter during pre-commit hook from plan 04 gap
-- [Phase 09-cota-o-e-pedido-de-compra]: useQuotations hook removes filters param to avoid unused-vars; state managed via setStatus/setSearch
-- [Phase 10-recebimento-de-mercadorias]: GoodsReceipt uses cuid() following Phase 9 PurchaseOrder pattern for consistent ID format across the purchase flow
-- [Phase 10-recebimento-de-mercadorias]: goodsReceiptId FKs on StockEntry and Payable are plain String? fields — avoids Prisma requiring reverse relations; service layer handles lookup
-- [Phase 10-recebimento-de-mercadorias]: Migration applied via db push + migrate resolve — consistent with Phase 7/9 approach (no shadow DB in dev)
-- [Phase 10-recebimento-de-mercadorias]: goodsReceiptsRouter /pending registered before /:id in routes file; CONFIRMADO transition blocked in service — Plan 03 handles atomic StockEntry+Payable; multer diskStorage at uploads/goods-receipts/{orgId}/{grId}/
-- [Phase 10-recebimento-de-mercadorias]: GrStatusBadge reads statusLabel from list item (backend-computed) rather than doing local lookup in GoodsReceiptsPage
-- [Phase 10-recebimento-de-mercadorias]: RecebimentosTab and PendenciasTab extracted as sub-components to isolate hook usage and keep main page clean
-- [Phase Phase 10-03]: Direct tx.stockEntry.create and tx.payable.create inside withRlsContext — never call wrapper functions that start their own transactions
-- [Phase Phase 10-03]: MERCADORIA_ANTECIPADA creates DRAFT StockEntry with no balance update; NF_ANTECIPADA creates Payable only
-- [Phase 10-recebimento-de-mercadorias]: GoodsReceiptModal handles both wizard (create) and detail (view) modes via existingId prop — single component for both flows
-- [Phase 10-recebimento-de-mercadorias]: RefetchKey pattern on RecebimentosTab key prop triggers remount/refetch without prop drilling refetch callbacks into sub-tabs
-- [Phase 11-devolu-o-or-amento-e-saving]: SupplierCategory used as PurchaseBudget.category enum — aligns with how users think about purchases
-- [Phase 11-devolu-o-or-amento-e-saving]: goodsReturnId and isCredit added to Payable for credit note traceability and AP aging filtering
-- [Phase 11-devolu-o-or-amento-e-saving]: budgetExceeded is a non-blocking boolean flag on RC/OC — set via service injection in plans 02/03, never blocks the operation
-- [Phase 11-02]: stockOutputId stored on GoodsReturn (not goodsReturnId on StockOutput) — avoids schema changes since StockOutput has no goodsReturnId field
-- [Phase 11-02]: creditPayable uses farmId from original payable falling back to goodsReceipt.storageFarmId — farmId is required on Payable model
-- [Phase 11-04]: Saving excludes quotations with < 2 proposals; winner determined via QuotationItemSelection with fallback to min price
-- [Phase 11-04]: getPriceHistory queries via purchaseRequestItem.productId join — PurchaseOrderItem has no direct productId field
-- [Phase 11-devolu-o-or-amento-e-saving]: checkBudgetExceeded injected into RC approval and OC EMITIDA — non-blocking flag, never prevents the operation
-- [Phase 11-06]: Lazy-loaded PriceHistoryChart and TopItemsChart follow FinancialDashboardPage pattern — avoids recharts in main bundle
-- [Phase 11-06]: useSavingDashboard uses /dashboard endpoint (single request) to avoid 5 parallel API calls on page load
-- [Phase 11-06]: TopItemsChart is a generic shared component for both top-products and top-suppliers (items prop)
-- [Phase 11-05]: Lazy Suspense import for GoodsReturnModal in DevolucoesPage avoids circular dep while keeping TSC clean
-- [Phase 11-05]: Wallet icon used for Orçamento sidebar entry — better semantic fit than TrendingUp
 
 ### Pending Todos
 
@@ -149,6 +102,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T09:06:06.123Z
-Stopped at: Completed 11-devolu-o-or-amento-e-saving/11-05-PLAN.md
+Last session: 2026-03-17T21:38:13.171Z
+Stopped at: Completed 08-05-PLAN.md
 Resume file: None

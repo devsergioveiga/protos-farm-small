@@ -28,8 +28,8 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 7: Cadastro de Fornecedores** — Fundação do módulo: entidade raiz de todo o ciclo P2P (completed 2026-03-17)
 - [x] **Phase 8: Requisição e Aprovação** — Entrada do ciclo: RC com fluxo de aprovação configurável por alçada (completed 2026-03-17)
 - [ ] **Phase 9: Cotação e Pedido de Compra** — Seleção de fornecedor e emissão formal da OC com PDF
-- [x] **Phase 10: Recebimento de Mercadorias** — Hub de integração: entrada no estoque + geração automática de CP (completed 2026-03-18)
-- [x] **Phase 11: Devolução, Orçamento e Saving** — Reversão de estoque/financeiro e controle orçamentário (completed 2026-03-18)
+- [ ] **Phase 10: Recebimento de Mercadorias** — Hub de integração: entrada no estoque + geração automática de CP
+- [ ] **Phase 11: Devolução, Orçamento e Saving** — Reversão de estoque/financeiro e controle orçamentário
 - [ ] **Phase 12: Kanban, Dashboard e Notificações** — Visibilidade operacional e execução do fluxo completo
 
 ## Phase Details
@@ -90,15 +90,7 @@ Plans:
 3. Gerente pode aprovar a cotação vencedora com justificativa obrigatória quando não for o menor preço
 4. Comprador pode emitir OC com número sequencial (OC-AAAA/NNNN), exportar PDF e enviar por email ao fornecedor
 5. OC emitida reflete snapshot de preços da cotação aprovada (edição bloqueada após emissão)
-   **Plans:** 4/5 plans executed
-
-Plans:
-
-- [ ] 09-01-PLAN.md — Schema foundation: 7 Prisma models, 2 enums, migration, type definitions
-- [ ] 09-02-PLAN.md — Quotations backend: SC CRUD, proposals, comparative map, approval with OC auto-creation
-- [ ] 09-03-PLAN.md — Purchase Orders backend: OC CRUD, PDF generation, state machine, overdue detection
-- [ ] 09-04-PLAN.md — Quotations frontend: list page, creation modal, detail modal, comparative map table
-- [ ] 09-05-PLAN.md — Purchase Orders frontend: list page, emergency PO modal, detail modal with PDF + email
+   **Plans**: TBD
 
 ### Phase 10: Recebimento de Mercadorias
 
@@ -112,15 +104,7 @@ Plans:
 3. Ao confirmar recebimento+NF, o sistema cria automaticamente entrada no estoque e conta a pagar com fornecedor, valor, vencimento e centro de custo corretos
 4. CP gerado referencia a cadeia completa (pedido→cotação→requisição) com drill-down navegável
 5. Recebimentos parciais geram CPs separados por entrega, sem duplicar o total do pedido
-   **Plans:** 5/5 plans complete
-
-Plans:
-
-- [ ] 10-01-PLAN.md — Schema foundation: 3 Prisma models, 4 enums, migration, type definitions + state machine
-- [ ] 10-02-PLAN.md — Backend CRUD: service, routes, tests — creation (6 scenarios), listing, transitions, divergences
-- [ ] 10-03-PLAN.md — Backend integration: atomic confirm (StockEntry + Payable), PO tracking, payment terms
-- [ ] 10-04-PLAN.md — Frontend page + hooks: types, useGoodsReceipts, GoodsReceiptsPage with tabs, sidebar, route
-- [ ] 10-05-PLAN.md — Frontend wizard modal: 4-step GoodsReceiptModal (PO select, NF, inspection, confirm)
+   **Plans**: TBD
 
 ### Phase 11: Devolução, Orçamento e Saving
 
@@ -134,16 +118,7 @@ Plans:
 3. O sistema alerta ao aprovar requisição ou pedido que ultrapasse o orçamento definido
 4. Gerente pode ver saving por cotação (diferença maior preço vs vencedor) e saving acumulado por período
 5. Gerente pode ver histórico de preço por produto e indicadores de ciclo (% compras com cotação formal, % emergenciais, prazo médio)
-   **Plans:** 6/6 plans complete
-
-Plans:
-
-- [ ] 11-01-PLAN.md — Schema foundation: Prisma models (GoodsReturn, GoodsReturnItem, PurchaseBudget), enums, migration, type definitions
-- [ ] 11-02-PLAN.md — Goods Returns backend: service, routes, state machine, RETURN stock output, CREDITO/ESTORNO/TROCA financial treatments, tests
-- [ ] 11-03-PLAN.md — Purchase Budgets backend: service, routes, real-time execution aggregation, budget check injection into RC/OC, tests
-- [ ] 11-04-PLAN.md — Saving Analysis backend: read-only analytics (saving per quotation, price history, cycle indicators, top products/suppliers), tests
-- [ ] 11-05-PLAN.md — Goods Returns frontend: DevolucoesPage, GoodsReturnModal, sidebar integration, route
-- [ ] 11-06-PLAN.md — Budget + Saving frontend: OrcamentoComprasPage with execution table, SavingAnalysisPage with Recharts charts and KPI cards
+   **Plans**: TBD
 
 ### Phase 12: Kanban, Dashboard e Notificações
 
@@ -170,7 +145,7 @@ Plans:
 | 6. Crédito Rural                     | v1.0      | 5/5            | Complete    | 2026-03-17 |
 | 7. Cadastro de Fornecedores          | 4/4       | Complete       | 2026-03-17  | -          |
 | 8. Requisição e Aprovação            | 6/6       | Complete       | 2026-03-17  | -          |
-| 9. Cotação e Pedido de Compra        | 4/5       | In Progress    |             | -          |
-| 10. Recebimento de Mercadorias       | 5/5       | Complete       | 2026-03-18  | -          |
-| 11. Devolução, Orçamento e Saving    | 6/6       | Complete       | 2026-03-18  | -          |
+| 9. Cotação e Pedido de Compra        | v1.1      | 0/TBD          | Not started | -          |
+| 10. Recebimento de Mercadorias       | v1.1      | 0/TBD          | Not started | -          |
+| 11. Devolução, Orçamento e Saving    | v1.1      | 0/TBD          | Not started | -          |
 | 12. Kanban, Dashboard e Notificações | v1.1      | 0/TBD          | Not started | -          |

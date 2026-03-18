@@ -1,6 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { checkPermission } from './check-permission';
-import { DEFAULT_ROLE_PERMISSIONS, ROLE_HIERARCHY, Permission } from '../shared/rbac/permissions';
+import {
+  ALL_ACTIONS,
+  ALL_MODULES,
+  DEFAULT_ROLE_PERMISSIONS,
+  ROLE_HIERARCHY,
+  Permission,
+} from '../shared/rbac/permissions';
 
 // Mock rbac.service
 jest.mock('../shared/rbac/rbac.service', () => ({
@@ -143,7 +149,7 @@ describe('ROLE_HIERARCHY', () => {
 
 describe('DEFAULT_ROLE_PERMISSIONS', () => {
   it('SUPER_ADMIN should have all permissions', () => {
-    const totalPerms = 11 * 5; // 11 modules × 5 actions
+    const totalPerms = ALL_MODULES.length * ALL_ACTIONS.length;
     expect(DEFAULT_ROLE_PERMISSIONS.SUPER_ADMIN).toHaveLength(totalPerms);
   });
 

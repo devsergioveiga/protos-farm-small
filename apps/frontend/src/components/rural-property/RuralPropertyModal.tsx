@@ -571,54 +571,30 @@ function CreatePropertyModal({
         }
       }
 
-      // Link or create pending registrations
-      if (pendingRegistrations.length > 0) {
-        // Fetch existing registrations to avoid duplicates
-        let existingRegs: { id: string; number: string; ruralPropertyId: string | null }[] = [];
+      // Create pending registrations
+      for (const reg of pendingRegistrations) {
         try {
-          const farmDetail = await api.get<{
-            registrations: { id: string; number: string; ruralPropertyId: string | null }[];
-          }>(`/org/farms/${farmId}`);
-          existingRegs = farmDetail.registrations;
-        } catch {
-          // If fetch fails, proceed with creating new registrations
-        }
-
-        for (const reg of pendingRegistrations) {
-          try {
-            // Check if a registration with the same number already exists
-            const existing = existingRegs.find(
-              (r) => r.number === reg.number && !r.ruralPropertyId,
-            );
-            if (existing) {
-              // Link existing registration to the new rural property
-              await api.patch(`/org/farms/${farmId}/registrations/${existing.id}`, {
-                ruralPropertyId: created.id,
-              });
-            } else {
-              const regPayload = {
-                number: reg.number,
-                cartorioName: reg.cartorioName,
-                comarca: reg.comarca,
-                state: reg.state,
-                areaHa: maskedToFloat(reg.areaHa),
-                cnsCode: reg.cnsCode || undefined,
-                livro: reg.livro || undefined,
-                registrationDate: reg.registrationDate || undefined,
-                ruralPropertyId: created.id,
-              };
-              await api.post(`/org/farms/${farmId}/registrations`, regPayload);
+          const regPayload = {
+            number: reg.number,
+            cartorioName: reg.cartorioName,
+            comarca: reg.comarca,
+            state: reg.state,
+            areaHa: maskedToFloat(reg.areaHa),
+            cnsCode: reg.cnsCode || undefined,
+            livro: reg.livro || undefined,
+            registrationDate: reg.registrationDate || undefined,
+            ruralPropertyId: created.id,
+          };
+          await api.post(`/org/farms/${farmId}/registrations`, regPayload);
+          if (reg.file) {
+            try {
+              await uploadDocToProperty(farmId, created.id, reg.file, 'MATRICULA');
+            } catch {
+              // Doc upload failed — user can retry
             }
-            if (reg.file) {
-              try {
-                await uploadDocToProperty(farmId, created.id, reg.file, 'MATRICULA');
-              } catch {
-                // Doc upload failed — user can retry
-              }
-            }
-          } catch {
-            // Registration creation failed — user can add in edit mode
           }
+        } catch {
+          // Registration creation failed — user can add in edit mode
         }
       }
 

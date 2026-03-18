@@ -16,6 +16,10 @@ jest.mock('../../shared/rbac/rbac.service', () => ({
   invalidatePermissionsCacheForRole: jest.fn(),
 }));
 
+jest.mock('../../database/rls', () => ({
+  withRlsContext: jest.fn((_ctx: unknown, fn: () => unknown) => fn()),
+}));
+
 import { getUserPermissions } from '../../shared/rbac/rbac.service';
 import { DEFAULT_ROLE_PERMISSIONS } from '../../shared/rbac/permissions';
 

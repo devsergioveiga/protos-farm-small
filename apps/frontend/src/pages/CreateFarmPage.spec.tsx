@@ -79,7 +79,7 @@ describe('CreateFarmModal', () => {
     expect(screen.getByRole('heading', { name: 'Dados Básicos' })).toBeDefined();
   });
 
-  it('should advance to step 2 with valid fields', async () => {
+  it('should advance to confirmation with valid fields', async () => {
     const user = userEvent.setup();
     await renderModal();
 
@@ -89,8 +89,8 @@ describe('CreateFarmModal', () => {
 
     await user.click(screen.getByRole('button', { name: /Próximo/ }));
 
-    expect(screen.getByRole('heading', { name: 'Identificadores' })).toBeDefined();
-    expect(screen.getByLabelText(/CIB/)).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Confirmação' })).toBeDefined();
+    expect(screen.getByText('Fazenda Test')).toBeDefined();
   });
 
   it('should preserve data when going back', async () => {
@@ -102,30 +102,13 @@ describe('CreateFarmModal', () => {
     await user.type(screen.getByLabelText(/Área total/), '200');
 
     await user.click(screen.getByRole('button', { name: /Próximo/ }));
-    expect(screen.getByRole('heading', { name: 'Identificadores' })).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Confirmação' })).toBeDefined();
 
     await user.click(screen.getByRole('button', { name: /Anterior/ }));
     expect(screen.getByRole('heading', { name: 'Dados Básicos' })).toBeDefined();
 
     expect(screen.getByLabelText(/Nome da fazenda/)).toHaveProperty('value', 'Fazenda Test');
     expect((screen.getByLabelText(/UF/) as HTMLSelectElement).value).toBe('SP');
-    expect(screen.getByLabelText(/Área total/)).toHaveProperty('value', '200');
-  });
-
-  it('should validate CIB format', async () => {
-    const user = userEvent.setup();
-    await renderModal();
-
-    await user.type(screen.getByLabelText(/Nome da fazenda/), 'Fazenda Test');
-    await user.selectOptions(screen.getByLabelText(/UF/), 'MG');
-    await user.type(screen.getByLabelText(/Área total/), '150');
-    await user.click(screen.getByRole('button', { name: /Próximo/ }));
-
-    const cibInput = screen.getByLabelText(/CIB/);
-    await user.type(cibInput, '12345');
-    await user.tab();
-
-    expect(screen.getByText('CIB deve ter formato XXX.XXX.XXX-X')).toBeDefined();
   });
 
   it('should show step indicator with completed steps', async () => {
@@ -141,23 +124,15 @@ describe('CreateFarmModal', () => {
     expect(step1Btn).toBeDefined();
   });
 
-  it('should show confirmation summary on step 4', async () => {
+  it('should show confirmation summary on last step', async () => {
     const user = userEvent.setup();
     await renderModal();
 
-    // Step 0
     await user.type(screen.getByLabelText(/Nome da fazenda/), 'Fazenda Test');
     await user.selectOptions(screen.getByLabelText(/UF/), 'MG');
     await user.type(screen.getByLabelText(/Área total/), '150');
     await user.click(screen.getByRole('button', { name: /Próximo/ }));
 
-    // Step 1
-    await user.click(screen.getByRole('button', { name: /Próximo/ }));
-
-    // Step 2
-    await user.click(screen.getByRole('button', { name: /Próximo/ }));
-
-    // Step 3 — Confirmation
     expect(screen.getByRole('heading', { name: 'Confirmação' })).toBeDefined();
     expect(screen.getByText('Fazenda Test')).toBeDefined();
     expect(screen.getByText('MG')).toBeDefined();
@@ -169,19 +144,11 @@ describe('CreateFarmModal', () => {
     const user = userEvent.setup();
     const { onSuccess } = await renderModal();
 
-    // Step 0
     await user.type(screen.getByLabelText(/Nome da fazenda/), 'Fazenda Test');
     await user.selectOptions(screen.getByLabelText(/UF/), 'MG');
     await user.type(screen.getByLabelText(/Área total/), '150');
     await user.click(screen.getByRole('button', { name: /Próximo/ }));
 
-    // Step 1
-    await user.click(screen.getByRole('button', { name: /Próximo/ }));
-
-    // Step 2
-    await user.click(screen.getByRole('button', { name: /Próximo/ }));
-
-    // Step 3
     await user.click(screen.getByRole('button', { name: /Cadastrar fazenda/ }));
 
     expect(mockApiPost).toHaveBeenCalledWith(
@@ -189,7 +156,6 @@ describe('CreateFarmModal', () => {
       expect.objectContaining({
         name: 'Fazenda Test',
         state: 'MG',
-        totalAreaHa: 150,
       }),
     );
     expect(onSuccess).toHaveBeenCalled();
@@ -200,12 +166,9 @@ describe('CreateFarmModal', () => {
     const user = userEvent.setup();
     await renderModal();
 
-    // Navigate to confirmation
     await user.type(screen.getByLabelText(/Nome da fazenda/), 'Fazenda Test');
     await user.selectOptions(screen.getByLabelText(/UF/), 'MG');
     await user.type(screen.getByLabelText(/Área total/), '150');
-    await user.click(screen.getByRole('button', { name: /Próximo/ }));
-    await user.click(screen.getByRole('button', { name: /Próximo/ }));
     await user.click(screen.getByRole('button', { name: /Próximo/ }));
 
     await user.click(screen.getByRole('button', { name: /Cadastrar fazenda/ }));
@@ -227,23 +190,5 @@ describe('CreateFarmModal', () => {
 
     await user.click(screen.getByRole('button', { name: /Fechar/ }));
     expect(onClose).toHaveBeenCalled();
-  });
-
-  it('should validate utilization degree range (0-100)', async () => {
-    const user = userEvent.setup();
-    await renderModal();
-
-    // Navigate to step 2
-    await user.type(screen.getByLabelText(/Nome da fazenda/), 'Fazenda Test');
-    await user.selectOptions(screen.getByLabelText(/UF/), 'MG');
-    await user.type(screen.getByLabelText(/Área total/), '150');
-    await user.click(screen.getByRole('button', { name: /Próximo/ }));
-    await user.click(screen.getByRole('button', { name: /Próximo/ }));
-
-    const degreeInput = screen.getByLabelText(/Grau de utilização/);
-    await user.type(degreeInput, '150');
-    await user.tab();
-
-    expect(screen.getByText('Grau deve estar entre 0 e 100')).toBeDefined();
   });
 });

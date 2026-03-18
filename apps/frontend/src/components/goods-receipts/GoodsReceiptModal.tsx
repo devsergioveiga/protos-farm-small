@@ -1854,7 +1854,6 @@ function GoodsReceiptModalInner({
   useEffect(() => {
     if (!existingId) return;
     let cancelled = false;
-    setIsLoading(true);
     void getGoodsReceiptApi(existingId)
       .then((r) => {
         if (!cancelled) {
