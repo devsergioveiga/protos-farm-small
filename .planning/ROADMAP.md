@@ -90,7 +90,15 @@ Plans:
 3. Gerente pode aprovar a cotação vencedora com justificativa obrigatória quando não for o menor preço
 4. Comprador pode emitir OC com número sequencial (OC-AAAA/NNNN), exportar PDF e enviar por email ao fornecedor
 5. OC emitida reflete snapshot de preços da cotação aprovada (edição bloqueada após emissão)
-   **Plans**: TBD
+   **Plans:** 5 plans
+
+Plans:
+
+- [ ] 09-01-PLAN.md — Schema foundation: 7 Prisma models, 2 enums, migration, type definitions
+- [ ] 09-02-PLAN.md — Quotations backend: SC CRUD, proposals, comparative map, approval with OC auto-creation
+- [ ] 09-03-PLAN.md — Purchase Orders backend: OC CRUD, PDF generation, state machine, overdue detection
+- [ ] 09-04-PLAN.md — Quotations frontend: list page, creation modal, detail modal, comparative map table
+- [ ] 09-05-PLAN.md — Purchase Orders frontend: list page, emergency PO modal, detail modal with PDF + email
 
 ### Phase 10: Recebimento de Mercadorias
 
@@ -145,7 +153,7 @@ Plans:
 | 6. Crédito Rural                     | v1.0      | 5/5            | Complete    | 2026-03-17 |
 | 7. Cadastro de Fornecedores          | 4/4       | Complete       | 2026-03-17  | -          |
 | 8. Requisição e Aprovação            | 6/6       | Complete       | 2026-03-17  | -          |
-| 9. Cotação e Pedido de Compra        | v1.1      | 0/TBD          | Not started | -          |
+| 9. Cotação e Pedido de Compra        | v1.1      | 0/5            | Planning    | -          |
 | 10. Recebimento de Mercadorias       | v1.1      | 0/TBD          | Not started | -          |
 | 11. Devolução, Orçamento e Saving    | v1.1      | 0/TBD          | Not started | -          |
 | 12. Kanban, Dashboard e Notificações | v1.1      | 0/TBD          | Not started | -          |
