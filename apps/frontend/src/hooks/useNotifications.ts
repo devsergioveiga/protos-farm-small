@@ -29,15 +29,62 @@ interface UseNotificationsResult {
   refresh: () => void;
 }
 
+async function loadNotifications(): Promise<Notification[]> {
+  return api.get<Notification[]>('/org/notifications?unread=true&limit=20');
+}
+
+async function loadUnreadCount(): Promise<number> {
+  const result = await api.get<{ count: number }>('/org/notifications/unread-count');
+  return result.count;
+}
+
 export function useNotifications(): UseNotificationsResult {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function init() {
+      try {
+        const data = await loadNotifications();
+        if (!cancelled) setNotifications(data);
+      } catch {
+        // silently fail
+      }
+      try {
+        const count = await loadUnreadCount();
+        if (!cancelled) setUnreadCount(count);
+      } catch {
+        // silently fail
+      }
+    }
+
+    void init();
+
+    // Poll unread count every 30 seconds
+    intervalRef.current = setInterval(async () => {
+      try {
+        const count = await loadUnreadCount();
+        if (!cancelled) setUnreadCount(count);
+      } catch {
+        // silently fail
+      }
+    }, 30000);
+
+    return () => {
+      cancelled = true;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
   const fetchNotifications = useCallback(async () => {
     try {
-      const result = await api.get<Notification[]>('/org/notifications?unread=true&limit=20');
+      const result = await loadNotifications();
       setNotifications(result);
     } catch {
       // silently fail on background updates
@@ -46,28 +93,12 @@ export function useNotifications(): UseNotificationsResult {
 
   const fetchUnreadCount = useCallback(async () => {
     try {
-      const result = await api.get<{ count: number }>('/org/notifications/unread-count');
-      setUnreadCount(result.count);
+      const count = await loadUnreadCount();
+      setUnreadCount(count);
     } catch {
       // silently fail on background updates
     }
   }, []);
-
-  useEffect(() => {
-    void fetchNotifications();
-    void fetchUnreadCount();
-
-    // Poll unread count every 30 seconds
-    intervalRef.current = setInterval(() => {
-      void fetchUnreadCount();
-    }, 30000);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [fetchNotifications, fetchUnreadCount]);
 
   async function markAsRead(id: string): Promise<void> {
     try {
