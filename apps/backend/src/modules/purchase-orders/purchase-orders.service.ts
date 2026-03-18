@@ -5,6 +5,7 @@ import { prisma } from '../../database/prisma';
 import {
   PurchaseOrderError,
   canOcTransition,
+  type OcStatus,
   type CreateEmergencyPOInput,
   type DuplicatePOInput,
   type UpdatePOInput,
@@ -167,7 +168,7 @@ export async function listPurchaseOrders(ctx: RlsContext, query: ListPurchaseOrd
   const skip = (page - 1) * limit;
 
   const now = new Date();
-  const overdueStatuses = ['EMITIDA', 'CONFIRMADA', 'EM_TRANSITO'];
+  const overdueStatuses: OcStatus[] = ['EMITIDA', 'CONFIRMADA', 'EM_TRANSITO'];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: Record<string, any> = {
@@ -440,8 +441,8 @@ export async function generatePurchaseOrderPdf(
   if (po.supplier.tradeName) doc.text(`Nome Fantasia: ${po.supplier.tradeName}`);
   if (po.supplier.document) doc.text(`CNPJ/CPF: ${po.supplier.document}`);
   if (po.supplier.address) doc.text(`Endereço: ${po.supplier.address}`);
-  if (po.supplier.phone) doc.text(`Telefone: ${po.supplier.phone}`);
-  if (po.supplier.email) doc.text(`E-mail: ${po.supplier.email}`);
+  if (po.supplier.contactPhone) doc.text(`Telefone: ${po.supplier.contactPhone}`);
+  if (po.supplier.contactEmail) doc.text(`E-mail: ${po.supplier.contactEmail}`);
   doc.moveDown(0.5);
 
   // Divider
@@ -572,7 +573,7 @@ export async function generatePurchaseOrderPdf(
 
 export async function checkOverduePOs(ctx: RlsContext): Promise<number> {
   const now = new Date();
-  const overdueStatuses = ['EMITIDA', 'CONFIRMADA', 'EM_TRANSITO'];
+  const overdueStatuses: OcStatus[] = ['EMITIDA', 'CONFIRMADA', 'EM_TRANSITO'];
 
   const overduePOs = await prisma.purchaseOrder.findMany({
     where: {
