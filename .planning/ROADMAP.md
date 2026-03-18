@@ -134,7 +134,16 @@ Plans:
 3. O sistema alerta ao aprovar requisição ou pedido que ultrapasse o orçamento definido
 4. Gerente pode ver saving por cotação (diferença maior preço vs vencedor) e saving acumulado por período
 5. Gerente pode ver histórico de preço por produto e indicadores de ciclo (% compras com cotação formal, % emergenciais, prazo médio)
-   **Plans**: TBD
+   **Plans:** 6 plans
+
+Plans:
+
+- [ ] 11-01-PLAN.md — Schema foundation: Prisma models (GoodsReturn, GoodsReturnItem, PurchaseBudget), enums, migration, type definitions
+- [ ] 11-02-PLAN.md — Goods Returns backend: service, routes, state machine, RETURN stock output, CREDITO/ESTORNO/TROCA financial treatments, tests
+- [ ] 11-03-PLAN.md — Purchase Budgets backend: service, routes, real-time execution aggregation, budget check injection into RC/OC, tests
+- [ ] 11-04-PLAN.md — Saving Analysis backend: read-only analytics (saving per quotation, price history, cycle indicators, top products/suppliers), tests
+- [ ] 11-05-PLAN.md — Goods Returns frontend: DevolucoesPage, GoodsReturnModal, sidebar integration, route
+- [ ] 11-06-PLAN.md — Budget + Saving frontend: OrcamentoComprasPage with execution table, SavingAnalysisPage with Recharts charts and KPI cards
 
 ### Phase 12: Kanban, Dashboard e Notificações
 
@@ -163,5 +172,5 @@ Plans:
 | 8. Requisição e Aprovação            | 6/6       | Complete       | 2026-03-17  | -          |
 | 9. Cotação e Pedido de Compra        | 4/5       | In Progress    |             | -          |
 | 10. Recebimento de Mercadorias       | 5/5       | Complete       | 2026-03-18  | -          |
-| 11. Devolução, Orçamento e Saving    | v1.1      | 0/TBD          | Not started | -          |
+| 11. Devolução, Orçamento e Saving    | v1.1      | 0/6            | Planned     | -          |
 | 12. Kanban, Dashboard e Notificações | v1.1      | 0/TBD          | Not started | -          |
