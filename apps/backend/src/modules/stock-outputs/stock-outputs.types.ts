@@ -17,6 +17,7 @@ export const STOCK_OUTPUT_TYPES = [
   'MANUAL_CONSUMPTION',
   'TRANSFER',
   'DISPOSAL',
+  'RETURN',
 ] as const;
 export type StockOutputTypeValue = (typeof STOCK_OUTPUT_TYPES)[number];
 
@@ -25,6 +26,7 @@ export const STOCK_OUTPUT_TYPE_LABELS: Record<StockOutputTypeValue, string> = {
   MANUAL_CONSUMPTION: 'Consumo manual',
   TRANSFER: 'Transferência',
   DISPOSAL: 'Descarte',
+  RETURN: 'Devolucao',
 };
 
 export const STOCK_OUTPUT_STATUSES = ['DRAFT', 'CONFIRMED', 'CANCELLED'] as const;

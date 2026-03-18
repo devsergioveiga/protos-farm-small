@@ -580,7 +580,7 @@ export async function createStockEntry(
       data: {
         organizationId: ctx.organizationId,
         entryDate,
-        status: 'CONFIRMED',
+        status: input.initialStatus ?? 'CONFIRMED',
         supplierName: input.supplierName?.trim() || null,
         invoiceNumber: input.invoiceNumber?.trim() || null,
         storageFarmId: input.storageFarmId || null,
@@ -591,6 +591,7 @@ export async function createStockEntry(
         totalExpensesCost,
         totalCost,
         createdBy: userId || null,
+        goodsReceiptId: input.goodsReceiptId ?? null,
         items: {
           create: itemsWithTotals.map((item, idx) => {
             const apportioned = apportionments[idx];

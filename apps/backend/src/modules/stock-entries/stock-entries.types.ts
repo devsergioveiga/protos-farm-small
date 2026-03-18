@@ -78,6 +78,10 @@ export interface CreateStockEntryInput {
   notes?: string;
   items: StockEntryItemInput[];
   expenses?: StockEntryExpenseInput[];
+  /** Optional initial status — defaults to 'CONFIRMED'. Use 'DRAFT' for MERCADORIA_ANTECIPADA scenario. */
+  initialStatus?: 'DRAFT' | 'CONFIRMED';
+  /** FK to GoodsReceipt for traceability. Set when entry is created from a goods receipt confirmation. */
+  goodsReceiptId?: string;
 }
 
 export interface AddExpenseInput {

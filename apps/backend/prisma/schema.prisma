@@ -2920,6 +2920,7 @@ model StockEntry {
   totalExpensesCost    Decimal          @default(0) @db.Decimal(14, 2)
   totalCost            Decimal          @default(0) @db.Decimal(14, 2)
   createdBy            String?
+  goodsReceiptId       String?
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
   cancelledAt          DateTime?
@@ -3016,6 +3017,7 @@ enum StockOutputType {
   MANUAL_CONSUMPTION
   TRANSFER
   DISPOSAL
+  RETURN
 }
 
 enum StockOutputStatus {
