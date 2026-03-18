@@ -70,6 +70,8 @@ import {
   Settings2,
   FileSearch,
   PackageCheck,
+  Undo2,
+  Wallet,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -205,6 +207,9 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/approval-rules', icon: Settings2, label: 'Alcadas' },
       { to: '/purchase-orders', icon: ClipboardList, label: 'Pedidos' },
       { to: '/goods-receipts', icon: PackageCheck, label: 'Recebimentos' },
+      { to: '/goods-returns', icon: Undo2, label: 'Devoluções' },
+      { to: '/purchase-budgets', icon: Wallet, label: 'Orçamento' },
+      { to: '/saving-analysis', icon: BarChart3, label: 'Análise de Saving' },
     ],
   },
   {
