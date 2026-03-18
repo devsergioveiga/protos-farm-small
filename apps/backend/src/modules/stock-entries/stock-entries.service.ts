@@ -580,7 +580,7 @@ export async function createStockEntry(
       data: {
         organizationId: ctx.organizationId,
         entryDate,
-        status: 'CONFIRMED',
+        status: input.initialStatus ?? 'CONFIRMED',
         supplierName: input.supplierName?.trim() || null,
         invoiceNumber: input.invoiceNumber?.trim() || null,
         storageFarmId: input.storageFarmId || null,
@@ -591,6 +591,7 @@ export async function createStockEntry(
         totalExpensesCost,
         totalCost,
         createdBy: userId || null,
+        goodsReceiptId: input.goodsReceiptId ?? null,
         items: {
           create: itemsWithTotals.map((item, idx) => {
             const apportioned = apportionments[idx];
@@ -635,16 +636,19 @@ export async function createStockEntry(
     });
 
     // Update stock balances (CA5) — use converted quantity for balance
-    await updateStockBalances(
-      tx,
-      ctx.organizationId,
-      itemsWithTotals.map((item, idx) => ({
-        productId: item.productId,
-        quantity: conversions[idx].balanceQuantity,
-        finalTotalCost: item.totalCost + apportionments[idx],
-      })),
-      entryDate,
-    );
+    // Skip for DRAFT entries (e.g., MERCADORIA_ANTECIPADA) — balances updated when confirmed
+    if ((input.initialStatus ?? 'CONFIRMED') !== 'DRAFT') {
+      await updateStockBalances(
+        tx,
+        ctx.organizationId,
+        itemsWithTotals.map((item, idx) => ({
+          productId: item.productId,
+          quantity: conversions[idx].balanceQuantity,
+          finalTotalCost: item.totalCost + apportionments[idx],
+        })),
+        entryDate,
+      );
+    }
 
     return { entry: formatEntry(entry), costAlerts };
   });
