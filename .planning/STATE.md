@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Phase 9 context gathered
-last_updated: '2026-03-17T23:56:38.670Z'
+stopped_at: Completed 09-01-PLAN.md
+last_updated: '2026-03-18T00:40:50.660Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 15
+  completed_plans: 11
   percent: 0
 ---
 
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-requisi-o-e-aprova-o P06 | 18 | 2 tasks | 8 files |
 | Phase 08-requisi-o-e-aprova-o P04 | 90min | 2 tasks | 11 files |
 | Phase 08-requisi-o-e-aprova-o P05 | 45min | 2 tasks | 14 files |
+| Phase 09-cota-o-e-pedido-de-compra P01 | 4 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,8 @@ Key decisions for v1.1:
 - [Phase 08-04]: Key-remount pattern used for PurchaseRequestModal — outer wrapper renders inner form with key=rc.id+rc.updatedAt, avoids setState-in-useEffect rule violation
 - [Phase 08-requisi-o-e-aprova-o]: NotificationBell uses click-outside mousedown handler + Escape key — no library needed for simple dropdown
 - [Phase 08-requisi-o-e-aprova-o]: HTML5 native drag events for rule reorder in ApprovalRulesPage — avoids adding dnd library for single use case
+- [Phase 09-cota-o-e-pedido-de-compra]: QuotationItemSelection model added for per-item split supplier selection
+- [Phase 09-cota-o-e-pedido-de-compra]: Named User relations used: QuotationCreator, QuotationApprover, POCreator
 
 ### Pending Todos
 
@@ -102,6 +105,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T23:56:38.659Z
-Stopped at: Phase 9 context gathered
-Resume file: .planning/phases/09-cota-o-e-pedido-de-compra/09-CONTEXT.md
+Last session: 2026-03-18T00:40:50.658Z
+Stopped at: Completed 09-01-PLAN.md
+Resume file: None

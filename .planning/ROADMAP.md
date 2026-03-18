@@ -90,7 +90,7 @@ Plans:
 3. Gerente pode aprovar a cotação vencedora com justificativa obrigatória quando não for o menor preço
 4. Comprador pode emitir OC com número sequencial (OC-AAAA/NNNN), exportar PDF e enviar por email ao fornecedor
 5. OC emitida reflete snapshot de preços da cotação aprovada (edição bloqueada após emissão)
-   **Plans:** 5 plans
+   **Plans:** 1/5 plans executed
 
 Plans:
 
@@ -153,7 +153,7 @@ Plans:
 | 6. Crédito Rural                     | v1.0      | 5/5            | Complete    | 2026-03-17 |
 | 7. Cadastro de Fornecedores          | 4/4       | Complete       | 2026-03-17  | -          |
 | 8. Requisição e Aprovação            | 6/6       | Complete       | 2026-03-17  | -          |
-| 9. Cotação e Pedido de Compra        | v1.1      | 0/5            | Planning    | -          |
+| 9. Cotação e Pedido de Compra        | 1/5       | In Progress    |             | -          |
 | 10. Recebimento de Mercadorias       | v1.1      | 0/TBD          | Not started | -          |
 | 11. Devolução, Orçamento e Saving    | v1.1      | 0/TBD          | Not started | -          |
 | 12. Kanban, Dashboard e Notificações | v1.1      | 0/TBD          | Not started | -          |

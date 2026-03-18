@@ -21,13 +21,13 @@ Requirements for milestone v1.1. Each maps to roadmap phases.
 
 ### Cotação
 
-- [ ] **COTA-01**: Comprador pode criar solicitação de cotação a partir de requisições aprovadas, selecionar fornecedores (sugestão top 3 por categoria), enviar por email com template configurável, definir prazo de resposta, disponibilizar link para preenchimento online, e registrar cotação recebida via WhatsApp/telefone
-- [ ] **COTA-02**: Comprador pode registrar cotações recebidas (preço unitário, prazo entrega, condição pagamento, frete, validade), fazer upload da proposta original, ver mapa comparativo automático (fornecedores x itens), destaque visual de menor/maior preço com diferença %, total por fornecedor com frete e impostos, comparativo de prazo/condição/rating, cálculo de custo financeiro (à vista vs parcelado), histórico de preços, e possibilidade de split entre fornecedores
-- [ ] **COTA-03**: Gerente pode aprovar cotação vencedora com justificativa obrigatória se não for menor preço, ver resumo com comparativo de alternativas, aprovação rápida via mobile, e gerar pedido automaticamente após aprovação
+- [x] **COTA-01**: Comprador pode criar solicitação de cotação a partir de requisições aprovadas, selecionar fornecedores (sugestão top 3 por categoria), enviar por email com template configurável, definir prazo de resposta, disponibilizar link para preenchimento online, e registrar cotação recebida via WhatsApp/telefone
+- [x] **COTA-02**: Comprador pode registrar cotações recebidas (preço unitário, prazo entrega, condição pagamento, frete, validade), fazer upload da proposta original, ver mapa comparativo automático (fornecedores x itens), destaque visual de menor/maior preço com diferença %, total por fornecedor com frete e impostos, comparativo de prazo/condição/rating, cálculo de custo financeiro (à vista vs parcelado), histórico de preços, e possibilidade de split entre fornecedores
+- [x] **COTA-03**: Gerente pode aprovar cotação vencedora com justificativa obrigatória se não for menor preço, ver resumo com comparativo de alternativas, aprovação rápida via mobile, e gerar pedido automaticamente após aprovação
 
 ### Pedido de Compra
 
-- [ ] **PEDI-01**: Comprador pode emitir pedido de compra (OC) com geração automática a partir de cotação aprovada, número sequencial (OC-YYYY/NNNN), campos adicionais (observações, referências), PDF com layout profissional, envio por email, possibilidade de pedido manual (emergencial com justificativa), status tracking (emitido→confirmado→em trânsito→entregue→cancelado), alerta de prazo vencido, e clone de pedido recorrente
+- [x] **PEDI-01**: Comprador pode emitir pedido de compra (OC) com geração automática a partir de cotação aprovada, número sequencial (OC-YYYY/NNNN), campos adicionais (observações, referências), PDF com layout profissional, envio por email, possibilidade de pedido manual (emergencial com justificativa), status tracking (emitido→confirmado→em trânsito→entregue→cancelado), alerta de prazo vencido, e clone de pedido recorrente
 
 ### Recebimento
 
@@ -87,10 +87,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REQC-01     | Phase 8  | Complete |
 | REQC-02     | Phase 8  | Complete |
 | REQC-03     | Phase 8  | Complete |
-| COTA-01     | Phase 9  | Pending  |
-| COTA-02     | Phase 9  | Pending  |
-| COTA-03     | Phase 9  | Pending  |
-| PEDI-01     | Phase 9  | Pending  |
+| COTA-01     | Phase 9  | Complete |
+| COTA-02     | Phase 9  | Complete |
+| COTA-03     | Phase 9  | Complete |
+| PEDI-01     | Phase 9  | Complete |
 | RECE-01     | Phase 10 | Pending  |
 | RECE-02     | Phase 10 | Pending  |
 | RECE-03     | Phase 10 | Pending  |
