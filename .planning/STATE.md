@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 12-kanban-dashboard-e-notifica-es/12-01-PLAN.md
-last_updated: '2026-03-18T14:09:18.917Z'
+stopped_at: Completed 12-02-PLAN.md
+last_updated: '2026-03-18T14:12:22.753Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 30
-  completed_plans: 27
+  completed_plans: 28
   percent: 0
 ---
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-requisi-o-e-aprova-o P04 | 90min | 2 tasks | 11 files |
 | Phase 08-requisi-o-e-aprova-o P05 | 45min | 2 tasks | 14 files |
 | Phase 12-kanban-dashboard-e-notifica-es P01 | 6min | 2 tasks | 5 files |
+| Phase 12 P02 | 501 | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,9 @@ Key decisions for v1.1:
 - [Phase 08-requisi-o-e-aprova-o]: HTML5 native drag events for rule reorder in ApprovalRulesPage — avoids adding dnd library for single use case
 - [Phase 12-01]: Only RC_PENDENTE->APROVADA is direct kanban action; other transitions return 400 instructional errors directing to correct domain page
 - [Phase 12-01]: Emergency POs (isEmergency=true, quotationId=null) start at OC_EMITIDA column with urgency=EMERGENCIAL
+- [Phase 12]: Dynamic import used in createNotificationIfEnabled to avoid circular dependency between notifications.service.ts and notification-preferences.service.ts
+- [Phase 12]: NotificationPreference uses opt-out model: absence of record = enabled (returns true)
+- [Phase 12]: Preference routes placed BEFORE /:id/read in notifications.routes.ts to prevent Express matching 'preferences' as :id param
 
 ### Pending Todos
 
@@ -105,6 +109,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T14:09:18.915Z
-Stopped at: Completed 12-kanban-dashboard-e-notifica-es/12-01-PLAN.md
+Last session: 2026-03-18T14:12:22.750Z
+Stopped at: Completed 12-02-PLAN.md
 Resume file: None
