@@ -13,6 +13,7 @@ import {
 import { useGoodsReceipts, usePendingDeliveries } from '@/hooks/useGoodsReceipts';
 import type { GoodsReceiptListItem } from '@/types/goods-receipt';
 import { GR_STATUS_COLORS, RECEIVING_TYPE_LABELS } from '@/types/goods-receipt';
+import GoodsReceiptModal from '@/components/goods-receipts/GoodsReceiptModal';
 import './GoodsReceiptsPage.css';
 
 // ─── Helpers ─────────────────────────────────────────────────────
@@ -58,7 +59,13 @@ function SkeletonRows({ cols }: { cols: number }) {
 
 // ─── Tab: Recebimentos ────────────────────────────────────────────
 
-function RecebimentosTab({ onOpenModal }: { onOpenModal: (purchaseOrderId?: string) => void }) {
+function RecebimentosTab({
+  onOpenModal,
+  onViewDetail,
+}: {
+  onOpenModal: (purchaseOrderId?: string) => void;
+  onViewDetail: (id: string) => void;
+}) {
   const [searchInput, setSearchInput] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [receivingTypeFilter, setReceivingTypeFilter] = useState('');
@@ -203,7 +210,7 @@ function RecebimentosTab({ onOpenModal }: { onOpenModal: (purchaseOrderId?: stri
           ) : (
             <tbody>
               {goodsReceipts.map((item) => (
-                <GoodsReceiptRow key={item.id} item={item} />
+                <GoodsReceiptRow key={item.id} item={item} onViewDetail={onViewDetail} />
               ))}
             </tbody>
           )}
@@ -214,7 +221,7 @@ function RecebimentosTab({ onOpenModal }: { onOpenModal: (purchaseOrderId?: stri
       {!isLoading && goodsReceipts.length > 0 && (
         <div className="gr-page__cards" aria-label="Lista de recebimentos">
           {goodsReceipts.map((item) => (
-            <GoodsReceiptCard key={item.id} item={item} />
+            <GoodsReceiptCard key={item.id} item={item} onViewDetail={onViewDetail} />
           ))}
         </div>
       )}
@@ -264,7 +271,13 @@ function RecebimentosTab({ onOpenModal }: { onOpenModal: (purchaseOrderId?: stri
   );
 }
 
-function GoodsReceiptRow({ item }: { item: GoodsReceiptListItem }) {
+function GoodsReceiptRow({
+  item,
+  onViewDetail,
+}: {
+  item: GoodsReceiptListItem;
+  onViewDetail: (id: string) => void;
+}) {
   return (
     <tr className="gr-table__row">
       <td>
@@ -306,6 +319,7 @@ function GoodsReceiptRow({ item }: { item: GoodsReceiptListItem }) {
           type="button"
           className="gr-table__icon-btn"
           aria-label={`Ver detalhe ${item.sequentialNumber}`}
+          onClick={() => onViewDetail(item.id)}
         >
           <Eye size={20} aria-hidden="true" />
         </button>
@@ -314,7 +328,13 @@ function GoodsReceiptRow({ item }: { item: GoodsReceiptListItem }) {
   );
 }
 
-function GoodsReceiptCard({ item }: { item: GoodsReceiptListItem }) {
+function GoodsReceiptCard({
+  item,
+  onViewDetail,
+}: {
+  item: GoodsReceiptListItem;
+  onViewDetail: (id: string) => void;
+}) {
   return (
     <article className="gr-card">
       <div className="gr-card__header">
@@ -334,6 +354,7 @@ function GoodsReceiptCard({ item }: { item: GoodsReceiptListItem }) {
           type="button"
           className="gr-card__action-btn"
           aria-label={`Ver recebimento ${item.sequentialNumber}`}
+          onClick={() => onViewDetail(item.id)}
         >
           <Eye size={16} aria-hidden="true" />
           Ver detalhe
@@ -451,16 +472,20 @@ type ActiveTab = 'recebimentos' | 'pendencias';
 
 function GoodsReceiptsPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('recebimentos');
-  // Placeholder for modal (wired in Plan 05)
-  const [showModal, setShowModal] = useState(false);
-  const [modalPurchaseOrderId, setModalPurchaseOrderId] = useState<string | undefined>(undefined);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedReceiptId, setSelectedReceiptId] = useState<string | null>(null);
+  const [preselectedPOId, setPreselectedPOId] = useState<string | null>(null);
+  const [refetchKey, setRefetchKey] = useState(0);
 
-  void showModal;
-  void modalPurchaseOrderId;
+  const refetch = useCallback(() => setRefetchKey((k) => k + 1), []);
 
   const handleOpenModal = useCallback((purchaseOrderId?: string) => {
-    setModalPurchaseOrderId(purchaseOrderId);
-    setShowModal(true);
+    setPreselectedPOId(purchaseOrderId ?? null);
+    setShowCreateModal(true);
+  }, []);
+
+  const handleViewDetail = useCallback((id: string) => {
+    setSelectedReceiptId(id);
   }, []);
 
   return (
@@ -508,9 +533,45 @@ function GoodsReceiptsPage() {
 
       {/* Tab panels */}
       <div className="gr-page__tab-content">
-        {activeTab === 'recebimentos' && <RecebimentosTab onOpenModal={handleOpenModal} />}
+        {activeTab === 'recebimentos' && (
+          <RecebimentosTab
+            key={refetchKey}
+            onOpenModal={handleOpenModal}
+            onViewDetail={handleViewDetail}
+          />
+        )}
         {activeTab === 'pendencias' && <PendenciasTab onOpenModal={handleOpenModal} />}
       </div>
+
+      {/* Create modal */}
+      {showCreateModal && (
+        <GoodsReceiptModal
+          isOpen={showCreateModal}
+          onClose={() => {
+            setShowCreateModal(false);
+            setPreselectedPOId(null);
+          }}
+          onSuccess={() => {
+            refetch();
+            setShowCreateModal(false);
+            setPreselectedPOId(null);
+          }}
+          preselectedPurchaseOrderId={preselectedPOId ?? undefined}
+        />
+      )}
+
+      {/* Detail modal */}
+      {selectedReceiptId && (
+        <GoodsReceiptModal
+          isOpen={!!selectedReceiptId}
+          onClose={() => setSelectedReceiptId(null)}
+          onSuccess={() => {
+            refetch();
+            setSelectedReceiptId(null);
+          }}
+          existingId={selectedReceiptId}
+        />
+      )}
     </main>
   );
 }
