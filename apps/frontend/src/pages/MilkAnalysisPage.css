@@ -1,0 +1,1062 @@
+/* ─── Page Layout ─────────────────────────────────────────────────── */
+.milk-analysis {
+  padding: 24px 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────── */
+.milk-analysis__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.milk-analysis__header h1 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.milk-analysis__header p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 4px 0 0;
+}
+
+.milk-analysis__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.milk-analysis__btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+  white-space: nowrap;
+}
+
+.milk-analysis__btn-primary:hover {
+  background: var(--color-primary-700);
+}
+
+.milk-analysis__btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+  white-space: nowrap;
+}
+
+.milk-analysis__btn-secondary:hover {
+  background: var(--color-neutral-50);
+}
+
+/* ─── Tabs ────────────────────────────────────────────────────────── */
+.milk-analysis__tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--color-neutral-100);
+  margin-bottom: 20px;
+}
+
+.milk-analysis__tab {
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  color: var(--color-neutral-500);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition:
+    color 200ms ease-out,
+    border-color 200ms ease-out;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.milk-analysis__tab:hover {
+  color: var(--color-neutral-700);
+}
+
+.milk-analysis__tab--active {
+  color: var(--color-primary-700, #15803d);
+  border-bottom-color: var(--color-primary-600);
+}
+
+/* ─── Toolbar ─────────────────────────────────────────────────────── */
+.milk-analysis__toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.milk-analysis__search {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.milk-analysis__search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-neutral-400);
+  pointer-events: none;
+}
+
+.milk-analysis__search input {
+  width: 100%;
+  padding: 12px 16px 12px 40px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  transition: border-color 200ms ease-out;
+}
+
+.milk-analysis__search input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.milk-analysis__filter select {
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  cursor: pointer;
+  min-width: 180px;
+  min-height: 48px;
+}
+
+.milk-analysis__filter select:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.milk-analysis__filter input[type='date'] {
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  min-height: 48px;
+}
+
+.milk-analysis__filter input[type='date']:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Error / Success / Empty / Loading ───────────────────────────── */
+.milk-analysis__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-error-50, #fef2f2);
+  border: 1px solid var(--color-error-200, #fecaca);
+  border-radius: 8px;
+  color: var(--color-error-700, #b91c1c);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.milk-analysis__success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-primary-50, #f0fdf4);
+  border: 1px solid var(--color-primary-200, #bbf7d0);
+  border-radius: 8px;
+  color: var(--color-primary-700, #15803d);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.milk-analysis__loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--color-neutral-500);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+}
+
+.milk-analysis__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--color-neutral-400);
+}
+
+.milk-analysis__empty h2 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  margin: 8px 0 0;
+}
+
+.milk-analysis__empty p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+/* ─── Grid ────────────────────────────────────────────────────────── */
+.milk-analysis__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+}
+
+/* ─── Card ────────────────────────────────────────────────────────── */
+.milk-analysis__card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out;
+}
+
+.milk-analysis__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.milk-analysis__card:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.milk-analysis__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.milk-analysis__card-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.milk-analysis__card-subtitle {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  margin: 2px 0 0;
+}
+
+.milk-analysis__card-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.milk-analysis__card-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  transition: background 200ms ease-out;
+}
+
+.milk-analysis__card-btn:hover {
+  background: var(--color-neutral-100);
+}
+
+.milk-analysis__card-btn--delete:hover {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-600, #dc2626);
+}
+
+/* ─── Tags ────────────────────────────────────────────────────────── */
+.milk-analysis__card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.milk-analysis__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.milk-analysis__tag--type {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.milk-analysis__tag--cmt {
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-700, #15803d);
+}
+
+.milk-analysis__tag--alert {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-700, #b91c1c);
+}
+
+.milk-analysis__tag--antibiotic-pos {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-700, #b91c1c);
+}
+
+.milk-analysis__tag--antibiotic-neg {
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-700, #15803d);
+}
+
+/* ─── Card Values (mono) ─────────────────────────────────────────── */
+.milk-analysis__card-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.milk-analysis__value {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.milk-analysis__value-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.6875rem;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.milk-analysis__value-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  color: var(--color-neutral-800);
+}
+
+/* ─── SCC/TBC traffic lights ─────────────────────────────────────── */
+.milk-analysis__alert-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.milk-analysis__alert-badge--GREEN {
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-700, #15803d);
+}
+
+.milk-analysis__alert-badge--YELLOW {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.milk-analysis__alert-badge--RED {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-700, #b91c1c);
+}
+
+/* ─── CMT Quarter Grid ───────────────────────────────────────────── */
+.milk-analysis__cmt-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  width: 80px;
+  margin: 4px 0;
+}
+
+.milk-analysis__cmt-cell {
+  width: 36px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--color-neutral-0);
+}
+
+.milk-analysis__cmt-cell--NEGATIVE {
+  background: #22c55e;
+}
+
+.milk-analysis__cmt-cell--TRACE {
+  background: #eab308;
+  color: var(--color-neutral-800);
+}
+
+.milk-analysis__cmt-cell--PLUS_1 {
+  background: #f97316;
+}
+
+.milk-analysis__cmt-cell--PLUS_2 {
+  background: #ef4444;
+}
+
+.milk-analysis__cmt-cell--PLUS_3 {
+  background: #991b1b;
+}
+
+.milk-analysis__cmt-cell--empty {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-400);
+}
+
+/* ─── Card Details ────────────────────────────────────────────────── */
+.milk-analysis__card-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+
+.milk-analysis__detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.milk-analysis__detail--mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ─── Fat:Protein Ratio ──────────────────────────────────────────── */
+.milk-analysis__ratio {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.milk-analysis__ratio--normal {
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-700, #15803d);
+}
+
+.milk-analysis__ratio--alert {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+/* ─── High SCC Table ─────────────────────────────────────────────── */
+.milk-analysis__table-wrap {
+  overflow-x: auto;
+}
+
+.milk-analysis__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+}
+
+.milk-analysis__table th {
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-700);
+  border-bottom: 2px solid var(--color-neutral-200);
+  white-space: nowrap;
+}
+
+.milk-analysis__table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.milk-analysis__table tr:hover td {
+  background: var(--color-neutral-50);
+}
+
+.milk-analysis__scc-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+}
+
+.milk-analysis__alert-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.milk-analysis__alert-level--HIGH {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.milk-analysis__alert-level--CRITICAL {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-700, #b91c1c);
+}
+
+/* ─── Sparkline placeholder ──────────────────────────────────────── */
+.milk-analysis__sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 24px;
+}
+
+.milk-analysis__spark-bar {
+  width: 6px;
+  background: var(--color-primary-400, #4ade80);
+  border-radius: 2px;
+  transition: height 300ms ease-out;
+}
+
+.milk-analysis__spark-bar--high {
+  background: var(--color-error-400, #f87171);
+}
+
+/* ─── Quality Trend ──────────────────────────────────────────────── */
+.milk-analysis__trend {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.milk-analysis__trend-section {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.milk-analysis__trend-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0 0 16px;
+}
+
+.milk-analysis__trend-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 160px;
+  padding-bottom: 32px;
+  position: relative;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.milk-analysis__trend-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.milk-analysis__trend-bar {
+  width: 100%;
+  max-width: 40px;
+  border-radius: 4px 4px 0 0;
+  transition: height 300ms ease-out;
+  min-height: 4px;
+}
+
+.milk-analysis__trend-bar--scc {
+  background: #3b82f6;
+}
+
+.milk-analysis__trend-bar--tbc {
+  background: #f59e0b;
+}
+
+.milk-analysis__trend-bar--fat {
+  background: #22c55e;
+}
+
+.milk-analysis__trend-bar--protein {
+  background: #8b5cf6;
+}
+
+.milk-analysis__trend-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.6875rem;
+  color: var(--color-neutral-500);
+  position: absolute;
+  bottom: -24px;
+  white-space: nowrap;
+}
+
+.milk-analysis__trend-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  color: var(--color-neutral-600);
+}
+
+.milk-analysis__trend-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.milk-analysis__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+
+.milk-analysis__legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.milk-analysis__legend-dot--scc {
+  background: #3b82f6;
+}
+
+.milk-analysis__legend-dot--tbc {
+  background: #f59e0b;
+}
+
+.milk-analysis__legend-dot--fat {
+  background: #22c55e;
+}
+
+.milk-analysis__legend-dot--protein {
+  background: #8b5cf6;
+}
+
+/* ─── Traffic Light Reference ────────────────────────────────────── */
+.milk-analysis__traffic-ref {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--color-neutral-50);
+  border-radius: 8px;
+}
+
+.milk-analysis__traffic-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+
+.milk-analysis__traffic-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.milk-analysis__traffic-dot--green {
+  background: #22c55e;
+}
+
+.milk-analysis__traffic-dot--yellow {
+  background: #eab308;
+}
+
+.milk-analysis__traffic-dot--red {
+  background: #ef4444;
+}
+
+/* ─── Config Tab ─────────────────────────────────────────────────── */
+.milk-analysis__config {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.milk-analysis__config-section {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.milk-analysis__config-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0 0 16px;
+}
+
+.milk-analysis__config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.milk-analysis__config-field label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.milk-analysis__config-field input {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9375rem;
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  transition: border-color 200ms ease-out;
+}
+
+.milk-analysis__config-field input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+/* ─── Bonus/Penalty Table ────────────────────────────────────────── */
+.milk-analysis__bonus-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.milk-analysis__bonus-table th {
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 12px;
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-600);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.milk-analysis__bonus-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.milk-analysis__bonus-table input {
+  width: 80px;
+  padding: 8px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  text-align: right;
+}
+
+.milk-analysis__bonus-table input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 1px;
+}
+
+.milk-analysis__bonus-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border: 1px dashed var(--color-neutral-300);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-neutral-500);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  min-height: 48px;
+  transition: background 200ms ease-out;
+}
+
+.milk-analysis__bonus-add:hover {
+  background: var(--color-neutral-50);
+}
+
+.milk-analysis__bonus-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--color-neutral-400);
+  transition: background 200ms ease-out;
+}
+
+.milk-analysis__bonus-remove:hover {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-600, #dc2626);
+}
+
+/* ─── Bonus Result ───────────────────────────────────────────────── */
+.milk-analysis__bonus-result {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 24px;
+}
+
+.milk-analysis__bonus-total {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 8px 0;
+}
+
+.milk-analysis__bonus-total--positive {
+  color: var(--color-primary-700, #15803d);
+}
+
+.milk-analysis__bonus-total--negative {
+  color: var(--color-error-700, #b91c1c);
+}
+
+.milk-analysis__bonus-total--neutral {
+  color: var(--color-neutral-600);
+}
+
+.milk-analysis__bonus-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.milk-analysis__bonus-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--color-neutral-50);
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+}
+
+.milk-analysis__bonus-detail-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+}
+
+/* ─── Pagination ──────────────────────────────────────────────────── */
+.milk-analysis__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.milk-analysis__pagination button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+
+.milk-analysis__pagination button:hover:not(:disabled) {
+  background: var(--color-neutral-50);
+}
+
+.milk-analysis__pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.milk-analysis__pagination span {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  padding: 0 8px;
+}
+
+/* ─── Mobile cards for High SCC table ────────────────────────────── */
+.milk-analysis__scc-cards {
+  display: none;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .milk-analysis__table-wrap {
+    display: none;
+  }
+
+  .milk-analysis__scc-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .milk-analysis__scc-card {
+    background: var(--color-neutral-0);
+    border: 1px solid var(--color-neutral-100);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .milk-analysis__scc-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+
+  .milk-analysis__scc-card-animal {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-weight: 600;
+    color: var(--color-neutral-800);
+  }
+
+  .milk-analysis__scc-card-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .milk-analysis {
+    padding: 16px;
+  }
+
+  .milk-analysis__header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .milk-analysis__actions {
+    width: 100%;
+  }
+
+  .milk-analysis__btn-primary,
+  .milk-analysis__btn-secondary {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .milk-analysis__toolbar {
+    flex-direction: column;
+  }
+
+  .milk-analysis__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .milk-analysis__tabs {
+    overflow-x: auto;
+  }
+
+  .milk-analysis__tab {
+    padding: 12px 12px;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+
+  .milk-analysis__config {
+    grid-template-columns: 1fr;
+  }
+
+  .milk-analysis__trend-bars {
+    height: 120px;
+  }
+}

@@ -16,6 +16,10 @@ const RolesPage = lazy(() => import('@/pages/RolesPage'));
 const OrgUsersPage = lazy(() => import('@/pages/OrgUsersPage'));
 const FarmsPage = lazy(() => import('@/pages/FarmsPage'));
 const FarmMapPage = lazy(() => import('@/pages/FarmMapPage'));
+const FarmDetailPage = lazy(() => import('@/pages/FarmDetailPage'));
+const RuralPropertiesPage = lazy(() => import('@/pages/RuralPropertiesPage'));
+const CarRegistrationsPage = lazy(() => import('@/pages/CarRegistrationsPage'));
+const RegistrationsPage = lazy(() => import('@/pages/RegistrationsPage'));
 const AdminDashboardPage = lazy(() => import('@/pages/AdminDashboardPage'));
 const AdminOrganizationsPage = lazy(() => import('@/pages/AdminOrganizationsPage'));
 const AdminAuditLogsPage = lazy(() => import('@/pages/AdminAuditLogsPage'));
@@ -51,6 +55,54 @@ const StockOutputsPage = lazy(() => import('@/pages/StockOutputsPage'));
 const StockAlertsPage = lazy(() => import('@/pages/StockAlertsPage'));
 const StockInventoriesPage = lazy(() => import('@/pages/StockInventoriesPage'));
 const ConversionHistoryPage = lazy(() => import('@/pages/ConversionHistoryPage'));
+const GrainDiscountsPage = lazy(() => import('@/pages/GrainDiscountsPage'));
+const DiseasesPage = lazy(() => import('@/pages/DiseasesPage'));
+const TreatmentProtocolsPage = lazy(() => import('@/pages/TreatmentProtocolsPage'));
+const SanitaryProtocolsPage = lazy(() => import('@/pages/SanitaryProtocolsPage'));
+const VaccinationsPage = lazy(() => import('@/pages/VaccinationsPage'));
+const DewormingsPage = lazy(() => import('@/pages/DewormingsPage'));
+const TherapeuticTreatmentsPage = lazy(() => import('@/pages/TherapeuticTreatmentsPage'));
+const AnimalExamsPage = lazy(() => import('@/pages/AnimalExamsPage'));
+const SanitaryDashboardPage = lazy(() => import('@/pages/SanitaryDashboardPage'));
+const BullsPage = lazy(() => import('@/pages/BullsPage'));
+const ReproductiveReleasesPage = lazy(() => import('@/pages/ReproductiveReleasesPage'));
+const HeatRecordsPage = lazy(() => import('@/pages/HeatRecordsPage'));
+const MatingPlansPage = lazy(() => import('@/pages/MatingPlansPage'));
+const IatfProtocolsPage = lazy(() => import('@/pages/IatfProtocolsPage'));
+const IatfExecutionPage = lazy(() => import('@/pages/IatfExecutionPage'));
+const NaturalMatingsPage = lazy(() => import('@/pages/NaturalMatingsPage'));
+const PregnancyDiagnosisPage = lazy(() => import('@/pages/PregnancyDiagnosisPage'));
+const CalvingEventsPage = lazy(() => import('@/pages/CalvingEventsPage'));
+const WeaningPage = lazy(() => import('@/pages/WeaningPage'));
+const MilkingRecordsPage = lazy(() => import('@/pages/MilkingRecordsPage'));
+const MilkAnalysisPage = lazy(() => import('@/pages/MilkAnalysisPage'));
+const MastitisPage = lazy(() => import('@/pages/MastitisPage'));
+const MilkTanksPage = lazy(() => import('@/pages/MilkTanksPage'));
+const LactationsPage = lazy(() => import('@/pages/LactationsPage'));
+const MilkDashboardPage = lazy(() => import('@/pages/MilkDashboardPage'));
+const FeedIngredientsPage = lazy(() => import('@/pages/FeedIngredientsPage'));
+const DietsPage = lazy(() => import('@/pages/DietsPage'));
+const FeedingRecordsPage = lazy(() => import('@/pages/FeedingRecordsPage'));
+const BankAccountsPage = lazy(() => import('@/pages/BankAccountsPage'));
+const PayablesPage = lazy(() => import('@/pages/PayablesPage'));
+const ReceivablesPage = lazy(() => import('@/pages/ReceivablesPage'));
+const FinancialDashboardPage = lazy(() => import('@/pages/FinancialDashboardPage'));
+const TransfersPage = lazy(() => import('@/pages/TransfersPage'));
+const CreditCardsPage = lazy(() => import('@/pages/CreditCardsPage'));
+const ChecksPage = lazy(() => import('@/pages/ChecksPage'));
+const CashflowPage = lazy(() => import('@/pages/CashflowPage'));
+const ReconciliationPage = lazy(() => import('@/pages/ReconciliationPage'));
+const RuralCreditPage = lazy(() => import('@/pages/RuralCreditPage'));
+const RuralCreditDetailPage = lazy(() => import('@/pages/RuralCreditDetailPage'));
+const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
+const PurchaseRequestsPage = lazy(() => import('@/pages/PurchaseRequestsPage'));
+const QuotationsPage = lazy(() => import('@/pages/QuotationsPage'));
+const ApprovalRulesPage = lazy(() => import('@/pages/ApprovalRulesPage'));
+const PurchaseOrdersPage = lazy(() => import('@/pages/PurchaseOrdersPage'));
+const GoodsReceiptsPage = lazy(() => import('@/pages/GoodsReceiptsPage'));
+const DevolucoesPage = lazy(() => import('@/pages/DevolucoesPage'));
+const OrcamentoComprasPage = lazy(() => import('@/pages/OrcamentoComprasPage'));
+const SavingAnalysisPage = lazy(() => import('@/pages/SavingAnalysisPage'));
 
 export function App() {
   return (
@@ -76,7 +128,11 @@ export function App() {
                 <Route path="/users" element={<OrgUsersPage />} />
                 <Route path="/roles" element={<RolesPage />} />
                 <Route path="/farms" element={<FarmsPage />} />
+                <Route path="/farms/:farmId" element={<FarmDetailPage />} />
                 <Route path="/farms/:farmId/map" element={<FarmMapPage />} />
+                <Route path="/rural-properties" element={<RuralPropertiesPage />} />
+                <Route path="/car-registrations" element={<CarRegistrationsPage />} />
+                <Route path="/registrations" element={<RegistrationsPage />} />
                 <Route path="/producers" element={<ProducersPage />} />
                 <Route path="/animals" element={<AnimalsPage />} />
                 <Route path="/animals/:animalId" element={<AnimalDetailPage />} />
@@ -103,6 +159,54 @@ export function App() {
                 <Route path="/stock-alerts" element={<StockAlertsPage />} />
                 <Route path="/stock-inventories" element={<StockInventoriesPage />} />
                 <Route path="/conversion-history" element={<ConversionHistoryPage />} />
+                <Route path="/grain-discounts" element={<GrainDiscountsPage />} />
+                <Route path="/diseases" element={<DiseasesPage />} />
+                <Route path="/treatment-protocols" element={<TreatmentProtocolsPage />} />
+                <Route path="/sanitary-protocols" element={<SanitaryProtocolsPage />} />
+                <Route path="/vaccinations" element={<VaccinationsPage />} />
+                <Route path="/dewormings" element={<DewormingsPage />} />
+                <Route path="/therapeutic-treatments" element={<TherapeuticTreatmentsPage />} />
+                <Route path="/animal-exams" element={<AnimalExamsPage />} />
+                <Route path="/sanitary-dashboard" element={<SanitaryDashboardPage />} />
+                <Route path="/bulls" element={<BullsPage />} />
+                <Route path="/reproductive-releases" element={<ReproductiveReleasesPage />} />
+                <Route path="/heat-records" element={<HeatRecordsPage />} />
+                <Route path="/mating-plans" element={<MatingPlansPage />} />
+                <Route path="/iatf-protocols" element={<IatfProtocolsPage />} />
+                <Route path="/iatf-execution" element={<IatfExecutionPage />} />
+                <Route path="/natural-matings" element={<NaturalMatingsPage />} />
+                <Route path="/pregnancy-diagnosis" element={<PregnancyDiagnosisPage />} />
+                <Route path="/calving-events" element={<CalvingEventsPage />} />
+                <Route path="/weaning" element={<WeaningPage />} />
+                <Route path="/milking-records" element={<MilkingRecordsPage />} />
+                <Route path="/milk-analysis" element={<MilkAnalysisPage />} />
+                <Route path="/mastitis" element={<MastitisPage />} />
+                <Route path="/milk-tanks" element={<MilkTanksPage />} />
+                <Route path="/lactations" element={<LactationsPage />} />
+                <Route path="/milk-dashboard" element={<MilkDashboardPage />} />
+                <Route path="/feed-ingredients" element={<FeedIngredientsPage />} />
+                <Route path="/diets" element={<DietsPage />} />
+                <Route path="/feeding-records" element={<FeedingRecordsPage />} />
+                <Route path="/financial-dashboard" element={<FinancialDashboardPage />} />
+                <Route path="/bank-accounts" element={<BankAccountsPage />} />
+                <Route path="/payables" element={<PayablesPage />} />
+                <Route path="/receivables" element={<ReceivablesPage />} />
+                <Route path="/transfers" element={<TransfersPage />} />
+                <Route path="/credit-cards" element={<CreditCardsPage />} />
+                <Route path="/checks" element={<ChecksPage />} />
+                <Route path="/cashflow" element={<CashflowPage />} />
+                <Route path="/reconciliation" element={<ReconciliationPage />} />
+                <Route path="/rural-credit" element={<RuralCreditPage />} />
+                <Route path="/rural-credit/:id" element={<RuralCreditDetailPage />} />
+                <Route path="/suppliers" element={<SuppliersPage />} />
+                <Route path="/purchase-requests" element={<PurchaseRequestsPage />} />
+                <Route path="/quotations" element={<QuotationsPage />} />
+                <Route path="/approval-rules" element={<ApprovalRulesPage />} />
+                <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
+                <Route path="/goods-receipts" element={<GoodsReceiptsPage />} />
+                <Route path="/goods-returns" element={<DevolucoesPage />} />
+                <Route path="/purchase-budgets" element={<OrcamentoComprasPage />} />
+                <Route path="/saving-analysis" element={<SavingAnalysisPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}

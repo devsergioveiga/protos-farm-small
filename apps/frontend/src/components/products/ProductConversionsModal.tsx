@@ -367,8 +367,8 @@ export default function ProductConversionsModal({
                   <Settings size={48} aria-hidden="true" />
                   <h3>Configure as unidades primeiro</h3>
                   <p>
-                    Acesse a aba "Unidades" para definir as unidades de compra, estoque e aplicação
-                    antes de adicionar conversões.
+                    Acesse a aba &ldquo;Unidades&rdquo; para definir as unidades de compra, estoque
+                    e aplicação antes de adicionar conversões.
                   </p>
                 </div>
               )}

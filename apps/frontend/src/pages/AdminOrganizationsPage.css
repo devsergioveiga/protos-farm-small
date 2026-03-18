@@ -447,15 +447,34 @@
   border-color: var(--color-primary-500);
 }
 
+.admin-orgs__input--error {
+  border-color: var(--color-error-500);
+}
+
+.admin-orgs__input--error:focus {
+  outline-color: var(--color-error-500);
+  border-color: var(--color-error-500);
+}
+
+.admin-orgs__field-error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-error-500);
+}
+
 .admin-orgs__select {
   width: 100%;
-  padding: 12px 16px;
+  padding: 12px 40px 12px 16px;
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 0.9375rem;
   border: 1px solid var(--color-neutral-300);
   border-radius: 8px;
   color: var(--color-neutral-700);
-  background: var(--color-neutral-0);
+  background-color: var(--color-neutral-0);
   cursor: pointer;
   min-height: 48px;
   box-sizing: border-box;
@@ -523,6 +542,54 @@
   outline-offset: 2px;
 }
 
+/* ─── User Action Buttons ─────────────────────────────────────── */
+
+.admin-orgs__user-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.admin-orgs__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.admin-orgs__icon-btn:hover:not(:disabled) {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.admin-orgs__icon-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.admin-orgs__icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-orgs__icon-btn--warn:hover:not(:disabled) {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.admin-orgs__icon-btn--danger:hover:not(:disabled) {
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+}
+
 /* ─── Action Row ──────────────────────────────────────────────── */
 
 .admin-orgs__action-row {
@@ -534,7 +601,13 @@
 
 .admin-orgs__action-row .admin-orgs__select {
   min-width: 160px;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+}
+
+.admin-orgs__plan-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 /* ─── Info Grid ───────────────────────────────────────────────── */
@@ -645,6 +718,10 @@
   .admin-orgs__action-row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .admin-orgs__plan-row {
+    flex-direction: column;
   }
 
   .admin-orgs__modal {

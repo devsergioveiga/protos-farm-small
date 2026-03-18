@@ -24,6 +24,14 @@ export interface CoffeeHarvestItem {
   harvestersProductivity: number | null;
   isSpecialLot: boolean;
   microlotCode: string | null;
+  // US-098 CA2 — commercial conversions
+  commercialUnits?: {
+    L: number;
+    sc: number;
+    kg: number;
+    arroba: number;
+    t: number;
+  };
   notes: string | null;
   recordedBy: string;
   recorderName: string;

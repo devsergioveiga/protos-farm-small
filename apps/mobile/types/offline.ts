@@ -383,4 +383,11 @@ export type SyncEntity =
   | 'pests'
   | 'monitoring_points'
   | 'field_teams'
-  | 'cultivars';
+  | 'cultivars'
+  | 'ref_bulls'
+  | 'ref_iatf_protocols'
+  | 'ref_diseases'
+  | 'ref_treatment_protocols'
+  | 'ref_exam_types'
+  | 'ref_feed_ingredients'
+  | 'ref_products';

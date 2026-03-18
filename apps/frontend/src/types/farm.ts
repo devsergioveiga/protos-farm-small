@@ -83,7 +83,7 @@ export interface FarmsListResponse {
 export interface BoundaryInfo {
   hasBoundary: boolean;
   boundaryAreaHa: number | null;
-  boundaryGeoJSON: GeoJSON.Polygon | null;
+  boundaryGeoJSON: GeoJSON.Polygon | GeoJSON.MultiPolygon | null;
 }
 
 export interface FieldPlot {

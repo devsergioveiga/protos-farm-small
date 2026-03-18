@@ -22,7 +22,6 @@
   background: var(--color-neutral-0);
   border-radius: var(--radius-lg);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
 }
 
 /* ─── Header ─── */
@@ -212,6 +211,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  position: relative;
+  overflow: visible;
 }
 
 .farm-form-modal__field--checkbox {
@@ -219,10 +220,48 @@
 }
 
 .farm-form-modal__label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-body);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   color: var(--color-neutral-700);
+}
+
+.farm-form-modal__tooltip-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.farm-form-modal__tooltip-icon {
+  color: var(--color-neutral-400);
+  cursor: help;
+  flex-shrink: 0;
+}
+
+.farm-form-modal__tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: max-content;
+  max-width: 260px;
+  padding: 8px 12px;
+  font-size: var(--text-xs);
+  font-weight: var(--font-regular);
+  line-height: 1.4;
+  color: var(--color-neutral-0);
+  background: var(--color-neutral-800);
+  border-radius: var(--radius-md);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.farm-form-modal__tooltip-icon:hover + .farm-form-modal__tooltip,
+.farm-form-modal__tooltip-icon:focus + .farm-form-modal__tooltip {
+  display: block;
 }
 
 .farm-form-modal__required {

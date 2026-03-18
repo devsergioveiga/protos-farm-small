@@ -79,6 +79,10 @@ const ENTRY_ITEM = {
   finalUnitCost: 51,
   finalTotalCost: 5100,
   weightKg: null,
+  purchaseUnitAbbreviation: null,
+  stockQuantity: null,
+  stockUnitAbbreviation: null,
+  conversionFactor: null,
 };
 
 const ENTRY_EXPENSE = {

@@ -36,7 +36,8 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "bcrypt"
+      "bcrypt",
+      "@swc/core"
     ]
   },
   "devDependencies": {

@@ -1,0 +1,281 @@
+/* ─── Bell wrapper ────────────────────────────────────────────────────── */
+
+.notification-bell {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.notification-bell__btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--color-neutral-600);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.notification-bell__btn:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-800);
+}
+
+.notification-bell__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Badge ───────────────────────────────────────────────────────────── */
+
+.notification-bell__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--color-error-500);
+  color: var(--color-neutral-0);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: var(--font-semibold);
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  pointer-events: none;
+  animation: badge-pulse 100ms var(--ease-out);
+}
+
+.notification-bell__badge--hidden {
+  display: none;
+}
+
+@keyframes badge-pulse {
+  from {
+    transform: scale(1.2);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notification-bell__badge {
+    animation: none;
+  }
+  .notification-dropdown {
+    animation: none;
+  }
+}
+
+/* ─── Dropdown panel ──────────────────────────────────────────────────── */
+
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  width: 380px;
+  max-height: 480px;
+  overflow-y: auto;
+  background: var(--color-neutral-0);
+  box-shadow: var(--shadow-xl);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-neutral-200);
+  transform-origin: top right;
+  animation: dropdown-enter var(--duration-normal) var(--ease-out);
+  z-index: 1050;
+}
+
+@keyframes dropdown-enter {
+  from {
+    opacity: 0;
+    transform: scaleY(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+/* ─── Dropdown header ─────────────────────────────────────────────────── */
+
+.notification-dropdown__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--color-neutral-200);
+  position: sticky;
+  top: 0;
+  background: var(--color-neutral-0);
+  z-index: 1;
+}
+
+.notification-dropdown__title {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.notification-dropdown__mark-all {
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-primary-600);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.notification-dropdown__mark-all:hover {
+  color: var(--color-primary-700);
+}
+
+.notification-dropdown__mark-all:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Empty state ─────────────────────────────────────────────────────── */
+
+.notification-dropdown__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.notification-dropdown__empty-icon {
+  color: var(--color-neutral-300);
+}
+
+.notification-dropdown__empty-text {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+/* ─── List ────────────────────────────────────────────────────────────── */
+
+.notification-dropdown__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* ─── Notification item ───────────────────────────────────────────────── */
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  width: 100%;
+  text-align: left;
+  background: var(--color-neutral-0);
+  border: none;
+  border-bottom: 1px solid var(--color-neutral-100);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item:hover {
+  background: var(--color-neutral-50);
+}
+
+.notification-item:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+
+.notification-item--unread {
+  border-left: 3px solid var(--color-primary-600);
+  padding-left: calc(var(--space-4) - 3px);
+}
+
+/* ─── Item icon ───────────────────────────────────────────────────────── */
+
+.nb-item__icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.nb-item__icon--success {
+  color: var(--color-success-500);
+}
+.nb-item__icon--error {
+  color: var(--color-error-500);
+}
+.nb-item__icon--warning {
+  color: var(--color-warning-500);
+}
+.nb-item__icon--neutral {
+  color: var(--color-neutral-500);
+}
+
+/* ─── Item content ────────────────────────────────────────────────────── */
+
+.notification-item__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notification-item__title {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-800);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notification-item__body {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-600);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notification-item__time {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .notification-dropdown {
+    width: calc(100vw - var(--space-8));
+    right: calc(-1 * var(--space-4));
+  }
+}

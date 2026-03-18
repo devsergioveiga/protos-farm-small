@@ -300,6 +300,12 @@
   color: var(--color-neutral-700);
 }
 
+.coffee-harvests__card-detail--commercial {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+
 .coffee-harvests__card-classification {
   display: flex;
   align-items: center;

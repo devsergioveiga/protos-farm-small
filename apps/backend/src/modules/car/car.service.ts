@@ -63,6 +63,44 @@ const carSelect = {
   },
 };
 
+// ─── List All CARs (org-wide) ───────────────────────────────────────
+
+export async function listAllCarRegistrations(ctx: RlsContext) {
+  return withRlsContext(ctx, async (tx) => {
+    const cars = await tx.carRegistration.findMany({
+      where: {
+        farm: {
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+        },
+      },
+      include: {
+        farm: { select: { name: true } },
+        ruralProperty: { select: { id: true, denomination: true } },
+      },
+      orderBy: [{ farm: { name: 'asc' } }, { carCode: 'asc' }],
+    });
+
+    return cars.map((c) => ({
+      id: c.id,
+      farmId: c.farmId,
+      farmName: c.farm.name,
+      ruralPropertyId: c.ruralPropertyId,
+      ruralPropertyName: c.ruralProperty?.denomination ?? null,
+      carCode: c.carCode,
+      status: c.status,
+      inscriptionDate: c.inscriptionDate ? c.inscriptionDate.toISOString().split('T')[0] : null,
+      areaHa: c.areaHa ? Number(c.areaHa) : null,
+      city: c.city,
+      state: c.state,
+      legalReserveApprovedHa: c.legalReserveApprovedHa ? Number(c.legalReserveApprovedHa) : null,
+      appTotalHa: c.appTotalHa ? Number(c.appTotalHa) : null,
+      boundaryAreaHa: c.boundaryAreaHa ? Number(c.boundaryAreaHa) : null,
+      createdAt: c.createdAt.toISOString(),
+    }));
+  });
+}
+
 // ─── Create CAR ──────────────────────────────────────────────────────
 
 export async function createCar(ctx: RlsContext, farmId: string, input: CreateCarInput) {
@@ -220,6 +258,7 @@ export async function updateCar(
       where: { id: carId },
       data: {
         carCode: input.carCode?.trim(),
+        ruralPropertyId: input.ruralPropertyId !== undefined ? input.ruralPropertyId : undefined,
         status: input.status as 'ATIVO' | 'PENDENTE' | 'CANCELADO' | 'SUSPENSO' | undefined,
         areaHa: input.areaHa,
         modulosFiscais: input.modulosFiscais,

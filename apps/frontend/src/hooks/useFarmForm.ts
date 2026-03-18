@@ -3,10 +3,7 @@ import { api } from '@/services/api';
 import { VALID_UF } from '@/constants/states';
 import type { CreateFarmPayload, FarmDetail } from '@/types/farm';
 
-const CIB_REGEX = /^\d{1,3}\.\d{3}\.\d{3}-\d$/;
 const ZIPCODE_REGEX = /^\d{5}-?\d{3}$/;
-
-const LAND_CLASSIFICATIONS = ['MINIFUNDIO', 'PEQUENA', 'MEDIA', 'GRANDE'] as const;
 
 export type FormFields = {
   name: string;
@@ -16,17 +13,6 @@ export type FormFields = {
   state: string;
   zipCode: string;
   totalAreaHa: string;
-  cib: string;
-  incraCode: string;
-  ccirCode: string;
-  carCode: string;
-  landClassification: string;
-  productive: string;
-  appAreaHa: string;
-  legalReserveHa: string;
-  taxableAreaHa: string;
-  usableAreaHa: string;
-  utilizationDegree: string;
 };
 
 type FieldErrors = Partial<Record<keyof FormFields, string>>;
@@ -40,35 +26,14 @@ const INITIAL_FORM: FormFields = {
   state: '',
   zipCode: '',
   totalAreaHa: '',
-  cib: '',
-  incraCode: '',
-  ccirCode: '',
-  carCode: '',
-  landClassification: '',
-  productive: 'false',
-  appAreaHa: '',
-  legalReserveHa: '',
-  taxableAreaHa: '',
-  usableAreaHa: '',
-  utilizationDegree: '',
 };
 
 const STEP_FIELDS: (keyof FormFields)[][] = [
   ['name', 'nickname', 'address', 'city', 'state', 'zipCode', 'totalAreaHa'],
-  ['cib', 'incraCode', 'ccirCode', 'carCode'],
-  [
-    'landClassification',
-    'productive',
-    'appAreaHa',
-    'legalReserveHa',
-    'taxableAreaHa',
-    'usableAreaHa',
-    'utilizationDegree',
-  ],
-  [],
+  [], // confirmation
 ];
 
-export const TOTAL_STEPS = 4;
+export const TOTAL_STEPS = 2;
 
 function validateField(field: keyof FormFields, value: string): string | undefined {
   switch (field) {
@@ -79,30 +44,14 @@ function validateField(field: keyof FormFields, value: string): string | undefin
       if (!value) return 'UF é obrigatória';
       if (!VALID_UF.includes(value as (typeof VALID_UF)[number])) return 'UF inválida';
       break;
-    case 'totalAreaHa':
+    case 'totalAreaHa': {
       if (!value) return 'Área total é obrigatória';
-      if (isNaN(Number(value)) || Number(value) <= 0) return 'Área deve ser maior que zero';
+      const parsed = Number(value.replace(/\./g, '').replace(',', '.'));
+      if (isNaN(parsed) || parsed <= 0) return 'Área deve ser maior que zero';
       break;
-    case 'cib':
-      if (value && !CIB_REGEX.test(value)) return 'CIB deve ter formato XXX.XXX.XXX-X';
-      break;
+    }
     case 'zipCode':
       if (value && !ZIPCODE_REGEX.test(value)) return 'CEP deve ter formato XXXXX-XXX';
-      break;
-    case 'landClassification':
-      if (value && !LAND_CLASSIFICATIONS.includes(value as (typeof LAND_CLASSIFICATIONS)[number]))
-        return 'Classificação inválida';
-      break;
-    case 'appAreaHa':
-    case 'legalReserveHa':
-    case 'taxableAreaHa':
-    case 'usableAreaHa':
-      if (value && (isNaN(Number(value)) || Number(value) < 0))
-        return 'Área deve ser maior ou igual a zero';
-      break;
-    case 'utilizationDegree':
-      if (value && (isNaN(Number(value)) || Number(value) < 0 || Number(value) > 100))
-        return 'Grau deve estar entre 0 e 100';
       break;
   }
   return undefined;
@@ -110,8 +59,15 @@ function validateField(field: keyof FormFields, value: string): string | undefin
 
 function farmDetailToFormFields(farm: FarmDetail): FormFields {
   const str = (v: string | null | undefined): string => v ?? '';
-  const num = (v: number | null | undefined): string => (v != null ? String(v) : '');
-  const bool = (v: boolean | null | undefined): string => (v ? 'true' : 'false');
+  const numArea = (v: number | string | null | undefined): string => {
+    if (v == null) return '';
+    const n = typeof v === 'string' ? parseFloat(v) : v;
+    if (isNaN(n)) return '';
+    return n
+      .toFixed(4)
+      .replace('.', ',')
+      .replace(/\B(?=(\d{3})+(?=,))/g, '.');
+  };
 
   return {
     name: str(farm.name),
@@ -120,18 +76,7 @@ function farmDetailToFormFields(farm: FarmDetail): FormFields {
     city: str(farm.city),
     state: farm.state,
     zipCode: str(farm.zipCode),
-    totalAreaHa: num(farm.totalAreaHa),
-    cib: str(farm.cib),
-    incraCode: str(farm.incraCode),
-    ccirCode: str(farm.ccirCode),
-    carCode: str(farm.carCode),
-    landClassification: str(farm.landClassification),
-    productive: bool(farm.productive),
-    appAreaHa: num(farm.appAreaHa),
-    legalReserveHa: num(farm.legalReserveHa),
-    taxableAreaHa: num(farm.taxableAreaHa),
-    usableAreaHa: num(farm.usableAreaHa),
-    utilizationDegree: num(farm.utilizationDegree),
+    totalAreaHa: numArea(farm.totalAreaHa),
   };
 }
 
@@ -149,7 +94,7 @@ export function useFarmForm(options: UseFarmFormOptions = {}) {
   const [touched, setTouched] = useState<TouchedFields>({});
   const [currentStep, setCurrentStep] = useState(0);
   const [visitedSteps, setVisitedSteps] = useState<Set<number>>(
-    isEditMode ? new Set([0, 1, 2, 3]) : new Set([0]),
+    isEditMode ? new Set([0, 1]) : new Set([0]),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -172,7 +117,7 @@ export function useFarmForm(options: UseFarmFormOptions = {}) {
         if (cancelled) return;
         editFarmRef.current = farm;
         setFormData(farmDetailToFormFields(farm));
-        setVisitedSteps(new Set([0, 1, 2, 3]));
+        setVisitedSteps(new Set([0, 1]));
       })
       .catch((err) => {
         if (cancelled) return;
@@ -284,24 +229,13 @@ export function useFarmForm(options: UseFarmFormOptions = {}) {
     const payload: CreateFarmPayload = {
       name: formData.name.trim(),
       state: formData.state,
-      totalAreaHa: Number(formData.totalAreaHa),
+      totalAreaHa: Number(formData.totalAreaHa.replace(/\./g, '').replace(',', '.')),
     };
 
     if (formData.nickname.trim()) payload.nickname = formData.nickname.trim();
     if (formData.address.trim()) payload.address = formData.address.trim();
     if (formData.city.trim()) payload.city = formData.city.trim();
     if (formData.zipCode.trim()) payload.zipCode = formData.zipCode.replace('-', '');
-    if (formData.cib.trim()) payload.cib = formData.cib.trim();
-    if (formData.incraCode.trim()) payload.incraCode = formData.incraCode.trim();
-    if (formData.ccirCode.trim()) payload.ccirCode = formData.ccirCode.trim();
-    if (formData.carCode.trim()) payload.carCode = formData.carCode.trim();
-    if (formData.landClassification) payload.landClassification = formData.landClassification;
-    if (formData.productive === 'true') payload.productive = true;
-    if (formData.appAreaHa) payload.appAreaHa = Number(formData.appAreaHa);
-    if (formData.legalReserveHa) payload.legalReserveHa = Number(formData.legalReserveHa);
-    if (formData.taxableAreaHa) payload.taxableAreaHa = Number(formData.taxableAreaHa);
-    if (formData.usableAreaHa) payload.usableAreaHa = Number(formData.usableAreaHa);
-    if (formData.utilizationDegree) payload.utilizationDegree = Number(formData.utilizationDegree);
 
     return payload;
   }, [formData]);
@@ -340,7 +274,7 @@ export function useFarmForm(options: UseFarmFormOptions = {}) {
   const reset = useCallback(() => {
     if (editFarmRef.current) {
       setFormData(farmDetailToFormFields(editFarmRef.current));
-      setVisitedSteps(new Set([0, 1, 2, 3]));
+      setVisitedSteps(new Set([0, 1]));
     } else {
       setFormData(INITIAL_FORM);
       setVisitedSteps(new Set([0]));
@@ -380,5 +314,3 @@ export function useFarmForm(options: UseFarmFormOptions = {}) {
 export function useCreateFarm(onSuccess?: () => void) {
   return useFarmForm({ onSuccess });
 }
-
-export { LAND_CLASSIFICATIONS };

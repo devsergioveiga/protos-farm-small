@@ -213,6 +213,16 @@ function OrangeHarvestsPage() {
                   <Package size={14} aria-hidden="true" />
                   <span className="orange-harvests__card-detail-label">Caixas:</span>
                   {formatNumber(h.numberOfBoxes)} cx ({formatNumber(h.totalWeightKg)} kg)
+                  {h.commercialUnits && (
+                    <span>
+                      {' '}
+                      ·{' '}
+                      {h.commercialUnits.t.toLocaleString('pt-BR', {
+                        maximumFractionDigits: 4,
+                      })}{' '}
+                      t
+                    </span>
+                  )}
                 </span>
               </div>
 

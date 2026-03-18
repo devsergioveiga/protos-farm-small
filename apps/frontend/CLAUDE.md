@@ -96,6 +96,7 @@ var(--color-neutral-50)    /* Background secundário */
 - **Empty state:** ícone + título + descrição + CTA — **nunca** tela vazia
 - **Toast:** top-right, auto-dismiss 5s (sucesso/info), persistente (erro)
 - **Modal destrutivo:** exigir digitação do nome para confirmar exclusão
+- **Confirmações destrutivas:** **nunca usar `window.confirm()`** — sempre usar `ConfirmModal` de `@/components/ui/ConfirmModal`. Para exclusão de alta criticidade (fazendas): `ConfirmDeleteModal` com digitação do nome. Para ações de risco médio/baixo (remover registro, desvincular): `ConfirmModal` com `variant="danger"` ou `variant="warning"`
 
 ### Acessibilidade
 

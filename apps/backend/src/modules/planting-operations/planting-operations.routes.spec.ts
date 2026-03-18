@@ -121,6 +121,9 @@ const SAMPLE_OPERATION = {
   recorderName: 'Admin',
   createdAt: '2025-10-15T08:00:00.000Z',
   updatedAt: '2025-10-15T12:00:00.000Z',
+  seedProductId: null,
+  stockOutputId: null,
+  totalSeedQuantityUsed: null,
 };
 
 beforeEach(() => {

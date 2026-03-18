@@ -51,6 +51,8 @@ export interface StockEntryItemInput {
   productId: string;
   quantity: number;
   unitCost: number;
+  /** Unidade de compra (abbreviation do MeasurementUnit, ex: 't', 'sc'). Opcional — se omitido, usa unidade padrão do produto */
+  purchaseUnitAbbreviation?: string;
   batchNumber?: string;
   manufacturingDate?: string;
   expirationDate?: string;
@@ -76,6 +78,10 @@ export interface CreateStockEntryInput {
   notes?: string;
   items: StockEntryItemInput[];
   expenses?: StockEntryExpenseInput[];
+  /** Optional initial status — defaults to 'CONFIRMED'. Use 'DRAFT' for MERCADORIA_ANTECIPADA scenario. */
+  initialStatus?: 'DRAFT' | 'CONFIRMED';
+  /** FK to GoodsReceipt for traceability. Set when entry is created from a goods receipt confirmation. */
+  goodsReceiptId?: string;
 }
 
 export interface AddExpenseInput {
@@ -113,6 +119,11 @@ export interface StockEntryItemOutput {
   finalUnitCost: number;
   finalTotalCost: number;
   weightKg: number | null;
+  // US-097: conversão compra → estoque
+  purchaseUnitAbbreviation: string | null;
+  stockQuantity: number | null;
+  stockUnitAbbreviation: string | null;
+  conversionFactor: number | null;
 }
 
 export interface StockEntryExpenseOutput {

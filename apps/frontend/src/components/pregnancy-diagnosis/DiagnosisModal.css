@@ -1,0 +1,27 @@
+/* ─── Calving preview ────────────────────────────────────── */
+.dg-modal__calving-preview {
+  display: block;
+  margin-top: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--color-primary-600);
+}
+
+/* ─── Checkbox field ─────────────────────────────────────── */
+.dg-modal__checkbox-field label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  min-height: 48px;
+}
+
+.dg-modal__checkbox-field input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-primary-600);
+  cursor: pointer;
+}

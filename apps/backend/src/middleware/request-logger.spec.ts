@@ -1,17 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import { EventEmitter } from 'events';
 
-const mockLogger = {
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-};
-
 jest.mock('../shared/utils/logger', () => ({
-  logger: mockLogger,
+  logger: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
 }));
 
 import { requestLoggerMiddleware } from './request-logger';
+import { logger } from '../shared/utils/logger';
+
+const mockLogger = jest.mocked(logger);
 
 function createMockReqRes(path: string, method = 'GET') {
   const req = { path, originalUrl: path, method } as Request;

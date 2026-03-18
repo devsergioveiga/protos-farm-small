@@ -212,6 +212,15 @@ function CoffeeHarvestsPage() {
                   {h.estimatedSacs} sc estimadas
                   {h.sacsBenefited != null && ` (${h.sacsBenefited} sc reais)`}
                 </span>
+                {h.commercialUnits && (
+                  <span className="coffee-harvests__card-detail coffee-harvests__card-detail--commercial">
+                    <span className="coffee-harvests__card-detail-label">Comercial:</span>
+                    {h.commercialUnits.kg.toLocaleString('pt-BR')} kg
+                    {' · '}
+                    {h.commercialUnits.arroba.toLocaleString('pt-BR')} @{' · '}
+                    {h.commercialUnits.t.toLocaleString('pt-BR', { maximumFractionDigits: 4 })} t
+                  </span>
+                )}
               </div>
 
               {(h.cherryPct > 0 || h.greenPct > 0 || h.floaterPct > 0 || h.dryPct > 0) && (

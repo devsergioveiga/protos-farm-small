@@ -10,7 +10,7 @@ interface BoundaryUploadModalProps {
   isOpen: boolean;
   farmId: string;
   farmTotalAreaHa: number;
-  existingBoundary?: GeoJSON.Polygon | null;
+  existingBoundary?: GeoJSON.Polygon | GeoJSON.MultiPolygon | null;
   onClose: () => void;
   onUploadComplete: () => void;
   /** If provided, uploads to registration boundary endpoint instead of farm boundary */

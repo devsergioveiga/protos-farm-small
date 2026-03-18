@@ -10,6 +10,8 @@ import {
   Sprout,
   SprayCan,
   Droplet,
+  Droplets,
+  Stethoscope,
   Shovel,
   UsersRound,
   ClipboardList,
@@ -20,6 +22,13 @@ import {
   Coffee,
   Map,
   Citrus,
+  Baby,
+  Milestone,
+  Heart,
+  HeartHandshake,
+  HeartPulse,
+  Syringe,
+  Flame,
   Users,
   Shield,
   Ruler,
@@ -30,8 +39,44 @@ import {
   ClipboardCheck,
   FileText,
   ArrowRightLeft,
+  TrendingDown,
+  ShieldPlus,
+  FlaskConical,
+  Activity,
+  BarChart3,
+  CalendarClock,
+  Zap,
+  ScanLine,
   X,
+  CupSoda,
+  Milk,
+  TestTube,
+  ShieldAlert,
+  Container,
+  Salad,
+  UtensilsCrossed,
+  Cookie,
+  Building2,
+  Receipt,
+  ReceiptText,
+  ArrowLeftRight,
+  CreditCard,
+  CheckSquare,
+  Landmark,
+  TreePine,
+  TrendingUp,
+  GitMerge,
+  Handshake,
+  ShoppingCart,
+  Settings2,
+  FileSearch,
+  PackageCheck,
+  Undo2,
+  Wallet,
 } from 'lucide-react';
+import { useOverdueCount } from '@/hooks/usePayables';
+import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
+import { useRuralCreditAlertCount } from '@/hooks/useRuralCredit';
 import './Sidebar.css';
 
 interface SidebarProps {
@@ -59,6 +104,9 @@ const NAV_GROUPS: NavGroup[] = [
     title: 'PROPRIEDADE',
     items: [
       { to: '/farms', icon: MapPin, label: 'Fazendas' },
+      { to: '/rural-properties', icon: Landmark, label: 'Imóveis rurais' },
+      { to: '/registrations', icon: FileText, label: 'Matrículas' },
+      { to: '/car-registrations', icon: TreePine, label: 'CAR' },
       { to: '/producers', icon: UserCheck, label: 'Produtores' },
     ],
   },
@@ -68,6 +116,43 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/animals', icon: Beef, label: 'Animais' },
       { to: '/lots', icon: Layers, label: 'Lotes' },
       { to: '/weighing-session', icon: Scale, label: 'Pesagem' },
+      { to: '/diseases', icon: HeartPulse, label: 'Doenças' },
+      { to: '/treatment-protocols', icon: Syringe, label: 'Protocolos tratamento' },
+      { to: '/sanitary-protocols', icon: ShieldPlus, label: 'Protocolos sanitários' },
+      { to: '/vaccinations', icon: Syringe, label: 'Vacinações' },
+      { to: '/dewormings', icon: Droplet, label: 'Vermifugações' },
+      { to: '/therapeutic-treatments', icon: Stethoscope, label: 'Tratamentos' },
+      { to: '/animal-exams', icon: FlaskConical, label: 'Exames' },
+      { to: '/reproductive-releases', icon: Baby, label: 'Liberação reprodutiva' },
+      { to: '/bulls', icon: Heart, label: 'Touros e sêmen' },
+      { to: '/heat-records', icon: Flame, label: 'Detecção de cio' },
+      { to: '/mating-plans', icon: HeartHandshake, label: 'Acasalamento' },
+      { to: '/iatf-protocols', icon: CalendarClock, label: 'Protocolos IATF' },
+      { to: '/iatf-execution', icon: Zap, label: 'Execução IATF' },
+      { to: '/natural-matings', icon: Beef, label: 'Monta natural' },
+      { to: '/pregnancy-diagnosis', icon: ScanLine, label: 'Diagnóstico gestação' },
+      { to: '/calving-events', icon: Milestone, label: 'Partos e crias' },
+      { to: '/weaning', icon: CupSoda, label: 'Desmama' },
+      { to: '/sanitary-dashboard', icon: Activity, label: 'Dashboard sanitário' },
+    ],
+  },
+  {
+    title: 'LEITE',
+    items: [
+      { to: '/milking-records', icon: Milk, label: 'Ordenha' },
+      { to: '/milk-analysis', icon: TestTube, label: 'Análise de leite' },
+      { to: '/mastitis', icon: ShieldAlert, label: 'Mastite' },
+      { to: '/milk-tanks', icon: Container, label: 'Tanque e entregas' },
+      { to: '/lactations', icon: Droplets, label: 'Lactação' },
+      { to: '/milk-dashboard', icon: BarChart3, label: 'Dashboard leite' },
+    ],
+  },
+  {
+    title: 'NUTRIÇÃO',
+    items: [
+      { to: '/feed-ingredients', icon: Salad, label: 'Ingredientes' },
+      { to: '/diets', icon: UtensilsCrossed, label: 'Dietas' },
+      { to: '/feeding-records', icon: Cookie, label: 'Trato/Fornecimento' },
     ],
   },
   {
@@ -97,6 +182,36 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/stock-alerts', icon: Bell, label: 'Alertas' },
       { to: '/stock-inventories', icon: ClipboardCheck, label: 'Inventário' },
       { to: '/conversion-history', icon: ArrowRightLeft, label: 'Conversões' },
+      { to: '/grain-discounts', icon: TrendingDown, label: 'Descontos de grãos' },
+    ],
+  },
+  {
+    title: 'FINANCEIRO',
+    items: [
+      { to: '/financial-dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      { to: '/bank-accounts', icon: Building2, label: 'Contas bancárias' },
+      { to: '/payables', icon: Receipt, label: 'Contas a pagar' },
+      { to: '/receivables', icon: ReceiptText, label: 'Contas a receber' },
+      { to: '/transfers', icon: ArrowLeftRight, label: 'Transferências' },
+      { to: '/credit-cards', icon: CreditCard, label: 'Cartões' },
+      { to: '/checks', icon: CheckSquare, label: 'Cheques' },
+      { to: '/cashflow', icon: TrendingUp, label: 'Fluxo de caixa' },
+      { to: '/reconciliation', icon: GitMerge, label: 'Conciliação bancária' },
+      { to: '/rural-credit', icon: Landmark, label: 'Crédito Rural' },
+    ],
+  },
+  {
+    title: 'COMPRAS',
+    items: [
+      { to: '/suppliers', icon: Handshake, label: 'Fornecedores' },
+      { to: '/purchase-requests', icon: ShoppingCart, label: 'Requisicoes' },
+      { to: '/quotations', icon: FileSearch, label: 'Cotacoes' },
+      { to: '/approval-rules', icon: Settings2, label: 'Alcadas' },
+      { to: '/purchase-orders', icon: ClipboardList, label: 'Pedidos' },
+      { to: '/goods-receipts', icon: PackageCheck, label: 'Recebimentos' },
+      { to: '/goods-returns', icon: Undo2, label: 'Devoluções' },
+      { to: '/purchase-budgets', icon: Wallet, label: 'Orçamento' },
+      { to: '/saving-analysis', icon: BarChart3, label: 'Análise de Saving' },
     ],
   },
   {
@@ -114,6 +229,9 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
   const isActive = (path: string) => location.pathname.startsWith(path);
   const onCloseRef = useRef(onClose);
+  const { count: overdueCount } = useOverdueCount();
+  const { count: checkAlertCount } = useCheckAlertCount();
+  const { count: ruralCreditAlertCount } = useRuralCreditAlertCount();
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
@@ -169,6 +287,10 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.to);
+                  const showOverdueBadge = item.to === '/payables' && overdueCount > 0;
+                  const showCheckBadge = item.to === '/checks' && checkAlertCount > 0;
+                  const showRuralCreditBadge =
+                    item.to === '/rural-credit' && ruralCreditAlertCount > 0;
                   return (
                     <li key={item.to}>
                       <Link
@@ -179,6 +301,60 @@ function Sidebar({ isOpen, onClose }: SidebarProps) {
                       >
                         <Icon size={20} aria-hidden="true" className="sidebar__icon" />
                         <span className="sidebar__label">{item.label}</span>
+                        {showOverdueBadge && (
+                          <span
+                            style={{
+                              marginLeft: 'auto',
+                              background: 'var(--color-error-600, #c62828)',
+                              color: '#fff',
+                              borderRadius: 100,
+                              padding: '1px 7px',
+                              fontSize: '0.6875rem',
+                              fontWeight: 700,
+                              fontFamily: "'Source Sans 3', system-ui, sans-serif",
+                              flexShrink: 0,
+                            }}
+                            aria-label={`${overdueCount} títulos vencidos`}
+                          >
+                            {overdueCount > 99 ? '99+' : overdueCount}
+                          </span>
+                        )}
+                        {showCheckBadge && (
+                          <span
+                            style={{
+                              marginLeft: 'auto',
+                              background: 'var(--color-warning-500, #ffc107)',
+                              color: '#fff',
+                              borderRadius: 100,
+                              padding: '1px 7px',
+                              fontSize: '0.6875rem',
+                              fontWeight: 700,
+                              fontFamily: "'JetBrains Mono', monospace",
+                              flexShrink: 0,
+                            }}
+                            aria-label={`${checkAlertCount} cheques aguardando atenção`}
+                          >
+                            {checkAlertCount > 99 ? '99+' : checkAlertCount}
+                          </span>
+                        )}
+                        {showRuralCreditBadge && (
+                          <span
+                            style={{
+                              marginLeft: 'auto',
+                              background: 'var(--color-error-600, #c62828)',
+                              color: '#fff',
+                              borderRadius: 100,
+                              padding: '1px 7px',
+                              fontSize: '0.6875rem',
+                              fontWeight: 700,
+                              fontFamily: "'Source Sans 3', system-ui, sans-serif",
+                              flexShrink: 0,
+                            }}
+                            aria-label={`${ruralCreditAlertCount} parcela(s) de crédito rural vencendo em breve`}
+                          >
+                            {ruralCreditAlertCount > 99 ? '99+' : ruralCreditAlertCount}
+                          </span>
+                        )}
                       </Link>
                     </li>
                   );

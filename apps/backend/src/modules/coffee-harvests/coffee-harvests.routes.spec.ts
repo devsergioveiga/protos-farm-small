@@ -102,6 +102,7 @@ const SAMPLE_HARVEST = {
   // CA7
   isSpecialLot: false,
   microlotCode: null,
+  commercialUnits: { L: 0, sc: 0, kg: 0, arroba: 0, t: 0 },
   notes: null,
   recordedBy: 'admin-1',
   recorderName: 'Admin',

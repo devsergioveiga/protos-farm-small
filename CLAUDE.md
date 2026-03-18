@@ -64,6 +64,7 @@ Ao criar ou modificar qualquer componente de interface (web ou mobile), seguir *
 - **Tabela em mobile:** transformar em cards empilhados
 - **Empty state:** ilustração + título + descrição + CTA
 - **Modal destrutivo:** exigir confirmação proporcional ao risco
+- **Confirmação de ação destrutiva:** **nunca usar `window.confirm()`** — usar `ConfirmModal` (`@/components/ui/ConfirmModal`). Alta criticidade (excluir fazenda): `ConfirmDeleteModal` com digitação do nome. Média/baixa criticidade (remover vínculo, excluir registro): `ConfirmModal` com variant `danger` ou `warning`
 - **Formulários de criação/edição:** sempre em modal, nunca em página dedicada
 - Specs completas: `docs/design-system/04-componentes.md`
 

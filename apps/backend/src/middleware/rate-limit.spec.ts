@@ -1,19 +1,20 @@
 import { Request, Response } from 'express';
 
-const mockRedis = {
-  incr: jest.fn(),
-  expire: jest.fn(),
-  exists: jest.fn(),
-  ttl: jest.fn(),
-  set: jest.fn(),
-  del: jest.fn(),
-};
-
 jest.mock('../database/redis', () => ({
-  redis: mockRedis,
+  redis: {
+    incr: jest.fn(),
+    expire: jest.fn(),
+    exists: jest.fn(),
+    ttl: jest.fn(),
+    set: jest.fn(),
+    del: jest.fn(),
+  },
 }));
 
 import { loginRateLimit, incrementLoginFailures, clearLoginFailures } from './rate-limit';
+import { redis } from '../database/redis';
+
+const mockRedis = jest.mocked(redis);
 
 function createMockReq(overrides: Partial<Request> = {}): Request {
   return {

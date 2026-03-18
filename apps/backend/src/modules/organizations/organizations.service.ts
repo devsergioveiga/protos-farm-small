@@ -125,7 +125,13 @@ export async function getOrganizationById(id: string) {
   return withRlsBypass(async (tx) => {
     const org = await tx.organization.findUnique({
       where: { id },
-      include: { _count: { select: { users: true, farms: true } } },
+      include: {
+        _count: { select: { users: true, farms: true } },
+        users: {
+          select: { id: true, name: true, email: true, role: true, status: true, createdAt: true },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
     });
 
     if (!org) {
@@ -303,14 +309,19 @@ export async function createOrgAdmin(orgId: string, input: CreateOrgAdminInput) 
 
     const inviteUrl = `${env.FRONTEND_URL}/accept-invite?token=${token}`;
 
-    await sendMail({
+    sendMail({
       to: user.email,
       subject: 'Protos Farm — Convite para definir sua senha',
       text: `Olá ${user.name},\n\nVocê foi convidado(a) como administrador(a) da organização ${org.name} no Protos Farm.\n\nClique no link abaixo para definir sua senha:\n${inviteUrl}\n\nEste link expira em 48 horas.\n\nEquipe Protos Farm`,
       html: `<p>Olá <strong>${user.name}</strong>,</p><p>Você foi convidado(a) como administrador(a) da organização <strong>${org.name}</strong> no Protos Farm.</p><p><a href="${inviteUrl}">Clique aqui para definir sua senha</a></p><p>Este link expira em 48 horas.</p><p>Equipe Protos Farm</p>`,
+    }).catch((err) => {
+      logger.error(
+        { userId: user.id, orgId, email: user.email, err },
+        'Failed to send org admin invite email',
+      );
     });
 
-    logger.info({ userId: user.id, orgId, email: user.email }, 'Org admin invite sent');
+    logger.info({ userId: user.id, orgId, email: user.email }, 'Org admin created, invite queued');
 
     return user;
   });
@@ -339,14 +350,16 @@ export async function resetOrgUserPassword(orgId: string, userId: string) {
 
     const resetUrl = `${env.FRONTEND_URL}/reset-password?token=${token}`;
 
-    await sendMail({
+    sendMail({
       to: user.email,
       subject: 'Protos Farm — Redefinição de senha',
       text: `Olá ${user.name},\n\nUma redefinição de senha foi solicitada para sua conta.\n\nClique no link abaixo para criar uma nova senha:\n${resetUrl}\n\nEste link expira em 1 hora.\n\nSe você não solicitou esta alteração, entre em contato com o suporte.\n\nEquipe Protos Farm`,
       html: `<p>Olá <strong>${user.name}</strong>,</p><p>Uma redefinição de senha foi solicitada para sua conta.</p><p><a href="${resetUrl}">Clique aqui para criar uma nova senha</a></p><p>Este link expira em 1 hora.</p><p>Se você não solicitou esta alteração, entre em contato com o suporte.</p><p>Equipe Protos Farm</p>`,
+    }).catch((err) => {
+      logger.error({ userId, orgId, err }, 'Failed to send password reset email');
     });
 
-    logger.info({ userId, orgId }, 'Org user password reset email sent');
+    logger.info({ userId, orgId }, 'Password reset queued');
 
     return { message: 'Email de redefinição de senha enviado' };
   });
@@ -376,5 +389,52 @@ export async function unlockOrgUser(orgId: string, userId: string) {
     logger.info({ userId, orgId }, 'Org user unlocked');
 
     return updated;
+  });
+}
+
+export async function deactivateOrgUser(orgId: string, userId: string) {
+  return withRlsBypass(async (tx) => {
+    const org = await tx.organization.findUnique({ where: { id: orgId } });
+    if (!org) {
+      throw new OrgError('Organização não encontrada', 404);
+    }
+
+    const user = await tx.user.findUnique({ where: { id: userId } });
+    if (!user || user.organizationId !== orgId) {
+      throw new OrgError('Usuário não encontrado nesta organização', 404);
+    }
+
+    if (user.status === 'INACTIVE') {
+      throw new OrgError('Usuário já está inativo', 422);
+    }
+
+    const updated = await tx.user.update({
+      where: { id: userId },
+      data: { status: 'INACTIVE' },
+    });
+
+    logger.info({ userId, orgId }, 'Org user deactivated');
+
+    return updated;
+  });
+}
+
+export async function deleteOrgUser(orgId: string, userId: string) {
+  return withRlsBypass(async (tx) => {
+    const org = await tx.organization.findUnique({ where: { id: orgId } });
+    if (!org) {
+      throw new OrgError('Organização não encontrada', 404);
+    }
+
+    const user = await tx.user.findUnique({ where: { id: userId } });
+    if (!user || user.organizationId !== orgId) {
+      throw new OrgError('Usuário não encontrado nesta organização', 404);
+    }
+
+    await tx.user.delete({ where: { id: userId } });
+
+    logger.info({ userId, orgId }, 'Org user deleted');
+
+    return { message: 'Usuário removido com sucesso' };
   });
 }

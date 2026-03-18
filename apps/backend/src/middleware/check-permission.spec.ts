@@ -143,7 +143,7 @@ describe('ROLE_HIERARCHY', () => {
 
 describe('DEFAULT_ROLE_PERMISSIONS', () => {
   it('SUPER_ADMIN should have all permissions', () => {
-    const totalPerms = 9 * 4; // 9 modules × 4 actions
+    const totalPerms = 11 * 5; // 11 modules × 5 actions
     expect(DEFAULT_ROLE_PERMISSIONS.SUPER_ADMIN).toHaveLength(totalPerms);
   });
 

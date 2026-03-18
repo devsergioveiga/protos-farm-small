@@ -1,0 +1,707 @@
+/* ─── Page Layout ─────────────────────────────────────────────────── */
+.milk-tanks-page {
+  padding: 24px 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────── */
+.milk-tanks-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+.milk-tanks-page__header h1 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+.milk-tanks-page__header p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 4px 0 0;
+}
+.milk-tanks-page__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.milk-tanks-page__btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+  white-space: nowrap;
+}
+.milk-tanks-page__btn-primary:hover {
+  background: var(--color-primary-700);
+}
+
+/* ─── Error / Success / Empty / Loading ───────────────────────────── */
+.milk-tanks-page__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-error-50, #fef2f2);
+  border: 1px solid var(--color-error-200, #fecaca);
+  border-radius: 8px;
+  color: var(--color-error-700, #b91c1c);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+.milk-tanks-page__success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-primary-50, #f0fdf4);
+  border: 1px solid var(--color-primary-200, #bbf7d0);
+  border-radius: 8px;
+  color: var(--color-primary-700, #15803d);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+.milk-tanks-page__loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--color-neutral-500);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+}
+.milk-tanks-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--color-neutral-400);
+}
+.milk-tanks-page__empty h2 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  margin: 8px 0 0;
+}
+.milk-tanks-page__empty p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+/* ─── Tabs ────────────────────────────────────────────────────────── */
+.milk-tanks-page__tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--color-neutral-100);
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+.milk-tanks-page__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  color: var(--color-neutral-500);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition:
+    color 200ms ease-out,
+    border-color 200ms ease-out;
+  white-space: nowrap;
+  min-height: 48px;
+}
+.milk-tanks-page__tab:hover {
+  color: var(--color-neutral-700);
+}
+.milk-tanks-page__tab--active {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+.milk-tanks-page__tab:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+
+/* ─── Tab Content ─────────────────────────────────────────────────── */
+.milk-tanks-page__tab-content {
+  min-height: 200px;
+}
+
+/* ─── Grid ────────────────────────────────────────────────────────── */
+.milk-tanks-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+/* ─── Card ────────────────────────────────────────────────────────── */
+.milk-tanks-page__card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out;
+}
+.milk-tanks-page__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+.milk-tanks-page__card:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+.milk-tanks-page__card--inactive {
+  opacity: 0.6;
+}
+.milk-tanks-page__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.milk-tanks-page__card-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+.milk-tanks-page__card-subtitle {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  margin: 2px 0 0;
+}
+.milk-tanks-page__card-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.milk-tanks-page__card-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  transition: background 200ms ease-out;
+}
+.milk-tanks-page__card-btn:hover {
+  background: var(--color-neutral-100);
+}
+.milk-tanks-page__card-btn--delete:hover {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-600, #dc2626);
+}
+
+/* ─── Tags ────────────────────────────────────────────────────────── */
+.milk-tanks-page__card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.milk-tanks-page__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.milk-tanks-page__tag--tank {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+.milk-tanks-page__tag--sample {
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-700, #15803d);
+}
+.milk-tanks-page__tag--divergence {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-700, #b91c1c);
+}
+.milk-tanks-page__tag--ticket {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+}
+.milk-tanks-page__tag--inactive {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-500);
+  font-size: 0.6875rem;
+  margin-left: 8px;
+}
+
+/* ─── Card Details ────────────────────────────────────────────────── */
+.milk-tanks-page__card-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+.milk-tanks-page__detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ─── Tank Capacity Bar ──────────────────────────────────────────── */
+.milk-tanks-page__tank-capacity {
+  margin-bottom: 12px;
+}
+.milk-tanks-page__capacity-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+.milk-tanks-page__capacity-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+.milk-tanks-page__capacity-bar {
+  height: 8px;
+  background: var(--color-neutral-100);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.milk-tanks-page__capacity-fill {
+  height: 100%;
+  background: var(--color-primary-500);
+  border-radius: 4px;
+  transition: width 300ms ease-out;
+}
+
+/* ─── Collection Volume ──────────────────────────────────────────── */
+.milk-tanks-page__collection-volume {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: var(--color-primary-600);
+}
+.milk-tanks-page__volume-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+}
+
+/* ─── Financial ──────────────────────────────────────────────────── */
+.milk-tanks-page__card-financial {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-neutral-100);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+.milk-tanks-page__financial-item strong {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--color-neutral-700);
+}
+.milk-tanks-page__financial-item--net strong {
+  color: var(--color-primary-700, #15803d);
+}
+
+/* ─── Table ──────────────────────────────────────────────────────── */
+.milk-tanks-page__table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  background: var(--color-neutral-0);
+}
+.milk-tanks-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+}
+.milk-tanks-page__table thead {
+  background: var(--color-neutral-50);
+}
+.milk-tanks-page__table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-100);
+  white-space: nowrap;
+}
+.milk-tanks-page__table td {
+  padding: 12px 16px;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-50);
+}
+.milk-tanks-page__td-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+.milk-tanks-page__td-bold {
+  font-weight: 600;
+}
+.milk-tanks-page__row--alert {
+  background: var(--color-error-50, #fef2f2);
+}
+.milk-tanks-page__row--ok {
+  background: transparent;
+}
+.milk-tanks-page__row--ok:hover,
+.milk-tanks-page__row--alert:hover {
+  background: var(--color-neutral-50);
+}
+
+/* ─── Divergence Badge ───────────────────────────────────────────── */
+.milk-tanks-page__divergence-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.milk-tanks-page__divergence-badge--ok {
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-700, #15803d);
+}
+.milk-tanks-page__divergence-badge--alert {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-700, #b91c1c);
+}
+
+/* ─── Reconciliation Mobile Cards ────────────────────────────────── */
+.milk-tanks-page__recon-cards {
+  display: none;
+}
+.milk-tanks-page__recon-card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 16px;
+}
+.milk-tanks-page__recon-card--alert {
+  border-left: 4px solid var(--color-error-500, #ef4444);
+}
+.milk-tanks-page__recon-card--ok {
+  border-left: 4px solid var(--color-primary-500);
+}
+.milk-tanks-page__recon-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.milk-tanks-page__recon-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+.milk-tanks-page__recon-card-values {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+.milk-tanks-page__recon-label {
+  display: block;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  color: var(--color-neutral-500);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.milk-tanks-page__recon-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+/* ─── Report Controls ────────────────────────────────────────────── */
+.milk-tanks-page__report-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.milk-tanks-page__month-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+.milk-tanks-page__month-input {
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+}
+.milk-tanks-page__month-input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+/* ─── Summary Grid ───────────────────────────────────────────────── */
+.milk-tanks-page__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.milk-tanks-page__summary-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+}
+.milk-tanks-page__summary-card--highlight {
+  border-color: var(--color-primary-200, #bbf7d0);
+  background: var(--color-primary-50, #f0fdf4);
+}
+.milk-tanks-page__summary-icon {
+  color: var(--color-neutral-400);
+  flex-shrink: 0;
+}
+.milk-tanks-page__summary-icon--warn {
+  color: var(--color-error-500, #ef4444);
+}
+.milk-tanks-page__summary-icon--primary {
+  color: var(--color-primary-600);
+}
+.milk-tanks-page__summary-label {
+  display: block;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  color: var(--color-neutral-500);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.milk-tanks-page__summary-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+}
+.milk-tanks-page__summary-value--discount {
+  color: var(--color-error-600, #dc2626);
+}
+.milk-tanks-page__summary-value--net {
+  color: var(--color-primary-700, #15803d);
+}
+
+/* ─── Report Mobile Cards ────────────────────────────────────────── */
+.milk-tanks-page__report-cards {
+  display: none;
+}
+.milk-tanks-page__report-card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 16px;
+}
+.milk-tanks-page__report-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+}
+.milk-tanks-page__report-card-dairy {
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+.milk-tanks-page__report-card-values {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+/* ─── Pagination ──────────────────────────────────────────────────── */
+.milk-tanks-page__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+.milk-tanks-page__pagination button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+.milk-tanks-page__pagination button:hover:not(:disabled) {
+  background: var(--color-neutral-50);
+}
+.milk-tanks-page__pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.milk-tanks-page__pagination span {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  padding: 0 8px;
+}
+
+/* ─── Screen reader only ─────────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Hide desktop table, show mobile cards */
+  .milk-tanks-page__table-wrapper {
+    display: none;
+  }
+  .milk-tanks-page__recon-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .milk-tanks-page__report-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .milk-tanks-page__report-card-values {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 769px) {
+  .milk-tanks-page__recon-cards {
+    display: none;
+  }
+  .milk-tanks-page__report-cards {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .milk-tanks-page {
+    padding: 16px;
+  }
+  .milk-tanks-page__header {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .milk-tanks-page__actions {
+    width: 100%;
+  }
+  .milk-tanks-page__btn-primary {
+    flex: 1;
+    justify-content: center;
+  }
+  .milk-tanks-page__tabs {
+    gap: 0;
+  }
+  .milk-tanks-page__tab {
+    padding: 12px 12px;
+    font-size: 0.8125rem;
+    flex: 1;
+    justify-content: center;
+  }
+  .milk-tanks-page__grid {
+    grid-template-columns: 1fr;
+  }
+  .milk-tanks-page__summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .milk-tanks-page__report-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .milk-tanks-page__month-input {
+    width: 100%;
+  }
+  .milk-tanks-page__recon-card-values {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+/* ─── Reduced Motion ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .milk-tanks-page__card,
+  .milk-tanks-page__btn-primary,
+  .milk-tanks-page__tab,
+  .milk-tanks-page__capacity-fill {
+    transition: none;
+  }
+  .milk-tanks-page__card:hover {
+    transform: none;
+  }
+}

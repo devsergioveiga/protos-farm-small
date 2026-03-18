@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { X, Plus, Trash2, AlertTriangle } from 'lucide-react';
+import { X, Plus, Trash2, AlertTriangle, ArrowRight } from 'lucide-react';
 import { api } from '@/services/api';
 import type { StockEntry, CostAlert } from '@/hooks/useStockEntries';
 import './StockEntryModal.css';
@@ -37,10 +37,22 @@ interface FarmOption {
   name: string;
 }
 
+interface MeasurementUnitOption {
+  id: string;
+  abbreviation: string;
+  name: string;
+}
+
+interface ProductUnitConfigInfo {
+  purchaseUnitAbbreviation: string | null;
+  stockUnitAbbreviation: string | null;
+}
+
 interface ItemForm {
   productId: string;
   quantity: string;
   unitCost: string;
+  purchaseUnitAbbreviation: string;
   batchNumber: string;
   manufacturingDate: string;
   expirationDate: string;
@@ -60,6 +72,7 @@ const emptyItem = (): ItemForm => ({
   productId: '',
   quantity: '',
   unitCost: '',
+  purchaseUnitAbbreviation: '',
   batchNumber: '',
   manufacturingDate: '',
   expirationDate: '',
@@ -97,6 +110,10 @@ export default function StockEntryModal({ isOpen, onClose, onSuccess }: StockEnt
 
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [farms, setFarms] = useState<FarmOption[]>([]);
+  const [units, setUnits] = useState<MeasurementUnitOption[]>([]);
+  const [productUnitConfigs, setProductUnitConfigs] = useState<
+    Record<string, ProductUnitConfigInfo>
+  >({});
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -115,6 +132,11 @@ export default function StockEntryModal({ isOpen, onClose, onSuccess }: StockEnt
       .get<{ data: FarmOption[] }>('/org/farms?status=ACTIVE&limit=100')
       .then((res) => setFarms(res.data))
       .catch(() => setFarms([]));
+
+    void api
+      .get<{ data: MeasurementUnitOption[] }>('/org/measurement-units?limit=100')
+      .then((res) => setUnits(res.data))
+      .catch(() => setUnits([]));
   }, [isOpen]);
 
   // Reset form when opening
@@ -131,6 +153,7 @@ export default function StockEntryModal({ isOpen, onClose, onSuccess }: StockEnt
       setExpenses([]);
       setError(null);
       setCostAlerts([]);
+      setProductUnitConfigs({});
     }
   }, [isOpen]);
 
@@ -142,6 +165,32 @@ export default function StockEntryModal({ isOpen, onClose, onSuccess }: StockEnt
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [isOpen, onClose]);
+
+  // Fetch product unit config when a product is selected (US-097 CA3)
+  const fetchProductUnitConfig = useCallback(
+    async (productId: string) => {
+      if (!productId || productUnitConfigs[productId]) return;
+      try {
+        const config = await api.get<ProductUnitConfigInfo & { productId: string }>(
+          `/org/product-unit-configs/${productId}`,
+        );
+        setProductUnitConfigs((prev) => ({
+          ...prev,
+          [productId]: {
+            purchaseUnitAbbreviation: config.purchaseUnitAbbreviation,
+            stockUnitAbbreviation: config.stockUnitAbbreviation,
+          },
+        }));
+      } catch {
+        // No config for this product — that's fine
+        setProductUnitConfigs((prev) => ({
+          ...prev,
+          [productId]: { purchaseUnitAbbreviation: null, stockUnitAbbreviation: null },
+        }));
+      }
+    },
+    [productUnitConfigs],
+  );
 
   // Item handlers
   const updateItem = useCallback((index: number, field: keyof ItemForm, value: string) => {
@@ -209,6 +258,7 @@ export default function StockEntryModal({ isOpen, onClose, onSuccess }: StockEnt
           productId: item.productId,
           quantity: parseFloat(item.quantity),
           unitCost: parseFloat(item.unitCost),
+          purchaseUnitAbbreviation: item.purchaseUnitAbbreviation || undefined,
           batchNumber: item.batchNumber || undefined,
           manufacturingDate: item.manufacturingDate || undefined,
           expirationDate: item.expirationDate || undefined,
@@ -387,7 +437,21 @@ export default function StockEntryModal({ isOpen, onClose, onSuccess }: StockEnt
           <div className="stock-modal__items">
             {items.map((item, idx) => {
               const selectedProduct = products.find((p) => p.id === item.productId);
-              const unitLabel = selectedProduct?.measurementUnitAbbreviation || '';
+              const unitConfig = item.productId ? productUnitConfigs[item.productId] : null;
+              const purchaseAbbrev =
+                item.purchaseUnitAbbreviation ||
+                unitConfig?.purchaseUnitAbbreviation ||
+                selectedProduct?.measurementUnitAbbreviation ||
+                '';
+              const stockAbbrev =
+                unitConfig?.stockUnitAbbreviation ||
+                selectedProduct?.measurementUnitAbbreviation ||
+                '';
+              const showConversionPreview =
+                purchaseAbbrev &&
+                stockAbbrev &&
+                purchaseAbbrev !== stockAbbrev &&
+                parseFloat(item.quantity) > 0;
               return (
                 <div key={idx} className="stock-modal__item-card">
                   <div className="stock-modal__item-card-header">
@@ -409,7 +473,12 @@ export default function StockEntryModal({ isOpen, onClose, onSuccess }: StockEnt
                       <select
                         id={`item-product-${idx}`}
                         value={item.productId}
-                        onChange={(e) => updateItem(idx, 'productId', e.target.value)}
+                        onChange={(e) => {
+                          const pid = e.target.value;
+                          updateItem(idx, 'productId', pid);
+                          updateItem(idx, 'purchaseUnitAbbreviation', '');
+                          if (pid) void fetchProductUnitConfig(pid);
+                        }}
                         required
                         aria-required="true"
                       >
@@ -435,11 +504,9 @@ export default function StockEntryModal({ isOpen, onClose, onSuccess }: StockEnt
                       />
                     </div>
                   </div>
-                  <div className="stock-modal__row stock-modal__row--3">
+                  <div className="stock-modal__row stock-modal__row--4">
                     <div className="stock-modal__field">
-                      <label htmlFor={`item-qty-${idx}`}>
-                        Quantidade {unitLabel ? `(${unitLabel})` : ''} *
-                      </label>
+                      <label htmlFor={`item-qty-${idx}`}>Quantidade *</label>
                       <input
                         id={`item-qty-${idx}`}
                         type="number"
@@ -450,6 +517,23 @@ export default function StockEntryModal({ isOpen, onClose, onSuccess }: StockEnt
                         required
                         aria-required="true"
                       />
+                    </div>
+                    <div className="stock-modal__field">
+                      <label htmlFor={`item-unit-${idx}`}>Unidade</label>
+                      <select
+                        id={`item-unit-${idx}`}
+                        value={item.purchaseUnitAbbreviation}
+                        onChange={(e) =>
+                          updateItem(idx, 'purchaseUnitAbbreviation', e.target.value)
+                        }
+                      >
+                        <option value="">{purchaseAbbrev || 'Padrão'}</option>
+                        {units.map((u) => (
+                          <option key={u.id} value={u.abbreviation}>
+                            {u.name} ({u.abbreviation})
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div className="stock-modal__field">
                       <label htmlFor={`item-cost-${idx}`}>Custo unitário (R$) *</label>
@@ -476,6 +560,19 @@ export default function StockEntryModal({ isOpen, onClose, onSuccess }: StockEnt
                       />
                     </div>
                   </div>
+                  {showConversionPreview && (
+                    <div
+                      className="stock-modal__conversion-preview"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <ArrowRight size={14} aria-hidden="true" />
+                      <span>
+                        {parseFloat(item.quantity)} {purchaseAbbrev} será convertido para{' '}
+                        {stockAbbrev} no estoque
+                      </span>
+                    </div>
+                  )}
                   <div className="stock-modal__row">
                     <div className="stock-modal__field">
                       <label htmlFor={`item-mfg-${idx}`}>Data de fabricação</label>

@@ -6,8 +6,11 @@ import {
   DESTINATIONS,
   DESTINATION_LABELS,
   DEFAULT_YIELD_LITERS_PER_SAC,
+  SACA_KG,
+  ARROBA_KG,
   type CreateCoffeeHarvestInput,
   type CoffeeHarvestItem,
+  type CoffeeCommercialUnits,
   type PlotDailySummary,
 } from './coffee-harvests.types';
 
@@ -82,6 +85,21 @@ function computeEstimatedSacs(volumeLiters: number, yieldLitersPerSac: number): 
   return Math.round((volumeLiters / yieldLitersPerSac) * 100) / 100;
 }
 
+/** US-098 CA2 — Compute commercial unit conversions for coffee */
+function computeCoffeeCommercialUnits(
+  volumeLiters: number,
+  estimatedSacs: number,
+): CoffeeCommercialUnits {
+  const kg = Math.round(estimatedSacs * SACA_KG * 100) / 100;
+  return {
+    L: Math.round(volumeLiters * 100) / 100,
+    sc: Math.round(estimatedSacs * 100) / 100,
+    kg,
+    arroba: Math.round((kg / ARROBA_KG) * 100) / 100,
+    t: Math.round((kg / 1000) * 10000) / 10000,
+  };
+}
+
 /** CA6 — Compute productivity (litros/pessoa/dia) */
 function computeProductivity(
   volumeLiters: number,
@@ -138,6 +156,11 @@ function toItem(row: Record<string, unknown>): CoffeeHarvestItem {
     // CA7
     isSpecialLot: (row.isSpecialLot as boolean) ?? false,
     microlotCode: (row.microlotCode as string) ?? null,
+    // US-098 CA2 — commercial conversions
+    commercialUnits: computeCoffeeCommercialUnits(
+      volumeLiters,
+      computeEstimatedSacs(volumeLiters, yieldLitersPerSac),
+    ),
     notes: (row.notes as string) ?? null,
     recordedBy: row.recordedBy as string,
     recorderName: recorder?.name ?? '',

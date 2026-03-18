@@ -5,6 +5,8 @@ import { api } from '@/services/api';
 import PasswordStrengthIndicator, {
   isPasswordValid,
 } from '@/components/ui/PasswordStrengthIndicator';
+import './LoginPage.css';
+import './ForgotPasswordPage.css';
 import './ResetPasswordPage.css';
 
 type PageState = 'idle' | 'submitting' | 'success' | 'error';

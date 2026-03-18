@@ -4,7 +4,7 @@ import type { LatLngBoundsExpression } from 'leaflet';
 
 interface BoundaryPreviewMapProps {
   polygon: GeoJSON.Polygon;
-  existingBoundary: GeoJSON.Polygon | null;
+  existingBoundary: GeoJSON.Polygon | GeoJSON.MultiPolygon | null;
 }
 
 function BoundaryPreviewMap({ polygon, existingBoundary }: BoundaryPreviewMapProps) {
@@ -16,8 +16,16 @@ function BoundaryPreviewMap({ polygon, existingBoundary }: BoundaryPreviewMapPro
     }
 
     if (existingBoundary) {
-      for (const coord of existingBoundary.coordinates[0]) {
-        allCoords.push([coord[1], coord[0]]);
+      if (existingBoundary.type === 'MultiPolygon') {
+        for (const poly of existingBoundary.coordinates) {
+          for (const coord of poly[0]) {
+            allCoords.push([coord[1] as number, coord[0] as number]);
+          }
+        }
+      } else {
+        for (const coord of existingBoundary.coordinates[0]) {
+          allCoords.push([coord[1] as number, coord[0] as number]);
+        }
       }
     }
 

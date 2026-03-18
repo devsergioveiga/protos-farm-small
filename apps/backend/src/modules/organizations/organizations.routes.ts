@@ -13,6 +13,8 @@ import {
   createOrgAdmin,
   resetOrgUserPassword,
   unlockOrgUser,
+  deactivateOrgUser,
+  deleteOrgUser,
   OrgError,
 } from './organizations.service';
 
@@ -289,6 +291,7 @@ organizationsRouter.post('/admin/organizations/:id/users', ...adminOnly, async (
       res.status(err.statusCode).json({ error: err.message });
       return;
     }
+    console.error('createOrgAdmin error:', err);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -348,6 +351,68 @@ organizationsRouter.patch(
       });
 
       res.json(user);
+    } catch (err) {
+      if (err instanceof OrgError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// PATCH /admin/organizations/:id/users/:userId/deactivate
+organizationsRouter.patch(
+  '/admin/organizations/:id/users/:userId/deactivate',
+  ...adminOnly,
+  async (req, res) => {
+    try {
+      const user = await deactivateOrgUser(req.params.id as string, req.params.userId as string);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'DEACTIVATE_USER',
+        targetType: 'user',
+        targetId: req.params.userId as string,
+        metadata: { organizationId: req.params.id },
+        ipAddress: getClientIp(req),
+        organizationId: req.params.id as string,
+      });
+
+      res.json(user);
+    } catch (err) {
+      if (err instanceof OrgError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
+
+// DELETE /admin/organizations/:id/users/:userId
+organizationsRouter.delete(
+  '/admin/organizations/:id/users/:userId',
+  ...adminOnly,
+  async (req, res) => {
+    try {
+      const result = await deleteOrgUser(req.params.id as string, req.params.userId as string);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'DELETE_USER',
+        targetType: 'user',
+        targetId: req.params.userId as string,
+        metadata: { organizationId: req.params.id },
+        ipAddress: getClientIp(req),
+        organizationId: req.params.id as string,
+      });
+
+      res.json(result);
     } catch (err) {
       if (err instanceof OrgError) {
         res.status(err.statusCode).json({ error: err.message });

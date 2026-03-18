@@ -6,7 +6,7 @@ import './BulkImportModal.css';
 
 interface BulkPreviewMapProps {
   features: BulkPreviewFeature[];
-  farmBoundary?: GeoJSON.Polygon | null;
+  farmBoundary?: GeoJSON.Polygon | GeoJSON.MultiPolygon | null;
   selectedIndices: Set<number>;
 }
 
@@ -22,8 +22,16 @@ function BulkPreviewMap({ features, farmBoundary, selectedIndices }: BulkPreview
     const allCoords: [number, number][] = [];
 
     if (farmBoundary) {
-      for (const coord of farmBoundary.coordinates[0]) {
-        allCoords.push([coord[1], coord[0]]);
+      if (farmBoundary.type === 'MultiPolygon') {
+        for (const poly of farmBoundary.coordinates) {
+          for (const coord of poly[0]) {
+            allCoords.push([coord[1] as number, coord[0] as number]);
+          }
+        }
+      } else {
+        for (const coord of farmBoundary.coordinates[0]) {
+          allCoords.push([coord[1] as number, coord[0] as number]);
+        }
       }
     }
 

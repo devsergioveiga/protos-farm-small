@@ -1,0 +1,996 @@
+/* ─── Page Layout ─────────────────────────────────────────────────── */
+.feed-ingredients-page {
+  padding: 24px 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────── */
+.feed-ingredients-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.feed-ingredients-page__header h1 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.feed-ingredients-page__header p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 4px 0 0;
+}
+
+.feed-ingredients-page__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.feed-ingredients-page__btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+  white-space: nowrap;
+}
+
+.feed-ingredients-page__btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+}
+
+.feed-ingredients-page__btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.feed-ingredients-page__btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+  white-space: nowrap;
+}
+
+.feed-ingredients-page__btn-secondary:hover {
+  background: var(--color-neutral-50);
+}
+
+/* ─── Tabs ────────────────────────────────────────────────────────── */
+.feed-ingredients-page__tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  margin-bottom: 20px;
+}
+
+.feed-ingredients-page__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--color-neutral-500);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    color 200ms ease-out,
+    border-color 200ms ease-out;
+  white-space: nowrap;
+}
+
+.feed-ingredients-page__tab:hover:not(:disabled) {
+  color: var(--color-neutral-700);
+}
+
+.feed-ingredients-page__tab--active {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+
+.feed-ingredients-page__tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.feed-ingredients-page__tab-badge {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-neutral-500);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Toolbar ─────────────────────────────────────────────────────── */
+.feed-ingredients-page__toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.feed-ingredients-page__search {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+
+.feed-ingredients-page__search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-neutral-400);
+  pointer-events: none;
+}
+
+.feed-ingredients-page__search input {
+  width: 100%;
+  padding: 12px 16px 12px 40px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  transition: border-color 200ms ease-out;
+}
+
+.feed-ingredients-page__search input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.feed-ingredients-page__filter select {
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  cursor: pointer;
+  min-width: 160px;
+}
+
+.feed-ingredients-page__filter select:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Error / Success / Loading / Empty ───────────────────────────── */
+.feed-ingredients-page__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-error-50, #fef2f2);
+  border: 1px solid var(--color-error-200, #fecaca);
+  border-radius: 8px;
+  color: var(--color-error-700, #b91c1c);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.feed-ingredients-page__success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-primary-50, #f0fdf4);
+  border: 1px solid var(--color-primary-200, #bbf7d0);
+  border-radius: 8px;
+  color: var(--color-primary-700, #15803d);
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.feed-ingredients-page__loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--color-neutral-500);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+}
+
+.feed-ingredients-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--color-neutral-400);
+}
+
+.feed-ingredients-page__empty h2 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  margin: 8px 0 0;
+}
+
+.feed-ingredients-page__empty p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 0 0 16px;
+}
+
+/* ─── Ingredient Grid ────────────────────────────────────────────── */
+.feed-ingredients-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* ─── Ingredient Card ────────────────────────────────────────────── */
+.feed-ingredients-page__card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out;
+}
+
+.feed-ingredients-page__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.feed-ingredients-page__card:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.feed-ingredients-page__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.feed-ingredients-page__card-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  margin: 0 0 8px;
+}
+
+.feed-ingredients-page__card-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.feed-ingredients-page__card-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  transition: background 200ms ease-out;
+}
+
+.feed-ingredients-page__card-btn:hover {
+  background: var(--color-neutral-100);
+}
+
+.feed-ingredients-page__card-btn--delete:hover {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-600, #dc2626);
+}
+
+/* ─── Type badges ─────────────────────────────────────────────────── */
+.feed-ingredients-page__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.feed-ingredients-page__badge--roughage {
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-700, #15803d);
+}
+
+.feed-ingredients-page__badge--concentrate {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.feed-ingredients-page__badge--mineral {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.feed-ingredients-page__badge--additive {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+.feed-ingredients-page__badge--byproduct {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+}
+
+/* ─── Cost ────────────────────────────────────────────────────────── */
+.feed-ingredients-page__card-cost {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0 0 12px;
+}
+
+.feed-ingredients-page__card-cost span {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-neutral-500);
+}
+
+/* ─── Reference params ────────────────────────────────────────────── */
+.feed-ingredients-page__card-params {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.feed-ingredients-page__param {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.feed-ingredients-page__param-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.feed-ingredients-page__param-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+}
+
+/* ─── Card footer ─────────────────────────────────────────────────── */
+.feed-ingredients-page__card-footer {
+  display: flex;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-neutral-100);
+}
+
+.feed-ingredients-page__analysis-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+
+/* ─── Pagination ──────────────────────────────────────────────────── */
+.feed-ingredients-page__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.feed-ingredients-page__pagination button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+
+.feed-ingredients-page__pagination button:hover:not(:disabled) {
+  background: var(--color-neutral-50);
+}
+
+.feed-ingredients-page__pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.feed-ingredients-page__pagination span {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  padding: 0 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* Analyses Tab                                                       */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+.feed-ingredients-page__analyses-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.feed-ingredients-page__back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+
+.feed-ingredients-page__back-btn:hover {
+  background: var(--color-neutral-50);
+}
+
+.feed-ingredients-page__analyses-title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feed-ingredients-page__analyses-title h2 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+/* ─── Analysis Cards ──────────────────────────────────────────────── */
+.feed-ingredients-page__analyses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.feed-ingredients-page__analysis-card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out,
+    border-color 200ms ease-out;
+}
+
+.feed-ingredients-page__analysis-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.feed-ingredients-page__analysis-card--selected {
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 2px var(--color-primary-100, #dcfce7);
+}
+
+.feed-ingredients-page__analysis-card:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.feed-ingredients-page__analysis-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.feed-ingredients-page__analysis-date {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  display: block;
+}
+
+.feed-ingredients-page__analysis-lab {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  display: block;
+  margin-top: 2px;
+}
+
+.feed-ingredients-page__analysis-batch {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--color-neutral-500);
+  padding: 4px 8px;
+  background: var(--color-neutral-50);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* ─── Analysis values grid ────────────────────────────────────────── */
+.feed-ingredients-page__analysis-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.feed-ingredients-page__val {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.feed-ingredients-page__val-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.feed-ingredients-page__val-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+}
+
+/* ─── Analysis card footer ────────────────────────────────────────── */
+.feed-ingredients-page__analysis-card-footer {
+  display: flex;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-neutral-100);
+}
+
+.feed-ingredients-page__report-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-primary-700, #15803d);
+  padding: 4px 8px;
+  background: var(--color-primary-50, #f0fdf4);
+  border-radius: 4px;
+}
+
+.feed-ingredients-page__upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+  padding: 4px 8px;
+  background: var(--color-neutral-50);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+
+.feed-ingredients-page__upload-btn:hover {
+  background: var(--color-neutral-100);
+}
+
+.feed-ingredients-page__upload-input {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* Comparison table                                                    */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+.feed-ingredients-page__comparison {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+}
+
+.feed-ingredients-page__section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0 0 16px;
+}
+
+.feed-ingredients-page__comparison-empty {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+}
+
+.feed-ingredients-page__comparison-table-wrapper {
+  overflow-x: auto;
+}
+
+.feed-ingredients-page__comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+}
+
+.feed-ingredients-page__comparison-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  border-bottom: 2px solid var(--color-neutral-200);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.feed-ingredients-page__comparison-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.feed-ingredients-page__td-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+}
+
+/* ─── Status badges ───────────────────────────────────────────────── */
+.feed-ingredients-page__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.feed-ingredients-page__status--low {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.feed-ingredients-page__status--normal {
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-700, #15803d);
+}
+
+.feed-ingredients-page__status--high {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-700, #b91c1c);
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* Quality trend bars                                                  */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+.feed-ingredients-page__trend {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+}
+
+.feed-ingredients-page__trend-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 200px;
+  padding-top: 16px;
+  overflow-x: auto;
+}
+
+.feed-ingredients-page__trend-bar-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 48px;
+  flex: 1;
+}
+
+.feed-ingredients-page__trend-bar-wrapper {
+  width: 100%;
+  max-width: 40px;
+  height: 140px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.feed-ingredients-page__trend-bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: var(--color-primary-400, #4ade80);
+  min-height: 4px;
+  transition: height 300ms ease-out;
+}
+
+.feed-ingredients-page__trend-bar-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  color: var(--color-neutral-700);
+  font-weight: 600;
+}
+
+.feed-ingredients-page__trend-bar-date {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.625rem;
+  color: var(--color-neutral-500);
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════ */
+/* Import tab                                                          */
+/* ═══════════════════════════════════════════════════════════════════ */
+
+.feed-ingredients-page__import {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.feed-ingredients-page__dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 24px;
+  border: 2px dashed var(--color-neutral-300);
+  border-radius: 12px;
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-400);
+  cursor: pointer;
+  transition:
+    border-color 200ms ease-out,
+    background 200ms ease-out;
+  text-align: center;
+}
+
+.feed-ingredients-page__dropzone:hover,
+.feed-ingredients-page__dropzone--active {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-600);
+}
+
+.feed-ingredients-page__dropzone:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.feed-ingredients-page__dropzone h3 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  margin: 8px 0 0;
+}
+
+.feed-ingredients-page__dropzone p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+.feed-ingredients-page__import-file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-top: 16px;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+}
+
+.feed-ingredients-page__import-file span {
+  flex: 1;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+}
+
+.feed-ingredients-page__import-result {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  margin-top: 16px;
+  background: var(--color-primary-50, #f0fdf4);
+  border: 1px solid var(--color-primary-200, #bbf7d0);
+  border-radius: 8px;
+  color: var(--color-primary-700, #15803d);
+  font-size: 0.875rem;
+}
+
+.feed-ingredients-page__import-result > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feed-ingredients-page__import-errors {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-primary-200, #bbf7d0);
+}
+
+.feed-ingredients-page__import-errors p {
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.feed-ingredients-page__import-errors ul {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.8125rem;
+}
+
+.feed-ingredients-page__import-errors li {
+  margin-bottom: 2px;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .feed-ingredients-page {
+    padding: 16px;
+  }
+
+  .feed-ingredients-page__header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .feed-ingredients-page__actions {
+    width: 100%;
+  }
+
+  .feed-ingredients-page__btn-primary,
+  .feed-ingredients-page__btn-secondary {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .feed-ingredients-page__toolbar {
+    flex-direction: column;
+  }
+
+  .feed-ingredients-page__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feed-ingredients-page__analyses-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feed-ingredients-page__tabs {
+    overflow-x: auto;
+  }
+
+  .feed-ingredients-page__analyses-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Comparison table → cards on mobile */
+  .feed-ingredients-page__comparison-table thead {
+    display: none;
+  }
+
+  .feed-ingredients-page__comparison-table,
+  .feed-ingredients-page__comparison-table tbody,
+  .feed-ingredients-page__comparison-table tr,
+  .feed-ingredients-page__comparison-table td {
+    display: block;
+  }
+
+  .feed-ingredients-page__comparison-table tr {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-neutral-100);
+  }
+
+  .feed-ingredients-page__comparison-table td {
+    padding: 4px 0;
+    border-bottom: none;
+  }
+
+  .feed-ingredients-page__comparison-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--color-neutral-600);
+    display: inline-block;
+    width: 100px;
+    font-size: 0.8125rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-ingredients-page__card,
+  .feed-ingredients-page__analysis-card,
+  .feed-ingredients-page__trend-bar {
+    transition: none;
+  }
+
+  .feed-ingredients-page__card:hover,
+  .feed-ingredients-page__analysis-card:hover {
+    transform: none;
+  }
+}

@@ -85,11 +85,20 @@ export interface OrangeHarvestItem {
   harvestersProductivity: number | null;
   // CA6
   saleContractRef: string | null;
+  // US-098 CA3 — commercial conversions
+  commercialUnits: OrangeCommercialUnits;
   notes: string | null;
   recordedBy: string;
   recorderName: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// US-098 CA3 — commercial unit conversions for orange
+export interface OrangeCommercialUnits {
+  cx: number;
+  kg: number;
+  t: number;
 }
 
 // CA5 — daily summary by plot

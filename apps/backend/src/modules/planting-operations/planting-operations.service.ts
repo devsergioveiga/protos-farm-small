@@ -10,6 +10,12 @@ import {
   type SeedTreatmentItem,
   type BaseFertilizationItem,
 } from './planting-operations.types';
+import {
+  createConsumptionOutput,
+  cancelConsumptionOutput,
+  doseToAbsoluteQuantity,
+} from '../stock-deduction/stock-deduction';
+import { convertToStockUnit } from '../stock-deduction/unit-conversion-bridge';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -165,6 +171,10 @@ function toItem(row: Record<string, unknown>): PlantingItem {
     recorderName: recorder?.name ?? '',
     createdAt: (row.createdAt as Date).toISOString(),
     updatedAt: (row.updatedAt as Date).toISOString(),
+    seedProductId: (row.seedProductId as string) ?? null,
+    stockOutputId: (row.stockOutputId as string) ?? null,
+    totalSeedQuantityUsed:
+      row.totalSeedQuantityUsed != null ? Number(row.totalSeedQuantityUsed) : null,
   };
 }
 
@@ -229,6 +239,23 @@ export async function createPlantingOperation(
       ? autoCalculateFertilizerTotals(input.baseFertilizations, areaHa)
       : [];
 
+    // US-096 CA3 — Calculate total seed quantity for stock deduction
+    const plantedPct = (input.plantedAreaPercent ?? 100) / 100;
+    const plantedAreaHa = areaHa * plantedPct;
+    let totalSeedQuantityUsed: number | null = input.totalSeedQuantityUsed ?? null;
+
+    if (totalSeedQuantityUsed == null && input.seedProductId && input.seedRateKgHa) {
+      const baseQuantity = doseToAbsoluteQuantity(input.seedRateKgHa, 'KG_HA', plantedAreaHa);
+      const conversion = await convertToStockUnit(
+        tx,
+        ctx.organizationId,
+        input.seedProductId,
+        baseQuantity,
+        'KG_HA',
+      );
+      totalSeedQuantityUsed = Math.round(conversion.stockQuantity * 10000) / 10000;
+    }
+
     const data: Record<string, unknown> = {
       farmId,
       fieldPlotId: input.fieldPlotId,
@@ -257,10 +284,27 @@ export async function createPlantingOperation(
       latitude: input.latitude ?? null,
       longitude: input.longitude ?? null,
       recordedBy: userId,
+      seedProductId: input.seedProductId ?? null,
+      totalSeedQuantityUsed: totalSeedQuantityUsed ?? null,
     };
 
     if (input.id) {
       data.id = input.id;
+    }
+
+    // Stock deduction (US-096 CA3) — deduct seed from stock if seedProductId is provided
+    if (input.seedProductId && totalSeedQuantityUsed && totalSeedQuantityUsed > 0) {
+      const deduction = await createConsumptionOutput(tx, {
+        organizationId: ctx.organizationId,
+        items: [{ productId: input.seedProductId, quantity: totalSeedQuantityUsed }],
+        fieldOperationRef: `planting:${input.id ?? 'new'}`,
+        fieldPlotId: input.fieldPlotId,
+        outputDate: new Date(input.plantingDate),
+        notes: `Baixa automática — Plantio: ${input.crop.trim()} (${input.seedRateKgHa} kg/ha × ${plantedAreaHa.toFixed(2)} ha)`,
+      });
+      if (deduction) {
+        data.stockOutputId = deduction.stockOutputId;
+      }
     }
 
     const row = await tx.plantingOperation.create({
@@ -513,11 +557,17 @@ export async function deletePlantingOperation(
   return withRlsContext(ctx, async (tx) => {
     const row = await tx.plantingOperation.findFirst({
       where: { id: operationId, farmId, deletedAt: null },
-      select: { id: true },
+      select: { id: true, stockOutputId: true },
     });
     if (!row) {
       throw new PlantingError('Operação de plantio não encontrada', 404);
     }
+
+    // Cancel linked stock output (reverse balances)
+    if (row.stockOutputId) {
+      await cancelConsumptionOutput(tx, ctx.organizationId, row.stockOutputId);
+    }
+
     await tx.plantingOperation.update({
       where: { id: operationId },
       data: { deletedAt: new Date() },

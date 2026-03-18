@@ -1,0 +1,497 @@
+/* ─── Overlay ─────────────────────────────────────────────────────────── */
+
+.prcm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(42, 37, 32, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  z-index: 1000;
+  overflow-y: auto;
+  animation: modal-fade-in var(--duration-normal) var(--ease-out);
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prcm-overlay {
+    animation: none;
+  }
+  .prcm-modal {
+    animation: none;
+  }
+}
+
+/* ─── Modal container ─────────────────────────────────────────────────── */
+
+.prcm-modal {
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 64px);
+  animation: modal-enter var(--duration-normal) var(--ease-out);
+}
+
+@keyframes modal-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Header ──────────────────────────────────────────────────────────── */
+
+.prcm-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+.prcm-modal__title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.prcm-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--color-neutral-500);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.prcm-modal__close:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-800);
+}
+
+.prcm-modal__close:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Body ────────────────────────────────────────────────────────────── */
+
+.prcm-modal__body {
+  padding: var(--space-6);
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* ─── Section ─────────────────────────────────────────────────────────── */
+
+.prcm-section {
+  margin-bottom: var(--space-6);
+}
+
+.prcm-section__title {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-700);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.prcm-divider {
+  border: none;
+  border-top: 1px solid var(--color-neutral-200);
+  margin: 0 0 var(--space-6) 0;
+}
+
+/* ─── Field layout ────────────────────────────────────────────────────── */
+
+.prcm-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.prcm-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.prcm-field--half {
+  max-width: 300px;
+}
+
+/* Collapsible field for EMERGENCIAL justification */
+.prcm-field--collapsible {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--duration-fast) var(--ease-out);
+  margin-bottom: 0;
+}
+
+.prcm-field--collapsible.prcm-field--visible {
+  max-height: 200px;
+  margin-bottom: var(--space-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prcm-field--collapsible {
+    transition: none;
+  }
+}
+
+/* ─── Form controls ───────────────────────────────────────────────────── */
+
+.prcm-label {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--font-regular);
+  color: var(--color-neutral-700);
+}
+
+.prcm-label span {
+  color: var(--color-error-500);
+  margin-left: 2px;
+}
+
+.prcm-input,
+.prcm-select,
+.prcm-textarea {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.prcm-input:focus,
+.prcm-select:focus,
+.prcm-textarea:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 0;
+  border-color: var(--color-primary-600);
+}
+
+.prcm-input--error,
+.prcm-select--error,
+.prcm-textarea--error {
+  border-color: var(--color-error-500);
+}
+
+.prcm-input--table {
+  min-width: 100px;
+}
+
+.prcm-input--narrow {
+  min-width: 70px;
+  max-width: 100px;
+}
+
+.prcm-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.prcm-fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.prcm-fieldset legend {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-neutral-700);
+  margin-bottom: var(--space-2);
+}
+
+/* ─── Urgency radio group ─────────────────────────────────────────────── */
+
+.prcm-urgency-group {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.prcm-urgency-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-600);
+  cursor: pointer;
+  min-height: 40px;
+  transition: all var(--duration-fast) var(--ease-out);
+  user-select: none;
+}
+
+.prcm-urgency-option:hover {
+  background: var(--color-neutral-50);
+  border-color: var(--color-neutral-400);
+}
+
+.prcm-urgency-option--active {
+  background: var(--color-primary-600);
+  border-color: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  font-weight: var(--font-semibold);
+}
+
+/* ─── Error message ───────────────────────────────────────────────────── */
+
+.prcm-error-msg {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-error-500);
+}
+
+.prcm-error-msg--block {
+  display: flex;
+  margin-bottom: var(--space-3);
+}
+
+.prcm-error-msg--sm {
+  font-size: var(--text-xs);
+}
+
+/* ─── Items table ─────────────────────────────────────────────────────── */
+
+.prcm-items-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+}
+
+.prcm-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  font-family: var(--font-body);
+}
+
+.prcm-items-table thead th {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-600);
+  background: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-neutral-200);
+  white-space: nowrap;
+}
+
+.prcm-items-table tbody td {
+  padding: var(--space-2) var(--space-3);
+  vertical-align: top;
+}
+
+.prcm-items-table tbody tr {
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.prcm-remove-item-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--color-neutral-400);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.prcm-remove-item-btn:hover:not(:disabled) {
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+}
+
+.prcm-remove-item-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.prcm-remove-item-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.prcm-add-item-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px dashed var(--color-primary-600);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-primary-600);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.prcm-add-item-btn:hover {
+  background: var(--color-primary-50);
+}
+
+.prcm-add-item-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Footer ──────────────────────────────────────────────────────────── */
+
+.prcm-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────────── */
+
+.prcm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  min-height: 48px;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.prcm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.prcm-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.prcm-btn--ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--color-neutral-600);
+}
+
+.prcm-btn--ghost:hover:not(:disabled) {
+  background: var(--color-neutral-100);
+}
+
+.prcm-btn--outlined {
+  background: transparent;
+  border: 1px solid var(--color-primary-600);
+  color: var(--color-primary-600);
+}
+
+.prcm-btn--outlined:hover:not(:disabled) {
+  background: var(--color-primary-50);
+}
+
+.prcm-btn--primary {
+  background: var(--color-primary-600);
+  border: 1px solid var(--color-primary-600);
+  color: var(--color-neutral-0);
+}
+
+.prcm-btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+  border-color: var(--color-primary-700);
+}
+
+/* ─── Spinner ─────────────────────────────────────────────────────────── */
+
+.prcm-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prcm-spin {
+    animation: none;
+  }
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .prcm-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .prcm-modal {
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    max-height: 92vh;
+  }
+
+  .prcm-field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .prcm-modal__footer {
+    flex-direction: column;
+  }
+
+  .prcm-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

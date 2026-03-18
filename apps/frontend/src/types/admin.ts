@@ -22,6 +22,14 @@ export interface Organization {
     users: number;
     farms: number;
   };
+  users?: Array<{
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    status: string;
+    createdAt: string;
+  }>;
 }
 
 export interface OrganizationsResponse {

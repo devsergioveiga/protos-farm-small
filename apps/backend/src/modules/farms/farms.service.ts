@@ -156,7 +156,7 @@ export async function createFarm(ctx: RlsContext, actorId: string, input: Create
 
     // PostGIS point if coordinates provided
     if (input.latitude != null && input.longitude != null) {
-      await prisma.$executeRawUnsafe(
+      await tx.$executeRawUnsafe(
         `UPDATE farms SET location = ST_SetSRID(ST_MakePoint($1, $2), 4326) WHERE id = $3`,
         input.longitude,
         input.latitude,
@@ -181,6 +181,39 @@ export async function createFarm(ctx: RlsContext, actorId: string, input: Create
       });
     }
 
+    // Create default RuralProperty to mirror farm fundiário data
+    const ruralProperty = await tx.ruralProperty.create({
+      data: {
+        farmId: farm.id,
+        denomination: input.name,
+        cib: input.cib ?? null,
+        incraCode: input.incraCode ?? null,
+        ccirCode: input.ccirCode ?? null,
+        carCode: input.carCode ?? null,
+        totalAreaHa: input.totalAreaHa,
+        landClassification: input.landClassification ?? null,
+        productive: input.productive ?? null,
+        fiscalModuleHa: input.fiscalModuleHa ?? null,
+        fiscalModulesCount: input.fiscalModulesCount ?? null,
+        minPartitionFraction: input.minPartitionFraction ?? null,
+        appAreaHa: input.appAreaHa ?? null,
+        legalReserveHa: input.legalReserveHa ?? null,
+        taxableAreaHa: input.taxableAreaHa ?? null,
+        usableAreaHa: input.usableAreaHa ?? null,
+        utilizationDegree: input.utilizationDegree ?? null,
+        municipality: input.city ?? null,
+        state: input.state,
+      },
+    });
+
+    // Link registrations to the RuralProperty
+    if (input.registrations && input.registrations.length > 0) {
+      await tx.farmRegistration.updateMany({
+        where: { farmId: farm.id },
+        data: { ruralPropertyId: ruralProperty.id },
+      });
+    }
+
     // Create UserFarmAccess for the creator
     await tx.userFarmAccess.create({
       data: { userId: actorId, farmId: farm.id },
@@ -190,7 +223,7 @@ export async function createFarm(ctx: RlsContext, actorId: string, input: Create
       where: { id: farm.id },
       include: {
         registrations: true,
-        _count: { select: { registrations: true } },
+        _count: { select: { registrations: true, ruralProperties: true } },
       },
     });
 
@@ -285,6 +318,7 @@ export async function getFarm(ctx: RlsContext, farmId: string) {
             },
           },
         },
+        _count: { select: { ruralProperties: { where: { deletedAt: null } } } },
       },
     });
 
@@ -356,12 +390,51 @@ export async function updateFarm(ctx: RlsContext, farmId: string, input: UpdateF
 
     // Update PostGIS point if coordinates changed
     if (input.latitude != null && input.longitude != null) {
-      await prisma.$executeRawUnsafe(
+      await tx.$executeRawUnsafe(
         `UPDATE farms SET location = ST_SetSRID(ST_MakePoint($1, $2), 4326) WHERE id = $3`,
         input.longitude,
         input.latitude,
         farmId,
       );
+    }
+
+    // Propagate fundiário fields to first RuralProperty (backward compatibility)
+    const fundiarioFields: Record<string, unknown> = {};
+    if (input.cib !== undefined) fundiarioFields.cib = input.cib || null;
+    if (input.incraCode !== undefined) fundiarioFields.incraCode = input.incraCode || null;
+    if (input.carCode !== undefined) fundiarioFields.carCode = input.carCode || null;
+    if (input.ccirCode !== undefined) fundiarioFields.ccirCode = input.ccirCode || null;
+    if (input.totalAreaHa !== undefined) fundiarioFields.totalAreaHa = input.totalAreaHa;
+    if (input.landClassification !== undefined)
+      fundiarioFields.landClassification = input.landClassification || null;
+    if (input.productive !== undefined) fundiarioFields.productive = input.productive;
+    if (input.fiscalModuleHa !== undefined) fundiarioFields.fiscalModuleHa = input.fiscalModuleHa;
+    if (input.fiscalModulesCount !== undefined)
+      fundiarioFields.fiscalModulesCount = input.fiscalModulesCount;
+    if (input.minPartitionFraction !== undefined)
+      fundiarioFields.minPartitionFraction = input.minPartitionFraction;
+    if (input.appAreaHa !== undefined) fundiarioFields.appAreaHa = input.appAreaHa;
+    if (input.legalReserveHa !== undefined) fundiarioFields.legalReserveHa = input.legalReserveHa;
+    if (input.taxableAreaHa !== undefined) fundiarioFields.taxableAreaHa = input.taxableAreaHa;
+    if (input.usableAreaHa !== undefined) fundiarioFields.usableAreaHa = input.usableAreaHa;
+    if (input.utilizationDegree !== undefined)
+      fundiarioFields.utilizationDegree = input.utilizationDegree;
+    if (input.name !== undefined) fundiarioFields.denomination = input.name;
+    if (input.city !== undefined) fundiarioFields.municipality = input.city || null;
+    if (input.state !== undefined) fundiarioFields.state = input.state || null;
+
+    if (Object.keys(fundiarioFields).length > 0) {
+      const firstProperty = await tx.ruralProperty.findFirst({
+        where: { farmId, deletedAt: null },
+        orderBy: { createdAt: 'asc' },
+        select: { id: true },
+      });
+      if (firstProperty) {
+        await tx.ruralProperty.update({
+          where: { id: firstProperty.id },
+          data: fundiarioFields,
+        });
+      }
     }
 
     logger.info({ farmId, orgId: ctx.organizationId }, 'Farm updated');
@@ -421,6 +494,44 @@ export async function getFarmLimit(ctx: RlsContext) {
   });
 }
 
+// ─── List All Registrations (org-wide) ──────────────────────────────
+
+export async function listAllRegistrations(ctx: RlsContext) {
+  return withRlsContext(ctx, async (tx) => {
+    const registrations = await tx.farmRegistration.findMany({
+      where: {
+        farm: {
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+        },
+      },
+      include: {
+        farm: { select: { name: true } },
+        ruralProperty: { select: { id: true, denomination: true } },
+      },
+      orderBy: [{ farm: { name: 'asc' } }, { number: 'asc' }],
+    });
+
+    return registrations.map((r) => ({
+      id: r.id,
+      farmId: r.farmId,
+      farmName: r.farm.name,
+      ruralPropertyId: r.ruralPropertyId,
+      ruralPropertyName: r.ruralProperty?.denomination ?? null,
+      number: r.number,
+      cnsCode: r.cnsCode,
+      cartorioName: r.cartorioName,
+      comarca: r.comarca,
+      state: r.state,
+      livro: r.livro,
+      registrationDate: r.registrationDate ? r.registrationDate.toISOString().split('T')[0] : null,
+      areaHa: Number(r.areaHa),
+      boundaryAreaHa: r.boundaryAreaHa ? Number(r.boundaryAreaHa) : null,
+      createdAt: r.createdAt.toISOString(),
+    }));
+  });
+}
+
 // ─── Add Registration ───────────────────────────────────────────────
 
 export async function addRegistration(
@@ -455,6 +566,7 @@ export async function addRegistration(
         livro: input.livro ?? null,
         registrationDate: input.registrationDate ? new Date(input.registrationDate) : null,
         areaHa: input.areaHa,
+        ruralPropertyId: input.ruralPropertyId ?? null,
       },
     });
 
@@ -511,6 +623,9 @@ export async function updateRegistration(
           registrationDate: input.registrationDate ? new Date(input.registrationDate) : null,
         }),
         ...(input.areaHa !== undefined && { areaHa: input.areaHa }),
+        ...(input.ruralPropertyId !== undefined && {
+          ruralPropertyId: input.ruralPropertyId || null,
+        }),
       },
     });
 
@@ -664,7 +779,7 @@ export async function getBoundaryVersionById(
       throw new FarmError('Versão não encontrada', 404);
     }
 
-    const rows = await prisma.$queryRawUnsafe<{ geojson: string; area_ha: number }[]>(
+    const rows = await tx.$queryRawUnsafe<{ geojson: string; area_ha: number }[]>(
       `SELECT ST_AsGeoJSON(boundary)::text AS geojson, "boundaryAreaHa"::float AS area_ha
        FROM farm_boundary_versions WHERE id = $1`,
       versionId,
@@ -699,19 +814,26 @@ export async function uploadFarmBoundary(
   actorId: string,
 ): Promise<BoundaryUploadResult> {
   const parsed = await parseGeoFile(buffer, filename);
-  const polygon = parsed.boundaries[0];
   const warnings = [...parsed.warnings];
 
-  if (parsed.boundaries.length > 1) {
-    warnings.push('Múltiplos polígonos encontrados; usando o primeiro');
+  if (parsed.boundaries.length === 0) {
+    throw new FarmError('Nenhum polígono encontrado no arquivo', 400);
   }
 
-  const validation = validateGeometry(polygon);
-  if (!validation.valid) {
-    throw new FarmError(`Geometria inválida: ${validation.errors.join('; ')}`, 400);
+  // Validate each polygon
+  for (let i = 0; i < parsed.boundaries.length; i++) {
+    const validation = validateGeometry(parsed.boundaries[i]);
+    if (!validation.valid) {
+      throw new FarmError(`Polígono ${i + 1} inválido: ${validation.errors.join('; ')}`, 400);
+    }
   }
 
-  const geojsonStr = JSON.stringify(polygon);
+  // Build MultiPolygon from all boundaries
+  const multiPolygon: GeoJSON.MultiPolygon = {
+    type: 'MultiPolygon',
+    coordinates: parsed.boundaries.map((p) => p.coordinates),
+  };
+  const geojsonStr = JSON.stringify(multiPolygon);
 
   return withRlsContext(ctx, async (tx) => {
     const farm = await tx.farm.findUnique({ where: { id: farmId } });
@@ -720,7 +842,7 @@ export async function uploadFarmBoundary(
     }
 
     // Save current boundary as a version before overwriting
-    const existingBoundary = await prisma.$queryRawUnsafe<
+    const existingBoundary = await tx.$queryRawUnsafe<
       { has_boundary: boolean; area_ha: number | null }[]
     >(
       `SELECT boundary IS NOT NULL AS has_boundary, "boundaryAreaHa"::float AS area_ha FROM farms WHERE id = $1`,
@@ -735,7 +857,7 @@ export async function uploadFarmBoundary(
       });
       const nextVersion = (lastVersion?.version ?? 0) + 1;
 
-      await prisma.$executeRawUnsafe(
+      await tx.$executeRawUnsafe(
         `INSERT INTO farm_boundary_versions (id, "farmId", "registrationId", boundary, "boundaryAreaHa", "uploadedBy", "uploadedAt", filename, version)
          SELECT gen_random_uuid(), id, NULL, boundary, "boundaryAreaHa", $2, now(), NULL, $3
          FROM farms WHERE id = $1 AND boundary IS NOT NULL`,
@@ -746,10 +868,12 @@ export async function uploadFarmBoundary(
     }
 
     // Insert boundary and calculate area using PostGIS
-    const result = await prisma.$queryRawUnsafe<{ area_ha: number; is_valid: boolean }[]>(
+    // Also update totalAreaHa so the farm's displayed area reflects the boundary
+    const result = await tx.$queryRawUnsafe<{ area_ha: number; is_valid: boolean }[]>(
       `UPDATE farms
        SET boundary = ST_GeomFromGeoJSON($1),
-           "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON($1)::geography) / 10000)::numeric, 4)
+           "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON($1)::geography) / 10000)::numeric, 4),
+           "totalAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON($1)::geography) / 10000)::numeric, 4)
        WHERE id = $2
        RETURNING
          ROUND((ST_Area(boundary::geography) / 10000)::numeric, 4)::float AS area_ha,
@@ -829,7 +953,7 @@ export async function uploadRegistrationBoundary(
     }
 
     // Save current boundary as a version before overwriting
-    const existingRegBoundary = await prisma.$queryRawUnsafe<
+    const existingRegBoundary = await tx.$queryRawUnsafe<
       { has_boundary: boolean; area_ha: number | null }[]
     >(
       `SELECT boundary IS NOT NULL AS has_boundary, "boundaryAreaHa"::float AS area_ha FROM farm_registrations WHERE id = $1`,
@@ -844,7 +968,7 @@ export async function uploadRegistrationBoundary(
       });
       const nextVersion = (lastVersion?.version ?? 0) + 1;
 
-      await prisma.$executeRawUnsafe(
+      await tx.$executeRawUnsafe(
         `INSERT INTO farm_boundary_versions (id, "farmId", "registrationId", boundary, "boundaryAreaHa", "uploadedBy", "uploadedAt", filename, version)
          SELECT gen_random_uuid(), $3, id, boundary, "boundaryAreaHa", $2, now(), NULL, $4
          FROM farm_registrations WHERE id = $1 AND boundary IS NOT NULL`,
@@ -855,7 +979,7 @@ export async function uploadRegistrationBoundary(
       );
     }
 
-    const result = await prisma.$queryRawUnsafe<{ area_ha: number; is_valid: boolean }[]>(
+    const result = await tx.$queryRawUnsafe<{ area_ha: number; is_valid: boolean }[]>(
       `UPDATE farm_registrations
        SET boundary = ST_GeomFromGeoJSON($1),
            "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON($1)::geography) / 10000)::numeric, 4)
@@ -907,7 +1031,7 @@ export async function getFarmBoundary(ctx: RlsContext, farmId: string): Promise<
       throw new FarmError('Fazenda não encontrada', 404);
     }
 
-    const rows = await prisma.$queryRawUnsafe<{ geojson: string | null; area_ha: number | null }[]>(
+    const rows = await tx.$queryRawUnsafe<{ geojson: string | null; area_ha: number | null }[]>(
       `SELECT ST_AsGeoJSON(boundary)::text AS geojson, "boundaryAreaHa"::float AS area_ha
        FROM farms WHERE id = $1`,
       farmId,
@@ -921,7 +1045,7 @@ export async function getFarmBoundary(ctx: RlsContext, farmId: string): Promise<
     return {
       hasBoundary: true,
       boundaryAreaHa: row.area_ha,
-      boundaryGeoJSON: JSON.parse(row.geojson) as GeoJSON.Polygon,
+      boundaryGeoJSON: JSON.parse(row.geojson) as GeoJSON.MultiPolygon,
     };
   });
 }
@@ -947,7 +1071,7 @@ export async function getRegistrationBoundary(
       throw new FarmError('Matrícula não encontrada', 404);
     }
 
-    const rows = await prisma.$queryRawUnsafe<{ geojson: string | null; area_ha: number | null }[]>(
+    const rows = await tx.$queryRawUnsafe<{ geojson: string | null; area_ha: number | null }[]>(
       `SELECT ST_AsGeoJSON(boundary)::text AS geojson, "boundaryAreaHa"::float AS area_ha
        FROM farm_registrations WHERE id = $1`,
       regId,
@@ -975,7 +1099,7 @@ export async function deleteFarmBoundary(ctx: RlsContext, farmId: string): Promi
       throw new FarmError('Fazenda não encontrada', 404);
     }
 
-    await prisma.$executeRawUnsafe(
+    await tx.$executeRawUnsafe(
       `UPDATE farms SET boundary = NULL, "boundaryAreaHa" = NULL WHERE id = $1`,
       farmId,
     );
@@ -1071,7 +1195,7 @@ export async function createFieldPlot(
     }
 
     // Validation 1: containment check (warning only, does not block)
-    const containmentCheck = await prisma.$queryRawUnsafe<{ is_contained: boolean }[]>(
+    const containmentCheck = await tx.$queryRawUnsafe<{ is_contained: boolean }[]>(
       `SELECT ST_Within(ST_GeomFromGeoJSON($1), boundary) AS is_contained
        FROM farms WHERE id = $2 AND boundary IS NOT NULL`,
       geojsonStr,
@@ -1082,7 +1206,7 @@ export async function createFieldPlot(
     }
 
     // Validation 2: overlap check (blocks if >5%)
-    const overlapCheck = await prisma.$queryRawUnsafe<{ plot_id: string; overlap_pct: number }[]>(
+    const overlapCheck = await tx.$queryRawUnsafe<{ plot_id: string; overlap_pct: number }[]>(
       `SELECT id AS plot_id,
               ROUND((ST_Area(ST_Intersection(boundary, ST_GeomFromGeoJSON($1))::geography)
                 / ST_Area(ST_GeomFromGeoJSON($1)::geography) * 100)::numeric, 2)::float AS overlap_pct
@@ -1104,7 +1228,7 @@ export async function createFieldPlot(
     }
 
     // Insert using raw SQL for PostGIS boundary
-    const inserted = await prisma.$queryRawUnsafe<
+    const inserted = await tx.$queryRawUnsafe<
       {
         id: string;
         area_ha: number;
@@ -1272,7 +1396,7 @@ export async function uploadFieldPlotBoundary(
     }
 
     // Containment check
-    const containmentCheck = await prisma.$queryRawUnsafe<{ is_contained: boolean }[]>(
+    const containmentCheck = await tx.$queryRawUnsafe<{ is_contained: boolean }[]>(
       `SELECT ST_Within(ST_GeomFromGeoJSON($1), boundary) AS is_contained
        FROM farms WHERE id = $2 AND boundary IS NOT NULL`,
       geojsonStr,
@@ -1283,7 +1407,7 @@ export async function uploadFieldPlotBoundary(
     }
 
     // Overlap check (exclude self)
-    const overlapCheck = await prisma.$queryRawUnsafe<{ plot_id: string; overlap_pct: number }[]>(
+    const overlapCheck = await tx.$queryRawUnsafe<{ plot_id: string; overlap_pct: number }[]>(
       `SELECT id AS plot_id,
               ROUND((ST_Area(ST_Intersection(boundary, ST_GeomFromGeoJSON($1))::geography)
                 / ST_Area(ST_GeomFromGeoJSON($1)::geography) * 100)::numeric, 2)::float AS overlap_pct
@@ -1306,7 +1430,7 @@ export async function uploadFieldPlotBoundary(
       }
     }
 
-    const result = await prisma.$queryRawUnsafe<{ area_ha: number }[]>(
+    const result = await tx.$queryRawUnsafe<{ area_ha: number }[]>(
       `UPDATE field_plots
        SET boundary = ST_GeomFromGeoJSON($1),
            "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON($1)::geography) / 10000)::numeric, 4),
@@ -1331,7 +1455,7 @@ async function saveFieldPlotBoundaryVersion(
   actorId: string,
   editSource: string,
 ): Promise<void> {
-  const existingBoundary = await prisma.$queryRawUnsafe<
+  const existingBoundary = await tx.$queryRawUnsafe<
     { has_boundary: boolean; area_ha: number | null }[]
   >(
     `SELECT boundary IS NOT NULL AS has_boundary, "boundaryAreaHa"::float AS area_ha FROM field_plots WHERE id = $1`,
@@ -1346,7 +1470,7 @@ async function saveFieldPlotBoundaryVersion(
     });
     const nextVersion = (lastVersion?.version ?? 0) + 1;
 
-    await prisma.$executeRawUnsafe(
+    await tx.$executeRawUnsafe(
       `INSERT INTO field_plot_boundary_versions (id, "plotId", "farmId", boundary, "boundaryAreaHa", "editedBy", "editedAt", "editSource", version)
        SELECT gen_random_uuid(), id, "farmId", boundary, "boundaryAreaHa", $2, now(), $3, $4
        FROM field_plots WHERE id = $1 AND boundary IS NOT NULL`,
@@ -1387,7 +1511,7 @@ export async function updatePlotBoundaryFromGeoJSON(
     await saveFieldPlotBoundaryVersion(tx, plotId, farmId, actorId, 'map_editor');
 
     // Containment check
-    const containmentCheck = await prisma.$queryRawUnsafe<{ is_contained: boolean }[]>(
+    const containmentCheck = await tx.$queryRawUnsafe<{ is_contained: boolean }[]>(
       `SELECT ST_Within(ST_GeomFromGeoJSON($1), boundary) AS is_contained
        FROM farms WHERE id = $2 AND boundary IS NOT NULL`,
       geojsonStr,
@@ -1398,7 +1522,7 @@ export async function updatePlotBoundaryFromGeoJSON(
     }
 
     // Overlap check (exclude self)
-    const overlapCheck = await prisma.$queryRawUnsafe<{ plot_id: string; overlap_pct: number }[]>(
+    const overlapCheck = await tx.$queryRawUnsafe<{ plot_id: string; overlap_pct: number }[]>(
       `SELECT id AS plot_id,
               ROUND((ST_Area(ST_Intersection(boundary, ST_GeomFromGeoJSON($1))::geography)
                 / ST_Area(ST_GeomFromGeoJSON($1)::geography) * 100)::numeric, 2)::float AS overlap_pct
@@ -1421,7 +1545,7 @@ export async function updatePlotBoundaryFromGeoJSON(
       }
     }
 
-    const result = await prisma.$queryRawUnsafe<{ area_ha: number }[]>(
+    const result = await tx.$queryRawUnsafe<{ area_ha: number }[]>(
       `UPDATE field_plots
        SET boundary = ST_GeomFromGeoJSON($1),
            "boundaryAreaHa" = ROUND((ST_Area(ST_GeomFromGeoJSON($1)::geography) / 10000)::numeric, 4),
@@ -1490,7 +1614,7 @@ export async function getFieldPlotBoundary(
       throw new FarmError('Talhão não encontrado', 404);
     }
 
-    const rows = await prisma.$queryRawUnsafe<{ geojson: string | null; area_ha: number | null }[]>(
+    const rows = await tx.$queryRawUnsafe<{ geojson: string | null; area_ha: number | null }[]>(
       `SELECT ST_AsGeoJSON(boundary)::text AS geojson, "boundaryAreaHa"::float AS area_ha
        FROM field_plots WHERE id = $1`,
       plotId,
@@ -1543,7 +1667,7 @@ export async function getFieldPlotsSummary(
       throw new FarmError('Fazenda não encontrada', 404);
     }
 
-    const result = await prisma.$queryRawUnsafe<{ total_plot_area: number; plot_count: number }[]>(
+    const result = await tx.$queryRawUnsafe<{ total_plot_area: number; plot_count: number }[]>(
       `SELECT COALESCE(SUM("boundaryAreaHa"::float), 0) AS total_plot_area,
               COUNT(*)::int AS plot_count
        FROM field_plots
@@ -1585,7 +1709,7 @@ export async function deleteRegistrationBoundary(
       throw new FarmError('Matrícula não encontrada', 404);
     }
 
-    await prisma.$executeRawUnsafe(
+    await tx.$executeRawUnsafe(
       `UPDATE farm_registrations SET boundary = NULL, "boundaryAreaHa" = NULL WHERE id = $1`,
       regId,
     );
@@ -1807,7 +1931,7 @@ export async function executeBulkImport(
       const geojsonStr = JSON.stringify(feature.polygon);
 
       // Overlap check against DB (existing + already inserted in this batch)
-      const overlapCheck = await prisma.$queryRawUnsafe<{ plot_id: string; overlap_pct: number }[]>(
+      const overlapCheck = await tx.$queryRawUnsafe<{ plot_id: string; overlap_pct: number }[]>(
         `SELECT id AS plot_id,
                 ROUND((ST_Area(ST_Intersection(boundary, ST_GeomFromGeoJSON($1))::geography)
                   / NULLIF(ST_Area(ST_GeomFromGeoJSON($1)::geography), 0) * 100)::numeric, 2)::float AS overlap_pct
@@ -1830,7 +1954,7 @@ export async function executeBulkImport(
 
       // Insert
       try {
-        const inserted = await prisma.$queryRawUnsafe<{ id: string; area_ha: number }[]>(
+        const inserted = await tx.$queryRawUnsafe<{ id: string; area_ha: number }[]>(
           `INSERT INTO field_plots (id, "farmId", "registrationId", name, code, "soilType", "currentCrop", "previousCrop", notes, boundary, "boundaryAreaHa", status, "createdAt", "updatedAt")
            VALUES (
              gen_random_uuid(), $1, $2, $3, $4, $5::"SoilType", $6, $7, $8,
@@ -1929,7 +2053,7 @@ export async function previewSubdivide(
       throw new FarmError('Talhão não encontrado', 404);
     }
 
-    const hasBoundary = await prisma.$queryRawUnsafe<{ has: boolean }[]>(
+    const hasBoundary = await tx.$queryRawUnsafe<{ has: boolean }[]>(
       `SELECT boundary IS NOT NULL AS has FROM field_plots WHERE id = $1`,
       plotId,
     );
@@ -1940,7 +2064,7 @@ export async function previewSubdivide(
     const cutLineStr = JSON.stringify(cutLine);
 
     // ST_Split returns a GeometryCollection; extract individual polygons
-    const splitResult = await prisma.$queryRawUnsafe<{ geojson: string; area_ha: number }[]>(
+    const splitResult = await tx.$queryRawUnsafe<{ geojson: string; area_ha: number }[]>(
       `WITH split AS (
          SELECT ST_Split(boundary, ST_GeomFromGeoJSON($2)) AS geom
          FROM field_plots WHERE id = $1
@@ -1995,7 +2119,7 @@ export async function executeSubdivide(
     }
 
     // Re-execute split for consistency
-    const splitResult = await prisma.$queryRawUnsafe<{ geojson: string; area_ha: number }[]>(
+    const splitResult = await tx.$queryRawUnsafe<{ geojson: string; area_ha: number }[]>(
       `WITH split AS (
          SELECT ST_Split(boundary, ST_GeomFromGeoJSON($2)) AS geom
          FROM field_plots WHERE id = $1
@@ -2032,7 +2156,7 @@ export async function executeSubdivide(
 
     for (let i = 0; i < 2; i++) {
       const geojsonStr = splitResult[i].geojson;
-      const inserted = await prisma.$queryRawUnsafe<{ id: string; area_ha: number }[]>(
+      const inserted = await tx.$queryRawUnsafe<{ id: string; area_ha: number }[]>(
         `INSERT INTO field_plots (id, "farmId", "registrationId", name, code, "soilType", "currentCrop", "previousCrop", notes, boundary, "boundaryAreaHa", status, "createdAt", "updatedAt")
          VALUES (
            gen_random_uuid(), $1, $2, $3, $4, $5::"SoilType", $6, $7, $8,
@@ -2091,7 +2215,7 @@ export async function previewMerge(
         throw new FarmError(`Talhão ${id} não encontrado`, 404);
       }
 
-      const hasBoundary = await prisma.$queryRawUnsafe<{ has: boolean }[]>(
+      const hasBoundary = await tx.$queryRawUnsafe<{ has: boolean }[]>(
         `SELECT boundary IS NOT NULL AS has FROM field_plots WHERE id = $1`,
         id,
       );
@@ -2107,7 +2231,7 @@ export async function previewMerge(
     }
 
     // Check adjacency — each plot must touch at least one other
-    const adjacencyCheck = await prisma.$queryRawUnsafe<{ pair_count: number }[]>(
+    const adjacencyCheck = await tx.$queryRawUnsafe<{ pair_count: number }[]>(
       `SELECT COUNT(*)::int AS pair_count
        FROM field_plots a, field_plots b
        WHERE a.id = ANY($1::text[])
@@ -2122,7 +2246,7 @@ export async function previewMerge(
     }
 
     // ST_Union all boundaries
-    const unionResult = await prisma.$queryRawUnsafe<
+    const unionResult = await tx.$queryRawUnsafe<
       { geojson: string; area_ha: number; geom_type: string }[]
     >(
       `SELECT ST_AsGeoJSON(ST_Union(boundary))::text AS geojson,
@@ -2197,7 +2321,7 @@ export async function executeMerge(
     }
 
     // Re-execute union
-    const unionResult = await prisma.$queryRawUnsafe<
+    const unionResult = await tx.$queryRawUnsafe<
       { geojson: string; area_ha: number; geom_type: string }[]
     >(
       `SELECT ST_AsGeoJSON(ST_Union(boundary))::text AS geojson,
@@ -2229,7 +2353,7 @@ export async function executeMerge(
     const largest = sourcePlots.reduce((a, b) => (a.areaHa >= b.areaHa ? a : b));
     const geojsonStr = unionResult[0].geojson;
 
-    const inserted = await prisma.$queryRawUnsafe<{ id: string; area_ha: number }[]>(
+    const inserted = await tx.$queryRawUnsafe<{ id: string; area_ha: number }[]>(
       `INSERT INTO field_plots (id, "farmId", "registrationId", name, code, "soilType", "currentCrop", "previousCrop", notes, boundary, "boundaryAreaHa", status, "createdAt", "updatedAt")
        VALUES (
          gen_random_uuid(), $1, $2, $3, $4, $5::"SoilType", $6, $7, $8,
