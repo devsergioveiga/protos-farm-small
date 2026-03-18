@@ -162,6 +162,30 @@ export default function PurchaseKanbanPage() {
       {/* Filter bar */}
       <div className="purchase-kanban-page__filters" role="search" aria-label="Filtros do kanban">
         <div className="purchase-kanban-page__filter-group">
+          <label htmlFor="kanban-filter-farm">Fazenda</label>
+          <input
+            id="kanban-filter-farm"
+            type="text"
+            placeholder="ID da fazenda"
+            value={filters.farmId ?? ''}
+            onChange={(e) => setFilters({ ...filters, farmId: e.target.value || undefined })}
+            aria-label="Filtrar por fazenda"
+          />
+        </div>
+
+        <div className="purchase-kanban-page__filter-group">
+          <label htmlFor="kanban-filter-supplier">Fornecedor</label>
+          <input
+            id="kanban-filter-supplier"
+            type="text"
+            placeholder="ID do fornecedor"
+            value={filters.supplierId ?? ''}
+            onChange={(e) => setFilters({ ...filters, supplierId: e.target.value || undefined })}
+            aria-label="Filtrar por fornecedor"
+          />
+        </div>
+
+        <div className="purchase-kanban-page__filter-group">
           <label htmlFor="kanban-filter-urgency">Urgencia</label>
           <select
             id="kanban-filter-urgency"
