@@ -39,6 +39,7 @@ import { soilPrepRouter } from './modules/soil-prep-operations/soil-prep-operati
 import { grainHarvestsRouter } from './modules/grain-harvests/grain-harvests.routes';
 import { moistureStandardsRouter } from './modules/grain-harvests/moisture-standards.routes';
 import { coffeeHarvestsRouter } from './modules/coffee-harvests/coffee-harvests.routes';
+import { productivityMapRouter } from './modules/productivity-map/productivity-map.routes';
 import { orangeHarvestsRouter } from './modules/orange-harvests/orange-harvests.routes';
 import { measurementUnitsRouter } from './modules/measurement-units/measurement-units.routes';
 import { productsRouter } from './modules/products/products.routes';
@@ -142,6 +143,7 @@ app.use('/api', soilPrepRouter);
 app.use('/api', grainHarvestsRouter);
 app.use('/api', moistureStandardsRouter);
 app.use('/api', coffeeHarvestsRouter);
+app.use('/api', productivityMapRouter);
 app.use('/api', orangeHarvestsRouter);
 app.use('/api', measurementUnitsRouter);
 app.use('/api', productsRouter);

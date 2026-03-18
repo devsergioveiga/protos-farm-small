@@ -46,6 +46,7 @@ const OperationTypesPage = lazy(() => import('@/pages/OperationTypesPage'));
 const PlantingPage = lazy(() => import('@/pages/PlantingPage'));
 const SoilPrepPage = lazy(() => import('@/pages/SoilPrepPage'));
 const CoffeeHarvestsPage = lazy(() => import('@/pages/CoffeeHarvestsPage'));
+const ProductivityMapPage = lazy(() => import('@/pages/ProductivityMapPage'));
 const OrangeHarvestsPage = lazy(() => import('@/pages/OrangeHarvestsPage'));
 const MeasurementUnitsPage = lazy(() => import('@/pages/MeasurementUnitsPage'));
 const ProductsPage = lazy(() => import('@/pages/ProductsPage'));
@@ -142,6 +143,7 @@ export function App() {
                 <Route path="/planting" element={<PlantingPage />} />
                 <Route path="/soil-prep" element={<SoilPrepPage />} />
                 <Route path="/coffee-harvests" element={<CoffeeHarvestsPage />} />
+                <Route path="/productivity-map" element={<ProductivityMapPage />} />
                 <Route path="/orange-harvests" element={<OrangeHarvestsPage />} />
                 <Route path="/pests" element={<PestsPage />} />
                 <Route path="/measurement-units" element={<MeasurementUnitsPage />} />
