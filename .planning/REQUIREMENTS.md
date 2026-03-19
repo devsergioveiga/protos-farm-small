@@ -1,114 +1,113 @@
-# Requirements: Protos Farm — Gestão de Compras
+# Requirements: Protos Farm — v1.2 Gestao de Patrimonio
 
-**Defined:** 2026-03-17
-**Core Value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-
-## v1.1 Requirements
-
-Requirements for milestone v1.1. Each maps to roadmap phases.
-
-### Fornecedores
-
-- [x] **FORN-01**: Gerente pode cadastrar fornecedor com dados fiscais (razão social, CNPJ/CPF, IE, endereço), dados comerciais (contato principal, condição de pagamento padrão, frete CIF/FOB), classificação por categorias, vinculação a produtos do catálogo, upload de documentação, avaliação (rating 1-5), e status (ativo/inativo/bloqueado)
-- [x] **FORN-02**: Gerente pode importar fornecedores em massa via CSV/Excel, consultar CNPJ para preencher dados automaticamente, buscar por nome/CNPJ/categoria/produto/cidade, e exportar listagem (CSV, PDF)
-- [x] **FORN-03**: Gerente pode avaliar fornecedor após cada entrega (prazo, qualidade, preço, atendimento), ver ranking automático por média ponderada, histórico de avaliações, top 3 por categoria, alerta ao cotar com fornecedor rating < 3, e relatório de performance por período
-
-### Requisição de Compra
-
-- [x] **REQC-01**: Usuário pode criar requisição de compra com tipo (insumo agrícola, pecuário, peça, combustível, EPI, ativo, serviço), itens do catálogo ou descrição livre, quantidade, urgência (normal/urgente/emergencial), justificativa, centro de custo, fazenda, data de necessidade, anexos, e número sequencial automático
-- [x] **REQC-02**: Operador de campo pode criar requisição simplificada via mobile com produto, quantidade, urgência, foto e observação, com geolocalização automática, funcionamento offline, e acompanhamento de status pelo app
-- [x] **REQC-03**: Gerente pode configurar fluxo de aprovação por valor (até R$ X gerente de campo, acima gerente geral, acima de R$ Y aprovação dupla) e por tipo, com tela de aprovação com pendências, ações aprovar/rejeitar/devolver, notificação ao solicitante, aprovação via mobile, delegação temporária, SLA configurável, e histórico para auditoria
-
-### Cotação
-
-- [x] **COTA-01**: Comprador pode criar solicitação de cotação a partir de requisições aprovadas, selecionar fornecedores (sugestão top 3 por categoria), enviar por email com template configurável, definir prazo de resposta, disponibilizar link para preenchimento online, e registrar cotação recebida via WhatsApp/telefone
-- [x] **COTA-02**: Comprador pode registrar cotações recebidas (preço unitário, prazo entrega, condição pagamento, frete, validade), fazer upload da proposta original, ver mapa comparativo automático (fornecedores x itens), destaque visual de menor/maior preço com diferença %, total por fornecedor com frete e impostos, comparativo de prazo/condição/rating, cálculo de custo financeiro (à vista vs parcelado), histórico de preços, e possibilidade de split entre fornecedores
-- [x] **COTA-03**: Gerente pode aprovar cotação vencedora com justificativa obrigatória se não for menor preço, ver resumo com comparativo de alternativas, aprovação rápida via mobile, e gerar pedido automaticamente após aprovação
-
-### Pedido de Compra
-
-- [x] **PEDI-01**: Comprador pode emitir pedido de compra (OC) com geração automática a partir de cotação aprovada, número sequencial (OC-YYYY/NNNN), campos adicionais (observações, referências), PDF com layout profissional, envio por email, possibilidade de pedido manual (emergencial com justificativa), status tracking (emitido→confirmado→em trânsito→entregue→cancelado), alerta de prazo vencido, e clone de pedido recorrente
-
-### Recebimento
-
-- [x] **RECE-01**: Conferente pode registrar recebimento com 6 cenários: (1) NF+mercadoria simultânea, (2) NF antecipada aguardando mercadoria, (3) mercadoria antecipada aguardando NF com entrada provisória/bloqueada, (4) recebimento parcial com saldo pendente e NFs parciais, (5) NF fracionada por fornecedor, (6) compra emergencial sem pedido formal
-- [x] **RECE-02**: Conferente pode fazer conferência física item a item (recebido vs pedido vs NF), registrar divergências (a mais, a menos, substituído, danificado, errado) com foto e ação (devolver/aceitar com desconto/registrar pendência), conferência de qualidade (visual, lote/validade, amostragem), vincular NF (digitação ou import XML/CTE), alerta de divergência >5%, e registro via mobile com foto
-- [x] **RECE-03**: Ao confirmar recebimento+NF: entrada automática no estoque (insumos) ou cadastro de ativo (equipamentos), com suporte a despesas acessórias de fornecedores diferentes, datas registradas separadamente (pedido, recebimento, NF, conferência), status do recebimento, e dashboard de pendências
-
-### Devolução
-
-- [x] **DEVO-01**: Gerente de estoque pode registrar devolução total ou parcial vinculada ao recebimento, com motivo obrigatório (defeito, validade, produto errado, excedente, especificação divergente), fotos/laudo, ação esperada (troca/crédito/estorno), saída automática do estoque, referência de NF de devolução, notificação ao fornecedor, e acompanhamento da resolução
-
-### Integração Financeira
-
-- [x] **FINC-01**: Ao confirmar recebimento+NF: lançamento automático no Contas a Pagar com fornecedor, valor, vencimento(s), centro de custo; suporte a despesas acessórias com CPs separados por fornecedor; cenários NF antecipada (CP provisório), recebimento antecipado (CP só com NF), parcial (CP por recebimento); parcelas automáticas da condição do pedido (30/60/90); classificação contábil sugerida; referência cruzada completa (CP→pedido→cotação→requisição); tela de revisão e navegação drill-down
-- [x] **FINC-02**: Gerente financeiro pode definir orçamento de compras por categoria e período (mensal/trimestral/safra), por centro de custo/fazenda, vinculado ao planejamento de safra, com acompanhamento orçado vs requisitado vs comprado vs pago, alerta ao aprovar se ultrapassar orçamento, dashboard de execução orçamentária, projeção de gasto, e relatório de desvios
-- [x] **FINC-03**: Gerente pode ver saving por cotação (diferença maior vs vencedora), saving acumulado por período, histórico de preço por produto (gráfico evolução), indicadores (% compras com cotação formal, % emergenciais, prazo médio ciclo), top 10 produtos por gasto, e top 5 fornecedores por volume
-
-### Dashboard e Acompanhamento
-
-- [x] **DASH-01**: Comprador/gerente pode ver kanban do fluxo de compras com colunas por etapa (RC Pendente→Aprovada→Em Cotação→OC Emitido→Aguardando Entrega→Recebido→Pago), cards com nº/tipo/solicitante/valor/urgência/dias no estágio, drag & drop com ações obrigatórias, filtros, alertas visuais, e contadores por coluna
-- [x] **DASH-02**: Gerente/diretor pode ver dashboard executivo com indicadores (volume total, nº requisições/pedidos, prazo médio ciclo, % entrega no prazo, saving acumulado), gráficos por categoria e fornecedor, compras urgentes vs planejadas, requisições pendentes com aging, pedidos em atraso, comparativo com período anterior, e filtros por fazenda/período/categoria
-- [x] **DASH-03**: Participantes do processo recebem notificações via push/email/badge em cada etapa relevante (solicitante: aprovação/rejeição/entrega; aprovador: nova pendência/lembrete SLA; comprador: RC aprovada/cotação recebida/prazo entrega; financeiro: recebimento confirmado; gerente: digest diário), com configuração de preferências por canal
+**Defined:** 2026-03-19
+**Core Value:** O proprietario/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visao consolidada por fazenda e conta bancaria.
 
 ## v1.2 Requirements
 
-Deferred to future release. Tracked but not in current roadmap.
+Requirements for asset lifecycle management. Each maps to roadmap phases.
 
-### Fornecedores
+### Cadastro de Ativos
 
-- **FORN-04**: Consulta automática de CNPJ (Receita Federal/SINTEGRA) para auto-preenchimento ao cadastrar fornecedor
+- [ ] **ATIV-01**: Gerente pode cadastrar maquinas, veiculos e implementos com dados de aquisicao (NF, fornecedor, valor), operacionais (horimetro, odometro, potencia, combustivel), status e fotos
+- [ ] **ATIV-02**: Gerente pode cadastrar benfeitorias e ativos imoveis com geolocalizacao (ponto, linha ou poligono), material de construcao, area e capacidade, visualizando no mapa da fazenda
+- [ ] **ATIV-03**: Proprietario pode cadastrar terras e imoveis rurais como ativo nao depreciavel (CPC 27) com documentacao cartoraria, despesas de aquisicao e historico de avaliacoes/reavaliacao
+- [ ] **ATIV-04**: Gerente pode cadastrar implementos e equipamentos menores (grades, ordenhadeiras, balancas) com vinculacao a maquina principal quando aplicavel
+- [ ] **ATIV-05**: Gerente pode importar ativos em massa via CSV/Excel com mapeamento flexivel de colunas, preview e relatorio pos-importacao
+- [ ] **ATIV-06**: Gerente pode visualizar inventario completo com filtros (tipo, categoria, fazenda, status, faixa de valor), busca, totalizacao, exportacao CSV/Excel/PDF e visao em mapa
+- [ ] **ATIV-07**: Gerente pode ver ficha completa do ativo com grafico de depreciacao, historico de manutencoes, TCO, indicadores (disponibilidade, custo/hora), timeline de eventos e documentos
 
-### Notificações Avançadas
+### Hierarquia e Imobilizado em Andamento
 
-- **NOTI-01**: Envio automático de RFQ por email com link para preenchimento online pelo fornecedor
+- [ ] **HIER-01**: Gerente pode cadastrar ativo composto (hierarquia pai-filho ate 3 niveis) onde o pai totaliza valores dos filhos e cada filho tem depreciacao independente
+- [ ] **HIER-02**: Gerente pode registrar reforma ou ampliacao de ativo existente com decisao de capitalizar (soma ao valor contabil + reavalia vida util) ou despesa (vai para DRE)
+- [ ] **HIER-03**: Gerente pode registrar imobilizado em andamento (obras) acumulando aportes parciais com cronograma de etapas, alerta de orcamento e ativacao ao concluir (inicia depreciacao)
+
+### Depreciacao e Valoracao
+
+- [ ] **DEPR-01**: Contador pode configurar metodo de depreciacao por ativo ou categoria (linear, horas-uso, producao, acelerada) com taxas pre-configuradas RFB e suporte a taxa fiscal vs gerencial
+- [ ] **DEPR-02**: Sistema calcula depreciacao mensal automaticamente (job ou gatilho manual) com pro rata die, parada em valor residual, relatorio mensal e possibilidade de estorno/recalculo
+- [ ] **DEPR-03**: Contador pode registrar valor justo de ativos biologicos (CPC 29/IAS 41) — rebanho por categoria com preco de mercado e culturas perenes por estagio — com variacao registrada no resultado
+- [ ] **DEPR-04**: Contador pode gerar relatorios patrimoniais (inventario geral, depreciacao acumulada, movimentacao, ativos biologicos, TCO) com filtros e exportacao PDF/Excel/CSV
+
+### Centro de Custo Patrimonial
+
+- [ ] **CCPA-01**: Contador pode vincular cada ativo a centro de custo (fixo, rateio % ou dinamico por horas-maquina do periodo) para depreciacao e manutencao serem apropriadas corretamente
+- [ ] **CCPA-02**: Processamento mensal de depreciacao gera lancamentos detalhados por centro de custo com conciliacao automatica (soma CCs = total depreciacao)
+- [ ] **CCPA-03**: Custos de manutencao (OS) sao apropriados por centro de custo com possibilidade de rateio manual ou heranca do CC do ativo
+- [ ] **CCPA-04**: Sistema oferece guia de decisao (wizard) para orientar criacao de centro de custo por ativo com exemplos e templates por tipo de fazenda
+
+### Manutencao e Ordens de Servico
+
+- [ ] **MANU-01**: Gerente pode criar planos de manutencao preventiva com gatilhos configuraveis (horimetro, km, tempo), calculo automatico da proxima execucao e alerta antecipado
+- [ ] **MANU-02**: Gerente pode abrir, acompanhar e encerrar ordens de servico (OS) com registro de pecas (baixa automatica no estoque), horas de mao de obra, custo externo e fotos
+- [ ] **MANU-03**: Operador pode solicitar manutencao pelo celular com foto, geolocalizacao automatica e notificacao push ao responsavel, funcionando offline
+- [ ] **MANU-04**: Gerente pode controlar estoque de pecas de reposicao com ponto de reposicao, vinculacao de pecas compativeis por maquina e inventario periodico
+- [ ] **MANU-05**: Gerente pode ver dashboard de manutencao com disponibilidade mecanica, MTBF, MTTR, custo acumulado, OS abertas (kanban) e alertas de manutencoes vencidas
+- [ ] **MANU-06**: Ao encerrar OS de alto valor, sistema apresenta assistente de classificacao contabil (despesa imediata, capitalizacao ou diferimento) com criterios-guia
+- [ ] **MANU-07**: Contador pode diferenciar e apropriar despesas antecipadas (diferimento) de manutencoes grandes que restauram condicao original sem aumentar vida util
+- [ ] **MANU-08**: Contador pode configurar provisao mensal de manutencao por ativo ou frota com lancamento automatico e conciliacao com gastos reais
+
+### Controle Operacional e Documentacao
+
+- [ ] **OPER-01**: Gerente pode registrar abastecimentos (combustivel) por ativo com custo/litro, custo/hora e benchmarking de eficiencia contra media da frota
+- [ ] **OPER-02**: Gerente pode controlar documentos com vencimento (CRLV, seguro, revisao) com alertas automaticos antecipados e calendario de vencimentos
+- [ ] **OPER-03**: Operador pode atualizar horimetro/odometro de forma rapida pelo mobile com validacao anti-regressao
+- [ ] **OPER-04**: Sistema calcula custo/hora e custo operacional por ativo (aquisicao + depreciacao + manutencao + combustivel + seguro) para analise de viabilidade
+
+### Integracao Financeira — Aquisicao
+
+- [ ] **AQUI-01**: Ao cadastrar ativo com valor de aquisicao, sistema gera CP automaticamente no modulo financeiro com fornecedor, valor, vencimento e centro de custo
+- [ ] **AQUI-02**: Gerente pode registrar compra financiada de ativo com dados do financiamento e parcelas geradas automaticamente no CP (reuso do installmentGenerator)
+- [ ] **AQUI-03**: Gerente pode importar dados do ativo a partir de NF-e (XML) com preenchimento automatico de fornecedor, valor, itens e dados fiscais
+- [ ] **AQUI-04**: Gerente pode registrar compra com multiplos ativos na mesma NF, cada um gerando registro patrimonial e rateio proporcional das despesas acessorias
+- [ ] **AQUI-05**: Gerente pode registrar leasing e arrendamento mercantil (CPC 06) com parcelas no CP e controle de opcao de compra ao final do contrato
+- [ ] **AQUI-06**: Gerente pode registrar troca de ativo (trade-in) com compensacao financeira automatica (valor do ativo antigo abatido do novo)
+- [ ] **AQUI-07**: Cada aquisicao tem centro de custo e classificacao contabil definidos para apropriacao correta de depreciacao futura
+
+### Integracao Financeira — Venda, Baixa e Saida
+
+- [ ] **DISP-01**: Gerente pode registrar venda de ativo com calculo automatico de ganho/perda contabil (valor venda vs valor contabil) e geracao de CR
+- [ ] **DISP-02**: Gerente pode registrar baixa por sinistro, descarte ou obsolescencia com motivo, laudo, valor residual e lancamento de perda
+- [ ] **DISP-03**: Gerente pode registrar venda parcelada de ativo com parcelas no CR
+- [ ] **DISP-04**: Gerente pode transferir ativo entre fazendas da mesma organizacao com historico e reavaliacao opcional
+- [ ] **DISP-05**: Contador pode conciliar patrimonio fisico vs contabil com inventario (contagem fisica vs registro) e gerar ajustes
+- [ ] **DISP-06**: Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciacao acumulada, aquisicoes/baixas do periodo e indicadores
+
+## v2 Requirements
+
+Deferred to future milestone. Tracked but not in current roadmap.
+
+### Integracao Avancada
+
+- **INTG-01**: Integracao com telematics/IoT para leitura automatica de horimetro e localizacao GPS
+- **INTG-02**: CIAP (credito ICMS sobre ativo) — requer modulo fiscal como prerequisito
+- **INTG-03**: NF-e importacao via SEFAZ (consulta automatica) — requer integracao fiscal
+- **INTG-04**: Manutencao preditiva baseada em historico de falhas (requer 2-3 anos de dados)
 
 ## Out of Scope
 
-| Feature                                 | Reason                                                                             |
-| --------------------------------------- | ---------------------------------------------------------------------------------- |
-| NF-e XML import/parsing completo        | Requer módulo fiscal separado — complexidade de schema SEFAZ                       |
-| Portal de fornecedores (login)          | Alto custo, baixo ROI para escala fazenda — fornecedores agro não adotam portais   |
-| Leilão reverso / bidding                | Complexidade excessiva para contexto rural — fornecedores são locais e relacionais |
-| Credit scoring Serasa/SPC               | Custo API, LGPD, overkill para 10-30 fornecedores conhecidos                       |
-| Contratos guarda-chuva (blanket orders) | Fazendas não operam com frame agreements formais                                   |
-| EDI / e-procurement                     | Nenhum fornecedor agro local tem capacidade EDI                                    |
-| Mobile: funcionalidades financeiras     | Web-only para financeiro por enquanto                                              |
+| Feature | Reason |
+|---------|--------|
+| Emissao de NF-e | Modulo fiscal separado, complexidade regulatoria |
+| Integracao IoT/telematics | Complexidade vs beneficio nao justificada no escopo atual |
+| Manutencao preditiva | Requer historico de falhas que ainda nao existe |
+| CIAP (credito ICMS) | Pre-requisito: modulo fiscal |
+| Gestao de projetos (Gantt) para obras | Excessivo para o escopo — cronograma de etapas simples e suficiente |
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
+Updated during roadmap creation.
 
-| Requirement | Phase    | Status   |
-| ----------- | -------- | -------- |
-| FORN-01     | Phase 7  | Complete |
-| FORN-02     | Phase 7  | Complete |
-| FORN-03     | Phase 14 | Complete |
-| REQC-01     | Phase 8  | Complete |
-| REQC-02     | Phase 8  | Complete |
-| REQC-03     | Phase 8  | Complete |
-| COTA-01     | Phase 9  | Complete |
-| COTA-02     | Phase 9  | Complete |
-| COTA-03     | Phase 9  | Complete |
-| PEDI-01     | Phase 9  | Complete |
-| RECE-01     | Phase 10 | Complete |
-| RECE-02     | Phase 10 | Complete |
-| RECE-03     | Phase 10 | Complete |
-| FINC-01     | Phase 10 | Complete |
-| DEVO-01     | Phase 14 | Complete |
-| FINC-02     | Phase 11 | Complete |
-| FINC-03     | Phase 11 | Complete |
-| DASH-01     | Phase 13 | Complete |
-| DASH-02     | Phase 12 | Complete |
-| DASH-03     | Phase 13 | Complete |
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| (populated by roadmapper) | | |
 
 **Coverage:**
-
-- v1.1 requirements: 20 total
-- Mapped to phases: 20
-- Unmapped: 0 ✓
+- v1.2 requirements: 44 total
+- Mapped to phases: 0
+- Unmapped: 44
 
 ---
-
-_Requirements defined: 2026-03-17_
-_Last updated: 2026-03-17 after roadmap creation_
+*Requirements defined: 2026-03-19*
+*Last updated: 2026-03-19 after initial definition*
