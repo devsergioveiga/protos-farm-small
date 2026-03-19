@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 12-kanban-dashboard-e-notifica-es 12-05-PLAN.md
-last_updated: '2026-03-18T21:32:59.909Z'
+stopped_at: Phase 13 context gathered
+last_updated: '2026-03-19T07:20:33.755Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
-  total_phases: 6
+  total_phases: 8
   completed_phases: 6
   total_plans: 31
   completed_plans: 31
@@ -117,6 +117,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T21:28:55.430Z
-Stopped at: Completed 12-kanban-dashboard-e-notifica-es 12-05-PLAN.md
-Resume file: None
+Last session: 2026-03-19T07:20:33.749Z
+Stopped at: Phase 13 context gathered
+Resume file: .planning/phases/13-kanban-dnd-notification-wiring/13-CONTEXT.md
