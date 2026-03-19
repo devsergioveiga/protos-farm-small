@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: in_progress
-stopped_at: Completed 16-01-PLAN.md
-last_updated: '2026-03-19T22:05:00.000Z'
-last_activity: 2026-03-19 — Phase 16 Plan 01 completed (Asset backend foundation)
+stopped_at: Completed 16-02-PLAN.md
+last_updated: '2026-03-19T22:25:00.000Z'
+last_activity: 2026-03-19 — Phase 16 Plan 02 completed (Fuel records, meter readings, asset documents, export)
 progress:
   total_phases: 9
   completed_phases: 0
   total_plans: 6
-  completed_plans: 2
-  percent: 3
+  completed_plans: 3
+  percent: 5
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ## Current Position
 
 Phase: 16 - Cadastro de Ativos (in progress)
-Plan: 01 complete — next: 16-02
+Plan: 02 complete — next: 16-03
 Status: In progress
-Last activity: 2026-03-19 — Phase 16 Plan 01 completed
+Last activity: 2026-03-19 — Phase 16 Plan 02 completed
 
-Progress: [█░░░░░░░░░] 3% (2/6 plans in phase 16)
+Progress: [█░░░░░░░░░] 5% (3/6 plans in phase 16)
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Progress: [█░░░░░░░░░] 3% (2/6 plans in phase 16)
 
 | Phase 16 P00 | 1 | 1 tasks | 4 files |
 | Phase 16 P01 | 30min | 2 tasks | 8 files |
+| Phase 16 P02 | 15min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,8 @@ Key decisions for v1.2:
 - [Phase 16 P00]: Wave 0 stubs use it.todo() only — no beforeAll/afterAll setup until Plans 01/02 fill in test bodies
 - [Phase 16 P01]: costCenterMode stored as String @default('FIXED') — existing CostCenterAllocMode enum incompatible (PERCENTAGE/FIXED_VALUE for Payable use)
 - [Phase 16 P01]: BENFEITORIA geoPoint written via $executeRawUnsafe after Prisma create() — Unsupported type limitation
+- [Phase 16 P02]: getFuelStats avgLitersPerHour = null when no hourmeterAtFuel readings exist — correct behavior, not a bug
+- [Phase 16 P02]: exportAssetsPdf uses landscape A4 to accommodate 6-column asset table
 
 ### Pending Todos
 
@@ -84,7 +87,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T22:05:00.000Z
-Stopped at: Completed 16-01-PLAN.md
+Last session: 2026-03-19T22:25:00.000Z
+Stopped at: Completed 16-02-PLAN.md
 Resume file: None
-Next action: /gsd:execute-phase 16 plan 02
+Next action: /gsd:execute-phase 16 plan 03
