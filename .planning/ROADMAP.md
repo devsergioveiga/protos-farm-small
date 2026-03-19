@@ -31,7 +31,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [ ] **Phase 10: Recebimento de Mercadorias** — Hub de integração: entrada no estoque + geração automática de CP
 - [ ] **Phase 11: Devolução, Orçamento e Saving** — Reversão de estoque/financeiro e controle orçamentário
 - [x] **Phase 12: Kanban, Dashboard e Notificações** — Visibilidade operacional e execução do fluxo completo (completed 2026-03-18)
-- [ ] **Phase 13: Kanban DnD Fixes + Notification Wiring** — Fix broken DnD transitions and wire notification dispatches
+- [x] **Phase 13: Kanban DnD Fixes + Notification Wiring** — Fix broken DnD transitions and wire notification dispatches (completed 2026-03-19)
 - [ ] **Phase 14: Stock Reversal + Supplier Rating Completion** — Stock reversal on goods return + rating alert and performance report
 
 ## Phase Details
@@ -145,19 +145,24 @@ Plans:
 
 ### Phase 13: Kanban DnD Fixes + Notification Wiring
 
-**Goal**: Fix 3 broken Kanban DnD transition calls and wire 4 notification types that are defined but never dispatched — restoring full Kanban interactivity and completing the notification pipeline
+**Goal**: Fix 2 broken Kanban DnD transition calls and wire 4 notification types that are defined but never dispatched — restoring full Kanban interactivity and completing the notification pipeline
 **Depends on**: Phase 12
 **Requirements**: DASH-01, DASH-03
 **Gap Closure:** Closes gaps from audit
 **Success Criteria** (what must be TRUE):
 
-1. Kanban DnD RC_PENDENTE→RC_APROVADA calls correct POST /transition endpoint and succeeds
-2. Kanban DnD EM_COTACAO→OC_EMITIDA redirects to quotation approval flow instead of calling createEmergencyPO
-3. Kanban DnD OC_EMITIDA→AGUARDANDO_ENTREGA calls correct PATCH /transition endpoint and succeeds
-4. BUDGET_EXCEEDED notification fires when budget is exceeded during approval
-5. RETURN_REGISTERED and RETURN_RESOLVED notifications fire from goods-returns service with registered types
-6. PO_GOODS_RECEIVED notification fires when goods receipt is confirmed
-   **Plans**: TBD
+1. Kanban DnD EM_COTACAO→OC_EMITIDA redirects to quotation approval flow instead of calling createEmergencyPO
+2. Kanban DnD OC_EMITIDA→AGUARDANDO_ENTREGA calls correct PATCH /transition endpoint and succeeds
+3. BUDGET_EXCEEDED notification fires when budget is exceeded during approval
+4. RETURN_REGISTERED and RETURN_RESOLVED notifications fire from goods-returns service with registered types
+5. PO_GOODS_RECEIVED notification fires when goods receipt is confirmed
+   **Plans:** 3/3 plans complete
+
+Plans:
+
+- [ ] 13-00-PLAN.md — Wave 0: Create frontend spec files with failing tests for DnD behaviors (Nyquist compliance)
+- [ ] 13-01-PLAN.md — Frontend DnD fixes: EM_COTACAO navigation redirect + OC_EMITIDA PATCH /transition
+- [ ] 13-02-PLAN.md — Backend notification wiring: BUDGET_EXCEEDED, PO_GOODS_RECEIVED, RETURN_REGISTERED, RETURN_RESOLVED
 
 ### Phase 14: Stock Reversal + Supplier Rating Completion
 
@@ -189,5 +194,5 @@ Plans:
 | 10. Recebimento de Mercadorias                  | v1.1      | 0/TBD          | Not started | -          |
 | 11. Devolução, Orçamento e Saving               | v1.1      | 0/TBD          | Not started | -          |
 | 12. Kanban, Dashboard e Notificações            | 5/5       | Complete       | 2026-03-18  | -          |
-| 13. Kanban DnD Fixes + Notification Wiring      | v1.1      | 0/TBD          | Not started | -          |
+| 13. Kanban DnD Fixes + Notification Wiring      | 3/3       | Complete       | 2026-03-19  | -          |
 | 14. Stock Reversal + Supplier Rating Completion | v1.1      | 0/TBD          | Not started | -          |

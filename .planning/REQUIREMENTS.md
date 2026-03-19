@@ -47,9 +47,9 @@ Requirements for milestone v1.1. Each maps to roadmap phases.
 
 ### Dashboard e Acompanhamento
 
-- [ ] **DASH-01**: Comprador/gerente pode ver kanban do fluxo de compras com colunas por etapa (RC Pendente→Aprovada→Em Cotação→OC Emitido→Aguardando Entrega→Recebido→Pago), cards com nº/tipo/solicitante/valor/urgência/dias no estágio, drag & drop com ações obrigatórias, filtros, alertas visuais, e contadores por coluna
+- [x] **DASH-01**: Comprador/gerente pode ver kanban do fluxo de compras com colunas por etapa (RC Pendente→Aprovada→Em Cotação→OC Emitido→Aguardando Entrega→Recebido→Pago), cards com nº/tipo/solicitante/valor/urgência/dias no estágio, drag & drop com ações obrigatórias, filtros, alertas visuais, e contadores por coluna
 - [x] **DASH-02**: Gerente/diretor pode ver dashboard executivo com indicadores (volume total, nº requisições/pedidos, prazo médio ciclo, % entrega no prazo, saving acumulado), gráficos por categoria e fornecedor, compras urgentes vs planejadas, requisições pendentes com aging, pedidos em atraso, comparativo com período anterior, e filtros por fazenda/período/categoria
-- [ ] **DASH-03**: Participantes do processo recebem notificações via push/email/badge em cada etapa relevante (solicitante: aprovação/rejeição/entrega; aprovador: nova pendência/lembrete SLA; comprador: RC aprovada/cotação recebida/prazo entrega; financeiro: recebimento confirmado; gerente: digest diário), com configuração de preferências por canal
+- [x] **DASH-03**: Participantes do processo recebem notificações via push/email/badge em cada etapa relevante (solicitante: aprovação/rejeição/entrega; aprovador: nova pendência/lembrete SLA; comprador: RC aprovada/cotação recebida/prazo entrega; financeiro: recebimento confirmado; gerente: digest diário), com configuração de preferências por canal
 
 ## v1.2 Requirements
 
@@ -98,9 +98,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DEVO-01     | Phase 14 | Pending  |
 | FINC-02     | Phase 11 | Complete |
 | FINC-03     | Phase 11 | Complete |
-| DASH-01     | Phase 13 | Pending  |
+| DASH-01     | Phase 13 | Complete |
 | DASH-02     | Phase 12 | Complete |
-| DASH-03     | Phase 13 | Pending  |
+| DASH-03     | Phase 13 | Complete |
 
 **Coverage:**
 
