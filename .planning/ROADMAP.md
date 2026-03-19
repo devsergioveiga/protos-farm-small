@@ -156,7 +156,7 @@ Plans:
 3. BUDGET_EXCEEDED notification fires when budget is exceeded during approval
 4. RETURN_REGISTERED and RETURN_RESOLVED notifications fire from goods-returns service with registered types
 5. PO_GOODS_RECEIVED notification fires when goods receipt is confirmed
-   **Plans:** 3 plans
+   **Plans:** 2/3 plans executed
 
 Plans:
 
@@ -194,5 +194,5 @@ Plans:
 | 10. Recebimento de Mercadorias                  | v1.1      | 0/TBD          | Not started | -          |
 | 11. Devolução, Orçamento e Saving               | v1.1      | 0/TBD          | Not started | -          |
 | 12. Kanban, Dashboard e Notificações            | 5/5       | Complete       | 2026-03-18  | -          |
-| 13. Kanban DnD Fixes + Notification Wiring      | v1.1      | 0/3            | Planned     | -          |
+| 13. Kanban DnD Fixes + Notification Wiring      | 2/3       | In Progress    |             | -          |
 | 14. Stock Reversal + Supplier Rating Completion | v1.1      | 0/TBD          | Not started | -          |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Phase 13 context gathered
-last_updated: '2026-03-19T07:20:33.755Z'
+stopped_at: Completed 13-02-PLAN.md
+last_updated: '2026-03-19T09:41:07.154Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 8
   completed_phases: 6
-  total_plans: 31
-  completed_plans: 31
+  total_plans: 34
+  completed_plans: 33
   percent: 0
 ---
 
@@ -62,6 +62,8 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 12-kanban-dashboard-e-notifica-es P02 | 18min | 2 tasks | 13 files |
 | Phase 12-kanban-dashboard-e-notifica-es P04 | 5min | 2 tasks | 7 files |
 | Phase 12-kanban-dashboard-e-notifica-es P05 | 7min | 2 tasks | 11 files |
+| Phase 13-kanban-dnd-notification-wiring PP00 | 15min | 2 tasks | 2 files |
+| Phase 13-kanban-dnd-notification-wiring P02 | 18min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -104,6 +106,8 @@ Key decisions for v1.1:
 - [Phase 12-kanban-dashboard-e-notifica-es]: Recharts Tooltip labelFormatter+content cannot coexist — use content custom renderer only for multi-value tooltips
 - [Phase 12-kanban-dashboard-e-notifica-es]: useNotificationPreferences uses /org/notification-preferences without explicit orgId — consistent with /org/notifications pattern, org extracted from JWT server-side
 - [Phase 12-kanban-dashboard-e-notifica-es]: NotificationBell handleItemClick is now type-aware — routes to quotations/goods-receipts/purchase-budgets/goods-returns per notification type
+- [Phase 13-kanban-dnd-notification-wiring]: transitionPO signature updated from RlsContext to RlsContext & { userId: string } — routes already pass userId, function declaration was under-typed
+- [Phase 13-kanban-dnd-notification-wiring]: RETURN_RESOLVED placed in CONCLUIDA branch targeting FINANCIAL users (not APROVADA/MANAGER) — correct business event for financial processing alert
 
 ### Pending Todos
 
@@ -117,6 +121,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T07:20:33.749Z
-Stopped at: Phase 13 context gathered
-Resume file: .planning/phases/13-kanban-dnd-notification-wiring/13-CONTEXT.md
+Last session: 2026-03-19T09:41:07.115Z
+Stopped at: Completed 13-02-PLAN.md
+Resume file: None
