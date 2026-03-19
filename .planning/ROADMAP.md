@@ -176,7 +176,12 @@ Plans:
 2. QuotationModal shows visual alert when selected supplier has average rating < 3
 3. Supplier performance report endpoint returns rating history filtered by period
 4. Frontend displays supplier performance report with rating trends
-   **Plans**: TBD
+   **Plans:** 2 plans
+
+Plans:
+
+- [ ] 14-01-PLAN.md — Backend: stock reversal fix (APROVADA->CONCLUIDA side-effects) + performance endpoint
+- [ ] 14-02-PLAN.md — Frontend: QuotationModal rating badge + SupplierPerformanceModal with charts
 
 ## Progress
 
@@ -195,4 +200,4 @@ Plans:
 | 11. Devolução, Orçamento e Saving               | v1.1      | 0/TBD          | Not started | -          |
 | 12. Kanban, Dashboard e Notificações            | 5/5       | Complete       | 2026-03-18  | -          |
 | 13. Kanban DnD Fixes + Notification Wiring      | 3/3       | Complete       | 2026-03-19  | -          |
-| 14. Stock Reversal + Supplier Rating Completion | v1.1      | 0/TBD          | Not started | -          |
+| 14. Stock Reversal + Supplier Rating Completion | v1.1      | 0/2            | Planning    | -          |
