@@ -68,13 +68,15 @@ Full details: `.planning/milestones/v1.1-ROADMAP.md`
 4. Gerente pode exportar lista filtrada em CSV e PDF
 5. Operador pode registrar leituras de horímetro/odômetro com validação anti-regressão e cadastrar documentos com alerta de vencimento (30/15/7 dias)
 6. Gerente pode registrar abastecimentos com custo/litro e ver benchmarking de eficiência vs frota
-   **Plans:** 4 plans
+   **Plans:** 6 plans
 
 Plans:
+- [ ] 16-00-PLAN.md — Wave 0: failing spec stubs for assets, fuel-records, meter-readings, asset-documents
 - [ ] 16-01-PLAN.md — Backend foundation: Prisma schema (Asset, FuelRecord, MeterReading, AssetDocument), migration, types, RBAC, CRUD service+routes+tests
 - [ ] 16-02-PLAN.md — Backend operational: fuel records, meter readings, asset documents, CSV/PDF export, tests
 - [ ] 16-03-PLAN.md — Frontend listing: types, hooks, AssetsPage, AssetModal, sidebar PATRIMONIO group, route wiring
-- [ ] 16-04-PLAN.md — Frontend detail: AssetDrawer with 6 tabs (geral, documentos, combustível, leituras, manutenção, timeline), fuel/reading forms
+- [ ] 16-04-PLAN.md — Frontend detail: AssetDrawer with 6 tabs (geral, documentos, combustivel, leituras, manutencao, timeline), fuel/reading forms
+- [ ] 16-05-PLAN.md — Backend+frontend bulk import: file parser, 3-endpoint import pattern, AssetImportModal wizard
 
 ### Phase 17: Engine de Depreciação
 
@@ -204,7 +206,7 @@ Plans:
 | 13. Kanban DnD Fixes | v1.1 | 3/3 | Complete | 2026-03-19 |
 | 14. Stock Reversal + Rating | v1.1 | 2/2 | Complete | 2026-03-19 |
 | 15. Frontend API Path Fixes | v1.1 | 1/1 | Complete | 2026-03-19 |
-| 16. Cadastro de Ativos | v1.2 | 0/4 | Planned | - |
+| 16. Cadastro de Ativos | v1.2 | 0/6 | Planned | - |
 | 17. Engine de Depreciação | v1.2 | 0/TBD | Not started | - |
 | 18. Manutenção e Ordens de Serviço | v1.2 | 0/TBD | Not started | - |
 | 19. Integração Financeira — Aquisição | v1.2 | 0/TBD | Not started | - |
