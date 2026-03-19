@@ -17,6 +17,7 @@ import {
   uploadAssetPhoto,
   removeAssetPhoto,
 } from './assets.service';
+import { exportAssetsCsv, exportAssetsPdf } from './asset-export.service';
 
 export const assetsRouter = Router();
 
@@ -69,6 +70,46 @@ const uploadMulter = multer({
     }
   },
 });
+
+// ─── GET /org/:orgId/assets/export/csv ────────────────────────────────
+
+assetsRouter.get(
+  `${base}/export/csv`,
+  authenticate,
+  checkPermission('assets:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const date = new Date().toISOString().split('T')[0];
+      const buffer = await exportAssetsCsv(ctx, req.query as never);
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="ativos-${date}.csv"`);
+      res.send(buffer);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── GET /org/:orgId/assets/export/pdf ────────────────────────────────
+
+assetsRouter.get(
+  `${base}/export/pdf`,
+  authenticate,
+  checkPermission('assets:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const date = new Date().toISOString().split('T')[0];
+      const buffer = await exportAssetsPdf(ctx, req.query as never);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="ativos-${date}.pdf"`);
+      res.send(buffer);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
 
 // ─── GET /org/:orgId/assets/summary (BEFORE /:id) ─────────────────────
 
