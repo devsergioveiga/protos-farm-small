@@ -4,7 +4,7 @@ milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
 stopped_at: Completed 14-02-PLAN.md
-last_updated: '2026-03-19T13:19:19.596Z'
+last_updated: '2026-03-19T13:23:48.479Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 8
