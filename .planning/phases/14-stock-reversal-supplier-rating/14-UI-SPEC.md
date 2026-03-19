@@ -22,7 +22,7 @@ created: 2026-03-19
 | Preset            | not applicable                                                                                      |
 | Component library | none (hand-rolled components using tokens.css)                                                      |
 | Icon library      | lucide-react                                                                                        |
-| Font              | DM Sans (headings, 500/700) + Source Sans 3 (body/UI, 400/600) + JetBrains Mono (numeric data, 400) |
+| Font              | DM Sans (headings, 500/600) + Source Sans 3 (body/UI, 400/600) + JetBrains Mono (numeric data, 400) |
 
 Source: `apps/frontend/src/styles/tokens.css`, `apps/frontend/CLAUDE.md`
 
@@ -57,8 +57,10 @@ Source: `tokens.css` --space-\* scale, `CLAUDE.md` touch target rules
 | ------------ | -------------------- | ----------------------- | ------------------------ | -------------- | --------------------------------------------------------------------------------------- |
 | Body         | 16px (`--text-base`) | 400 (`--font-regular`)  | 1.5 (`--leading-normal`) | Source Sans 3  | Supplier name in QuotationModal list, tab labels, form labels                           |
 | Label        | 14px (`--text-sm`)   | 600 (`--font-semibold`) | 1.5                      | Source Sans 3  | Badge text ("Avaliacao critica", "Avaliacao baixa"), tooltip content, chart axis labels |
-| Heading      | 20px (`--text-md`)   | 700 (`--font-bold`)     | 1.2 (`--leading-tight`)  | DM Sans        | Section heading in Performance tab ("Evolucao da Nota", "Nota por Criterio")            |
+| Heading      | 20px (`--text-md`)   | 600 (`--font-semibold`) | 1.2 (`--leading-tight`)  | DM Sans        | Section heading in Performance tab ("Evolucao da Nota", "Nota por Criterio")            |
 | Numeric data | 12px (`--text-xs`)   | 400 (`--font-regular`)  | 1.5                      | JetBrains Mono | Chart axis tick values (YAxis ratings 1.0–5.0, XAxis dates)                             |
+
+Weights in use: 400 (regular) and 600 (semibold) only. No bold (700) weight is declared for this phase.
 
 Source: `tokens.css` --text-_ and --font-_ tokens, established pattern from `MonthlyEvolutionChart.tsx`
 
@@ -103,7 +105,7 @@ Source: `tokens.css`, `CLAUDE.md` color rules, `MonthlyEvolutionChart.tsx` chart
 **Badge specs:**
 
 - Display: inline-flex, align-items center, gap 4px
-- Padding: 2px 8px (vertical 2px, horizontal 8px)
+- Padding: 4px 8px (vertical 4px, horizontal 8px)
 - Border-radius: `--radius-full` (9999px) — pill shape
 - Font: 14px Source Sans 3 weight 600
 - Positioned: inline after supplier name span, before existing star display
@@ -124,6 +126,8 @@ Source: `14-CONTEXT.md` badge decision, `CLAUDE.md` color-not-alone rule, `Quota
 
 **Where:** New "Performance" tab added to the supplier detail section in SuppliersPage. The tab panel sits alongside existing supplier info. Follow the existing Tabs pattern (tabs component with header/panel structure).
 
+**Primary focal point:** Rating Trend Chart (full-width LineChart) — draws eye first due to chart scale and position at the top of the tab panel, above the criteria breakdown.
+
 **Tab label:** "Performance"
 
 **Tab panel layout (top to bottom):**
@@ -140,7 +144,7 @@ Source: `14-CONTEXT.md` badge decision, `CLAUDE.md` color-not-alone rule, `Quota
 
 #### 2b. Rating Trend Chart (LineChart)
 
-- Title: "Evolucao da Nota" — 20px DM Sans bold, margin-bottom 16px
+- Title: "Evolucao da Nota" — 20px DM Sans semibold (weight 600), margin-bottom 16px
 - Recharts `LineChart` inside `ResponsiveContainer width="100%" height={240}`
 - XAxis: `dataKey="date"` formatted as "DD/MM/YY" — font Source Sans 3 12px, color `--color-neutral-500`
 - YAxis: domain [1, 5], ticks [1, 2, 3, 4, 5] — font JetBrains Mono 12px, color `--color-neutral-500`
@@ -151,7 +155,7 @@ Source: `14-CONTEXT.md` badge decision, `CLAUDE.md` color-not-alone rule, `Quota
 
 #### 2c. Criteria Breakdown (horizontal bars)
 
-- Title: "Nota por Criterio" — 20px DM Sans bold, margin-top 32px, margin-bottom 16px
+- Title: "Nota por Criterio" — 20px DM Sans semibold (weight 600), margin-top 32px, margin-bottom 16px
 - Four rows, one per criterion: "Prazo de Entrega", "Qualidade do Produto", "Preco", "Atendimento"
 - Each row layout:
   - Label: 16px Source Sans 3 regular, min-width 160px, color `--color-neutral-700`
@@ -164,7 +168,7 @@ Source: `14-CONTEXT.md` badge decision, `CLAUDE.md` color-not-alone rule, `Quota
 #### 2d. Empty State (no ratings in selected period)
 
 - Icon: `Star` size=48, color `--color-neutral-300`, aria-hidden
-- Heading: "Nenhuma avaliacao neste periodo" — 20px DM Sans bold, color `--color-neutral-700`
+- Heading: "Nenhuma avaliacao neste periodo" — 20px DM Sans semibold (weight 600), color `--color-neutral-700`
 - Body: "Registre avaliacoes apos cada entrega para acompanhar a performance deste fornecedor." — 16px Source Sans 3 regular, color `--color-neutral-500`, max-width 360px
 - CTA button: "Avaliar fornecedor" — primary button style (`--color-primary-600` bg, white text)
 - Layout: flex column, align-items center, gap 16px, padding-top 48px
