@@ -107,6 +107,7 @@ import { savingAnalysisRouter } from './modules/saving-analysis/saving-analysis.
 import { purchasingKanbanRouter } from './modules/purchasing-kanban/purchasing-kanban.routes';
 import { purchasingDashboardRouter } from './modules/purchasing-dashboard/purchasing-dashboard.routes';
 import { notificationPreferencesRouter } from './modules/notification-preferences/notification-preferences.routes';
+import { assetsRouter } from './modules/assets/assets.routes';
 
 const app = express();
 
@@ -223,5 +224,6 @@ app.use('/api', savingAnalysisRouter);
 app.use('/api', purchasingKanbanRouter);
 app.use('/api', purchasingDashboardRouter);
 app.use('/api', notificationPreferencesRouter);
+app.use('/api', assetsRouter);
 
 export { app };
