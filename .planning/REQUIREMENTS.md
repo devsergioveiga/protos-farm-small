@@ -11,7 +11,7 @@ Requirements for milestone v1.1. Each maps to roadmap phases.
 
 - [x] **FORN-01**: Gerente pode cadastrar fornecedor com dados fiscais (razão social, CNPJ/CPF, IE, endereço), dados comerciais (contato principal, condição de pagamento padrão, frete CIF/FOB), classificação por categorias, vinculação a produtos do catálogo, upload de documentação, avaliação (rating 1-5), e status (ativo/inativo/bloqueado)
 - [x] **FORN-02**: Gerente pode importar fornecedores em massa via CSV/Excel, consultar CNPJ para preencher dados automaticamente, buscar por nome/CNPJ/categoria/produto/cidade, e exportar listagem (CSV, PDF)
-- [ ] **FORN-03**: Gerente pode avaliar fornecedor após cada entrega (prazo, qualidade, preço, atendimento), ver ranking automático por média ponderada, histórico de avaliações, top 3 por categoria, alerta ao cotar com fornecedor rating < 3, e relatório de performance por período
+- [x] **FORN-03**: Gerente pode avaliar fornecedor após cada entrega (prazo, qualidade, preço, atendimento), ver ranking automático por média ponderada, histórico de avaliações, top 3 por categoria, alerta ao cotar com fornecedor rating < 3, e relatório de performance por período
 
 ### Requisição de Compra
 
@@ -37,7 +37,7 @@ Requirements for milestone v1.1. Each maps to roadmap phases.
 
 ### Devolução
 
-- [ ] **DEVO-01**: Gerente de estoque pode registrar devolução total ou parcial vinculada ao recebimento, com motivo obrigatório (defeito, validade, produto errado, excedente, especificação divergente), fotos/laudo, ação esperada (troca/crédito/estorno), saída automática do estoque, referência de NF de devolução, notificação ao fornecedor, e acompanhamento da resolução
+- [x] **DEVO-01**: Gerente de estoque pode registrar devolução total ou parcial vinculada ao recebimento, com motivo obrigatório (defeito, validade, produto errado, excedente, especificação divergente), fotos/laudo, ação esperada (troca/crédito/estorno), saída automática do estoque, referência de NF de devolução, notificação ao fornecedor, e acompanhamento da resolução
 
 ### Integração Financeira
 
@@ -83,7 +83,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ----------- | -------- | -------- |
 | FORN-01     | Phase 7  | Complete |
 | FORN-02     | Phase 7  | Complete |
-| FORN-03     | Phase 14 | Pending  |
+| FORN-03     | Phase 14 | Complete |
 | REQC-01     | Phase 8  | Complete |
 | REQC-02     | Phase 8  | Complete |
 | REQC-03     | Phase 8  | Complete |
@@ -95,7 +95,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RECE-02     | Phase 10 | Complete |
 | RECE-03     | Phase 10 | Complete |
 | FINC-01     | Phase 10 | Complete |
-| DEVO-01     | Phase 14 | Pending  |
+| DEVO-01     | Phase 14 | Complete |
 | FINC-02     | Phase 11 | Complete |
 | FINC-03     | Phase 11 | Complete |
 | DASH-01     | Phase 13 | Complete |

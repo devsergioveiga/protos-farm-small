@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Phase 14 context gathered
-last_updated: '2026-03-19T10:53:40.099Z'
+stopped_at: Completed 14-01-PLAN.md
+last_updated: '2026-03-19T13:12:52.682Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 8
   completed_phases: 7
-  total_plans: 34
-  completed_plans: 34
+  total_plans: 36
+  completed_plans: 35
   percent: 0
 ---
 
@@ -65,6 +65,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 13-kanban-dnd-notification-wiring PP00 | 15min | 2 tasks | 2 files |
 | Phase 13-kanban-dnd-notification-wiring P02 | 18min | 2 tasks | 4 files |
 | Phase 13-kanban-dnd-notification-wiring P01 | 3 | 2 tasks | 2 files |
+| Phase 14-stock-reversal-supplier-rating P01 | 3 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,8 @@ Key decisions for v1.1:
 - [Phase 13-kanban-dnd-notification-wiring]: RETURN_RESOLVED placed in CONCLUIDA branch targeting FINANCIAL users (not APROVADA/MANAGER) — correct business event for financial processing alert
 - [Phase 13-kanban-dnd-notification-wiring]: EM_COTACAO->OC_EMITIDA returns null from moveCard and navigates to /quotations?purchaseRequestId= in KanbanBoard (purchaseRequestId not quotationId — card.id in that column is the RC)
 - [Phase 13-kanban-dnd-notification-wiring]: OC_EMITIDA->AGUARDANDO_ENTREGA uses api.patch /transition with { status: 'EM_TRANSITO' } matching TransitionPOInput interface (not action: CONFIRM_SHIPMENT)
+- [Phase 14-stock-reversal-supplier-rating]: Stock reversal tied to CONCLUIDA (physical confirmation), not APROVADA — prevents phantom stock decrements before goods are returned
+- [Phase 14-stock-reversal-supplier-rating]: PerformanceReport returns empty breakdown {0,0,0,0} instead of null when no ratings — cleaner for frontend consumption
 
 ### Pending Todos
 
@@ -124,6 +127,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T10:53:40.095Z
-Stopped at: Phase 14 context gathered
-Resume file: .planning/phases/14-stock-reversal-supplier-rating/14-CONTEXT.md
+Last session: 2026-03-19T13:12:52.679Z
+Stopped at: Completed 14-01-PLAN.md
+Resume file: None
