@@ -5,6 +5,7 @@ import type {
   Asset,
   AssetType,
   AssetClassification,
+  AssetStatus,
   CreateAssetInput,
   UpdateAssetInput,
 } from '@/types/asset';
@@ -67,13 +68,16 @@ const ALL_TYPE_SPECIFIC_FIELDS = [
 
 // ─── Hook ─────────────────────────────────────────────────────────────
 
-type FormData = Partial<CreateAssetInput> & { id?: string };
+type FormData = Partial<CreateAssetInput> & { id?: string; status?: AssetStatus };
 
 interface UseAssetFormResult {
   formData: FormData;
   errors: Record<string, string>;
   isSubmitting: boolean;
-  setField: (name: keyof CreateAssetInput | 'id', value: string | number | undefined) => void;
+  setField: (
+    name: keyof CreateAssetInput | 'id' | 'status',
+    value: string | number | undefined,
+  ) => void;
   validate: () => Record<string, string>;
   handleSubmit: (onSuccess: (asset: Asset) => void) => Promise<void>;
   resetForm: () => void;
@@ -89,7 +93,7 @@ export function useAssetForm(): UseAssetFormResult {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const setField = useCallback(
-    (name: keyof CreateAssetInput | 'id', value: string | number | undefined) => {
+    (name: keyof CreateAssetInput | 'id' | 'status', value: string | number | undefined) => {
       setFormData((prev) => {
         const next = { ...prev, [name]: value === '' ? undefined : value };
 
