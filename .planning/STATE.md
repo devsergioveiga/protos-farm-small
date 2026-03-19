@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: planning
-stopped_at: Roadmap created, ready for phase planning
-last_updated: '2026-03-19T18:00:00.000Z'
-last_activity: 2026-03-19 — Roadmap v1.2 created (9 phases, 38 requirements)
+stopped_at: Phase 16 context gathered
+last_updated: "2026-03-19T18:54:15.813Z"
+last_activity: 2026-03-19 — Roadmap v1.2 created
 progress:
   total_phases: 9
   completed_phases: 0
@@ -78,6 +78,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T18:00:00.000Z
-Stopped at: Roadmap v1.2 created — ready for phase planning
-Resume file: .planning/ROADMAP.md
+Last session: 2026-03-19T18:54:15.806Z
+Stopped at: Phase 16 context gathered
+Resume file: .planning/phases/16-cadastro-de-ativos/16-CONTEXT.md
