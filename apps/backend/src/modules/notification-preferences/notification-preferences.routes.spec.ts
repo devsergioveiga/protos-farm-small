@@ -219,9 +219,8 @@ describe('NotificationPreferences endpoints', () => {
     it('should return false when preference is disabled', async () => {
       // Test the service function directly via mock
       mockedService.shouldNotify.mockResolvedValue(false);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await prefService.shouldNotify(
-        {} as any,
+        {} as unknown as Parameters<typeof prefService.shouldNotify>[0],
         'user-1',
         'org-1',
         'RC_APPROVED',
@@ -232,9 +231,8 @@ describe('NotificationPreferences endpoints', () => {
 
     it('should return true when no preference is saved (opt-out model)', async () => {
       mockedService.shouldNotify.mockResolvedValue(true);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await prefService.shouldNotify(
-        {} as any,
+        {} as unknown as Parameters<typeof prefService.shouldNotify>[0],
         'user-1',
         'org-1',
         'SLA_REMINDER',
