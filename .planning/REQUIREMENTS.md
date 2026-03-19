@@ -87,27 +87,69 @@ Deferred to future milestone. Tracked but not in current roadmap.
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| Emissao de NF-e | Modulo fiscal separado, complexidade regulatoria |
-| Integracao IoT/telematics | Complexidade vs beneficio nao justificada no escopo atual |
-| Manutencao preditiva | Requer historico de falhas que ainda nao existe |
-| CIAP (credito ICMS) | Pre-requisito: modulo fiscal |
+| Feature                               | Reason                                                              |
+| ------------------------------------- | ------------------------------------------------------------------- |
+| Emissao de NF-e                       | Modulo fiscal separado, complexidade regulatoria                    |
+| Integracao IoT/telematics             | Complexidade vs beneficio nao justificada no escopo atual           |
+| Manutencao preditiva                  | Requer historico de falhas que ainda nao existe                     |
+| CIAP (credito ICMS)                   | Pre-requisito: modulo fiscal                                        |
 | Gestao de projetos (Gantt) para obras | Excessivo para o escopo — cronograma de etapas simples e suficiente |
 
 ## Traceability
 
-Updated during roadmap creation.
-
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| (populated by roadmapper) | | |
+| Requirement | Phase    | Status  |
+| ----------- | -------- | ------- |
+| ATIV-01     | Phase 16 | Pending |
+| ATIV-02     | Phase 16 | Pending |
+| ATIV-03     | Phase 16 | Pending |
+| ATIV-04     | Phase 16 | Pending |
+| ATIV-05     | Phase 16 | Pending |
+| ATIV-06     | Phase 16 | Pending |
+| ATIV-07     | Phase 16 | Pending |
+| DEPR-01     | Phase 17 | Pending |
+| DEPR-02     | Phase 17 | Pending |
+| CCPA-01     | Phase 17 | Pending |
+| CCPA-02     | Phase 17 | Pending |
+| MANU-01     | Phase 18 | Pending |
+| MANU-02     | Phase 18 | Pending |
+| MANU-03     | Phase 18 | Pending |
+| MANU-04     | Phase 18 | Pending |
+| MANU-05     | Phase 18 | Pending |
+| MANU-06     | Phase 18 | Pending |
+| MANU-07     | Phase 18 | Pending |
+| MANU-08     | Phase 18 | Pending |
+| CCPA-03     | Phase 18 | Pending |
+| AQUI-01     | Phase 19 | Pending |
+| AQUI-02     | Phase 19 | Pending |
+| AQUI-03     | Phase 19 | Pending |
+| AQUI-04     | Phase 19 | Pending |
+| AQUI-07     | Phase 19 | Pending |
+| DISP-01     | Phase 20 | Pending |
+| DISP-02     | Phase 20 | Pending |
+| DISP-03     | Phase 20 | Pending |
+| DISP-04     | Phase 20 | Pending |
+| DISP-05     | Phase 20 | Pending |
+| DISP-06     | Phase 20 | Pending |
+| OPER-01     | Phase 21 | Pending |
+| OPER-02     | Phase 21 | Pending |
+| OPER-03     | Phase 21 | Pending |
+| OPER-04     | Phase 21 | Pending |
+| HIER-01     | Phase 22 | Pending |
+| HIER-02     | Phase 22 | Pending |
+| HIER-03     | Phase 22 | Pending |
+| DEPR-04     | Phase 23 | Pending |
+| CCPA-04     | Phase 23 | Pending |
+| DEPR-03     | Phase 24 | Pending |
+| AQUI-05     | Phase 24 | Pending |
+| AQUI-06     | Phase 24 | Pending |
 
 **Coverage:**
-- v1.2 requirements: 44 total
-- Mapped to phases: 0
-- Unmapped: 44
+
+- v1.2 requirements: 43 total
+- Mapped to phases: 43
+- Unmapped: 0
 
 ---
-*Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after initial definition*
+
+_Requirements defined: 2026-03-19_
+_Last updated: 2026-03-19 after roadmap creation_

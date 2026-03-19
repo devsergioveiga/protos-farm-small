@@ -3,7 +3,8 @@
 ## Milestones
 
 - ✅ **v1.0 Financeiro Base** — Phases 1-6 (shipped 2026-03-17)
-- 🚧 **v1.1 Gestão de Compras** — Phases 7-12 (in progress)
+- ✅ **v1.1 Gestão de Compras** — Phases 7-15 (all complete)
+- 🚧 **v1.2 Gestão de Patrimônio** — Phases 16-24 (in progress)
 
 ## Phases
 
@@ -21,19 +22,34 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 </details>
 
-### 🚧 v1.1 Gestão de Compras (In Progress)
-
-**Milestone Goal:** Implementar o ciclo completo de procurement — da requisição de compra até o recebimento e geração automática de contas a pagar.
+<details>
+<summary>✅ v1.1 Gestão de Compras (Phases 7-15) — COMPLETE</summary>
 
 - [x] **Phase 7: Cadastro de Fornecedores** — Fundação do módulo: entidade raiz de todo o ciclo P2P (completed 2026-03-17)
 - [x] **Phase 8: Requisição e Aprovação** — Entrada do ciclo: RC com fluxo de aprovação configurável por alçada (completed 2026-03-17)
-- [ ] **Phase 9: Cotação e Pedido de Compra** — Seleção de fornecedor e emissão formal da OC com PDF
-- [ ] **Phase 10: Recebimento de Mercadorias** — Hub de integração: entrada no estoque + geração automática de CP
-- [ ] **Phase 11: Devolução, Orçamento e Saving** — Reversão de estoque/financeiro e controle orçamentário
+- [x] **Phase 9: Cotação e Pedido de Compra** — Seleção de fornecedor e emissão formal da OC com PDF (completed 2026-03-19)
+- [x] **Phase 10: Recebimento de Mercadorias** — Hub de integração: entrada no estoque + geração automática de CP (completed 2026-03-19)
+- [x] **Phase 11: Devolução, Orçamento e Saving** — Reversão de estoque/financeiro e controle orçamentário (completed pre-GSD)
 - [x] **Phase 12: Kanban, Dashboard e Notificações** — Visibilidade operacional e execução do fluxo completo (completed 2026-03-18)
 - [x] **Phase 13: Kanban DnD Fixes + Notification Wiring** — Fix broken DnD transitions and wire notification dispatches (completed 2026-03-19)
 - [x] **Phase 14: Stock Reversal + Supplier Rating Completion** — Stock reversal on goods return + rating alert and performance report (completed 2026-03-19)
 - [x] **Phase 15: Frontend API Path Fixes** — Fix Kanban DnD orgId path mismatches, notification preferences route, and DAILY_DIGEST type (completed 2026-03-19)
+
+</details>
+
+### 🚧 v1.2 Gestão de Patrimônio (Active)
+
+**Milestone Goal:** Implementar o ciclo de vida completo dos ativos da fazenda — cadastro, depreciação, manutenção preventiva/corretiva, controle operacional, documentação e integração bidirecional com o módulo financeiro (compra, venda, financiamento, leasing).
+
+- [ ] **Phase 16: Cadastro de Ativos** — Entidade raiz do patrimônio: todas as fases dependem de um ativo cadastrado e classificado corretamente
+- [ ] **Phase 17: Engine de Depreciação** — Cálculo mensal automático e rastreável, pré-requisito para ganho/perda na alienação
+- [ ] **Phase 18: Manutenção e Ordens de Serviço** — CMMS completo com consumo de peças do estoque existente e classificação contábil obrigatória
+- [ ] **Phase 19: Integração Financeira — Aquisição** — Compra à vista e financiada geram CP automaticamente sem contaminar o fluxo de recebimento de mercadorias
+- [ ] **Phase 20: Alienação e Baixa de Ativos** — Venda, descarte, sinistro e transferência com cálculo automático de ganho/perda e geração de CR
+- [ ] **Phase 21: Controle Operacional** — Combustível, documentos, horímetro e custo operacional por ativo
+- [ ] **Phase 22: Hierarquia Avançada e Imobilizado em Andamento** — Ativo composto pai-filho, reforma/capitalização e obras em andamento
+- [ ] **Phase 23: Relatórios e Dashboard Patrimonial** — Visão consolidada de TCO, depreciação acumulada e indicadores — leitura sobre dados produzidos pelas fases anteriores
+- [ ] **Phase 24: Ativos Biológicos, Leasing e Features Avançadas** — CPC 29 fair value, CPC 06 leasing e troca de ativo com compensação financeira
 
 ## Phase Details
 
@@ -88,12 +104,12 @@ Plans:
 **Requirements**: COTA-01, COTA-02, COTA-03, PEDI-01
 **Success Criteria** (what must be TRUE):
 
-1. Comprador pode criar solicitação de cotação a partir de RC aprovada, selecionando fornecedores (com sugestão dos top 3 por categoria) e definindo prazo de resposta
-2. Comprador pode registrar cotações recebidas e visualizar mapa comparativo com destaque de menor preço por item e cálculo de total com frete e impostos
-3. Gerente pode aprovar a cotação vencedora com justificativa obrigatória quando não for o menor preço
-4. Comprador pode emitir OC com número sequencial (OC-AAAA/NNNN), exportar PDF e enviar por email ao fornecedor
-5. OC emitida reflete snapshot de preços da cotação aprovada (edição bloqueada após emissão)
-   **Plans**: TBD
+1. ✅ Comprador pode criar solicitação de cotação a partir de RC aprovada, selecionando fornecedores (com sugestão dos top 3 por categoria) e definindo prazo de resposta
+2. ✅ Comprador pode registrar cotações recebidas e visualizar mapa comparativo com destaque de menor preço por item e cálculo de total com frete e impostos
+3. ✅ Gerente pode aprovar a cotação vencedora com justificativa obrigatória quando não for o menor preço
+4. ✅ Comprador pode emitir OC com número sequencial (OC-AAAA/NNNN), exportar PDF e enviar por email ao fornecedor
+5. ✅ OC emitida reflete snapshot de preços da cotação aprovada (edição bloqueada após emissão)
+   **Plans**: Pre-GSD (implemented before roadmap tracking) — 40+ quotation tests, 40+ PO tests
 
 ### Phase 10: Recebimento de Mercadorias
 
@@ -102,12 +118,12 @@ Plans:
 **Requirements**: RECE-01, RECE-02, RECE-03, FINC-01
 **Success Criteria** (what must be TRUE):
 
-1. Conferente pode registrar recebimento nos 6 cenários (NF+mercadoria simultânea, NF antecipada, mercadoria antecipada, parcial, NF fracionada, emergencial sem pedido)
-2. Conferente pode conferir itens fisicamente, registrar divergências com foto e escolher ação (devolver/aceitar com desconto/registrar pendência)
-3. Ao confirmar recebimento+NF, o sistema cria automaticamente entrada no estoque e conta a pagar com fornecedor, valor, vencimento e centro de custo corretos
-4. CP gerado referencia a cadeia completa (pedido→cotação→requisição) com drill-down navegável
-5. Recebimentos parciais geram CPs separados por entrega, sem duplicar o total do pedido
-   **Plans**: TBD
+1. ✅ Conferente pode registrar recebimento nos 6 cenários (NF+mercadoria simultânea, NF antecipada, mercadoria antecipada, parcial, NF fracionada, emergencial sem pedido)
+2. ✅ Conferente pode conferir itens fisicamente, registrar divergências com foto e escolher ação (devolver/aceitar com desconto/registrar pendência)
+3. ✅ Ao confirmar recebimento+NF, o sistema cria automaticamente entrada no estoque e conta a pagar com fornecedor, valor, vencimento e centro de custo corretos
+4. ✅ CP gerado referencia a cadeia completa (pedido→cotação→requisição) com drill-down navegável
+5. ✅ Recebimentos parciais geram CPs separados por entrega, sem duplicar o total do pedido
+   **Plans**: Pre-GSD (implemented before roadmap tracking) — 27 backend tests
 
 ### Phase 11: Devolução, Orçamento e Saving
 
@@ -116,12 +132,12 @@ Plans:
 **Requirements**: DEVO-01, FINC-02, FINC-03
 **Success Criteria** (what must be TRUE):
 
-1. Gerente de estoque pode registrar devolução total ou parcial com motivo, fotos e ação esperada (troca/crédito/estorno), com saída automática do estoque e notificação ao fornecedor
-2. Gerente financeiro pode definir orçamento de compras por categoria e período, acompanhando orçado vs requisitado vs comprado vs pago
-3. O sistema alerta ao aprovar requisição ou pedido que ultrapasse o orçamento definido
-4. Gerente pode ver saving por cotação (diferença maior preço vs vencedor) e saving acumulado por período
-5. Gerente pode ver histórico de preço por produto e indicadores de ciclo (% compras com cotação formal, % emergenciais, prazo médio)
-   **Plans**: TBD
+1. ✅ Gerente de estoque pode registrar devolução total ou parcial com motivo, fotos e ação esperada (troca/crédito/estorno), com saída automática do estoque e notificação ao fornecedor
+2. ✅ Gerente financeiro pode definir orçamento de compras por categoria e período, acompanhando orçado vs requisitado vs comprado vs pago
+3. ✅ O sistema alerta ao aprovar requisição ou pedido que ultrapasse o orçamento definido
+4. ✅ Gerente pode ver saving por cotação (diferença maior preço vs vencedor) e saving acumulado por período
+5. ✅ Gerente pode ver histórico de preço por produto e indicadores de ciclo (% compras com cotação formal, % emergenciais, prazo médio)
+   **Plans**: Pre-GSD (implemented before roadmap tracking) — 221 backend tests (89 returns + 69 budgets + 63 saving)
 
 ### Phase 12: Kanban, Dashboard e Notificações
 
@@ -203,22 +219,164 @@ Plans:
 
 - [ ] 15-01-PLAN.md — Fix 3 DnD paths in usePurchasingKanban, inject orgId in useNotificationPreferences, add DAILY_DIGEST to useNotifications
 
+---
+
+### Phase 16: Cadastro de Ativos
+
+**Goal**: Gerente pode cadastrar qualquer tipo de ativo da fazenda — máquina, veículo, benfeitoria, terra ou implemento — com classificação CPC correta definida desde o schema, tornando a entidade ativo disponível como raiz de todo o módulo patrimonial
+**Depends on**: Phase 15 (v1.1 completo — base financeira e módulo de estoque existentes)
+**Requirements**: ATIV-01, ATIV-02, ATIV-03, ATIV-04, ATIV-05, ATIV-06, ATIV-07
+**Success Criteria** (what must be TRUE):
+
+1. Gerente pode cadastrar máquina, veículo, benfeitoria, terra ou implemento com classificação CPC (CPC 27 depreciável, CPC 27 não-depreciável, CPC 29 valor justo) definida no momento do cadastro
+2. Gerente pode importar ativos em massa via CSV/Excel com mapeamento de colunas e relatório de erros pós-importação
+3. Gerente pode ver inventário completo de ativos com filtros por tipo, fazenda, status e faixa de valor, com exportação CSV/Excel/PDF
+4. Gerente pode acessar a ficha completa do ativo com histórico de manutenções, documentos e timeline de eventos desde o cadastro
+5. Ativo de benfeitoria aparece com marcação georreferenciada no mapa da fazenda usando coordenada ou polígono informado no cadastro
+
+**Plans**: TBD
+
+### Phase 17: Engine de Depreciação
+
+**Goal**: Contador pode configurar o método de depreciação por ativo e o sistema executa o cálculo mensal automaticamente com precisão decimal e idempotência garantida — tornando o valor contábil líquido de cada ativo sempre correto e auditável
+**Depends on**: Phase 16
+**Requirements**: DEPR-01, DEPR-02, CCPA-01, CCPA-02
+**Success Criteria** (what must be TRUE):
+
+1. Contador pode configurar método de depreciação por ativo (linear, horas-uso, produção, acelerada) com taxa fiscal vs gerencial, vida útil e valor residual
+2. Sistema executa cálculo mensal de depreciação com pro rata die no primeiro e último mês, parando ao atingir o valor residual, sem duplicar lançamentos em caso de reexecução
+3. Cada ativo tem sua depreciação apropriada ao centro de custo configurado, com conciliação automática garantindo que a soma dos CCs igual ao total depreciado
+4. Contador pode ver relatório mensal de depreciação por ativo com valor antes/depois e lançamento por centro de custo
+5. Ativo com status EM_ANDAMENTO é excluído do lote de depreciação — depreciação só inicia após ativação
+
+**Plans**: TBD
+
+### Phase 18: Manutenção e Ordens de Serviço
+
+**Goal**: Gerente pode criar planos de manutenção preventiva e gerenciar o ciclo completo de ordens de serviço — com consumo automático de peças do estoque, classificação contábil obrigatória no encerramento e custo de manutenção rastreado por centro de custo
+**Depends on**: Phase 16
+**Requirements**: MANU-01, MANU-02, MANU-03, MANU-04, MANU-05, MANU-06, MANU-07, MANU-08, CCPA-03
+**Success Criteria** (what must be TRUE):
+
+1. Gerente pode criar plano de manutenção preventiva com gatilhos por horímetro, km ou tempo, e o sistema calcula a próxima execução e alerta com antecedência configurável
+2. Gerente pode abrir OS, registrar peças consumidas (com baixa automática no estoque), horas de mão de obra, custo externo e fotos, e encerrar a OS — sendo obrigado a classificar como despesa, capitalização ou diferimento
+3. Operador pode solicitar manutenção pelo celular com foto e geolocalização, funcionando offline, com notificação push ao responsável ao sincronizar
+4. Gerente pode controlar estoque de peças de reposição com ponto de reposição e vinculação de peças compatíveis por máquina
+5. Gerente pode ver dashboard de manutenção com disponibilidade mecânica, MTBF, MTTR, custo acumulado e kanban de OS abertas
+
+**Plans**: TBD
+
+### Phase 19: Integração Financeira — Aquisição
+
+**Goal**: Gerente pode registrar a compra de um ativo — à vista, financiada ou via NF-e — com geração automática de conta a pagar pelo módulo financeiro existente, sem contaminar o fluxo de recebimento de mercadorias
+**Depends on**: Phase 16, Phase 17
+**Requirements**: AQUI-01, AQUI-02, AQUI-03, AQUI-04, AQUI-07
+**Success Criteria** (what must be TRUE):
+
+1. Ao cadastrar ativo com valor de aquisição, sistema gera CP automaticamente com fornecedor, valor, vencimento e centro de custo — sem criar entrada no estoque
+2. Gerente pode registrar compra financiada com dados do financiamento e visualizar parcelas geradas automaticamente no módulo CP
+3. Gerente pode fazer upload de NF-e (XML) e o sistema preenche automaticamente fornecedor, valor e dados fiscais do ativo
+4. Gerente pode registrar NF com múltiplos ativos, cada um gerando seu registro patrimonial com rateio proporcional das despesas acessórias
+5. Cada aquisição tem centro de custo e classificação contábil definidos para apropriação correta da depreciação futura
+
+**Plans**: TBD
+
+### Phase 20: Alienação e Baixa de Ativos
+
+**Goal**: Gerente pode encerrar o ciclo de vida de um ativo por venda, descarte, sinistro ou transferência — com cálculo automático de ganho/perda contábil, geração de CR e cancelamento atômico das entradas de depreciação pendentes
+**Depends on**: Phase 17, Phase 19
+**Requirements**: DISP-01, DISP-02, DISP-03, DISP-04, DISP-05, DISP-06
+**Success Criteria** (what must be TRUE):
+
+1. Gerente pode registrar venda de ativo e visualizar o ganho ou perda contábil calculado automaticamente (valor de venda vs valor contábil líquido), com CR gerado no módulo financeiro
+2. Gerente pode registrar baixa por descarte, sinistro ou obsolescência com motivo e laudo, com lançamento de perda e encerramento do ativo
+3. Gerente pode registrar venda parcelada de ativo com parcelas geradas no módulo CR
+4. Gerente pode transferir ativo entre fazendas da mesma organização com histórico e reavaliação opcional de centro de custo
+5. Contador pode conciliar patrimônio físico vs contábil com inventário (contagem física vs registro) e gerar ajustes
+6. Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciação acumulada, aquisições/baixas do período e indicadores de rentabilidade
+
+**Plans**: TBD
+
+### Phase 21: Controle Operacional
+
+**Goal**: Gerente e operador podem registrar e consultar o histórico operacional de cada ativo — combustível, documentos, horímetro e custo operacional — formando a base de dados para o cálculo de TCO
+**Depends on**: Phase 16
+**Requirements**: OPER-01, OPER-02, OPER-03, OPER-04
+**Success Criteria** (what must be TRUE):
+
+1. Gerente pode registrar abastecimentos por ativo com custo/litro e custo/hora, e ver benchmarking de eficiência contra a média da frota
+2. Gerente pode controlar documentos com vencimento (CRLV, seguro, revisão) com alertas automáticos antecipados e calendário de vencimentos
+3. Operador pode atualizar horímetro/odômetro pelo celular com validação anti-regressão
+4. Sistema exibe custo operacional por ativo composto por aquisição, depreciação, manutenção, combustível e seguro para análise de viabilidade
+
+**Plans**: TBD
+
+### Phase 22: Hierarquia Avançada e Imobilizado em Andamento
+
+**Goal**: Gerente pode modelar relacionamentos complexos entre ativos — ativo composto pai-filho, reforma com decisão de capitalização, e obra em andamento com aportes parciais — cobrindo os cenários patrimoniais menos frequentes mas de alto valor
+**Depends on**: Phase 16, Phase 17
+**Requirements**: HIER-01, HIER-02, HIER-03
+**Success Criteria** (what must be TRUE):
+
+1. Gerente pode criar ativo composto com hierarquia pai-filho até 3 níveis, onde o ativo pai totaliza os valores dos filhos e cada filho tem depreciação independente
+2. Gerente pode registrar reforma ou ampliação de ativo existente com decisão explícita de capitalizar (soma ao valor contábil e reavaliar vida útil) ou tratar como despesa imediata (vai para DRE)
+3. Gerente pode registrar imobilizado em andamento acumulando aportes parciais com cronograma de etapas, alerta de orçamento e ativação ao concluir a obra — iniciando a depreciação somente após a ativação
+
+**Plans**: TBD
+
+### Phase 23: Relatórios e Dashboard Patrimonial
+
+**Goal**: Contador e gerente têm acesso a relatórios completos do patrimônio — inventário, depreciação, TCO, custo por centro de custo — e ao wizard de criação de centro de custo, consumindo dados produzidos por todas as fases anteriores
+**Depends on**: Phase 17, Phase 18, Phase 20, Phase 21
+**Requirements**: DEPR-04, CCPA-04
+**Success Criteria** (what must be TRUE):
+
+1. Contador pode gerar relatório patrimonial com valor bruto, depreciação acumulada e valor líquido por classe de ativo, exportável em PDF/Excel/CSV
+2. Contador pode ver relatório de depreciação acumulada por período e projeção para os próximos 12/36/60 meses
+3. Sistema exibe dashboard de TCO por ativo e por frota, com alerta de "reparar vs substituir" quando custo acumulado de manutenção ultrapassa 60-70% do custo de reposição
+4. Sistema oferece wizard de decisão para orientar o gerente na criação de centro de custo por tipo de ativo, com exemplos e templates por tipo de fazenda
+
+**Plans**: TBD
+
+### Phase 24: Ativos Biológicos, Leasing e Features Avançadas
+
+**Goal**: Contador pode registrar valor justo de ativos biológicos (CPC 29) e leasing (CPC 06), e o gerente pode registrar troca de ativo com compensação financeira — cobrindo os cenários contábeis mais complexos do patrimônio rural
+**Depends on**: Phase 17, Phase 19
+**Requirements**: DEPR-03, AQUI-05, AQUI-06
+**Success Criteria** (what must be TRUE):
+
+1. Contador pode registrar valor justo de ativos biológicos (rebanho por categoria e culturas perenes por estágio) com variação de valor justo registrada no resultado do período como item não-caixa
+2. Planta portadora (café, laranja) é classificada como CPC 27 depreciável — não CPC 29 — e entra no lote de depreciação normal
+3. Gerente pode registrar leasing e arrendamento mercantil (CPC 06) com ROU asset criado automaticamente, parcelas geradas no módulo CP e controle da opção de compra ao final do contrato
+4. Gerente pode registrar troca de ativo (trade-in) com compensação financeira automática — valor do ativo antigo abatido do novo — gerando baixa e aquisição no mesmo lançamento
+
+**Plans**: TBD
+
 ## Progress
 
-| Phase                                           | Milestone | Plans Complete | Status      | Completed  |
-| ----------------------------------------------- | --------- | -------------- | ----------- | ---------- |
-| 1. Fundação Financeira                          | v1.0      | 3/3            | Complete    | 2026-03-16 |
-| 2. Núcleo AP/AR                                 | v1.0      | 7/7            | Complete    | 2026-03-16 |
-| 3. Dashboard Financeiro                         | v1.0      | 2/2            | Complete    | 2026-03-16 |
-| 4. Instrumentos de Pagamento                    | v1.0      | 7/7            | Complete    | 2026-03-17 |
-| 5. Conciliação e Fluxo de Caixa                 | v1.0      | 6/6            | Complete    | 2026-03-17 |
-| 6. Crédito Rural                                | v1.0      | 5/5            | Complete    | 2026-03-17 |
-| 7. Cadastro de Fornecedores                     | 4/4       | Complete       | 2026-03-17  | -          |
-| 8. Requisição e Aprovação                       | 6/6       | Complete       | 2026-03-17  | -          |
-| 9. Cotação e Pedido de Compra                   | v1.1      | 0/TBD          | Not started | -          |
-| 10. Recebimento de Mercadorias                  | v1.1      | 0/TBD          | Not started | -          |
-| 11. Devolução, Orçamento e Saving               | v1.1      | 0/TBD          | Not started | -          |
-| 12. Kanban, Dashboard e Notificações            | 5/5       | Complete       | 2026-03-18  | -          |
-| 13. Kanban DnD Fixes + Notification Wiring      | 3/3       | Complete       | 2026-03-19  | -          |
-| 14. Stock Reversal + Supplier Rating Completion | 2/2       | Complete       | 2026-03-19  | -          |
-| 15. Frontend API Path Fixes                     | 1/1       | Complete       | 2026-03-19  | -          |
+| Phase                                               | Milestone | Plans Complete | Status      | Completed  |
+| --------------------------------------------------- | --------- | -------------- | ----------- | ---------- |
+| 1. Fundação Financeira                              | v1.0      | 3/3            | Complete    | 2026-03-16 |
+| 2. Núcleo AP/AR                                     | v1.0      | 7/7            | Complete    | 2026-03-16 |
+| 3. Dashboard Financeiro                             | v1.0      | 2/2            | Complete    | 2026-03-16 |
+| 4. Instrumentos de Pagamento                        | v1.0      | 7/7            | Complete    | 2026-03-17 |
+| 5. Conciliação e Fluxo de Caixa                     | v1.0      | 6/6            | Complete    | 2026-03-17 |
+| 6. Crédito Rural                                    | v1.0      | 5/5            | Complete    | 2026-03-17 |
+| 7. Cadastro de Fornecedores                         | v1.1      | 4/4            | Complete    | 2026-03-17 |
+| 8. Requisição e Aprovação                           | v1.1      | 6/6            | Complete    | 2026-03-17 |
+| 9. Cotação e Pedido de Compra                       | v1.1      | pre-GSD        | Complete    | 2026-03-19 |
+| 10. Recebimento de Mercadorias                      | v1.1      | pre-GSD        | Complete    | 2026-03-19 |
+| 11. Devolução, Orçamento e Saving                   | v1.1      | pre-GSD        | Complete    | pre-GSD    |
+| 12. Kanban, Dashboard e Notificações                | v1.1      | 5/5            | Complete    | 2026-03-18 |
+| 13. Kanban DnD Fixes + Notification Wiring          | v1.1      | 3/3            | Complete    | 2026-03-19 |
+| 14. Stock Reversal + Supplier Rating Completion     | v1.1      | 2/2            | Complete    | 2026-03-19 |
+| 15. Frontend API Path Fixes                         | v1.1      | 1/1            | Complete    | 2026-03-19 |
+| 16. Cadastro de Ativos                              | v1.2      | 0/?            | Not started | -          |
+| 17. Engine de Depreciação                           | v1.2      | 0/?            | Not started | -          |
+| 18. Manutenção e Ordens de Serviço                  | v1.2      | 0/?            | Not started | -          |
+| 19. Integração Financeira — Aquisição               | v1.2      | 0/?            | Not started | -          |
+| 20. Alienação e Baixa de Ativos                     | v1.2      | 0/?            | Not started | -          |
+| 21. Controle Operacional                            | v1.2      | 0/?            | Not started | -          |
+| 22. Hierarquia Avançada e Imobilizado em Andamento  | v1.2      | 0/?            | Not started | -          |
+| 23. Relatórios e Dashboard Patrimonial              | v1.2      | 0/?            | Not started | -          |
+| 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 0/?            | Not started | -          |
