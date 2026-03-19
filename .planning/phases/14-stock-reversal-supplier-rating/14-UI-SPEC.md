@@ -1,7 +1,8 @@
 ---
 phase: 14
 slug: stock-reversal-supplier-rating
-status: draft
+status: approved
+reviewed_at: 2026-03-19
 shadcn_initialized: false
 preset: none
 created: 2026-03-19
