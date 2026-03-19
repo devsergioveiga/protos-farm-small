@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 14-01-PLAN.md
-last_updated: '2026-03-19T13:12:52.682Z'
+stopped_at: Completed 14-02-PLAN.md
+last_updated: '2026-03-19T13:19:19.596Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 8
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 36
-  completed_plans: 35
+  completed_plans: 36
   percent: 0
 ---
 
@@ -66,6 +66,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 13-kanban-dnd-notification-wiring P02 | 18min | 2 tasks | 4 files |
 | Phase 13-kanban-dnd-notification-wiring P01 | 3 | 2 tasks | 2 files |
 | Phase 14-stock-reversal-supplier-rating P01 | 3 | 2 tasks | 6 files |
+| Phase 14-stock-reversal-supplier-rating P02 | 8 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -114,6 +115,7 @@ Key decisions for v1.1:
 - [Phase 13-kanban-dnd-notification-wiring]: OC_EMITIDA->AGUARDANDO_ENTREGA uses api.patch /transition with { status: 'EM_TRANSITO' } matching TransitionPOInput interface (not action: CONFIRM_SHIPMENT)
 - [Phase 14-stock-reversal-supplier-rating]: Stock reversal tied to CONCLUIDA (physical confirmation), not APROVADA — prevents phantom stock decrements before goods are returned
 - [Phase 14-stock-reversal-supplier-rating]: PerformanceReport returns empty breakdown {0,0,0,0} instead of null when no ratings — cleaner for frontend consumption
+- [Phase 14-stock-reversal-supplier-rating]: getRatingBadge fallback: averageRating ?? supplier.rating for backward compat; Recharts Tooltip formatter typed as (value: number | undefined); SupplierCard onPerformance prop symmetric with desktop
 
 ### Pending Todos
 
@@ -127,6 +129,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T13:12:52.679Z
-Stopped at: Completed 14-01-PLAN.md
+Last session: 2026-03-19T13:19:19.594Z
+Stopped at: Completed 14-02-PLAN.md
 Resume file: None

@@ -32,7 +32,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [ ] **Phase 11: Devolução, Orçamento e Saving** — Reversão de estoque/financeiro e controle orçamentário
 - [x] **Phase 12: Kanban, Dashboard e Notificações** — Visibilidade operacional e execução do fluxo completo (completed 2026-03-18)
 - [x] **Phase 13: Kanban DnD Fixes + Notification Wiring** — Fix broken DnD transitions and wire notification dispatches (completed 2026-03-19)
-- [ ] **Phase 14: Stock Reversal + Supplier Rating Completion** — Stock reversal on goods return + rating alert and performance report
+- [x] **Phase 14: Stock Reversal + Supplier Rating Completion** — Stock reversal on goods return + rating alert and performance report (completed 2026-03-19)
 
 ## Phase Details
 
@@ -176,7 +176,7 @@ Plans:
 2. QuotationModal shows visual alert when selected supplier has average rating < 3
 3. Supplier performance report endpoint returns rating history filtered by period
 4. Frontend displays supplier performance report with rating trends
-   **Plans:** 1/2 plans executed
+   **Plans:** 2/2 plans complete
 
 Plans:
 
@@ -200,4 +200,4 @@ Plans:
 | 11. Devolução, Orçamento e Saving               | v1.1      | 0/TBD          | Not started | -          |
 | 12. Kanban, Dashboard e Notificações            | 5/5       | Complete       | 2026-03-18  | -          |
 | 13. Kanban DnD Fixes + Notification Wiring      | 3/3       | Complete       | 2026-03-19  | -          |
-| 14. Stock Reversal + Supplier Rating Completion | 1/2       | In Progress    |             | -          |
+| 14. Stock Reversal + Supplier Rating Completion | 2/2       | Complete       | 2026-03-19  | -          |
