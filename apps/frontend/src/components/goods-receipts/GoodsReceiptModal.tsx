@@ -9,6 +9,8 @@ import {
   Plus,
   Trash2,
   ChevronRight,
+  Camera,
+  ImageIcon,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/services/api';
@@ -16,6 +18,7 @@ import {
   createGoodsReceiptApi,
   confirmGoodsReceiptApi,
   getGoodsReceiptApi,
+  uploadDivergencePhotoApi,
 } from '@/hooks/useGoodsReceipts';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import type {
@@ -87,6 +90,7 @@ interface InspectionItemRow {
   divergenceType: DivergenceType | '';
   divergenceAction: DivergenceAction | '';
   divergenceObservation: string;
+  divergencePhoto: File | null;
 }
 
 interface GoodsReceiptModalProps {
@@ -697,6 +701,7 @@ function Step3Inspection({ items, setItems, isEmergency }: Step3Props) {
         divergenceType: '',
         divergenceAction: '',
         divergenceObservation: '',
+        divergencePhoto: null,
       },
     ]);
   }
@@ -997,6 +1002,48 @@ function Step3Inspection({ items, setItems, isEmergency }: Step3Props) {
                                   updateItem(index, 'divergenceObservation', e.target.value)
                                 }
                               />
+                            </div>
+                            <div className="gr-modal__field gr-modal__field--inline">
+                              <input
+                                id={`div-photo-${index}`}
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                className="gr-modal__file-input-hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0] ?? null;
+                                  if (file && file.size > 10 * 1024 * 1024) {
+                                    e.target.value = '';
+                                    return;
+                                  }
+                                  updateItem(index, 'divergencePhoto', file);
+                                }}
+                              />
+                              <button
+                                type="button"
+                                className={`gr-modal__photo-btn ${item.divergencePhoto ? 'gr-modal__photo-btn--has-photo' : ''}`}
+                                onClick={() =>
+                                  document.getElementById(`div-photo-${index}`)?.click()
+                                }
+                                aria-label={
+                                  item.divergencePhoto
+                                    ? `Foto: ${item.divergencePhoto.name}`
+                                    : 'Anexar foto da divergencia'
+                                }
+                              >
+                                {item.divergencePhoto ? (
+                                  <>
+                                    <ImageIcon size={14} aria-hidden="true" />
+                                    <span className="gr-modal__photo-filename">
+                                      {item.divergencePhoto.name}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Camera size={14} aria-hidden="true" />
+                                    Foto
+                                  </>
+                                )}
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -1408,10 +1455,23 @@ function DetailView({
                   {receipt.divergences.map((div) => (
                     <li key={div.id} className="gr-modal__divergence-item">
                       <AlertTriangle size={14} aria-hidden="true" />
-                      <span>
-                        {div.divergenceTypeLabel} — {div.actionLabel}
-                        {div.observation ? `: ${div.observation}` : ''}
-                      </span>
+                      <div className="gr-modal__divergence-item-content">
+                        <span>
+                          {div.divergenceTypeLabel} — {div.actionLabel}
+                          {div.observation ? `: ${div.observation}` : ''}
+                        </span>
+                        {div.photoUrl && (
+                          <a
+                            href={`/api/${div.photoUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="gr-modal__divergence-photo-link"
+                          >
+                            <ImageIcon size={12} aria-hidden="true" />
+                            {div.photoFileName ?? 'Ver foto'}
+                          </a>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -1525,6 +1585,7 @@ function GoodsReceiptWizard({
           divergenceType: '',
           divergenceAction: '',
           divergenceObservation: '',
+          divergencePhoto: null,
         })),
       );
     } else if (emergencyMode && inspectionItems.length === 0) {
@@ -1544,6 +1605,7 @@ function GoodsReceiptWizard({
           divergenceType: '',
           divergenceAction: '',
           divergenceObservation: '',
+          divergencePhoto: null,
         },
       ]);
     }
@@ -1672,7 +1734,31 @@ function GoodsReceiptWizard({
     try {
       const input = buildInput();
       const receipt = await createGoodsReceiptApi(input);
-      setCreatedReceipt(receipt);
+
+      // Upload divergence photos (fire-and-forget, non-blocking)
+      const photosToUpload = inspectionItems
+        .filter((item) => item.divergencePhoto && item.divergenceType)
+        .map((item) => ({ photo: item.divergencePhoto!, itemProductName: item.productName }));
+
+      if (photosToUpload.length > 0 && receipt.divergences.length > 0) {
+        for (let i = 0; i < photosToUpload.length && i < receipt.divergences.length; i++) {
+          try {
+            await uploadDivergencePhotoApi(
+              receipt.id,
+              receipt.divergences[i].id,
+              photosToUpload[i].photo,
+            );
+          } catch {
+            // Photo upload failure is non-critical — continue
+          }
+        }
+        // Refresh receipt to get updated photo URLs
+        const updated = await getGoodsReceiptApi(receipt.id);
+        setCreatedReceipt(updated);
+      } else {
+        setCreatedReceipt(receipt);
+      }
+
       setIsSubmitting(false);
       setShowConfirmModal(true);
     } catch (err) {

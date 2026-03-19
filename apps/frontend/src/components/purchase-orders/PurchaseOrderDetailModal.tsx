@@ -17,6 +17,7 @@ import {
   transitionPO,
   deletePO,
   updatePO,
+  sendPOEmail,
 } from '@/hooks/usePurchaseOrders';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import type { PurchaseOrder, PurchaseOrderItem } from '@/types/purchase-order';
@@ -201,6 +202,7 @@ function PurchaseOrderDetail({
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -233,7 +235,7 @@ function PurchaseOrderDetail({
   }
 
   function openEmailSection(po: PurchaseOrder) {
-    setEmailAddress(po.supplier.email ?? '');
+    setEmailAddress(po.supplier.contactEmail ?? '');
     setEmailSubject(`Pedido de Compra ${po.sequentialNumber}`);
     setEmailBody(
       `Prezado fornecedor,\n\nSegue em anexo o pedido de compra ${po.sequentialNumber}.\n\nAtenciosamente,`,
@@ -324,9 +326,26 @@ function PurchaseOrderDetail({
     }
   }
 
-  function handleEmailSend() {
-    showToast('Funcionalidade de envio sera implementada em breve');
-    setShowEmailSection(false);
+  async function handleEmailSend() {
+    if (!purchaseOrder || !emailAddress) return;
+    setIsSendingEmail(true);
+    try {
+      await sendPOEmail(purchaseOrder.id, {
+        to: emailAddress,
+        subject: emailSubject,
+        body: emailBody,
+      });
+      showToast('Email enviado com sucesso ao fornecedor');
+      setShowEmailSection(false);
+    } catch (err) {
+      showToast(
+        err instanceof Error
+          ? err.message
+          : 'Nao foi possivel enviar o email. Verifique a configuracao SMTP.',
+      );
+    } finally {
+      setIsSendingEmail(false);
+    }
   }
 
   if (isLoading) {
@@ -667,10 +686,16 @@ function PurchaseOrderDetail({
               <button
                 type="button"
                 className="podm-action-btn podm-action-btn--primary"
-                onClick={handleEmailSend}
+                onClick={() => void handleEmailSend()}
+                disabled={isSendingEmail || !emailAddress}
+                aria-busy={isSendingEmail}
               >
-                <Mail size={16} aria-hidden="true" />
-                Enviar
+                {isSendingEmail ? (
+                  <Loader2 size={16} className="podm-spin" aria-hidden="true" />
+                ) : (
+                  <Mail size={16} aria-hidden="true" />
+                )}
+                {isSendingEmail ? 'Enviando...' : 'Enviar'}
               </button>
             </div>
           </section>

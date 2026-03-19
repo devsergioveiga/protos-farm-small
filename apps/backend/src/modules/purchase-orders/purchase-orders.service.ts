@@ -14,6 +14,8 @@ import {
 } from './purchase-orders.types';
 import { createNotification } from '../notifications/notifications.service';
 import { checkBudgetExceeded } from '../purchase-budgets/purchase-budgets.service';
+import { sendMail } from '../../shared/mail/mail.service';
+import { logger } from '../../shared/utils/logger';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TxClient = any;
@@ -42,7 +44,7 @@ async function getNextOcSequentialNumber(tx: TxClient, organizationId: string): 
 
 const PO_INCLUDE = {
   items: true,
-  supplier: { select: { id: true, name: true, tradeName: true } },
+  supplier: { select: { id: true, name: true, tradeName: true, contactEmail: true } },
   creator: { select: { id: true, name: true } },
   quotation: {
     select: {
@@ -637,6 +639,181 @@ export async function generatePurchaseOrderPdf(
   );
 
   doc.end();
+}
+
+// ─── Send PO Email ───────────────────────────────────────────────────
+
+export interface SendPOEmailInput {
+  to: string;
+  subject: string;
+  body: string;
+}
+
+export async function sendPurchaseOrderEmail(
+  ctx: RlsContext,
+  id: string,
+  input: SendPOEmailInput,
+): Promise<void> {
+  const po = await withRlsContext(ctx, async (tx) => {
+    return tx.purchaseOrder.findFirst({
+      where: { id, organizationId: ctx.organizationId, deletedAt: null },
+      include: {
+        items: true,
+        supplier: true,
+        organization: { select: { name: true } },
+      },
+    });
+  });
+
+  if (!po) {
+    throw new PurchaseOrderError('Pedido de compra nao encontrado', 404);
+  }
+
+  if (po.status !== 'EMITIDA') {
+    throw new PurchaseOrderError('Apenas pedidos emitidos podem ser enviados por email', 400);
+  }
+
+  // Generate PDF as buffer
+  const doc = new PDFDocument({ size: 'A4', margin: 50 });
+  const chunks: Buffer[] = [];
+
+  await new Promise<void>((resolve, reject) => {
+    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+    doc.on('end', resolve);
+    doc.on('error', reject);
+
+    // Reuse the same PDF layout from generatePurchaseOrderPdf
+    const pageWidth = doc.page.width - 100;
+
+    doc
+      .fontSize(18)
+      .font('Helvetica-Bold')
+      .text(po.organization?.name ?? 'Organizacao', { align: 'left' });
+    doc.moveDown(0.5);
+    doc
+      .moveTo(50, doc.y)
+      .lineTo(50 + pageWidth, doc.y)
+      .stroke();
+    doc.moveDown(0.5);
+
+    doc.fontSize(14).font('Helvetica-Bold').text('PEDIDO DE COMPRA', { align: 'center' });
+    doc.moveDown(0.3);
+    doc.fontSize(10).font('Helvetica').text(`Numero: ${po.sequentialNumber}`, { align: 'center' });
+    doc
+      .fontSize(9)
+      .text(`Data: ${new Date(po.createdAt).toLocaleDateString('pt-BR')}`, { align: 'center' });
+    doc.moveDown(0.5);
+
+    doc.fontSize(11).font('Helvetica-Bold').text('FORNECEDOR');
+    doc.moveDown(0.3);
+    doc.fontSize(9).font('Helvetica');
+    doc.text(`Nome: ${po.supplier.name}`);
+    if (po.supplier.tradeName) doc.text(`Nome Fantasia: ${po.supplier.tradeName}`);
+    if (po.supplier.document) doc.text(`CNPJ/CPF: ${po.supplier.document}`);
+    doc.moveDown(0.5);
+
+    doc.fontSize(11).font('Helvetica-Bold').text('ITENS DO PEDIDO');
+    doc.moveDown(0.3);
+
+    let subtotal = 0;
+    doc.fontSize(8).font('Helvetica');
+    for (const [i, item] of po.items.entries()) {
+      const total = Number(item.totalPrice);
+      subtotal += total;
+      doc.text(
+        `${i + 1}. ${item.productName} — ${Number(item.quantity).toFixed(3)} ${item.unitName} x ${Number(item.unitPrice).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} = ${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
+      );
+    }
+    doc.moveDown(0.3);
+    doc
+      .fontSize(10)
+      .font('Helvetica-Bold')
+      .text(`Total: ${subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, {
+        align: 'right',
+      });
+
+    doc.moveDown(1);
+    doc
+      .fontSize(8)
+      .font('Helvetica')
+      .text(
+        `Documento gerado em ${new Date().toLocaleDateString('pt-BR')} — ${po.organization?.name ?? 'Protos Farm'}`,
+        { align: 'center' },
+      );
+
+    doc.end();
+  });
+
+  const pdfBuffer = Buffer.concat(chunks);
+
+  // Build HTML email with brand colors
+  const itemsHtml = po.items
+    .map((item, i) => {
+      const total = Number(item.totalPrice);
+      return `<tr>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">${i + 1}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.productName}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">${Number(item.quantity).toFixed(3)} ${item.unitName}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+    </tr>`;
+    })
+    .join('');
+
+  const totalAmount = po.items.reduce((sum, item) => sum + Number(item.totalPrice), 0);
+
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #2E7D32; padding: 20px; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 20px;">${po.organization?.name ?? 'Protos Farm'}</h1>
+      </div>
+      <div style="padding: 24px; background: #fff;">
+        <h2 style="color: #2A2520; font-size: 18px; margin-top: 0;">Pedido de Compra ${po.sequentialNumber}</h2>
+        <p style="color: #3E3833; line-height: 1.6; white-space: pre-line;">${input.body}</p>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+          <thead>
+            <tr style="background: #f5f5f5;">
+              <th style="padding: 8px; text-align: left;">#</th>
+              <th style="padding: 8px; text-align: left;">Produto</th>
+              <th style="padding: 8px; text-align: left;">Qtd</th>
+              <th style="padding: 8px; text-align: right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>${itemsHtml}</tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" style="padding: 8px; font-weight: bold; text-align: right;">Total:</td>
+              <td style="padding: 8px; font-weight: bold; text-align: right;">${totalAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div style="padding: 16px; background: #FAFAF8; text-align: center; font-size: 13px; color: #3E3833;">
+        PDF do pedido em anexo
+      </div>
+    </div>
+  `;
+
+  try {
+    await sendMail({
+      to: input.to,
+      subject: input.subject,
+      text: `${input.body}\n\nPedido: ${po.sequentialNumber}\nTotal: ${totalAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
+      html,
+      attachments: [
+        {
+          filename: `OC-${po.sequentialNumber}.pdf`,
+          content: pdfBuffer,
+          contentType: 'application/pdf',
+        },
+      ],
+    });
+  } catch (err) {
+    logger.error({ err, poId: id, to: input.to }, 'Failed to send PO email');
+    throw new PurchaseOrderError(
+      'Nao foi possivel enviar o email. Verifique a configuracao SMTP.',
+      500,
+    );
+  }
 }
 
 // ─── Check Overdue POs ────────────────────────────────────────────────
