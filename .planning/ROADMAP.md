@@ -33,6 +33,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 12: Kanban, Dashboard e Notificações** — Visibilidade operacional e execução do fluxo completo (completed 2026-03-18)
 - [x] **Phase 13: Kanban DnD Fixes + Notification Wiring** — Fix broken DnD transitions and wire notification dispatches (completed 2026-03-19)
 - [x] **Phase 14: Stock Reversal + Supplier Rating Completion** — Stock reversal on goods return + rating alert and performance report (completed 2026-03-19)
+- [ ] **Phase 15: Frontend API Path Fixes** — Fix Kanban DnD orgId path mismatches, notification preferences route, and DAILY_DIGEST type
 
 ## Phase Details
 
@@ -183,6 +184,21 @@ Plans:
 - [ ] 14-01-PLAN.md — Backend: stock reversal fix (APROVADA->CONCLUIDA side-effects) + performance endpoint
 - [ ] 14-02-PLAN.md — Frontend: QuotationModal rating badge + SupplierPerformanceModal with charts
 
+### Phase 15: Frontend API Path Fixes
+
+**Goal**: Fix frontend API path mismatches that cause 404s in Kanban DnD transitions and notification preferences — restoring full drag-and-drop interactivity and preference management
+**Depends on**: Phase 13
+**Requirements**: DASH-01, DASH-03
+**Gap Closure:** Closes integration gaps from re-audit (2026-03-19)
+**Success Criteria** (what must be TRUE):
+
+1. Kanban DnD RC_PENDENTE→RC_APROVADA calls correct backend endpoint and succeeds
+2. Kanban DnD RC_APROVADA→EM_COTACAO calls correct backend endpoint and succeeds
+3. Kanban DnD OC_EMITIDA→AGUARDANDO_ENTREGA calls correct backend endpoint and succeeds
+4. Notification preferences GET/PUT calls include orgId segment and return 200
+5. DAILY_DIGEST notification type is recognized and labeled in the frontend bell
+   **Plans:** TBD
+
 ## Progress
 
 | Phase                                           | Milestone | Plans Complete | Status      | Completed  |
@@ -201,3 +217,4 @@ Plans:
 | 12. Kanban, Dashboard e Notificações            | 5/5       | Complete       | 2026-03-18  | -          |
 | 13. Kanban DnD Fixes + Notification Wiring      | 3/3       | Complete       | 2026-03-19  | -          |
 | 14. Stock Reversal + Supplier Rating Completion | 2/2       | Complete       | 2026-03-19  | -          |
+| 15. Frontend API Path Fixes                     | v1.1      | 0/TBD          | Not started | -          |
