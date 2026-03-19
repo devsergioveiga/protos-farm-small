@@ -1,8 +1,8 @@
 # Feature Research
 
-**Domain:** Procurement / Purchasing Module (Gestao de Compras) — Farm Management ERP Brazil
-**Researched:** 2026-03-17
-**Confidence:** HIGH — ERP procurement is a mature domain with well-established patterns; verified against ERPNext, SAP, NetSuite, Dynamics 365 documentation.
+**Domain:** Asset Lifecycle Management (Gestao de Patrimônio) — Farm Management ERP Brazil
+**Researched:** 2026-03-19
+**Confidence:** HIGH — Fixed asset management is a mature domain (CPC 27/IAS 16 standards are unambiguous); CMMS patterns verified against MaintainX, Fiix, FTMaintenance documentation; CPC 29 biological assets verified against CPC official pronouncements; financial integration patterns verified against SAP FI-AA, TOTVS Protheus SIGAATF, and ERPNext documentation.
 
 ---
 
@@ -10,304 +10,456 @@
 
 The system already ships:
 
-- `payables` module — CP with installments, cost center rateio, CNAB, aging, alerts
+- `payables` module — CP with installments, cost center rateio, CNAB 240/400, aging, alerts
+- `receivables` module — CR with FUNRURAL, renegociação, PDD, aging
+- `bank-accounts` module — saldo real-time, extrato, tipo Money (decimal.js)
 - `stock-entries` module — entries with accessory expense rateio, custo medio ponderado
 - `stock-outputs` module — FEFO, historical movements, CSV export
-- `products` module — product catalog with measurement units and conversions
+- `stock-balances` module — current balance per product per farm
+- `products` module — product catalog with measurement units, conversions, reorder points
+- `suppliers` module — fiscal data, avaliação, ranking, import/export
+- `purchase-orders` module — PO with PDF, GRN (6 scenarios), automatic CP + stock entry on GRN
 - `producers` module — fiscal entity (CNPJ/CPF) linked to bank accounts
 - `cost-centers` module — fazenda/setor rateio
+- `cash-flow` module — 12-month projection with 3 scenarios, DFC classification
+- `rural-credit` module — PRONAF/PRONAMP/Funcafé/CPR, SAC/Price/Bullet amortization
+- `installmentGenerator` (packages/shared) — reusable installment schedule generator
+- `farms` module — fazendas with PostGIS boundaries, plots, land parcels
+- `herd` module — animals, batches, locations, sanitary, reproductive, nutrition
 
-The procurement module is NOT building financial infrastructure from scratch. It is building the upstream P2P (Purchase-to-Pay) flow that feeds the existing `payables` and `stock-entries` modules. The most important integration point is GRN confirmation: one action creates both a CP and a stock entry automatically.
+The asset management module (Gestao de Patrimônio) sits at the intersection of the financial and operational layers. It does NOT build new financial infrastructure — it consumes the existing `payables`, `receivables`, `cost-centers`, and `installmentGenerator` as integration points. The core value is: a single asset entity that accumulates the full lifecycle (acquisition → depreciation → maintenance → disposal) and connects it to the financial module bidirectionally.
 
 ---
 
 ## Feature Landscape
 
-### Table Stakes (Users Expect These)
+### Table Stakes — Asset Registration
 
-Features a procurement module must have. Missing any of these makes the module feel broken or incomplete to a purchasing or finance manager.
+Features users expect in any fixed asset module. Missing = the module cannot function.
 
-| Feature                                                | Why Expected                                                                                                                                                  | Complexity | Notes                                                                                                                                                                                          |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Supplier registration with fiscal data                 | Every purchase has a fiscal counterpart (CNPJ/CPF, IE). Without structured supplier data, CP generation is manual and error-prone.                            | MEDIUM     | Fields: razao social, nome fantasia, CNPJ/CPF, inscricao estadual, endereco, contatos, payment terms. Same fiscal entity pattern as `producers`.                                               |
-| Multiple contacts per supplier                         | Farms deal with sales reps, billing contacts, and logistics contacts at the same supplier simultaneously                                                      | LOW        | Contact fields: name, role, phone, email. At least one contact marked as "principal".                                                                                                          |
-| Supplier search and filtering                          | Supplier list grows fast; without search the module is unusable at 50+ suppliers                                                                              | LOW        | Filter by: name, CNPJ fragment, product category, status (active/inactive)                                                                                                                     |
-| Supplier payment terms defaults                        | Each supplier has preferred terms (30/60/90 dias); default on OC avoids repeated manual entry                                                                 | LOW        | Stored on supplier, copied to OC at creation, editable per OC                                                                                                                                  |
-| Purchase Requisition (RC) creation                     | Entry point of any traceable procurement workflow. Without it, purchases are ad-hoc and unauditable.                                                          | MEDIUM     | Fields: requester, date needed, items (product + qty + estimated unit price), cost center, farm, justification, urgency flag (normal/urgente)                                                  |
-| RC items linked to existing product catalog            | Requisitions must reference real products for stock integration to work automatically                                                                         | LOW        | Search from existing `products` module; allow free-text for items not yet cataloged (flagged for product creation)                                                                             |
-| RC approval workflow with value thresholds             | Core financial control requirement. No approval = no accountability or budget protection.                                                                     | HIGH       | Configurable alcadas: up to R$X = auto-approve, R$X to R$Y = supervisor, above R$Y = director. State machine: RASCUNHO -> SUBMETIDA -> APROVADA / REJEITADA. Rejection requires comment.       |
-| Request for Quotation (Cotacao) to multiple suppliers  | Required for fiscal compliance and cost control in any structured farm operation. Brazilian agro law mandates competitive quotation above certain thresholds. | MEDIUM     | Attach RC items, select 2-5 suppliers, set response deadline, record via email or manual entry                                                                                                 |
-| Manual supplier quotation registration                 | Not all agro suppliers have email or a portal. Manual entry is the baseline that must work without any external dependency.                                   | LOW        | Per-item registration: unit price, available quantity, delivery time, payment terms, validity date                                                                                             |
-| Quotation comparison map (mapa comparativo)            | Core decision support tool. Buyers need side-by-side item-level comparison across all responding suppliers to justify winner selection.                       | MEDIUM     | Matrix view: rows = items, columns = suppliers, highlight lowest price per item, show non-responding suppliers, compute line totals and grand total per supplier                               |
-| Winner selection with justification                    | Must formalize which supplier was chosen and why, creating an audit trail.                                                                                    | LOW        | Mark winning supplier per item (can split order across suppliers), record approval user + timestamp + optional justification note                                                              |
-| Purchase Order (OC) generation from approved quotation | Formal purchase commitment document required before receiving goods.                                                                                          | MEDIUM     | Generate OC with: supplier, items, agreed prices, delivery date, payment terms, cost center rateio, OC number (sequential per org)                                                             |
-| OC PDF export                                          | Suppliers expect a formal document; required for email dispatch.                                                                                              | LOW        | Use existing pdfkit pattern. Include: OC number, farm CNPJ, items, unit prices, totals, payment terms, delivery address, signature line                                                        |
-| OC status tracking                                     | Managers need to know which OCs are open, partially received, or closed                                                                                       | LOW        | States: EMITIDA -> RECEBIMENTO_PARCIAL -> ENCERRADA / CANCELADA                                                                                                                                |
-| Goods Receiving (Recebimento / GRN)                    | Physical confirmation that goods arrived. This is the most critical event: it triggers both stock update and CP generation.                                   | HIGH       | 6 explicit scenarios (see below). 3-way match against OC. Captures NF data (numero, serie, data, valor total, chave NF-e).                                                                     |
-| Automatic CP generation from GRN + NF data             | Core P2P integration with the existing `payables` module. Eliminates double-entry and ensures every receipt creates a payable.                                | MEDIUM     | On GRN confirmation: create CP with supplier as vendor, NF value as amount, installments from OC payment terms (reuse existing installmentGenerator from packages/shared), cost center from OC |
-| Automatic stock entry from GRN                         | Core integration with the existing `stock-entries` module. Eliminates double-entry and ensures received goods enter stock at the correct cost.                | MEDIUM     | On GRN confirmation: create stock entry with received items, quantities, unit costs calculated from NF value                                                                                   |
-| GRN with discrepancy handling                          | Quantities or prices frequently differ from OC in agro purchasing (weight-based products, price updates). Must not block legitimate receipts.                 | MEDIUM     | Tolerance bands configurable per org (default ±3%). Within tolerance: auto-accept. Outside tolerance: flag for buyer review before closing.                                                    |
-| Purchase return (Devolucao) with supplier credit       | Goods rejected at receiving or after quality check must be returned with financial credit from supplier.                                                      | HIGH       | Reverse stock entry, generate credit note linked to original CP. States: SOLICITADA -> APROVADA -> ENVIADA -> CREDITO_RECEBIDO                                                                 |
-| Kanban / pipeline view of procurement flow             | Managers and buyers need a real-time view of what is pending approval, awaiting delivery, or blocked.                                                         | MEDIUM     | Columns: RC Pendente -> Cotacao -> Aprovacao OC -> OC Emitida -> Aguardando Recebimento -> Encerrada. Filter by farm, buyer, date range.                                                       |
-| Purchasing history per supplier                        | Buyers need price history to negotiate; auditors need traceability per supplier relationship.                                                                 | LOW        | List of all OCs + GRNs per supplier with items, values, delivery performance, and return history                                                                                               |
-| Email notifications at each workflow step              | Users not logged in must be notified when action is required from them (approval, quotation response deadline, OC sent).                                      | MEDIUM     | Triggered by: RC submitted for approval, RC approved/rejected, OC emitted to supplier, GRN created                                                                                             |
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Asset catalog with classification tree | Assets must be classified by type (machinery, vehicle, implement, building, land, biological) for depreciation routing and reporting | MEDIUM | none | At minimum 6 types: Máquinas e Equipamentos, Veículos, Implementos Agrícolas, Benfeitorias, Terras/Imóveis, Ativos Biológicos. Classification drives which fields appear and which depreciation rules apply. |
+| Asset registration form with acquisition data | Every fixed asset starts with a purchase event. Form captures: description, classification, serial number, manufacturer, acquisition date, acquisition value, NF number, supplier. | MEDIUM | `suppliers` module | Acquisition value is the initial cost basis for all subsequent depreciation. NF number links to purchasing records even without NF-e XML parsing. |
+| Farm and location assignment | Assets belong to a specific farm. Buildings and land need geolocation. Mobile/field equipment assigned to a plot or sector. | LOW | `farms` module | farmId required on all assets. Buildings can reference PostGIS coordinates. |
+| Cost center assignment (fixed, rateio %, dynamic) | Depreciation and maintenance costs must flow to specific cost centers for P&L by activity. Fixed = single CC. Rateio % = split across multiple CCs. Dynamic = changes with operational assignment. | HIGH | `cost-centers` module | Three assignment modes cover all farm structures. Dynamic mode is needed for tractors shared across crops. Without this, depreciation cannot be meaningfully attributed. |
+| Asset status lifecycle | Assets move through states: EM_USO → EM_MANUTENCAO → INATIVO → BAIXADO. Status determines whether depreciation runs and whether maintenance orders can be created. | LOW | none | State machine prevents depreciation on disposed or inactive assets. |
+| Unique asset tag / plate | Physical identification of assets (patrimônio number, chassis, RENAVAM for vehicles). Required for inventory reconciliation. | LOW | none | Sequential numbering per org. Optional QR code generation for mobile scan. |
+| Asset photo attachment | Field teams need visual identification. Useful for insurance claims and maintenance records. | LOW | none | Multiple photos per asset. Store as file references. |
+| Asset specification fields by type | Tractors need HP, RENAVAM, model year. Implements need width, working depth. Buildings need area m², address. Land needs area ha, coordinates, matricula (registration number). | MEDIUM | none | Configurable spec fields per asset type. Farm-specific fields (e.g., coffee plantation maturity year) must be extensible. |
+| Complete asset record (ficha) | Single-view of asset showing: acquisition data, depreciation schedule, maintenance history, fuel log, document expiry, and financial summary (TCO). | MEDIUM | all modules | The "ficha do ativo" is the anchor UI that everything links to. Tabs: Dados Gerais, Depreciação, Manutenção, Combustível/Horímetro, Documentos, Financeiro. |
+| Asset search and filtering | Asset list grows quickly; without search it is unusable at 50+ assets. | LOW | none | Filter by: type, farm, status, cost center, acquisition date range, depreciation status. |
+| Mass import (CSV/Excel) | Farms typically have existing asset inventories in spreadsheets. Typed-field manual entry for 200 assets is impractical. | MEDIUM | none | CSV/Excel with column mapping. Same pattern as existing product/animal import. Required fields validation before import. |
+| Asset transfer between farms | Tractors and equipment move between farms in multi-farm operations. Ownership, depreciation, and cost center must follow the asset. | MEDIUM | `farms` module | Transfer creates a history entry. Depreciation continues under new farm/CC assignment from transfer date. |
+| Asset write-off (baixa) | Assets removed from service by sale, disposal, obsolescence, or casualty loss. Baixa triggers: stop depreciation, optionally generate financial event (CR for sale, expense for disposal). | MEDIUM | `payables`, `receivables` | Three baixa types: Venda (generates CR), Descarte/Obsolescência (expense recognition), Sinistro (insurance recovery). |
 
-### Goods Receiving Scenarios (Detail)
+### Table Stakes — Depreciation
 
-The 6 receiving scenarios are a well-known ERP pattern (SAP MIGO, ERPNext GRN). Each creates different state machine paths and must be explicitly designed.
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Linear depreciation (quota constante) | CPC 27/IAS 16 requirement. Most common method. Annual rate = 1 / useful life. Monthly quota = (acquisition value - residual value) / useful life in months. | MEDIUM | none | Pro rata die required for the acquisition month and disposal month (depreciation starts from the day asset enters service, not just first of month). |
+| Hours-of-use depreciation (horas-uso) | Required for heavy machinery where usage intensity varies. Quota = (acquisition value - residual value) / estimated total hours × hours used this period. | MEDIUM | hourmeter log | Depends on hourmeter readings being updated monthly. Without horímetro updates, this method degrades to approximation. |
+| Production-based depreciation | Required for assets whose wear correlates with output volume (e.g., grain elevators, milking equipment). Quota = (acq. value - residual value) / lifetime production volume × period production. | MEDIUM | production module | Requires production volume input for each depreciation period. Complex to operationalize — limit to assets explicitly configured for this method. |
+| Accelerated depreciation | Fiscal incentive available for rural properties under Brazilian income tax rules (IRPF/IRPJ). Machines and implements can use 25%/35%/50% annual rates depending on shift usage. | MEDIUM | none | Two calculation bases: CPC (accounting) and Fiscal (for IR). System must track both independently because CPC value ≠ fiscal value after accelerated depreciation. |
+| Residual value configuration | CPC 27 requires residual value estimation. System must store residual value per asset, use it in quota calculations, and allow revision. | LOW | none | Default residual value = 10% of acquisition value. Must be editable per asset. |
+| Useful life estimation | CPC 27: useful life is a management estimate, not a tax table. System must allow farm manager to set useful life independently per asset (different from tax table). | LOW | none | Display estimated end-of-life date based on useful life. Alert when useful life is due for review (typically every 3 years per CPC 27). |
+| Monthly depreciation run | Automated batch computation of all active assets at month-end (or triggered manually). One depreciation entry per asset per period. | HIGH | `cost-centers` | Idempotent: running twice for the same period must not double-post. Requires a `depreciation_entries` table with period lock. Batch must respect cost center rateio — if asset has 3 CCs at 40/35/25%, three line entries are generated. |
+| Depreciation ledger / history | Finance manager needs to see depreciation history per asset: date, period, method, quota, accumulated depreciation, book value. | LOW | none | Computed view over `depreciation_entries`. Should also show full schedule (past + future) at any point in time. |
+| Dual-track: CPC vs Fiscal | Brazilian companies often maintain two depreciation schedules simultaneously: CPC 27 (accounting) and fiscal (based on RFB tables). System must track both book values independently. | HIGH | none | Adds significant complexity. Consider making Fiscal track optional (flag per org) for farms that are Simples Nacional (no separate fiscal depreciation needed). |
+| Impairment test (valor recuperável) | CPC 01/IAS 36 requires annual review that book value does not exceed recoverable amount. | LOW | none | Manual input: farm manager records impairment amount when market value falls below book value. Rare for agricultural assets but required for CPC compliance. |
 
-| Scenario                              | Description                                              | Handling                                                                                                                                |
-| ------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. NF antecipada                      | Supplier sends NF before delivering goods                | Register NF data and park. No stock entry until physical receipt confirmed. GRN in state AGUARDANDO_ENTREGA.                            |
-| 2. Recebimento normal                 | Standard: truck arrives with goods and NF simultaneously | GRN creation + stock entry + CP generation in one confirmed flow. Most common scenario.                                                 |
-| 3. Recebimento parcial                | Supplier delivers part of OC; remainder is pending       | GRN for received items only, OC stays open for remainder, CP created for received portion value. OC status becomes RECEBIMENTO_PARCIAL. |
-| 4. Compra emergencial                 | Goods must enter stock immediately; no OC exists         | Open GRN flagged as "sem OC", requires post-hoc approval within 48h. Retroactive OC created or exception noted.                         |
-| 5. Divergencia de quantidade ou preco | Quantities or prices differ from OC                      | Within tolerance (±3%): auto-accept with note. Outside tolerance: flag for buyer review. Buyer resolves before GRN is confirmed.        |
-| 6. Devolucao no ato do recebimento    | Goods rejected during physical inspection at dock        | No stock entry created. Generate return document against supplier immediately. No CP generated. OC item stays open.                     |
+### Table Stakes — Biological Asset Valuation (CPC 29)
 
-### Differentiators (Competitive Advantage)
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Biological asset registration | CPC 29/IAS 41 requires separate classification for living organisms that undergo biological transformation: cattle (corte, leite, reprodução), perennial crops (café, laranja, eucalipto), annual crops in progress. | MEDIUM | `herd`, `farms` modules | Link herd animals to biological assets for valuation. Perennial crops linked to farm plots/talhões. |
+| Fair value measurement (valor justo) | CPC 29 requires biological assets to be measured at fair value minus estimated selling costs at each reporting date. Fair value = quoted market price for the biological group in that state of transformation. | HIGH | none | For cattle: price per arroba (Cepea/B3 indices). For crops: commodity prices (CBOT, ESALQ). System stores the index used and the price per period. Complex because market prices change monthly. |
+| Cost-based fallback | When fair value cannot be reliably measured (e.g., new breeds, experimental crops), CPC 29 allows cost-based measurement: accumulated cost minus impairment. | MEDIUM | none | Flag per asset: "mensuração pelo custo" vs "valor justo". Cost accumulation includes: implantation, insumos, labor, infrastructure allocation. |
+| Biological transformation gain/loss | Changes in fair value from one period to the next are recognized in P&L (not in OCI). This is a distinctive feature of CPC 29 — unlike fixed assets, biological assets create income/expense entries from revaluation. | HIGH | none | Net gain or loss per period = closing fair value − opening fair value ± acquisitions/disposals. Must generate a P&L line item per period. |
+| Harvest product separation | At harvest, the biological asset produces an "agricultural product" (product of harvest) that must be measured at fair value at the point of harvest and transferred to inventory. | HIGH | `stock-entries`, `grain-harvests` modules | CPC 29 para 13: agricultural products must be measured at fair value at point of harvest. This is the handoff from biological asset to stock. |
+| Perennial crop maturity tracking | Perennial crops (café, laranja, eucalyptus) have a formation period (not yet productive) before they are productive assets. Formation costs are capitalized during this period. | MEDIUM | `farms` module | Formation phase: costs accumulate in "ativo biológico em formação" (similar to imobilizado em andamento). After first harvest: reclassify to "ativo biológico em produção". |
 
-Features that go beyond basic procurement software. These are the ones that justify Protos Farm over a generic ERP for Brazilian farm operators.
+### Table Stakes — Asset Under Construction (Imobilizado em Andamento)
 
-| Feature                                                         | Value Proposition                                                                                                                                                                                               | Complexity | Notes                                                                                                                                                                                                |
-| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Saving analysis (economia realizada)                            | Shows exactly how much was saved vs. last purchase price and vs. the highest quote received. Proves procurement team value and justifies the tool ROI.                                                          | MEDIUM     | Compare winning quote to: (a) last purchase price for same product+supplier, (b) highest quote in the same cotacao. Display saving in R$ and %. Aggregate by period, product category, and supplier. |
-| Price history per product across all suppliers                  | Buyers see price trends and seasonality — critical for agro inputs (defensivos, fertilizantes, racoes) that have significant price volatility tied to USD exchange rate and harvest seasons.                    | LOW        | Time-series of unit prices per product per supplier. Flag price increase >10% vs last purchase as alert. Visible from product detail and from supplier profile.                                      |
-| Supplier scorecard / ranking                                    | Quantified supplier performance enables data-driven negotiation and reduces dependence on a single supplier. Rarely available in farm ERP tools.                                                                | MEDIUM     | Computed score from: on-time delivery rate, quote response rate, price competitiveness rank, return rate. Displayed on supplier profile and in dashboard supplier ranking.                           |
-| Procurement dashboard (executive view)                          | CFO or fazenda owner needs one screen showing: spend by category, by supplier, by farm, pending approvals, savings achieved, and open OC value. Reuses existing dashboard tab pattern.                          | MEDIUM     | KPIs: total spend MTD/YTD, open OC value, pending approvals count, savings realized, top 5 suppliers by spend, spend by product category chart                                                       |
-| CP generation with automatic installments from OC payment terms | If OC specifies "30/60/90 dias", CP is automatically created with 3 installments. Reuses the existing installmentGenerator from packages/shared — zero duplication.                                             | LOW        | Payment terms on OC (a_vista, 30d, 30_60d, 30_60_90d, safra) drive installment schedule on CP. Safra term is flagged specially for visibility in cash flow.                                          |
-| Supplier import (CNPJ lookup)                                   | Pre-populate supplier registration from public CNPJ data (Receita Federal API) to reduce manual data entry errors on fiscal data.                                                                               | LOW        | Hit public Receita Federal CNPJ API (free, no auth) to fill razao social, endereco, situacao. User confirms and saves.                                                                               |
-| Mobile requisition (RC from campo)                              | Field workers or farm managers can create emergency purchase requisitions from the farm using the mobile app. Manager approves from web. Closes the loop on "I called the buyer on WhatsApp" informal requests. | MEDIUM     | Simplified mobile RC form: product search, quantity, urgency flag, photo attachment (e.g., damaged equipment part). Push notification to web approver.                                               |
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Construction project registry | Obras in progress (barns, silos, irrigation infrastructure) accumulate costs over time before activation. Must be tracked separately from active assets. | MEDIUM | none | CPC 27 para 22: costs during construction are capitalized in a separate "Imobilizado em Andamento" account until the asset is placed in service. |
+| Partial cost contributions | Multiple invoices, labor entries, and material costs accumulate against the project over weeks or months. | MEDIUM | `payables` | Each CP payment linked to a construction project adds to the accumulated capitalized cost. Integration: paying a CP for a building project updates the imobilizado em andamento balance. |
+| Activation event | When construction is complete, a single activation event: (a) sets activation date, (b) moves accumulated cost from "em andamento" to the new active asset, (c) starts depreciation. | MEDIUM | none | Critical: depreciation only starts after activation. Before activation, no depreciation quota is generated even if months have passed. |
+| Progress tracking | Farm manager needs to track budget vs. actual costs for the project and estimated completion date. | LOW | none | Simple: project budget vs. accumulated cost, estimated completion date, list of linked CPs. |
 
-### Anti-Features (Commonly Requested, Often Problematic)
+### Table Stakes — Operational Control
 
-| Feature                                          | Why Requested                                                | Why Problematic                                                                                                                                                                                                                                              | Alternative                                                                                                                                                 |
-| ------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NF-e XML import for automatic GRN                | Eliminates manual NF data entry at receiving                 | NF-e XML parsing requires SEFAZ integration, digital certificate validation, schema versioning, and fiscal rule interpretation. This is a full fiscal module (out of scope per PROJECT.md). One edge case breaks the entire flow.                            | Manual NF data entry on GRN form: NF number, series, date, total value, chave NF-e (as future hook). Takes 30 seconds, always works.                        |
-| Supplier portal (suppliers submit quotes online) | Reduces back-and-forth in quotation collection               | High development cost for a feature that serves suppliers, not farm staff. Brazilian agro suppliers (small distributors, local vendors) won't adopt a portal login.                                                                                          | Email RFQ with manual response registration covers 90% of cases at 10% of the development cost.                                                             |
-| Automated 3-way match with hard payment block    | Prevents paying wrong invoices                               | If tolerance is strict and blocks CP creation, it generates constant support burden. Rural suppliers often round weights and prices differently from the OC. Blocking breaks operations.                                                                     | Tolerance bands (±3%) with warning-not-block. Outside tolerance triggers buyer review, not payment block. Buyer resolves discrepancy before confirming GRN. |
-| Auction / reverse bidding                        | Competitive price discovery for large purchases              | Excessive complexity for farm context. Suppliers are often local and relationship-based. Adds significant UX complexity for a scenario that happens rarely.                                                                                                  | Standard RFQ with comparison map achieves the same outcome at a fraction of the complexity.                                                                 |
-| Supplier credit scoring via Serasa/SPC API       | Risk management for new suppliers                            | API cost, legal consent requirements under LGPD, and overkill for farm-scale supplier relationships (typically 10-30 known suppliers).                                                                                                                       | Manual risk flag field on supplier profile + qualitative notes field. Sufficient for farm scale.                                                            |
-| Blanket Purchase Orders / frame contracts        | Long-term volume commitments to lock in prices               | Adds contract lifecycle management complexity. Brazilian farms rarely have formal frame agreements; they operate on relationship and phone call.                                                                                                             | Recurring OC from template (copy OC feature) covers the practical use case without contract management overhead.                                            |
-| Full EDI / e-procurement integration             | Large enterprise capability for automated order transmission | Cost vs. benefit wrong for farm scale. No local agro suppliers have EDI capability.                                                                                                                                                                          | Email dispatch of OC PDF covers the practical need.                                                                                                         |
-| Budget control (orcamento de compras)            | Enforce spend limits per cost center                         | Requires a budget planning module as a prerequisite — a separate complex process. Budget entities, period management, and carryover rules are a milestone on their own. Block-on-budget without proper budget setup creates false alarms and user hostility. | Mark as P3 (future milestone). For v1.1, the dashboard spend-vs-period visualization provides informal budget awareness without enforcement.                |
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Hourmeter / odometer log | Tractors, harvesters, and trucks have hour or km meters. Log readings are required for: (a) hours-based depreciation, (b) maintenance triggers, (c) cost-per-hour calculation. | LOW | none | Entry per asset per date: reading value, type (hours/km), operator, farm. Alert when reading is not updated for >30 days on active assets. |
+| Fuel consumption log | Fuel cost is typically 30-40% of farm machinery TCO. Without fuel tracking, cost-per-hour and cost-per-hectare calculations are unreliable. | LOW | none | Entry: date, asset, liters filled, cost per liter, total R$, operator. Consumption rate computed as liters/hour between readings. Flag abnormal consumption (>20% deviation from asset average). |
+| Document control with expiry alerts | Vehicles require CRLV, insurance, revisão periódica. Buildings may have AVCB, habite-se. Land has ITR, CCIR. Expiry management prevents legal and operational risk. | LOW | none | Per asset: document type, issue date, expiry date. Alert 30/15/7 days before expiry. Alert destinations: farm manager + system notification. |
+| Cost-per-hour calculation | TCO KPI for machinery decisions (repair vs. replace). Computed as: (depreciation + maintenance + fuel + insurance) / total hours used. | MEDIUM | all cost inputs | Requires all cost categories to be linked to the asset with timestamps. Computed as dashboard metric, not stored. |
+| Availability index | Uptime KPI: % of time asset was available (not in maintenance). Critical for planning-intensive operations like planting and harvesting windows. | MEDIUM | maintenance orders | Computed from maintenance order start/end dates vs. calendar hours. MTBF (mean time between failures) and MTTR (mean time to repair) also derivable. |
+
+### Table Stakes — Maintenance (CMMS)
+
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Preventive maintenance plans | Structured plans define what must be done, how often, and what triggers the work. Without plans, maintenance is reactive only. | MEDIUM | none | Plan components: asset, task description, trigger type (calendar interval / hourmeter interval / production volume), estimated duration, assigned team, required parts (from stock). |
+| Maintenance trigger types | Calendar: every 30 days. Hourmeter: every 250 hours. Seasonal: before/after harvest. Condition-based: reading deviates from baseline. | MEDIUM | hourmeter log | System monitors readings and auto-generates work order when trigger condition is met. Calendar triggers are simplest; hourmeter triggers require daily reading checks. |
+| Work Order (OS) — CRUD | The OS is the unit of work in a CMMS. Fields: asset, type (preventiva/corretiva/reforma), description, requested by, assigned team/technician, priority, scheduled date, estimated duration, status. | HIGH | `stock` module (for parts) | State machine: SOLICITADA → APROVADA → EM_EXECUCAO → CONCLUIDA / CANCELADA. Status drives asset availability calculation and cost accumulation. |
+| Work Order accounting classification | Each OS must be classified before closure: Despesa Operacional (routine maintenance expensed immediately), Capitalização (improvement extends asset life — added to book value), Diferimento (prepaid expense amortized over future periods). | HIGH | `payables`, asset module | This is the single most complex feature in the maintenance module. The classification decision determines P&L vs balance sheet impact. Require classification input on OS closure. Default = Despesa Operacional. |
+| Parts consumption from stock | OS consumes spare parts from stock inventory. On OS closure: stock output created against parts used. Stock reservation on OS approval prevents parts from being allocated elsewhere. | MEDIUM | `stock-outputs`, `products` | Spare parts are regular products in the existing products module with a "peça de reposição" category flag. No separate spare-parts database needed. |
+| Maintenance cost accumulation | Total OS cost = labor + parts + external services. All costs must be captured and rolled up to the asset's TCO. | MEDIUM | none | Labor: R$/hour × hours worked. Parts: valued from stock at custo médio. External services: entered as R$ amount. Total post-closure. |
+| OS cost center attribution | OS costs flow to the asset's cost center(s) following the same rateio as depreciation. | LOW | `cost-centers` | Inherit asset's cost center assignment at OS creation. Allow override per OS if asset is reassigned. |
+| Corrective maintenance request (mobile) | Operators in the field identify problems and must report them immediately. Mobile creates a maintenance request (not a full OS) that a manager approves and converts to OS. | MEDIUM | mobile app | Simplified mobile form: asset (scanned by QR or selected), problem description, photo, urgency. Web manager reviews and promotes to OS. |
+| Maintenance dashboard | Manager view: open OS count by priority, assets in maintenance now, upcoming preventive OS by next 30 days, average MTBF by asset type. | MEDIUM | none | Single page with KPI cards + list of open/upcoming OS. Filter by farm, asset type, date range. |
+| Maintenance history per asset | Complete log of all OS (preventive, corrective, capitalize) for an asset, with dates, durations, costs, and closing notes. | LOW | none | Tab in ficha do ativo. Sort by date desc. Export to PDF for insurance/resale documentation. |
+| Maintenance cost provision | Monthly accounting provision for expected maintenance costs (reserves for future major repairs). Recognizes expense before cash outflow. | HIGH | `payables` | CPC 25 provision: Dr. Despesa de Manutenção / Cr. Provisão de Manutenção. Monthly provision amount set by manager (estimated annual cost / 12). Provision reverses when actual OS cost is posted. |
+
+### Table Stakes — Financial Integration
+
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Cash purchase → auto CP | Buying an asset for cash must create a Conta a Pagar automatically, just like purchasing inventory. | LOW | `payables` | On asset acquisition confirmation: create CP with supplier, value, due date, payment terms. Link CP to asset record. Reuse `installmentGenerator` from packages/shared. |
+| Financed purchase → CP with installment schedule | Financed machinery (common for tractors, combine harvesters in Brazil) generates a multi-installment CP. | MEDIUM | `payables`, `installmentGenerator` | OC-like form: down payment + number of installments + interval. Creates CP with installments. Links installments to asset. Shows total financing cost vs asset book value. |
+| Multiple assets on same NF | One invoice may include multiple pieces of equipment (e.g., 3 irrigation pumps). Each creates its own asset record from the same acquisition event. | MEDIUM | none | NF total must equal sum of per-asset values. Value allocation: proportional or user-specified per asset. |
+| Leasing (CPC 06 / IFRS 16) | Common for high-value machinery (colheitadeiras, tratores de grande porte) in Brazilian agro. CPC 06 R2 requires recognition of right-of-use asset + lease liability. | HIGH | `payables` | Two entries at inception: Dr. Ativo de Direito de Uso / Cr. Obrigação de Arrendamento. Monthly: Dr. Depreciação / Cr. Acc Depreciation + Dr. Juros / Cr. Obrigação. Complex: amortization schedule distinct from regular depreciation. |
+| Asset trade-in (troca) | Equipment traded in against a new purchase. Old asset is written off at book value; any difference from trade-in credit vs book value creates gain or loss. | MEDIUM | `payables`, asset write-off | Net entry: old asset off at book value + any gain/loss + new CP for balance due to supplier. |
+| Asset sale → auto CR | Selling a fixed asset generates a Conta a Receber automatically. Gain or loss = sale price − book value at sale date. | MEDIUM | `receivables` | On sale confirmation: create CR with buyer (may be a non-supplier contact), link to asset, record sale price. Compute gain/loss: sale price − net book value. Post gain/loss as non-operating income/expense. |
+| Partial installment sale | Large equipment sold with payment in installments (common in rural transactions — "parcelado na safra"). | MEDIUM | `receivables`, `installmentGenerator` | Same as financed purchase but generating CRs. Reuse installmentGenerator. |
+| Write-off by casualty (sinistro) | Asset destroyed by fire, flood, or theft. Remaining book value is recognized as a loss. Insurance recovery (if any) generates a CR. | MEDIUM | `receivables` | Two events: (a) loss recognition = book value as expense, (b) insurance recovery = CR creation if insurance claim is filed. |
+| Financial summary per asset | Dashboard panel on ficha do ativo showing: acquisition cost, accumulated depreciation, book value today, total maintenance spend YTD, total fuel YTD, effective TCO. | MEDIUM | all financial inputs | Purely computed. No separate storage required beyond what is already accumulated in existing modules. |
+
+### Table Stakes — Reports and Inventory
+
+| Feature | Why Expected | Complexity | Dependencies | Notes |
+|---------|--------------|------------|--------------|-------|
+| Asset inventory (physical vs. contábil) | Annual or ad-hoc count of all physical assets vs. system records. Required for audit, insurance, and bank financing. | MEDIUM | none | Same pattern as stock inventory module: create inventory session, count assets physically (QR code scan on mobile), reconcile with system. Discrepancy report. |
+| Patrimônio report (balance sheet schedule) | Required for external audits and bank financing applications. Shows: asset class, gross value, accumulated depreciation, net book value, per farm. | MEDIUM | none | Replicates SAP FI-AA Asset Explorer report structure. Export to PDF and Excel. |
+| Depreciation schedule report | Projected depreciation quotas for next 12/36/60 months by asset and by cost center. Input to cash flow planning. | LOW | none | Computed from existing depreciation parameters. Feeds into the existing `cash-flow` module. |
+| Cost center depreciation attribution report | Finance manager needs to see total depreciation charge allocated to each cost center per period. | LOW | `cost-centers` | Aggregated from `depreciation_entries` grouped by cost center × period. |
+| Asset utilization report | Hours used vs. available hours per asset, per period. Input to replacement decision. | LOW | hourmeter log | Computed from hourmeter entries. Useful for underutilized vs. overloaded equipment decisions. |
+
+---
+
+## Differentiators (Competitive Advantage)
+
+Features that go beyond generic fixed asset software. These justify Protos Farm over Siagri, AgroReceita, or a generic TOTVS implementation for Brazilian farm operators.
+
+| Feature | Value Proposition | Complexity | Dependencies | Notes |
+|---------|-------------------|------------|--------------|-------|
+| Composite asset hierarchy (pai-filho) | Tractors have attached implements (grades, plantadeiras). Building systems (irrigation pump + pipes + emitters) are managed as a unit. Cost and depreciation can be tracked at component level. | HIGH | none | Up to 3 levels. Child assets inherit cost center from parent by default. Child depreciation is independent (different useful lives). Parent ficha shows aggregate book value and TCO across children. |
+| Asset under construction with budget tracking | Obras on farms often run over budget. A farm-specific construction project module with budget vs. actual tracking is rare in generic ERPs and extremely valuable for fazenda owners building new infrastructure. | MEDIUM | `payables` | Simple: project budget (manual entry), list of linked CPs, % complete (manual), estimated completion date. Visual: budget gauge. |
+| TCO dashboard per asset and per fleet | Knowing the true cost-per-hour for each tractor over its lifetime is the #1 input to "repair vs. replace" decisions. This insight is what separates a farm manager from a farm owner who guesses. | MEDIUM | all cost inputs | Key KPI: custo/hora = (depreciation + maintenance + fuel + insurance) / total hours. Historical trend chart per asset. Fleet comparison chart (rank by custo/hora). |
+| Repair-vs-replace recommendation | When cumulative maintenance cost exceeds 60-70% of replacement cost, replacement is financially superior. System can surface this decision when OS cost crosses the threshold. | LOW | maintenance costs, book value | Single alert: "Custo acumulado de manutenção deste ativo atingiu X% do valor de reposição. Considere a troca." Not an auto-decision, just a flag. |
+| Seasonal maintenance calendar | Brazilian agriculture has hard deadlines (planting windows, harvest windows) where equipment downtime is very expensive. Preventive maintenance must be scheduled AROUND those windows, not during them. | MEDIUM | maintenance plans, `farms` module | Integration with farm planting/harvest calendar: maintenance scheduling wizard warns if a planned OS overlaps with an active planting or harvest operation for the same farm. |
+| Biological asset dashboard | Herd value, crop formation value, and total biological asset portfolio at current fair value — on one screen. Rare in farm ERPs, high value for bank financing and net worth reporting. | MEDIUM | `herd`, CPC 29 module | Cards: total herd FV, total perennial crops FV, total biological asset FV, period change in FV (gain/loss). Drill down to per-category and per-animal-group. |
+| QR code asset tags (mobile scan) | Field workers identify assets by scanning a QR code to open the ficha, log hourmeter, or request maintenance — without knowing the system asset ID. | LOW | mobile app | Generate printable QR codes per asset. QR encodes the asset UUID. Mobile deep-link opens ficha. Required for inventory counting via mobile. |
+| Fuel efficiency benchmarking | Compare fuel consumption per hour or per hectare across similar equipment models. Flag machines consuming 20%+ above fleet average. | LOW | fuel log | Computed from fuel log. Requires at least 2 similar assets to produce a comparison. |
+
+---
+
+## Anti-Features (Commonly Requested, Often Problematic)
+
+| Anti-Feature | Why Requested | Why Avoid | Alternative |
+|--------------|---------------|-----------|-------------|
+| NF-e XML import for asset acquisition | Eliminate manual NF data entry | NF-e XML parsing requires SEFAZ integration, digital certificate validation, and fiscal rule interpretation. This is a full fiscal module (explicitly out of scope per PROJECT.md). | Manual NF data capture on acquisition form: number, series, date, value, chave NF-e as future hook. Takes 60 seconds, always works. |
+| Full CIAP (ICMS credit on fixed assets) management | Recover ICMS paid on asset acquisition over 48 months | CIAP involves complex fiscal rules, SPED EFD integration, and interaction with the fiscal module. It requires monthly apportionment of ICMS recovery linked to taxed vs. exempt revenue. Belongs in a dedicated fiscal module. | Store the chave NF-e on the asset as a future integration hook. Let the fiscal module use it when built. |
+| IoT / telematics integration (GPS, engine hours via CAN bus) | Automatic hourmeter updates without manual entry | High integration complexity, device fragmentation (each tractor brand has its own API), and ongoing maintenance cost. Benefit is real but not proportionate to cost at current scale. | Manual hourmeter log with monthly reminder notification. QR code scan + manual entry on mobile covers 90% of the benefit at 5% of the cost. |
+| Predictive maintenance via ML | Prevent failures before they occur | Requires 2-3 years of failure history with correlated sensor data to build any useful model. The system doesn't have that history. A model trained on generic agricultural equipment data won't fit this farm's specific fleet and conditions. | Preventive maintenance plans with hourmeter-based triggers achieve 80% of downtime reduction from predictive maintenance without the complexity and data requirement. |
+| Asset-level P&L (embedded profit center accounting) | Know exactly how profitable each tractor or plot is | This is responsibility center accounting — a full management accounting module. It requires revenue allocation rules (which crops did this tractor service?) that are arbitrary and contentious. Adds enormous configuration complexity for questionable marginal insight. | Cost center attribution + TCO dashboard gives sufficient cost visibility. Revenue attribution belongs in a management accounting module, not the asset module. |
+| Lease vs. buy decision wizard | Automated NPV comparison to guide financing decisions | Decision depends on tax rate, opportunity cost of capital, expected inflation, and credit access — all farm-specific inputs that change constantly. A canned wizard will produce wrong answers with false confidence. | Simple TCO report + depreciation schedule + financing cost summary gives the CFO the inputs to make the decision. Don't automate the judgment. |
+| Insurance integration (SUSEP API) | Auto-fetch insurance policy data | SUSEP does not expose a public API for policy data retrieval. Integration would require each insurer's proprietary API. Complexity far exceeds benefit. | Manual insurance document record with expiry alert. Store policy number, insurer name, coverage value, premium, and expiry date. |
+| Full project management (gantt, resource leveling) for construction | Manage obra projects like an MS Project plan | This is project management software, not an asset module. The cost-capture and activation features of imobilizado em andamento already provide the accounting value. The gantt/resource problem is out of scope. | Budget vs. actual tracking + estimated completion date + list of linked payments is sufficient for farm-scale construction projects. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-[Supplier Registration]
-    required-by --> [RFQ / Cotacao]
-    required-by --> [Purchase Order (OC)]
-    required-by --> [CP generation]
+[Asset Registration]
+    required-by --> [Depreciation Module]
+    required-by --> [Maintenance Module]
+    required-by --> [Operational Control]
+    required-by --> [Financial Integration]
+    required-by --> [Biological Asset Valuation]
 
-[Product Catalog (existing)]
-    required-by --> [RC items]
-    required-by --> [GRN items]
-    required-by --> [Stock Entry (existing)]
+[Cost Center Module (existing)]
+    required-by --> [Depreciation attribution]
+    required-by --> [Maintenance OS cost attribution]
+    required-by --> [Asset registration cost center assignment]
 
-[Purchase Requisition (RC)]
-    required-by --> [RC Approval Workflow]
-                        required-by --> [RFQ / Cotacao]
-                                            required-by --> [Quotation Comparison Map]
-                                                                required-by --> [Winner Selection]
-                                                                                    required-by --> [Purchase Order (OC)]
-                                                                                                        required-by --> [Goods Receiving (GRN)]
-                                                                                                                            feeds --> [CP (payables module, existing)]
-                                                                                                                            feeds --> [Stock Entry (stock-entries module, existing)]
+[Suppliers Module (existing)]
+    required-by --> [Asset acquisition (CP generation)]
+    required-by --> [Maintenance parts procurement]
 
-[Price History]
-    accumulated-by --> [GRN confirmation]
-    required-by --> [Saving Analysis]
+[Payables Module (existing)]
+    feeds-from --> [Asset cash purchase]
+    feeds-from --> [Financed asset installments]
+    feeds-from --> [Leasing monthly installments]
+    feeds-from --> [OS cost settlement (external services)]
 
-[Saving Analysis]
-    enhances --> [Procurement Dashboard]
-
-[Supplier Scorecard]
-    requires --> [multiple completed GRN cycles]
-    enhances --> [Quotation Comparison Map]
-
-[Purchase Return]
-    requires --> [GRN] (must reference a received GRN line)
-    feeds --> [CP credit note or CP reduction]
-    feeds --> [Stock Output reversal]
-
-[Mobile RC]
-    simplified-version-of --> [RC]
-    feeds --> [RC Approval Workflow] (same flow)
+[Receivables Module (existing)]
+    feeds-from --> [Asset sale → CR]
+    feeds-from --> [Casualty insurance recovery]
+    feeds-from --> [Parcelada asset sale installments]
 
 [installmentGenerator (packages/shared, existing)]
-    reused-by --> [CP generation from GRN]
+    reused-by --> [Financed asset installments]
+    reused-by --> [Leasing amortization]
+    reused-by --> [Parcelada asset sale]
 
-[Cost Centers (existing)]
-    required-by --> [RC cost center rateio]
-    required-by --> [OC cost center rateio]
-    required-by --> [CP cost center rateio]
+[Stock Module (products, outputs — existing)]
+    required-by --> [Maintenance parts consumption from stock]
+    feeds-from --> [Biological asset harvest → stock entry]
+
+[Herd Module (existing)]
+    feeds-into --> [Biological asset valuation (cattle)]
+
+[Farm/Plots Module (existing)]
+    required-by --> [Asset farm assignment]
+    feeds-into --> [Biological asset valuation (perennial crops)]
+    feeds-into --> [Seasonal maintenance calendar]
+
+[Hourmeter Log]
+    required-by --> [Hours-based depreciation]
+    required-by --> [Maintenance hourmeter triggers]
+    required-by --> [Cost-per-hour calculation]
+    required-by --> [Fuel efficiency calculation]
+
+[Depreciation Engine]
+    required-by --> [Book value at any date]
+    required-by --> [Gain/loss on asset sale]
+    required-by --> [Asset write-off loss amount]
+    required-by --> [TCO calculation]
+
+[Maintenance Work Order (OS)]
+    required-by --> [Parts stock reservation and consumption]
+    required-by --> [Maintenance cost attribution to asset]
+    required-by --> [Availability/MTBF calculation]
+    required-by --> [Maintenance provision usage]
+
+[Asset Write-off (Baixa)]
+    required-by --> [Asset sale → CR generation]
+    required-by --> [Casualty loss → expense]
+    required-by --> [Disposal → book value expense]
+
+[Imobilizado em Andamento]
+    feeds-into --> [Active asset on activation]
+    required-by --> [Construction cost capitalization]
+
+[Biological Asset (CPC 29)]
+    feeds-from --> [Herd (cattle FV)]
+    feeds-from --> [Plots/Crops (perennial crop FV)]
+    feeds-into --> [Stock Entries on harvest (FV at point of harvest)]
+    generates --> [Fair value gain/loss in P&L per period]
 ```
 
 ### Dependency Notes
 
-- **Supplier Registration is the root dependency.** Nothing in procurement works without a clean supplier entity. It must be the first story in any phase ordering.
-- **RC -> Approval -> RFQ -> OC -> GRN is the critical path.** The entire P2P lifecycle must be implemented in order. You cannot skip steps without breaking auditability.
-- **GRN is the most critical integration point.** A single GRN confirmation event must atomically create a CP (in `payables`) and a stock entry (in `stock-entries`). Get the data model and transaction boundary right before building UI.
-- **Price history accumulates naturally.** No extra data model is needed for price history — it is a query over GRN items grouped by product + supplier + date. Saving analysis is built on top of this at zero extra storage cost.
-- **Saving analysis needs data before it is meaningful.** Do not prioritize saving analysis UI in the first sprint; there will be no historical data to show.
-- **Purchase Return requires GRN to exist first.** Cannot return goods that have not been received. Return is always a reference to one or more GRN line items.
-- **installmentGenerator from packages/shared must be reused.** Creating a separate installment logic for procurement would be duplication and drift. OC payment terms drive the same installment schedule as manual CP creation.
-- **Budget control is a separate prerequisite.** It requires a `purchase_budgets` entity with period + cost center + amount. This is an org process change (someone must set budgets) before enforcement makes sense. Defer to v2.
+- **Asset Registration is the root dependency.** All other features presuppose a clean, classified asset entity. It must be the first story in any phase ordering.
+- **Depreciation engine must be built before write-off.** Gain/loss on sale requires net book value, which requires the depreciation engine to have run correctly for all prior periods. Do not build the financial integration stories before the depreciation engine is validated.
+- **Hourmeter log is a prerequisite for hours-based depreciation and maintenance triggers.** Without daily or weekly readings, the trigger mechanism cannot function. Prioritize hourmeter log UX (simple mobile entry) early.
+- **Maintenance OS classification (expense vs. capitalize) is the most complex integration point.** It is the one decision that can distort both P&L and balance sheet if handled incorrectly. Require explicit classification before OS closure; do not auto-default to either.
+- **CPC 29 biological assets are independent from CPC 27 fixed assets.** They have a different valuation model (fair value, not cost). Biological asset valuation is its own sub-module. Do not build it into the fixed asset depreciation engine.
+- **Financial integration (purchase → CP) reuses existing payables infrastructure.** Do not create new payment tracking; route all asset-related payments through the existing `payables` module.
+- **Leasing (CPC 06) is the highest complexity financial integration.** It requires a separate amortization schedule (right-of-use asset + lease liability), interest calculation, and dual depreciation entry. Consider deferring to a later phase unless leasing is common in the specific farm's fleet.
+- **Imobilizado em andamento is low complexity but high value.** Simple data model (project → aportes → activation). Build early because farm construction projects are always ongoing and managers want to see them tracked.
 
 ---
 
 ## MVP Definition
 
-### Launch With (v1.1 — the full milestone)
+### Phase 1 — Foundation (Build First)
 
-This milestone is not decomposable into sub-MVPs. A procurement module that has requisitions but no GRN is useless. A GRN without CP auto-generation defeats the purpose. The minimum coherent unit is the complete P2P cycle.
+The minimum coherent unit that delivers value for a farm manager who needs to know what assets exist and their current book value.
 
-- [ ] Supplier CRUD with fiscal data, contacts, and payment terms — root dependency for everything
-- [ ] Purchase Requisition (RC) with items, cost center, and urgency flag — entry point of cycle
-- [ ] RC approval workflow (configurable value thresholds, state machine, rejection with comment) — control requirement
-- [ ] RFQ to multiple suppliers, manual quotation registration — price discovery
-- [ ] Quotation comparison map (mapa comparativo) with winner selection — decision support
-- [ ] Purchase Order (OC) generation with PDF export — formal commitment
-- [ ] Goods Receiving (6 scenarios) with NF data capture and 3-way match tolerance — stock + finance trigger
-- [ ] Automatic CP generation from GRN + NF — eliminates double-entry (core value)
-- [ ] Automatic stock entry from GRN — eliminates double-entry (core value)
-- [ ] Purchase return (devolucao) with credit note — required for complete financial cycle
-- [ ] Kanban / pipeline view of procurement flow — operational visibility
-- [ ] Procurement dashboard (executive view) — management visibility
-- [ ] Email notifications at key workflow transitions — keeps process moving
+- [ ] Asset catalog with classification tree (6 types)
+- [ ] Asset registration form (machines, vehicles, implements)
+- [ ] Farm, cost center, and status assignment
+- [ ] Hourmeter / odometer log (simple entry)
+- [ ] Document control with expiry alerts
+- [ ] Mass import from CSV/Excel
+- [ ] Linear depreciation with pro rata die
+- [ ] Monthly depreciation run (batch, idempotent)
+- [ ] Depreciation ledger per asset
+- [ ] Asset ficha (tabs: Dados Gerais, Depreciação, Documentos)
+- [ ] Patrimônio report (gross value / accumulated dep / book value)
+- [ ] Cash purchase → auto CP (simplest financial integration)
+- [ ] Asset write-off (descarte / baixa simples)
 
-### Add After Validation (v1.2)
+### Phase 2 — Maintenance CMMS
 
-Add after the core P2P cycle has 2-3 months of real data and user feedback.
+Add after Phase 1 has at least 4-6 weeks of production data.
 
-- [ ] Saving analysis — needs historical price data to be meaningful; ship UI after data accumulates
-- [ ] Supplier scorecard / ranking — needs multiple completed purchase cycles before scores are reliable
-- [ ] Price history visualization per product — data exists after v1.1 runs; UI is the only addition
-- [ ] Mobile requisition (RC from campo) — validate web flow and approval process first; mobile is an accelerator
-- [ ] CNPJ lookup for supplier registration — quality-of-life improvement, not blocking
+- [ ] Preventive maintenance plans with calendar and hourmeter triggers
+- [ ] Work Order (OS) CRUD with state machine
+- [ ] Parts consumption from stock (reuse existing stock-outputs)
+- [ ] OS accounting classification (despesa / capitalização / diferimento)
+- [ ] Mobile maintenance request from operator
+- [ ] Maintenance dashboard (open OS, upcoming preventive, MTBF)
+- [ ] Cost-per-hour calculation (powered by Phase 1 data + OS costs)
+- [ ] Maintenance cost provision (CPC 25)
 
-### Future Consideration (v2+)
+### Phase 3 — Advanced Depreciation and Financial Integration
 
-- [ ] Budget control (orcamento de compras) — requires budget planning module as prerequisite; organizational process change
-- [ ] Email RFQ sending with supplier response tracking — higher fidelity workflow; email + manual covers day-1
-- [ ] Frame contracts / blanket orders — enterprise feature, farm scale does not need it
-- [ ] NF-e XML import — full fiscal module, explicitly out of scope per PROJECT.md
-- [ ] Supplier portal — high cost, low ROI at farm scale
+- [ ] Hours-based depreciation (requires hourmeter data from Phase 1)
+- [ ] Production-based depreciation
+- [ ] Accelerated depreciation (dual-track CPC vs Fiscal)
+- [ ] Financed purchase (installments → CP reusing installmentGenerator)
+- [ ] Asset sale with gain/loss → auto CR
+- [ ] Asset trade-in (troca com compensação)
+- [ ] Imobilizado em andamento (obras + partial contributions + activation)
+- [ ] Composite asset hierarchy (pai-filho up to 3 levels)
+
+### Phase 4 — Biological Assets and Advanced Reports
+
+- [ ] Biological asset registration (cattle + perennial crops)
+- [ ] Fair value measurement with price index reference
+- [ ] Biological asset transformation gain/loss in P&L
+- [ ] Harvest product separation (FV at harvest → stock entry)
+- [ ] Perennial crop maturity tracking (formação → produção)
+- [ ] Leasing / arrendamento (CPC 06 right-of-use asset)
+- [ ] Biological asset dashboard
+- [ ] Asset inventory (physical vs. contábil reconciliation)
+- [ ] TCO dashboard per asset and per fleet
+- [ ] Repair-vs-replace alert
+
+### Defer to Future Milestone
+
+- [ ] CIAP (ICMS credit recovery) — requires fiscal module as prerequisite
+- [ ] NF-e XML import for asset acquisition — explicitly out of scope
+- [ ] IoT/telematics integration — complexity vs. benefit not justified at this scale
+- [ ] Predictive maintenance — requires 2-3 years of failure history
+- [ ] Full project management (gantt) for construction — out of scope
 
 ---
 
 ## Feature Prioritization Matrix
 
-| Feature                       | User Value | Implementation Cost | Priority     |
-| ----------------------------- | ---------- | ------------------- | ------------ |
-| Supplier registration         | HIGH       | LOW                 | P1           |
-| Purchase Requisition (RC)     | HIGH       | MEDIUM              | P1           |
-| RC approval workflow          | HIGH       | HIGH                | P1           |
-| RFQ + quotation registration  | HIGH       | MEDIUM              | P1           |
-| Quotation comparison map      | HIGH       | MEDIUM              | P1           |
-| Purchase Order (OC) + PDF     | HIGH       | MEDIUM              | P1           |
-| Goods Receiving — 6 scenarios | HIGH       | HIGH                | P1           |
-| Auto CP generation from GRN   | HIGH       | MEDIUM              | P1           |
-| Auto stock entry from GRN     | HIGH       | MEDIUM              | P1           |
-| Purchase return (devolucao)   | HIGH       | HIGH                | P1           |
-| Kanban pipeline view          | HIGH       | MEDIUM              | P1           |
-| Procurement dashboard         | HIGH       | MEDIUM              | P1           |
-| Email notifications           | MEDIUM     | MEDIUM              | P1           |
-| Price history per product     | MEDIUM     | LOW                 | P2           |
-| Saving analysis               | HIGH       | MEDIUM              | P2           |
-| Supplier scorecard            | MEDIUM     | MEDIUM              | P2           |
-| Mobile requisition            | MEDIUM     | MEDIUM              | P2           |
-| CNPJ lookup on supplier       | LOW        | LOW                 | P2           |
-| Budget control                | HIGH       | HIGH                | P3           |
-| Email RFQ with tracking       | MEDIUM     | HIGH                | P3           |
-| NF-e XML import               | MEDIUM     | VERY HIGH           | Out of scope |
-| Supplier portal               | LOW        | HIGH                | Out of scope |
+| Feature | User Value | Implementation Cost | Priority |
+|---------|------------|---------------------|----------|
+| Asset registration (machines, buildings, land) | HIGH | MEDIUM | P1 |
+| Linear depreciation engine | HIGH | MEDIUM | P1 |
+| Monthly depreciation run (batch) | HIGH | HIGH | P1 |
+| Document control with expiry alerts | HIGH | LOW | P1 |
+| Hourmeter log | HIGH | LOW | P1 |
+| Mass import CSV/Excel | MEDIUM | MEDIUM | P1 |
+| Cash purchase → CP | HIGH | LOW | P1 |
+| Asset write-off (baixa) | HIGH | MEDIUM | P1 |
+| Patrimônio report | HIGH | MEDIUM | P1 |
+| Preventive maintenance plans | HIGH | MEDIUM | P2 |
+| Work Order (OS) CRUD | HIGH | HIGH | P2 |
+| OS accounting classification | HIGH | HIGH | P2 |
+| Parts from stock on OS | HIGH | MEDIUM | P2 |
+| Mobile maintenance request | MEDIUM | MEDIUM | P2 |
+| Maintenance dashboard | HIGH | MEDIUM | P2 |
+| Cost-per-hour (TCO) | HIGH | MEDIUM | P2 |
+| Financed purchase → installments | HIGH | MEDIUM | P3 |
+| Asset sale → CR + gain/loss | HIGH | MEDIUM | P3 |
+| Imobilizado em andamento | HIGH | MEDIUM | P3 |
+| Composite asset hierarchy (pai-filho) | MEDIUM | HIGH | P3 |
+| Hours-based depreciation | MEDIUM | MEDIUM | P3 |
+| Accelerated depreciation (dual-track) | MEDIUM | HIGH | P3 |
+| Biological asset valuation (CPC 29) | HIGH | VERY HIGH | P4 |
+| Leasing / CPC 06 | MEDIUM | HIGH | P4 |
+| Asset trade-in | LOW | MEDIUM | P4 |
+| Asset inventory reconciliation | MEDIUM | MEDIUM | P4 |
+| CIAP | MEDIUM | VERY HIGH | Out of scope |
+| NF-e XML import | LOW | VERY HIGH | Out of scope |
+| IoT / telematics | LOW | VERY HIGH | Out of scope |
 
 **Priority key:**
+- P1: Phase 1 (Foundation) — must have for first delivery
+- P2: Phase 2 (CMMS Maintenance)
+- P3: Phase 3 (Advanced Depreciation + Financial Integration)
+- P4: Phase 4 (Biological Assets + Advanced Reports)
 
-- P1: Must have for v1.1 milestone launch
-- P2: Add after core P2P cycle is stable, when data exists (v1.2)
-- P3: Future milestone
+---
+
+## Brazilian Agricultural Asset Context
+
+### Typical Asset Profile of a Mid-Sized Brazilian Farm (500-5000 ha)
+
+**Machinery (most complex, highest value):**
+- 2-6 tractors (R$300k–R$800k each, 10-12 year useful life)
+- 1-2 colheitadeiras (R$600k–R$2M each, 8-10 year useful life)
+- Plantadeiras, grades, pulverizadores (implements, linked to tractors as children)
+- Caminhões (truck fleet for grain transport)
+
+**Buildings and infrastructure:**
+- Galpões (machinery storage, grain storage — R$200k–R$500k)
+- Armazéns and silos (can be R$1M–R$5M for a medium grain farm)
+- Casas de funcionários (staff housing — low value but many)
+- Irrigação infrastructure (pivôs centrais — R$200k–R$800k each)
+
+**Land:**
+- Not depreciated per CPC 27
+- Multiple titles (matrículas) per farm
+- ITR (imposto territorial rural) must be tracked annually
+
+**Biological assets:**
+- Cattle herd (corte: valued by arroba price; leite: by annual milk yield)
+- Perennial crops: café (3-5 year formation, 15-20 year productive life), laranja, eucalipto
+- Formation costs for perennial crops are significant — R$8k–R$15k per hectare for coffee implantation
+
+### Depreciation Rates — Brazilian Tax Reference (RFB tables)
+
+These are the fiscal depreciation rates commonly used in Brazilian agriculture (not CPC 27 accounting rates — those are management estimates):
+
+| Asset Type | Annual Rate (Fiscal) | Useful Life | Notes |
+|------------|----------------------|-------------|-------|
+| Tratores e máquinas agrícolas | 10% | 10 years | Can be 25-50% accelerated for rural producers |
+| Colheitadeiras | 10% | 10 years | Accelerated available |
+| Implementos agrícolas | 20% | 5 years | |
+| Veículos | 20% | 5 years | |
+| Galpões e armazéns | 4% | 25 years | |
+| Silos (metálicos) | 10% | 10 years | |
+| Sistemas de irrigação | 10% | 10 years | |
+| Perennial crops (café, citros) | Not depreciated fiscally | — | Treated as permanent (CPC 29 biological asset) |
+
+### Accelerated Depreciation (Rural Fiscal Benefit)
+
+Brazilian tax law allows rural producers to apply accelerated depreciation for income tax purposes:
+- 1 shift/day (8h): normal 100% rate
+- 2 shifts/day (16h): 150% rate
+- 3 shifts/day (24h): 200% rate
+
+This creates the dual-track requirement: the CPC (accounting) book value uses management-estimated useful life; the fiscal book value uses accelerated rates. Both must be tracked separately.
 
 ---
 
 ## Competitor Feature Analysis
 
-Reference systems analyzed to inform patterns and scope decisions.
-
-| Feature               | ERPNext (open source reference)                | SAP S/4HANA (enterprise reference)                  | Our Approach                                                                                                    |
-| --------------------- | ---------------------------------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Supplier registration | Full master data with optional supplier portal | Full master with credit management and risk scoring | Simplified: fiscal data + contacts + payment terms + quality flag. No portal. CNPJ lookup from Receita Federal. |
-| RC workflow           | Configurable approval chains                   | Complex org hierarchy with role-based routing       | Value-threshold alcadas (3 levels max, configurable per org). Mobile approval for web approvers.                |
-| RFQ                   | Email to supplier portal                       | Formal sourcing event with sourcing cockpit         | Email dispatch + manual response registration. No portal. Comparison map included.                              |
-| Quotation comparison  | Line-item supplier quotation report            | SRM analytics with scoring                          | Visual matrix with lowest-price highlight per item. Winner selection with audit trail.                          |
-| PO / OC               | Full document with conditions and approval     | Formal contract with release strategy               | OC document with PDF + email dispatch. Linked to RFQ winner.                                                    |
-| Goods receiving       | Multiple GRN scenarios + warehouse movements   | MIGO with warehouse management integration          | 6 explicit scenarios with tolerance bands. No warehouse management.                                             |
-| 3-way match           | Automated with tolerance                       | Automated + ML anomaly detection                    | Tolerance bands (±3%) with warning-not-block. Buyer resolves before GRN confirmed.                              |
-| CP generation         | Manual AP link after GRN                       | Automatic via MIRO with FI integration              | Automatic on GRN confirmation using existing installmentGenerator. Zero double-entry.                           |
-| Saving analysis       | Basic quotation savings report                 | Advanced spend analytics platform                   | Saving vs. last price + vs. max quote. Aggregate by period, category, supplier.                                 |
-| Budget control        | Yes, linked to cost centers                    | Yes, complex (commitment accounting)                | P3 — not in v1.1 scope. Dashboard spend visualization provides informal awareness.                              |
-
----
-
-## Brazilian Agricultural Context — Specific Notes
-
-### Supplier Types Common in Brazilian Agro
-
-1. **Insumos (defensivos, fertilizantes, sementes)** — typically large regional distributors (Nutrien, Mosaic dealers, AgroGalaxy). Issue NF-e. Have formal quotation processes. High value purchases.
-2. **Servicos agricolas (calcario, aviacao agricola, manutencao de maquinas)** — smaller, may issue NFS-e or nota de produtor. Less formal quotation.
-3. **Veterinarios e produtos veterinarios** — regulated products. Some items require receituario agronômico (already built in EPIC-10).
-4. **Manutencao e pecas (implementos, tratores, equipamentos de irrigacao)** — mix of large dealers and small workshops.
-5. **Alimentos e insumos pecuarios (racoes, minerais, sal)** — regular recurring purchases with seasonal price variation. Good candidates for recurring OC templates.
-
-### NF Data Capture Strategy
-
-NF-e XML parsing is out of scope. The GRN receiving form must capture manually:
-
-- Numero NF
-- Serie NF
-- Data de emissao NF
-- Valor total NF (drives CP amount)
-- Chave NF-e (optional 44-digit key, stored as future hook for fiscal module integration)
-
-This manual entry is sufficient for CP generation and audit trail. Takes under 30 seconds. Chave NF-e field is the integration interface for the future fiscal module.
-
-### Payment Terms in Brazilian Agro
-
-Common terms that must be modeled on OC:
-
-- A vista (immediate)
-- 30 dias
-- 30/60 dias
-- 30/60/90 dias
-- Safra (linked to harvest date — common for large input purchases at planting time, paid at harvest)
-
-"Safra" payment term requires special treatment in CP: due date is "estimada colheita" not a fixed calendar date. This is a known agro-specific requirement that generic ERPs miss.
-
-### Price Volatility Context
-
-Defensivos agricolas (herbicides, fungicides, insecticides) and fertilizantes are priced in USD. Price can swing 15-30% between planting seasons. Price history and saving analysis are therefore not vanity features — they are legitimate procurement intelligence tools that help buyers time purchases and demonstrate performance.
+| Feature | TOTVS Protheus SIGAATF | SAP FI-AA | Siagri Agro (Brazilian vertical) | Our Approach |
+|---------|------------------------|-----------|----------------------------------|--------------|
+| Asset catalog | Full with 100+ config fields | Full with enterprise hierarchy | Farm-specific types | 6 asset types, farm-specific fields per type. Extensible spec fields. |
+| Depreciation methods | Linear, hours, production, accelerated, dual-track | All methods + planned/unplanned | Linear and accelerated | Linear (Phase 1) + hours + production + accelerated (Phase 3). Dual-track optional. |
+| CMMS integration | Separate module (SIGAMNT) | PM module with complex integration | Basic work order | Integrated OS in same monorepo. Parts from existing stock module. |
+| CPC 29 | Yes (separate module) | Via IFRS add-on | Partial (cattle only) | Full CPC 29 with fair value + cost fallback + perennial crops (Phase 4). |
+| CPC 06 leasing | Yes | Yes | No | Phase 4. Right-of-use + lease liability amortization. |
+| Financial integration | Auto CP/CR on events | Full FI-AA integration | Partial, manual steps | Auto CP on purchase, auto CR on sale, gain/loss calculation — all via existing payables/receivables. |
+| Mobile | No | Minimal | No | Mobile maintenance request + QR code scan + hourmeter log. |
+| Farm-specific context | No farm/plot concept | No | Yes (talhão integration) | Full farm/plot/cost center context on all assets. Seasonal maintenance calendar. |
 
 ---
 
 ## Sources
 
-- [ERPNext Open Source Procurement](https://frappe.io/erpnext/open-source-procurement) — RFQ, comparison map, PO generation patterns. Confidence: HIGH.
-- [NetSuite Procurement Module](https://www.netsuite.com/portal/resource/articles/erp/procurement-module.shtml) — lifecycle and integration patterns. Confidence: HIGH.
-- [Three-Way Matching — NetSuite](https://www.netsuite.com/portal/resource/articles/accounting/three-way-matching.shtml) — 3-way match definition and tolerance patterns. Confidence: HIGH.
-- [Goods Receipt Definition and Process — Ramp](https://ramp.com/blog/accounts-payable/goods-receipt) — receiving scenarios and GRN workflow. Confidence: HIGH.
-- [Purchase Requisition Best Practices — Stampli](https://www.stampli.com/blog/accounts-payable/purchase-requisition-best-practices/) — approval workflow patterns and threshold configuration. Confidence: HIGH.
-- [Procurement Dashboard KPIs — Upsolve](https://upsolve.ai/blog/procurement-dashboard) — dashboard metrics and KPI selection. Confidence: MEDIUM.
-- [Supplier Scorecard Guide — HighRadius](https://www.highradius.com/resources/Blog/supplier-scorecard/) — scorecard metrics and computation methodology. Confidence: HIGH.
-- [Procurement Savings Analysis — Sievo](https://sievo.com/resources/procurement-analytics-demystified) — saving analysis methodology. Confidence: HIGH.
-- [Purchase Return — Microsoft Dynamics 365](https://learn.microsoft.com/en-us/dynamics365/supply-chain/procurement/tasks/create-purchase-return-order) — return order workflow and credit note process. Confidence: HIGH.
-- [NFP-e for Rural Producers — Aegro](https://aegro.com.br/blog/nota-fiscal-eletronica-produtor-rural/) — Brazilian fiscal context for agricultural suppliers. Confidence: HIGH.
-- PROJECT.md — milestone requirements, out-of-scope items, existing module inventory. Confidence: HIGH (primary source).
+- [CPC 27 — Ativo Imobilizado (CVM)](https://conteudo.cvm.gov.br/export/sites/cvm/menu/regulados/normascontabeis/cpc/CPC_27_rev_12.pdf) — Depreciation methods, useful life, residual value, impairment. Confidence: HIGH.
+- [CPC 29 — Ativos Biológicos e Produtos Agrícolas (CVM)](https://conteudo.cvm.gov.br/export/sites/cvm/menu/regulados/normascontabeis/cpc/CPC_29_rev_14.pdf) — Fair value measurement, harvest product, biological transformation. Confidence: HIGH.
+- [CPC 06 R2 — TOTVS Blog](https://www.totvs.com/blog/negocios/cpc-06/) — Leasing accounting under IFRS 16: right-of-use asset, lease liability, financial vs. operational unification. Confidence: HIGH.
+- [TOTVS Protheus SIGAATF — CPC no Ativo Fixo](https://centraldeatendimento.totvs.com/hc/pt-br/articles/4411126012439-Cross-Segmento-Backoffice-Linha-Protheus-SIGAATF-IFRS-CPC-no-Ativo-fixo) — Brazilian ERP asset module with dual-track CPC vs Fiscal. Confidence: HIGH.
+- [MaintainX — Agricultural CMMS](https://www.getmaintainx.com/industries/agriculture-and-farm-maintenance-software) — Work order patterns, preventive maintenance triggers, ERP integration. Confidence: HIGH.
+- [FTMaintenance — Modernizing Agricultural Maintenance](https://ftmaintenance.com/maintenance-management/modernizing-agricultural-maintenance-with-cmms-software/) — CMMS patterns for farm machinery. Confidence: MEDIUM.
+- [AfixCode — CPC 27 Depreciação](https://www.afixcode.com.br/blog/cpc-27/) — Brazilian accounting context for fixed asset depreciation. Confidence: HIGH.
+- [AfixCode — Imobilizado em Andamento](https://www.afixcode.com.br/blog/imobilizado-em-andamento-contabilizacao/) — Construction in progress accounting. Confidence: HIGH.
+- [AfixCode — Contabilização Reformas e Reparos](https://www.afixcode.com.br/blog/contabilizacao-ativo-imobilizado/) — Capitalize vs. expense maintenance costs. Confidence: HIGH.
+- [Asset Disposal Accounting — Corporate Finance Institute](https://corporatefinanceinstitute.com/resources/accounting/asset-disposal/) — Gain/loss on disposal journal entries, ERP integration pattern. Confidence: HIGH.
+- [PWC — Maintenance Capitalization (IAS 16 / IFRS)](https://viewpoint.pwc.com/dt/us/en/pwc/accounting_guides/property_plant_equip/property_plant_equip_US/chapter_1_capitaliza_US/14_maintenance_inclu_US.html) — Capitalize vs. expense decision framework for maintenance. Confidence: HIGH.
+- [MaintainX EAM — Financial Integration Patterns](https://www.getmaintainx.com/learning-center/enterprise-asset-management-software) — EAM-ERP integration patterns for cost center and financial module. Confidence: MEDIUM.
+- [Fleet TCO Calculation — Fleetio](https://www.fleetio.com/blog/calculating-total-cost-of-ownership-for-fleet) — TCO formula: acquisition + admin/operating + depreciation + downtime. Confidence: HIGH.
+- PROJECT.md — Milestone requirements, out-of-scope items, existing module inventory. Confidence: HIGH (primary source).
 
 ---
 
-_Feature research for: Protos Farm v1.1 — Gestao de Compras (Procurement)_
-_Researched: 2026-03-17_
+_Feature research for: Protos Farm v1.2 — Gestao de Patrimônio (Asset Lifecycle Management)_
+_Researched: 2026-03-19_
