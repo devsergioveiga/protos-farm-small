@@ -18,6 +18,44 @@ vi.mock('@/services/api', () => ({
 const MOCK_BOARD_RESPONSE = {
   columns: [
     {
+      id: 'RC_PENDENTE',
+      label: 'RC Pendente',
+      count: 1,
+      cards: [
+        {
+          id: 'card-rc',
+          entityType: 'RC' as const,
+          sequentialNumber: 'RC-010',
+          urgency: 'NORMAL' as const,
+          requesterName: 'Ana',
+          totalValue: 500,
+          daysInStage: 1,
+          isOverdue: false,
+          farmId: 'farm-1',
+          farmName: 'Fazenda Sol',
+        },
+      ],
+    },
+    {
+      id: 'RC_APROVADA',
+      label: 'RC Aprovada',
+      count: 1,
+      cards: [
+        {
+          id: 'card-rc2',
+          entityType: 'RC' as const,
+          sequentialNumber: 'RC-011',
+          urgency: 'NORMAL' as const,
+          requesterName: 'Pedro',
+          totalValue: 800,
+          daysInStage: 3,
+          isOverdue: false,
+          farmId: 'farm-1',
+          farmName: 'Fazenda Sol',
+        },
+      ],
+    },
+    {
       id: 'EM_COTACAO',
       label: 'Em Cotação',
       count: 1,
@@ -133,10 +171,9 @@ describe('usePurchasingKanban moveCard', () => {
 
     // Should call PATCH /transition (not PUT /status)
     expect(mockPatch).toHaveBeenCalledTimes(1);
-    expect(mockPatch).toHaveBeenCalledWith(
-      expect.stringMatching(/purchase-orders\/card-2\/transition/),
-      { status: 'EM_TRANSITO' },
-    );
+    expect(mockPatch).toHaveBeenCalledWith('/org/purchase-orders/card-2/transition', {
+      status: 'EM_TRANSITO',
+    });
   });
 
   it('OC_EMITIDA->AGUARDANDO_ENTREGA does not call api.put (broken endpoint removed)', async () => {
@@ -156,5 +193,43 @@ describe('usePurchasingKanban moveCard', () => {
 
     // api.put /status is the old broken endpoint — must not be called
     expect(mockPut).not.toHaveBeenCalled();
+  });
+
+  it('RC_PENDENTE->RC_APROVADA calls api.post /org/purchase-requests/:id/transition with {action: APPROVE}', async () => {
+    const { usePurchasingKanban } = await import('./usePurchasingKanban');
+
+    mockPost.mockResolvedValue({});
+
+    const { result } = renderHook(() => usePurchasingKanban('org-1', {}));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockPost.mockClear();
+
+    await act(async () => {
+      await result.current.moveCard('card-rc', 'RC_PENDENTE', 'RC_APROVADA');
+    });
+
+    expect(mockPost).toHaveBeenCalledWith('/org/purchase-requests/card-rc/transition', {
+      action: 'APPROVE',
+    });
+  });
+
+  it('RC_APROVADA->EM_COTACAO calls api.post /org/quotations without orgId', async () => {
+    const { usePurchasingKanban } = await import('./usePurchasingKanban');
+
+    mockPost.mockResolvedValue({});
+
+    const { result } = renderHook(() => usePurchasingKanban('org-1', {}));
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockPost.mockClear();
+
+    await act(async () => {
+      await result.current.moveCard('card-rc2', 'RC_APROVADA', 'EM_COTACAO');
+    });
+
+    expect(mockPost).toHaveBeenCalledWith('/org/quotations', { purchaseRequestId: 'card-rc2' });
   });
 });
