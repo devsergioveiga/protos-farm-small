@@ -2,6 +2,7 @@ import request from 'supertest';
 import { app } from '../../app';
 import * as assetsService from './assets.service';
 import * as authService from '../auth/auth.service';
+import * as bulkImportService from './asset-bulk-import.service';
 import { AssetError } from './assets.types';
 
 jest.mock('../../shared/rbac/rbac.service', () => ({
@@ -15,6 +16,12 @@ import { getUserPermissions } from '../../shared/rbac/rbac.service';
 import { DEFAULT_ROLE_PERMISSIONS } from '../../shared/rbac/permissions';
 
 const mockGetUserPermissions = getUserPermissions as jest.MockedFunction<typeof getUserPermissions>;
+
+jest.mock('./asset-bulk-import.service', () => ({
+  previewAssetImport: jest.fn(),
+  confirmAssetImport: jest.fn(),
+  generateAssetCsvTemplate: jest.fn(),
+}));
 
 jest.mock('./assets.service', () => ({
   createAsset: jest.fn(),
@@ -37,6 +44,7 @@ jest.mock('../auth/auth.service', () => {
 
 const mockedService = jest.mocked(assetsService);
 const mockedAuth = jest.mocked(authService);
+const mockedBulkImport = jest.mocked(bulkImportService);
 
 const ORG_ID = 'org-1';
 
@@ -571,5 +579,177 @@ describe('Assets API', () => {
 
   describe('GET /api/org/:orgId/assets/export/pdf', () => {
     it.todo('returns PDF with Content-Type application/pdf');
+  });
+
+  // ─── Asset Import ─────────────────────────────────────────────────────
+
+  describe('Asset Import', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    // ─── GET /import/template ─────────────────────────────────────────
+
+    describe('GET /api/org/:orgId/assets/import/template', () => {
+      it('returns CSV template with Content-Type text/csv', async () => {
+        mockedBulkImport.generateAssetCsvTemplate.mockReturnValue(
+          'nome,tipo,classificacao_cpc\nTrator,MAQUINA,DEPRECIABLE_CPC27',
+        );
+
+        const res = await request(app)
+          .get(`/api/org/${ORG_ID}/assets/import/template`)
+          .set('Authorization', 'Bearer valid-token');
+
+        expect(res.status).toBe(200);
+        expect(res.headers['content-type']).toMatch(/text\/csv/);
+        expect(res.headers['content-disposition']).toMatch(/modelo-ativos\.csv/);
+      });
+    });
+
+    // ─── POST /import/parse ───────────────────────────────────────────
+
+    describe('POST /api/org/:orgId/assets/import/parse', () => {
+      it('parses CSV file and returns columnHeaders + suggestedMapping', async () => {
+        const res = await request(app)
+          .post(`/api/org/${ORG_ID}/assets/import/parse`)
+          .set('Authorization', 'Bearer valid-token')
+          .attach(
+            'file',
+            Buffer.from('nome,tipo,classificacao_cpc\nTrator,MAQUINA,DEPRECIABLE_CPC27'),
+            { filename: 'ativos.csv', contentType: 'text/csv' },
+          );
+
+        expect(res.status).toBe(200);
+        expect(res.body.columnHeaders).toEqual(['nome', 'tipo', 'classificacao_cpc']);
+        expect(res.body.suggestedMapping).toBeDefined();
+        expect(res.body.suggestedMapping['nome']).toBe('name');
+        expect(res.body.suggestedMapping['tipo']).toBe('assetType');
+        expect(res.body.rowCount).toBe(1);
+      });
+
+      it('returns 400 when no file is sent', async () => {
+        const res = await request(app)
+          .post(`/api/org/${ORG_ID}/assets/import/parse`)
+          .set('Authorization', 'Bearer valid-token');
+
+        expect(res.status).toBe(400);
+        expect(res.body.error).toContain('arquivo');
+      });
+    });
+
+    // ─── POST /import/preview ─────────────────────────────────────────
+
+    describe('POST /api/org/:orgId/assets/import/preview', () => {
+      it('returns valid and invalid rows with error details', async () => {
+        mockedBulkImport.previewAssetImport.mockResolvedValue({
+          valid: [
+            {
+              rowNumber: 2,
+              data: {
+                name: 'Trator',
+                assetType: 'MAQUINA' as const,
+                classification: 'DEPRECIABLE_CPC27' as const,
+                farmId: 'farm-1',
+              },
+              valid: true,
+              errors: [],
+            },
+          ],
+          invalid: [
+            {
+              rowNumber: 3,
+              data: {},
+              valid: false,
+              errors: ['Nome e obrigatorio'],
+            },
+          ],
+          totalValid: 1,
+          totalInvalid: 1,
+        });
+
+        const res = await request(app)
+          .post(`/api/org/${ORG_ID}/assets/import/preview`)
+          .set('Authorization', 'Bearer valid-token')
+          .send({
+            rows: [{ nome: 'Trator', tipo: 'MAQUINA' }],
+            columnMapping: { nome: 'name', tipo: 'assetType' },
+          });
+
+        expect(res.status).toBe(200);
+        expect(res.body.totalValid).toBe(1);
+        expect(res.body.totalInvalid).toBe(1);
+        expect(res.body.valid).toHaveLength(1);
+        expect(res.body.invalid[0].errors).toContain('Nome e obrigatorio');
+      });
+
+      it('returns 400 when rows is missing', async () => {
+        const res = await request(app)
+          .post(`/api/org/${ORG_ID}/assets/import/preview`)
+          .set('Authorization', 'Bearer valid-token')
+          .send({ columnMapping: {} });
+
+        expect(res.status).toBe(400);
+        expect(res.body.error).toContain('rows');
+      });
+    });
+
+    // ─── POST /import/confirm ─────────────────────────────────────────
+
+    describe('POST /api/org/:orgId/assets/import/confirm', () => {
+      it('inserts valid rows and returns imported count', async () => {
+        mockedBulkImport.confirmAssetImport.mockResolvedValue({
+          imported: 2,
+          skipped: 0,
+          failed: 0,
+          errors: [],
+        });
+
+        const validRows = [
+          {
+            rowNumber: 2,
+            data: {
+              name: 'Trator',
+              assetType: 'MAQUINA',
+              classification: 'DEPRECIABLE_CPC27',
+              farmId: 'farm-1',
+            },
+            valid: true,
+            errors: [],
+          },
+          {
+            rowNumber: 3,
+            data: {
+              name: 'Veiculo',
+              assetType: 'VEICULO',
+              classification: 'DEPRECIABLE_CPC27',
+              farmId: 'farm-1',
+            },
+            valid: true,
+            errors: [],
+          },
+        ];
+
+        const res = await request(app)
+          .post(`/api/org/${ORG_ID}/assets/import/confirm`)
+          .set('Authorization', 'Bearer valid-token')
+          .send({ validRows });
+
+        expect(res.status).toBe(200);
+        expect(res.body.imported).toBe(2);
+        expect(res.body.failed).toBe(0);
+        expect(mockedBulkImport.confirmAssetImport).toHaveBeenCalledWith(
+          expect.objectContaining({ organizationId: ORG_ID }),
+          validRows,
+        );
+      });
+
+      it('returns 400 when validRows is missing', async () => {
+        const res = await request(app)
+          .post(`/api/org/${ORG_ID}/assets/import/confirm`)
+          .set('Authorization', 'Bearer valid-token')
+          .send({});
+
+        expect(res.status).toBe(400);
+        expect(res.body.error).toContain('validRows');
+      });
+    });
   });
 });

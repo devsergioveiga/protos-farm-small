@@ -18,6 +18,12 @@ import {
   removeAssetPhoto,
 } from './assets.service';
 import { exportAssetsCsv, exportAssetsPdf } from './asset-export.service';
+import { parseAssetFile, autoMapColumns } from './asset-file-parser';
+import {
+  previewAssetImport,
+  confirmAssetImport,
+  generateAssetCsvTemplate,
+} from './asset-bulk-import.service';
 
 export const assetsRouter = Router();
 
@@ -44,6 +50,33 @@ function handleError(err: unknown, res: Response): void {
   }
   res.status(500).json({ error: 'Erro interno do servidor' });
 }
+
+// ─── Multer (import file — memory storage) ────────────────────────────
+
+const importStorage = multer.memoryStorage();
+const importUpload = multer({
+  storage: importStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (_req, file, cb) => {
+    const allowed = [
+      'text/csv',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'application/octet-stream',
+    ];
+    const ext = file.originalname.toLowerCase();
+    if (
+      allowed.includes(file.mimetype) ||
+      ext.endsWith('.csv') ||
+      ext.endsWith('.xlsx') ||
+      ext.endsWith('.xls')
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error('Formato nao suportado. Use CSV ou XLSX.'));
+    }
+  },
+});
 
 // ─── Multer (photo upload) ─────────────────────────────────────────────
 
@@ -105,6 +138,115 @@ assetsRouter.get(
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="ativos-${date}.pdf"`);
       res.send(buffer);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── GET /org/:orgId/assets/import/template ──────────────────────────
+
+assetsRouter.get(
+  `${base}/import/template`,
+  authenticate,
+  checkPermission('assets:read'),
+  async (_req, res) => {
+    try {
+      const csv = generateAssetCsvTemplate();
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="modelo-ativos.csv"');
+      res.send(Buffer.from(csv, 'utf-8'));
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── POST /org/:orgId/assets/import/parse ────────────────────────────
+
+assetsRouter.post(
+  `${base}/import/parse`,
+  authenticate,
+  checkPermission('assets:create'),
+  importUpload.single('file'),
+  async (req, res) => {
+    try {
+      const file = req.file;
+      if (!file) {
+        res.status(400).json({ error: 'Nenhum arquivo enviado' });
+        return;
+      }
+
+      const result = await parseAssetFile(file.buffer, file.originalname);
+      const suggestedMapping = autoMapColumns(result.columnHeaders);
+
+      res.json({
+        columnHeaders: result.columnHeaders,
+        rowCount: result.rowCount,
+        sampleRows: result.sampleRows,
+        allRows: result.allRows,
+        suggestedMapping,
+      });
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── POST /org/:orgId/assets/import/preview ──────────────────────────
+
+assetsRouter.post(
+  `${base}/import/preview`,
+  authenticate,
+  checkPermission('assets:create'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const { rows, columnMapping } = req.body as {
+        rows?: Record<string, string>[];
+        columnMapping?: Record<string, string>;
+      };
+
+      if (!rows || !Array.isArray(rows)) {
+        res.status(400).json({ error: 'rows e obrigatorio' });
+        return;
+      }
+      if (!columnMapping || typeof columnMapping !== 'object') {
+        res.status(400).json({ error: 'columnMapping e obrigatorio' });
+        return;
+      }
+
+      const result = await previewAssetImport(ctx, rows, columnMapping);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── POST /org/:orgId/assets/import/confirm ──────────────────────────
+
+assetsRouter.post(
+  `${base}/import/confirm`,
+  authenticate,
+  checkPermission('assets:create'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const userId = req.user?.userId ?? 'unknown';
+      const { validRows } = req.body as { validRows?: unknown[] };
+
+      if (!validRows || !Array.isArray(validRows)) {
+        res.status(400).json({ error: 'validRows e obrigatorio' });
+        return;
+      }
+
+      const result = await confirmAssetImport(
+        { ...ctx, userId },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        validRows as any,
+      );
+      res.json(result);
     } catch (err) {
       handleError(err, res);
     }
