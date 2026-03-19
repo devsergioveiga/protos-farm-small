@@ -31,6 +31,8 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [ ] **Phase 10: Recebimento de Mercadorias** — Hub de integração: entrada no estoque + geração automática de CP
 - [ ] **Phase 11: Devolução, Orçamento e Saving** — Reversão de estoque/financeiro e controle orçamentário
 - [x] **Phase 12: Kanban, Dashboard e Notificações** — Visibilidade operacional e execução do fluxo completo (completed 2026-03-18)
+- [ ] **Phase 13: Kanban DnD Fixes + Notification Wiring** — Fix broken DnD transitions and wire notification dispatches
+- [ ] **Phase 14: Stock Reversal + Supplier Rating Completion** — Stock reversal on goods return + rating alert and performance report
 
 ## Phase Details
 
@@ -141,19 +143,51 @@ Plans:
 - [ ] 12-04-PLAN.md — Frontend purchasing dashboard (KPIs, Recharts charts, alerts, drill-down)
 - [ ] 12-05-PLAN.md — Frontend preferences page + NotificationBell expansion + Sidebar + route wiring
 
+### Phase 13: Kanban DnD Fixes + Notification Wiring
+
+**Goal**: Fix 3 broken Kanban DnD transition calls and wire 4 notification types that are defined but never dispatched — restoring full Kanban interactivity and completing the notification pipeline
+**Depends on**: Phase 12
+**Requirements**: DASH-01, DASH-03
+**Gap Closure:** Closes gaps from audit
+**Success Criteria** (what must be TRUE):
+
+1. Kanban DnD RC_PENDENTE→RC_APROVADA calls correct POST /transition endpoint and succeeds
+2. Kanban DnD EM_COTACAO→OC_EMITIDA redirects to quotation approval flow instead of calling createEmergencyPO
+3. Kanban DnD OC_EMITIDA→AGUARDANDO_ENTREGA calls correct PATCH /transition endpoint and succeeds
+4. BUDGET_EXCEEDED notification fires when budget is exceeded during approval
+5. RETURN_REGISTERED and RETURN_RESOLVED notifications fire from goods-returns service with registered types
+6. PO_GOODS_RECEIVED notification fires when goods receipt is confirmed
+   **Plans**: TBD
+
+### Phase 14: Stock Reversal + Supplier Rating Completion
+
+**Goal**: Complete stock reversal on goods return conclusion and wire supplier rating alert in quotation flow plus performance report — closing remaining data integrity and UX gaps
+**Depends on**: Phase 13
+**Requirements**: DEVO-01, FORN-03
+**Gap Closure:** Closes gaps from audit
+**Success Criteria** (what must be TRUE):
+
+1. When goods return transitions to CONCLUIDA, StockBalance is decremented and a StockOutput of type RETURN is created
+2. QuotationModal shows visual alert when selected supplier has average rating < 3
+3. Supplier performance report endpoint returns rating history filtered by period
+4. Frontend displays supplier performance report with rating trends
+   **Plans**: TBD
+
 ## Progress
 
-| Phase                                | Milestone | Plans Complete | Status      | Completed  |
-| ------------------------------------ | --------- | -------------- | ----------- | ---------- |
-| 1. Fundação Financeira               | v1.0      | 3/3            | Complete    | 2026-03-16 |
-| 2. Núcleo AP/AR                      | v1.0      | 7/7            | Complete    | 2026-03-16 |
-| 3. Dashboard Financeiro              | v1.0      | 2/2            | Complete    | 2026-03-16 |
-| 4. Instrumentos de Pagamento         | v1.0      | 7/7            | Complete    | 2026-03-17 |
-| 5. Conciliação e Fluxo de Caixa      | v1.0      | 6/6            | Complete    | 2026-03-17 |
-| 6. Crédito Rural                     | v1.0      | 5/5            | Complete    | 2026-03-17 |
-| 7. Cadastro de Fornecedores          | 4/4       | Complete       | 2026-03-17  | -          |
-| 8. Requisição e Aprovação            | 6/6       | Complete       | 2026-03-17  | -          |
-| 9. Cotação e Pedido de Compra        | v1.1      | 0/TBD          | Not started | -          |
-| 10. Recebimento de Mercadorias       | v1.1      | 0/TBD          | Not started | -          |
-| 11. Devolução, Orçamento e Saving    | v1.1      | 0/TBD          | Not started | -          |
-| 12. Kanban, Dashboard e Notificações | 5/5       | Complete       | 2026-03-18  | -          |
+| Phase                                           | Milestone | Plans Complete | Status      | Completed  |
+| ----------------------------------------------- | --------- | -------------- | ----------- | ---------- |
+| 1. Fundação Financeira                          | v1.0      | 3/3            | Complete    | 2026-03-16 |
+| 2. Núcleo AP/AR                                 | v1.0      | 7/7            | Complete    | 2026-03-16 |
+| 3. Dashboard Financeiro                         | v1.0      | 2/2            | Complete    | 2026-03-16 |
+| 4. Instrumentos de Pagamento                    | v1.0      | 7/7            | Complete    | 2026-03-17 |
+| 5. Conciliação e Fluxo de Caixa                 | v1.0      | 6/6            | Complete    | 2026-03-17 |
+| 6. Crédito Rural                                | v1.0      | 5/5            | Complete    | 2026-03-17 |
+| 7. Cadastro de Fornecedores                     | 4/4       | Complete       | 2026-03-17  | -          |
+| 8. Requisição e Aprovação                       | 6/6       | Complete       | 2026-03-17  | -          |
+| 9. Cotação e Pedido de Compra                   | v1.1      | 0/TBD          | Not started | -          |
+| 10. Recebimento de Mercadorias                  | v1.1      | 0/TBD          | Not started | -          |
+| 11. Devolução, Orçamento e Saving               | v1.1      | 0/TBD          | Not started | -          |
+| 12. Kanban, Dashboard e Notificações            | 5/5       | Complete       | 2026-03-18  | -          |
+| 13. Kanban DnD Fixes + Notification Wiring      | v1.1      | 0/TBD          | Not started | -          |
+| 14. Stock Reversal + Supplier Rating Completion | v1.1      | 0/TBD          | Not started | -          |
