@@ -97,12 +97,7 @@ export default function DocumentsModal({
           <h2 id="docs-modal-title" className="docs-modal__title">
             Documentos
           </h2>
-          <button
-            type="button"
-            className="docs-modal__close"
-            onClick={onClose}
-            aria-label="Fechar"
-          >
+          <button type="button" className="docs-modal__close" onClick={onClose} aria-label="Fechar">
             <X size={20} aria-hidden="true" />
           </button>
         </header>
@@ -125,9 +120,7 @@ export default function DocumentsModal({
         ) : documents.length === 0 ? (
           <div className="docs-modal__empty">
             <FileText size={40} aria-hidden="true" />
-            <p className="docs-modal__empty-text">
-              Nenhum documento vinculado a este imóvel.
-            </p>
+            <p className="docs-modal__empty-text">Nenhum documento vinculado a este imóvel.</p>
           </div>
         ) : (
           <ul className="docs-modal__list">
@@ -139,12 +132,8 @@ export default function DocumentsModal({
                 <div className="docs-modal__item-info">
                   <span className="docs-modal__item-name">{doc.filename}</span>
                   <div className="docs-modal__item-details">
-                    <span className="docs-modal__item-badge">
-                      {getTypeLabel(doc.type)}
-                    </span>
-                    {doc.sizeBytes != null && (
-                      <span>{formatFileSize(doc.sizeBytes)}</span>
-                    )}
+                    <span className="docs-modal__item-badge">{getTypeLabel(doc.type)}</span>
+                    {doc.sizeBytes != null && <span>{formatFileSize(doc.sizeBytes)}</span>}
                   </div>
                 </div>
                 <button
