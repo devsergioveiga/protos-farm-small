@@ -206,7 +206,7 @@ suppliersRouter.get(
     try {
       const ctx = buildRlsContext(req);
       const { startDate, endDate } = req.query as { startDate?: string; endDate?: string };
-      const result = await getPerformanceReport(ctx, req.params.id, startDate, endDate);
+      const result = await getPerformanceReport(ctx, req.params.id as string, startDate, endDate);
       res.json(result);
     } catch (err) {
       handleError(err, res);
