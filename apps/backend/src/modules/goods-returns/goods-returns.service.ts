@@ -202,6 +202,26 @@ export async function createGoodsReturn(
       include: GR_FULL_INCLUDE,
     });
 
+    // Notify OC buyer (needs to contact supplier about the return)
+    const receipt = await tx.goodsReceipt.findFirst({
+      where: { id: input.goodsReceiptId },
+      select: {
+        purchaseOrder: {
+          select: { createdBy: true, sequentialNumber: true },
+        },
+      },
+    });
+    if (receipt?.purchaseOrder?.createdBy) {
+      void createNotification(tx, ctx.organizationId, {
+        recipientId: receipt.purchaseOrder.createdBy,
+        type: 'RETURN_REGISTERED',
+        title: 'Devolucao registrada',
+        body: `Uma devolucao foi registrada para o pedido ${receipt.purchaseOrder.sequentialNumber}. Entre em contato com o fornecedor.`,
+        referenceId: goodsReturn.id,
+        referenceType: 'GOODS_RETURN',
+      }).catch(() => {});
+    }
+
     return formatGoodsReturn(goodsReturn);
   });
 }
@@ -318,7 +338,10 @@ export async function transitionGoodsReturn(
       notes: input.notes !== undefined ? input.notes : gr.notes,
     };
 
-    if (input.status === 'APROVADA') {
+    if (input.status === 'CONCLUIDA') {
+      updateData.resolutionStatus = 'RESOLVED';
+
+      // === BEGIN: moved from APROVADA ===
       // Calculate total return value
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const totalReturnValue = gr.items.reduce((sum: number, item: any) => {
@@ -477,34 +500,24 @@ export async function transitionGoodsReturn(
         }
         // TROCA: no financial action needed
       }
+      // === END: moved from APROVADA ===
 
-      // Step D: Notify managers about return approval (fire-and-forget)
-      const managers = await tx.user.findMany({
-        where: {
-          organizationId: ctx.organizationId,
-          role: 'MANAGER',
-        },
+      // Notify FINANCIAL users that return is resolved (fire-and-forget)
+      const financialUsers = await tx.user.findMany({
+        where: { organizationId: ctx.organizationId, role: 'FINANCIAL' },
         select: { id: true },
         take: 5,
       });
-
-      for (const manager of managers) {
+      for (const u of financialUsers) {
         void createNotification(tx, ctx.organizationId, {
-          recipientId: manager.id,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          type: 'GOODS_RETURN_APPROVED' as any,
-          title: 'Devolucao aprovada',
-          body: `Devolucao ${gr.sequentialNumber} foi aprovada`,
+          recipientId: u.id,
+          type: 'RETURN_RESOLVED',
+          title: 'Devolucao resolvida',
+          body: `Devolucao ${gr.sequentialNumber} foi concluida e aguarda processamento financeiro.`,
           referenceId: gr.id,
           referenceType: 'GOODS_RETURN',
-        }).catch(() => {
-          // Ignore notification errors
-        });
+        }).catch(() => {});
       }
-    }
-
-    if (input.status === 'CONCLUIDA') {
-      updateData.resolutionStatus = 'RESOLVED';
     }
 
     const updated = await tx.goodsReturn.update({

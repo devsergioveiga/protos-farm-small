@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { api } from '../services/api';
+import { useAuth } from '../stores/AuthContext';
 
 export interface NotificationPreference {
   eventType: string;
@@ -22,6 +23,8 @@ interface UseNotificationPreferencesResult {
 }
 
 export function useNotificationPreferences(): UseNotificationPreferencesResult {
+  const { user } = useAuth();
+  const orgId = user?.organizationId ?? '';
   const [preferences, setPreferences] = useState<NotificationPreference[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,14 +35,16 @@ export function useNotificationPreferences(): UseNotificationPreferencesResult {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<NotificationPreference[]>('/org/notification-preferences');
+      const data = await api.get<NotificationPreference[]>(
+        `/org/${orgId}/notification-preferences`,
+      );
       setPreferences(data);
     } catch {
       setError('Nao foi possivel carregar suas preferencias. Tente novamente.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [orgId]);
 
   useEffect(() => {
     void fetchPreferences();
@@ -53,7 +58,7 @@ export function useNotificationPreferences(): UseNotificationPreferencesResult {
       );
 
       try {
-        await api.put('/org/notification-preferences', {
+        await api.put(`/org/${orgId}/notification-preferences`, {
           eventType,
           channel,
           enabled,
@@ -72,7 +77,7 @@ export function useNotificationPreferences(): UseNotificationPreferencesResult {
         setTimeout(() => setErrorToast(null), 5000);
       }
     },
-    [],
+    [orgId],
   );
 
   return {

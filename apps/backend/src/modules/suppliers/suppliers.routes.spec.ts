@@ -30,6 +30,7 @@ jest.mock('./suppliers.service', () => ({
   createRating: jest.fn(),
   listRatings: jest.fn(),
   getTop3ByCategory: jest.fn(),
+  getPerformanceReport: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -679,6 +680,76 @@ describe('Suppliers endpoints', () => {
       expect(response.status).toBe(200);
       expect(response.body).toHaveLength(2);
       expect(mockedService.listRatings).toHaveBeenCalledWith({ organizationId: 'org-1' }, 'sup-1');
+    });
+  });
+
+  // ─── GET /api/org/suppliers/:id/performance ──────────────────────
+
+  describe('GET /org/suppliers/:id/performance', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('returns rating history and breakdown for supplier with ratings', async () => {
+      mockedService.getPerformanceReport.mockResolvedValue({
+        history: [{ date: '2026-01-15', average: 4.25 }],
+        breakdown: { deadline: 4.0, quality: 4.5, price: 4.0, service: 4.5 },
+        totalRatings: 1,
+      } as never);
+
+      const response = await request(app)
+        .get('/api/org/suppliers/sup-1/performance')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.totalRatings).toBe(1);
+      expect(response.body.history).toHaveLength(1);
+      expect(response.body.breakdown.quality).toBe(4.5);
+    });
+
+    it('returns empty history when no ratings exist', async () => {
+      mockedService.getPerformanceReport.mockResolvedValue({
+        history: [],
+        breakdown: { deadline: 0, quality: 0, price: 0, service: 0 },
+        totalRatings: 0,
+      } as never);
+
+      const response = await request(app)
+        .get('/api/org/suppliers/sup-1/performance')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.totalRatings).toBe(0);
+      expect(response.body.history).toHaveLength(0);
+    });
+
+    it('passes startDate and endDate query params to service', async () => {
+      mockedService.getPerformanceReport.mockResolvedValue({
+        history: [],
+        breakdown: { deadline: 0, quality: 0, price: 0, service: 0 },
+        totalRatings: 0,
+      } as never);
+
+      await request(app)
+        .get('/api/org/suppliers/sup-1/performance?startDate=2026-01-01&endDate=2026-03-31')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(mockedService.getPerformanceReport).toHaveBeenCalledWith(
+        expect.anything(),
+        'sup-1',
+        '2026-01-01',
+        '2026-03-31',
+      );
+    });
+
+    it('returns 404 for non-existent supplier', async () => {
+      mockedService.getPerformanceReport.mockRejectedValue(
+        new SupplierError('Fornecedor nao encontrado', 404),
+      );
+
+      const response = await request(app)
+        .get('/api/org/suppliers/nonexistent/performance')
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(response.status).toBe(404);
     });
   });
 

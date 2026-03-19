@@ -104,3 +104,21 @@ export interface CreateRatingInput {
   service: number; // 1-5
   comment?: string;
 }
+
+export interface PerformanceHistoryPoint {
+  date: string; // ISO date "YYYY-MM-DD"
+  average: number; // 1-5 scale, rounded to 2 decimals
+}
+
+export interface PerformanceCriteriaBreakdown {
+  deadline: number;
+  quality: number;
+  price: number;
+  service: number;
+}
+
+export interface PerformanceReportOutput {
+  history: PerformanceHistoryPoint[];
+  breakdown: PerformanceCriteriaBreakdown;
+  totalRatings: number;
+}

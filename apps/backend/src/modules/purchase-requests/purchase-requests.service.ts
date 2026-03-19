@@ -480,6 +480,36 @@ export async function transitionPurchaseRequest(
         void dispatchPushNotification(notification).catch((err: Error) => {
           console.warn('Push dispatch failed', err);
         });
+
+        // Notify approver + FINANCIAL if budget exceeded
+        if (budgetCheck.exceeded) {
+          // Notify the approver
+          void createNotification(tx, ctx.organizationId, {
+            recipientId: ctx.userId,
+            type: 'BUDGET_EXCEEDED',
+            title: 'Orcamento excedido',
+            body: `A aprovacao de ${rc.sequentialNumber} ultrapassou o orcamento configurado.`,
+            referenceId: id,
+            referenceType: 'purchase_request',
+          }).catch(() => {});
+
+          // Notify FINANCIAL role users
+          const financialUsers = await tx.user.findMany({
+            where: { organizationId: ctx.organizationId, role: 'FINANCIAL' },
+            select: { id: true },
+            take: 5,
+          });
+          for (const u of financialUsers) {
+            void createNotification(tx, ctx.organizationId, {
+              recipientId: u.id,
+              type: 'BUDGET_EXCEEDED',
+              title: 'Orcamento excedido',
+              body: `Requisicao ${rc.sequentialNumber} ultrapassou o orcamento ao ser aprovada.`,
+              referenceId: id,
+              referenceType: 'purchase_request',
+            }).catch(() => {});
+          }
+        }
       }
 
       return tx.purchaseRequest.findFirst({

@@ -15,7 +15,8 @@ export type NotificationType =
   | 'PO_GOODS_RECEIVED'
   | 'BUDGET_EXCEEDED'
   | 'RETURN_REGISTERED'
-  | 'RETURN_RESOLVED';
+  | 'RETURN_RESOLVED'
+  | 'DAILY_DIGEST';
 
 export const NOTIFICATION_LABELS: Record<NotificationType, string> = {
   RC_APPROVED: 'Requisicao aprovada',
@@ -32,6 +33,7 @@ export const NOTIFICATION_LABELS: Record<NotificationType, string> = {
   BUDGET_EXCEEDED: 'Orcamento excedido',
   RETURN_REGISTERED: 'Devolucao registrada',
   RETURN_RESOLVED: 'Devolucao resolvida',
+  DAILY_DIGEST: 'Resumo diario',
 };
 
 export interface Notification {

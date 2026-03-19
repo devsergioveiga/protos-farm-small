@@ -21,6 +21,7 @@ import {
   type DivergenceActionValue,
 } from './goods-receipts.types';
 import { canOcTransition } from '../purchase-orders/purchase-orders.types';
+import { createNotification } from '../notifications/notifications.service';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TxClient = any;
@@ -818,6 +819,44 @@ export async function confirmGoodsReceipt(
       },
       include: GR_FULL_INCLUDE,
     });
+
+    // Notify RC creator + OC buyer that goods were received
+    if (gr.purchaseOrderId) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const po = await (tx as any).purchaseOrder.findFirst({
+        where: { id: gr.purchaseOrderId },
+        select: {
+          createdBy: true,
+          sequentialNumber: true,
+          quotation: {
+            select: {
+              purchaseRequest: { select: { createdBy: true } },
+            },
+          },
+        },
+      });
+
+      if (po) {
+        const recipients = new Set<string>();
+        // OC buyer
+        if (po.createdBy) recipients.add(po.createdBy);
+        // RC creator
+        if (po.quotation?.purchaseRequest?.createdBy) {
+          recipients.add(po.quotation.purchaseRequest.createdBy);
+        }
+
+        for (const recipientId of recipients) {
+          void createNotification(tx, ctx.organizationId, {
+            recipientId,
+            type: 'PO_GOODS_RECEIVED',
+            title: 'Mercadoria recebida',
+            body: `O recebimento do pedido ${po.sequentialNumber} foi confirmado.`,
+            referenceId: id,
+            referenceType: 'goods_receipt',
+          }).catch(() => {});
+        }
+      }
+    }
 
     return formatGoodsReceipt(updated);
   });

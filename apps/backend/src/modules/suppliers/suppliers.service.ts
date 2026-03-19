@@ -9,6 +9,7 @@ import {
   type UpdateSupplierInput,
   type ListSuppliersQuery,
   type CreateRatingInput,
+  type PerformanceReportOutput,
 } from './suppliers.types';
 import { parseSupplierFile } from './supplier-file-parser';
 
@@ -648,6 +649,56 @@ export async function listRatings(ctx: RlsContext, supplierId: string) {
       ...r,
       individualAverage: (r.deadline + r.quality + r.price + r.service) / 4,
     }));
+  });
+}
+
+// ─── Performance Report ───────────────────────────────────────────────
+
+export async function getPerformanceReport(
+  ctx: RlsContext,
+  supplierId: string,
+  startDate?: string,
+  endDate?: string,
+): Promise<PerformanceReportOutput> {
+  return withRlsContext(ctx, async (tx) => {
+    const supplier = await tx.supplier.findFirst({
+      where: { id: supplierId, organizationId: ctx.organizationId, deletedAt: null },
+    });
+    if (!supplier) throw new SupplierError('Fornecedor nao encontrado', 404);
+
+    const where: Prisma.SupplierRatingWhereInput = { supplierId };
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) (where.createdAt as Record<string, Date>).gte = new Date(startDate);
+      if (endDate) (where.createdAt as Record<string, Date>).lte = new Date(endDate);
+    }
+
+    const ratings = await tx.supplierRating.findMany({
+      where,
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const history = ratings.map((r) => ({
+      date: r.createdAt.toISOString().slice(0, 10),
+      average: Math.round(((r.deadline + r.quality + r.price + r.service) / 4) * 100) / 100,
+    }));
+
+    const breakdown =
+      ratings.length === 0
+        ? { deadline: 0, quality: 0, price: 0, service: 0 }
+        : {
+            deadline:
+              Math.round((ratings.reduce((s, r) => s + r.deadline, 0) / ratings.length) * 100) /
+              100,
+            quality:
+              Math.round((ratings.reduce((s, r) => s + r.quality, 0) / ratings.length) * 100) / 100,
+            price:
+              Math.round((ratings.reduce((s, r) => s + r.price, 0) / ratings.length) * 100) / 100,
+            service:
+              Math.round((ratings.reduce((s, r) => s + r.service, 0) / ratings.length) * 100) / 100,
+          };
+
+    return { history, breakdown, totalRatings: ratings.length };
   });
 }
 

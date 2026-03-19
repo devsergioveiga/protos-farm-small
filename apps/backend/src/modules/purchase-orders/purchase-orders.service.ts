@@ -304,7 +304,11 @@ export async function updatePO(ctx: RlsContext, id: string, input: UpdatePOInput
 
 // ─── Transition PO ────────────────────────────────────────────────────
 
-export async function transitionPO(ctx: RlsContext, id: string, input: TransitionPOInput) {
+export async function transitionPO(
+  ctx: RlsContext & { userId: string },
+  id: string,
+  input: TransitionPOInput,
+) {
   return withRlsContext(ctx, async (tx) => {
     const po = await tx.purchaseOrder.findFirst({
       where: { id, organizationId: ctx.organizationId, deletedAt: null },
@@ -360,6 +364,32 @@ export async function transitionPO(ctx: RlsContext, id: string, input: Transitio
         );
         if (budgetCheck.exceeded) {
           data.budgetExceeded = true;
+
+          // Notify current user (who issued the OC) + FINANCIAL
+          void createNotification(tx, ctx.organizationId, {
+            recipientId: ctx.userId,
+            type: 'BUDGET_EXCEEDED',
+            title: 'Orcamento comprometido',
+            body: `Emissao de ${po.sequentialNumber} ultrapassou o orcamento comprometido.`,
+            referenceId: id,
+            referenceType: 'purchase_order',
+          }).catch(() => {});
+
+          const financialUsers = await tx.user.findMany({
+            where: { organizationId: ctx.organizationId, role: 'FINANCIAL' },
+            select: { id: true },
+            take: 5,
+          });
+          for (const u of financialUsers) {
+            void createNotification(tx, ctx.organizationId, {
+              recipientId: u.id,
+              type: 'BUDGET_EXCEEDED',
+              title: 'Orcamento comprometido',
+              body: `Emissao de ${po.sequentialNumber} ultrapassou o orcamento comprometido.`,
+              referenceId: id,
+              referenceType: 'purchase_order',
+            }).catch(() => {});
+          }
         }
       }
     } else if (input.status === 'CONFIRMADA') {

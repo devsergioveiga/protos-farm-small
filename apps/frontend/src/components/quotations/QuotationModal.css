@@ -406,3 +406,34 @@
 .qm-btn--secondary:hover:not(:disabled) {
   background: var(--color-neutral-50);
 }
+
+/* ─── Rating badge ─── */
+
+.qm-rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+.qm-rating-badge--critical {
+  background-color: var(--color-error-100, #ffebee);
+  color: var(--color-error-500, #c62828);
+}
+
+.qm-rating-badge--low {
+  background-color: var(--color-warning-100, #fff8e1);
+  color: var(--color-warning-500, #f57f17);
+}
+
+.qm-rating-badge:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}

@@ -114,13 +114,14 @@ export function usePurchasingKanban(orgId: string, filters: KanbanFilters) {
 
       try {
         if (fromCol === 'RC_PENDENTE' && toCol === 'RC_APROVADA') {
-          await api.post(`/org/${orgId}/purchase-requests/${cardId}/approve`);
+          await api.post(`/org/purchase-requests/${cardId}/transition`, { action: 'APPROVE' });
         } else if (fromCol === 'RC_APROVADA' && toCol === 'EM_COTACAO') {
-          await api.post(`/org/${orgId}/quotations`, { purchaseRequestId: cardId });
+          await api.post('/org/quotations', { purchaseRequestId: cardId });
         } else if (fromCol === 'EM_COTACAO' && toCol === 'OC_EMITIDA') {
-          await api.post(`/org/${orgId}/purchase-orders`, { quotationId: cardId });
+          // Navigation handled in KanbanBoard.tsx — redirect to quotations page
+          return null;
         } else if (fromCol === 'OC_EMITIDA' && toCol === 'AGUARDANDO_ENTREGA') {
-          await api.put(`/org/${orgId}/purchase-orders/${cardId}/status`, {
+          await api.patch(`/org/purchase-orders/${cardId}/transition`, {
             status: 'EM_TRANSITO',
           });
         } else if (fromCol === 'AGUARDANDO_ENTREGA' && toCol === 'RECEBIDO') {
