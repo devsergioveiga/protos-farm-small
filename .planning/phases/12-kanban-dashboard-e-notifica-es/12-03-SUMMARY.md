@@ -1,6 +1,6 @@
 ---
 phase: 12-kanban-dashboard-e-notifica-es
-plan: "03"
+plan: '03'
 subsystem: frontend/kanban
 tags: [kanban, dnd-kit, purchasing, frontend, react]
 dependency_graph:
@@ -9,14 +9,14 @@ dependency_graph:
   affects: [App.tsx, Sidebar.tsx]
 tech_stack:
   added:
-    - "@dnd-kit/core ^6"
-    - "@dnd-kit/sortable ^8"
-    - "@dnd-kit/utilities ^3"
-    - "@dnd-kit/modifiers ^7"
+    - '@dnd-kit/core ^6'
+    - '@dnd-kit/sortable ^8'
+    - '@dnd-kit/utilities ^3'
+    - '@dnd-kit/modifiers ^7'
   patterns:
-    - "useSortable + useDroppable for drag-and-drop columns"
-    - "Optimistic update with snapshot rollback in usePurchasingKanban"
-    - "ConfirmModal with transition-specific copy per DnD drop"
+    - 'useSortable + useDroppable for drag-and-drop columns'
+    - 'Optimistic update with snapshot rollback in usePurchasingKanban'
+    - 'ConfirmModal with transition-specific copy per DnD drop'
 key_files:
   created:
     - apps/frontend/src/hooks/usePurchasingKanban.ts
@@ -34,13 +34,13 @@ key_files:
     - apps/frontend/src/App.tsx
     - apps/frontend/src/components/layout/Sidebar.tsx
 decisions:
-  - "KanbanFilters type renamed to KanbanFiltersState in page to avoid collision with KanbanFilters component import"
-  - "overColumnId state removed from KanbanBoard — valid/invalid targets computed from activeColumnId + KANBAN_VALID_DROPS map, no need to track over column separately"
-  - "AGUARDANDO_ENTREGA->RECEBIDO transition uses navigate() instead of API call — redirects to /goods-receipts?poId=..."
-  - "Columns3 icon from lucide-react used for kanban sidebar entry"
+  - 'KanbanFilters type renamed to KanbanFiltersState in page to avoid collision with KanbanFilters component import'
+  - 'overColumnId state removed from KanbanBoard — valid/invalid targets computed from activeColumnId + KANBAN_VALID_DROPS map, no need to track over column separately'
+  - 'AGUARDANDO_ENTREGA->RECEBIDO transition uses navigate() instead of API call — redirects to /goods-receipts?poId=...'
+  - 'Columns3 icon from lucide-react used for kanban sidebar entry'
 metrics:
-  duration: "10min"
-  completed: "2026-03-18"
+  duration: '10min'
+  completed: '2026-03-18'
   tasks_completed: 2
   files_created: 10
   files_modified: 3
@@ -67,12 +67,14 @@ A complete 7-column kanban board frontend for the purchasing flow, including:
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Naming collision — KanbanFilters type vs component**
+
 - **Found during:** Task 2
 - **Issue:** `PurchasingKanbanPage.tsx` imported both the `KanbanFilters` type and the `KanbanFilters` component, causing TS2300 duplicate identifier error
 - **Fix:** Renamed type import alias to `KanbanFiltersState` in page file
 - **Files modified:** apps/frontend/src/pages/PurchasingKanbanPage.tsx
 
 **2. [Rule 1 - Bug] Unused overColumnId state — ESLint no-unused-vars**
+
 - **Found during:** Task 2 commit
 - **Issue:** `overColumnId` state was set in handlers but never read (valid/invalid targets computed from `activeColumnId` directly)
 - **Fix:** Removed `overColumnId` state and `DragOverEvent` import; simplified `handleDragOver` callback
@@ -81,10 +83,11 @@ A complete 7-column kanban board frontend for the purchasing flow, including:
 ## Deferred Items
 
 Pre-existing TypeScript errors in spec files (unrelated to this plan):
+
 - `apps/frontend/src/components/farm-selector/FarmSelector.spec.tsx` — `registrations` field mismatch
 - `apps/frontend/src/pages/FarmsPage.spec.tsx` — same
 - `apps/frontend/src/stores/FarmContext.spec.tsx` — same
-Logged to `.planning/phases/12-kanban-dashboard-e-notifica-es/deferred-items.md`.
+  Logged to `.planning/phases/12-kanban-dashboard-e-notifica-es/deferred-items.md`.
 
 ## Self-Check: PASSED
 
