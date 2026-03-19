@@ -20,6 +20,7 @@ The primary risk is integration contamination: asset acquisitions must never rou
 The milestone requires only 2 new npm packages. Everything else reuses infrastructure already installed in the monorepo: `pdfkit` for PDF reports, `exceljs` for bulk import, `decimal.js` for all monetary arithmetic, `node-cron` for the monthly depreciation scheduler, `bullmq` for async work order notifications, `recharts` for dashboards, `ioredis`/`nodemailer` for notifications, and `multer` for file uploads.
 
 **Core technologies:**
+
 - `fast-xml-parser@^5.5.7` (backend): NF-e XML parsing for asset acquisition import — preferred over `@xmldom/xmldom` for its object-mapping API that simplifies deep NF-e structure traversal; zero dependencies; actively maintained
 - `react-spreadsheet-import@^4.7.1` (frontend): Multi-step column-mapping UI for bulk asset import from varied farmer spreadsheets; last published 2 years ago — MEDIUM confidence, React 19 compatibility must be tested before committing
 - Custom `DepreciationEngine` in `packages/shared/src/utils/depreciation.ts`: supports LINEAR, HOURS_BASED, PRODUCTION_BASED, ACCELERATED; no npm library covers all four Brazilian-relevant methods with CPC 27 specifics
@@ -29,6 +30,7 @@ The milestone requires only 2 new npm packages. Everything else reuses infrastru
 ### Expected Features
 
 **Must have (Phase 1 — Foundation):**
+
 - Asset catalog with 6 classification types (Máquinas, Veículos, Implementos, Benfeitorias, Terras, Biológicos) — drives accounting treatment routing
 - Asset registration with acquisition data, farm/cost-center assignment, status lifecycle (ACTIVE/INACTIVE/MAINTENANCE/DISPOSED/WIP), unique asset tag
 - Hourmeter/odometer log — prerequisite for hours-based depreciation and maintenance triggers
@@ -40,6 +42,7 @@ The milestone requires only 2 new npm packages. Everything else reuses infrastru
 - Mass import via CSV/Excel with column mapping
 
 **Must have (Phase 2 — CMMS Maintenance):**
+
 - Preventive maintenance plans with calendar and hourmeter triggers
 - Work Order (OS) CRUD with state machine (OPEN → IN_PROGRESS → WAITING_PARTS → COMPLETED)
 - OS accounting classification at closure (EXPENSE | CAPITALIZATION | DEFERRAL) — mandatory field, 400 if absent
@@ -49,6 +52,7 @@ The milestone requires only 2 new npm packages. Everything else reuses infrastru
 - Cost-per-hour TCO calculation powered by accumulated data
 
 **Should have (competitive differentiators — Phase 3+):**
+
 - Composite asset hierarchy up to 3 levels (Colheitadeira → Motor → Correia) — rare in generic ERPs
 - TCO dashboard per asset and per fleet — "repair vs. replace" decision support
 - Asset under construction (Imobilizado em Andamento) with budget tracking
@@ -60,6 +64,7 @@ The milestone requires only 2 new npm packages. Everything else reuses infrastru
 - Seasonal maintenance calendar (warn if OS overlaps planting/harvest window)
 
 **Must have (Phase 4 — Biological Assets):**
+
 - Biological asset registration (cattle + perennial crops) with explicit CPC 27 vs CPC 29 classification
 - Bearer plant classification under CPC 27 (coffee/orange trees — NOT CPC 29 fair value)
 - Fair value measurement (manual entry — no live market data feed)
@@ -67,6 +72,7 @@ The milestone requires only 2 new npm packages. Everything else reuses infrastru
 - Perennial crop maturity tracking (formação → produção)
 
 **Defer to future milestone:**
+
 - CIAP (ICMS credit recovery) — requires fiscal module as prerequisite
 - NF-e XML import via SEFAZ integration — explicitly out of scope per PROJECT.md
 - IoT/telematics integration — complexity vs. benefit not justified at current scale
@@ -78,6 +84,7 @@ The milestone requires only 2 new npm packages. Everything else reuses infrastru
 The architecture is a clean additive extension of the existing monolith. Nine new backend modules form the asset domain organized by responsibility. All follow the established colocated pattern (`controller + service + routes + types`). A new `PATRIMÔNIO` sidebar group is added in the frontend. The existing `FarmMap.tsx` receives an additive asset marker layer via the existing `LayerControlPanel` extensibility point — no rewrite required.
 
 **Major components:**
+
 1. `assets/` — Core entity CRUD, hierarchy (AssetComponent join table), farm/CC/status assignment, bulk import, map layer; root dependency for all other modules
 2. `asset-depreciation/` — Pure `calculateDepreciation()` function (shared for frontend preview) + monthly cron batch (Redis NX lock, per-org `withRlsContext`) + DepreciationRun tracking
 3. `work-orders/` — OS state machine (`VALID_WO_TRANSITIONS`), atomic completion (StockOutput + Payable in one transaction), mandatory accounting classification at closure
@@ -194,10 +201,12 @@ The dependency graph is clear and dictates a specific build order. Asset registr
 ### Research Flags
 
 Phases needing deeper research during planning:
+
 - **Phase 7 (Advanced Depreciation):** Accelerated depreciation dual-track — confirm which farm legal entity types actually need the fiscal track; validate RFB table rates for 2026; consider org-level opt-in flag to avoid building unused complexity.
 - **Phase 9 (Biological Assets + Leasing):** CEPEA price index references for fair value, CPC 29 fair value disclosure requirements in financial statements, leasing effective interest method amortization — validate with an accountant before story writing to avoid non-compliant implementation.
 
 Phases with standard patterns (skip research-phase):
+
 - **Phase 1 (Asset Entity):** CPC 27 classification taxonomy is unambiguous; monorepo module patterns are established.
 - **Phase 2 (Depreciation Engine):** Linear depreciation formulas are standard accounting math; cron infrastructure already exists in codebase.
 - **Phase 3 (Maintenance CMMS):** MaintainX/Fiix CMMS patterns are well-documented; state machine follows established `VALID_TRANSITIONS` project pattern.
@@ -208,12 +217,12 @@ Phases with standard patterns (skip research-phase):
 
 ## Confidence Assessment
 
-| Area | Confidence | Notes |
-|------|------------|-------|
-| Stack | HIGH | Only 2 new packages; all others already installed and in active use. fast-xml-parser npm-verified. react-spreadsheet-import is MEDIUM due to React 19 compat uncertainty — test in isolation before Phase 1 bulk import story. |
-| Features | HIGH | CPC 27, CPC 29, and CPC 06 R2 are official Brazilian accounting standards with no ambiguity on core requirements. CMMS patterns verified against MaintainX, FTMaintenance, SAP FI-AA, and TOTVS Protheus SIGAATF documentation. |
-| Architecture | HIGH | Derived from direct codebase analysis (6500+ line Prisma schema, existing service patterns, cron and state machine infrastructure). All integration points verified against existing code. No guesses. |
-| Pitfalls | HIGH | Integration pitfalls from direct codebase analysis. Accounting standard pitfalls from CPC 27/29/06 official texts. Batch performance patterns from PostgreSQL docs and ERP community (MEDIUM for scale-specific claims beyond 500 organizations). |
+| Area         | Confidence | Notes                                                                                                                                                                                                                                             |
+| ------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stack        | HIGH       | Only 2 new packages; all others already installed and in active use. fast-xml-parser npm-verified. react-spreadsheet-import is MEDIUM due to React 19 compat uncertainty — test in isolation before Phase 1 bulk import story.                    |
+| Features     | HIGH       | CPC 27, CPC 29, and CPC 06 R2 are official Brazilian accounting standards with no ambiguity on core requirements. CMMS patterns verified against MaintainX, FTMaintenance, SAP FI-AA, and TOTVS Protheus SIGAATF documentation.                   |
+| Architecture | HIGH       | Derived from direct codebase analysis (6500+ line Prisma schema, existing service patterns, cron and state machine infrastructure). All integration points verified against existing code. No guesses.                                            |
+| Pitfalls     | HIGH       | Integration pitfalls from direct codebase analysis. Accounting standard pitfalls from CPC 27/29/06 official texts. Batch performance patterns from PostgreSQL docs and ERP community (MEDIUM for scale-specific claims beyond 500 organizations). |
 
 **Overall confidence:** HIGH
 
@@ -228,6 +237,7 @@ Phases with standard patterns (skip research-phase):
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - `apps/backend/prisma/schema.prisma` (6500+ lines) — existing data models, enums, integration points verified directly
 - `apps/backend/src/shared/cron/digest.cron.ts` — cron infrastructure pattern for depreciation batch
 - `apps/backend/src/modules/checks/checks.types.ts` — VALID_TRANSITIONS state machine pattern
@@ -241,6 +251,7 @@ Phases with standard patterns (skip research-phase):
 - Prisma official docs — self-relations and `$queryRaw` for recursive CTEs
 
 ### Secondary (MEDIUM confidence)
+
 - MaintainX agricultural CMMS documentation — work order patterns, preventive maintenance triggers, ERP integration
 - FTMaintenance — CMMS patterns for farm machinery
 - TOTVS Protheus SIGAATF — Brazilian ERP asset module with dual-track CPC vs Fiscal
@@ -250,10 +261,12 @@ Phases with standard patterns (skip research-phase):
 - KPMG Brasil guide on CPC 06 R2 leasing — ROU asset and lease liability treatment
 
 ### Tertiary (LOW confidence)
+
 - WebSearch results on accelerated depreciation RFB rates for rural producers (rates cited; not read directly from RFB official site)
 - Community sources on CPC 29 fair value subjectivity for unlisted biological assets (academic literature; specific auditor guidance not verified)
 - Aegro blog on custo operacional hora máquina — hours-based depreciation context in Brazilian agro
 
 ---
-*Research completed: 2026-03-19*
-*Ready for roadmap: yes*
+
+_Research completed: 2026-03-19_
+_Ready for roadmap: yes_
