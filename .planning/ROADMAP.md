@@ -57,17 +57,24 @@ Full details: `.planning/milestones/v1.1-ROADMAP.md`
 
 ### Phase 16: Cadastro de Ativos
 
-**Goal**: Gerente pode cadastrar, buscar e visualizar ativos com classificação CPC correta (máquina, veículo, implemento, benfeitoria, terra, biológico) — tornando a entidade ativo disponível como raiz de todo o módulo patrimonial
+**Goal**: Gerente pode cadastrar, buscar e visualizar ativos com classificação CPC correta (máquina, veículo, implemento, benfeitoria, terra) — tornando a entidade ativo disponível como raiz de todo o módulo patrimonial, com controle operacional básico (combustível, horímetro, documentos)
 **Depends on**: v1.1 completo (módulos payables, receivables, cost-centers, stock, suppliers existentes)
 **Requirements**: ATIV-01, ATIV-02, ATIV-04, ATIV-06, OPER-01, OPER-03
 **Success Criteria** (what must be TRUE):
 
 1. Gerente pode cadastrar máquina, veículo, implemento, benfeitoria ou terra com classificação CPC definida no momento do cadastro, dados de aquisição, tag patrimônio sequencial e fotos
 2. Gerente pode atribuir ativo a fazenda e centro de custo (fixo, rateio % ou dinâmico) com campos específicos por tipo (HP/RENAVAM, área m², hectares/matrícula)
-3. Gerente pode importar ativos em massa via CSV/Excel com mapeamento de colunas e validação de campos obrigatórios
-4. Gerente pode visualizar ficha completa do ativo com abas e buscar/filtrar por tipo, fazenda, status, CC e período
-5. Operador pode registrar leituras de horímetro/odômetro e cadastrar documentos com alerta de vencimento (30/15/7 dias)
-   **Plans**: TBD
+3. Gerente pode visualizar ficha completa do ativo com abas (drawer lateral) e buscar/filtrar por tipo, fazenda, status e período
+4. Gerente pode exportar lista filtrada em CSV e PDF
+5. Operador pode registrar leituras de horímetro/odômetro com validação anti-regressão e cadastrar documentos com alerta de vencimento (30/15/7 dias)
+6. Gerente pode registrar abastecimentos com custo/litro e ver benchmarking de eficiência vs frota
+   **Plans:** 4 plans
+
+Plans:
+- [ ] 16-01-PLAN.md — Backend foundation: Prisma schema (Asset, FuelRecord, MeterReading, AssetDocument), migration, types, RBAC, CRUD service+routes+tests
+- [ ] 16-02-PLAN.md — Backend operational: fuel records, meter readings, asset documents, CSV/PDF export, tests
+- [ ] 16-03-PLAN.md — Frontend listing: types, hooks, AssetsPage, AssetModal, sidebar PATRIMONIO group, route wiring
+- [ ] 16-04-PLAN.md — Frontend detail: AssetDrawer with 6 tabs (geral, documentos, combustível, leituras, manutenção, timeline), fuel/reading forms
 
 ### Phase 17: Engine de Depreciação
 
@@ -197,7 +204,7 @@ Full details: `.planning/milestones/v1.1-ROADMAP.md`
 | 13. Kanban DnD Fixes | v1.1 | 3/3 | Complete | 2026-03-19 |
 | 14. Stock Reversal + Rating | v1.1 | 2/2 | Complete | 2026-03-19 |
 | 15. Frontend API Path Fixes | v1.1 | 1/1 | Complete | 2026-03-19 |
-| 16. Cadastro de Ativos | v1.2 | 0/TBD | Not started | - |
+| 16. Cadastro de Ativos | v1.2 | 0/4 | Planned | - |
 | 17. Engine de Depreciação | v1.2 | 0/TBD | Not started | - |
 | 18. Manutenção e Ordens de Serviço | v1.2 | 0/TBD | Not started | - |
 | 19. Integração Financeira — Aquisição | v1.2 | 0/TBD | Not started | - |
