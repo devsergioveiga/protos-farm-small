@@ -1,0 +1,233 @@
+/* ============================================================
+   PurchasingKanbanPage — BEM CSS
+   All values from tokens.css custom properties
+   ============================================================ */
+
+.purchasing-kanban {
+  padding: var(--space-6);
+  max-width: var(--container-max, 1280px);
+  margin: 0 auto;
+}
+
+.purchasing-kanban__header {
+  margin-bottom: var(--space-6);
+}
+
+.purchasing-kanban__header h1 {
+  font-family: var(--font-display, 'DM Sans', system-ui, sans-serif);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+  line-height: var(--leading-tight);
+}
+
+/* Filter preset banner */
+.purchasing-kanban__preset-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--color-info-100);
+  border: 1px solid var(--color-info-500);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.purchasing-kanban__preset-banner p {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm);
+  color: var(--color-info-500);
+  margin: 0;
+  font-weight: 600;
+}
+
+.purchasing-kanban__preset-dismiss {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-info-500);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  min-width: 32px;
+  min-height: 32px;
+  justify-content: center;
+  transition: background var(--duration-instant) ease-out;
+}
+
+.purchasing-kanban__preset-dismiss:hover {
+  background: var(--color-info-500);
+  color: var(--color-neutral-0);
+}
+
+.purchasing-kanban__preset-dismiss:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Board area */
+.purchasing-kanban__board {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  padding-bottom: var(--space-4);
+  align-items: flex-start;
+}
+
+.purchasing-kanban__board::-webkit-scrollbar {
+  height: 8px;
+}
+
+.purchasing-kanban__board::-webkit-scrollbar-track {
+  background: var(--color-neutral-100);
+  border-radius: var(--radius-full);
+}
+
+.purchasing-kanban__board::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+  border-radius: var(--radius-full);
+}
+
+.purchasing-kanban__board::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
+}
+
+/* kanban-board inner flex */
+.kanban-board {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
+/* ── Loading skeleton ── */
+.purchasing-kanban__skeleton {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.purchasing-kanban__skeleton-col {
+  flex: 0 0 280px;
+  background: var(--color-neutral-100);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.purchasing-kanban__skeleton-header {
+  height: 28px;
+  background: var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+}
+
+.purchasing-kanban__skeleton-card {
+  height: 80px;
+  background: var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ── Error state ── */
+.purchasing-kanban__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+}
+
+.purchasing-kanban__error p {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-base);
+  color: var(--color-neutral-600);
+  margin: 0;
+  max-width: 400px;
+}
+
+.purchasing-kanban__retry {
+  min-height: 48px;
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--duration-instant) ease-out;
+}
+
+.purchasing-kanban__retry:hover {
+  background: var(--color-primary-700);
+}
+
+.purchasing-kanban__retry:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ── Empty state ── */
+.purchasing-kanban__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+}
+
+.purchasing-kanban__empty-icon {
+  color: var(--color-neutral-300);
+}
+
+.purchasing-kanban__empty h2 {
+  font-family: var(--font-display, 'DM Sans', system-ui, sans-serif);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.purchasing-kanban__empty p {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-base);
+  color: var(--color-neutral-500);
+  margin: 0;
+  max-width: 400px;
+}
+
+/* Responsive */
+@media (min-width: 1280px) {
+  .purchasing-kanban__board {
+    gap: var(--space-6);
+  }
+
+  .kanban-board {
+    gap: var(--space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .purchasing-kanban__skeleton-col {
+    animation-duration: 0.01ms;
+  }
+
+  .purchasing-kanban__retry {
+    transition-duration: 0.01ms;
+  }
+}

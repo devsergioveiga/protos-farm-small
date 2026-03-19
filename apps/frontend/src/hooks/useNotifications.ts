@@ -6,7 +6,33 @@ export type NotificationType =
   | 'RC_REJECTED'
   | 'RC_RETURNED'
   | 'SLA_REMINDER'
-  | 'RC_PENDING';
+  | 'RC_PENDING'
+  | 'QUOTATION_PENDING_APPROVAL'
+  | 'QUOTATION_APPROVED'
+  | 'QUOTATION_RECEIVED'
+  | 'QUOTATION_DEADLINE_NEAR'
+  | 'PO_OVERDUE'
+  | 'PO_GOODS_RECEIVED'
+  | 'BUDGET_EXCEEDED'
+  | 'RETURN_REGISTERED'
+  | 'RETURN_RESOLVED';
+
+export const NOTIFICATION_LABELS: Record<NotificationType, string> = {
+  RC_APPROVED: 'Requisicao aprovada',
+  RC_REJECTED: 'Requisicao rejeitada',
+  RC_RETURNED: 'Requisicao devolvida',
+  SLA_REMINDER: 'Lembrete de SLA',
+  RC_PENDING: 'Requisicao pendente',
+  QUOTATION_PENDING_APPROVAL: 'Cotacao aguardando aprovacao',
+  QUOTATION_APPROVED: 'Cotacao aprovada',
+  QUOTATION_RECEIVED: 'Proposta recebida',
+  QUOTATION_DEADLINE_NEAR: 'Prazo de cotacao proximo',
+  PO_OVERDUE: 'Pedido em atraso',
+  PO_GOODS_RECEIVED: 'Recebimento confirmado',
+  BUDGET_EXCEEDED: 'Orcamento excedido',
+  RETURN_REGISTERED: 'Devolucao registrada',
+  RETURN_RESOLVED: 'Devolucao resolvida',
+};
 
 export interface Notification {
   id: string;

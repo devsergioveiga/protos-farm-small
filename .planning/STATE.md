@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 08-05-PLAN.md
-last_updated: '2026-03-17T22:23:36.312Z'
+stopped_at: Completed 12-kanban-dashboard-e-notifica-es 12-05-PLAN.md
+last_updated: '2026-03-18T21:32:59.909Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 6
-  completed_phases: 2
-  total_plans: 10
-  completed_plans: 10
+  completed_phases: 6
+  total_plans: 31
+  completed_plans: 31
   percent: 0
 ---
 
@@ -57,6 +57,11 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08-requisi-o-e-aprova-o P06 | 18 | 2 tasks | 8 files |
 | Phase 08-requisi-o-e-aprova-o P04 | 90min | 2 tasks | 11 files |
 | Phase 08-requisi-o-e-aprova-o P05 | 45min | 2 tasks | 14 files |
+| Phase 12-kanban-dashboard-e-notifica-es PP01 | 20min | 2 tasks | 8 files |
+| Phase 12-kanban-dashboard-e-notifica-es P03 | 10min | 2 tasks | 13 files |
+| Phase 12-kanban-dashboard-e-notifica-es P02 | 18min | 2 tasks | 13 files |
+| Phase 12-kanban-dashboard-e-notifica-es P04 | 5min | 2 tasks | 7 files |
+| Phase 12-kanban-dashboard-e-notifica-es P05 | 7min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -89,6 +94,16 @@ Key decisions for v1.1:
 - [Phase 08-04]: Key-remount pattern used for PurchaseRequestModal — outer wrapper renders inner form with key=rc.id+rc.updatedAt, avoids setState-in-useEffect rule violation
 - [Phase 08-requisi-o-e-aprova-o]: NotificationBell uses click-outside mousedown handler + Escape key — no library needed for simple dropdown
 - [Phase 08-requisi-o-e-aprova-o]: HTML5 native drag events for rule reorder in ApprovalRulesPage — avoids adding dnd library for single use case
+- [Phase 12-kanban-dashboard-e-notifica-es]: RC with existing quotation placed in EM_COTACAO not RC_APROVADA — checked via quotations count in RC query
+- [Phase 12-kanban-dashboard-e-notifica-es]: PAGO column: Payable.status=PAID + paidAt >= 30 days ago + goodsReceiptId not null
+- [Phase 12-kanban-dashboard-e-notifica-es]: KanbanFilters type aliased to KanbanFiltersState in page to avoid naming collision with KanbanFilters component
+- [Phase 12-kanban-dashboard-e-notifica-es]: AGUARDANDO_ENTREGA->RECEBIDO transition navigates to /goods-receipts?poId= instead of API call
+- [Phase 12-kanban-dashboard-e-notifica-es]: ADMIN role used for digest recipients (UserRole has no OWNER value)
+- [Phase 12-kanban-dashboard-e-notifica-es]: shouldNotify called inside existing tx for BADGE; EMAIL dispatch uses withRlsBypass fire-and-forget
+- [Phase 12-kanban-dashboard-e-notifica-es]: Digest only sends when pending items > 0 (no empty digest emails)
+- [Phase 12-kanban-dashboard-e-notifica-es]: Recharts Tooltip labelFormatter+content cannot coexist — use content custom renderer only for multi-value tooltips
+- [Phase 12-kanban-dashboard-e-notifica-es]: useNotificationPreferences uses /org/notification-preferences without explicit orgId — consistent with /org/notifications pattern, org extracted from JWT server-side
+- [Phase 12-kanban-dashboard-e-notifica-es]: NotificationBell handleItemClick is now type-aware — routes to quotations/goods-receipts/purchase-budgets/goods-returns per notification type
 
 ### Pending Todos
 
@@ -102,6 +117,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T21:38:13.171Z
-Stopped at: Completed 08-05-PLAN.md
+Last session: 2026-03-18T21:28:55.430Z
+Stopped at: Completed 12-kanban-dashboard-e-notifica-es 12-05-PLAN.md
 Resume file: None

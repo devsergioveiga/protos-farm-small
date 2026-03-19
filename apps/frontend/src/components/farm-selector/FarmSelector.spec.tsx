@@ -17,7 +17,7 @@ const MOCK_FARMS: FarmListItem[] = [
     latitude: null,
     longitude: null,
     createdAt: '2026-01-01',
-    _count: { registrations: 2, fieldPlots: 0 },
+    _count: { registrations: 2, fieldPlots: 0, ruralProperties: 0 },
   },
   {
     id: 'farm-2',
@@ -32,7 +32,7 @@ const MOCK_FARMS: FarmListItem[] = [
     latitude: null,
     longitude: null,
     createdAt: '2026-01-02',
-    _count: { registrations: 1, fieldPlots: 0 },
+    _count: { registrations: 1, fieldPlots: 0, ruralProperties: 0 },
   },
   {
     id: 'farm-3',
@@ -47,7 +47,7 @@ const MOCK_FARMS: FarmListItem[] = [
     latitude: null,
     longitude: null,
     createdAt: '2026-01-03',
-    _count: { registrations: 0, fieldPlots: 0 },
+    _count: { registrations: 0, fieldPlots: 0, ruralProperties: 0 },
   },
   {
     id: 'farm-4',
@@ -62,7 +62,7 @@ const MOCK_FARMS: FarmListItem[] = [
     latitude: null,
     longitude: null,
     createdAt: '2026-01-04',
-    _count: { registrations: 3, fieldPlots: 0 },
+    _count: { registrations: 3, fieldPlots: 0, ruralProperties: 0 },
   },
 ];
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { FileText, MapPin, Search, Landmark, ExternalLink } from 'lucide-react';
 import { api } from '@/services/api';
 import './RegistrationsPage.css';
@@ -48,10 +48,12 @@ function useAllRegistrations() {
 }
 
 export default function RegistrationsPage() {
+  const [searchParams] = useSearchParams();
+  const propertyNameParam = searchParams.get('propertyName');
   const { registrations, isLoading, error } = useAllRegistrations();
   const [search, setSearch] = useState('');
   const [filterFarm, setFilterFarm] = useState('');
-  const [filterProperty, setFilterProperty] = useState('');
+  const [filterProperty, setFilterProperty] = useState(propertyNameParam ?? '');
 
   const farmNames = [...new Set(registrations.map((r) => r.farmName))].sort();
   const propertyNames = [
