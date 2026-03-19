@@ -685,15 +685,23 @@ export async function sendPurchaseOrderEmail(
     // Reuse the same PDF layout from generatePurchaseOrderPdf
     const pageWidth = doc.page.width - 100;
 
-    doc.fontSize(18).font('Helvetica-Bold').text(po.organization?.name ?? 'Organizacao', { align: 'left' });
+    doc
+      .fontSize(18)
+      .font('Helvetica-Bold')
+      .text(po.organization?.name ?? 'Organizacao', { align: 'left' });
     doc.moveDown(0.5);
-    doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).stroke();
+    doc
+      .moveTo(50, doc.y)
+      .lineTo(50 + pageWidth, doc.y)
+      .stroke();
     doc.moveDown(0.5);
 
     doc.fontSize(14).font('Helvetica-Bold').text('PEDIDO DE COMPRA', { align: 'center' });
     doc.moveDown(0.3);
     doc.fontSize(10).font('Helvetica').text(`Numero: ${po.sequentialNumber}`, { align: 'center' });
-    doc.fontSize(9).text(`Data: ${new Date(po.createdAt).toLocaleDateString('pt-BR')}`, { align: 'center' });
+    doc
+      .fontSize(9)
+      .text(`Data: ${new Date(po.createdAt).toLocaleDateString('pt-BR')}`, { align: 'center' });
     doc.moveDown(0.5);
 
     doc.fontSize(11).font('Helvetica-Bold').text('FORNECEDOR');
@@ -712,13 +720,26 @@ export async function sendPurchaseOrderEmail(
     for (const [i, item] of po.items.entries()) {
       const total = Number(item.totalPrice);
       subtotal += total;
-      doc.text(`${i + 1}. ${item.productName} — ${Number(item.quantity).toFixed(3)} ${item.unitName} x ${Number(item.unitPrice).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} = ${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`);
+      doc.text(
+        `${i + 1}. ${item.productName} — ${Number(item.quantity).toFixed(3)} ${item.unitName} x ${Number(item.unitPrice).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} = ${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
+      );
     }
     doc.moveDown(0.3);
-    doc.fontSize(10).font('Helvetica-Bold').text(`Total: ${subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, { align: 'right' });
+    doc
+      .fontSize(10)
+      .font('Helvetica-Bold')
+      .text(`Total: ${subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, {
+        align: 'right',
+      });
 
     doc.moveDown(1);
-    doc.fontSize(8).font('Helvetica').text(`Documento gerado em ${new Date().toLocaleDateString('pt-BR')} — ${po.organization?.name ?? 'Protos Farm'}`, { align: 'center' });
+    doc
+      .fontSize(8)
+      .font('Helvetica')
+      .text(
+        `Documento gerado em ${new Date().toLocaleDateString('pt-BR')} — ${po.organization?.name ?? 'Protos Farm'}`,
+        { align: 'center' },
+      );
 
     doc.end();
   });
@@ -726,15 +747,17 @@ export async function sendPurchaseOrderEmail(
   const pdfBuffer = Buffer.concat(chunks);
 
   // Build HTML email with brand colors
-  const itemsHtml = po.items.map((item, i) => {
-    const total = Number(item.totalPrice);
-    return `<tr>
+  const itemsHtml = po.items
+    .map((item, i) => {
+      const total = Number(item.totalPrice);
+      return `<tr>
       <td style="padding: 8px; border-bottom: 1px solid #eee;">${i + 1}</td>
       <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.productName}</td>
       <td style="padding: 8px; border-bottom: 1px solid #eee;">${Number(item.quantity).toFixed(3)} ${item.unitName}</td>
       <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
     </tr>`;
-  }).join('');
+    })
+    .join('');
 
   const totalAmount = po.items.reduce((sum, item) => sum + Number(item.totalPrice), 0);
 
@@ -786,7 +809,10 @@ export async function sendPurchaseOrderEmail(
     });
   } catch (err) {
     logger.error({ err, poId: id, to: input.to }, 'Failed to send PO email');
-    throw new PurchaseOrderError('Nao foi possivel enviar o email. Verifique a configuracao SMTP.', 500);
+    throw new PurchaseOrderError(
+      'Nao foi possivel enviar o email. Verifique a configuracao SMTP.',
+      500,
+    );
   }
 }
 

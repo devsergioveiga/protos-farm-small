@@ -151,7 +151,10 @@ export async function sendPOEmail(
   id: string,
   input: { to: string; subject: string; body: string },
 ): Promise<{ success: boolean; message: string }> {
-  return api.post<{ success: boolean; message: string }>(`/org/purchase-orders/${id}/send-email`, input);
+  return api.post<{ success: boolean; message: string }>(
+    `/org/purchase-orders/${id}/send-email`,
+    input,
+  );
 }
 
 export async function downloadPOPdf(id: string, sequentialNumber: string): Promise<void> {

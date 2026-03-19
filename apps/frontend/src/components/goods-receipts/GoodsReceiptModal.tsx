@@ -1021,13 +1021,21 @@ function Step3Inspection({ items, setItems, isEmergency }: Step3Props) {
                               <button
                                 type="button"
                                 className={`gr-modal__photo-btn ${item.divergencePhoto ? 'gr-modal__photo-btn--has-photo' : ''}`}
-                                onClick={() => document.getElementById(`div-photo-${index}`)?.click()}
-                                aria-label={item.divergencePhoto ? `Foto: ${item.divergencePhoto.name}` : 'Anexar foto da divergencia'}
+                                onClick={() =>
+                                  document.getElementById(`div-photo-${index}`)?.click()
+                                }
+                                aria-label={
+                                  item.divergencePhoto
+                                    ? `Foto: ${item.divergencePhoto.name}`
+                                    : 'Anexar foto da divergencia'
+                                }
                               >
                                 {item.divergencePhoto ? (
                                   <>
                                     <ImageIcon size={14} aria-hidden="true" />
-                                    <span className="gr-modal__photo-filename">{item.divergencePhoto.name}</span>
+                                    <span className="gr-modal__photo-filename">
+                                      {item.divergencePhoto.name}
+                                    </span>
                                   </>
                                 ) : (
                                   <>
@@ -1735,7 +1743,11 @@ function GoodsReceiptWizard({
       if (photosToUpload.length > 0 && receipt.divergences.length > 0) {
         for (let i = 0; i < photosToUpload.length && i < receipt.divergences.length; i++) {
           try {
-            await uploadDivergencePhotoApi(receipt.id, receipt.divergences[i].id, photosToUpload[i].photo);
+            await uploadDivergencePhotoApi(
+              receipt.id,
+              receipt.divergences[i].id,
+              photosToUpload[i].photo,
+            );
           } catch {
             // Photo upload failure is non-critical — continue
           }

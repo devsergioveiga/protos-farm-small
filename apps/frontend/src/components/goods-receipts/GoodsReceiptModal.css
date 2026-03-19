@@ -832,7 +832,9 @@
   cursor: pointer;
   white-space: nowrap;
   min-height: 32px;
-  transition: border-color 200ms ease-out, background 200ms ease-out;
+  transition:
+    border-color 200ms ease-out,
+    background 200ms ease-out;
 }
 
 .gr-modal__photo-btn:hover {

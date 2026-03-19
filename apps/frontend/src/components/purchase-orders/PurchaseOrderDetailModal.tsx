@@ -338,7 +338,11 @@ function PurchaseOrderDetail({
       showToast('Email enviado com sucesso ao fornecedor');
       setShowEmailSection(false);
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Nao foi possivel enviar o email. Verifique a configuracao SMTP.');
+      showToast(
+        err instanceof Error
+          ? err.message
+          : 'Nao foi possivel enviar o email. Verifique a configuracao SMTP.',
+      );
     } finally {
       setIsSendingEmail(false);
     }
