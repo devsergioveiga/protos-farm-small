@@ -110,8 +110,7 @@
 }
 
 .rp-page__select {
-  min-height: 40px;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-8) var(--space-3) var(--space-3);
   border: 1px solid var(--color-neutral-200);
   border-radius: var(--radius-md);
   font-family: var(--font-body);
@@ -119,6 +118,11 @@
   color: var(--color-neutral-700);
   background: var(--color-neutral-0);
   cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-2) center;
+  background-size: 16px;
 }
 
 .rp-page__success {
@@ -217,7 +221,10 @@ button.rp-card__stat--link {
   background: none;
   border: none;
   padding: 0;
-  font: inherit;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: inherit;
+  line-height: inherit;
 }
 
 .rp-card__stat--link:hover {

@@ -23,6 +23,21 @@ import {
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
+/** Fix mojibake: UTF-8 bytes that were decoded as latin1 and stored as such */
+function fixMojibake(str: string): string {
+  try {
+    const buf = Buffer.from(str, 'latin1');
+    const decoded = buf.toString('utf8');
+    // If re-encoding back to latin1 matches the original, the fix is valid
+    if (Buffer.from(decoded, 'utf8').toString('latin1') === str) {
+      return decoded;
+    }
+  } catch {
+    // not mojibake, return as-is
+  }
+  return str;
+}
+
 function validateUf(uf: string): void {
   if (!(VALID_UF as readonly string[]).includes(uf)) {
     throw new RuralPropertyError(`UF inválida: ${uf}`, 400);
@@ -610,7 +625,7 @@ export async function listDocuments(
     return docs.map((d) => ({
       id: d.id,
       type: d.type,
-      filename: d.filename,
+      filename: fixMojibake(d.filename),
       mimeType: d.mimeType,
       sizeBytes: d.sizeBytes,
       extractionStatus: d.extractionStatus,
@@ -642,7 +657,7 @@ export async function getDocument(
     if (!doc.fileData) throw new RuralPropertyError('Arquivo não disponível', 404);
 
     return {
-      filename: doc.filename,
+      filename: fixMojibake(doc.filename),
       mimeType: doc.mimeType || 'application/octet-stream',
       fileData: Buffer.from(doc.fileData),
     };
