@@ -53,13 +53,7 @@ export default function RegistrationsPage() {
   const { registrations, isLoading, error } = useAllRegistrations();
   const [search, setSearch] = useState('');
   const [filterFarm, setFilterFarm] = useState('');
-  const [filterProperty, setFilterProperty] = useState('');
-
-  useEffect(() => {
-    if (propertyNameParam) {
-      setFilterProperty(propertyNameParam);
-    }
-  }, [propertyNameParam]);
+  const [filterProperty, setFilterProperty] = useState(propertyNameParam ?? '');
 
   const farmNames = [...new Set(registrations.map((r) => r.farmName))].sort();
   const propertyNames = [
