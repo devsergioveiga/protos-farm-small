@@ -1,11 +1,33 @@
 # Gestao de Contratos de Arrendamento
 
 **Data:** 2026-03-17
+**Atualizado:** 2026-03-18
 **Status:** Documentacao de especificacao (nao implementado)
 
 ---
 
-## Contexto — O que ja existe
+## Contexto — Conceito operacional
+
+No mundo real, uma **fazenda** representa uma **unidade operacional** — compartilha maquinario, equipe, estoque e compras. Dentro de uma fazenda, o produtor pode operar sobre:
+
+- **Imoveis rurais proprios** — com dados fundiarios completos (CIB, INCRA, matriculas, titulares)
+- **Areas arrendadas de terceiros** — sem dados fundiarios (pertencem ao proprietario), apenas o contrato
+
+Exemplo concreto:
+
+```
+Fazenda Limeira (unidade operacional)
+  ├── Imovel Rural: Fazenda Limeira (proprio — CIB, matriculas, titulares)
+  ├── Imovel Rural: Fazenda Faria (proprio — CIB, matriculas, titulares)
+  ├── Arrendamento: Sitio Sao Pedro (contrato, arrendador, vigencia, valor)
+  │   └── Talhoes operacionais
+  └── Arrendamento: Chacara Boa Vista (contrato, arrendador, vigencia, valor)
+      └── Talhoes operacionais
+```
+
+Todos compartilham o mesmo estoque, maquinario, equipe e compras. O talhao identifica em qual imovel/arrendamento o custo ocorreu, permitindo rastreamento por propriedade.
+
+### O que ja existe no sistema
 
 O sistema ja modela a relacao arrendatario-fazenda atraves do vinculo produtor-fazenda (`ProducerFarmLink`):
 
@@ -19,70 +41,84 @@ O sistema ja modela a relacao arrendatario-fazenda atraves do vinculo produtor-f
 
 Alem disso, o endpoint `GET /org/contracts/expiring?days=30` ja retorna alertas de vencimento para vinculos com `endDate` proximo.
 
-**Lacuna atual:** nao ha gestao do contrato de arrendamento em si — valores, clausulas, reajustes, pagamentos, documentos anexos e renovacoes.
+**Lacuna atual:** nao ha gestao do contrato de arrendamento em si — valores, clausulas, reajustes, pagamentos, documentos anexos e renovacoes. Alem disso, o fluxo atual **exige** que o arrendador seja cadastrado como produtor e vinculado a fazenda para criar um contrato. Na pratica, muitas vezes o produtor nao tem os dados fundiarios do arrendador e quer apenas registrar o contrato com os dados basicos (nome, CPF/CNPJ, area, valor).
 
 ---
 
 ## Proposta — Modulo de Contratos de Arrendamento
 
+### Principios de design
+
+1. **Contrato vinculado a fazenda, nao ao produtor** — o arrendamento e uma relacao da operacao (fazenda), nao do cadastro de produtores
+2. **ProducerFarmLink opcional** — se o arrendador ja esta cadastrado como produtor, pode vincular; senao, os dados do arrendador ficam diretamente no contrato
+3. **Dados fundiarios nao exigidos** — o arrendatario tipicamente nao tem CIB, INCRA, matriculas do imovel arrendado
+4. **Identificacao da area** — nome/denominacao da area arrendada + area em hectares, com vinculacao opcional a talhoes
+5. **Independencia do imovel rural** — arrendamentos NAO criam imoveis rurais; sao entidades separadas
+
 ### Modelo de dados
 
 ```prisma
 model LeaseContract {
-  id                String   @id @default(uuid())
-  organizationId    String
-  farmId            String
-  producerFarmLinkId String  @unique
+  id                 String   @id @default(uuid())
+  organizationId     String
+  farmId             String
+  producerFarmLinkId String?  @unique  // Opcional — vincula se arrendador esta cadastrado como produtor
+
+  // Identificacao da area arrendada
+  areaName           String               // Nome/denominacao da area (ex: "Sitio Sao Pedro")
+  areaDescription    String?              // Descricao, localizacao, referencias
 
   // Partes
-  lessorName        String               // Arrendador (proprietario)
-  lessorDocument    String               // CPF/CNPJ do arrendador
-  lesseeName        String               // Arrendatario
-  lesseeDocument    String               // CPF/CNPJ do arrendatario
+  lessorName         String               // Arrendador (proprietario)
+  lessorDocument     String               // CPF/CNPJ do arrendador
+  lessorPhone        String?              // Telefone do arrendador
+  lessorEmail        String?              // Email do arrendador
+  lesseeName         String               // Arrendatario (quem opera)
+  lesseeDocument     String               // CPF/CNPJ do arrendatario
 
   // Vigencia
-  startDate         DateTime
-  endDate           DateTime
-  autoRenew         Boolean  @default(false)
-  renewalNoticeDays Int      @default(90)  // Dias de antecedencia para aviso de renovacao
+  startDate          DateTime
+  endDate            DateTime
+  autoRenew          Boolean  @default(false)
+  renewalNoticeDays  Int      @default(90)  // Dias de antecedencia para aviso de renovacao
 
   // Area
-  leasedAreaHa      Decimal  @db.Decimal(12, 4)
-  plotIds           String[] // Talhoes especificos incluidos no arrendamento
+  leasedAreaHa       Decimal  @db.Decimal(12, 4)
+  plotIds            String[] // Talhoes especificos incluidos no arrendamento (opcional)
 
   // Valores
-  paymentType       LeasePaymentType     // FIXED, PER_HECTARE, PERCENTAGE_PRODUCTION
-  annualValueBrl    Decimal? @db.Decimal(14, 2)  // Valor fixo anual
-  perHectareValueBrl Decimal? @db.Decimal(14, 2) // Valor por hectare
-  productionPct     Decimal? @db.Decimal(5, 2)   // % da producao
-  paymentFrequency  PaymentFrequency     // MONTHLY, QUARTERLY, SEMIANNUAL, ANNUAL, AT_HARVEST
+  paymentType        LeasePaymentType     // FIXED, PER_HECTARE, PERCENTAGE_PRODUCTION
+  annualValueBrl     Decimal? @db.Decimal(14, 2)  // Valor fixo anual
+  perHectareValueBrl Decimal? @db.Decimal(14, 2)  // Valor por hectare
+  productionPct      Decimal? @db.Decimal(5, 2)   // % da producao
+  paymentFrequency   PaymentFrequency     // MONTHLY, QUARTERLY, SEMIANNUAL, ANNUAL, AT_HARVEST
 
   // Reajuste
-  adjustmentIndex   String?              // IGPM, IPCA, INPC, preco_saca
-  adjustmentMonth   Int?                 // Mes de referencia do reajuste (1-12)
+  adjustmentIndex    String?              // IGPM, IPCA, INPC, preco_saca
+  adjustmentMonth    Int?                 // Mes de referencia do reajuste (1-12)
 
   // Clausulas
-  allowedActivities String[]             // Atividades permitidas: agricultura, pecuaria, etc.
-  restrictions      String?              // Clausulas restritivas em texto livre
+  allowedActivities  String[]             // Atividades permitidas: agricultura, pecuaria, etc.
+  restrictions       String?              // Clausulas restritivas em texto livre
 
   // Documentacao
-  contractNumber    String?              // Numero/protocolo do contrato
-  notaryOffice      String?              // Cartorio de registro
-  registrationDate  DateTime?            // Data de registro em cartorio
+  contractNumber     String?              // Numero/protocolo do contrato
+  notaryOffice       String?              // Cartorio de registro
+  registrationDate   DateTime?            // Data de registro em cartorio
 
   // Status
-  status            LeaseContractStatus  @default(ACTIVE)
+  status             LeaseContractStatus  @default(ACTIVE)
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  deletedAt         DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  deletedAt          DateTime?
 
-  organization      Organization     @relation(fields: [organizationId], references: [id])
-  farm              Farm             @relation(fields: [farmId], references: [id])
-  producerFarmLink  ProducerFarmLink @relation(fields: [producerFarmLinkId], references: [id])
-  payments          LeasePayment[]
-  documents         LeaseDocument[]
-  adjustments       LeaseAdjustment[]
+  organization       Organization      @relation(fields: [organizationId], references: [id])
+  farm               Farm              @relation(fields: [farmId], references: [id])
+  producerFarmLink   ProducerFarmLink?  @relation(fields: [producerFarmLinkId], references: [id])
+  payments           LeasePayment[]
+  documents          LeaseDocument[]
+  adjustments        LeaseAdjustment[]
 
   @@index([organizationId])
   @@index([farmId])
@@ -118,13 +154,15 @@ model LeaseDocument {
   id              String   @id @default(uuid())
   leaseContractId String
 
-  fileName        String
-  fileUrl         String
-  fileType        String               // PDF, JPG, etc.
+  filename        String
+  mimeType        String
+  sizeBytes       Int
+  fileData        Bytes                // Armazenamento em banco (mesmo padrao de PropertyDocument)
   category        LeaseDocCategory     // CONTRACT, ADDENDUM, RECEIPT, INSPECTION, OTHER
   description     String?
 
   uploadedAt      DateTime @default(now())
+  uploadedBy      String
 
   leaseContract   LeaseContract @relation(fields: [leaseContractId], references: [id], onDelete: Cascade)
 
@@ -133,19 +171,19 @@ model LeaseDocument {
 }
 
 model LeaseAdjustment {
-  id              String   @id @default(uuid())
-  leaseContractId String
+  id               String   @id @default(uuid())
+  leaseContractId  String
 
-  referenceDate   DateTime             // Data base do reajuste
-  indexUsed        String              // IGPM, IPCA, etc.
+  referenceDate    DateTime             // Data base do reajuste
+  indexUsed        String               // IGPM, IPCA, etc.
   indexValuePct    Decimal  @db.Decimal(8, 4)  // Percentual do indice
-  previousValueBrl Decimal @db.Decimal(14, 2)
-  newValueBrl      Decimal @db.Decimal(14, 2)
+  previousValueBrl Decimal  @db.Decimal(14, 2)
+  newValueBrl      Decimal  @db.Decimal(14, 2)
   appliedAt        DateTime
 
-  createdAt       DateTime @default(now())
+  createdAt        DateTime @default(now())
 
-  leaseContract   LeaseContract @relation(fields: [leaseContractId], references: [id], onDelete: Cascade)
+  leaseContract    LeaseContract @relation(fields: [leaseContractId], references: [id], onDelete: Cascade)
 
   @@index([leaseContractId])
   @@map("lease_adjustments")
@@ -192,18 +230,25 @@ enum LeaseDocCategory {
 ### Relacao com estruturas existentes
 
 ```
-Producer ──(ProducerFarmLink: bondType=ARRENDATARIO)──> Farm
-                          │
-                          └── LeaseContract (1:1 com o link)
-                                ├── LeasePayment[]
-                                ├── LeaseDocument[]
-                                └── LeaseAdjustment[]
+Farm
+ ├── RuralProperty[]        (imoveis proprios — dados fundiarios completos)
+ ├── LeaseContract[]        (areas arrendadas — dados do contrato)
+ │     ├── LeasePayment[]
+ │     ├── LeaseDocument[]
+ │     └── LeaseAdjustment[]
+ └── FieldPlot[]            (talhoes — podem pertencer a imovel ou arrendamento)
 ```
 
-- O `LeaseContract` e criado **a partir** de um `ProducerFarmLink` com `bondType=ARRENDATARIO`
-- Relacao 1:1 via `producerFarmLinkId` (unique)
-- `startDate`/`endDate` do contrato sincronizam com os do vínculo
-- `plotIds` permite arrendar talhoes especificos (nao obrigatoriamente a fazenda inteira)
+**Dois caminhos para criar um contrato:**
+
+1. **Direto na fazenda** — preenche dados do arrendador no formulario, sem precisar cadastrar produtor
+2. **A partir de um ProducerFarmLink** — se o arrendador ja esta cadastrado como produtor com `bondType=ARRENDATARIO`, vincula automaticamente e preenche nome/documento do arrendador
+
+**Talhoes:**
+
+- `plotIds` no contrato permite vincular talhoes existentes a area arrendada
+- Os talhoes continuam pertencendo a fazenda (mesma operacao), mas o contrato identifica quais sao da area arrendada
+- Isso permite rastrear custos: "quanto gastei nos talhoes do arrendamento X?"
 
 ---
 
@@ -235,6 +280,7 @@ Producer ──(ProducerFarmLink: bondType=ARRENDATARIO)──> Farm
 | ------ | ------------------------------------------- | -------------- | ------------------- |
 | POST   | `/org/lease-contracts/:id/documents`        | `farms:update` | Upload de documento |
 | GET    | `/org/lease-contracts/:id/documents`        | `farms:read`   | Listar documentos   |
+| GET    | `/org/lease-contracts/:id/documents/:docId` | `farms:read`   | Download documento  |
 | DELETE | `/org/lease-contracts/:id/documents/:docId` | `farms:update` | Remover documento   |
 
 ### Reajustes
@@ -258,10 +304,12 @@ Producer ──(ProducerFarmLink: bondType=ARRENDATARIO)──> Farm
 
 ### CA1 — CRUD de contrato de arrendamento
 
-- Criar contrato vinculado a um `ProducerFarmLink` com `bondType=ARRENDATARIO`
-- Validar que o link existe e pertence a organizacao
-- Impedir duplicidade (1 contrato por link ativo)
-- Campos obrigatorios: `startDate`, `endDate`, `leasedAreaHa`, `paymentType`
+- Criar contrato vinculado a uma fazenda, com `producerFarmLinkId` **opcional**
+- Se `producerFarmLinkId` fornecido: validar que o link existe, pertence a organizacao e tem `bondType=ARRENDATARIO`; preencher `lessorName`/`lessorDocument` automaticamente a partir do produtor vinculado
+- Se `producerFarmLinkId` nao fornecido: exigir `lessorName` e `lessorDocument` diretamente
+- `areaName` obrigatorio (denominacao da area arrendada)
+- Campos obrigatorios: `areaName`, `lessorName`, `lessorDocument`, `startDate`, `endDate`, `leasedAreaHa`, `paymentType`
+- Impedir duplicidade de `producerFarmLinkId` quando fornecido (1 contrato por link ativo)
 - Soft delete com `deletedAt`
 
 ### CA2 — Tipos de pagamento e calculo de parcelas
@@ -286,6 +334,7 @@ Producer ──(ProducerFarmLink: bondType=ARRENDATARIO)──> Farm
 ### CA5 — Documentos anexos
 
 - Upload de PDF/imagens do contrato, aditivos, comprovantes
+- Armazenamento em banco (campo `Bytes`), mesmo padrao de `PropertyDocument`
 - Categorizar por tipo: contrato, aditivo, comprovante, vistoria
 - Limite de tamanho: 10 MB por arquivo
 
@@ -299,13 +348,17 @@ Producer ──(ProducerFarmLink: bondType=ARRENDATARIO)──> Farm
 ### CA7 — Vinculacao com talhoes
 
 - Permitir selecionar talhoes especificos da fazenda
-- Calcular area arrendada como soma dos talhoes selecionados
+- Calcular area arrendada como soma dos talhoes selecionados (quando vinculados)
 - Validar que area arrendada nao excede area total da fazenda
+- Vinculacao opcional — contrato pode existir sem talhoes mapeados
 
 ### CA8 — Frontend (web)
 
-- Aba "Contratos" na pagina de detalhe da fazenda
+- **Pagina dedicada** `/lease-contracts` no sidebar (grupo ADMINISTRACAO, junto com Imoveis Rurais)
+- Listagem org-wide com cards mostrando: area, arrendador, fazenda, vigencia, status, valor
+- Filtros: por fazenda, por status (ativo, vencido, rascunho)
 - Modal de criacao/edicao seguindo design system
+- Aba "Arrendamentos" na pagina de detalhe da fazenda (lista filtrada por fazenda)
 - Lista de pagamentos com status visual (cores por status)
 - Upload de documentos com drag-and-drop
 - Cards de resumo: valor total, pago, pendente, vencido
@@ -332,22 +385,63 @@ apps/backend/src/modules/lease-contracts/
 
 ## Dependencias
 
-- **Existentes:** `ProducerFarmLink`, `Farm`, `Organization`, `Plot`
-- **Novas:** upload de arquivos (S3/minio), geracao de PDF (pdfkit ja usado no projeto)
+- **Existentes:** `Farm`, `Organization`, `FieldPlot`, `ProducerFarmLink` (opcional)
+- **Existentes (reutilizar padrao):** armazenamento de documentos em banco (padrao `PropertyDocument`), geracao de PDF (pdfkit ja usado no projeto)
 - **Opcionais (futuro):** integracao com API de indices economicos (IGPM, IPCA) para reajuste automatico
+- **Integracao financeira:** parcelas podem ser registradas como Contas a Pagar (AP) com `category=LEASE` no modulo financeiro existente
 
 ---
 
 ## Fluxo do usuario
 
-1. Cadastra fazenda e produtor normalmente
-2. Vincula o produtor a fazenda com `bondType=ARRENDATARIO`, preenchendo `startDate` e `endDate`
-3. A partir do vinculo, acessa "Criar contrato de arrendamento"
-4. Preenche dados do contrato: area, talhoes, valores, forma de pagamento, clausulas
-5. Sistema gera parcelas de pagamento conforme frequencia
-6. Faz upload do PDF do contrato registrado em cartorio
+### Fluxo principal (sem produtor cadastrado)
+
+1. Acessa a fazenda (ex: Fazenda Limeira)
+2. Vai em "Arrendamentos" > "Novo contrato"
+3. Preenche: nome da area, dados do arrendador (nome, CPF/CNPJ), area, vigencia, valores
+4. Opcionalmente vincula talhoes existentes
+5. Faz upload do PDF do contrato
+6. Sistema gera parcelas de pagamento conforme frequencia
 7. Recebe alertas de vencimento de parcelas e do contrato
 8. No vencimento, renova ou encerra o contrato
+
+### Fluxo alternativo (arrendador ja cadastrado como produtor)
+
+1. Vincula o produtor a fazenda com `bondType=ARRENDATARIO`
+2. A partir do vinculo, acessa "Criar contrato de arrendamento"
+3. Sistema preenche automaticamente nome/documento do arrendador
+4. Segue o mesmo fluxo a partir do passo 3 acima
+
+---
+
+## Cenarios de uso real
+
+### Cenario 1 — Areas arrendadas na mesma operacao
+
+> "Tenho a Fazenda Limeira (propria) e arrendo 2 areas de terceiros. Nao tenho dados fundiarios dessas areas, so o contrato."
+
+- Fazenda Limeira cadastrada no sistema
+- 2 contratos de arrendamento vinculados a Fazenda Limeira
+- Talhoes criados para as areas arrendadas, vinculados via `plotIds` no contrato
+- Operacoes, estoque, equipe — tudo na Fazenda Limeira
+- Custo por area rastreavel via talhao
+
+### Cenario 2 — Fazenda propria operada por outra fazenda
+
+> "Tenho a Fazenda Faria (propria) mas as operacoes sao feitas com maquinas da Fazenda Limeira."
+
+- Fazenda Faria cadastrada como **imovel rural** da Fazenda Limeira (dados fundiarios completos)
+- NAO precisa de contrato de arrendamento (e propria)
+- Talhoes da Faria ficam na operacao da Limeira
+- Estoque, maquinas, equipe — tudo compartilhado
+
+### Cenario 3 — Arrendamento parcial
+
+> "Arrendo apenas 50 ha dos 200 ha do Sitio Sao Pedro."
+
+- Contrato com `leasedAreaHa = 50`
+- `plotIds` vincula apenas os talhoes da area arrendada
+- Area nao arrendada nao aparece na operacao
 
 ---
 
@@ -358,3 +452,4 @@ apps/backend/src/modules/lease-contracts/
 - Rastreabilidade documental e exigencia legal para financiamentos rurais (Pronaf, Pronamp)
 - Alertas de vencimento previnem perda de prazos e renovacoes automaticas indesejadas
 - Vinculacao com talhoes especificos reflete a realidade de arrendamentos parciais
+- Independencia do cadastro de produtores simplifica o fluxo para quem nao tem dados do proprietario

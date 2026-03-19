@@ -385,6 +385,7 @@ model Organization {
   goodsReceipts            GoodsReceipt[]
   goodsReturns             GoodsReturn[]
   purchaseBudgets          PurchaseBudget[]
+  notificationPreferences  NotificationPreference[]
 
   @@map("organizations")
 }
@@ -472,6 +473,7 @@ model User {
   goodsReceiptsCreated           GoodsReceipt[]           @relation("GRCreator")
   goodsReturnsCreated            GoodsReturn[]            @relation("GRReturnCreator")
   purchaseBudgetsCreated         PurchaseBudget[]         @relation("PBCreator")
+  notificationPreferences        NotificationPreference[] @relation("NotificationPreferences")
 
   @@map("users")
 }
@@ -6176,6 +6178,24 @@ model Notification {
   @@index([recipientId, readAt])
   @@index([organizationId, recipientId])
   @@map("notifications")
+}
+
+model NotificationPreference {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  eventType      String   // NotificationType value
+  channel        String   // 'BADGE' | 'EMAIL'
+  enabled        Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation("NotificationPreferences", fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([userId, organizationId, eventType, channel])
+  @@index([userId, organizationId])
+  @@map("notification_preferences")
 }
 
 // ─── Quotation & Purchase Order Module (Phase 9) ─────────────────────

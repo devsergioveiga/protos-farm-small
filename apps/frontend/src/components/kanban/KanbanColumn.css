@@ -1,0 +1,124 @@
+/* ============================================================
+   KanbanColumn — BEM CSS
+   All values from tokens.css custom properties
+   ============================================================ */
+
+.kanban-column {
+  flex: 0 0 280px;
+  width: 280px;
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition:
+    background var(--duration-fast) ease-out,
+    border var(--duration-fast) ease-out,
+    opacity var(--duration-fast) ease-out;
+  border: 2px solid transparent;
+  min-height: 200px;
+}
+
+.kanban-column--valid-target {
+  background: var(--color-primary-100);
+  border-color: var(--color-primary-500);
+  border-style: dashed;
+}
+
+.kanban-column--invalid-target {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.kanban-column--over {
+  background: var(--color-primary-100);
+}
+
+/* Header */
+.kanban-column__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.kanban-column__title {
+  font-family: var(--font-display, 'DM Sans', system-ui, sans-serif);
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--color-neutral-800);
+  margin: 0;
+  line-height: var(--leading-tight);
+}
+
+.kanban-column__counter {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-neutral-300);
+  color: var(--color-neutral-600);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kanban-column__counter--active {
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+}
+
+/* Cards container */
+.kanban-column__cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+  min-height: 48px;
+}
+
+/* Empty state for PAGO */
+.kanban-column__empty-pago {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  text-align: center;
+  padding: var(--space-4);
+  margin: 0;
+}
+
+/* Ver todos link */
+.kanban-column__ver-todos {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary-600);
+  text-decoration: none;
+  text-align: center;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-instant) ease-out;
+}
+
+.kanban-column__ver-todos:hover {
+  color: var(--color-primary-700);
+  text-decoration: underline;
+}
+
+.kanban-column__ver-todos:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kanban-column {
+    transition-duration: 0.01ms;
+  }
+  .kanban-column__ver-todos {
+    transition-duration: 0.01ms;
+  }
+}

@@ -43,7 +43,9 @@ import {
   ShieldPlus,
   FlaskConical,
   Activity,
+  BarChart2,
   BarChart3,
+  BellRing,
   CalendarClock,
   Zap,
   ScanLine,
@@ -73,6 +75,7 @@ import {
   PackageCheck,
   Undo2,
   Wallet,
+  Columns3,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -203,6 +206,8 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'COMPRAS',
     items: [
+      { to: '/purchasing-dashboard', icon: BarChart2, label: 'Dashboard Compras' },
+      { to: '/purchasing-kanban', icon: Columns3, label: 'Kanban' },
       { to: '/suppliers', icon: Handshake, label: 'Fornecedores' },
       { to: '/purchase-requests', icon: ShoppingCart, label: 'Requisicoes' },
       { to: '/quotations', icon: FileSearch, label: 'Cotacoes' },
@@ -221,6 +226,11 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/roles', icon: Shield, label: 'Papéis' },
       { to: '/measurement-units', icon: Ruler, label: 'Unidades de medida' },
       { to: '/products', icon: Package, label: 'Produtos e serviços' },
+      {
+        to: '/notification-preferences',
+        icon: BellRing,
+        label: 'Preferencias de Notificacao',
+      },
     ],
   },
 ];

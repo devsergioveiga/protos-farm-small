@@ -1,24 +1,35 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Landmark, MapPin, FileText, Users, Search, Pencil, Trash2, Plus } from 'lucide-react';
 import { useAllRuralProperties } from '@/hooks/useRuralProperties';
 import { CLASSIFICATION_LABELS } from '@/types/rural-property';
 import type { RuralPropertyWithFarm } from '@/hooks/useRuralProperties';
 import { RuralPropertyModal } from '@/components/rural-property/RuralPropertyModal';
+import OwnersModal from '@/components/rural-property/OwnersModal';
 import { deleteRuralProperty } from '@/hooks/useRuralProperties';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import '@/components/rural-property/RuralPropertySection.css';
 import './RuralPropertiesPage.css';
 
 export default function RuralPropertiesPage() {
+  const [searchParams] = useSearchParams();
+  const farmIdParam = searchParams.get('farmId');
   const { properties, isLoading, error, refetch } = useAllRuralProperties();
   const [search, setSearch] = useState('');
   const [filterFarm, setFilterFarm] = useState('');
+
+  useEffect(() => {
+    if (farmIdParam && properties.length > 0) {
+      const match = properties.find((p) => p.farmId === farmIdParam);
+      if (match) setFilterFarm(match.farmName);
+    }
+  }, [farmIdParam, properties]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editTarget, setEditTarget] = useState<{ farmId: string; propertyId: string } | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<RuralPropertyWithFarm | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [ownersTarget, setOwnersTarget] = useState<RuralPropertyWithFarm | null>(null);
 
   const farmNames = [...new Set(properties.map((p) => p.farmName))].sort();
 
@@ -211,18 +222,27 @@ export default function RuralPropertiesPage() {
               </div>
 
               <div className="rp-card__footer">
-                <div className="rp-card__stat">
+                <Link
+                  to={`/registrations?propertyName=${encodeURIComponent(rp.denomination)}`}
+                  className="rp-card__stat rp-card__stat--link"
+                  aria-label={`Ver matrículas de ${rp.denomination}`}
+                >
                   <FileText size={14} aria-hidden="true" />
                   <span>
                     {rp.titlesCount} matrícula{rp.titlesCount !== 1 ? 's' : ''}
                   </span>
-                </div>
-                <div className="rp-card__stat">
+                </Link>
+                <button
+                  type="button"
+                  className="rp-card__stat rp-card__stat--link"
+                  onClick={() => setOwnersTarget(rp)}
+                  aria-label={`Ver titulares de ${rp.denomination}`}
+                >
                   <Users size={14} aria-hidden="true" />
                   <span>
                     {rp.ownersCount} titular{rp.ownersCount !== 1 ? 'es' : ''}
                   </span>
-                </div>
+                </button>
                 <div className="rp-card__stat">
                   <FileText size={14} aria-hidden="true" />
                   <span>
@@ -261,6 +281,16 @@ export default function RuralPropertiesPage() {
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteTarget(null)}
       />
+
+      {ownersTarget && (
+        <OwnersModal
+          isOpen={!!ownersTarget}
+          farmId={ownersTarget.farmId}
+          propertyId={ownersTarget.id}
+          propertyName={ownersTarget.denomination}
+          onClose={() => setOwnersTarget(null)}
+        />
+      )}
     </main>
   );
 }

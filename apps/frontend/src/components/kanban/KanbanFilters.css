@@ -1,0 +1,70 @@
+/* ============================================================
+   KanbanFilters — BEM CSS
+   All values from tokens.css custom properties
+   ============================================================ */
+
+.kanban-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: flex-end;
+  margin-bottom: var(--space-6);
+}
+
+.kanban-filters__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.kanban-filters__label {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-neutral-600);
+}
+
+.kanban-filters__select,
+.kanban-filters__input {
+  min-height: 48px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-0);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-base);
+  color: var(--color-neutral-700);
+  transition: border-color var(--duration-instant) ease-out;
+  min-width: 180px;
+}
+
+.kanban-filters__select:hover,
+.kanban-filters__input:hover {
+  border-color: var(--color-neutral-400);
+}
+
+.kanban-filters__select:focus,
+.kanban-filters__input:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 2px var(--color-primary-100);
+}
+
+.kanban-filters__select:focus-visible,
+.kanban-filters__input:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .kanban-filters__select,
+  .kanban-filters__input {
+    min-width: 140px;
+    width: 100%;
+  }
+
+  .kanban-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

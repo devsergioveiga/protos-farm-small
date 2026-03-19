@@ -181,39 +181,6 @@ export async function createFarm(ctx: RlsContext, actorId: string, input: Create
       });
     }
 
-    // Create default RuralProperty to mirror farm fundiário data
-    const ruralProperty = await tx.ruralProperty.create({
-      data: {
-        farmId: farm.id,
-        denomination: input.name,
-        cib: input.cib ?? null,
-        incraCode: input.incraCode ?? null,
-        ccirCode: input.ccirCode ?? null,
-        carCode: input.carCode ?? null,
-        totalAreaHa: input.totalAreaHa,
-        landClassification: input.landClassification ?? null,
-        productive: input.productive ?? null,
-        fiscalModuleHa: input.fiscalModuleHa ?? null,
-        fiscalModulesCount: input.fiscalModulesCount ?? null,
-        minPartitionFraction: input.minPartitionFraction ?? null,
-        appAreaHa: input.appAreaHa ?? null,
-        legalReserveHa: input.legalReserveHa ?? null,
-        taxableAreaHa: input.taxableAreaHa ?? null,
-        usableAreaHa: input.usableAreaHa ?? null,
-        utilizationDegree: input.utilizationDegree ?? null,
-        municipality: input.city ?? null,
-        state: input.state,
-      },
-    });
-
-    // Link registrations to the RuralProperty
-    if (input.registrations && input.registrations.length > 0) {
-      await tx.farmRegistration.updateMany({
-        where: { farmId: farm.id },
-        data: { ruralPropertyId: ruralProperty.id },
-      });
-    }
-
     // Create UserFarmAccess for the creator
     await tx.userFarmAccess.create({
       data: { userId: actorId, farmId: farm.id },
@@ -286,7 +253,12 @@ export async function listFarms(ctx: RlsContext, caller: FarmListCaller, query: 
       take: limit,
       orderBy: { createdAt: 'desc' },
       include: {
-        _count: { select: { registrations: true, fieldPlots: { where: { deletedAt: null } } } },
+        _count: {
+          select: {
+            ruralProperties: { where: { deletedAt: null } },
+            fieldPlots: { where: { deletedAt: null } },
+          },
+        },
       },
     });
     const total = await tx.farm.count({ where });
@@ -396,45 +368,6 @@ export async function updateFarm(ctx: RlsContext, farmId: string, input: UpdateF
         input.latitude,
         farmId,
       );
-    }
-
-    // Propagate fundiário fields to first RuralProperty (backward compatibility)
-    const fundiarioFields: Record<string, unknown> = {};
-    if (input.cib !== undefined) fundiarioFields.cib = input.cib || null;
-    if (input.incraCode !== undefined) fundiarioFields.incraCode = input.incraCode || null;
-    if (input.carCode !== undefined) fundiarioFields.carCode = input.carCode || null;
-    if (input.ccirCode !== undefined) fundiarioFields.ccirCode = input.ccirCode || null;
-    if (input.totalAreaHa !== undefined) fundiarioFields.totalAreaHa = input.totalAreaHa;
-    if (input.landClassification !== undefined)
-      fundiarioFields.landClassification = input.landClassification || null;
-    if (input.productive !== undefined) fundiarioFields.productive = input.productive;
-    if (input.fiscalModuleHa !== undefined) fundiarioFields.fiscalModuleHa = input.fiscalModuleHa;
-    if (input.fiscalModulesCount !== undefined)
-      fundiarioFields.fiscalModulesCount = input.fiscalModulesCount;
-    if (input.minPartitionFraction !== undefined)
-      fundiarioFields.minPartitionFraction = input.minPartitionFraction;
-    if (input.appAreaHa !== undefined) fundiarioFields.appAreaHa = input.appAreaHa;
-    if (input.legalReserveHa !== undefined) fundiarioFields.legalReserveHa = input.legalReserveHa;
-    if (input.taxableAreaHa !== undefined) fundiarioFields.taxableAreaHa = input.taxableAreaHa;
-    if (input.usableAreaHa !== undefined) fundiarioFields.usableAreaHa = input.usableAreaHa;
-    if (input.utilizationDegree !== undefined)
-      fundiarioFields.utilizationDegree = input.utilizationDegree;
-    if (input.name !== undefined) fundiarioFields.denomination = input.name;
-    if (input.city !== undefined) fundiarioFields.municipality = input.city || null;
-    if (input.state !== undefined) fundiarioFields.state = input.state || null;
-
-    if (Object.keys(fundiarioFields).length > 0) {
-      const firstProperty = await tx.ruralProperty.findFirst({
-        where: { farmId, deletedAt: null },
-        orderBy: { createdAt: 'asc' },
-        select: { id: true },
-      });
-      if (firstProperty) {
-        await tx.ruralProperty.update({
-          where: { id: firstProperty.id },
-          data: fundiarioFields,
-        });
-      }
     }
 
     logger.info({ farmId, orgId: ctx.organizationId }, 'Farm updated');

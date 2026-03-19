@@ -1,6 +1,37 @@
-import { withRlsContext, type RlsContext, type TxClient } from '../../database/rls';
+import { withRlsContext, withRlsBypass, type RlsContext, type TxClient } from '../../database/rls';
 import { NotificationError, type CreateNotificationInput } from './notifications.types';
 import { logger } from '../../shared/utils/logger';
+import { sendMail } from '../../shared/mail/mail.service';
+import { shouldNotify } from '../notification-preferences/notification-preferences.service';
+
+// ─── Email Helper ─────────────────────────────────────────────────────────────
+
+async function sendNotificationEmail(
+  to: string,
+  notification: { type: string; title: string; body: string },
+): Promise<void> {
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background-color: #2E7D32; padding: 20px; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 20px;">Protos Farm</h1>
+      </div>
+      <div style="padding: 24px; background: #fff;">
+        <h2 style="color: #2A2520; font-size: 18px; margin-top: 0;">${notification.title}</h2>
+        <p style="color: #3E3833; line-height: 1.6;">${notification.body}</p>
+      </div>
+      <div style="padding: 16px; background: #FAFAF8; text-align: center; font-size: 13px; color: #3E3833;">
+        <a href="/notification-preferences" style="color: #2E7D32;">Gerenciar preferências</a>
+      </div>
+    </div>
+  `;
+
+  await sendMail({
+    to,
+    subject: notification.title,
+    text: `${notification.title}\n\n${notification.body}`,
+    html,
+  });
+}
 
 // ─── Create Notification (inside existing transaction) ───────────────
 
@@ -9,7 +40,16 @@ export async function createNotification(
   organizationId: string,
   input: CreateNotificationInput,
 ) {
-  return tx.notification.create({
+  // Check BADGE preference — if disabled, mark as read immediately
+  const badgeEnabled = await shouldNotify(
+    tx,
+    input.recipientId,
+    organizationId,
+    input.type,
+    'BADGE',
+  );
+
+  const notification = await tx.notification.create({
     data: {
       organizationId,
       recipientId: input.recipientId,
@@ -18,8 +58,44 @@ export async function createNotification(
       body: input.body,
       referenceId: input.referenceId ?? null,
       referenceType: input.referenceType ?? null,
+      // If badge disabled, mark as read immediately (effectively hidden)
+      readAt: badgeEnabled ? null : new Date(),
     },
   });
+
+  // Fire-and-forget email dispatch (outside transaction context)
+  void (async () => {
+    try {
+      const emailEnabled = await withRlsBypass(async (bypassTx) => {
+        const enabled = await shouldNotify(
+          bypassTx,
+          input.recipientId,
+          organizationId,
+          input.type,
+          'EMAIL',
+        );
+        if (!enabled) return false;
+
+        const user = await bypassTx.user.findUnique({
+          where: { id: input.recipientId },
+          select: { email: true },
+        });
+        return user?.email ?? null;
+      });
+
+      if (emailEnabled && typeof emailEnabled === 'string') {
+        await sendNotificationEmail(emailEnabled, {
+          type: input.type,
+          title: input.title,
+          body: input.body,
+        });
+      }
+    } catch (err) {
+      logger.error({ err, notificationId: notification.id }, 'Failed to send notification email');
+    }
+  })();
+
+  return notification;
 }
 
 // ─── List Notifications ──────────────────────────────────────────────

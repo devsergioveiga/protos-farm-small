@@ -68,10 +68,15 @@ function FarmCard({ farm, canDelete, canEdit, onDelete, onEdit }: FarmCardProps)
           <Ruler size={16} aria-hidden="true" className="farm-card__detail-icon" />
           {Number(farm.totalAreaHa).toLocaleString('pt-BR')} ha
         </span>
-        <span className="farm-card__detail">
+        <Link
+          to={`/rural-properties?farmId=${farm.id}`}
+          className="farm-card__detail farm-card__detail--link"
+          aria-label={`Ver imóveis rurais de ${farm.name}`}
+        >
           <FileText size={16} aria-hidden="true" className="farm-card__detail-icon" />
-          {farm._count.registrations} {farm._count.registrations === 1 ? 'matrícula' : 'matrículas'}
-        </span>
+          {farm._count.ruralProperties}{' '}
+          {farm._count.ruralProperties === 1 ? 'Imóvel Rural' : 'Imóveis Rurais'}
+        </Link>
         <span className="farm-card__detail">
           <Layers size={16} aria-hidden="true" className="farm-card__detail-icon" />
           {farm._count.fieldPlots} {farm._count.fieldPlots === 1 ? 'talhão' : 'talhões'}
@@ -151,10 +156,15 @@ function FarmListRow({ farm, canEdit, onEdit }: FarmListRowProps) {
           <Ruler size={16} aria-hidden="true" className="farm-card__detail-icon" />
           {Number(farm.totalAreaHa).toLocaleString('pt-BR')} ha
         </span>
-        <span className="farm-card__detail">
+        <Link
+          to={`/rural-properties?farmId=${farm.id}`}
+          className="farm-card__detail farm-card__detail--link"
+          aria-label={`Ver imóveis rurais de ${farm.name}`}
+        >
           <FileText size={16} aria-hidden="true" className="farm-card__detail-icon" />
-          {farm._count.registrations} {farm._count.registrations === 1 ? 'matrícula' : 'matrículas'}
-        </span>
+          {farm._count.ruralProperties}{' '}
+          {farm._count.ruralProperties === 1 ? 'Imóvel Rural' : 'Imóveis Rurais'}
+        </Link>
       </div>
       <div className="farm-list-row__actions">
         <Link
