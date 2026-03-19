@@ -71,6 +71,7 @@ Full details: `.planning/milestones/v1.1-ROADMAP.md`
    **Plans:** 1/6 plans executed
 
 Plans:
+
 - [ ] 16-00-PLAN.md — Wave 0: failing spec stubs for assets, fuel-records, meter-readings, asset-documents
 - [ ] 16-01-PLAN.md — Backend foundation: Prisma schema (Asset, FuelRecord, MeterReading, AssetDocument), migration, types, RBAC, CRUD service+routes+tests
 - [ ] 16-02-PLAN.md — Backend operational: fuel records, meter readings, asset documents, CSV/PDF export, tests
@@ -189,29 +190,29 @@ Plans:
 
 ## Progress
 
-| Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|----------------|--------|-----------|
-| 1. Fundação Financeira | v1.0 | 3/3 | Complete | 2026-03-16 |
-| 2. Núcleo AP/AR | v1.0 | 7/7 | Complete | 2026-03-16 |
-| 3. Dashboard Financeiro | v1.0 | 2/2 | Complete | 2026-03-16 |
-| 4. Instrumentos de Pagamento | v1.0 | 7/7 | Complete | 2026-03-17 |
-| 5. Conciliação e Fluxo de Caixa | v1.0 | 6/6 | Complete | 2026-03-17 |
-| 6. Crédito Rural | v1.0 | 5/5 | Complete | 2026-03-17 |
-| 7. Cadastro de Fornecedores | v1.1 | 4/4 | Complete | 2026-03-17 |
-| 8. Requisição e Aprovação | v1.1 | 6/6 | Complete | 2026-03-17 |
-| 9. Cotação e Pedido de Compra | v1.1 | Complete | Complete | 2026-03-18 |
-| 10. Recebimento de Mercadorias | v1.1 | Complete | Complete | 2026-03-18 |
-| 11. Devolução, Orçamento e Saving | v1.1 | Complete | Complete | 2026-03-18 |
-| 12. Kanban, Dashboard e Notificações | v1.1 | 5/5 | Complete | 2026-03-18 |
-| 13. Kanban DnD Fixes | v1.1 | 3/3 | Complete | 2026-03-19 |
-| 14. Stock Reversal + Rating | v1.1 | 2/2 | Complete | 2026-03-19 |
-| 15. Frontend API Path Fixes | v1.1 | 1/1 | Complete | 2026-03-19 |
-| 16. Cadastro de Ativos | 1/6 | In Progress|  | - |
-| 17. Engine de Depreciação | v1.2 | 0/TBD | Not started | - |
-| 18. Manutenção e Ordens de Serviço | v1.2 | 0/TBD | Not started | - |
-| 19. Integração Financeira — Aquisição | v1.2 | 0/TBD | Not started | - |
-| 20. Alienação e Baixa de Ativos | v1.2 | 0/TBD | Not started | - |
-| 21. Controle Operacional Avançado | v1.2 | 0/TBD | Not started | - |
-| 22. Depreciação Avançada e Hierarquia | v1.2 | 0/TBD | Not started | - |
-| 23. Imobilizado em Andamento e Relatórios | v1.2 | 0/TBD | Not started | - |
-| 24. Ativos Biológicos e Leasing | v1.2 | 0/TBD | Not started | - |
+| Phase                                     | Milestone | Plans Complete | Status      | Completed  |
+| ----------------------------------------- | --------- | -------------- | ----------- | ---------- |
+| 1. Fundação Financeira                    | v1.0      | 3/3            | Complete    | 2026-03-16 |
+| 2. Núcleo AP/AR                           | v1.0      | 7/7            | Complete    | 2026-03-16 |
+| 3. Dashboard Financeiro                   | v1.0      | 2/2            | Complete    | 2026-03-16 |
+| 4. Instrumentos de Pagamento              | v1.0      | 7/7            | Complete    | 2026-03-17 |
+| 5. Conciliação e Fluxo de Caixa           | v1.0      | 6/6            | Complete    | 2026-03-17 |
+| 6. Crédito Rural                          | v1.0      | 5/5            | Complete    | 2026-03-17 |
+| 7. Cadastro de Fornecedores               | v1.1      | 4/4            | Complete    | 2026-03-17 |
+| 8. Requisição e Aprovação                 | v1.1      | 6/6            | Complete    | 2026-03-17 |
+| 9. Cotação e Pedido de Compra             | v1.1      | Complete       | Complete    | 2026-03-18 |
+| 10. Recebimento de Mercadorias            | v1.1      | Complete       | Complete    | 2026-03-18 |
+| 11. Devolução, Orçamento e Saving         | v1.1      | Complete       | Complete    | 2026-03-18 |
+| 12. Kanban, Dashboard e Notificações      | v1.1      | 5/5            | Complete    | 2026-03-18 |
+| 13. Kanban DnD Fixes                      | v1.1      | 3/3            | Complete    | 2026-03-19 |
+| 14. Stock Reversal + Rating               | v1.1      | 2/2            | Complete    | 2026-03-19 |
+| 15. Frontend API Path Fixes               | v1.1      | 1/1            | Complete    | 2026-03-19 |
+| 16. Cadastro de Ativos                    | v1.2      | 2/6            | In Progress | -          |
+| 17. Engine de Depreciação                 | v1.2      | 0/TBD          | Not started | -          |
+| 18. Manutenção e Ordens de Serviço        | v1.2      | 0/TBD          | Not started | -          |
+| 19. Integração Financeira — Aquisição     | v1.2      | 0/TBD          | Not started | -          |
+| 20. Alienação e Baixa de Ativos           | v1.2      | 0/TBD          | Not started | -          |
+| 21. Controle Operacional Avançado         | v1.2      | 0/TBD          | Not started | -          |
+| 22. Depreciação Avançada e Hierarquia     | v1.2      | 0/TBD          | Not started | -          |
+| 23. Imobilizado em Andamento e Relatórios | v1.2      | 0/TBD          | Not started | -          |
+| 24. Ativos Biológicos e Leasing           | v1.2      | 0/TBD          | Not started | -          |

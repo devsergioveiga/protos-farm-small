@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
-status: planning
-stopped_at: Completed 16-00-PLAN.md
-last_updated: "2026-03-19T21:32:40.712Z"
-last_activity: 2026-03-19 — Roadmap v1.2 created
+status: in_progress
+stopped_at: Completed 16-01-PLAN.md
+last_updated: '2026-03-19T22:05:00.000Z'
+last_activity: 2026-03-19 — Phase 16 Plan 01 completed (Asset backend foundation)
 progress:
   total_phases: 9
   completed_phases: 0
   total_plans: 6
-  completed_plans: 1
-  percent: 0
+  completed_plans: 2
+  percent: 3
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Current Position
 
-Phase: 16 - Cadastro de Ativos (not started)
-Plan: —
-Status: Ready for planning
-Last activity: 2026-03-19 — Roadmap v1.2 created
+Phase: 16 - Cadastro de Ativos (in progress)
+Plan: 01 complete — next: 16-02
+Status: In progress
+Last activity: 2026-03-19 — Phase 16 Plan 01 completed
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 3% (2/6 plans in phase 16)
 
 ## Performance Metrics
 
@@ -46,7 +46,9 @@ Progress: [░░░░░░░░░░] 0%
 | 06-cr-dito-rural               | 5     | 62min      | 12min    |
 
 **Total v1.0:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
+
 | Phase 16 P00 | 1 | 1 tasks | 4 files |
+| Phase 16 P01 | 30min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -68,7 +70,9 @@ Key decisions for v1.2:
 - **CPC 27 vs CPC 29 classification at schema creation**: BEARER_PLANT (CPC 27) vs BIOLOGICAL_ASSET_ANIMAL (CPC 29)
 - **OS accounting classification mandatory at closure**: 400 if accountingTreatment absent
 - **Batch depreciation idempotent**: Unique constraint on (assetId, periodYear, periodMonth)
-- [Phase 16]: Wave 0 stubs use it.todo() only — no beforeAll/afterAll setup until Plans 01/02 fill in test bodies
+- [Phase 16 P00]: Wave 0 stubs use it.todo() only — no beforeAll/afterAll setup until Plans 01/02 fill in test bodies
+- [Phase 16 P01]: costCenterMode stored as String @default('FIXED') — existing CostCenterAllocMode enum incompatible (PERCENTAGE/FIXED_VALUE for Payable use)
+- [Phase 16 P01]: BENFEITORIA geoPoint written via $executeRawUnsafe after Prisma create() — Unsupported type limitation
 
 ### Pending Todos
 
@@ -80,6 +84,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T21:32:40.709Z
-Stopped at: Completed 16-00-PLAN.md
+Last session: 2026-03-19T22:05:00.000Z
+Stopped at: Completed 16-01-PLAN.md
 Resume file: None
+Next action: /gsd:execute-phase 16 plan 02
