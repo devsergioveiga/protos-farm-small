@@ -202,6 +202,26 @@ export async function createGoodsReturn(
       include: GR_FULL_INCLUDE,
     });
 
+    // Notify OC buyer (needs to contact supplier about the return)
+    const receipt = await tx.goodsReceipt.findFirst({
+      where: { id: input.goodsReceiptId },
+      select: {
+        purchaseOrder: {
+          select: { createdBy: true, sequentialNumber: true },
+        },
+      },
+    });
+    if (receipt?.purchaseOrder?.createdBy) {
+      void createNotification(tx, ctx.organizationId, {
+        recipientId: receipt.purchaseOrder.createdBy,
+        type: 'RETURN_REGISTERED',
+        title: 'Devolucao registrada',
+        body: `Uma devolucao foi registrada para o pedido ${receipt.purchaseOrder.sequentialNumber}. Entre em contato com o fornecedor.`,
+        referenceId: goodsReturn.id,
+        referenceType: 'GOODS_RETURN',
+      }).catch(() => {});
+    }
+
     return formatGoodsReturn(goodsReturn);
   });
 }
@@ -477,34 +497,27 @@ export async function transitionGoodsReturn(
         }
         // TROCA: no financial action needed
       }
-
-      // Step D: Notify managers about return approval (fire-and-forget)
-      const managers = await tx.user.findMany({
-        where: {
-          organizationId: ctx.organizationId,
-          role: 'MANAGER',
-        },
-        select: { id: true },
-        take: 5,
-      });
-
-      for (const manager of managers) {
-        void createNotification(tx, ctx.organizationId, {
-          recipientId: manager.id,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          type: 'GOODS_RETURN_APPROVED' as any,
-          title: 'Devolucao aprovada',
-          body: `Devolucao ${gr.sequentialNumber} foi aprovada`,
-          referenceId: gr.id,
-          referenceType: 'GOODS_RETURN',
-        }).catch(() => {
-          // Ignore notification errors
-        });
-      }
     }
 
     if (input.status === 'CONCLUIDA') {
       updateData.resolutionStatus = 'RESOLVED';
+
+      // Notify FINANCIAL users that return is resolved (fire-and-forget)
+      const financialUsers = await tx.user.findMany({
+        where: { organizationId: ctx.organizationId, role: 'FINANCIAL' },
+        select: { id: true },
+        take: 5,
+      });
+      for (const u of financialUsers) {
+        void createNotification(tx, ctx.organizationId, {
+          recipientId: u.id,
+          type: 'RETURN_RESOLVED',
+          title: 'Devolucao resolvida',
+          body: `Devolucao ${gr.sequentialNumber} foi concluida e aguarda processamento financeiro.`,
+          referenceId: gr.id,
+          referenceType: 'GOODS_RETURN',
+        }).catch(() => {});
+      }
     }
 
     const updated = await tx.goodsReturn.update({
