@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: executing
-stopped_at: Completed 16-03-PLAN.md
-last_updated: '2026-03-19T22:18:29.337Z'
-last_activity: 2026-03-19 — Phase 16 Plan 02 completed
+stopped_at: Completed 16-05-PLAN.md
+last_updated: '2026-03-19T22:31:38.734Z'
+last_activity: 2026-03-19 — Phase 16 Plan 03 completed (AssetsPage frontend)
 progress:
   total_phases: 9
   completed_phases: 0
   total_plans: 6
-  completed_plans: 4
-  percent: 5
+  completed_plans: 5
+  percent: 67
 ---
 
 # Project State
@@ -51,6 +51,7 @@ Progress: [███████░░░] 67% (4/6 plans in phase 16)
 | Phase 16 P01 | 30min | 2 tasks | 8 files |
 | Phase 16 P02 | 15min | 2 tasks | 15 files |
 | Phase 16 P03 | 31 | 3 tasks | 10 files |
+| Phase 16-cadastro-de-ativos P05 | 90 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,8 @@ Key decisions for v1.2:
 - [Phase 16 P02]: getFuelStats avgLitersPerHour = null when no hourmeterAtFuel readings exist — correct behavior, not a bug
 - [Phase 16 P02]: exportAssetsPdf uses landscape A4 to accommodate 6-column asset table
 - [Phase 16]: AssetModal stub committed first in Task 2 to keep TSC clean; full implementation overwrites it in Task 3
+- [Phase 16-cadastro-de-ativos]: Reused createAsset() in confirmAssetImport to keep PAT-NNNNN tag generation atomic
+- [Phase 16-cadastro-de-ativos]: Auto-mapping dictionary maps Portuguese CSV headers to system field names; TERRA type auto-classifies to NON_DEPRECIABLE_CPC27 in preview
 
 ### Pending Todos
 
@@ -89,7 +92,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T22:18:29.335Z
-Stopped at: Completed 16-03-PLAN.md
+Last session: 2026-03-19T22:31:38.731Z
+Stopped at: Completed 16-05-PLAN.md
 Resume file: None
 Next action: /gsd:execute-phase 16 plan 04
