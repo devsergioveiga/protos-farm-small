@@ -11,7 +11,12 @@ export interface ProducerPJFormFields {
   name: string;
   document: string;
   tradeName: string;
-  address: string;
+  street: string;
+  addressNumber: string;
+  complement: string;
+  neighborhood: string;
+  district: string;
+  locationReference: string;
   city: string;
   state: string;
   zipCode: string;
@@ -29,7 +34,12 @@ const INITIAL_FIELDS: ProducerPJFormFields = {
   name: '',
   document: '',
   tradeName: '',
-  address: '',
+  street: '',
+  addressNumber: '',
+  complement: '',
+  neighborhood: '',
+  district: '',
+  locationReference: '',
   city: '',
   state: '',
   zipCode: '',
@@ -109,7 +119,12 @@ function buildCreatePayload(fields: ProducerPJFormFields): CreateProducerPJPaylo
   };
 
   if (fields.tradeName.trim()) payload.tradeName = fields.tradeName.trim();
-  if (fields.address.trim()) payload.address = fields.address.trim();
+  if (fields.street.trim()) payload.street = fields.street.trim();
+  if (fields.addressNumber.trim()) payload.addressNumber = fields.addressNumber.trim();
+  if (fields.complement.trim()) payload.complement = fields.complement.trim();
+  if (fields.neighborhood.trim()) payload.neighborhood = fields.neighborhood.trim();
+  if (fields.district.trim()) payload.district = fields.district.trim();
+  if (fields.locationReference.trim()) payload.locationReference = fields.locationReference.trim();
   if (fields.city.trim()) payload.city = fields.city.trim();
   if (fields.state) payload.state = fields.state;
   if (fields.zipCode.trim()) payload.zipCode = fields.zipCode.replace(/\D/g, '');
@@ -131,7 +146,12 @@ function buildUpdatePayload(fields: ProducerPJFormFields): UpdateProducerPayload
   };
 
   payload.tradeName = fields.tradeName.trim() || undefined;
-  payload.address = fields.address.trim() || undefined;
+  payload.street = fields.street.trim() || undefined;
+  payload.addressNumber = fields.addressNumber.trim() || undefined;
+  payload.complement = fields.complement.trim() || undefined;
+  payload.neighborhood = fields.neighborhood.trim() || undefined;
+  payload.district = fields.district.trim() || undefined;
+  payload.locationReference = fields.locationReference.trim() || undefined;
   payload.city = fields.city.trim() || undefined;
   payload.state = fields.state || undefined;
   payload.zipCode = fields.zipCode.trim() ? fields.zipCode.replace(/\D/g, '') : undefined;
@@ -150,7 +170,12 @@ function detailToFormFields(detail: ProducerDetail): ProducerPJFormFields {
     name: detail.name || '',
     document: detail.document ? formatCnpjInput(detail.document) : '',
     tradeName: detail.tradeName || '',
-    address: detail.address || '',
+    street: detail.street || '',
+    addressNumber: detail.addressNumber || '',
+    complement: detail.complement || '',
+    neighborhood: detail.neighborhood || '',
+    district: detail.district || '',
+    locationReference: detail.locationReference || '',
     city: detail.city || '',
     state: detail.state || '',
     zipCode: detail.zipCode || '',

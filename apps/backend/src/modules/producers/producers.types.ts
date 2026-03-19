@@ -72,7 +72,12 @@ export interface CreateProducerInput {
   incraRegistration?: string;
   legalRepresentative?: string;
   legalRepCpf?: string;
-  address?: string;
+  street?: string;
+  addressNumber?: string;
+  complement?: string;
+  neighborhood?: string;
+  district?: string;
+  locationReference?: string;
   city?: string;
   state?: string;
   zipCode?: string;
@@ -90,7 +95,12 @@ export interface UpdateProducerInput {
   incraRegistration?: string;
   legalRepresentative?: string;
   legalRepCpf?: string;
-  address?: string;
+  street?: string;
+  addressNumber?: string;
+  complement?: string;
+  neighborhood?: string;
+  district?: string;
+  locationReference?: string;
   city?: string;
   state?: string;
   zipCode?: string;

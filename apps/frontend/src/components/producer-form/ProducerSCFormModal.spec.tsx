@@ -27,7 +27,12 @@ const mockProducerSC: ProducerDetail = {
   document: null,
   type: 'SOCIEDADE_EM_COMUM',
   status: 'ACTIVE',
-  address: 'Estrada Municipal KM 5',
+  street: 'Estrada Municipal',
+  addressNumber: 'KM 5',
+  complement: null,
+  neighborhood: null,
+  district: null,
+  locationReference: null,
   city: 'Goiânia',
   state: 'GO',
   zipCode: '74000000',
@@ -78,8 +83,19 @@ describe('ProducerSCFormModal', () => {
   it('should render the modal with title and sections', () => {
     render(<ProducerSCFormModal {...defaultProps} />);
     expect(screen.getByText('Novo produtor — Sociedade em Comum')).toBeDefined();
-    expect(screen.getByText('Dados da Sociedade')).toBeDefined();
-    expect(screen.getByText('Participantes (Sócios)')).toBeDefined();
+    expect(screen.getByText('Dados Cadastrais')).toBeDefined();
+    expect(screen.getByText('Endereço do Estabelecimento')).toBeDefined();
+    expect(screen.getByText('Participantes da Sociedade em Comum')).toBeDefined();
+  });
+
+  it('should render IE-specific fields from document layout', () => {
+    render(<ProducerSCFormModal {...defaultProps} />);
+    expect(document.getElementById('sc-ie-number')).toBeDefined();
+    expect(screen.getByLabelText(/CNAE\/Descrição/)).toBeDefined();
+    expect(screen.getByLabelText(/Regime de Apuração/)).toBeDefined();
+    expect(screen.getByLabelText(/Categoria/)).toBeDefined();
+    expect(screen.getByLabelText(/Situação da Inscrição/)).toBeDefined();
+    expect(screen.getByLabelText(/Optante pelo Programa de Leite/)).toBeDefined();
   });
 
   it('should render 2 participant rows by default', () => {
@@ -131,7 +147,7 @@ describe('ProducerSCFormModal', () => {
     fireEvent.click(screen.getByText('Cadastrar sociedade'));
 
     await waitFor(() => {
-      expect(screen.getByText('Nome da sociedade é obrigatório')).toBeDefined();
+      expect(screen.getByText('Nome é obrigatório')).toBeDefined();
     });
   });
 
@@ -139,13 +155,10 @@ describe('ProducerSCFormModal', () => {
     render(<ProducerSCFormModal {...defaultProps} />);
 
     // Fill name
-    fireEvent.change(screen.getByLabelText(/Nome da sociedade/), {
+    fireEvent.change(screen.getByLabelText(/Nome do Responsável/), {
       target: { value: 'Teste SC' },
     });
 
-    // Add a third then remove two to get below 2 - actually can't because remove is disabled at 2
-    // This scenario can't happen in UI since remove is disabled at 2
-    // But we can test the validation message for missing participant data
     fireEvent.click(screen.getByText('Cadastrar sociedade'));
 
     await waitFor(() => {
@@ -158,7 +171,7 @@ describe('ProducerSCFormModal', () => {
     render(<ProducerSCFormModal {...defaultProps} />);
 
     // Fill name
-    fireEvent.change(screen.getByLabelText(/Nome da sociedade/), {
+    fireEvent.change(screen.getByLabelText(/Nome do Responsável/), {
       target: { value: 'Teste SC' },
     });
 
@@ -189,7 +202,7 @@ describe('ProducerSCFormModal', () => {
   it('should show error when total percentage exceeds 100', async () => {
     render(<ProducerSCFormModal {...defaultProps} />);
 
-    fireEvent.change(screen.getByLabelText(/Nome da sociedade/), {
+    fireEvent.change(screen.getByLabelText(/Nome do Responsável/), {
       target: { value: 'Teste SC' },
     });
 
@@ -215,7 +228,7 @@ describe('ProducerSCFormModal', () => {
   it('should show error for duplicate CPFs', async () => {
     render(<ProducerSCFormModal {...defaultProps} />);
 
-    fireEvent.change(screen.getByLabelText(/Nome da sociedade/), {
+    fireEvent.change(screen.getByLabelText(/Nome do Responsável/), {
       target: { value: 'Teste SC' },
     });
 
@@ -250,7 +263,7 @@ describe('ProducerSCFormModal', () => {
   it('should submit with correct SC payload and create participants', async () => {
     render(<ProducerSCFormModal {...defaultProps} />);
 
-    fireEvent.change(screen.getByLabelText(/Nome da sociedade/), {
+    fireEvent.change(screen.getByLabelText(/Nome do Responsável/), {
       target: { value: 'Irmãos Teste' },
     });
 
@@ -298,7 +311,7 @@ describe('ProducerSCFormModal', () => {
     const onSuccess = vi.fn();
     render(<ProducerSCFormModal {...defaultProps} onSuccess={onSuccess} />);
 
-    fireEvent.change(screen.getByLabelText(/Nome da sociedade/), {
+    fireEvent.change(screen.getByLabelText(/Nome do Responsável/), {
       target: { value: 'Irmãos Teste' },
     });
     fireEvent.change(document.getElementById('sc-p-name-0')!, { target: { value: 'José' } });
@@ -326,7 +339,7 @@ describe('ProducerSCFormModal', () => {
 
     render(<ProducerSCFormModal {...defaultProps} />);
 
-    fireEvent.change(screen.getByLabelText(/Nome da sociedade/), {
+    fireEvent.change(screen.getByLabelText(/Nome do Responsável/), {
       target: { value: 'Teste' },
     });
     fireEvent.change(document.getElementById('sc-p-name-0')!, { target: { value: 'José' } });
@@ -406,7 +419,7 @@ describe('ProducerSCFormModal', () => {
       render(<ProducerSCFormModal {...defaultProps} producerId="prod-sc-1" />);
 
       await waitFor(() => {
-        const nameInput = screen.getByLabelText(/Nome da sociedade/) as HTMLInputElement;
+        const nameInput = screen.getByLabelText(/Nome do Responsável/) as HTMLInputElement;
         expect(nameInput.value).toBe('Irmãos Silva');
       });
 
@@ -432,7 +445,7 @@ describe('ProducerSCFormModal', () => {
       render(<ProducerSCFormModal {...defaultProps} producerId="prod-sc-1" />);
 
       await waitFor(() => {
-        const nameInput = screen.getByLabelText(/Nome da sociedade/) as HTMLInputElement;
+        const nameInput = screen.getByLabelText(/Nome do Responsável/) as HTMLInputElement;
         expect(nameInput.value).toBe('Irmãos Silva');
       });
 

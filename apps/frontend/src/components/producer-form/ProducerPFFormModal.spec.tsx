@@ -26,7 +26,12 @@ const mockProducerPF: ProducerDetail = {
   document: '12345678901',
   type: 'PF',
   status: 'ACTIVE',
-  address: 'Rua das Flores, 123',
+  street: 'Rua das Flores',
+  addressNumber: '123',
+  complement: null,
+  neighborhood: 'Centro',
+  district: null,
+  locationReference: null,
   city: 'Uberlândia',
   state: 'MG',
   zipCode: '38400000',
@@ -60,14 +65,13 @@ describe('ProducerPFFormModal', () => {
   it('should render the modal with title and sections', () => {
     render(<ProducerPFFormModal {...defaultProps} />);
     expect(screen.getByText('Novo produtor — Pessoa Física')).toBeDefined();
-    expect(screen.getByText('Dados Pessoais')).toBeDefined();
-    expect(screen.getByText('Endereço Fiscal')).toBeDefined();
-    expect(screen.getByText('Informações Adicionais')).toBeDefined();
+    expect(screen.getByText('Dados Cadastrais')).toBeDefined();
+    expect(screen.getByText('Endereço do Estabelecimento')).toBeDefined();
   });
 
   it('should show required field indicators on Nome and CPF', () => {
     render(<ProducerPFFormModal {...defaultProps} />);
-    const nameLabel = screen.getByLabelText(/Nome completo/);
+    const nameLabel = screen.getByLabelText(/Nome do Responsável/);
     expect(nameLabel.getAttribute('aria-required')).toBe('true');
     const cpfLabel = document.getElementById('pf-document')!;
     expect(cpfLabel.getAttribute('aria-required')).toBe('true');
@@ -76,7 +80,7 @@ describe('ProducerPFFormModal', () => {
   it('should show validation errors on blur for required fields', () => {
     render(<ProducerPFFormModal {...defaultProps} />);
 
-    fireEvent.blur(screen.getByLabelText(/Nome completo/));
+    fireEvent.blur(screen.getByLabelText(/Nome do Responsável/));
     expect(screen.getByText('Nome é obrigatório')).toBeDefined();
 
     fireEvent.blur(document.getElementById('pf-document')!);
@@ -91,14 +95,6 @@ describe('ProducerPFFormModal', () => {
     expect(cpfInput.value).toBe('123.456.789-01');
   });
 
-  it('should format spouse CPF while typing', () => {
-    render(<ProducerPFFormModal {...defaultProps} />);
-    const spouseInput = screen.getByLabelText(/CPF do cônjuge/) as HTMLInputElement;
-
-    fireEvent.change(spouseInput, { target: { value: '98765432100' } });
-    expect(spouseInput.value).toBe('987.654.321-00');
-  });
-
   it('should validate CPF with wrong digit count', () => {
     render(<ProducerPFFormModal {...defaultProps} />);
     const cpfInput = document.getElementById('pf-document')!;
@@ -107,16 +103,6 @@ describe('ProducerPFFormModal', () => {
     fireEvent.blur(cpfInput);
 
     expect(screen.getByText('CPF deve ter 11 dígitos')).toBeDefined();
-  });
-
-  it('should validate optional spouse CPF if partially filled', () => {
-    render(<ProducerPFFormModal {...defaultProps} />);
-    const spouseInput = screen.getByLabelText(/CPF do cônjuge/);
-
-    fireEvent.change(spouseInput, { target: { value: '123' } });
-    fireEvent.blur(spouseInput);
-
-    expect(screen.getByText('CPF do cônjuge deve ter 11 dígitos')).toBeDefined();
   });
 
   it('should validate CEP format', () => {
@@ -129,10 +115,22 @@ describe('ProducerPFFormModal', () => {
     expect(screen.getByText('CEP inválido (formato: 00000-000)')).toBeDefined();
   });
 
+  it('should render IE-specific fields from document layout', () => {
+    render(<ProducerPFFormModal {...defaultProps} />);
+    expect(document.getElementById('pf-ie-number')).toBeDefined();
+    expect(screen.getByLabelText(/CNAE\/Descrição/)).toBeDefined();
+    expect(screen.getByLabelText(/Regime de Apuração/)).toBeDefined();
+    expect(screen.getByLabelText(/Categoria/)).toBeDefined();
+    expect(screen.getByLabelText(/Data da Inscrição/)).toBeDefined();
+    expect(screen.getByLabelText(/Data do Fim do Contrato/)).toBeDefined();
+    expect(screen.getByLabelText(/Situação da Inscrição/)).toBeDefined();
+    expect(screen.getByLabelText(/Optante pelo Programa de Leite/)).toBeDefined();
+  });
+
   it('should submit with correct payload on valid form', async () => {
     render(<ProducerPFFormModal {...defaultProps} />);
 
-    fireEvent.change(screen.getByLabelText(/Nome completo/), {
+    fireEvent.change(screen.getByLabelText(/Nome do Responsável/), {
       target: { value: 'João da Silva' },
     });
     fireEvent.change(document.getElementById('pf-document')!, {
@@ -150,11 +148,36 @@ describe('ProducerPFFormModal', () => {
     });
   });
 
+  it('should create IE when IE number is provided', async () => {
+    render(<ProducerPFFormModal {...defaultProps} />);
+
+    fireEvent.change(screen.getByLabelText(/Nome do Responsável/), {
+      target: { value: 'João da Silva' },
+    });
+    fireEvent.change(document.getElementById('pf-document')!, {
+      target: { value: '12345678901' },
+    });
+    fireEvent.change(document.getElementById('pf-ie-number')!, {
+      target: { value: '004382845.00-24' },
+    });
+
+    fireEvent.click(screen.getByText('Cadastrar produtor'));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith(
+        '/org/producers/new-1/ies',
+        expect.objectContaining({
+          number: '004382845.00-24',
+        }),
+      );
+    });
+  });
+
   it('should call onSuccess after successful submit', async () => {
     const onSuccess = vi.fn();
     render(<ProducerPFFormModal {...defaultProps} onSuccess={onSuccess} />);
 
-    fireEvent.change(screen.getByLabelText(/Nome completo/), {
+    fireEvent.change(screen.getByLabelText(/Nome do Responsável/), {
       target: { value: 'Maria' },
     });
     fireEvent.change(document.getElementById('pf-document')!, {
@@ -188,7 +211,7 @@ describe('ProducerPFFormModal', () => {
 
     render(<ProducerPFFormModal {...defaultProps} />);
 
-    fireEvent.change(screen.getByLabelText(/Nome completo/), {
+    fireEvent.change(screen.getByLabelText(/Nome do Responsável/), {
       target: { value: 'Teste' },
     });
     fireEvent.change(document.getElementById('pf-document')!, {
@@ -222,13 +245,13 @@ describe('ProducerPFFormModal', () => {
   it('should include optional fields in payload when provided', async () => {
     render(<ProducerPFFormModal {...defaultProps} />);
 
-    fireEvent.change(screen.getByLabelText(/Nome completo/), {
+    fireEvent.change(screen.getByLabelText(/Nome do Responsável/), {
       target: { value: 'João' },
     });
     fireEvent.change(document.getElementById('pf-document')!, {
       target: { value: '12345678901' },
     });
-    fireEvent.change(screen.getByLabelText(/Nome fantasia/), {
+    fireEvent.change(screen.getByLabelText(/Nome do Estabelecimento/), {
       target: { value: 'Fazenda São João' },
     });
     fireEvent.change(screen.getByLabelText(/Município/), {
@@ -278,14 +301,14 @@ describe('ProducerPFFormModal', () => {
       render(<ProducerPFFormModal {...defaultProps} producerId="prod-1" />);
 
       await waitFor(() => {
-        const nameInput = screen.getByLabelText(/Nome completo/) as HTMLInputElement;
+        const nameInput = screen.getByLabelText(/Nome do Responsável/) as HTMLInputElement;
         expect(nameInput.value).toBe('João da Silva');
       });
 
       const cpfInput = document.getElementById('pf-document')! as HTMLInputElement;
       expect(cpfInput.value).toBe('123.456.789-01');
 
-      const tradeNameInput = screen.getByLabelText(/Nome fantasia/) as HTMLInputElement;
+      const tradeNameInput = screen.getByLabelText(/Nome do Estabelecimento/) as HTMLInputElement;
       expect(tradeNameInput.value).toBe('Fazenda São João');
 
       const cityInput = screen.getByLabelText(/Município/) as HTMLInputElement;
@@ -304,7 +327,7 @@ describe('ProducerPFFormModal', () => {
       render(<ProducerPFFormModal {...defaultProps} producerId="prod-1" />);
 
       await waitFor(() => {
-        const nameInput = screen.getByLabelText(/Nome completo/) as HTMLInputElement;
+        const nameInput = screen.getByLabelText(/Nome do Responsável/) as HTMLInputElement;
         expect(nameInput.value).toBe('João da Silva');
       });
 
@@ -326,7 +349,7 @@ describe('ProducerPFFormModal', () => {
       render(<ProducerPFFormModal {...defaultProps} onSuccess={onSuccess} producerId="prod-1" />);
 
       await waitFor(() => {
-        const nameInput = screen.getByLabelText(/Nome completo/) as HTMLInputElement;
+        const nameInput = screen.getByLabelText(/Nome do Responsável/) as HTMLInputElement;
         expect(nameInput.value).toBe('João da Silva');
       });
 

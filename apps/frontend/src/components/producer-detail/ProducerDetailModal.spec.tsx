@@ -41,7 +41,12 @@ const mockProducerPF: ProducerDetail = {
   document: '12345678901',
   type: 'PF',
   status: 'ACTIVE',
-  address: 'Rua das Flores, 123',
+  street: 'Rua das Flores',
+  addressNumber: '123',
+  complement: null,
+  neighborhood: 'Centro',
+  district: null,
+  locationReference: null,
   city: 'Uberlândia',
   state: 'MG',
   zipCode: '38400000',
@@ -351,7 +356,7 @@ describe('ProducerDetailModal', () => {
     });
   });
 
-  it('should not show Editar button for SOCIEDADE_EM_COMUM producer', async () => {
+  it('should show Editar button for SOCIEDADE_EM_COMUM producer', async () => {
     (api.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockProducerSC);
     const onEdit = vi.fn();
     render(<ProducerDetailModal {...defaultProps} producerId="prod-3" onEdit={onEdit} />);
@@ -360,7 +365,7 @@ describe('ProducerDetailModal', () => {
       expect(screen.getByText('Dados Gerais')).toBeDefined();
     });
 
-    expect(screen.queryByText('Editar')).toBeNull();
+    expect(screen.getByText('Editar')).toBeDefined();
   });
 
   it('should not show Editar button when onEdit is not provided', async () => {

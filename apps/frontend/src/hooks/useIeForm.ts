@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { api } from '@/services/api';
 import { VALID_UF } from '@/constants/states';
+import { isoToDateInput } from '@/utils/dateUtils';
 import type { ProducerStateRegistration, CreateIePayload, UpdateIePayload } from '@/types/producer';
 
 export interface IeFormFields {
@@ -54,8 +55,8 @@ function ieToFormFields(ie: ProducerStateRegistration): IeFormFields {
     state: ie.state,
     situation: ie.situation ?? '',
     category: ie.category ?? '',
-    inscriptionDate: ie.inscriptionDate ? ie.inscriptionDate.split('T')[0] : '',
-    contractEndDate: ie.contractEndDate ? ie.contractEndDate.split('T')[0] : '',
+    inscriptionDate: isoToDateInput(ie.inscriptionDate),
+    contractEndDate: isoToDateInput(ie.contractEndDate),
     cnaeActivity: ie.cnaeActivity ?? '',
     assessmentRegime: ie.assessmentRegime ?? '',
     milkProgramOptIn: ie.milkProgramOptIn ?? false,

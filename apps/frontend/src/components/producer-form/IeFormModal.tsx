@@ -1,7 +1,8 @@
-import { useEffect, useCallback } from 'react';
-import { X, AlertCircle, Loader2 } from 'lucide-react';
+import { useEffect, useCallback, useRef, useState } from 'react';
+import { X, AlertCircle, Loader2, Upload, CheckCircle2 } from 'lucide-react';
 import { useIeForm } from '@/hooks/useIeForm';
 import { VALID_UF } from '@/constants/states';
+import { parseIeDocument } from '@/utils/parseIeDocument';
 import type { ProducerStateRegistration } from '@/types/producer';
 import './IeFormModal.css';
 
@@ -53,6 +54,48 @@ function IeFormModal({ isOpen, onClose, onSuccess, producerId, existingIe }: IeF
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, handleClose]);
 
+  // ─── PDF upload / auto-fill ────────────────────────────────────
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isParsing, setIsParsing] = useState(false);
+  const [parseStatus, setParseStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  const handlePdfUpload = useCallback(
+    async (file: File) => {
+      setIsParsing(true);
+      setParseStatus('idle');
+      try {
+        const parsed = await parseIeDocument(file);
+        const ie = parsed.ie;
+        if (ie.number) setField('number', ie.number);
+        if (ie.state) setField('state', ie.state);
+        if (ie.situation) setField('situation', ie.situation);
+        if (ie.category) setField('category', ie.category);
+        if (ie.inscriptionDate) setField('inscriptionDate', ie.inscriptionDate);
+        if (ie.contractEndDate) setField('contractEndDate', ie.contractEndDate);
+        if (ie.cnaeActivity) setField('cnaeActivity', ie.cnaeActivity);
+        if (ie.assessmentRegime) setField('assessmentRegime', ie.assessmentRegime);
+        setField('milkProgramOptIn', ie.milkProgramOptIn);
+        setParseStatus('success');
+      } catch {
+        setParseStatus('error');
+      } finally {
+        setIsParsing(false);
+      }
+    },
+    [setField],
+  );
+
+  const onFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file && file.type === 'application/pdf') {
+        void handlePdfUpload(file);
+      }
+      e.target.value = '';
+    },
+    [handlePdfUpload],
+  );
+
   if (!isOpen) return null;
 
   const numberError = touched.number && errors.number;
@@ -84,6 +127,53 @@ function IeFormModal({ isOpen, onClose, onSuccess, producerId, existingIe }: IeF
         </header>
 
         <div className="ie-modal__body">
+          {/* Upload de documento */}
+          {!isEditMode && (
+            <div className="ie-modal__upload-section">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf"
+                className="ie-modal__file-input"
+                onChange={onFileChange}
+                aria-label="Anexar comprovante de Inscrição Estadual (PDF)"
+              />
+              <button
+                type="button"
+                className="ie-modal__upload-btn"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isParsing}
+              >
+                {isParsing ? (
+                  <>
+                    <Loader2 size={18} aria-hidden="true" className="ie-modal__spinner" />
+                    Lendo documento...
+                  </>
+                ) : (
+                  <>
+                    <Upload size={18} aria-hidden="true" />
+                    Importar dados do PDF
+                  </>
+                )}
+              </button>
+              {parseStatus === 'success' && (
+                <span className="ie-modal__upload-status ie-modal__upload-status--success">
+                  <CheckCircle2 size={16} aria-hidden="true" />
+                  Dados importados. Revise antes de salvar.
+                </span>
+              )}
+              {parseStatus === 'error' && (
+                <span
+                  className="ie-modal__upload-status ie-modal__upload-status--error"
+                  role="alert"
+                >
+                  <AlertCircle size={16} aria-hidden="true" />
+                  Não foi possível ler o documento.
+                </span>
+              )}
+            </div>
+          )}
+
           <div className="ie-modal__fields">
             {/* Numero IE */}
             <div className="ie-modal__field">

@@ -9,6 +9,7 @@ import {
   getProducer,
   updateProducer,
   toggleProducerStatus,
+  deleteProducer,
   addParticipant,
   updateParticipant,
   deleteParticipant,
@@ -192,6 +193,35 @@ producersRouter.patch(
       });
 
       res.json(producer);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// DELETE /org/producers/:producerId
+producersRouter.delete(
+  '/org/producers/:producerId',
+  authenticate,
+  checkPermission('producers:delete'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await deleteProducer(ctx, req.params.producerId as string);
+
+      void logAudit({
+        actorId: req.user!.userId,
+        actorEmail: req.user!.email,
+        actorRole: req.user!.role,
+        action: 'DELETE_PRODUCER',
+        targetType: 'producer',
+        targetId: req.params.producerId as string,
+        metadata: {},
+        ipAddress: getClientIp(req),
+        organizationId: ctx.organizationId,
+      });
+
+      res.json(result);
     } catch (err) {
       handleError(err, res);
     }

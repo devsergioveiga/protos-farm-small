@@ -2,21 +2,38 @@ import { useState, useCallback, useEffect } from 'react';
 import { api } from '@/services/api';
 import { VALID_UF } from '@/constants/states';
 import { formatCpfInput, stripCpf } from '@/hooks/useCreateProducer';
+import { isoToDateInput } from '@/utils/dateUtils';
 import type {
   CreateProducerSCPayload,
   CreateParticipantPayload,
+  CreateIePayload,
   UpdateProducerPayload,
   ProducerDetail,
 } from '@/types/producer';
 
 export interface ProducerSCFormFields {
+  // Dados Cadastrais (same order as IE document)
+  ieNumber: string;
   name: string;
   tradeName: string;
-  address: string;
-  city: string;
-  state: string;
+  cnaeActivity: string;
+  assessmentRegime: string;
+  category: string;
+  inscriptionDate: string;
+  contractEndDate: string;
+  situation: string;
+  // Endereço do Estabelecimento
   zipCode: string;
-  taxRegime: string;
+  state: string;
+  city: string;
+  district: string;
+  neighborhood: string;
+  street: string;
+  addressNumber: string;
+  complement: string;
+  locationReference: string;
+  // Extra
+  milkProgramOptIn: boolean;
 }
 
 export type SCFieldKey = keyof ProducerSCFormFields;
@@ -29,13 +46,25 @@ export interface ParticipantRow {
 }
 
 const INITIAL_FIELDS: ProducerSCFormFields = {
+  ieNumber: '',
   name: '',
   tradeName: '',
-  address: '',
-  city: '',
-  state: '',
+  cnaeActivity: '',
+  assessmentRegime: '',
+  category: '',
+  inscriptionDate: '',
+  contractEndDate: '',
+  situation: '',
   zipCode: '',
-  taxRegime: '',
+  state: '',
+  city: '',
+  district: '',
+  neighborhood: '',
+  street: '',
+  addressNumber: '',
+  complement: '',
+  locationReference: '',
+  milkProgramOptIn: false,
 };
 
 function emptyParticipant(): ParticipantRow {
@@ -63,7 +92,7 @@ export function validateSCForm(
   const fieldErrors: Partial<Record<SCFieldKey, string>> = {};
 
   if (!fields.name.trim()) {
-    fieldErrors.name = 'Nome da sociedade é obrigatório';
+    fieldErrors.name = 'Nome é obrigatório';
   }
 
   if (fields.state && !(VALID_UF as readonly string[]).includes(fields.state)) {
@@ -140,11 +169,15 @@ function buildCreatePayload(fields: ProducerSCFormFields): CreateProducerSCPaylo
   };
 
   if (fields.tradeName.trim()) payload.tradeName = fields.tradeName.trim();
-  if (fields.address.trim()) payload.address = fields.address.trim();
+  if (fields.street.trim()) payload.street = fields.street.trim();
+  if (fields.addressNumber.trim()) payload.addressNumber = fields.addressNumber.trim();
+  if (fields.complement.trim()) payload.complement = fields.complement.trim();
+  if (fields.neighborhood.trim()) payload.neighborhood = fields.neighborhood.trim();
+  if (fields.district.trim()) payload.district = fields.district.trim();
+  if (fields.locationReference.trim()) payload.locationReference = fields.locationReference.trim();
   if (fields.city.trim()) payload.city = fields.city.trim();
   if (fields.state) payload.state = fields.state;
   if (fields.zipCode.trim()) payload.zipCode = fields.zipCode.replace(/\D/g, '');
-  if (fields.taxRegime) payload.taxRegime = fields.taxRegime;
 
   return payload;
 }
@@ -155,24 +188,62 @@ function buildUpdatePayload(fields: ProducerSCFormFields): UpdateProducerPayload
   };
 
   payload.tradeName = fields.tradeName.trim() || undefined;
-  payload.address = fields.address.trim() || undefined;
+  payload.street = fields.street.trim() || undefined;
+  payload.addressNumber = fields.addressNumber.trim() || undefined;
+  payload.complement = fields.complement.trim() || undefined;
+  payload.neighborhood = fields.neighborhood.trim() || undefined;
+  payload.district = fields.district.trim() || undefined;
+  payload.locationReference = fields.locationReference.trim() || undefined;
   payload.city = fields.city.trim() || undefined;
   payload.state = fields.state || undefined;
   payload.zipCode = fields.zipCode.trim() ? fields.zipCode.replace(/\D/g, '') : undefined;
-  payload.taxRegime = fields.taxRegime || undefined;
+
+  return payload;
+}
+
+function buildIePayload(fields: ProducerSCFormFields): CreateIePayload | null {
+  const ieDigits = fields.ieNumber.replace(/\D/g, '');
+  if (!ieDigits) return null;
+
+  const payload: CreateIePayload = {
+    number: fields.ieNumber.trim(),
+    state: fields.state || 'MG',
+  };
+
+  if (fields.cnaeActivity.trim()) payload.cnaeActivity = fields.cnaeActivity.trim();
+  if (fields.assessmentRegime.trim()) payload.assessmentRegime = fields.assessmentRegime.trim();
+  if (fields.category) payload.category = fields.category;
+  if (fields.inscriptionDate) payload.inscriptionDate = fields.inscriptionDate;
+  if (fields.contractEndDate) payload.contractEndDate = fields.contractEndDate;
+  if (fields.situation) payload.situation = fields.situation;
+  payload.milkProgramOptIn = fields.milkProgramOptIn;
 
   return payload;
 }
 
 function detailToFormFields(detail: ProducerDetail): ProducerSCFormFields {
+  const firstIe = detail.stateRegistrations?.[0];
+
   return {
+    ieNumber: firstIe?.number ?? '',
     name: detail.name || '',
     tradeName: detail.tradeName || '',
-    address: detail.address || '',
-    city: detail.city || '',
-    state: detail.state || '',
+    cnaeActivity: firstIe?.cnaeActivity ?? '',
+    assessmentRegime: firstIe?.assessmentRegime ?? '',
+    category: firstIe?.category ?? '',
+    inscriptionDate: isoToDateInput(firstIe?.inscriptionDate),
+    contractEndDate: isoToDateInput(firstIe?.contractEndDate),
+    situation: firstIe?.situation ?? '',
     zipCode: detail.zipCode || '',
-    taxRegime: detail.taxRegime || '',
+    state: detail.state || '',
+    city: detail.city || '',
+    district: detail.district || '',
+    neighborhood: detail.neighborhood || '',
+    street: detail.street || '',
+    addressNumber: detail.addressNumber || '',
+    complement: detail.complement || '',
+    locationReference: detail.locationReference || '',
+    milkProgramOptIn: firstIe?.milkProgramOptIn ?? false,
   };
 }
 
@@ -208,6 +279,7 @@ export function useCreateProducerSC({ onSuccess, producerId }: UseCreateProducer
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const [existingIeId, setExistingIeId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!producerId) return;
@@ -220,6 +292,9 @@ export function useCreateProducerSC({ onSuccess, producerId }: UseCreateProducer
         if (!cancelled) {
           setFormData(detailToFormFields(detail));
           setParticipants(detailToParticipants(detail));
+          if (detail.stateRegistrations?.[0]) {
+            setExistingIeId(detail.stateRegistrations[0].id);
+          }
         }
       })
       .catch(() => {
@@ -239,12 +314,12 @@ export function useCreateProducerSC({ onSuccess, producerId }: UseCreateProducer
   }, [producerId]);
 
   const setField = useCallback(
-    (key: SCFieldKey, value: string) => {
+    (key: SCFieldKey, value: string | boolean) => {
       setFormData((prev) => ({ ...prev, [key]: value }));
       setSubmitError(null);
       if (touched[key]) {
         setErrors((prev) => {
-          const updated = { ...formData, [key]: value };
+          const updated = { ...formData, [key]: value } as ProducerSCFormFields;
           const newErrors = validateSCForm(updated, participants);
           return { ...prev, fields: { ...prev.fields, [key]: newErrors.fields[key] } };
         });
@@ -268,6 +343,10 @@ export function useCreateProducerSC({ onSuccess, producerId }: UseCreateProducer
 
   const removeParticipant = useCallback((index: number) => {
     setParticipants((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const replaceAllParticipants = useCallback((rows: ParticipantRow[]) => {
+    setParticipants(rows);
   }, []);
 
   const setParticipantField = useCallback(
@@ -311,6 +390,8 @@ export function useCreateProducerSC({ onSuccess, producerId }: UseCreateProducer
     setSubmitError(null);
 
     try {
+      let targetProducerId = producerId;
+
       if (isEditMode) {
         const payload = buildUpdatePayload(formData);
         await api.patch(`/org/producers/${producerId}`, payload);
@@ -332,6 +413,7 @@ export function useCreateProducerSC({ onSuccess, producerId }: UseCreateProducer
       } else {
         const payload = buildCreatePayload(formData);
         const created = await api.post<{ id: string }>('/org/producers', payload);
+        targetProducerId = created.id;
 
         // Create participants
         for (const p of participants) {
@@ -341,9 +423,20 @@ export function useCreateProducerSC({ onSuccess, producerId }: UseCreateProducer
             participationPct: parseFloat(p.participationPct),
             isMainResponsible: p.isMainResponsible,
           };
-          await api.post(`/org/producers/${created.id}/participants`, participantPayload);
+          await api.post(`/org/producers/${targetProducerId}/participants`, participantPayload);
         }
       }
+
+      // Create or update IE if number provided
+      const iePayload = buildIePayload(formData);
+      if (iePayload && targetProducerId) {
+        if (existingIeId) {
+          await api.patch(`/org/producers/${targetProducerId}/ies/${existingIeId}`, iePayload);
+        } else {
+          await api.post(`/org/producers/${targetProducerId}/ies`, iePayload);
+        }
+      }
+
       onSuccess();
     } catch (err) {
       const message =
@@ -356,7 +449,7 @@ export function useCreateProducerSC({ onSuccess, producerId }: UseCreateProducer
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, participants, onSuccess, isEditMode, producerId]);
+  }, [formData, participants, onSuccess, isEditMode, producerId, existingIeId]);
 
   const reset = useCallback(() => {
     setFormData(INITIAL_FIELDS);
@@ -365,6 +458,7 @@ export function useCreateProducerSC({ onSuccess, producerId }: UseCreateProducer
     setTouched({});
     setIsSubmitting(false);
     setSubmitError(null);
+    setExistingIeId(null);
   }, []);
 
   const totalPct = participants.reduce((sum, p) => {
@@ -386,6 +480,7 @@ export function useCreateProducerSC({ onSuccess, producerId }: UseCreateProducer
     touchField,
     addParticipant,
     removeParticipant,
+    replaceAllParticipants,
     setParticipantField,
     submit,
     reset,

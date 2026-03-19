@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useProducerDetail } from '@/hooks/useProducerDetail';
 import PermissionGate from '@/components/auth/PermissionGate';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import FarmLinkFormModal from '@/components/producer-form/FarmLinkFormModal';
 import IeFormModal from '@/components/producer-form/IeFormModal';
 import { api } from '@/services/api';
@@ -60,6 +61,7 @@ interface ProducerDetailModalProps {
   onClose: () => void;
   onStatusChange: () => void;
   onEdit?: (producerId: string, type: ProducerType) => void;
+  onDelete?: () => void;
 }
 
 function formatDocument(doc: string | null, type: ProducerType): string {
@@ -141,7 +143,12 @@ function GeneralSection({ producer }: { producer: ProducerDetail }) {
             <DlItem label="CPF do cônjuge" value={formatCpf(producer.spouseCpf)} mono />
           </>
         )}
-        <DlItem label="Endereço" value={producer.address || '—'} full />
+        <DlItem label="Logradouro" value={producer.street || '—'} full />
+        <DlItem label="Número" value={producer.addressNumber || '—'} />
+        <DlItem label="Complemento" value={producer.complement || '—'} />
+        <DlItem label="Bairro" value={producer.neighborhood || '—'} />
+        <DlItem label="Distrito/Povoado" value={producer.district || '—'} />
+        <DlItem label="Referência" value={producer.locationReference || '—'} full />
         <DlItem label="Município" value={producer.city || '—'} />
         <DlItem label="UF" value={producer.state || '—'} />
         <DlItem label="CEP" value={formatCep(producer.zipCode)} mono />
@@ -457,9 +464,12 @@ function ProducerDetailModal({
   onClose,
   onStatusChange,
   onEdit,
+  onDelete,
 }: ProducerDetailModalProps) {
   const { producer, isLoading, error, refetch } = useProducerDetail(producerId);
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [farmLinkModal, setFarmLinkModal] = useState<{
     isOpen: boolean;
     link?: ProducerFarmLink;
@@ -500,6 +510,20 @@ function ProducerDetailModal({
       setIsTogglingStatus(false);
     }
   }, [producer, refetch, onStatusChange]);
+
+  const handleDeleteProducer = useCallback(async () => {
+    if (!producer) return;
+    setIsDeleting(true);
+    try {
+      await api.delete(`/org/producers/${producer.id}`);
+      setShowDeleteConfirm(false);
+      onClose();
+      onDelete?.();
+    } catch {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  }, [producer, onClose, onDelete]);
 
   const handleFarmLinkSuccess = useCallback(() => {
     setFarmLinkModal({ isOpen: false });
@@ -637,28 +661,40 @@ function ProducerDetailModal({
 
         <footer className="producer-detail__footer">
           <PermissionGate permission="producers:update">
+            {producer && onEdit && (
+              <button
+                type="button"
+                className="producer-detail__btn producer-detail__btn--edit"
+                onClick={() => onEdit(producer.id, producer.type)}
+              >
+                <Pencil size={16} aria-hidden="true" />
+                Editar
+              </button>
+            )}
+          </PermissionGate>
+          <PermissionGate permission="producers:delete">
             {producer && (
-              <>
-                {onEdit && (producer.type === 'PF' || producer.type === 'PJ') && (
-                  <button
-                    type="button"
-                    className="producer-detail__btn producer-detail__btn--edit"
-                    onClick={() => onEdit(producer.id, producer.type)}
-                  >
-                    <Pencil size={16} aria-hidden="true" />
-                    Editar
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className={`producer-detail__btn producer-detail__btn--${producer.status === 'ACTIVE' ? 'deactivate' : 'activate'}`}
-                  onClick={() => void handleToggleStatus()}
-                  disabled={isTogglingStatus}
-                >
-                  {isTogglingStatus ? <Loader2 size={16} aria-hidden="true" /> : null}
-                  {producer.status === 'ACTIVE' ? 'Desativar' : 'Ativar'}
-                </button>
-              </>
+              <button
+                type="button"
+                className="producer-detail__btn producer-detail__btn--deactivate"
+                onClick={() => setShowDeleteConfirm(true)}
+              >
+                <Trash2 size={16} aria-hidden="true" />
+                Excluir
+              </button>
+            )}
+          </PermissionGate>
+          <PermissionGate permission="producers:update">
+            {producer && (
+              <button
+                type="button"
+                className={`producer-detail__btn producer-detail__btn--${producer.status === 'ACTIVE' ? 'deactivate' : 'activate'}`}
+                onClick={() => void handleToggleStatus()}
+                disabled={isTogglingStatus}
+              >
+                {isTogglingStatus ? <Loader2 size={16} aria-hidden="true" /> : null}
+                {producer.status === 'ACTIVE' ? 'Desativar' : 'Ativar'}
+              </button>
             )}
           </PermissionGate>
           <button
@@ -750,6 +786,17 @@ function ProducerDetailModal({
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        title="Excluir produtor"
+        message={`Deseja excluir o produtor "${producer?.name ?? ''}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir produtor"
+        variant="danger"
+        isLoading={isDeleting}
+        onConfirm={() => void handleDeleteProducer()}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
 
       {confirmDeleteLink && (
         <div
