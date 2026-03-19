@@ -326,13 +326,34 @@ async function getPurchasesByCategory(
     select: {
       estimatedUnitPrice: true,
       quantity: true,
-      product: { select: { category: true } },
+      productId: true,
     },
   });
 
+  // Gather unique productIds and fetch their categories
+  const productIds = [
+    ...new Set(items.map((i: { productId: string | null }) => i.productId).filter(Boolean)),
+  ] as string[];
+  const products =
+    productIds.length > 0
+      ? await tx.product.findMany({
+          where: { id: { in: productIds } },
+          select: { id: true, category: true, type: true },
+        })
+      : [];
+  const productCategoryMap = new Map<string, string>();
+  for (const p of products) {
+    productCategoryMap.set(
+      p.id,
+      (p.category as string | null) ?? (p.type as string | null) ?? 'Outros',
+    );
+  }
+
   const categoryMap = new Map<string, number>();
   for (const item of items) {
-    const category = (item.product?.category as string | null) ?? 'Outros';
+    const category = item.productId
+      ? (productCategoryMap.get(item.productId) ?? 'Outros')
+      : 'Outros';
     const value = Number(item.estimatedUnitPrice ?? 0) * Number(item.quantity);
     categoryMap.set(category, (categoryMap.get(category) ?? 0) + value);
   }
