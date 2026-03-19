@@ -617,6 +617,27 @@
   }
 }
 
+/* ─── Clickable row ───────────────────────────────────────────────────── */
+
+.assets-page__tr--clickable {
+  cursor: pointer;
+}
+
+/* ─── Name cell with expiry indicator ────────────────────────────────── */
+
+.assets-page__name-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ─── Expiry icon ─────────────────────────────────────────────────────── */
+
+.assets-page__expiry-icon {
+  color: var(--color-warning-500);
+  flex-shrink: 0;
+}
+
 /* ─── Screen-reader only ──────────────────────────────────────────────── */
 
 .sr-only {

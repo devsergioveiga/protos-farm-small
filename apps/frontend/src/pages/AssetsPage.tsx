@@ -17,18 +17,22 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
 } from 'lucide-react';
 import { useAssets } from '@/hooks/useAssets';
+import { useAssetDocuments } from '@/hooks/useAssetDocuments';
 import { useFarms } from '@/hooks/useFarms';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import AssetDrawer from '@/components/assets/AssetDrawer';
 import type { Asset, AssetType, AssetStatus, ListAssetsQuery } from '@/types/asset';
 import { ASSET_TYPE_LABELS, ASSET_STATUS_LABELS } from '@/types/asset';
 import './AssetsPage.css';
 
-// ─── Lazy-load AssetModal ─────────────────────────────────────────────
+// ─── Lazy-load AssetModal / AssetImportModal ──────────────────────────
 // Using dynamic import to avoid circular dependency at module load time.
 // The modal will be loaded when the user opens it.
 import AssetModal from '@/components/assets/AssetModal';
+import AssetImportModal from '@/components/assets/AssetImportModal';
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -149,16 +153,29 @@ function SummaryCards({ totalAssets, totalValue, inMaintenance, recentCount }: S
 
 interface AssetCardProps {
   asset: Asset;
+  hasExpiringDocs: boolean;
+  onView: (asset: Asset) => void;
   onEdit: (asset: Asset) => void;
   onDelete: (asset: Asset) => void;
 }
 
-function AssetCard({ asset, onEdit, onDelete }: AssetCardProps) {
+function AssetCard({ asset, hasExpiringDocs, onView, onEdit, onDelete }: AssetCardProps) {
   return (
-    <article className="assets-page__card">
+    <article
+      className="assets-page__card"
+      onClick={() => onView(asset)}
+      style={{ cursor: 'pointer' }}
+    >
       <div className="assets-page__card-header">
         <span className="assets-page__asset-tag">{asset.assetTag}</span>
         <StatusBadge status={asset.status} />
+        {hasExpiringDocs && (
+          <AlertTriangle
+            size={16}
+            aria-label="Documento vencendo"
+            className="assets-page__expiry-icon"
+          />
+        )}
       </div>
       <h3 className="assets-page__card-name">{asset.name}</h3>
       <div className="assets-page__card-meta">
@@ -170,7 +187,10 @@ function AssetCard({ asset, onEdit, onDelete }: AssetCardProps) {
         <button
           type="button"
           className="assets-page__action-btn"
-          onClick={() => onEdit(asset)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(asset);
+          }}
           aria-label={`Editar ativo ${asset.name}`}
         >
           <Pencil size={20} aria-hidden="true" />
@@ -178,7 +198,10 @@ function AssetCard({ asset, onEdit, onDelete }: AssetCardProps) {
         <button
           type="button"
           className="assets-page__action-btn assets-page__action-btn--danger"
-          onClick={() => onDelete(asset)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(asset);
+          }}
           aria-label={`Excluir ativo ${asset.name}`}
         >
           <Trash2 size={20} aria-hidden="true" />
@@ -205,6 +228,7 @@ export default function AssetsPage() {
     exportPdf,
   } = useAssets();
   const { farms } = useFarms();
+  const { expiringDocs, fetchExpiring } = useAssetDocuments(null);
 
   // Filters
   const [farmFilter, setFarmFilter] = useState('');
@@ -222,6 +246,16 @@ export default function AssetsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [assetToDelete, setAssetToDelete] = useState<Asset | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Import modal state
+  const [importModalOpen, setImportModalOpen] = useState(false);
+
+  // Drawer state
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerTab, setDrawerTab] = useState<
+    'geral' | 'documentos' | 'combustivel' | 'leituras' | 'manutencao' | 'timeline'
+  >('geral');
 
   // Toast
   const [toast, setToast] = useState<string | null>(null);
@@ -249,9 +283,11 @@ export default function AssetsPage() {
   const loadData = useCallback(() => {
     void fetchAssets(currentQuery);
     void fetchSummary();
+    void fetchExpiring();
   }, [
     fetchAssets,
     fetchSummary,
+    fetchExpiring,
     currentPage,
     farmFilter,
     typeFilter,
@@ -279,8 +315,21 @@ export default function AssetsPage() {
   }
 
   function handleEditAsset(asset: Asset) {
+    setDrawerOpen(false);
+    setSelectedAssetId(null);
     setSelectedAsset(asset);
     setShowModal(true);
+  }
+
+  function handleViewAsset(asset: Asset) {
+    setSelectedAssetId(asset.id);
+    setDrawerTab('geral');
+    setDrawerOpen(true);
+  }
+
+  function handleDrawerClose() {
+    setDrawerOpen(false);
+    setSelectedAssetId(null);
   }
 
   function handleDeleteRequest(asset: Asset) {
@@ -332,6 +381,14 @@ export default function AssetsPage() {
   );
   const isEmpty = !loading && !error && assets.length === 0;
 
+  // Build set of asset IDs with expiring/expired documents for badge display
+  const expiringAssetIds = new Set<string>();
+  if (expiringDocs) {
+    [...expiringDocs.expired, ...expiringDocs.urgent, ...expiringDocs.warning].forEach((doc) => {
+      expiringAssetIds.add(doc.assetId);
+    });
+  }
+
   return (
     <main className="assets-page" id="main-content">
       {/* Breadcrumb */}
@@ -355,9 +412,7 @@ export default function AssetsPage() {
           <button
             type="button"
             className="assets-page__btn assets-page__btn--secondary"
-            aria-disabled="true"
-            title="Disponivel no plano de importacao"
-            onClick={(e) => e.preventDefault()}
+            onClick={() => setImportModalOpen(true)}
           >
             <Upload size={20} aria-hidden="true" />
             Importar ativos
@@ -587,6 +642,8 @@ export default function AssetsPage() {
                 <AssetCard
                   key={asset.id}
                   asset={asset}
+                  hasExpiringDocs={expiringAssetIds.has(asset.id)}
+                  onView={handleViewAsset}
                   onEdit={handleEditAsset}
                   onDelete={handleDeleteRequest}
                 />
@@ -624,11 +681,27 @@ export default function AssetsPage() {
                 </thead>
                 <tbody>
                   {assets.map((asset) => (
-                    <tr key={asset.id} className="assets-page__tr">
+                    <tr
+                      key={asset.id}
+                      className="assets-page__tr assets-page__tr--clickable"
+                      onClick={() => handleViewAsset(asset)}
+                      aria-label={`Ver ficha do ativo ${asset.name}`}
+                    >
                       <td className="assets-page__td">
                         <span className="assets-page__tag">{asset.assetTag}</span>
                       </td>
-                      <td className="assets-page__td">{asset.name}</td>
+                      <td className="assets-page__td">
+                        <span className="assets-page__name-cell">
+                          {asset.name}
+                          {expiringAssetIds.has(asset.id) && (
+                            <AlertTriangle
+                              size={14}
+                              aria-label="Documento vencendo"
+                              className="assets-page__expiry-icon"
+                            />
+                          )}
+                        </span>
+                      </td>
                       <td className="assets-page__td">{ASSET_TYPE_LABELS[asset.assetType]}</td>
                       <td className="assets-page__td">{asset.farm?.name ?? '—'}</td>
                       <td className="assets-page__td">
@@ -642,7 +715,10 @@ export default function AssetsPage() {
                           <button
                             type="button"
                             className="assets-page__action-btn"
-                            onClick={() => handleEditAsset(asset)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditAsset(asset);
+                            }}
                             aria-label="Editar ativo"
                           >
                             <Pencil size={20} aria-hidden="true" />
@@ -650,7 +726,10 @@ export default function AssetsPage() {
                           <button
                             type="button"
                             className="assets-page__action-btn assets-page__action-btn--danger"
-                            onClick={() => handleDeleteRequest(asset)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteRequest(asset);
+                            }}
                             aria-label="Excluir ativo"
                           >
                             <Trash2 size={20} aria-hidden="true" />
@@ -705,6 +784,28 @@ export default function AssetsPage() {
           asset={selectedAsset ?? undefined}
         />
       )}
+
+      {/* Import Modal */}
+      <AssetImportModal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onSuccess={() => {
+          setImportModalOpen(false);
+          void fetchAssets(currentQuery);
+          void fetchSummary();
+          setToast('Importacao concluida. Lista atualizada.');
+        }}
+      />
+
+      {/* Asset Drawer */}
+      <AssetDrawer
+        assetId={selectedAssetId}
+        isOpen={drawerOpen}
+        onClose={handleDrawerClose}
+        onEdit={handleEditAsset}
+        activeTab={drawerTab}
+        onTabChange={setDrawerTab}
+      />
 
       {/* Delete confirmation */}
       <ConfirmModal
