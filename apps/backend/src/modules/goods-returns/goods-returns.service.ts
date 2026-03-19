@@ -338,7 +338,10 @@ export async function transitionGoodsReturn(
       notes: input.notes !== undefined ? input.notes : gr.notes,
     };
 
-    if (input.status === 'APROVADA') {
+    if (input.status === 'CONCLUIDA') {
+      updateData.resolutionStatus = 'RESOLVED';
+
+      // === BEGIN: moved from APROVADA ===
       // Calculate total return value
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const totalReturnValue = gr.items.reduce((sum: number, item: any) => {
@@ -497,10 +500,7 @@ export async function transitionGoodsReturn(
         }
         // TROCA: no financial action needed
       }
-    }
-
-    if (input.status === 'CONCLUIDA') {
-      updateData.resolutionStatus = 'RESOLVED';
+      // === END: moved from APROVADA ===
 
       // Notify FINANCIAL users that return is resolved (fire-and-forget)
       const financialUsers = await tx.user.findMany({

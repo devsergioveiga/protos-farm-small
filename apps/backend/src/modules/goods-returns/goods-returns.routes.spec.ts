@@ -289,12 +289,12 @@ describe('GoodsReturns endpoints', () => {
       expect(response.body.status).toBe('EM_ANALISE');
     });
 
-    it('EM_ANALISE -> APROVADA: valid, verify stockOutputId is set on response (RETURN stock output created)', async () => {
+    it('EM_ANALISE -> APROVADA: valid, status-only change (no side-effects)', async () => {
       const approved = {
         ...VALID_RETURN,
         status: 'APROVADA',
         statusLabel: 'Aprovada',
-        stockOutputId: 'so-1',
+        stockOutputId: null,
       };
       mockedService.transitionGoodsReturn.mockResolvedValue(approved as never);
 
@@ -305,10 +305,10 @@ describe('GoodsReturns endpoints', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.status).toBe('APROVADA');
-      expect(response.body.stockOutputId).toBe('so-1');
+      expect(response.body.stockOutputId).toBeNull();
     });
 
-    it('APROVADA -> CONCLUIDA: valid, verify resolutionStatus = RESOLVED', async () => {
+    it('APROVADA -> CONCLUIDA: valid, creates StockOutput + decrements StockBalance + resolves', async () => {
       const concluded = {
         ...VALID_RETURN,
         status: 'CONCLUIDA',
@@ -325,6 +325,7 @@ describe('GoodsReturns endpoints', () => {
         .send({ status: 'CONCLUIDA' });
 
       expect(response.status).toBe(200);
+      expect(response.body.stockOutputId).toBe('so-1');
       expect(response.body.resolutionStatus).toBe('RESOLVED');
     });
 
@@ -356,24 +357,25 @@ describe('GoodsReturns endpoints', () => {
     });
   });
 
-  // ─── APROVADA + CREDITO: verify negative Payable with isCredit=true ─
+  // ─── CONCLUIDA + CREDITO: verify negative Payable with isCredit=true ─
 
-  describe('APROVADA + CREDITO financial treatment', () => {
-    it('APROVADA + CREDITO: verify creditPayableId is returned (negative Payable with isCredit=true)', async () => {
+  describe('CONCLUIDA + CREDITO financial treatment', () => {
+    it('CONCLUIDA + CREDITO: verify creditPayableId is returned (negative Payable with isCredit=true)', async () => {
       const creditReturn = {
         ...VALID_RETURN,
         expectedAction: 'CREDITO',
         actionLabel: 'Credito',
-        status: 'APROVADA',
+        status: 'CONCLUIDA',
         stockOutputId: 'so-1',
         creditPayableId: 'payable-credit-1',
+        resolutionStatus: 'RESOLVED',
       };
       mockedService.transitionGoodsReturn.mockResolvedValue(creditReturn as never);
 
       const response = await request(app)
         .patch('/api/org/goods-returns/dev-1/transition')
         .set('Authorization', 'Bearer valid-token')
-        .send({ status: 'APROVADA' });
+        .send({ status: 'CONCLUIDA' });
 
       expect(response.status).toBe(200);
       expect(response.body.creditPayableId).toBe('payable-credit-1');
@@ -381,24 +383,25 @@ describe('GoodsReturns endpoints', () => {
     });
   });
 
-  // ─── APROVADA + ESTORNO: verify original Payable totalAmount reduced ─
+  // ─── CONCLUIDA + ESTORNO: verify original Payable totalAmount reduced ─
 
-  describe('APROVADA + ESTORNO financial treatment', () => {
-    it('APROVADA + ESTORNO: transition succeeds, ESTORNO action applied', async () => {
+  describe('CONCLUIDA + ESTORNO financial treatment', () => {
+    it('CONCLUIDA + ESTORNO: transition succeeds, ESTORNO action applied', async () => {
       const estornoReturn = {
         ...VALID_RETURN,
         expectedAction: 'ESTORNO',
         actionLabel: 'Estorno',
-        status: 'APROVADA',
+        status: 'CONCLUIDA',
         stockOutputId: 'so-2',
         creditPayableId: null,
+        resolutionStatus: 'RESOLVED',
       };
       mockedService.transitionGoodsReturn.mockResolvedValue(estornoReturn as never);
 
       const response = await request(app)
         .patch('/api/org/goods-returns/dev-1/transition')
         .set('Authorization', 'Bearer valid-token')
-        .send({ status: 'APROVADA' });
+        .send({ status: 'CONCLUIDA' });
 
       expect(response.status).toBe(200);
       expect(response.body.expectedAction).toBe('ESTORNO');
@@ -406,24 +409,25 @@ describe('GoodsReturns endpoints', () => {
     });
   });
 
-  // ─── APROVADA + TROCA: no financial side effect ──────────────────────
+  // ─── CONCLUIDA + TROCA: no financial side effect ─────────────────────
 
-  describe('APROVADA + TROCA financial treatment', () => {
-    it('APROVADA + TROCA: no creditPayableId created, original payable unchanged', async () => {
+  describe('CONCLUIDA + TROCA financial treatment', () => {
+    it('CONCLUIDA + TROCA: no creditPayableId created, original payable unchanged', async () => {
       const trocaReturn = {
         ...VALID_RETURN,
         expectedAction: 'TROCA',
         actionLabel: 'Troca',
-        status: 'APROVADA',
+        status: 'CONCLUIDA',
         stockOutputId: 'so-3',
         creditPayableId: null,
+        resolutionStatus: 'RESOLVED',
       };
       mockedService.transitionGoodsReturn.mockResolvedValue(trocaReturn as never);
 
       const response = await request(app)
         .patch('/api/org/goods-returns/dev-1/transition')
         .set('Authorization', 'Bearer valid-token')
-        .send({ status: 'APROVADA' });
+        .send({ status: 'CONCLUIDA' });
 
       expect(response.status).toBe(200);
       expect(response.body.expectedAction).toBe('TROCA');
