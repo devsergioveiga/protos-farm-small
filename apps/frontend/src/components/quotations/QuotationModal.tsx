@@ -12,12 +12,36 @@ interface Supplier {
   tradeName: string | null;
   status: string;
   rating: number | null;
+  averageRating: number | null;
+  ratingCount: number | null;
 }
 
 interface QuotationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+}
+
+function getRatingBadge(
+  averageRating: number | null | undefined,
+  ratingCount: number | null | undefined,
+) {
+  if (averageRating == null || averageRating >= 3) return null;
+  const isCritical = averageRating < 2;
+  const tooltipText = `Nota media: ${averageRating.toFixed(1)} (${ratingCount ?? 0} avaliacoes)`;
+  return (
+    <span
+      className={`qm-rating-badge qm-rating-badge--${isCritical ? 'critical' : 'low'}`}
+      title={tooltipText}
+    >
+      {isCritical ? (
+        <AlertCircle size={12} aria-hidden="true" />
+      ) : (
+        <AlertTriangle size={12} aria-hidden="true" />
+      )}
+      {isCritical ? 'Avaliacao critica' : 'Avaliacao baixa'}
+    </span>
+  );
 }
 
 function QuotationForm({ onClose, onSuccess }: Omit<QuotationModalProps, 'isOpen'>) {
@@ -287,6 +311,10 @@ function QuotationForm({ onClose, onSuccess }: Omit<QuotationModalProps, 'isOpen
                               </span>
                             )}
                           </span>
+                          {getRatingBadge(
+                            supplier.averageRating ?? supplier.rating,
+                            supplier.ratingCount,
+                          )}
                           {supplier.rating != null && (
                             <span
                               className="qm-supplier-item__rating"
@@ -327,6 +355,10 @@ function QuotationForm({ onClose, onSuccess }: Omit<QuotationModalProps, 'isOpen
                                 </span>
                               )}
                             </span>
+                            {getRatingBadge(
+                              supplier.averageRating ?? supplier.rating,
+                              supplier.ratingCount,
+                            )}
                             {supplier.rating != null && (
                               <span
                                 className="qm-supplier-item__rating"

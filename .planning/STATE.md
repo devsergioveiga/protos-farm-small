@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 13-01-PLAN.md
-last_updated: '2026-03-19T10:00:37.577Z'
+stopped_at: Completed 15-01-PLAN.md
+last_updated: '2026-03-19T14:26:00.232Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
-  total_phases: 8
-  completed_phases: 7
-  total_plans: 34
-  completed_plans: 34
+  total_phases: 9
+  completed_phases: 9
+  total_plans: 37
+  completed_plans: 37
   percent: 0
 ---
 
@@ -65,6 +65,9 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 13-kanban-dnd-notification-wiring PP00 | 15min | 2 tasks | 2 files |
 | Phase 13-kanban-dnd-notification-wiring P02 | 18min | 2 tasks | 4 files |
 | Phase 13-kanban-dnd-notification-wiring P01 | 3 | 2 tasks | 2 files |
+| Phase 14-stock-reversal-supplier-rating P01 | 3 | 2 tasks | 6 files |
+| Phase 14-stock-reversal-supplier-rating P02 | 8 | 2 tasks | 6 files |
+| Phase 15-frontend-api-path-fixes P01 | 7min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -111,6 +114,12 @@ Key decisions for v1.1:
 - [Phase 13-kanban-dnd-notification-wiring]: RETURN_RESOLVED placed in CONCLUIDA branch targeting FINANCIAL users (not APROVADA/MANAGER) — correct business event for financial processing alert
 - [Phase 13-kanban-dnd-notification-wiring]: EM_COTACAO->OC_EMITIDA returns null from moveCard and navigates to /quotations?purchaseRequestId= in KanbanBoard (purchaseRequestId not quotationId — card.id in that column is the RC)
 - [Phase 13-kanban-dnd-notification-wiring]: OC_EMITIDA->AGUARDANDO_ENTREGA uses api.patch /transition with { status: 'EM_TRANSITO' } matching TransitionPOInput interface (not action: CONFIRM_SHIPMENT)
+- [Phase 14-stock-reversal-supplier-rating]: Stock reversal tied to CONCLUIDA (physical confirmation), not APROVADA — prevents phantom stock decrements before goods are returned
+- [Phase 14-stock-reversal-supplier-rating]: PerformanceReport returns empty breakdown {0,0,0,0} instead of null when no ratings — cleaner for frontend consumption
+- [Phase 14-stock-reversal-supplier-rating]: getRatingBadge fallback: averageRating ?? supplier.rating for backward compat; Recharts Tooltip formatter typed as (value: number | undefined); SupplierCard onPerformance prop symmetric with desktop
+- [Phase 15-frontend-api-path-fixes]: RC_PENDENTE->RC_APROVADA uses POST /org/purchase-requests/:id/transition with {action:'APPROVE'} — matches backend TransitionPRInput interface
+- [Phase 15-frontend-api-path-fixes]: Notification preferences orgId injected via useAuth().user.organizationId — consistent with authenticated context pattern
+- [Phase 15-frontend-api-path-fixes]: DAILY_DIGEST added to NotificationType union with label 'Resumo diario' — matches digest cron notification
 
 ### Pending Todos
 
@@ -124,6 +133,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T09:47:51.351Z
-Stopped at: Completed 13-01-PLAN.md
+Last session: 2026-03-19T14:22:54.361Z
+Stopped at: Completed 15-01-PLAN.md
 Resume file: None

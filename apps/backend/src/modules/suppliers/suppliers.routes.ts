@@ -19,6 +19,7 @@ import {
   createRating,
   listRatings,
   getTop3ByCategory,
+  getPerformanceReport,
 } from './suppliers.service';
 
 export const suppliersRouter = Router();
@@ -188,6 +189,24 @@ suppliersRouter.get(
       }
       const ctx = buildRlsContext(req);
       const result = await getTop3ByCategory(ctx, category);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── Performance route (BEFORE /:id CRUD) ─────────────────────────────
+// GET /org/suppliers/:id/performance?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
+suppliersRouter.get(
+  `${base}/:id/performance`,
+  authenticate,
+  checkPermission('purchases:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const { startDate, endDate } = req.query as { startDate?: string; endDate?: string };
+      const result = await getPerformanceReport(ctx, req.params.id as string, startDate, endDate);
       res.json(result);
     } catch (err) {
       handleError(err, res);

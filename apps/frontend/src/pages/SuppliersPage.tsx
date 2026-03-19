@@ -18,6 +18,7 @@ import {
   Trophy,
   Medal,
   Loader2,
+  TrendingUp,
 } from 'lucide-react';
 import { useSuppliers } from '@/hooks/useSuppliers';
 import { useSupplierForm } from '@/hooks/useSupplierForm';
@@ -25,6 +26,7 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 import SupplierModal from '@/components/suppliers/SupplierModal';
 import SupplierImportModal from '@/components/suppliers/SupplierImportModal';
 import SupplierRatingModal from '@/components/suppliers/SupplierRatingModal';
+import SupplierPerformanceModal from '@/components/suppliers/SupplierPerformanceModal';
 import type { Supplier, SupplierCategory } from '@/types/supplier';
 import { SUPPLIER_CATEGORY_LABELS, SUPPLIER_STATUS_LABELS } from '@/types/supplier';
 import { api } from '@/services/api';
@@ -162,11 +164,13 @@ function SupplierCard({
   onEdit,
   onDelete,
   onRate,
+  onPerformance,
 }: {
   supplier: Supplier;
   onEdit: (s: Supplier) => void;
   onDelete: (s: Supplier) => void;
   onRate: (s: Supplier) => void;
+  onPerformance: (s: Supplier) => void;
 }) {
   const location = [supplier.city, supplier.state].filter(Boolean).join(' / ');
   return (
@@ -198,6 +202,14 @@ function SupplierCard({
           aria-label={`Editar ${supplier.name}`}
         >
           Editar
+        </button>
+        <button
+          type="button"
+          className="supplier-card__action-btn"
+          onClick={() => onPerformance(supplier)}
+          aria-label={`Performance de ${supplier.name}`}
+        >
+          Performance
         </button>
         <button
           type="button"
@@ -288,6 +300,7 @@ function SuppliersPage() {
   const [supplierToEdit, setSupplierToEdit] = useState<Supplier | null>(null);
   const [supplierToDelete, setSupplierToDelete] = useState<Supplier | null>(null);
   const [supplierToRate, setSupplierToRate] = useState<Supplier | null>(null);
+  const [supplierToPerformance, setSupplierToPerformance] = useState<Supplier | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Top 3 section
@@ -775,6 +788,14 @@ function SuppliersPage() {
                     <button
                       type="button"
                       className="suppliers-table__icon-btn"
+                      aria-label={`Performance de ${supplier.name}`}
+                      onClick={() => setSupplierToPerformance(supplier)}
+                    >
+                      <TrendingUp size={20} aria-hidden="true" />
+                    </button>
+                    <button
+                      type="button"
+                      className="suppliers-table__icon-btn"
                       aria-label={`Editar ${supplier.name}`}
                       onClick={() => {
                         setSupplierToEdit(supplier);
@@ -820,6 +841,7 @@ function SuppliersPage() {
               }}
               onDelete={(s) => setSupplierToDelete(s)}
               onRate={(s) => setSupplierToRate(s)}
+              onPerformance={(s) => setSupplierToPerformance(s)}
             />
           ))}
         </div>
@@ -922,6 +944,20 @@ function SuppliersPage() {
             showToast('Avaliacao registrada com sucesso');
             void refetch();
             refetchTop3();
+          }}
+        />
+      )}
+
+      {/* Performance Modal */}
+      {supplierToPerformance && (
+        <SupplierPerformanceModal
+          isOpen={!!supplierToPerformance}
+          supplierId={supplierToPerformance.id}
+          supplierName={supplierToPerformance.name}
+          onClose={() => setSupplierToPerformance(null)}
+          onRateClick={() => {
+            setSupplierToRate(supplierToPerformance);
+            setSupplierToPerformance(null);
           }}
         />
       )}
