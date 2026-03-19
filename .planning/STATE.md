@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Gestão de Compras
 status: planning
-stopped_at: Completed 13-02-PLAN.md
-last_updated: '2026-03-19T09:41:07.154Z'
+stopped_at: Completed 13-01-PLAN.md
+last_updated: '2026-03-19T09:47:51.353Z'
 last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
 progress:
   total_phases: 8
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 34
-  completed_plans: 33
+  completed_plans: 34
   percent: 0
 ---
 
@@ -64,6 +64,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 12-kanban-dashboard-e-notifica-es P05 | 7min | 2 tasks | 11 files |
 | Phase 13-kanban-dnd-notification-wiring PP00 | 15min | 2 tasks | 2 files |
 | Phase 13-kanban-dnd-notification-wiring P02 | 18min | 2 tasks | 4 files |
+| Phase 13-kanban-dnd-notification-wiring P01 | 3 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -108,6 +109,8 @@ Key decisions for v1.1:
 - [Phase 12-kanban-dashboard-e-notifica-es]: NotificationBell handleItemClick is now type-aware — routes to quotations/goods-receipts/purchase-budgets/goods-returns per notification type
 - [Phase 13-kanban-dnd-notification-wiring]: transitionPO signature updated from RlsContext to RlsContext & { userId: string } — routes already pass userId, function declaration was under-typed
 - [Phase 13-kanban-dnd-notification-wiring]: RETURN_RESOLVED placed in CONCLUIDA branch targeting FINANCIAL users (not APROVADA/MANAGER) — correct business event for financial processing alert
+- [Phase 13-kanban-dnd-notification-wiring]: EM_COTACAO->OC_EMITIDA returns null from moveCard and navigates to /quotations?purchaseRequestId= in KanbanBoard (purchaseRequestId not quotationId — card.id in that column is the RC)
+- [Phase 13-kanban-dnd-notification-wiring]: OC_EMITIDA->AGUARDANDO_ENTREGA uses api.patch /transition with { status: 'EM_TRANSITO' } matching TransitionPOInput interface (not action: CONFIRM_SHIPMENT)
 
 ### Pending Todos
 
@@ -121,6 +124,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T09:41:07.115Z
-Stopped at: Completed 13-02-PLAN.md
+Last session: 2026-03-19T09:47:51.351Z
+Stopped at: Completed 13-01-PLAN.md
 Resume file: None

@@ -31,7 +31,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [ ] **Phase 10: Recebimento de Mercadorias** — Hub de integração: entrada no estoque + geração automática de CP
 - [ ] **Phase 11: Devolução, Orçamento e Saving** — Reversão de estoque/financeiro e controle orçamentário
 - [x] **Phase 12: Kanban, Dashboard e Notificações** — Visibilidade operacional e execução do fluxo completo (completed 2026-03-18)
-- [ ] **Phase 13: Kanban DnD Fixes + Notification Wiring** — Fix broken DnD transitions and wire notification dispatches
+- [x] **Phase 13: Kanban DnD Fixes + Notification Wiring** — Fix broken DnD transitions and wire notification dispatches (completed 2026-03-19)
 - [ ] **Phase 14: Stock Reversal + Supplier Rating Completion** — Stock reversal on goods return + rating alert and performance report
 
 ## Phase Details
@@ -156,7 +156,7 @@ Plans:
 3. BUDGET_EXCEEDED notification fires when budget is exceeded during approval
 4. RETURN_REGISTERED and RETURN_RESOLVED notifications fire from goods-returns service with registered types
 5. PO_GOODS_RECEIVED notification fires when goods receipt is confirmed
-   **Plans:** 2/3 plans executed
+   **Plans:** 3/3 plans complete
 
 Plans:
 
@@ -194,5 +194,5 @@ Plans:
 | 10. Recebimento de Mercadorias                  | v1.1      | 0/TBD          | Not started | -          |
 | 11. Devolução, Orçamento e Saving               | v1.1      | 0/TBD          | Not started | -          |
 | 12. Kanban, Dashboard e Notificações            | 5/5       | Complete       | 2026-03-18  | -          |
-| 13. Kanban DnD Fixes + Notification Wiring      | 2/3       | In Progress    |             | -          |
+| 13. Kanban DnD Fixes + Notification Wiring      | 3/3       | Complete       | 2026-03-19  | -          |
 | 14. Stock Reversal + Supplier Rating Completion | v1.1      | 0/TBD          | Not started | -          |
