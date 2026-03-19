@@ -33,7 +33,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 12: Kanban, Dashboard e Notificações** — Visibilidade operacional e execução do fluxo completo (completed 2026-03-18)
 - [x] **Phase 13: Kanban DnD Fixes + Notification Wiring** — Fix broken DnD transitions and wire notification dispatches (completed 2026-03-19)
 - [x] **Phase 14: Stock Reversal + Supplier Rating Completion** — Stock reversal on goods return + rating alert and performance report (completed 2026-03-19)
-- [ ] **Phase 15: Frontend API Path Fixes** — Fix Kanban DnD orgId path mismatches, notification preferences route, and DAILY_DIGEST type
+- [x] **Phase 15: Frontend API Path Fixes** — Fix Kanban DnD orgId path mismatches, notification preferences route, and DAILY_DIGEST type (completed 2026-03-19)
 
 ## Phase Details
 
@@ -197,7 +197,7 @@ Plans:
 3. Kanban DnD OC_EMITIDA→AGUARDANDO_ENTREGA calls correct backend endpoint and succeeds
 4. Notification preferences GET/PUT calls include orgId segment and return 200
 5. DAILY_DIGEST notification type is recognized and labeled in the frontend bell
-   **Plans:** 1 plan
+   **Plans:** 1/1 plans complete
 
 Plans:
 
@@ -221,4 +221,4 @@ Plans:
 | 12. Kanban, Dashboard e Notificações            | 5/5       | Complete       | 2026-03-18  | -          |
 | 13. Kanban DnD Fixes + Notification Wiring      | 3/3       | Complete       | 2026-03-19  | -          |
 | 14. Stock Reversal + Supplier Rating Completion | 2/2       | Complete       | 2026-03-19  | -          |
-| 15. Frontend API Path Fixes                     | v1.1      | 0/1            | Not started | -          |
+| 15. Frontend API Path Fixes                     | 1/1       | Complete       | 2026-03-19  | -          |
