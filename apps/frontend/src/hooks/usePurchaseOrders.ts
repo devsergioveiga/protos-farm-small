@@ -147,6 +147,13 @@ export async function deletePO(id: string): Promise<void> {
   return api.delete<void>(`/org/purchase-orders/${id}`);
 }
 
+export async function sendPOEmail(
+  id: string,
+  input: { to: string; subject: string; body: string },
+): Promise<{ success: boolean; message: string }> {
+  return api.post<{ success: boolean; message: string }>(`/org/purchase-orders/${id}/send-email`, input);
+}
+
 export async function downloadPOPdf(id: string, sequentialNumber: string): Promise<void> {
   const blob = await api.getBlob(`/org/purchase-orders/${id}/pdf`);
   const url = URL.createObjectURL(blob);

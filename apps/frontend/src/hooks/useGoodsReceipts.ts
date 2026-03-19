@@ -148,3 +148,16 @@ export async function transitionGoodsReceiptApi(
 export async function confirmGoodsReceiptApi(id: string): Promise<GoodsReceipt> {
   return api.put<GoodsReceipt>(`/org/goods-receipts/${id}/confirm`);
 }
+
+export async function uploadDivergencePhotoApi(
+  goodsReceiptId: string,
+  divergenceId: string,
+  file: File,
+): Promise<{ photoUrl: string; photoFileName: string }> {
+  const formData = new FormData();
+  formData.append('photo', file);
+  return api.postFormData<{ photoUrl: string; photoFileName: string }>(
+    `/org/goods-receipts/${goodsReceiptId}/divergences/${divergenceId}/photo`,
+    formData,
+  );
+}
