@@ -197,7 +197,11 @@ Plans:
 3. Kanban DnD OC_EMITIDA→AGUARDANDO_ENTREGA calls correct backend endpoint and succeeds
 4. Notification preferences GET/PUT calls include orgId segment and return 200
 5. DAILY_DIGEST notification type is recognized and labeled in the frontend bell
-   **Plans:** TBD
+   **Plans:** 1 plan
+
+Plans:
+
+- [ ] 15-01-PLAN.md — Fix 3 DnD paths in usePurchasingKanban, inject orgId in useNotificationPreferences, add DAILY_DIGEST to useNotifications
 
 ## Progress
 
@@ -217,4 +221,4 @@ Plans:
 | 12. Kanban, Dashboard e Notificações            | 5/5       | Complete       | 2026-03-18  | -          |
 | 13. Kanban DnD Fixes + Notification Wiring      | 3/3       | Complete       | 2026-03-19  | -          |
 | 14. Stock Reversal + Supplier Rating Completion | 2/2       | Complete       | 2026-03-19  | -          |
-| 15. Frontend API Path Fixes                     | v1.1      | 0/TBD          | Not started | -          |
+| 15. Frontend API Path Fixes                     | v1.1      | 0/1            | Not started | -          |
