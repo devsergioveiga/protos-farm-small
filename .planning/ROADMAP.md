@@ -156,10 +156,11 @@ Plans:
 3. BUDGET_EXCEEDED notification fires when budget is exceeded during approval
 4. RETURN_REGISTERED and RETURN_RESOLVED notifications fire from goods-returns service with registered types
 5. PO_GOODS_RECEIVED notification fires when goods receipt is confirmed
-   **Plans:** 2 plans
+   **Plans:** 3 plans
 
 Plans:
 
+- [ ] 13-00-PLAN.md — Wave 0: Create frontend spec files with failing tests for DnD behaviors (Nyquist compliance)
 - [ ] 13-01-PLAN.md — Frontend DnD fixes: EM_COTACAO navigation redirect + OC_EMITIDA PATCH /transition
 - [ ] 13-02-PLAN.md — Backend notification wiring: BUDGET_EXCEEDED, PO_GOODS_RECEIVED, RETURN_REGISTERED, RETURN_RESOLVED
 
@@ -193,5 +194,5 @@ Plans:
 | 10. Recebimento de Mercadorias                  | v1.1      | 0/TBD          | Not started | -          |
 | 11. Devolução, Orçamento e Saving               | v1.1      | 0/TBD          | Not started | -          |
 | 12. Kanban, Dashboard e Notificações            | 5/5       | Complete       | 2026-03-18  | -          |
-| 13. Kanban DnD Fixes + Notification Wiring      | v1.1      | 0/2            | Planned     | -          |
+| 13. Kanban DnD Fixes + Notification Wiring      | v1.1      | 0/3            | Planned     | -          |
 | 14. Stock Reversal + Supplier Rating Completion | v1.1      | 0/TBD          | Not started | -          |
