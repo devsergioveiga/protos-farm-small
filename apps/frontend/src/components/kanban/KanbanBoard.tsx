@@ -48,9 +48,9 @@ function getTransitionCopy(
       confirmLabel: 'Iniciar cotação',
     },
     'EM_COTACAO->OC_EMITIDA': {
-      title: 'Emitir pedido?',
-      message: 'A cotação aprovada se tornará um pedido de compra formal.',
-      confirmLabel: 'Emitir pedido',
+      title: 'Aprovar cotacao vencedora?',
+      message: 'Para emitir o pedido de compra, e necessario aprovar a cotacao vencedora primeiro.',
+      confirmLabel: 'Ir para Cotacoes',
     },
     'OC_EMITIDA->AGUARDANDO_ENTREGA': {
       title: 'Confirmar envio?',
@@ -146,6 +146,13 @@ export default function KanbanBoard({ columns, onCardMove }: KanbanBoardProps) {
   const handleConfirm = useCallback(async () => {
     if (!confirmPending) return;
     const { card, from, to } = confirmPending;
+
+    // Special case: EM_COTACAO -> OC_EMITIDA navigates to quotations page
+    if (from === 'EM_COTACAO' && to === 'OC_EMITIDA') {
+      setConfirmPending(null);
+      navigate(`/quotations?purchaseRequestId=${card.id}`);
+      return;
+    }
 
     // Special case: AGUARDANDO_ENTREGA -> RECEBIDO navigates instead of API call
     if (from === 'AGUARDANDO_ENTREGA' && to === 'RECEBIDO') {
