@@ -68,7 +68,7 @@ Full details: `.planning/milestones/v1.1-ROADMAP.md`
 4. Gerente pode exportar lista filtrada em CSV e PDF
 5. Operador pode registrar leituras de horímetro/odômetro com validação anti-regressão e cadastrar documentos com alerta de vencimento (30/15/7 dias)
 6. Gerente pode registrar abastecimentos com custo/litro e ver benchmarking de eficiência vs frota
-   **Plans:** 6 plans
+   **Plans:** 1/6 plans executed
 
 Plans:
 - [ ] 16-00-PLAN.md — Wave 0: failing spec stubs for assets, fuel-records, meter-readings, asset-documents
@@ -206,7 +206,7 @@ Plans:
 | 13. Kanban DnD Fixes | v1.1 | 3/3 | Complete | 2026-03-19 |
 | 14. Stock Reversal + Rating | v1.1 | 2/2 | Complete | 2026-03-19 |
 | 15. Frontend API Path Fixes | v1.1 | 1/1 | Complete | 2026-03-19 |
-| 16. Cadastro de Ativos | v1.2 | 0/6 | Planned | - |
+| 16. Cadastro de Ativos | 1/6 | In Progress|  | - |
 | 17. Engine de Depreciação | v1.2 | 0/TBD | Not started | - |
 | 18. Manutenção e Ordens de Serviço | v1.2 | 0/TBD | Not started | - |
 | 19. Integração Financeira — Aquisição | v1.2 | 0/TBD | Not started | - |

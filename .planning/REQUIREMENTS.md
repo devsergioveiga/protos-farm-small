@@ -9,12 +9,12 @@ Requirements for milestone v1.2 Gestão de Patrimônio. Each maps to roadmap pha
 
 ### Cadastro de Ativos
 
-- [ ] **ATIV-01**: Gerente pode cadastrar ativo com classificação (máquina, veículo, implemento, benfeitoria, terra, biológico), dados de aquisição (valor, data, NF, fornecedor), número de série, fabricante, tag patrimônio sequencial e fotos
-- [ ] **ATIV-02**: Gerente pode atribuir ativo a fazenda, centro de custo (fixo, rateio %, dinâmico) e status (EM_USO, EM_MANUTENÇÃO, INATIVO, BAIXADO, EM_ANDAMENTO) com campos específicos por tipo (HP/RENAVAM para veículos, área m² para benfeitorias, hectares/matrícula para terras)
+- [x] **ATIV-01**: Gerente pode cadastrar ativo com classificação (máquina, veículo, implemento, benfeitoria, terra, biológico), dados de aquisição (valor, data, NF, fornecedor), número de série, fabricante, tag patrimônio sequencial e fotos
+- [x] **ATIV-02**: Gerente pode atribuir ativo a fazenda, centro de custo (fixo, rateio %, dinâmico) e status (EM_USO, EM_MANUTENÇÃO, INATIVO, BAIXADO, EM_ANDAMENTO) com campos específicos por tipo (HP/RENAVAM para veículos, área m² para benfeitorias, hectares/matrícula para terras)
 - [ ] **ATIV-03**: Gerente pode criar hierarquia pai-filho de ativos (até 3 níveis), com custo e depreciação independentes por componente e TCO agregado no pai
-- [ ] **ATIV-04**: Gerente pode importar ativos em massa via CSV/Excel com mapeamento de colunas e validação de campos obrigatórios
+- [x] **ATIV-04**: Gerente pode importar ativos em massa via CSV/Excel com mapeamento de colunas e validação de campos obrigatórios
 - [ ] **ATIV-05**: Gerente pode gerar QR code por ativo para scan no mobile que abre a ficha do ativo diretamente
-- [ ] **ATIV-06**: Gerente pode visualizar ficha completa do ativo com abas (Dados Gerais, Depreciação, Manutenção, Combustível/Horímetro, Documentos, Financeiro) e buscar/filtrar ativos por tipo, fazenda, status, CC e período de aquisição
+- [x] **ATIV-06**: Gerente pode visualizar ficha completa do ativo com abas (Dados Gerais, Depreciação, Manutenção, Combustível/Horímetro, Documentos, Financeiro) e buscar/filtrar ativos por tipo, fazenda, status, CC e período de aquisição
 - [ ] **ATIV-07**: Gerente pode transferir ativo entre fazendas com atualização obrigatória de centro de custo e registro no histórico
 
 ### Depreciação
@@ -37,9 +37,9 @@ Requirements for milestone v1.2 Gestão de Patrimônio. Each maps to roadmap pha
 
 ### Controle Operacional
 
-- [ ] **OPER-01**: Operador pode registrar leituras de horímetro/odômetro por ativo com data, valor e operador, com alerta quando leitura não atualizada há >30 dias
+- [x] **OPER-01**: Operador pode registrar leituras de horímetro/odômetro por ativo com data, valor e operador, com alerta quando leitura não atualizada há >30 dias
 - [ ] **OPER-02**: Operador pode registrar abastecimentos (litros, custo/litro, total R$, operador) com cálculo automático de consumo l/hora e flag quando consumo >20% acima da média da frota
-- [ ] **OPER-03**: Gerente pode cadastrar documentos por ativo (CRLV, seguro, revisão, CCIR, ITR) com data de emissão e vencimento, recebendo alertas 30/15/7 dias antes do vencimento
+- [x] **OPER-03**: Gerente pode cadastrar documentos por ativo (CRLV, seguro, revisão, CCIR, ITR) com data de emissão e vencimento, recebendo alertas 30/15/7 dias antes do vencimento
 - [ ] **OPER-04**: Gerente pode visualizar custo/hora por ativo (depreciação + manutenção + combustível + seguro / horas usadas) e índice de disponibilidade (% tempo disponível vs em manutenção)
 
 ### Integração Financeira
@@ -153,12 +153,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ATIV-01 | Phase 16 | Pending |
-| ATIV-02 | Phase 16 | Pending |
+| ATIV-01 | Phase 16 | Complete |
+| ATIV-02 | Phase 16 | Complete |
 | ATIV-03 | Phase 22 | Pending |
-| ATIV-04 | Phase 16 | Pending |
+| ATIV-04 | Phase 16 | Complete |
 | ATIV-05 | Phase 21 | Pending |
-| ATIV-06 | Phase 16 | Pending |
+| ATIV-06 | Phase 16 | Complete |
 | ATIV-07 | Phase 20 | Pending |
 | DEPR-01 | Phase 17 | Pending |
 | DEPR-02 | Phase 17 | Pending |
@@ -172,9 +172,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MANU-04 | Phase 21 | Pending |
 | MANU-05 | Phase 18 | Pending |
 | MANU-06 | Phase 18 | Pending |
-| OPER-01 | Phase 16 | Pending |
+| OPER-01 | Phase 16 | Complete |
 | OPER-02 | Phase 21 | Pending |
-| OPER-03 | Phase 16 | Pending |
+| OPER-03 | Phase 16 | Complete |
 | OPER-04 | Phase 21 | Pending |
 | FINP-01 | Phase 19 | Pending |
 | FINP-02 | Phase 19 | Pending |

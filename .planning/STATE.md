@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: planning
-stopped_at: Phase 16 context gathered
-last_updated: "2026-03-19T18:54:15.813Z"
+stopped_at: Completed 16-00-PLAN.md
+last_updated: "2026-03-19T21:32:40.712Z"
 last_activity: 2026-03-19 — Roadmap v1.2 created
 progress:
   total_phases: 9
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 6
+  completed_plans: 1
   percent: 0
 ---
 
@@ -46,6 +46,7 @@ Progress: [░░░░░░░░░░] 0%
 | 06-cr-dito-rural               | 5     | 62min      | 12min    |
 
 **Total v1.0:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
+| Phase 16 P00 | 1 | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,7 @@ Key decisions for v1.2:
 - **CPC 27 vs CPC 29 classification at schema creation**: BEARER_PLANT (CPC 27) vs BIOLOGICAL_ASSET_ANIMAL (CPC 29)
 - **OS accounting classification mandatory at closure**: 400 if accountingTreatment absent
 - **Batch depreciation idempotent**: Unique constraint on (assetId, periodYear, periodMonth)
+- [Phase 16]: Wave 0 stubs use it.todo() only — no beforeAll/afterAll setup until Plans 01/02 fill in test bodies
 
 ### Pending Todos
 
@@ -78,6 +80,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T18:54:15.806Z
-Stopped at: Phase 16 context gathered
-Resume file: .planning/phases/16-cadastro-de-ativos/16-CONTEXT.md
+Last session: 2026-03-19T21:32:40.709Z
+Stopped at: Completed 16-00-PLAN.md
+Resume file: None
