@@ -1,6 +1,8 @@
+import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import { authenticate } from './middleware/auth';
 import { metricsMiddleware, metricsHandler } from './middleware/metrics';
 import { requestLoggerMiddleware } from './middleware/request-logger';
 import { healthRouter } from './modules/health/health.routes';
@@ -115,6 +117,10 @@ app.use(metricsMiddleware);
 app.use(requestLoggerMiddleware);
 
 app.get('/metrics', metricsHandler);
+
+// Serve uploaded files (photos, attachments) — requires authentication
+app.use('/api/uploads', authenticate, express.static(path.join(process.cwd(), 'uploads')));
+
 app.use('/api', healthRouter);
 app.use('/api', authRouter);
 app.use('/api', organizationsRouter);

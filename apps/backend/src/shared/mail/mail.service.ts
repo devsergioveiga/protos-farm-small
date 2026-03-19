@@ -3,11 +3,18 @@ import type { Transporter } from 'nodemailer';
 import { loadEnv } from '../../config/env';
 import { logger } from '../utils/logger';
 
+export interface MailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType: string;
+}
+
 export interface MailOptions {
   to: string;
   subject: string;
   text: string;
   html?: string;
+  attachments?: MailAttachment[];
 }
 
 let transporter: Transporter | null = null;
@@ -40,6 +47,13 @@ export async function sendMail(options: MailOptions): Promise<void> {
     subject: options.subject,
     text: options.text,
     ...(options.html && { html: options.html }),
+    ...(options.attachments && {
+      attachments: options.attachments.map((a) => ({
+        filename: a.filename,
+        content: a.content,
+        contentType: a.contentType,
+      })),
+    }),
   };
 
   try {

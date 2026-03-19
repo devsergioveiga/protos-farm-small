@@ -13,6 +13,7 @@ import {
   transitionPO,
   deletePO,
   generatePurchaseOrderPdf,
+  sendPurchaseOrderEmail,
 } from './purchase-orders.service';
 
 export const purchaseOrdersRouter = Router();
@@ -118,6 +119,30 @@ purchaseOrdersRouter.get(
         return;
       }
       res.status(500).json({ error: 'Erro ao gerar PDF' });
+    }
+  },
+);
+
+// ─── POST /org/purchase-orders/:id/send-email (BEFORE /:id) ──────────
+
+purchaseOrdersRouter.post(
+  `${base}/:id/send-email`,
+  authenticate,
+  checkPermission('purchases:manage'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const { to, subject, body } = req.body as { to: string; subject: string; body: string };
+
+      if (!to || !subject) {
+        res.status(400).json({ error: 'Destinatario e assunto sao obrigatorios' });
+        return;
+      }
+
+      await sendPurchaseOrderEmail(ctx, req.params.id as string, { to, subject, body: body ?? '' });
+      res.json({ success: true, message: 'Email enviado com sucesso' });
+    } catch (err) {
+      handleError(err, res);
     }
   },
 );

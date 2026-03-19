@@ -13,7 +13,7 @@ export interface PurchaseOrder {
   createdAt: string;
   updatedAt: string;
   isOverdue?: boolean;
-  supplier: { id: string; name: string; tradeName: string | null; email?: string | null };
+  supplier: { id: string; name: string; tradeName: string | null; contactEmail?: string | null };
   quotation?: {
     id: string;
     sequentialNumber: string;
