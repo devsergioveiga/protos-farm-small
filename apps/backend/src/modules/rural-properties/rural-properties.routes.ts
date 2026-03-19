@@ -39,6 +39,15 @@ const upload = multer({
   limits: { fileSize: MAX_DOCUMENT_SIZE },
 });
 
+/** Multer decodes originalname as latin1; re-decode as UTF-8 */
+function fixMulterFilename(name: string): string {
+  try {
+    return Buffer.from(name, 'latin1').toString('utf8');
+  } catch {
+    return name;
+  }
+}
+
 function getClientIp(req: import('express').Request): string {
   const forwarded = req.headers['x-forwarded-for'];
   if (typeof forwarded === 'string') return forwarded.split(',')[0].trim();
@@ -375,7 +384,7 @@ ruralPropertiesRouter.post(
         propertyId,
         {
           type: docType,
-          filename: req.file.originalname,
+          filename: fixMulterFilename(req.file.originalname),
           mimeType: req.file.mimetype,
           sizeBytes: req.file.size,
           fileData: req.file.buffer,
@@ -390,7 +399,7 @@ ruralPropertiesRouter.post(
         action: 'UPLOAD_PROPERTY_DOCUMENT',
         targetType: 'property_document',
         targetId: result.id,
-        metadata: { type: docType, filename: req.file.originalname, propertyId },
+        metadata: { type: docType, filename: fixMulterFilename(req.file.originalname), propertyId },
         ipAddress: getClientIp(req),
         organizationId: ctx.organizationId,
         farmId,
@@ -441,7 +450,13 @@ ruralPropertiesRouter.get(
       );
 
       res.setHeader('Content-Type', doc.mimeType);
-      res.setHeader('Content-Disposition', `attachment; filename="${doc.filename}"`);
+      // RFC 5987: use filename* for UTF-8 names, ASCII fallback for filename
+      const asciiName = doc.filename.replace(/[^\x20-\x7E]/g, '_');
+      const encodedName = encodeURIComponent(doc.filename);
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${asciiName}"; filename*=UTF-8''${encodedName}`,
+      );
       res.send(doc.fileData);
     } catch (err) {
       handleError(err, res);
@@ -544,7 +559,7 @@ ruralPropertiesRouter.post(
         req.params.farmId as string,
         req.params.propertyId as string,
         req.file.buffer,
-        req.file.originalname,
+        fixMulterFilename(req.file.originalname),
       );
 
       void logAudit({
@@ -555,7 +570,7 @@ ruralPropertiesRouter.post(
         targetType: 'rural_property',
         targetId: req.params.propertyId as string,
         metadata: {
-          filename: req.file.originalname,
+          filename: fixMulterFilename(req.file.originalname),
           boundaryAreaHa: result.boundaryAreaHa,
           polygonCount: result.polygonCount,
         },

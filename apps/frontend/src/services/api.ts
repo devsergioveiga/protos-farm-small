@@ -123,7 +123,7 @@ class ApiClient {
     return this.request<T>('DELETE', path, body);
   }
 
-  async getBlob(path: string): Promise<Blob> {
+  async getBlob(path: string, retry = true): Promise<Blob> {
     const token = this.getAccessToken();
     const headers: Record<string, string> = {};
     if (token) {
@@ -134,6 +134,20 @@ class ApiClient {
       method: 'GET',
       headers,
     });
+
+    if (response.status === 401 && retry) {
+      const refreshed = await this.tryRefresh();
+      if (refreshed) {
+        return this.getBlob(path, false);
+      }
+      this.clearTokens();
+      if (this.onUnauthorized) {
+        this.onUnauthorized();
+      } else {
+        window.location.href = '/login';
+      }
+      throw new Error('Sessão expirada');
+    }
 
     if (!response.ok) {
       const errorBody = (await response.json().catch(() => ({}))) as ApiError;

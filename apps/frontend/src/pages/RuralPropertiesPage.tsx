@@ -6,6 +6,7 @@ import { CLASSIFICATION_LABELS } from '@/types/rural-property';
 import type { RuralPropertyWithFarm } from '@/hooks/useRuralProperties';
 import { RuralPropertyModal } from '@/components/rural-property/RuralPropertyModal';
 import OwnersModal from '@/components/rural-property/OwnersModal';
+import DocumentsModal from '@/components/rural-property/DocumentsModal';
 import { deleteRuralProperty } from '@/hooks/useRuralProperties';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import '@/components/rural-property/RuralPropertySection.css';
@@ -30,6 +31,7 @@ export default function RuralPropertiesPage() {
   const [deleteTarget, setDeleteTarget] = useState<RuralPropertyWithFarm | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [ownersTarget, setOwnersTarget] = useState<RuralPropertyWithFarm | null>(null);
+  const [docsTarget, setDocsTarget] = useState<RuralPropertyWithFarm | null>(null);
 
   const farmNames = [...new Set(properties.map((p) => p.farmName))].sort();
 
@@ -243,12 +245,17 @@ export default function RuralPropertiesPage() {
                     {rp.ownersCount} titular{rp.ownersCount !== 1 ? 'es' : ''}
                   </span>
                 </button>
-                <div className="rp-card__stat">
+                <button
+                  type="button"
+                  className="rp-card__stat rp-card__stat--link"
+                  onClick={() => setDocsTarget(rp)}
+                  aria-label={`Ver documentos de ${rp.denomination}`}
+                >
                   <FileText size={14} aria-hidden="true" />
                   <span>
                     {rp.documentsCount} doc{rp.documentsCount !== 1 ? 's' : ''}
                   </span>
-                </div>
+                </button>
               </div>
             </article>
           ))}
@@ -289,6 +296,16 @@ export default function RuralPropertiesPage() {
           propertyId={ownersTarget.id}
           propertyName={ownersTarget.denomination}
           onClose={() => setOwnersTarget(null)}
+        />
+      )}
+
+      {docsTarget && (
+        <DocumentsModal
+          isOpen={!!docsTarget}
+          farmId={docsTarget.farmId}
+          propertyId={docsTarget.id}
+          propertyName={docsTarget.denomination}
+          onClose={() => setDocsTarget(null)}
         />
       )}
     </main>
