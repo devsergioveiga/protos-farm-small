@@ -153,50 +153,50 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ATIV-01 | TBD | Pending |
-| ATIV-02 | TBD | Pending |
-| ATIV-03 | TBD | Pending |
-| ATIV-04 | TBD | Pending |
-| ATIV-05 | TBD | Pending |
-| ATIV-06 | TBD | Pending |
-| ATIV-07 | TBD | Pending |
-| DEPR-01 | TBD | Pending |
-| DEPR-02 | TBD | Pending |
-| DEPR-03 | TBD | Pending |
-| DEPR-04 | TBD | Pending |
-| DEPR-05 | TBD | Pending |
-| DEPR-06 | TBD | Pending |
-| MANU-01 | TBD | Pending |
-| MANU-02 | TBD | Pending |
-| MANU-03 | TBD | Pending |
-| MANU-04 | TBD | Pending |
-| MANU-05 | TBD | Pending |
-| MANU-06 | TBD | Pending |
-| OPER-01 | TBD | Pending |
-| OPER-02 | TBD | Pending |
-| OPER-03 | TBD | Pending |
-| OPER-04 | TBD | Pending |
-| FINP-01 | TBD | Pending |
-| FINP-02 | TBD | Pending |
-| FINP-03 | TBD | Pending |
-| FINP-04 | TBD | Pending |
-| FINP-05 | TBD | Pending |
-| FINP-06 | TBD | Pending |
-| BIOL-01 | TBD | Pending |
-| BIOL-02 | TBD | Pending |
-| BIOL-03 | TBD | Pending |
-| BIOL-04 | TBD | Pending |
-| IMOB-01 | TBD | Pending |
-| IMOB-02 | TBD | Pending |
-| RELP-01 | TBD | Pending |
-| RELP-02 | TBD | Pending |
-| RELP-03 | TBD | Pending |
+| ATIV-01 | Phase 16 | Pending |
+| ATIV-02 | Phase 16 | Pending |
+| ATIV-03 | Phase 22 | Pending |
+| ATIV-04 | Phase 16 | Pending |
+| ATIV-05 | Phase 21 | Pending |
+| ATIV-06 | Phase 16 | Pending |
+| ATIV-07 | Phase 20 | Pending |
+| DEPR-01 | Phase 17 | Pending |
+| DEPR-02 | Phase 17 | Pending |
+| DEPR-03 | Phase 17 | Pending |
+| DEPR-04 | Phase 22 | Pending |
+| DEPR-05 | Phase 22 | Pending |
+| DEPR-06 | Phase 22 | Pending |
+| MANU-01 | Phase 18 | Pending |
+| MANU-02 | Phase 18 | Pending |
+| MANU-03 | Phase 18 | Pending |
+| MANU-04 | Phase 21 | Pending |
+| MANU-05 | Phase 18 | Pending |
+| MANU-06 | Phase 18 | Pending |
+| OPER-01 | Phase 16 | Pending |
+| OPER-02 | Phase 21 | Pending |
+| OPER-03 | Phase 16 | Pending |
+| OPER-04 | Phase 21 | Pending |
+| FINP-01 | Phase 19 | Pending |
+| FINP-02 | Phase 19 | Pending |
+| FINP-03 | Phase 20 | Pending |
+| FINP-04 | Phase 20 | Pending |
+| FINP-05 | Phase 24 | Pending |
+| FINP-06 | Phase 19 | Pending |
+| BIOL-01 | Phase 24 | Pending |
+| BIOL-02 | Phase 24 | Pending |
+| BIOL-03 | Phase 24 | Pending |
+| BIOL-04 | Phase 24 | Pending |
+| IMOB-01 | Phase 23 | Pending |
+| IMOB-02 | Phase 23 | Pending |
+| RELP-01 | Phase 23 | Pending |
+| RELP-02 | Phase 23 | Pending |
+| RELP-03 | Phase 23 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 38 total
-- Mapped to phases: 0
-- Unmapped: 38 (pending roadmap creation)
+- Mapped to phases: 38
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after v1.2 milestone scoping*
+*Last updated: 2026-03-19 after roadmap creation*

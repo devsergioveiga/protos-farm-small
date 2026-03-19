@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: planning
-stopped_at: Defining requirements
-last_updated: '2026-03-19T17:00:00.000Z'
-last_activity: 2026-03-19 — Milestone v1.2 started
+stopped_at: Roadmap created, ready for phase planning
+last_updated: '2026-03-19T18:00:00.000Z'
+last_activity: 2026-03-19 — Roadmap v1.2 created (9 phases, 38 requirements)
 progress:
-  total_phases: 0
+  total_phases: 9
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** v1.2 Gestão de Patrimônio — Defining requirements
+**Current focus:** v1.2 Gestão de Patrimônio — Phase 16: Cadastro de Ativos
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 16 - Cadastro de Ativos (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-03-19 — Milestone v1.2 started
+Status: Ready for planning
+Last activity: 2026-03-19 — Roadmap v1.2 created
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -60,6 +60,14 @@ Key decisions carried from v1.1:
 - **BullMQ for async email**: Never await emailService.send() inside Prisma transaction
 - **VALID_TRANSITIONS map**: State machines follow checks.types.ts pattern
 
+Key decisions for v1.2:
+
+- **Asset purchase must NOT route through GoodsReceipt/StockEntry**: Separate AssetAcquisition module with originType ASSET_PURCHASE
+- **All depreciation arithmetic uses decimal.js**: Last-period balancing entry brings book value to exactly residual value
+- **CPC 27 vs CPC 29 classification at schema creation**: BEARER_PLANT (CPC 27) vs BIOLOGICAL_ASSET_ANIMAL (CPC 29)
+- **OS accounting classification mandatory at closure**: 400 if accountingTreatment absent
+- **Batch depreciation idempotent**: Unique constraint on (assetId, periodYear, periodMonth)
+
 ### Pending Todos
 
 None.
@@ -70,6 +78,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T17:00:00.000Z
-Stopped at: Defining requirements for v1.2
-Resume file: None
+Last session: 2026-03-19T18:00:00.000Z
+Stopped at: Roadmap v1.2 created — ready for phase planning
+Resume file: .planning/ROADMAP.md
