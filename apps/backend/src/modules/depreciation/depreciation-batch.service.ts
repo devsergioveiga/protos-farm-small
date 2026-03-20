@@ -96,6 +96,12 @@ async function _processOrganization(
         orderBy: [{ periodYear: 'desc' }, { periodMonth: 'desc' }],
       });
 
+      // acquisitionValue and acquisitionDate can be null in schema — skip if missing
+      if (!asset.acquisitionValue || !asset.acquisitionDate) {
+        skippedCount++;
+        continue;
+      }
+
       const openingBookValue = latestEntry
         ? new Decimal(latestEntry.closingBookValue)
         : new Decimal(asset.acquisitionValue);
@@ -127,7 +133,7 @@ async function _processOrganization(
         },
         period: { year: periodYear, month: periodMonth },
         acquisitionDate: asset.acquisitionDate,
-        disposalDate: asset.disposalDate,
+        disposalDate: null,
       });
 
       if (result.skipped) {
