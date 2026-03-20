@@ -280,7 +280,17 @@ Plans:
 4. Gerente pode controlar estoque de peças de reposição com ponto de reposição e vinculação de peças compatíveis por máquina
 5. Gerente pode ver dashboard de manutenção com disponibilidade mecânica, MTBF, MTTR, custo acumulado e kanban de OS abertas
 
-**Plans**: TBD
+**Plans:** 7 plans
+
+Plans:
+
+- [ ] 18-00-PLAN.md — Wave 0: Prisma schema (7 models, 4 enums, migration), types, RBAC, test stubs
+- [ ] 18-01-PLAN.md — Maintenance plans backend: CRUD, next-due calculation, daily alert cron, tests
+- [ ] 18-02-PLAN.md — Work orders backend: CRUD, close with accounting treatment, stock deduction, CC, dashboard, tests
+- [ ] 18-03-PLAN.md — Spare parts compatibility + maintenance provisions backend: CRUD, reconciliation, monthly cron, tests
+- [ ] 18-04-PLAN.md — Frontend: types, hooks, MaintenancePlansPage, WorkOrdersPage, modals, sidebar, routes
+- [ ] 18-05-PLAN.md — Frontend: dashboard, kanban, close wizard, provision modal, AssetMaintenanceTab
+- [ ] 18-06-PLAN.md — Mobile: maintenance request screen with offline queue, photo, geolocation
 
 ### Phase 19: Integração Financeira — Aquisição
 
@@ -387,9 +397,9 @@ Plans:
 | 13. Kanban DnD Fixes + Notification Wiring          | v1.1      | 3/3            | Complete    | 2026-03-19 |
 | 14. Stock Reversal + Supplier Rating Completion     | v1.1      | 2/2            | Complete    | 2026-03-19 |
 | 15. Frontend API Path Fixes                         | v1.1      | 1/1            | Complete    | 2026-03-19 |
-| 16. Cadastro de Ativos                              | 7/7       | Complete       | 2026-03-20  | -          |
+| 16. Cadastro de Ativos                              | v1.2      | 7/7            | Complete    | 2026-03-20 |
 | 17. Engine de Depreciação                           | v1.2      | 4/4            | Complete    | 2026-03-20 |
-| 18. Manutenção e Ordens de Serviço                  | v1.2      | 0/?            | Not started | -          |
+| 18. Manutenção e Ordens de Serviço                  | v1.2      | 0/7            | Planned     | -          |
 | 19. Integração Financeira — Aquisição               | v1.2      | 0/?            | Not started | -          |
 | 20. Alienação e Baixa de Ativos                     | v1.2      | 0/?            | Not started | -          |
 | 21. Controle Operacional                            | v1.2      | 0/?            | Not started | -          |
