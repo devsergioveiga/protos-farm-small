@@ -1,5 +1,14 @@
-import { useEffect, useRef } from 'react';
-import { X, Pencil, CheckCircle, MinusCircle, XCircle, Clock, Wrench } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import {
+  X,
+  Pencil,
+  CheckCircle,
+  MinusCircle,
+  XCircle,
+  Clock,
+  Wrench,
+  Settings,
+} from 'lucide-react';
 import { useAssetDetail } from '@/hooks/useAssetDetail';
 import type { Asset, AssetStatus } from '@/types/asset';
 import AssetGeneralTab from './AssetGeneralTab';
@@ -8,11 +17,23 @@ import AssetFuelTab from './AssetFuelTab';
 import AssetReadingsTab from './AssetReadingsTab';
 import AssetMaintenanceTab from './AssetMaintenanceTab';
 import AssetTimelineTab from './AssetTimelineTab';
+import DepreciationConfigModal from '../depreciation/DepreciationConfigModal';
+import { useDepreciationConfig } from '@/hooks/useDepreciationConfig';
+import { useDepreciationReport } from '@/hooks/useDepreciationReport';
+import { METHOD_LABELS, TRACK_LABELS } from '@/types/depreciation';
+import type { DepreciationEntry } from '@/types/depreciation';
 import './AssetDrawer.css';
 
 // ─── Tab definitions ──────────────────────────────────────────────────
 
-type TabId = 'geral' | 'documentos' | 'combustivel' | 'leituras' | 'manutencao' | 'timeline';
+type TabId =
+  | 'geral'
+  | 'documentos'
+  | 'combustivel'
+  | 'leituras'
+  | 'manutencao'
+  | 'depreciacao'
+  | 'timeline';
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'geral', label: 'Geral' },
@@ -20,6 +41,7 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'combustivel', label: 'Combustivel' },
   { id: 'leituras', label: 'Leituras' },
   { id: 'manutencao', label: 'Manutencao' },
+  { id: 'depreciacao', label: 'Depreciacao' },
   { id: 'timeline', label: 'Timeline' },
 ];
 
@@ -59,6 +81,178 @@ function DrawerSkeleton() {
       <div className="asset-drawer__skeleton-block asset-drawer__skeleton-block--title" />
       <div className="asset-drawer__skeleton-block" />
       <div className="asset-drawer__skeleton-block" />
+    </div>
+  );
+}
+
+// ─── AssetDepreciationTab ──────────────────────────────────────────────
+
+function formatBRL(value: number): string {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+}
+
+interface AssetDepreciationTabProps {
+  asset: Asset;
+}
+
+function AssetDepreciationTab({ asset }: AssetDepreciationTabProps) {
+  const {
+    config,
+    loading: configLoading,
+    fetchConfig,
+    refetch: refetchConfig,
+  } = useDepreciationConfig(asset.id);
+  const { data: reportData, fetchReport } = useDepreciationReport();
+
+  const [showConfigModal, setShowConfigModal] = useState(false);
+
+  useEffect(() => {
+    void fetchConfig();
+  }, [fetchConfig]);
+
+  useEffect(() => {
+    if (config) {
+      void fetchReport(
+        new Date().getFullYear(),
+        new Date().getMonth() + 1,
+        config.activeTrack,
+        asset.id,
+        1,
+        12,
+      );
+    }
+  }, [config, asset.id, fetchReport]);
+
+  if (configLoading) {
+    return (
+      <div className="asset-drawer__skeleton" role="status" aria-label="Carregando depreciacao">
+        <div className="asset-drawer__skeleton-block" />
+        <div className="asset-drawer__skeleton-block" />
+      </div>
+    );
+  }
+
+  if (!config) {
+    return (
+      <div className="asset-depreciation-tab__empty">
+        <Settings size={48} aria-hidden="true" style={{ color: 'var(--color-neutral-400)' }} />
+        <h3 className="asset-depreciation-tab__empty-title">
+          Ativo sem configuracao de depreciacao
+        </h3>
+        <p className="asset-depreciation-tab__empty-desc">
+          Configure o metodo e as taxas para calcular o valor contabil deste ativo.
+        </p>
+        <button
+          type="button"
+          className="asset-depreciation-tab__cta"
+          onClick={() => setShowConfigModal(true)}
+        >
+          Configurar depreciacao
+        </button>
+        {showConfigModal && (
+          <DepreciationConfigModal
+            isOpen={showConfigModal}
+            onClose={() => setShowConfigModal(false)}
+            onSuccess={() => {
+              setShowConfigModal(false);
+              refetchConfig();
+            }}
+            asset={{ id: asset.id, assetType: asset.assetType, name: asset.name }}
+            config={null}
+          />
+        )}
+      </div>
+    );
+  }
+
+  const entries: DepreciationEntry[] = reportData?.entries ?? [];
+
+  return (
+    <div className="asset-depreciation-tab">
+      {/* Config summary */}
+      <div className="asset-depreciation-tab__card">
+        <div className="asset-depreciation-tab__card-header">
+          <h3 className="asset-depreciation-tab__card-title">Configuracao de depreciacao</h3>
+          <button
+            type="button"
+            className="asset-depreciation-tab__edit-btn"
+            onClick={() => setShowConfigModal(true)}
+          >
+            Editar configuracao
+          </button>
+        </div>
+        <dl className="asset-depreciation-tab__dl">
+          <div className="asset-depreciation-tab__dl-row">
+            <dt>Metodo</dt>
+            <dd>{METHOD_LABELS[config.method]}</dd>
+          </div>
+          <div className="asset-depreciation-tab__dl-row">
+            <dt>Taxa fiscal</dt>
+            <dd>{config.fiscalAnnualRate != null ? `${config.fiscalAnnualRate}%` : '—'}</dd>
+          </div>
+          <div className="asset-depreciation-tab__dl-row">
+            <dt>Taxa gerencial</dt>
+            <dd>{config.managerialAnnualRate != null ? `${config.managerialAnnualRate}%` : '—'}</dd>
+          </div>
+          <div className="asset-depreciation-tab__dl-row">
+            <dt>Valor residual</dt>
+            <dd>{formatBRL(config.residualValue)}</dd>
+          </div>
+          <div className="asset-depreciation-tab__dl-row">
+            <dt>Track ativo</dt>
+            <dd>{TRACK_LABELS[config.activeTrack]}</dd>
+          </div>
+        </dl>
+      </div>
+
+      {/* Mini entries table */}
+      {entries.length > 0 && (
+        <div className="asset-depreciation-tab__entries">
+          <h4 className="asset-depreciation-tab__entries-title">Ultimos lancamentos</h4>
+          <table className="asset-depreciation-tab__table">
+            <caption className="sr-only">Lancamentos de depreciacao deste ativo</caption>
+            <thead>
+              <tr>
+                <th scope="col">Periodo</th>
+                <th scope="col" style={{ textAlign: 'right' }}>
+                  Depreciacao
+                </th>
+                <th scope="col" style={{ textAlign: 'right' }}>
+                  Valor Contabil
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map((entry) => (
+                <tr key={entry.id}>
+                  <td>
+                    {String(entry.periodMonth).padStart(2, '0')}/{entry.periodYear}
+                  </td>
+                  <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                    {formatBRL(entry.depreciationAmount)}
+                  </td>
+                  <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                    {formatBRL(entry.closingBookValue)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {showConfigModal && (
+        <DepreciationConfigModal
+          isOpen={showConfigModal}
+          onClose={() => setShowConfigModal(false)}
+          onSuccess={() => {
+            setShowConfigModal(false);
+            refetchConfig();
+          }}
+          asset={{ id: asset.id, assetType: asset.assetType, name: asset.name }}
+          config={config}
+        />
+      )}
     </div>
   );
 }
@@ -255,6 +449,16 @@ export default function AssetDrawer({
                 className="asset-drawer__tabpanel"
               >
                 {activeTab === 'manutencao' && <AssetMaintenanceTab assetId={asset.id} />}
+              </div>
+
+              <div
+                id="tabpanel-depreciacao"
+                role="tabpanel"
+                aria-labelledby="tab-depreciacao"
+                hidden={activeTab !== 'depreciacao'}
+                className="asset-drawer__tabpanel"
+              >
+                {activeTab === 'depreciacao' && <AssetDepreciationTab asset={asset} />}
               </div>
 
               <div

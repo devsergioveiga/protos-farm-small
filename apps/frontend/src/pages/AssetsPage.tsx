@@ -254,7 +254,7 @@ export default function AssetsPage() {
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerTab, setDrawerTab] = useState<
-    'geral' | 'documentos' | 'combustivel' | 'leituras' | 'manutencao' | 'timeline'
+    'geral' | 'documentos' | 'combustivel' | 'leituras' | 'manutencao' | 'depreciacao' | 'timeline'
   >('geral');
 
   // Toast
