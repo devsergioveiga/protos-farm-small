@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: executing
-stopped_at: Completed 17-02-PLAN.md
-last_updated: '2026-03-20T09:07:04.254Z'
+stopped_at: Completed 17-03-PLAN.md
+last_updated: '2026-03-20T09:25:36.902Z'
 last_activity: 2026-03-19 — Plan 16-04 complete (AssetDrawer + fuel + meter readings)
 progress:
   total_phases: 18
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 47
-  completed_plans: 46
+  completed_plans: 47
   percent: 4
 ---
 
@@ -49,6 +49,7 @@ Progress: [░░░░░░░░░░] 4% (0/9 phases, Phase 16 in progress)
 | Phase 17-engine-de-deprecia-o P00 | 86s | 1 tasks | 3 files |
 | Phase 17-engine-de-deprecia-o P01 | 7 | 2 tasks | 5 files |
 | Phase 17-engine-de-deprecia-o P02 | 627s | 3 tasks | 9 files |
+| Phase 17-engine-de-deprecia-o P03 | 25min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,8 @@ Key decisions for v1.2:
 - [Phase 17-engine-de-deprecia-o]: Per-asset transactions (not one big transaction) to avoid timeout per Research pitfall 2
 - [Phase 17-engine-de-deprecia-o]: FINANCIAL role gets depreciation read+update (accountants configure and run)
 - [Phase 17-engine-de-deprecia-o]: disposalDate not in Asset schema — pass null to engine for now, defer to future phase
+- [Phase 17-engine-de-deprecia-o]: display:none for conditional modal fields in DepreciationConfigModal (no animation per CLAUDE.md)
+- [Phase 17-engine-de-deprecia-o]: AssetDepreciationTab fetches last 12 entries using current month/year + assetId filter on GET /report
 
 ### Pending Todos
 
@@ -99,7 +102,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-20T09:06:56.841Z
-Stopped at: Completed 17-02-PLAN.md
+Last session: 2026-03-20T09:25:36.895Z
+Stopped at: Completed 17-03-PLAN.md
 Resume file: None
 Next action: Execute plan 16-05 (bulk import frontend — AssetImportModal)
