@@ -390,6 +390,13 @@ model Organization {
   depreciationConfigs      DepreciationConfig[]
   depreciationEntries      DepreciationEntry[]
   depreciationRuns         DepreciationRun[]
+  animalExits              AnimalExit[]
+  activeIngredients        ActiveIngredient[]
+  storageLocations         StorageLocation[]
+  maintenancePlans         MaintenancePlan[]
+  workOrders               WorkOrder[]
+  deferredMaintenances     DeferredMaintenance[]
+  maintenanceProvisions    MaintenanceProvision[]
 
   @@map("organizations")
 }
@@ -478,6 +485,8 @@ model User {
   goodsReturnsCreated            GoodsReturn[]            @relation("GRReturnCreator")
   purchaseBudgetsCreated         PurchaseBudget[]         @relation("PBCreator")
   notificationPreferences        NotificationPreference[] @relation("NotificationPreferences")
+  createdAnimalOwnerships        AnimalOwnership[]
+  createdAnimalExits             AnimalExit[]        @relation("AnimalExitCreator")
 
   @@map("users")
 }
@@ -584,6 +593,7 @@ model Farm {
   ruralCreditContracts       RuralCreditContract[]
   purchaseRequests           PurchaseRequest[]
   assets                     Asset[]
+  animalExits                AnimalExit[]
 
   @@map("farms")
 }
@@ -759,6 +769,7 @@ model Producer {
   bankAccounts       BankAccount[]
   payables           Payable[]
   receivables        Receivable[]
+  animalOwnerships   AnimalOwnership[]
 
   @@unique([document, organizationId])
   @@index([organizationId])
@@ -1193,6 +1204,8 @@ model Animal {
   earTag                 String
   rfidTag                String?
   name                   String?
+  registeredName         String?
+  registrationNumber     String?
   sex                    AnimalSex
   birthDate              DateTime?       @db.Date
   birthDateEstimated     Boolean         @default(false)
@@ -1253,6 +1266,8 @@ model Animal {
   milkAnalyses            MilkAnalysis[]
   mastitisCases           MastitisCase[]
   lactations              Lactation[]
+  ownerships              AnimalOwnership[]
+  animalExit              AnimalExit?
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -1883,6 +1898,7 @@ model CostCenter {
   purchaseRequests          PurchaseRequest[]
   assets                    Asset[]
   depreciationCCItems       DepreciationEntryCCItem[]
+  workOrderCCItems          WorkOrderCCItem[]
 
   @@unique([farmId, code])
   @@index([farmId])
@@ -2771,6 +2787,7 @@ model Product {
   cultivar         Cultivar?        @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
 
   compositions     ProductComposition[]
+  activeIngredients ProductActiveIngredient[]
   compositeIngredients  CompositeIngredient[] @relation("CompositeIngredients")
   ingredientOf          CompositeIngredient[] @relation("IngredientOf")
   compositeProductions  CompositeProduction[] @relation("CompositeProductions")
@@ -2817,11 +2834,79 @@ model Manufacturer {
   @@map("manufacturers")
 }
 
-// CA7: Composição / princípio ativo
+// ─── Princípio Ativo (normalizado) ─────────────────────────────────
+
+enum ActiveIngredientType {
+  VETERINARY    // medicamentos veterinários
+  AGROCHEMICAL  // defensivos agrícolas
+  FERTILIZER    // nutrientes / fertilizantes
+  OTHER
+}
+
+model ActiveIngredient {
+  id             String               @id @default(uuid())
+  organizationId String
+  name           String
+  type           ActiveIngredientType @default(OTHER)
+  casNumber      String?              // CAS Registry Number (ex: "70288-86-7")
+  notes          String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  organization Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  products     ProductActiveIngredient[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([organizationId, type])
+  @@map("active_ingredients")
+}
+
+model ProductActiveIngredient {
+  id                 String  @id @default(uuid())
+  productId          String
+  activeIngredientId String
+  concentration      String? // ex: "480 g/L", "10%", "150 mg/mL"
+  function           String? // ex: herbicida, bactericida, nutriente
+
+  product          Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  activeIngredient ActiveIngredient @relation(fields: [activeIngredientId], references: [id], onDelete: Restrict)
+
+  @@unique([productId, activeIngredientId])
+  @@index([productId])
+  @@index([activeIngredientId])
+  @@map("product_active_ingredients")
+}
+
+// ─── Local de Armazenamento ───────────────────────────────────────
+
+model StorageLocation {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  code           String?  // sigla curta (ex: "DEP-01", "GALP-A")
+  assetId        String?  // vínculo opcional com patrimônio (galpão, silo)
+  isDefault      Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  asset        Asset?       @relation(fields: [assetId], references: [id], onDelete: SetNull)
+  stockEntries StockEntry[]
+
+  @@unique([organizationId, name])
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@map("storage_locations")
+}
+
+// CA7: Composição / princípio ativo (legado — string livre)
 model ProductComposition {
   id              String  @id @default(uuid())
   productId       String
-  activeIngredient String  // nome do princípio ativo ou nutriente
+  activeIngredient String  // nome do princípio ativo ou nutriente (legado)
   concentration   String? // ex: "480 g/L", "10%", "150 mg/mL"
   function        String? // ex: herbicida, bactericida, nutriente
 
@@ -2938,7 +3023,8 @@ model StockEntry {
   invoiceNumber        String?
   invoiceFileUrl       String?
   storageFarmId        String?
-  storageLocation      String?          // depósito/galpão
+  storageLocationId    String?          // FK para StorageLocation
+  storageLocation      String?          // depósito/galpão (legado, texto livre)
   storageSublocation   String?          // prateleira
   notes                String?
   totalMerchandiseCost Decimal          @default(0) @db.Decimal(14, 2)
@@ -2950,10 +3036,11 @@ model StockEntry {
   updatedAt            DateTime         @updatedAt
   cancelledAt          DateTime?
 
-  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  storageFarm  Farm?              @relation(fields: [storageFarmId], references: [id], onDelete: SetNull)
-  items        StockEntryItem[]
-  expenses     StockEntryExpense[]
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  storageFarm     Farm?              @relation(fields: [storageFarmId], references: [id], onDelete: SetNull)
+  storageLocationRef StorageLocation? @relation(fields: [storageLocationId], references: [id], onDelete: SetNull)
+  items           StockEntryItem[]
+  expenses        StockEntryExpense[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -6707,6 +6794,11 @@ model Asset {
   documents           AssetDocument[]
   depreciationConfig  DepreciationConfig?
   depreciationEntries DepreciationEntry[]
+  storageLocations    StorageLocation[]
+  maintenancePlans    MaintenancePlan[]
+  workOrders          WorkOrder[]
+  maintenanceProvisions MaintenanceProvision[]
+  sparePartCompat     SparePartAssetCompat[]
 
   @@unique([organizationId, assetTag])
   @@index([organizationId, assetType])
@@ -6877,4 +6969,271 @@ model DepreciationEntryCCItem {
 
   @@index([entryId])
   @@map("depreciation_entry_cc_items")
+}
+
+// ─── Animal Ownership ──────────────────────────────────────────────
+
+enum AnimalOwnershipType {
+  PROPRIETARIO
+  PARCEIRO
+  COMODATARIO
+  DEPOSITARIO
+}
+
+model AnimalOwnership {
+  id               String               @id @default(uuid())
+  animalId         String
+  producerId       String
+  ownershipType    AnimalOwnershipType   @default(PROPRIETARIO)
+  participationPct Decimal?             @db.Decimal(5, 2)
+  startDate        DateTime             @db.Date
+  endDate          DateTime?            @db.Date
+  notes            String?
+  createdBy        String
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  animal   Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  producer Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  creator  User     @relation(fields: [createdBy], references: [id])
+
+  @@unique([animalId, producerId, ownershipType, startDate])
+  @@index([animalId])
+  @@index([producerId])
+  @@index([endDate])
+  @@map("animal_ownerships")
+}
+
+// ─── Animal Exit ──────────────────────────────────────────────────
+
+enum AnimalExitType {
+  MORTE
+  VENDA
+  DOACAO
+  ABATE
+  TRANSFERENCIA
+  PERDA
+}
+
+model AnimalExit {
+  id               String         @id @default(uuid())
+  organizationId   String
+  animalId         String         @unique
+  farmId           String
+  exitType         AnimalExitType
+  exitDate         DateTime       @db.Date
+  deathType        String?
+  deathCause       String?
+  buyerName        String?
+  salePriceTotal   Decimal?       @db.Decimal(12, 2)
+  salePricePerKg   Decimal?       @db.Decimal(10, 4)
+  saleWeightKg     Decimal?       @db.Decimal(10, 2)
+  gtaNumber        String?
+  destinationFarm  String?
+  notes            String?
+  createdBy        String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  animal       Animal       @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  farm         Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  creator      User         @relation("AnimalExitCreator", fields: [createdBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([exitType])
+  @@index([exitDate])
+  @@map("animal_exits")
+}
+
+// ─── Maintenance & Work Orders ─────────────────────────────────────────────
+
+enum MaintenanceTriggerType {
+  HOURMETER
+  ODOMETER
+  CALENDAR
+}
+
+enum WorkOrderStatus {
+  ABERTA
+  EM_ANDAMENTO
+  AGUARDANDO_PECA
+  ENCERRADA
+  CANCELADA
+}
+
+enum WorkOrderType {
+  PREVENTIVA
+  CORRETIVA
+  SOLICITACAO
+}
+
+enum WorkOrderAccountingTreatment {
+  DESPESA
+  CAPITALIZACAO
+  DIFERIMENTO
+}
+
+model MaintenancePlan {
+  id               String                 @id @default(uuid())
+  organizationId   String
+  assetId          String
+  name             String
+  description      String?
+  triggerType      MaintenanceTriggerType
+  intervalValue    Decimal                @db.Decimal(12, 2)
+  alertBeforeValue Decimal                @db.Decimal(12, 2)
+  lastExecutedAt   DateTime?
+  lastMeterValue   Decimal?               @db.Decimal(12, 2)
+  nextDueAt        DateTime?
+  nextDueMeter     Decimal?               @db.Decimal(12, 2)
+  isActive         Boolean                @default(true)
+  createdBy        String
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  asset        Asset        @relation(fields: [assetId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  workOrders   WorkOrder[]
+
+  @@index([organizationId, assetId])
+  @@index([nextDueAt])
+  @@map("maintenance_plans")
+}
+
+model WorkOrder {
+  id                  String                        @id @default(uuid())
+  organizationId      String
+  assetId             String
+  sequentialNumber    Int
+  type                WorkOrderType
+  status              WorkOrderStatus               @default(ABERTA)
+  title               String
+  description         String?
+  maintenancePlanId   String?
+  requestedBy         String?
+  assignedTo          String?
+  openedAt            DateTime                      @default(now())
+  startedAt           DateTime?
+  closedAt            DateTime?
+  hourmeterAtOpen     Decimal?                      @db.Decimal(12, 2)
+  odometerAtOpen      Decimal?                      @db.Decimal(12, 2)
+  externalCost        Decimal?                      @db.Decimal(15, 2)
+  externalSupplier    String?
+  laborHours          Decimal?                      @db.Decimal(8, 2)
+  laborCostPerHour    Decimal?                      @db.Decimal(10, 2)
+  totalPartsCost      Decimal?                      @db.Decimal(15, 2)
+  totalLaborCost      Decimal?                      @db.Decimal(15, 2)
+  totalCost           Decimal?                      @db.Decimal(15, 2)
+  accountingTreatment WorkOrderAccountingTreatment?
+  accountingThreshold Decimal?                      @db.Decimal(15, 2)
+  photoUrls           Json?                         @default("[]")
+  geoLat              Decimal?                      @db.Decimal(9, 6)
+  geoLon              Decimal?                      @db.Decimal(9, 6)
+  stockOutputId       String?
+  costCenterId        String?
+  costCenterMode      String                        @default("INHERITED")
+  notes               String?
+  createdBy           String
+  createdAt           DateTime                      @default(now())
+  updatedAt           DateTime                      @updatedAt
+
+  asset           Asset            @relation(fields: [assetId], references: [id])
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  maintenancePlan MaintenancePlan? @relation(fields: [maintenancePlanId], references: [id])
+  parts           WorkOrderPart[]
+  ccItems         WorkOrderCCItem[]
+  deferredMaint   DeferredMaintenance?
+
+  @@unique([organizationId, sequentialNumber])
+  @@index([organizationId, status])
+  @@index([assetId])
+  @@map("work_orders")
+}
+
+model WorkOrderPart {
+  id          String   @id @default(uuid())
+  workOrderId String
+  productId   String
+  quantity    Decimal  @db.Decimal(10, 3)
+  unitCost    Decimal  @db.Decimal(10, 4)
+  totalCost   Decimal  @db.Decimal(15, 2)
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+
+  @@index([workOrderId])
+  @@map("work_order_parts")
+}
+
+model WorkOrderCCItem {
+  id           String  @id @default(uuid())
+  workOrderId  String
+  costCenterId String
+  farmId       String
+  amount       Decimal @db.Decimal(15, 2)
+  percentage   Decimal @db.Decimal(5, 2)
+
+  workOrder  WorkOrder  @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  costCenter CostCenter @relation(fields: [costCenterId], references: [id])
+
+  @@index([workOrderId])
+  @@map("work_order_cc_items")
+}
+
+model DeferredMaintenance {
+  id                  String   @id @default(uuid())
+  organizationId      String
+  workOrderId         String   @unique
+  totalAmount         Decimal  @db.Decimal(15, 2)
+  monthlyAmortization Decimal  @db.Decimal(15, 2)
+  startMonth          Int
+  startYear           Int
+  endMonth            Int
+  endYear             Int
+  amortizedToDate     Decimal  @db.Decimal(15, 2) @default(0)
+  isFullyAmortized    Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  workOrder    WorkOrder    @relation(fields: [workOrderId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, isFullyAmortized])
+  @@map("deferred_maintenances")
+}
+
+model MaintenanceProvision {
+  id             String   @id @default(uuid())
+  organizationId String
+  assetId        String?
+  monthlyAmount  Decimal  @db.Decimal(15, 2)
+  costCenterId   String?
+  isActive       Boolean  @default(true)
+  description    String?
+  createdBy      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  asset        Asset?       @relation(fields: [assetId], references: [id])
+
+  @@index([organizationId, isActive])
+  @@map("maintenance_provisions")
+}
+
+model SparePartAssetCompat {
+  id        String   @id @default(uuid())
+  productId String
+  assetId   String
+  notes     String?
+  createdAt DateTime @default(now())
+
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  @@unique([productId, assetId])
+  @@index([assetId])
+  @@map("spare_part_asset_compat")
 }
