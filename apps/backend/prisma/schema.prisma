@@ -387,6 +387,9 @@ model Organization {
   purchaseBudgets          PurchaseBudget[]
   notificationPreferences  NotificationPreference[]
   assets                   Asset[]
+  depreciationConfigs      DepreciationConfig[]
+  depreciationEntries      DepreciationEntry[]
+  depreciationRuns         DepreciationRun[]
 
   @@map("organizations")
 }
@@ -1879,6 +1882,7 @@ model CostCenter {
   receivableCostCenterItems ReceivableCostCenterItem[]
   purchaseRequests          PurchaseRequest[]
   assets                    Asset[]
+  depreciationCCItems       DepreciationEntryCCItem[]
 
   @@unique([farmId, code])
   @@index([farmId])
@@ -6698,9 +6702,11 @@ model Asset {
   costCenter   CostCenter?   @relation(fields: [costCenterId], references: [id])
   parentAsset  Asset?        @relation("AssetHierarchy", fields: [parentAssetId], references: [id])
   childAssets  Asset[]       @relation("AssetHierarchy")
-  fuelRecords  FuelRecord[]
-  meterReadings MeterReading[]
-  documents    AssetDocument[]
+  fuelRecords         FuelRecord[]
+  meterReadings       MeterReading[]
+  documents           AssetDocument[]
+  depreciationConfig  DepreciationConfig?
+  depreciationEntries DepreciationEntry[]
 
   @@unique([organizationId, assetTag])
   @@index([organizationId, assetType])
@@ -6767,4 +6773,108 @@ model AssetDocument {
   @@index([assetId])
   @@index([organizationId, expiresAt])
   @@map("asset_documents")
+}
+
+// ─── Depreciation Engine ───────────────────────────────────────────────────
+
+enum DepreciationMethod {
+  STRAIGHT_LINE
+  HOURS_OF_USE
+  UNITS_OF_PRODUCTION
+  ACCELERATED
+}
+
+enum DepreciationTrack {
+  FISCAL
+  MANAGERIAL
+}
+
+model DepreciationConfig {
+  id                    String             @id @default(uuid())
+  organizationId        String
+  assetId               String             @unique
+  method                DepreciationMethod @default(STRAIGHT_LINE)
+  fiscalAnnualRate      Decimal?           @db.Decimal(7, 4)
+  managerialAnnualRate  Decimal?           @db.Decimal(7, 4)
+  usefulLifeMonths      Int?
+  residualValue         Decimal            @db.Decimal(15, 2) @default(0)
+  totalHours            Decimal?           @db.Decimal(12, 2)
+  totalUnits            Decimal?           @db.Decimal(14, 2)
+  accelerationFactor    Decimal?           @db.Decimal(5, 2)
+  activeTrack           DepreciationTrack  @default(FISCAL)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  asset        Asset        @relation(fields: [assetId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("depreciation_configs")
+}
+
+model DepreciationEntry {
+  id                  String            @id @default(uuid())
+  organizationId      String
+  assetId             String
+  runId               String
+  periodYear          Int
+  periodMonth         Int
+  track               DepreciationTrack
+  openingBookValue    Decimal           @db.Decimal(15, 2)
+  depreciationAmount  Decimal           @db.Decimal(15, 2)
+  closingBookValue    Decimal           @db.Decimal(15, 2)
+  proRataDays         Int?
+  daysInMonth         Int
+  reversedAt          DateTime?
+  reversalEntryId     String?
+  notes               String?
+  createdAt           DateTime          @default(now())
+
+  asset        Asset                     @relation(fields: [assetId], references: [id])
+  run          DepreciationRun           @relation(fields: [runId], references: [id])
+  organization Organization              @relation(fields: [organizationId], references: [id])
+  ccItems      DepreciationEntryCCItem[]
+
+  @@unique([assetId, periodYear, periodMonth, track])
+  @@index([organizationId, periodYear, periodMonth])
+  @@index([assetId])
+  @@map("depreciation_entries")
+}
+
+model DepreciationRun {
+  id             String            @id @default(uuid())
+  organizationId String
+  periodYear     Int
+  periodMonth    Int
+  track          DepreciationTrack
+  status         String            @default("PENDING")
+  totalAssets    Int               @default(0)
+  processedCount Int               @default(0)
+  skippedCount   Int               @default(0)
+  totalAmount    Decimal           @db.Decimal(15, 2) @default(0)
+  triggeredBy    String
+  startedAt      DateTime          @default(now())
+  completedAt    DateTime?
+  errorMessage   String?
+
+  organization Organization       @relation(fields: [organizationId], references: [id])
+  entries      DepreciationEntry[]
+
+  @@index([organizationId, periodYear, periodMonth])
+  @@map("depreciation_runs")
+}
+
+model DepreciationEntryCCItem {
+  id           String  @id @default(uuid())
+  entryId      String
+  costCenterId String
+  farmId       String
+  amount       Decimal @db.Decimal(15, 2)
+  percentage   Decimal @db.Decimal(5, 2)
+
+  entry      DepreciationEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  costCenter CostCenter        @relation(fields: [costCenterId], references: [id])
+
+  @@index([entryId])
+  @@map("depreciation_entry_cc_items")
 }
