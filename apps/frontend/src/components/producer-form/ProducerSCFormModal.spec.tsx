@@ -82,7 +82,8 @@ describe('ProducerSCFormModal', () => {
 
   it('should render the modal with title and sections', () => {
     render(<ProducerSCFormModal {...defaultProps} />);
-    expect(screen.getByText('Novo produtor — Sociedade em Comum')).toBeDefined();
+    expect(screen.getByText('Novo produtor')).toBeDefined();
+    expect(screen.getByText('Sociedade em Comum')).toBeDefined();
     expect(screen.getByText('Dados Cadastrais')).toBeDefined();
     expect(screen.getByText('Endereço do Estabelecimento')).toBeDefined();
     expect(screen.getByText('Participantes da Sociedade em Comum')).toBeDefined();
@@ -405,7 +406,8 @@ describe('ProducerSCFormModal', () => {
       render(<ProducerSCFormModal {...defaultProps} producerId="prod-sc-1" />);
 
       await waitFor(() => {
-        expect(screen.getByText('Editar produtor — Sociedade em Comum')).toBeDefined();
+        expect(screen.getByText('Editar produtor')).toBeDefined();
+        expect(screen.getByText('Sociedade em Comum')).toBeDefined();
       });
     });
 

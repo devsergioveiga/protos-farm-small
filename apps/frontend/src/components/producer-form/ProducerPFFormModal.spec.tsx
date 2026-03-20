@@ -64,7 +64,8 @@ describe('ProducerPFFormModal', () => {
 
   it('should render the modal with title and sections', () => {
     render(<ProducerPFFormModal {...defaultProps} />);
-    expect(screen.getByText('Novo produtor — Pessoa Física')).toBeDefined();
+    expect(screen.getByText('Novo produtor')).toBeDefined();
+    expect(screen.getByText('Pessoa Física')).toBeDefined();
     expect(screen.getByText('Dados Cadastrais')).toBeDefined();
     expect(screen.getByText('Endereço do Estabelecimento')).toBeDefined();
   });
@@ -287,7 +288,8 @@ describe('ProducerPFFormModal', () => {
       render(<ProducerPFFormModal {...defaultProps} producerId="prod-1" />);
 
       await waitFor(() => {
-        expect(screen.getByText('Editar produtor — Pessoa Física')).toBeDefined();
+        expect(screen.getByText('Editar produtor')).toBeDefined();
+        expect(screen.getByText('Pessoa Física')).toBeDefined();
       });
     });
 

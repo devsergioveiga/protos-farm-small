@@ -64,7 +64,8 @@ describe('ProducerPJFormModal', () => {
 
   it('should render the modal with title and sections', () => {
     render(<ProducerPJFormModal {...defaultProps} />);
-    expect(screen.getByText('Novo produtor — Pessoa Jurídica')).toBeDefined();
+    expect(screen.getByText('Novo produtor')).toBeDefined();
+    expect(screen.getByText('Pessoa Jurídica')).toBeDefined();
     expect(screen.getByText('Dados da Empresa')).toBeDefined();
     expect(screen.getByText('Endereço Fiscal')).toBeDefined();
     expect(screen.getByText('Informações Adicionais')).toBeDefined();
@@ -287,7 +288,8 @@ describe('ProducerPJFormModal', () => {
       render(<ProducerPJFormModal {...defaultProps} producerId="prod-pj-1" />);
 
       await waitFor(() => {
-        expect(screen.getByText('Editar produtor — Pessoa Jurídica')).toBeDefined();
+        expect(screen.getByText('Editar produtor')).toBeDefined();
+        expect(screen.getByText('Pessoa Jurídica')).toBeDefined();
       });
     });
 
