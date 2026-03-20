@@ -1,7 +1,13 @@
 import { useState, useCallback } from 'react';
 import { api } from '@/services/api';
 import { useAuth } from '@/stores/AuthContext';
-import type { Asset, AssetSummary, AssetListResponse, ListAssetsQuery } from '@/types/asset';
+import type {
+  Asset,
+  AssetSummary,
+  AssetListResponse,
+  ListAssetsQuery,
+  AssetMapItem,
+} from '@/types/asset';
 
 // ─── useAssets ────────────────────────────────────────────────────────
 
@@ -136,6 +142,16 @@ export function useAssets() {
     [orgId],
   );
 
+  const fetchMapAssets = useCallback(async (): Promise<AssetMapItem[]> => {
+    if (!orgId) return [];
+    try {
+      const res = await api.get<AssetMapItem[]>(`/org/${orgId}/assets/map`);
+      return res;
+    } catch {
+      return [];
+    }
+  }, [orgId]);
+
   return {
     ...state,
     fetchAssets,
@@ -143,5 +159,6 @@ export function useAssets() {
     deleteAsset,
     exportCsv,
     exportPdf,
+    fetchMapAssets,
   };
 }
