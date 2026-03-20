@@ -25,15 +25,15 @@ Requirements for asset lifecycle management. Each maps to roadmap phases.
 
 ### Depreciacao e Valoracao
 
-- [ ] **DEPR-01**: Contador pode configurar metodo de depreciacao por ativo ou categoria (linear, horas-uso, producao, acelerada) com taxas pre-configuradas RFB e suporte a taxa fiscal vs gerencial
-- [ ] **DEPR-02**: Sistema calcula depreciacao mensal automaticamente (job ou gatilho manual) com pro rata die, parada em valor residual, relatorio mensal e possibilidade de estorno/recalculo
+- [x] **DEPR-01**: Contador pode configurar metodo de depreciacao por ativo ou categoria (linear, horas-uso, producao, acelerada) com taxas pre-configuradas RFB e suporte a taxa fiscal vs gerencial
+- [x] **DEPR-02**: Sistema calcula depreciacao mensal automaticamente (job ou gatilho manual) com pro rata die, parada em valor residual, relatorio mensal e possibilidade de estorno/recalculo
 - [ ] **DEPR-03**: Contador pode registrar valor justo de ativos biologicos (CPC 29/IAS 41) — rebanho por categoria com preco de mercado e culturas perenes por estagio — com variacao registrada no resultado
 - [ ] **DEPR-04**: Contador pode gerar relatorios patrimoniais (inventario geral, depreciacao acumulada, movimentacao, ativos biologicos, TCO) com filtros e exportacao PDF/Excel/CSV
 
 ### Centro de Custo Patrimonial
 
-- [ ] **CCPA-01**: Contador pode vincular cada ativo a centro de custo (fixo, rateio % ou dinamico por horas-maquina do periodo) para depreciacao e manutencao serem apropriadas corretamente
-- [ ] **CCPA-02**: Processamento mensal de depreciacao gera lancamentos detalhados por centro de custo com conciliacao automatica (soma CCs = total depreciacao)
+- [x] **CCPA-01**: Contador pode vincular cada ativo a centro de custo (fixo, rateio % ou dinamico por horas-maquina do periodo) para depreciacao e manutencao serem apropriadas corretamente
+- [x] **CCPA-02**: Processamento mensal de depreciacao gera lancamentos detalhados por centro de custo com conciliacao automatica (soma CCs = total depreciacao)
 - [ ] **CCPA-03**: Custos de manutencao (OS) sao apropriados por centro de custo com possibilidade de rateio manual ou heranca do CC do ativo
 - [ ] **CCPA-04**: Sistema oferece guia de decisao (wizard) para orientar criacao de centro de custo por ativo com exemplos e templates por tipo de fazenda
 
@@ -97,51 +97,51 @@ Deferred to future milestone. Tracked but not in current roadmap.
 
 ## Traceability
 
-| Requirement | Phase    | Status  |
-| ----------- | -------- | ------- |
-| ATIV-01     | Phase 16 | Pending |
-| ATIV-02     | Phase 16 | Pending |
-| ATIV-03     | Phase 16 | Pending |
-| ATIV-04     | Phase 16 | Pending |
-| ATIV-05     | Phase 16 | Pending |
-| ATIV-06     | Phase 16 | Pending |
-| ATIV-07     | Phase 16 | Pending |
-| DEPR-01     | Phase 17 | Pending |
-| DEPR-02     | Phase 17 | Pending |
-| CCPA-01     | Phase 17 | Pending |
-| CCPA-02     | Phase 17 | Pending |
-| MANU-01     | Phase 18 | Pending |
-| MANU-02     | Phase 18 | Pending |
-| MANU-03     | Phase 18 | Pending |
-| MANU-04     | Phase 18 | Pending |
-| MANU-05     | Phase 18 | Pending |
-| MANU-06     | Phase 18 | Pending |
-| MANU-07     | Phase 18 | Pending |
-| MANU-08     | Phase 18 | Pending |
-| CCPA-03     | Phase 18 | Pending |
-| AQUI-01     | Phase 19 | Pending |
-| AQUI-02     | Phase 19 | Pending |
-| AQUI-03     | Phase 19 | Pending |
-| AQUI-04     | Phase 19 | Pending |
-| AQUI-07     | Phase 19 | Pending |
-| DISP-01     | Phase 20 | Pending |
-| DISP-02     | Phase 20 | Pending |
-| DISP-03     | Phase 20 | Pending |
-| DISP-04     | Phase 20 | Pending |
-| DISP-05     | Phase 20 | Pending |
-| DISP-06     | Phase 20 | Pending |
-| OPER-01     | Phase 21 | Pending |
-| OPER-02     | Phase 21 | Pending |
-| OPER-03     | Phase 21 | Pending |
-| OPER-04     | Phase 21 | Pending |
-| HIER-01     | Phase 22 | Pending |
-| HIER-02     | Phase 22 | Pending |
-| HIER-03     | Phase 22 | Pending |
-| DEPR-04     | Phase 23 | Pending |
-| CCPA-04     | Phase 23 | Pending |
-| DEPR-03     | Phase 24 | Pending |
-| AQUI-05     | Phase 24 | Pending |
-| AQUI-06     | Phase 24 | Pending |
+| Requirement | Phase    | Status   |
+| ----------- | -------- | -------- |
+| ATIV-01     | Phase 16 | Pending  |
+| ATIV-02     | Phase 16 | Pending  |
+| ATIV-03     | Phase 16 | Pending  |
+| ATIV-04     | Phase 16 | Pending  |
+| ATIV-05     | Phase 16 | Pending  |
+| ATIV-06     | Phase 16 | Pending  |
+| ATIV-07     | Phase 16 | Pending  |
+| DEPR-01     | Phase 17 | Complete |
+| DEPR-02     | Phase 17 | Complete |
+| CCPA-01     | Phase 17 | Complete |
+| CCPA-02     | Phase 17 | Complete |
+| MANU-01     | Phase 18 | Pending  |
+| MANU-02     | Phase 18 | Pending  |
+| MANU-03     | Phase 18 | Pending  |
+| MANU-04     | Phase 18 | Pending  |
+| MANU-05     | Phase 18 | Pending  |
+| MANU-06     | Phase 18 | Pending  |
+| MANU-07     | Phase 18 | Pending  |
+| MANU-08     | Phase 18 | Pending  |
+| CCPA-03     | Phase 18 | Pending  |
+| AQUI-01     | Phase 19 | Pending  |
+| AQUI-02     | Phase 19 | Pending  |
+| AQUI-03     | Phase 19 | Pending  |
+| AQUI-04     | Phase 19 | Pending  |
+| AQUI-07     | Phase 19 | Pending  |
+| DISP-01     | Phase 20 | Pending  |
+| DISP-02     | Phase 20 | Pending  |
+| DISP-03     | Phase 20 | Pending  |
+| DISP-04     | Phase 20 | Pending  |
+| DISP-05     | Phase 20 | Pending  |
+| DISP-06     | Phase 20 | Pending  |
+| OPER-01     | Phase 21 | Pending  |
+| OPER-02     | Phase 21 | Pending  |
+| OPER-03     | Phase 21 | Pending  |
+| OPER-04     | Phase 21 | Pending  |
+| HIER-01     | Phase 22 | Pending  |
+| HIER-02     | Phase 22 | Pending  |
+| HIER-03     | Phase 22 | Pending  |
+| DEPR-04     | Phase 23 | Pending  |
+| CCPA-04     | Phase 23 | Pending  |
+| DEPR-03     | Phase 24 | Pending  |
+| AQUI-05     | Phase 24 | Pending  |
+| AQUI-06     | Phase 24 | Pending  |
 
 **Coverage:**
 

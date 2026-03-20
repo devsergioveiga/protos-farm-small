@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
-status: roadmap_ready
-stopped_at: Roadmap created — ready to plan Phase 16
-last_updated: '2026-03-19T17:30:00.000Z'
-last_activity: 2026-03-19 — Roadmap v1.2 created (9 phases, 43 requirements mapped)
+status: executing
+stopped_at: Completed 17-00-PLAN.md (Wave 0 TDD stubs)
+last_updated: '2026-03-20T08:46:34.300Z'
+last_activity: 2026-03-19 — Plan 16-04 complete (AssetDrawer + fuel + meter readings)
 progress:
-  total_phases: 9
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_phases: 18
+  completed_phases: 10
+  total_plans: 47
+  completed_plans: 44
+  percent: 4
 ---
 
 # Project State
@@ -46,6 +46,7 @@ Progress: [░░░░░░░░░░] 4% (0/9 phases, Phase 16 in progress)
 | 06-cr-dito-rural               | 5     | 62min      | 12min    |
 
 **Total v1.0:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
+| Phase 17-engine-de-deprecia-o P00 | 86s | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,7 @@ Key decisions for v1.2:
 - **OS accounting treatment is mandatory**: PATCH /work-orders/:id/close returns 400 if accountingTreatment absent.
 - **WIP exclusion from depreciation batch**: AssetStatus.EM_ANDAMENTO excluded from batch query. Depreciation starts only after activation.
 - **Asset disposal cancels pending depreciation atomically**: Disposal transaction atomically cancels all pending DepreciationEntry records for the asset.
+- [Phase 17-engine-de-deprecia-o]: it.todo() stubs for Wave 0: clearly communicates behavioral contract without false failing tests; Plans 01-02 will implement against these contracts
 
 ### Pending Todos
 
@@ -89,7 +91,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T22:46:00.000Z
-Stopped at: Completed 16-04-PLAN.md — AssetDrawer with 6 tabs, fuel benchmarking, meter readings anti-regression
+Last session: 2026-03-20T08:46:34.297Z
+Stopped at: Completed 17-00-PLAN.md (Wave 0 TDD stubs)
 Resume file: None
 Next action: Execute plan 16-05 (bulk import frontend — AssetImportModal)
