@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: executing
-stopped_at: Completed 17-00-PLAN.md (Wave 0 TDD stubs)
-last_updated: '2026-03-20T08:46:34.300Z'
+stopped_at: Completed 17-01-PLAN.md
+last_updated: '2026-03-20T08:52:59.094Z'
 last_activity: 2026-03-19 — Plan 16-04 complete (AssetDrawer + fuel + meter readings)
 progress:
   total_phases: 18
   completed_phases: 10
   total_plans: 47
-  completed_plans: 44
+  completed_plans: 45
   percent: 4
 ---
 
@@ -47,6 +47,7 @@ Progress: [░░░░░░░░░░] 4% (0/9 phases, Phase 16 in progress)
 
 **Total v1.0:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
 | Phase 17-engine-de-deprecia-o P00 | 86s | 1 tasks | 3 files |
+| Phase 17-engine-de-deprecia-o P01 | 7 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,9 @@ Key decisions for v1.2:
 - **WIP exclusion from depreciation batch**: AssetStatus.EM_ANDAMENTO excluded from batch query. Depreciation starts only after activation.
 - **Asset disposal cancels pending depreciation atomically**: Disposal transaction atomically cancels all pending DepreciationEntry records for the asset.
 - [Phase 17-engine-de-deprecia-o]: it.todo() stubs for Wave 0: clearly communicates behavioral contract without false failing tests; Plans 01-02 will implement against these contracts
+- [Phase 17-engine-de-deprecia-o]: UTC-safe date extraction in getProRataDays: use getUTCDate/getUTCMonth/getUTCFullYear to avoid timezone off-by-one for Prisma DateTime fields
+- [Phase 17-engine-de-deprecia-o]: HOURS_OF_USE and UNITS_OF_PRODUCTION skip pro-rata-die: usage-based methods use actual periodic consumption, not calendar days
+- [Phase 17-engine-de-deprecia-o]: ACCELERATED method uses openingBookValue _ rate _ factor / 12 (not depreciableValue): matches double-declining balance convention
 
 ### Pending Todos
 
@@ -91,7 +95,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-20T08:46:34.297Z
-Stopped at: Completed 17-00-PLAN.md (Wave 0 TDD stubs)
+Last session: 2026-03-20T08:52:59.092Z
+Stopped at: Completed 17-01-PLAN.md
 Resume file: None
 Next action: Execute plan 16-05 (bulk import frontend — AssetImportModal)

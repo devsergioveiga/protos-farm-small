@@ -249,7 +249,7 @@ Plans:
 4. Contador pode ver relatório mensal de depreciação por ativo com valor antes/depois e lançamento por centro de custo
 5. Ativo com status EM_ANDAMENTO é excluído do lote de depreciação — depreciação só inicia após ativação
 
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 
 Plans:
 
@@ -378,7 +378,7 @@ Plans:
 | 14. Stock Reversal + Supplier Rating Completion     | v1.1      | 2/2            | Complete    | 2026-03-19 |
 | 15. Frontend API Path Fixes                         | v1.1      | 1/1            | Complete    | 2026-03-19 |
 | 16. Cadastro de Ativos                              | v1.2      | 4/5            | In progress | -          |
-| 17. Engine de Depreciação                           | 1/4       | In Progress    |             | -          |
+| 17. Engine de Depreciação                           | 2/4       | In Progress    |             | -          |
 | 18. Manutenção e Ordens de Serviço                  | v1.2      | 0/?            | Not started | -          |
 | 19. Integração Financeira — Aquisição               | v1.2      | 0/?            | Not started | -          |
 | 20. Alienação e Baixa de Ativos                     | v1.2      | 0/?            | Not started | -          |
