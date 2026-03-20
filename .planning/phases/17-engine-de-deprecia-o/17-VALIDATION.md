@@ -2,9 +2,10 @@
 phase: 17
 slug: engine-de-deprecia-o
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-03-20
+updated: 2026-03-19
 ---
 
 # Phase 17 — Validation Strategy
@@ -36,24 +37,28 @@ created: 2026-03-20
 
 ## Per-Task Verification Map
 
-| Task ID  | Plan | Wave | Requirement | Test Type   | Automated Command                                                                  | File Exists | Status     |
-| -------- | ---- | ---- | ----------- | ----------- | ---------------------------------------------------------------------------------- | ----------- | ---------- |
-| 17-01-01 | 01   | 0    | DEPR-01     | unit stub   | `pnpm --filter @protos-farm/backend test -- --testPathPattern=depreciation`        | ❌ W0       | ⬜ pending |
-| 17-01-02 | 01   | 1    | DEPR-01     | integration | `pnpm --filter @protos-farm/backend test -- --testPathPattern=depreciation-config` | ❌ W0       | ⬜ pending |
-| 17-02-01 | 02   | 1    | DEPR-02     | integration | `pnpm --filter @protos-farm/backend test -- --testPathPattern=depreciation-batch`  | ❌ W0       | ⬜ pending |
-| 17-02-02 | 02   | 1    | DEPR-02     | unit        | `pnpm --filter @protos-farm/backend test -- --testPathPattern=depreciation-calc`   | ❌ W0       | ⬜ pending |
-| 17-03-01 | 03   | 2    | CCPA-01     | integration | `pnpm --filter @protos-farm/backend test -- --testPathPattern=depreciation`        | ❌ W0       | ⬜ pending |
-| 17-04-01 | 04   | 2    | CCPA-02     | e2e         | `pnpm --filter @protos-farm/frontend test -- --testPathPattern=Depreciation`       | ❌ W0       | ⬜ pending |
+| Task ID  | Plan | Wave | Requirement | Test Type   | Automated Command                                                                  | File Exists | Status  |
+| -------- | ---- | ---- | ----------- | ----------- | ---------------------------------------------------------------------------------- | ----------- | ------- |
+| 17-00-01 | 00   | 0    | ALL         | stubs       | `pnpm --filter @protos-farm/backend test -- --testPathPattern=depreciation`        | Wave 0      | pending |
+| 17-01-01 | 01   | 1    | DEPR-01     | schema      | `npx prisma validate --schema apps/backend/prisma/schema.prisma`                   | N/A         | pending |
+| 17-01-02 | 01   | 1    | DEPR-02     | unit        | `pnpm --filter @protos-farm/backend test -- --testPathPattern=depreciation-engine` | Wave 0      | pending |
+| 17-02-01 | 02   | 2    | DEPR-02     | unit        | `pnpm --filter @protos-farm/backend test -- --testPathPattern=depreciation-batch`  | Wave 0      | pending |
+| 17-02-02 | 02   | 2    | DEPR-01     | integration | `pnpm --filter @protos-farm/backend test -- --testPathPattern=depreciation.routes` | Wave 0      | pending |
+| 17-02-03 | 02   | 2    | CCPA-01     | tsc         | `cd apps/backend && npx tsc --noEmit`                                              | N/A         | pending |
+| 17-03-01 | 03   | 3    | ALL         | tsc         | `cd apps/frontend && npx tsc --noEmit`                                             | N/A         | pending |
+| 17-03-02 | 03   | 3    | ALL         | visual      | Manual checkpoint — UI verification                                                | N/A         | pending |
 
-_Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
+_Status: pending / green / red / flaky_
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] `apps/backend/src/modules/depreciation/depreciation.routes.spec.ts` — stubs for DEPR-01, DEPR-02
-- [ ] `apps/backend/src/modules/depreciation/depreciation-calc.spec.ts` — stubs for calculation engine
-- [ ] `apps/frontend/src/pages/DepreciationPage.spec.tsx` — stubs for CCPA-02
+Plan 17-00 creates all three stub files:
+
+- [x] `apps/backend/src/modules/depreciation/depreciation-engine.spec.ts` — stubs for arithmetic
+- [x] `apps/backend/src/modules/depreciation/depreciation-batch.spec.ts` — stubs for batch processing
+- [x] `apps/backend/src/modules/depreciation/depreciation.routes.spec.ts` — stubs for API endpoints
 
 ---
 
@@ -63,16 +68,17 @@ _Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
 | --------------------------- | ----------- | --------------------------------------------- | ------------------------------------------------------------------------- |
 | Cron executes monthly batch | DEPR-02     | Requires system clock manipulation or waiting | Trigger batch endpoint manually, verify entries created for current month |
 | Report PDF formatting       | CCPA-02     | Visual verification of PDF layout             | Export PDF, check column alignment and totals                             |
+| Frontend UI flows           | ALL         | Visual/interactive verification               | Plan 17-03 Task 3 checkpoint                                              |
 
 ---
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 30s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (Plan 17-00)
+- [x] No watch-mode flags
+- [x] Feedback latency < 30s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** pending execution
