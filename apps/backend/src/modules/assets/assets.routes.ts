@@ -14,6 +14,7 @@ import {
   updateAsset,
   deleteAsset,
   getAssetSummary,
+  getAssetsForMap,
   uploadAssetPhoto,
   removeAssetPhoto,
 } from './assets.service';
@@ -269,6 +270,19 @@ assetsRouter.get(
     }
   },
 );
+
+// ─── GET /org/:orgId/assets/map (BEFORE /:id) ─────────────────────────
+
+assetsRouter.get(`${base}/map`, authenticate, checkPermission('assets:read'), async (req, res) => {
+  try {
+    const ctx = buildRlsContext(req);
+    const farmId = req.query.farmId as string | undefined;
+    const items = await getAssetsForMap(ctx, farmId);
+    res.json(items);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
 
 // ─── GET /org/:orgId/assets ────────────────────────────────────────────
 

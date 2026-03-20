@@ -5,6 +5,7 @@ import {
   type CreateAssetInput,
   type UpdateAssetInput,
   type ListAssetsQuery,
+  type AssetMapItem,
 } from './assets.types';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -404,6 +405,28 @@ export async function uploadAssetPhoto(ctx: RlsContext, assetId: string, filePat
   });
 
   return result.photoUrls;
+}
+
+export async function getAssetsForMap(ctx: RlsContext, farmId?: string): Promise<AssetMapItem[]> {
+  const farmFilter = farmId ? `AND a."farmId" = '${farmId}'` : '';
+  const rows = await prisma.$queryRawUnsafe<AssetMapItem[]>(
+    `SELECT
+       a.id,
+       a.name,
+       a."assetTag" AS "assetTag",
+       a."assetType" AS "assetType",
+       a.status,
+       a."farmId" AS "farmId",
+       ST_Y(a."geoPoint") AS lat,
+       ST_X(a."geoPoint") AS lon
+     FROM assets a
+     WHERE a."organizationId" = '${ctx.organizationId}'
+       AND a."deletedAt" IS NULL
+       AND a."geoPoint" IS NOT NULL
+       ${farmFilter}
+     ORDER BY a.name ASC`,
+  );
+  return rows;
 }
 
 export async function removeAssetPhoto(ctx: RlsContext, assetId: string, photoUrl: string) {

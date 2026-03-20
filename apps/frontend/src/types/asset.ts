@@ -147,6 +147,19 @@ export const ASSET_STATUS_LABELS: Record<AssetStatus, string> = {
   EM_ANDAMENTO: 'Em andamento',
 };
 
+// ─── Map types ────────────────────────────────────────────────────────
+
+export interface AssetMapItem {
+  id: string;
+  name: string;
+  assetTag: string;
+  assetType: AssetType;
+  status: AssetStatus;
+  farmId: string;
+  lat: number;
+  lon: number;
+}
+
 export const ASSET_CLASSIFICATION_LABELS: Record<AssetClassification, string> = {
   DEPRECIABLE_CPC27: 'CPC 27 — Depreciavel',
   NON_DEPRECIABLE_CPC27: 'CPC 27 — Nao depreciavel',
