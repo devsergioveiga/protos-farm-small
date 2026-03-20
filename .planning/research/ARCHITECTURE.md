@@ -10,25 +10,25 @@
 
 This is the v1.2 milestone. The base architecture and integration contracts are established:
 
-| Existing Component | Relevance to Asset Management |
-|---|---|
-| `modules/payables/` `createPayable()` | Asset purchase → CP; maintenance OS cost → CP (expense) or capitalization |
-| `modules/receivables/` | Asset sale → CR with gain/loss calculation |
-| `modules/cost-centers/` | Depreciation and maintenance costs allocated per CC; rateio validator reused |
-| `withRlsContext` / `RlsContext` | All new modules use same multitenancy pattern — no exceptions |
-| `Money` factory (decimal.js) | All monetary fields: acquisition cost, residual value, depreciation amounts |
-| `generateInstallments` (shared) | Financed asset purchase → CP installments; leasing periodic payments |
-| `Payable.originType` / `Payable.originId` | Polymorphic link: `originType='ASSET_PURCHASE'`, `'MAINTENANCE_OS'`, `'LEASING'` |
-| `Receivable.originType` / `Receivable.originId` | Asset sale: `originType='ASSET_SALE'` |
-| `FarmLocation` with PostGIS geometry | Benfeitorias and imóveis get location Point, assets at structures reference this |
-| `Farm` with PostGIS boundary | Farm-level asset inventory filtering; transfer between farms |
-| `StockBalance` / `StockEntry` / `StockOutput` | Maintenance spare parts consume existing stock modules as-is |
-| `RuralCreditContract` (SAC/Price amortization) | Financing model for asset acquisition loans; leasing follows same installment logic |
-| `node-cron` + Redis lock pattern | Monthly depreciation batch reuses `digest.cron.ts` infrastructure exactly |
-| `OC_VALID_TRANSITIONS` pattern (purchase-orders) | Maintenance OS state machine follows same exported const + guard function pattern |
-| `pdfkit` (pesticide-prescriptions) | Asset ficha completa PDF and OS PDF reuse same synchronous stream-to-response approach |
-| `LayerControlPanel` + `FarmMap.tsx` (react-leaflet) | Asset map layer added via existing `LayerConfig[]` extensibility point — no rewrite |
-| Sidebar group structure | New `PATRIMÔNIO` group added between `COMPRAS` and `FINANCEIRO` |
+| Existing Component                                  | Relevance to Asset Management                                                          |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `modules/payables/` `createPayable()`               | Asset purchase → CP; maintenance OS cost → CP (expense) or capitalization              |
+| `modules/receivables/`                              | Asset sale → CR with gain/loss calculation                                             |
+| `modules/cost-centers/`                             | Depreciation and maintenance costs allocated per CC; rateio validator reused           |
+| `withRlsContext` / `RlsContext`                     | All new modules use same multitenancy pattern — no exceptions                          |
+| `Money` factory (decimal.js)                        | All monetary fields: acquisition cost, residual value, depreciation amounts            |
+| `generateInstallments` (shared)                     | Financed asset purchase → CP installments; leasing periodic payments                   |
+| `Payable.originType` / `Payable.originId`           | Polymorphic link: `originType='ASSET_PURCHASE'`, `'MAINTENANCE_OS'`, `'LEASING'`       |
+| `Receivable.originType` / `Receivable.originId`     | Asset sale: `originType='ASSET_SALE'`                                                  |
+| `FarmLocation` with PostGIS geometry                | Benfeitorias and imóveis get location Point, assets at structures reference this       |
+| `Farm` with PostGIS boundary                        | Farm-level asset inventory filtering; transfer between farms                           |
+| `StockBalance` / `StockEntry` / `StockOutput`       | Maintenance spare parts consume existing stock modules as-is                           |
+| `RuralCreditContract` (SAC/Price amortization)      | Financing model for asset acquisition loans; leasing follows same installment logic    |
+| `node-cron` + Redis lock pattern                    | Monthly depreciation batch reuses `digest.cron.ts` infrastructure exactly              |
+| `OC_VALID_TRANSITIONS` pattern (purchase-orders)    | Maintenance OS state machine follows same exported const + guard function pattern      |
+| `pdfkit` (pesticide-prescriptions)                  | Asset ficha completa PDF and OS PDF reuse same synchronous stream-to-response approach |
+| `LayerControlPanel` + `FarmMap.tsx` (react-leaflet) | Asset map layer added via existing `LayerConfig[]` extensibility point — no rewrite    |
+| Sidebar group structure                             | New `PATRIMÔNIO` group added between `COMPRAS` and `FINANCEIRO`                        |
 
 ---
 
@@ -90,27 +90,27 @@ This is the v1.2 milestone. The base architecture and integration contracts are 
 
 ### New Backend Modules
 
-| Module | Key Responsibility | New Prisma Models |
-|---|---|---|
-| `assets/` | CRUD ativos com hierarquia pai-filho (3 níveis), ficha completa, inventory, bulk import, transfer between farms | `Asset`, `AssetComponent`, `AssetCostCenterItem` |
-| `asset-depreciation/` | Config de métodos, cálculo mensal batch, pro rata die, lançamento CC, relatórios | `DepreciationConfig`, `DepreciationRun`, `DepreciationEntry` |
-| `maintenance-plans/` | Planos preventivos com gatilhos (tempo, horímetro, odômetro), geração automática de OS | `MaintenancePlan`, `MaintenancePlanItem` |
-| `work-orders/` | CRUD OS (corretiva + preventiva), state machine, peças (stock deduction), classificação contábil, PDF | `WorkOrder`, `WorkOrderItem`, `WorkOrderCostCenterItem` |
-| `fuel-records/` | Registro de abastecimentos, custo/litro, cálculo custo/hora | `FuelRecord` |
-| `asset-documents/` | Documentos e vencimentos (CRLV, seguro, revisão), alertas de vencimento | `AssetDocument` |
-| `asset-acquisition/` | Compra à vista/financiada, NF-e (XML parse), leasing CPC 06, troca, multi-ativo por NF | `AssetAcquisition`, `AssetAcquisitionItem`, `AssetLease` |
-| `asset-disposal/` | Baixa (sinistro/descarte/obsolescência), venda com ganho/perda, venda parcelada | `AssetDisposal` |
-| `asset-dashboard/` | TCO, disponibilidade, MTBF, relatórios patrimoniais (read-only aggregation) | no new models |
+| Module                | Key Responsibility                                                                                              | New Prisma Models                                            |
+| --------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `assets/`             | CRUD ativos com hierarquia pai-filho (3 níveis), ficha completa, inventory, bulk import, transfer between farms | `Asset`, `AssetComponent`, `AssetCostCenterItem`             |
+| `asset-depreciation/` | Config de métodos, cálculo mensal batch, pro rata die, lançamento CC, relatórios                                | `DepreciationConfig`, `DepreciationRun`, `DepreciationEntry` |
+| `maintenance-plans/`  | Planos preventivos com gatilhos (tempo, horímetro, odômetro), geração automática de OS                          | `MaintenancePlan`, `MaintenancePlanItem`                     |
+| `work-orders/`        | CRUD OS (corretiva + preventiva), state machine, peças (stock deduction), classificação contábil, PDF           | `WorkOrder`, `WorkOrderItem`, `WorkOrderCostCenterItem`      |
+| `fuel-records/`       | Registro de abastecimentos, custo/litro, cálculo custo/hora                                                     | `FuelRecord`                                                 |
+| `asset-documents/`    | Documentos e vencimentos (CRLV, seguro, revisão), alertas de vencimento                                         | `AssetDocument`                                              |
+| `asset-acquisition/`  | Compra à vista/financiada, NF-e (XML parse), leasing CPC 06, troca, multi-ativo por NF                          | `AssetAcquisition`, `AssetAcquisitionItem`, `AssetLease`     |
+| `asset-disposal/`     | Baixa (sinistro/descarte/obsolescência), venda com ganho/perda, venda parcelada                                 | `AssetDisposal`                                              |
+| `asset-dashboard/`    | TCO, disponibilidade, MTBF, relatórios patrimoniais (read-only aggregation)                                     | no new models                                                |
 
 ### Modified Existing Modules
 
-| Module | Change | Reason |
-|---|---|---|
-| `payables/` | Add `assetId` FK nullable, `workOrderId` FK nullable to `Payable` | Link CP to asset purchase or OS costs for traceability |
-| `receivables/` | Add `assetId` FK nullable to `Receivable` | Link CR to asset sale for financial reconciliation |
-| Schema `Farm` | Add `assets Asset[]` relation | Farm owns assets (FK already implicit, relation declaration needed) |
-| `PayableCategory` enum | Add `ASSET_PURCHASE`, `ASSET_MAINTENANCE`, `LEASING` values | Categorization for CP auto-generated from asset flows |
-| `ReceivableCategory` enum | Add `ASSET_SALE` value | Categorization for CR generated from asset sale |
+| Module                    | Change                                                            | Reason                                                              |
+| ------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `payables/`               | Add `assetId` FK nullable, `workOrderId` FK nullable to `Payable` | Link CP to asset purchase or OS costs for traceability              |
+| `receivables/`            | Add `assetId` FK nullable to `Receivable`                         | Link CR to asset sale for financial reconciliation                  |
+| Schema `Farm`             | Add `assets Asset[]` relation                                     | Farm owns assets (FK already implicit, relation declaration needed) |
+| `PayableCategory` enum    | Add `ASSET_PURCHASE`, `ASSET_MAINTENANCE`, `LEASING` values       | Categorization for CP auto-generated from asset flows               |
+| `ReceivableCategory` enum | Add `ASSET_SALE` value                                            | Categorization for CR generated from asset sale                     |
 
 ---
 
@@ -470,6 +470,7 @@ Asset (level 0: master) — e.g. "Colheitadeira John Deere S680"
 ```
 
 Rules enforced at service layer (not database constraint):
+
 - Before creating an AssetComponent link, traverse up from proposed parent to root
 - If depth >= 3: throw AssetError('Hierarquia máxima de 3 níveis atingida', 400)
 - Depreciation runs on each asset independently (components have their own schedule)
@@ -547,7 +548,7 @@ export interface DepreciationInput {
 }
 
 export interface DepreciationResult {
-  amount: Decimal;          // depreciation this period
+  amount: Decimal; // depreciation this period
   isFullyDepreciated: boolean;
   remainingPeriods?: number;
 }
@@ -628,20 +629,20 @@ AssetDetailPage
 
 New migrations follow the established `20260{timestamp}_{name}` convention. The last shipped migration is `20260411100000`. Asset management starts at `20260412`:
 
-| Migration | Content | Depends on |
-|---|---|---|
-| `20260412100000_add_assets_core` | `Asset`, `AssetComponent`, `AssetCostCenterItem`, enums | Farm, CostCenter, Supplier, FarmLocation |
-| `20260412200000_add_depreciation` | `DepreciationConfig`, `DepreciationRun`, `DepreciationEntry` | Asset, CostCenter |
-| `20260412300000_add_maintenance_plans` | `MaintenancePlan`, `MaintenancePlanItem` | Asset |
-| `20260412400000_add_work_orders` | `WorkOrder`, `WorkOrderItem`, `WorkOrderCostCenterItem` | Asset, MaintenancePlan, CostCenter, Product |
-| `20260412500000_add_fuel_records` | `FuelRecord` | Asset |
-| `20260412600000_add_asset_documents` | `AssetDocument` | Asset |
-| `20260412700000_add_asset_acquisition` | `AssetAcquisition`, `AssetAcquisitionItem`, `AssetLease` | Asset, Supplier |
-| `20260412800000_add_asset_disposal` | `AssetDisposal` | Asset |
-| `20260412900000_add_asset_biological` | `AssetBiologicalValuation` (CPC 29/IAS 41) | Asset |
-| `20260413000000_add_asset_wip` | `AssetWipContribution` (obras em andamento aporte parcial) | Asset |
-| `20260413100000_modify_payables_asset` | ADD `assetId`, `workOrderId` FK columns to `payables`; ADD `ASSET_PURCHASE`, `ASSET_MAINTENANCE`, `LEASING` to `PayableCategory` | Asset, WorkOrder |
-| `20260413200000_modify_receivables_asset` | ADD `assetId` FK column to `receivables`; ADD `ASSET_SALE` to `ReceivableCategory` | Asset |
+| Migration                                 | Content                                                                                                                          | Depends on                                  |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `20260412100000_add_assets_core`          | `Asset`, `AssetComponent`, `AssetCostCenterItem`, enums                                                                          | Farm, CostCenter, Supplier, FarmLocation    |
+| `20260412200000_add_depreciation`         | `DepreciationConfig`, `DepreciationRun`, `DepreciationEntry`                                                                     | Asset, CostCenter                           |
+| `20260412300000_add_maintenance_plans`    | `MaintenancePlan`, `MaintenancePlanItem`                                                                                         | Asset                                       |
+| `20260412400000_add_work_orders`          | `WorkOrder`, `WorkOrderItem`, `WorkOrderCostCenterItem`                                                                          | Asset, MaintenancePlan, CostCenter, Product |
+| `20260412500000_add_fuel_records`         | `FuelRecord`                                                                                                                     | Asset                                       |
+| `20260412600000_add_asset_documents`      | `AssetDocument`                                                                                                                  | Asset                                       |
+| `20260412700000_add_asset_acquisition`    | `AssetAcquisition`, `AssetAcquisitionItem`, `AssetLease`                                                                         | Asset, Supplier                             |
+| `20260412800000_add_asset_disposal`       | `AssetDisposal`                                                                                                                  | Asset                                       |
+| `20260412900000_add_asset_biological`     | `AssetBiologicalValuation` (CPC 29/IAS 41)                                                                                       | Asset                                       |
+| `20260413000000_add_asset_wip`            | `AssetWipContribution` (obras em andamento aporte parcial)                                                                       | Asset                                       |
+| `20260413100000_modify_payables_asset`    | ADD `assetId`, `workOrderId` FK columns to `payables`; ADD `ASSET_PURCHASE`, `ASSET_MAINTENANCE`, `LEASING` to `PayableCategory` | Asset, WorkOrder                            |
+| `20260413200000_modify_receivables_asset` | ADD `assetId` FK column to `receivables`; ADD `ASSET_SALE` to `ReceivableCategory`                                               | Asset                                       |
 
 ---
 
@@ -715,24 +716,24 @@ Phase 8 — Specialized Asset Types (depends on assets core)
 
 ### Reads (asset modules read existing data)
 
-| Existing Module | What Asset Management Reads |
-|---|---|
-| `farms/` | Farm boundary for filtering; farm transfer target |
-| `cost-centers/` | CC allocation on depreciation entries and OS costs |
-| `suppliers/` | Supplier on asset acquisition (supplierId FK) |
-| `products/` | Spare parts catalog on WorkOrderItem |
-| `measurement-units/` | Units for spare parts quantities |
-| `stock-balances/` | Pre-check parts availability before OS completion |
-| `rural-credit/` | Reference only — financing linked to Payable not duplicated here |
-| `farm-locations/` | Optional link: benfeitoria asset ↔ existing farm_locations entry |
+| Existing Module      | What Asset Management Reads                                      |
+| -------------------- | ---------------------------------------------------------------- |
+| `farms/`             | Farm boundary for filtering; farm transfer target                |
+| `cost-centers/`      | CC allocation on depreciation entries and OS costs               |
+| `suppliers/`         | Supplier on asset acquisition (supplierId FK)                    |
+| `products/`          | Spare parts catalog on WorkOrderItem                             |
+| `measurement-units/` | Units for spare parts quantities                                 |
+| `stock-balances/`    | Pre-check parts availability before OS completion                |
+| `rural-credit/`      | Reference only — financing linked to Payable not duplicated here |
+| `farm-locations/`    | Optional link: benfeitoria asset ↔ existing farm_locations entry |
 
 ### Writes to Existing Modules
 
-| Existing Module | Modification | Trigger |
-|---|---|---|
-| `stock-outputs/` | WorkOrder.complete() creates StockOutput per spare part item consumed | OS completion |
-| `payables/` | Asset acquisition confirm → CP; OS completion with external cost → CP; leasing monthly → recurring CP | Acquisition/OS/Leasing confirm |
-| `receivables/` | Asset disposal confirm (sale) → CR with gain/loss | Asset sale confirm |
+| Existing Module  | Modification                                                                                          | Trigger                        |
+| ---------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `stock-outputs/` | WorkOrder.complete() creates StockOutput per spare part item consumed                                 | OS completion                  |
+| `payables/`      | Asset acquisition confirm → CP; OS completion with external cost → CP; leasing monthly → recurring CP | Acquisition/OS/Leasing confirm |
+| `receivables/`   | Asset disposal confirm (sale) → CR with gain/loss                                                     | Asset sale confirm             |
 
 ### New Permissions for RBAC
 
@@ -764,22 +765,26 @@ Monthly depreciation cron follows `digest.cron.ts` exactly: `node-cron`, Redis `
 ```typescript
 // shared/cron/depreciation.cron.ts
 export function startDepreciationCron(): void {
-  cron.schedule('0 0 1 * *', async () => {
-    const orgs = await getActiveOrganizations();
-    for (const org of orgs) {
-      const lockKey = `cron:depreciation:${org.id}:${year}-${month}`;
-      const locked = await redis.set(lockKey, '1', 'EX', 300, 'NX');
-      if (!locked) continue;
-      try {
-        await runMonthlyDepreciation({ organizationId: org.id }, year, month);
-      } catch (err) {
-        logger.error({ err, orgId: org.id }, 'Depreciation cron failed for org');
-        // Do NOT rethrow — process other orgs
-      } finally {
-        await redis.del(lockKey);
+  cron.schedule(
+    '0 0 1 * *',
+    async () => {
+      const orgs = await getActiveOrganizations();
+      for (const org of orgs) {
+        const lockKey = `cron:depreciation:${org.id}:${year}-${month}`;
+        const locked = await redis.set(lockKey, '1', 'EX', 300, 'NX');
+        if (!locked) continue;
+        try {
+          await runMonthlyDepreciation({ organizationId: org.id }, year, month);
+        } catch (err) {
+          logger.error({ err, orgId: org.id }, 'Depreciation cron failed for org');
+          // Do NOT rethrow — process other orgs
+        } finally {
+          await redis.del(lockKey);
+        }
       }
-    }
-  }, { timezone: 'America/Sao_Paulo' });
+    },
+    { timezone: 'America/Sao_Paulo' },
+  );
 }
 ```
 
@@ -839,12 +844,12 @@ Asset management reuses the existing `Payable.originType` / `Payable.originId` p
 
 ## Scalability Considerations
 
-| Concern | At ~50 farms | At ~500 farms | At ~5k farms |
-|---|---|---|---|
-| Depreciation batch | 500 assets: runs in < 1s | 5k assets: 10-15s per org, stagger by org | 50k assets: parallelize per farm, batch size tuning |
-| Asset inventory query | No issue | Add composite index `(organizationId, farmId, status, type)` | Consider partial index on `status != 'DISPOSED'` |
-| OS history per asset | No issue | No issue | Paginate WorkOrder query by default (already standard) |
-| Map layer (asset markers) | No issue | 100+ markers: cluster with leaflet.markercluster | 1k+ markers: server-side spatial query with bbox filter |
+| Concern                   | At ~50 farms             | At ~500 farms                                                | At ~5k farms                                            |
+| ------------------------- | ------------------------ | ------------------------------------------------------------ | ------------------------------------------------------- |
+| Depreciation batch        | 500 assets: runs in < 1s | 5k assets: 10-15s per org, stagger by org                    | 50k assets: parallelize per farm, batch size tuning     |
+| Asset inventory query     | No issue                 | Add composite index `(organizationId, farmId, status, type)` | Consider partial index on `status != 'DISPOSED'`        |
+| OS history per asset      | No issue                 | No issue                                                     | Paginate WorkOrder query by default (already standard)  |
+| Map layer (asset markers) | No issue                 | 100+ markers: cluster with leaflet.markercluster             | 1k+ markers: server-side spatial query with bbox filter |
 
 **First bottleneck:** Monthly depreciation cron when org has hundreds of active assets. Mitigation: batch assets in chunks of 100 per transaction (already in design), per-org Redis lock prevents duplicate runs.
 

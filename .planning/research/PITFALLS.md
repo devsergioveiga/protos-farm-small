@@ -19,6 +19,7 @@ This is the single most dangerous integration pitfall for this milestone. The ex
 The asset purchase NF arrives through the same physical receiving dock as stock inputs. A developer extends the existing goods-receipt or stock-entry flow to "also handle assets" by adding a flag: `isAsset: boolean`. The goods-receipt service then conditionally skips stock entry creation but still creates the CP — or vice versa. Under time pressure, the "just add a flag" shortcut avoids designing a separate asset acquisition flow.
 
 **How to avoid:**
+
 - Asset acquisitions must use a separate code path: `AssetAcquisition` module, not `GoodsReceipt` or `StockEntry`. These modules must never share logic other than calling `createPayable()` via the same shared service.
 - The `Payable` created for an asset must use `originType = 'ASSET_ACQUISITION'` and `originId = assetId` — using the existing `originType`/`originId` pattern already on the `Payable` model in `schema.prisma`.
 - Add `ASSET_ACQUISITION` to the `PayableCategory` enum in `schema.prisma` — do not reuse `OTHER` or `MAINTENANCE`. The distinction is critical for financial reporting (CAPEX vs OPEX).
@@ -27,6 +28,7 @@ The asset purchase NF arrives through the same physical receiving dock as stock 
 - Receiving flow guard: add a check in the `GoodsReceipt` service — if the purchase order line item is of category `ASSET`, reject routing through the standard receiving flow and redirect to `AssetAcquisition`.
 
 **Warning signs:**
+
 - `StockEntry` records with a product category of `ASSET` or `EQUIPAMENTO`.
 - `Payable.category` is `OTHER` for an asset purchase.
 - `AssetAcquisition` calls `stockEntryService.create()` anywhere in its service.
@@ -49,6 +51,7 @@ The project already uses `decimal.js` for all financial arithmetic (confirmed in
 Depreciation formulas look like simple arithmetic. Developers unfamiliar with the project's `Money`/`Decimal` convention write `acquisitionValue - residualValue / usefulLifeMonths` using plain JavaScript division. Tests pass because test values are chosen to divide evenly.
 
 **How to avoid:**
+
 - All depreciation arithmetic must use `Decimal` from `decimal.js` — same as `Money(value)` factory already in use.
 - Depreciation period amount: `Decimal(acquisitionValue).minus(residualValue).dividedBy(usefulLifeMonths).toDecimalPlaces(2, Decimal.ROUND_HALF_EVEN)`.
 - Last period correction: the final depreciation entry must be `netBookValue - residualValue` (not the computed period amount) to ensure the net book value reaches exactly the residual value. This final-period balancing entry is standard in CPC 27.
@@ -58,6 +61,7 @@ Depreciation formulas look like simple arithmetic. Developers unfamiliar with th
 - Unit test specifically: an asset that runs the full depreciation schedule must end with `netBookValue === residualValue` to the cent.
 
 **Warning signs:**
+
 - Depreciation service imports `Money` but computes period amounts with `asset.acquisitionValue / asset.usefulLifeMonths` (JS division).
 - No "last period balancing" logic — the final month uses the same computed amount as all other months.
 - `DepreciationEntry.amount` stored as `Float` instead of `Decimal(15, 2)`.
@@ -78,6 +82,7 @@ The confusion: a developer classifies cattle as `AssetType.MACHINERY_EQUIPMENT` 
 The distinction between bearer plants (CPC 27) and other biological assets (CPC 29) is counterintuitive. CPC 29 says "biological assets at fair value" — developers read this and apply it to all living things. But CPC 29 itself was amended (amendment to IAS 41 Agriculture in 2014, transposed to CPC 29) to move bearer plants to CPC 27. This amendment is not well-known among developers without accounting background.
 
 **How to avoid:**
+
 - Define a clear `AssetClassification` enum that explicitly separates the accounting treatment at the schema level:
   - `MACHINERY_VEHICLE` — CPC 27, depreciable
   - `BUILDING_IMPROVEMENT` — CPC 27, depreciable
@@ -91,6 +96,7 @@ The distinction between bearer plants (CPC 27) and other biological assets (CPC 
 - The UI for asset creation must show a tooltip explaining bearer plants: "Plantas produtivas (café, laranja, cana) são classificadas como CPC 27 — Planta Portadora, não como ativo biológico CPC 29."
 
 **Warning signs:**
+
 - `AssetType` enum has `BOVINO`, `OVINO` as values inside the same enum that also has `TRATOR`, `COLHEITADEIRA` — no classification distinction for accounting treatment.
 - Depreciation service applies straight-line to all assets regardless of type.
 - `LAND` type asset is included in the monthly depreciation batch run.
@@ -113,6 +119,7 @@ Two separate problems combine in the OS (Ordem de Serviço / Work Order) module:
 The state machine is missing because OS looks simple in the happy path. The accounting classification is missed because it requires accounting knowledge that most developers do not have — it feels like a label field, not a financially consequential decision.
 
 **How to avoid:**
+
 - Define `OS_VALID_TRANSITIONS` map mirroring the `VALID_TRANSITIONS` pattern from `checks.types.ts`:
   ```
   SOLICITADA:   ['APROVADA', 'CANCELADA']
@@ -127,6 +134,7 @@ The state machine is missing because OS looks simple in the happy path. The acco
 - For `DESPESA`: OS cost creates a `Payable` with `category = MAINTENANCE` and `originType = 'WORK_ORDER'`, `originId = osId`. Uses the existing CP infrastructure.
 
 **Warning signs:**
+
 - OS service has `if (os.status === 'SOLICITADA') os.status = 'APROVADA'` instead of a transition map.
 - `WorkOrder.accountingTreatment` is nullable — can be closed without it.
 - A closed OS with `accountingTreatment = 'CAPITALIZACAO'` does not update `asset.bookValue`.
@@ -149,6 +157,7 @@ The alternative mistake is to limit depth via application logic but allow databa
 Parent-child with depth = 3 looks trivial ("just a parentId FK"). The performance collapse only manifests with real data. The circular reference issue is never tested because test data is always a clean tree.
 
 **How to avoid:**
+
 - Use PostgreSQL recursive CTEs (`WITH RECURSIVE`) for all tree traversals — a single query returns the full subtree regardless of depth. Index on `(organizationId, parentId)`.
 - Add a database check constraint enforcing maximum depth:
   ```sql
@@ -160,6 +169,7 @@ Parent-child with depth = 3 looks trivial ("just a parentId FK"). The performanc
 - Depreciation batch: fetch assets grouped by root via a single CTE, not by repeated parent traversal.
 
 **Warning signs:**
+
 - `asset.service.ts` has a `getAssetTree(assetId)` method that calls `findChildren()` recursively.
 - No `depth` or `path` field on the `Asset` model.
 - `AssetTransfer` service does not fetch child assets before moving — only the root asset changes `farmId`.
@@ -182,6 +192,7 @@ In production, this is discovered months later when the depreciation balance rep
 Batch jobs are typically written as `SELECT all active assets → for each → INSERT DepreciationEntry`. There is no idempotency check: "has this asset already been depreciated for this period?" The check is obvious in hindsight but is skipped during development because tests run the job once against a clean database.
 
 **How to avoid:**
+
 - Add a unique constraint on `DepreciationEntry(assetId, period)` where `period` is a `YYYY-MM` string. This makes the INSERT idempotent at the database level — duplicate entries for the same asset+period throw a unique constraint violation, not a silent success.
 - The batch job must use `INSERT ... ON CONFLICT (assetId, period) DO NOTHING` — PostgreSQL upsert semantics.
 - Alternatively, before processing each asset, check: `SELECT COUNT(*) FROM depreciation_entries WHERE assetId = ? AND period = ?` — skip if already exists.
@@ -189,6 +200,7 @@ Batch jobs are typically written as `SELECT all active assets → for each → I
 - Never run two depreciation batches for the same period simultaneously — use PostgreSQL advisory locks (`pg_try_advisory_xact_lock`) keyed on `(organizationId, period)`.
 
 **Warning signs:**
+
 - No unique constraint on `(assetId, period)` in the depreciation entries table.
 - Depreciation batch job has no `DepreciationRun` tracking table.
 - Job implementation is `for await (const asset of assets) { await createDepreciationEntry(asset, period); }` with no idempotency check.
@@ -202,6 +214,7 @@ Batch jobs are typically written as `SELECT all active assets → for each → I
 
 **What goes wrong:**
 When an asset is sold, the following must happen atomically:
+
 1. Asset status → `BAIXADO` (written off) or `VENDIDO`.
 2. All future `DepreciationEntry` records (status `PENDING`) are cancelled.
 3. A gain/loss on disposal is calculated: `salePrice - netBookValue` (where `netBookValue = acquisitionValue - accumulatedDepreciation`).
@@ -214,6 +227,7 @@ The common mistake is implementing step 4 (CR creation) without step 2 (cancelli
 Asset disposal is coded as: update `asset.status = 'VENDIDO'`, create `Receivable`. The pending depreciation entries are a separate table that nobody remembers to clean up. The status guard in the depreciation batch is often `status != 'BAIXADO'` but the status set was `'VENDIDO'` — a string mismatch.
 
 **How to avoid:**
+
 - Define a single terminal status for all asset disposal cases: `INATIVO` (covering VENDIDO, BAIXADO, SINISTRADO, DESCARTADO). The depreciation batch checks `status = 'ATIVO'`. Terminal status is mutually exclusive with active depreciation.
 - Asset disposal must be a single `prisma.$transaction()` that atomically:
   - Updates `asset.status` to the appropriate terminal value.
@@ -224,6 +238,7 @@ Asset disposal is coded as: update `asset.status = 'VENDIDO'`, create `Receivabl
 - The `AssetDisposal` record must reference the `assetId`, `disposalDate`, `salePrice`, `netBookValueAtDisposal`, `gainOrLoss`, and linked `receivableId` or `payableId`.
 
 **Warning signs:**
+
 - `asset-disposal.service.ts` does not include `prisma.$transaction()`.
 - No step cancels `DepreciationEntry` records with `status = 'PENDING'` on disposal.
 - Asset disposal sets `status = 'VENDIDO'`, but the depreciation batch query filters for `status != 'BAIXADO'` — VENDIDO passes the filter.
@@ -237,6 +252,7 @@ Asset disposal is coded as: update `asset.status = 'VENDIDO'`, create `Receivabl
 
 **What goes wrong:**
 Under CPC 06 (R2) / IFRS 16, a finance lease (arrendamento financeiro or leasing) creates two obligations:
+
 1. A right-of-use (ROU) asset that must be depreciated over the asset's useful life or the lease term (whichever is shorter).
 2. A lease liability that must be amortized using the effective interest method (principal + interest components per installment).
 
@@ -248,6 +264,7 @@ The reverse mistake is creating the ROU asset and its depreciation but also trea
 Leasing "feels like" a recurring payment (similar to rent). The developer creates a `Payable` record per installment with `category = FINANCING`. This matches v1.0's rural credit installment pattern (which itself creates installments per `RuralCreditInstallment`). The two concepts look similar enough to blur.
 
 **How to avoid:**
+
 - Model leasing as a first-class entity: `LeasingContract` with `type: FINANCEIRO | OPERACIONAL`, total value, lease term, interest rate, residual value, and linked `Asset` (ROU).
 - On `LeasingContract` creation:
   - Create the `Asset` record with `acquisitionValue = presentValueOfLease`, `assetType = RIGHT_OF_USE`, linked `leasingContractId`.
@@ -259,6 +276,7 @@ Leasing "feels like" a recurring payment (similar to rent). The developer create
 - Do not reuse the `RuralCredit` installment model for leasing — they look similar but have different accounting treatment.
 
 **Warning signs:**
+
 - `LeasingContract` creates a `Payable` per installment with `category = FINANCING` and no `principalAmount`/`interestAmount` split.
 - No `Asset` record is created when a leasing contract is registered.
 - The depreciation batch does not process any `assetType = RIGHT_OF_USE` assets.
@@ -281,6 +299,7 @@ The secondary problem: the fixed allocation percentages were set at asset regist
 Cost center allocation is copied from the existing `PayableCostCenterItem` pattern — which works for invoices (single point-in-time allocation) but not for recurring depreciation (monthly allocation over years). The pattern is technically correct for the first month but becomes stale.
 
 **How to avoid:**
+
 - Model asset cost center allocation as `AssetCostCenterAllocation` with a validity period (`validFrom`, `validTo`): when the allocation changes, close the current record and open a new one. The depreciation batch uses the allocation valid at the period being depreciated.
 - The depreciation batch must validate each cost center before creating `DepreciationEntry`: if a cost center is inactive, look for the most recent valid allocation and use it; if none exists, defer the entry and create an alert for the financial team.
 - Provide a "Revisar alocação de centros de custo" prompt in the UI when an asset's cost center allocation has not been reviewed in 90+ days.
@@ -288,6 +307,7 @@ Cost center allocation is copied from the existing `PayableCostCenterItem` patte
 - The `validateCostCenterItems` helper from `@protos-farm/shared` (used in procurement) must be reused here to validate that percentages sum to 100%.
 
 **Warning signs:**
+
 - `Asset.costCenterAllocation` is a JSON column with a static array — no validity period.
 - Depreciation batch does not check if cost centers are active before creating entries.
 - The `validateCostCenterItems` helper from `@protos-farm/shared` is not imported in the depreciation service.
@@ -308,6 +328,7 @@ If the depreciation batch query is `SELECT * FROM assets WHERE status = 'ATIVO'`
 WIP assets look like assets. The developer creates an `Asset` record immediately when the first expense is logged for the construction. The status is set to `ATIVO` because `EM_ANDAMENTO` was not defined in the status enum, or the developer did not realize the distinction matters.
 
 **How to avoid:**
+
 - Define `AssetStatus` enum explicitly including `EM_ANDAMENTO` for WIP. The `EM_ANDAMENTO` status must be excluded from all depreciation batch queries at the database level (add `WHERE classification != 'IN_PROGRESS'` or `WHERE status = 'ATIVO'`).
 - WIP activation is a separate action: `POST /assets/:id/activate` that transitions status `EM_ANDAMENTO → ATIVO`, sets `activationDate`, and triggers the first depreciation period calculation.
 - The `acquisitionValue` of the finalized asset is the sum of all partial investments recorded during the WIP phase.
@@ -315,6 +336,7 @@ WIP assets look like assets. The developer creates an `Asset` record immediately
 - Add a UI step: when creating a WIP asset, require the user to explicitly schedule the "activation date" (planned) or leave it blank; the system alerts when activation date is passed without activation.
 
 **Warning signs:**
+
 - `AssetStatus` enum does not include `EM_ANDAMENTO` — only `ATIVO`, `INATIVO`.
 - Newly created WIP asset has `status = 'ATIVO'` in the database.
 - Depreciation batch query uses `status = 'ATIVO'` and processes WIP assets.
@@ -334,6 +356,7 @@ Agricultural machinery (tractors, combines) is often depreciated using the hours
 If the horímetro (hour meter) readings are not recorded every month, the depreciation run for that month has no data and produces R$ 0.00 depreciation. The system appears to work but the asset is under-depreciated by the missed months. Recovery requires reconstructing usage hours retroactively — often impossible.
 
 **Prevention:**
+
 - The depreciation batch for hours-based assets must check whether an horímetro reading exists for the period before processing. If missing, flag as `PENDING_HOURS_DATA` and skip — not silently R$ 0.00.
 - Create an alert for assets with `depreciationMethod = HOURS` that lack a horímetro reading as month-end approaches (e.g., alert on day 25 of each month).
 - The `HorimetroReading` entity must have a `period` field (YYYY-MM) and a unique constraint on `(assetId, period)` to prevent duplicate readings.
@@ -346,6 +369,7 @@ If the horímetro (hour meter) readings are not recorded every month, the deprec
 When an asset is transferred from Fazenda A to Fazenda B, the cost center allocation (which references `farmId` in `PayableCostCenterItem`) still points to Fazenda A's cost centers. Depreciation after the transfer is posted to the wrong farm's P&L.
 
 **Prevention:**
+
 - `AssetTransfer` must trigger a mandatory review of cost center allocation — the transfer endpoint returns a 400 if the new farm's cost centers are not confirmed.
 - Close the current `AssetCostCenterAllocation` on the transfer date and require creating a new allocation for the destination farm.
 - Test the scenario: transfer asset on day 15 of a month → depreciation for the first 15 days goes to Farm A's cost center, remaining 15 days to Farm B's cost center (pro rata transfer treatment).
@@ -358,6 +382,7 @@ When an asset is transferred from Fazenda A to Fazenda B, the cost center alloca
 CPC 29 requires biological assets (cattle, breeding stock) to be remeasured at fair value at each balance sheet date. The gain/loss on remeasurement flows through the P&L. If the system auto-calculates fair value using market prices (e.g., arroba price × animal weight), a market spike creates a large unrealized gain that inflates profit — with no cash received. Farm managers may misinterpret the P&L as cash profit available for distribution.
 
 **Prevention:**
+
 - Fair value updates must be manual (user-confirmed) with a mandatory note field explaining the basis of valuation.
 - The `FairValueRevaluation` event must be clearly labeled as "ajuste a valor justo — não representa entrada de caixa" in all P&L reports that include biological assets.
 - The cash flow statement (DFC) must exclude fair value movements from operating activities and show them as non-cash items.
@@ -371,6 +396,7 @@ CPC 29 requires biological assets (cattle, breeding stock) to be remeasured at f
 Maintenance parts (rolamentos, filtros, correias) are stored in the same stock database as agricultural inputs (seeds, fertilizers, pesticides). When a maintenance OS is completed and parts are consumed, the stock output uses `StockOutput.type = CONSUMPTION` — the same type used for seed planting. Cost reports cannot distinguish "input consumed in field operation" from "part consumed in maintenance." The maintenance cost KPI is inaccurate.
 
 **Prevention:**
+
 - Add `MAINTENANCE_PARTS` as a separate `StockOutputType` or use `Product.category = MAINTENANCE_PART` as a filter. At minimum, an OS closure that consumes parts must create `StockOutput` records with `originType = 'WORK_ORDER'` and `originId = workOrderId`.
 - Alternatively, model maintenance parts as a separate inventory context: `parts_stock` vs `inputs_stock` — but this increases schema complexity. The simpler approach is to preserve the existing stock model and use `originType` tagging for reporting separation.
 - Add a check at OS closure: the parts consumed must have `Product.category = MAINTENANCE_PART` — do not allow field inputs (seeds, pesticides) to be consumed via an OS.
@@ -383,6 +409,7 @@ Maintenance parts (rolamentos, filtros, correias) are stored in the same stock d
 A single NF may contain multiple items — e.g., "3 x Trator Massey Ferguson 7180" on line 1 and "1 x Grade Aradora" on line 2. If the NF-e import creates a single `Asset` record per NF (not per line item, not per asset unit), three tractors become one asset record with value 3×. Depreciation is then calculated on a single record worth 3× the individual tractor — producing the correct total depreciation but making individual asset tracking impossible.
 
 **Prevention:**
+
 - NF-e import must create one `Asset` record per unit per NF line item. If `quantity = 3`, it creates 3 separate `Asset` records, each with `acquisitionValue = unitPrice`.
 - The import UI must show the expansion: "NF linha 1: 3 × Trator — serão criados 3 ativos individuais. Confirmar?"
 - Allow the user to optionally group (e.g., create 1 asset representing the "tractor group") — but default to individual asset creation.
@@ -421,67 +448,67 @@ The asset report shows only `currentBookValue = acquisitionValue - accumulatedDe
 
 ## Technical Debt Patterns
 
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| Asset purchase routed through GoodsReceipt → StockEntry flow | Reuses existing receiving code | Stock balance inflated with capitalized assets; CP double-counted | Never |
-| Depreciation arithmetic with JavaScript `number` instead of `Decimal` | Simpler code | Rounding drift makes depreciation ledger irreconcilable over years | Never — project already uses decimal.js |
-| All biological assets treated as CPC 27 depreciable | Simpler code | Bearer plants: correct; cattle: non-compliant, will fail audit | Never for entities subject to CPC 29 |
-| OS `accountingTreatment` field nullable | Simpler OS creation | All maintenance expenses treated as OPEX; capitalizeable overhauls missed | Never — mandatory at closure |
-| WIP asset created with `status = 'ATIVO'` | No separate activation step | WIP depreciates from cost accumulation, not from ready-for-use date | Never |
-| Asset hierarchy traversal with N+1 recursive queries | Simple code | Depreciation batch and asset report collapse at scale (>50 child assets) | Acceptable for MVP if depth guard is enforced and tree size is small |
-| Static cost center allocation (no validity period) | Simpler model | After cost center deactivation, monthly depreciation fails silently | Acceptable for MVP if cost center lifecycle is stable and monitored |
-| Single PayableCategory for all asset-related expenses | No enum migration | Cannot separate CAPEX (acquisition) from OPEX (maintenance) in financial reports | Never — ASSET_ACQUISITION category must be distinct |
+| Shortcut                                                              | Immediate Benefit              | Long-term Cost                                                                   | When Acceptable                                                      |
+| --------------------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Asset purchase routed through GoodsReceipt → StockEntry flow          | Reuses existing receiving code | Stock balance inflated with capitalized assets; CP double-counted                | Never                                                                |
+| Depreciation arithmetic with JavaScript `number` instead of `Decimal` | Simpler code                   | Rounding drift makes depreciation ledger irreconcilable over years               | Never — project already uses decimal.js                              |
+| All biological assets treated as CPC 27 depreciable                   | Simpler code                   | Bearer plants: correct; cattle: non-compliant, will fail audit                   | Never for entities subject to CPC 29                                 |
+| OS `accountingTreatment` field nullable                               | Simpler OS creation            | All maintenance expenses treated as OPEX; capitalizeable overhauls missed        | Never — mandatory at closure                                         |
+| WIP asset created with `status = 'ATIVO'`                             | No separate activation step    | WIP depreciates from cost accumulation, not from ready-for-use date              | Never                                                                |
+| Asset hierarchy traversal with N+1 recursive queries                  | Simple code                    | Depreciation batch and asset report collapse at scale (>50 child assets)         | Acceptable for MVP if depth guard is enforced and tree size is small |
+| Static cost center allocation (no validity period)                    | Simpler model                  | After cost center deactivation, monthly depreciation fails silently              | Acceptable for MVP if cost center lifecycle is stable and monitored  |
+| Single PayableCategory for all asset-related expenses                 | No enum migration              | Cannot separate CAPEX (acquisition) from OPEX (maintenance) in financial reports | Never — ASSET_ACQUISITION category must be distinct                  |
 
 ---
 
 ## Integration Gotchas
 
-| Integration | Common Mistake | Correct Approach |
-|-------------|---------------|-----------------|
-| Payables service (asset acquisition CP) | Using `category = OTHER` or `MAINTENANCE` for asset purchase | Add and use `ASSET_ACQUISITION` enum value; set `originType = 'ASSET_ACQUISITION'`, `originId = assetId` |
-| Payables service (OS maintenance expense) | Creating CP directly from OS without `originType` | OS creates CP with `originType = 'WORK_ORDER'`, `originId = workOrderId`; `category = MAINTENANCE` |
-| Receivables service (asset sale CR) | Creating CR without gain/loss calculation | Asset sale creates `Receivable` with `originType = 'ASSET_DISPOSAL'`; a separate `AssetDisposal` record stores `gainOrLoss` |
-| Stock entries (maintenance parts) | Parts consumption uses `CONSUMPTION` type identically to field inputs | Tag with `originType = 'WORK_ORDER'` or add `MAINTENANCE_PARTS` output type for reporting separation |
-| Depreciation batch (cost centers) | Using `PayableCostCenterItem` pattern directly without validity period | Create `AssetCostCenterAllocation` with `validFrom`/`validTo`; reuse `validateCostCenterItems` from `@protos-farm/shared` |
-| GoodsReceipt service (asset on PO) | Routing asset-type PO lines through standard stock-entry creation | Guard in GoodsReceipt service: if PO line is ASSET category, redirect to AssetAcquisition flow, do not create StockEntry |
-| Leasing installments (LeasingContract) | Reusing RuralCredit installment pattern with `category = FINANCING` | Leasing installments split into principal (reduces liability) and interest (P&L expense); ROU asset depreciated separately |
+| Integration                               | Common Mistake                                                         | Correct Approach                                                                                                            |
+| ----------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Payables service (asset acquisition CP)   | Using `category = OTHER` or `MAINTENANCE` for asset purchase           | Add and use `ASSET_ACQUISITION` enum value; set `originType = 'ASSET_ACQUISITION'`, `originId = assetId`                    |
+| Payables service (OS maintenance expense) | Creating CP directly from OS without `originType`                      | OS creates CP with `originType = 'WORK_ORDER'`, `originId = workOrderId`; `category = MAINTENANCE`                          |
+| Receivables service (asset sale CR)       | Creating CR without gain/loss calculation                              | Asset sale creates `Receivable` with `originType = 'ASSET_DISPOSAL'`; a separate `AssetDisposal` record stores `gainOrLoss` |
+| Stock entries (maintenance parts)         | Parts consumption uses `CONSUMPTION` type identically to field inputs  | Tag with `originType = 'WORK_ORDER'` or add `MAINTENANCE_PARTS` output type for reporting separation                        |
+| Depreciation batch (cost centers)         | Using `PayableCostCenterItem` pattern directly without validity period | Create `AssetCostCenterAllocation` with `validFrom`/`validTo`; reuse `validateCostCenterItems` from `@protos-farm/shared`   |
+| GoodsReceipt service (asset on PO)        | Routing asset-type PO lines through standard stock-entry creation      | Guard in GoodsReceipt service: if PO line is ASSET category, redirect to AssetAcquisition flow, do not create StockEntry    |
+| Leasing installments (LeasingContract)    | Reusing RuralCredit installment pattern with `category = FINANCING`    | Leasing installments split into principal (reduces liability) and interest (P&L expense); ROU asset depreciated separately  |
 
 ---
 
 ## Performance Traps
 
-| Trap | Symptoms | Prevention | When It Breaks |
-|------|----------|------------|---------------|
-| Depreciation batch with N+1 asset hierarchy traversal | Month-end batch runs 30+ minutes with large asset tree | Use PostgreSQL recursive CTE; fetch all subtrees in one query | >50 child assets per organization |
-| No idempotency guard on depreciation batch | Partial run on crash produces duplicate entries on retry | Unique constraint on `(assetId, period)`; advisory lock on `(organizationId, period)` | Every server restart mid-batch |
-| Accumulated depreciation computed from SUM of all entries on every report load | Asset report page times out | Maintain running `accumulatedDepreciation` column on `Asset`; update atomically per `DepreciationEntry` | >200 depreciation entries per asset |
-| Cost center allocation validation (sum = 100%) computed by fetching all allocation records | Slow validation on asset save with many allocations | In-memory validation at service layer before transaction; do not re-query after INSERT | >20 cost center items per asset |
-| Fair value batch update for all biological assets without batching | OOM or timeout if org has large cattle herd | Process biological asset revaluation in batches of 100; use `cursor`-based pagination | >500 biological assets |
-| Document expiry alert query joining all assets without index | Slow dashboard load | Index on `(organizationId, expiryDate)` on asset documents table; exclude `status != 'ATIVO'` assets | >1,000 asset documents |
+| Trap                                                                                       | Symptoms                                                 | Prevention                                                                                              | When It Breaks                      |
+| ------------------------------------------------------------------------------------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| Depreciation batch with N+1 asset hierarchy traversal                                      | Month-end batch runs 30+ minutes with large asset tree   | Use PostgreSQL recursive CTE; fetch all subtrees in one query                                           | >50 child assets per organization   |
+| No idempotency guard on depreciation batch                                                 | Partial run on crash produces duplicate entries on retry | Unique constraint on `(assetId, period)`; advisory lock on `(organizationId, period)`                   | Every server restart mid-batch      |
+| Accumulated depreciation computed from SUM of all entries on every report load             | Asset report page times out                              | Maintain running `accumulatedDepreciation` column on `Asset`; update atomically per `DepreciationEntry` | >200 depreciation entries per asset |
+| Cost center allocation validation (sum = 100%) computed by fetching all allocation records | Slow validation on asset save with many allocations      | In-memory validation at service layer before transaction; do not re-query after INSERT                  | >20 cost center items per asset     |
+| Fair value batch update for all biological assets without batching                         | OOM or timeout if org has large cattle herd              | Process biological asset revaluation in batches of 100; use `cursor`-based pagination                   | >500 biological assets              |
+| Document expiry alert query joining all assets without index                               | Slow dashboard load                                      | Index on `(organizationId, expiryDate)` on asset documents table; exclude `status != 'ATIVO'` assets    | >1,000 asset documents              |
 
 ---
 
 ## Security Mistakes
 
-| Mistake | Risk | Prevention |
-|---------|------|------------|
-| Asset acquisition endpoint accessible to `OPERATOR` role | Field operator registers unauthorized capital expenditures | `assets:create` permission limited to `MANAGER`, `FINANCIAL`, `ADMIN` roles; mobile flow for maintenance requests, not asset creation |
-| Depreciation run triggerable via API by any authenticated user | Malicious or accidental double-run produces duplicate entries | Depreciation run endpoint requires `assets:depreciate` permission (`FINANCIAL` or `ADMIN` only); idempotency constraint at database level as last resort |
-| Asset book value visible in list API to all roles | Confidential asset valuation exposed to field workers | Book value, acquisition value, and depreciation details returned only for `FINANCIAL`, `MANAGER`, `ADMIN` roles; `OPERATOR` sees only operational fields (status, location, documents) |
-| OS accounting treatment selectable by maintenance technician | Technician classifies routine repair as capitalization to inflate asset value | `accountingTreatment` selection on OS closure requires `FINANCIAL` or `MANAGER` role; technician can close OS but accounting classification is locked to authorized users |
+| Mistake                                                        | Risk                                                                          | Prevention                                                                                                                                                                             |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Asset acquisition endpoint accessible to `OPERATOR` role       | Field operator registers unauthorized capital expenditures                    | `assets:create` permission limited to `MANAGER`, `FINANCIAL`, `ADMIN` roles; mobile flow for maintenance requests, not asset creation                                                  |
+| Depreciation run triggerable via API by any authenticated user | Malicious or accidental double-run produces duplicate entries                 | Depreciation run endpoint requires `assets:depreciate` permission (`FINANCIAL` or `ADMIN` only); idempotency constraint at database level as last resort                               |
+| Asset book value visible in list API to all roles              | Confidential asset valuation exposed to field workers                         | Book value, acquisition value, and depreciation details returned only for `FINANCIAL`, `MANAGER`, `ADMIN` roles; `OPERATOR` sees only operational fields (status, location, documents) |
+| OS accounting treatment selectable by maintenance technician   | Technician classifies routine repair as capitalization to inflate asset value | `accountingTreatment` selection on OS closure requires `FINANCIAL` or `MANAGER` role; technician can close OS but accounting classification is locked to authorized users              |
 
 ---
 
 ## UX Pitfalls
 
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| Depreciation run triggered manually with no progress feedback | User clicks "Executar Depreciação" and sees nothing for 30 seconds, clicks again | Show progress: "Processando X de Y ativos..." with a cancel option; disable button during run |
+| Pitfall                                                                                         | User Impact                                                                      | Better Approach                                                                                                                                                                    |
+| ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Depreciation run triggered manually with no progress feedback                                   | User clicks "Executar Depreciação" and sees nothing for 30 seconds, clicks again | Show progress: "Processando X de Y ativos..." with a cancel option; disable button during run                                                                                      |
 | OS closure form shows `accountingTreatment` as a dropdown with three options and no explanation | Maintenance team selects wrong treatment (CAPITALIZACAO for a simple oil change) | Show contextual help: "Capitalização: melhora ou estende vida útil. Despesa: manutenção de rotina. Diferimento: reforma planejada com amortização futura." Link to CPC 27 summary. |
-| Asset transfer form does not show current cost center allocation | User transfers asset without realizing cost center must be updated for new farm | Show current allocation in read-only panel on transfer form; require confirmation that allocation will be updated |
-| Biological asset fair value update with no cash flow warning | Manager sees large P&L gain, assumes profit available for distribution | Show inline: "Ajuste a valor justo de R$ X,XXX — não representa entrada de caixa. Não afeta o saldo bancário." |
-| Imobilizado em andamento shows depreciation amount of R$ 0.00 in asset list | Manager thinks the WIP asset is depreciating at zero | Show "Em andamento — depreciação inicia na ativação" instead of R$ 0.00 |
-| Document expiry dashboard shows expired documents for deactivated assets | Cluttered dashboard with irrelevant alerts | Filter document alerts to `asset.status = 'ATIVO'` assets only; show count of inactive assets with expired documents as a collapsed section |
+| Asset transfer form does not show current cost center allocation                                | User transfers asset without realizing cost center must be updated for new farm  | Show current allocation in read-only panel on transfer form; require confirmation that allocation will be updated                                                                  |
+| Biological asset fair value update with no cash flow warning                                    | Manager sees large P&L gain, assumes profit available for distribution           | Show inline: "Ajuste a valor justo de R$ X,XXX — não representa entrada de caixa. Não afeta o saldo bancário."                                                                     |
+| Imobilizado em andamento shows depreciation amount of R$ 0.00 in asset list                     | Manager thinks the WIP asset is depreciating at zero                             | Show "Em andamento — depreciação inicia na ativação" instead of R$ 0.00                                                                                                            |
+| Document expiry dashboard shows expired documents for deactivated assets                        | Cluttered dashboard with irrelevant alerts                                       | Filter document alerts to `asset.status = 'ATIVO'` assets only; show count of inactive assets with expired documents as a collapsed section                                        |
 
 ---
 
@@ -504,33 +531,33 @@ The asset report shows only `currentBookValue = acquisitionValue - accumulatedDe
 
 ## Recovery Strategies
 
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|---------------|
-| Asset purchases already creating StockEntry records discovered in production | HIGH | Audit all `StockEntry` records with `product.category = ASSET`; reverse stock balance for affected items; reprocess as `AssetAcquisition`; financial reporting for affected periods must be regenerated |
-| Depreciation computed with float arithmetic — accumulated rounding drift | HIGH | Recalculate all `DepreciationEntry` records using Decimal arithmetic; compare with stored values; create adjustment entries for the difference; audit trail required for accounting sign-off |
-| Biological assets (cattle) have depreciation entries instead of fair value revaluations | MEDIUM | Identify all `DepreciationEntry` records for `classification = BIOLOGICAL_ASSET_*` assets; void them; create compensating entries; requires accountant review |
-| WIP assets with premature depreciation entries | MEDIUM | Identify `DepreciationEntry` records for assets with `activationDate > entryDate`; void premature entries; recalculate from correct activation date |
-| Batch run created duplicate entries for same period | LOW | Delete duplicates using unique constraint violation analysis; unique constraint prevents future occurrences after it is added |
-| Asset disposed without cancelling pending depreciation entries | MEDIUM | Write script: for each disposed asset with `status != 'ATIVO'`, void all `DepreciationEntry` records with `status = 'PENDING'`; verify net book values |
+| Pitfall                                                                                 | Recovery Cost | Recovery Steps                                                                                                                                                                                          |
+| --------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Asset purchases already creating StockEntry records discovered in production            | HIGH          | Audit all `StockEntry` records with `product.category = ASSET`; reverse stock balance for affected items; reprocess as `AssetAcquisition`; financial reporting for affected periods must be regenerated |
+| Depreciation computed with float arithmetic — accumulated rounding drift                | HIGH          | Recalculate all `DepreciationEntry` records using Decimal arithmetic; compare with stored values; create adjustment entries for the difference; audit trail required for accounting sign-off            |
+| Biological assets (cattle) have depreciation entries instead of fair value revaluations | MEDIUM        | Identify all `DepreciationEntry` records for `classification = BIOLOGICAL_ASSET_*` assets; void them; create compensating entries; requires accountant review                                           |
+| WIP assets with premature depreciation entries                                          | MEDIUM        | Identify `DepreciationEntry` records for assets with `activationDate > entryDate`; void premature entries; recalculate from correct activation date                                                     |
+| Batch run created duplicate entries for same period                                     | LOW           | Delete duplicates using unique constraint violation analysis; unique constraint prevents future occurrences after it is added                                                                           |
+| Asset disposed without cancelling pending depreciation entries                          | MEDIUM        | Write script: for each disposed asset with `status != 'ATIVO'`, void all `DepreciationEntry` records with `status = 'PENDING'`; verify net book values                                                  |
 
 ---
 
 ## Pitfall-to-Phase Mapping
 
-| Pitfall | Prevention Phase | Verification |
-|---------|-----------------|-------------|
-| Asset purchase double-counting via GoodsReceipt | Cadastro e Aquisição (Phase 1) | No StockEntry created for asset-category products; CP has `originType = ASSET_ACQUISITION`; `GoodsReceipt` service rejects asset-type PO lines |
-| CPC 27 vs CPC 29 classification confusion | Cadastro de Ativos (Phase 1) | `AssetClassification` enum has explicit CPC mapping; bearer plants classified as `BEARER_PLANT`; cattle as `BIOLOGICAL_ASSET_ANIMAL` |
-| WIP asset premature depreciation | Imobilizado em Andamento (Phase 2) | WIP asset with `status = EM_ANDAMENTO` produces R$0 in depreciation batch; batch query excludes `IN_PROGRESS` classification |
-| Asset hierarchy N+1 query performance | Imobilizado em Andamento (Phase 2) | Tree traversal uses recursive CTE; `depth` or `path` column enforces max depth; circular reference returns 400 |
-| Depreciation decimal precision | Depreciação Automática (Phase 3) | 84-month depreciation ends at exactly residual value; all arithmetic via Decimal |
-| Depreciation batch idempotency | Depreciação Automática (Phase 3) | Double batch run produces identical result as single run; unique constraint on (assetId, period) |
-| Cost center allocation staleness | Depreciação e Centro de Custo (Phase 3) | After cost center deactivation, batch skips and alerts; allocation has validity period |
-| Asset disposal missing pending entry cleanup | Baixa e Transferência (Phase 4) | Sold asset has zero PENDING depreciation entries; next batch ignores sold assets |
-| OS state machine invalid transitions | Manutenção e OS (Phase 5) | Direct API call with invalid transition returns 409; OS_VALID_TRANSITIONS is source of truth |
-| OS accounting treatment missing | Manutenção e OS (Phase 5) | Close OS without accountingTreatment returns 400; CAPITALIZACAO updates asset.bookValue |
-| Leasing ROU asset not created | Leasing e Arrendamento (Phase 7) | LeasingContract FINANCEIRO creates Asset(RIGHT_OF_USE) + amortization schedule; depreciation batch processes ROU asset |
-| Hours-based depreciation with missing horímetro | Operacional (Phase 6) | Assets with HOURS method and no horímetro reading flagged as PENDING_HOURS_DATA, not R$0 |
+| Pitfall                                         | Prevention Phase                        | Verification                                                                                                                                   |
+| ----------------------------------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Asset purchase double-counting via GoodsReceipt | Cadastro e Aquisição (Phase 1)          | No StockEntry created for asset-category products; CP has `originType = ASSET_ACQUISITION`; `GoodsReceipt` service rejects asset-type PO lines |
+| CPC 27 vs CPC 29 classification confusion       | Cadastro de Ativos (Phase 1)            | `AssetClassification` enum has explicit CPC mapping; bearer plants classified as `BEARER_PLANT`; cattle as `BIOLOGICAL_ASSET_ANIMAL`           |
+| WIP asset premature depreciation                | Imobilizado em Andamento (Phase 2)      | WIP asset with `status = EM_ANDAMENTO` produces R$0 in depreciation batch; batch query excludes `IN_PROGRESS` classification                   |
+| Asset hierarchy N+1 query performance           | Imobilizado em Andamento (Phase 2)      | Tree traversal uses recursive CTE; `depth` or `path` column enforces max depth; circular reference returns 400                                 |
+| Depreciation decimal precision                  | Depreciação Automática (Phase 3)        | 84-month depreciation ends at exactly residual value; all arithmetic via Decimal                                                               |
+| Depreciation batch idempotency                  | Depreciação Automática (Phase 3)        | Double batch run produces identical result as single run; unique constraint on (assetId, period)                                               |
+| Cost center allocation staleness                | Depreciação e Centro de Custo (Phase 3) | After cost center deactivation, batch skips and alerts; allocation has validity period                                                         |
+| Asset disposal missing pending entry cleanup    | Baixa e Transferência (Phase 4)         | Sold asset has zero PENDING depreciation entries; next batch ignores sold assets                                                               |
+| OS state machine invalid transitions            | Manutenção e OS (Phase 5)               | Direct API call with invalid transition returns 409; OS_VALID_TRANSITIONS is source of truth                                                   |
+| OS accounting treatment missing                 | Manutenção e OS (Phase 5)               | Close OS without accountingTreatment returns 400; CAPITALIZACAO updates asset.bookValue                                                        |
+| Leasing ROU asset not created                   | Leasing e Arrendamento (Phase 7)        | LeasingContract FINANCEIRO creates Asset(RIGHT_OF_USE) + amortization schedule; depreciation batch processes ROU asset                         |
+| Hours-based depreciation with missing horímetro | Operacional (Phase 6)                   | Assets with HOURS method and no horímetro reading flagged as PENDING_HOURS_DATA, not R$0                                                       |
 
 ---
 

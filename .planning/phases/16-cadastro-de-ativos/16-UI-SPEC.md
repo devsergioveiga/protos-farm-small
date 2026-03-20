@@ -251,7 +251,7 @@ All copy in pt-BR coloquial per CLAUDE.md.
 | Page title                | "Ativos Patrimoniais"                                                                    |
 | Primary CTA               | "Novo ativo"                                                                             |
 | Import CTA                | "Importar ativos"                                                                        |
-| Export label              | "Exportar ativos"                                                                               |
+| Export label              | "Exportar ativos"                                                                        |
 | Empty state heading       | "Nenhum ativo cadastrado"                                                                |
 | Empty state body          | "Cadastre máquinas, veículos, implementos e benfeitorias para controlar seu patrimônio." |
 | Empty state CTA           | "Cadastrar primeiro ativo"                                                               |

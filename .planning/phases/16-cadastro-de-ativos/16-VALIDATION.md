@@ -15,13 +15,13 @@ created: 2026-03-19
 
 ## Test Infrastructure
 
-| Property | Value |
-|----------|-------|
-| **Framework** | Jest + @swc/jest (backend), Vitest + @testing-library/react (frontend) |
-| **Config file** | `apps/backend/jest.config.js`, `apps/frontend/vitest.config.ts` |
-| **Quick run command** | `cd apps/backend && pnpm test -- --testPathPattern "assets\|fuel-records\|meter-readings"` |
-| **Full suite command** | `cd apps/backend && pnpm test` |
-| **Estimated runtime** | ~30 seconds |
+| Property               | Value                                                                                      |
+| ---------------------- | ------------------------------------------------------------------------------------------ |
+| **Framework**          | Jest + @swc/jest (backend), Vitest + @testing-library/react (frontend)                     |
+| **Config file**        | `apps/backend/jest.config.js`, `apps/frontend/vitest.config.ts`                            |
+| **Quick run command**  | `cd apps/backend && pnpm test -- --testPathPattern "assets\|fuel-records\|meter-readings"` |
+| **Full suite command** | `cd apps/backend && pnpm test`                                                             |
+| **Estimated runtime**  | ~30 seconds                                                                                |
 
 ---
 
@@ -36,25 +36,25 @@ created: 2026-03-19
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 16-01-01 | 01 | 1 | ATIV-01 | unit/integration | `pnpm test -- --testPathPattern assets.routes` | ❌ W0 | ⬜ pending |
-| 16-01-02 | 01 | 1 | ATIV-01 | unit/integration | `pnpm test -- --testPathPattern assets.routes` | ❌ W0 | ⬜ pending |
-| 16-01-03 | 01 | 1 | ATIV-01 | unit/integration | `pnpm test -- --testPathPattern assets.routes` | ❌ W0 | ⬜ pending |
-| 16-01-04 | 01 | 1 | ATIV-01 | unit/integration | `pnpm test -- --testPathPattern assets.routes` | ❌ W0 | ⬜ pending |
-| 16-01-05 | 01 | 1 | ATIV-02 | unit/integration | `pnpm test -- --testPathPattern assets.routes` | ❌ W0 | ⬜ pending |
-| 16-01-06 | 01 | 1 | ATIV-04 | unit/integration | `pnpm test -- --testPathPattern assets.routes` | ❌ W0 | ⬜ pending |
-| 16-02-01 | 02 | 1 | ATIV-06 | unit/integration | `pnpm test -- --testPathPattern assets.routes` | ❌ W0 | ⬜ pending |
-| 16-02-02 | 02 | 1 | ATIV-06 | unit/integration | `pnpm test -- --testPathPattern assets.routes` | ❌ W0 | ⬜ pending |
-| 16-02-03 | 02 | 1 | ATIV-06 | unit/integration | `pnpm test -- --testPathPattern assets.routes` | ❌ W0 | ⬜ pending |
-| 16-03-01 | 03 | 2 | OPER-01 | unit/integration | `pnpm test -- --testPathPattern fuel-records.routes` | ❌ W0 | ⬜ pending |
-| 16-03-02 | 03 | 2 | OPER-01 | unit/integration | `pnpm test -- --testPathPattern fuel-records.routes` | ❌ W0 | ⬜ pending |
-| 16-04-01 | 04 | 2 | OPER-03 | unit/integration | `pnpm test -- --testPathPattern meter-readings.routes` | ❌ W0 | ⬜ pending |
-| 16-04-02 | 04 | 2 | OPER-03 | unit/integration | `pnpm test -- --testPathPattern meter-readings.routes` | ❌ W0 | ⬜ pending |
-| 16-05-01 | 05 | 3 | ATIV-01 | visual/functional | `cd apps/frontend && pnpm test` | ❌ W0 | ⬜ pending |
-| 16-05-02 | 05 | 3 | ATIV-06 | visual/functional | `cd apps/frontend && pnpm test` | ❌ W0 | ⬜ pending |
+| Task ID  | Plan | Wave | Requirement | Test Type         | Automated Command                                      | File Exists | Status     |
+| -------- | ---- | ---- | ----------- | ----------------- | ------------------------------------------------------ | ----------- | ---------- |
+| 16-01-01 | 01   | 1    | ATIV-01     | unit/integration  | `pnpm test -- --testPathPattern assets.routes`         | ❌ W0       | ⬜ pending |
+| 16-01-02 | 01   | 1    | ATIV-01     | unit/integration  | `pnpm test -- --testPathPattern assets.routes`         | ❌ W0       | ⬜ pending |
+| 16-01-03 | 01   | 1    | ATIV-01     | unit/integration  | `pnpm test -- --testPathPattern assets.routes`         | ❌ W0       | ⬜ pending |
+| 16-01-04 | 01   | 1    | ATIV-01     | unit/integration  | `pnpm test -- --testPathPattern assets.routes`         | ❌ W0       | ⬜ pending |
+| 16-01-05 | 01   | 1    | ATIV-02     | unit/integration  | `pnpm test -- --testPathPattern assets.routes`         | ❌ W0       | ⬜ pending |
+| 16-01-06 | 01   | 1    | ATIV-04     | unit/integration  | `pnpm test -- --testPathPattern assets.routes`         | ❌ W0       | ⬜ pending |
+| 16-02-01 | 02   | 1    | ATIV-06     | unit/integration  | `pnpm test -- --testPathPattern assets.routes`         | ❌ W0       | ⬜ pending |
+| 16-02-02 | 02   | 1    | ATIV-06     | unit/integration  | `pnpm test -- --testPathPattern assets.routes`         | ❌ W0       | ⬜ pending |
+| 16-02-03 | 02   | 1    | ATIV-06     | unit/integration  | `pnpm test -- --testPathPattern assets.routes`         | ❌ W0       | ⬜ pending |
+| 16-03-01 | 03   | 2    | OPER-01     | unit/integration  | `pnpm test -- --testPathPattern fuel-records.routes`   | ❌ W0       | ⬜ pending |
+| 16-03-02 | 03   | 2    | OPER-01     | unit/integration  | `pnpm test -- --testPathPattern fuel-records.routes`   | ❌ W0       | ⬜ pending |
+| 16-04-01 | 04   | 2    | OPER-03     | unit/integration  | `pnpm test -- --testPathPattern meter-readings.routes` | ❌ W0       | ⬜ pending |
+| 16-04-02 | 04   | 2    | OPER-03     | unit/integration  | `pnpm test -- --testPathPattern meter-readings.routes` | ❌ W0       | ⬜ pending |
+| 16-05-01 | 05   | 3    | ATIV-01     | visual/functional | `cd apps/frontend && pnpm test`                        | ❌ W0       | ⬜ pending |
+| 16-05-02 | 05   | 3    | ATIV-06     | visual/functional | `cd apps/frontend && pnpm test`                        | ❌ W0       | ⬜ pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+_Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
 
 ---
 
@@ -64,17 +64,17 @@ created: 2026-03-19
 - [ ] `apps/backend/src/modules/fuel-records/fuel-records.routes.spec.ts` — stubs for OPER-01
 - [ ] `apps/backend/src/modules/meter-readings/meter-readings.routes.spec.ts` — stubs for OPER-03
 
-*Existing infrastructure covers framework setup — only test file stubs needed.*
+_Existing infrastructure covers framework setup — only test file stubs needed._
 
 ---
 
 ## Manual-Only Verifications
 
-| Behavior | Requirement | Why Manual | Test Instructions |
-|----------|-------------|------------|-------------------|
-| Photo upload renders correctly in ficha | ATIV-01 | Visual rendering | Upload photo → verify thumbnail in detail tab |
-| Map picker for benfeitoria coordinates | ATIV-02 | Map interaction | Open asset modal → select BENFEITORIA → verify map picker |
-| CSV/Excel import wizard column mapping UX | ATIV-06 | Multi-step wizard flow | Upload file → map columns → preview → confirm |
+| Behavior                                  | Requirement | Why Manual             | Test Instructions                                         |
+| ----------------------------------------- | ----------- | ---------------------- | --------------------------------------------------------- |
+| Photo upload renders correctly in ficha   | ATIV-01     | Visual rendering       | Upload photo → verify thumbnail in detail tab             |
+| Map picker for benfeitoria coordinates    | ATIV-02     | Map interaction        | Open asset modal → select BENFEITORIA → verify map picker |
+| CSV/Excel import wizard column mapping UX | ATIV-06     | Multi-step wizard flow | Upload file → map columns → preview → confirm             |
 
 ---
 

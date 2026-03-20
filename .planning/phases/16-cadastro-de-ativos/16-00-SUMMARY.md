@@ -1,13 +1,13 @@
 ---
 phase: 16-cadastro-de-ativos
-plan: "00"
+plan: '00'
 subsystem: testing
 tags: [jest, tdd, assets, fuel-records, meter-readings, asset-documents, wave-0, nyquist]
 
 requires: []
 provides:
-  - "48 it.todo() spec stubs covering all backend modules for Phase 16 (assets, fuel-records, meter-readings, asset-documents)"
-  - "Jest-recognized spec files establishing RED state for Plans 16-01 and 16-02"
+  - '48 it.todo() spec stubs covering all backend modules for Phase 16 (assets, fuel-records, meter-readings, asset-documents)'
+  - 'Jest-recognized spec files establishing RED state for Plans 16-01 and 16-02'
 affects:
   - 16-cadastro-de-ativos/16-01
   - 16-cadastro-de-ativos/16-02
@@ -15,7 +15,7 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "Wave 0 Nyquist scaffold: it.todo() stubs created before any production code, no beforeAll/afterAll setup in stub files"
+    - 'Wave 0 Nyquist scaffold: it.todo() stubs created before any production code, no beforeAll/afterAll setup in stub files'
 
 key-files:
   created:
@@ -26,11 +26,11 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Wave 0 stubs use it.todo() only — no beforeAll/afterAll setup until Plans 01/02 fill in test bodies"
-  - "Module directories created for assets/, fuel-records/, meter-readings/ as empty containers for production code"
+  - 'Wave 0 stubs use it.todo() only — no beforeAll/afterAll setup until Plans 01/02 fill in test bodies'
+  - 'Module directories created for assets/, fuel-records/, meter-readings/ as empty containers for production code'
 
 patterns-established:
-  - "Pattern: Wave 0 spec file contains describe() blocks mirroring API route structure, with it.todo() per test case"
+  - 'Pattern: Wave 0 spec file contains describe() blocks mirroring API route structure, with it.todo() per test case'
 
 requirements-completed:
   - ATIV-01
@@ -41,7 +41,7 @@ requirements-completed:
   - OPER-03
 
 duration: 1min
-completed: "2026-03-19"
+completed: '2026-03-19'
 ---
 
 # Phase 16 Plan 00: Cadastro de Ativos — Wave 0 Summary
@@ -95,14 +95,17 @@ None. The worktree's `.planning/` directory is separate from the main repo's `.p
 ## Self-Check: PASSED
 
 Files exist:
+
 - FOUND: apps/backend/src/modules/assets/assets.routes.spec.ts
 - FOUND: apps/backend/src/modules/assets/asset-documents.routes.spec.ts
 - FOUND: apps/backend/src/modules/fuel-records/fuel-records.routes.spec.ts
 - FOUND: apps/backend/src/modules/meter-readings/meter-readings.routes.spec.ts
 
 Commits exist:
+
 - FOUND: d9d9c0c3 — test(16-00): add Wave 0 failing spec stubs
 
 ---
-*Phase: 16-cadastro-de-ativos*
-*Completed: 2026-03-19*
+
+_Phase: 16-cadastro-de-ativos_
+_Completed: 2026-03-19_

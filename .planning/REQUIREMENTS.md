@@ -133,70 +133,72 @@ Requirements for milestone v1.2 Gestão de Patrimônio. Each maps to roadmap pha
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| NF-e XML import/parsing completo | Requer módulo fiscal separado — complexidade de schema SEFAZ |
-| Portal de fornecedores (login) | Alto custo, baixo ROI para escala fazenda |
-| Leilão reverso / bidding | Complexidade excessiva para contexto rural |
-| Credit scoring Serasa/SPC | Custo API, LGPD, overkill para 10-30 fornecedores |
-| IoT / telematics integration | Fragmentação por marca de trator, custo de manutenção |
-| Predictive maintenance via ML | Sem histórico suficiente de falhas |
-| Asset-level P&L (profit center) | Requer módulo de contabilidade gerencial separado |
-| Lease vs buy decision wizard | Inputs variáveis demais para automação confiável |
-| Insurance integration (SUSEP API) | Nenhuma API pública disponível por seguradora |
-| Full project management (Gantt) for construction | Escopo de gerenciamento de projetos, não patrimônio |
-| Mobile: funcionalidades financeiras | Web-only para financeiro por enquanto |
+| Feature                                          | Reason                                                       |
+| ------------------------------------------------ | ------------------------------------------------------------ |
+| NF-e XML import/parsing completo                 | Requer módulo fiscal separado — complexidade de schema SEFAZ |
+| Portal de fornecedores (login)                   | Alto custo, baixo ROI para escala fazenda                    |
+| Leilão reverso / bidding                         | Complexidade excessiva para contexto rural                   |
+| Credit scoring Serasa/SPC                        | Custo API, LGPD, overkill para 10-30 fornecedores            |
+| IoT / telematics integration                     | Fragmentação por marca de trator, custo de manutenção        |
+| Predictive maintenance via ML                    | Sem histórico suficiente de falhas                           |
+| Asset-level P&L (profit center)                  | Requer módulo de contabilidade gerencial separado            |
+| Lease vs buy decision wizard                     | Inputs variáveis demais para automação confiável             |
+| Insurance integration (SUSEP API)                | Nenhuma API pública disponível por seguradora                |
+| Full project management (Gantt) for construction | Escopo de gerenciamento de projetos, não patrimônio          |
+| Mobile: funcionalidades financeiras              | Web-only para financeiro por enquanto                        |
 
 ## Traceability
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| ATIV-01 | Phase 16 | Complete |
-| ATIV-02 | Phase 16 | Complete |
-| ATIV-03 | Phase 22 | Pending |
-| ATIV-04 | Phase 16 | Complete |
-| ATIV-05 | Phase 21 | Pending |
-| ATIV-06 | Phase 16 | Complete |
-| ATIV-07 | Phase 20 | Pending |
-| DEPR-01 | Phase 17 | Pending |
-| DEPR-02 | Phase 17 | Pending |
-| DEPR-03 | Phase 17 | Pending |
-| DEPR-04 | Phase 22 | Pending |
-| DEPR-05 | Phase 22 | Pending |
-| DEPR-06 | Phase 22 | Pending |
-| MANU-01 | Phase 18 | Pending |
-| MANU-02 | Phase 18 | Pending |
-| MANU-03 | Phase 18 | Pending |
-| MANU-04 | Phase 21 | Pending |
-| MANU-05 | Phase 18 | Pending |
-| MANU-06 | Phase 18 | Pending |
-| OPER-01 | Phase 16 | Complete |
-| OPER-02 | Phase 21 | Pending |
-| OPER-03 | Phase 16 | Complete |
-| OPER-04 | Phase 21 | Pending |
-| FINP-01 | Phase 19 | Pending |
-| FINP-02 | Phase 19 | Pending |
-| FINP-03 | Phase 20 | Pending |
-| FINP-04 | Phase 20 | Pending |
-| FINP-05 | Phase 24 | Pending |
-| FINP-06 | Phase 19 | Pending |
-| BIOL-01 | Phase 24 | Pending |
-| BIOL-02 | Phase 24 | Pending |
-| BIOL-03 | Phase 24 | Pending |
-| BIOL-04 | Phase 24 | Pending |
-| IMOB-01 | Phase 23 | Pending |
-| IMOB-02 | Phase 23 | Pending |
-| RELP-01 | Phase 23 | Pending |
-| RELP-02 | Phase 23 | Pending |
-| RELP-03 | Phase 23 | Pending |
+| Requirement | Phase    | Status   |
+| ----------- | -------- | -------- |
+| ATIV-01     | Phase 16 | Complete |
+| ATIV-02     | Phase 16 | Complete |
+| ATIV-03     | Phase 22 | Pending  |
+| ATIV-04     | Phase 16 | Complete |
+| ATIV-05     | Phase 21 | Pending  |
+| ATIV-06     | Phase 16 | Complete |
+| ATIV-07     | Phase 20 | Pending  |
+| DEPR-01     | Phase 17 | Pending  |
+| DEPR-02     | Phase 17 | Pending  |
+| DEPR-03     | Phase 17 | Pending  |
+| DEPR-04     | Phase 22 | Pending  |
+| DEPR-05     | Phase 22 | Pending  |
+| DEPR-06     | Phase 22 | Pending  |
+| MANU-01     | Phase 18 | Pending  |
+| MANU-02     | Phase 18 | Pending  |
+| MANU-03     | Phase 18 | Pending  |
+| MANU-04     | Phase 21 | Pending  |
+| MANU-05     | Phase 18 | Pending  |
+| MANU-06     | Phase 18 | Pending  |
+| OPER-01     | Phase 16 | Complete |
+| OPER-02     | Phase 21 | Pending  |
+| OPER-03     | Phase 16 | Complete |
+| OPER-04     | Phase 21 | Pending  |
+| FINP-01     | Phase 19 | Pending  |
+| FINP-02     | Phase 19 | Pending  |
+| FINP-03     | Phase 20 | Pending  |
+| FINP-04     | Phase 20 | Pending  |
+| FINP-05     | Phase 24 | Pending  |
+| FINP-06     | Phase 19 | Pending  |
+| BIOL-01     | Phase 24 | Pending  |
+| BIOL-02     | Phase 24 | Pending  |
+| BIOL-03     | Phase 24 | Pending  |
+| BIOL-04     | Phase 24 | Pending  |
+| IMOB-01     | Phase 23 | Pending  |
+| IMOB-02     | Phase 23 | Pending  |
+| RELP-01     | Phase 23 | Pending  |
+| RELP-02     | Phase 23 | Pending  |
+| RELP-03     | Phase 23 | Pending  |
 
 **Coverage:**
+
 - v1.2 requirements: 38 total
 - Mapped to phases: 38
 - Unmapped: 0 ✓
 
 ---
-*Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after roadmap creation*
+
+_Requirements defined: 2026-03-19_
+_Last updated: 2026-03-19 after roadmap creation_
