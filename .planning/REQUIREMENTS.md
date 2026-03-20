@@ -10,11 +10,11 @@ Requirements for asset lifecycle management. Each maps to roadmap phases.
 ### Cadastro de Ativos
 
 - [ ] **ATIV-01**: Gerente pode cadastrar maquinas, veiculos e implementos com dados de aquisicao (NF, fornecedor, valor), operacionais (horimetro, odometro, potencia, combustivel), status e fotos
-- [ ] **ATIV-02**: Gerente pode cadastrar benfeitorias e ativos imoveis com geolocalizacao (ponto, linha ou poligono), material de construcao, area e capacidade, visualizando no mapa da fazenda
+- [x] **ATIV-02**: Gerente pode cadastrar benfeitorias e ativos imoveis com geolocalizacao (ponto, linha ou poligono), material de construcao, area e capacidade, visualizando no mapa da fazenda
 - [ ] **ATIV-03**: Proprietario pode cadastrar terras e imoveis rurais como ativo nao depreciavel (CPC 27) com documentacao cartoraria, despesas de aquisicao e historico de avaliacoes/reavaliacao
 - [ ] **ATIV-04**: Gerente pode cadastrar implementos e equipamentos menores (grades, ordenhadeiras, balancas) com vinculacao a maquina principal quando aplicavel
 - [ ] **ATIV-05**: Gerente pode importar ativos em massa via CSV/Excel com mapeamento flexivel de colunas, preview e relatorio pos-importacao
-- [ ] **ATIV-06**: Gerente pode visualizar inventario completo com filtros (tipo, categoria, fazenda, status, faixa de valor), busca, totalizacao, exportacao CSV/Excel/PDF e visao em mapa
+- [x] **ATIV-06**: Gerente pode visualizar inventario completo com filtros (tipo, categoria, fazenda, status, faixa de valor), busca, totalizacao, exportacao CSV/Excel/PDF e visao em mapa
 - [ ] **ATIV-07**: Gerente pode ver ficha completa do ativo com grafico de depreciacao, historico de manutencoes, TCO, indicadores (disponibilidade, custo/hora), timeline de eventos e documentos
 
 ### Hierarquia e Imobilizado em Andamento
@@ -100,11 +100,11 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | Requirement | Phase    | Status   |
 | ----------- | -------- | -------- |
 | ATIV-01     | Phase 16 | Pending  |
-| ATIV-02     | Phase 16 | Pending  |
+| ATIV-02     | Phase 16 | Complete |
 | ATIV-03     | Phase 16 | Pending  |
 | ATIV-04     | Phase 16 | Pending  |
 | ATIV-05     | Phase 16 | Pending  |
-| ATIV-06     | Phase 16 | Pending  |
+| ATIV-06     | Phase 16 | Complete |
 | ATIV-07     | Phase 16 | Pending  |
 | DEPR-01     | Phase 17 | Complete |
 | DEPR-02     | Phase 17 | Complete |

@@ -41,7 +41,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 **Milestone Goal:** Implementar o ciclo de vida completo dos ativos da fazenda — cadastro, depreciação, manutenção preventiva/corretiva, controle operacional, documentação e integração bidirecional com o módulo financeiro (compra, venda, financiamento, leasing).
 
-- [ ] **Phase 16: Cadastro de Ativos** — Entidade raiz do patrimônio: todas as fases dependem de um ativo cadastrado e classificado corretamente
+- [x] **Phase 16: Cadastro de Ativos** — Entidade raiz do patrimônio: todas as fases dependem de um ativo cadastrado e classificado corretamente (completed 2026-03-20)
 - [x] **Phase 17: Engine de Depreciação** — Cálculo mensal automático e rastreável, pré-requisito para ganho/perda na alienação (completed 2026-03-20)
 - [ ] **Phase 18: Manutenção e Ordens de Serviço** — CMMS completo com consumo de peças do estoque existente e classificação contábil obrigatória
 - [ ] **Phase 19: Integração Financeira — Aquisição** — Compra à vista e financiada geram CP automaticamente sem contaminar o fluxo de recebimento de mercadorias
@@ -234,7 +234,7 @@ Plans:
 4. Gerente pode acessar a ficha completa do ativo com histórico de manutenções, documentos e timeline de eventos desde o cadastro
 5. Ativo de benfeitoria aparece com marcação georreferenciada no mapa da fazenda usando coordenada ou polígono informado no cadastro
 
-**Plans:** 7 plans
+**Plans:** 7/7 plans complete
 
 Plans:
 
@@ -387,7 +387,7 @@ Plans:
 | 13. Kanban DnD Fixes + Notification Wiring          | v1.1      | 3/3            | Complete    | 2026-03-19 |
 | 14. Stock Reversal + Supplier Rating Completion     | v1.1      | 2/2            | Complete    | 2026-03-19 |
 | 15. Frontend API Path Fixes                         | v1.1      | 1/1            | Complete    | 2026-03-19 |
-| 16. Cadastro de Ativos                              | v1.2      | 6/7            | In progress | -          |
+| 16. Cadastro de Ativos                              | 7/7       | Complete       | 2026-03-20  | -          |
 | 17. Engine de Depreciação                           | v1.2      | 4/4            | Complete    | 2026-03-20 |
 | 18. Manutenção e Ordens de Serviço                  | v1.2      | 0/?            | Not started | -          |
 | 19. Integração Financeira — Aquisição               | v1.2      | 0/?            | Not started | -          |
