@@ -4,7 +4,7 @@ milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: executing
 stopped_at: Completed 16-06-PLAN.md (asset map integration — ATIV-02 + ATIV-06)
-last_updated: '2026-03-20T12:25:59.603Z'
+last_updated: '2026-03-20T12:30:36.715Z'
 last_activity: 2026-03-19 — Plan 16-04 complete (AssetDrawer + fuel + meter readings)
 progress:
   total_phases: 18
