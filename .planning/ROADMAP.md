@@ -234,7 +234,17 @@ Plans:
 4. Gerente pode acessar a ficha completa do ativo com histórico de manutenções, documentos e timeline de eventos desde o cadastro
 5. Ativo de benfeitoria aparece com marcação georreferenciada no mapa da fazenda usando coordenada ou polígono informado no cadastro
 
-**Plans**: TBD
+**Plans:** 7 plans
+
+Plans:
+
+- [x] 16-00-PLAN.md — Wave 0: Prisma schema, migration, backend types, RBAC permissions
+- [x] 16-01-PLAN.md — Backend CRUD service, routes, sequential tag, tests
+- [x] 16-02-PLAN.md — Backend bulk import, export CSV/PDF, fuel records, meter readings
+- [x] 16-03-PLAN.md — Frontend AssetsPage, AssetModal, types, hooks, sidebar wiring
+- [x] 16-04-PLAN.md — Frontend AssetDrawer with tabs (fuel, readings, documents, timeline)
+- [x] 16-05-PLAN.md — Frontend AssetImportModal (5-step bulk import wizard)
+- [ ] 16-06-PLAN.md — Gap closure: backend assets/map endpoint + FarmMapPage asset layer + AssetsPage map view toggle
 
 ### Phase 17: Engine de Depreciação
 
@@ -377,8 +387,8 @@ Plans:
 | 13. Kanban DnD Fixes + Notification Wiring          | v1.1      | 3/3            | Complete    | 2026-03-19 |
 | 14. Stock Reversal + Supplier Rating Completion     | v1.1      | 2/2            | Complete    | 2026-03-19 |
 | 15. Frontend API Path Fixes                         | v1.1      | 1/1            | Complete    | 2026-03-19 |
-| 16. Cadastro de Ativos                              | v1.2      | 4/5            | In progress | -          |
-| 17. Engine de Depreciação                           | 4/4       | Complete       | 2026-03-20  | -          |
+| 16. Cadastro de Ativos                              | v1.2      | 6/7            | In progress | -          |
+| 17. Engine de Depreciação                           | v1.2      | 4/4            | Complete    | 2026-03-20 |
 | 18. Manutenção e Ordens de Serviço                  | v1.2      | 0/?            | Not started | -          |
 | 19. Integração Financeira — Aquisição               | v1.2      | 0/?            | Not started | -          |
 | 20. Alienação e Baixa de Ativos                     | v1.2      | 0/?            | Not started | -          |
