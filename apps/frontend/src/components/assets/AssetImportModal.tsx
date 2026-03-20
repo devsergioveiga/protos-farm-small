@@ -55,12 +55,14 @@ export default function AssetImportModal({ isOpen, onClose, onSuccess }: AssetIm
 
   // Reset on close
   const prevIsOpen = useRef(isOpen);
-  if (prevIsOpen.current !== isOpen) {
-    prevIsOpen.current = isOpen;
-    if (!isOpen) {
-      reset();
+  useEffect(() => {
+    if (prevIsOpen.current !== isOpen) {
+      prevIsOpen.current = isOpen;
+      if (!isOpen) {
+        reset();
+      }
     }
-  }
+  }, [isOpen, reset]);
 
   // Keyboard handling
   useEffect(() => {
