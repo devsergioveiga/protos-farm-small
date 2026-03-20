@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: executing
-stopped_at: Completed 17-01-PLAN.md
-last_updated: '2026-03-20T08:52:59.094Z'
+stopped_at: Completed 17-02-PLAN.md
+last_updated: '2026-03-20T09:07:04.254Z'
 last_activity: 2026-03-19 — Plan 16-04 complete (AssetDrawer + fuel + meter readings)
 progress:
   total_phases: 18
   completed_phases: 10
   total_plans: 47
-  completed_plans: 45
+  completed_plans: 46
   percent: 4
 ---
 
@@ -48,6 +48,7 @@ Progress: [░░░░░░░░░░] 4% (0/9 phases, Phase 16 in progress)
 **Total v1.0:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
 | Phase 17-engine-de-deprecia-o P00 | 86s | 1 tasks | 3 files |
 | Phase 17-engine-de-deprecia-o P01 | 7 | 2 tasks | 5 files |
+| Phase 17-engine-de-deprecia-o P02 | 627s | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,9 @@ Key decisions for v1.2:
 - [Phase 17-engine-de-deprecia-o]: UTC-safe date extraction in getProRataDays: use getUTCDate/getUTCMonth/getUTCFullYear to avoid timezone off-by-one for Prisma DateTime fields
 - [Phase 17-engine-de-deprecia-o]: HOURS_OF_USE and UNITS_OF_PRODUCTION skip pro-rata-die: usage-based methods use actual periodic consumption, not calendar days
 - [Phase 17-engine-de-deprecia-o]: ACCELERATED method uses openingBookValue _ rate _ factor / 12 (not depreciableValue): matches double-declining balance convention
+- [Phase 17-engine-de-deprecia-o]: Per-asset transactions (not one big transaction) to avoid timeout per Research pitfall 2
+- [Phase 17-engine-de-deprecia-o]: FINANCIAL role gets depreciation read+update (accountants configure and run)
+- [Phase 17-engine-de-deprecia-o]: disposalDate not in Asset schema — pass null to engine for now, defer to future phase
 
 ### Pending Todos
 
@@ -95,7 +99,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-20T08:52:59.092Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-03-20T09:06:56.841Z
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None
 Next action: Execute plan 16-05 (bulk import frontend — AssetImportModal)
