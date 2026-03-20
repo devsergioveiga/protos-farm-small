@@ -42,7 +42,7 @@ decisions:
 metrics:
   duration: ~25min
   completed: 2026-03-20
-  tasks_completed: 2
+  tasks_completed: 3
   tasks_total: 3
   files_created: 10
   files_modified: 5
@@ -54,11 +54,11 @@ metrics:
 
 ## Tasks Completed
 
-| Task | Name                                          | Commit   | Files                     |
-| ---- | --------------------------------------------- | -------- | ------------------------- |
-| 1    | Types + hooks + DepreciationPage + components | 7622489f | 10 new files              |
-| 2    | AssetDrawer tab + Sidebar + App route wiring  | 95b8fbdb | 5 modified files          |
-| 3    | Verify depreciation UI end-to-end             | —        | Checkpoint (human verify) |
+| Task | Name                                          | Commit   | Files                       |
+| ---- | --------------------------------------------- | -------- | --------------------------- |
+| 1    | Types + hooks + DepreciationPage + components | 7622489f | 10 new files                |
+| 2    | AssetDrawer tab + Sidebar + App route wiring  | 95b8fbdb | 5 modified files            |
+| 3    | Verify depreciation UI end-to-end             | approved | Checkpoint approved by user |
 
 ## What Was Built
 
