@@ -386,6 +386,7 @@ model Organization {
   goodsReturns             GoodsReturn[]
   purchaseBudgets          PurchaseBudget[]
   notificationPreferences  NotificationPreference[]
+  assets                   Asset[]
 
   @@map("organizations")
 }
@@ -579,6 +580,7 @@ model Farm {
   ruralProperties            RuralProperty[]
   ruralCreditContracts       RuralCreditContract[]
   purchaseRequests           PurchaseRequest[]
+  assets                     Asset[]
 
   @@map("farms")
 }
@@ -1876,6 +1878,7 @@ model CostCenter {
   payableCostCenterItems    PayableCostCenterItem[]
   receivableCostCenterItems ReceivableCostCenterItem[]
   purchaseRequests          PurchaseRequest[]
+  assets                    Asset[]
 
   @@unique([farmId, code])
   @@index([farmId])
@@ -5979,6 +5982,7 @@ model Supplier {
   purchaseOrders    PurchaseOrder[]
   goodsReceipts     GoodsReceipt[]
   goodsReturns      GoodsReturn[]
+  assets            Asset[]
 
   @@unique([document, organizationId])
   @@index([organizationId])
@@ -6608,4 +6612,159 @@ model PurchaseBudget {
   @@index([organizationId, periodStart, periodEnd])
   @@index([organizationId, category])
   @@map("purchase_budgets")
+}
+
+// ─── Assets (Cadastro de Ativos) ──────────────────────────────────────────────
+
+enum AssetType {
+  MAQUINA
+  VEICULO
+  IMPLEMENTO
+  BENFEITORIA
+  TERRA
+}
+
+enum AssetClassification {
+  DEPRECIABLE_CPC27
+  NON_DEPRECIABLE_CPC27
+  FAIR_VALUE_CPC29
+  BEARER_PLANT_CPC27
+}
+
+enum AssetStatus {
+  ATIVO
+  INATIVO
+  EM_MANUTENCAO
+  ALIENADO
+  EM_ANDAMENTO
+}
+
+enum AssetDocumentType {
+  CRLV
+  SEGURO
+  REVISAO
+  CCIR
+  ITR
+  LAUDO
+  GARANTIA
+  OUTRO
+}
+
+model Asset {
+  id                   String              @id @default(uuid())
+  organizationId       String
+  farmId               String
+  assetType            AssetType
+  classification       AssetClassification
+  status               AssetStatus         @default(ATIVO)
+  name                 String
+  description          String?
+  assetTag             String
+  acquisitionDate      DateTime?
+  acquisitionValue     Decimal?            @db.Decimal(15, 2)
+  supplierId           String?
+  invoiceNumber        String?
+  costCenterId         String?
+  costCenterMode       String              @default("FIXED")
+  costCenterPercent    Decimal?            @db.Decimal(5, 2)
+  serialNumber         String?
+  manufacturer         String?
+  model                String?
+  yearOfManufacture    Int?
+  engineHp             Decimal?            @db.Decimal(8, 2)
+  fuelType             String?
+  renavamCode          String?
+  licensePlate         String?
+  parentAssetId        String?
+  constructionMaterial String?
+  areaM2               Decimal?            @db.Decimal(12, 2)
+  capacity             String?
+  geoPoint             Unsupported("geometry(Point, 4326)")?
+  geoBoundary          Unsupported("geometry(Polygon, 4326)")?
+  registrationNumber   String?
+  areaHa               Decimal?            @db.Decimal(12, 4)
+  carCode              String?
+  currentHourmeter     Decimal?            @db.Decimal(12, 2)
+  currentOdometer      Decimal?            @db.Decimal(12, 2)
+  photoUrls            Json?               @default("[]")
+  notes                String?
+  deletedAt            DateTime?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  farm         Farm          @relation(fields: [farmId], references: [id])
+  supplier     Supplier?     @relation(fields: [supplierId], references: [id])
+  costCenter   CostCenter?   @relation(fields: [costCenterId], references: [id])
+  parentAsset  Asset?        @relation("AssetHierarchy", fields: [parentAssetId], references: [id])
+  childAssets  Asset[]       @relation("AssetHierarchy")
+  fuelRecords  FuelRecord[]
+  meterReadings MeterReading[]
+  documents    AssetDocument[]
+
+  @@unique([organizationId, assetTag])
+  @@index([organizationId, assetType])
+  @@index([organizationId, status])
+  @@index([farmId])
+  @@map("assets")
+}
+
+model FuelRecord {
+  id              String   @id @default(uuid())
+  organizationId  String
+  assetId         String
+  farmId          String
+  fuelDate        DateTime
+  liters          Decimal  @db.Decimal(10, 3)
+  pricePerLiter   Decimal  @db.Decimal(10, 4)
+  totalCost       Decimal  @db.Decimal(15, 2)
+  hourmeterAtFuel Decimal? @db.Decimal(12, 2)
+  odometerAtFuel  Decimal? @db.Decimal(12, 2)
+  notes           String?
+  createdBy       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  @@index([assetId])
+  @@index([organizationId, fuelDate])
+  @@map("fuel_records")
+}
+
+model MeterReading {
+  id            String   @id @default(uuid())
+  organizationId String
+  assetId       String
+  readingDate   DateTime
+  readingType   String
+  value         Decimal  @db.Decimal(12, 2)
+  previousValue Decimal? @db.Decimal(12, 2)
+  createdBy     String
+  createdAt     DateTime @default(now())
+
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  @@index([assetId, readingType])
+  @@map("meter_readings")
+}
+
+model AssetDocument {
+  id             String            @id @default(uuid())
+  organizationId String
+  assetId        String
+  documentType   AssetDocumentType
+  documentName   String
+  description    String?
+  expiresAt      DateTime?
+  fileUrl        String?
+  createdBy      String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  @@index([assetId])
+  @@index([organizationId, expiresAt])
+  @@map("asset_documents")
 }
