@@ -371,7 +371,7 @@ Plans:
 | 13. Kanban DnD Fixes + Notification Wiring          | v1.1      | 3/3            | Complete    | 2026-03-19 |
 | 14. Stock Reversal + Supplier Rating Completion     | v1.1      | 2/2            | Complete    | 2026-03-19 |
 | 15. Frontend API Path Fixes                         | v1.1      | 1/1            | Complete    | 2026-03-19 |
-| 16. Cadastro de Ativos                              | v1.2      | 0/?            | Not started | -          |
+| 16. Cadastro de Ativos                              | v1.2      | 4/5            | In progress | -          |
 | 17. Engine de Depreciação                           | v1.2      | 0/?            | Not started | -          |
 | 18. Manutenção e Ordens de Serviço                  | v1.2      | 0/?            | Not started | -          |
 | 19. Integração Financeira — Aquisição               | v1.2      | 0/?            | Not started | -          |

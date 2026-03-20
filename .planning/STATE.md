@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Current Position
 
-Phase: 16 — Cadastro de Ativos (not started)
-Plan: —
-Status: Roadmap ready — awaiting plan-phase 16
-Last activity: 2026-03-19 — Roadmap created
+Phase: 16 — Cadastro de Ativos (in progress)
+Plan: 4/5 complete
+Status: Executing Phase 16 — Plan 04 complete
+Last activity: 2026-03-19 — Plan 16-04 complete (AssetDrawer + fuel + meter readings)
 
-Progress: [░░░░░░░░░░] 0% (0/9 phases)
+Progress: [░░░░░░░░░░] 4% (0/9 phases, Phase 16 in progress)
 
 ## Performance Metrics
 
@@ -60,6 +60,12 @@ Key decisions carried from v1.1:
 - **BullMQ for async email**: Never await emailService.send() inside Prisma transaction
 - **VALID_TRANSITIONS map**: State machines follow checks.types.ts pattern
 
+Key decisions for v1.2 (Phase 16-04):
+
+- **AssetDrawer activeTab as controlled prop**: AssetsPage owns drawerTab state and passes activeTab/onTabChange to AssetDrawer, enabling future parent-driven navigation (e.g. jump to Documentos from notification).
+- **Expiry badge uses Set lookup**: fetchExpiring on page load builds Set of assetIds, O(1) lookup per row — avoids iterating arrays per row.
+- **useMeterReadings re-throws on 400**: setSubmitError for inline display AND re-throw so form knows to stop isSubmitting. Prevents silent swallow of anti-regression error.
+
 Key decisions for v1.2:
 
 - **AssetAcquisition never routes through GoodsReceipt**: Asset NF must never create StockEntry. Separate AssetAcquisition module with originType = ASSET_ACQUISITION on CP. Guard in GoodsReceipt service to reject asset-category lines.
@@ -83,7 +89,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T17:30:00.000Z
-Stopped at: Roadmap created — ready to plan Phase 16
+Last session: 2026-03-19T22:46:00.000Z
+Stopped at: Completed 16-04-PLAN.md — AssetDrawer with 6 tabs, fuel benchmarking, meter readings anti-regression
 Resume file: None
-Next action: `/gsd:plan-phase 16`
+Next action: Execute plan 16-05 (bulk import frontend — AssetImportModal)
