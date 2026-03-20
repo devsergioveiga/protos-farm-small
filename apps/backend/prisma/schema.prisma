@@ -732,7 +732,12 @@ model Producer {
   incraRegistration   String?
   legalRepresentative String?
   legalRepCpf         String?
-  address             String?
+  street              String?
+  addressNumber       String?
+  complement          String?
+  neighborhood        String?
+  district            String?
+  locationReference   String?
   city                String?
   state               String?
   zipCode             String?

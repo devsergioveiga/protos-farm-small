@@ -75,6 +75,74 @@
   padding: var(--space-6);
 }
 
+/* ─── Upload section ─── */
+
+.ie-modal__upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  background: var(--color-neutral-50);
+  border: 1px dashed var(--color-neutral-300);
+  border-radius: var(--radius-md);
+}
+
+.ie-modal__file-input {
+  display: none;
+}
+
+.ie-modal__upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-0);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  min-height: 48px;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
+}
+
+.ie-modal__upload-btn:hover {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+}
+
+.ie-modal__upload-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.ie-modal__upload-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ie-modal__upload-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+
+.ie-modal__upload-status--success {
+  color: var(--color-primary-600);
+}
+
+.ie-modal__upload-status--error {
+  color: var(--color-error-500);
+}
+
 /* ─── Fields ─── */
 
 .ie-modal__fields {

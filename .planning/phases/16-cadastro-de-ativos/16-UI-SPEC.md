@@ -1,8 +1,7 @@
 ---
 phase: 16
 slug: cadastro-de-ativos
-status: approved
-reviewed_at: 2026-03-19
+status: draft
 shadcn_initialized: false
 preset: none
 created: 2026-03-19
@@ -198,11 +197,6 @@ All components follow the existing modular CSS + BEM-style class naming pattern 
 | 5 — confirming | "Importando..."           | Progress indicator                                                                                                                         |
 | 6 — done       | "Resultado da importação" | Imported count, skipped count, failed count, error list                                                                                    |
 
-### AssetsPage — Visual Hierarchy
-
-**Primary visual anchor:** "Novo ativo" primary CTA in the top-right header area.
-**Eye path:** H1 page title → filter bar → asset list → primary CTA.
-
 ### AssetsPage — Filter Bar
 
 Filters displayed inline in a horizontal bar above the list:
@@ -251,7 +245,7 @@ All copy in pt-BR coloquial per CLAUDE.md.
 | Page title                | "Ativos Patrimoniais"                                                                    |
 | Primary CTA               | "Novo ativo"                                                                             |
 | Import CTA                | "Importar ativos"                                                                        |
-| Export label              | "Exportar ativos"                                                                        |
+| Export label              | "Exportar"                                                                               |
 | Empty state heading       | "Nenhum ativo cadastrado"                                                                |
 | Empty state body          | "Cadastre máquinas, veículos, implementos e benfeitorias para controlar seu patrimônio." |
 | Empty state CTA           | "Cadastrar primeiro ativo"                                                               |

@@ -1,7 +1,8 @@
 import { useEffect, useCallback } from 'react';
-import { X, AlertCircle, Loader2 } from 'lucide-react';
+import { X, AlertCircle, Loader2, Building2 } from 'lucide-react';
 import { VALID_UF } from '@/constants/states';
 import { useCreateProducerPJ } from '@/hooks/useCreateProducerPJ';
+import { formatCepInput } from '@/hooks/useCreateProducer';
 import './ProducerPJFormModal.css';
 
 const TAX_REGIME_OPTIONS = [
@@ -180,9 +181,15 @@ function ProducerPJFormModal({ isOpen, onClose, onSuccess, producerId }: Produce
     >
       <div className="pj-form-modal">
         <header className="pj-form-modal__header">
-          <h2 id="pj-form-title" className="pj-form-modal__title">
-            {isEditMode ? 'Editar produtor — Pessoa Jurídica' : 'Novo produtor — Pessoa Jurídica'}
-          </h2>
+          <div className="pj-form-modal__header-info">
+            <h2 id="pj-form-title" className="pj-form-modal__title">
+              {isEditMode ? 'Editar produtor' : 'Novo produtor'}
+            </h2>
+            <span className="pj-form-modal__type-badge">
+              <Building2 size={14} aria-hidden="true" />
+              Pessoa Jurídica
+            </span>
+          </div>
           <button
             type="button"
             className="pj-form-modal__close"
@@ -256,13 +263,54 @@ function ProducerPJFormModal({ isOpen, onClose, onSuccess, producerId }: Produce
                 <legend className="pj-form-modal__section-title">Endereço Fiscal</legend>
                 <div className="pj-form-modal__fields">
                   <FieldInput
-                    id="pj-address"
-                    label="Endereço"
-                    value={formData.address}
-                    placeholder="Rua, número, complemento"
+                    id="pj-street"
+                    label="Logradouro"
+                    value={formData.street}
+                    placeholder="Ex: Fazenda Limeira"
                     fullWidth
-                    onChange={(v) => setField('address', v)}
-                    onBlur={() => touchField('address')}
+                    onChange={(v) => setField('street', v)}
+                    onBlur={() => touchField('street')}
+                  />
+                  <FieldInput
+                    id="pj-address-number"
+                    label="Número"
+                    value={formData.addressNumber}
+                    placeholder="Ex: S/N"
+                    onChange={(v) => setField('addressNumber', v)}
+                    onBlur={() => touchField('addressNumber')}
+                  />
+                  <FieldInput
+                    id="pj-complement"
+                    label="Complemento"
+                    value={formData.complement}
+                    placeholder="Opcional"
+                    onChange={(v) => setField('complement', v)}
+                    onBlur={() => touchField('complement')}
+                  />
+                  <FieldInput
+                    id="pj-neighborhood"
+                    label="Bairro"
+                    value={formData.neighborhood}
+                    placeholder="Ex: Zona Rural"
+                    onChange={(v) => setField('neighborhood', v)}
+                    onBlur={() => touchField('neighborhood')}
+                  />
+                  <FieldInput
+                    id="pj-district"
+                    label="Distrito/Povoado"
+                    value={formData.district}
+                    placeholder="Opcional"
+                    onChange={(v) => setField('district', v)}
+                    onBlur={() => touchField('district')}
+                  />
+                  <FieldInput
+                    id="pj-location-reference"
+                    label="Referência de localização"
+                    value={formData.locationReference}
+                    placeholder="Ex: Km 2 Estrada Porto do Faria"
+                    fullWidth
+                    onChange={(v) => setField('locationReference', v)}
+                    onBlur={() => touchField('locationReference')}
                   />
                   <FieldInput
                     id="pj-city"
@@ -290,7 +338,7 @@ function ProducerPJFormModal({ isOpen, onClose, onSuccess, producerId }: Produce
                     error={errors.zipCode}
                     touched={touched.zipCode}
                     placeholder="00000-000"
-                    onChange={(v) => setField('zipCode', v)}
+                    onChange={(v) => setField('zipCode', formatCepInput(v))}
                     onBlur={() => touchField('zipCode')}
                   />
                 </div>
@@ -366,6 +414,9 @@ function ProducerPJFormModal({ isOpen, onClose, onSuccess, producerId }: Produce
         </div>
 
         <footer className="pj-form-modal__footer">
+          <span className="pj-form-modal__required-hint">
+            <span className="pj-form-modal__required">*</span> Campos obrigatórios
+          </span>
           <button
             type="button"
             className="pj-form-modal__btn pj-form-modal__btn--secondary"

@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { api } from '@/services/api';
+import { isoToDateInput } from '@/utils/dateUtils';
 import type {
   ProducerFarmLink,
   CreateFarmLinkPayload,
@@ -62,8 +63,8 @@ function linkToFormFields(link: ProducerFarmLink): FarmLinkFormFields {
     farmId: link.farm.id,
     bondType: link.bondType,
     participationPct: link.participationPct != null ? String(link.participationPct) : '',
-    startDate: link.startDate ? link.startDate.split('T')[0] : '',
-    endDate: link.endDate ? link.endDate.split('T')[0] : '',
+    startDate: isoToDateInput(link.startDate),
+    endDate: isoToDateInput(link.endDate),
     isItrDeclarant: link.isItrDeclarant,
     registrationIds: (link.registrationLinks ?? []).map((rl) => rl.farmRegistrationId),
   };

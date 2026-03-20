@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
-status: executing
-stopped_at: Completed 16-05-PLAN.md
-last_updated: '2026-03-19T22:31:38.734Z'
-last_activity: 2026-03-19 — Phase 16 Plan 03 completed (AssetsPage frontend)
+status: roadmap_ready
+stopped_at: Roadmap created — ready to plan Phase 16
+last_updated: '2026-03-19T17:30:00.000Z'
+last_activity: 2026-03-19 — Roadmap v1.2 created (9 phases, 43 requirements mapped)
 progress:
   total_phases: 9
   completed_phases: 0
-  total_plans: 6
-  completed_plans: 5
-  percent: 67
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Current Position
 
-Phase: 16 - Cadastro de Ativos (in progress)
-Plan: 03 complete — next: 16-04
-Status: In progress
-Last activity: 2026-03-19 — Phase 16 Plan 03 completed (AssetsPage frontend)
+Phase: 16 — Cadastro de Ativos (not started)
+Plan: —
+Status: Roadmap ready — awaiting plan-phase 16
+Last activity: 2026-03-19 — Roadmap created
 
-Progress: [███████░░░] 67% (4/6 plans in phase 16)
+Progress: [░░░░░░░░░░] 0% (0/9 phases)
 
 ## Performance Metrics
 
@@ -47,12 +47,6 @@ Progress: [███████░░░] 67% (4/6 plans in phase 16)
 
 **Total v1.0:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
 
-| Phase 16 P00 | 1 | 1 tasks | 4 files |
-| Phase 16 P01 | 30min | 2 tasks | 8 files |
-| Phase 16 P02 | 15min | 2 tasks | 15 files |
-| Phase 16 P03 | 31 | 3 tasks | 10 files |
-| Phase 16-cadastro-de-ativos P05 | 90 | 2 tasks | 8 files |
-
 ## Accumulated Context
 
 ### Decisions
@@ -68,23 +62,20 @@ Key decisions carried from v1.1:
 
 Key decisions for v1.2:
 
-- **Asset purchase must NOT route through GoodsReceipt/StockEntry**: Separate AssetAcquisition module with originType ASSET_PURCHASE
-- **All depreciation arithmetic uses decimal.js**: Last-period balancing entry brings book value to exactly residual value
-- **CPC 27 vs CPC 29 classification at schema creation**: BEARER_PLANT (CPC 27) vs BIOLOGICAL_ASSET_ANIMAL (CPC 29)
-- **OS accounting classification mandatory at closure**: 400 if accountingTreatment absent
-- **Batch depreciation idempotent**: Unique constraint on (assetId, periodYear, periodMonth)
-- [Phase 16 P00]: Wave 0 stubs use it.todo() only — no beforeAll/afterAll setup until Plans 01/02 fill in test bodies
-- [Phase 16 P01]: costCenterMode stored as String @default('FIXED') — existing CostCenterAllocMode enum incompatible (PERCENTAGE/FIXED_VALUE for Payable use)
-- [Phase 16 P01]: BENFEITORIA geoPoint written via $executeRawUnsafe after Prisma create() — Unsupported type limitation
-- [Phase 16 P02]: getFuelStats avgLitersPerHour = null when no hourmeterAtFuel readings exist — correct behavior, not a bug
-- [Phase 16 P02]: exportAssetsPdf uses landscape A4 to accommodate 6-column asset table
-- [Phase 16]: AssetModal stub committed first in Task 2 to keep TSC clean; full implementation overwrites it in Task 3
-- [Phase 16-cadastro-de-ativos]: Reused createAsset() in confirmAssetImport to keep PAT-NNNNN tag generation atomic
-- [Phase 16-cadastro-de-ativos]: Auto-mapping dictionary maps Portuguese CSV headers to system field names; TERRA type auto-classifies to NON_DEPRECIABLE_CPC27 in preview
+- **AssetAcquisition never routes through GoodsReceipt**: Asset NF must never create StockEntry. Separate AssetAcquisition module with originType = ASSET_ACQUISITION on CP. Guard in GoodsReceipt service to reject asset-category lines.
+- **Decimal-only depreciation**: All depreciation arithmetic uses Decimal from decimal.js. Unique constraint on (assetId, periodYear, periodMonth) in depreciation_entries. DepreciationRun tracking table for safe retry.
+- **CPC 27 vs CPC 29 at schema creation**: AssetClassification enum must encode BEARER_PLANT (CPC 27, depreciable), BIOLOGICAL_ASSET_ANIMAL (CPC 29, fair value), LAND_RURAL_PROPERTY (CPC 27, non-depreciable) from the start.
+- **OS accounting treatment is mandatory**: PATCH /work-orders/:id/close returns 400 if accountingTreatment absent.
+- **WIP exclusion from depreciation batch**: AssetStatus.EM_ANDAMENTO excluded from batch query. Depreciation starts only after activation.
+- **Asset disposal cancels pending depreciation atomically**: Disposal transaction atomically cancels all pending DepreciationEntry records for the asset.
 
 ### Pending Todos
 
-None.
+- Test react-spreadsheet-import React 19 compatibility before committing to Phase 16 bulk import story
+- Confirm with customer whether farm legal entities are Simples Nacional or Lucro Real/Presumido before Phase 22 (accelerated depreciation dual-track)
+- Confirm biological asset fair value input method (manual vs automatic) before Phase 24 planning
+- Validate NF-e v4.0 XML tag paths against real sample before Phase 19 story writing
+- Confirm whether any customer fleet has active finance leases before committing to Phase 24 leasing scope
 
 ### Blockers/Concerns
 
@@ -92,7 +83,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T22:31:38.731Z
-Stopped at: Completed 16-05-PLAN.md
+Last session: 2026-03-19T17:30:00.000Z
+Stopped at: Roadmap created — ready to plan Phase 16
 Resume file: None
-Next action: /gsd:execute-phase 16 plan 04
+Next action: `/gsd:plan-phase 16`

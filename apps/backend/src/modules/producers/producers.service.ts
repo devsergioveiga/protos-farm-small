@@ -148,7 +148,12 @@ export async function createProducer(ctx: RlsContext, input: CreateProducerInput
         incraRegistration: input.incraRegistration ?? null,
         legalRepresentative: input.legalRepresentative ?? null,
         legalRepCpf: input.legalRepCpf ?? null,
-        address: input.address ?? null,
+        street: input.street ?? null,
+        addressNumber: input.addressNumber ?? null,
+        complement: input.complement ?? null,
+        neighborhood: input.neighborhood ?? null,
+        district: input.district ?? null,
+        locationReference: input.locationReference ?? null,
         city: input.city ?? null,
         state: input.state ?? null,
         zipCode: input.zipCode ?? null,
@@ -306,7 +311,14 @@ export async function updateProducer(
           legalRepresentative: input.legalRepresentative || null,
         }),
         ...(input.legalRepCpf !== undefined && { legalRepCpf: input.legalRepCpf || null }),
-        ...(input.address !== undefined && { address: input.address || null }),
+        ...(input.street !== undefined && { street: input.street || null }),
+        ...(input.addressNumber !== undefined && { addressNumber: input.addressNumber || null }),
+        ...(input.complement !== undefined && { complement: input.complement || null }),
+        ...(input.neighborhood !== undefined && { neighborhood: input.neighborhood || null }),
+        ...(input.district !== undefined && { district: input.district || null }),
+        ...(input.locationReference !== undefined && {
+          locationReference: input.locationReference || null,
+        }),
         ...(input.city !== undefined && { city: input.city || null }),
         ...(input.state !== undefined && { state: input.state || null }),
         ...(input.zipCode !== undefined && { zipCode: input.zipCode || null }),
@@ -352,6 +364,35 @@ export async function toggleProducerStatus(
     logger.info({ producerId, orgId: ctx.organizationId, status }, 'Producer status updated');
 
     return updated;
+  });
+}
+
+export async function deleteProducer(ctx: RlsContext, producerId: string) {
+  return withRlsContext(ctx, async (tx) => {
+    const producer = await tx.producer.findUnique({
+      where: { id: producerId },
+      include: {
+        farmLinks: true,
+      },
+    });
+
+    if (!producer) {
+      throw new ProducerError('Produtor não encontrado', 404);
+    }
+
+    if (producer.farmLinks.length > 0) {
+      throw new ProducerError(
+        'Não é possível excluir produtor com vínculos a fazendas. Remova os vínculos primeiro.',
+        409,
+      );
+    }
+
+    // Cascade: participants, IEs, and documents are deleted via DB cascades
+    await tx.producer.delete({ where: { id: producerId } });
+
+    logger.info({ producerId, orgId: ctx.organizationId }, 'Producer deleted');
+
+    return { id: producerId, deleted: true };
   });
 }
 

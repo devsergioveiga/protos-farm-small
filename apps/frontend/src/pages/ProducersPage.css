@@ -253,6 +253,64 @@
   color: var(--color-neutral-500);
 }
 
+/* ─── Actions ────────────────────────────────────────────────── */
+
+.producers__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.producers__action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: all 100ms;
+}
+
+.producers__action-btn:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.producers__action-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.producers__action-btn--danger:hover {
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+}
+
+.producers__card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-neutral-100);
+}
+
+.producers__card-actions .producers__action-btn {
+  width: auto;
+  height: auto;
+  padding: 8px 12px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  min-height: 36px;
+}
+
 /* ─── Mobile Cards ───────────────────────────────────────────── */
 
 .producers__cards {
@@ -460,7 +518,8 @@
   .producers__search,
   .producers__card,
   .producers__table-row,
-  .producers__pagination-btn {
+  .producers__pagination-btn,
+  .producers__action-btn {
     transition: none;
   }
 }

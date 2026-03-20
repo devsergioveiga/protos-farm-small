@@ -1,11 +1,23 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Users, Plus, AlertCircle, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import {
+  Users,
+  Plus,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Eye,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
 import { useProducers } from '@/hooks/useProducers';
 import PermissionGate from '@/components/auth/PermissionGate';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import ProducerPFFormModal from '@/components/producer-form/ProducerPFFormModal';
 import ProducerPJFormModal from '@/components/producer-form/ProducerPJFormModal';
 import ProducerSCFormModal from '@/components/producer-form/ProducerSCFormModal';
 import ProducerDetailModal from '@/components/producer-detail/ProducerDetailModal';
+import { api } from '@/services/api';
 import type { ProducerListItem, ProducerType } from '@/types/producer';
 import './ProducersPage.css';
 
@@ -49,6 +61,8 @@ function ProducersPage() {
   const [editingProducer, setEditingProducer] = useState<{ id: string; type: ProducerType } | null>(
     null,
   );
+  const [deletingProducer, setDeletingProducer] = useState<ProducerListItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { producers, meta, isLoading, error, refetch } = useProducers({
     page,
@@ -96,6 +110,20 @@ function ProducersPage() {
       handleRowClick(producer);
     }
   };
+
+  const handleDeleteProducer = useCallback(async () => {
+    if (!deletingProducer) return;
+    setIsDeleting(true);
+    try {
+      await api.delete(`/org/producers/${deletingProducer.id}`);
+      setDeletingProducer(null);
+      void refetch();
+    } catch {
+      // Error will show on next refetch
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [deletingProducer, refetch]);
 
   // ─── Loading ───────────────────────────────────────────────────
   if (isLoading && producers.length === 0) {
@@ -264,6 +292,7 @@ function ProducersPage() {
                   <th scope="col">Status</th>
                   <th scope="col">Fazendas</th>
                   <th scope="col">IEs</th>
+                  <th scope="col">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -302,6 +331,44 @@ function ProducersPage() {
                     </td>
                     <td>
                       <span className="producers__count">{producer._count.stateRegistrations}</span>
+                    </td>
+                    <td>
+                      <div
+                        className="producers__actions"
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          className="producers__action-btn"
+                          aria-label={`Visualizar ${producer.name}`}
+                          onClick={() => setSelectedProducerId(producer.id)}
+                        >
+                          <Eye size={16} aria-hidden="true" />
+                        </button>
+                        <PermissionGate permission="producers:update">
+                          <button
+                            type="button"
+                            className="producers__action-btn"
+                            aria-label={`Editar ${producer.name}`}
+                            onClick={() =>
+                              setEditingProducer({ id: producer.id, type: producer.type })
+                            }
+                          >
+                            <Pencil size={16} aria-hidden="true" />
+                          </button>
+                        </PermissionGate>
+                        <PermissionGate permission="producers:delete">
+                          <button
+                            type="button"
+                            className="producers__action-btn producers__action-btn--danger"
+                            aria-label={`Excluir ${producer.name}`}
+                            onClick={() => setDeletingProducer(producer)}
+                          >
+                            <Trash2 size={16} aria-hidden="true" />
+                          </button>
+                        </PermissionGate>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -346,6 +413,43 @@ function ProducersPage() {
                 <div className="producers__card-counts">
                   <span>{producer._count.farmLinks} fazenda(s)</span>
                   <span>{producer._count.stateRegistrations} IE(s)</span>
+                </div>
+                <div
+                  className="producers__card-actions"
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    className="producers__action-btn"
+                    aria-label={`Visualizar ${producer.name}`}
+                    onClick={() => setSelectedProducerId(producer.id)}
+                  >
+                    <Eye size={16} aria-hidden="true" />
+                    <span>Ver</span>
+                  </button>
+                  <PermissionGate permission="producers:update">
+                    <button
+                      type="button"
+                      className="producers__action-btn"
+                      aria-label={`Editar ${producer.name}`}
+                      onClick={() => setEditingProducer({ id: producer.id, type: producer.type })}
+                    >
+                      <Pencil size={16} aria-hidden="true" />
+                      <span>Editar</span>
+                    </button>
+                  </PermissionGate>
+                  <PermissionGate permission="producers:delete">
+                    <button
+                      type="button"
+                      className="producers__action-btn producers__action-btn--danger"
+                      aria-label={`Excluir ${producer.name}`}
+                      onClick={() => setDeletingProducer(producer)}
+                    >
+                      <Trash2 size={16} aria-hidden="true" />
+                      <span>Excluir</span>
+                    </button>
+                  </PermissionGate>
                 </div>
               </div>
             ))}
@@ -446,6 +550,20 @@ function ProducersPage() {
           setSelectedProducerId(null);
           setEditingProducer({ id, type });
         }}
+        onDelete={() => {
+          setSelectedProducerId(null);
+          void refetch();
+        }}
+      />
+      <ConfirmModal
+        isOpen={deletingProducer !== null}
+        title="Excluir produtor"
+        message={`Deseja excluir o produtor "${deletingProducer?.name ?? ''}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir produtor"
+        variant="danger"
+        isLoading={isDeleting}
+        onConfirm={() => void handleDeleteProducer()}
+        onCancel={() => setDeletingProducer(null)}
       />
     </section>
   );

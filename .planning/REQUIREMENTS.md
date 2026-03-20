@@ -1,202 +1,153 @@
-# Requirements: Protos Farm — Gestão de Patrimônio
+# Requirements: Protos Farm — v1.2 Gestao de Patrimonio
 
 **Defined:** 2026-03-19
-**Core Value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
+**Core Value:** O proprietario/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visao consolidada por fazenda e conta bancaria.
 
 ## v1.2 Requirements
 
-Requirements for milestone v1.2 Gestão de Patrimônio. Each maps to roadmap phases.
+Requirements for asset lifecycle management. Each maps to roadmap phases.
 
 ### Cadastro de Ativos
 
-- [x] **ATIV-01**: Gerente pode cadastrar ativo com classificação (máquina, veículo, implemento, benfeitoria, terra, biológico), dados de aquisição (valor, data, NF, fornecedor), número de série, fabricante, tag patrimônio sequencial e fotos
-- [x] **ATIV-02**: Gerente pode atribuir ativo a fazenda, centro de custo (fixo, rateio %, dinâmico) e status (EM_USO, EM_MANUTENÇÃO, INATIVO, BAIXADO, EM_ANDAMENTO) com campos específicos por tipo (HP/RENAVAM para veículos, área m² para benfeitorias, hectares/matrícula para terras)
-- [ ] **ATIV-03**: Gerente pode criar hierarquia pai-filho de ativos (até 3 níveis), com custo e depreciação independentes por componente e TCO agregado no pai
-- [x] **ATIV-04**: Gerente pode importar ativos em massa via CSV/Excel com mapeamento de colunas e validação de campos obrigatórios
-- [ ] **ATIV-05**: Gerente pode gerar QR code por ativo para scan no mobile que abre a ficha do ativo diretamente
-- [x] **ATIV-06**: Gerente pode visualizar ficha completa do ativo com abas (Dados Gerais, Depreciação, Manutenção, Combustível/Horímetro, Documentos, Financeiro) e buscar/filtrar ativos por tipo, fazenda, status, CC e período de aquisição
-- [ ] **ATIV-07**: Gerente pode transferir ativo entre fazendas com atualização obrigatória de centro de custo e registro no histórico
+- [ ] **ATIV-01**: Gerente pode cadastrar maquinas, veiculos e implementos com dados de aquisicao (NF, fornecedor, valor), operacionais (horimetro, odometro, potencia, combustivel), status e fotos
+- [ ] **ATIV-02**: Gerente pode cadastrar benfeitorias e ativos imoveis com geolocalizacao (ponto, linha ou poligono), material de construcao, area e capacidade, visualizando no mapa da fazenda
+- [ ] **ATIV-03**: Proprietario pode cadastrar terras e imoveis rurais como ativo nao depreciavel (CPC 27) com documentacao cartoraria, despesas de aquisicao e historico de avaliacoes/reavaliacao
+- [ ] **ATIV-04**: Gerente pode cadastrar implementos e equipamentos menores (grades, ordenhadeiras, balancas) com vinculacao a maquina principal quando aplicavel
+- [ ] **ATIV-05**: Gerente pode importar ativos em massa via CSV/Excel com mapeamento flexivel de colunas, preview e relatorio pos-importacao
+- [ ] **ATIV-06**: Gerente pode visualizar inventario completo com filtros (tipo, categoria, fazenda, status, faixa de valor), busca, totalizacao, exportacao CSV/Excel/PDF e visao em mapa
+- [ ] **ATIV-07**: Gerente pode ver ficha completa do ativo com grafico de depreciacao, historico de manutencoes, TCO, indicadores (disponibilidade, custo/hora), timeline de eventos e documentos
 
-### Depreciação
+### Hierarquia e Imobilizado em Andamento
 
-- [ ] **DEPR-01**: Gerente pode configurar depreciação linear por ativo (valor residual, vida útil) com cálculo automático de quota mensal e pro rata die no mês de aquisição e baixa
-- [ ] **DEPR-02**: Sistema executa batch mensal de depreciação (idempotente, por organização) gerando uma entrada por ativo por período com atribuição ao(s) centro(s) de custo configurados
-- [ ] **DEPR-03**: Gerente pode visualizar ledger de depreciação por ativo (data, método, quota, acumulada, valor contábil) e schedule projetado (passado + futuro)
-- [ ] **DEPR-04**: Gerente pode configurar depreciação por horas-uso (quota proporcional às horas utilizadas no período) e por volume de produção (quota proporcional à produção do período)
-- [ ] **DEPR-05**: Gerente pode configurar depreciação acelerada com dual-track CPC vs Fiscal (taxas RFB: 25-50% para uso em turnos), mantendo valor contábil e fiscal independentes (opt-in por organização)
-- [ ] **DEPR-06**: Gerente pode registrar teste de impairment (valor recuperável) quando valor contábil excede valor recuperável, com redução ao valor recuperável registrada no ledger
+- [ ] **HIER-01**: Gerente pode cadastrar ativo composto (hierarquia pai-filho ate 3 niveis) onde o pai totaliza valores dos filhos e cada filho tem depreciacao independente
+- [ ] **HIER-02**: Gerente pode registrar reforma ou ampliacao de ativo existente com decisao de capitalizar (soma ao valor contabil + reavalia vida util) ou despesa (vai para DRE)
+- [ ] **HIER-03**: Gerente pode registrar imobilizado em andamento (obras) acumulando aportes parciais com cronograma de etapas, alerta de orcamento e ativacao ao concluir (inicia depreciacao)
 
-### Manutenção (CMMS)
+### Depreciacao e Valoracao
 
-- [ ] **MANU-01**: Gerente pode criar planos de manutenção preventiva com gatilhos configuráveis (calendário, horímetro, volume de produção) vinculados a um ativo, com estimativa de duração, equipe e peças necessárias
-- [ ] **MANU-02**: Gerente pode criar e gerenciar ordens de serviço (OS) com tipo (preventiva/corretiva/reforma), prioridade, equipe, peças do estoque, e máquina de estados (SOLICITADA→APROVADA→EM_EXECUÇÃO→CONCLUÍDA/CANCELADA)
-- [ ] **MANU-03**: Gerente deve classificar contabilmente a OS ao concluir (Despesa Operacional, Capitalização ou Diferimento) — campo obrigatório que determina impacto no P&L vs balanço
-- [ ] **MANU-04**: Operador no campo pode criar solicitação de manutenção pelo mobile com ativo (scan QR ou seleção), descrição, foto e urgência, que gerente converte em OS
-- [ ] **MANU-05**: Gerente pode visualizar dashboard de manutenção com OS abertas por prioridade, ativos em manutenção, preventivas próximas (30 dias), MTBF e MTTR por tipo de ativo
-- [ ] **MANU-06**: Gerente pode configurar provisão mensal de manutenção (CPC 25) com valor estimado anual/12, reversão quando custo real é registrado
+- [ ] **DEPR-01**: Contador pode configurar metodo de depreciacao por ativo ou categoria (linear, horas-uso, producao, acelerada) com taxas pre-configuradas RFB e suporte a taxa fiscal vs gerencial
+- [ ] **DEPR-02**: Sistema calcula depreciacao mensal automaticamente (job ou gatilho manual) com pro rata die, parada em valor residual, relatorio mensal e possibilidade de estorno/recalculo
+- [ ] **DEPR-03**: Contador pode registrar valor justo de ativos biologicos (CPC 29/IAS 41) — rebanho por categoria com preco de mercado e culturas perenes por estagio — com variacao registrada no resultado
+- [ ] **DEPR-04**: Contador pode gerar relatorios patrimoniais (inventario geral, depreciacao acumulada, movimentacao, ativos biologicos, TCO) com filtros e exportacao PDF/Excel/CSV
 
-### Controle Operacional
+### Centro de Custo Patrimonial
 
-- [x] **OPER-01**: Operador pode registrar leituras de horímetro/odômetro por ativo com data, valor e operador, com alerta quando leitura não atualizada há >30 dias
-- [ ] **OPER-02**: Operador pode registrar abastecimentos (litros, custo/litro, total R$, operador) com cálculo automático de consumo l/hora e flag quando consumo >20% acima da média da frota
-- [x] **OPER-03**: Gerente pode cadastrar documentos por ativo (CRLV, seguro, revisão, CCIR, ITR) com data de emissão e vencimento, recebendo alertas 30/15/7 dias antes do vencimento
-- [ ] **OPER-04**: Gerente pode visualizar custo/hora por ativo (depreciação + manutenção + combustível + seguro / horas usadas) e índice de disponibilidade (% tempo disponível vs em manutenção)
+- [ ] **CCPA-01**: Contador pode vincular cada ativo a centro de custo (fixo, rateio % ou dinamico por horas-maquina do periodo) para depreciacao e manutencao serem apropriadas corretamente
+- [ ] **CCPA-02**: Processamento mensal de depreciacao gera lancamentos detalhados por centro de custo com conciliacao automatica (soma CCs = total depreciacao)
+- [ ] **CCPA-03**: Custos de manutencao (OS) sao apropriados por centro de custo com possibilidade de rateio manual ou heranca do CC do ativo
+- [ ] **CCPA-04**: Sistema oferece guia de decisao (wizard) para orientar criacao de centro de custo por ativo com exemplos e templates por tipo de fazenda
 
-### Integração Financeira
+### Manutencao e Ordens de Servico
 
-- [ ] **FINP-01**: Ao registrar compra de ativo à vista, sistema gera CP automaticamente via módulo payables existente com fornecedor, valor e vencimento
-- [ ] **FINP-02**: Ao registrar compra financiada, sistema gera CP com parcelas (usando installmentGenerator existente) com entrada + número de parcelas + intervalo
-- [ ] **FINP-03**: Gerente pode registrar venda de ativo com cálculo automático de ganho/perda (preço venda − valor contábil) e geração de CR, inclusive venda parcelada
-- [ ] **FINP-04**: Gerente pode registrar baixa por sinistro (reconhece perda, opcionalmente gera CR para recuperação seguro), descarte ou obsolescência (reconhece valor contábil como despesa)
-- [ ] **FINP-05**: Gerente pode registrar leasing/arrendamento (CPC 06) com ativo de direito de uso + passivo de arrendamento e amortização com juros efetivos
-- [ ] **FINP-06**: Gerente pode registrar troca de ativo com compensação financeira (baixa do antigo + aquisição do novo com abatimento) e registrar múltiplos ativos na mesma NF
+- [ ] **MANU-01**: Gerente pode criar planos de manutencao preventiva com gatilhos configuraveis (horimetro, km, tempo), calculo automatico da proxima execucao e alerta antecipado
+- [ ] **MANU-02**: Gerente pode abrir, acompanhar e encerrar ordens de servico (OS) com registro de pecas (baixa automatica no estoque), horas de mao de obra, custo externo e fotos
+- [ ] **MANU-03**: Operador pode solicitar manutencao pelo celular com foto, geolocalizacao automatica e notificacao push ao responsavel, funcionando offline
+- [ ] **MANU-04**: Gerente pode controlar estoque de pecas de reposicao com ponto de reposicao, vinculacao de pecas compativeis por maquina e inventario periodico
+- [ ] **MANU-05**: Gerente pode ver dashboard de manutencao com disponibilidade mecanica, MTBF, MTTR, custo acumulado, OS abertas (kanban) e alertas de manutencoes vencidas
+- [ ] **MANU-06**: Ao encerrar OS de alto valor, sistema apresenta assistente de classificacao contabil (despesa imediata, capitalizacao ou diferimento) com criterios-guia
+- [ ] **MANU-07**: Contador pode diferenciar e apropriar despesas antecipadas (diferimento) de manutencoes grandes que restauram condicao original sem aumentar vida util
+- [ ] **MANU-08**: Contador pode configurar provisao mensal de manutencao por ativo ou frota com lancamento automatico e conciliacao com gastos reais
 
-### Ativos Biológicos (CPC 29)
+### Controle Operacional e Documentacao
 
-- [ ] **BIOL-01**: Gerente pode registrar ativo biológico (gado, lavoura perene) com classificação explícita CPC 27 (planta portadora — café, laranja, depreciável) vs CPC 29 (animais — valor justo)
-- [ ] **BIOL-02**: Gerente pode registrar mensuração a valor justo por período (entrada manual do preço de referência — arroba CEPEA para gado, ESALQ para grãos) com ganho/perda reconhecido no P&L
-- [ ] **BIOL-03**: Gerente pode acompanhar maturidade de lavouras perenes (formação → produção) com custos capitalizados durante formação e reclassificação após 1ª colheita
-- [ ] **BIOL-04**: Gerente pode visualizar dashboard biológico (valor total rebanho + lavouras a valor justo, variação no período) e separação do produto colhido (valor justo no ponto da colheita → entrada no estoque)
+- [ ] **OPER-01**: Gerente pode registrar abastecimentos (combustivel) por ativo com custo/litro, custo/hora e benchmarking de eficiencia contra media da frota
+- [ ] **OPER-02**: Gerente pode controlar documentos com vencimento (CRLV, seguro, revisao) com alertas automaticos antecipados e calendario de vencimentos
+- [ ] **OPER-03**: Operador pode atualizar horimetro/odometro de forma rapida pelo mobile com validacao anti-regressao
+- [ ] **OPER-04**: Sistema calcula custo/hora e custo operacional por ativo (aquisicao + depreciacao + manutencao + combustivel + seguro) para analise de viabilidade
 
-### Imobilizado em Andamento
+### Integracao Financeira — Aquisicao
 
-- [ ] **IMOB-01**: Gerente pode registrar projeto de obra (galpão, silo, irrigação) com orçamento, data estimada de conclusão e aportes parciais vinculados a CPs pagos
-- [ ] **IMOB-02**: Gerente pode ativar obra concluída (transfere custo acumulado para ativo ativo, inicia depreciação) e acompanhar orçamento vs realizado
+- [ ] **AQUI-01**: Ao cadastrar ativo com valor de aquisicao, sistema gera CP automaticamente no modulo financeiro com fornecedor, valor, vencimento e centro de custo
+- [ ] **AQUI-02**: Gerente pode registrar compra financiada de ativo com dados do financiamento e parcelas geradas automaticamente no CP (reuso do installmentGenerator)
+- [ ] **AQUI-03**: Gerente pode importar dados do ativo a partir de NF-e (XML) com preenchimento automatico de fornecedor, valor, itens e dados fiscais
+- [ ] **AQUI-04**: Gerente pode registrar compra com multiplos ativos na mesma NF, cada um gerando registro patrimonial e rateio proporcional das despesas acessorias
+- [ ] **AQUI-05**: Gerente pode registrar leasing e arrendamento mercantil (CPC 06) com parcelas no CP e controle de opcao de compra ao final do contrato
+- [ ] **AQUI-06**: Gerente pode registrar troca de ativo (trade-in) com compensacao financeira automatica (valor do ativo antigo abatido do novo)
+- [ ] **AQUI-07**: Cada aquisicao tem centro de custo e classificacao contabil definidos para apropriacao correta de depreciacao futura
 
-### Relatórios e Inventário
+### Integracao Financeira — Venda, Baixa e Saida
 
-- [ ] **RELP-01**: Gerente pode gerar relatório patrimonial (valor bruto / depreciação acumulada / valor contábil por classe e fazenda) e schedule de depreciação projetado (12/36/60 meses), exportável em PDF e Excel
-- [ ] **RELP-02**: Gerente pode visualizar dashboard patrimonial com valor total do patrimônio, depreciação YTD, custo/hora por frota, e alerta quando custo de manutenção acumulado > 60-70% do valor de reposição
-- [ ] **RELP-03**: Gerente pode realizar inventário físico (contagem com scan QR no mobile) e conciliar com registros contábeis, gerando relatório de divergências
+- [ ] **DISP-01**: Gerente pode registrar venda de ativo com calculo automatico de ganho/perda contabil (valor venda vs valor contabil) e geracao de CR
+- [ ] **DISP-02**: Gerente pode registrar baixa por sinistro, descarte ou obsolescencia com motivo, laudo, valor residual e lancamento de perda
+- [ ] **DISP-03**: Gerente pode registrar venda parcelada de ativo com parcelas no CR
+- [ ] **DISP-04**: Gerente pode transferir ativo entre fazendas da mesma organizacao com historico e reavaliacao opcional
+- [ ] **DISP-05**: Contador pode conciliar patrimonio fisico vs contabil com inventario (contagem fisica vs registro) e gerar ajustes
+- [ ] **DISP-06**: Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciacao acumulada, aquisicoes/baixas do periodo e indicadores
 
-## v1.1 Requirements (Shipped)
+## v2 Requirements
 
-### Fornecedores
+Deferred to future milestone. Tracked but not in current roadmap.
 
-- [x] **FORN-01**: Gerente pode cadastrar fornecedor com dados fiscais (razão social, CNPJ/CPF, IE, endereço), dados comerciais (contato principal, condição de pagamento padrão, frete CIF/FOB), classificação por categorias, vinculação a produtos do catálogo, upload de documentação, avaliação (rating 1-5), e status (ativo/inativo/bloqueado)
-- [x] **FORN-02**: Gerente pode importar fornecedores em massa via CSV/Excel, consultar CNPJ para preencher dados automaticamente, buscar por nome/CNPJ/categoria/produto/cidade, e exportar listagem (CSV, PDF)
-- [x] **FORN-03**: Gerente pode avaliar fornecedor após cada entrega (prazo, qualidade, preço, atendimento), ver ranking automático por média ponderada, histórico de avaliações, top 3 por categoria, alerta ao cotar com fornecedor rating < 3, e relatório de performance por período
+### Integracao Avancada
 
-### Requisição de Compra
-
-- [x] **REQC-01**: Usuário pode criar requisição de compra com tipo (insumo agrícola, pecuário, peça, combustível, EPI, ativo, serviço), itens do catálogo ou descrição livre, quantidade, urgência (normal/urgente/emergencial), justificativa, centro de custo, fazenda, data de necessidade, anexos, e número sequencial automático
-- [x] **REQC-02**: Operador de campo pode criar requisição simplificada via mobile com produto, quantidade, urgência, foto e observação, com geolocalização automática, funcionamento offline, e acompanhamento de status pelo app
-- [x] **REQC-03**: Gerente pode configurar fluxo de aprovação por valor e por tipo, com tela de aprovação com pendências, ações aprovar/rejeitar/devolver, notificação ao solicitante, aprovação via mobile, delegação temporária, SLA configurável, e histórico para auditoria
-
-### Cotação
-
-- [x] **COTA-01**: Comprador pode criar solicitação de cotação a partir de requisições aprovadas, selecionar fornecedores (sugestão top 3 por categoria), enviar por email com template configurável, definir prazo de resposta, e registrar cotação recebida
-- [x] **COTA-02**: Comprador pode registrar cotações recebidas, ver mapa comparativo automático (fornecedores x itens), destaque de menor/maior preço, total por fornecedor com frete e impostos, e histórico de preços
-- [x] **COTA-03**: Gerente pode aprovar cotação vencedora com justificativa obrigatória se não for menor preço, aprovação rápida via mobile, e gerar pedido automaticamente após aprovação
-
-### Pedido de Compra
-
-- [x] **PEDI-01**: Comprador pode emitir pedido de compra (OC) com número sequencial, PDF com layout profissional, envio por email, pedido emergencial com justificativa, status tracking, alerta de prazo vencido, e clone de pedido recorrente
-
-### Recebimento
-
-- [x] **RECE-01**: Conferente pode registrar recebimento com 6 cenários (NF+mercadoria simultânea, NF antecipada, mercadoria antecipada, parcial, NF fracionada, emergencial sem pedido)
-- [x] **RECE-02**: Conferente pode fazer conferência física item a item, registrar divergências com foto e ação, conferência de qualidade, vincular NF
-- [x] **RECE-03**: Ao confirmar recebimento+NF: entrada automática no estoque ou cadastro de ativo, com despesas acessórias e dashboard de pendências
-
-### Devolução
-
-- [x] **DEVO-01**: Gerente de estoque pode registrar devolução total ou parcial vinculada ao recebimento, com motivo obrigatório, fotos/laudo, ação esperada, saída automática do estoque, e acompanhamento da resolução
-
-### Integração Financeira (Compras)
-
-- [x] **FINC-01**: Ao confirmar recebimento+NF: lançamento automático no Contas a Pagar com fornecedor, valor, vencimento(s), centro de custo, referência cruzada completa
-- [x] **FINC-02**: Gerente financeiro pode definir orçamento de compras por categoria e período, acompanhar orçado vs requisitado vs comprado vs pago, e alerta ao ultrapassar orçamento
-- [x] **FINC-03**: Gerente pode ver saving por cotação, saving acumulado por período, histórico de preço por produto, e indicadores de ciclo
-
-### Dashboard e Acompanhamento (Compras)
-
-- [x] **DASH-01**: Comprador/gerente pode ver kanban do fluxo de compras com drag & drop que executa ações reais, filtros e alertas visuais
-- [x] **DASH-02**: Gerente/diretor pode ver dashboard executivo com indicadores de volume, prazo, entrega, saving e comparativo por período
-- [x] **DASH-03**: Participantes recebem notificações push/email/badge em cada etapa relevante, com configuração de preferências por canal
-
-## Future Requirements
-
-### Fornecedores
-
-- **FORN-04**: Consulta automática de CNPJ (Receita Federal/SINTEGRA) para auto-preenchimento ao cadastrar fornecedor
-
-### Notificações Avançadas
-
-- **NOTI-01**: Envio automático de RFQ por email com link para preenchimento online pelo fornecedor
-
-### Patrimônio Avançado
-
-- **PATR-01**: CIAP (crédito ICMS sobre ativo imobilizado em 48 parcelas) — requer módulo fiscal
-- **PATR-02**: Integração IoT/telemática para horímetro automático — complexidade vs benefício não justificada
-- **PATR-03**: Manutenção preditiva via ML — requer 2-3 anos de histórico de falhas
+- **INTG-01**: Integracao com telematics/IoT para leitura automatica de horimetro e localizacao GPS
+- **INTG-02**: CIAP (credito ICMS sobre ativo) — requer modulo fiscal como prerequisito
+- **INTG-03**: NF-e importacao via SEFAZ (consulta automatica) — requer integracao fiscal
+- **INTG-04**: Manutencao preditiva baseada em historico de falhas (requer 2-3 anos de dados)
 
 ## Out of Scope
 
-| Feature                                          | Reason                                                       |
-| ------------------------------------------------ | ------------------------------------------------------------ |
-| NF-e XML import/parsing completo                 | Requer módulo fiscal separado — complexidade de schema SEFAZ |
-| Portal de fornecedores (login)                   | Alto custo, baixo ROI para escala fazenda                    |
-| Leilão reverso / bidding                         | Complexidade excessiva para contexto rural                   |
-| Credit scoring Serasa/SPC                        | Custo API, LGPD, overkill para 10-30 fornecedores            |
-| IoT / telematics integration                     | Fragmentação por marca de trator, custo de manutenção        |
-| Predictive maintenance via ML                    | Sem histórico suficiente de falhas                           |
-| Asset-level P&L (profit center)                  | Requer módulo de contabilidade gerencial separado            |
-| Lease vs buy decision wizard                     | Inputs variáveis demais para automação confiável             |
-| Insurance integration (SUSEP API)                | Nenhuma API pública disponível por seguradora                |
-| Full project management (Gantt) for construction | Escopo de gerenciamento de projetos, não patrimônio          |
-| Mobile: funcionalidades financeiras              | Web-only para financeiro por enquanto                        |
+| Feature                               | Reason                                                              |
+| ------------------------------------- | ------------------------------------------------------------------- |
+| Emissao de NF-e                       | Modulo fiscal separado, complexidade regulatoria                    |
+| Integracao IoT/telematics             | Complexidade vs beneficio nao justificada no escopo atual           |
+| Manutencao preditiva                  | Requer historico de falhas que ainda nao existe                     |
+| CIAP (credito ICMS)                   | Pre-requisito: modulo fiscal                                        |
+| Gestao de projetos (Gantt) para obras | Excessivo para o escopo — cronograma de etapas simples e suficiente |
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
-
-| Requirement | Phase    | Status   |
-| ----------- | -------- | -------- |
-| ATIV-01     | Phase 16 | Complete |
-| ATIV-02     | Phase 16 | Complete |
-| ATIV-03     | Phase 22 | Pending  |
-| ATIV-04     | Phase 16 | Complete |
-| ATIV-05     | Phase 21 | Pending  |
-| ATIV-06     | Phase 16 | Complete |
-| ATIV-07     | Phase 20 | Pending  |
-| DEPR-01     | Phase 17 | Pending  |
-| DEPR-02     | Phase 17 | Pending  |
-| DEPR-03     | Phase 17 | Pending  |
-| DEPR-04     | Phase 22 | Pending  |
-| DEPR-05     | Phase 22 | Pending  |
-| DEPR-06     | Phase 22 | Pending  |
-| MANU-01     | Phase 18 | Pending  |
-| MANU-02     | Phase 18 | Pending  |
-| MANU-03     | Phase 18 | Pending  |
-| MANU-04     | Phase 21 | Pending  |
-| MANU-05     | Phase 18 | Pending  |
-| MANU-06     | Phase 18 | Pending  |
-| OPER-01     | Phase 16 | Complete |
-| OPER-02     | Phase 21 | Pending  |
-| OPER-03     | Phase 16 | Complete |
-| OPER-04     | Phase 21 | Pending  |
-| FINP-01     | Phase 19 | Pending  |
-| FINP-02     | Phase 19 | Pending  |
-| FINP-03     | Phase 20 | Pending  |
-| FINP-04     | Phase 20 | Pending  |
-| FINP-05     | Phase 24 | Pending  |
-| FINP-06     | Phase 19 | Pending  |
-| BIOL-01     | Phase 24 | Pending  |
-| BIOL-02     | Phase 24 | Pending  |
-| BIOL-03     | Phase 24 | Pending  |
-| BIOL-04     | Phase 24 | Pending  |
-| IMOB-01     | Phase 23 | Pending  |
-| IMOB-02     | Phase 23 | Pending  |
-| RELP-01     | Phase 23 | Pending  |
-| RELP-02     | Phase 23 | Pending  |
-| RELP-03     | Phase 23 | Pending  |
+| Requirement | Phase    | Status  |
+| ----------- | -------- | ------- |
+| ATIV-01     | Phase 16 | Pending |
+| ATIV-02     | Phase 16 | Pending |
+| ATIV-03     | Phase 16 | Pending |
+| ATIV-04     | Phase 16 | Pending |
+| ATIV-05     | Phase 16 | Pending |
+| ATIV-06     | Phase 16 | Pending |
+| ATIV-07     | Phase 16 | Pending |
+| DEPR-01     | Phase 17 | Pending |
+| DEPR-02     | Phase 17 | Pending |
+| CCPA-01     | Phase 17 | Pending |
+| CCPA-02     | Phase 17 | Pending |
+| MANU-01     | Phase 18 | Pending |
+| MANU-02     | Phase 18 | Pending |
+| MANU-03     | Phase 18 | Pending |
+| MANU-04     | Phase 18 | Pending |
+| MANU-05     | Phase 18 | Pending |
+| MANU-06     | Phase 18 | Pending |
+| MANU-07     | Phase 18 | Pending |
+| MANU-08     | Phase 18 | Pending |
+| CCPA-03     | Phase 18 | Pending |
+| AQUI-01     | Phase 19 | Pending |
+| AQUI-02     | Phase 19 | Pending |
+| AQUI-03     | Phase 19 | Pending |
+| AQUI-04     | Phase 19 | Pending |
+| AQUI-07     | Phase 19 | Pending |
+| DISP-01     | Phase 20 | Pending |
+| DISP-02     | Phase 20 | Pending |
+| DISP-03     | Phase 20 | Pending |
+| DISP-04     | Phase 20 | Pending |
+| DISP-05     | Phase 20 | Pending |
+| DISP-06     | Phase 20 | Pending |
+| OPER-01     | Phase 21 | Pending |
+| OPER-02     | Phase 21 | Pending |
+| OPER-03     | Phase 21 | Pending |
+| OPER-04     | Phase 21 | Pending |
+| HIER-01     | Phase 22 | Pending |
+| HIER-02     | Phase 22 | Pending |
+| HIER-03     | Phase 22 | Pending |
+| DEPR-04     | Phase 23 | Pending |
+| CCPA-04     | Phase 23 | Pending |
+| DEPR-03     | Phase 24 | Pending |
+| AQUI-05     | Phase 24 | Pending |
+| AQUI-06     | Phase 24 | Pending |
 
 **Coverage:**
 
-- v1.2 requirements: 38 total
-- Mapped to phases: 38
-- Unmapped: 0 ✓
+- v1.2 requirements: 43 total
+- Mapped to phases: 43
+- Unmapped: 0
 
 ---
 
