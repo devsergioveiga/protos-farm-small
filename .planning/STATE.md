@@ -1,36 +1,36 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Gestão de Compras
-status: planning
-stopped_at: Completed 15-01-PLAN.md
-last_updated: '2026-03-19T14:26:00.232Z'
-last_activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
+milestone: v1.2
+milestone_name: Gestão de Patrimônio
+status: executing
+stopped_at: Completed 16-05-PLAN.md
+last_updated: '2026-03-19T22:31:38.734Z'
+last_activity: 2026-03-19 — Phase 16 Plan 03 completed (AssetsPage frontend)
 progress:
   total_phases: 9
-  completed_phases: 9
-  total_plans: 37
-  completed_plans: 37
-  percent: 0
+  completed_phases: 0
+  total_plans: 6
+  completed_plans: 5
+  percent: 67
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-17)
+See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** v1.1 Gestão de Compras — Phase 7: Cadastro de Fornecedores
+**Current focus:** v1.2 Gestão de Patrimônio — Phase 16: Cadastro de Ativos
 
 ## Current Position
 
-Phase: 7 of 12 (Phase 7 — Cadastro de Fornecedores)
-Plan: — (not started)
-Status: Ready to plan
-Last activity: 2026-03-17 — Roadmap v1.1 created, 20 requirements mapped across 6 phases
+Phase: 16 - Cadastro de Ativos (in progress)
+Plan: 03 complete — next: 16-04
+Status: In progress
+Last activity: 2026-03-19 — Phase 16 Plan 03 completed (AssetsPage frontend)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███████░░░] 67% (4/6 plans in phase 16)
 
 ## Performance Metrics
 
@@ -46,28 +46,12 @@ Progress: [░░░░░░░░░░] 0%
 | 06-cr-dito-rural               | 5     | 62min      | 12min    |
 
 **Total v1.0:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
-| Phase 07-cadastro-de-fornecedores P01 | 7 | 2 tasks | 8 files |
-| Phase 07-cadastro-de-fornecedores P02 | 7min | 2 tasks | 6 files |
-| Phase 07-cadastro-de-fornecedores P03 | 7 | 2 tasks | 9 files |
-| Phase 07-cadastro-de-fornecedores P04 | 7min | 2 tasks | 7 files |
-| Phase 07-cadastro-de-fornecedores P04 | 7min | 3 tasks | 7 files |
-| Phase 08-requisi-o-e-aprova-o P01 | 5min | 2 tasks | 5 files |
-| Phase 08-requisi-o-e-aprova-o P02 | 4min | 2 tasks | 4 files |
-| Phase 08-requisi-o-e-aprova-o P03 | 21min | 2 tasks | 9 files |
-| Phase 08-requisi-o-e-aprova-o P06 | 18 | 2 tasks | 8 files |
-| Phase 08-requisi-o-e-aprova-o P04 | 90min | 2 tasks | 11 files |
-| Phase 08-requisi-o-e-aprova-o P05 | 45min | 2 tasks | 14 files |
-| Phase 12-kanban-dashboard-e-notifica-es PP01 | 20min | 2 tasks | 8 files |
-| Phase 12-kanban-dashboard-e-notifica-es P03 | 10min | 2 tasks | 13 files |
-| Phase 12-kanban-dashboard-e-notifica-es P02 | 18min | 2 tasks | 13 files |
-| Phase 12-kanban-dashboard-e-notifica-es P04 | 5min | 2 tasks | 7 files |
-| Phase 12-kanban-dashboard-e-notifica-es P05 | 7min | 2 tasks | 11 files |
-| Phase 13-kanban-dnd-notification-wiring PP00 | 15min | 2 tasks | 2 files |
-| Phase 13-kanban-dnd-notification-wiring P02 | 18min | 2 tasks | 4 files |
-| Phase 13-kanban-dnd-notification-wiring P01 | 3 | 2 tasks | 2 files |
-| Phase 14-stock-reversal-supplier-rating P01 | 3 | 2 tasks | 6 files |
-| Phase 14-stock-reversal-supplier-rating P02 | 8 | 2 tasks | 6 files |
-| Phase 15-frontend-api-path-fixes P01 | 7min | 2 tasks | 6 files |
+
+| Phase 16 P00 | 1 | 1 tasks | 4 files |
+| Phase 16 P01 | 30min | 2 tasks | 8 files |
+| Phase 16 P02 | 15min | 2 tasks | 15 files |
+| Phase 16 P03 | 31 | 3 tasks | 10 files |
+| Phase 16-cadastro-de-ativos P05 | 90 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -75,51 +59,28 @@ Progress: [░░░░░░░░░░] 0%
 
 Full log: PROJECT.md Key Decisions table.
 
-Key decisions for v1.1:
+Key decisions carried from v1.1:
 
-- **GoodsReceipt is integration hub**: CP creation fires only from ReceivingConfirmed event — never from PO approval (avoids duplicate CP on partial shipments)
-- **Price snapshot on PO**: PurchaseOrder snapshots unitPrice/quantity/total at issuance; quotation transitions to CLOSED (prices frozen)
-- **BullMQ for async email**: Never await emailService.send() inside Prisma transaction — enqueue BullMQ job after commit
-- **VALID_TRANSITIONS map**: Approval and receiving state machines follow checks.types.ts pattern — no inline status checks
-- **Saving analysis deferred to v1.2**: Requires 2-3 months of production price data to be meaningful
-- [Phase 07-cadastro-de-fornecedores]: Used db push + migrate resolve due to pre-existing shadow DB failure; migration file created manually and marked as applied
-- [Phase 07-cadastro-de-fornecedores]: purchases module added to RBAC: manage for MANAGER, read for FINANCIAL/AGRONOMIST/CONSULTANT
-- [Phase 07-cadastro-de-fornecedores]: Import routes placed BEFORE /:id routes to prevent Express from matching 'import' as an ID parameter
-- [Phase 07-cadastro-de-fornecedores]: Category label mapping uses bidirectional lookup so CSV can use both English enum values and Portuguese display labels
-- [Phase 07-cadastro-de-fornecedores]: COMPRAS sidebar group positioned between FINANCEIRO and CONFIGURACAO
-- [Phase 07-cadastro-de-fornecedores]: Import/Export/Rate buttons rendered as no-op stubs in SuppliersPage (Plan 04 wires them)
-- [Phase 07-cadastro-de-fornecedores]: Export uses api.getBlob() rather than window.open — preserves auth header and enables loading state
-- [Phase 07-cadastro-de-fornecedores]: SupplierRatingModal form uses id/form attribute pattern so footer submit button is outside form element
-- [Phase 08-requisi-o-e-aprova-o]: Notification model uses purchaseRequestId FK (optional) for direct relation — cleaner than relying only on referenceId/referenceType strings
-- [Phase 08-requisi-o-e-aprova-o]: All 7 Phase 8 models use cuid() as ID following RESEARCH.md recommendation and Phase 7 pattern
-- [Phase 08-requisi-o-e-aprova-o]: createPurchaseRequest context type extended to RlsContext & { userId: string } — createdBy field must be persisted in the RC row
-- [Phase 08-requisi-o-e-aprova-o]: Decimal type for Prisma Decimal fields requires Number() cast before arithmetic comparisons in TypeScript strict mode
-- [Phase 08-requisi-o-e-aprova-o]: dispatchPushNotification uses fire-and-forget void pattern to prevent push failures rolling back the Prisma transaction
-- [Phase 08-06]: purchase_requests OperationEntity priority is NORMAL (not critical) — purchase orders are not safety-critical like health/reproductive records
-- [Phase 08-06]: expo-notifications NotificationBehavior requires shouldShowBanner+shouldShowList alongside shouldShowAlert for Expo SDK 54+ compatibility
-- [Phase 08-04]: Key-remount pattern used for PurchaseRequestModal — outer wrapper renders inner form with key=rc.id+rc.updatedAt, avoids setState-in-useEffect rule violation
-- [Phase 08-requisi-o-e-aprova-o]: NotificationBell uses click-outside mousedown handler + Escape key — no library needed for simple dropdown
-- [Phase 08-requisi-o-e-aprova-o]: HTML5 native drag events for rule reorder in ApprovalRulesPage — avoids adding dnd library for single use case
-- [Phase 12-kanban-dashboard-e-notifica-es]: RC with existing quotation placed in EM_COTACAO not RC_APROVADA — checked via quotations count in RC query
-- [Phase 12-kanban-dashboard-e-notifica-es]: PAGO column: Payable.status=PAID + paidAt >= 30 days ago + goodsReceiptId not null
-- [Phase 12-kanban-dashboard-e-notifica-es]: KanbanFilters type aliased to KanbanFiltersState in page to avoid naming collision with KanbanFilters component
-- [Phase 12-kanban-dashboard-e-notifica-es]: AGUARDANDO_ENTREGA->RECEBIDO transition navigates to /goods-receipts?poId= instead of API call
-- [Phase 12-kanban-dashboard-e-notifica-es]: ADMIN role used for digest recipients (UserRole has no OWNER value)
-- [Phase 12-kanban-dashboard-e-notifica-es]: shouldNotify called inside existing tx for BADGE; EMAIL dispatch uses withRlsBypass fire-and-forget
-- [Phase 12-kanban-dashboard-e-notifica-es]: Digest only sends when pending items > 0 (no empty digest emails)
-- [Phase 12-kanban-dashboard-e-notifica-es]: Recharts Tooltip labelFormatter+content cannot coexist — use content custom renderer only for multi-value tooltips
-- [Phase 12-kanban-dashboard-e-notifica-es]: useNotificationPreferences uses /org/notification-preferences without explicit orgId — consistent with /org/notifications pattern, org extracted from JWT server-side
-- [Phase 12-kanban-dashboard-e-notifica-es]: NotificationBell handleItemClick is now type-aware — routes to quotations/goods-receipts/purchase-budgets/goods-returns per notification type
-- [Phase 13-kanban-dnd-notification-wiring]: transitionPO signature updated from RlsContext to RlsContext & { userId: string } — routes already pass userId, function declaration was under-typed
-- [Phase 13-kanban-dnd-notification-wiring]: RETURN_RESOLVED placed in CONCLUIDA branch targeting FINANCIAL users (not APROVADA/MANAGER) — correct business event for financial processing alert
-- [Phase 13-kanban-dnd-notification-wiring]: EM_COTACAO->OC_EMITIDA returns null from moveCard and navigates to /quotations?purchaseRequestId= in KanbanBoard (purchaseRequestId not quotationId — card.id in that column is the RC)
-- [Phase 13-kanban-dnd-notification-wiring]: OC_EMITIDA->AGUARDANDO_ENTREGA uses api.patch /transition with { status: 'EM_TRANSITO' } matching TransitionPOInput interface (not action: CONFIRM_SHIPMENT)
-- [Phase 14-stock-reversal-supplier-rating]: Stock reversal tied to CONCLUIDA (physical confirmation), not APROVADA — prevents phantom stock decrements before goods are returned
-- [Phase 14-stock-reversal-supplier-rating]: PerformanceReport returns empty breakdown {0,0,0,0} instead of null when no ratings — cleaner for frontend consumption
-- [Phase 14-stock-reversal-supplier-rating]: getRatingBadge fallback: averageRating ?? supplier.rating for backward compat; Recharts Tooltip formatter typed as (value: number | undefined); SupplierCard onPerformance prop symmetric with desktop
-- [Phase 15-frontend-api-path-fixes]: RC_PENDENTE->RC_APROVADA uses POST /org/purchase-requests/:id/transition with {action:'APPROVE'} — matches backend TransitionPRInput interface
-- [Phase 15-frontend-api-path-fixes]: Notification preferences orgId injected via useAuth().user.organizationId — consistent with authenticated context pattern
-- [Phase 15-frontend-api-path-fixes]: DAILY_DIGEST added to NotificationType union with label 'Resumo diario' — matches digest cron notification
+- **GoodsReceipt is integration hub**: CP creation fires only from ReceivingConfirmed event
+- **Price snapshot on PO**: PurchaseOrder snapshots unitPrice/quantity/total at issuance
+- **BullMQ for async email**: Never await emailService.send() inside Prisma transaction
+- **VALID_TRANSITIONS map**: State machines follow checks.types.ts pattern
+
+Key decisions for v1.2:
+
+- **Asset purchase must NOT route through GoodsReceipt/StockEntry**: Separate AssetAcquisition module with originType ASSET_PURCHASE
+- **All depreciation arithmetic uses decimal.js**: Last-period balancing entry brings book value to exactly residual value
+- **CPC 27 vs CPC 29 classification at schema creation**: BEARER_PLANT (CPC 27) vs BIOLOGICAL_ASSET_ANIMAL (CPC 29)
+- **OS accounting classification mandatory at closure**: 400 if accountingTreatment absent
+- **Batch depreciation idempotent**: Unique constraint on (assetId, periodYear, periodMonth)
+- [Phase 16 P00]: Wave 0 stubs use it.todo() only — no beforeAll/afterAll setup until Plans 01/02 fill in test bodies
+- [Phase 16 P01]: costCenterMode stored as String @default('FIXED') — existing CostCenterAllocMode enum incompatible (PERCENTAGE/FIXED_VALUE for Payable use)
+- [Phase 16 P01]: BENFEITORIA geoPoint written via $executeRawUnsafe after Prisma create() — Unsupported type limitation
+- [Phase 16 P02]: getFuelStats avgLitersPerHour = null when no hourmeterAtFuel readings exist — correct behavior, not a bug
+- [Phase 16 P02]: exportAssetsPdf uses landscape A4 to accommodate 6-column asset table
+- [Phase 16]: AssetModal stub committed first in Task 2 to keep TSC clean; full implementation overwrites it in Task 3
+- [Phase 16-cadastro-de-ativos]: Reused createAsset() in confirmAssetImport to keep PAT-NNNNN tag generation atomic
+- [Phase 16-cadastro-de-ativos]: Auto-mapping dictionary maps Portuguese CSV headers to system field names; TERRA type auto-classifies to NON_DEPRECIABLE_CPC27 in preview
 
 ### Pending Todos
 
@@ -127,12 +88,11 @@ None.
 
 ### Blockers/Concerns
 
-- **Phase 10 (Recebimento) needs research-phase before planning**: 6-scenario state machine + atomic 3-table transaction (StockEntry + Payable) + NF desynchronization handling warrant dedicated implementation plan before code
-- **validation-br API**: Function signature (validateCNPJ vs cnpj.isValid) not confirmed — verify during Phase 7 implementation before committing to call sites
-- **PayableCredit model**: Inspect payables schema during Phase 11 planning to determine correct partial CP reduction pattern
+None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T14:22:54.361Z
-Stopped at: Completed 15-01-PLAN.md
+Last session: 2026-03-19T22:31:38.731Z
+Stopped at: Completed 16-05-PLAN.md
 Resume file: None
+Next action: /gsd:execute-phase 16 plan 04

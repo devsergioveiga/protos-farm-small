@@ -13,7 +13,8 @@ export type PermissionModule =
   | 'reports'
   | 'settings'
   | 'reconciliation'
-  | 'purchases';
+  | 'purchases'
+  | 'assets';
 
 export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage';
 
@@ -33,6 +34,7 @@ export const ALL_MODULES: PermissionModule[] = [
   'settings',
   'reconciliation',
   'purchases',
+  'assets',
 ];
 
 export const ALL_ACTIONS: PermissionAction[] = ['create', 'read', 'update', 'delete', 'manage'];
@@ -86,6 +88,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...p('users', 'read'),
     ...modulePermissions('operations'),
     ...modulePermissions('purchases'),
+    ...modulePermissions('assets'),
     ...p('reports', 'read'),
     ...p('settings', 'read'),
     ...p('reconciliation', 'manage'),
@@ -105,6 +108,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...p('farms', 'read'),
     ...p('producers', 'read'),
     ...p('purchases', 'read'),
+    ...p('assets', 'read'),
     ...p('reports', 'read'),
     ...p('reconciliation', 'manage'),
   ],
@@ -114,6 +118,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...p('producers', 'read'),
     ...p('animals', 'create', 'read'),
     ...p('operations', 'create', 'read'),
+    ...p('assets', 'read', 'update'),
   ],
 
   COWBOY: [

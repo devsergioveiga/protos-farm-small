@@ -1,22 +1,21 @@
 # Protos Farm — Fase 3: Módulos Administrativos
 
-## Current Milestone: v1.1 Gestão de Compras
+## Current Milestone: v1.2 Gestão de Patrimônio
 
-**Goal:** Implementar o ciclo completo de procurement — da requisição de compra até o recebimento e geração automática de contas a pagar.
+**Goal:** Implementar o ciclo de vida completo dos ativos da fazenda — cadastro, depreciação, manutenção preventiva/corretiva, controle operacional, documentação e integração bidirecional com o módulo financeiro (compra, venda, financiamento, leasing).
 
 **Target features:**
 
-- Cadastro de fornecedores com dados fiscais, avaliação e ranking
-- Requisição de compra (web + mobile) com fluxo de aprovação configurável
-- Cotação a múltiplos fornecedores com mapa comparativo
-- Pedido de compra formal com PDF e envio por email
-- Recebimento e conferência com 6 cenários (NF antecipada, parcial, emergencial etc.)
-- Devolução e troca de mercadorias
-- Geração automática de CP a partir do recebimento + NF
-- Orçamento de compras e controle orçamentário
-- Análise de saving e histórico de preços
-- Dashboard executivo e kanban do fluxo de compras
-- Notificações em cada etapa do processo
+- Cadastro de máquinas, veículos, implementos, benfeitorias, terras e ativos biológicos
+- Imobilizado em andamento (obras) e ativo composto (hierarquia pai-filho)
+- Reforma/ampliação com capitalização, importação em massa, inventário e ficha completa
+- Depreciação automática (linear, horas-uso, produção, acelerada) com centro de custo
+- Valoração de ativos biológicos (CPC 29/IAS 41) e relatórios patrimoniais
+- Manutenção preventiva com planos, OS (CRUD), solicitação mobile, estoque de peças
+- Dashboard de manutenção, classificação contábil de OS (despesa/capitalização/diferimento)
+- Controle operacional: combustível, documentos, horímetro, custo/hora
+- Integração financeira: compra à vista/financiada, NF-e, leasing, troca, venda com ganho/perda
+- Baixa por sinistro/descarte, transferência entre fazendas, conciliação patrimonial, dashboard financeiro
 
 ## What This Is
 
@@ -54,29 +53,62 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 - ✓ Fluxo de caixa 12 meses com 3 cenários, classificação DFC, alerta saldo negativo — v1.0
 - ✓ Crédito rural (PRONAF/PRONAMP/Funcafé/CPR) com amortização SAC/Price/Bullet — v1.0
 - ✓ Dashboard financeiro consolidado com saldo, CP/CR, resultado, endividamento — v1.0
+- ✓ Fornecedores com dados fiscais, avaliação, ranking, import/export — v1.1
+- ✓ Requisição de compra (web + mobile) com fluxo de aprovação configurável — v1.1
+- ✓ Cotação a múltiplos fornecedores com mapa comparativo e aprovação justificada — v1.1
+- ✓ Pedido de compra formal com PDF e envio por email — v1.1
+- ✓ Recebimento e conferência em 6 cenários com geração automática de CP — v1.1
+- ✓ Devolução com reversão de estoque, orçamento de compras, saving — v1.1
+- ✓ Kanban, dashboard executivo e notificações do fluxo de compras — v1.1
 
 ### Active
 
-<!-- v1.1 Gestão de Compras — 18 stories, 115 points, 6 épicos -->
+<!-- v1.2 Gestão de Patrimônio — 44 stories, 295 points, 6 épicos -->
 
-- [ ] Cadastro completo de fornecedores (dados fiscais, comerciais, avaliação)
-- [ ] Importação e busca de fornecedores
-- [ ] Avaliação e ranking de fornecedores
-- [ ] Requisição de compra (web) com tipos, itens, centro de custo
-- [ ] Requisição de compra via mobile (campo)
-- [ ] Fluxo de aprovação de requisição (alçada por valor e tipo)
-- [ ] Solicitação de cotação a fornecedores
-- [ ] Registro e comparação de cotações (mapa comparativo)
-- [ ] Aprovação da cotação vencedora
-- [ ] Emissão de pedido de compra (OC/PC)
-- [ ] Recebimento e conferência de mercadorias (6 cenários)
-- [ ] Devolução e troca de mercadorias
-- [ ] Geração automática de CP a partir do recebimento
-- [ ] Orçamento de compras e controle orçamentário
-- [ ] Análise de saving e histórico de preços
-- [ ] Kanban do fluxo de compras
-- [ ] Dashboard executivo de compras
-- [ ] Notificações e alertas do fluxo de compras
+- [ ] Cadastro de máquinas, veículos e implementos com dados de aquisição e operacionais
+- [ ] Cadastro de benfeitorias e ativos imóveis com geolocalização
+- [ ] Cadastro de terras e imóveis rurais (ativo não depreciável, CPC 27)
+- [ ] Imobilizado em andamento (obras com aportes parciais até ativação)
+- [ ] Ativo composto com hierarquia pai-filho (até 3 níveis)
+- [ ] Reforma e ampliação com capitalização
+- [ ] Cadastro de implementos e equipamentos menores
+- [ ] Importação em massa de ativos (CSV/Excel)
+- [ ] Inventário e busca de ativos com exportação
+- [ ] Ficha completa do ativo (TCO, disponibilidade, timeline)
+- [ ] Baixa e transferência de ativos entre fazendas
+- [ ] Configuração de métodos de depreciação (linear, horas-uso, produção, acelerada)
+- [ ] Cálculo automático de depreciação mensal com pro rata die
+- [ ] Valoração de ativos biológicos (CPC 29/IAS 41)
+- [ ] Relatórios patrimoniais e contábeis
+- [ ] Vinculação de ativo a centro de custo (fixo, rateio %, dinâmico)
+- [ ] Apropriação de depreciação por centro de custo
+- [ ] Apropriação de custo de manutenção por centro de custo
+- [ ] Guia de decisão para criação de centro de custo
+- [ ] Plano de manutenção preventiva com gatilhos configuráveis
+- [ ] Criação e gestão de ordens de serviço (OS)
+- [ ] Solicitação de manutenção pelo operador (mobile)
+- [ ] Estoque de peças de reposição
+- [ ] Dashboard de manutenção e disponibilidade
+- [ ] Classificação contábil da OS (despesa/capitalização/diferimento)
+- [ ] Diferimento de manutenção como despesa antecipada
+- [ ] Provisão mensal de manutenção
+- [ ] Registro de abastecimentos (combustível)
+- [ ] Controle de documentos e vencimentos (CRLV, seguro, revisão)
+- [ ] Atualização de horímetro/odômetro
+- [ ] Custo/hora e custo operacional por ativo
+- [ ] Compra de ativo à vista com geração de CP
+- [ ] Compra de ativo financiada com parcelas no CP
+- [ ] Importação e cadastro via NF-e (XML)
+- [ ] Compra com múltiplos ativos na mesma NF
+- [ ] Leasing e arrendamento mercantil (CPC 06)
+- [ ] Troca de ativo com compensação financeira
+- [ ] Centro de custo e classificação contábil na aquisição
+- [ ] Venda de ativo com cálculo de ganho/perda e geração de CR
+- [ ] Baixa por sinistro, descarte ou obsolescência
+- [ ] Venda parcelada de ativo
+- [ ] Transferência entre fazendas com reavaliação
+- [ ] Conciliação patrimonial (físico vs contábil)
+- [ ] Dashboard financeiro patrimonial
 
 ### Out of Scope
 
@@ -150,4 +182,4 @@ Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
 
 ---
 
-_Last updated: 2026-03-17 after v1.1 milestone start_
+_Last updated: 2026-03-19 after v1.2 milestone start_

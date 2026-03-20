@@ -1,215 +1,272 @@
 # Project Research Summary
 
-**Project:** Protos Farm — v1.1 Gestao de Compras (Procurement Module)
-**Domain:** P2P (Purchase-to-Pay) procurement module added to a live agricultural ERP
-**Researched:** 2026-03-17
-**Confidence:** HIGH
+**Project:** Protos Farm — v1.2 Gestão de Patrimônio (Asset Lifecycle Management)
+**Domain:** Fixed asset management, CMMS, and biological asset valuation integrated into existing agricultural ERP
+**Researched:** 2026-03-19
+**Confidence:** HIGH for architecture and pitfalls (codebase-derived); HIGH for features (CPC 27/29/06 standards); MEDIUM for new dependency choices
 
 ## Executive Summary
 
-This milestone adds a complete Purchase-to-Pay (P2P) procurement cycle to a system that already has live financial (payables, cost centers) and inventory (stock-entries, stock-outputs) modules. The research confirms this is not a greenfield procurement build — it is an upstream feeder module whose single most valuable action is a GoodsReceipt confirmation that atomically creates both a stock entry and a conta a pagar (CP), eliminating all double-entry. Every architecture and feature decision in this module must be evaluated against that core integration contract.
+This milestone adds a complete Asset Lifecycle Management module (Gestão de Patrimônio) to an already mature agricultural ERP. The domain is well-understood — Brazilian accounting standards CPC 27 (fixed assets), CPC 29 (biological assets), and CPC 06 R2 (leasing) are unambiguous in their requirements for depreciation, fair value measurement, and right-of-use assets. The key challenge is not innovation but integration fidelity: the new asset modules must consume existing `payables`, `receivables`, `cost-centers`, `stock-outputs`, and `installmentGenerator` infrastructure precisely, without duplicating or corrupting existing financial data.
 
-The recommended approach follows the dependency-driven sequence established by ERP procurement best practice and validated against the existing codebase: Suppliers first (root dependency for everything), then Requisition + Approval, then Quotation + Comparison Map, then Purchase Order, then Goods Receiving (the integration hub), then Purchase Return. The kanban pipeline view and procurement dashboard are pure aggregations that come last. Four new packages are needed: `bullmq` for async job queuing (reuses existing Redis), `validation-br` for CNPJ/CPF check-digit validation, `handlebars` for HTML email templates, and `@dnd-kit/core + sortable` for the kanban board. No new infrastructure is required.
+The recommended approach builds in strict dependency order: core asset catalog first (all subsequent work depends on a clean asset entity with correct CPC 27/29 classification), then the depreciation engine (required for write-off gain/loss and financial reporting), then the maintenance CMMS (consumes stock outputs and generates payables), and finally advanced features (biological assets, leasing, and hierarchy). The architecture is additive — 9 new backend modules, 12 new Prisma migrations, a new `PATRIMÔNIO` frontend sidebar group, and targeted FK additions to `payables` and `receivables`. No existing module needs a rewrite.
 
-The highest-risk area is the Goods Receiving implementation. Three pitfalls cluster around receiving: duplicate CP generation on partial shipments, stock/NF desynchronization across the 6 receiving scenarios, and return reversals that use the wrong stock output type. All three are recoverable but expensive if discovered in production. The mitigation is straightforward: define the `GoodsReceipt` data model and its atomic transaction contract before writing any service code, and require that CP creation fires only from the `ReceivingConfirmed` event — never from PO approval.
+The primary risk is integration contamination: asset acquisitions must never route through the existing `GoodsReceipt → StockEntry` flow (which would inflate stock balances and double-count payables). A secondary and equally critical risk is decimal precision in the depreciation engine — the project already uses `decimal.js` for all monetary arithmetic, and this discipline is mandatory for the depreciation service or accumulated rounding drift will make the depreciation ledger irreconcilable over years. Both risks have clear preventions and are avoidable with disciplined design and code review.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The project already ships all core infrastructure needed for procurement. The existing `ioredis`, `pdfkit`, `exceljs`, `decimal.js`, `nodemailer`, `recharts`, `multer`, and `lucide-react` are all reused at zero additional cost. The four new packages add specific missing capabilities: `bullmq` for event-driven async email dispatch without blocking HTTP responses, `validation-br` for backend CNPJ/CPF check-digit validation with support for the July 2026 alphanumeric CNPJ transition (Receita Federal Technical Note COCAD/SUARA/RFB no 49), `handlebars` for maintainable HTML email templates covering 5 workflow events, and `@dnd-kit` for the accessible kanban board (chosen over the unmaintained `react-beautiful-dnd` and the React 19-incompatible `react-dnd`). Real-time UI notifications use native SSE over Express — zero additional dependencies.
+The milestone requires only 2 new npm packages. Everything else reuses infrastructure already installed in the monorepo: `pdfkit` for PDF reports, `exceljs` for bulk import, `decimal.js` for all monetary arithmetic, `node-cron` for the monthly depreciation scheduler, `bullmq` for async work order notifications, `recharts` for dashboards, `ioredis`/`nodemailer` for notifications, and `multer` for file uploads.
 
 **Core technologies:**
 
-- `bullmq ^5.71.0`: Async job queue for email dispatch and approval escalation timers — reuses existing `ioredis ^5.9.3`, no new infrastructure, ships own types
-- `validation-br ^1.6.4`: CNPJ/CPF/IE backend validation — covers July 2026 alphanumeric CNPJ transition, actively maintained (published Jan 2026)
-- `handlebars ^4.7.8`: HTML email templates for 5 workflow notification events — integrates with existing `nodemailer` via `mail.service.ts`, stable with no CVEs
-- `@dnd-kit/core ^6.3.1` + `@dnd-kit/sortable ^10.0.0`: Kanban board — React 19 compatible, keyboard and screen reader accessible, 12KB gzipped core
-- SSE (native Express): Real-time UI notifications — unidirectional, zero dependencies, works through HTTP/2, auto-reconnects
+- `fast-xml-parser@^5.5.7` (backend): NF-e XML parsing for asset acquisition import — preferred over `@xmldom/xmldom` for its object-mapping API that simplifies deep NF-e structure traversal; zero dependencies; actively maintained
+- `react-spreadsheet-import@^4.7.1` (frontend): Multi-step column-mapping UI for bulk asset import from varied farmer spreadsheets; last published 2 years ago — MEDIUM confidence, React 19 compatibility must be tested before committing
+- Custom `DepreciationEngine` in `packages/shared/src/utils/depreciation.ts`: supports LINEAR, HOURS_BASED, PRODUCTION_BASED, ACCELERATED; no npm library covers all four Brazilian-relevant methods with CPC 27 specifics
+- Custom `BiologicalAssetValuation` service: CPC 29/IAS 41 fair value model; no npm library exists for this standard
+- Asset hierarchy via Prisma self-relation + `$queryRaw` recursive CTEs: official Prisma recommendation for 3-level tree traversal
 
 ### Expected Features
 
-**Must have (table stakes — v1.1 launch):**
+**Must have (Phase 1 — Foundation):**
 
-- Supplier CRUD with fiscal data (CNPJ/CPF, IE, fiscal regime), contacts, and payment terms — root dependency for all downstream features
-- Purchase Requisition (RC) with product catalog items, cost center rateio, and urgency flag — entry point of P2P cycle
-- RC approval workflow with configurable value thresholds (alcadas), sequential state machine, and rejection with mandatory comment
-- RFQ to multiple suppliers with manual quotation registration — covers 90% of agro suppliers who have no portal
-- Quotation comparison map (mapa comparativo) — matrix view with per-item lowest-price highlight and winner selection audit trail
-- Purchase Order (OC) generation with PDF export (pdfkit) and email dispatch
-- Goods Receiving — 6 explicit scenarios with 3-way match tolerance bands (±3%): NF antecipada, standard, parcial, emergencial, divergencia, devolucao no ato
-- Automatic CP generation from GRN + NF data — fires from ReceivingConfirmed event only, uses existing `generateInstallments` from `@protos-farm/shared`
-- Automatic stock entry from GRN — inside same Prisma transaction as CP creation (atomic)
-- Purchase return (devolucao) with stock reversal (`RETURN_TO_SUPPLIER` type) and payable credit note
-- Kanban pipeline view (RC Pendente -> Cotacao -> Aprovacao OC -> OC Emitida -> Aguardando Recebimento -> Encerrada)
-- Procurement dashboard: total spend MTD/YTD, open OC value, pending approvals count, savings realized, top 5 suppliers, spend by category
-- Email notifications at key workflow transitions via BullMQ async queue
+- Asset catalog with 6 classification types (Máquinas, Veículos, Implementos, Benfeitorias, Terras, Biológicos) — drives accounting treatment routing
+- Asset registration with acquisition data, farm/cost-center assignment, status lifecycle (ACTIVE/INACTIVE/MAINTENANCE/DISPOSED/WIP), unique asset tag
+- Hourmeter/odometer log — prerequisite for hours-based depreciation and maintenance triggers
+- Document control with expiry alerts (CRLV, seguro, CCIR, ITR)
+- Linear depreciation with pro-rata die, monthly batch run (idempotent), depreciation ledger per asset
+- Cash purchase generating CP automatically via existing `payables` module
+- Asset write-off (baixa) with gain/loss calculation
+- Patrimônio report (gross value / accumulated depreciation / net book value by asset class)
+- Mass import via CSV/Excel with column mapping
 
-**Should have (v1.2 — after data accumulates):**
+**Must have (Phase 2 — CMMS Maintenance):**
 
-- Saving analysis (economia realizada) — needs 2-3 months of historical price data to be meaningful; comparing prices without data produces misleading results
-- Supplier scorecard / ranking — needs multiple completed purchase cycles before scores are reliable
-- Price history visualization per product — data exists after v1.1 runs; only UI addition required
-- Mobile requisition (RC from campo) — validate web flow and approval process first
-- CNPJ lookup from Receita Federal API for supplier registration pre-fill
+- Preventive maintenance plans with calendar and hourmeter triggers
+- Work Order (OS) CRUD with state machine (OPEN → IN_PROGRESS → WAITING_PARTS → COMPLETED)
+- OS accounting classification at closure (EXPENSE | CAPITALIZATION | DEFERRAL) — mandatory field, 400 if absent
+- Parts consumption from existing stock-outputs module
+- Maintenance cost attribution to cost centers
+- Maintenance dashboard (MTBF, availability, open OS count, upcoming preventive OS)
+- Cost-per-hour TCO calculation powered by accumulated data
 
-**Defer (v2+):**
+**Should have (competitive differentiators — Phase 3+):**
 
-- Budget control (orcamento de compras) — requires budget planning module as prerequisite; organizational process change before enforcement makes sense
-- Email RFQ with supplier response tracking — email + manual entry covers day-1 needs
-- NF-e XML import — explicitly out of scope (full fiscal module)
-- Supplier portal — high cost, low ROI at farm scale (Brazilian agro suppliers will not adopt a portal login)
-- Frame contracts / blanket orders — enterprise feature, farm scale does not need it
+- Composite asset hierarchy up to 3 levels (Colheitadeira → Motor → Correia) — rare in generic ERPs
+- TCO dashboard per asset and per fleet — "repair vs. replace" decision support
+- Asset under construction (Imobilizado em Andamento) with budget tracking
+- Financed purchase with installment schedule via existing `installmentGenerator`
+- Asset sale with gain/loss generating CR automatically
+- Hours-based and production-based depreciation
+- Accelerated depreciation dual-track (CPC accounting vs. fiscal RFB)
+- QR code asset tags for mobile scan
+- Seasonal maintenance calendar (warn if OS overlaps planting/harvest window)
+
+**Must have (Phase 4 — Biological Assets):**
+
+- Biological asset registration (cattle + perennial crops) with explicit CPC 27 vs CPC 29 classification
+- Bearer plant classification under CPC 27 (coffee/orange trees — NOT CPC 29 fair value)
+- Fair value measurement (manual entry — no live market data feed)
+- Fair value gain/loss P&L disclosure per period
+- Perennial crop maturity tracking (formação → produção)
+
+**Defer to future milestone:**
+
+- CIAP (ICMS credit recovery) — requires fiscal module as prerequisite
+- NF-e XML import via SEFAZ integration — explicitly out of scope per PROJECT.md
+- IoT/telematics integration — complexity vs. benefit not justified at current scale
+- Predictive maintenance — requires 2-3 years of failure history
+- Full project management (Gantt) for construction — out of scope
 
 ### Architecture Approach
 
-Procurement integrates as 8 new backend modules and 8 new frontend pages into the existing modular monolith, with additive-only modifications to `stock-entries` and `payables` (nullable FK additions, no breaking changes to existing data). The design follows the proven `modules/{domain}/routes+service+types` colocation pattern. All new modules use `withRlsContext` for multitenancy. The `Payable.originType = 'PURCHASE'` and `Payable.originId` fields are already stubbed in the existing schema — the integration interface was designed in advance. The `Supplier` entity replaces the denormalized `supplierName: String` on both `Payable` and `StockEntry` via nullable FK additions, with no backfill required for historical records. Approval workflow uses the existing `VALID_TRANSITIONS` map pattern from `checks.types.ts` — no new pattern introduction.
+The architecture is a clean additive extension of the existing monolith. Nine new backend modules form the asset domain organized by responsibility. All follow the established colocated pattern (`controller + service + routes + types`). A new `PATRIMÔNIO` sidebar group is added in the frontend. The existing `FarmMap.tsx` receives an additive asset marker layer via the existing `LayerControlPanel` extensibility point — no rewrite required.
 
 **Major components:**
 
-1. `suppliers/` — Supplier CRUD with fiscal data, contacts, payment terms, evaluations; root dependency for all procurement documents; CNPJ/CPF validated backend via `validation-br`
-2. `purchase-requisitions/` + approval workflow — RC state machine using existing `VALID_TRANSITIONS` map pattern; `ApprovalStep` records per approver level; `ApprovalPolicy` per org; in-app `Notification` table for badge counter
-3. `purchase-quotations/` — `QuotationRequest` + `QuotationResponse` + items; mapa comparativo matrix UI; quotation transitions to `CLOSED` on PO issuance (prices frozen by snapshot)
-4. `purchase-orders/` — OC document with sequential org-scoped number; PDF via pdfkit (same pattern as `pesticide-prescriptions`); email via BullMQ + Handlebars template
-5. `goods-receipts/` — Integration hub: single `withRlsContext` transaction creates `StockEntry` + `Payable` on CONFIRM; 6-scenario state machine; tolerance bands ±3%; `PurchaseOrder.payableStatus` tracking
-6. `purchase-returns/` — `PurchaseReturn` -> `StockOutput (RETURN_TO_SUPPLIER)` + `PayableCredit`; `RETURN_TO_SUPPLIER` type added to `StockOutput` enum during receiving phase
-7. `purchase-budget/` — `PurchaseBudgetLine` with `softCommitted`/`hardCommitted`/`consumed` columns; schema initialized in Phase 2 (Requisition) even though enforcement is v2
-8. `purchase-dashboard/` — Pure aggregation (read-only); KPIs + kanban summary; composite indexes on `(organizationId, status, createdAt)` on purchase_orders and goods_receipts
+1. `assets/` — Core entity CRUD, hierarchy (AssetComponent join table), farm/CC/status assignment, bulk import, map layer; root dependency for all other modules
+2. `asset-depreciation/` — Pure `calculateDepreciation()` function (shared for frontend preview) + monthly cron batch (Redis NX lock, per-org `withRlsContext`) + DepreciationRun tracking
+3. `work-orders/` — OS state machine (`VALID_WO_TRANSITIONS`), atomic completion (StockOutput + Payable in one transaction), mandatory accounting classification at closure
+4. `asset-acquisition/` + `asset-disposal/` — Financial integration hubs; consume `createPayable()`, `createReceivable()`, and `generateInstallments()` from existing infrastructure
+5. `maintenance-plans/` + `fuel-records/` + `asset-documents/` — Operational records consumed by TCO calculation
+6. `asset-dashboard/` — Read-only TCO aggregation; no new models; depends on indexes on `(assetId, periodYear, periodMonth)` on `depreciation_entries`
+7. Monthly depreciation cron — `shared/cron/depreciation.cron.ts` following `digest.cron.ts` pattern exactly (Redis NX lock, per-org `withRlsContext`, chunk of 100 assets per transaction)
 
 ### Critical Pitfalls
 
-1. **Duplicate CP on partial receiving** — CP amount must come from `receiving.confirmedAmount`, never from `purchaseOrder.totalAmount`. CP creation fires only from the `ReceivingConfirmed` event — not from PO approval. Add `PurchaseOrder.payableStatus` enum (`NOT_GENERATED | PARTIAL | FULLY_GENERATED`) to prevent duplicate generation on second shipment. Highest recovery cost if discovered in production.
+1. **Asset purchase routed through GoodsReceipt/StockEntry** — The single most dangerous integration risk. An asset NF must never create a `StockEntry`. Use a separate `AssetAcquisition` module with `originType = 'ASSET_ACQUISITION'` on the CP. Add a guard in `GoodsReceipt` service to reject asset-category PO lines from the standard stock-entry flow. Recovery is expensive — requires auditing stock balances and financial reports.
 
-2. **NF/goods desynchronization across 6 receiving scenarios** — Two receiving scenarios involve goods arriving before NF or NF before goods. Stock entry fires on goods arrival; CP fires on NF arrival. Never create both from the same code path. The current `invoiceNumber: String` on `StockEntry` is insufficient — must be upgraded before any receiving code is written.
+2. **Depreciation decimal precision — float arithmetic drift** — All depreciation arithmetic must use `Decimal` from `decimal.js`. Add a "last-period balancing" entry so the final month brings net book value to exactly residual value. Add a unique constraint on `(assetId, periodYear, periodMonth)` in `depreciation_entries` to prevent duplicate entries on cron retry. Using JavaScript `number` types is a regression that will not be caught with clean test fixtures.
 
-3. **Approval state machine without explicit transitions** — Use `VALID_TRANSITIONS` map pattern already established in `checks.types.ts`. One `validateTransition(current, next)` function at service boundary. Never inline `if (status === 'DRAFT')` checks scattered across service methods. Rejection requires mandatory `rejectionReason`. Multi-level approval is modeled as ordered `ApprovalStep` records, not flags on the requisition.
+3. **CPC 27 vs CPC 29 classification error for biological assets** — Bearer plants (café, laranja) are CPC 27 depreciable assets, not CPC 29 fair-value assets. The `AssetClassification` enum must explicitly encode: `BEARER_PLANT` (CPC 27, depreciable), `BIOLOGICAL_ASSET_ANIMAL` (CPC 29, fair value), `LAND_RURAL_PROPERTY` (CPC 27, non-depreciable). The depreciation batch must guard against processing CPC 29 biological assets. This classification must be correct at schema creation — retrofitting after depreciation records exist requires data migration.
 
-4. **Synchronous email blocking workflow mutations** — Never `await emailService.send()` inside a Prisma transaction. BullMQ job is enqueued after transaction commits; HTTP response returns before email delivery. If SMTP fails, workflow state is already saved. Show UI distinction between success notification and notification failure.
+4. **OS accounting treatment not enforced at closure** — `accountingTreatment` on OS closure is a mandatory field, not optional. Missing it defaults all maintenance to OPEX, silently missing capitalizable overhauls that should increase asset book value. The `PATCH /work-orders/:id/close` endpoint must return 400 if `accountingTreatment` is absent. CAPITALIZATION must atomically update asset book value and recalculate depreciation.
 
-5. **Quotation prices not frozen at PO issuance** — `PurchaseOrder` must snapshot `unitPrice`/`quantity`/`totalAmount` at issuance time, not store only a quotation FK. Quotation transitions to `CLOSED` status when PO is issued. Editing a closed quotation returns 409. CP amount is computed from the PO snapshot, not from live quotation or live product prices.
+5. **Batch depreciation without idempotency guard** — Running the monthly cron twice (crash + retry) must produce identical results. Unique constraint on `(assetId, periodYear, periodMonth)` in `depreciation_entries`. PostgreSQL advisory lock on `(organizationId, period)` prevents concurrent runs. Use `INSERT ... ON CONFLICT DO NOTHING` semantics. A `DepreciationRun` tracking table with status (PENDING/RUNNING/COMPLETED/FAILED) enables safe retry from the first unprocessed asset.
+
+6. **Asset disposal without cancelling pending depreciation entries** — When an asset is sold or written off, all pending `DepreciationEntry` records for that asset must be cancelled atomically in the same transaction that creates the CR/CP and sets the terminal status. Status enum mismatch (e.g., `VENDIDO` vs `BAIXADO`) is a common bug that lets the batch continue depreciating disposed assets. Use a single terminal status concept for all disposal types.
+
+7. **WIP asset depreciates before activation** — `AssetStatus.EM_ANDAMENTO` must be explicitly excluded from the depreciation batch query. CPC 27 requires depreciation to begin only when the asset is available for use. Depreciation begins only after `POST /assets/:id/activate` transitions status to `ATIVO` and sets `activationDate`. Define this status at schema creation, not as a later amendment.
 
 ## Implications for Roadmap
 
-Based on dependency analysis, the P2P cycle must be implemented in strict upstream-to-downstream order. No phase can be skipped without breaking the next. The minimum coherent unit is the complete cycle — a procurement module with requisitions but no GRN is useless; a GRN without CP auto-generation defeats the purpose.
+The dependency graph is clear and dictates a specific build order. Asset registration is the root node — everything else depends on a clean, classified asset entity. Depreciation must be proven correct before write-off or financial integration builds on it. Maintenance OS is independent of financial integration stories and can be validated faster. Financial integration phases (acquisition, disposal) are ordered acquisition-before-disposal because disposal gain/loss requires acquisition cost to be correctly recorded. Advanced features (hierarchy, biological assets, leasing) are deferred until the core loop is stable.
 
-### Phase 1: Cadastro de Fornecedores (Supplier Foundation)
+### Phase 1: Core Asset Entity and Foundation
 
-**Rationale:** Supplier is the root dependency for every procurement document. No quotation, PO, or CP can be generated without a valid `supplierId`. Must be phase 1 with no exceptions.
-**Delivers:** Supplier CRUD with fiscal data, multiple contacts, payment terms; backend CNPJ/CPF/IE validation via `validation-br`; `fiscalRegime` enum (SIMPLES_NACIONAL, LUCRO_PRESUMIDO, LUCRO_REAL, PESSOA_FISICA, RURAL_PRODUCER); `SupplierEvaluation` sub-resource; supplier search and filtering; purchasing history per supplier view.
-**Addresses:** All table-stakes supplier features (registration, contacts, search, payment term defaults).
-**Avoids:** Pitfall 8 — CNPJ stored without backend check-digit validation causes SEFAZ reconciliation failures discovered only months later.
-**Research flag:** Standard CRUD patterns — no additional research needed.
+**Rationale:** Asset registration is the absolute root dependency. No depreciation, no maintenance, no financial integration can be built without a clean asset entity with proper CPC 27/29 classification defined at schema creation.
+**Delivers:** Asset catalog with 6 classification types, registration form, farm/CC/status assignment, hourmeter log, document control with expiry alerts, bulk CSV/Excel import with column mapping, asset map layer in FarmMap, asset ficha skeleton with tabs
+**Addresses:** Asset catalog, registration, farm assignment, status lifecycle, unique tags, hourmeter/odometer log, document control, mass import, asset search/filtering
+**Avoids:** CPC 27 vs CPC 29 classification error (define AssetClassification enum with explicit CPC mapping at schema creation); WIP premature depreciation (define EM_ANDAMENTO status at schema creation)
+**Research flag:** Standard patterns — CPC 27 classification taxonomy is unambiguous; no phase research needed
 
-### Phase 2: Requisicao de Compra e Aprovacao (Requisition + Approval Workflow)
+### Phase 2: Depreciation Engine
 
-**Rationale:** RC is the entry point of the P2P cycle. The approval workflow is the new architectural element with no existing precedent in this codebase — it must be designed completely before any downstream phase uses its output. The `VALID_TRANSITIONS` map and `Notification` model introduced here are reused by Kanban (Phase 6).
-**Delivers:** `PurchaseRequisition` + `PurchaseRequisitionItem` + `ApprovalStep` + `ApprovalPolicy` + `Notification` models; `VALID_TRANSITIONS` state machine (DRAFT -> PENDING_APPROVAL -> APPROVED -> REJECTED -> RECALLED -> CANCELLED); in-app badge counter via `GET /api/notifications/unread-count`; BullMQ queue infrastructure for async email dispatch; `purchase_budget_lines` schema with `softCommitted`/`hardCommitted`/`consumed` columns (initialized here, enforcement v2).
-**Addresses:** RC creation, RC approval workflow with configurable alcadas, rejection with mandatory comment, in-app notifications.
-**Avoids:** Pitfall 3 (approval state machine without explicit transitions — VALID_TRANSITIONS map is the feature, not an implementation detail); pitfall 5 (synchronous email — BullMQ queue established here before first notification fires).
-**Research flag:** Standard ERP patterns — no additional research needed.
+**Rationale:** The depreciation engine must be built and validated before any write-off or financial integration work. Gain/loss calculations require accurate accumulated depreciation. The monthly batch idempotency guard must be in place before any data accumulates in production.
+**Delivers:** DepreciationConfig per asset, `calculateDepreciation()` pure function (in `packages/shared` for frontend preview reuse), monthly cron batch (idempotent, per-org Redis lock, chunks of 100), DepreciationRun tracking table, pro-rata die for first/last months, depreciation ledger, DepreciationPage, depreciation schedule report
+**Addresses:** Linear depreciation, monthly depreciation run, depreciation ledger, residual value, useful life, cost-center attribution in entries
+**Uses:** `decimal.js` (existing), `node-cron` (existing), `ioredis` for Redis lock (existing), `pdfkit` for schedule PDF (existing)
+**Avoids:** Float arithmetic drift (Decimal-only rule), batch idempotency (unique constraint + advisory lock), WIP exclusion (status guard in batch query)
+**Research flag:** Standard accounting math — CPC 27 depreciation formulas are unambiguous; no phase research needed
 
-### Phase 3: Cotacao e Pedido de Compra (Quotation + Purchase Order)
+### Phase 3: Maintenance CMMS
 
-**Rationale:** RFQ flows from an APPROVED requisition. Quotation comparison map is the key decision-support UI. PO issuance must freeze prices — data model must snapshot prices, not reference live quotation records. Email dispatch to supplier uses Handlebars templates + BullMQ from Phase 2.
-**Delivers:** `QuotationRequest` + `QuotationResponse` + `QuotationResponseItem`; mapa comparativo UI (matrix: rows = items, cols = suppliers, lowest price highlighted per item); winner selection with audit trail; `PurchaseOrder` with sequential org-scoped number, price snapshot fields, and `CLOSED` quotation status on issuance; OC PDF via pdfkit; email via BullMQ + Handlebars `purchase-order.hbs` template.
-**Addresses:** RFQ to multiple suppliers, manual quotation registration, quotation comparison map, winner selection, OC generation, OC PDF export, OC email dispatch to supplier.
-**Avoids:** Pitfall 6 (quotation price not frozen at PO issuance — snapshot prices on PO creation, transition quotation to CLOSED); pitfall 9 (saving analysis deferred to v1.2 when actual price data accumulates).
-**Uses:** `handlebars` for OC email template; `pdfkit` existing pattern from `pesticide-prescriptions`.
-**Research flag:** Standard patterns — no additional research needed.
+**Rationale:** Maintenance is independent of financial integration stories but depends on assets (Phase 1) and the existing stock-outputs module. Building maintenance before complex financial integrations allows the OS state machine and mandatory accounting classification to be validated with real data before the higher-risk asset disposal and leasing phases.
+**Delivers:** Preventive maintenance plans with calendar/hourmeter triggers, Work Order CRUD with state machine (`VALID_WO_TRANSITIONS`), OS completion (atomic: StockOutput + Payable in one transaction), mandatory accounting classification at closure (400 if absent), maintenance dashboard (MTBF, availability, upcoming OS), cost-per-hour calculation foundation
+**Addresses:** Preventive maintenance plans, trigger types, Work Order CRUD, OS accounting classification, parts consumption from stock, OS cost center attribution, maintenance history per asset, maintenance dashboard
+**Uses:** `stock-outputs` module (existing, consumed read-only for parts), `payables` module (existing, for OS expense CP), `bullmq` (existing, for work order notifications), `handlebars`/`nodemailer` (existing, for email)
+**Avoids:** OS state machine invalid transitions (`VALID_WO_TRANSITIONS` constant, same pattern as `checks.types.ts`); OS accounting treatment missing (400 at closure); parts mixed with field inputs (StockOutput `originType = WORK_ORDER` tagging)
+**Research flag:** Standard CMMS patterns — well-documented; OS accounting classification stories need careful acceptance criteria to avoid the expense vs. capitalize ambiguity reaching production
 
-### Phase 4: Recebimento de Mercadorias (Goods Receiving — Integration Hub)
+### Phase 4: Asset Acquisition — Financial Integration
 
-**Rationale:** This is the highest-value and highest-risk phase. A single CONFIRM action must atomically create a `StockEntry` (existing module) and a `Payable` (existing module) via `withRlsContext`. The 6 receiving scenarios require careful state machine design before implementation begins. The `RETURN_TO_SUPPLIER` stock output type must be added to the `StockOutput` enum here (not in Phase 5) to avoid migrating a live enum in production.
-**Delivers:** `GoodsReceipt` + `GoodsReceiptItem` with 6-scenario state machine; 3-way match with ±3% tolerance bands (warning-not-block); atomic transaction: StockEntry + Payable creation on CONFIRM; `PurchaseOrder.payableStatus` tracking (NOT_GENERATED -> PARTIAL -> FULLY_GENERATED); NF data capture (manual: number, serie, date, total, chave NF-e as future fiscal hook); modifications to `stock-entries` (add `supplierId`, `purchaseOrderId`, `goodsReceiptId` FKs) and `payables` (add `supplierId` FK, expose `POST /api/payables/from-purchase` route); `RETURN_TO_SUPPLIER` added to `StockOutput` type enum (used in Phase 5).
-**Addresses:** Goods Receiving (all 6 scenarios), automatic CP generation, automatic stock entry, discrepancy handling, OC status tracking (EMITIDA -> RECEBIMENTO_PARCIAL -> ENCERRADA).
-**Avoids:** Pitfall 1 (duplicate CP on partial receiving — `payableStatus` + event-driven CP from ReceivingConfirmed only); pitfall 2 (NF/goods desync — explicit two-phase state machine for goods vs NF arrival, not a flag on StockEntry).
-**Research flag:** Needs implementation plan before coding — the atomic transaction across 3 tables and the 6-scenario state machine benefit from a dedicated phase planning document. Recommend `/gsd:research-phase` before implementation starts.
+**Rationale:** Establishes the `AssetAcquisition` module as a separate code path from `GoodsReceipt`. Must come after Phase 1 (asset entity exists) and before Phase 5 (disposal requires knowing acquisition cost). This phase also adds the `payables` table migration (assetId FK, ASSET_PURCHASE enum value).
+**Delivers:** Cash purchase generating CP (`originType = ASSET_PURCHASE`), financed purchase with installment schedule (reusing `generateInstallments`), NF-e XML file upload parsed by `fast-xml-parser`, multi-asset NF (one asset record per line item), payables table migration
+**Addresses:** Cash purchase → auto CP, financed purchase → CP with installment schedule, multiple assets on same NF, NF-e XML pre-fill
+**Uses:** `fast-xml-parser@^5.5.7` (new), `multer` (existing), `generateInstallments` in `packages/shared` (existing), `createPayable()` (existing)
+**Avoids:** Asset purchase double-counting via GoodsReceipt (AssetAcquisition never calls stockEntryService; GoodsReceipt guard added); CAPEX/OPEX separation (ASSET_PURCHASE distinct from MAINTENANCE in PayableCategory)
+**Research flag:** Standard payables integration pattern; NF-e XML tag paths (infNFe.det[n] structure, schema v4.0) should be validated against a real NF-e sample during story planning before committing to field mappings
 
-### Phase 5: Devolucao e Troca (Purchase Returns)
+### Phase 5: Asset Disposal and Write-Off
 
-**Rationale:** Returns reference a confirmed GoodsReceipt and must reverse both stock and payable correctly. The `RETURN_TO_SUPPLIER` stock output type was added in Phase 4. A partial return against a partially-paid CP requires a `PayableCredit` model (not direct CP amount mutation) to preserve audit trail.
-**Delivers:** `PurchaseReturn` + `PurchaseReturnItem`; `StockOutput (RETURN_TO_SUPPLIER)` reversal (FEFO preserved); `PayableCredit` record reducing outstanding CP (or `Receivable` generation if CP already paid); return reasons (DEFECT, WRONG_PRODUCT, EXCESS, QUALITY); resolution types (CREDIT_NOTE, EXCHANGE, REFUND); return status machine (PENDING -> CONFIRMED -> RESOLVED).
-**Addresses:** Purchase return (devolucao) with supplier credit note; complete financial cycle closure.
-**Avoids:** Pitfall 7 (return using DISPOSAL stock type — `RETURN_TO_SUPPLIER` ready from Phase 4; partial CP credit modeled as `PayableCredit` not direct amount mutation).
-**Research flag:** Verify `PayableCredit` model fits existing payables schema before implementation — inspect `payables.service.ts` and `payables.types.ts` during Phase 5 planning.
+**Rationale:** Asset disposal requires the depreciation engine (Phase 2) to be correct — final pro-rata depreciation runs atomically at disposal. Build after Phase 4 so the financial integration pattern (`originType` on Receivable) is established consistently.
+**Delivers:** Asset write-off (descarte, sinistro, obsolescência), asset sale generating CR with gain/loss, installment sale (reusing `generateInstallments`), receivables table migration (assetId FK, ASSET_SALE enum value), atomic disposal transaction (final depreciation + status update + pending entry cancellation + CR creation)
+**Addresses:** Asset write-off (baixa), asset sale → auto CR, partial installment sale, casualty loss (sinistro), financial summary per asset
+**Avoids:** Disposal without cancelling pending depreciation entries (atomic `prisma.$transaction()` required); status enum consistency (single DISPOSED terminal status in batch guard)
+**Research flag:** Standard patterns — no phase research needed
 
-### Phase 6: Kanban, Dashboard e Notificacoes (Visibility + Operations)
+### Phase 6: Operational Records (Fuel + Documents Enhanced)
 
-**Rationale:** Pure aggregation reads from all upstream tables. Kanban uses `@dnd-kit` with drag actions wired to the same service methods as form buttons (not a generic status override). Dashboard KPIs need composite indexes on `(organizationId, status, createdAt)` to perform at scale.
-**Delivers:** Procurement kanban (5 columns, `@dnd-kit`, drag validates via existing `VALID_TRANSITIONS`); `PurchaseDashboardPage` with KPIs (total spend MTD/YTD, open OC value, pending approvals count, top 5 suppliers by spend, spend by category via recharts); SSE endpoint for real-time Kanban updates; composite DB indexes on `purchase_orders` and `goods_receipts`; Kanban server-side pagination per column (default: last 90 days); full BullMQ email notification suite for all 5 workflow templates.
-**Addresses:** Kanban pipeline view, procurement dashboard (executive view), email notifications at all workflow steps, real-time UI feedback.
-**Avoids:** Pitfall 10 (kanban drag bypassing state machine — reuse `validateTransition()` from Phase 2, card snaps back on invalid drag); performance trap (kanban without pagination; dashboard aggregation without indexes).
-**Uses:** `@dnd-kit/core` + `@dnd-kit/sortable`; SSE native Express; existing `recharts` for dashboard charts; existing `Notification` table from Phase 2.
-**Research flag:** Standard patterns — no additional research needed.
+**Rationale:** Fuel records and enhanced document features are low complexity and independent. Building after the core operational loop (Phases 1-5) is stable. These feed TCO calculations in the reporting phase.
+**Delivers:** Fuel consumption log per asset (cost/liter, cost/hour trend), fuel efficiency benchmarking (flag 20%+ above fleet average), advanced document expiry calendar, document expiry cron alerts (30/15/7 days before), QR code generation per asset, mobile deep-link from QR to asset ficha
+**Addresses:** Fuel consumption log, fuel efficiency benchmarking, document control with expiry alerts (enhanced), QR code asset tags, availability for mobile asset identification
+**Avoids:** Document expiry alerts for inactive assets (filter WHERE asset.status = ATIVO); fuel cost/hour requiring hourmeter at refueling (horímetroAtRefueling required for hour-metered machinery)
+**Research flag:** Standard patterns — no phase research needed
+
+### Phase 7: Advanced Depreciation and Asset Hierarchy
+
+**Rationale:** Hours-based and production-based depreciation require real hourmeter/production data from Phase 1/6. Composite asset hierarchy adds complexity to existing asset queries and must be built after the simple asset model is stable. Accelerated depreciation dual-track is a Brazilian-specific feature requiring careful data model design.
+**Delivers:** Hours-based depreciation (with PENDING_HOURS_DATA flag when horímetro missing — not R$0), production-based depreciation, accelerated depreciation dual-track (CPC book value separate from fiscal book value as org-level opt-in), composite asset hierarchy up to 3 levels (AssetComponent join table + recursive CTE + depth guard), asset transfer between farms (mandatory CC allocation review at transfer)
+**Addresses:** Hours-of-use depreciation, production-based depreciation, accelerated depreciation, composite asset hierarchy (pai-filho), asset transfer between farms
+**Avoids:** Hours-based with missing horímetro (PENDING_HOURS_DATA not R$0); hierarchy depth N+1 queries (recursive CTE, depth column at schema); circular reference prevention (traverse-up guard before AssetComponent insert); asset transfer without CC update (mandatory CC review)
+**Research flag:** Accelerated depreciation dual-track scope needs validation — confirm whether farm legal entity type (Simples Nacional vs Lucro Real vs Lucro Presumido) requires the fiscal track before building it; make it an org-level opt-in to avoid unused complexity
+
+### Phase 8: Reporting and TCO Dashboard
+
+**Rationale:** All reporting is read-only aggregation over data produced by Phases 1-7. Building reports last ensures underlying data is correct before exposing it in dashboards. TCO calculation joins assets + depreciation_entries + work_orders + fuel_records — all must exist and be correct first.
+**Delivers:** PatrimonialDashboardPage (total patrimônio, depreciation YTD, gain/loss summary), TCO per asset and fleet (cost/hour calculation), repair-vs-replace alert (when cumulative maintenance > 60-70% of replacement cost), Patrimônio report PDF (gross/accumulated/net by asset class), depreciation schedule report (12/36/60 month projection), cost-center depreciation attribution report, asset utilization report, asset inventory reconciliation (physical count vs contábil via QR scan)
+**Addresses:** TCO dashboard, repair-vs-replace recommendation, patrimônio report, depreciation schedule report, CC depreciation report, asset utilization report, asset inventory reconciliation
+**Uses:** `recharts` (existing), `pdfkit` (existing), `exceljs` (existing)
+**Avoids:** AccumulatedDepreciation computed on-the-fly from SUM (use running total column on Asset, updated atomically per entry); PatrimonialDashboard timeout (composite indexes on depreciation_entries and work_orders before this phase)
+**Research flag:** Standard patterns — ensure composite indexes `(assetId, periodYear, periodMonth)` on `depreciation_entries` and `(assetId, completedAt)` on `work_orders` are in place before stories are written
+
+### Phase 9: Biological Assets (CPC 29) and Leasing (CPC 06)
+
+**Rationale:** Biological assets and leasing are the most complex features with the most accounting nuance. Building them last allows the team to use established patterns from all prior phases. Leasing (right-of-use asset + liability amortization) is the highest-risk financial feature and benefits from the depreciation engine and financial integration patterns being fully proven.
+**Delivers:** Biological asset registration (cattle + perennial crops), bearer plant classification under CPC 27 (coffee/orange trees with their own depreciation schedule), fair value measurement for CPC 29 assets (manual entry), fair value gain/loss P&L entry per period (labeled as non-cash), perennial crop maturity tracking (formação → produção), biological asset dashboard, leasing CPC 06 (ROU asset + lease liability amortization with effective interest method), imobilizado em andamento (partial contributions + activation event)
+**Addresses:** Biological asset registration, CPC 29 fair value, transformation gain/loss, harvest product separation, perennial crop maturity, leasing, imobilizado em andamento
+**Avoids:** CPC 27 vs CPC 29 confusion (bearer plants under CPC 27 depreciable, cattle under CPC 29 fair value); leasing ROU asset missing (AssetLease must create Asset(RIGHT_OF_USE) and enter depreciation batch); biological fair value unrealized gain misinterpreted (inline non-cash label required); WIP depreciating before activation
+**Research flag:** Needs phase research — biological asset valuation inputs (CEPEA price indices, cattle arroba pricing sources), CPC 29 fair value disclosure requirements, leasing effective interest amortization method — validate with an accountant before story writing
 
 ### Phase Ordering Rationale
 
-- Supplier -> Requisition -> Quotation -> PurchaseOrder -> GoodsReceipt -> PurchaseReturn is the strict topological order of P2P dependencies. No entity at level N can exist without entities at level N-1.
-- `PurchaseBudgetLine` schema is initialized during Phase 2 (Requisition) — even though budget enforcement is v2 — to avoid retroactive migrations when approval records are already live in production.
-- `RETURN_TO_SUPPLIER` stock output type is added to the enum during Phase 4 (Receiving) schema work, not Phase 5 (Returns), to avoid migrating a live production enum with existing records.
-- `VALID_TRANSITIONS` map and `Notification` table from Phase 2 are reused directly by Phase 6 (Kanban). This cross-cutting dependency is satisfied by the ordering.
-- Saving analysis, supplier scorecard, and price history visualization are v1.2 — these features require real historical data from 2-3 months of production use to be meaningful.
+- Asset registration is the root dependency. No other phase can start without a correct asset entity with proper classification. This is non-negotiable.
+- Depreciation must be correct before write-off or any financial integration uses net book value. Do not build Phase 4 or 5 before Phase 2 is validated.
+- Maintenance (Phase 3) is independent of financial integration and builds faster, providing real TCO data earlier. The OS accounting classification is high-risk but well-understood — handle it explicitly in story acceptance criteria.
+- Acquisition before disposal: you cannot calculate disposal gain/loss without the acquisition cost being correctly recorded.
+- Advanced features (Phases 7, 9) deferred until the core loop is proven in production. This reduces rework risk if requirements shift.
+- Biological assets and leasing are combined into one phase (9) to reduce context switching and because they share the theme of specialized accounting models.
 
 ### Research Flags
 
-Phases needing `/gsd:research-phase` before implementation tasks are written:
+Phases needing deeper research during planning:
 
-- **Phase 4 (Goods Receiving):** The 6-scenario state machine, the atomic 3-table transaction contract, and the NF desynchronization handling are the most complex implementation in this milestone. The interaction between `GoodsReceipt` scenarios, `payableStatus` tracking, and `generateInstallments` rural calendar handling warrants a dedicated implementation plan before any code is written.
+- **Phase 7 (Advanced Depreciation):** Accelerated depreciation dual-track — confirm which farm legal entity types actually need the fiscal track; validate RFB table rates for 2026; consider org-level opt-in flag to avoid building unused complexity.
+- **Phase 9 (Biological Assets + Leasing):** CEPEA price index references for fair value, CPC 29 fair value disclosure requirements in financial statements, leasing effective interest method amortization — validate with an accountant before story writing to avoid non-compliant implementation.
 
-Phases with well-documented patterns (skip research-phase):
+Phases with standard patterns (skip research-phase):
 
-- **Phase 1 (Suppliers):** Standard entity CRUD + CNPJ validation. Established module pattern in this codebase.
-- **Phase 2 (Requisition + Approval):** State machine follows existing `VALID_TRANSITIONS` pattern from `checks.types.ts`. `ApprovalStep` ordered list is a well-known ERP pattern.
-- **Phase 3 (Quotation + PO):** PDF reuses `pesticide-prescriptions` pattern. Email reuses `mail.service.ts` with BullMQ queue. Quotation comparison is a standard matrix UI.
-- **Phase 5 (Returns):** Standard reversal pattern dependent only on confirmed GRN records.
-- **Phase 6 (Dashboard + Kanban):** Pure read aggregation. `@dnd-kit` integration is well-documented.
+- **Phase 1 (Asset Entity):** CPC 27 classification taxonomy is unambiguous; monorepo module patterns are established.
+- **Phase 2 (Depreciation Engine):** Linear depreciation formulas are standard accounting math; cron infrastructure already exists in codebase.
+- **Phase 3 (Maintenance CMMS):** MaintainX/Fiix CMMS patterns are well-documented; state machine follows established `VALID_TRANSITIONS` project pattern.
+- **Phase 4 (Acquisition):** Payables integration pattern established in v1.1 procurement phase; fast-xml-parser integration is straightforward.
+- **Phase 5 (Disposal):** Receivables integration pattern established; gain/loss formula is standard CPC 27.
+- **Phase 6 (Operational Records):** Simple CRUD with notification hooks; no novel patterns.
+- **Phase 8 (Reporting):** Read-only aggregation; recharts and pdfkit patterns are proven in codebase.
 
 ## Confidence Assessment
 
-| Area         | Confidence                                                                                                                                                                          | Notes                                                                                                                                                                                                                                                               |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Stack        | HIGH                                                                                                                                                                                | All 4 new packages npm-verified with exact versions and peer dep compatibility confirmed. `validation-br` alphanumeric CNPJ support is MEDIUM — specific function API not verified from official Receita Federal docs directly.                                     |
-| Features     | HIGH                                                                                                                                                                                | ERP procurement is a mature domain. ERPNext, SAP, NetSuite, Dynamics 365 patterns verified. Brazilian agro-specific requirements (safra payment terms, NF-e manual entry, 6 receiving scenarios) confirmed against industry sources.                                |
-| Architecture | HIGH                                                                                                                                                                                | Derived from direct codebase analysis of 5500+ line Prisma schema. `Payable.originType = 'PURCHASE'` integration interface pre-confirmed. `VALID_TRANSITIONS` pattern confirmed in `checks.types.ts`. `invoiceNumber: String` limitation on `StockEntry` confirmed. |
-| Pitfalls     | HIGH for integration pitfalls (codebase-derived); MEDIUM for Brazilian fiscal NF workflow specifics (agribusiness ERP literature, not verified against current SEFAZ documentation) |                                                                                                                                                                                                                                                                     |
+| Area         | Confidence | Notes                                                                                                                                                                                                                                             |
+| ------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stack        | HIGH       | Only 2 new packages; all others already installed and in active use. fast-xml-parser npm-verified. react-spreadsheet-import is MEDIUM due to React 19 compat uncertainty — test in isolation before Phase 1 bulk import story.                    |
+| Features     | HIGH       | CPC 27, CPC 29, and CPC 06 R2 are official Brazilian accounting standards with no ambiguity on core requirements. CMMS patterns verified against MaintainX, FTMaintenance, SAP FI-AA, and TOTVS Protheus SIGAATF documentation.                   |
+| Architecture | HIGH       | Derived from direct codebase analysis (6500+ line Prisma schema, existing service patterns, cron and state machine infrastructure). All integration points verified against existing code. No guesses.                                            |
+| Pitfalls     | HIGH       | Integration pitfalls from direct codebase analysis. Accounting standard pitfalls from CPC 27/29/06 official texts. Batch performance patterns from PostgreSQL docs and ERP community (MEDIUM for scale-specific claims beyond 500 organizations). |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **`validation-br` alphanumeric CNPJ function API:** Support confirmed via package description and recent publish date, but the specific function signature (e.g., `validateCNPJ(str)` vs `cnpj.isValid(str)`) was not verified. Validate API during Phase 1 implementation before committing to the package call sites.
-- **`PayableCredit` model for partial CP reduction:** The current `payables.service.ts` has no model for reducing a partially-settled payable. Inspect the payables schema during Phase 5 planning to determine whether a `PayableCredit` record or a `Payable` amount adjustment with audit trail is the better fit for the existing system.
-- **`generateInstallments` rural calendar handling:** The existing shared helper must be verified for "safra" payment term (harvest-date-relative due date, not fixed calendar). Validate during Phase 4 planning before relying on it for GRN-triggered CP installment generation.
-- **Saving analysis inflation adjustment (v1.2):** When Phase 6+ saving analysis is planned, the nominal vs IPCA-adjusted comparison must be addressed explicitly. For MVP v1.2, manual inflation adjustment percentage input is acceptable. Label all saving figures as "comparacao nominal (sem ajuste IPCA)" until inflation adjustment is implemented.
+- **react-spreadsheet-import React 19 compatibility:** Must be tested in isolation before the bulk import story is started in Phase 1. If incompatible, fall back to custom step wizard + raw `exceljs` on frontend (adds 2-3 days of work, well-understood effort).
+- **Accelerated depreciation dual-track scope:** Confirm with the customer whether their farm entities are Simples Nacional (no fiscal track needed) or Lucro Real/Presumido (fiscal track required). Make dual-track an org-level opt-in flag to avoid building complexity that may not be used.
+- **Biological asset fair value inputs:** Confirm whether CEPEA price data will be entered manually by the accountant or expected to be fetched automatically. Research recommends manual entry (no API integration), but this must be aligned with customer expectation before Phase 9 planning.
+- **Leasing scope in this milestone:** CPC 06 right-of-use asset is the highest-complexity financial feature. Confirm whether any of the customer's current fleet is on finance leases before committing to Phase 9 scope. If no current finance leases exist, consider deferring to a future milestone.
+- **NF-e XML tag paths:** The `fast-xml-parser` integration should be tested against a real NF-e v4.0 XML file before Phase 4 story writing to confirm the `infNFe.det[n]` field mappings for emitente, destinatário, and product line items.
 
 ## Sources
 
 ### Primary (HIGH confidence)
 
-- `apps/backend/prisma/schema.prisma` — existing data models, `Payable.originType`/`originId` integration interface, `StockEntry.supplierName` as plain string
-- `apps/backend/src/modules/checks/checks.types.ts` — `VALID_TRANSITIONS` pattern adopted for approval state machine
-- `apps/backend/src/modules/payables/payables.service.ts` — `Money` factory, `generateInstallments` import confirmed
-- `apps/backend/src/modules/stock-outputs/stock-outputs.types.ts` — `RETURN_TO_SUPPLIER` type absence confirmed
-- `apps/backend/src/modules/pesticide-prescriptions/` — PDF generation pattern reused for OC
-- `apps/backend/src/database/redis.ts` + `src/shared/mail/mail.service.ts` — BullMQ and email infrastructure
-- npm registry: `bullmq@5.71.0`, `validation-br@1.6.4`, `handlebars@4.7.8`, `@dnd-kit/core@6.3.1`, `@dnd-kit/sortable@10.0.0` — versions verified
-- ERPNext open source procurement documentation — RFQ, comparison map, PO generation patterns
-- NetSuite procurement and three-way matching documentation — lifecycle and tolerance patterns
+- `apps/backend/prisma/schema.prisma` (6500+ lines) — existing data models, enums, integration points verified directly
+- `apps/backend/src/shared/cron/digest.cron.ts` — cron infrastructure pattern for depreciation batch
+- `apps/backend/src/modules/checks/checks.types.ts` — VALID_TRANSITIONS state machine pattern
+- `apps/backend/src/modules/goods-receipts/goods-receipts.service.ts` — atomic multi-domain write pattern
+- `apps/backend/src/modules/payables/payables.service.ts` — createPayable() function signature and originType/originId pattern
+- `packages/shared/src/utils/installments.ts` — generateInstallments() reuse confirmation
+- CPC 27 — Ativo Imobilizado (CVM): depreciation methods, useful life, bearer plants under CPC 27, non-depreciation of land
+- CPC 29 — Ativos Biológicos e Produtos Agrícolas (CVM): fair value measurement, biological transformation, harvest product handoff
+- CPC 06 R2 — Arrendamentos (IFRS 16): right-of-use asset, lease liability amortization, financial vs operational lease
+- IAS 41 Agriculture (IFRS Foundation): fair value less costs to sell requirements, bearer plant amendment 2014
+- Prisma official docs — self-relations and `$queryRaw` for recursive CTEs
 
 ### Secondary (MEDIUM confidence)
 
-- BullMQ official docs — job events, delayed jobs, ioredis peer dep compatibility
-- dnd-kit GitHub — React 19 compatibility (confirmed for `@dnd-kit/core`; one open issue for `@dnd-kit/react`, which is not used here)
-- Ramp, Stampli, HighRadius procurement guides — GRN scenarios, approval workflow patterns, supplier scorecard methodology
-- Receita Federal Technical Note COCAD/SUARA/RFB no 49 — alphanumeric CNPJ July 2026 (via web search, not official Receita Federal site directly)
-- Aegro blog — NF-e context for Brazilian agro suppliers, receituario agronômico integration context
+- MaintainX agricultural CMMS documentation — work order patterns, preventive maintenance triggers, ERP integration
+- FTMaintenance — CMMS patterns for farm machinery
+- TOTVS Protheus SIGAATF — Brazilian ERP asset module with dual-track CPC vs Fiscal
+- AfixCode blog — CPC 27 depreciation, imobilizado em andamento, capitalization vs expense decision
+- Fleetio — fleet TCO calculation methodology (acquisition + admin + depreciation + downtime)
+- npm registry — fast-xml-parser 5.5.7, react-spreadsheet-import 4.7.1 (version-verified)
+- KPMG Brasil guide on CPC 06 R2 leasing — ROU asset and lease liability treatment
 
 ### Tertiary (LOW confidence)
 
-- IPCA agricultural price adjustment for saving analysis — common practice in agribusiness, not formally verified for this project's specific saving analysis requirements
-- NF-e receiving scenarios per Brazilian fiscal law — derived from agribusiness ERP literature, not verified against current SEFAZ documentation for this project's specific 6 scenarios
+- WebSearch results on accelerated depreciation RFB rates for rural producers (rates cited; not read directly from RFB official site)
+- Community sources on CPC 29 fair value subjectivity for unlisted biological assets (academic literature; specific auditor guidance not verified)
+- Aegro blog on custo operacional hora máquina — hours-based depreciation context in Brazilian agro
 
 ---
 
-_Research completed: 2026-03-17_
+_Research completed: 2026-03-19_
 _Ready for roadmap: yes_

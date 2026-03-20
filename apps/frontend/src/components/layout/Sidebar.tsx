@@ -189,6 +189,10 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    title: 'PATRIMONIO',
+    items: [{ to: '/assets', icon: Tractor, label: 'Ativos' }],
+  },
+  {
     title: 'FINANCEIRO',
     items: [
       { to: '/financial-dashboard', icon: LayoutDashboard, label: 'Dashboard' },
