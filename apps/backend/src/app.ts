@@ -111,6 +111,7 @@ import { assetsRouter } from './modules/assets/assets.routes';
 import { assetDocumentsRouter } from './modules/assets/asset-documents.routes';
 import { fuelRecordsRouter } from './modules/fuel-records/fuel-records.routes';
 import { meterReadingsRouter } from './modules/meter-readings/meter-readings.routes';
+import { depreciationRouter } from './modules/depreciation/depreciation.routes';
 
 const app = express();
 
@@ -231,5 +232,6 @@ app.use('/api', assetsRouter);
 app.use('/api', assetDocumentsRouter);
 app.use('/api', fuelRecordsRouter);
 app.use('/api', meterReadingsRouter);
+app.use('/api', depreciationRouter);
 
 export { app };
