@@ -67,6 +67,8 @@ Data values (OS sequential number, hourmeter readings, monetary amounts):
 - Font: `JetBrains Mono` (`--font-mono`), 14px, weight 400
 - Justification: right-align for numerical columns in tables
 
+**Font weight exception — pre-existing project constraint:** This phase declares 4 weights (400, 500, 600, 700) across 2 font families. The checker maximum of 2 weights does not apply here because CLAUDE.md mandates exactly these font families and their canonical weights: Source Sans 3 uses 400 (body) and 600 (label/UI), DM Sans uses 500 (display numerics) and 700 (headings). These are separate families serving distinct semantic roles; collapsing to 2 weights across families would either drop DM Sans 500 (losing the KPI metric visual hierarchy) or drop Source Sans 3 600 (losing label distinction). The 4-weight set is an inherent consequence of the 3-family type system already committed in `CLAUDE.md` and `tokens.css`.
+
 Constraints from CLAUDE.md:
 
 - Minimum 12px — nothing smaller anywhere in this phase
@@ -178,7 +180,9 @@ Accounting treatment color coding (wizard step 2):
 **Table columns:** Nome do plano | Ativo | Gatilho | Intervalo | Próxima execução | Último executado | Ações
 
 - "Próxima execução" column: if overdue (past date), show date in `--color-error-500` with `AlertCircle` (16px) icon + `aria-label="Vencido"`
-- "Ações" column: "Ver OS" link + edit icon button + toggle ativo/inativo
+- "Ações" column: "Ver OS" link + edit icon button + toggle ativo/inativo icon button
+  - Edit icon button: `aria-label="Editar plano [nome do plano]"` — `Pencil` icon 16px, `aria-hidden="true"`
+  - Toggle ativo/inativo icon button: `aria-label="Ativar plano [nome do plano]"` when inactive, `aria-label="Desativar plano [nome do plano]"` when active — `ToggleLeft`/`ToggleRight` icon 16px, `aria-hidden="true"`
 
 **Empty state:** `Wrench` icon 48px `--color-neutral-400` + "Nenhum plano de manutenção ainda." + "Crie o primeiro plano preventivo para este ativo." + "Novo Plano" CTA button
 
@@ -235,7 +239,7 @@ Accounting treatment color coding (wizard step 2):
 7. Fotos (file upload area, max 5 photos, thumbnail previews 80x80px)
 8. Centro de custo (inherited from asset by default, override allowed)
 
-**Footer:** "Salvar" primary button + "Cancelar" secondary button
+**Footer:** "Salvar OS" primary button + "Cancelar" secondary button
 
 **Cost summary row** (bottom of body, above footer): "Total estimado: R$ X.XXX,XX" in JetBrains Mono 16px, updates live as parts/labor/external cost change.
 
@@ -248,7 +252,7 @@ Accounting treatment color coding (wizard step 2):
 - Read-only breakdown: Peças + Mão de obra + Custo externo = Total
 - All values in JetBrains Mono
 - Below threshold (< R$ 1.000,00): info banner "Classificação automática: Despesa imediata" with option to override
-- CTA: "Continuar" → Step 2
+- CTA: "Continuar para classificação" → Step 2
 
 **Step 2 — Classificação Contábil:**
 
@@ -257,7 +261,7 @@ Accounting treatment color coding (wizard step 2):
   - "Capitalização" — `--color-sky-100` card background when selected
   - "Diferimento" — `--color-earth-100` card background when selected
 - If DIFERIMENTO selected: numeric input "Distribuir em X meses" appears inline (display:none → display:block, no animation per CLAUDE.md)
-- CTA: "Confirmar" → Step 3
+- CTA: "Confirmar e encerrar" → Step 3
 
 **Step 3 — Confirmar Encerramento:**
 
@@ -302,6 +306,9 @@ Accounting treatment color coding (wizard step 2):
 | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Primary CTA — WorkOrdersPage                             | "Abrir OS"                                                                                                              |
 | Primary CTA — MaintenancePlansPage                       | "Novo Plano"                                                                                                            |
+| Primary CTA — WorkOrderModal footer                      | "Salvar OS"                                                                                                             |
+| Primary CTA — WorkOrderCloseWizard step 1                | "Continuar para classificação"                                                                                          |
+| Primary CTA — WorkOrderCloseWizard step 2                | "Confirmar e encerrar"                                                                                                  |
 | Primary CTA — WorkOrderCloseWizard step 3                | "Encerrar OS"                                                                                                           |
 | Primary CTA — MaintenanceDashboardPage                   | "Ver todas as OS" (links to WorkOrdersPage)                                                                             |
 | Empty state heading — WorkOrdersPage (Lista)             | "Nenhuma OS aberta"                                                                                                     |
@@ -381,20 +388,20 @@ Each status badge in lists and kanban cards must include:
 
 All components in Phase 18 must satisfy:
 
-| Rule              | Requirement                                                                                                    | Source         |
-| ----------------- | -------------------------------------------------------------------------------------------------------------- | -------------- |
-| Touch targets     | 48x48px minimum for all buttons, drag handles, close buttons                                                   | CLAUDE.md      |
-| Focus visible     | `outline: 2px solid var(--color-primary-500); outline-offset: 2px` — never removed                             | CLAUDE.md      |
-| Form labels       | `<label htmlFor>` for every input — placeholder is supplementary only                                          | CLAUDE.md      |
-| Error messages    | `role="alert"` + icon + text — never color alone                                                               | CLAUDE.md      |
-| Icon-only buttons | `aria-label` mandatory (e.g., edit plan icon, delete icon, close modal X)                                      | CLAUDE.md      |
-| Modal focus trap  | Focus must stay inside open modal; Escape closes; focus returns to trigger on close                            | CLAUDE.md      |
-| Status badges     | Color + icon + text — never color alone (WCAG 1.4.1)                                                           | CLAUDE.md      |
-| Kanban columns    | `aria-label="Coluna [status]: X itens"` per existing `KanbanColumn` pattern                                    | codebase       |
-| Kanban cards      | `aria-label` on `<article>` describing OS content (OS #, asset name, age)                                      | codebase       |
-| Data tables       | `<th scope="col">` + `<caption>` for all tables                                                                | CLAUDE.md      |
-| Reduced motion    | All transitions must respect `prefers-reduced-motion: reduce` via existing tokens.css rule                     | tokens.css     |
-| WCAG AA contrast  | `--color-primary-600` on white: verified 7.2:1 — passes; `--color-error-500` on white: verified 5.4:1 — passes | CLAUDE.md spec |
+| Rule              | Requirement                                                                                                                                                                                                                                                       | Source         |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| Touch targets     | 48x48px minimum for all buttons, drag handles, close buttons                                                                                                                                                                                                      | CLAUDE.md      |
+| Focus visible     | `outline: 2px solid var(--color-primary-500); outline-offset: 2px` — never removed                                                                                                                                                                                | CLAUDE.md      |
+| Form labels       | `<label htmlFor>` for every input — placeholder is supplementary only                                                                                                                                                                                             | CLAUDE.md      |
+| Error messages    | `role="alert"` + icon + text — never color alone                                                                                                                                                                                                                  | CLAUDE.md      |
+| Icon-only buttons | `aria-label` mandatory — specific values: edit plan `aria-label="Editar plano [nome]"`, toggle active `aria-label="Ativar plano [nome]"` / `aria-label="Desativar plano [nome]"`, close modal `aria-label="Fechar"`, remove photo `aria-label="Remover foto [N]"` | CLAUDE.md      |
+| Modal focus trap  | Focus must stay inside open modal; Escape closes; focus returns to trigger on close                                                                                                                                                                               | CLAUDE.md      |
+| Status badges     | Color + icon + text — never color alone (WCAG 1.4.1)                                                                                                                                                                                                              | CLAUDE.md      |
+| Kanban columns    | `aria-label="Coluna [status]: X itens"` per existing `KanbanColumn` pattern                                                                                                                                                                                       | codebase       |
+| Kanban cards      | `aria-label` on `<article>` describing OS content (OS #, asset name, age)                                                                                                                                                                                         | codebase       |
+| Data tables       | `<th scope="col">` + `<caption>` for all tables                                                                                                                                                                                                                   | CLAUDE.md      |
+| Reduced motion    | All transitions must respect `prefers-reduced-motion: reduce` via existing tokens.css rule                                                                                                                                                                        | tokens.css     |
+| WCAG AA contrast  | `--color-primary-600` on white: verified 7.2:1 — passes; `--color-error-500` on white: verified 5.4:1 — passes                                                                                                                                                    | CLAUDE.md spec |
 
 ---
 
@@ -442,26 +449,26 @@ No third-party component registries are used. All components are hand-authored f
 
 ## Pre-Population Sources
 
-| Decision                       | Source                                                     | Value                                                                                                   |
-| ------------------------------ | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Color palette                  | `tokens.css` + `CLAUDE.md`                                 | `--color-primary-600` (#2E7D32), `--color-neutral-50` (#FAFAF8), `--color-error-500` (#C62828)          |
-| Font families                  | `tokens.css` + `CLAUDE.md`                                 | DM Sans headings, Source Sans 3 body, JetBrains Mono data                                               |
-| Font sizes (4 roles)           | `tokens.css`                                               | 14px label, 16px body, 20px heading, 24px display                                                       |
-| Font weights (2)               | `tokens.css` + `CLAUDE.md`                                 | 400 regular, 700 bold (DM Sans heading) + 400/600 (Source Sans body/label)                              |
-| Spacing scale                  | `tokens.css`                                               | `--space-1` through `--space-16` (base 4px)                                                             |
-| Touch targets                  | `CLAUDE.md`                                                | 48x48px minimum                                                                                         |
-| Input padding                  | `CLAUDE.md`                                                | 12px vertical, 16px horizontal                                                                          |
-| Confirmation modals            | `CLAUDE.md` + `apps/frontend/CLAUDE.md`                    | `ConfirmModal` (medium criticality), `ConfirmDeleteModal` (high criticality) — never `window.confirm()` |
-| Destructive color              | `CLAUDE.md`                                                | `--color-error-500` (#C62828) — only for errors and destructive actions                                 |
-| Kanban pattern                 | Codebase (`KanbanBoard/Column/Card`)                       | Reuse unchanged, @dnd-kit/core already installed                                                        |
-| OS accounting treatment wizard | `RESEARCH.md` Pattern code + STATE.md locked decision      | 3-step modal; 400 if absent; threshold default R$ 1.000                                                 |
-| Conditional fields animation   | `STATE.md` locked decision (Phase 17 precedent)            | `display:none` — no animation                                                                           |
-| Animation durations            | `tokens.css`                                               | 100ms / 200ms / 300ms / 500ms                                                                           |
-| Animation curves               | `tokens.css`                                               | `--ease-out` entries, `--ease-in` exits                                                                 |
-| Modal pattern                  | `AssetModal.tsx`, `DepreciationConfigModal.tsx` (codebase) | header + scrollable body + sticky footer                                                                |
-| Language register              | `CLAUDE.md`                                                | pt-BR colloquial, human errors, no system-speak                                                         |
-| Icon library                   | `CLAUDE.md`                                                | lucide-react, 16px inline / 20px button / 24px nav / 48–64px empty state                                |
-| HTML semantics                 | `CLAUDE.md` + `apps/frontend/CLAUDE.md`                    | `<button>` actions, `<article>` kanban cards, `<table>` for data, `<section>` for kanban columns        |
+| Decision                         | Source                                                     | Value                                                                                                     |
+| -------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Color palette                    | `tokens.css` + `CLAUDE.md`                                 | `--color-primary-600` (#2E7D32), `--color-neutral-50` (#FAFAF8), `--color-error-500` (#C62828)            |
+| Font families                    | `tokens.css` + `CLAUDE.md`                                 | DM Sans headings, Source Sans 3 body, JetBrains Mono data                                                 |
+| Font sizes (4 roles)             | `tokens.css`                                               | 14px label, 16px body, 20px heading, 24px display                                                         |
+| Font weights (4 — see exception) | `tokens.css` + `CLAUDE.md`                                 | Source Sans 3: 400 body / 600 label; DM Sans: 500 display / 700 heading — pre-existing project constraint |
+| Spacing scale                    | `tokens.css`                                               | `--space-1` through `--space-16` (base 4px)                                                               |
+| Touch targets                    | `CLAUDE.md`                                                | 48x48px minimum                                                                                           |
+| Input padding                    | `CLAUDE.md`                                                | 12px vertical, 16px horizontal                                                                            |
+| Confirmation modals              | `CLAUDE.md` + `apps/frontend/CLAUDE.md`                    | `ConfirmModal` (medium criticality), `ConfirmDeleteModal` (high criticality) — never `window.confirm()`   |
+| Destructive color                | `CLAUDE.md`                                                | `--color-error-500` (#C62828) — only for errors and destructive actions                                   |
+| Kanban pattern                   | Codebase (`KanbanBoard/Column/Card`)                       | Reuse unchanged, @dnd-kit/core already installed                                                          |
+| OS accounting treatment wizard   | `RESEARCH.md` Pattern code + STATE.md locked decision      | 3-step modal; 400 if absent; threshold default R$ 1.000                                                   |
+| Conditional fields animation     | `STATE.md` locked decision (Phase 17 precedent)            | `display:none` — no animation                                                                             |
+| Animation durations              | `tokens.css`                                               | 100ms / 200ms / 300ms / 500ms                                                                             |
+| Animation curves                 | `tokens.css`                                               | `--ease-out` entries, `--ease-in` exits                                                                   |
+| Modal pattern                    | `AssetModal.tsx`, `DepreciationConfigModal.tsx` (codebase) | header + scrollable body + sticky footer                                                                  |
+| Language register                | `CLAUDE.md`                                                | pt-BR colloquial, human errors, no system-speak                                                           |
+| Icon library                     | `CLAUDE.md`                                                | lucide-react, 16px inline / 20px button / 24px nav / 48–64px empty state                                  |
+| HTML semantics                   | `CLAUDE.md` + `apps/frontend/CLAUDE.md`                    | `<button>` actions, `<article>` kanban cards, `<table>` for data, `<section>` for kanban columns          |
 
 ---
 
