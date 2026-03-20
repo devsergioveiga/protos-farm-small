@@ -118,9 +118,10 @@ export async function previewAssetImport(
     farmsByNameLower.set(farm.name.toLowerCase().trim(), farm.id);
   }
 
-  // Fetch cost centers
+  // Fetch cost centers (scoped to org farms)
+  const farmIds = farms.map((f) => f.id);
   const costCenters = await prisma.costCenter.findMany({
-    where: { organizationId: ctx.organizationId },
+    where: { farmId: { in: farmIds } },
     select: { id: true, name: true },
   });
 
