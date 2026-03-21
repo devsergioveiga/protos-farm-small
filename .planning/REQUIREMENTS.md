@@ -41,7 +41,7 @@ Requirements for asset lifecycle management. Each maps to roadmap phases.
 
 - [ ] **MANU-01**: Gerente pode criar planos de manutencao preventiva com gatilhos configuraveis (horimetro, km, tempo), calculo automatico da proxima execucao e alerta antecipado
 - [ ] **MANU-02**: Gerente pode abrir, acompanhar e encerrar ordens de servico (OS) com registro de pecas (baixa automatica no estoque), horas de mao de obra, custo externo e fotos
-- [ ] **MANU-03**: Operador pode solicitar manutencao pelo celular com foto, geolocalizacao automatica e notificacao push ao responsavel, funcionando offline
+- [x] **MANU-03**: Operador pode solicitar manutencao pelo celular com foto, geolocalizacao automatica e notificacao push ao responsavel, funcionando offline
 - [ ] **MANU-04**: Gerente pode controlar estoque de pecas de reposicao com ponto de reposicao, vinculacao de pecas compativeis por maquina e inventario periodico
 - [x] **MANU-05**: Gerente pode ver dashboard de manutencao com disponibilidade mecanica, MTBF, MTTR, custo acumulado, OS abertas (kanban) e alertas de manutencoes vencidas
 - [x] **MANU-06**: Ao encerrar OS de alto valor, sistema apresenta assistente de classificacao contabil (despesa imediata, capitalizacao ou diferimento) com criterios-guia
@@ -112,7 +112,7 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | CCPA-02     | Phase 17 | Pending |
 | MANU-01     | Phase 18 | Pending |
 | MANU-02     | Phase 18 | Pending |
-| MANU-03     | Phase 18 | Pending |
+| MANU-03     | Phase 18 | Complete |
 | MANU-04     | Phase 18 | Pending |
 | MANU-05     | Phase 18 | Complete |
 | MANU-06     | Phase 18 | Complete |

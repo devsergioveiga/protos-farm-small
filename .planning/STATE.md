@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: Roadmap ready — awaiting plan-phase 16
-stopped_at: Completed 18-manutencao-ordens-servico-05-PLAN.md
-last_updated: "2026-03-21T13:38:41.440Z"
+stopped_at: Completed 18-06-PLAN.md
+last_updated: "2026-03-21T21:17:26.647Z"
 last_activity: 2026-03-19 — Roadmap created
 progress:
   total_phases: 18
-  completed_phases: 10
-  total_plans: 43
-  completed_plans: 43
+  completed_phases: 11
+  total_plans: 55
+  completed_plans: 52
   percent: 0
 ---
 
@@ -47,6 +47,7 @@ Progress: [░░░░░░░░░░] 0% (0/9 phases)
 
 **Total v1.0:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
 | Phase 18-manutencao-ordens-servico P05 | 120 | 2 tasks | 23 files |
+| Phase 18 P06 | 18 | 1 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,8 @@ Key decisions for v1.2:
 - **Asset disposal cancels pending depreciation atomically**: Disposal transaction atomically cancels all pending DepreciationEntry records for the asset.
 - [Phase 18-manutencao-ordens-servico]: Standalone MaintenanceKanban built with @dnd-kit primitives — existing KanbanBoard tightly coupled to purchasing types
 - [Phase 18-manutencao-ordens-servico]: WorkOrderCloseWizard uses display:none/block for step transitions per UI-SPEC locked decision (zero animation)
+- [Phase 18]: expo-image-manipulator replaced by expo-image-picker built-in base64 quality:0.7 (package not installed)
+- [Phase 18]: MAINTENANCE_REQUEST notification dispatched only when assignedTo is set (Asset.responsibleUserId does not exist in schema)
 
 ### Pending Todos
 
@@ -86,7 +89,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-21T13:38:41.437Z
-Stopped at: Completed 18-manutencao-ordens-servico-05-PLAN.md
+Last session: 2026-03-21T21:17:26.644Z
+Stopped at: Completed 18-06-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 16`
