@@ -107,6 +107,8 @@ const PurchasingDashboardPage = lazy(() => import('@/pages/PurchasingDashboardPa
 const PurchasingKanbanPage = lazy(() => import('@/pages/PurchasingKanbanPage'));
 const NotificationPreferencesPage = lazy(() => import('@/pages/NotificationPreferencesPage'));
 const AssetsPage = lazy(() => import('@/pages/AssetsPage'));
+const MaintenancePlansPage = lazy(() => import('@/pages/MaintenancePlansPage'));
+const WorkOrdersPage = lazy(() => import('@/pages/WorkOrdersPage'));
 
 export function App() {
   return (
@@ -215,6 +217,8 @@ export function App() {
                 <Route path="/purchasing-kanban" element={<PurchasingKanbanPage />} />
                 <Route path="/notification-preferences" element={<NotificationPreferencesPage />} />
                 <Route path="/assets" element={<AssetsPage />} />
+                <Route path="/maintenance-plans" element={<MaintenancePlansPage />} />
+                <Route path="/work-orders" element={<WorkOrdersPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}
