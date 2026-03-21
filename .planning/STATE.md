@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
-status: executing
-stopped_at: Completed 18-manutencao-ordens-servico-01-PLAN.md
-last_updated: "2026-03-21T11:05:57.446Z"
-last_activity: 2026-03-19 — Plan 16-04 complete (AssetDrawer + fuel + meter readings)
+status: Roadmap ready — awaiting plan-phase 16
+stopped_at: Completed 18-manutencao-ordens-servico/18-04-PLAN.md
+last_updated: "2026-03-21T13:37:04.272Z"
+last_activity: 2026-03-19 — Roadmap created
 progress:
   total_phases: 18
-  completed_phases: 11
-  total_plans: 55
-  completed_plans: 49
-  percent: 4
+  completed_phases: 10
+  total_plans: 43
+  completed_plans: 43
+  percent: 0
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Current Position
 
-Phase: 16 — Cadastro de Ativos (in progress)
-Plan: 4/5 complete
-Status: Executing Phase 16 — Plan 04 complete
-Last activity: 2026-03-19 — Plan 16-04 complete (AssetDrawer + fuel + meter readings)
+Phase: 16 — Cadastro de Ativos (not started)
+Plan: —
+Status: Roadmap ready — awaiting plan-phase 16
+Last activity: 2026-03-19 — Roadmap created
 
-Progress: [░░░░░░░░░░] 4% (0/9 phases, Phase 16 in progress)
+Progress: [░░░░░░░░░░] 0% (0/9 phases)
 
 ## Performance Metrics
 
@@ -46,12 +46,7 @@ Progress: [░░░░░░░░░░] 4% (0/9 phases, Phase 16 in progress)
 | 06-cr-dito-rural               | 5     | 62min      | 12min    |
 
 **Total v1.0:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
-| Phase 17-engine-de-deprecia-o P00 | 86s | 1 tasks | 3 files |
-| Phase 17-engine-de-deprecia-o P01 | 7 | 2 tasks | 5 files |
-| Phase 17-engine-de-deprecia-o P02 | 627s | 3 tasks | 9 files |
-| Phase 17-engine-de-deprecia-o P03 | 25min | 2 tasks | 15 files |
-| Phase 16-cadastro-de-ativos P06 | 470s | 2 tasks | 10 files |
-| Phase 18-manutencao-ordens-servico P01 | 15 | 2 tasks | 4 files |
+| Phase 18-manutencao-ordens-servico P04 | 90 | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -66,12 +61,6 @@ Key decisions carried from v1.1:
 - **BullMQ for async email**: Never await emailService.send() inside Prisma transaction
 - **VALID_TRANSITIONS map**: State machines follow checks.types.ts pattern
 
-Key decisions for v1.2 (Phase 16-04):
-
-- **AssetDrawer activeTab as controlled prop**: AssetsPage owns drawerTab state and passes activeTab/onTabChange to AssetDrawer, enabling future parent-driven navigation (e.g. jump to Documentos from notification).
-- **Expiry badge uses Set lookup**: fetchExpiring on page load builds Set of assetIds, O(1) lookup per row — avoids iterating arrays per row.
-- **useMeterReadings re-throws on 400**: setSubmitError for inline display AND re-throw so form knows to stop isSubmitting. Prevents silent swallow of anti-regression error.
-
 Key decisions for v1.2:
 
 - **AssetAcquisition never routes through GoodsReceipt**: Asset NF must never create StockEntry. Separate AssetAcquisition module with originType = ASSET_ACQUISITION on CP. Guard in GoodsReceipt service to reject asset-category lines.
@@ -80,18 +69,8 @@ Key decisions for v1.2:
 - **OS accounting treatment is mandatory**: PATCH /work-orders/:id/close returns 400 if accountingTreatment absent.
 - **WIP exclusion from depreciation batch**: AssetStatus.EM_ANDAMENTO excluded from batch query. Depreciation starts only after activation.
 - **Asset disposal cancels pending depreciation atomically**: Disposal transaction atomically cancels all pending DepreciationEntry records for the asset.
-- [Phase 17-engine-de-deprecia-o]: it.todo() stubs for Wave 0: clearly communicates behavioral contract without false failing tests; Plans 01-02 will implement against these contracts
-- [Phase 17-engine-de-deprecia-o]: UTC-safe date extraction in getProRataDays: use getUTCDate/getUTCMonth/getUTCFullYear to avoid timezone off-by-one for Prisma DateTime fields
-- [Phase 17-engine-de-deprecia-o]: HOURS_OF_USE and UNITS_OF_PRODUCTION skip pro-rata-die: usage-based methods use actual periodic consumption, not calendar days
-- [Phase 17-engine-de-deprecia-o]: ACCELERATED method uses openingBookValue _ rate _ factor / 12 (not depreciableValue): matches double-declining balance convention
-- [Phase 17-engine-de-deprecia-o]: Per-asset transactions (not one big transaction) to avoid timeout per Research pitfall 2
-- [Phase 17-engine-de-deprecia-o]: FINANCIAL role gets depreciation read+update (accountants configure and run)
-- [Phase 17-engine-de-deprecia-o]: disposalDate not in Asset schema — pass null to engine for now, defer to future phase
-- [Phase 17-engine-de-deprecia-o]: display:none for conditional modal fields in DepreciationConfigModal (no animation per CLAUDE.md)
-- [Phase 17-engine-de-deprecia-o]: AssetDepreciationTab fetches last 12 entries using current month/year + assetId filter on GET /report
-- [Phase 16-06]: Brown CircleMarker color (#6D4C41/#8D6E63) for asset markers: distinguishes benfeitorias from farm locations without using reserved primary/error colors
-- [Phase 16-06]: /map route registered before /:id in assets.routes.ts: Express matches routes in registration order; prevents 'map' being treated as asset ID
-- [Phase 18-manutencao-ordens-servico]: computeNextDue exported from maintenance-plans.service for reuse in work-orders close
+- [Phase 18-manutencao-ordens-servico]: WorkOrdersPage Kanban tab shows placeholder referencing Plan 05 — tab nav structure ready for Plan 05
+- [Phase 18-manutencao-ordens-servico]: Parts inline table in WorkOrderModal uses local PartRow state for unsaved OS draft preview
 
 ### Pending Todos
 
@@ -107,7 +86,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-21T11:05:57.442Z
-Stopped at: Completed 18-manutencao-ordens-servico-01-PLAN.md
+Last session: 2026-03-21T13:37:04.268Z
+Stopped at: Completed 18-manutencao-ordens-servico/18-04-PLAN.md
 Resume file: None
-Next action: Execute plan 16-05 (bulk import frontend — AssetImportModal)
+Next action: `/gsd:plan-phase 16`
