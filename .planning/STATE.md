@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
-status: roadmap_ready
-stopped_at: Roadmap created — ready to plan Phase 16
-last_updated: '2026-03-19T17:30:00.000Z'
-last_activity: 2026-03-19 — Roadmap v1.2 created (9 phases, 43 requirements mapped)
+status: Roadmap ready — awaiting plan-phase 16
+stopped_at: Completed 18-manutencao-ordens-servico-05-PLAN.md
+last_updated: "2026-03-21T13:38:41.440Z"
+last_activity: 2026-03-19 — Roadmap created
 progress:
-  total_phases: 9
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 18
+  completed_phases: 10
+  total_plans: 43
+  completed_plans: 43
   percent: 0
 ---
 
@@ -46,6 +46,7 @@ Progress: [░░░░░░░░░░] 0% (0/9 phases)
 | 06-cr-dito-rural               | 5     | 62min      | 12min    |
 
 **Total v1.0:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
+| Phase 18-manutencao-ordens-servico P05 | 120 | 2 tasks | 23 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,8 @@ Key decisions for v1.2:
 - **OS accounting treatment is mandatory**: PATCH /work-orders/:id/close returns 400 if accountingTreatment absent.
 - **WIP exclusion from depreciation batch**: AssetStatus.EM_ANDAMENTO excluded from batch query. Depreciation starts only after activation.
 - **Asset disposal cancels pending depreciation atomically**: Disposal transaction atomically cancels all pending DepreciationEntry records for the asset.
+- [Phase 18-manutencao-ordens-servico]: Standalone MaintenanceKanban built with @dnd-kit primitives — existing KanbanBoard tightly coupled to purchasing types
+- [Phase 18-manutencao-ordens-servico]: WorkOrderCloseWizard uses display:none/block for step transitions per UI-SPEC locked decision (zero animation)
 
 ### Pending Todos
 
@@ -83,7 +86,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T17:30:00.000Z
-Stopped at: Roadmap created — ready to plan Phase 16
+Last session: 2026-03-21T13:38:41.437Z
+Stopped at: Completed 18-manutencao-ordens-servico-05-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 16`

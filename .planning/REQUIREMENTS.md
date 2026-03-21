@@ -34,7 +34,7 @@ Requirements for asset lifecycle management. Each maps to roadmap phases.
 
 - [ ] **CCPA-01**: Contador pode vincular cada ativo a centro de custo (fixo, rateio % ou dinamico por horas-maquina do periodo) para depreciacao e manutencao serem apropriadas corretamente
 - [ ] **CCPA-02**: Processamento mensal de depreciacao gera lancamentos detalhados por centro de custo com conciliacao automatica (soma CCs = total depreciacao)
-- [ ] **CCPA-03**: Custos de manutencao (OS) sao apropriados por centro de custo com possibilidade de rateio manual ou heranca do CC do ativo
+- [x] **CCPA-03**: Custos de manutencao (OS) sao apropriados por centro de custo com possibilidade de rateio manual ou heranca do CC do ativo
 - [ ] **CCPA-04**: Sistema oferece guia de decisao (wizard) para orientar criacao de centro de custo por ativo com exemplos e templates por tipo de fazenda
 
 ### Manutencao e Ordens de Servico
@@ -43,10 +43,10 @@ Requirements for asset lifecycle management. Each maps to roadmap phases.
 - [ ] **MANU-02**: Gerente pode abrir, acompanhar e encerrar ordens de servico (OS) com registro de pecas (baixa automatica no estoque), horas de mao de obra, custo externo e fotos
 - [ ] **MANU-03**: Operador pode solicitar manutencao pelo celular com foto, geolocalizacao automatica e notificacao push ao responsavel, funcionando offline
 - [ ] **MANU-04**: Gerente pode controlar estoque de pecas de reposicao com ponto de reposicao, vinculacao de pecas compativeis por maquina e inventario periodico
-- [ ] **MANU-05**: Gerente pode ver dashboard de manutencao com disponibilidade mecanica, MTBF, MTTR, custo acumulado, OS abertas (kanban) e alertas de manutencoes vencidas
-- [ ] **MANU-06**: Ao encerrar OS de alto valor, sistema apresenta assistente de classificacao contabil (despesa imediata, capitalizacao ou diferimento) com criterios-guia
-- [ ] **MANU-07**: Contador pode diferenciar e apropriar despesas antecipadas (diferimento) de manutencoes grandes que restauram condicao original sem aumentar vida util
-- [ ] **MANU-08**: Contador pode configurar provisao mensal de manutencao por ativo ou frota com lancamento automatico e conciliacao com gastos reais
+- [x] **MANU-05**: Gerente pode ver dashboard de manutencao com disponibilidade mecanica, MTBF, MTTR, custo acumulado, OS abertas (kanban) e alertas de manutencoes vencidas
+- [x] **MANU-06**: Ao encerrar OS de alto valor, sistema apresenta assistente de classificacao contabil (despesa imediata, capitalizacao ou diferimento) com criterios-guia
+- [x] **MANU-07**: Contador pode diferenciar e apropriar despesas antecipadas (diferimento) de manutencoes grandes que restauram condicao original sem aumentar vida util
+- [x] **MANU-08**: Contador pode configurar provisao mensal de manutencao por ativo ou frota com lancamento automatico e conciliacao com gastos reais
 
 ### Controle Operacional e Documentacao
 
@@ -114,11 +114,11 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | MANU-02     | Phase 18 | Pending |
 | MANU-03     | Phase 18 | Pending |
 | MANU-04     | Phase 18 | Pending |
-| MANU-05     | Phase 18 | Pending |
-| MANU-06     | Phase 18 | Pending |
-| MANU-07     | Phase 18 | Pending |
-| MANU-08     | Phase 18 | Pending |
-| CCPA-03     | Phase 18 | Pending |
+| MANU-05     | Phase 18 | Complete |
+| MANU-06     | Phase 18 | Complete |
+| MANU-07     | Phase 18 | Complete |
+| MANU-08     | Phase 18 | Complete |
+| CCPA-03     | Phase 18 | Complete |
 | AQUI-01     | Phase 19 | Pending |
 | AQUI-02     | Phase 19 | Pending |
 | AQUI-03     | Phase 19 | Pending |
