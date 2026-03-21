@@ -76,6 +76,7 @@ import {
   Undo2,
   Wallet,
   Columns3,
+  Wrench,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -190,7 +191,12 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: 'PATRIMONIO',
-    items: [{ to: '/assets', icon: Tractor, label: 'Ativos' }],
+    items: [
+      { to: '/assets', icon: Tractor, label: 'Ativos' },
+      { to: '/maintenance-plans', icon: Wrench, label: 'Planos de Manutencao' },
+      { to: '/work-orders', icon: ClipboardList, label: 'Ordens de Servico' },
+      { to: '/maintenance-dashboard', icon: BarChart3, label: 'Dashboard Manutencao' },
+    ],
   },
   {
     title: 'FINANCEIRO',
