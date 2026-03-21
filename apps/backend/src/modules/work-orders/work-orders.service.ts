@@ -2,6 +2,7 @@ import Decimal from 'decimal.js';
 import { addDays } from 'date-fns';
 import { prisma } from '../../database/prisma';
 import { createConsumptionOutput } from '../stock-deduction/stock-deduction';
+import { createNotification } from '../notifications/notifications.service';
 import {
   WorkOrderError,
   type CreateWorkOrderInput,
@@ -150,7 +151,7 @@ export async function createWorkOrder(
     // Verify asset belongs to org
     const asset = await tx.asset.findFirst({
       where: { id: input.assetId, organizationId: ctx.organizationId, deletedAt: null },
-      select: { id: true, status: true },
+      select: { id: true, status: true, name: true },
     });
     if (!asset) {
       throw new WorkOrderError('Ativo não encontrado', 404);
@@ -186,6 +187,18 @@ export async function createWorkOrder(
       where: { id: input.assetId },
       data: { status: 'EM_MANUTENCAO' },
     });
+
+    // Dispatch notification to assignee when type is SOLICITACAO (mobile maintenance request)
+    if (input.type === 'SOLICITACAO' && input.assignedTo) {
+      await createNotification(tx, ctx.organizationId, {
+        type: 'MAINTENANCE_REQUEST',
+        recipientId: input.assignedTo,
+        title: 'Nova solicitação de manutenção',
+        body: `${asset.name} — ${input.title}`,
+        referenceId: wo.id,
+        referenceType: 'work_order',
+      });
+    }
 
     return mapWorkOrder(wo);
   });

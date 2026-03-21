@@ -21,7 +21,8 @@ export type OperationEntity =
   | 'pregnancy_diagnoses'
   | 'calving_events'
   | 'mastitis_cases'
-  | 'purchase_requests';
+  | 'purchase_requests'
+  | 'maintenance_requests';
 
 export type OperationPriority = 0 | 1;
 export const PRIORITY_NORMAL: OperationPriority = 0;
