@@ -21,7 +21,7 @@ export type PermissionModule =
   | 'maintenance-provisions'
   | 'spare-parts';
 
-export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage';
+export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage' | 'close';
 
 export type Permission = `${PermissionModule}:${PermissionAction}`;
 
@@ -47,7 +47,14 @@ export const ALL_MODULES: PermissionModule[] = [
   'spare-parts',
 ];
 
-export const ALL_ACTIONS: PermissionAction[] = ['create', 'read', 'update', 'delete', 'manage'];
+export const ALL_ACTIONS: PermissionAction[] = [
+  'create',
+  'read',
+  'update',
+  'delete',
+  'manage',
+  'close',
+];
 
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
   SUPER_ADMIN: 100,
@@ -126,7 +133,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...p('assets', 'read'),
     ...p('depreciation', 'read', 'update'),
     ...p('maintenance-plans', 'read'),
-    ...p('work-orders', 'read', 'update'),
+    ...p('work-orders', 'read', 'update', 'close'),
     ...p('maintenance-provisions', 'read', 'create', 'update'),
     ...p('spare-parts', 'read'),
     ...p('reports', 'read'),
