@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: executing
-stopped_at: Completed 16-06-PLAN.md (asset map integration — ATIV-02 + ATIV-06)
-last_updated: '2026-03-20T12:30:36.715Z'
+stopped_at: Completed 18-manutencao-ordens-servico-01-PLAN.md
+last_updated: "2026-03-21T11:05:57.446Z"
 last_activity: 2026-03-19 — Plan 16-04 complete (AssetDrawer + fuel + meter readings)
 progress:
   total_phases: 18
   completed_phases: 11
-  total_plans: 48
-  completed_plans: 48
+  total_plans: 55
+  completed_plans: 49
   percent: 4
 ---
 
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 4% (0/9 phases, Phase 16 in progress)
 | Phase 17-engine-de-deprecia-o P02 | 627s | 3 tasks | 9 files |
 | Phase 17-engine-de-deprecia-o P03 | 25min | 2 tasks | 15 files |
 | Phase 16-cadastro-de-ativos P06 | 470s | 2 tasks | 10 files |
+| Phase 18-manutencao-ordens-servico P01 | 15 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,7 @@ Key decisions for v1.2:
 - [Phase 17-engine-de-deprecia-o]: AssetDepreciationTab fetches last 12 entries using current month/year + assetId filter on GET /report
 - [Phase 16-06]: Brown CircleMarker color (#6D4C41/#8D6E63) for asset markers: distinguishes benfeitorias from farm locations without using reserved primary/error colors
 - [Phase 16-06]: /map route registered before /:id in assets.routes.ts: Express matches routes in registration order; prevents 'map' being treated as asset ID
+- [Phase 18-manutencao-ordens-servico]: computeNextDue exported from maintenance-plans.service for reuse in work-orders close
 
 ### Pending Todos
 
@@ -105,7 +107,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-20T12:25:59.600Z
-Stopped at: Completed 16-06-PLAN.md (asset map integration — ATIV-02 + ATIV-06)
+Last session: 2026-03-21T11:05:57.442Z
+Stopped at: Completed 18-manutencao-ordens-servico-01-PLAN.md
 Resume file: None
 Next action: Execute plan 16-05 (bulk import frontend — AssetImportModal)
