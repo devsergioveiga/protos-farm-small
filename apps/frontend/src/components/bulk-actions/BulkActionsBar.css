@@ -99,6 +99,15 @@
   outline-offset: 2px;
 }
 
+.bulk-bar__btn--danger {
+  background: var(--color-error-600, #dc2626);
+  color: #fff;
+}
+
+.bulk-bar__btn--danger:hover {
+  background: var(--color-error-700, #b91c1c);
+}
+
 /* ─── Responsive ───────────────────────────────────────────────── */
 
 @media (max-width: 768px) {

@@ -77,6 +77,7 @@ import {
   Wallet,
   Columns3,
   Wrench,
+  LogOut,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -138,6 +139,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/calving-events', icon: Milestone, label: 'Partos e crias' },
       { to: '/weaning', icon: CupSoda, label: 'Desmama' },
       { to: '/sanitary-dashboard', icon: Activity, label: 'Dashboard sanitário' },
+      { to: '/animal-exits', icon: LogOut, label: 'Saídas de animais' },
     ],
   },
   {

@@ -94,6 +94,30 @@
 
 .animal-detail__header-info {
   min-width: 0;
+  flex: 1;
+}
+
+.animal-detail__exit-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-error-700, #b91c1c);
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-error-200, #fecaca);
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  min-height: 48px;
+  white-space: nowrap;
+  align-self: flex-start;
+  transition: all 200ms ease-out;
+}
+
+.animal-detail__exit-btn:hover {
+  background: var(--color-error-50, #fef2f2);
 }
 
 .animal-detail__title {

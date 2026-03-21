@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { X, AlertCircle, Loader2, Plus, Trash2 } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { X, AlertCircle, Loader2, Plus, Trash2, Check, ArrowRight, ArrowLeft, Dna, ScrollText } from 'lucide-react';
 import { api } from '@/services/api';
 import { useBreeds } from '@/hooks/useBreeds';
 import type {
@@ -28,6 +28,12 @@ interface CreateAnimalModalProps {
   onClose: () => void;
   onSuccess: () => void;
 }
+
+const STEPS = [
+  { number: 1, label: 'Dados básicos' },
+  { number: 2, label: 'Composição racial' },
+  { number: 3, label: 'Genealogia' },
+] as const;
 
 function suggestCategory(sex: string, birthDate: string): AnimalCategory | null {
   if (!sex) return null;
@@ -70,11 +76,14 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
 
   // Step 1: Basic data
   const [earTag, setEarTag] = useState('');
   const [rfidTag, setRfidTag] = useState('');
   const [name, setName] = useState('');
+  const [registeredName, setRegisteredName] = useState('');
+  const [registrationNumber, setRegistrationNumber] = useState('');
   const [sex, setSex] = useState<AnimalSex | ''>('');
   const [birthDate, setBirthDate] = useState('');
   const [birthDateEstimated, setBirthDateEstimated] = useState(false);
@@ -117,6 +126,8 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
       setEarTag('');
       setRfidTag('');
       setName('');
+      setRegisteredName('');
+      setRegistrationNumber('');
       setSex('');
       setBirthDate('');
       setBirthDateEstimated(false);
@@ -180,6 +191,11 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
   const canGoStep2 = earTag.trim() !== '' && sex !== '';
   const compositionValid = compositions.length === 0 || Math.abs(compositionTotal - 100) < 0.01;
 
+  const goToStep = useCallback((newStep: number) => {
+    setStep(newStep);
+    bodyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const handleSubmit = useCallback(async () => {
     if (!canGoStep2) return;
     if (!compositionValid) return;
@@ -196,6 +212,8 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
 
       if (rfidTag.trim()) payload.rfidTag = rfidTag.trim();
       if (name.trim()) payload.name = name.trim();
+      if (registeredName.trim()) payload.registeredName = registeredName.trim();
+      if (registrationNumber.trim()) payload.registrationNumber = registrationNumber.trim();
       if (birthDate) payload.birthDate = birthDate;
       if (birthDateEstimated) payload.birthDateEstimated = true;
       if (category) payload.category = category;
@@ -226,6 +244,8 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
     sex,
     rfidTag,
     name,
+    registeredName,
+    registrationNumber,
     birthDate,
     birthDateEstimated,
     category,
@@ -255,25 +275,49 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
       >
         {/* Header */}
         <header className="create-animal-modal__header">
-          <div>
+          <div className="create-animal-modal__header-content">
             <h2 className="create-animal-modal__title">Cadastrar animal</h2>
-            <div className="create-animal-modal__stepper">
-              <span
-                className={`create-animal-modal__step ${step >= 1 ? 'create-animal-modal__step--active' : ''}`}
-              >
-                1. Dados básicos
-              </span>
-              <span
-                className={`create-animal-modal__step ${step >= 2 ? 'create-animal-modal__step--active' : ''}`}
-              >
-                2. Composição racial
-              </span>
-              <span
-                className={`create-animal-modal__step ${step >= 3 ? 'create-animal-modal__step--active' : ''}`}
-              >
-                3. Genealogia
-              </span>
-            </div>
+            <nav className="create-animal-modal__stepper" aria-label="Progresso do cadastro">
+              {STEPS.map((s, i) => {
+                const isCompleted = step > s.number;
+                const isCurrent = step === s.number;
+                return (
+                  <div key={s.number} className="create-animal-modal__step-item">
+                    {i > 0 && (
+                      <div
+                        className={`create-animal-modal__step-connector ${isCompleted || isCurrent ? 'create-animal-modal__step-connector--active' : ''}`}
+                      />
+                    )}
+                    <button
+                      type="button"
+                      className={`create-animal-modal__step-circle ${
+                        isCurrent ? 'create-animal-modal__step-circle--current' : ''
+                      } ${isCompleted ? 'create-animal-modal__step-circle--completed' : ''}`}
+                      onClick={() => {
+                        if (s.number === 1 || (s.number === 2 && canGoStep2) || (s.number === 3 && canGoStep2 && compositionValid)) {
+                          goToStep(s.number);
+                        }
+                      }}
+                      aria-current={isCurrent ? 'step' : undefined}
+                      aria-label={`Etapa ${s.number}: ${s.label}${isCompleted ? ' (concluída)' : isCurrent ? ' (atual)' : ''}`}
+                    >
+                      {isCompleted ? (
+                        <Check size={14} aria-hidden="true" />
+                      ) : (
+                        <span>{s.number}</span>
+                      )}
+                    </button>
+                    <span
+                      className={`create-animal-modal__step-label ${
+                        isCurrent ? 'create-animal-modal__step-label--current' : ''
+                      } ${isCompleted ? 'create-animal-modal__step-label--completed' : ''}`}
+                    >
+                      {s.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </nav>
           </div>
           <button
             type="button"
@@ -286,7 +330,7 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
         </header>
 
         {/* Body */}
-        <div className="create-animal-modal__body">
+        <div className="create-animal-modal__body" ref={bodyRef}>
           {submitError && (
             <div className="create-animal-modal__alert" role="alert">
               <AlertCircle size={16} aria-hidden="true" />
@@ -296,389 +340,488 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
 
           {/* Step 1: Basic Data */}
           {step === 1 && (
-            <div className="create-animal-modal__fields">
-              <div className="create-animal-modal__row">
-                <div className="create-animal-modal__field">
-                  <label htmlFor="animal-ear-tag" className="create-animal-modal__label">
-                    Brinco <span className="create-animal-modal__required">*</span>
-                  </label>
-                  <input
-                    id="animal-ear-tag"
-                    type="text"
-                    className="create-animal-modal__input create-animal-modal__input--mono"
-                    value={earTag}
-                    onChange={(e) => setEarTag(e.target.value)}
-                    aria-required="true"
-                    placeholder="Ex: BR-001"
-                  />
-                </div>
-                <div className="create-animal-modal__field">
-                  <label htmlFor="animal-rfid" className="create-animal-modal__label">
-                    RFID
-                  </label>
-                  <input
-                    id="animal-rfid"
-                    type="text"
-                    className="create-animal-modal__input create-animal-modal__input--mono"
-                    value={rfidTag}
-                    onChange={(e) => setRfidTag(e.target.value)}
-                    placeholder="Tag eletrônica"
-                  />
-                </div>
-              </div>
-
-              <div className="create-animal-modal__row">
-                <div className="create-animal-modal__field">
-                  <label htmlFor="animal-name" className="create-animal-modal__label">
-                    Nome
-                  </label>
-                  <input
-                    id="animal-name"
-                    type="text"
-                    className="create-animal-modal__input"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Ex: Mimosa"
-                  />
-                </div>
-                <div className="create-animal-modal__field">
-                  <label htmlFor="animal-sex" className="create-animal-modal__label">
-                    Sexo <span className="create-animal-modal__required">*</span>
-                  </label>
-                  <select
-                    id="animal-sex"
-                    className="create-animal-modal__select"
-                    value={sex}
-                    onChange={(e) => {
-                      setSex(e.target.value as AnimalSex);
-                      setCategory('');
-                    }}
-                    aria-required="true"
-                  >
-                    <option value="">Selecione...</option>
-                    {Object.entries(SEX_LABELS).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="create-animal-modal__row">
-                <div className="create-animal-modal__field">
-                  <label htmlFor="animal-birthdate" className="create-animal-modal__label">
-                    Data de nascimento
-                  </label>
-                  <input
-                    id="animal-birthdate"
-                    type="date"
-                    className="create-animal-modal__input"
-                    value={birthDate}
-                    onChange={(e) => {
-                      setBirthDate(e.target.value);
-                      setCategory('');
-                    }}
-                  />
-                  <label className="create-animal-modal__checkbox-label">
+            <div className="create-animal-modal__step-content">
+              <fieldset className="create-animal-modal__fieldset">
+                <legend className="create-animal-modal__fieldset-legend">Identificação</legend>
+                <div className="create-animal-modal__row">
+                  <div className="create-animal-modal__field">
+                    <label htmlFor="animal-ear-tag" className="create-animal-modal__label">
+                      Brinco <span className="create-animal-modal__required">*</span>
+                    </label>
                     <input
-                      type="checkbox"
-                      checked={birthDateEstimated}
-                      onChange={(e) => setBirthDateEstimated(e.target.checked)}
+                      id="animal-ear-tag"
+                      type="text"
+                      className="create-animal-modal__input create-animal-modal__input--mono"
+                      value={earTag}
+                      onChange={(e) => setEarTag(e.target.value)}
+                      aria-required="true"
+                      placeholder="Ex: BR-001"
                     />
-                    Data estimada
-                  </label>
+                  </div>
+                  <div className="create-animal-modal__field">
+                    <label htmlFor="animal-rfid" className="create-animal-modal__label">
+                      RFID
+                    </label>
+                    <input
+                      id="animal-rfid"
+                      type="text"
+                      className="create-animal-modal__input create-animal-modal__input--mono"
+                      value={rfidTag}
+                      onChange={(e) => setRfidTag(e.target.value)}
+                      placeholder="Tag eletrônica"
+                    />
+                  </div>
                 </div>
-                <div className="create-animal-modal__field">
-                  <label htmlFor="animal-category" className="create-animal-modal__label">
-                    Categoria
-                    {suggestedCategory && (
-                      <span className="create-animal-modal__hint">
-                        {' '}
-                        (sugerido: {CATEGORY_LABELS[suggestedCategory]})
-                      </span>
-                    )}
-                  </label>
-                  <select
-                    id="animal-category"
-                    className="create-animal-modal__select"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as AnimalCategory)}
-                  >
-                    <option value="">Auto (pela idade)</option>
-                    {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
 
-              <div className="create-animal-modal__row">
-                <div className="create-animal-modal__field">
-                  <label htmlFor="animal-origin" className="create-animal-modal__label">
-                    Origem
-                  </label>
-                  <select
-                    id="animal-origin"
-                    className="create-animal-modal__select"
-                    value={origin}
-                    onChange={(e) => setOrigin(e.target.value as AnimalOrigin)}
-                  >
-                    {Object.entries(ORIGIN_LABELS).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
+                <div className="create-animal-modal__row">
+                  <div className="create-animal-modal__field">
+                    <label htmlFor="animal-name" className="create-animal-modal__label">
+                      Nome
+                    </label>
+                    <input
+                      id="animal-name"
+                      type="text"
+                      className="create-animal-modal__input"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Ex: Mimosa"
+                    />
+                  </div>
+                  <div className="create-animal-modal__field">
+                    <label htmlFor="animal-sex" className="create-animal-modal__label">
+                      Sexo <span className="create-animal-modal__required">*</span>
+                    </label>
+                    <select
+                      id="animal-sex"
+                      className="create-animal-modal__select"
+                      value={sex}
+                      onChange={(e) => {
+                        setSex(e.target.value as AnimalSex);
+                        setCategory('');
+                      }}
+                      aria-required="true"
+                    >
+                      <option value="">Selecione...</option>
+                      {Object.entries(SEX_LABELS).map(([key, label]) => (
+                        <option key={key} value={key}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <div className="create-animal-modal__field">
-                  <label htmlFor="animal-weight" className="create-animal-modal__label">
-                    Peso de entrada (kg)
+
+                <div className="create-animal-modal__row">
+                  <div className="create-animal-modal__field">
+                    <label htmlFor="animal-registered-name" className="create-animal-modal__label">
+                      Nome completo (registro)
+                    </label>
+                    <input
+                      id="animal-registered-name"
+                      type="text"
+                      className="create-animal-modal__input"
+                      value={registeredName}
+                      onChange={(e) => setRegisteredName(e.target.value)}
+                      placeholder="Ex: Mimosa da Fazenda Limeira"
+                    />
+                  </div>
+                  <div className="create-animal-modal__field">
+                    <label htmlFor="animal-registration-number" className="create-animal-modal__label">
+                      N. registro (associação)
+                    </label>
+                    <input
+                      id="animal-registration-number"
+                      type="text"
+                      className="create-animal-modal__input create-animal-modal__input--mono"
+                      value={registrationNumber}
+                      onChange={(e) => setRegistrationNumber(e.target.value)}
+                      placeholder="Ex: 12345-AB"
+                    />
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset className="create-animal-modal__fieldset">
+                <legend className="create-animal-modal__fieldset-legend">Classificação</legend>
+                <div className="create-animal-modal__row">
+                  <div className="create-animal-modal__field">
+                    <label htmlFor="animal-birthdate" className="create-animal-modal__label">
+                      Data de nascimento
+                    </label>
+                    <input
+                      id="animal-birthdate"
+                      type="date"
+                      className="create-animal-modal__input"
+                      value={birthDate}
+                      onChange={(e) => {
+                        setBirthDate(e.target.value);
+                        setCategory('');
+                      }}
+                    />
+                    <label className="create-animal-modal__checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={birthDateEstimated}
+                        onChange={(e) => setBirthDateEstimated(e.target.checked)}
+                      />
+                      Data estimada
+                    </label>
+                  </div>
+                  <div className="create-animal-modal__field">
+                    <label htmlFor="animal-category" className="create-animal-modal__label">
+                      Categoria
+                      {suggestedCategory && (
+                        <span className="create-animal-modal__hint">
+                          {' '}
+                          (sugerido: {CATEGORY_LABELS[suggestedCategory]})
+                        </span>
+                      )}
+                    </label>
+                    <select
+                      id="animal-category"
+                      className="create-animal-modal__select"
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value as AnimalCategory)}
+                    >
+                      <option value="">Auto (pela idade)</option>
+                      {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                        <option key={key} value={key}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="create-animal-modal__row">
+                  <div className="create-animal-modal__field">
+                    <label htmlFor="animal-origin" className="create-animal-modal__label">
+                      Origem
+                    </label>
+                    <select
+                      id="animal-origin"
+                      className="create-animal-modal__select"
+                      value={origin}
+                      onChange={(e) => setOrigin(e.target.value as AnimalOrigin)}
+                    >
+                      {Object.entries(ORIGIN_LABELS).map(([key, label]) => (
+                        <option key={key} value={key}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="create-animal-modal__field">
+                    <label htmlFor="animal-weight" className="create-animal-modal__label">
+                      Peso de entrada (kg)
+                    </label>
+                    <input
+                      id="animal-weight"
+                      type="number"
+                      className="create-animal-modal__input"
+                      value={entryWeightKg}
+                      onChange={(e) => setEntryWeightKg(e.target.value)}
+                      placeholder="Ex: 350"
+                      min="0"
+                      step="0.1"
+                    />
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset className="create-animal-modal__fieldset">
+                <legend className="create-animal-modal__fieldset-legend">Condição e observações</legend>
+                <div className="create-animal-modal__row">
+                  <div className="create-animal-modal__field">
+                    <label htmlFor="animal-bcs" className="create-animal-modal__label">
+                      Escore de condição corporal (1-5)
+                    </label>
+                    <select
+                      id="animal-bcs"
+                      className="create-animal-modal__select"
+                      value={bodyConditionScore}
+                      onChange={(e) => setBodyConditionScore(e.target.value)}
+                    >
+                      <option value="">Não informado</option>
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="create-animal-modal__field" />
+                </div>
+
+                <div className="create-animal-modal__field create-animal-modal__field--full">
+                  <label htmlFor="animal-notes" className="create-animal-modal__label">
+                    Observações
                   </label>
-                  <input
-                    id="animal-weight"
-                    type="number"
-                    className="create-animal-modal__input"
-                    value={entryWeightKg}
-                    onChange={(e) => setEntryWeightKg(e.target.value)}
-                    placeholder="Ex: 350"
-                    min="0"
-                    step="0.1"
+                  <textarea
+                    id="animal-notes"
+                    className="create-animal-modal__textarea"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    rows={3}
+                    placeholder="Observações sobre o animal..."
                   />
                 </div>
-              </div>
-
-              <div className="create-animal-modal__row">
-                <div className="create-animal-modal__field">
-                  <label htmlFor="animal-bcs" className="create-animal-modal__label">
-                    Escore de condição corporal (1-5)
-                  </label>
-                  <select
-                    id="animal-bcs"
-                    className="create-animal-modal__select"
-                    value={bodyConditionScore}
-                    onChange={(e) => setBodyConditionScore(e.target.value)}
-                  >
-                    <option value="">Não informado</option>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="create-animal-modal__field" />
-              </div>
-
-              <div className="create-animal-modal__field create-animal-modal__field--full">
-                <label htmlFor="animal-notes" className="create-animal-modal__label">
-                  Observações
-                </label>
-                <textarea
-                  id="animal-notes"
-                  className="create-animal-modal__textarea"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                  placeholder="Observações sobre o animal..."
-                />
-              </div>
+              </fieldset>
             </div>
           )}
 
           {/* Step 2: Breed Composition */}
           {step === 2 && (
-            <div className="create-animal-modal__fields">
-              <p className="create-animal-modal__section-desc">
-                Informe a composição racial do animal. A soma dos percentuais deve ser 100%.
-              </p>
-
-              {compositions.map((comp, index) => (
-                <div key={index} className="create-animal-modal__composition-row">
-                  <div className="create-animal-modal__field" style={{ flex: 2 }}>
-                    <label htmlFor={`breed-${index}`} className="create-animal-modal__label">
-                      Raça
-                    </label>
-                    <select
-                      id={`breed-${index}`}
-                      className="create-animal-modal__select"
-                      value={comp.breedId}
-                      onChange={(e) => updateComposition(index, 'breedId', e.target.value)}
-                    >
-                      <option value="">Selecione...</option>
-                      {breeds.map((b) => (
-                        <option key={b.id} value={b.id}>
-                          {b.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="create-animal-modal__field" style={{ flex: 1 }}>
-                    <label htmlFor={`pct-${index}`} className="create-animal-modal__label">
-                      %
-                    </label>
-                    <input
-                      id={`pct-${index}`}
-                      type="number"
-                      className="create-animal-modal__input create-animal-modal__input--mono"
-                      value={comp.percentage || ''}
-                      onChange={(e) =>
-                        updateComposition(index, 'percentage', Number(e.target.value))
-                      }
-                      min="0"
-                      max="100"
-                      step="0.01"
-                    />
-                  </div>
+            <div className="create-animal-modal__step-content">
+              {compositions.length === 0 ? (
+                <div className="create-animal-modal__empty-state">
+                  <Dna size={48} aria-hidden="true" className="create-animal-modal__empty-icon" />
+                  <h3 className="create-animal-modal__empty-title">Nenhuma raça adicionada</h3>
+                  <p className="create-animal-modal__empty-desc">
+                    Informe a composição racial do animal. A soma dos percentuais deve totalizar 100%.
+                    Este passo é opcional.
+                  </p>
                   <button
                     type="button"
-                    className="create-animal-modal__remove-btn"
-                    onClick={() => removeComposition(index)}
-                    aria-label={`Remover raça ${breedNames[comp.breedId] || ''}`}
+                    className="create-animal-modal__add-btn"
+                    onClick={addComposition}
                   >
-                    <Trash2 size={16} aria-hidden="true" />
+                    <Plus size={16} aria-hidden="true" />
+                    Adicionar raça
                   </button>
                 </div>
-              ))}
+              ) : (
+                <>
+                  <p className="create-animal-modal__section-desc">
+                    Informe a composição racial do animal. A soma dos percentuais deve ser 100%.
+                  </p>
 
-              <div className="create-animal-modal__composition-footer">
-                <button
-                  type="button"
-                  className="create-animal-modal__add-btn"
-                  onClick={addComposition}
-                >
-                  <Plus size={16} aria-hidden="true" />
-                  Adicionar raça
-                </button>
+                  {/* Progress bar */}
+                  <div className="create-animal-modal__composition-progress">
+                    <div className="create-animal-modal__progress-bar">
+                      <div
+                        className={`create-animal-modal__progress-fill ${
+                          compositionTotal > 100
+                            ? 'create-animal-modal__progress-fill--over'
+                            : Math.abs(compositionTotal - 100) < 0.01
+                              ? 'create-animal-modal__progress-fill--complete'
+                              : ''
+                        }`}
+                        style={{ width: `${Math.min(compositionTotal, 100)}%` }}
+                      />
+                    </div>
+                    <div className="create-animal-modal__progress-info">
+                      <span
+                        className={`create-animal-modal__total ${
+                          Math.abs(compositionTotal - 100) < 0.01
+                            ? 'create-animal-modal__total--ok'
+                            : compositionTotal > 100
+                              ? 'create-animal-modal__total--error'
+                              : ''
+                        }`}
+                      >
+                        {compositionTotal.toFixed(1)}%
+                      </span>
+                      {girolandoGrade && (
+                        <span className="create-animal-modal__girolando-badge">
+                          Girolando {girolandoGrade}
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
-                {compositions.length > 0 && (
-                  <span
-                    className={`create-animal-modal__total ${
-                      Math.abs(compositionTotal - 100) < 0.01
-                        ? 'create-animal-modal__total--ok'
-                        : 'create-animal-modal__total--error'
-                    }`}
+                  {compositions.map((comp, index) => (
+                    <div key={index} className="create-animal-modal__composition-row">
+                      <div className="create-animal-modal__field" style={{ flex: 2 }}>
+                        <label htmlFor={`breed-${index}`} className="create-animal-modal__label">
+                          Raça
+                        </label>
+                        <select
+                          id={`breed-${index}`}
+                          className="create-animal-modal__select"
+                          value={comp.breedId}
+                          onChange={(e) => updateComposition(index, 'breedId', e.target.value)}
+                        >
+                          <option value="">Selecione...</option>
+                          {breeds.map((b) => (
+                            <option key={b.id} value={b.id}>
+                              {b.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="create-animal-modal__field" style={{ flex: 1 }}>
+                        <label htmlFor={`pct-${index}`} className="create-animal-modal__label">
+                          %
+                        </label>
+                        <input
+                          id={`pct-${index}`}
+                          type="number"
+                          className="create-animal-modal__input create-animal-modal__input--mono"
+                          value={comp.percentage || ''}
+                          onChange={(e) =>
+                            updateComposition(index, 'percentage', Number(e.target.value))
+                          }
+                          min="0"
+                          max="100"
+                          step="0.01"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className="create-animal-modal__remove-btn"
+                        onClick={() => removeComposition(index)}
+                        aria-label={`Remover raça ${breedNames[comp.breedId] || ''}`}
+                      >
+                        <Trash2 size={16} aria-hidden="true" />
+                      </button>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    className="create-animal-modal__add-btn"
+                    onClick={addComposition}
                   >
-                    Total: {compositionTotal.toFixed(1)}%
-                  </span>
-                )}
+                    <Plus size={16} aria-hidden="true" />
+                    Adicionar raça
+                  </button>
 
-                {girolandoGrade && (
-                  <span className="create-animal-modal__girolando-badge">
-                    Girolando {girolandoGrade}
-                  </span>
-                )}
-              </div>
-
-              <label className="create-animal-modal__checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={isCompositionEstimated}
-                  onChange={(e) => setIsCompositionEstimated(e.target.checked)}
-                />
-                Composição estimada
-              </label>
+                  <label className="create-animal-modal__checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={isCompositionEstimated}
+                      onChange={(e) => setIsCompositionEstimated(e.target.checked)}
+                    />
+                    Composição estimada
+                  </label>
+                </>
+              )}
             </div>
           )}
 
           {/* Step 3: Genealogy */}
           {step === 3 && (
-            <div className="create-animal-modal__fields">
-              <p className="create-animal-modal__section-desc">
-                Registros genealógicos são opcionais. Adicione se o animal possui registro em
-                associação.
-              </p>
-
-              {genealogicalRecords.map((rec, index) => (
-                <div key={index} className="create-animal-modal__genealogy-card">
-                  <div className="create-animal-modal__row">
-                    <div className="create-animal-modal__field" style={{ flex: 2 }}>
-                      <label htmlFor={`gen-class-${index}`} className="create-animal-modal__label">
-                        Classe
-                      </label>
-                      <select
-                        id={`gen-class-${index}`}
-                        className="create-animal-modal__select"
-                        value={rec.genealogyClass}
-                        onChange={(e) =>
-                          updateGenealogicalRecord(index, 'genealogyClass', e.target.value)
-                        }
-                      >
-                        <option value="">Selecione...</option>
-                        {Object.entries(GENEALOGY_CLASS_LABELS).map(([key, label]) => (
-                          <option key={key} value={key}>
-                            {label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="create-animal-modal__field" style={{ flex: 1 }}>
-                      <label htmlFor={`gen-number-${index}`} className="create-animal-modal__label">
-                        Nº Registro
-                      </label>
-                      <input
-                        id={`gen-number-${index}`}
-                        type="text"
-                        className="create-animal-modal__input create-animal-modal__input--mono"
-                        value={rec.registrationNumber ?? ''}
-                        onChange={(e) =>
-                          updateGenealogicalRecord(index, 'registrationNumber', e.target.value)
-                        }
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      className="create-animal-modal__remove-btn"
-                      onClick={() => removeGenealogicalRecord(index)}
-                      aria-label="Remover registro genealógico"
-                    >
-                      <Trash2 size={16} aria-hidden="true" />
-                    </button>
-                  </div>
-                  <div className="create-animal-modal__row">
-                    <div className="create-animal-modal__field">
-                      <label htmlFor={`gen-assoc-${index}`} className="create-animal-modal__label">
-                        Associação
-                      </label>
-                      <input
-                        id={`gen-assoc-${index}`}
-                        type="text"
-                        className="create-animal-modal__input"
-                        value={rec.associationName ?? ''}
-                        onChange={(e) =>
-                          updateGenealogicalRecord(index, 'associationName', e.target.value)
-                        }
-                        placeholder="Ex: ABCGIL"
-                      />
-                    </div>
-                    <div className="create-animal-modal__field">
-                      <label htmlFor={`gen-date-${index}`} className="create-animal-modal__label">
-                        Data do registro
-                      </label>
-                      <input
-                        id={`gen-date-${index}`}
-                        type="date"
-                        className="create-animal-modal__input"
-                        value={rec.registrationDate ?? ''}
-                        onChange={(e) =>
-                          updateGenealogicalRecord(index, 'registrationDate', e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
+            <div className="create-animal-modal__step-content">
+              {genealogicalRecords.length === 0 ? (
+                <div className="create-animal-modal__empty-state">
+                  <ScrollText size={48} aria-hidden="true" className="create-animal-modal__empty-icon" />
+                  <h3 className="create-animal-modal__empty-title">Nenhum registro genealógico</h3>
+                  <p className="create-animal-modal__empty-desc">
+                    Registros genealógicos são opcionais. Adicione se o animal possui registro em
+                    associação de criadores.
+                  </p>
+                  <button
+                    type="button"
+                    className="create-animal-modal__add-btn"
+                    onClick={addGenealogicalRecord}
+                  >
+                    <Plus size={16} aria-hidden="true" />
+                    Adicionar registro genealógico
+                  </button>
                 </div>
-              ))}
+              ) : (
+                <>
+                  <p className="create-animal-modal__section-desc">
+                    Registros genealógicos são opcionais. Adicione se o animal possui registro em
+                    associação.
+                  </p>
 
-              <button
-                type="button"
-                className="create-animal-modal__add-btn"
-                onClick={addGenealogicalRecord}
-              >
-                <Plus size={16} aria-hidden="true" />
-                Adicionar registro genealógico
-              </button>
+                  {genealogicalRecords.map((rec, index) => (
+                    <div key={index} className="create-animal-modal__genealogy-card">
+                      <div className="create-animal-modal__genealogy-card-header">
+                        <span className="create-animal-modal__genealogy-card-number">
+                          Registro {index + 1}
+                        </span>
+                        <button
+                          type="button"
+                          className="create-animal-modal__remove-btn create-animal-modal__remove-btn--compact"
+                          onClick={() => removeGenealogicalRecord(index)}
+                          aria-label="Remover registro genealógico"
+                        >
+                          <Trash2 size={16} aria-hidden="true" />
+                        </button>
+                      </div>
+                      <div className="create-animal-modal__row">
+                        <div className="create-animal-modal__field" style={{ flex: 2 }}>
+                          <label htmlFor={`gen-class-${index}`} className="create-animal-modal__label">
+                            Classe
+                          </label>
+                          <select
+                            id={`gen-class-${index}`}
+                            className="create-animal-modal__select"
+                            value={rec.genealogyClass}
+                            onChange={(e) =>
+                              updateGenealogicalRecord(index, 'genealogyClass', e.target.value)
+                            }
+                          >
+                            <option value="">Selecione...</option>
+                            {Object.entries(GENEALOGY_CLASS_LABELS).map(([key, label]) => (
+                              <option key={key} value={key}>
+                                {label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="create-animal-modal__field" style={{ flex: 1 }}>
+                          <label htmlFor={`gen-number-${index}`} className="create-animal-modal__label">
+                            N. Registro
+                          </label>
+                          <input
+                            id={`gen-number-${index}`}
+                            type="text"
+                            className="create-animal-modal__input create-animal-modal__input--mono"
+                            value={rec.registrationNumber ?? ''}
+                            onChange={(e) =>
+                              updateGenealogicalRecord(index, 'registrationNumber', e.target.value)
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="create-animal-modal__row">
+                        <div className="create-animal-modal__field">
+                          <label htmlFor={`gen-assoc-${index}`} className="create-animal-modal__label">
+                            Associação
+                          </label>
+                          <input
+                            id={`gen-assoc-${index}`}
+                            type="text"
+                            className="create-animal-modal__input"
+                            value={rec.associationName ?? ''}
+                            onChange={(e) =>
+                              updateGenealogicalRecord(index, 'associationName', e.target.value)
+                            }
+                            placeholder="Ex: ABCGIL"
+                          />
+                        </div>
+                        <div className="create-animal-modal__field">
+                          <label htmlFor={`gen-date-${index}`} className="create-animal-modal__label">
+                            Data do registro
+                          </label>
+                          <input
+                            id={`gen-date-${index}`}
+                            type="date"
+                            className="create-animal-modal__input"
+                            value={rec.registrationDate ?? ''}
+                            onChange={(e) =>
+                              updateGenealogicalRecord(index, 'registrationDate', e.target.value)
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    className="create-animal-modal__add-btn"
+                    onClick={addGenealogicalRecord}
+                  >
+                    <Plus size={16} aria-hidden="true" />
+                    Adicionar registro genealógico
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -689,8 +832,9 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
             <button
               type="button"
               className="create-animal-modal__btn create-animal-modal__btn--secondary"
-              onClick={() => setStep((s) => s - 1)}
+              onClick={() => goToStep(step - 1)}
             >
+              <ArrowLeft size={16} aria-hidden="true" />
               Voltar
             </button>
           )}
@@ -702,10 +846,11 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
               disabled={step === 1 && !canGoStep2}
               onClick={() => {
                 if (step === 2 && !compositionValid) return;
-                setStep((s) => s + 1);
+                goToStep(step + 1);
               }}
             >
               Próximo
+              <ArrowRight size={16} aria-hidden="true" />
             </button>
           ) : (
             <button

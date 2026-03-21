@@ -53,6 +53,8 @@ export interface AnimalListItem {
   earTag: string;
   rfidTag: string | null;
   name: string | null;
+  registeredName: string | null;
+  registrationNumber: string | null;
   sex: AnimalSex;
   birthDate: string | null;
   birthDateEstimated: boolean;
@@ -69,6 +71,14 @@ export interface AnimalListItem {
   breedSummary: string | null;
   sire: AnimalParent | null;
   dam: AnimalParent | null;
+  currentOwners: AnimalOwnerSummary[];
+  ownerSummary: string | null;
+}
+
+export interface AnimalOwnerSummary {
+  producerId: string;
+  producerName: string;
+  ownershipType: string;
 }
 
 export interface GenealogicalRecord {
@@ -129,6 +139,8 @@ export interface CreateAnimalPayload {
   earTag: string;
   rfidTag?: string;
   name?: string;
+  registeredName?: string;
+  registrationNumber?: string;
   sex: AnimalSex;
   birthDate?: string;
   birthDateEstimated?: boolean;

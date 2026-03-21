@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Camera, AlertCircle, ArrowLeft, Beef } from 'lucide-react';
+import { Camera, AlertCircle, ArrowLeft, Beef, LogOut } from 'lucide-react';
 import { useAnimalDetail } from '@/hooks/useAnimalDetail';
 import { useFarmContext } from '@/stores/FarmContext';
+import PermissionGate from '@/components/auth/PermissionGate';
+import AnimalExitModal from '@/components/animal-exits/AnimalExitModal';
 import WeighingTab from '@/components/animals/WeighingTab';
 import SanitaryTab from '@/components/animals/SanitaryTab';
 import ReproductiveTab from '@/components/animals/ReproductiveTab';
@@ -22,6 +24,7 @@ function AnimalDetailPage() {
   const { animalId } = useParams<{ animalId: string }>();
   const { selectedFarm } = useFarmContext();
   const [activeTab, setActiveTab] = useState<Tab>('general');
+  const [showExitModal, setShowExitModal] = useState(false);
 
   const { animal, isLoading, error, refetch } = useAnimalDetail(
     selectedFarm?.id ?? null,
@@ -167,6 +170,16 @@ function AnimalDetailPage() {
             </span>
           </div>
         </div>
+        <PermissionGate permission="animals:delete">
+          <button
+            type="button"
+            className="animal-detail__exit-btn"
+            onClick={() => setShowExitModal(true)}
+          >
+            <LogOut aria-hidden="true" size={18} />
+            Registrar saída
+          </button>
+        </PermissionGate>
       </header>
 
       <div className="animal-detail__tabs" role="tablist" aria-label="Seções do animal">
@@ -205,6 +218,17 @@ function AnimalDetailPage() {
           <MovementsTab farmId={selectedFarm.id} animalId={animal.id} />
         ) : null}
       </div>
+
+      <AnimalExitModal
+        isOpen={showExitModal}
+        farmId={selectedFarm.id}
+        animalId={animal.id}
+        onClose={() => setShowExitModal(false)}
+        onSuccess={() => {
+          setShowExitModal(false);
+          void refetch();
+        }}
+      />
     </main>
   );
 }
