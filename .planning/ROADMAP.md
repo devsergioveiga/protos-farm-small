@@ -280,7 +280,8 @@ Plans:
 4. Gerente pode controlar estoque de peças de reposição com ponto de reposição e vinculação de peças compatíveis por máquina
 5. Gerente pode ver dashboard de manutenção com disponibilidade mecânica, MTBF, MTTR, custo acumulado e kanban de OS abertas
 
-**Plans:** 4/7 plans executed
+**Plans:** 10 plans (7 executed + 3 gap closure)
+**Gap Closure:** Closes 4 gaps from verification (cron wiring, integration tests)
 
 Plans:
 
@@ -291,6 +292,9 @@ Plans:
 - [ ] 18-04-PLAN.md — Frontend: types, hooks, MaintenancePlansPage, WorkOrdersPage, modals, sidebar, routes
 - [ ] 18-05-PLAN.md — Frontend: dashboard, kanban, close wizard, provision modal, AssetMaintenanceTab
 - [ ] 18-06-PLAN.md — Mobile: maintenance request screen with offline queue, photo, geolocation
+- [ ] 18-07-PLAN.md — Gap closure: wire maintenance crons to main.ts startup
+- [ ] 18-08-PLAN.md — Gap closure: work orders integration tests (35 stubs to real tests)
+- [ ] 18-09-PLAN.md — Gap closure: maintenance provisions integration tests (19 stubs to real tests)
 
 ### Phase 19: Integração Financeira — Aquisição
 
@@ -399,7 +403,7 @@ Plans:
 | 15. Frontend API Path Fixes                         | v1.1      | 1/1            | Complete    | 2026-03-19 |
 | 16. Cadastro de Ativos                              | v1.2      | 7/7            | Complete    | 2026-03-20 |
 | 17. Engine de Depreciação                           | v1.2      | 4/4            | Complete    | 2026-03-20 |
-| 18. Manutenção e Ordens de Serviço                  | 4/7 | In Progress|  | -          |
+| 18. Manutenção e Ordens de Serviço                  | v1.2      | 7/10           | In Progress | -          |
 | 19. Integração Financeira — Aquisição               | v1.2      | 0/?            | Not started | -          |
 | 20. Alienação e Baixa de Ativos                     | v1.2      | 0/?            | Not started | -          |
 | 21. Controle Operacional                            | v1.2      | 0/?            | Not started | -          |
