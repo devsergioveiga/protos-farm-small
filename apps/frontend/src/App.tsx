@@ -110,6 +110,7 @@ const AssetsPage = lazy(() => import('@/pages/AssetsPage'));
 const DepreciationPage = lazy(() => import('@/pages/DepreciationPage'));
 const MaintenancePlansPage = lazy(() => import('@/pages/MaintenancePlansPage'));
 const WorkOrdersPage = lazy(() => import('@/pages/WorkOrdersPage'));
+const MaintenanceDashboardPage = lazy(() => import('@/pages/MaintenanceDashboardPage'));
 
 export function App() {
   return (
@@ -221,6 +222,7 @@ export function App() {
                 <Route path="/depreciation" element={<DepreciationPage />} />
                 <Route path="/maintenance-plans" element={<MaintenancePlansPage />} />
                 <Route path="/work-orders" element={<WorkOrdersPage />} />
+                <Route path="/maintenance-dashboard" element={<MaintenanceDashboardPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}

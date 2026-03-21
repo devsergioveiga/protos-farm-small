@@ -196,6 +196,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/depreciation', icon: TrendingDown, label: 'Depreciacao' },
       { to: '/maintenance-plans', icon: Wrench, label: 'Planos de Manutencao' },
       { to: '/work-orders', icon: ClipboardList, label: 'Ordens de Servico' },
+      { to: '/maintenance-dashboard', icon: BarChart3, label: 'Dashboard Manutencao' },
     ],
   },
   {
