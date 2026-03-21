@@ -1,0 +1,296 @@
+/* ─── MaintenancePlansPage ─────────────────────────────────────────────── */
+
+.maintenance-plans-page {
+  padding: var(--space-6);
+  max-width: var(--container-max, 1280px);
+  margin: 0 auto;
+}
+
+/* ─── Breadcrumb ──────────────────────────────────────────────────────── */
+
+.maintenance-plans-page__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+}
+
+.maintenance-plans-page__breadcrumb-sep { color: var(--color-neutral-400); }
+
+.maintenance-plans-page__breadcrumb-item--current {
+  color: var(--color-neutral-700);
+  font-weight: 600;
+}
+
+/* ─── Header ──────────────────────────────────────────────────────────── */
+
+.maintenance-plans-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .maintenance-plans-page__header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.maintenance-plans-page__title {
+  font-family: var(--font-display, 'DM Sans', system-ui, sans-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.maintenance-plans-page__btn-primary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-primary-600);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md, 6px);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  white-space: nowrap;
+  transition: background 100ms ease-out;
+}
+
+.maintenance-plans-page__btn-primary:hover { background: var(--color-primary-700, #1b5e20); }
+.maintenance-plans-page__btn-primary:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
+
+/* ─── Filters ──────────────────────────────────────────────────────────── */
+
+.maintenance-plans-page__filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+
+.maintenance-plans-page__filter-select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md, 6px);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0, #ffffff);
+  min-height: 40px;
+  cursor: pointer;
+}
+
+.maintenance-plans-page__filter-select:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Table ──────────────────────────────────────────────────────────── */
+
+.maintenance-plans-page__table-wrap {
+  overflow-x: auto;
+}
+
+.maintenance-plans-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.875rem;
+}
+
+.maintenance-plans-page__table caption {
+  text-align: left;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  margin-bottom: var(--space-2);
+}
+
+.maintenance-plans-page__table th {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-100);
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  border-bottom: 1px solid var(--color-neutral-200);
+  white-space: nowrap;
+}
+
+.maintenance-plans-page__table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  vertical-align: middle;
+}
+
+.maintenance-plans-page__table tr:hover td {
+  background: var(--color-neutral-50, #fafaf8);
+}
+
+/* ─── Due date ──────────────────────────────────────────────────────── */
+
+.maintenance-plans-page__overdue {
+  color: var(--color-error-500);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* ─── Status badge ───────────────────────────────────────────────────── */
+
+.maintenance-plans-page__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.maintenance-plans-page__badge--active {
+  background: var(--color-success-100, #e8f5e9);
+  color: var(--color-success-700, #1b5e20);
+}
+
+.maintenance-plans-page__badge--inactive {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-500);
+}
+
+/* ─── Action buttons ──────────────────────────────────────────────────── */
+
+.maintenance-plans-page__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.maintenance-plans-page__action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm, 4px);
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  transition: color 100ms, background 100ms;
+}
+
+.maintenance-plans-page__action-btn:hover {
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-100);
+}
+
+.maintenance-plans-page__action-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Empty state ──────────────────────────────────────────────────────── */
+
+.maintenance-plans-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+}
+
+.maintenance-plans-page__empty-title {
+  font-family: var(--font-display, 'DM Sans', system-ui, sans-serif);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.maintenance-plans-page__empty-desc {
+  color: var(--color-neutral-500);
+  font-size: 0.875rem;
+  max-width: 400px;
+  margin: 0;
+}
+
+/* ─── Skeleton ──────────────────────────────────────────────────────────── */
+
+.maintenance-plans-page__skeleton-row td {
+  background: transparent;
+}
+
+.maintenance-plans-page__skeleton-cell {
+  height: 20px;
+  border-radius: var(--radius-sm, 4px);
+  background: var(--color-neutral-200);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .maintenance-plans-page__skeleton-cell { animation: none; }
+}
+
+/* ─── Error ─────────────────────────────────────────────────────────────── */
+
+.maintenance-plans-page__error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-error-100, #ffebee);
+  border: 1px solid var(--color-error-300, #ef9a9a);
+  border-radius: var(--radius-md, 6px);
+  color: var(--color-error-700, #b71c1c);
+  font-size: 0.875rem;
+}
+
+/* ─── Mobile cards ──────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .maintenance-plans-page__table-wrap { display: none; }
+  .maintenance-plans-page__cards { display: flex; flex-direction: column; gap: var(--space-3); }
+}
+
+@media (min-width: 768px) {
+  .maintenance-plans-page__cards { display: none; }
+}
+
+.maintenance-plans-page__card {
+  padding: var(--space-4);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md, 6px);
+  background: var(--color-neutral-0, #ffffff);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.maintenance-plans-page__card-title {
+  font-weight: 600;
+  color: var(--color-neutral-800);
+}
+
+.maintenance-plans-page__card-meta {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}

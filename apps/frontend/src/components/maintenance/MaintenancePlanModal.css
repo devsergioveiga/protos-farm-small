@@ -1,0 +1,276 @@
+/* ─── MaintenancePlanModal ─────────────────────────────────────────────── */
+
+.plan-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+}
+
+.plan-modal {
+  background: var(--color-neutral-0, #ffffff);
+  border-radius: var(--radius-lg, 8px);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xl);
+  animation: plan-modal-in 300ms ease-out;
+}
+
+@keyframes plan-modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plan-modal { animation: none; }
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────── */
+
+.plan-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+.plan-modal__title {
+  font-family: var(--font-display, 'DM Sans', system-ui, sans-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.plan-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md, 6px);
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  transition: background 100ms ease-out, color 100ms ease-out;
+}
+
+.plan-modal__close:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.plan-modal__close:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Body ──────────────────────────────────────────────────────────── */
+
+.plan-modal__body {
+  padding: var(--space-6);
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ─── Field ─────────────────────────────────────────────────────────── */
+
+.plan-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.plan-modal__label {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.plan-modal__required {
+  color: var(--color-error-500);
+}
+
+.plan-modal__input,
+.plan-modal__select,
+.plan-modal__textarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md, 6px);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 1rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0, #ffffff);
+  transition: border-color 100ms ease-out;
+  box-sizing: border-box;
+}
+
+.plan-modal__input:focus,
+.plan-modal__select:focus,
+.plan-modal__textarea:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.plan-modal__input--error,
+.plan-modal__select--error,
+.plan-modal__textarea--error {
+  border-color: var(--color-error-500);
+}
+
+.plan-modal__textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* ─── Trigger type radio ─────────────────────────────────────────────── */
+
+.plan-modal__radio-group {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.plan-modal__radio-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md, 6px);
+  cursor: pointer;
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0, #ffffff);
+  transition: border-color 100ms ease-out, background 100ms ease-out;
+  min-height: 48px;
+}
+
+.plan-modal__radio-card:hover {
+  background: var(--color-neutral-100);
+}
+
+.plan-modal__radio-card--selected {
+  border-color: var(--color-primary-600);
+  border-width: 2px;
+  color: var(--color-primary-600);
+}
+
+.plan-modal__radio-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.plan-modal__radio-card:focus-within {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Error ─────────────────────────────────────────────────────────── */
+
+.plan-modal__field-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.8125rem;
+  color: var(--color-error-500);
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────────── */
+
+.plan-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+.plan-modal__btn-cancel {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md, 6px);
+  background: var(--color-neutral-0, #ffffff);
+  color: var(--color-neutral-700);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  transition: background 100ms ease-out;
+}
+
+.plan-modal__btn-cancel:hover {
+  background: var(--color-neutral-100);
+}
+
+.plan-modal__btn-cancel:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.plan-modal__btn-submit {
+  padding: var(--space-3) var(--space-5);
+  border: none;
+  border-radius: var(--radius-md, 6px);
+  background: var(--color-primary-600);
+  color: #ffffff;
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  transition: background 100ms ease-out;
+}
+
+.plan-modal__btn-submit:hover {
+  background: var(--color-primary-700, #1b5e20);
+}
+
+.plan-modal__btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.plan-modal__btn-submit:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Submit error ────────────────────────────────────────────────────── */
+
+.plan-modal__submit-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-error-100, #ffebee);
+  border: 1px solid var(--color-error-300, #ef9a9a);
+  border-radius: var(--radius-md, 6px);
+  color: var(--color-error-700, #b71c1c);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: 0.875rem;
+}
