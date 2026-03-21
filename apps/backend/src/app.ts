@@ -112,6 +112,12 @@ import { assetDocumentsRouter } from './modules/assets/asset-documents.routes';
 import { fuelRecordsRouter } from './modules/fuel-records/fuel-records.routes';
 import { meterReadingsRouter } from './modules/meter-readings/meter-readings.routes';
 import { depreciationRouter } from './modules/depreciation/depreciation.routes';
+import { animalOwnershipsRouter } from './modules/animal-ownerships/animal-ownerships.routes';
+import { animalExitsRouter } from './modules/animal-exits/animal-exits.routes';
+import { workOrdersRouter } from './modules/work-orders/work-orders.routes';
+import { maintenancePlansRouter } from './modules/maintenance-plans/maintenance-plans.routes';
+import { sparePartsRouter } from './modules/spare-parts/spare-parts.routes';
+import { maintenanceProvisionsRouter } from './modules/maintenance-provisions/maintenance-provisions.routes';
 
 const app = express();
 
@@ -233,5 +239,11 @@ app.use('/api', assetDocumentsRouter);
 app.use('/api', fuelRecordsRouter);
 app.use('/api', meterReadingsRouter);
 app.use('/api', depreciationRouter);
+app.use('/api', animalOwnershipsRouter);
+app.use('/api', animalExitsRouter);
+app.use('/api', workOrdersRouter);
+app.use('/api', maintenancePlansRouter);
+app.use('/api', sparePartsRouter);
+app.use('/api', maintenanceProvisionsRouter);
 
 export { app };

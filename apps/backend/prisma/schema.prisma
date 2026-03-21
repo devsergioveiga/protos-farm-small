@@ -2808,6 +2808,7 @@ model Product {
   treatmentApplications  TreatmentApplication[]
   iatfStepProducts       IatfProtocolStepProduct[] @relation("IatfStepProduct")
   mastitisApplications   MastitisApplication[]    @relation("MastitisProduct")
+  workOrderParts         WorkOrderPart[]
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -7163,6 +7164,7 @@ model WorkOrderPart {
   createdAt   DateTime @default(now())
 
   workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id])
 
   @@index([workOrderId])
   @@map("work_order_parts")
