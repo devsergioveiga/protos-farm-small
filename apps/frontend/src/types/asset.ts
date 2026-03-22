@@ -2,6 +2,8 @@
 
 export type AssetType = 'MAQUINA' | 'VEICULO' | 'IMPLEMENTO' | 'BENFEITORIA' | 'TERRA';
 
+export type PaymentType = 'AVISTA' | 'FINANCIADO';
+
 export type AssetClassification =
   | 'DEPRECIABLE_CPC27'
   | 'NON_DEPRECIABLE_CPC27'
@@ -100,6 +102,75 @@ export interface CreateAssetInput {
 }
 
 export type UpdateAssetInput = Partial<CreateAssetInput> & { status?: AssetStatus };
+
+export interface AssetAcquisitionInput extends CreateAssetInput {
+  paymentType: PaymentType;
+  dueDate?: string;
+  installmentCount?: number;
+  firstDueDate?: string;
+  interestRate?: number;
+}
+
+export interface AssetAcquisitionOutput {
+  asset: { id: string; assetTag: string; name: string };
+  payableId: string | null;
+  installmentCount: number;
+}
+
+export interface InstallmentPreview {
+  number: number;
+  dueDate: Date;
+  amount: number;
+}
+
+// ─── NF-e types ───────────────────────────────────────────────────────
+
+export interface NfeItem {
+  description: string;
+  value: number;
+  ncm: string | null;
+  quantity: number;
+  unit: string | null;
+}
+
+export interface NfeParsedData {
+  supplierName: string | null;
+  supplierCnpj: string | null;
+  invoiceNumber: string | null;
+  issueDate: string | null;
+  totalNf: string | null;
+  totalProducts: string | null;
+  freight: string | null;
+  insurance: string | null;
+  otherCosts: string | null;
+  items: NfeItem[];
+}
+
+export interface NfeItemAssignment {
+  nfeItemIndex: number;
+  assetName: string;
+  assetType: string;
+  existingAssetId?: string;
+}
+
+export interface CreateFromNfeInput {
+  farmId: string;
+  costCenterId?: string;
+  costCenterMode?: string;
+  classification: string;
+  paymentType: PaymentType;
+  dueDate?: string;
+  installmentCount?: number;
+  firstDueDate?: string;
+  interestRate?: number;
+  items: NfeItemAssignment[];
+}
+
+export interface NfeAcquisitionOutput {
+  assets: Array<{ id: string; assetTag: string; name: string; acquisitionValue: number }>;
+  payableId: string | null;
+  totalNf: number;
+}
 
 export interface AssetSummary {
   totalAssets: number;
