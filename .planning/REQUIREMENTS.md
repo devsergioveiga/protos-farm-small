@@ -57,13 +57,13 @@ Requirements for asset lifecycle management. Each maps to roadmap phases.
 
 ### Integracao Financeira — Aquisicao
 
-- [ ] **AQUI-01**: Ao cadastrar ativo com valor de aquisicao, sistema gera CP automaticamente no modulo financeiro com fornecedor, valor, vencimento e centro de custo
-- [ ] **AQUI-02**: Gerente pode registrar compra financiada de ativo com dados do financiamento e parcelas geradas automaticamente no CP (reuso do installmentGenerator)
-- [ ] **AQUI-03**: Gerente pode importar dados do ativo a partir de NF-e (XML) com preenchimento automatico de fornecedor, valor, itens e dados fiscais
-- [ ] **AQUI-04**: Gerente pode registrar compra com multiplos ativos na mesma NF, cada um gerando registro patrimonial e rateio proporcional das despesas acessorias
+- [x] **AQUI-01**: Ao cadastrar ativo com valor de aquisicao, sistema gera CP automaticamente no modulo financeiro com fornecedor, valor, vencimento e centro de custo
+- [x] **AQUI-02**: Gerente pode registrar compra financiada de ativo com dados do financiamento e parcelas geradas automaticamente no CP (reuso do installmentGenerator)
+- [x] **AQUI-03**: Gerente pode importar dados do ativo a partir de NF-e (XML) com preenchimento automatico de fornecedor, valor, itens e dados fiscais
+- [x] **AQUI-04**: Gerente pode registrar compra com multiplos ativos na mesma NF, cada um gerando registro patrimonial e rateio proporcional das despesas acessorias
 - [ ] **AQUI-05**: Gerente pode registrar leasing e arrendamento mercantil (CPC 06) com parcelas no CP e controle de opcao de compra ao final do contrato
 - [ ] **AQUI-06**: Gerente pode registrar troca de ativo (trade-in) com compensacao financeira automatica (valor do ativo antigo abatido do novo)
-- [ ] **AQUI-07**: Cada aquisicao tem centro de custo e classificacao contabil definidos para apropriacao correta de depreciacao futura
+- [x] **AQUI-07**: Cada aquisicao tem centro de custo e classificacao contabil definidos para apropriacao correta de depreciacao futura
 
 ### Integracao Financeira — Venda, Baixa e Saida
 
@@ -119,11 +119,11 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | MANU-07     | Phase 18 | Complete |
 | MANU-08     | Phase 18 | Complete |
 | CCPA-03     | Phase 18 | Complete |
-| AQUI-01     | Phase 19 | Pending |
-| AQUI-02     | Phase 19 | Pending |
-| AQUI-03     | Phase 19 | Pending |
-| AQUI-04     | Phase 19 | Pending |
-| AQUI-07     | Phase 19 | Pending |
+| AQUI-01     | Phase 19 | Complete |
+| AQUI-02     | Phase 19 | Complete |
+| AQUI-03     | Phase 19 | Complete |
+| AQUI-04     | Phase 19 | Complete |
+| AQUI-07     | Phase 19 | Complete |
 | DISP-01     | Phase 20 | Pending |
 | DISP-02     | Phase 20 | Pending |
 | DISP-03     | Phase 20 | Pending |
