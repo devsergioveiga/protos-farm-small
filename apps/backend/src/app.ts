@@ -119,6 +119,9 @@ import { maintenancePlansRouter } from './modules/maintenance-plans/maintenance-
 import { sparePartsRouter } from './modules/spare-parts/spare-parts.routes';
 import { maintenanceProvisionsRouter } from './modules/maintenance-provisions/maintenance-provisions.routes';
 import { assetAcquisitionsRouter } from './modules/asset-acquisitions/asset-acquisitions.routes';
+import { assetDisposalsRouter } from './modules/asset-disposals/asset-disposals.routes';
+import { assetFarmTransfersRouter } from './modules/asset-farm-transfers/asset-farm-transfers.routes';
+import { assetInventoryRouter } from './modules/asset-inventory/asset-inventory.routes';
 
 const app = express();
 
@@ -247,5 +250,8 @@ app.use('/api', maintenancePlansRouter);
 app.use('/api', sparePartsRouter);
 app.use('/api', maintenanceProvisionsRouter);
 app.use('/api', assetAcquisitionsRouter);
+app.use('/api', assetDisposalsRouter);
+app.use('/api', assetFarmTransfersRouter);
+app.use('/api', assetInventoryRouter);
 
 export { app };
