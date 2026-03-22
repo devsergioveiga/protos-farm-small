@@ -309,7 +309,13 @@ Plans:
 4. Gerente pode registrar NF com múltiplos ativos, cada um gerando seu registro patrimonial com rateio proporcional das despesas acessórias
 5. Cada aquisição tem centro de custo e classificação contábil definidos para apropriação correta da depreciação futura
 
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+
+- [ ] 19-01-PLAN.md — Backend: migration (PayableCategory enum), types, NF-e parser, service, routes, integration tests
+- [ ] 19-02-PLAN.md — Frontend: AssetModal "Dados Financeiros" section, InstallmentPreviewTable, useAssetAcquisition hook
+- [ ] 19-03-PLAN.md — Frontend: AssetNfeImportModal 3-step wizard, wiring from AssetModal and AssetsPage
 
 ### Phase 20: Alienação e Baixa de Ativos
 
@@ -403,8 +409,8 @@ Plans:
 | 15. Frontend API Path Fixes                         | v1.1      | 1/1            | Complete    | 2026-03-19 |
 | 16. Cadastro de Ativos                              | v1.2      | 7/7            | Complete    | 2026-03-20 |
 | 17. Engine de Depreciação                           | v1.2      | 4/4            | Complete    | 2026-03-20 |
-| 18. Manutenção e Ordens de Serviço                  | 10/10 | Complete    | 2026-03-22 | -          |
-| 19. Integração Financeira — Aquisição               | v1.2      | 0/?            | Not started | -          |
+| 18. Manutenção e Ordens de Serviço                  | v1.2      | 10/10          | Complete    | 2026-03-22 |
+| 19. Integração Financeira — Aquisição               | v1.2      | 0/3            | Planned     | -          |
 | 20. Alienação e Baixa de Ativos                     | v1.2      | 0/?            | Not started | -          |
 | 21. Controle Operacional                            | v1.2      | 0/?            | Not started | -          |
 | 22. Hierarquia Avançada e Imobilizado em Andamento  | v1.2      | 0/?            | Not started | -          |
