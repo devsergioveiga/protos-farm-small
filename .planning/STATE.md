@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: Roadmap ready — awaiting plan-phase 16
-stopped_at: Completed 20-alienacao-baixa-ativos/20-04-PLAN.md (all tasks complete, human verify approved)
-last_updated: "2026-03-22T15:26:39.085Z"
+stopped_at: Completed 21-controle-operacional/21-03-PLAN.md
+last_updated: "2026-03-22T22:20:08.177Z"
 last_activity: 2026-03-19 — Roadmap created
 progress:
   total_phases: 18
   completed_phases: 14
-  total_plans: 66
-  completed_plans: 66
+  total_plans: 69
+  completed_plans: 67
   percent: 0
 ---
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0% (0/9 phases)
 | Phase 20-alienacao-baixa-ativos P01 | 229 | 1 tasks | 4 files |
 | Phase 20-alienacao-baixa-ativos P02 | 259 | 2 tasks | 7 files |
 | Phase 20-alienacao-baixa-ativos P04 | 670 | 2 tasks | 20 files |
+| Phase 21 P03 | 130 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -101,6 +102,8 @@ Key decisions for v1.2:
 - [Phase 20-alienacao-baixa-ativos]: prisma.$transaction used directly in asset-farm-transfers and asset-inventory (consistent with asset-acquisitions pattern to avoid nested withRlsContext deadlocks)
 - [Phase 20-alienacao-baixa-ativos]: Disposal modal uses ConfirmModal wrapper for destructive action guard per CLAUDE.md requirements
 - [Phase 20-alienacao-baixa-ativos]: AssetInventoryPage uses inline detail (not separate route) for simpler navigation
+- [Phase 21]: organizationId sourced from useAuth().user instead of FarmContext for meter-readings API calls
+- [Phase 21]: meter_readings added to OperationEntity union type for offline queue type safety
 
 ### Pending Todos
 
@@ -116,7 +119,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T15:21:08.685Z
-Stopped at: Completed 20-alienacao-baixa-ativos/20-04-PLAN.md (all tasks complete, human verify approved)
+Last session: 2026-03-22T22:20:08.172Z
+Stopped at: Completed 21-controle-operacional/21-03-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 16`
