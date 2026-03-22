@@ -72,7 +72,7 @@ Requirements for asset lifecycle management. Each maps to roadmap phases.
 - [x] **DISP-03**: Gerente pode registrar venda parcelada de ativo com parcelas no CR
 - [x] **DISP-04**: Gerente pode transferir ativo entre fazendas da mesma organizacao com historico e reavaliacao opcional
 - [x] **DISP-05**: Contador pode conciliar patrimonio fisico vs contabil com inventario (contagem fisica vs registro) e gerar ajustes
-- [ ] **DISP-06**: Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciacao acumulada, aquisicoes/baixas do periodo e indicadores
+- [x] **DISP-06**: Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciacao acumulada, aquisicoes/baixas do periodo e indicadores
 
 ## v2 Requirements
 
@@ -129,7 +129,7 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | DISP-03     | Phase 20 | Complete |
 | DISP-04     | Phase 20 | Complete |
 | DISP-05     | Phase 20 | Complete |
-| DISP-06     | Phase 20 | Pending |
+| DISP-06     | Phase 20 | Complete |
 | OPER-01     | Phase 21 | Pending |
 | OPER-02     | Phase 21 | Pending |
 | OPER-03     | Phase 21 | Pending |
