@@ -23,6 +23,8 @@ import {
   List,
   Map as MapIcon,
   MapPin,
+  PackageMinus,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { useAssets } from '@/hooks/useAssets';
 import { useAssetDocuments } from '@/hooks/useAssetDocuments';
@@ -39,6 +41,8 @@ import './AssetsPage.css';
 import AssetModal from '@/components/assets/AssetModal';
 import AssetImportModal from '@/components/assets/AssetImportModal';
 import AssetNfeImportModal from '@/components/assets/AssetNfeImportModal';
+import AssetDisposalModal from '@/components/assets/AssetDisposalModal';
+import AssetTransferModal from '@/components/assets/AssetTransferModal';
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -258,6 +262,10 @@ export default function AssetsPage() {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [showNfeImport, setShowNfeImport] = useState(false);
 
+  // Disposal / transfer state
+  const [disposalAsset, setDisposalAsset] = useState<Asset | null>(null);
+  const [transferAsset, setTransferAsset] = useState<Asset | null>(null);
+
   // Drawer state
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -362,6 +370,14 @@ export default function AssetsPage() {
       setShowDeleteConfirm(false);
       setAssetToDelete(null);
     }
+  }
+
+  function handleAlienarrRequest(asset: Asset) {
+    setDisposalAsset(asset);
+  }
+
+  function handleTransferRequest(asset: Asset) {
+    setTransferAsset(asset);
   }
 
   function handleModalSuccess() {
@@ -824,6 +840,34 @@ export default function AssetsPage() {
                             >
                               <Pencil size={20} aria-hidden="true" />
                             </button>
+                            {asset.status !== 'ALIENADO' && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="assets-page__action-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAlienarrRequest(asset);
+                                  }}
+                                  aria-label="Alienar ativo"
+                                  title="Alienar"
+                                >
+                                  <PackageMinus size={20} aria-hidden="true" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="assets-page__action-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleTransferRequest(asset);
+                                  }}
+                                  aria-label="Transferir ativo"
+                                  title="Transferir"
+                                >
+                                  <ArrowRightLeft size={20} aria-hidden="true" />
+                                </button>
+                              </>
+                            )}
                             <button
                               type="button"
                               className="assets-page__action-btn assets-page__action-btn--danger"
@@ -936,6 +980,37 @@ export default function AssetsPage() {
           setAssetToDelete(null);
         }}
       />
+
+      {/* Disposal Modal */}
+      {disposalAsset && (
+        <AssetDisposalModal
+          isOpen={!!disposalAsset}
+          onClose={() => setDisposalAsset(null)}
+          onSuccess={() => {
+            setDisposalAsset(null);
+            void fetchAssets(currentQuery);
+            void fetchSummary();
+            setToast('Ativo alienado com sucesso.');
+          }}
+          asset={disposalAsset}
+        />
+      )}
+
+      {/* Transfer Modal */}
+      {transferAsset && (
+        <AssetTransferModal
+          isOpen={!!transferAsset}
+          onClose={() => setTransferAsset(null)}
+          onSuccess={(toFarmName) => {
+            setTransferAsset(null);
+            void fetchAssets(currentQuery);
+            void fetchSummary();
+            setToast(`Ativo transferido para ${toFarmName} com sucesso.`);
+          }}
+          asset={transferAsset}
+          farms={farms}
+        />
+      )}
 
       {/* Toast */}
       {toast && (

@@ -8,8 +8,11 @@ import {
   Clock,
   Wrench,
   Settings,
+  PackageMinus,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { useAssetDetail } from '@/hooks/useAssetDetail';
+import { useFarms } from '@/hooks/useFarms';
 import type { Asset, AssetStatus } from '@/types/asset';
 import AssetGeneralTab from './AssetGeneralTab';
 import AssetDocumentsTab from './AssetDocumentsTab';
@@ -18,6 +21,8 @@ import AssetReadingsTab from './AssetReadingsTab';
 import AssetMaintenanceTab from './AssetMaintenanceTab';
 import AssetTimelineTab from './AssetTimelineTab';
 import DepreciationConfigModal from '../depreciation/DepreciationConfigModal';
+import AssetDisposalModal from './AssetDisposalModal';
+import AssetTransferModal from './AssetTransferModal';
 import { useDepreciationConfig } from '@/hooks/useDepreciationConfig';
 import { useDepreciationReport } from '@/hooks/useDepreciationReport';
 import { METHOD_LABELS, TRACK_LABELS } from '@/types/depreciation';
@@ -264,6 +269,7 @@ interface AssetDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onEdit: (asset: Asset) => void;
+  onRefresh?: () => void;
   activeTab?: TabId;
   onTabChange?: (tab: TabId) => void;
 }
@@ -273,12 +279,17 @@ export default function AssetDrawer({
   isOpen,
   onClose,
   onEdit,
+  onRefresh,
   activeTab = 'geral',
   onTabChange,
 }: AssetDrawerProps) {
-  const { asset, loading, error } = useAssetDetail(isOpen ? assetId : null);
+  const { asset, loading, error, refetch } = useAssetDetail(isOpen ? assetId : null);
+  const { farms } = useFarms();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  const [showDisposalModal, setShowDisposalModal] = useState(false);
+  const [showTransferModal, setShowTransferModal] = useState(false);
 
   // Focus close button when drawer opens
   useEffect(() => {
@@ -349,14 +360,36 @@ export default function AssetDrawer({
           <header className="asset-drawer__header">
             <div className="asset-drawer__header-top">
               <h2 className="asset-drawer__title">{asset.name}</h2>
-              <button
-                type="button"
-                className="asset-drawer__edit-btn"
-                onClick={() => onEdit(asset)}
-                aria-label={`Editar ativo ${asset.name}`}
-              >
-                <Pencil size={20} aria-hidden="true" />
-              </button>
+              <div className="asset-drawer__header-actions">
+                <button
+                  type="button"
+                  className="asset-drawer__action-btn"
+                  onClick={() => setShowDisposalModal(true)}
+                  aria-label={`Alienar ativo ${asset.name}`}
+                  disabled={asset.status === 'ALIENADO'}
+                  title="Alienar"
+                >
+                  <PackageMinus size={18} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className="asset-drawer__action-btn"
+                  onClick={() => setShowTransferModal(true)}
+                  aria-label={`Transferir ativo ${asset.name}`}
+                  disabled={asset.status === 'ALIENADO'}
+                  title="Transferir"
+                >
+                  <ArrowRightLeft size={18} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className="asset-drawer__edit-btn"
+                  onClick={() => onEdit(asset)}
+                  aria-label={`Editar ativo ${asset.name}`}
+                >
+                  <Pencil size={20} aria-hidden="true" />
+                </button>
+              </div>
             </div>
             <div className="asset-drawer__header-meta">
               <span className="asset-drawer__tag" aria-label={`Tag: ${asset.assetTag}`}>
@@ -474,6 +507,35 @@ export default function AssetDrawer({
           </>
         )}
       </div>
+
+      {/* Disposal modal */}
+      {asset && showDisposalModal && (
+        <AssetDisposalModal
+          isOpen={showDisposalModal}
+          onClose={() => setShowDisposalModal(false)}
+          onSuccess={() => {
+            setShowDisposalModal(false);
+            refetch();
+            onRefresh?.();
+          }}
+          asset={asset}
+        />
+      )}
+
+      {/* Transfer modal */}
+      {asset && showTransferModal && (
+        <AssetTransferModal
+          isOpen={showTransferModal}
+          onClose={() => setShowTransferModal(false)}
+          onSuccess={() => {
+            setShowTransferModal(false);
+            refetch();
+            onRefresh?.();
+          }}
+          asset={asset}
+          farms={farms}
+        />
+      )}
     </div>
   );
 }

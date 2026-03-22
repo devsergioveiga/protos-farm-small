@@ -237,3 +237,115 @@ export const ASSET_CLASSIFICATION_LABELS: Record<AssetClassification, string> = 
   FAIR_VALUE_CPC29: 'CPC 29 — Valor justo',
   BEARER_PLANT_CPC27: 'CPC 27 — Planta portadora',
 };
+
+// ─── Disposal Types ──────────────────────────────────────────────────
+
+export type DisposalType = 'VENDA' | 'DESCARTE' | 'SINISTRO' | 'OBSOLESCENCIA';
+
+export const DISPOSAL_TYPE_LABELS: Record<DisposalType, string> = {
+  VENDA: 'Venda',
+  DESCARTE: 'Descarte',
+  SINISTRO: 'Sinistro',
+  OBSOLESCENCIA: 'Obsolescencia',
+};
+
+export interface CreateDisposalInput {
+  disposalType: DisposalType;
+  disposalDate: string;
+  saleValue?: number;
+  buyerName?: string;
+  motivation?: string;
+  documentUrl?: string;
+  dueDate?: string;
+  installmentCount?: number;
+  firstDueDate?: string;
+}
+
+export interface DisposalOutput {
+  id: string;
+  assetId: string;
+  assetTag: string;
+  assetName: string;
+  disposalType: DisposalType;
+  disposalTypeLabel: string;
+  disposalDate: string;
+  saleValue: number | null;
+  netBookValue: number;
+  gainLoss: number;
+  buyerName: string | null;
+  motivation: string | null;
+  receivableId: string | null;
+  installmentCount: number;
+  cancelledDepreciationCount: number;
+  createdAt: string;
+}
+
+// ─── Transfer Types ──────────────────────────────────────────────────
+
+export interface CreateTransferInput {
+  toFarmId: string;
+  transferDate: string;
+  toCostCenterId?: string;
+  notes?: string;
+}
+
+export interface TransferOutput {
+  id: string;
+  assetId: string;
+  fromFarmId: string;
+  fromFarmName: string;
+  toFarmId: string;
+  toFarmName: string;
+  transferDate: string;
+  notes: string | null;
+  createdAt: string;
+}
+
+// ─── Inventory Types ─────────────────────────────────────────────────
+
+export type PhysicalStatus = 'ENCONTRADO' | 'NAO_ENCONTRADO' | 'AVARIADO' | 'DESCARTADO';
+
+export const PHYSICAL_STATUS_LABELS: Record<PhysicalStatus, string> = {
+  ENCONTRADO: 'Encontrado',
+  NAO_ENCONTRADO: 'Nao encontrado',
+  AVARIADO: 'Avariado',
+  DESCARTADO: 'Descartado',
+};
+
+export interface InventoryItemOutput {
+  id: string;
+  assetId: string;
+  assetTag: string;
+  assetName: string;
+  assetType: string;
+  registeredStatus: string;
+  physicalStatus: string | null;
+  physicalStatusLabel: string | null;
+  notes: string | null;
+}
+
+export interface InventoryOutput {
+  id: string;
+  farmId: string | null;
+  farmName: string | null;
+  status: string;
+  statusLabel: string;
+  notes: string | null;
+  items: InventoryItemOutput[];
+  itemCount: number;
+  countedCount: number;
+  divergenceCount: number;
+  createdAt: string;
+}
+
+// ─── Patrimony Dashboard Types ───────────────────────────────────────
+
+export interface PatrimonyDashboardOutput {
+  totalActiveValue: number;
+  accumulatedDepreciation: number;
+  netBookValue: number;
+  acquisitionsInPeriod: { count: number; totalValue: number };
+  disposalsInPeriod: { count: number; totalSaleValue: number; totalGainLoss: number };
+  assetCountByType: Array<{ assetType: string; count: number }>;
+  assetCountByStatus: Array<{ status: string; count: number }>;
+}
