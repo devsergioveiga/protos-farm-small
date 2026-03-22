@@ -403,7 +403,7 @@ Plans:
 | 15. Frontend API Path Fixes                         | v1.1      | 1/1            | Complete    | 2026-03-19 |
 | 16. Cadastro de Ativos                              | v1.2      | 7/7            | Complete    | 2026-03-20 |
 | 17. Engine de Depreciação                           | v1.2      | 4/4            | Complete    | 2026-03-20 |
-| 18. Manutenção e Ordens de Serviço                  | 10/10 | Complete   | 2026-03-22 | -          |
+| 18. Manutenção e Ordens de Serviço                  | 10/10 | Complete    | 2026-03-22 | -          |
 | 19. Integração Financeira — Aquisição               | v1.2      | 0/?            | Not started | -          |
 | 20. Alienação e Baixa de Ativos                     | v1.2      | 0/?            | Not started | -          |
 | 21. Controle Operacional                            | v1.2      | 0/?            | Not started | -          |
