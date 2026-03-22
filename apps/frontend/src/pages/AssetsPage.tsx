@@ -28,7 +28,9 @@ import {
 } from 'lucide-react';
 import { useAssets } from '@/hooks/useAssets';
 import { useAssetDocuments } from '@/hooks/useAssetDocuments';
+import { useAssetDocumentAlerts } from '@/hooks/useAssetDocumentAlerts';
 import { useFarms } from '@/hooks/useFarms';
+import AssetDocumentAlertsView from '@/components/assets/AssetDocumentAlertsView';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import AssetDrawer from '@/components/assets/AssetDrawer';
 import type { Asset, AssetType, AssetStatus, AssetMapItem, ListAssetsQuery } from '@/types/asset';
@@ -240,6 +242,7 @@ export default function AssetsPage() {
   } = useAssets();
   const { farms } = useFarms();
   const { expiringDocs, fetchExpiring } = useAssetDocuments(null);
+  const { alerts: documentAlerts, loading: alertsLoading } = useAssetDocumentAlerts();
 
   // Filters
   const [farmFilter, setFarmFilter] = useState('');
@@ -503,6 +506,17 @@ export default function AssetsPage() {
       {!summary && !loading && (
         <SummaryCards totalAssets={0} totalValue="0" inMaintenance={0} recentCount={0} />
       )}
+
+      {/* Document expiry alerts */}
+      <AssetDocumentAlertsView
+        alerts={documentAlerts}
+        loading={alertsLoading}
+        onAssetClick={(assetId) => {
+          setSelectedAssetId(assetId);
+          setDrawerTab('documentos');
+          setDrawerOpen(true);
+        }}
+      />
 
       {/* Filter bar */}
       <section className="assets-page__filters" aria-label="Filtros">
