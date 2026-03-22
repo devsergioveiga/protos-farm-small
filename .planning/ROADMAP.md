@@ -280,7 +280,7 @@ Plans:
 4. Gerente pode controlar estoque de peças de reposição com ponto de reposição e vinculação de peças compatíveis por máquina
 5. Gerente pode ver dashboard de manutenção com disponibilidade mecânica, MTBF, MTTR, custo acumulado e kanban de OS abertas
 
-**Plans:** 10 plans (7 executed + 3 gap closure)
+**Plans:** 8/10 plans executed
 **Gap Closure:** Closes 4 gaps from verification (cron wiring, integration tests)
 
 Plans:
@@ -403,7 +403,7 @@ Plans:
 | 15. Frontend API Path Fixes                         | v1.1      | 1/1            | Complete    | 2026-03-19 |
 | 16. Cadastro de Ativos                              | v1.2      | 7/7            | Complete    | 2026-03-20 |
 | 17. Engine de Depreciação                           | v1.2      | 4/4            | Complete    | 2026-03-20 |
-| 18. Manutenção e Ordens de Serviço                  | v1.2      | 7/10           | In Progress | -          |
+| 18. Manutenção e Ordens de Serviço                  | 8/10 | In Progress|  | -          |
 | 19. Integração Financeira — Aquisição               | v1.2      | 0/?            | Not started | -          |
 | 20. Alienação e Baixa de Ativos                     | v1.2      | 0/?            | Not started | -          |
 | 21. Controle Operacional                            | v1.2      | 0/?            | Not started | -          |
