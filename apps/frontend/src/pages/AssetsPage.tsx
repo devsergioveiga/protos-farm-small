@@ -12,6 +12,7 @@ import {
   Trash2,
   Plus,
   Upload,
+  FileUp,
   CheckCircle,
   MinusCircle,
   XCircle,
@@ -37,6 +38,7 @@ import './AssetsPage.css';
 // The modal will be loaded when the user opens it.
 import AssetModal from '@/components/assets/AssetModal';
 import AssetImportModal from '@/components/assets/AssetImportModal';
+import AssetNfeImportModal from '@/components/assets/AssetNfeImportModal';
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -254,6 +256,7 @@ export default function AssetsPage() {
 
   // Import modal state
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [showNfeImport, setShowNfeImport] = useState(false);
 
   // Drawer state
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
@@ -445,6 +448,14 @@ export default function AssetsPage() {
               <MapIcon size={20} aria-hidden="true" />
             </button>
           </div>
+          <button
+            type="button"
+            className="assets-page__btn assets-page__btn--secondary"
+            onClick={() => setShowNfeImport(true)}
+          >
+            <FileUp size={20} aria-hidden="true" />
+            Importar NF-e
+          </button>
           <button
             type="button"
             className="assets-page__btn assets-page__btn--secondary"
@@ -885,6 +896,18 @@ export default function AssetsPage() {
           void fetchAssets(currentQuery);
           void fetchSummary();
           setToast('Importacao concluida. Lista atualizada.');
+        }}
+      />
+
+      {/* NF-e Import Modal */}
+      <AssetNfeImportModal
+        isOpen={showNfeImport}
+        onClose={() => setShowNfeImport(false)}
+        onSuccess={() => {
+          setShowNfeImport(false);
+          void fetchAssets(currentQuery);
+          void fetchSummary();
+          setToast('Ativos criados a partir da NF-e. Conta a pagar registrada.');
         }}
       />
 

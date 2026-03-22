@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { X, AlertCircle, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { X, AlertCircle, ChevronDown, ChevronUp, Info, FileUp } from 'lucide-react';
 import { useAssetForm } from '@/hooks/useAssetForm';
 import { useFarms } from '@/hooks/useFarms';
 import { useAssets } from '@/hooks/useAssets';
@@ -14,6 +14,7 @@ import type {
   InstallmentPreview,
 } from '@/types/asset';
 import { ASSET_TYPE_LABELS, ASSET_CLASSIFICATION_LABELS, ASSET_STATUS_LABELS } from '@/types/asset';
+import AssetNfeImportModal from './AssetNfeImportModal';
 import './AssetModal.css';
 
 // ─── Props ─────────────────────────────────────────────────────────────
@@ -102,6 +103,7 @@ export default function AssetModal({ isOpen, onClose, onSuccess, asset }: AssetM
   const [previewLoading, setPreviewLoading] = useState(false);
   const [infoBannerDismissed, setInfoBannerDismissed] = useState(false);
   const [installmentError, setInstallmentError] = useState<string | null>(null);
+  const [showNfeModal, setShowNfeModal] = useState(false);
 
   const isEdit = Boolean(asset?.id);
 
@@ -279,6 +281,7 @@ export default function AssetModal({ isOpen, onClose, onSuccess, asset }: AssetM
   }
 
   return (
+    <>
     <div
       className="asset-modal__overlay"
       onClick={(e) => {
@@ -294,14 +297,27 @@ export default function AssetModal({ isOpen, onClose, onSuccess, asset }: AssetM
           <h2 id="asset-modal-title" className="asset-modal__title">
             {isEdit ? 'Editar ativo' : 'Cadastrar ativo'}
           </h2>
-          <button
-            type="button"
-            className="asset-modal__close"
-            onClick={onClose}
-            aria-label="Fechar modal"
-          >
-            <X size={20} aria-hidden="true" />
-          </button>
+          <div className="asset-modal__header-actions">
+            {!isEdit && (
+              <button
+                type="button"
+                className="asset-modal__nfe-btn"
+                onClick={() => setShowNfeModal(true)}
+                aria-label="Importar NF-e"
+              >
+                <FileUp size={20} aria-hidden="true" />
+                Importar NF-e
+              </button>
+            )}
+            <button
+              type="button"
+              className="asset-modal__close"
+              onClick={onClose}
+              aria-label="Fechar modal"
+            >
+              <X size={20} aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         {/* Body */}
@@ -1151,5 +1167,19 @@ export default function AssetModal({ isOpen, onClose, onSuccess, asset }: AssetM
         </div>
       </div>
     </div>
+
+    {showNfeModal && (
+      <AssetNfeImportModal
+        isOpen={showNfeModal}
+        onClose={() => setShowNfeModal(false)}
+        onSuccess={() => {
+          setShowNfeModal(false);
+          onSuccess();
+        }}
+        farmId={formData.farmId ?? undefined}
+        costCenterId={formData.costCenterId ?? undefined}
+      />
+    )}
+    </>
   );
 }
