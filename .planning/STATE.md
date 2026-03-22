@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: Roadmap ready — awaiting plan-phase 16
-stopped_at: Completed 19-integrao-financeira-aquisio/19-03-PLAN.md
-last_updated: "2026-03-22T13:55:25.717Z"
+stopped_at: Completed 20-alienacao-baixa-ativos/20-00-PLAN.md
+last_updated: "2026-03-22T14:45:23.432Z"
 last_activity: 2026-03-19 — Roadmap created
 progress:
   total_phases: 18
   completed_phases: 13
-  total_plans: 61
-  completed_plans: 61
+  total_plans: 66
+  completed_plans: 62
   percent: 0
 ---
 
@@ -54,6 +54,7 @@ Progress: [░░░░░░░░░░] 0% (0/9 phases)
 | Phase 19-integrao-financeira-aquisio P01 | 334 | 2 tasks | 11 files |
 | Phase 19-integrao-financeira-aquisio P02 | 420 | 2 tasks | 9 files |
 | Phase 19-integrao-financeira-aquisio P03 | 603 | 2 tasks | 5 files |
+| Phase 20-alienacao-baixa-ativos P00 | 10 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,8 @@ Key decisions for v1.2:
 - [Phase 19-integrao-financeira-aquisio]: Payment type radio cards use label-wrapping-hidden-input pattern for accessible card UI without custom JS
 - [Phase 19-integrao-financeira-aquisio]: ASSET_ACQUISITION excluded from PayableModal manual dropdown — generated-only via asset-acquisitions endpoint
 - [Phase 19-integrao-financeira-aquisio]: AssetNfeImportModal uses React Fragment wrapper to render alongside main modal overlay — avoids portal complexity at correct z-index
+- [Phase 20-alienacao-baixa-ativos]: AssetDisposal.assetId has @unique constraint enforcing one-disposal-per-asset at DB level
+- [Phase 20-alienacao-baixa-ativos]: Depreciation batch uses notIn: ['EM_ANDAMENTO', 'ALIENADO'] to exclude disposed assets
 
 ### Pending Todos
 
@@ -102,7 +105,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T13:50:29.701Z
-Stopped at: Completed 19-integrao-financeira-aquisio/19-03-PLAN.md
+Last session: 2026-03-22T14:45:23.429Z
+Stopped at: Completed 20-alienacao-baixa-ativos/20-00-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 16`

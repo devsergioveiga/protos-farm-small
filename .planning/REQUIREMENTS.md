@@ -67,11 +67,11 @@ Requirements for asset lifecycle management. Each maps to roadmap phases.
 
 ### Integracao Financeira — Venda, Baixa e Saida
 
-- [ ] **DISP-01**: Gerente pode registrar venda de ativo com calculo automatico de ganho/perda contabil (valor venda vs valor contabil) e geracao de CR
-- [ ] **DISP-02**: Gerente pode registrar baixa por sinistro, descarte ou obsolescencia com motivo, laudo, valor residual e lancamento de perda
-- [ ] **DISP-03**: Gerente pode registrar venda parcelada de ativo com parcelas no CR
-- [ ] **DISP-04**: Gerente pode transferir ativo entre fazendas da mesma organizacao com historico e reavaliacao opcional
-- [ ] **DISP-05**: Contador pode conciliar patrimonio fisico vs contabil com inventario (contagem fisica vs registro) e gerar ajustes
+- [x] **DISP-01**: Gerente pode registrar venda de ativo com calculo automatico de ganho/perda contabil (valor venda vs valor contabil) e geracao de CR
+- [x] **DISP-02**: Gerente pode registrar baixa por sinistro, descarte ou obsolescencia com motivo, laudo, valor residual e lancamento de perda
+- [x] **DISP-03**: Gerente pode registrar venda parcelada de ativo com parcelas no CR
+- [x] **DISP-04**: Gerente pode transferir ativo entre fazendas da mesma organizacao com historico e reavaliacao opcional
+- [x] **DISP-05**: Contador pode conciliar patrimonio fisico vs contabil com inventario (contagem fisica vs registro) e gerar ajustes
 - [ ] **DISP-06**: Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciacao acumulada, aquisicoes/baixas do periodo e indicadores
 
 ## v2 Requirements
@@ -124,11 +124,11 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | AQUI-03     | Phase 19 | Complete |
 | AQUI-04     | Phase 19 | Complete |
 | AQUI-07     | Phase 19 | Complete |
-| DISP-01     | Phase 20 | Pending |
-| DISP-02     | Phase 20 | Pending |
-| DISP-03     | Phase 20 | Pending |
-| DISP-04     | Phase 20 | Pending |
-| DISP-05     | Phase 20 | Pending |
+| DISP-01     | Phase 20 | Complete |
+| DISP-02     | Phase 20 | Complete |
+| DISP-03     | Phase 20 | Complete |
+| DISP-04     | Phase 20 | Complete |
+| DISP-05     | Phase 20 | Complete |
 | DISP-06     | Phase 20 | Pending |
 | OPER-01     | Phase 21 | Pending |
 | OPER-02     | Phase 21 | Pending |
