@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: Roadmap ready — awaiting plan-phase 16
-stopped_at: Completed 19-integrao-financeira-aquisio/19-01-PLAN.md
-last_updated: "2026-03-22T13:36:50.369Z"
+stopped_at: Completed 19-integrao-financeira-aquisio/19-02-PLAN.md
+last_updated: "2026-03-22T13:46:33.570Z"
 last_activity: 2026-03-19 — Roadmap created
 progress:
   total_phases: 18
   completed_phases: 12
   total_plans: 61
-  completed_plans: 59
+  completed_plans: 60
   percent: 0
 ---
 
@@ -52,6 +52,7 @@ Progress: [░░░░░░░░░░] 0% (0/9 phases)
 | Phase 18-manutencao-ordens-servico P08 | 8 | 1 tasks | 1 files |
 | Phase 18-manutencao-ordens-servico P07 | 3 | 1 tasks | 1 files |
 | Phase 19-integrao-financeira-aquisio P01 | 334 | 2 tasks | 11 files |
+| Phase 19-integrao-financeira-aquisio P02 | 420 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Key decisions for v1.2:
 - [Phase 18-manutencao-ordens-servico]: Used CONSULTANT role for 403 test in work-orders spec (OPERATOR has work-orders:create by default)
 - [Phase 19-integrao-financeira-aquisio]: tx.payable.create used directly in asset-acquisitions transactions (NOT payables.service.createPayable) to avoid nested withRlsContext deadlocks
 - [Phase 19-integrao-financeira-aquisio]: ASSET_ACQUISITION maps to DFC INVESTIMENTO — correct cash flow statement classification for capital expenditure
+- [Phase 19-integrao-financeira-aquisio]: Payment type radio cards use label-wrapping-hidden-input pattern for accessible card UI without custom JS
+- [Phase 19-integrao-financeira-aquisio]: ASSET_ACQUISITION excluded from PayableModal manual dropdown — generated-only via asset-acquisitions endpoint
 
 ### Pending Todos
 
@@ -97,7 +100,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T13:36:50.366Z
-Stopped at: Completed 19-integrao-financeira-aquisio/19-01-PLAN.md
+Last session: 2026-03-22T13:46:33.567Z
+Stopped at: Completed 19-integrao-financeira-aquisio/19-02-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 16`
