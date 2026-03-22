@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: Roadmap ready — awaiting plan-phase 16
-stopped_at: Completed 20-alienacao-baixa-ativos/20-02-PLAN.md
-last_updated: "2026-03-22T14:51:45.554Z"
+stopped_at: Completed 20-alienacao-baixa-ativos/20-04-PLAN.md (awaiting human verify checkpoint)
+last_updated: "2026-03-22T15:05:20.478Z"
 last_activity: 2026-03-19 — Roadmap created
 progress:
   total_phases: 18
-  completed_phases: 13
+  completed_phases: 14
   total_plans: 66
-  completed_plans: 65
+  completed_plans: 66
   percent: 0
 ---
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0% (0/9 phases)
 | Phase 20-alienacao-baixa-ativos P03 | 3 | 1 tasks | 6 files |
 | Phase 20-alienacao-baixa-ativos P01 | 229 | 1 tasks | 4 files |
 | Phase 20-alienacao-baixa-ativos P02 | 259 | 2 tasks | 7 files |
+| Phase 20-alienacao-baixa-ativos P04 | 670 | 2 tasks | 20 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,8 @@ Key decisions for v1.2:
 - [Phase 20-alienacao-baixa-ativos]: prisma.$transaction used directly (NOT withRlsContext) in createDisposal to avoid nested RLS deadlocks
 - [Phase 20-alienacao-baixa-ativos]: Receivable created with category ASSET_SALE + originType ASSET_DISPOSAL only for VENDA type
 - [Phase 20-alienacao-baixa-ativos]: prisma.$transaction used directly in asset-farm-transfers and asset-inventory (consistent with asset-acquisitions pattern to avoid nested withRlsContext deadlocks)
+- [Phase 20-alienacao-baixa-ativos]: Disposal modal uses ConfirmModal wrapper for destructive action guard per CLAUDE.md requirements
+- [Phase 20-alienacao-baixa-ativos]: AssetInventoryPage uses inline detail (not separate route) for simpler navigation
 
 ### Pending Todos
 
@@ -113,7 +116,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T14:51:35.333Z
-Stopped at: Completed 20-alienacao-baixa-ativos/20-02-PLAN.md
+Last session: 2026-03-22T15:05:20.475Z
+Stopped at: Completed 20-alienacao-baixa-ativos/20-04-PLAN.md (awaiting human verify checkpoint)
 Resume file: None
 Next action: `/gsd:plan-phase 16`

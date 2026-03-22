@@ -45,7 +45,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 17: Engine de Depreciação** — Cálculo mensal automático e rastreável, pré-requisito para ganho/perda na alienação (completed 2026-03-20)
 - [x] **Phase 18: Manutenção e Ordens de Serviço** — CMMS completo com consumo de peças do estoque existente e classificação contábil obrigatória (completed 2026-03-22)
 - [x] **Phase 19: Integração Financeira — Aquisição** — Compra à vista e financiada geram CP automaticamente sem contaminar o fluxo de recebimento de mercadorias (completed 2026-03-22)
-- [ ] **Phase 20: Alienação e Baixa de Ativos** — Venda, descarte, sinistro e transferência com cálculo automático de ganho/perda e geração de CR
+- [x] **Phase 20: Alienação e Baixa de Ativos** — Venda, descarte, sinistro e transferência com cálculo automático de ganho/perda e geração de CR (completed 2026-03-22)
 - [ ] **Phase 21: Controle Operacional** — Combustível, documentos, horímetro e custo operacional por ativo
 - [ ] **Phase 22: Hierarquia Avançada e Imobilizado em Andamento** — Ativo composto pai-filho, reforma/capitalização e obras em andamento
 - [ ] **Phase 23: Relatórios e Dashboard Patrimonial** — Visão consolidada de TCO, depreciação acumulada e indicadores — leitura sobre dados produzidos pelas fases anteriores
@@ -331,7 +331,7 @@ Plans:
 5. Contador pode conciliar patrimônio físico vs contábil com inventário (contagem física vs registro) e gerar ajustes
 6. Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciação acumulada, aquisições/baixas do período e indicadores de rentabilidade
 
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans complete
 
 Plans:
 - [ ] 20-00-PLAN.md — Wave 0: Prisma schema (4 models, 2 enums), migration, type files, depreciation batch exclusion fix
@@ -418,7 +418,7 @@ Plans:
 | 17. Engine de Depreciação                           | v1.2      | 4/4            | Complete    | 2026-03-20 |
 | 18. Manutenção e Ordens de Serviço                  | v1.2      | 10/10          | Complete    | 2026-03-22 |
 | 19. Integração Financeira — Aquisição               | 3/3 | Complete    | 2026-03-22 | -          |
-| 20. Alienação e Baixa de Ativos                     | 4/5 | In Progress|  | -          |
+| 20. Alienação e Baixa de Ativos                     | 5/5 | Complete   | 2026-03-22 | -          |
 | 21. Controle Operacional                            | v1.2      | 0/?            | Not started | -          |
 | 22. Hierarquia Avançada e Imobilizado em Andamento  | v1.2      | 0/?            | Not started | -          |
 | 23. Relatórios e Dashboard Patrimonial              | v1.2      | 0/?            | Not started | -          |
