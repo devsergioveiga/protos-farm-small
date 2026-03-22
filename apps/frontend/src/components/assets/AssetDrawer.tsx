@@ -20,6 +20,7 @@ import AssetFuelTab from './AssetFuelTab';
 import AssetReadingsTab from './AssetReadingsTab';
 import AssetMaintenanceTab from './AssetMaintenanceTab';
 import AssetTimelineTab from './AssetTimelineTab';
+import AssetCostTab from './AssetCostTab';
 import DepreciationConfigModal from '../depreciation/DepreciationConfigModal';
 import AssetDisposalModal from './AssetDisposalModal';
 import AssetTransferModal from './AssetTransferModal';
@@ -38,6 +39,7 @@ type TabId =
   | 'leituras'
   | 'manutencao'
   | 'depreciacao'
+  | 'custo'
   | 'timeline';
 
 const TABS: { id: TabId; label: string }[] = [
@@ -47,6 +49,7 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'leituras', label: 'Leituras' },
   { id: 'manutencao', label: 'Manutencao' },
   { id: 'depreciacao', label: 'Depreciacao' },
+  { id: 'custo', label: 'Custo' },
   { id: 'timeline', label: 'Timeline' },
 ];
 
@@ -492,6 +495,16 @@ export default function AssetDrawer({
                 className="asset-drawer__tabpanel"
               >
                 {activeTab === 'depreciacao' && <AssetDepreciationTab asset={asset} />}
+              </div>
+
+              <div
+                id="tabpanel-custo"
+                role="tabpanel"
+                aria-labelledby="tab-custo"
+                hidden={activeTab !== 'custo'}
+                className="asset-drawer__tabpanel"
+              >
+                {activeTab === 'custo' && <AssetCostTab assetId={asset.id} />}
               </div>
 
               <div
