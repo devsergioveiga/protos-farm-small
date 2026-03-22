@@ -352,7 +352,7 @@ Plans:
 3. Operador pode atualizar horímetro/odômetro pelo celular com validação anti-regressão
 4. Sistema exibe custo operacional por ativo composto por aquisição, depreciação, manutenção, combustível e seguro para análise de viabilidade
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 
@@ -425,7 +425,7 @@ Plans:
 | 18. Manutenção e Ordens de Serviço                  | v1.2      | 10/10          | Complete    | 2026-03-22 |
 | 19. Integração Financeira — Aquisição               | 3/3 | Complete    | 2026-03-22 | -          |
 | 20. Alienação e Baixa de Ativos                     | 5/5 | Complete    | 2026-03-22 | -          |
-| 21. Controle Operacional                            | 1/3 | In Progress|  | -          |
+| 21. Controle Operacional                            | 2/3 | In Progress|  | -          |
 | 22. Hierarquia Avançada e Imobilizado em Andamento  | v1.2      | 0/?            | Not started | -          |
 | 23. Relatórios e Dashboard Patrimonial              | v1.2      | 0/?            | Not started | -          |
 | 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 0/?            | Not started | -          |

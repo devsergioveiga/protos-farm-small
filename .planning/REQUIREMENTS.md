@@ -50,10 +50,10 @@ Requirements for asset lifecycle management. Each maps to roadmap phases.
 
 ### Controle Operacional e Documentacao
 
-- [ ] **OPER-01**: Gerente pode registrar abastecimentos (combustivel) por ativo com custo/litro, custo/hora e benchmarking de eficiencia contra media da frota
-- [ ] **OPER-02**: Gerente pode controlar documentos com vencimento (CRLV, seguro, revisao) com alertas automaticos antecipados e calendario de vencimentos
+- [x] **OPER-01**: Gerente pode registrar abastecimentos (combustivel) por ativo com custo/litro, custo/hora e benchmarking de eficiencia contra media da frota
+- [x] **OPER-02**: Gerente pode controlar documentos com vencimento (CRLV, seguro, revisao) com alertas automaticos antecipados e calendario de vencimentos
 - [x] **OPER-03**: Operador pode atualizar horimetro/odometro de forma rapida pelo mobile com validacao anti-regressao
-- [ ] **OPER-04**: Sistema calcula custo/hora e custo operacional por ativo (aquisicao + depreciacao + manutencao + combustivel + seguro) para analise de viabilidade
+- [x] **OPER-04**: Sistema calcula custo/hora e custo operacional por ativo (aquisicao + depreciacao + manutencao + combustivel + seguro) para analise de viabilidade
 
 ### Integracao Financeira — Aquisicao
 
@@ -130,10 +130,10 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | DISP-04     | Phase 20 | Complete |
 | DISP-05     | Phase 20 | Complete |
 | DISP-06     | Phase 20 | Complete |
-| OPER-01     | Phase 21 | Pending |
-| OPER-02     | Phase 21 | Pending |
+| OPER-01     | Phase 21 | Complete |
+| OPER-02     | Phase 21 | Complete |
 | OPER-03     | Phase 21 | Complete |
-| OPER-04     | Phase 21 | Pending |
+| OPER-04     | Phase 21 | Complete |
 | HIER-01     | Phase 22 | Pending |
 | HIER-02     | Phase 22 | Pending |
 | HIER-03     | Phase 22 | Pending |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: Roadmap ready — awaiting plan-phase 16
-stopped_at: Completed 21-controle-operacional/21-03-PLAN.md
-last_updated: "2026-03-22T22:20:08.177Z"
+stopped_at: Completed 21-controle-operacional/21-01-PLAN.md
+last_updated: "2026-03-22T22:21:28.163Z"
 last_activity: 2026-03-19 — Roadmap created
 progress:
   total_phases: 18
   completed_phases: 14
   total_plans: 69
-  completed_plans: 67
+  completed_plans: 68
   percent: 0
 ---
 
@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0% (0/9 phases)
 | Phase 20-alienacao-baixa-ativos P02 | 259 | 2 tasks | 7 files |
 | Phase 20-alienacao-baixa-ativos P04 | 670 | 2 tasks | 20 files |
 | Phase 21 P03 | 130 | 2 tasks | 3 files |
+| Phase 21-controle-operacional P01 | 231 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,9 @@ Key decisions for v1.2:
 - [Phase 20-alienacao-baixa-ativos]: AssetInventoryPage uses inline detail (not separate route) for simpler navigation
 - [Phase 21]: organizationId sourced from useAuth().user instead of FarmContext for meter-readings API calls
 - [Phase 21]: meter_readings added to OperationEntity union type for offline queue type safety
+- [Phase 21-controle-operacional]: insuranceCost always null — insurance field not modeled in schema, surfaced in notes array
+- [Phase 21-controle-operacional]: Depreciation aggregation cumulative (not period-filtered) — correct for TCO book value calculation
+- [Phase 21-controle-operacional]: AlertsView returns null when all bucket counts are 0 — avoids visual noise on pages with clean document state
 
 ### Pending Todos
 
@@ -119,7 +123,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T22:20:08.172Z
-Stopped at: Completed 21-controle-operacional/21-03-PLAN.md
+Last session: 2026-03-22T22:21:28.160Z
+Stopped at: Completed 21-controle-operacional/21-01-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 16`
