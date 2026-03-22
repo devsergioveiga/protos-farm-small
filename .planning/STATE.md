@@ -4,7 +4,7 @@ milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: Roadmap ready — awaiting plan-phase 16
 stopped_at: Completed 19-integrao-financeira-aquisio/19-03-PLAN.md
-last_updated: "2026-03-22T13:50:29.704Z"
+last_updated: "2026-03-22T13:55:25.717Z"
 last_activity: 2026-03-19 — Roadmap created
 progress:
   total_phases: 18
