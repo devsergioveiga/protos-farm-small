@@ -397,6 +397,9 @@ model Organization {
   workOrders               WorkOrder[]
   deferredMaintenances     DeferredMaintenance[]
   maintenanceProvisions    MaintenanceProvision[]
+  assetDisposals           AssetDisposal[]
+  assetFarmTransfers       AssetFarmTransfer[]
+  assetInventories         AssetInventory[]
 
   @@map("organizations")
 }
@@ -594,6 +597,8 @@ model Farm {
   purchaseRequests           PurchaseRequest[]
   assets                     Asset[]
   animalExits                AnimalExit[]
+  assetTransfersFrom         AssetFarmTransfer[] @relation("AssetTransferFrom")
+  assetTransfersTo           AssetFarmTransfer[] @relation("AssetTransferTo")
 
   @@map("farms")
 }
@@ -5571,6 +5576,7 @@ enum ReceivableCategory {
   MILK_SALE
   LEASE
   SERVICES
+  ASSET_SALE
   OTHER
 }
 
@@ -6747,6 +6753,20 @@ enum AssetDocumentType {
   OUTRO
 }
 
+enum AssetDisposalType {
+  VENDA
+  DESCARTE
+  SINISTRO
+  OBSOLESCENCIA
+}
+
+enum AssetInventoryStatus {
+  DRAFT
+  COUNTING
+  RECONCILED
+  CANCELLED
+}
+
 model Asset {
   id                   String              @id @default(uuid())
   organizationId       String
@@ -6785,6 +6805,7 @@ model Asset {
   currentOdometer      Decimal?            @db.Decimal(12, 2)
   photoUrls            Json?               @default("[]")
   notes                String?
+  disposalDate         DateTime?
   deletedAt            DateTime?
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
@@ -6805,6 +6826,9 @@ model Asset {
   workOrders          WorkOrder[]
   maintenanceProvisions MaintenanceProvision[]
   sparePartCompat     SparePartAssetCompat[]
+  disposal            AssetDisposal?
+  farmTransfers       AssetFarmTransfer[]
+  inventoryItems      AssetInventoryItem[]
 
   @@unique([organizationId, assetTag])
   @@index([organizationId, assetType])
@@ -6871,6 +6895,90 @@ model AssetDocument {
   @@index([assetId])
   @@index([organizationId, expiresAt])
   @@map("asset_documents")
+}
+
+// ─── Asset Disposals ───────────────────────────────────────────────────────
+
+model AssetDisposal {
+  id                         String            @id @default(uuid())
+  organizationId             String
+  assetId                    String            @unique
+  disposalType               AssetDisposalType
+  disposalDate               DateTime
+  saleValue                  Decimal?          @db.Decimal(15, 2)
+  netBookValue               Decimal           @db.Decimal(15, 2)
+  gainLoss                   Decimal           @db.Decimal(15, 2)
+  buyerName                  String?
+  motivation                 String?
+  documentUrl                String?
+  receivableId               String?
+  cancelledDepreciationCount Int               @default(0)
+  createdBy                  String
+  createdAt                  DateTime          @default(now())
+
+  asset        Asset         @relation(fields: [assetId], references: [id])
+  organization Organization  @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, disposalDate])
+  @@map("asset_disposals")
+}
+
+model AssetFarmTransfer {
+  id               String   @id @default(uuid())
+  organizationId   String
+  assetId          String
+  fromFarmId       String
+  toFarmId         String
+  transferDate     DateTime
+  fromCostCenterId String?
+  toCostCenterId   String?
+  notes            String?
+  createdBy        String
+  createdAt        DateTime @default(now())
+
+  asset        Asset         @relation(fields: [assetId], references: [id])
+  fromFarm     Farm          @relation("AssetTransferFrom", fields: [fromFarmId], references: [id])
+  toFarm       Farm          @relation("AssetTransferTo", fields: [toFarmId], references: [id])
+  organization Organization  @relation(fields: [organizationId], references: [id])
+
+  @@index([assetId])
+  @@index([organizationId, transferDate])
+  @@map("asset_farm_transfers")
+}
+
+model AssetInventory {
+  id             String               @id @default(uuid())
+  organizationId String
+  farmId         String?
+  status         AssetInventoryStatus @default(DRAFT)
+  notes          String?
+  reconciledAt   DateTime?
+  reconciledBy   String?
+  createdBy      String
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  items        AssetInventoryItem[]
+  organization Organization          @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, status])
+  @@map("asset_inventories")
+}
+
+model AssetInventoryItem {
+  id               String      @id @default(uuid())
+  inventoryId      String
+  assetId          String
+  registeredStatus AssetStatus
+  physicalStatus   String?
+  notes            String?
+  updatedAt        DateTime    @updatedAt
+
+  inventory AssetInventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  asset     Asset          @relation(fields: [assetId], references: [id])
+
+  @@unique([inventoryId, assetId])
+  @@map("asset_inventory_items")
 }
 
 // ─── Depreciation Engine ───────────────────────────────────────────────────
