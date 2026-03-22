@@ -118,6 +118,7 @@ import { workOrdersRouter } from './modules/work-orders/work-orders.routes';
 import { maintenancePlansRouter } from './modules/maintenance-plans/maintenance-plans.routes';
 import { sparePartsRouter } from './modules/spare-parts/spare-parts.routes';
 import { maintenanceProvisionsRouter } from './modules/maintenance-provisions/maintenance-provisions.routes';
+import { assetAcquisitionsRouter } from './modules/asset-acquisitions/asset-acquisitions.routes';
 
 const app = express();
 
@@ -245,5 +246,6 @@ app.use('/api', workOrdersRouter);
 app.use('/api', maintenancePlansRouter);
 app.use('/api', sparePartsRouter);
 app.use('/api', maintenanceProvisionsRouter);
+app.use('/api', assetAcquisitionsRouter);
 
 export { app };
