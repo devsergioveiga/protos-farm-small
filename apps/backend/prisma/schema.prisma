@@ -4772,6 +4772,10 @@ model WeaningCriteria {
   minConcentrateGrams Float?
   consecutiveDays     Int?     @default(3)
   targetLotId         String?
+  weaningDaysMale     Int?
+  weaningDaysFemale   Int?
+  minWeightKgMale     Float?
+  minWeightKgFemale   Float?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
@@ -5522,6 +5526,7 @@ enum PayableCategory {
   FINANCING
   OTHER
   CARTAO_CREDITO
+  ASSET_ACQUISITION
 }
 
 // ─── Phase 4: Payment Instruments Enums ──────────────────────────────
