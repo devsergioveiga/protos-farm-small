@@ -58,7 +58,7 @@ async function _processOrganization(
     where: {
       organizationId: orgId,
       deletedAt: null,
-      status: { not: 'EM_ANDAMENTO' },
+      status: { notIn: ['EM_ANDAMENTO', 'ALIENADO'] as never[] },
       classification: { in: ['DEPRECIABLE_CPC27', 'BEARER_PLANT_CPC27'] as never[] },
     },
     include: {
