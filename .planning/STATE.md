@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: Roadmap ready — awaiting plan-phase 16
-stopped_at: Completed 20-alienacao-baixa-ativos/20-01-PLAN.md
-last_updated: "2026-03-22T14:51:19.286Z"
+stopped_at: Completed 20-alienacao-baixa-ativos/20-02-PLAN.md
+last_updated: "2026-03-22T14:51:45.554Z"
 last_activity: 2026-03-19 — Roadmap created
 progress:
   total_phases: 18
   completed_phases: 13
   total_plans: 66
-  completed_plans: 64
+  completed_plans: 65
   percent: 0
 ---
 
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0% (0/9 phases)
 | Phase 20-alienacao-baixa-ativos P00 | 10 | 2 tasks | 6 files |
 | Phase 20-alienacao-baixa-ativos P03 | 3 | 1 tasks | 6 files |
 | Phase 20-alienacao-baixa-ativos P01 | 229 | 1 tasks | 4 files |
+| Phase 20-alienacao-baixa-ativos P02 | 259 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,7 @@ Key decisions for v1.2:
 - [Phase 20-alienacao-baixa-ativos]: assets:read permission used for patrimony endpoint (consistent with asset module RBAC boundary)
 - [Phase 20-alienacao-baixa-ativos]: prisma.$transaction used directly (NOT withRlsContext) in createDisposal to avoid nested RLS deadlocks
 - [Phase 20-alienacao-baixa-ativos]: Receivable created with category ASSET_SALE + originType ASSET_DISPOSAL only for VENDA type
+- [Phase 20-alienacao-baixa-ativos]: prisma.$transaction used directly in asset-farm-transfers and asset-inventory (consistent with asset-acquisitions pattern to avoid nested withRlsContext deadlocks)
 
 ### Pending Todos
 
@@ -111,7 +113,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T14:51:19.283Z
-Stopped at: Completed 20-alienacao-baixa-ativos/20-01-PLAN.md
+Last session: 2026-03-22T14:51:35.333Z
+Stopped at: Completed 20-alienacao-baixa-ativos/20-02-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 16`
