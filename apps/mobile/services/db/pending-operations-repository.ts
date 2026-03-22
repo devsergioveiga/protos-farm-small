@@ -22,7 +22,8 @@ export type OperationEntity =
   | 'calving_events'
   | 'mastitis_cases'
   | 'purchase_requests'
-  | 'maintenance_requests';
+  | 'maintenance_requests'
+  | 'meter_readings';
 
 export type OperationPriority = 0 | 1;
 export const PRIORITY_NORMAL: OperationPriority = 0;
