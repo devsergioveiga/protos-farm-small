@@ -331,7 +331,14 @@ Plans:
 5. Contador pode conciliar patrimônio físico vs contábil com inventário (contagem física vs registro) e gerar ajustes
 6. Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciação acumulada, aquisições/baixas do período e indicadores de rentabilidade
 
-**Plans**: TBD
+**Plans:** 5 plans
+
+Plans:
+- [ ] 20-00-PLAN.md — Wave 0: Prisma schema (4 models, 2 enums), migration, type files, depreciation batch exclusion fix
+- [ ] 20-01-PLAN.md — Backend: asset disposals (sale + write-off + installment) with atomic CR generation
+- [ ] 20-02-PLAN.md — Backend: farm transfers + inventory reconciliation modules
+- [ ] 20-03-PLAN.md — Backend: patrimony dashboard endpoint on financial-dashboard module
+- [ ] 20-04-PLAN.md — Frontend: DisposalModal, TransferModal, InventoryPage, PatrimonyDashboardPage, sidebar wiring
 
 ### Phase 21: Controle Operacional
 
