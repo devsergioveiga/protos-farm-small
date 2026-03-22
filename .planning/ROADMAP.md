@@ -371,7 +371,12 @@ Plans:
 2. Gerente pode registrar reforma ou ampliação de ativo existente com decisão explícita de capitalizar (soma ao valor contábil e reavaliar vida útil) ou tratar como despesa imediata (vai para DRE)
 3. Gerente pode registrar imobilizado em andamento acumulando aportes parciais com cronograma de etapas, alerta de orçamento e ativação ao concluir a obra — iniciando a depreciação somente após a ativação
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 22-01-PLAN.md — Schema migration + HIER-01 hierarchy depth guard + parent totalization
+- [ ] 22-02-PLAN.md — HIER-02 renovation module + HIER-03 WIP module backend
+- [ ] 22-03-PLAN.md — Frontend: hierarchy tab, renovation modal, WIP contributions tab
 
 ### Phase 23: Relatórios e Dashboard Patrimonial
 
@@ -385,7 +390,12 @@ Plans:
 3. Sistema exibe dashboard de TCO por ativo e por frota, com alerta de "reparar vs substituir" quando custo acumulado de manutenção ultrapassa 60-70% do custo de reposição
 4. Sistema oferece wizard de decisão para orientar o gerente na criação de centro de custo por tipo de ativo, com exemplos e templates por tipo de fazenda
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 22-01-PLAN.md — Schema migration + HIER-01 hierarchy depth guard + parent totalization
+- [ ] 22-02-PLAN.md — HIER-02 renovation module + HIER-03 WIP module backend
+- [ ] 22-03-PLAN.md — Frontend: hierarchy tab, renovation modal, WIP contributions tab
 
 ### Phase 24: Ativos Biológicos, Leasing e Features Avançadas
 
@@ -399,7 +409,12 @@ Plans:
 3. Gerente pode registrar leasing e arrendamento mercantil (CPC 06) com ROU asset criado automaticamente, parcelas geradas no módulo CP e controle da opção de compra ao final do contrato
 4. Gerente pode registrar troca de ativo (trade-in) com compensação financeira automática — valor do ativo antigo abatido do novo — gerando baixa e aquisição no mesmo lançamento
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 22-01-PLAN.md — Schema migration + HIER-01 hierarchy depth guard + parent totalization
+- [ ] 22-02-PLAN.md — HIER-02 renovation module + HIER-03 WIP module backend
+- [ ] 22-03-PLAN.md — Frontend: hierarchy tab, renovation modal, WIP contributions tab
 
 ## Progress
 
