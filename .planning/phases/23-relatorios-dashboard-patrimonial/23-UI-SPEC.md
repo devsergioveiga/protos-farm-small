@@ -53,18 +53,17 @@ Exceptions:
 
 ## Typography
 
-Source: `tokens.css` + `CLAUDE.md` font rules. Exactly 4 sizes declared for this phase; 2 weights per font role.
+Source: `tokens.css` + `CLAUDE.md` font rules. Exactly 4 distinct pixel sizes declared for this phase; 2 weights per font role.
 
 | Role | Font | Size | Weight | Line Height | Usage |
 |------|------|------|--------|-------------|-------|
-| Page title | DM Sans | 24px (`--text-xl`, 1.5rem) | 700 (`--font-bold`) | 1.2 (`--leading-tight`) | `AssetReportsPage` heading |
-| Card title / chart title | DM Sans | 16px (`--text-base`, 1rem) | 700 (`--font-bold`) | 1.2 | KPI card label, chart section title, wizard step title |
-| Body / label | Source Sans 3 | 15px (0.9375rem) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) | Table cells, description text, wizard body copy |
+| Page title / KPI value | DM Sans / JetBrains Mono | 24px (`--text-xl`, 1.5rem) | 700 (`--font-bold`) | 1.2 (`--leading-tight`) | `AssetReportsPage` heading; KPI card values (currency, counts) |
+| Card title / chart title / numeric inline | DM Sans / JetBrains Mono | 18px (`--text-md`, 1.125rem) | 700 (`--font-bold`) | 1.2 | KPI card label, chart section title, wizard step title; table monetary cells, TCO values |
+| Body / label | Source Sans 3 | 16px (`--text-base`, 1rem) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) | Table cells, description text, wizard body copy, card titles at regular weight |
 | Metadata / filter label | Source Sans 3 | 14px (`--text-sm`, 0.875rem) | 600 (`--font-semibold`) | 1.5 | Column headers (ALL CAPS), filter labels, badge text |
-| Numeric data | JetBrains Mono | 24px (`--text-xl`, 1.5rem) | 700 (`--font-bold`) | 1.2 | KPI card values (currency, counts) |
-| Numeric data inline | JetBrains Mono | 18px (`--text-md`, 1.125rem) | 700 | 1.2 | Table monetary cells, TCO values |
 
 Notes:
+- Distinct pixel sizes: 14px, 16px, 18px, 24px — exactly 4 sizes.
 - ALL CAPS only on column headers and filter labels (max 3 words). Never on full sentences.
 - Never center-align text blocks longer than 2 lines.
 - Minimum size: 14px (legibility rule from CLAUDE.md).
@@ -151,6 +150,8 @@ Structure:
 Tab bar pattern: horizontal scrollable, `border-bottom: 2px solid transparent` default, `var(--color-primary-600)` on active. Exactly matches `AssetDrawer` tab pattern. Tab items: min-height 48px, padding `12px 16px`.
 
 ### Tab: Inventário Patrimonial
+
+**Primary visual anchor: KPI row (Valor Líquido card).**
 
 - KPI row (4 cards, 2-column grid on mobile, 4-column on ≥1024px): Valor Bruto Total, Depreciação Acumulada, Valor Líquido, Qtd Ativos
 - Table: Classification / Qtd / Valor Bruto / Depr. Acumulada / Valor Líquido. Desktop table; mobile transforms to stacked cards.
