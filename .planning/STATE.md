@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: Roadmap ready — awaiting plan-phase 16
-stopped_at: Phase 23 UI-SPEC approved
-last_updated: "2026-03-23T09:32:27.785Z"
+stopped_at: Completed 23-01-PLAN.md
+last_updated: "2026-03-23T10:52:50.610Z"
 last_activity: 2026-03-19 — Roadmap created
 progress:
   total_phases: 18
   completed_phases: 16
-  total_plans: 72
-  completed_plans: 72
+  total_plans: 75
+  completed_plans: 73
   percent: 0
 ---
 
@@ -65,6 +65,7 @@ Progress: [░░░░░░░░░░] 0% (0/9 phases)
 | Phase 22-hierarquia-avancada-imobilizado-andamento P02 | 15 | 2 tasks | 9 files |
 | Phase 22-hierarquia-avancada-imobilizado-andamento P01 | 7 | 2 tasks | 6 files |
 | Phase 22-hierarquia-avancada-imobilizado-andamento P03 | 531 | 2 tasks | 14 files |
+| Phase 23-relatorios-dashboard-patrimonial P01 | 803 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -122,6 +123,8 @@ Key decisions for v1.2:
 - [Phase 22-03]: AssetHierarchyTab shows current asset highlighted, parent above (level 0), children indented (level 1/2)
 - [Phase 22-03]: AssetDrawer.TabId exported so AssetsPage can use it directly — fixes pre-existing TS type mismatch
 - [Phase 22-03]: WIP activation uses ConfirmModal variant=warning — medium criticality, irreversible status change
+- [Phase 23-relatorios-dashboard-patrimonial]: groupBy + in-memory join used for inventory roll-up; HOURS_OF_USE/UNITS_OF_PRODUCTION fall back to STRAIGHT_LINE for projection
+- [Phase 23-relatorios-dashboard-patrimonial]: Routes registered under /orgs/:orgId (plural) matching plan spec; authenticate+checkPermission('assets:read') per asset RBAC boundary decision
 
 ### Pending Todos
 
@@ -137,7 +140,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-23T09:32:27.777Z
-Stopped at: Phase 23 UI-SPEC approved
-Resume file: .planning/phases/23-relatorios-dashboard-patrimonial/23-UI-SPEC.md
+Last session: 2026-03-23T10:52:50.495Z
+Stopped at: Completed 23-01-PLAN.md
+Resume file: None
 Next action: `/gsd:plan-phase 16`

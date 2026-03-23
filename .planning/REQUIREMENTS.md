@@ -28,7 +28,7 @@ Requirements for asset lifecycle management. Each maps to roadmap phases.
 - [ ] **DEPR-01**: Contador pode configurar metodo de depreciacao por ativo ou categoria (linear, horas-uso, producao, acelerada) com taxas pre-configuradas RFB e suporte a taxa fiscal vs gerencial
 - [ ] **DEPR-02**: Sistema calcula depreciacao mensal automaticamente (job ou gatilho manual) com pro rata die, parada em valor residual, relatorio mensal e possibilidade de estorno/recalculo
 - [ ] **DEPR-03**: Contador pode registrar valor justo de ativos biologicos (CPC 29/IAS 41) — rebanho por categoria com preco de mercado e culturas perenes por estagio — com variacao registrada no resultado
-- [ ] **DEPR-04**: Contador pode gerar relatorios patrimoniais (inventario geral, depreciacao acumulada, movimentacao, ativos biologicos, TCO) com filtros e exportacao PDF/Excel/CSV
+- [x] **DEPR-04**: Contador pode gerar relatorios patrimoniais (inventario geral, depreciacao acumulada, movimentacao, ativos biologicos, TCO) com filtros e exportacao PDF/Excel/CSV
 
 ### Centro de Custo Patrimonial
 
@@ -137,7 +137,7 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | HIER-01     | Phase 22 | Complete |
 | HIER-02     | Phase 22 | Complete |
 | HIER-03     | Phase 22 | Complete |
-| DEPR-04     | Phase 23 | Pending |
+| DEPR-04     | Phase 23 | Complete |
 | CCPA-04     | Phase 23 | Pending |
 | DEPR-03     | Phase 24 | Pending |
 | AQUI-05     | Phase 24 | Pending |
