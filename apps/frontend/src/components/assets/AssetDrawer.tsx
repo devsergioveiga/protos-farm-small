@@ -21,6 +21,8 @@ import AssetReadingsTab from './AssetReadingsTab';
 import AssetMaintenanceTab from './AssetMaintenanceTab';
 import AssetTimelineTab from './AssetTimelineTab';
 import AssetCostTab from './AssetCostTab';
+import AssetHierarchyTab from './AssetHierarchyTab';
+import AssetWipContributionsTab from './AssetWipContributionsTab';
 import DepreciationConfigModal from '../depreciation/DepreciationConfigModal';
 import AssetDisposalModal from './AssetDisposalModal';
 import AssetTransferModal from './AssetTransferModal';
@@ -32,7 +34,7 @@ import './AssetDrawer.css';
 
 // ─── Tab definitions ──────────────────────────────────────────────────
 
-type TabId =
+export type TabId =
   | 'geral'
   | 'documentos'
   | 'combustivel'
@@ -40,9 +42,11 @@ type TabId =
   | 'manutencao'
   | 'depreciacao'
   | 'custo'
-  | 'timeline';
+  | 'timeline'
+  | 'hierarquia'
+  | 'andamento';
 
-const TABS: { id: TabId; label: string }[] = [
+const BASE_TABS: { id: TabId; label: string }[] = [
   { id: 'geral', label: 'Geral' },
   { id: 'documentos', label: 'Documentos' },
   { id: 'combustivel', label: 'Combustivel' },
@@ -52,6 +56,19 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'custo', label: 'Custo' },
   { id: 'timeline', label: 'Timeline' },
 ];
+
+function getVisibleTabs(asset: Asset | null): { id: TabId; label: string }[] {
+  const tabs = [...BASE_TABS];
+  // Add WIP tab when asset is EM_ANDAMENTO (insert at position 1, after Geral)
+  if (asset?.status === 'EM_ANDAMENTO') {
+    tabs.splice(1, 0, { id: 'andamento', label: 'Andamento' });
+  }
+  // Add hierarchy tab when asset has parent or children (insert after Geral)
+  if (asset?.parentAsset || (asset?.childAssets && asset.childAssets.length > 0)) {
+    tabs.splice(1, 0, { id: 'hierarquia', label: 'Hierarquia' });
+  }
+  return tabs;
+}
 
 // ─── Status badge ─────────────────────────────────────────────────────
 
@@ -415,7 +432,7 @@ export default function AssetDrawer({
         {asset && !loading && (
           <>
             <div className="asset-drawer__tabs" role="tablist" aria-label="Abas da ficha do ativo">
-              {TABS.map((tab) => (
+              {getVisibleTabs(asset).map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
@@ -440,7 +457,7 @@ export default function AssetDrawer({
                 hidden={activeTab !== 'geral'}
                 className="asset-drawer__tabpanel"
               >
-                {activeTab === 'geral' && <AssetGeneralTab asset={asset} />}
+                {activeTab === 'geral' && <AssetGeneralTab asset={asset} onRefresh={refetch} />}
               </div>
 
               <div
@@ -515,6 +532,52 @@ export default function AssetDrawer({
                 className="asset-drawer__tabpanel"
               >
                 {activeTab === 'timeline' && <AssetTimelineTab asset={asset} />}
+              </div>
+
+              {/* Hierarquia tab — conditional */}
+              <div
+                id="tabpanel-hierarquia"
+                role="tabpanel"
+                aria-labelledby="tab-hierarquia"
+                hidden={activeTab !== 'hierarquia'}
+                className="asset-drawer__tabpanel"
+              >
+                {activeTab === 'hierarquia' && (
+                  <AssetHierarchyTab
+                    asset={asset}
+                    onNavigate={(id) => {
+                      // Navigate to a different asset by re-fetching it
+                      // Parent component manages assetId; here we use the closest mechanism
+                      void refetch();
+                      // Note: full navigation handled via parent's assetId prop change
+                      // For drawer-internal navigation, we emit via onRefresh which can be used
+                      // by parent to open a new drawer for the target asset
+                      onRefresh?.();
+                    }}
+                  />
+                )}
+              </div>
+
+              {/* Andamento tab — conditional, only for EM_ANDAMENTO */}
+              <div
+                id="tabpanel-andamento"
+                role="tabpanel"
+                aria-labelledby="tab-andamento"
+                hidden={activeTab !== 'andamento'}
+                className="asset-drawer__tabpanel"
+              >
+                {activeTab === 'andamento' && (
+                  <AssetWipContributionsTab
+                    assetId={asset.id}
+                    onRefresh={() => {
+                      refetch();
+                      onRefresh?.();
+                    }}
+                    onSwitchToDepreciation={() => {
+                      if (onTabChange) onTabChange('depreciacao');
+                    }}
+                  />
+                )}
               </div>
             </div>
           </>

@@ -32,7 +32,7 @@ import { useAssetDocumentAlerts } from '@/hooks/useAssetDocumentAlerts';
 import { useFarms } from '@/hooks/useFarms';
 import AssetDocumentAlertsView from '@/components/assets/AssetDocumentAlertsView';
 import ConfirmModal from '@/components/ui/ConfirmModal';
-import AssetDrawer from '@/components/assets/AssetDrawer';
+import AssetDrawer, { type TabId as AssetDrawerTabId } from '@/components/assets/AssetDrawer';
 import type { Asset, AssetType, AssetStatus, AssetMapItem, ListAssetsQuery } from '@/types/asset';
 import { ASSET_TYPE_LABELS, ASSET_STATUS_LABELS } from '@/types/asset';
 import './AssetsPage.css';
@@ -272,9 +272,7 @@ export default function AssetsPage() {
   // Drawer state
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerTab, setDrawerTab] = useState<
-    'geral' | 'documentos' | 'combustivel' | 'leituras' | 'manutencao' | 'depreciacao' | 'timeline'
-  >('geral');
+  const [drawerTab, setDrawerTab] = useState<AssetDrawerTabId>('geral');
 
   // Map view
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
