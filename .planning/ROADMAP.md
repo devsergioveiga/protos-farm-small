@@ -443,4 +443,4 @@ Plans:
 | 21. Controle Operacional                            | 3/3 | Complete    | 2026-03-22 | -          |
 | 22. Hierarquia Avançada e Imobilizado em Andamento  | 3/3 | Complete    | 2026-03-23 | -          |
 | 23. Relatórios e Dashboard Patrimonial              | 1/3 | 3/3 | Complete    | 2026-03-23 |
-| 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 3/3 | Complete   | 2026-03-23 |
+| 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 3/3 | Complete    | 2026-03-23 |
