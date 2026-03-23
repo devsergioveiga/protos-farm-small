@@ -400,6 +400,9 @@ model Organization {
   assetDisposals           AssetDisposal[]
   assetFarmTransfers       AssetFarmTransfer[]
   assetInventories         AssetInventory[]
+  assetRenovations         AssetRenovation[]
+  assetWipStages           AssetWipStage[]
+  assetWipContributions    AssetWipContribution[]
 
   @@map("organizations")
 }
@@ -6767,6 +6770,11 @@ enum AssetInventoryStatus {
   CANCELLED
 }
 
+enum AssetRenovationDecision {
+  CAPITALIZAR
+  DESPESA
+}
+
 model Asset {
   id                   String              @id @default(uuid())
   organizationId       String
@@ -6806,6 +6814,8 @@ model Asset {
   photoUrls            Json?               @default("[]")
   notes                String?
   disposalDate         DateTime?
+  wipBudget            Decimal?            @db.Decimal(15, 2)
+  wipBudgetAlertPct    Decimal?            @db.Decimal(5, 2)
   deletedAt            DateTime?
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
@@ -6829,12 +6839,76 @@ model Asset {
   disposal            AssetDisposal?
   farmTransfers       AssetFarmTransfer[]
   inventoryItems      AssetInventoryItem[]
+  renovations         AssetRenovation[]
+  wipContributions    AssetWipContribution[]
+  wipStages           AssetWipStage[]
 
   @@unique([organizationId, assetTag])
   @@index([organizationId, assetType])
   @@index([organizationId, status])
   @@index([farmId])
   @@map("assets")
+}
+
+model AssetRenovation {
+  id                  String                   @id @default(uuid())
+  organizationId      String
+  assetId             String
+  description         String
+  renovationDate      DateTime
+  totalCost           Decimal                  @db.Decimal(15, 2)
+  accountingDecision  AssetRenovationDecision
+  newUsefulLifeMonths Int?
+  notes               String?
+  createdAt           DateTime                 @default(now())
+
+  asset        Asset        @relation(fields: [assetId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([assetId])
+  @@index([organizationId])
+  @@map("asset_renovations")
+}
+
+model AssetWipStage {
+  id             String   @id @default(uuid())
+  organizationId String
+  assetId        String
+  name           String
+  targetDate     DateTime?
+  completedAt    DateTime?
+  notes          String?
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  asset         Asset                  @relation(fields: [assetId], references: [id])
+  organization  Organization           @relation(fields: [organizationId], references: [id])
+  contributions AssetWipContribution[]
+
+  @@index([assetId])
+  @@map("asset_wip_stages")
+}
+
+model AssetWipContribution {
+  id               String   @id @default(uuid())
+  organizationId   String
+  assetId          String
+  stageId          String?
+  contributionDate DateTime
+  amount           Decimal             @db.Decimal(15, 2)
+  description      String
+  supplierId       String?
+  invoiceRef       String?
+  notes            String?
+  createdAt        DateTime @default(now())
+
+  asset        Asset          @relation(fields: [assetId], references: [id])
+  organization Organization   @relation(fields: [organizationId], references: [id])
+  stage        AssetWipStage? @relation(fields: [stageId], references: [id])
+
+  @@index([assetId])
+  @@index([organizationId])
+  @@map("asset_wip_contributions")
 }
 
 model FuelRecord {
