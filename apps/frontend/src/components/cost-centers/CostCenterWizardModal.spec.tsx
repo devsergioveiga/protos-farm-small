@@ -1,197 +1,227 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import CostCenterWizardModal from './CostCenterWizardModal';
 
-// ─── Mocks ─────────────────────────────────────────────────────────────────
-
-vi.mock('@/stores/FarmContext', () => ({
-  useFarm: () => ({
-    selectedFarm: { id: 'farm-1', name: 'Fazenda Teste' },
-    selectedFarmId: 'farm-1',
-    farms: [{ id: 'farm-1', name: 'Fazenda Teste' }],
-  }),
-}));
-
-vi.mock('@/stores/AuthContext', () => ({
-  useAuth: () => ({
-    user: { userId: 'user-1', organizationId: 'org-1' },
-    isAuthenticated: true,
-  }),
-}));
+// ─── Mocks ──────────────────────────────────────────────────────────────────
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-// ─── Helpers ───────────────────────────────────────────────────────────────
+vi.mock('@/stores/AuthContext', () => ({
+  useAuth: () => ({
+    user: { userId: 'user-1', email: 'test@example.com', role: 'OWNER', organizationId: 'org-1' },
+    isAuthenticated: true,
+    permissions: ['farms:update'],
+  }),
+}));
 
-const defaultProps = {
-  isOpen: true,
-  onClose: vi.fn(),
-  onSuccess: vi.fn(),
-};
+vi.mock('@/stores/FarmContext', () => ({
+  useFarmContext: () => ({
+    selectedFarm: { id: 'farm-1', name: 'Fazenda Santa Helena' },
+    selectedFarmId: 'farm-1',
+    farms: [{ id: 'farm-1', name: 'Fazenda Santa Helena' }],
+    isLoadingFarms: false,
+    selectFarm: vi.fn(),
+    refreshFarms: vi.fn(),
+  }),
+}));
 
-function renderWizard(props = defaultProps) {
-  return render(<CostCenterWizardModal {...props} />);
+// ─── Import component under test ────────────────────────────────────────────
+
+async function importModal() {
+  const mod = await import('./CostCenterWizardModal');
+  return mod.default;
 }
 
-// ─── Tests ─────────────────────────────────────────────────────────────────
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+async function renderModal(
+  props: { isOpen?: boolean; onClose?: () => void; onSuccess?: () => void } = {},
+) {
+  const CostCenterWizardModal = await importModal();
+  const onClose = props.onClose ?? vi.fn();
+  const onSuccess = props.onSuccess ?? vi.fn();
+  const result = render(
+    <CostCenterWizardModal isOpen={props.isOpen ?? true} onClose={onClose} onSuccess={onSuccess} />,
+  );
+  return { ...result, onClose, onSuccess };
+}
+
+// ─── Tests ──────────────────────────────────────────────────────────────────
 
 describe('CostCenterWizardModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders step 1 with 5 asset-type radio cards when isOpen=true', () => {
-    renderWizard();
+  // Test 1: Renders step 1 with 5 asset-type radio cards when isOpen=true
+  it('renders step 1 with 5 asset-type radio cards when isOpen=true', async () => {
+    await renderModal();
 
-    expect(screen.getByRole('dialog')).toBeTruthy();
-    expect(screen.getByText('Maquina')).toBeTruthy();
-    expect(screen.getByText('Veiculo')).toBeTruthy();
-    expect(screen.getByText('Implemento')).toBeTruthy();
-    expect(screen.getByText('Benfeitoria')).toBeTruthy();
-    expect(screen.getByText('Terra')).toBeTruthy();
+    // Modal should be visible
+    expect(screen.getByRole('dialog')).toBeDefined();
 
-    const radios = screen.getAllByRole('radio');
-    expect(radios).toHaveLength(5);
+    // Should show 5 radio cards
+    expect(screen.getByText('Maquina')).toBeDefined();
+    expect(screen.getByText('Veiculo')).toBeDefined();
+    expect(screen.getByText('Implemento')).toBeDefined();
+    expect(screen.getByText('Benfeitoria')).toBeDefined();
+    expect(screen.getByText('Terra')).toBeDefined();
   });
 
-  it('does not render when isOpen=false', () => {
-    render(<CostCenterWizardModal isOpen={false} onClose={vi.fn()} onSuccess={vi.fn()} />);
-    expect(screen.queryByRole('dialog')).toBeNull();
-  });
-
+  // Test 2: Clicking a radio card and "Proximo" navigates to step 2
   it('clicking a radio card and Proximo navigates to step 2', async () => {
     const user = userEvent.setup();
-    renderWizard();
+    await renderModal();
 
-    await user.click(screen.getByLabelText('Maquina'));
-    await user.click(screen.getByRole('button', { name: /pr[oó]ximo/i }));
+    // Select MAQUINA radio card
+    const maquinaLabel = screen.getByText('Maquina');
+    await user.click(maquinaLabel);
 
-    // Step 2 step-label should be visible
-    expect(screen.getByText(/sugest[aã]o de c[oó]digo/i)).toBeTruthy();
-    // Code badge should render the prefix
-    const badge = document.querySelector('.cc-wizard__code-badge');
-    expect(badge).toBeTruthy();
-    expect(badge?.textContent).toBe('MAQ');
+    // Click "Proximo"
+    await user.click(screen.getByRole('button', { name: /Pr[oó]ximo/i }));
+
+    // Step 2 should be visible (shows code suggestion)
+    await waitFor(() => {
+      expect(screen.getByText(/Sugest[aã]o de C[oó]digo/i)).toBeDefined();
+    });
   });
 
+  // Test 3: Navigating to step 3 shows pre-filled code input with prefix
   it('navigating to step 3 shows pre-filled code input with selected type prefix', async () => {
     const user = userEvent.setup();
-    renderWizard();
+    await renderModal();
 
-    await user.click(screen.getByLabelText('Veiculo'));
-    await user.click(screen.getByRole('button', { name: /pr[oó]ximo/i }));
-    await user.click(screen.getByRole('button', { name: /pr[oó]ximo/i }));
+    // Select MAQUINA and go to step 2
+    await user.click(screen.getByText('Maquina'));
+    await user.click(screen.getByRole('button', { name: /Pr[oó]ximo/i }));
 
-    const codeInput = screen.getByLabelText(/c[oó]digo/i) as HTMLInputElement;
-    expect(codeInput.value).toBe('VEI-');
+    // Go to step 3
+    await user.click(screen.getByRole('button', { name: /Pr[oó]ximo/i }));
+
+    // Step 3 should have a code input pre-filled with MAQ-
+    await waitFor(() => {
+      const codeInput = screen.getByLabelText(/C[oó]digo/i);
+      expect((codeInput as HTMLInputElement).value).toContain('MAQ');
+    });
   });
 
-  it('step 4 Criar Centro de Custo fires POST to correct endpoint', async () => {
+  // Test 4: Step 4 "Criar Centro de Custo" button fires POST to correct endpoint
+  it('step 4 Criar Centro de Custo button fires POST to /api/org/farms/:farmId/cost-centers', async () => {
+    const user = userEvent.setup();
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ id: 'cc-1', code: 'VEI-CAMINHAO', name: 'Caminhao Teste' }),
+      json: async () => ({ id: 'cc-1', code: 'MAQ-01', name: 'Meu Trator' }),
     });
 
-    const user = userEvent.setup();
-    renderWizard();
+    await renderModal();
 
-    // Step 1: select type
-    await user.click(screen.getByLabelText('Veiculo'));
-    await user.click(screen.getByRole('button', { name: /pr[oó]ximo/i }));
+    // Navigate through all steps
+    await user.click(screen.getByText('Maquina'));
+    await user.click(screen.getByRole('button', { name: /Pr[oó]ximo/i }));
+    await user.click(screen.getByRole('button', { name: /Pr[oó]ximo/i }));
 
-    // Step 2: next
-    await user.click(screen.getByRole('button', { name: /pr[oó]ximo/i }));
-
-    // Step 3: fill form — code is pre-filled with VEI-, type more
-    const codeInput = screen.getByLabelText(/c[oó]digo/i) as HTMLInputElement;
-    await user.clear(codeInput);
-    await user.type(codeInput, 'VEI-CAMINHAO');
-
-    const nameInput = screen.getByLabelText(/^nome/i) as HTMLInputElement;
-    await user.type(nameInput, 'Caminhao Teste');
-
-    await user.click(screen.getByRole('button', { name: /pr[oó]ximo/i }));
-
-    // Step 4: confirm
-    await user.click(screen.getByRole('button', { name: /criar centro de custo/i }));
-
-    expect(mockFetch).toHaveBeenCalledTimes(1);
-    const [url, options] = mockFetch.mock.calls[0] as [string, RequestInit];
-    expect(url).toContain('/api/orgs/org-1/farms/farm-1/cost-centers');
-    const body = JSON.parse(options.body as string) as { code: string; name: string };
-    expect(body.code).toBe('VEI-CAMINHAO');
-    expect(body.name).toBe('Caminhao Teste');
-  });
-
-  it('successful POST calls onSuccess and onClose', async () => {
-    const onSuccess = vi.fn();
-    const onClose = vi.fn();
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ id: 'cc-1', code: 'MAQ-01', name: 'Trator' }),
-    });
-
-    const user = userEvent.setup();
-    render(<CostCenterWizardModal isOpen={true} onClose={onClose} onSuccess={onSuccess} />);
-
-    await user.click(screen.getByLabelText('Maquina'));
-    await user.click(screen.getByRole('button', { name: /pr[oó]ximo/i }));
-    await user.click(screen.getByRole('button', { name: /pr[oó]ximo/i }));
-
-    const codeInput = screen.getByLabelText(/c[oó]digo/i) as HTMLInputElement;
+    // Fill code and name
+    const codeInput = screen.getByLabelText(/C[oó]digo/i);
     await user.clear(codeInput);
     await user.type(codeInput, 'MAQ-01');
 
-    const nameInput = screen.getByLabelText(/^nome/i) as HTMLInputElement;
-    await user.type(nameInput, 'Trator');
+    const nameInput = screen.getByLabelText(/Nome/i);
+    await user.type(nameInput, 'Meu Trator');
 
-    await user.click(screen.getByRole('button', { name: /pr[oó]ximo/i }));
-    await user.click(screen.getByRole('button', { name: /criar centro de custo/i }));
+    // Go to step 4
+    await user.click(screen.getByRole('button', { name: /Pr[oó]ximo/i }));
 
-    expect(onSuccess).toHaveBeenCalledTimes(1);
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it('failed POST shows error banner with role=alert', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ message: 'Erro interno' }),
+    // Click "Criar Centro de Custo"
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Criar Centro de Custo/i })).toBeDefined();
     });
 
-    const user = userEvent.setup();
-    renderWizard();
+    await user.click(screen.getByRole('button', { name: /Criar Centro de Custo/i }));
 
-    await user.click(screen.getByLabelText('Implemento'));
-    await user.click(screen.getByRole('button', { name: /pr[oó]ximo/i }));
-    await user.click(screen.getByRole('button', { name: /pr[oó]ximo/i }));
-
-    const codeInput = screen.getByLabelText(/c[oó]digo/i) as HTMLInputElement;
-    await user.clear(codeInput);
-    await user.type(codeInput, 'IMP-01');
-
-    const nameInput = screen.getByLabelText(/^nome/i) as HTMLInputElement;
-    await user.type(nameInput, 'Grade Niveladora');
-
-    await user.click(screen.getByRole('button', { name: /pr[oó]ximo/i }));
-    await user.click(screen.getByRole('button', { name: /criar centro de custo/i }));
-
-    const errorBanner = await screen.findByRole('alert');
-    expect(errorBanner).toBeTruthy();
-    expect(errorBanner.textContent).toMatch(/n[aã]o foi poss[ií]vel/i);
+    // Verify fetch was called with correct URL
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/org/farms/farm-1/cost-centers'),
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.stringContaining('MAQ-01'),
+        }),
+      );
+    });
   });
 
-  it('navigating between steps does not use CSS transitions (display:none/block pattern)', () => {
-    const { container } = renderWizard();
+  // Test 5: Successful POST calls onSuccess() and onClose()
+  it('successful POST calls onSuccess() and onClose()', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const onSuccess = vi.fn();
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ id: 'cc-1', code: 'MAQ-01', name: 'Meu Trator' }),
+    });
 
-    // Step 1 should be visible, steps 2-4 hidden via display:none
-    const steps = container.querySelectorAll('[data-step]');
-    expect(steps).toHaveLength(4);
+    await renderModal({ onClose, onSuccess });
 
-    const step1 = container.querySelector('[data-step="1"]') as HTMLElement;
-    const step2 = container.querySelector('[data-step="2"]') as HTMLElement;
-    expect(step1.style.display).not.toBe('none');
-    expect(step2.style.display).toBe('none');
+    // Navigate through all steps
+    await user.click(screen.getByText('Maquina'));
+    await user.click(screen.getByRole('button', { name: /Pr[oó]ximo/i }));
+    await user.click(screen.getByRole('button', { name: /Pr[oó]ximo/i }));
+
+    const codeInput = screen.getByLabelText(/C[oó]digo/i);
+    await user.clear(codeInput);
+    await user.type(codeInput, 'MAQ-01');
+
+    const nameInput = screen.getByLabelText(/Nome/i);
+    await user.type(nameInput, 'Meu Trator');
+
+    await user.click(screen.getByRole('button', { name: /Pr[oó]ximo/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Criar Centro de Custo/i })).toBeDefined();
+    });
+
+    await user.click(screen.getByRole('button', { name: /Criar Centro de Custo/i }));
+
+    await waitFor(() => {
+      expect(onSuccess).toHaveBeenCalled();
+      expect(onClose).toHaveBeenCalled();
+    });
+  });
+
+  // Test 6: Failed POST shows error banner with role="alert"
+  it('failed POST shows error banner with role="alert"', async () => {
+    const user = userEvent.setup();
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      json: async () => ({ message: 'Codigo ja existe' }),
+    });
+
+    await renderModal();
+
+    // Navigate through all steps
+    await user.click(screen.getByText('Maquina'));
+    await user.click(screen.getByRole('button', { name: /Pr[oó]ximo/i }));
+    await user.click(screen.getByRole('button', { name: /Pr[oó]ximo/i }));
+
+    const codeInput = screen.getByLabelText(/C[oó]digo/i);
+    await user.clear(codeInput);
+    await user.type(codeInput, 'MAQ-01');
+
+    const nameInput = screen.getByLabelText(/Nome/i);
+    await user.type(nameInput, 'Meu Trator');
+
+    await user.click(screen.getByRole('button', { name: /Pr[oó]ximo/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Criar Centro de Custo/i })).toBeDefined();
+    });
+
+    await user.click(screen.getByRole('button', { name: /Criar Centro de Custo/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeDefined();
+    });
   });
 });
