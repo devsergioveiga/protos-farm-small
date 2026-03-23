@@ -2,16 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
-status: Roadmap ready — awaiting plan-phase 16
-stopped_at: Completed 23-01-PLAN.md
-last_updated: "2026-03-23T10:52:50.610Z"
-last_activity: 2026-03-19 — Roadmap created
+status: Ready to execute
+stopped_at: Completed 23-02-PLAN.md
+last_updated: "2026-03-23T15:13:23.461Z"
 progress:
   total_phases: 18
   completed_phases: 16
   total_plans: 75
-  completed_plans: 73
-  percent: 0
+  completed_plans: 74
 ---
 
 # Project State
@@ -21,16 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** v1.2 Gestão de Patrimônio — Phase 16: Cadastro de Ativos
+**Current focus:** Phase 23 — relatorios-dashboard-patrimonial
 
 ## Current Position
 
-Phase: 16 — Cadastro de Ativos (not started)
-Plan: —
-Status: Roadmap ready — awaiting plan-phase 16
-Last activity: 2026-03-19 — Roadmap created
-
-Progress: [░░░░░░░░░░] 0% (0/9 phases)
+Phase: 23 (relatorios-dashboard-patrimonial) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -66,6 +60,7 @@ Progress: [░░░░░░░░░░] 0% (0/9 phases)
 | Phase 22-hierarquia-avancada-imobilizado-andamento P01 | 7 | 2 tasks | 6 files |
 | Phase 22-hierarquia-avancada-imobilizado-andamento P03 | 531 | 2 tasks | 14 files |
 | Phase 23-relatorios-dashboard-patrimonial P01 | 803 | 2 tasks | 6 files |
+| Phase 23-relatorios-dashboard-patrimonial P02 | 5 | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -125,6 +120,8 @@ Key decisions for v1.2:
 - [Phase 22-03]: WIP activation uses ConfirmModal variant=warning — medium criticality, irreversible status change
 - [Phase 23-relatorios-dashboard-patrimonial]: groupBy + in-memory join used for inventory roll-up; HOURS_OF_USE/UNITS_OF_PRODUCTION fall back to STRAIGHT_LINE for projection
 - [Phase 23-relatorios-dashboard-patrimonial]: Routes registered under /orgs/:orgId (plural) matching plan spec; authenticate+checkPermission('assets:read') per asset RBAC boundary decision
+- [Phase 23-relatorios-dashboard-patrimonial]: useFarmContext (not useFarm) is the correct export from FarmContext.tsx — useFarm does not exist
+- [Phase 23-relatorios-dashboard-patrimonial]: CC_TEMPLATES defined as constant inside CostCenterWizardModal.tsx per plan spec (not separate file)
 
 ### Pending Todos
 
@@ -140,7 +137,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-23T10:52:50.495Z
-Stopped at: Completed 23-01-PLAN.md
+Last session: 2026-03-23T15:13:23.458Z
+Stopped at: Completed 23-02-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 16`

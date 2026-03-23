@@ -35,7 +35,7 @@ Requirements for asset lifecycle management. Each maps to roadmap phases.
 - [ ] **CCPA-01**: Contador pode vincular cada ativo a centro de custo (fixo, rateio % ou dinamico por horas-maquina do periodo) para depreciacao e manutencao serem apropriadas corretamente
 - [ ] **CCPA-02**: Processamento mensal de depreciacao gera lancamentos detalhados por centro de custo com conciliacao automatica (soma CCs = total depreciacao)
 - [x] **CCPA-03**: Custos de manutencao (OS) sao apropriados por centro de custo com possibilidade de rateio manual ou heranca do CC do ativo
-- [ ] **CCPA-04**: Sistema oferece guia de decisao (wizard) para orientar criacao de centro de custo por ativo com exemplos e templates por tipo de fazenda
+- [x] **CCPA-04**: Sistema oferece guia de decisao (wizard) para orientar criacao de centro de custo por ativo com exemplos e templates por tipo de fazenda
 
 ### Manutencao e Ordens de Servico
 
@@ -138,7 +138,7 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | HIER-02     | Phase 22 | Complete |
 | HIER-03     | Phase 22 | Complete |
 | DEPR-04     | Phase 23 | Complete |
-| CCPA-04     | Phase 23 | Pending |
+| CCPA-04     | Phase 23 | Complete |
 | DEPR-03     | Phase 24 | Pending |
 | AQUI-05     | Phase 24 | Pending |
 | AQUI-06     | Phase 24 | Pending |
