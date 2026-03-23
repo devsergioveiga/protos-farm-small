@@ -123,6 +123,8 @@ import { assetDisposalsRouter } from './modules/asset-disposals/asset-disposals.
 import { assetFarmTransfersRouter } from './modules/asset-farm-transfers/asset-farm-transfers.routes';
 import { assetInventoryRouter } from './modules/asset-inventory/asset-inventory.routes';
 import { operationalCostRouter } from './modules/assets/asset-operational-cost.routes';
+import { assetRenovationsRouter } from './modules/asset-renovations/asset-renovations.routes';
+import { assetWipRouter } from './modules/asset-wip/asset-wip.routes';
 
 const app = express();
 
@@ -255,5 +257,7 @@ app.use('/api', assetDisposalsRouter);
 app.use('/api', assetFarmTransfersRouter);
 app.use('/api', assetInventoryRouter);
 app.use('/api', operationalCostRouter);
+app.use('/api', assetRenovationsRouter);
+app.use('/api', assetWipRouter);
 
 export { app };
