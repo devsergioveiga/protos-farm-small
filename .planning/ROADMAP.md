@@ -409,7 +409,12 @@ Plans:
 3. Gerente pode registrar leasing e arrendamento mercantil (CPC 06) com ROU asset criado automaticamente, parcelas geradas no módulo CP e controle da opção de compra ao final do contrato
 4. Gerente pode registrar troca de ativo (trade-in) com compensação financeira automática — valor do ativo antigo abatido do novo — gerando baixa e aquisição no mesmo lançamento
 
-**Plans:** [To be planned]
+**Plans:** 3 plans
+
+Plans:
+- [ ] 24-01-PLAN.md — Biological assets CPC 29 fair value: backend module + frontend page
+- [ ] 24-02-PLAN.md — Asset leasing CPC 06: ROU asset + CP installments + frontend page
+- [ ] 24-03-PLAN.md — Asset trade-in: atomic swap + financial compensation + frontend modal
 
 ## Progress
 
@@ -437,5 +442,5 @@ Plans:
 | 20. Alienação e Baixa de Ativos                     | 5/5 | Complete    | 2026-03-22 | -          |
 | 21. Controle Operacional                            | 3/3 | Complete    | 2026-03-22 | -          |
 | 22. Hierarquia Avançada e Imobilizado em Andamento  | 3/3 | Complete    | 2026-03-23 | -          |
-| 23. Relatórios e Dashboard Patrimonial              | 1/3 | 3/3 | Complete   | 2026-03-23 |
-| 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 0/?            | Not started | -          |
+| 23. Relatórios e Dashboard Patrimonial              | 1/3 | 3/3 | Complete    | 2026-03-23 |
+| 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 0/3            | Planning    | -          |
