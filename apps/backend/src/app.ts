@@ -125,6 +125,7 @@ import { assetInventoryRouter } from './modules/asset-inventory/asset-inventory.
 import { operationalCostRouter } from './modules/assets/asset-operational-cost.routes';
 import { assetRenovationsRouter } from './modules/asset-renovations/asset-renovations.routes';
 import { assetWipRouter } from './modules/asset-wip/asset-wip.routes';
+import { assetReportsRouter } from './modules/asset-reports/asset-reports.routes';
 
 const app = express();
 
@@ -259,5 +260,6 @@ app.use('/api', assetInventoryRouter);
 app.use('/api', operationalCostRouter);
 app.use('/api', assetRenovationsRouter);
 app.use('/api', assetWipRouter);
+app.use('/api', assetReportsRouter);
 
 export { app };
