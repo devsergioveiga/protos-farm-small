@@ -20,8 +20,8 @@ Requirements for asset lifecycle management. Each maps to roadmap phases.
 ### Hierarquia e Imobilizado em Andamento
 
 - [ ] **HIER-01**: Gerente pode cadastrar ativo composto (hierarquia pai-filho ate 3 niveis) onde o pai totaliza valores dos filhos e cada filho tem depreciacao independente
-- [ ] **HIER-02**: Gerente pode registrar reforma ou ampliacao de ativo existente com decisao de capitalizar (soma ao valor contabil + reavalia vida util) ou despesa (vai para DRE)
-- [ ] **HIER-03**: Gerente pode registrar imobilizado em andamento (obras) acumulando aportes parciais com cronograma de etapas, alerta de orcamento e ativacao ao concluir (inicia depreciacao)
+- [x] **HIER-02**: Gerente pode registrar reforma ou ampliacao de ativo existente com decisao de capitalizar (soma ao valor contabil + reavalia vida util) ou despesa (vai para DRE)
+- [x] **HIER-03**: Gerente pode registrar imobilizado em andamento (obras) acumulando aportes parciais com cronograma de etapas, alerta de orcamento e ativacao ao concluir (inicia depreciacao)
 
 ### Depreciacao e Valoracao
 
@@ -135,8 +135,8 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | OPER-03     | Phase 21 | Complete |
 | OPER-04     | Phase 21 | Complete |
 | HIER-01     | Phase 22 | Pending |
-| HIER-02     | Phase 22 | Pending |
-| HIER-03     | Phase 22 | Pending |
+| HIER-02     | Phase 22 | Complete |
+| HIER-03     | Phase 22 | Complete |
 | DEPR-04     | Phase 23 | Pending |
 | CCPA-04     | Phase 23 | Pending |
 | DEPR-03     | Phase 24 | Pending |
