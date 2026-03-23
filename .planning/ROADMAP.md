@@ -47,7 +47,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 19: Integração Financeira — Aquisição** — Compra à vista e financiada geram CP automaticamente sem contaminar o fluxo de recebimento de mercadorias (completed 2026-03-22)
 - [x] **Phase 20: Alienação e Baixa de Ativos** — Venda, descarte, sinistro e transferência com cálculo automático de ganho/perda e geração de CR (completed 2026-03-22)
 - [x] **Phase 21: Controle Operacional** — Combustível, documentos, horímetro e custo operacional por ativo (completed 2026-03-22)
-- [ ] **Phase 22: Hierarquia Avançada e Imobilizado em Andamento** — Ativo composto pai-filho, reforma/capitalização e obras em andamento
+- [x] **Phase 22: Hierarquia Avançada e Imobilizado em Andamento** — Ativo composto pai-filho, reforma/capitalização e obras em andamento (completed 2026-03-23)
 - [ ] **Phase 23: Relatórios e Dashboard Patrimonial** — Visão consolidada de TCO, depreciação acumulada e indicadores — leitura sobre dados produzidos pelas fases anteriores
 - [ ] **Phase 24: Ativos Biológicos, Leasing e Features Avançadas** — CPC 29 fair value, CPC 06 leasing e troca de ativo com compensação financeira
 
@@ -441,6 +441,6 @@ Plans:
 | 19. Integração Financeira — Aquisição               | 3/3 | Complete    | 2026-03-22 | -          |
 | 20. Alienação e Baixa de Ativos                     | 5/5 | Complete    | 2026-03-22 | -          |
 | 21. Controle Operacional                            | 3/3 | Complete    | 2026-03-22 | -          |
-| 22. Hierarquia Avançada e Imobilizado em Andamento  | 2/3 | In Progress|  | -          |
+| 22. Hierarquia Avançada e Imobilizado em Andamento  | 3/3 | Complete   | 2026-03-23 | -          |
 | 23. Relatórios e Dashboard Patrimonial              | v1.2      | 0/?            | Not started | -          |
 | 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 0/?            | Not started | -          |

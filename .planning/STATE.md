@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: Roadmap ready — awaiting plan-phase 16
-stopped_at: Completed 22-01-PLAN.md
-last_updated: "2026-03-23T00:54:49.331Z"
+stopped_at: Completed 22-03-PLAN.md (awaiting Task 3 human-verify checkpoint)
+last_updated: "2026-03-23T01:06:43.069Z"
 last_activity: 2026-03-19 — Roadmap created
 progress:
   total_phases: 18
-  completed_phases: 15
+  completed_phases: 16
   total_plans: 72
-  completed_plans: 71
+  completed_plans: 72
   percent: 0
 ---
 
@@ -64,6 +64,7 @@ Progress: [░░░░░░░░░░] 0% (0/9 phases)
 | Phase 21 P02 | 167 | 2 tasks | 4 files |
 | Phase 22-hierarquia-avancada-imobilizado-andamento P02 | 15 | 2 tasks | 9 files |
 | Phase 22-hierarquia-avancada-imobilizado-andamento P01 | 7 | 2 tasks | 6 files |
+| Phase 22-hierarquia-avancada-imobilizado-andamento P03 | 531 | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -118,6 +119,9 @@ Key decisions for v1.2:
 - [Phase 22-hierarquia-avancada-imobilizado-andamento]: Hierarchy depth traverses upward from proposedParent (O(depth) not O(tree))
 - [Phase 22-hierarquia-avancada-imobilizado-andamento]: Migration applied via psql directly due to broken shadow database (pre-existing cultivars issue)
 - [Phase 22-hierarquia-avancada-imobilizado-andamento]: asset-wip.routes.ts stub created to unblock tests (full implementation in Plan 22-03)
+- [Phase 22-03]: AssetHierarchyTab shows current asset highlighted, parent above (level 0), children indented (level 1/2)
+- [Phase 22-03]: AssetDrawer.TabId exported so AssetsPage can use it directly — fixes pre-existing TS type mismatch
+- [Phase 22-03]: WIP activation uses ConfirmModal variant=warning — medium criticality, irreversible status change
 
 ### Pending Todos
 
@@ -133,7 +137,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-23T00:54:49.329Z
-Stopped at: Completed 22-01-PLAN.md
+Last session: 2026-03-23T01:06:43.066Z
+Stopped at: Completed 22-03-PLAN.md (awaiting Task 3 human-verify checkpoint)
 Resume file: None
 Next action: `/gsd:plan-phase 16`
