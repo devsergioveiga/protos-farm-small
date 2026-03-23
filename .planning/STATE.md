@@ -4,7 +4,7 @@ milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: Roadmap ready — awaiting plan-phase 16
 stopped_at: Completed 22-03-PLAN.md — Task 3 human-verify approved, Phase 22 complete
-last_updated: "2026-03-23T01:30:09.078Z"
+last_updated: "2026-03-23T01:36:01.667Z"
 last_activity: 2026-03-19 — Roadmap created
 progress:
   total_phases: 18

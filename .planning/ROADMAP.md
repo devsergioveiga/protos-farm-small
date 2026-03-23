@@ -441,6 +441,6 @@ Plans:
 | 19. Integração Financeira — Aquisição               | 3/3 | Complete    | 2026-03-22 | -          |
 | 20. Alienação e Baixa de Ativos                     | 5/5 | Complete    | 2026-03-22 | -          |
 | 21. Controle Operacional                            | 3/3 | Complete    | 2026-03-22 | -          |
-| 22. Hierarquia Avançada e Imobilizado em Andamento  | 3/3 | Complete   | 2026-03-23 | -          |
+| 22. Hierarquia Avançada e Imobilizado em Andamento  | 3/3 | Complete    | 2026-03-23 | -          |
 | 23. Relatórios e Dashboard Patrimonial              | v1.2      | 0/?            | Not started | -          |
 | 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 0/?            | Not started | -          |
