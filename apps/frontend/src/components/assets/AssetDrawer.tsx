@@ -10,6 +10,7 @@ import {
   Settings,
   PackageMinus,
   ArrowRightLeft,
+  ArrowLeftRight,
 } from 'lucide-react';
 import { useAssetDetail } from '@/hooks/useAssetDetail';
 import { useFarms } from '@/hooks/useFarms';
@@ -26,6 +27,7 @@ import AssetWipContributionsTab from './AssetWipContributionsTab';
 import DepreciationConfigModal from '../depreciation/DepreciationConfigModal';
 import AssetDisposalModal from './AssetDisposalModal';
 import AssetTransferModal from './AssetTransferModal';
+import AssetTradeInModal from './AssetTradeInModal';
 import { useDepreciationConfig } from '@/hooks/useDepreciationConfig';
 import { useDepreciationReport } from '@/hooks/useDepreciationReport';
 import { METHOD_LABELS, TRACK_LABELS } from '@/types/depreciation';
@@ -310,6 +312,7 @@ export default function AssetDrawer({
 
   const [showDisposalModal, setShowDisposalModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
+  const [showTradeInModal, setShowTradeInModal] = useState(false);
 
   // Focus close button when drawer opens
   useEffect(() => {
@@ -401,6 +404,17 @@ export default function AssetDrawer({
                 >
                   <ArrowRightLeft size={18} aria-hidden="true" />
                 </button>
+                {asset.status === 'ATIVO' && (
+                  <button
+                    type="button"
+                    className="asset-drawer__action-btn"
+                    onClick={() => setShowTradeInModal(true)}
+                    aria-label={`Trocar ativo ${asset.name}`}
+                    title="Trocar ativo"
+                  >
+                    <ArrowLeftRight size={18} aria-hidden="true" />
+                  </button>
+                )}
                 <button
                   type="button"
                   className="asset-drawer__edit-btn"
@@ -610,6 +624,20 @@ export default function AssetDrawer({
           }}
           asset={asset}
           farms={farms}
+        />
+      )}
+
+      {/* Trade-in modal */}
+      {asset && showTradeInModal && (
+        <AssetTradeInModal
+          isOpen={showTradeInModal}
+          onClose={() => setShowTradeInModal(false)}
+          onSuccess={() => {
+            setShowTradeInModal(false);
+            refetch();
+            onRefresh?.();
+          }}
+          tradedAsset={asset}
         />
       )}
     </div>
