@@ -378,10 +378,11 @@ async function performRelease(
     include: RELEASE_INCLUDE,
   });
 
-  // CA3: Update animal category to NOVILHA and set reproductivelyReleased flag
+  // CA3: Update animal category and set reproductivelyReleased flag
+  const newCategory = animal.sex === 'MALE' ? 'NOVILHO' : 'NOVILHA';
   const updateData: any = { reproductivelyReleased: true };
-  if (animal.category !== 'NOVILHA') {
-    updateData.category = 'NOVILHA';
+  if (animal.category !== newCategory) {
+    updateData.category = newCategory;
   }
 
   // CA4: Move to target lot if configured
