@@ -355,6 +355,7 @@ model Organization {
   mastitisCases            MastitisCase[]
   coolingTanks             CoolingTank[]
   milkCollections          MilkCollection[]
+  dailyMilkProductions     DailyMilkProduction[]
   lactations               Lactation[]
   feedIngredients          FeedIngredient[]
   bromatologicalAnalyses   BromatologicalAnalysis[]
@@ -593,6 +594,7 @@ model Farm {
   mastitisCases              MastitisCase[]
   coolingTanks               CoolingTank[]
   milkCollections            MilkCollection[]
+  dailyMilkProductions       DailyMilkProduction[]
   lactations                 Lactation[]
   feedingRecords             FeedingRecord[]
   bankAccountFarms           BankAccountFarm[]
@@ -5114,6 +5116,43 @@ model MilkCollection {
   @@index([farmId])
   @@index([collectionDate])
   @@map("milk_collections")
+}
+
+// ─── Produção Diária Histórica (importação cadernos de leite) ────────
+
+model DailyMilkProduction {
+  id               String   @id @default(uuid())
+  organizationId   String
+  farmId           String
+  productionDate   DateTime @db.Date
+  totalLiters      Float
+  cowCount         Int?
+  avgPerCow        Float?
+
+  // Detalhamento por turno (litros)
+  morningLiters    Float?
+  afternoonLiters  Float?
+  nightLiters      Float?
+  dawnLiters       Float?
+
+  // Coleta e destinos
+  collectionLiters Float?
+  nurseryLiters    Float?
+  discardLiters    Float?
+  calfLiters       Float?
+
+  notes            String?
+  source           String?  // ex: "caderno_leite_2013.xlsx"
+  importedAt       DateTime @default(now())
+
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm             Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+
+  @@unique([farmId, productionDate])
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([productionDate])
+  @@map("daily_milk_productions")
 }
 
 // ─── EPIC-13 US-122: Lactação ────────────────────────────────────────

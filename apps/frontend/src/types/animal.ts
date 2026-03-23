@@ -157,6 +157,8 @@ export interface CreateAnimalPayload {
   genealogicalRecords?: GenealogicalRecordInput[];
 }
 
+export type UpdateAnimalPayload = Partial<CreateAnimalPayload>;
+
 // Labels
 export const SEX_LABELS: Record<AnimalSex, string> = {
   MALE: 'Macho',

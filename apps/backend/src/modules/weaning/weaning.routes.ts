@@ -6,19 +6,14 @@ import { logAudit } from '../../shared/audit/audit.service';
 import type { RlsContext } from '../../database/rls';
 import { WeaningError } from './weaning.types';
 import {
-  createSeparation,
-  setFeedingProtocol,
-  listSeparations,
-  getSeparation,
-  deleteSeparation,
-  setCriteria,
-  getCriteria,
-  getWeaningCandidates,
+  getWeaningConfig,
+  setWeaningConfig,
+  getUnweanedAnimals,
   createWeaning,
+  createBulkWeaning,
   listWeanings,
   getWeaning,
   deleteWeaning,
-  getWeaningIndicators,
 } from './weaning.service';
 
 export const weaningRouter = Router();
@@ -48,18 +43,67 @@ function handleError(err: unknown, res: import('express').Response): void {
   res.status(500).json({ error: 'Erro interno do servidor' });
 }
 
-// ─── CALF SEPARATIONS ──────────────────────────────────────────────
+// ─── CONFIG ─────────────────────────────────────────────────────────
 
-// CREATE SEPARATION (CA1)
+weaningRouter.get(
+  '/org/weaning-config',
+  authenticate,
+  checkPermission('animals:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await getWeaningConfig(ctx);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+weaningRouter.put(
+  '/org/weaning-config',
+  authenticate,
+  checkPermission('animals:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await setWeaningConfig(ctx, req.body);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── UNWEANED ANIMALS ───────────────────────────────────────────────
+
+weaningRouter.get(
+  '/org/farms/:farmId/weanings/unweaned',
+  authenticate,
+  checkPermission('animals:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await getUnweanedAnimals(ctx, req.params.farmId as string);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── BULK WEANING ───────────────────────────────────────────────────
+
 weaningRouter.post(
-  '/org/farms/:farmId/calf-separations',
+  '/org/farms/:farmId/weanings/bulk',
   authenticate,
   checkPermission('animals:update'),
   checkFarmAccess(),
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const result = await createSeparation(
+      const result = await createBulkWeaning(
         ctx,
         req.params.farmId as string,
         req.user!.userId,
@@ -70,12 +114,12 @@ weaningRouter.post(
         actorId: req.user!.userId,
         actorEmail: req.user!.email,
         actorRole: req.user!.role,
-        action: 'CREATE_CALF_SEPARATION',
-        targetType: 'calf_separation',
-        targetId: result.id,
+        action: 'BULK_WEANING',
+        targetType: 'weaning_record',
+        targetId: 'bulk',
         metadata: {
-          calfId: result.calfId,
-          motherId: result.motherId,
+          count: result.length,
+          created: result.filter((r) => r.status === 'created').length,
           farmId: req.params.farmId as string,
         },
         ipAddress: getClientIp(req),
@@ -90,205 +134,8 @@ weaningRouter.post(
   },
 );
 
-// LIST SEPARATIONS
-weaningRouter.get(
-  '/org/farms/:farmId/calf-separations',
-  authenticate,
-  checkPermission('animals:read'),
-  checkFarmAccess(),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const query = {
-        calfId: req.query.calfId as string | undefined,
-        motherId: req.query.motherId as string | undefined,
-        dateFrom: req.query.dateFrom as string | undefined,
-        dateTo: req.query.dateTo as string | undefined,
-        page: req.query.page ? Number(req.query.page) : undefined,
-        limit: req.query.limit ? Number(req.query.limit) : undefined,
-      };
-      const result = await listSeparations(ctx, req.params.farmId as string, query);
-      res.json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
+// ─── SINGLE WEANING ─────────────────────────────────────────────────
 
-// GET SEPARATION
-weaningRouter.get(
-  '/org/farms/:farmId/calf-separations/:separationId',
-  authenticate,
-  checkPermission('animals:read'),
-  checkFarmAccess(),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const result = await getSeparation(
-        ctx,
-        req.params.farmId as string,
-        req.params.separationId as string,
-      );
-      res.json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
-
-// SET FEEDING PROTOCOL (CA2)
-weaningRouter.put(
-  '/org/farms/:farmId/calf-separations/:separationId/feeding-protocol',
-  authenticate,
-  checkPermission('animals:update'),
-  checkFarmAccess(),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const result = await setFeedingProtocol(ctx, req.params.separationId as string, req.body);
-
-      void logAudit({
-        actorId: req.user!.userId,
-        actorEmail: req.user!.email,
-        actorRole: req.user!.role,
-        action: 'SET_FEEDING_PROTOCOL',
-        targetType: 'calf_feeding_protocol',
-        targetId: result.id,
-        metadata: {
-          separationId: req.params.separationId as string,
-          feedType: result.feedType,
-          farmId: req.params.farmId as string,
-        },
-        ipAddress: getClientIp(req),
-        farmId: req.params.farmId as string,
-        organizationId: ctx.organizationId,
-      });
-
-      res.json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
-
-// DELETE SEPARATION
-weaningRouter.delete(
-  '/org/farms/:farmId/calf-separations/:separationId',
-  authenticate,
-  checkPermission('animals:update'),
-  checkFarmAccess(),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      await deleteSeparation(ctx, req.params.farmId as string, req.params.separationId as string);
-
-      void logAudit({
-        actorId: req.user!.userId,
-        actorEmail: req.user!.email,
-        actorRole: req.user!.role,
-        action: 'DELETE_CALF_SEPARATION',
-        targetType: 'calf_separation',
-        targetId: req.params.separationId as string,
-        metadata: { farmId: req.params.farmId as string },
-        ipAddress: getClientIp(req),
-        farmId: req.params.farmId as string,
-        organizationId: ctx.organizationId,
-      });
-
-      res.json({ message: 'Registro de separação excluído com sucesso' });
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
-
-// ─── WEANING CRITERIA ──────────────────────────────────────────────
-
-// GET CRITERIA
-weaningRouter.get(
-  '/org/weaning-criteria',
-  authenticate,
-  checkPermission('animals:read'),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const result = await getCriteria(ctx);
-      res.json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
-
-// SET CRITERIA (CA4)
-weaningRouter.put(
-  '/org/weaning-criteria',
-  authenticate,
-  checkPermission('animals:update'),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const result = await setCriteria(ctx, req.body);
-
-      void logAudit({
-        actorId: req.user!.userId,
-        actorEmail: req.user!.email,
-        actorRole: req.user!.role,
-        action: 'SET_WEANING_CRITERIA',
-        targetType: 'weaning_criteria',
-        targetId: result.id,
-        metadata: {
-          minAgeDays: result.minAgeDays,
-          minWeightKg: result.minWeightKg,
-        },
-        ipAddress: getClientIp(req),
-        organizationId: ctx.organizationId,
-      });
-
-      res.json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
-
-// ─── WEANINGS ──────────────────────────────────────────────────────
-
-// CANDIDATES (CA4)
-weaningRouter.get(
-  '/org/farms/:farmId/weanings/candidates',
-  authenticate,
-  checkPermission('animals:read'),
-  checkFarmAccess(),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const result = await getWeaningCandidates(ctx, req.params.farmId as string);
-      res.json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
-
-// INDICATORS (CA8)
-weaningRouter.get(
-  '/org/farms/:farmId/weanings/indicators',
-  authenticate,
-  checkPermission('animals:read'),
-  checkFarmAccess(),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const result = await getWeaningIndicators(ctx, req.params.farmId as string);
-      res.json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
-
-// CREATE WEANING (CA5-CA7, CA9)
 weaningRouter.post(
   '/org/farms/:farmId/weanings',
   authenticate,
@@ -341,6 +188,7 @@ weaningRouter.get(
         calfId: req.query.calfId as string | undefined,
         dateFrom: req.query.dateFrom as string | undefined,
         dateTo: req.query.dateTo as string | undefined,
+        search: req.query.search as string | undefined,
         page: req.query.page ? Number(req.query.page) : undefined,
         limit: req.query.limit ? Number(req.query.limit) : undefined,
       };
