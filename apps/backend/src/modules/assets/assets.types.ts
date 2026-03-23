@@ -48,6 +48,8 @@ export interface CreateAssetInput {
   currentHourmeter?: number | string;
   currentOdometer?: number | string;
   notes?: string;
+  wipBudget?: number | string;
+  wipBudgetAlertPct?: number | string;
 }
 
 export type UpdateAssetInput = Partial<CreateAssetInput> & {
@@ -71,4 +73,17 @@ export interface ListAssetsQuery {
 
 export interface RlsContext {
   organizationId: string;
+}
+
+// ─── Map types ────────────────────────────────────────────────────────
+
+export interface AssetMapItem {
+  id: string;
+  name: string;
+  assetTag: string;
+  assetType: string;
+  status: string;
+  farmId: string;
+  lat: number;
+  lon: number;
 }

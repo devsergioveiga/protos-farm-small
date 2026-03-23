@@ -19,6 +19,7 @@ type PayableCategory =
   | 'SEED'
   | 'EQUIPMENT'
   | 'FINANCE'
+  | 'ASSET_ACQUISITION'
   | 'OTHER';
 
 const CATEGORY_LABELS: Record<PayableCategory, string> = {
@@ -35,8 +36,14 @@ const CATEGORY_LABELS: Record<PayableCategory, string> = {
   SEED: 'Semente',
   EQUIPMENT: 'Equipamento',
   FINANCE: 'Financeiro',
+  ASSET_ACQUISITION: 'Aquisicao de Ativo',
   OTHER: 'Outros',
 };
+
+// ASSET_ACQUISITION CPs are generated-only via asset-acquisitions endpoint — never manually created
+const MANUAL_CATEGORIES = (Object.keys(CATEGORY_LABELS) as PayableCategory[]).filter(
+  (c) => c !== 'ASSET_ACQUISITION',
+);
 
 interface FarmOption {
   id: string;
@@ -464,7 +471,7 @@ const PayableModal = ({ isOpen, onClose, onSuccess, payableId }: PayableModalPro
                   aria-required="true"
                 >
                   <option value="">Selecione a categoria</option>
-                  {(Object.keys(CATEGORY_LABELS) as PayableCategory[]).map((c) => (
+                  {MANUAL_CATEGORIES.map((c) => (
                     <option key={c} value={c}>
                       {CATEGORY_LABELS[c]}
                     </option>

@@ -10,6 +10,8 @@ const MOCK_ANIMALS: AnimalListItem[] = [
     earTag: 'BR-001',
     rfidTag: null,
     name: 'Mimosa',
+    registeredName: null,
+    registrationNumber: null,
     sex: 'FEMALE',
     birthDate: '2022-03-15',
     birthDateEstimated: false,
@@ -26,6 +28,8 @@ const MOCK_ANIMALS: AnimalListItem[] = [
     dam: null,
     lotId: 'lot-1',
     lotName: 'Lote Maternidade',
+    currentOwners: [],
+    ownerSummary: null,
   },
   {
     id: 'a2',
@@ -33,6 +37,8 @@ const MOCK_ANIMALS: AnimalListItem[] = [
     earTag: 'BR-002',
     rfidTag: null,
     name: 'Estrela',
+    registeredName: null,
+    registrationNumber: null,
     sex: 'FEMALE',
     birthDate: '2023-01-10',
     birthDateEstimated: false,
@@ -49,6 +55,8 @@ const MOCK_ANIMALS: AnimalListItem[] = [
     dam: null,
     lotId: null,
     lotName: null,
+    currentOwners: [],
+    ownerSummary: null,
   },
   {
     id: 'a3',
@@ -56,6 +64,8 @@ const MOCK_ANIMALS: AnimalListItem[] = [
     earTag: 'BR-003',
     rfidTag: null,
     name: null,
+    registeredName: null,
+    registrationNumber: null,
     sex: 'MALE',
     birthDate: '2025-06-01',
     birthDateEstimated: true,
@@ -72,6 +82,8 @@ const MOCK_ANIMALS: AnimalListItem[] = [
     dam: null,
     lotId: null,
     lotName: null,
+    currentOwners: [],
+    ownerSummary: null,
   },
 ];
 

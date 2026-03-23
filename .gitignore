@@ -39,6 +39,10 @@ pnpm-debug.log*
 tmp/
 temp/
 
+# FDB import data (ID mappings)
+.import-data/
+*.FDB
+
 # Playwright MCP
 .playwright-mcp/
 .claude/

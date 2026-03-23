@@ -70,6 +70,7 @@ const HeatRecordsPage = lazy(() => import('@/pages/HeatRecordsPage'));
 const MatingPlansPage = lazy(() => import('@/pages/MatingPlansPage'));
 const IatfProtocolsPage = lazy(() => import('@/pages/IatfProtocolsPage'));
 const IatfExecutionPage = lazy(() => import('@/pages/IatfExecutionPage'));
+const InseminationsPage = lazy(() => import('@/pages/InseminationsPage'));
 const NaturalMatingsPage = lazy(() => import('@/pages/NaturalMatingsPage'));
 const PregnancyDiagnosisPage = lazy(() => import('@/pages/PregnancyDiagnosisPage'));
 const CalvingEventsPage = lazy(() => import('@/pages/CalvingEventsPage'));
@@ -107,6 +108,17 @@ const PurchasingDashboardPage = lazy(() => import('@/pages/PurchasingDashboardPa
 const PurchasingKanbanPage = lazy(() => import('@/pages/PurchasingKanbanPage'));
 const NotificationPreferencesPage = lazy(() => import('@/pages/NotificationPreferencesPage'));
 const AssetsPage = lazy(() => import('@/pages/AssetsPage'));
+const DepreciationPage = lazy(() => import('@/pages/DepreciationPage'));
+const MaintenancePlansPage = lazy(() => import('@/pages/MaintenancePlansPage'));
+const WorkOrdersPage = lazy(() => import('@/pages/WorkOrdersPage'));
+const MaintenanceDashboardPage = lazy(() => import('@/pages/MaintenanceDashboardPage'));
+const AnimalExitsPage = lazy(() => import('@/pages/AnimalExitsPage'));
+const AssetInventoryPage = lazy(() => import('@/pages/AssetInventoryPage'));
+const PatrimonyDashboardPage = lazy(() => import('@/pages/PatrimonyDashboardPage'));
+const AssetReportsPage = lazy(() => import('@/pages/AssetReportsPage'));
+const BiologicalAssetsPage = lazy(() => import('@/pages/BiologicalAssetsPage'));
+const AssetLeasingsPage = lazy(() => import('@/pages/AssetLeasingsPage'));
+const HerdDashboardPage = lazy(() => import('@/pages/HerdDashboardPage'));
 
 export function App() {
   return (
@@ -178,6 +190,7 @@ export function App() {
                 <Route path="/mating-plans" element={<MatingPlansPage />} />
                 <Route path="/iatf-protocols" element={<IatfProtocolsPage />} />
                 <Route path="/iatf-execution" element={<IatfExecutionPage />} />
+                <Route path="/inseminations" element={<InseminationsPage />} />
                 <Route path="/natural-matings" element={<NaturalMatingsPage />} />
                 <Route path="/pregnancy-diagnosis" element={<PregnancyDiagnosisPage />} />
                 <Route path="/calving-events" element={<CalvingEventsPage />} />
@@ -214,7 +227,18 @@ export function App() {
                 <Route path="/purchasing-dashboard" element={<PurchasingDashboardPage />} />
                 <Route path="/purchasing-kanban" element={<PurchasingKanbanPage />} />
                 <Route path="/notification-preferences" element={<NotificationPreferencesPage />} />
+                <Route path="/animal-exits" element={<AnimalExitsPage />} />
+                <Route path="/herd-dashboard" element={<HerdDashboardPage />} />
                 <Route path="/assets" element={<AssetsPage />} />
+                <Route path="/depreciation" element={<DepreciationPage />} />
+                <Route path="/maintenance-plans" element={<MaintenancePlansPage />} />
+                <Route path="/work-orders" element={<WorkOrdersPage />} />
+                <Route path="/maintenance-dashboard" element={<MaintenanceDashboardPage />} />
+                <Route path="/asset-inventories" element={<AssetInventoryPage />} />
+                <Route path="/patrimony-dashboard" element={<PatrimonyDashboardPage />} />
+                <Route path="/asset-reports" element={<AssetReportsPage />} />
+                <Route path="/biological-assets" element={<BiologicalAssetsPage />} />
+                <Route path="/asset-leasings" element={<AssetLeasingsPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}

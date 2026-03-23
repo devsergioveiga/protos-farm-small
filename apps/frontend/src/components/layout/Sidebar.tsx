@@ -76,6 +76,10 @@ import {
   Undo2,
   Wallet,
   Columns3,
+  Wrench,
+  LogOut,
+  FileBarChart,
+  Leaf,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -116,6 +120,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'REBANHO',
     items: [
+      { to: '/herd-dashboard', icon: BarChart3, label: 'Dashboard rebanho' },
       { to: '/animals', icon: Beef, label: 'Animais' },
       { to: '/lots', icon: Layers, label: 'Lotes' },
       { to: '/weighing-session', icon: Scale, label: 'Pesagem' },
@@ -132,11 +137,13 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/mating-plans', icon: HeartHandshake, label: 'Acasalamento' },
       { to: '/iatf-protocols', icon: CalendarClock, label: 'Protocolos IATF' },
       { to: '/iatf-execution', icon: Zap, label: 'Execução IATF' },
+      { to: '/inseminations', icon: Syringe, label: 'Inseminações' },
       { to: '/natural-matings', icon: Beef, label: 'Monta natural' },
       { to: '/pregnancy-diagnosis', icon: ScanLine, label: 'Diagnóstico gestação' },
       { to: '/calving-events', icon: Milestone, label: 'Partos e crias' },
       { to: '/weaning', icon: CupSoda, label: 'Desmama' },
       { to: '/sanitary-dashboard', icon: Activity, label: 'Dashboard sanitário' },
+      { to: '/animal-exits', icon: LogOut, label: 'Saídas de animais' },
     ],
   },
   {
@@ -190,7 +197,18 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: 'PATRIMONIO',
-    items: [{ to: '/assets', icon: Tractor, label: 'Ativos' }],
+    items: [
+      { to: '/assets', icon: Tractor, label: 'Ativos' },
+      { to: '/depreciation', icon: TrendingDown, label: 'Depreciacao' },
+      { to: '/maintenance-plans', icon: Wrench, label: 'Planos de Manutencao' },
+      { to: '/work-orders', icon: ClipboardList, label: 'Ordens de Servico' },
+      { to: '/maintenance-dashboard', icon: BarChart3, label: 'Dashboard Manutencao' },
+      { to: '/asset-inventories', icon: ClipboardCheck, label: 'Inventario Patrimonial' },
+      { to: '/patrimony-dashboard', icon: BarChart3, label: 'Dashboard Patrimonial' },
+      { to: '/biological-assets', icon: Leaf, label: 'Ativos Biologicos' },
+      { to: '/asset-leasings', icon: FileText, label: 'Contratos Leasing' },
+      { to: '/asset-reports', icon: FileBarChart, label: 'Relatorios' },
+    ],
   },
   {
     title: 'FINANCEIRO',

@@ -24,6 +24,7 @@ export const PAYABLE_CATEGORY_LABELS: Record<PayableCategory, string> = {
   FINANCING: 'Financiamento',
   OTHER: 'Outros',
   CARTAO_CREDITO: 'Cartão de Crédito',
+  ASSET_ACQUISITION: 'Aquisição de Ativo',
 };
 
 // ─── Input types ─────────────────────────────────────────────────────

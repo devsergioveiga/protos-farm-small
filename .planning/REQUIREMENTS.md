@@ -19,60 +19,60 @@ Requirements for asset lifecycle management. Each maps to roadmap phases.
 
 ### Hierarquia e Imobilizado em Andamento
 
-- [ ] **HIER-01**: Gerente pode cadastrar ativo composto (hierarquia pai-filho ate 3 niveis) onde o pai totaliza valores dos filhos e cada filho tem depreciacao independente
-- [ ] **HIER-02**: Gerente pode registrar reforma ou ampliacao de ativo existente com decisao de capitalizar (soma ao valor contabil + reavalia vida util) ou despesa (vai para DRE)
-- [ ] **HIER-03**: Gerente pode registrar imobilizado em andamento (obras) acumulando aportes parciais com cronograma de etapas, alerta de orcamento e ativacao ao concluir (inicia depreciacao)
+- [x] **HIER-01**: Gerente pode cadastrar ativo composto (hierarquia pai-filho ate 3 niveis) onde o pai totaliza valores dos filhos e cada filho tem depreciacao independente
+- [x] **HIER-02**: Gerente pode registrar reforma ou ampliacao de ativo existente com decisao de capitalizar (soma ao valor contabil + reavalia vida util) ou despesa (vai para DRE)
+- [x] **HIER-03**: Gerente pode registrar imobilizado em andamento (obras) acumulando aportes parciais com cronograma de etapas, alerta de orcamento e ativacao ao concluir (inicia depreciacao)
 
 ### Depreciacao e Valoracao
 
 - [ ] **DEPR-01**: Contador pode configurar metodo de depreciacao por ativo ou categoria (linear, horas-uso, producao, acelerada) com taxas pre-configuradas RFB e suporte a taxa fiscal vs gerencial
 - [ ] **DEPR-02**: Sistema calcula depreciacao mensal automaticamente (job ou gatilho manual) com pro rata die, parada em valor residual, relatorio mensal e possibilidade de estorno/recalculo
 - [ ] **DEPR-03**: Contador pode registrar valor justo de ativos biologicos (CPC 29/IAS 41) — rebanho por categoria com preco de mercado e culturas perenes por estagio — com variacao registrada no resultado
-- [ ] **DEPR-04**: Contador pode gerar relatorios patrimoniais (inventario geral, depreciacao acumulada, movimentacao, ativos biologicos, TCO) com filtros e exportacao PDF/Excel/CSV
+- [x] **DEPR-04**: Contador pode gerar relatorios patrimoniais (inventario geral, depreciacao acumulada, movimentacao, ativos biologicos, TCO) com filtros e exportacao PDF/Excel/CSV
 
 ### Centro de Custo Patrimonial
 
 - [ ] **CCPA-01**: Contador pode vincular cada ativo a centro de custo (fixo, rateio % ou dinamico por horas-maquina do periodo) para depreciacao e manutencao serem apropriadas corretamente
 - [ ] **CCPA-02**: Processamento mensal de depreciacao gera lancamentos detalhados por centro de custo com conciliacao automatica (soma CCs = total depreciacao)
-- [ ] **CCPA-03**: Custos de manutencao (OS) sao apropriados por centro de custo com possibilidade de rateio manual ou heranca do CC do ativo
-- [ ] **CCPA-04**: Sistema oferece guia de decisao (wizard) para orientar criacao de centro de custo por ativo com exemplos e templates por tipo de fazenda
+- [x] **CCPA-03**: Custos de manutencao (OS) sao apropriados por centro de custo com possibilidade de rateio manual ou heranca do CC do ativo
+- [x] **CCPA-04**: Sistema oferece guia de decisao (wizard) para orientar criacao de centro de custo por ativo com exemplos e templates por tipo de fazenda
 
 ### Manutencao e Ordens de Servico
 
-- [ ] **MANU-01**: Gerente pode criar planos de manutencao preventiva com gatilhos configuraveis (horimetro, km, tempo), calculo automatico da proxima execucao e alerta antecipado
-- [ ] **MANU-02**: Gerente pode abrir, acompanhar e encerrar ordens de servico (OS) com registro de pecas (baixa automatica no estoque), horas de mao de obra, custo externo e fotos
-- [ ] **MANU-03**: Operador pode solicitar manutencao pelo celular com foto, geolocalizacao automatica e notificacao push ao responsavel, funcionando offline
-- [ ] **MANU-04**: Gerente pode controlar estoque de pecas de reposicao com ponto de reposicao, vinculacao de pecas compativeis por maquina e inventario periodico
-- [ ] **MANU-05**: Gerente pode ver dashboard de manutencao com disponibilidade mecanica, MTBF, MTTR, custo acumulado, OS abertas (kanban) e alertas de manutencoes vencidas
-- [ ] **MANU-06**: Ao encerrar OS de alto valor, sistema apresenta assistente de classificacao contabil (despesa imediata, capitalizacao ou diferimento) com criterios-guia
-- [ ] **MANU-07**: Contador pode diferenciar e apropriar despesas antecipadas (diferimento) de manutencoes grandes que restauram condicao original sem aumentar vida util
-- [ ] **MANU-08**: Contador pode configurar provisao mensal de manutencao por ativo ou frota com lancamento automatico e conciliacao com gastos reais
+- [x] **MANU-01**: Gerente pode criar planos de manutencao preventiva com gatilhos configuraveis (horimetro, km, tempo), calculo automatico da proxima execucao e alerta antecipado
+- [x] **MANU-02**: Gerente pode abrir, acompanhar e encerrar ordens de servico (OS) com registro de pecas (baixa automatica no estoque), horas de mao de obra, custo externo e fotos
+- [x] **MANU-03**: Operador pode solicitar manutencao pelo celular com foto, geolocalizacao automatica e notificacao push ao responsavel, funcionando offline
+- [x] **MANU-04**: Gerente pode controlar estoque de pecas de reposicao com ponto de reposicao, vinculacao de pecas compativeis por maquina e inventario periodico
+- [x] **MANU-05**: Gerente pode ver dashboard de manutencao com disponibilidade mecanica, MTBF, MTTR, custo acumulado, OS abertas (kanban) e alertas de manutencoes vencidas
+- [x] **MANU-06**: Ao encerrar OS de alto valor, sistema apresenta assistente de classificacao contabil (despesa imediata, capitalizacao ou diferimento) com criterios-guia
+- [x] **MANU-07**: Contador pode diferenciar e apropriar despesas antecipadas (diferimento) de manutencoes grandes que restauram condicao original sem aumentar vida util
+- [x] **MANU-08**: Contador pode configurar provisao mensal de manutencao por ativo ou frota com lancamento automatico e conciliacao com gastos reais
 
 ### Controle Operacional e Documentacao
 
-- [ ] **OPER-01**: Gerente pode registrar abastecimentos (combustivel) por ativo com custo/litro, custo/hora e benchmarking de eficiencia contra media da frota
-- [ ] **OPER-02**: Gerente pode controlar documentos com vencimento (CRLV, seguro, revisao) com alertas automaticos antecipados e calendario de vencimentos
-- [ ] **OPER-03**: Operador pode atualizar horimetro/odometro de forma rapida pelo mobile com validacao anti-regressao
-- [ ] **OPER-04**: Sistema calcula custo/hora e custo operacional por ativo (aquisicao + depreciacao + manutencao + combustivel + seguro) para analise de viabilidade
+- [x] **OPER-01**: Gerente pode registrar abastecimentos (combustivel) por ativo com custo/litro, custo/hora e benchmarking de eficiencia contra media da frota
+- [x] **OPER-02**: Gerente pode controlar documentos com vencimento (CRLV, seguro, revisao) com alertas automaticos antecipados e calendario de vencimentos
+- [x] **OPER-03**: Operador pode atualizar horimetro/odometro de forma rapida pelo mobile com validacao anti-regressao
+- [x] **OPER-04**: Sistema calcula custo/hora e custo operacional por ativo (aquisicao + depreciacao + manutencao + combustivel + seguro) para analise de viabilidade
 
 ### Integracao Financeira — Aquisicao
 
-- [ ] **AQUI-01**: Ao cadastrar ativo com valor de aquisicao, sistema gera CP automaticamente no modulo financeiro com fornecedor, valor, vencimento e centro de custo
-- [ ] **AQUI-02**: Gerente pode registrar compra financiada de ativo com dados do financiamento e parcelas geradas automaticamente no CP (reuso do installmentGenerator)
-- [ ] **AQUI-03**: Gerente pode importar dados do ativo a partir de NF-e (XML) com preenchimento automatico de fornecedor, valor, itens e dados fiscais
-- [ ] **AQUI-04**: Gerente pode registrar compra com multiplos ativos na mesma NF, cada um gerando registro patrimonial e rateio proporcional das despesas acessorias
+- [x] **AQUI-01**: Ao cadastrar ativo com valor de aquisicao, sistema gera CP automaticamente no modulo financeiro com fornecedor, valor, vencimento e centro de custo
+- [x] **AQUI-02**: Gerente pode registrar compra financiada de ativo com dados do financiamento e parcelas geradas automaticamente no CP (reuso do installmentGenerator)
+- [x] **AQUI-03**: Gerente pode importar dados do ativo a partir de NF-e (XML) com preenchimento automatico de fornecedor, valor, itens e dados fiscais
+- [x] **AQUI-04**: Gerente pode registrar compra com multiplos ativos na mesma NF, cada um gerando registro patrimonial e rateio proporcional das despesas acessorias
 - [ ] **AQUI-05**: Gerente pode registrar leasing e arrendamento mercantil (CPC 06) com parcelas no CP e controle de opcao de compra ao final do contrato
 - [ ] **AQUI-06**: Gerente pode registrar troca de ativo (trade-in) com compensacao financeira automatica (valor do ativo antigo abatido do novo)
-- [ ] **AQUI-07**: Cada aquisicao tem centro de custo e classificacao contabil definidos para apropriacao correta de depreciacao futura
+- [x] **AQUI-07**: Cada aquisicao tem centro de custo e classificacao contabil definidos para apropriacao correta de depreciacao futura
 
 ### Integracao Financeira — Venda, Baixa e Saida
 
-- [ ] **DISP-01**: Gerente pode registrar venda de ativo com calculo automatico de ganho/perda contabil (valor venda vs valor contabil) e geracao de CR
-- [ ] **DISP-02**: Gerente pode registrar baixa por sinistro, descarte ou obsolescencia com motivo, laudo, valor residual e lancamento de perda
-- [ ] **DISP-03**: Gerente pode registrar venda parcelada de ativo com parcelas no CR
-- [ ] **DISP-04**: Gerente pode transferir ativo entre fazendas da mesma organizacao com historico e reavaliacao opcional
-- [ ] **DISP-05**: Contador pode conciliar patrimonio fisico vs contabil com inventario (contagem fisica vs registro) e gerar ajustes
-- [ ] **DISP-06**: Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciacao acumulada, aquisicoes/baixas do periodo e indicadores
+- [x] **DISP-01**: Gerente pode registrar venda de ativo com calculo automatico de ganho/perda contabil (valor venda vs valor contabil) e geracao de CR
+- [x] **DISP-02**: Gerente pode registrar baixa por sinistro, descarte ou obsolescencia com motivo, laudo, valor residual e lancamento de perda
+- [x] **DISP-03**: Gerente pode registrar venda parcelada de ativo com parcelas no CR
+- [x] **DISP-04**: Gerente pode transferir ativo entre fazendas da mesma organizacao com historico e reavaliacao opcional
+- [x] **DISP-05**: Contador pode conciliar patrimonio fisico vs contabil com inventario (contagem fisica vs registro) e gerar ajustes
+- [x] **DISP-06**: Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciacao acumulada, aquisicoes/baixas do periodo e indicadores
 
 ## v2 Requirements
 
@@ -110,35 +110,35 @@ Deferred to future milestone. Tracked but not in current roadmap.
 | DEPR-02     | Phase 17 | Pending |
 | CCPA-01     | Phase 17 | Pending |
 | CCPA-02     | Phase 17 | Pending |
-| MANU-01     | Phase 18 | Pending |
-| MANU-02     | Phase 18 | Pending |
-| MANU-03     | Phase 18 | Pending |
-| MANU-04     | Phase 18 | Pending |
-| MANU-05     | Phase 18 | Pending |
-| MANU-06     | Phase 18 | Pending |
-| MANU-07     | Phase 18 | Pending |
-| MANU-08     | Phase 18 | Pending |
-| CCPA-03     | Phase 18 | Pending |
-| AQUI-01     | Phase 19 | Pending |
-| AQUI-02     | Phase 19 | Pending |
-| AQUI-03     | Phase 19 | Pending |
-| AQUI-04     | Phase 19 | Pending |
-| AQUI-07     | Phase 19 | Pending |
-| DISP-01     | Phase 20 | Pending |
-| DISP-02     | Phase 20 | Pending |
-| DISP-03     | Phase 20 | Pending |
-| DISP-04     | Phase 20 | Pending |
-| DISP-05     | Phase 20 | Pending |
-| DISP-06     | Phase 20 | Pending |
-| OPER-01     | Phase 21 | Pending |
-| OPER-02     | Phase 21 | Pending |
-| OPER-03     | Phase 21 | Pending |
-| OPER-04     | Phase 21 | Pending |
-| HIER-01     | Phase 22 | Pending |
-| HIER-02     | Phase 22 | Pending |
-| HIER-03     | Phase 22 | Pending |
-| DEPR-04     | Phase 23 | Pending |
-| CCPA-04     | Phase 23 | Pending |
+| MANU-01     | Phase 18 | Complete |
+| MANU-02     | Phase 18 | Complete |
+| MANU-03     | Phase 18 | Complete |
+| MANU-04     | Phase 18 | Complete |
+| MANU-05     | Phase 18 | Complete |
+| MANU-06     | Phase 18 | Complete |
+| MANU-07     | Phase 18 | Complete |
+| MANU-08     | Phase 18 | Complete |
+| CCPA-03     | Phase 18 | Complete |
+| AQUI-01     | Phase 19 | Complete |
+| AQUI-02     | Phase 19 | Complete |
+| AQUI-03     | Phase 19 | Complete |
+| AQUI-04     | Phase 19 | Complete |
+| AQUI-07     | Phase 19 | Complete |
+| DISP-01     | Phase 20 | Complete |
+| DISP-02     | Phase 20 | Complete |
+| DISP-03     | Phase 20 | Complete |
+| DISP-04     | Phase 20 | Complete |
+| DISP-05     | Phase 20 | Complete |
+| DISP-06     | Phase 20 | Complete |
+| OPER-01     | Phase 21 | Complete |
+| OPER-02     | Phase 21 | Complete |
+| OPER-03     | Phase 21 | Complete |
+| OPER-04     | Phase 21 | Complete |
+| HIER-01     | Phase 22 | Complete |
+| HIER-02     | Phase 22 | Complete |
+| HIER-03     | Phase 22 | Complete |
+| DEPR-04     | Phase 23 | Complete |
+| CCPA-04     | Phase 23 | Complete |
 | DEPR-03     | Phase 24 | Pending |
 | AQUI-05     | Phase 24 | Pending |
 | AQUI-06     | Phase 24 | Pending |

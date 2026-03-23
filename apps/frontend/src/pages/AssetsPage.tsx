@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import {
   Tractor,
   DollarSign,
@@ -11,6 +12,7 @@ import {
   Trash2,
   Plus,
   Upload,
+  FileUp,
   CheckCircle,
   MinusCircle,
   XCircle,
@@ -18,13 +20,20 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
+  List,
+  Map as MapIcon,
+  MapPin,
+  PackageMinus,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { useAssets } from '@/hooks/useAssets';
 import { useAssetDocuments } from '@/hooks/useAssetDocuments';
+import { useAssetDocumentAlerts } from '@/hooks/useAssetDocumentAlerts';
 import { useFarms } from '@/hooks/useFarms';
+import AssetDocumentAlertsView from '@/components/assets/AssetDocumentAlertsView';
 import ConfirmModal from '@/components/ui/ConfirmModal';
-import AssetDrawer from '@/components/assets/AssetDrawer';
-import type { Asset, AssetType, AssetStatus, ListAssetsQuery } from '@/types/asset';
+import AssetDrawer, { type TabId as AssetDrawerTabId } from '@/components/assets/AssetDrawer';
+import type { Asset, AssetType, AssetStatus, AssetMapItem, ListAssetsQuery } from '@/types/asset';
 import { ASSET_TYPE_LABELS, ASSET_STATUS_LABELS } from '@/types/asset';
 import './AssetsPage.css';
 
@@ -33,6 +42,9 @@ import './AssetsPage.css';
 // The modal will be loaded when the user opens it.
 import AssetModal from '@/components/assets/AssetModal';
 import AssetImportModal from '@/components/assets/AssetImportModal';
+import AssetNfeImportModal from '@/components/assets/AssetNfeImportModal';
+import AssetDisposalModal from '@/components/assets/AssetDisposalModal';
+import AssetTransferModal from '@/components/assets/AssetTransferModal';
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -226,9 +238,11 @@ export default function AssetsPage() {
     deleteAsset,
     exportCsv,
     exportPdf,
+    fetchMapAssets,
   } = useAssets();
   const { farms } = useFarms();
   const { expiringDocs, fetchExpiring } = useAssetDocuments(null);
+  const { alerts: documentAlerts, loading: alertsLoading } = useAssetDocumentAlerts();
 
   // Filters
   const [farmFilter, setFarmFilter] = useState('');
@@ -249,13 +263,20 @@ export default function AssetsPage() {
 
   // Import modal state
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [showNfeImport, setShowNfeImport] = useState(false);
+
+  // Disposal / transfer state
+  const [disposalAsset, setDisposalAsset] = useState<Asset | null>(null);
+  const [transferAsset, setTransferAsset] = useState<Asset | null>(null);
 
   // Drawer state
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerTab, setDrawerTab] = useState<
-    'geral' | 'documentos' | 'combustivel' | 'leituras' | 'manutencao' | 'timeline'
-  >('geral');
+  const [drawerTab, setDrawerTab] = useState<AssetDrawerTabId>('geral');
+
+  // Map view
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [mapAssets, setMapAssets] = useState<AssetMapItem[]>([]);
 
   // Toast
   const [toast, setToast] = useState<string | null>(null);
@@ -352,6 +373,14 @@ export default function AssetsPage() {
     }
   }
 
+  function handleAlienarrRequest(asset: Asset) {
+    setDisposalAsset(asset);
+  }
+
+  function handleTransferRequest(asset: Asset) {
+    setTransferAsset(asset);
+  }
+
   function handleModalSuccess() {
     setShowModal(false);
     setSelectedAsset(null);
@@ -374,6 +403,12 @@ export default function AssetsPage() {
     } catch {
       setToast('Nao foi possivel exportar o PDF.');
     }
+  }
+
+  async function handleSwitchToMap() {
+    setViewMode('map');
+    const items = await fetchMapAssets();
+    setMapAssets(items);
   }
 
   const hasFilters = Boolean(
@@ -409,6 +444,35 @@ export default function AssetsPage() {
       <header className="assets-page__header">
         <h1 className="assets-page__title">Ativos Patrimoniais</h1>
         <div className="assets-page__header-actions">
+          {/* View mode toggle */}
+          <div className="assets-page__view-toggle" role="group" aria-label="Modo de visualizacao">
+            <button
+              type="button"
+              className={`assets-page__view-toggle-btn${viewMode === 'list' ? ' assets-page__view-toggle-btn--active' : ''}`}
+              onClick={() => setViewMode('list')}
+              aria-pressed={viewMode === 'list'}
+              aria-label="Visualizar como lista"
+            >
+              <List size={20} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className={`assets-page__view-toggle-btn${viewMode === 'map' ? ' assets-page__view-toggle-btn--active' : ''}`}
+              onClick={() => void handleSwitchToMap()}
+              aria-pressed={viewMode === 'map'}
+              aria-label="Visualizar no mapa"
+            >
+              <MapIcon size={20} aria-hidden="true" />
+            </button>
+          </div>
+          <button
+            type="button"
+            className="assets-page__btn assets-page__btn--secondary"
+            onClick={() => setShowNfeImport(true)}
+          >
+            <FileUp size={20} aria-hidden="true" />
+            Importar NF-e
+          </button>
           <button
             type="button"
             className="assets-page__btn assets-page__btn--secondary"
@@ -440,6 +504,17 @@ export default function AssetsPage() {
       {!summary && !loading && (
         <SummaryCards totalAssets={0} totalValue="0" inMaintenance={0} recentCount={0} />
       )}
+
+      {/* Document expiry alerts */}
+      <AssetDocumentAlertsView
+        alerts={documentAlerts}
+        loading={alertsLoading}
+        onAssetClick={(assetId) => {
+          setSelectedAssetId(assetId);
+          setDrawerTab('documentos');
+          setDrawerOpen(true);
+        }}
+      />
 
       {/* Filter bar */}
       <section className="assets-page__filters" aria-label="Filtros">
@@ -590,187 +665,270 @@ export default function AssetsPage() {
         </div>
       </section>
 
-      {/* Content */}
-      <section className="assets-page__content" aria-label="Lista de ativos">
-        {loading && <TableSkeleton />}
-
-        {error && !loading && (
-          <div className="assets-page__error" role="alert">
-            <p>{error}</p>
-            <button
-              type="button"
-              className="assets-page__btn assets-page__btn--secondary"
-              onClick={loadData}
-            >
-              Tentar novamente
-            </button>
-          </div>
-        )}
-
-        {isEmpty && hasFilters && !error && (
-          <div className="assets-page__empty">
-            <Tractor size={64} aria-hidden="true" className="assets-page__empty-icon" />
-            <p className="assets-page__empty-text">
-              Nenhum ativo encontrado com esses filtros. Tente ajustar a busca.
-            </p>
-          </div>
-        )}
-
-        {isEmpty && !hasFilters && !error && (
-          <div className="assets-page__empty">
-            <Tractor size={64} aria-hidden="true" className="assets-page__empty-icon" />
-            <h2 className="assets-page__empty-title">Nenhum ativo cadastrado</h2>
-            <p className="assets-page__empty-desc">
-              Cadastre maquinas, veiculos, implementos e benfeitorias para controlar seu patrimonio.
-            </p>
-            <button
-              type="button"
-              className="assets-page__btn assets-page__btn--primary"
-              onClick={handleNewAsset}
-            >
-              <Plus size={20} aria-hidden="true" />
-              Cadastrar primeiro ativo
-            </button>
-          </div>
-        )}
-
-        {!loading && !error && assets.length > 0 && (
-          <>
-            {/* Mobile: card stack */}
-            <div className="assets-page__cards">
-              {assets.map((asset) => (
-                <AssetCard
-                  key={asset.id}
-                  asset={asset}
-                  hasExpiringDocs={expiringAssetIds.has(asset.id)}
-                  onView={handleViewAsset}
-                  onEdit={handleEditAsset}
-                  onDelete={handleDeleteRequest}
+      {/* Map View */}
+      {viewMode === 'map' && (
+        <section className="assets-page__content" aria-label="Mapa de ativos">
+          {mapAssets.length === 0 ? (
+            <div className="assets-page__map-empty">
+              <MapPin size={48} aria-hidden="true" />
+              <p>
+                Nenhum ativo com coordenadas cadastradas. Adicione latitude/longitude nas
+                benfeitorias para visualizar no mapa.
+              </p>
+            </div>
+          ) : (
+            <div className="assets-page__map-container">
+              <MapContainer
+                center={[-15.78, -47.93]}
+                zoom={4}
+                style={{ height: '100%', width: '100%' }}
+                scrollWheelZoom={true}
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution="&copy; OpenStreetMap"
                 />
-              ))}
+                {mapAssets.map((asset) => (
+                  <CircleMarker
+                    key={asset.id}
+                    center={[asset.lat, asset.lon]}
+                    radius={8}
+                    pathOptions={{
+                      color: '#6D4C41',
+                      fillColor: '#8D6E63',
+                      fillOpacity: 0.85,
+                      weight: 2,
+                    }}
+                  >
+                    <Popup>
+                      <strong>{asset.name}</strong>
+                      <br />
+                      <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>
+                        {asset.assetTag}
+                      </span>
+                      <br />
+                      <span style={{ fontSize: 12 }}>{asset.assetType}</span>
+                    </Popup>
+                  </CircleMarker>
+                ))}
+              </MapContainer>
             </div>
+          )}
+        </section>
+      )}
 
-            {/* Desktop: table */}
-            <div className="assets-page__table-wrapper">
-              <table className="assets-page__table">
-                <caption className="sr-only">Lista de ativos patrimoniais</caption>
-                <thead>
-                  <tr>
-                    <th scope="col" className="assets-page__th">
-                      Tag
-                    </th>
-                    <th scope="col" className="assets-page__th">
-                      Nome
-                    </th>
-                    <th scope="col" className="assets-page__th">
-                      Tipo
-                    </th>
-                    <th scope="col" className="assets-page__th">
-                      Fazenda
-                    </th>
-                    <th scope="col" className="assets-page__th">
-                      Status
-                    </th>
-                    <th scope="col" className="assets-page__th assets-page__th--right">
-                      Valor Aquisicao
-                    </th>
-                    <th scope="col" className="assets-page__th assets-page__th--right">
-                      Acoes
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {assets.map((asset) => (
-                    <tr
-                      key={asset.id}
-                      className="assets-page__tr assets-page__tr--clickable"
-                      onClick={() => handleViewAsset(asset)}
-                      aria-label={`Ver ficha do ativo ${asset.name}`}
-                    >
-                      <td className="assets-page__td">
-                        <span className="assets-page__tag">{asset.assetTag}</span>
-                      </td>
-                      <td className="assets-page__td">
-                        <span className="assets-page__name-cell">
-                          {asset.name}
-                          {expiringAssetIds.has(asset.id) && (
-                            <AlertTriangle
-                              size={14}
-                              aria-label="Documento vencendo"
-                              className="assets-page__expiry-icon"
-                            />
-                          )}
-                        </span>
-                      </td>
-                      <td className="assets-page__td">{ASSET_TYPE_LABELS[asset.assetType]}</td>
-                      <td className="assets-page__td">{asset.farm?.name ?? '—'}</td>
-                      <td className="assets-page__td">
-                        <StatusBadge status={asset.status} />
-                      </td>
-                      <td className="assets-page__td assets-page__td--right">
-                        {formatBRL(asset.acquisitionValue)}
-                      </td>
-                      <td className="assets-page__td assets-page__td--right">
-                        <div className="assets-page__row-actions">
-                          <button
-                            type="button"
-                            className="assets-page__action-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditAsset(asset);
-                            }}
-                            aria-label="Editar ativo"
-                          >
-                            <Pencil size={20} aria-hidden="true" />
-                          </button>
-                          <button
-                            type="button"
-                            className="assets-page__action-btn assets-page__action-btn--danger"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteRequest(asset);
-                            }}
-                            aria-label="Excluir ativo"
-                          >
-                            <Trash2 size={20} aria-hidden="true" />
-                          </button>
-                        </div>
-                      </td>
+      {/* Content */}
+      {viewMode === 'list' && (
+        <section className="assets-page__content" aria-label="Lista de ativos">
+          {loading && <TableSkeleton />}
+
+          {error && !loading && (
+            <div className="assets-page__error" role="alert">
+              <p>{error}</p>
+              <button
+                type="button"
+                className="assets-page__btn assets-page__btn--secondary"
+                onClick={loadData}
+              >
+                Tentar novamente
+              </button>
+            </div>
+          )}
+
+          {isEmpty && hasFilters && !error && (
+            <div className="assets-page__empty">
+              <Tractor size={64} aria-hidden="true" className="assets-page__empty-icon" />
+              <p className="assets-page__empty-text">
+                Nenhum ativo encontrado com esses filtros. Tente ajustar a busca.
+              </p>
+            </div>
+          )}
+
+          {isEmpty && !hasFilters && !error && (
+            <div className="assets-page__empty">
+              <Tractor size={64} aria-hidden="true" className="assets-page__empty-icon" />
+              <h2 className="assets-page__empty-title">Nenhum ativo cadastrado</h2>
+              <p className="assets-page__empty-desc">
+                Cadastre maquinas, veiculos, implementos e benfeitorias para controlar seu
+                patrimonio.
+              </p>
+              <button
+                type="button"
+                className="assets-page__btn assets-page__btn--primary"
+                onClick={handleNewAsset}
+              >
+                <Plus size={20} aria-hidden="true" />
+                Cadastrar primeiro ativo
+              </button>
+            </div>
+          )}
+
+          {!loading && !error && assets.length > 0 && (
+            <>
+              {/* Mobile: card stack */}
+              <div className="assets-page__cards">
+                {assets.map((asset) => (
+                  <AssetCard
+                    key={asset.id}
+                    asset={asset}
+                    hasExpiringDocs={expiringAssetIds.has(asset.id)}
+                    onView={handleViewAsset}
+                    onEdit={handleEditAsset}
+                    onDelete={handleDeleteRequest}
+                  />
+                ))}
+              </div>
+
+              {/* Desktop: table */}
+              <div className="assets-page__table-wrapper">
+                <table className="assets-page__table">
+                  <caption className="sr-only">Lista de ativos patrimoniais</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="assets-page__th">
+                        Tag
+                      </th>
+                      <th scope="col" className="assets-page__th">
+                        Nome
+                      </th>
+                      <th scope="col" className="assets-page__th">
+                        Tipo
+                      </th>
+                      <th scope="col" className="assets-page__th">
+                        Fazenda
+                      </th>
+                      <th scope="col" className="assets-page__th">
+                        Status
+                      </th>
+                      <th scope="col" className="assets-page__th assets-page__th--right">
+                        Valor Aquisicao
+                      </th>
+                      <th scope="col" className="assets-page__th assets-page__th--right">
+                        Acoes
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {assets.map((asset) => (
+                      <tr
+                        key={asset.id}
+                        className="assets-page__tr assets-page__tr--clickable"
+                        onClick={() => handleViewAsset(asset)}
+                        aria-label={`Ver ficha do ativo ${asset.name}`}
+                      >
+                        <td className="assets-page__td">
+                          <span className="assets-page__tag">{asset.assetTag}</span>
+                        </td>
+                        <td className="assets-page__td">
+                          <span className="assets-page__name-cell">
+                            {asset.name}
+                            {expiringAssetIds.has(asset.id) && (
+                              <AlertTriangle
+                                size={14}
+                                aria-label="Documento vencendo"
+                                className="assets-page__expiry-icon"
+                              />
+                            )}
+                          </span>
+                        </td>
+                        <td className="assets-page__td">{ASSET_TYPE_LABELS[asset.assetType]}</td>
+                        <td className="assets-page__td">{asset.farm?.name ?? '—'}</td>
+                        <td className="assets-page__td">
+                          <StatusBadge status={asset.status} />
+                        </td>
+                        <td className="assets-page__td assets-page__td--right">
+                          {formatBRL(asset.acquisitionValue)}
+                        </td>
+                        <td className="assets-page__td assets-page__td--right">
+                          <div className="assets-page__row-actions">
+                            <button
+                              type="button"
+                              className="assets-page__action-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditAsset(asset);
+                              }}
+                              aria-label="Editar ativo"
+                            >
+                              <Pencil size={20} aria-hidden="true" />
+                            </button>
+                            {asset.status !== 'ALIENADO' && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="assets-page__action-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAlienarrRequest(asset);
+                                  }}
+                                  aria-label="Alienar ativo"
+                                  title="Alienar"
+                                >
+                                  <PackageMinus size={20} aria-hidden="true" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="assets-page__action-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleTransferRequest(asset);
+                                  }}
+                                  aria-label="Transferir ativo"
+                                  title="Transferir"
+                                >
+                                  <ArrowRightLeft size={20} aria-hidden="true" />
+                                </button>
+                              </>
+                            )}
+                            <button
+                              type="button"
+                              className="assets-page__action-btn assets-page__action-btn--danger"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteRequest(asset);
+                              }}
+                              aria-label="Excluir ativo"
+                            >
+                              <Trash2 size={20} aria-hidden="true" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <nav className="assets-page__pagination" aria-label="Paginacao">
-                <button
-                  type="button"
-                  className="assets-page__pagination-btn"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage <= 1}
-                  aria-label="Pagina anterior"
-                >
-                  <ChevronLeft size={20} aria-hidden="true" />
-                </button>
-                <span className="assets-page__pagination-info">
-                  Pagina {currentPage} de {totalPages} ({total} ativos)
-                </span>
-                <button
-                  type="button"
-                  className="assets-page__pagination-btn"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage >= totalPages}
-                  aria-label="Proxima pagina"
-                >
-                  <ChevronRight size={20} aria-hidden="true" />
-                </button>
-              </nav>
-            )}
-          </>
-        )}
-      </section>
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <nav className="assets-page__pagination" aria-label="Paginacao">
+                  <button
+                    type="button"
+                    className="assets-page__pagination-btn"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage <= 1}
+                    aria-label="Pagina anterior"
+                  >
+                    <ChevronLeft size={20} aria-hidden="true" />
+                  </button>
+                  <span className="assets-page__pagination-info">
+                    Pagina {currentPage} de {totalPages} ({total} ativos)
+                  </span>
+                  <button
+                    type="button"
+                    className="assets-page__pagination-btn"
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage >= totalPages}
+                    aria-label="Proxima pagina"
+                  >
+                    <ChevronRight size={20} aria-hidden="true" />
+                  </button>
+                </nav>
+              )}
+            </>
+          )}
+        </section>
+      )}
 
       {/* Asset Modal (create/edit) */}
       {showModal && (
@@ -794,6 +952,18 @@ export default function AssetsPage() {
           void fetchAssets(currentQuery);
           void fetchSummary();
           setToast('Importacao concluida. Lista atualizada.');
+        }}
+      />
+
+      {/* NF-e Import Modal */}
+      <AssetNfeImportModal
+        isOpen={showNfeImport}
+        onClose={() => setShowNfeImport(false)}
+        onSuccess={() => {
+          setShowNfeImport(false);
+          void fetchAssets(currentQuery);
+          void fetchSummary();
+          setToast('Ativos criados a partir da NF-e. Conta a pagar registrada.');
         }}
       />
 
@@ -822,6 +992,37 @@ export default function AssetsPage() {
           setAssetToDelete(null);
         }}
       />
+
+      {/* Disposal Modal */}
+      {disposalAsset && (
+        <AssetDisposalModal
+          isOpen={!!disposalAsset}
+          onClose={() => setDisposalAsset(null)}
+          onSuccess={() => {
+            setDisposalAsset(null);
+            void fetchAssets(currentQuery);
+            void fetchSummary();
+            setToast('Ativo alienado com sucesso.');
+          }}
+          asset={disposalAsset}
+        />
+      )}
+
+      {/* Transfer Modal */}
+      {transferAsset && (
+        <AssetTransferModal
+          isOpen={!!transferAsset}
+          onClose={() => setTransferAsset(null)}
+          onSuccess={(toFarmName) => {
+            setTransferAsset(null);
+            void fetchAssets(currentQuery);
+            void fetchSummary();
+            setToast(`Ativo transferido para ${toFarmName} com sucesso.`);
+          }}
+          asset={transferAsset}
+          farms={farms}
+        />
+      )}
 
       {/* Toast */}
       {toast && (

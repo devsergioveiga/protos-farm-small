@@ -18,6 +18,7 @@ export type PayableCategory =
   | 'SEED'
   | 'EQUIPMENT'
   | 'FINANCE'
+  | 'ASSET_ACQUISITION'
   | 'OTHER';
 
 export interface CostCenterItem {

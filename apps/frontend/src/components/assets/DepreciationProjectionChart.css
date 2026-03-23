@@ -1,0 +1,18 @@
+.depr-projection-chart {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.depr-projection-chart__container {
+  height: 220px;
+}
+
+@media (min-width: 1024px) {
+  .depr-projection-chart__container {
+    height: 320px;
+  }
+}
+
+.recharts-text {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+}

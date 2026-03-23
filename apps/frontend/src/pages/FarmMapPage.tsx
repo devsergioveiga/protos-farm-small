@@ -77,6 +77,7 @@ const DEFAULT_LAYERS: LayerConfig[] = [
   { id: 'plots', label: 'Talhões', enabled: true },
   { id: 'pastures', label: 'Pastos', enabled: false },
   { id: 'structures', label: 'Instalações', enabled: false },
+  { id: 'assets', label: 'Benfeitorias', enabled: false },
   {
     id: 'environmental',
     label: 'APP/Reserva Legal',
@@ -341,6 +342,7 @@ function FarmMapPage() {
   const showPlots = layers.find((l) => l.id === 'plots')?.enabled ?? true;
   const showPastures = layers.find((l) => l.id === 'pastures')?.enabled ?? false;
   const showFacilities = layers.find((l) => l.id === 'structures')?.enabled ?? false;
+  const showAssets = layers.find((l) => l.id === 'assets')?.enabled ?? false;
 
   if (isLoading) {
     return (
@@ -483,6 +485,8 @@ function FarmMapPage() {
           showPlots={showPlots}
           showPastures={showPastures}
           showFacilities={showFacilities}
+          showAssets={showAssets}
+          assetMarkers={data.assetMarkers}
           onPlotClick={handlePlotClick}
           onLocationClick={handleLocationClick}
           cropFilter={cropFilter}

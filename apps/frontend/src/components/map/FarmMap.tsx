@@ -8,6 +8,7 @@ import type { BaseMapType } from './BaseMapSelector';
 import type { FarmMapData } from '@/hooks/useFarmMap';
 import type { FarmRegistration, FieldPlot } from '@/types/farm';
 import type { FarmLocationMapItem } from '@/types/farm-location';
+import type { AssetMapItem } from '@/types/asset';
 import { PASTURE_STATUS_COLORS, FACILITY_TYPE_COLORS } from './LocationLegend';
 
 const TILE_URLS: Record<BaseMapType, { url: string; attribution: string; maxZoom: number }> = {
@@ -108,6 +109,8 @@ interface FarmMapProps {
   showPlots?: boolean;
   showPastures?: boolean;
   showFacilities?: boolean;
+  showAssets?: boolean;
+  assetMarkers?: AssetMapItem[];
   onPlotClick?: (plot: FieldPlot) => void;
   onLocationClick?: (location: FarmLocationMapItem) => void;
   cropFilter?: Set<string>;
@@ -122,6 +125,8 @@ function FarmMap({
   showPlots = true,
   showPastures = false,
   showFacilities = false,
+  showAssets = false,
+  assetMarkers = [],
   onPlotClick,
   onLocationClick,
   cropFilter,
@@ -391,6 +396,29 @@ function FarmMap({
             />
           );
         })}
+
+      {showAssets &&
+        assetMarkers.map((asset) => (
+          <CircleMarker
+            key={`asset-${asset.id}`}
+            center={[asset.lat, asset.lon]}
+            radius={7}
+            pathOptions={{
+              color: '#6D4C41',
+              fillColor: '#8D6E63',
+              fillOpacity: 0.85,
+              weight: 2,
+            }}
+          >
+            <Popup>
+              <strong>{asset.name}</strong>
+              <br />
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>
+                {asset.assetTag}
+              </span>
+            </Popup>
+          </CircleMarker>
+        ))}
 
       {versionOverlay && (
         <GeoJSON

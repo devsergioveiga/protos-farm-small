@@ -13,6 +13,7 @@ import {
   ShoppingCart,
   ClipboardCheck,
   PlusCircle,
+  Gauge,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { spacing, fontSize } from '@protos-farm/shared';
@@ -145,6 +146,12 @@ export default function MoreScreen() {
       label: 'Aprovacoes Pendentes',
       icon: ClipboardCheck,
       onPress: () => router.push('/(app)/pending-approvals'),
+    },
+    {
+      id: 'meter-reading',
+      label: 'Atualizar Horimetro',
+      icon: Gauge,
+      onPress: () => router.push('/meter-reading'),
     },
     {
       id: 'sync',

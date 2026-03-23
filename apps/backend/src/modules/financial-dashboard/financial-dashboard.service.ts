@@ -5,6 +5,8 @@ import { getNegativeBalanceAlert } from '../cashflow/cashflow.service';
 import {
   type FinancialDashboardQuery,
   type FinancialDashboardOutput,
+  type PatrimonyDashboardQuery,
+  type PatrimonyDashboardOutput,
 } from './financial-dashboard.types';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -576,6 +578,106 @@ export async function getFinancialDashboard(
       openBillsCount,
       checksNearCompensation,
       ruralCredit,
+    };
+  });
+}
+
+// ─── getPatrimonyDashboard ────────────────────────────────────────────
+
+export async function getPatrimonyDashboard(
+  ctx: RlsContext,
+  query: PatrimonyDashboardQuery,
+): Promise<PatrimonyDashboardOutput> {
+  const { farmId, year, month } = query;
+  const { start: monthStart, end: monthEnd } = monthBoundaries(year, month);
+
+  return withRlsContext(ctx, async (tx) => {
+    const baseWhere: any = {
+      organizationId: ctx.organizationId,
+      deletedAt: null,
+      ...(farmId ? { farmId } : {}),
+    };
+
+    // ── totalActiveValue ─────────────────────────────────────────────
+    const activeValueAgg = await (tx as any).asset.aggregate({
+      where: { ...baseWhere, status: { not: 'ALIENADO' } },
+      _sum: { acquisitionValue: true },
+    });
+    const totalActiveValue = Number(activeValueAgg._sum.acquisitionValue ?? 0);
+
+    // ── accumulatedDepreciation ──────────────────────────────────────
+    const deprWhere: any = {
+      organizationId: ctx.organizationId,
+      reversedAt: null,
+      ...(farmId ? { asset: { farmId } } : {}),
+    };
+    const deprAgg = await (tx as any).depreciationEntry.aggregate({
+      where: deprWhere,
+      _sum: { depreciationAmount: true },
+    });
+    const accumulatedDepreciation = Number(deprAgg._sum.depreciationAmount ?? 0);
+
+    // ── netBookValue ─────────────────────────────────────────────────
+    const netBookValue = totalActiveValue - accumulatedDepreciation;
+
+    // ── acquisitionsInPeriod ─────────────────────────────────────────
+    const acqAgg = await (tx as any).asset.aggregate({
+      where: { ...baseWhere, acquisitionDate: { gte: monthStart, lt: monthEnd } },
+      _sum: { acquisitionValue: true },
+      _count: true,
+    });
+    const acquisitionsInPeriod = {
+      count: acqAgg._count as number,
+      totalValue: Number(acqAgg._sum.acquisitionValue ?? 0),
+    };
+
+    // ── disposalsInPeriod ────────────────────────────────────────────
+    const disposalWhere: any = {
+      organizationId: ctx.organizationId,
+      disposalDate: { gte: monthStart, lt: monthEnd },
+      ...(farmId ? { asset: { farmId } } : {}),
+    };
+    const disposalAgg = await (tx as any).assetDisposal.aggregate({
+      where: disposalWhere,
+      _sum: { saleValue: true, gainLoss: true },
+      _count: true,
+    });
+    const disposalsInPeriod = {
+      count: disposalAgg._count as number,
+      totalSaleValue: Number(disposalAgg._sum.saleValue ?? 0),
+      totalGainLoss: Number(disposalAgg._sum.gainLoss ?? 0),
+    };
+
+    // ── assetCountByType ─────────────────────────────────────────────
+    const byType = await (tx as any).asset.groupBy({
+      by: ['assetType'],
+      where: { ...baseWhere, status: { not: 'ALIENADO' } },
+      _count: true,
+    });
+    const assetCountByType = byType.map((row: any) => ({
+      assetType: row.assetType as string,
+      count: row._count as number,
+    }));
+
+    // ── assetCountByStatus ───────────────────────────────────────────
+    const byStatus = await (tx as any).asset.groupBy({
+      by: ['status'],
+      where: baseWhere,
+      _count: true,
+    });
+    const assetCountByStatus = byStatus.map((row: any) => ({
+      status: row.status as string,
+      count: row._count as number,
+    }));
+
+    return {
+      totalActiveValue,
+      accumulatedDepreciation,
+      netBookValue,
+      acquisitionsInPeriod,
+      disposalsInPeriod,
+      assetCountByType,
+      assetCountByStatus,
     };
   });
 }

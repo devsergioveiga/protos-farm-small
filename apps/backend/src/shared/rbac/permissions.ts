@@ -14,9 +14,14 @@ export type PermissionModule =
   | 'settings'
   | 'reconciliation'
   | 'purchases'
-  | 'assets';
+  | 'assets'
+  | 'depreciation'
+  | 'maintenance-plans'
+  | 'work-orders'
+  | 'maintenance-provisions'
+  | 'spare-parts';
 
-export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage';
+export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage' | 'close';
 
 export type Permission = `${PermissionModule}:${PermissionAction}`;
 
@@ -35,9 +40,21 @@ export const ALL_MODULES: PermissionModule[] = [
   'reconciliation',
   'purchases',
   'assets',
+  'depreciation',
+  'maintenance-plans',
+  'work-orders',
+  'maintenance-provisions',
+  'spare-parts',
 ];
 
-export const ALL_ACTIONS: PermissionAction[] = ['create', 'read', 'update', 'delete', 'manage'];
+export const ALL_ACTIONS: PermissionAction[] = [
+  'create',
+  'read',
+  'update',
+  'delete',
+  'manage',
+  'close',
+];
 
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
   SUPER_ADMIN: 100,
@@ -89,6 +106,11 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...modulePermissions('operations'),
     ...modulePermissions('purchases'),
     ...modulePermissions('assets'),
+    ...modulePermissions('depreciation'),
+    ...modulePermissions('maintenance-plans'),
+    ...modulePermissions('work-orders'),
+    ...modulePermissions('maintenance-provisions'),
+    ...modulePermissions('spare-parts'),
     ...p('reports', 'read'),
     ...p('settings', 'read'),
     ...p('reconciliation', 'manage'),
@@ -109,6 +131,11 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...p('producers', 'read'),
     ...p('purchases', 'read'),
     ...p('assets', 'read'),
+    ...p('depreciation', 'read', 'update'),
+    ...p('maintenance-plans', 'read'),
+    ...p('work-orders', 'read', 'update', 'close'),
+    ...p('maintenance-provisions', 'read', 'create', 'update'),
+    ...p('spare-parts', 'read'),
     ...p('reports', 'read'),
     ...p('reconciliation', 'manage'),
   ],
@@ -119,6 +146,11 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...p('animals', 'create', 'read'),
     ...p('operations', 'create', 'read'),
     ...p('assets', 'read', 'update'),
+    ...p('depreciation', 'read'),
+    ...p('maintenance-plans', 'read'),
+    ...p('work-orders', 'read', 'create'),
+    ...p('maintenance-provisions', 'read'),
+    ...p('spare-parts', 'read'),
   ],
 
   COWBOY: [

@@ -41,15 +41,15 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 **Milestone Goal:** Implementar o ciclo de vida completo dos ativos da fazenda — cadastro, depreciação, manutenção preventiva/corretiva, controle operacional, documentação e integração bidirecional com o módulo financeiro (compra, venda, financiamento, leasing).
 
-- [ ] **Phase 16: Cadastro de Ativos** — Entidade raiz do patrimônio: todas as fases dependem de um ativo cadastrado e classificado corretamente
-- [ ] **Phase 17: Engine de Depreciação** — Cálculo mensal automático e rastreável, pré-requisito para ganho/perda na alienação
-- [ ] **Phase 18: Manutenção e Ordens de Serviço** — CMMS completo com consumo de peças do estoque existente e classificação contábil obrigatória
-- [ ] **Phase 19: Integração Financeira — Aquisição** — Compra à vista e financiada geram CP automaticamente sem contaminar o fluxo de recebimento de mercadorias
-- [ ] **Phase 20: Alienação e Baixa de Ativos** — Venda, descarte, sinistro e transferência com cálculo automático de ganho/perda e geração de CR
-- [ ] **Phase 21: Controle Operacional** — Combustível, documentos, horímetro e custo operacional por ativo
-- [ ] **Phase 22: Hierarquia Avançada e Imobilizado em Andamento** — Ativo composto pai-filho, reforma/capitalização e obras em andamento
-- [ ] **Phase 23: Relatórios e Dashboard Patrimonial** — Visão consolidada de TCO, depreciação acumulada e indicadores — leitura sobre dados produzidos pelas fases anteriores
-- [ ] **Phase 24: Ativos Biológicos, Leasing e Features Avançadas** — CPC 29 fair value, CPC 06 leasing e troca de ativo com compensação financeira
+- [x] **Phase 16: Cadastro de Ativos** — Entidade raiz do patrimônio: todas as fases dependem de um ativo cadastrado e classificado corretamente (completed 2026-03-20)
+- [x] **Phase 17: Engine de Depreciação** — Cálculo mensal automático e rastreável, pré-requisito para ganho/perda na alienação (completed 2026-03-20)
+- [x] **Phase 18: Manutenção e Ordens de Serviço** — CMMS completo com consumo de peças do estoque existente e classificação contábil obrigatória (completed 2026-03-22)
+- [x] **Phase 19: Integração Financeira — Aquisição** — Compra à vista e financiada geram CP automaticamente sem contaminar o fluxo de recebimento de mercadorias (completed 2026-03-22)
+- [x] **Phase 20: Alienação e Baixa de Ativos** — Venda, descarte, sinistro e transferência com cálculo automático de ganho/perda e geração de CR (completed 2026-03-22)
+- [x] **Phase 21: Controle Operacional** — Combustível, documentos, horímetro e custo operacional por ativo (completed 2026-03-22)
+- [x] **Phase 22: Hierarquia Avançada e Imobilizado em Andamento** — Ativo composto pai-filho, reforma/capitalização e obras em andamento (completed 2026-03-23)
+- [x] **Phase 23: Relatórios e Dashboard Patrimonial** — Visão consolidada de TCO, depreciação acumulada e indicadores — leitura sobre dados produzidos pelas fases anteriores (completed 2026-03-23)
+- [x] **Phase 24: Ativos Biológicos, Leasing e Features Avançadas** — CPC 29 fair value, CPC 06 leasing e troca de ativo com compensação financeira (completed 2026-03-23)
 
 ## Phase Details
 
@@ -234,7 +234,17 @@ Plans:
 4. Gerente pode acessar a ficha completa do ativo com histórico de manutenções, documentos e timeline de eventos desde o cadastro
 5. Ativo de benfeitoria aparece com marcação georreferenciada no mapa da fazenda usando coordenada ou polígono informado no cadastro
 
-**Plans**: TBD
+**Plans:** 7/7 plans complete
+
+Plans:
+
+- [x] 16-00-PLAN.md — Wave 0: Prisma schema, migration, backend types, RBAC permissions
+- [x] 16-01-PLAN.md — Backend CRUD service, routes, sequential tag, tests
+- [x] 16-02-PLAN.md — Backend bulk import, export CSV/PDF, fuel records, meter readings
+- [x] 16-03-PLAN.md — Frontend AssetsPage, AssetModal, types, hooks, sidebar wiring
+- [x] 16-04-PLAN.md — Frontend AssetDrawer with tabs (fuel, readings, documents, timeline)
+- [x] 16-05-PLAN.md — Frontend AssetImportModal (5-step bulk import wizard)
+- [ ] 16-06-PLAN.md — Gap closure: backend assets/map endpoint + FarmMapPage asset layer + AssetsPage map view toggle
 
 ### Phase 17: Engine de Depreciação
 
@@ -249,7 +259,13 @@ Plans:
 4. Contador pode ver relatório mensal de depreciação por ativo com valor antes/depois e lançamento por centro de custo
 5. Ativo com status EM_ANDAMENTO é excluído do lote de depreciação — depreciação só inicia após ativação
 
-**Plans**: TBD
+**Plans:** 4/4 plans complete
+
+Plans:
+
+- [ ] 17-01-PLAN.md — Prisma schema (4 models, 2 enums, migration) + depreciation engine arithmetic + unit tests
+- [ ] 17-02-PLAN.md — Backend config CRUD + batch processor + cron + routes + integration tests
+- [ ] 17-03-PLAN.md — Frontend DepreciationPage + ConfigModal + ReportTable + RunBadge + AssetDrawer tab + sidebar
 
 ### Phase 18: Manutenção e Ordens de Serviço
 
@@ -264,7 +280,21 @@ Plans:
 4. Gerente pode controlar estoque de peças de reposição com ponto de reposição e vinculação de peças compatíveis por máquina
 5. Gerente pode ver dashboard de manutenção com disponibilidade mecânica, MTBF, MTTR, custo acumulado e kanban de OS abertas
 
-**Plans**: TBD
+**Plans:** 10/10 plans complete
+**Gap Closure:** Closes 4 gaps from verification (cron wiring, integration tests)
+
+Plans:
+
+- [ ] 18-00-PLAN.md — Wave 0: Prisma schema (7 models, 4 enums, migration), types, RBAC, test stubs
+- [ ] 18-01-PLAN.md — Maintenance plans backend: CRUD, next-due calculation, daily alert cron, tests
+- [ ] 18-02-PLAN.md — Work orders backend: CRUD, close with accounting treatment, stock deduction, CC, dashboard, tests
+- [ ] 18-03-PLAN.md — Spare parts compatibility + maintenance provisions backend: CRUD, reconciliation, monthly cron, tests
+- [ ] 18-04-PLAN.md — Frontend: types, hooks, MaintenancePlansPage, WorkOrdersPage, modals, sidebar, routes
+- [ ] 18-05-PLAN.md — Frontend: dashboard, kanban, close wizard, provision modal, AssetMaintenanceTab
+- [ ] 18-06-PLAN.md — Mobile: maintenance request screen with offline queue, photo, geolocation
+- [ ] 18-07-PLAN.md — Gap closure: wire maintenance crons to main.ts startup
+- [ ] 18-08-PLAN.md — Gap closure: work orders integration tests (35 stubs to real tests)
+- [ ] 18-09-PLAN.md — Gap closure: maintenance provisions integration tests (19 stubs to real tests)
 
 ### Phase 19: Integração Financeira — Aquisição
 
@@ -279,7 +309,13 @@ Plans:
 4. Gerente pode registrar NF com múltiplos ativos, cada um gerando seu registro patrimonial com rateio proporcional das despesas acessórias
 5. Cada aquisição tem centro de custo e classificação contábil definidos para apropriação correta da depreciação futura
 
-**Plans**: TBD
+**Plans:** 3/3 plans complete
+
+Plans:
+
+- [ ] 19-01-PLAN.md — Backend: migration (PayableCategory enum), types, NF-e parser, service, routes, integration tests
+- [ ] 19-02-PLAN.md — Frontend: AssetModal "Dados Financeiros" section, InstallmentPreviewTable, useAssetAcquisition hook
+- [ ] 19-03-PLAN.md — Frontend: AssetNfeImportModal 3-step wizard, wiring from AssetModal and AssetsPage
 
 ### Phase 20: Alienação e Baixa de Ativos
 
@@ -295,7 +331,14 @@ Plans:
 5. Contador pode conciliar patrimônio físico vs contábil com inventário (contagem física vs registro) e gerar ajustes
 6. Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciação acumulada, aquisições/baixas do período e indicadores de rentabilidade
 
-**Plans**: TBD
+**Plans:** 5/5 plans complete
+
+Plans:
+- [ ] 20-00-PLAN.md — Wave 0: Prisma schema (4 models, 2 enums), migration, type files, depreciation batch exclusion fix
+- [ ] 20-01-PLAN.md — Backend: asset disposals (sale + write-off + installment) with atomic CR generation
+- [ ] 20-02-PLAN.md — Backend: farm transfers + inventory reconciliation modules
+- [ ] 20-03-PLAN.md — Backend: patrimony dashboard endpoint on financial-dashboard module
+- [ ] 20-04-PLAN.md — Frontend: DisposalModal, TransferModal, InventoryPage, PatrimonyDashboardPage, sidebar wiring
 
 ### Phase 21: Controle Operacional
 
@@ -309,7 +352,13 @@ Plans:
 3. Operador pode atualizar horímetro/odômetro pelo celular com validação anti-regressão
 4. Sistema exibe custo operacional por ativo composto por aquisição, depreciação, manutenção, combustível e seguro para análise de viabilidade
 
-**Plans**: TBD
+**Plans:** 3/3 plans complete
+
+Plans:
+
+- [ ] 21-01-PLAN.md — Backend operational cost endpoint + frontend document expiry alerts view
+- [ ] 21-02-PLAN.md — Frontend AssetCostTab + useAssetOperationalCost + AssetDrawer custo tab wiring
+- [ ] 21-03-PLAN.md — Mobile meter-reading screen + More tab quick action wiring
 
 ### Phase 22: Hierarquia Avançada e Imobilizado em Andamento
 
@@ -322,7 +371,12 @@ Plans:
 2. Gerente pode registrar reforma ou ampliação de ativo existente com decisão explícita de capitalizar (soma ao valor contábil e reavaliar vida útil) ou tratar como despesa imediata (vai para DRE)
 3. Gerente pode registrar imobilizado em andamento acumulando aportes parciais com cronograma de etapas, alerta de orçamento e ativação ao concluir a obra — iniciando a depreciação somente após a ativação
 
-**Plans**: TBD
+**Plans:** 3/3 plans complete
+
+Plans:
+- [x] 22-01-PLAN.md — Schema migration + HIER-01 hierarchy depth guard + parent totalization
+- [x] 22-02-PLAN.md — HIER-02 renovation module + HIER-03 WIP module backend
+- [x] 22-03-PLAN.md — Frontend: hierarchy tab, renovation modal, WIP contributions tab
 
 ### Phase 23: Relatórios e Dashboard Patrimonial
 
@@ -336,7 +390,12 @@ Plans:
 3. Sistema exibe dashboard de TCO por ativo e por frota, com alerta de "reparar vs substituir" quando custo acumulado de manutenção ultrapassa 60-70% do custo de reposição
 4. Sistema oferece wizard de decisão para orientar o gerente na criação de centro de custo por tipo de ativo, com exemplos e templates por tipo de fazenda
 
-**Plans**: TBD
+**Plans:** 3/3 plans complete
+
+Plans:
+- [x] 23-01-PLAN.md — Backend asset-reports module: inventory, depreciation projection, TCO fleet, export
+- [x] 23-02-PLAN.md — Frontend CostCenterWizardModal: 4-step wizard with templates by asset type
+- [x] 23-03-PLAN.md — Frontend AssetReportsPage: 3 tabs, charts, fleet view, routing, sidebar
 
 ### Phase 24: Ativos Biológicos, Leasing e Features Avançadas
 
@@ -350,7 +409,12 @@ Plans:
 3. Gerente pode registrar leasing e arrendamento mercantil (CPC 06) com ROU asset criado automaticamente, parcelas geradas no módulo CP e controle da opção de compra ao final do contrato
 4. Gerente pode registrar troca de ativo (trade-in) com compensação financeira automática — valor do ativo antigo abatido do novo — gerando baixa e aquisição no mesmo lançamento
 
-**Plans**: TBD
+**Plans:** 3/3 plans complete
+
+Plans:
+- [x] 24-01-PLAN.md — Biological assets CPC 29 fair value: backend module + frontend page
+- [x] 24-02-PLAN.md — Asset leasing CPC 06: ROU asset + CP installments + frontend page
+- [x] 24-03-PLAN.md — Asset trade-in: atomic swap + financial compensation + frontend modal
 
 ## Progress
 
@@ -371,12 +435,12 @@ Plans:
 | 13. Kanban DnD Fixes + Notification Wiring          | v1.1      | 3/3            | Complete    | 2026-03-19 |
 | 14. Stock Reversal + Supplier Rating Completion     | v1.1      | 2/2            | Complete    | 2026-03-19 |
 | 15. Frontend API Path Fixes                         | v1.1      | 1/1            | Complete    | 2026-03-19 |
-| 16. Cadastro de Ativos                              | v1.2      | 4/5            | In progress | -          |
-| 17. Engine de Depreciação                           | v1.2      | 0/?            | Not started | -          |
-| 18. Manutenção e Ordens de Serviço                  | v1.2      | 0/?            | Not started | -          |
-| 19. Integração Financeira — Aquisição               | v1.2      | 0/?            | Not started | -          |
-| 20. Alienação e Baixa de Ativos                     | v1.2      | 0/?            | Not started | -          |
-| 21. Controle Operacional                            | v1.2      | 0/?            | Not started | -          |
-| 22. Hierarquia Avançada e Imobilizado em Andamento  | v1.2      | 0/?            | Not started | -          |
-| 23. Relatórios e Dashboard Patrimonial              | v1.2      | 0/?            | Not started | -          |
-| 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 0/?            | Not started | -          |
+| 16. Cadastro de Ativos                              | v1.2      | 7/7            | Complete    | 2026-03-20 |
+| 17. Engine de Depreciação                           | v1.2      | 4/4            | Complete    | 2026-03-20 |
+| 18. Manutenção e Ordens de Serviço                  | v1.2      | 10/10          | Complete    | 2026-03-22 |
+| 19. Integração Financeira — Aquisição               | 3/3 | Complete    | 2026-03-22 | -          |
+| 20. Alienação e Baixa de Ativos                     | 5/5 | Complete    | 2026-03-22 | -          |
+| 21. Controle Operacional                            | 3/3 | Complete    | 2026-03-22 | -          |
+| 22. Hierarquia Avançada e Imobilizado em Andamento  | 3/3 | Complete    | 2026-03-23 | -          |
+| 23. Relatórios e Dashboard Patrimonial              | 1/3 | 3/3 | Complete    | 2026-03-23 |
+| 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 3/3 | Complete    | 2026-03-23 |

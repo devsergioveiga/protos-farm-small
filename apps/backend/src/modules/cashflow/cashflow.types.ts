@@ -14,6 +14,7 @@ export const PAYABLE_DFC_MAP: Record<string, DfcCategory> = {
   FINANCING: 'FINANCIAMENTO',
   OTHER: 'OPERACIONAL',
   CARTAO_CREDITO: 'OPERACIONAL',
+  ASSET_ACQUISITION: 'INVESTIMENTO',
 };
 
 // Map ReceivableCategory enum values (from schema.prisma) to DFC classification
