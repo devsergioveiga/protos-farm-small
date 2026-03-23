@@ -371,19 +371,25 @@ export async function dryOff(
 
     const durationDays = calcDel(startDate, endDate);
 
-    const row = await (tx as any).lactation.update({
-      where: { id: lactationId },
-      data: {
-        endDate,
-        status: 'DRIED',
-        dryingReason: input.dryingReason,
-        dryingProtocol: input.dryingProtocol ?? null,
-        dryingVet: input.dryingVet ?? null,
-        durationDays,
-        notes: input.notes !== undefined ? input.notes : existing.notes,
-      },
-      include: LACTATION_INCLUDE,
-    });
+    const [row] = await Promise.all([
+      (tx as any).lactation.update({
+        where: { id: lactationId },
+        data: {
+          endDate,
+          status: 'DRIED',
+          dryingReason: input.dryingReason,
+          dryingProtocol: input.dryingProtocol ?? null,
+          dryingVet: input.dryingVet ?? null,
+          durationDays,
+          notes: input.notes !== undefined ? input.notes : existing.notes,
+        },
+        include: LACTATION_INCLUDE,
+      }),
+      (tx as any).animal.update({
+        where: { id: existing.animalId },
+        data: { category: 'VACA_SECA' },
+      }),
+    ]);
 
     return toLactationItem(row);
   });
