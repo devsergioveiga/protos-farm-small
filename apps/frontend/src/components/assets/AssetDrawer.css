@@ -422,6 +422,42 @@
   font-size: 12px;
 }
 
+/* Actions area */
+.asset-general-tab__actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.asset-general-tab__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 40px;
+  transition: background 200ms ease-out, border-color 200ms ease-out;
+}
+
+.asset-general-tab__action-btn:hover {
+  background: var(--color-neutral-50);
+  border-color: var(--color-neutral-400);
+}
+
+.asset-general-tab__action-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
 /* ─── AssetDocumentsTab ───────────────────────────────────────────── */
 
 .docs-tab__add-section {
