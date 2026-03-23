@@ -49,7 +49,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 21: Controle Operacional** — Combustível, documentos, horímetro e custo operacional por ativo (completed 2026-03-22)
 - [x] **Phase 22: Hierarquia Avançada e Imobilizado em Andamento** — Ativo composto pai-filho, reforma/capitalização e obras em andamento (completed 2026-03-23)
 - [x] **Phase 23: Relatórios e Dashboard Patrimonial** — Visão consolidada de TCO, depreciação acumulada e indicadores — leitura sobre dados produzidos pelas fases anteriores (completed 2026-03-23)
-- [ ] **Phase 24: Ativos Biológicos, Leasing e Features Avançadas** — CPC 29 fair value, CPC 06 leasing e troca de ativo com compensação financeira
+- [x] **Phase 24: Ativos Biológicos, Leasing e Features Avançadas** — CPC 29 fair value, CPC 06 leasing e troca de ativo com compensação financeira (completed 2026-03-23)
 
 ## Phase Details
 
@@ -409,12 +409,12 @@ Plans:
 3. Gerente pode registrar leasing e arrendamento mercantil (CPC 06) com ROU asset criado automaticamente, parcelas geradas no módulo CP e controle da opção de compra ao final do contrato
 4. Gerente pode registrar troca de ativo (trade-in) com compensação financeira automática — valor do ativo antigo abatido do novo — gerando baixa e aquisição no mesmo lançamento
 
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 24-01-PLAN.md — Biological assets CPC 29 fair value: backend module + frontend page
-- [ ] 24-02-PLAN.md — Asset leasing CPC 06: ROU asset + CP installments + frontend page
-- [ ] 24-03-PLAN.md — Asset trade-in: atomic swap + financial compensation + frontend modal
+- [x] 24-01-PLAN.md — Biological assets CPC 29 fair value: backend module + frontend page
+- [x] 24-02-PLAN.md — Asset leasing CPC 06: ROU asset + CP installments + frontend page
+- [x] 24-03-PLAN.md — Asset trade-in: atomic swap + financial compensation + frontend modal
 
 ## Progress
 
@@ -443,4 +443,4 @@ Plans:
 | 21. Controle Operacional                            | 3/3 | Complete    | 2026-03-22 | -          |
 | 22. Hierarquia Avançada e Imobilizado em Andamento  | 3/3 | Complete    | 2026-03-23 | -          |
 | 23. Relatórios e Dashboard Patrimonial              | 1/3 | 3/3 | Complete    | 2026-03-23 |
-| 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 0/3            | Planning    | -          |
+| 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 3/3 | Complete   | 2026-03-23 |
