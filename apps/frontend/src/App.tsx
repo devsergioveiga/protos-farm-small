@@ -70,6 +70,7 @@ const HeatRecordsPage = lazy(() => import('@/pages/HeatRecordsPage'));
 const MatingPlansPage = lazy(() => import('@/pages/MatingPlansPage'));
 const IatfProtocolsPage = lazy(() => import('@/pages/IatfProtocolsPage'));
 const IatfExecutionPage = lazy(() => import('@/pages/IatfExecutionPage'));
+const InseminationsPage = lazy(() => import('@/pages/InseminationsPage'));
 const NaturalMatingsPage = lazy(() => import('@/pages/NaturalMatingsPage'));
 const PregnancyDiagnosisPage = lazy(() => import('@/pages/PregnancyDiagnosisPage'));
 const CalvingEventsPage = lazy(() => import('@/pages/CalvingEventsPage'));
@@ -114,6 +115,7 @@ const MaintenanceDashboardPage = lazy(() => import('@/pages/MaintenanceDashboard
 const AnimalExitsPage = lazy(() => import('@/pages/AnimalExitsPage'));
 const AssetInventoryPage = lazy(() => import('@/pages/AssetInventoryPage'));
 const PatrimonyDashboardPage = lazy(() => import('@/pages/PatrimonyDashboardPage'));
+const AssetReportsPage = lazy(() => import('@/pages/AssetReportsPage'));
 
 export function App() {
   return (
@@ -185,6 +187,7 @@ export function App() {
                 <Route path="/mating-plans" element={<MatingPlansPage />} />
                 <Route path="/iatf-protocols" element={<IatfProtocolsPage />} />
                 <Route path="/iatf-execution" element={<IatfExecutionPage />} />
+                <Route path="/inseminations" element={<InseminationsPage />} />
                 <Route path="/natural-matings" element={<NaturalMatingsPage />} />
                 <Route path="/pregnancy-diagnosis" element={<PregnancyDiagnosisPage />} />
                 <Route path="/calving-events" element={<CalvingEventsPage />} />
@@ -229,6 +232,7 @@ export function App() {
                 <Route path="/maintenance-dashboard" element={<MaintenanceDashboardPage />} />
                 <Route path="/asset-inventories" element={<AssetInventoryPage />} />
                 <Route path="/patrimony-dashboard" element={<PatrimonyDashboardPage />} />
+                <Route path="/asset-reports" element={<AssetReportsPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}

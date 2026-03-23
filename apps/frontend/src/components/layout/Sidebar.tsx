@@ -78,6 +78,7 @@ import {
   Columns3,
   Wrench,
   LogOut,
+  FileBarChart,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -134,6 +135,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/mating-plans', icon: HeartHandshake, label: 'Acasalamento' },
       { to: '/iatf-protocols', icon: CalendarClock, label: 'Protocolos IATF' },
       { to: '/iatf-execution', icon: Zap, label: 'Execução IATF' },
+      { to: '/inseminations', icon: Syringe, label: 'Inseminações' },
       { to: '/natural-matings', icon: Beef, label: 'Monta natural' },
       { to: '/pregnancy-diagnosis', icon: ScanLine, label: 'Diagnóstico gestação' },
       { to: '/calving-events', icon: Milestone, label: 'Partos e crias' },
@@ -201,6 +203,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/maintenance-dashboard', icon: BarChart3, label: 'Dashboard Manutencao' },
       { to: '/asset-inventories', icon: ClipboardCheck, label: 'Inventario Patrimonial' },
       { to: '/patrimony-dashboard', icon: BarChart3, label: 'Dashboard Patrimonial' },
+      { to: '/asset-reports', icon: FileBarChart, label: 'Relatorios' },
     ],
   },
   {
