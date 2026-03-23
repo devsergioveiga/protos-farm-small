@@ -75,6 +75,7 @@
   flex-direction: column;
   gap: 4px;
   margin-bottom: 16px;
+  position: relative;
 }
 
 .weaning-modal__field label {
@@ -110,44 +111,79 @@
   resize: vertical;
 }
 
-/* ─── Candidate Info ─────────────────────────────────────────────── */
-.weaning-modal__candidate-info {
+/* ─── Animal Selector ────────────────────────────────────────────── */
+.weaning-modal__selected-animal {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  justify-content: space-between;
   padding: 12px 16px;
   background: var(--color-neutral-50, #fafaf8);
-  border: 1px solid var(--color-neutral-100);
+  border: 1px solid var(--color-neutral-200);
   border-radius: 8px;
-  margin-bottom: 16px;
 }
 
-.weaning-modal__candidate-tag {
+.weaning-modal__selected-animal strong {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.875rem;
-  font-weight: 600;
-  padding: 4px 10px;
-  background: var(--color-primary-50, #f0fdf4);
   color: var(--color-primary-700, #15803d);
-  border-radius: 20px;
 }
 
-.weaning-modal__candidate-name {
-  font-family: 'DM Sans', system-ui, sans-serif;
-  font-weight: 600;
-  color: var(--color-neutral-800);
-  font-size: 0.9375rem;
-}
-
-.weaning-modal__candidate-detail {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 0.8125rem;
+.weaning-modal__clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: var(--color-neutral-200);
+  border-radius: 6px;
+  cursor: pointer;
   color: var(--color-neutral-600);
+  transition: background 200ms ease-out;
 }
 
-.weaning-modal__candidate-detail strong {
+.weaning-modal__clear-btn:hover {
+  background: var(--color-neutral-300);
+}
+
+.weaning-modal__animal-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--color-neutral-0);
+}
+
+.weaning-modal__animal-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  transition: background 100ms ease-out;
+}
+
+.weaning-modal__animal-option:hover {
+  background: var(--color-neutral-50);
+}
+
+.weaning-modal__animal-option strong {
   font-family: 'JetBrains Mono', monospace;
+  color: var(--color-primary-700, #15803d);
+}
+
+.weaning-modal__no-results {
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  padding: 8px 0;
+  margin: 0;
 }
 
 /* ─── Error ───────────────────────────────────────────────────────── */
