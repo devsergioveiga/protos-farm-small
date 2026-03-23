@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Heart, AlertCircle, Download } from 'lucide-react';
+import { Plus, Syringe, Heart, AlertCircle, Download } from 'lucide-react';
 import { useAnimalReproductive } from '@/hooks/useAnimalReproductive';
 import { api } from '@/services/api';
 import type { ReproductiveRecordItem, ReproductiveEventType, AnimalListItem } from '@/types/animal';
@@ -7,6 +7,7 @@ import { REPRODUCTIVE_EVENT_TYPE_LABELS } from '@/types/animal';
 import ReproductiveStatsCards from './ReproductiveStatsCards';
 import ReproductiveRecordsList from './ReproductiveRecordsList';
 import CreateReproductiveModal from './CreateReproductiveModal';
+import InseminationModal from '@/components/iatf-execution/InseminationModal';
 import './ReproductiveTab.css';
 
 interface ReproductiveTabProps {
@@ -30,6 +31,7 @@ function ReproductiveTab({ farmId, animalId, animalEarTag }: ReproductiveTabProp
     useAnimalReproductive(farmId, animalId, typeFilter);
 
   const [showModal, setShowModal] = useState(false);
+  const [showInseminationModal, setShowInseminationModal] = useState(false);
   const [editingRecord, setEditingRecord] = useState<ReproductiveRecordItem | null>(null);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -185,6 +187,14 @@ function ReproductiveTab({ farmId, animalId, animalEarTag }: ReproductiveTabProp
           )}
           <button
             type="button"
+            className="repro-tab__insemination-btn"
+            onClick={() => setShowInseminationModal(true)}
+          >
+            <Syringe size={16} aria-hidden="true" />
+            Inseminação
+          </button>
+          <button
+            type="button"
             className="repro-tab__add-btn"
             onClick={() => {
               setEditingRecord(null);
@@ -231,6 +241,17 @@ function ReproductiveTab({ farmId, animalId, animalEarTag }: ReproductiveTabProp
         onSubmit={handleSubmit}
         editingRecord={editingRecord}
         males={males}
+      />
+
+      <InseminationModal
+        isOpen={showInseminationModal}
+        onClose={() => setShowInseminationModal(false)}
+        farmId={farmId}
+        preSelectedAnimalId={animalId}
+        onSuccess={() => {
+          void refetch();
+          showToast('success', 'Inseminação registrada com sucesso');
+        }}
       />
     </div>
   );
