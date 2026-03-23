@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Gestão de Patrimônio
 status: Roadmap ready — awaiting plan-phase 16
-stopped_at: Completed 22-02-PLAN.md
-last_updated: "2026-03-23T00:53:46.960Z"
+stopped_at: Completed 22-01-PLAN.md
+last_updated: "2026-03-23T00:54:49.331Z"
 last_activity: 2026-03-19 — Roadmap created
 progress:
   total_phases: 18
   completed_phases: 15
   total_plans: 72
-  completed_plans: 70
+  completed_plans: 71
   percent: 0
 ---
 
@@ -63,6 +63,7 @@ Progress: [░░░░░░░░░░] 0% (0/9 phases)
 | Phase 21-controle-operacional P01 | 231 | 2 tasks | 8 files |
 | Phase 21 P02 | 167 | 2 tasks | 4 files |
 | Phase 22-hierarquia-avancada-imobilizado-andamento P02 | 15 | 2 tasks | 9 files |
+| Phase 22-hierarquia-avancada-imobilizado-andamento P01 | 7 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -114,6 +115,9 @@ Key decisions for v1.2:
 - [Phase 22]: depreciationConfigMissing returned as boolean flag (not 400 error) — activation succeeds, frontend warns user to configure depreciation
 - [Phase 22]: Budget alert threshold defaults to 90% when wipBudgetAlertPct is null — avoids null-check errors in calculation
 - [Phase 22]: CAPITALIZAR uses Prisma increment operator for acquisitionValue — atomic with transaction, avoids race conditions
+- [Phase 22-hierarquia-avancada-imobilizado-andamento]: Hierarchy depth traverses upward from proposedParent (O(depth) not O(tree))
+- [Phase 22-hierarquia-avancada-imobilizado-andamento]: Migration applied via psql directly due to broken shadow database (pre-existing cultivars issue)
+- [Phase 22-hierarquia-avancada-imobilizado-andamento]: asset-wip.routes.ts stub created to unblock tests (full implementation in Plan 22-03)
 
 ### Pending Todos
 
@@ -129,7 +133,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-23T00:53:46.957Z
-Stopped at: Completed 22-02-PLAN.md
+Last session: 2026-03-23T00:54:49.329Z
+Stopped at: Completed 22-01-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 16`
