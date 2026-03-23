@@ -405,6 +405,7 @@ model Organization {
   assetWipContributions    AssetWipContribution[]
   assetTradeIns            AssetTradeIn[]
   assetLeasings            AssetLeasing[]
+  biologicalAssetValuations BiologicalAssetValuation[]
 
   @@map("organizations")
 }
@@ -497,6 +498,7 @@ model User {
   createdAnimalExits             AnimalExit[]        @relation("AnimalExitCreator")
   assetTradeInsCreated           AssetTradeIn[]      @relation("AssetTradeInCreator")
   assetLeasingsCreated           AssetLeasing[]      @relation("AssetLeasingCreator")
+  biologicalAssetValuationsCreated BiologicalAssetValuation[] @relation("BiologicalAssetValuationCreator")
 
   @@map("users")
 }
@@ -608,6 +610,7 @@ model Farm {
   assetTransfersTo           AssetFarmTransfer[] @relation("AssetTransferTo")
   assetTradeIns              AssetTradeIn[]
   assetLeasings              AssetLeasing[]
+  biologicalAssetValuations  BiologicalAssetValuation[]
 
   @@map("farms")
 }
@@ -7504,4 +7507,30 @@ model AssetTradeIn {
   @@index([organizationId])
   @@index([farmId])
   @@map("asset_trade_ins")
+}
+
+model BiologicalAssetValuation {
+  id              String   @id @default(uuid())
+  organizationId  String
+  farmId          String
+  valuationDate   DateTime @db.Date
+  assetGroup      String
+  groupType       String
+  headCount       Int?
+  areaHa          Decimal? @db.Decimal(12, 4)
+  pricePerUnit    Decimal  @db.Decimal(15, 4)
+  totalFairValue  Decimal  @db.Decimal(15, 2)
+  previousValue   Decimal? @db.Decimal(15, 2)
+  fairValueChange Decimal? @db.Decimal(15, 2)
+  notes           String?
+  createdBy       String
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  farm         Farm         @relation(fields: [farmId], references: [id])
+  creator      User         @relation("BiologicalAssetValuationCreator", fields: [createdBy], references: [id])
+
+  @@index([organizationId, valuationDate])
+  @@index([organizationId, assetGroup])
+  @@map("biological_asset_valuations")
 }

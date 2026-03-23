@@ -109,6 +109,7 @@ import { purchasingDashboardRouter } from './modules/purchasing-dashboard/purcha
 import { notificationPreferencesRouter } from './modules/notification-preferences/notification-preferences.routes';
 import { assetsRouter } from './modules/assets/assets.routes';
 import { assetDocumentsRouter } from './modules/assets/asset-documents.routes';
+import { biologicalAssetsRouter } from './modules/biological-assets/biological-assets.routes';
 import { fuelRecordsRouter } from './modules/fuel-records/fuel-records.routes';
 import { meterReadingsRouter } from './modules/meter-readings/meter-readings.routes';
 import { depreciationRouter } from './modules/depreciation/depreciation.routes';
@@ -246,6 +247,7 @@ app.use('/api', purchasingDashboardRouter);
 app.use('/api', notificationPreferencesRouter);
 app.use('/api', assetsRouter);
 app.use('/api', assetDocumentsRouter);
+app.use('/api', biologicalAssetsRouter);
 app.use('/api', fuelRecordsRouter);
 app.use('/api', meterReadingsRouter);
 app.use('/api', depreciationRouter);
