@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Camera, AlertCircle, ArrowLeft, Beef, LogOut } from 'lucide-react';
+import { Camera, AlertCircle, ArrowLeft, Beef, LogOut, Pencil } from 'lucide-react';
 import { useAnimalDetail } from '@/hooks/useAnimalDetail';
 import { useFarmContext } from '@/stores/FarmContext';
 import PermissionGate from '@/components/auth/PermissionGate';
 import AnimalExitModal from '@/components/animal-exits/AnimalExitModal';
+import CreateAnimalModal from '@/components/animals/CreateAnimalModal';
 import WeighingTab from '@/components/animals/WeighingTab';
 import SanitaryTab from '@/components/animals/SanitaryTab';
 import ReproductiveTab from '@/components/animals/ReproductiveTab';
@@ -25,6 +26,7 @@ function AnimalDetailPage() {
   const { selectedFarm } = useFarmContext();
   const [activeTab, setActiveTab] = useState<Tab>('general');
   const [showExitModal, setShowExitModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const { animal, isLoading, error, refetch } = useAnimalDetail(
     selectedFarm?.id ?? null,
@@ -170,16 +172,28 @@ function AnimalDetailPage() {
             </span>
           </div>
         </div>
-        <PermissionGate permission="animals:delete">
-          <button
-            type="button"
-            className="animal-detail__exit-btn"
-            onClick={() => setShowExitModal(true)}
-          >
-            <LogOut aria-hidden="true" size={18} />
-            Registrar saída
-          </button>
-        </PermissionGate>
+        <div className="animal-detail__header-actions">
+          <PermissionGate permission="animals:update">
+            <button
+              type="button"
+              className="animal-detail__edit-btn"
+              onClick={() => setShowEditModal(true)}
+            >
+              <Pencil aria-hidden="true" size={18} />
+              Editar
+            </button>
+          </PermissionGate>
+          <PermissionGate permission="animals:delete">
+            <button
+              type="button"
+              className="animal-detail__exit-btn"
+              onClick={() => setShowExitModal(true)}
+            >
+              <LogOut aria-hidden="true" size={18} />
+              Registrar saída
+            </button>
+          </PermissionGate>
+        </div>
       </header>
 
       <div className="animal-detail__tabs" role="tablist" aria-label="Seções do animal">
@@ -218,6 +232,17 @@ function AnimalDetailPage() {
           <MovementsTab farmId={selectedFarm.id} animalId={animal.id} />
         ) : null}
       </div>
+
+      <CreateAnimalModal
+        isOpen={showEditModal}
+        farmId={selectedFarm.id}
+        animal={animal}
+        onClose={() => setShowEditModal(false)}
+        onSuccess={() => {
+          setShowEditModal(false);
+          void refetch();
+        }}
+      />
 
       <AnimalExitModal
         isOpen={showExitModal}
