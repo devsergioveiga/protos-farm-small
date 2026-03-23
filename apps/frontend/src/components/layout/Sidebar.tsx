@@ -79,6 +79,7 @@ import {
   Wrench,
   LogOut,
   FileBarChart,
+  Leaf,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -119,6 +120,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'REBANHO',
     items: [
+      { to: '/herd-dashboard', icon: BarChart3, label: 'Dashboard rebanho' },
       { to: '/animals', icon: Beef, label: 'Animais' },
       { to: '/lots', icon: Layers, label: 'Lotes' },
       { to: '/weighing-session', icon: Scale, label: 'Pesagem' },
@@ -203,6 +205,8 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/maintenance-dashboard', icon: BarChart3, label: 'Dashboard Manutencao' },
       { to: '/asset-inventories', icon: ClipboardCheck, label: 'Inventario Patrimonial' },
       { to: '/patrimony-dashboard', icon: BarChart3, label: 'Dashboard Patrimonial' },
+      { to: '/biological-assets', icon: Leaf, label: 'Ativos Biologicos' },
+      { to: '/asset-leasings', icon: FileText, label: 'Contratos Leasing' },
       { to: '/asset-reports', icon: FileBarChart, label: 'Relatorios' },
     ],
   },

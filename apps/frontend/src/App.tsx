@@ -116,6 +116,9 @@ const AnimalExitsPage = lazy(() => import('@/pages/AnimalExitsPage'));
 const AssetInventoryPage = lazy(() => import('@/pages/AssetInventoryPage'));
 const PatrimonyDashboardPage = lazy(() => import('@/pages/PatrimonyDashboardPage'));
 const AssetReportsPage = lazy(() => import('@/pages/AssetReportsPage'));
+const BiologicalAssetsPage = lazy(() => import('@/pages/BiologicalAssetsPage'));
+const AssetLeasingsPage = lazy(() => import('@/pages/AssetLeasingsPage'));
+const HerdDashboardPage = lazy(() => import('@/pages/HerdDashboardPage'));
 
 export function App() {
   return (
@@ -225,6 +228,7 @@ export function App() {
                 <Route path="/purchasing-kanban" element={<PurchasingKanbanPage />} />
                 <Route path="/notification-preferences" element={<NotificationPreferencesPage />} />
                 <Route path="/animal-exits" element={<AnimalExitsPage />} />
+                <Route path="/herd-dashboard" element={<HerdDashboardPage />} />
                 <Route path="/assets" element={<AssetsPage />} />
                 <Route path="/depreciation" element={<DepreciationPage />} />
                 <Route path="/maintenance-plans" element={<MaintenancePlansPage />} />
@@ -233,6 +237,8 @@ export function App() {
                 <Route path="/asset-inventories" element={<AssetInventoryPage />} />
                 <Route path="/patrimony-dashboard" element={<PatrimonyDashboardPage />} />
                 <Route path="/asset-reports" element={<AssetReportsPage />} />
+                <Route path="/biological-assets" element={<BiologicalAssetsPage />} />
+                <Route path="/asset-leasings" element={<AssetLeasingsPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}
