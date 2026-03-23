@@ -126,6 +126,8 @@ import { operationalCostRouter } from './modules/assets/asset-operational-cost.r
 import { assetRenovationsRouter } from './modules/asset-renovations/asset-renovations.routes';
 import { assetWipRouter } from './modules/asset-wip/asset-wip.routes';
 import { assetReportsRouter } from './modules/asset-reports/asset-reports.routes';
+import { assetLeasingsRouter } from './modules/asset-leasings/asset-leasings.routes';
+import { assetTradeInsRouter } from './modules/asset-trade-ins/asset-trade-ins.routes';
 
 const app = express();
 
@@ -261,5 +263,7 @@ app.use('/api', operationalCostRouter);
 app.use('/api', assetRenovationsRouter);
 app.use('/api', assetWipRouter);
 app.use('/api', assetReportsRouter);
+app.use('/api', assetLeasingsRouter);
+app.use('/api', assetTradeInsRouter);
 
 export { app };

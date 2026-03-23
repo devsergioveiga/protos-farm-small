@@ -403,6 +403,8 @@ model Organization {
   assetRenovations         AssetRenovation[]
   assetWipStages           AssetWipStage[]
   assetWipContributions    AssetWipContribution[]
+  assetTradeIns            AssetTradeIn[]
+  assetLeasings            AssetLeasing[]
 
   @@map("organizations")
 }
@@ -493,6 +495,8 @@ model User {
   notificationPreferences        NotificationPreference[] @relation("NotificationPreferences")
   createdAnimalOwnerships        AnimalOwnership[]
   createdAnimalExits             AnimalExit[]        @relation("AnimalExitCreator")
+  assetTradeInsCreated           AssetTradeIn[]      @relation("AssetTradeInCreator")
+  assetLeasingsCreated           AssetLeasing[]      @relation("AssetLeasingCreator")
 
   @@map("users")
 }
@@ -602,6 +606,8 @@ model Farm {
   animalExits                AnimalExit[]
   assetTransfersFrom         AssetFarmTransfer[] @relation("AssetTransferFrom")
   assetTransfersTo           AssetFarmTransfer[] @relation("AssetTransferTo")
+  assetTradeIns              AssetTradeIn[]
+  assetLeasings              AssetLeasing[]
 
   @@map("farms")
 }
@@ -6842,6 +6848,9 @@ model Asset {
   renovations         AssetRenovation[]
   wipContributions    AssetWipContribution[]
   wipStages           AssetWipStage[]
+  tradeInAsOld        AssetTradeIn?         @relation("TradeInOld")
+  tradeInAsNew        AssetTradeIn?         @relation("TradeInNew")
+  leasingRou          AssetLeasing?         @relation("LeasingROU")
 
   @@unique([organizationId, assetTag])
   @@index([organizationId, assetType])
@@ -7425,4 +7434,74 @@ model SparePartAssetCompat {
   @@unique([productId, assetId])
   @@index([assetId])
   @@map("spare_part_asset_compat")
+}
+
+// ─── Phase 24: Leasing (CPC 06) ──────────────────────────────────────
+
+enum LeasingStatus {
+  ACTIVE
+  PURCHASE_OPTION_EXERCISED
+  RETURNED
+  CANCELLED
+}
+
+model AssetLeasing {
+  id                  String        @id @default(uuid())
+  organizationId      String
+  farmId              String
+  rouAssetId          String        @unique
+  lessorName          String
+  lessorDocument      String?
+  contractNumber      String?
+  contractDate        DateTime      @db.Date
+  startDate           DateTime      @db.Date
+  endDate             DateTime      @db.Date
+  totalContractValue  Decimal       @db.Decimal(15, 2)
+  monthlyInstallment  Decimal       @db.Decimal(15, 2)
+  installmentCount    Int
+  purchaseOptionValue Decimal?      @db.Decimal(15, 2)
+  purchaseOptionDate  DateTime?     @db.Date
+  hasPurchaseOption   Boolean       @default(false)
+  status              LeasingStatus @default(ACTIVE)
+  payableId           String?
+  notes               String?
+  createdBy           String
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  farm         Farm         @relation(fields: [farmId], references: [id])
+  rouAsset     Asset        @relation("LeasingROU", fields: [rouAssetId], references: [id])
+  creator      User         @relation("AssetLeasingCreator", fields: [createdBy], references: [id])
+
+  @@index([organizationId, status])
+  @@map("asset_leasings")
+}
+
+model AssetTradeIn {
+  id               String   @id @default(uuid())
+  organizationId   String
+  farmId           String
+  tradedAssetId    String   @unique
+  newAssetId       String   @unique
+  tradeInDate      DateTime @db.Date
+  tradedAssetValue Decimal  @db.Decimal(15, 2)
+  newAssetValue    Decimal  @db.Decimal(15, 2)
+  netPayable       Decimal  @db.Decimal(15, 2)
+  payableId        String?
+  gainLossOnTrade  Decimal  @db.Decimal(15, 2)
+  supplierName     String?
+  notes            String?
+  createdBy        String
+  createdAt        DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  farm         Farm         @relation(fields: [farmId], references: [id])
+  tradedAsset  Asset        @relation("TradeInOld", fields: [tradedAssetId], references: [id])
+  newAsset     Asset        @relation("TradeInNew", fields: [newAssetId], references: [id])
+  creator      User         @relation("AssetTradeInCreator", fields: [createdBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@map("asset_trade_ins")
 }
