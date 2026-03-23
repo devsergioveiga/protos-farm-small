@@ -195,10 +195,7 @@ function mapCategory(
 
 // ─── Breed Compositions ───────────────────────────────────────────────
 
-export async function importBreedCompositions(
-  prisma: PrismaClient,
-  idMap: IdMap,
-): Promise<void> {
+export async function importBreedCompositions(prisma: PrismaClient, idMap: IdMap): Promise<void> {
   console.log('\n── Composições Raciais ──');
 
   // ANIMALRACA has the primary breed per animal
@@ -344,11 +341,7 @@ export async function importLotMovements(
 
 // ─── Run All Phase 3 ──────────────────────────────────────────────────
 
-export async function runPhase3(
-  prisma: PrismaClient,
-  orgId: string,
-  idMap: IdMap,
-): Promise<void> {
+export async function runPhase3(prisma: PrismaClient, orgId: string, idMap: IdMap): Promise<void> {
   console.log('\n═══════════════════════════════════════');
   console.log(' PHASE 3: Animals');
   console.log('═══════════════════════════════════════');

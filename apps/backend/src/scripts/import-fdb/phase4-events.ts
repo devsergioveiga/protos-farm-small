@@ -106,9 +106,9 @@ export async function importReproduction(
 
   const farmId = idMap.first('FAZENDA')!;
 
-  // Pre-load existing animal IDs to validate FK references
+  // Pre-load ALL animal IDs (including soft-deleted) to validate FK references
   const existingAnimals = await prisma.animal.findMany({
-    where: { farmId, deletedAt: null },
+    where: { farmId },
     select: { id: true },
   });
   const validAnimalIds = new Set(existingAnimals.map((a) => a.id));
