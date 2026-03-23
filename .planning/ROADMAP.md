@@ -48,7 +48,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 20: Alienação e Baixa de Ativos** — Venda, descarte, sinistro e transferência com cálculo automático de ganho/perda e geração de CR (completed 2026-03-22)
 - [x] **Phase 21: Controle Operacional** — Combustível, documentos, horímetro e custo operacional por ativo (completed 2026-03-22)
 - [x] **Phase 22: Hierarquia Avançada e Imobilizado em Andamento** — Ativo composto pai-filho, reforma/capitalização e obras em andamento (completed 2026-03-23)
-- [ ] **Phase 23: Relatórios e Dashboard Patrimonial** — Visão consolidada de TCO, depreciação acumulada e indicadores — leitura sobre dados produzidos pelas fases anteriores
+- [x] **Phase 23: Relatórios e Dashboard Patrimonial** — Visão consolidada de TCO, depreciação acumulada e indicadores — leitura sobre dados produzidos pelas fases anteriores (completed 2026-03-23)
 - [ ] **Phase 24: Ativos Biológicos, Leasing e Features Avançadas** — CPC 29 fair value, CPC 06 leasing e troca de ativo com compensação financeira
 
 ## Phase Details
@@ -390,12 +390,12 @@ Plans:
 3. Sistema exibe dashboard de TCO por ativo e por frota, com alerta de "reparar vs substituir" quando custo acumulado de manutenção ultrapassa 60-70% do custo de reposição
 4. Sistema oferece wizard de decisão para orientar o gerente na criação de centro de custo por tipo de ativo, com exemplos e templates por tipo de fazenda
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 23-01-PLAN.md — Backend asset-reports module: inventory, depreciation projection, TCO fleet, export
 - [x] 23-02-PLAN.md — Frontend CostCenterWizardModal: 4-step wizard with templates by asset type
-- [ ] 23-03-PLAN.md — Frontend AssetReportsPage: 3 tabs, charts, fleet view, routing, sidebar
+- [x] 23-03-PLAN.md — Frontend AssetReportsPage: 3 tabs, charts, fleet view, routing, sidebar
 
 ### Phase 24: Ativos Biológicos, Leasing e Features Avançadas
 
@@ -437,5 +437,5 @@ Plans:
 | 20. Alienação e Baixa de Ativos                     | 5/5 | Complete    | 2026-03-22 | -          |
 | 21. Controle Operacional                            | 3/3 | Complete    | 2026-03-22 | -          |
 | 22. Hierarquia Avançada e Imobilizado em Andamento  | 3/3 | Complete    | 2026-03-23 | -          |
-| 23. Relatórios e Dashboard Patrimonial              | 1/3 | 2/3 | In Progress|  |
+| 23. Relatórios e Dashboard Patrimonial              | 1/3 | 3/3 | Complete   | 2026-03-23 |
 | 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 0/?            | Not started | -          |
