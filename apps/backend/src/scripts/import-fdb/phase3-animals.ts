@@ -3,7 +3,7 @@
  *
  * Tables: ANIMAL, COMPOSICAORACIAL, ANIMALRACA, GRUPOANIMAL, MOVGRUPOANIMAL
  */
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient, AnimalCategory } from '@prisma/client';
 import { query, queryBatched } from './firebird-client';
 import { IdMap } from './id-map';
 import { getCategoryInfo } from './phase1-master-data';
@@ -178,7 +178,7 @@ function mapSex(sexo: string | null, catInfo: { sex: string } | null): 'MALE' | 
 function mapCategory(
   sex: 'MALE' | 'FEMALE',
   catInfo: { sex: string; label: string } | null,
-): string {
+): AnimalCategory {
   if (catInfo) {
     const label = catInfo.label.toLowerCase();
     if (label.includes('reprodutor') || label.includes('touro')) return 'TOURO_REPRODUTOR';

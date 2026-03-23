@@ -40,7 +40,7 @@ assetDisposalsRouter.post(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const { assetId } = req.params;
+      const assetId = req.params.assetId as string;
       const userId = req.user!.userId;
       const result = await createDisposal(ctx, assetId, req.body, userId);
       res.status(201).json(result);
@@ -59,7 +59,7 @@ assetDisposalsRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const { assetId } = req.params;
+      const assetId = req.params.assetId as string;
       const result = await getDisposal(ctx, assetId);
       res.status(200).json(result);
     } catch (err) {

@@ -159,7 +159,7 @@ export interface CloseWorkOrderInput {
   externalSupplier?: string;
   costCenterId?: string;
   deferralMonths?: number;
-  closedBy: string;
+  closedBy?: string;
 }
 
 export interface ListWorkOrdersQuery {
@@ -193,6 +193,7 @@ export interface MaintenanceDashboard {
   byStatus: Record<string, number>;
   costByAsset: Array<{ assetId: string; assetName: string; totalCost: number }>;
   recentOrders: WorkOrder[];
+  overduePlans?: Array<{ id: string; assetName: string; name: string; daysOverdue: number }>;
 }
 
 // ─── Labels ────────────────────────────────────────────────────────────
@@ -216,3 +217,41 @@ export const WORK_ORDER_STATUS_LABELS: Record<WorkOrderStatus, string> = {
   ENCERRADA: 'ENCERRADA',
   CANCELADA: 'CANCELADA',
 };
+
+// ─── Maintenance Provisions ─────────────────────────────────────────────
+
+export interface MaintenanceProvision {
+  id: string;
+  organizationId: string;
+  assetId: string | null;
+  monthlyAmount: number;
+  costCenterId: string | null;
+  isActive: boolean;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+  asset?: { id: string; name: string; assetTag: string } | null;
+}
+
+export interface CreateMaintenanceProvisionInput {
+  assetId?: string;
+  monthlyAmount: number;
+  costCenterId?: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface ProvisionReconciliation {
+  periodYear: number;
+  periodMonth: number;
+  totalProvisioned: number;
+  totalActualCost: number;
+  variance: number;
+  byAsset: Array<{
+    assetId: string;
+    assetName: string;
+    provisioned: number;
+    actual: number;
+    variance: number;
+  }>;
+}

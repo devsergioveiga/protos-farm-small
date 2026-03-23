@@ -133,7 +133,7 @@ export async function getInventoryReport(
 
   // Compute totals
   const totals = rows.reduce(
-    (acc, row) => ({
+    (acc: { count: number; grossValue: number; accumulatedDepreciation: number; netBookValue: number }, row: typeof rows[number]) => ({
       count: acc.count + row.count,
       grossValue: acc.grossValue + row.grossValue,
       accumulatedDepreciation: acc.accumulatedDepreciation + row.accumulatedDepreciation,
@@ -267,7 +267,7 @@ export async function getDepreciationProjection(
           track: (config.activeTrack as 'FISCAL' | 'MANAGERIAL') ?? 'FISCAL',
         },
         period: { year: periodYear, month: periodMonth },
-        acquisitionDate: new Date(asset.acquisitionDate),
+        acquisitionDate: asset.acquisitionDate!,
       });
 
       const monthDepr = engineOutput.depreciationAmount;

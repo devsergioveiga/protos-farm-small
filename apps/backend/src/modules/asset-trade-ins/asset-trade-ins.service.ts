@@ -184,7 +184,7 @@ export async function createTradeIn(
         data: {
           organizationId: ctx.organizationId,
           farmId: input.farmId,
-          supplierName: input.supplierName ?? null,
+          supplierName: input.supplierName ?? '',
           category: 'ASSET_ACQUISITION',
           description: `Trade-in ${newAsset.assetTag} — ${newAsset.name}`,
           totalAmount: netPayableAmount.toDecimalPlaces(2).toString(),

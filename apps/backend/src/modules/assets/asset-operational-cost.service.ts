@@ -93,7 +93,7 @@ export async function getOperationalCost(
   const maintenanceTotal = new Decimal(String(maintenanceAgg._sum.totalCost ?? 0));
   const fuelTotal = new Decimal(String(fuelAgg._sum.totalCost ?? 0));
 
-  const netBookValue = acquisitionValue.minus(depreciationTotal).max(new Decimal(0));
+  const netBookValue = Decimal.max(acquisitionValue.minus(depreciationTotal), new Decimal(0));
   const totalOperationalCost = maintenanceTotal.plus(fuelTotal);
   const totalLifetimeCost = acquisitionValue.plus(maintenanceTotal).plus(fuelTotal);
 

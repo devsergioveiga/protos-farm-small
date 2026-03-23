@@ -52,8 +52,8 @@ function mapSex(sexo: string | null): 'MALE' | 'FEMALE' {
   return 'FEMALE'; // default for dairy farm
 }
 
-function mapCategory(sex: 'MALE' | 'FEMALE'): string {
-  return sex === 'MALE' ? 'NOVILHO' : 'NOVILHA';
+function mapCategory(sex: 'MALE' | 'FEMALE') {
+  return sex === 'MALE' ? 'NOVILHO' as const : 'NOVILHA' as const;
 }
 
 // ─── Import Breeds ───────────────────────────────────────────────────

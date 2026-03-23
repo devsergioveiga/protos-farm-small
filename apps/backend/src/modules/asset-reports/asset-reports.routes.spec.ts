@@ -91,7 +91,7 @@ const BASE_TCO = {
       fuelCost: 10000,
       totalCost: 160000,
       repairRatio: 0.5,
-      alert: 'OK',
+      alert: 'OK' as const,
       costPerHour: 320,
     },
   ],

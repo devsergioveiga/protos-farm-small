@@ -41,7 +41,7 @@ assetFarmTransfersRouter.post(
     try {
       const ctx = buildRlsContext(req);
       const userId = req.user?.userId ?? '';
-      const result = await createTransfer(ctx, req.params.assetId, req.body, userId);
+      const result = await createTransfer(ctx, req.params.assetId as string, req.body, userId);
       res.status(201).json(result);
     } catch (err) {
       handleError(err, res);
@@ -59,7 +59,7 @@ assetFarmTransfersRouter.get(
     try {
       const ctx = buildRlsContext(req);
       const { page, limit } = req.query;
-      const result = await listTransfers(ctx, req.params.assetId, {
+      const result = await listTransfers(ctx, req.params.assetId as string, {
         page: page ? Number(page) : undefined,
         limit: limit ? Number(limit) : undefined,
       });

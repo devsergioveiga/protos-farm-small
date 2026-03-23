@@ -178,7 +178,7 @@ export async function importProducts(
       const tipo = str(row.tipo) || 'P';
 
       // Map FDB product type to Protos Farm
-      const nature = tipo === 'S' ? 'SERVICE' : 'PRODUCT';
+      const nature = tipo === 'S' ? 'SERVICE' as const : 'PRODUCT' as const;
       const type = mapProductType(idMap, row.cdclassificacao as number | null);
       const measurementUnitId = idMap.get('UNIDADEMEDIDA', row.cdunidademedida as number);
 

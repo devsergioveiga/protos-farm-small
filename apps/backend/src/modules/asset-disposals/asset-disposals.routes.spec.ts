@@ -73,7 +73,7 @@ const SALE_OUTPUT = {
   assetId: ASSET_ID,
   assetTag: 'PAT-00001',
   assetName: 'Trator John Deere',
-  disposalType: 'VENDA',
+  disposalType: 'VENDA' as const,
   disposalTypeLabel: 'Venda',
   disposalDate: '2026-04-25T00:00:00.000Z',
   saleValue: 80000,
@@ -94,7 +94,7 @@ const WRITEOFF_OUTPUT = {
   assetId: ASSET_ID,
   assetTag: 'PAT-00001',
   assetName: 'Trator John Deere',
-  disposalType: 'DESCARTE',
+  disposalType: 'DESCARTE' as const,
   disposalTypeLabel: 'Descarte',
   disposalDate: '2026-04-25T00:00:00.000Z',
   saleValue: null,
@@ -222,7 +222,7 @@ describe('Asset Disposals API', () => {
 
     it('Test 5: SINISTRO creates disposal with motivation required', async () => {
       authAs(ADMIN_PAYLOAD);
-      const sinistroOutput = { ...WRITEOFF_OUTPUT, disposalType: 'SINISTRO', disposalTypeLabel: 'Sinistro', motivation: 'Incendio' };
+      const sinistroOutput = { ...WRITEOFF_OUTPUT, disposalType: 'SINISTRO' as const, disposalTypeLabel: 'Sinistro', motivation: 'Incendio' };
       mockedService.createDisposal.mockResolvedValue(sinistroOutput);
 
       const res = await request(app)
@@ -242,7 +242,7 @@ describe('Asset Disposals API', () => {
 
     it('Test 6: OBSOLESCENCIA creates disposal without receivable', async () => {
       authAs(ADMIN_PAYLOAD);
-      const obsOutput = { ...WRITEOFF_OUTPUT, disposalType: 'OBSOLESCENCIA', disposalTypeLabel: 'Obsolescencia' };
+      const obsOutput = { ...WRITEOFF_OUTPUT, disposalType: 'OBSOLESCENCIA' as const, disposalTypeLabel: 'Obsolescencia' };
       mockedService.createDisposal.mockResolvedValue(obsOutput);
 
       const res = await request(app)

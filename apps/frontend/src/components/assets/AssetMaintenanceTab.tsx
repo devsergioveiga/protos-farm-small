@@ -288,14 +288,14 @@ export default function AssetMaintenanceTab({ assetId }: AssetMaintenanceTabProp
         isOpen={showWorkOrderModal}
         onClose={() => setShowWorkOrderModal(false)}
         onSuccess={() => { setShowWorkOrderModal(false); loadData(); }}
-        prefilledAssetId={assetId}
+        assetId={assetId}
       />
 
       <MaintenancePlanModal
         isOpen={showPlanModal}
         onClose={() => setShowPlanModal(false)}
         onSuccess={() => { setShowPlanModal(false); loadData(); }}
-        prefilledAssetId={assetId}
+        assetId={assetId}
       />
     </div>
   );

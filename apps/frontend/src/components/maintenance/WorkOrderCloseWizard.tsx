@@ -81,7 +81,7 @@ export default function WorkOrderCloseWizard({
         accountingTreatment,
         deferralMonths: accountingTreatment === 'DIFERIMENTO' && deferralMonths
           ? Number(deferralMonths)
-          : null,
+          : undefined,
       }, onSuccess);
     } catch {
       setSubmitError('Nao foi possivel encerrar a OS. Verifique se todos os campos estao preenchidos.');

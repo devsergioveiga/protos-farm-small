@@ -113,7 +113,7 @@ async function checkHierarchyDepth(
   let depth = 1; // the child being added is at depth 1 relative to proposedParent
   let currentId: string | null = proposedParentId;
   while (currentId) {
-    const node = await tx.asset.findFirst({
+    const node: { parentAssetId: string | null } | null = await tx.asset.findFirst({
       where: { id: currentId, organizationId: orgId },
       select: { parentAssetId: true },
     });

@@ -87,12 +87,12 @@ export async function listSparePartsForAsset(ctx: RlsContext, assetId: string) {
     records.map(async (r) => {
       const product = await prisma.product.findUnique({
         where: { id: r.productId },
-        select: { id: true, name: true, unit: true },
+        select: { id: true, name: true, measurementUnit: { select: { abbreviation: true } } },
       });
 
       const stockBalance = await prisma.stockBalance.findFirst({
         where: { organizationId: ctx.organizationId, productId: r.productId },
-        select: { quantity: true },
+        select: { currentQuantity: true },
       });
 
       const reorderPoint = await prisma.product.findUnique({
@@ -104,8 +104,8 @@ export async function listSparePartsForAsset(ctx: RlsContext, assetId: string) {
         compatId: r.id,
         productId: r.productId,
         productName: product?.name ?? r.productId,
-        unit: product?.unit ?? '',
-        currentStock: stockBalance ? Number(stockBalance.quantity) : 0,
+        unit: product?.measurementUnit?.abbreviation ?? '',
+        currentStock: stockBalance ? Number(stockBalance.currentQuantity) : 0,
         reorderPoint: reorderPoint?.reorderPoint != null ? Number(reorderPoint.reorderPoint) : null,
         notes: r.notes ?? null,
       };

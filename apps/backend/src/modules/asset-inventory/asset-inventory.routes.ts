@@ -87,7 +87,7 @@ assetInventoryRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const result = await getInventory(ctx, req.params.id);
+      const result = await getInventory(ctx, req.params.id as string);
       res.status(200).json(result);
     } catch (err) {
       handleError(err, res);
@@ -104,7 +104,7 @@ assetInventoryRouter.patch(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const result = await countItems(ctx, req.params.id, req.body.items ?? []);
+      const result = await countItems(ctx, req.params.id as string, req.body.items ?? []);
       res.status(200).json(result);
     } catch (err) {
       handleError(err, res);
@@ -122,7 +122,7 @@ assetInventoryRouter.post(
     try {
       const ctx = buildRlsContext(req);
       const userId = req.user?.userId ?? '';
-      const result = await reconcileInventory(ctx, req.params.id, userId);
+      const result = await reconcileInventory(ctx, req.params.id as string, userId);
       res.status(200).json(result);
     } catch (err) {
       handleError(err, res);

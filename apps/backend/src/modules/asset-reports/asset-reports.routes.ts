@@ -17,7 +17,7 @@ assetReportsRouter.get(
   async (req: Request, res: Response) => {
     try {
       const result = await service.getInventoryReport({
-        organizationId: req.params.orgId,
+        organizationId: req.params.orgId as string,
         farmId: req.query.farmId as string | undefined,
         assetType: req.query.assetType as string | undefined,
         dateFrom: req.query.dateFrom as string | undefined,
@@ -49,7 +49,7 @@ assetReportsRouter.get(
       }
       const buffer = await service.exportInventoryReport(
         {
-          organizationId: req.params.orgId,
+          organizationId: req.params.orgId as string,
           farmId: req.query.farmId as string | undefined,
           assetType: req.query.assetType as string | undefined,
           dateFrom: req.query.dateFrom as string | undefined,
@@ -97,7 +97,7 @@ assetReportsRouter.get(
         return;
       }
       const result = await service.getDepreciationProjection({
-        organizationId: req.params.orgId,
+        organizationId: req.params.orgId as string,
         horizonMonths: horizonMonths as 12 | 36 | 60,
         farmId: req.query.farmId as string | undefined,
         assetType: req.query.assetType as string | undefined,
@@ -122,7 +122,7 @@ assetReportsRouter.get(
   async (req: Request, res: Response) => {
     try {
       const result = await service.getTCOFleet({
-        organizationId: req.params.orgId,
+        organizationId: req.params.orgId as string,
         farmId: req.query.farmId as string | undefined,
         assetType: req.query.assetType as string | undefined,
       });

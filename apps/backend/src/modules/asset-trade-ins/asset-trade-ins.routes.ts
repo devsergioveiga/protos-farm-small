@@ -75,7 +75,7 @@ assetTradeInsRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const { id } = req.params;
+      const id = req.params.id as string;
       const result = await getTradeIn(ctx, id);
       res.status(200).json(result);
     } catch (err) {

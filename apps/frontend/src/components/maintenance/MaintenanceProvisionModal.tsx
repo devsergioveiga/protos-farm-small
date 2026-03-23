@@ -102,10 +102,10 @@ export default function MaintenanceProvisionModal({
     setSubmitError(null);
     try {
       const input = {
-        assetId: assetId || null,
+        assetId: assetId || undefined,
         monthlyAmount: Number(monthlyAmount),
-        costCenterId: costCenterId || null,
-        description: description.trim() || null,
+        costCenterId: costCenterId || undefined,
+        description: description.trim() || undefined,
         isActive,
       };
       if (provision) {

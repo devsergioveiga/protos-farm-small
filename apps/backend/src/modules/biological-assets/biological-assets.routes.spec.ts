@@ -109,8 +109,8 @@ const VALID_PERENNIAL_VALUATION = {
 
 const SUMMARY = [
   {
-    assetGroup: 'VACA_LACTACAO',
-    groupType: 'ANIMAL',
+    assetGroup: 'VACA_LACTACAO' as const,
+    groupType: 'ANIMAL' as const,
     latestTotalFairValue: 185000,
     latestFairValueChange: 10000,
     valuationCount: 2,

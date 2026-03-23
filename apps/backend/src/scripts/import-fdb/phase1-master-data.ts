@@ -203,15 +203,15 @@ export async function importMeasurementUnits(
   console.log(`  ✓ Measurement units: ${created} created, ${skipped} skipped`);
 }
 
-function guessUnitCategory(name: string, symbol: string): string {
+function guessUnitCategory(name: string, symbol: string) {
   const n = name.toLowerCase();
   const s = symbol.toLowerCase();
   if (['kg', 'g', 'mg', 'ton', 't', '@'].includes(s) || n.includes('quilo') || n.includes('grama') || n.includes('arroba') || n.includes('tonelada'))
-    return 'WEIGHT';
-  if (['l', 'ml', 'lt'].includes(s) || n.includes('litro')) return 'VOLUME';
+    return 'WEIGHT' as const;
+  if (['l', 'ml', 'lt'].includes(s) || n.includes('litro')) return 'VOLUME' as const;
   if (['ha', 'm²', 'm2'].includes(s) || n.includes('hectare') || n.includes('alqueire'))
-    return 'AREA';
-  return 'COUNT';
+    return 'AREA' as const;
+  return 'COUNT' as const;
 }
 
 // ─── Product Classifications ──────────────────────────────────────────

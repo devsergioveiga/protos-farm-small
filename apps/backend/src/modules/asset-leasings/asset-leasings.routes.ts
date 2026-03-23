@@ -86,7 +86,7 @@ assetLeasingsRouter.get(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const leasing = await getLeasing(ctx, req.params.id);
+      const leasing = await getLeasing(ctx, req.params.id as string);
       res.status(200).json(leasing);
     } catch (err) {
       handleError(err, res);
@@ -103,7 +103,7 @@ assetLeasingsRouter.put(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const leasing = await exercisePurchaseOption(ctx, req.params.id);
+      const leasing = await exercisePurchaseOption(ctx, req.params.id as string);
       res.status(200).json(leasing);
     } catch (err) {
       handleError(err, res);
@@ -120,7 +120,7 @@ assetLeasingsRouter.put(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const leasing = await returnAsset(ctx, req.params.id);
+      const leasing = await returnAsset(ctx, req.params.id as string);
       res.status(200).json(leasing);
     } catch (err) {
       handleError(err, res);
@@ -137,7 +137,7 @@ assetLeasingsRouter.put(
   async (req, res) => {
     try {
       const ctx = buildRlsContext(req);
-      const leasing = await cancelLeasing(ctx, req.params.id);
+      const leasing = await cancelLeasing(ctx, req.params.id as string);
       res.status(200).json(leasing);
     } catch (err) {
       handleError(err, res);

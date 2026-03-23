@@ -4,6 +4,7 @@ import { api } from '@/services/api';
 import { INSEMINATION_TYPES, CERVICAL_MUCUS_OPTIONS } from '@/types/iatf-execution';
 import type { BullItem } from '@/types/bull';
 import type { AnimalListItem } from '@/types/animal';
+import { CATEGORY_LABELS } from '@/types/animal';
 import './BulkInseminationModal.css';
 
 interface Props {
@@ -249,7 +250,7 @@ export default function BulkInseminationModal({ isOpen, onClose, farmId, onSucce
                       </span>
                       <span className="bulk-insem__animal-tag">{a.earTag}</span>
                       <span className="bulk-insem__animal-name">{a.name || '—'}</span>
-                      <span className="bulk-insem__animal-cat">{a.categoryLabel}</span>
+                      <span className="bulk-insem__animal-cat">{CATEGORY_LABELS[a.category] || a.category}</span>
                     </li>
                   );
                 })}
