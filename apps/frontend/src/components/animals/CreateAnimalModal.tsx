@@ -4,6 +4,7 @@ import { api } from '@/services/api';
 import { useBreeds } from '@/hooks/useBreeds';
 import type {
   CreateAnimalPayload,
+  UpdateAnimalPayload,
   AnimalSex,
   AnimalCategory,
   AnimalOrigin,
@@ -25,6 +26,7 @@ const GIROLANDO_GRADES: Record<string, string> = {
 interface CreateAnimalModalProps {
   isOpen: boolean;
   farmId: string;
+  animal?: AnimalDetail | null;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -72,7 +74,8 @@ function detectGirolandoGrade(
   return GIROLANDO_GRADES[holPct.toFixed(2)] ?? null;
 }
 
-function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalModalProps) {
+function CreateAnimalModal({ isOpen, farmId, animal, onClose, onSuccess }: CreateAnimalModalProps) {
+  const isEditMode = Boolean(animal);
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -119,9 +122,16 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
   // Girolando detection
   const girolandoGrade = detectGirolandoGrade(compositions, breedNames);
 
-  // Reset on close
+  // Track previous isOpen to detect open transitions
+  const prevIsOpenRef = useRef(false);
+
+  // Reset on close / Populate on open in edit mode
   useEffect(() => {
+    const wasOpen = prevIsOpenRef.current;
+    prevIsOpenRef.current = isOpen;
+
     if (!isOpen) {
+      // Reset all fields when modal closes
       setStep(1);
       setEarTag('');
       setRfidTag('');
@@ -141,8 +151,46 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
       setGenealogicalRecords([]);
       setSubmitError(null);
       setIsSubmitting(false);
+      return;
     }
-  }, [isOpen]);
+
+    // Populate fields when opening in edit mode
+    if (isOpen && !wasOpen && animal) {
+      setEarTag(animal.earTag);
+      setRfidTag(animal.rfidTag ?? '');
+      setName(animal.name ?? '');
+      setRegisteredName(animal.registeredName ?? '');
+      setRegistrationNumber(animal.registrationNumber ?? '');
+      setSex(animal.sex);
+      setBirthDate(animal.birthDate ? animal.birthDate.slice(0, 10) : '');
+      setBirthDateEstimated(animal.birthDateEstimated);
+      setCategory(animal.category);
+      setOrigin(animal.origin);
+      setEntryWeightKg(animal.entryWeightKg != null ? String(animal.entryWeightKg) : '');
+      setBodyConditionScore(animal.bodyConditionScore != null ? String(animal.bodyConditionScore) : '');
+      setNotes(animal.notes ?? '');
+      setIsCompositionEstimated(animal.isCompositionEstimated);
+      setCompositions(
+        animal.compositions.map((c) => ({
+          breedId: c.breedId,
+          percentage: c.percentage,
+          fraction: c.fraction ?? undefined,
+        })),
+      );
+      setGenealogicalRecords(
+        animal.genealogicalRecords.map((r) => ({
+          genealogyClass: r.genealogyClass,
+          registrationNumber: r.registrationNumber ?? undefined,
+          associationName: r.associationName ?? undefined,
+          registrationDate: r.registrationDate ? r.registrationDate.slice(0, 10) : undefined,
+          girolando_grade: r.girolando_grade ?? undefined,
+          notes: r.notes ?? undefined,
+        })),
+      );
+      setSubmitError(null);
+      setIsSubmitting(false);
+    }
+  }, [isOpen, animal]);
 
   // Focus trap with Escape
   useEffect(() => {
@@ -204,37 +252,67 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
     setSubmitError(null);
 
     try {
-      const payload: CreateAnimalPayload = {
-        earTag: earTag.trim(),
-        sex: sex as AnimalSex,
-        origin,
-      };
+      if (isEditMode && animal) {
+        // Edit mode: PATCH
+        const payload: UpdateAnimalPayload = {
+          earTag: earTag.trim(),
+          sex: sex as AnimalSex,
+          origin,
+          rfidTag: rfidTag.trim() || undefined,
+          name: name.trim() || undefined,
+          registeredName: registeredName.trim() || undefined,
+          registrationNumber: registrationNumber.trim() || undefined,
+          birthDate: birthDate || undefined,
+          birthDateEstimated,
+          category: category || undefined,
+          entryWeightKg: entryWeightKg ? Number(entryWeightKg) : undefined,
+          bodyConditionScore: bodyConditionScore ? Number(bodyConditionScore) : undefined,
+          notes: notes.trim() || undefined,
+          isCompositionEstimated,
+          compositions: compositions.filter((c) => c.breedId && c.percentage > 0),
+          genealogicalRecords: genealogicalRecords.filter((r) => r.genealogyClass),
+        };
 
-      if (rfidTag.trim()) payload.rfidTag = rfidTag.trim();
-      if (name.trim()) payload.name = name.trim();
-      if (registeredName.trim()) payload.registeredName = registeredName.trim();
-      if (registrationNumber.trim()) payload.registrationNumber = registrationNumber.trim();
-      if (birthDate) payload.birthDate = birthDate;
-      if (birthDateEstimated) payload.birthDateEstimated = true;
-      if (category) payload.category = category;
-      if (entryWeightKg) payload.entryWeightKg = Number(entryWeightKg);
-      if (bodyConditionScore) payload.bodyConditionScore = Number(bodyConditionScore);
-      if (notes.trim()) payload.notes = notes.trim();
-      if (isCompositionEstimated) payload.isCompositionEstimated = true;
+        await api.patch<AnimalDetail>(`/org/farms/${farmId}/animals/${animal.id}`, payload);
+      } else {
+        // Create mode: POST
+        const payload: CreateAnimalPayload = {
+          earTag: earTag.trim(),
+          sex: sex as AnimalSex,
+          origin,
+        };
 
-      if (compositions.length > 0) {
-        payload.compositions = compositions.filter((c) => c.breedId && c.percentage > 0);
+        if (rfidTag.trim()) payload.rfidTag = rfidTag.trim();
+        if (name.trim()) payload.name = name.trim();
+        if (registeredName.trim()) payload.registeredName = registeredName.trim();
+        if (registrationNumber.trim()) payload.registrationNumber = registrationNumber.trim();
+        if (birthDate) payload.birthDate = birthDate;
+        if (birthDateEstimated) payload.birthDateEstimated = true;
+        if (category) payload.category = category;
+        if (entryWeightKg) payload.entryWeightKg = Number(entryWeightKg);
+        if (bodyConditionScore) payload.bodyConditionScore = Number(bodyConditionScore);
+        if (notes.trim()) payload.notes = notes.trim();
+        if (isCompositionEstimated) payload.isCompositionEstimated = true;
+
+        if (compositions.length > 0) {
+          payload.compositions = compositions.filter((c) => c.breedId && c.percentage > 0);
+        }
+
+        if (genealogicalRecords.length > 0) {
+          const validRecords = genealogicalRecords.filter((r) => r.genealogyClass);
+          if (validRecords.length > 0) payload.genealogicalRecords = validRecords;
+        }
+
+        await api.post<AnimalDetail>(`/org/farms/${farmId}/animals`, payload);
       }
 
-      if (genealogicalRecords.length > 0) {
-        const validRecords = genealogicalRecords.filter((r) => r.genealogyClass);
-        if (validRecords.length > 0) payload.genealogicalRecords = validRecords;
-      }
-
-      await api.post<AnimalDetail>(`/org/farms/${farmId}/animals`, payload);
       onSuccess();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Não foi possível cadastrar o animal.';
+      const message = err instanceof Error
+        ? err.message
+        : isEditMode
+          ? 'Não foi possível atualizar o animal.'
+          : 'Não foi possível cadastrar o animal.';
       setSubmitError(message);
     } finally {
       setIsSubmitting(false);
@@ -257,6 +335,8 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
     genealogicalRecords,
     isCompositionEstimated,
     farmId,
+    animal,
+    isEditMode,
     onSuccess,
     canGoStep2,
     compositionValid,
@@ -270,13 +350,13 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
         className="create-animal-modal"
         role="dialog"
         aria-modal="true"
-        aria-label="Cadastrar animal"
+        aria-label={isEditMode ? 'Editar animal' : 'Cadastrar animal'}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <header className="create-animal-modal__header">
           <div className="create-animal-modal__header-content">
-            <h2 className="create-animal-modal__title">Cadastrar animal</h2>
+            <h2 className="create-animal-modal__title">{isEditMode ? 'Editar animal' : 'Cadastrar animal'}</h2>
             <nav className="create-animal-modal__stepper" aria-label="Progresso do cadastro">
               {STEPS.map((s, i) => {
                 const isCompleted = step > s.number;
@@ -864,6 +944,8 @@ function CreateAnimalModal({ isOpen, farmId, onClose, onSuccess }: CreateAnimalM
                   <Loader2 size={16} className="create-animal-modal__spinner" aria-hidden="true" />
                   Salvando...
                 </>
+              ) : isEditMode ? (
+                'Salvar alterações'
               ) : (
                 'Cadastrar animal'
               )}
