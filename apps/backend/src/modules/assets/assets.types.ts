@@ -48,6 +48,8 @@ export interface CreateAssetInput {
   currentHourmeter?: number | string;
   currentOdometer?: number | string;
   notes?: string;
+  wipBudget?: number | string;
+  wipBudgetAlertPct?: number | string;
 }
 
 export type UpdateAssetInput = Partial<CreateAssetInput> & {

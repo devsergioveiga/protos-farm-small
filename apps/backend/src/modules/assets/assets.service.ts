@@ -38,9 +38,132 @@ const ASSET_INCLUDE = {
 
 const ASSET_INCLUDE_FULL = {
   ...ASSET_INCLUDE,
-  childAssets: { select: { id: true, name: true, assetTag: true, assetType: true, status: true } },
+  childAssets: {
+    where: { deletedAt: null },
+    select: {
+      id: true,
+      name: true,
+      assetTag: true,
+      assetType: true,
+      status: true,
+      acquisitionValue: true,
+      deletedAt: true,
+      childAssets: {
+        where: { deletedAt: null },
+        select: {
+          id: true,
+          name: true,
+          assetTag: true,
+          assetType: true,
+          status: true,
+          acquisitionValue: true,
+          deletedAt: true,
+          childAssets: {
+            where: { deletedAt: null },
+            select: {
+              id: true,
+              name: true,
+              assetTag: true,
+              assetType: true,
+              status: true,
+              acquisitionValue: true,
+              deletedAt: true,
+            },
+          },
+        },
+      },
+    },
+  },
   _count: { select: { fuelRecords: true, meterReadings: true, documents: true } },
 };
+
+// ─── Hierarchy helpers ────────────────────────────────────────────────
+
+async function getDescendantIds(
+  tx: TxClient,
+  assetId: string,
+  orgId: string,
+): Promise<string[]> {
+  const children = await tx.asset.findMany({
+    where: { parentAssetId: assetId, organizationId: orgId, deletedAt: null },
+    select: { id: true },
+  });
+  const ids: string[] = children.map((c: { id: string }) => c.id);
+  for (const child of children) {
+    const grandchildren = await getDescendantIds(tx, child.id, orgId);
+    ids.push(...grandchildren);
+  }
+  return ids;
+}
+
+async function checkHierarchyDepth(
+  tx: TxClient,
+  proposedParentId: string,
+  orgId: string,
+  currentAssetId?: string,
+): Promise<void> {
+  // Check proposed parent exists
+  const parent = await tx.asset.findFirst({
+    where: { id: proposedParentId, organizationId: orgId, deletedAt: null },
+    select: { parentAssetId: true },
+  });
+  if (!parent) throw new AssetError('Ativo pai não encontrado', 404);
+
+  // Traverse upward to count ancestor depth
+  let depth = 1; // the child being added is at depth 1 relative to proposedParent
+  let currentId: string | null = proposedParentId;
+  while (currentId) {
+    const node = await tx.asset.findFirst({
+      where: { id: currentId, organizationId: orgId },
+      select: { parentAssetId: true },
+    });
+    if (!node) break;
+    if (node.parentAssetId) {
+      depth++;
+      if (depth >= 3) {
+        throw new AssetError('Limite de 3 niveis de hierarquia atingido', 400);
+      }
+    }
+    currentId = node.parentAssetId;
+  }
+
+  // Circular reference check: if updating, verify proposedParent is not a descendant
+  if (currentAssetId) {
+    const descendants = await getDescendantIds(tx, currentAssetId, orgId);
+    if (descendants.includes(proposedParentId)) {
+      throw new AssetError(
+        'Referencia circular: o pai selecionado e um descendente deste ativo',
+        400,
+      );
+    }
+  }
+}
+
+function sumChildValues(
+  childAssets: Array<{
+    acquisitionValue: unknown;
+    status: string;
+    deletedAt: unknown;
+    childAssets?: Array<{
+      acquisitionValue: unknown;
+      status: string;
+      deletedAt: unknown;
+      childAssets?: Array<{ acquisitionValue: unknown; status: string; deletedAt: unknown }>;
+    }>;
+  }>,
+): number {
+  let total = 0;
+  for (const child of childAssets) {
+    if (child.status === 'ALIENADO' || child.deletedAt) continue;
+    if (child.acquisitionValue != null) {
+      total += Number(child.acquisitionValue);
+    }
+    if (child.childAssets) {
+      total += sumChildValues(child.childAssets);
+    }
+  }
+  return total;
+}
 
 // ─── Service functions ────────────────────────────────────────────────
 
@@ -48,7 +171,12 @@ export async function createAsset(ctx: RlsContext, input: CreateAssetInput) {
   return prisma.$transaction(async (tx) => {
     const assetTag = await getNextAssetTag(tx, ctx.organizationId);
 
-    // Validate IMPLEMENTO parent
+    // Validate hierarchy depth (3-level limit) for any parent relationship
+    if (input.parentAssetId) {
+      await checkHierarchyDepth(tx, input.parentAssetId, ctx.organizationId);
+    }
+
+    // Validate IMPLEMENTO parent type (must be MAQUINA) — additional type-specific check
     if (input.assetType === 'IMPLEMENTO' && input.parentAssetId) {
       const parent = await tx.asset.findFirst({
         where: { id: input.parentAssetId, organizationId: ctx.organizationId, deletedAt: null },
@@ -113,6 +241,9 @@ export async function createAsset(ctx: RlsContext, input: CreateAssetInput) {
             input.currentOdometer != null ? String(input.currentOdometer) : undefined,
           photoUrls: [],
           notes: input.notes,
+          wipBudget: input.wipBudget != null ? String(input.wipBudget) : undefined,
+          wipBudgetAlertPct:
+            input.wipBudgetAlertPct != null ? String(input.wipBudgetAlertPct) : undefined,
         },
         include: ASSET_INCLUDE,
       });
@@ -163,6 +294,9 @@ export async function createAsset(ctx: RlsContext, input: CreateAssetInput) {
         currentOdometer: input.currentOdometer != null ? String(input.currentOdometer) : undefined,
         photoUrls: [],
         notes: input.notes,
+        wipBudget: input.wipBudget != null ? String(input.wipBudget) : undefined,
+        wipBudgetAlertPct:
+          input.wipBudgetAlertPct != null ? String(input.wipBudgetAlertPct) : undefined,
       },
       include: ASSET_INCLUDE,
     });
@@ -242,7 +376,21 @@ export async function getAsset(ctx: RlsContext, assetId: string) {
     throw new AssetError('Ativo não encontrado', 404);
   }
 
-  return asset;
+  const totalChildValue = sumChildValues(
+    (asset.childAssets ?? []) as Array<{
+      acquisitionValue: unknown;
+      status: string;
+      deletedAt: unknown;
+      childAssets?: Array<{
+        acquisitionValue: unknown;
+        status: string;
+        deletedAt: unknown;
+        childAssets?: Array<{ acquisitionValue: unknown; status: string; deletedAt: unknown }>;
+      }>;
+    }>,
+  );
+
+  return { ...asset, totalChildValue };
 }
 
 export async function updateAsset(ctx: RlsContext, assetId: string, input: UpdateAssetInput) {
@@ -254,8 +402,13 @@ export async function updateAsset(ctx: RlsContext, assetId: string, input: Updat
     throw new AssetError('Ativo não encontrado', 404);
   }
 
-  // Validate IMPLEMENTO parent if changing parentAssetId
+  // Validate hierarchy depth and circular refs if parentAssetId is changing
   if (input.parentAssetId && input.parentAssetId !== existing.parentAssetId) {
+    await prisma.$transaction(async (tx) => {
+      await checkHierarchyDepth(tx, input.parentAssetId!, ctx.organizationId, assetId);
+    });
+
+    // Validate IMPLEMENTO parent type (must be MAQUINA) — additional type-specific check
     const assetType = input.assetType ?? String(existing.assetType);
     if (assetType === 'IMPLEMENTO') {
       const parent = await prisma.asset.findFirst({
@@ -323,6 +476,10 @@ export async function updateAsset(ctx: RlsContext, assetId: string, input: Updat
       ...(input.currentHourmeter != null && { currentHourmeter: String(input.currentHourmeter) }),
       ...(input.currentOdometer != null && { currentOdometer: String(input.currentOdometer) }),
       ...(input.notes !== undefined && { notes: input.notes }),
+      ...(input.wipBudget != null && { wipBudget: String(input.wipBudget) }),
+      ...(input.wipBudgetAlertPct != null && {
+        wipBudgetAlertPct: String(input.wipBudgetAlertPct),
+      }),
     },
     include: ASSET_INCLUDE,
   });

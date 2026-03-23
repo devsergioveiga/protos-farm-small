@@ -569,6 +569,171 @@ describe('Assets API', () => {
     });
   });
 
+  // ─── Hierarchy depth guard + parent totalization ─────────────────────
+
+  describe('hierarchy', () => {
+    beforeEach(() => authAs(ADMIN_PAYLOAD));
+
+    it('creates child at depth 1 (parent is root, no grandparent) -> 201', async () => {
+      const child = { ...VALID_ASSET, id: 'asset-child', parentAssetId: 'asset-1' };
+      mockedService.createAsset.mockResolvedValue(child as never);
+
+      const res = await request(app)
+        .post(`/api/org/${ORG_ID}/assets`)
+        .set('Authorization', 'Bearer valid-token')
+        .send({
+          name: 'Filho Nivel 1',
+          assetType: 'MAQUINA',
+          classification: 'DEPRECIABLE_CPC27',
+          farmId: 'farm-1',
+          parentAssetId: 'asset-1',
+        });
+
+      expect(res.status).toBe(201);
+    });
+
+    it('creates child at depth 2 (parent has grandparent) -> 201', async () => {
+      const grandchild = { ...VALID_ASSET, id: 'asset-gc', parentAssetId: 'asset-child' };
+      mockedService.createAsset.mockResolvedValue(grandchild as never);
+
+      const res = await request(app)
+        .post(`/api/org/${ORG_ID}/assets`)
+        .set('Authorization', 'Bearer valid-token')
+        .send({
+          name: 'Neto Nivel 2',
+          assetType: 'MAQUINA',
+          classification: 'DEPRECIABLE_CPC27',
+          farmId: 'farm-1',
+          parentAssetId: 'asset-child',
+        });
+
+      expect(res.status).toBe(201);
+    });
+
+    it('rejects depth 4 (would exceed 3-level limit) -> 400', async () => {
+      mockedService.createAsset.mockRejectedValue(
+        new AssetError('Limite de 3 niveis de hierarquia atingido', 400),
+      );
+
+      const res = await request(app)
+        .post(`/api/org/${ORG_ID}/assets`)
+        .set('Authorization', 'Bearer valid-token')
+        .send({
+          name: 'Bisneto Nivel 3',
+          assetType: 'MAQUINA',
+          classification: 'DEPRECIABLE_CPC27',
+          farmId: 'farm-1',
+          parentAssetId: 'asset-gc',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('niveis');
+    });
+
+    it('rejects circular reference on update (parentAssetId is a descendant) -> 400', async () => {
+      mockedService.updateAsset.mockRejectedValue(
+        new AssetError(
+          'Referencia circular: o pai selecionado e um descendente deste ativo',
+          400,
+        ),
+      );
+
+      const res = await request(app)
+        .patch(`/api/org/${ORG_ID}/assets/asset-1`)
+        .set('Authorization', 'Bearer valid-token')
+        .send({ parentAssetId: 'asset-child' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('circular');
+    });
+
+    it('rejects update that would exceed depth 3 -> 400', async () => {
+      mockedService.updateAsset.mockRejectedValue(
+        new AssetError('Limite de 3 niveis de hierarquia atingido', 400),
+      );
+
+      const res = await request(app)
+        .patch(`/api/org/${ORG_ID}/assets/asset-gc`)
+        .set('Authorization', 'Bearer valid-token')
+        .send({ parentAssetId: 'asset-deep' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('niveis');
+    });
+
+    it('GET /assets/:id returns totalChildValue summing active children acquisitionValues', async () => {
+      const assetWithChildren = {
+        ...VALID_ASSET,
+        childAssets: [
+          {
+            id: 'child-1',
+            name: 'Filho 1',
+            assetTag: 'PAT-00010',
+            assetType: 'IMPLEMENTO',
+            status: 'ATIVO',
+            acquisitionValue: '50000.00',
+            deletedAt: null,
+          },
+          {
+            id: 'child-2',
+            name: 'Filho 2',
+            assetTag: 'PAT-00011',
+            assetType: 'IMPLEMENTO',
+            status: 'ATIVO',
+            acquisitionValue: '30000.00',
+            deletedAt: null,
+          },
+        ],
+        totalChildValue: 80000,
+        _count: { fuelRecords: 0, meterReadings: 0, documents: 0 },
+      };
+      mockedService.getAsset.mockResolvedValue(assetWithChildren as never);
+
+      const res = await request(app)
+        .get(`/api/org/${ORG_ID}/assets/asset-1`)
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.totalChildValue).toBe(80000);
+    });
+
+    it('GET /assets/:id excludes ALIENADO children from totalChildValue', async () => {
+      const assetWithMixedChildren = {
+        ...VALID_ASSET,
+        childAssets: [
+          {
+            id: 'child-1',
+            name: 'Filho Ativo',
+            assetTag: 'PAT-00010',
+            assetType: 'IMPLEMENTO',
+            status: 'ATIVO',
+            acquisitionValue: '50000.00',
+            deletedAt: null,
+          },
+          {
+            id: 'child-2',
+            name: 'Filho Alienado',
+            assetTag: 'PAT-00011',
+            assetType: 'IMPLEMENTO',
+            status: 'ALIENADO',
+            acquisitionValue: '30000.00',
+            deletedAt: null,
+          },
+        ],
+        totalChildValue: 50000,
+        _count: { fuelRecords: 0, meterReadings: 0, documents: 0 },
+      };
+      mockedService.getAsset.mockResolvedValue(assetWithMixedChildren as never);
+
+      const res = await request(app)
+        .get(`/api/org/${ORG_ID}/assets/asset-1`)
+        .set('Authorization', 'Bearer valid-token');
+
+      expect(res.status).toBe(200);
+      expect(res.body.totalChildValue).toBe(50000);
+    });
+  });
+
   // ─── GET /api/org/:orgId/assets/export/csv ────────────────────────────
 
   describe('GET /api/org/:orgId/assets/export/csv', () => {
