@@ -1,272 +1,255 @@
 # Project Research Summary
 
-**Project:** Protos Farm — v1.2 Gestão de Patrimônio (Asset Lifecycle Management)
-**Domain:** Fixed asset management, CMMS, and biological asset valuation integrated into existing agricultural ERP
-**Researched:** 2026-03-19
-**Confidence:** HIGH for architecture and pitfalls (codebase-derived); HIGH for features (CPC 27/29/06 standards); MEDIUM for new dependency choices
+**Project:** Protos Farm — v1.3 RH e Folha de Pagamento Rural
+**Domain:** HR and Rural Payroll module integrated into existing agricultural ERP monolith
+**Researched:** 2026-03-23
+**Confidence:** HIGH overall — research is grounded in direct codebase analysis, official Brazilian labor law (Lei 5.889/73, CLT, eSocial S-1.3), and verified npm package metadata.
+
+---
 
 ## Executive Summary
 
-This milestone adds a complete Asset Lifecycle Management module (Gestão de Patrimônio) to an already mature agricultural ERP. The domain is well-understood — Brazilian accounting standards CPC 27 (fixed assets), CPC 29 (biological assets), and CPC 06 R2 (leasing) are unambiguous in their requirements for depreciation, fair value measurement, and right-of-use assets. The key challenge is not innovation but integration fidelity: the new asset modules must consume existing `payables`, `receivables`, `cost-centers`, `stock-outputs`, and `installmentGenerator` infrastructure precisely, without duplicating or corrupting existing financial data.
+This milestone adds a complete HR and Rural Payroll module to an existing, well-structured agricultural ERP. The system already has financial (payables, cost centers), procurement (stock, products), asset (depreciation, maintenance), and field operations modules live. The HR module is the missing link between "who did the work" and "what it cost." Building on top of v1.0–v1.2 means the architectural contracts, integration patterns, and infrastructure are already established — new work must extend them, not re-create them.
 
-The recommended approach builds in strict dependency order: core asset catalog first (all subsequent work depends on a clean asset entity with correct CPC 27/29 classification), then the depreciation engine (required for write-off gain/loss and financial reporting), then the maintenance CMMS (consumes stock outputs and generates payables), and finally advanced features (biological assets, leasing, and hierarchy). The architecture is additive — 9 new backend modules, 12 new Prisma migrations, a new `PATRIMÔNIO` frontend sidebar group, and targeted FK additions to `payables` and `receivables`. No existing module needs a rewrite.
+The recommended approach is additive and dependency-respecting: build the employee and contract foundation first, then the payroll calculation engine (which is custom — no npm library exists for Brazilian payroll), then time tracking and approval, and finally the payroll-to-payables integration and eSocial obligations. The existing BullMQ, pdfkit, nodemailer, exceljs, and @xmldom/xmldom stack covers most needs. Only four new dependencies are required: `xmlbuilder2` for eSocial XML generation, `xml-crypto` for digital signing, `pdfkit-table` for payslip table layout, and `date-holidays` for Brazilian holiday calendars.
 
-The primary risk is integration contamination: asset acquisitions must never route through the existing `GoodsReceipt → StockEntry` flow (which would inflate stock balances and double-count payables). A secondary and equally critical risk is decimal precision in the depreciation engine — the project already uses `decimal.js` for all monetary arithmetic, and this discipline is mandatory for the depreciation service or accumulated rounding drift will make the depreciation ledger irreconcilable over years. Both risks have clear preventions and are avoidable with disciplined design and code review.
+The dominant risks are correctness risks, not technical risks. Brazilian payroll law has several non-obvious rules that differ from urban CLT defaults: progressive INSS (not flat-rate), IRRF calculated after INSS deduction, rural night shift at 21h–5h with 25% premium (not 22h–5h with 20%), and FUNRURAL as a farm-level annual election with different calculation bases. eSocial adds compliance risk — events must be transmitted in strict ordering (table events → cadastral events → periodic events) and the XML must be digitally signed with an ICP-Brasil certificate. The atomicity of payroll runs and the locking of time entries before payroll approval are the critical engineering design decisions to get right early.
+
+---
 
 ## Key Findings
 
 ### Recommended Stack
 
-The milestone requires only 2 new npm packages. Everything else reuses infrastructure already installed in the monorepo: `pdfkit` for PDF reports, `exceljs` for bulk import, `decimal.js` for all monetary arithmetic, `node-cron` for the monthly depreciation scheduler, `bullmq` for async work order notifications, `recharts` for dashboards, `ioredis`/`nodemailer` for notifications, and `multer` for file uploads.
+The existing monorepo stack handles almost everything. No new framework, ORM, or infrastructure is needed. The four net-new backend packages are surgical additions. See `STACK.md` for full detail.
 
-**Core technologies:**
+**Core technologies (new additions only):**
+- `xmlbuilder2@^4.0.3`: eSocial XML event generation — fluent API handles namespaces and character encoding; replaces verbose @xmldom/xmldom API for generation (keep @xmldom for existing uses)
+- `xml-crypto@^6.1.2`: ICP-Brasil XMLDSig signing — 1.98M weekly downloads, RSA-SHA256 and X509 embedding, protects against signature wrapping attacks
+- `pdfkit-table@^0.1.99`: tabular layout for payslips and TRCT — wraps existing pdfkit, data-driven row/column API
+- `date-holidays@^3.26.11`: Brazilian national + 26 state holiday calendars — actively maintained (published 8 days ago), required for DSR and overtime classification
+- `expo-task-manager@~14.0.9` (mobile, conditional): background geolocation for continuous shift tracking — only needed if background tracking is required; foreground-only punch-in/out works with existing `expo-location`
 
-- `fast-xml-parser@^5.5.7` (backend): NF-e XML parsing for asset acquisition import — preferred over `@xmldom/xmldom` for its object-mapping API that simplifies deep NF-e structure traversal; zero dependencies; actively maintained
-- `react-spreadsheet-import@^4.7.1` (frontend): Multi-step column-mapping UI for bulk asset import from varied farmer spreadsheets; last published 2 years ago — MEDIUM confidence, React 19 compatibility must be tested before committing
-- Custom `DepreciationEngine` in `packages/shared/src/utils/depreciation.ts`: supports LINEAR, HOURS_BASED, PRODUCTION_BASED, ACCELERATED; no npm library covers all four Brazilian-relevant methods with CPC 27 specifics
-- Custom `BiologicalAssetValuation` service: CPC 29/IAS 41 fair value model; no npm library exists for this standard
-- Asset hierarchy via Prisma self-relation + `$queryRaw` recursive CTEs: official Prisma recommendation for 3-level tree traversal
+**Custom-built (no library exists):**
+- `PayrollEngine` in `packages/shared` — Brazilian tax bracket calculations (INSS progressive, IRRF with dependent deductions, FUNRURAL rural-specific rates)
+- eSocial XML builders — one builder per event type (S-2200, S-1200, S-2299, etc.) using `xmlbuilder2`
 
 ### Expected Features
 
-**Must have (Phase 1 — Foundation):**
+See `FEATURES.md` for full feature tables with legal basis citations.
 
-- Asset catalog with 6 classification types (Máquinas, Veículos, Implementos, Benfeitorias, Terras, Biológicos) — drives accounting treatment routing
-- Asset registration with acquisition data, farm/cost-center assignment, status lifecycle (ACTIVE/INACTIVE/MAINTENANCE/DISPOSED/WIP), unique asset tag
-- Hourmeter/odometer log — prerequisite for hours-based depreciation and maintenance triggers
-- Document control with expiry alerts (CRLV, seguro, CCIR, ITR)
-- Linear depreciation with pro-rata die, monthly batch run (idempotent), depreciation ledger per asset
-- Cash purchase generating CP automatically via existing `payables` module
-- Asset write-off (baixa) with gain/loss calculation
-- Patrimônio report (gross value / accumulated depreciation / net book value by asset class)
-- Mass import via CSV/Excel with column mapping
+**Must have (table stakes) — cannot legally employ workers without these:**
+- Employee profile with CPF, PIS/PASEP, CTPS, CBO code — required for eSocial S-2200 and IRRF/FGTS calculations
+- Contract types: CLT permanent, safra, intermitente, experiência, aprendiz — each has different termination rules and eSocial event variants
+- Work schedule assignment — 44h/week rural standard, night shift 21h–5h window, multiple escalas
+- Salary history (not just current salary) — required for correct vacation/13th provision recalculation after raises
+- Mobile time clock with GPS geofence — field workers cannot use web; reuses PostGIS farm boundary for validation
+- INSS progressive table, IRRF with dependent deductions, FGTS 8%, FUNRURAL — all required for legal payroll
+- Payslip (holerite) generation and delivery — employee legal right; digital PDF via mobile app
+- Vacation accrual, scheduling, and payment calculation — 30-day rural, fractionable to 3 periods
+- Leave of absence management (sick leave, CAT, maternity) — CAT is also an eSocial event (S-2210)
+- Termination calculation (TRCT) with proportional aviso prévio extension — Lei 12.506/2011: 30 + 3 days/year, max 90
+- eSocial XML event generation and transmission — mandatory for rural employers since 2021, version S-1.3
+- Payroll-to-payables integration — creates AP entries for net salaries and FGTS/INSS/IRRF/FUNRURAL guides
 
-**Must have (Phase 2 — CMMS Maintenance):**
+**Should have (competitive differentiators):**
+- Activity-linked time entries from field operations — bridges "who worked" to "what it cost per talhão/crop" (unique to this system)
+- Safra contract lifecycle bulk termination wizard — 50+ safristas auto-terminated at harvest end with full TRCT
+- Mobile payslip delivery — rural workers rarely have email; push notification + in-app PDF
+- eSocial error triage workflow — maps government rejection codes to human-readable fix actions
+- FUNRURAL regime comparison calculator — annual election (receita bruta vs folha) with cost comparison
+- Vacation planning calendar with crop cycle overlay — prevents conflicts with harvest peaks
+- Labor cost per hectare reporting — payroll cost center + PostGIS plot area = R$/ha KPI
 
-- Preventive maintenance plans with calendar and hourmeter triggers
-- Work Order (OS) CRUD with state machine (OPEN → IN_PROGRESS → WAITING_PARTS → COMPLETED)
-- OS accounting classification at closure (EXPENSE | CAPITALIZATION | DEFERRAL) — mandatory field, 400 if absent
-- Parts consumption from existing stock-outputs module
-- Maintenance cost attribution to cost centers
-- Maintenance dashboard (MTBF, availability, open OS count, upcoming preventive OS)
-- Cost-per-hour TCO calculation powered by accumulated data
-
-**Should have (competitive differentiators — Phase 3+):**
-
-- Composite asset hierarchy up to 3 levels (Colheitadeira → Motor → Correia) — rare in generic ERPs
-- TCO dashboard per asset and per fleet — "repair vs. replace" decision support
-- Asset under construction (Imobilizado em Andamento) with budget tracking
-- Financed purchase with installment schedule via existing `installmentGenerator`
-- Asset sale with gain/loss generating CR automatically
-- Hours-based and production-based depreciation
-- Accelerated depreciation dual-track (CPC accounting vs. fiscal RFB)
-- QR code asset tags for mobile scan
-- Seasonal maintenance calendar (warn if OS overlaps planting/harvest window)
-
-**Must have (Phase 4 — Biological Assets):**
-
-- Biological asset registration (cattle + perennial crops) with explicit CPC 27 vs CPC 29 classification
-- Bearer plant classification under CPC 27 (coffee/orange trees — NOT CPC 29 fair value)
-- Fair value measurement (manual entry — no live market data feed)
-- Fair value gain/loss P&L disclosure per period
-- Perennial crop maturity tracking (formação → produção)
-
-**Defer to future milestone:**
-
-- CIAP (ICMS credit recovery) — requires fiscal module as prerequisite
-- NF-e XML import via SEFAZ integration — explicitly out of scope per PROJECT.md
-- IoT/telematics integration — complexity vs. benefit not justified at current scale
-- Predictive maintenance — requires 2-3 years of failure history
-- Full project management (Gantt) for construction — out of scope
+**Defer to v2+:**
+- Biometric hardware integration — GPS geofencing achieves same anti-fraud goal without infrastructure dependency
+- Real-time payroll calculation during time entry — creates false expectations; label estimates clearly
+- Full accounting chart of accounts — deferred to v1.4 contabilidade milestone
+- WhatsApp payslip delivery — Meta approval complexity, out of scope for v1.3
+- Production-based pay (piece-rate) — high litigation risk, deferred to future epic
+- Homologação sindical workflow — repealed by 2017 Labor Reform for most scenarios
 
 ### Architecture Approach
 
-The architecture is a clean additive extension of the existing monolith. Nine new backend modules form the asset domain organized by responsibility. All follow the established colocated pattern (`controller + service + routes + types`). A new `PATRIMÔNIO` sidebar group is added in the frontend. The existing `FarmMap.tsx` receives an additive asset marker layer via the existing `LayerControlPanel` extensibility point — no rewrite required.
+The architecture extends the existing monolith with 14 new collocated modules under `apps/backend/src/modules/`, following the exact same controller+service+routes+types pattern used by all v1.0–v1.2 modules. Two new cron jobs are added to `shared/cron/`. The build order is strictly dependency-respecting: foundation (employees, rubrics, job-positions) → contracts and time entries → time approval + mobile clock → payroll engine → lifecycle events (vacations, leaves, terminations) → compliance/safety (EPI, trainings, ASOs) → eSocial → dashboard and reports. See `ARCHITECTURE.md` for the complete module map and data flow diagrams.
 
 **Major components:**
+1. `modules/employees/` + `modules/contracts/` + `modules/job-positions/` — foundation; everything else depends on this
+2. `modules/time-entries/` + `modules/time-approval/` + mobile `time-clock.tsx` — time tracking pipeline; feeds payroll engine
+3. `modules/rubrics/` + `modules/payroll-runs/` (with `payroll-engine.service.ts`) — core value delivery; mirrors `DepreciationRun` state machine
+4. `modules/vacations/` + `modules/leaves/` + `modules/terminations/` + `modules/payroll-provisions/` — lifecycle events
+5. `modules/epi-deliveries/` + `modules/trainings/` + `modules/asos/` — NR-31 compliance safety layer
+6. `modules/esocial-events/` (with `esocial-xml.service.ts` and `esocial-transmission.service.ts`) — government obligations
+7. `modules/hr-dashboard/` — KPI aggregation
 
-1. `assets/` — Core entity CRUD, hierarchy (AssetComponent join table), farm/CC/status assignment, bulk import, map layer; root dependency for all other modules
-2. `asset-depreciation/` — Pure `calculateDepreciation()` function (shared for frontend preview) + monthly cron batch (Redis NX lock, per-org `withRlsContext`) + DepreciationRun tracking
-3. `work-orders/` — OS state machine (`VALID_WO_TRANSITIONS`), atomic completion (StockOutput + Payable in one transaction), mandatory accounting classification at closure
-4. `asset-acquisition/` + `asset-disposal/` — Financial integration hubs; consume `createPayable()`, `createReceivable()`, and `generateInstallments()` from existing infrastructure
-5. `maintenance-plans/` + `fuel-records/` + `asset-documents/` — Operational records consumed by TCO calculation
-6. `asset-dashboard/` — Read-only TCO aggregation; no new models; depends on indexes on `(assetId, periodYear, periodMonth)` on `depreciation_entries`
-7. Monthly depreciation cron — `shared/cron/depreciation.cron.ts` following `digest.cron.ts` pattern exactly (Redis NX lock, per-org `withRlsContext`, chunk of 100 assets per transaction)
+**Key patterns to follow:**
+- `PayrollRun` state machine: `PENDING → PROCESSING → COMPLETED | ERROR` (mirrors `DepreciationRun`)
+- Payroll to Payables: always `tx.payable.create(...)` inside `prisma.$transaction`, never `payablesService.createPayable()` — established deadlock avoidance pattern from `asset-acquisitions.service.ts`
+- eSocial events: each module triggers its own event via shared `createEsocialEvent()` helper; `esocial-events` module handles XML and transmission generically
+- BullMQ queues: `payroll-processing`, `payslip-generation`, `esocial-events` — add to existing infrastructure
 
 ### Critical Pitfalls
 
-1. **Asset purchase routed through GoodsReceipt/StockEntry** — The single most dangerous integration risk. An asset NF must never create a `StockEntry`. Use a separate `AssetAcquisition` module with `originType = 'ASSET_ACQUISITION'` on the CP. Add a guard in `GoodsReceipt` service to reject asset-category PO lines from the standard stock-entry flow. Recovery is expensive — requires auditing stock balances and financial reports.
+See `PITFALLS.md` for full prevention detail, warning signs, and phase assignments.
 
-2. **Depreciation decimal precision — float arithmetic drift** — All depreciation arithmetic must use `Decimal` from `decimal.js`. Add a "last-period balancing" entry so the final month brings net book value to exactly residual value. Add a unique constraint on `(assetId, periodYear, periodMonth)` in `depreciation_entries` to prevent duplicate entries on cron retry. Using JavaScript `number` types is a regression that will not be caught with clean test fixtures.
+1. **INSS calculated as flat rate instead of progressive** — over-deducts R$100–200/employee/month; implement bracket accumulation with `Decimal.js` and unit-test against official Receita Federal tables for 2025 and 2026
+2. **IRRF calculated before INSS deduction or without dependent deductions** — inflates IRRF base; enforce strict calculation order (gross → INSS → dependents deduction → IRRF base → IRRF); add 2026 partial exemption for R$5,000–R$7,350 band
+3. **Payroll run not atomic** — partial failure leaves inconsistent state; entire employee batch must be inside `prisma.$transaction()`; idempotency key = `runId + employeeId`; payables only created on APPROVE, not during calculation
+4. **eSocial events sent out of order** — S-1010 rubrics table must exist before S-2200 admission; S-2200 before S-1200 payroll; enforce via BullMQ job dependencies with separate named queues
+5. **Rural labor rules defaulted to urban CLT** — night shift 21h–5h at 25% (not 22h–5h at 20%); housing/food deductions against regional minimum wage (not salary); safra termination has no 40% FGTS penalty; FUNRURAL is a farm-level annual election
+6. **Payroll to Payables creates duplicates on re-processing** — add `originType` + `originId` unique constraint to `Payable` model in Phase 1 schema; use upsert not create
+7. **Time entries editable after payroll calculation** — add `lockedByPayrollRunId` to attendance records; mobile offline sync must check lock before applying edits
+8. **Vacation/13th provision uses simple accrual instead of provision/reversal** — must store `EmployeeSalaryHistory` (not just current salary); provision = `currentSalary × elapsed / 12` recalculated monthly
+9. **Termination omits proportional aviso prévio extension** — Lei 12.506/2011: 30 + 3 days/complete year, max 90 days; affects all downstream termination calculations
 
-3. **CPC 27 vs CPC 29 classification error for biological assets** — Bearer plants (café, laranja) are CPC 27 depreciable assets, not CPC 29 fair-value assets. The `AssetClassification` enum must explicitly encode: `BEARER_PLANT` (CPC 27, depreciable), `BIOLOGICAL_ASSET_ANIMAL` (CPC 29, fair value), `LAND_RURAL_PROPERTY` (CPC 27, non-depreciable). The depreciation batch must guard against processing CPC 29 biological assets. This classification must be correct at schema creation — retrofitting after depreciation records exist requires data migration.
-
-4. **OS accounting treatment not enforced at closure** — `accountingTreatment` on OS closure is a mandatory field, not optional. Missing it defaults all maintenance to OPEX, silently missing capitalizable overhauls that should increase asset book value. The `PATCH /work-orders/:id/close` endpoint must return 400 if `accountingTreatment` is absent. CAPITALIZATION must atomically update asset book value and recalculate depreciation.
-
-5. **Batch depreciation without idempotency guard** — Running the monthly cron twice (crash + retry) must produce identical results. Unique constraint on `(assetId, periodYear, periodMonth)` in `depreciation_entries`. PostgreSQL advisory lock on `(organizationId, period)` prevents concurrent runs. Use `INSERT ... ON CONFLICT DO NOTHING` semantics. A `DepreciationRun` tracking table with status (PENDING/RUNNING/COMPLETED/FAILED) enables safe retry from the first unprocessed asset.
-
-6. **Asset disposal without cancelling pending depreciation entries** — When an asset is sold or written off, all pending `DepreciationEntry` records for that asset must be cancelled atomically in the same transaction that creates the CR/CP and sets the terminal status. Status enum mismatch (e.g., `VENDIDO` vs `BAIXADO`) is a common bug that lets the batch continue depreciating disposed assets. Use a single terminal status concept for all disposal types.
-
-7. **WIP asset depreciates before activation** — `AssetStatus.EM_ANDAMENTO` must be explicitly excluded from the depreciation batch query. CPC 27 requires depreciation to begin only when the asset is available for use. Depreciation begins only after `POST /assets/:id/activate` transitions status to `ATIVO` and sets `activationDate`. Define this status at schema creation, not as a later amendment.
+---
 
 ## Implications for Roadmap
 
-The dependency graph is clear and dictates a specific build order. Asset registration is the root node — everything else depends on a clean, classified asset entity. Depreciation must be proven correct before write-off or financial integration builds on it. Maintenance OS is independent of financial integration stories and can be validated faster. Financial integration phases (acquisition, disposal) are ordered acquisition-before-disposal because disposal gain/loss requires acquisition cost to be correctly recorded. Advanced features (hierarchy, biological assets, leasing) are deferred until the core loop is stable.
+Based on the dependency graph from FEATURES.md and the build order from ARCHITECTURE.md, the natural phase structure follows the prerequisite chain strictly.
 
-### Phase 1: Core Asset Entity and Foundation
+### Phase 1: Cadastro de Colaboradores e Contratos
 
-**Rationale:** Asset registration is the absolute root dependency. No depreciation, no maintenance, no financial integration can be built without a clean asset entity with proper CPC 27/29 classification defined at schema creation.
-**Delivers:** Asset catalog with 6 classification types, registration form, farm/CC/status assignment, hourmeter log, document control with expiry alerts, bulk CSV/Excel import with column mapping, asset map layer in FarmMap, asset ficha skeleton with tabs
-**Addresses:** Asset catalog, registration, farm assignment, status lifecycle, unique tags, hourmeter/odometer log, document control, mass import, asset search/filtering
-**Avoids:** CPC 27 vs CPC 29 classification error (define AssetClassification enum with explicit CPC mapping at schema creation); WIP premature depreciation (define EM_ANDAMENTO status at schema creation)
-**Research flag:** Standard patterns — CPC 27 classification taxonomy is unambiguous; no phase research needed
+**Rationale:** Nothing else is buildable without employees, contracts, job positions, and salary history. eSocial S-2200 events, INSS/IRRF calculations, and time tracking all depend on this foundation. This phase also includes the `EmployeeSalaryHistory` table (Pitfall 8) and the `originType`/`originId` constraint on `Payable` (Pitfall 6) — two schema decisions that must be in place before any other module writes data.
 
-### Phase 2: Depreciation Engine
+**Delivers:** Employee registration (CPF, PIS/PASEP, CTPS, dependents), contract type management (CLT/safra/intermitente/experiência/aprendiz), CBO/job position catalog, work schedule configuration, salary history, mass import via CSV/XLSX, complete employee ficha (tabbed UI).
 
-**Rationale:** The depreciation engine must be built and validated before any write-off or financial integration work. Gain/loss calculations require accurate accumulated depreciation. The monthly batch idempotency guard must be in place before any data accumulates in production.
-**Delivers:** DepreciationConfig per asset, `calculateDepreciation()` pure function (in `packages/shared` for frontend preview reuse), monthly cron batch (idempotent, per-org Redis lock, chunks of 100), DepreciationRun tracking table, pro-rata die for first/last months, depreciation ledger, DepreciationPage, depreciation schedule report
-**Addresses:** Linear depreciation, monthly depreciation run, depreciation ledger, residual value, useful life, cost-center attribution in entries
-**Uses:** `decimal.js` (existing), `node-cron` (existing), `ioredis` for Redis lock (existing), `pdfkit` for schedule PDF (existing)
-**Avoids:** Float arithmetic drift (Decimal-only rule), batch idempotency (unique constraint + advisory lock), WIP exclusion (status guard in batch query)
-**Research flag:** Standard accounting math — CPC 27 depreciation formulas are unambiguous; no phase research needed
+**Addresses:** EPIC-RH1 table stakes — all employee and contract features.
 
-### Phase 3: Maintenance CMMS
+**Avoids:** Pitfall 5 (rural vs urban rules — contract type enum established here), Pitfall 6 (schema constraint added here), Pitfall 8 (salary history table created here).
 
-**Rationale:** Maintenance is independent of financial integration stories but depends on assets (Phase 1) and the existing stock-outputs module. Building maintenance before complex financial integrations allows the OS state machine and mandatory accounting classification to be validated with real data before the higher-risk asset disposal and leasing phases.
-**Delivers:** Preventive maintenance plans with calendar/hourmeter triggers, Work Order CRUD with state machine (`VALID_WO_TRANSITIONS`), OS completion (atomic: StockOutput + Payable in one transaction), mandatory accounting classification at closure (400 if absent), maintenance dashboard (MTBF, availability, upcoming OS), cost-per-hour calculation foundation
-**Addresses:** Preventive maintenance plans, trigger types, Work Order CRUD, OS accounting classification, parts consumption from stock, OS cost center attribution, maintenance history per asset, maintenance dashboard
-**Uses:** `stock-outputs` module (existing, consumed read-only for parts), `payables` module (existing, for OS expense CP), `bullmq` (existing, for work order notifications), `handlebars`/`nodemailer` (existing, for email)
-**Avoids:** OS state machine invalid transitions (`VALID_WO_TRANSITIONS` constant, same pattern as `checks.types.ts`); OS accounting treatment missing (400 at closure); parts mixed with field inputs (StockOutput `originType = WORK_ORDER` tagging)
-**Research flag:** Standard CMMS patterns — well-documented; OS accounting classification stories need careful acceptance criteria to avoid the expense vs. capitalize ambiguity reaching production
+### Phase 2: Parâmetros de Rubrica e Motor de Cálculo da Folha
 
-### Phase 4: Asset Acquisition — Financial Integration
+**Rationale:** The payroll calculation engine is custom-built with no npm library available. It must be fully implemented and unit-tested (with official Receita Federal table values) before time tracking UI is built — time entries feed this engine. Rubric master data also seeds the eSocial S-1010 table event, which must precede all other eSocial transmissions.
 
-**Rationale:** Establishes the `AssetAcquisition` module as a separate code path from `GoodsReceipt`. Must come after Phase 1 (asset entity exists) and before Phase 5 (disposal requires knowing acquisition cost). This phase also adds the `payables` table migration (assetId FK, ASSET_PURCHASE enum value).
-**Delivers:** Cash purchase generating CP (`originType = ASSET_PURCHASE`), financed purchase with installment schedule (reusing `generateInstallments`), NF-e XML file upload parsed by `fast-xml-parser`, multi-asset NF (one asset record per line item), payables table migration
-**Addresses:** Cash purchase → auto CP, financed purchase → CP with installment schedule, multiple assets on same NF, NF-e XML pre-fill
-**Uses:** `fast-xml-parser@^5.5.7` (new), `multer` (existing), `generateInstallments` in `packages/shared` (existing), `createPayable()` (existing)
-**Avoids:** Asset purchase double-counting via GoodsReceipt (AssetAcquisition never calls stockEntryService; GoodsReceipt guard added); CAPEX/OPEX separation (ASSET_PURCHASE distinct from MAINTENANCE in PayableCategory)
-**Research flag:** Standard payables integration pattern; NF-e XML tag paths (infNFe.det[n] structure, schema v4.0) should be validated against a real NF-e sample during story planning before committing to field mappings
+**Delivers:** Configurable rubric/event system (proventos e descontos), INSS progressive table calculation, IRRF with dependents and 2026 partial exemption, FGTS 8%, FUNRURAL dual-mode (receita bruta vs folha), moradia/alimentação deductions against regional minimum wage, DSR calculation, payroll calculation unit test suite with known official values.
 
-### Phase 5: Asset Disposal and Write-Off
+**Uses:** `date-holidays@3.26.11` for DSR and overtime classification; `Decimal.js` `Money()` factory throughout.
 
-**Rationale:** Asset disposal requires the depreciation engine (Phase 2) to be correct — final pro-rata depreciation runs atomically at disposal. Build after Phase 4 so the financial integration pattern (`originType` on Receivable) is established consistently.
-**Delivers:** Asset write-off (descarte, sinistro, obsolescência), asset sale generating CR with gain/loss, installment sale (reusing `generateInstallments`), receivables table migration (assetId FK, ASSET_SALE enum value), atomic disposal transaction (final depreciation + status update + pending entry cancellation + CR creation)
-**Addresses:** Asset write-off (baixa), asset sale → auto CR, partial installment sale, casualty loss (sinistro), financial summary per asset
-**Avoids:** Disposal without cancelling pending depreciation entries (atomic `prisma.$transaction()` required); status enum consistency (single DISPOSED terminal status in batch guard)
-**Research flag:** Standard patterns — no phase research needed
+**Avoids:** Pitfall 1 (INSS progressive), Pitfall 2 (IRRF order and dependent deductions), Pitfall 5 (rural-specific rates and deduction bases).
 
-### Phase 6: Operational Records (Fuel + Documents Enhanced)
+### Phase 3: Controle de Ponto e Jornada
 
-**Rationale:** Fuel records and enhanced document features are low complexity and independent. Building after the core operational loop (Phases 1-5) is stable. These feed TCO calculations in the reporting phase.
-**Delivers:** Fuel consumption log per asset (cost/liter, cost/hour trend), fuel efficiency benchmarking (flag 20%+ above fleet average), advanced document expiry calendar, document expiry cron alerts (30/15/7 days before), QR code generation per asset, mobile deep-link from QR to asset ficha
-**Addresses:** Fuel consumption log, fuel efficiency benchmarking, document control with expiry alerts (enhanced), QR code asset tags, availability for mobile asset identification
-**Avoids:** Document expiry alerts for inactive assets (filter WHERE asset.status = ATIVO); fuel cost/hour requiring hourmeter at refueling (horímetroAtRefueling required for hour-metered machinery)
-**Research flag:** Standard patterns — no phase research needed
+**Rationale:** Time tracking must exist before payroll can process real hours. This phase builds the mobile-first time clock (reusing existing offline sync infrastructure), the web clock for administrative staff, and the approval workflow (espelho de ponto). Critically, the attendance locking mechanism (Pitfall 7) must be designed into the model from the start.
 
-### Phase 7: Advanced Depreciation and Asset Hierarchy
+**Delivers:** Mobile time clock with GPS geofence validation (PostGIS), offline sync via existing queue infrastructure, overtime calculation with rural rules (21h–5h at 25%), banco de horas, web time clock, time sheet mirror with approval workflow, attendance record locking on payroll calculation, PDF export for audit.
 
-**Rationale:** Hours-based and production-based depreciation require real hourmeter/production data from Phase 1/6. Composite asset hierarchy adds complexity to existing asset queries and must be built after the simple asset model is stable. Accelerated depreciation dual-track is a Brazilian-specific feature requiring careful data model design.
-**Delivers:** Hours-based depreciation (with PENDING_HOURS_DATA flag when horímetro missing — not R$0), production-based depreciation, accelerated depreciation dual-track (CPC book value separate from fiscal book value as org-level opt-in), composite asset hierarchy up to 3 levels (AssetComponent join table + recursive CTE + depth guard), asset transfer between farms (mandatory CC allocation review at transfer)
-**Addresses:** Hours-of-use depreciation, production-based depreciation, accelerated depreciation, composite asset hierarchy (pai-filho), asset transfer between farms
-**Avoids:** Hours-based with missing horímetro (PENDING_HOURS_DATA not R$0); hierarchy depth N+1 queries (recursive CTE, depth column at schema); circular reference prevention (traverse-up guard before AssetComponent insert); asset transfer without CC update (mandatory CC review)
-**Research flag:** Accelerated depreciation dual-track scope needs validation — confirm whether farm legal entity type (Simples Nacional vs Lucro Real vs Lucro Presumido) requires the fiscal track before building it; make it an org-level opt-in to avoid unused complexity
+**Implements:** `modules/time-entries/`, `modules/time-approval/`, mobile `time-clock.tsx`, `time-entry-repository.ts` (SQLite offline store mirrors `operation-repository.ts`).
 
-### Phase 8: Reporting and TCO Dashboard
+**Avoids:** Pitfall 7 (time entries locked by payroll run ID when run reaches CALCULATED).
 
-**Rationale:** All reporting is read-only aggregation over data produced by Phases 1-7. Building reports last ensures underlying data is correct before exposing it in dashboards. TCO calculation joins assets + depreciation_entries + work_orders + fuel_records — all must exist and be correct first.
-**Delivers:** PatrimonialDashboardPage (total patrimônio, depreciation YTD, gain/loss summary), TCO per asset and fleet (cost/hour calculation), repair-vs-replace alert (when cumulative maintenance > 60-70% of replacement cost), Patrimônio report PDF (gross/accumulated/net by asset class), depreciation schedule report (12/36/60 month projection), cost-center depreciation attribution report, asset utilization report, asset inventory reconciliation (physical count vs contábil via QR scan)
-**Addresses:** TCO dashboard, repair-vs-replace recommendation, patrimônio report, depreciation schedule report, CC depreciation report, asset utilization report, asset inventory reconciliation
-**Uses:** `recharts` (existing), `pdfkit` (existing), `exceljs` (existing)
-**Avoids:** AccumulatedDepreciation computed on-the-fly from SUM (use running total column on Asset, updated atomically per entry); PatrimonialDashboard timeout (composite indexes on depreciation_entries and work_orders before this phase)
-**Research flag:** Standard patterns — ensure composite indexes `(assetId, periodYear, periodMonth)` on `depreciation_entries` and `(assetId, completedAt)` on `work_orders` are in place before stories are written
+### Phase 4: Processamento da Folha Mensal
 
-### Phase 9: Biological Assets (CPC 29) and Leasing (CPC 06)
+**Rationale:** With employees, rubrics, and time tracking in place, the payroll run orchestration can be built. This is the core value delivery of v1.3. The state machine, atomicity design, and BullMQ processing must be implemented correctly before any live payroll is run.
 
-**Rationale:** Biological assets and leasing are the most complex features with the most accounting nuance. Building them last allows the team to use established patterns from all prior phases. Leasing (right-of-use asset + liability amortization) is the highest-risk financial feature and benefits from the depreciation engine and financial integration patterns being fully proven.
-**Delivers:** Biological asset registration (cattle + perennial crops), bearer plant classification under CPC 27 (coffee/orange trees with their own depreciation schedule), fair value measurement for CPC 29 assets (manual entry), fair value gain/loss P&L entry per period (labeled as non-cash), perennial crop maturity tracking (formação → produção), biological asset dashboard, leasing CPC 06 (ROU asset + lease liability amortization with effective interest method), imobilizado em andamento (partial contributions + activation event)
-**Addresses:** Biological asset registration, CPC 29 fair value, transformation gain/loss, harvest product separation, perennial crop maturity, leasing, imobilizado em andamento
-**Avoids:** CPC 27 vs CPC 29 confusion (bearer plants under CPC 27 depreciable, cattle under CPC 29 fair value); leasing ROU asset missing (AssetLease must create Asset(RIGHT_OF_USE) and enter depreciation batch); biological fair value unrealized gain misinterpreted (inline non-cash label required); WIP depreciating before activation
-**Research flag:** Needs phase research — biological asset valuation inputs (CEPEA price indices, cattle arroba pricing sources), CPC 29 fair value disclosure requirements, leasing effective interest amortization method — validate with an accountant before story writing
+**Delivers:** Payroll run creation and batch processing (BullMQ), per-employee payroll item calculation, payslip PDF generation (pdfkit + pdfkit-table), email and mobile delivery (nodemailer), 13th salary processing (1st and 2nd installments), salary advance management, payroll run status dashboard with progress polling.
+
+**Implements:** `modules/payroll-runs/` with `payroll-engine.service.ts`, `payroll-batch.service.ts`, `payslip.service.ts`.
+
+**Avoids:** Pitfall 3 (payroll atomicity — `prisma.$transaction()` for all employee items; payables only on APPROVE), Pitfall 7 (lock attendance records when run reaches CALCULATED).
+
+### Phase 5: Férias, Afastamentos, Rescisão e Integração Financeira
+
+**Rationale:** Lifecycle events (vacation, leave, termination) depend on the payroll engine and salary history from earlier phases. Financial integration (payroll to payables) is last in the chain — payable entries must only be created after payroll approval, and termination payments require accurate vacation and 13th balances.
+
+**Delivers:** Vacation accrual with provision/reversal method, vacation scheduling calendar with crop cycle overlay, leave management (sick leave, CAT, maternity), TRCT calculation with proportional aviso prévio extension (Lei 12.506/2011), safra bulk termination wizard, monthly provision cron for vacation and 13th, automatic payables creation for net salaries and tax guides, cost center rateio per employee activity.
+
+**Implements:** `modules/vacations/`, `modules/leaves/`, `modules/terminations/`, `modules/payroll-provisions/`, `shared/cron/payroll-provision.cron.ts`, payroll to payables integration with `originType`/`originId` upsert.
+
+**Avoids:** Pitfall 6 (duplicate payables via originId upsert), Pitfall 8 (provision/reversal method), Pitfall 9 (proportional aviso prévio extension).
+
+### Phase 6: Segurança do Trabalho (NR-31) e eSocial
+
+**Rationale:** Safety compliance (EPI, trainings, ASOs) can be built largely independently since it only depends on the employee record. eSocial is deferred to last because it wraps all previous modules — admission, payroll, leaves, accidents, and terminations must all be working before their XML events can be correctly generated and transmitted.
+
+**Delivers:** EPI delivery records consuming existing products/stock module, NR-31 training matrix with certificate tracking, ASO/PCMSO records with expiry alerts, eSocial XML generation for all event types using `xmlbuilder2`, ICP-Brasil digital signing with `xml-crypto`, eSocial transmission with BullMQ job ordering (table events → cadastral events → periodic events), transmission status dashboard with error triage workflow, RAIS export, Informe de Rendimentos PDF.
+
+**Implements:** `modules/epi-deliveries/`, `modules/trainings/`, `modules/asos/`, `modules/esocial-events/` with `esocial-xml.service.ts`, `esocial-signer.service.ts`, `esocial-transmission.service.ts`, `shared/cron/esocial-retry.cron.ts`.
+
+**Avoids:** Pitfall 4 (eSocial event ordering via BullMQ job dependencies with strict queue sequencing).
+
+### Phase 7: Dashboard RH e Relatórios
+
+**Rationale:** Aggregation and reporting can only be meaningful after all previous modules are live and generating data. This phase is pure read-side — no new writes to any existing module.
+
+**Delivers:** HR KPI dashboard (headcount by contract type, payroll cost vs prior month, cost per activity/crop, overtime hours by team, NR-31 compliance %), labor cost per hectare report (payroll cost center + PostGIS talhão area), FUNRURAL regime comparison calculator, headcount and payroll cost export to CSV.
+
+**Implements:** `modules/hr-dashboard/`.
+
+---
 
 ### Phase Ordering Rationale
 
-- Asset registration is the root dependency. No other phase can start without a correct asset entity with proper classification. This is non-negotiable.
-- Depreciation must be correct before write-off or any financial integration uses net book value. Do not build Phase 4 or 5 before Phase 2 is validated.
-- Maintenance (Phase 3) is independent of financial integration and builds faster, providing real TCO data earlier. The OS accounting classification is high-risk but well-understood — handle it explicitly in story acceptance criteria.
-- Acquisition before disposal: you cannot calculate disposal gain/loss without the acquisition cost being correctly recorded.
-- Advanced features (Phases 7, 9) deferred until the core loop is proven in production. This reduces rework risk if requirements shift.
-- Biological assets and leasing are combined into one phase (9) to reduce context switching and because they share the theme of specialized accounting models.
+- Phases 1–2 establish the foundation and the calculation engine that all other phases depend on — no downstream work is valid without correct employees, contracts, and tax calculations.
+- Phase 3 (time tracking) is sequenced after Phase 2 so time entry data can be immediately validated against calculation requirements; they could be built in parallel if sprint capacity allows.
+- Phase 4 (payroll runs) is gated on Phases 1–3 — it reads all three to produce a correct payroll.
+- Phase 5 bundles lifecycle events and financial integration because vacation/13th/termination balances are all prerequisites for generating payables — splitting them would leave an incomplete integration for the first deployable payroll run.
+- Phase 6 (eSocial) is explicitly last because it wraps all previous events. Retroactive eSocial correction events are costly and error-prone; building eSocial last means events are generated from correct, approved data.
+- Phase 7 is pure aggregation and can be developed incrementally alongside Phases 4–6 if sprint capacity allows.
+
+---
 
 ### Research Flags
 
-Phases needing deeper research during planning:
+**Phases needing `/gsd:research-phase` during planning:**
 
-- **Phase 7 (Advanced Depreciation):** Accelerated depreciation dual-track — confirm which farm legal entity types actually need the fiscal track; validate RFB table rates for 2026; consider org-level opt-in flag to avoid building unused complexity.
-- **Phase 9 (Biological Assets + Leasing):** CEPEA price index references for fair value, CPC 29 fair value disclosure requirements in financial statements, leasing effective interest method amortization — validate with an accountant before story writing to avoid non-compliant implementation.
+- **Phase 6 (eSocial):** ICP-Brasil certificate management in cloud environments (AWS Secrets Manager vs KMS vs HSM), eSocial sandbox endpoint URLs and mTLS configuration for development, S-1.3 XSD files download and validation setup, specific XML structure for rural employer (PF vs PJ) eSocial S-1000 employer table. High complexity, sparse Node.js documentation.
+- **Phase 5 (Termination / TRCT):** Validation of CCT edge cases per collective agreement (homologação residual risk), GRRF guide generation specifics, seguro-desemprego eligibility check logic for safra workers. Legal edge cases may surface implementation details not covered in general research.
 
-Phases with standard patterns (skip research-phase):
+**Phases with standard/well-documented patterns (skip research-phase):**
 
-- **Phase 1 (Asset Entity):** CPC 27 classification taxonomy is unambiguous; monorepo module patterns are established.
-- **Phase 2 (Depreciation Engine):** Linear depreciation formulas are standard accounting math; cron infrastructure already exists in codebase.
-- **Phase 3 (Maintenance CMMS):** MaintainX/Fiix CMMS patterns are well-documented; state machine follows established `VALID_TRANSITIONS` project pattern.
-- **Phase 4 (Acquisition):** Payables integration pattern established in v1.1 procurement phase; fast-xml-parser integration is straightforward.
-- **Phase 5 (Disposal):** Receivables integration pattern established; gain/loss formula is standard CPC 27.
-- **Phase 6 (Operational Records):** Simple CRUD with notification hooks; no novel patterns.
-- **Phase 8 (Reporting):** Read-only aggregation; recharts and pdfkit patterns are proven in codebase.
+- **Phase 1 (Employee + Contracts):** Standard CRUD following existing module patterns. Brazilian CPF and PIS/NIT checksum algorithms are well-known and trivially tested.
+- **Phase 2 (Rubrics + Calculation Engine):** Tax tables and formulas are officially published. Calculation logic is pure functions amenable to comprehensive unit testing.
+- **Phase 3 (Time Tracking):** Reuses existing mobile offline sync infrastructure and PostGIS geofence from EPIC-06. Pattern is established in the codebase.
+- **Phase 4 (Payroll Runs):** Mirrors `DepreciationRun` state machine exactly. BullMQ pattern already proven in the codebase.
+- **Phase 7 (Dashboard):** Pure aggregation using existing recharts setup and established service patterns.
+
+---
 
 ## Confidence Assessment
 
-| Area         | Confidence | Notes                                                                                                                                                                                                                                             |
-| ------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Stack        | HIGH       | Only 2 new packages; all others already installed and in active use. fast-xml-parser npm-verified. react-spreadsheet-import is MEDIUM due to React 19 compat uncertainty — test in isolation before Phase 1 bulk import story.                    |
-| Features     | HIGH       | CPC 27, CPC 29, and CPC 06 R2 are official Brazilian accounting standards with no ambiguity on core requirements. CMMS patterns verified against MaintainX, FTMaintenance, SAP FI-AA, and TOTVS Protheus SIGAATF documentation.                   |
-| Architecture | HIGH       | Derived from direct codebase analysis (6500+ line Prisma schema, existing service patterns, cron and state machine infrastructure). All integration points verified against existing code. No guesses.                                            |
-| Pitfalls     | HIGH       | Integration pitfalls from direct codebase analysis. Accounting standard pitfalls from CPC 27/29/06 official texts. Batch performance patterns from PostgreSQL docs and ERP community (MEDIUM for scale-specific claims beyond 500 organizations). |
+| Area | Confidence | Notes |
+|------|------------|-------|
+| Stack | HIGH | xmlbuilder2, xml-crypto, date-holidays verified at specific versions via npm (March 2026). pdfkit-table is MEDIUM confidence (0.x semver). expo-task-manager is MEDIUM (iOS/Android permission complexity). All existing libraries are production-proven in the codebase. |
+| Features | HIGH | Brazilian labor law (Lei 5.889/73, CLT, eSocial S-1.3) is codified and unambiguous. Feature scope verified against TOTVS RM and Senior HCM documentation. 2026 INSS/IRRF tables cross-checked across 3 sources. |
+| Architecture | HIGH | Derived from direct codebase analysis of schema.prisma (7400+ lines) and all existing modules. Integration patterns (`tx.payable.create`, `withRlsContext`, batch state machine) are live in production. |
+| Pitfalls | HIGH | Brazilian labor law pitfalls sourced from official legislation and current-year searches. Payroll atomicity and concurrency design is established ERP practice verified by multiple sources. |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **react-spreadsheet-import React 19 compatibility:** Must be tested in isolation before the bulk import story is started in Phase 1. If incompatible, fall back to custom step wizard + raw `exceljs` on frontend (adds 2-3 days of work, well-understood effort).
-- **Accelerated depreciation dual-track scope:** Confirm with the customer whether their farm entities are Simples Nacional (no fiscal track needed) or Lucro Real/Presumido (fiscal track required). Make dual-track an org-level opt-in flag to avoid building complexity that may not be used.
-- **Biological asset fair value inputs:** Confirm whether CEPEA price data will be entered manually by the accountant or expected to be fetched automatically. Research recommends manual entry (no API integration), but this must be aligned with customer expectation before Phase 9 planning.
-- **Leasing scope in this milestone:** CPC 06 right-of-use asset is the highest-complexity financial feature. Confirm whether any of the customer's current fleet is on finance leases before committing to Phase 9 scope. If no current finance leases exist, consider deferring to a future milestone.
-- **NF-e XML tag paths:** The `fast-xml-parser` integration should be tested against a real NF-e v4.0 XML file before Phase 4 story writing to confirm the `infNFe.det[n]` field mappings for emitente, destinatário, and product line items.
+- **2026 INSS and IRRF exact table values:** Sourced from contabilizei.com.br and praticasdepessoal.com.br, not directly from the Receita Federal portal. Recommend cross-checking against official RFB Instrução Normativa before implementing the production tax engine.
+- **eSocial sandbox access:** Development and testing require access to the eSocial sandbox (Ambiente de Produção Restrita). Confirm credentials and endpoint URLs with the client before Phase 6 begins.
+- **ICP-Brasil certificate in production:** Where the PFX is stored, how it is rotated, and whether AWS KMS is used must be decided before Phase 6 starts. This is an infrastructure decision outside the scope of code.
+- **FUNRURAL receita bruta integration:** The receita-bruta option requires reading commercialization totals from the receivables module (v1.1). Confirm the receivables module exposes the necessary data before Phase 2 configures the FUNRURAL rubric.
+- **Regional minimum wage values:** Housing and food deductions are capped against the regional minimum wage (varies by state). Confirm whether a configurable table per state is required or whether the federal minimum wage is an acceptable approximation for v1.3.
+
+---
 
 ## Sources
 
 ### Primary (HIGH confidence)
-
-- `apps/backend/prisma/schema.prisma` (6500+ lines) — existing data models, enums, integration points verified directly
-- `apps/backend/src/shared/cron/digest.cron.ts` — cron infrastructure pattern for depreciation batch
-- `apps/backend/src/modules/checks/checks.types.ts` — VALID_TRANSITIONS state machine pattern
-- `apps/backend/src/modules/goods-receipts/goods-receipts.service.ts` — atomic multi-domain write pattern
-- `apps/backend/src/modules/payables/payables.service.ts` — createPayable() function signature and originType/originId pattern
-- `packages/shared/src/utils/installments.ts` — generateInstallments() reuse confirmation
-- CPC 27 — Ativo Imobilizado (CVM): depreciation methods, useful life, bearer plants under CPC 27, non-depreciation of land
-- CPC 29 — Ativos Biológicos e Produtos Agrícolas (CVM): fair value measurement, biological transformation, harvest product handoff
-- CPC 06 R2 — Arrendamentos (IFRS 16): right-of-use asset, lease liability amortization, financial vs operational lease
-- IAS 41 Agriculture (IFRS Foundation): fair value less costs to sell requirements, bearer plant amendment 2014
-- Prisma official docs — self-relations and `$queryRaw` for recursive CTEs
+- Direct codebase analysis: `apps/backend/prisma/schema.prisma` (7400+ lines), `modules/asset-acquisitions/`, `modules/depreciation/`, `modules/field-teams/`, `modules/payables/`, `modules/maintenance-provisions/`
+- Lei 5.889/73 — Rural Labor Statute (night shift, housing, food, safra contract rules)
+- CLT — Consolidação das Leis do Trabalho (general labor law base)
+- eSocial S-1.3 schema (NT 05/2025) — event ordering and XML structure requirements
+- Lei 8.212/91 + IN 2.110/2022 — FUNRURAL calculation and election rules
+- Lei 8.036/1990 — FGTS
+- Lei 12.506/2011 — proportional aviso prévio extension
+- npm registry — xmlbuilder2@4.0.3, xml-crypto@6.1.2, date-holidays@3.26.11 (verified March 2026)
 
 ### Secondary (MEDIUM confidence)
-
-- MaintainX agricultural CMMS documentation — work order patterns, preventive maintenance triggers, ERP integration
-- FTMaintenance — CMMS patterns for farm machinery
-- TOTVS Protheus SIGAATF — Brazilian ERP asset module with dual-track CPC vs Fiscal
-- AfixCode blog — CPC 27 depreciation, imobilizado em andamento, capitalization vs expense decision
-- Fleetio — fleet TCO calculation methodology (acquisition + admin + depreciation + downtime)
-- npm registry — fast-xml-parser 5.5.7, react-spreadsheet-import 4.7.1 (version-verified)
-- KPMG Brasil guide on CPC 06 R2 leasing — ROU asset and lease liability treatment
+- contabilizei.com.br + praticasdepessoal.com.br — 2026 INSS/IRRF table values (cross-checked 3 sources, not fetched from RFB directly)
+- TOTVS RM and Senior HCM documentation — feature scope validation for Brazilian HR ERP
+- eSocial NT 05/2025 production move announcement — S-1.3 schema confirmation
+- pdfkit-table@0.1.99 — npm-verified compatibility with pdfkit@0.17.x; community-use confirmed
 
 ### Tertiary (LOW confidence)
-
-- WebSearch results on accelerated depreciation RFB rates for rural producers (rates cited; not read directly from RFB official site)
-- Community sources on CPC 29 fair value subjectivity for unlisted biological assets (academic literature; specific auditor guidance not verified)
-- Aegro blog on custo operacional hora máquina — hours-based depreciation context in Brazilian agro
+- No npm source for payroll calculation libraries — confirmed absence by registry search; custom engine is the only option
+- expo-task-manager background location behavior on iOS 17+ — documentation exists but app store submission complexity not fully characterized
 
 ---
 
-_Research completed: 2026-03-19_
-_Ready for roadmap: yes_
+*Research completed: 2026-03-23*
+*Ready for roadmap: yes*
