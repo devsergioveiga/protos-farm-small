@@ -1,5 +1,16 @@
 import type { TimeEntrySource } from '@prisma/client';
 
+export class TimeEntryError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number = 400,
+    public data?: Record<string, unknown>,
+  ) {
+    super(message);
+    this.name = 'TimeEntryError';
+  }
+}
+
 export interface CreateTimeEntryInput {
   employeeId: string;
   farmId: string;
