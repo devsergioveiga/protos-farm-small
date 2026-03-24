@@ -80,6 +80,9 @@ import {
   LogOut,
   FileBarChart,
   Leaf,
+  UserRound,
+  Briefcase,
+  Calendar,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -239,6 +242,14 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/goods-returns', icon: Undo2, label: 'Devoluções' },
       { to: '/purchase-budgets', icon: Wallet, label: 'Orçamento' },
       { to: '/saving-analysis', icon: BarChart3, label: 'Análise de Saving' },
+    ],
+  },
+  {
+    title: 'RH',
+    items: [
+      { to: '/employees', icon: UserRound, label: 'Colaboradores' },
+      { to: '/positions', icon: Briefcase, label: 'Cargos' },
+      { to: '/work-schedules', icon: Calendar, label: 'Escalas' },
     ],
   },
   {
