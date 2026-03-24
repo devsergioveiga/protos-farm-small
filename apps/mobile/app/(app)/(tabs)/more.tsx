@@ -14,6 +14,7 @@ import {
   ClipboardCheck,
   PlusCircle,
   Gauge,
+  Clock,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { spacing, fontSize } from '@protos-farm/shared';
@@ -129,6 +130,12 @@ export default function MoreScreen() {
       : 'Sincronizar dados';
 
   const menuItems: MenuItem[] = [
+    {
+      id: 'time-punch',
+      label: 'Registro de Ponto',
+      icon: Clock,
+      onPress: () => router.push('/(app)/time-punch'),
+    },
     {
       id: 'new-request',
       label: 'Nova Requisicao',
