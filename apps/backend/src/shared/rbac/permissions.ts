@@ -19,7 +19,8 @@ export type PermissionModule =
   | 'maintenance-plans'
   | 'work-orders'
   | 'maintenance-provisions'
-  | 'spare-parts';
+  | 'spare-parts'
+  | 'employees';
 
 export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage' | 'close';
 
@@ -45,6 +46,7 @@ export const ALL_MODULES: PermissionModule[] = [
   'work-orders',
   'maintenance-provisions',
   'spare-parts',
+  'employees',
 ];
 
 export const ALL_ACTIONS: PermissionAction[] = [
@@ -111,6 +113,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...modulePermissions('work-orders'),
     ...modulePermissions('maintenance-provisions'),
     ...modulePermissions('spare-parts'),
+    ...modulePermissions('employees'),
     ...p('reports', 'read'),
     ...p('settings', 'read'),
     ...p('reconciliation', 'manage'),
@@ -136,6 +139,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     ...p('work-orders', 'read', 'update', 'close'),
     ...p('maintenance-provisions', 'read', 'create', 'update'),
     ...p('spare-parts', 'read'),
+    ...p('employees', 'read'),
     ...p('reports', 'read'),
     ...p('reconciliation', 'manage'),
   ],
