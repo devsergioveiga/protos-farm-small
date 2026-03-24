@@ -124,6 +124,7 @@ const EmployeeDetailPage = lazy(() => import('@/pages/EmployeeDetailPage'));
 const PositionsPage = lazy(() => import('@/pages/PositionsPage'));
 const WorkSchedulesPage = lazy(() => import('@/pages/WorkSchedulesPage'));
 const PayrollParametersPage = lazy(() => import('@/pages/PayrollParametersPage'));
+const AttendancePage = lazy(() => import('@/pages/AttendancePage'));
 
 export function App() {
   return (
@@ -239,6 +240,7 @@ export function App() {
                 <Route path="/positions" element={<PositionsPage />} />
                 <Route path="/work-schedules" element={<WorkSchedulesPage />} />
                 <Route path="/payroll-parameters" element={<PayrollParametersPage />} />
+                <Route path="/attendance" element={<AttendancePage />} />
                 <Route path="/assets" element={<AssetsPage />} />
                 <Route path="/depreciation" element={<DepreciationPage />} />
                 <Route path="/maintenance-plans" element={<MaintenancePlansPage />} />

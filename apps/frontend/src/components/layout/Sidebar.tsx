@@ -84,6 +84,8 @@ import {
   UserRound,
   Briefcase,
   Calendar,
+  Clock,
+  CalendarCheck,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -252,6 +254,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/positions', icon: Briefcase, label: 'Cargos' },
       { to: '/work-schedules', icon: Calendar, label: 'Escalas' },
       { to: '/payroll-parameters', icon: Settings, label: 'Parâmetros de Folha' },
+      { to: '/attendance', icon: Clock, label: 'Controle de Ponto' },
     ],
   },
   {
