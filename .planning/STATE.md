@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Completed 25-02-PLAN.md
-last_updated: "2026-03-24T03:05:49.648Z"
+stopped_at: Completed 25-03-PLAN.md
+last_updated: "2026-03-24T03:25:50.268Z"
 progress:
   total_phases: 26
   completed_phases: 18
   total_plans: 82
-  completed_plans: 80
+  completed_plans: 81
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 25 (cadastro-de-colaboradores-e-contratos) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 
 ## Accumulated Context
 
@@ -53,6 +53,7 @@ Key decisions for v1.3:
 - [Phase 25]: prisma db push + migrate resolve used for employee foundation migration due to shadow DB being out of sync — migration SQL created manually and marked as applied
 - [Phase 25]: CONTRACT_EXPIRY notification type added to NOTIFICATION_TYPES for cron alerts
 - [Phase 25]: HR endpoints use farms:read permission (hr module not yet in PermissionModule type)
+- [Phase 25]: Frontend hooks follow useState+useCallback pattern (no SWR) matching existing useAnimals pattern
 
 ### Pending Todos
 
@@ -68,7 +69,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T03:05:49.644Z
-Stopped at: Completed 25-02-PLAN.md
+Last session: 2026-03-24T03:25:44.853Z
+Stopped at: Completed 25-03-PLAN.md
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos

@@ -12,6 +12,7 @@ const STATUS_CONFIG: Record<
   ATIVO: {
     icon: CheckCircle,
     label: 'Ativo',
+    // --color-success-500 = #2E7D32 per design tokens
     colorVar: 'var(--color-success-700, #1B5E20)',
     bgVar: 'var(--color-success-50, #E8F5E9)',
   },
