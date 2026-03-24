@@ -494,7 +494,7 @@ Plans:
 - [x] 27-01-PLAN.md — Prisma schema (5 models, 3 enums), migration, date-holidays install, TypeScript types
 - [x] 27-02-PLAN.md — Time calculations engine (TDD): overtime, rural night premium, interjornada, holidays
 - [x] 27-03-PLAN.md — Backend REST API: time-entries (incl. team bulk linking), overtime-bank, timesheets with PDF export
-- [ ] 27-04-PLAN.md — Frontend web: AttendancePage with team linking, hooks, types
+- [x] 27-04-PLAN.md — Frontend web: AttendancePage with team linking, hooks, types
 - [x] 27-05-PLAN.md — Mobile: time-punch screen with geofencing, offline storage, sync
 - [ ] 27-06-PLAN.md — Frontend web: TimesheetPage with approval flow, corrections, PDF export
 **UI hint**: yes
@@ -632,7 +632,7 @@ Plans:
 | 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 3/3            | Complete    | 2026-03-23 |
 | 25. Cadastro de Colaboradores e Contratos           | v1.3      | 4/4 | Complete    | 2026-03-24 |
 | 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 4/4 | Complete    | 2026-03-24 |
-| 27. Controle de Ponto e Jornada                     | v1.3      | 4/6 | In Progress|  |
+| 27. Controle de Ponto e Jornada                     | v1.3      | 5/6 | In Progress|  |
 | 28. Processamento da Folha Mensal                   | v1.3      | 0/TBD          | Not started | -          |
 | 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 0/TBD          | Not started | -          |
 | 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 0/TBD          | Not started | -          |
