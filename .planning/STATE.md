@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Completed 27-02-PLAN.md
-last_updated: "2026-03-24T14:48:39.352Z"
+stopped_at: Completed 27-01-PLAN.md
+last_updated: "2026-03-24T14:49:44.493Z"
 progress:
   total_phases: 26
   completed_phases: 20
   total_plans: 92
-  completed_plans: 87
+  completed_plans: 88
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 27 (controle-de-ponto-e-jornada) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 
 ## Accumulated Context
 
@@ -64,6 +64,8 @@ Key decisions for v1.3:
 - [Phase 26]: Removed sonner dependency from payroll hooks — using error/successMessage state return pattern instead
 - [Phase 27]: calcDailyWork accepts optional previousClockOut + clockIn pair for interjornada — avoids coupling to caller's clock-in data model
 - [Phase 27]: Holiday cache keyed by BR-state-city — ensures single Holidays instance per locale across test runs
+- [Phase 27-controle-de-ponto-e-jornada]: TimeEntry.payrollRunId as immutable lock — set once when payroll run processes the entry
+- [Phase 27-controle-de-ponto-e-jornada]: Timesheet unique constraint on (employeeId, referenceMonth) — one timesheet per employee per month
 
 ### Pending Todos
 
@@ -79,7 +81,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T14:48:39.348Z
-Stopped at: Completed 27-02-PLAN.md
+Last session: 2026-03-24T14:49:44.488Z
+Stopped at: Completed 27-01-PLAN.md
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
