@@ -47,14 +47,16 @@ describe('calculateINSS', () => {
     expect(result.contribution.toFixed(2)).toBe('155.69');
   });
 
-  it('salary R$ 3.500,00: INSS = R$ 308,61', () => {
+  it('salary R$ 3.500,00: INSS = R$ 308,60 (total rounding per Portaria MPS/MF nº 13/2026)', () => {
+    // 1621*7.5% + 1281.84*9% + 597.15*12% = 121.575+115.3656+71.658 = 308.5986 -> 308.60
     const result = calculateINSS(new Decimal('3500.00'), INSS_BRACKETS_2026, INSS_CEILING_2026);
-    expect(result.contribution.toFixed(2)).toBe('308.61');
+    expect(result.contribution.toFixed(2)).toBe('308.60');
   });
 
-  it('salary R$ 5.000,00: INSS = R$ 501,52', () => {
+  it('salary R$ 5.000,00: INSS = R$ 501,51 (total rounding per Portaria MPS/MF nº 13/2026)', () => {
+    // 1621*7.5% + 1281.84*9% + 1451.43*12% + 645.73*14% = 121.575+115.3656+174.1716+90.4022 = 501.5144 -> 501.51
     const result = calculateINSS(new Decimal('5000.00'), INSS_BRACKETS_2026, INSS_CEILING_2026);
-    expect(result.contribution.toFixed(2)).toBe('501.52');
+    expect(result.contribution.toFixed(2)).toBe('501.51');
   });
 
   it('salary R$ 10.000,00 (above ceiling 8475.55): INSS = R$ 988,09', () => {
@@ -104,11 +106,11 @@ describe('calculateIRRF', () => {
   });
 
   it('salary R$ 5.000,00, 2 dependents — base <= 5000 so IRRF = R$ 0,00 (2026 exemption)', () => {
-    // INSS = 501.52, base = 5000 - 501.52 - (2 * 189.59) = 4119.30
-    // 4119.30 <= 5000 → finalTax = 0
+    // INSS = 501.51 (total rounding), base = 5000 - 501.51 - (2 * 189.59) = 4119.31
+    // 4119.31 <= 5000 → finalTax = 0
     const result = calculateIRRF({
       grossSalary: new Decimal('5000.00'),
-      inssContribution: new Decimal('501.52'),
+      inssContribution: new Decimal('501.51'),
       dependents: 2,
       alimony: new Decimal('0'),
       brackets: IRRF_BRACKETS_2026,
@@ -119,7 +121,7 @@ describe('calculateIRRF', () => {
       redutorB: new Decimal('0.133145'),
     });
     expect(result.finalTax.toFixed(2)).toBe('0.00');
-    expect(result.taxableBase.toFixed(2)).toBe('4119.30');
+    expect(result.taxableBase.toFixed(2)).toBe('4119.31');
   });
 
   it('salary R$ 8.000,00, 0 dependents — IRRF applies partial redutor', () => {

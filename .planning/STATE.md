@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Ready to plan
-stopped_at: Completed 25-04-PLAN.md — Phase 25 complete, human verification approved
-last_updated: "2026-03-24T08:58:01.336Z"
+status: Ready to execute
+stopped_at: Completed 26-01-PLAN.md — Prisma schema, migration, seed, and TypeScript types for payroll
+last_updated: "2026-03-24T10:24:24.867Z"
 progress:
   total_phases: 26
   completed_phases: 19
-  total_plans: 82
-  completed_plans: 82
+  total_plans: 86
+  completed_plans: 83
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 25 — cadastro-de-colaboradores-e-contratos
+**Current focus:** Phase 26 — par-metros-de-folha-e-motor-de-c-lculo
 
 ## Current Position
 
-Phase: 26
-Plan: Not started
+Phase: 26 (par-metros-de-folha-e-motor-de-c-lculo) — EXECUTING
+Plan: 2 of 4
 
 ## Accumulated Context
 
@@ -55,6 +55,8 @@ Key decisions for v1.3:
 - [Phase 25]: HR endpoints use farms:read permission (hr module not yet in PermissionModule type)
 - [Phase 25]: Frontend hooks follow useState+useCallback pattern (no SWR) matching existing useAnimals pattern
 - [Phase 25]: Bulk preview uses two-level validation: ERROR blocks confirm, WARNING allows confirm
+- [Phase 26]: Used prisma db push + migrate resolve for Phase 26 Plan 01 (shadow DB out of sync — same pattern as Phase 25)
+- [Phase 26]: FUNRURAL 2026 implemented as two PayrollLegalTable rows (Jan-Mar effectiveFrom 2026-01-01 and Apr-Dec effectiveFrom 2026-04-01)
 
 ### Pending Todos
 
@@ -70,7 +72,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T08:34:20.046Z
-Stopped at: Completed 25-04-PLAN.md — Phase 25 complete, human verification approved
+Last session: 2026-03-24T10:24:24.863Z
+Stopped at: Completed 26-01-PLAN.md — Prisma schema, migration, seed, and TypeScript types for payroll
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
