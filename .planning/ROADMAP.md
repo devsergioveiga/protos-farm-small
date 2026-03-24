@@ -470,10 +470,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [x] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
-- [x] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
-- [x] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
-- [x] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
+- [ ] 26-01-PLAN.md — Prisma schema (4 models, 4 enums), migration, seed 2026 legal tables, TypeScript types
+- [ ] 26-02-PLAN.md — Payroll engine TDD (INSS progressive, IRRF two-step, FGTS, rural rules, formula eval)
+- [ ] 26-03-PLAN.md — Backend REST endpoints (rubricas CRUD + legal tables CRUD + RBAC)
+- [ ] 26-04-PLAN.md — Frontend PayrollParametersPage (rubricas tab + legal tables tab + modals)
 **UI hint**: yes
 
 ### Phase 27: Controle de Ponto e Jornada
