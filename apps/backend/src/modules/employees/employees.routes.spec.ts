@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { app } from '../../app';
 import * as employeesService from './employees.service';
+import * as employeesBulkImportService from './employee-bulk-import.service';
 import * as authService from '../auth/auth.service';
 import { EmployeeError } from './employees.types';
 
@@ -32,6 +33,15 @@ jest.mock('./employees.service', () => ({
   createSalaryMovement: jest.fn(),
 }));
 
+jest.mock('./employee-bulk-import.service', () => ({
+  uploadAndParse: jest.fn(),
+  previewBulkImport: jest.fn(),
+  confirmBulkImport: jest.fn(),
+  generateTemplate: jest.fn(),
+  isValidCPF: jest.fn(),
+  isValidPIS: jest.fn(),
+}));
+
 jest.mock('../auth/auth.service', () => {
   const actual = jest.requireActual('../auth/auth.service');
   return {
@@ -41,6 +51,7 @@ jest.mock('../auth/auth.service', () => {
 });
 
 const mockedService = jest.mocked(employeesService);
+const mockedBulkService = jest.mocked(employeesBulkImportService);
 const mockedAuth = jest.mocked(authService);
 
 const ADMIN_PAYLOAD = {
@@ -423,5 +434,193 @@ describe('DELETE /org/:orgId/employees/:id/documents/:docId', () => {
       expect.objectContaining({ organizationId: ORG_ID }),
       'doc-1',
     );
+  });
+});
+
+// ─── GET /org/:orgId/employees/bulk/template ─────────────────────────
+
+describe('GET /org/:orgId/employees/bulk/template', () => {
+  it('should return 200 with xlsx content-type', async () => {
+    authAs(MANAGER_PAYLOAD);
+    // Return a minimal XLSX-like buffer
+    mockedBulkService.generateTemplate.mockResolvedValue(Buffer.from('PK\x03\x04xlsx mock'));
+
+    const res = await request(app)
+      .get(`/api/org/${ORG_ID}/employees/bulk/template`)
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain(
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    expect(mockedBulkService.generateTemplate).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ─── POST /org/:orgId/employees/bulk/upload ───────────────────────────
+
+describe('POST /org/:orgId/employees/bulk/upload', () => {
+  it('should parse CSV file and return column headers and rows', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedBulkService.uploadAndParse.mockResolvedValue({
+      columnHeaders: ['nome', 'cpf', 'data_nascimento', 'data_admissao'],
+      sampleRows: [
+        { nome: 'João Silva', cpf: '529.982.247-25', data_nascimento: '1990-01-01', data_admissao: '2025-01-01' },
+      ],
+      totalRows: 1,
+    });
+
+    const csvContent = 'nome,cpf,data_nascimento,data_admissao\nJoão Silva,529.982.247-25,1990-01-01,2025-01-01';
+
+    const res = await request(app)
+      .post(`/api/org/${ORG_ID}/employees/bulk/upload`)
+      .set('Authorization', 'Bearer token')
+      .attach('file', Buffer.from(csvContent), { filename: 'test.csv', contentType: 'text/csv' });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('columnHeaders');
+    expect(res.body).toHaveProperty('totalRows', 1);
+    expect(mockedBulkService.uploadAndParse).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return 400 when no file is uploaded', async () => {
+    authAs(ADMIN_PAYLOAD);
+
+    const res = await request(app)
+      .post(`/api/org/${ORG_ID}/employees/bulk/upload`)
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Nenhum arquivo enviado');
+  });
+});
+
+// ─── POST /org/:orgId/employees/bulk/preview ──────────────────────────
+
+describe('POST /org/:orgId/employees/bulk/preview', () => {
+  it('should validate rows and return error/warning/valid counts', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedBulkService.previewBulkImport.mockResolvedValue({
+      validRows: [
+        { rowNumber: 2, status: 'valid', messages: [], data: { name: 'João', cpf: '52998224725' } },
+      ],
+      errorRows: [
+        { rowNumber: 3, status: 'error', messages: ['CPF inválido'], data: {} },
+      ],
+      warningRows: [
+        { rowNumber: 4, status: 'warning', messages: ['PIS/PASEP parece inválido'], data: { name: 'Maria' } },
+      ],
+      totalRows: 3,
+    });
+
+    const res = await request(app)
+      .post(`/api/org/${ORG_ID}/employees/bulk/preview`)
+      .set('Authorization', 'Bearer token')
+      .send({
+        rows: [
+          { nome: 'João', cpf: '529.982.247-25' },
+          { nome: 'Inválido', cpf: '111.111.111-11' },
+          { nome: 'Maria', cpf: '529.982.247-25' },
+        ],
+        columnMapping: { nome: 'name', cpf: 'cpf' },
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.validRows).toHaveLength(1);
+    expect(res.body.errorRows).toHaveLength(1);
+    expect(res.body.warningRows).toHaveLength(1);
+    expect(res.body.totalRows).toBe(3);
+  });
+
+  it('should mark row as error when CPF is invalid', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedBulkService.previewBulkImport.mockResolvedValue({
+      validRows: [],
+      errorRows: [
+        { rowNumber: 2, status: 'error', messages: ['CPF inválido'], data: {} },
+      ],
+      warningRows: [],
+      totalRows: 1,
+    });
+
+    const res = await request(app)
+      .post(`/api/org/${ORG_ID}/employees/bulk/preview`)
+      .set('Authorization', 'Bearer token')
+      .send({
+        rows: [{ nome: 'Inválido', cpf: '111.111.111-11' }],
+        columnMapping: { nome: 'name', cpf: 'cpf' },
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.errorRows[0].messages).toContain('CPF inválido');
+    expect(res.body.validRows).toHaveLength(0);
+  });
+
+  it('should mark row as warning (not error) when PIS is invalid', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedBulkService.previewBulkImport.mockResolvedValue({
+      validRows: [],
+      errorRows: [],
+      warningRows: [
+        {
+          rowNumber: 2,
+          status: 'warning',
+          messages: ['PIS/PASEP parece inválido'],
+          data: { name: 'João', cpf: '52998224725' },
+        },
+      ],
+      totalRows: 1,
+    });
+
+    const res = await request(app)
+      .post(`/api/org/${ORG_ID}/employees/bulk/preview`)
+      .set('Authorization', 'Bearer token')
+      .send({
+        rows: [{ nome: 'João', cpf: '529.982.247-25', pis_pasep: '00000000000' }],
+        columnMapping: { nome: 'name', cpf: 'cpf', pis_pasep: 'pis_pasep' },
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.errorRows).toHaveLength(0);
+    expect(res.body.warningRows[0].messages).toContain('PIS/PASEP parece inválido');
+  });
+});
+
+// ─── POST /org/:orgId/employees/bulk/confirm ──────────────────────────
+
+describe('POST /org/:orgId/employees/bulk/confirm', () => {
+  it('should create employees in batch and return created count', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedBulkService.confirmBulkImport.mockResolvedValue({
+      created: 2,
+      errors: [],
+    });
+
+    const res = await request(app)
+      .post(`/api/org/${ORG_ID}/employees/bulk/confirm`)
+      .set('Authorization', 'Bearer token')
+      .send({
+        rows: [
+          {
+            rowNumber: 2,
+            name: 'João Silva',
+            cpf: '52998224725',
+            birthDate: '1990-01-01',
+            admissionDate: '2025-01-01',
+          },
+          {
+            rowNumber: 3,
+            name: 'Maria Santos',
+            cpf: '11144477735',
+            birthDate: '1992-05-10',
+            admissionDate: '2025-02-01',
+          },
+        ],
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.created).toBe(2);
+    expect(res.body.errors).toHaveLength(0);
+    expect(mockedBulkService.confirmBulkImport).toHaveBeenCalledTimes(1);
   });
 });

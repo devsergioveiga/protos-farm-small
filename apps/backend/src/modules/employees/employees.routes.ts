@@ -21,6 +21,12 @@ import {
   deleteDocument,
   getSalaryHistory,
 } from './employees.service';
+import {
+  uploadAndParse,
+  previewBulkImport,
+  confirmBulkImport,
+  generateTemplate,
+} from './employee-bulk-import.service';
 
 export const employeesRouter = Router();
 
@@ -47,6 +53,28 @@ function handleError(err: unknown, res: Response): void {
   }
   res.status(500).json({ error: 'Erro interno do servidor' });
 }
+
+// ─── Multer — bulk import (memoryStorage) ──────────────────────────
+
+const bulkUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (_req, file, cb) => {
+    const ext = file.originalname.toLowerCase();
+    if (
+      ext.endsWith('.csv') ||
+      ext.endsWith('.xlsx') ||
+      ext.endsWith('.xls') ||
+      file.mimetype === 'text/csv' ||
+      file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      file.mimetype === 'application/vnd.ms-excel'
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error('Formato não suportado. Use CSV ou XLSX.'));
+    }
+  },
+});
 
 // ─── Multer — document upload (diskStorage) ────────────────────────
 
@@ -116,6 +144,83 @@ employeesRouter.post(
       const ctx = buildRlsContext(req);
       const result = await createEmployee(ctx, req.body);
       res.status(201).json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── GET /org/:orgId/employees/bulk/template ──────────────────────
+
+employeesRouter.get(
+  `${base}/bulk/template`,
+  authenticate,
+  checkPermission('employees:read'),
+  async (_req, res) => {
+    try {
+      const buffer = await generateTemplate();
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      );
+      res.setHeader('Content-Disposition', 'attachment; filename="template-colaboradores.xlsx"');
+      res.send(buffer);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── POST /org/:orgId/employees/bulk/upload ────────────────────────
+
+employeesRouter.post(
+  `${base}/bulk/upload`,
+  authenticate,
+  checkPermission('employees:create'),
+  bulkUpload.single('file'),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: 'Nenhum arquivo enviado' });
+        return;
+      }
+      const ctx = buildRlsContext(req);
+      const result = await uploadAndParse(ctx, req.file);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── POST /org/:orgId/employees/bulk/preview ──────────────────────
+
+employeesRouter.post(
+  `${base}/bulk/preview`,
+  authenticate,
+  checkPermission('employees:create'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await previewBulkImport(ctx, req.body);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── POST /org/:orgId/employees/bulk/confirm ──────────────────────
+
+employeesRouter.post(
+  `${base}/bulk/confirm`,
+  authenticate,
+  checkPermission('employees:create'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const result = await confirmBulkImport(ctx, req.body);
+      res.json(result);
     } catch (err) {
       handleError(err, res);
     }
