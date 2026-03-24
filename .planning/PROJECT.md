@@ -125,10 +125,11 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 
 ## Context
 
-### Current State (v1.3 in progress — Phase 25 complete)
+### Current State (v1.3 in progress — Phase 26 complete)
 
 Shipped v1.0 Financeiro Base, v1.1 Compras, v1.2 Patrimônio (24 phases, 78 plans).
 Phase 25 complete — Cadastro de Colaboradores e Contratos: 13 models, 7 enums, 5 backend modules (employees, contracts, positions, work-schedules, movements), full frontend with 3 pages, 14 modals/components, bulk CSV/XLSX import, 5-tab employee detail page with salary evolution chart. 69 backend tests passing.
+Phase 26 complete — Parâmetros de Folha e Motor de Cálculo: 4 Prisma models (PayrollRubrica, PayrollLegalTable, PayrollTableBracket, PayrollTableScalar), 4 enums, 7 pure engine functions (INSS progressivo, IRRF two-step com redutor 2026, FGTS, salário-família, noturno rural, moradia/alimentação, fórmula customizada), 65 tests, REST API com auto-seed de 18 rubricas-sistema, frontend PayrollParametersPage com 2 abas.
 Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
 Módulos financeiros, compras e patrimônio completos com integração bidirecional.
 Equipes de campo (field_teams) já existem no módulo de operações — potencial reuso para apontamento de horas.
@@ -194,4 +195,4 @@ Equipes de campo (field_teams) já existem no módulo de operações — potenci
 
 ---
 
-_Last updated: 2026-03-24 after Phase 25 complete_
+_Last updated: 2026-03-24 after Phase 26 complete_
