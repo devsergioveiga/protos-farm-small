@@ -53,10 +53,12 @@ Exceptions:
 | Role | Family | Size | Weight | Line Height |
 |------|--------|------|--------|-------------|
 | Body | Source Sans 3 (`--font-body`) | 16px (`--text-base`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) |
-| Label / UI | Source Sans 3 (`--font-body`) | 14px (`--text-sm`) | 600 (`--font-semibold`) | 1.3 (`--leading-snug`) |
+| Label / UI | Source Sans 3 (`--font-body`) | 14px (`--text-sm`) | 700 (`--font-bold`) | 1.3 (`--leading-snug`) |
 | Heading (página/seção) | DM Sans (`--font-display`) | 20px (`--text-lg`) | 700 (`--font-bold`) | 1.2 (`--leading-tight`) |
-| Display (nome na ficha) | DM Sans (`--font-display`) | 24px (`--text-xl`) | 500 (`--font-medium`) | 1.2 (`--leading-tight`) |
+| Display (nome na ficha) | DM Sans (`--font-display`) | 24px (`--text-xl`) | 700 (`--font-bold`) | 1.2 (`--leading-tight`) |
 | Dados monetários / CPF / PIS | JetBrains Mono (`--font-mono`) | 14px (`--text-sm`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) |
+
+Weights in use: **400** (`--font-regular`) and **700** (`--font-bold`) only. Weights 500 (`--font-medium`) and 600 (`--font-semibold`) are not used in this phase.
 
 Rules:
 - Mínimo absoluto: 14px — nunca abaixo (legibilidade ao ar livre)
@@ -93,6 +95,17 @@ Color rules:
 - PIS/PASEP warning (permite salvar): `--color-warning-500` + ícone `AlertTriangle` + mensagem textual
 
 > Source: CLAUDE.md cores + tokens.css semânticas + CONTEXT.md D-03 (state machine de status)
+
+---
+
+## Visual Focal Points
+
+Declares the primary visual anchor on each primary screen. The executor must ensure this element is the most visually prominent on the page.
+
+| Screen | Focal Point |
+|--------|-------------|
+| `EmployeesPage` | Tabela de colaboradores (ou cards empilhados em mobile) — a lista ocupa a área de conteúdo central; o botão primário "Cadastrar colaborador" (accent verde, canto superior direito) é o único elemento de ação de alto peso visual na tela |
+| `EmployeeDetailPage` | Nome do colaborador em Display 24px/700 no cabeçalho fixo, acompanhado do status badge — ancora a identidade da ficha; o conteúdo da tab ativa é o segundo nível de atenção imediatamente abaixo |
 
 ---
 
