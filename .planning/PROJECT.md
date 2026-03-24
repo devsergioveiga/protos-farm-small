@@ -125,9 +125,10 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 
 ## Context
 
-### Current State (v1.2 shipped)
+### Current State (v1.3 in progress — Phase 25 complete)
 
 Shipped v1.0 Financeiro Base, v1.1 Compras, v1.2 Patrimônio (24 phases, 78 plans).
+Phase 25 complete — Cadastro de Colaboradores e Contratos: 13 models, 7 enums, 5 backend modules (employees, contracts, positions, work-schedules, movements), full frontend with 3 pages, 14 modals/components, bulk CSV/XLSX import, 5-tab employee detail page with salary evolution chart. 69 backend tests passing.
 Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
 Módulos financeiros, compras e patrimônio completos com integração bidirecional.
 Equipes de campo (field_teams) já existem no módulo de operações — potencial reuso para apontamento de horas.
@@ -193,4 +194,4 @@ Equipes de campo (field_teams) já existem no módulo de operações — potenci
 
 ---
 
-_Last updated: 2026-03-23 after v1.3 milestone start_
+_Last updated: 2026-03-24 after Phase 25 complete_
