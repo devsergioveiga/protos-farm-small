@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Completed 28-02-PLAN.md
-last_updated: "2026-03-24T21:15:35.444Z"
+stopped_at: Completed 28-01-PLAN.md
+last_updated: "2026-03-24T21:15:43.196Z"
 progress:
   total_phases: 26
   completed_phases: 21
@@ -70,6 +70,8 @@ Key decisions for v1.3:
 - [Phase 27-controle-de-ponto-e-jornada]: APPROVE_MANAGER auto-advances to PENDING_RH in state machine per RESEARCH.md pattern
 - [Phase 27-04]: api.getBlob used for PDF export in useTimesheet — api.get only takes one argument
 - [Phase 28]: Batch advance uses per-employee createAdvance calls (not one big tx) for isolation — a single failure doesn't abort the whole batch
+- [Phase 28]: UTC date methods used in pro-rata (getUTCFullYear/Month/Date) to prevent timezone off-by-one on ISO date strings
+- [Phase 28]: EngineParams interface encapsulates legal table values — callers load from DB once and pass to pure calculation functions
 
 ### Pending Todos
 
@@ -85,7 +87,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T21:15:29.402Z
-Stopped at: Completed 28-02-PLAN.md
+Last session: 2026-03-24T21:15:43.193Z
+Stopped at: Completed 28-01-PLAN.md
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos

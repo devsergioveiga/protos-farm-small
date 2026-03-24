@@ -25,10 +25,10 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 ### Cálculo e Processamento de Folha
 
 - [x] **FOLHA-01**: Contador pode configurar rubricas de proventos (salário, HE 50%/100%, noturno 25%, insalubridade, periculosidade, salário-família, comissão) e descontos (INSS progressiva, IRRF progressiva, VT 6%, moradia até 25%, alimentação até 20%, adiantamento, faltas, pensão), com fórmulas customizáveis e tabelas legais atualizáveis (INSS, IRRF, salário-família com vigência)
-- [ ] **FOLHA-02**: Contador pode processar folha mensal em lote com cálculo automático por colaborador (salário proporcional, HE com DSR, noturno, insalubridade, INSS/IRRF/FGTS, moradia/alimentação), encargos patronais (INSS 20%, RAT, FGTS 8%), preview antes de confirmar, recálculo individual, bloqueio se ponto não aprovado e fechamento imutável com possibilidade de estorno
+- [x] **FOLHA-02**: Contador pode processar folha mensal em lote com cálculo automático por colaborador (salário proporcional, HE com DSR, noturno, insalubridade, INSS/IRRF/FGTS, moradia/alimentação), encargos patronais (INSS 20%, RAT, FGTS 8%), preview antes de confirmar, recálculo individual, bloqueio se ponto não aprovado e fechamento imutável com possibilidade de estorno
 - [x] **FOLHA-03**: Gerente pode registrar adiantamentos salariais com limite configurável (% do salário), adiantamento em lote (dia 15, 40%), desconto automático na folha, recibo PDF e integração com Contas a Pagar
 - [ ] **FOLHA-04**: Colaborador pode receber holerite detalhado (proventos, descontos, totais, bases INSS/IRRF/FGTS) em PDF individual ou lote, via email ou app mobile, com histórico acessível na ficha e formato compatível eSocial
-- [ ] **FOLHA-05**: Contador pode processar 13º salário em duas parcelas (1ª até 30/nov sem descontos, 2ª até 20/dez com INSS/IRRF), proporcional por meses trabalhados, incluindo médias de HE/noturno, com recibo PDF, encargos patronais e integração financeira/contábil
+- [x] **FOLHA-05**: Contador pode processar 13º salário em duas parcelas (1ª até 30/nov sem descontos, 2ª até 20/dez com INSS/IRRF), proporcional por meses trabalhados, incluindo médias de HE/noturno, com recibo PDF, encargos patronais e integração financeira/contábil
 
 ### Férias, Afastamentos e Rescisão
 
@@ -90,10 +90,10 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 | PONTO-02 | Phase 27 | Complete |
 | PONTO-03 | Phase 27 | Complete |
 | PONTO-04 | Phase 27 | Complete |
-| FOLHA-02 | Phase 28 | Pending |
+| FOLHA-02 | Phase 28 | Complete |
 | FOLHA-03 | Phase 28 | Complete |
 | FOLHA-04 | Phase 28 | Pending |
-| FOLHA-05 | Phase 28 | Pending |
+| FOLHA-05 | Phase 28 | Complete |
 | FERIAS-01 | Phase 29 | Pending |
 | FERIAS-02 | Phase 29 | Pending |
 | FERIAS-03 | Phase 29 | Pending |
