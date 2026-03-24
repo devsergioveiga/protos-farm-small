@@ -1,0 +1,281 @@
+/* ─── Salary Advance Modal ────────────────────────────────────────────── */
+
+.salary-advance-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.salary-advance-modal {
+  background: var(--color-neutral-0, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  /* Modal open animation: 300ms ease-out */
+  animation: salary-modal-enter 300ms cubic-bezier(0.0, 0, 0.2, 1);
+}
+
+@keyframes salary-modal-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .salary-advance-modal {
+    animation: none;
+  }
+}
+
+/* ─── Header ────────────────────────────────────────────────────────── */
+
+.salary-advance-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--color-neutral-200, #e5e4e2);
+  flex-shrink: 0;
+}
+
+.salary-advance-modal__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-neutral-800, #2a2520);
+  margin: 0;
+}
+
+.salary-advance-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  color: var(--color-neutral-600, #6b6560);
+  transition: background 200ms ease-out, color 200ms ease-out;
+  flex-shrink: 0;
+}
+
+.salary-advance-modal__close:hover {
+  background: var(--color-neutral-100, #f0efed);
+  color: var(--color-neutral-800, #2a2520);
+}
+
+.salary-advance-modal__close:focus-visible {
+  outline: 2px solid var(--color-primary-500, #2e7d32);
+  outline-offset: 2px;
+}
+
+/* ─── Body ──────────────────────────────────────────────────────────── */
+
+.salary-advance-modal__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ─── Success / Error banners ───────────────────────────────────────── */
+
+.salary-advance-modal__success {
+  padding: 12px 16px;
+  background: var(--color-success-50, #e8f5e9);
+  color: var(--color-success-700, #1b5e20);
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  border-left: 3px solid var(--color-primary-600, #2e7d32);
+}
+
+.salary-advance-modal__error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-error-50, #ffebee);
+  color: var(--color-error-700, #b71c1c);
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  border-left: 3px solid var(--color-error-500, #c62828);
+}
+
+/* ─── Form fields ───────────────────────────────────────────────────── */
+
+.salary-advance-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.salary-advance-modal__label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-neutral-700, #3e3833);
+}
+
+.salary-advance-modal__input,
+.salary-advance-modal__select,
+.salary-advance-modal__textarea {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--color-neutral-800, #2a2520);
+  background: var(--color-neutral-0, #ffffff);
+  border: 1.5px solid var(--color-neutral-300, #d1cfc8);
+  border-radius: 6px;
+  padding: 12px 16px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 150ms ease-out;
+  min-height: 48px;
+}
+
+.salary-advance-modal__input:focus,
+.salary-advance-modal__select:focus,
+.salary-advance-modal__textarea:focus {
+  outline: 2px solid var(--color-primary-500, #2e7d32);
+  outline-offset: 0;
+  border-color: var(--color-primary-600, #2e7d32);
+}
+
+.salary-advance-modal__input--error,
+.salary-advance-modal__select--error {
+  border-color: var(--color-error-500, #c62828);
+}
+
+.salary-advance-modal__field-error {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--color-error-600, #c62828);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ─── Amount field ──────────────────────────────────────────────────── */
+
+.salary-advance-modal__amount-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.salary-advance-modal__amount-prefix {
+  position: absolute;
+  left: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--color-neutral-600, #6b6560);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.salary-advance-modal__input--amount {
+  padding-left: 40px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ─── Batch summary ─────────────────────────────────────────────────── */
+
+.salary-advance-modal__batch-summary {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--color-neutral-700, #3e3833);
+  background: var(--color-neutral-50, #fafaf8);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ─── Footer ────────────────────────────────────────────────────────── */
+
+.salary-advance-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid var(--color-neutral-200, #e5e4e2);
+  flex-shrink: 0;
+}
+
+.salary-advance-modal__btn-primary {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--color-primary-600, #2e7d32);
+  border: none;
+  border-radius: 6px;
+  padding: 0 24px;
+  min-height: 48px;
+  cursor: pointer;
+  transition: background 150ms ease-out;
+  white-space: nowrap;
+}
+
+.salary-advance-modal__btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-700, #1b5e20);
+}
+
+.salary-advance-modal__btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.salary-advance-modal__btn-primary:focus-visible {
+  outline: 2px solid var(--color-primary-500, #2e7d32);
+  outline-offset: 2px;
+}
+
+.salary-advance-modal__btn-secondary {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-neutral-700, #3e3833);
+  background: transparent;
+  border: 1.5px solid var(--color-neutral-300, #d1cfc8);
+  border-radius: 6px;
+  padding: 0 20px;
+  min-height: 48px;
+  cursor: pointer;
+  transition: background 150ms ease-out, border-color 150ms ease-out;
+  white-space: nowrap;
+}
+
+.salary-advance-modal__btn-secondary:hover:not(:disabled) {
+  background: var(--color-neutral-100, #f0efed);
+}
+
+.salary-advance-modal__btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.salary-advance-modal__btn-secondary:focus-visible {
+  outline: 2px solid var(--color-primary-500, #2e7d32);
+  outline-offset: 2px;
+}

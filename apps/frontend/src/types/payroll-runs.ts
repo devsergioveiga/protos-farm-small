@@ -84,10 +84,7 @@ export interface CreateAdvanceInput {
 export interface BatchAdvanceInput {
   referenceMonth: string;
   advanceDate: string;
-  advances: Array<{
-    employeeId: string;
-    amount: number;
-  }>;
+  percentOfSalary?: number; // default 40
   notes?: string;
 }
 

@@ -9,8 +9,8 @@ interface FetchAdvancesFilters {
 }
 
 interface BatchAdvanceResult {
-  succeeded: number;
-  failed: number;
+  batchId: string;
+  count: number;
   advances: SalaryAdvance[];
 }
 
@@ -81,7 +81,7 @@ export function useSalaryAdvances() {
           data,
         );
         setSuccessMessage(
-          `Lote processado: ${result.succeeded} adiantamentos registrados${result.failed > 0 ? `, ${result.failed} falhas` : ''}`,
+          `Adiantamento em lote registrado para ${result.count} colaboradores.`,
         );
         return result;
       } catch (err) {
