@@ -202,8 +202,10 @@ Componentes a implementar nesta fase, com padrão de referência:
 | Empty state — EmployeesPage CTA | "Cadastrar colaborador" |
 | Empty state — PositionsPage heading | "Nenhum cargo cadastrado" |
 | Empty state — PositionsPage body | "Crie os cargos antes de cadastrar colaboradores." |
+| Empty state — PositionsPage CTA | "Cadastrar cargo" |
 | Empty state — WorkSchedulesPage heading | "Nenhuma escala cadastrada" |
 | Empty state — WorkSchedulesPage body | "Configure as escalas de trabalho para vincular aos contratos." |
+| Empty state — WorkSchedulesPage CTA | "Cadastrar escala" |
 | Empty state — DocumentsTab | "Nenhum documento anexado. Faça upload do RG, CTPS ou ASO." |
 | Empty state — HistoryTab | "Nenhuma movimentação registrada ainda." |
 | Empty state — EvolutionTab (sem movimentos salariais) | "Nenhum reajuste registrado. O histórico aparecerá aqui." |
@@ -323,7 +325,7 @@ RH
   └── Escalas          → /work-schedules    (ícone: Calendar)
 ```
 
-- Grupo com label "RH" em ALL CAPS, tamanho 12px (`--text-xs`), cor `--color-neutral-500`
+- Grupo com label "RH" em ALL CAPS, tamanho herdado do padrão de grupos existentes (`--text-xs`, mesmo valor dos grupos ESTOQUE/OPERAÇÕES), cor `--color-neutral-500`
 - Item ativo: fundo `--color-primary-50`, texto `--color-primary-700`, ícone `--color-primary-600`
 - Item hover: fundo `--color-neutral-100`
 - Segue padrão visual exato dos grupos existentes (ESTOQUE, OPERAÇÕES, etc.)
