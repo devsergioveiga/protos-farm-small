@@ -120,6 +120,7 @@ const BiologicalAssetsPage = lazy(() => import('@/pages/BiologicalAssetsPage'));
 const AssetLeasingsPage = lazy(() => import('@/pages/AssetLeasingsPage'));
 const HerdDashboardPage = lazy(() => import('@/pages/HerdDashboardPage'));
 const EmployeesPage = lazy(() => import('@/pages/EmployeesPage'));
+const EmployeeDetailPage = lazy(() => import('@/pages/EmployeeDetailPage'));
 const PositionsPage = lazy(() => import('@/pages/PositionsPage'));
 const WorkSchedulesPage = lazy(() => import('@/pages/WorkSchedulesPage'));
 
@@ -233,6 +234,7 @@ export function App() {
                 <Route path="/animal-exits" element={<AnimalExitsPage />} />
                 <Route path="/herd-dashboard" element={<HerdDashboardPage />} />
                 <Route path="/employees" element={<EmployeesPage />} />
+                <Route path="/employees/:employeeId" element={<EmployeeDetailPage />} />
                 <Route path="/positions" element={<PositionsPage />} />
                 <Route path="/work-schedules" element={<WorkSchedulesPage />} />
                 <Route path="/assets" element={<AssetsPage />} />
