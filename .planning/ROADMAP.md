@@ -515,8 +515,8 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 28-01-PLAN.md — Prisma schema (PayrollRun/PayrollRunItem/SalaryAdvance) + payroll calculation service
-- [ ] 28-02-PLAN.md — Salary advances module (service + routes + receipt PDF + tests)
+- [x] 28-01-PLAN.md — Prisma schema (PayrollRun/PayrollRunItem/SalaryAdvance) + payroll calculation service
+- [x] 28-02-PLAN.md — Salary advances module (service + routes + receipt PDF + tests)
 - [ ] 28-03-PLAN.md — PayrollRun orchestrator (process/close/revert) + payslip PDF + email + routes
 - [ ] 28-04-PLAN.md — Frontend types/hooks + PayrollRunsPage + wizard + detail modal + status badges
 - [ ] 28-05-PLAN.md — SalaryAdvanceModal + PayslipTab on employee ficha + sidebar/routes
@@ -635,7 +635,7 @@ Plans:
 | 25. Cadastro de Colaboradores e Contratos           | v1.3      | 4/4 | Complete    | 2026-03-24 |
 | 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 4/4 | Complete    | 2026-03-24 |
 | 27. Controle de Ponto e Jornada                     | v1.3      | 6/6 | Complete    | 2026-03-24 |
-| 28. Processamento da Folha Mensal                   | v1.3      | 0/6            | Planned     | -          |
+| 28. Processamento da Folha Mensal                   | v1.3      | 2/6 | In Progress|  |
 | 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 0/TBD          | Not started | -          |
 | 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 0/TBD          | Not started | -          |
 | 31. Obrigações Acessórias e eSocial                 | v1.3      | 0/TBD          | Not started | -          |

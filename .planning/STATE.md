@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Ready to plan
-stopped_at: Phase 28 context gathered
-last_updated: "2026-03-24T20:28:40.496Z"
+status: Ready to execute
+stopped_at: Completed 28-02-PLAN.md
+last_updated: "2026-03-24T21:15:35.444Z"
 progress:
   total_phases: 26
   completed_phases: 21
-  total_plans: 92
-  completed_plans: 92
+  total_plans: 98
+  completed_plans: 94
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 27 — controle-de-ponto-e-jornada
+**Current focus:** Phase 28 — processamento-da-folha-mensal
 
 ## Current Position
 
-Phase: 28
-Plan: Not started
+Phase: 28 (processamento-da-folha-mensal) — EXECUTING
+Plan: 3 of 6
 
 ## Accumulated Context
 
@@ -69,6 +69,7 @@ Key decisions for v1.3:
 - [Phase 27-controle-de-ponto-e-jornada]: TimeEntryError/TimesheetError custom error classes added to types files for consistent error handling in routes
 - [Phase 27-controle-de-ponto-e-jornada]: APPROVE_MANAGER auto-advances to PENDING_RH in state machine per RESEARCH.md pattern
 - [Phase 27-04]: api.getBlob used for PDF export in useTimesheet — api.get only takes one argument
+- [Phase 28]: Batch advance uses per-employee createAdvance calls (not one big tx) for isolation — a single failure doesn't abort the whole batch
 
 ### Pending Todos
 
@@ -84,7 +85,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T20:28:40.488Z
-Stopped at: Phase 28 context gathered
-Resume file: .planning/phases/28-processamento-da-folha-mensal/28-CONTEXT.md
+Last session: 2026-03-24T21:15:29.402Z
+Stopped at: Completed 28-02-PLAN.md
+Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
