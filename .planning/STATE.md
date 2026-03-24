@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Checkpoint 27-05 Task 3 human-verify
-last_updated: "2026-03-24T14:58:56.066Z"
+stopped_at: Completed 27-03-PLAN.md
+last_updated: "2026-03-24T15:02:25.791Z"
 progress:
   total_phases: 26
   completed_phases: 20
   total_plans: 92
-  completed_plans: 89
+  completed_plans: 90
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 27 (controle-de-ponto-e-jornada) — EXECUTING
-Plan: 3 of 6
+Plan: 4 of 6
 
 ## Accumulated Context
 
@@ -66,6 +66,8 @@ Key decisions for v1.3:
 - [Phase 27]: Holiday cache keyed by BR-state-city — ensures single Holidays instance per locale across test runs
 - [Phase 27-controle-de-ponto-e-jornada]: TimeEntry.payrollRunId as immutable lock — set once when payroll run processes the entry
 - [Phase 27-controle-de-ponto-e-jornada]: Timesheet unique constraint on (employeeId, referenceMonth) — one timesheet per employee per month
+- [Phase 27-controle-de-ponto-e-jornada]: TimeEntryError/TimesheetError custom error classes added to types files for consistent error handling in routes
+- [Phase 27-controle-de-ponto-e-jornada]: APPROVE_MANAGER auto-advances to PENDING_RH in state machine per RESEARCH.md pattern
 
 ### Pending Todos
 
@@ -81,7 +83,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T14:58:56.051Z
-Stopped at: Checkpoint 27-05 Task 3 human-verify
+Last session: 2026-03-24T15:02:25.787Z
+Stopped at: Completed 27-03-PLAN.md
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
