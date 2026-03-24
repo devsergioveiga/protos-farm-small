@@ -58,7 +58,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 **Milestone Goal:** Implementar o ciclo completo de gestão de pessoas em fazendas — cadastro e contratos, controle de ponto e jornada rural, folha de pagamento com particularidades do trabalhador rural (Lei 5.889/73, NR-31), férias, 13º, rescisão, eSocial, segurança do trabalho e integração bidirecional com os módulos financeiro e contábil.
 
 - [x] **Phase 25: Cadastro de Colaboradores e Contratos** — Fundação do módulo RH: entidade colaborador com todos os dados trabalhistas, contratuais e pessoais exigidos pela legislação e pelo eSocial (completed 2026-03-24)
-- [ ] **Phase 26: Parâmetros de Folha e Motor de Cálculo** — Engine de cálculo brasileiro customizado: rubricas configuráveis, tabelas INSS/IRRF progressivas, FUNRURAL rural, moradia/alimentação — motor que alimenta todo o processamento de folha
+- [x] **Phase 26: Parâmetros de Folha e Motor de Cálculo** — Engine de cálculo brasileiro customizado: rubricas configuráveis, tabelas INSS/IRRF progressivas, FUNRURAL rural, moradia/alimentação — motor que alimenta todo o processamento de folha (completed 2026-03-24)
 - [ ] **Phase 27: Controle de Ponto e Jornada** — Pipeline de horas: registro mobile/web, apontamento por atividade/operação com rateio por CC, cálculo de HE/noturno rural, banco de horas, aprovação do espelho
 - [ ] **Phase 28: Processamento da Folha Mensal** — Core value: folha em lote com holerite PDF, adiantamento salarial, 13º salário — o ciclo mensal completo do processamento de folha
 - [ ] **Phase 29: Férias, Afastamentos, Rescisão e Provisões** — Ciclo de vida trabalhista: férias com fracionamento, afastamentos/CAT, rescisão com TRCT, provisão mensal de férias e 13º com lançamento contábil
@@ -473,7 +473,7 @@ Plans:
 - [x] 26-01-PLAN.md — Prisma schema (4 models, 4 enums), migration, seed 2026 legal tables, TypeScript types
 - [x] 26-02-PLAN.md — Payroll engine TDD (INSS progressive, IRRF two-step, FGTS, rural rules, formula eval)
 - [x] 26-03-PLAN.md — Backend REST endpoints (rubricas CRUD + legal tables CRUD + RBAC)
-- [ ] 26-04-PLAN.md — Frontend PayrollParametersPage (rubricas tab + legal tables tab + modals)
+- [x] 26-04-PLAN.md — Frontend PayrollParametersPage (rubricas tab + legal tables tab + modals)
 **UI hint**: yes
 
 ### Phase 27: Controle de Ponto e Jornada
@@ -629,7 +629,7 @@ Plans:
 | 23. Relatórios e Dashboard Patrimonial              | v1.2      | 3/3            | Complete    | 2026-03-23 |
 | 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 3/3            | Complete    | 2026-03-23 |
 | 25. Cadastro de Colaboradores e Contratos           | v1.3      | 4/4 | Complete    | 2026-03-24 |
-| 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 3/4 | In Progress|  |
+| 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 4/4 | Complete   | 2026-03-24 |
 | 27. Controle de Ponto e Jornada                     | v1.3      | 0/TBD          | Not started | -          |
 | 28. Processamento da Folha Mensal                   | v1.3      | 0/TBD          | Not started | -          |
 | 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 0/TBD          | Not started | -          |
