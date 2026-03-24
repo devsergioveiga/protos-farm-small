@@ -414,6 +414,8 @@ model Organization {
   payrollRubricas          PayrollRubrica[]
   payrollLegalTables       PayrollLegalTable[]
   timeEntries              TimeEntry[]
+  payrollRuns              PayrollRun[]
+  salaryAdvances           SalaryAdvance[]
 
   @@map("organizations")
 }
@@ -7730,6 +7732,8 @@ model Employee {
   timeEntries         TimeEntry[]
   overtimeBankEntries OvertimeBankEntry[]
   timesheets          Timesheet[]
+  payrollRunItems     PayrollRunItem[]
+  salaryAdvances      SalaryAdvance[]
 
   @@unique([organizationId, cpf])
   @@index([organizationId, status])
@@ -8172,4 +8176,111 @@ model TimesheetCorrection {
 
   @@index([timesheetId])
   @@map("timesheet_corrections")
+}
+
+// ─── Payroll Run Models ───────────────────────────────────────────────
+
+enum PayrollRunType {
+  MONTHLY
+  ADVANCE
+  THIRTEENTH_FIRST
+  THIRTEENTH_SECOND
+
+  @@map("payroll_run_type")
+}
+
+enum PayrollRunStatus {
+  PENDING
+  PROCESSING
+  CALCULATED
+  COMPLETED
+  ERROR
+  REVERTED
+
+  @@map("payroll_run_status")
+}
+
+model PayrollRun {
+  id             String           @id @default(uuid())
+  organizationId String
+  referenceMonth DateTime         @db.Date
+  runType        PayrollRunType
+  status         PayrollRunStatus @default(PENDING)
+  triggeredBy    String
+  closedAt       DateTime?
+  closedBy       String?
+  revertedAt     DateTime?
+  revertedBy     String?
+  totalGross     Decimal?         @db.Decimal(14, 2)
+  totalNet       Decimal?         @db.Decimal(14, 2)
+  totalCharges   Decimal?         @db.Decimal(14, 2)
+  employeeCount  Int              @default(0)
+  notes          String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  items        PayrollRunItem[]
+
+  @@unique([organizationId, referenceMonth, runType])
+  @@index([organizationId, status])
+  @@map("payroll_runs")
+}
+
+model PayrollRunItem {
+  id               String   @id @default(uuid())
+  payrollRunId     String
+  employeeId       String
+  status           String   @default("CALCULATED")
+  baseSalary       Decimal  @db.Decimal(10, 2)
+  proRataDays      Int?
+  overtime50       Decimal  @db.Decimal(10, 2) @default(0)
+  overtime100      Decimal  @db.Decimal(10, 2) @default(0)
+  dsrValue         Decimal  @db.Decimal(10, 2) @default(0)
+  nightPremium     Decimal  @db.Decimal(10, 2) @default(0)
+  salaryFamily     Decimal  @db.Decimal(10, 2) @default(0)
+  otherProvisions  Decimal  @db.Decimal(10, 2) @default(0)
+  grossSalary      Decimal  @db.Decimal(10, 2)
+  inssAmount       Decimal  @db.Decimal(10, 2) @default(0)
+  irrfAmount       Decimal  @db.Decimal(10, 2) @default(0)
+  vtDeduction      Decimal  @db.Decimal(10, 2) @default(0)
+  housingDeduction Decimal  @db.Decimal(10, 2) @default(0)
+  foodDeduction    Decimal  @db.Decimal(10, 2) @default(0)
+  advanceDeduction Decimal  @db.Decimal(10, 2) @default(0)
+  otherDeductions  Decimal  @db.Decimal(10, 2) @default(0)
+  netSalary        Decimal  @db.Decimal(10, 2)
+  fgtsAmount       Decimal  @db.Decimal(10, 2) @default(0)
+  inssPatronal     Decimal  @db.Decimal(10, 2) @default(0)
+  lineItemsJson    Json?
+  payslipSentAt    DateTime?
+  createdAt        DateTime @default(now())
+
+  payrollRun PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employee   Employee   @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@unique([payrollRunId, employeeId])
+  @@index([employeeId])
+  @@map("payroll_run_items")
+}
+
+model SalaryAdvance {
+  id              String   @id @default(uuid())
+  organizationId  String
+  employeeId      String
+  referenceMonth  DateTime @db.Date
+  amount          Decimal  @db.Decimal(10, 2)
+  advanceDate     DateTime @db.Date
+  batchId         String?
+  notes           String?
+  payableId       String?  @unique
+  deductedInRunId String?
+  createdBy       String
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee     Employee     @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId, referenceMonth])
+  @@index([employeeId, referenceMonth])
+  @@map("salary_advances")
 }
