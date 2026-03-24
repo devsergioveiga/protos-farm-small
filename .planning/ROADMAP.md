@@ -472,7 +472,7 @@ Plans:
 Plans:
 - [x] 26-01-PLAN.md — Prisma schema (4 models, 4 enums), migration, seed 2026 legal tables, TypeScript types
 - [x] 26-02-PLAN.md — Payroll engine TDD (INSS progressive, IRRF two-step, FGTS, rural rules, formula eval)
-- [ ] 26-03-PLAN.md — Backend REST endpoints (rubricas CRUD + legal tables CRUD + RBAC)
+- [x] 26-03-PLAN.md — Backend REST endpoints (rubricas CRUD + legal tables CRUD + RBAC)
 - [ ] 26-04-PLAN.md — Frontend PayrollParametersPage (rubricas tab + legal tables tab + modals)
 **UI hint**: yes
 
@@ -629,7 +629,7 @@ Plans:
 | 23. Relatórios e Dashboard Patrimonial              | v1.2      | 3/3            | Complete    | 2026-03-23 |
 | 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 3/3            | Complete    | 2026-03-23 |
 | 25. Cadastro de Colaboradores e Contratos           | v1.3      | 4/4 | Complete    | 2026-03-24 |
-| 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 2/4 | In Progress|  |
+| 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 3/4 | In Progress|  |
 | 27. Controle de Ponto e Jornada                     | v1.3      | 0/TBD          | Not started | -          |
 | 28. Processamento da Folha Mensal                   | v1.3      | 0/TBD          | Not started | -          |
 | 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 0/TBD          | Not started | -          |

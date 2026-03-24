@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Completed 26-02-PLAN.md (payroll engine)
-last_updated: "2026-03-24T10:26:40.711Z"
+stopped_at: Completed 26-03-PLAN.md (payroll REST API)
+last_updated: "2026-03-24T10:34:50.303Z"
 progress:
   total_phases: 26
   completed_phases: 19
   total_plans: 86
-  completed_plans: 84
+  completed_plans: 85
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 26 (par-metros-de-folha-e-motor-de-c-lculo) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 
 ## Accumulated Context
 
@@ -59,6 +59,8 @@ Key decisions for v1.3:
 - [Phase 26]: FUNRURAL 2026 implemented as two PayrollLegalTable rows (Jan-Mar effectiveFrom 2026-01-01 and Apr-Dec effectiveFrom 2026-04-01)
 - [Phase 26]: INSS uses upTo-boundary approach to avoid 1-cent discrepancy at bracket boundaries; total rounding per Portaria MPS/MF nº 13/2026
 - [Phase 26]: IRRF exemption sets redutor=grossTax (transparent tracking of exemption mechanism via 2026 Lei 15.079/2024 redutor)
+- [Phase 26]: Added 'write' to PermissionAction type for payroll-params module — MANAGER gets read+write, FINANCIAL gets read
+- [Phase 26]: Route /effective registered before /:id in payroll-tables routes to prevent Express param route shadowing
 
 ### Pending Todos
 
@@ -74,7 +76,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T10:26:40.707Z
-Stopped at: Completed 26-02-PLAN.md (payroll engine)
+Last session: 2026-03-24T10:34:50.300Z
+Stopped at: Completed 26-03-PLAN.md (payroll REST API)
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
