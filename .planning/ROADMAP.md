@@ -628,7 +628,7 @@ Plans:
 | 22. Hierarquia Avançada e Imobilizado em Andamento  | v1.2      | 3/3            | Complete    | 2026-03-23 |
 | 23. Relatórios e Dashboard Patrimonial              | v1.2      | 3/3            | Complete    | 2026-03-23 |
 | 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 3/3            | Complete    | 2026-03-23 |
-| 25. Cadastro de Colaboradores e Contratos           | v1.3      | 4/4 | Complete   | 2026-03-24 |
+| 25. Cadastro de Colaboradores e Contratos           | v1.3      | 4/4 | Complete    | 2026-03-24 |
 | 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 0/TBD          | Not started | -          |
 | 27. Controle de Ponto e Jornada                     | v1.3      | 0/TBD          | Not started | -          |
 | 28. Processamento da Folha Mensal                   | v1.3      | 0/TBD          | Not started | -          |
