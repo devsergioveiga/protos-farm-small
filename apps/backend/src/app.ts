@@ -139,6 +139,7 @@ import { payrollTablesRouter } from './modules/payroll-tables/payroll-tables.rou
 import { timeEntriesRouter } from './modules/time-entries/time-entries.routes';
 import { overtimeBankRouter } from './modules/overtime-bank/overtime-bank.routes';
 import { timesheetsRouter } from './modules/timesheets/timesheets.routes';
+import { salaryAdvancesRouter } from './modules/salary-advances/salary-advances.routes';
 
 const app = express();
 
@@ -287,5 +288,6 @@ app.use('/api', payrollTablesRouter);
 app.use('/api', timeEntriesRouter);
 app.use('/api', overtimeBankRouter);
 app.use('/api', timesheetsRouter);
+app.use('/api', salaryAdvancesRouter);
 
 export { app };
