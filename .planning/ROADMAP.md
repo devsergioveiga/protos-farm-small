@@ -57,7 +57,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 **Milestone Goal:** Implementar o ciclo completo de gestão de pessoas em fazendas — cadastro e contratos, controle de ponto e jornada rural, folha de pagamento com particularidades do trabalhador rural (Lei 5.889/73, NR-31), férias, 13º, rescisão, eSocial, segurança do trabalho e integração bidirecional com os módulos financeiro e contábil.
 
-- [ ] **Phase 25: Cadastro de Colaboradores e Contratos** — Fundação do módulo RH: entidade colaborador com todos os dados trabalhistas, contratuais e pessoais exigidos pela legislação e pelo eSocial
+- [x] **Phase 25: Cadastro de Colaboradores e Contratos** — Fundação do módulo RH: entidade colaborador com todos os dados trabalhistas, contratuais e pessoais exigidos pela legislação e pelo eSocial (completed 2026-03-24)
 - [ ] **Phase 26: Parâmetros de Folha e Motor de Cálculo** — Engine de cálculo brasileiro customizado: rubricas configuráveis, tabelas INSS/IRRF progressivas, FUNRURAL rural, moradia/alimentação — motor que alimenta todo o processamento de folha
 - [ ] **Phase 27: Controle de Ponto e Jornada** — Pipeline de horas: registro mobile/web, apontamento por atividade/operação com rateio por CC, cálculo de HE/noturno rural, banco de horas, aprovação do espelho
 - [ ] **Phase 28: Processamento da Folha Mensal** — Core value: folha em lote com holerite PDF, adiantamento salarial, 13º salário — o ciclo mensal completo do processamento de folha
@@ -452,7 +452,7 @@ Plans:
 - [x] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
 - [x] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
 - [x] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
-- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
+- [x] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
 **UI hint**: yes
 
 ### Phase 26: Parâmetros de Folha e Motor de Cálculo
@@ -472,7 +472,7 @@ Plans:
 Plans:
 - [x] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
 - [x] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
-- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
+- [x] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
 - [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
 **UI hint**: yes
 
@@ -492,7 +492,7 @@ Plans:
 
 Plans:
 - [x] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
-- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
+- [x] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
 - [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
 - [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
 **UI hint**: yes
@@ -513,7 +513,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
+- [x] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
 - [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
 - [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
 - [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
@@ -628,7 +628,7 @@ Plans:
 | 22. Hierarquia Avançada e Imobilizado em Andamento  | v1.2      | 3/3            | Complete    | 2026-03-23 |
 | 23. Relatórios e Dashboard Patrimonial              | v1.2      | 3/3            | Complete    | 2026-03-23 |
 | 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 3/3            | Complete    | 2026-03-23 |
-| 25. Cadastro de Colaboradores e Contratos           | v1.3      | 3/4 | In Progress|  |
+| 25. Cadastro de Colaboradores e Contratos           | v1.3      | 4/4 | Complete   | 2026-03-24 |
 | 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 0/TBD          | Not started | -          |
 | 27. Controle de Ponto e Jornada                     | v1.3      | 0/TBD          | Not started | -          |
 | 28. Processamento da Folha Mensal                   | v1.3      | 0/TBD          | Not started | -          |

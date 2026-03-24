@@ -12,8 +12,8 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 - [x] **COLAB-01**: Gerente pode cadastrar colaborador com dados pessoais completos (CPF, RG, PIS/PASEP, CTPS), dados bancários, dependentes (CPF obrigatório, para IRRF e salário-família), dados de saúde, upload de documentos digitalizados, associação a fazendas e status (ativo/afastado/férias/desligado)
 - [x] **COLAB-02**: Gerente pode registrar contrato de trabalho com tipo (CLT indeterminado, determinado, safra, intermitente, experiência, aprendiz), dados contratuais (admissão, cargo/CBO, salário, jornada, sindicato), aditivos com histórico, alertas de vencimento (experiência, safra) e geração de PDF
 - [x] **COLAB-03**: Gerente pode cadastrar cargos com CBO, faixas salariais (piso/teto + níveis), escalas de trabalho configuráveis (5x2, 6x1, 12x36, turno ordenha), adicionais por cargo, quadro de lotação, histórico de movimentações (promoção, reajuste, transferência) com timeline e reajuste coletivo em lote
-- [ ] **COLAB-04**: Gerente pode importar colaboradores existentes em massa via CSV/Excel com template, mapeamento flexível, validação (CPF, PIS), preview, relatório pós-importação e saldos iniciais de férias/banco de horas
-- [ ] **COLAB-05**: Gerente pode visualizar ficha completa do colaborador em tela única com dados pessoais, contrato atual e histórico, evolução salarial (gráfico), holerites 12 meses, saldo de férias/banco de horas, histórico de afastamentos, EPIs entregues, treinamentos e operações de campo vinculadas
+- [x] **COLAB-04**: Gerente pode importar colaboradores existentes em massa via CSV/Excel com template, mapeamento flexível, validação (CPF, PIS), preview, relatório pós-importação e saldos iniciais de férias/banco de horas
+- [x] **COLAB-05**: Gerente pode visualizar ficha completa do colaborador em tela única com dados pessoais, contrato atual e histórico, evolução salarial (gráfico), holerites 12 meses, saldo de férias/banco de horas, histórico de afastamentos, EPIs entregues, treinamentos e operações de campo vinculadas
 
 ### Controle de Ponto e Jornada
 
@@ -83,8 +83,8 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 | COLAB-01 | Phase 25 | Complete |
 | COLAB-02 | Phase 25 | Complete |
 | COLAB-03 | Phase 25 | Complete |
-| COLAB-04 | Phase 25 | Pending |
-| COLAB-05 | Phase 25 | Pending |
+| COLAB-04 | Phase 25 | Complete |
+| COLAB-05 | Phase 25 | Complete |
 | FOLHA-01 | Phase 26 | Pending |
 | PONTO-01 | Phase 27 | Pending |
 | PONTO-02 | Phase 27 | Pending |

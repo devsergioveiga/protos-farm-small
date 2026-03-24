@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Ready to execute
-stopped_at: Completed 25-03-PLAN.md
-last_updated: "2026-03-24T03:25:50.268Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 25-04-PLAN.md — awaiting human verification (Task 3)
+last_updated: "2026-03-24T03:42:10.407Z"
 progress:
   total_phases: 26
-  completed_phases: 18
+  completed_phases: 19
   total_plans: 82
-  completed_plans: 81
+  completed_plans: 82
 ---
 
 # Project State
@@ -54,6 +54,7 @@ Key decisions for v1.3:
 - [Phase 25]: CONTRACT_EXPIRY notification type added to NOTIFICATION_TYPES for cron alerts
 - [Phase 25]: HR endpoints use farms:read permission (hr module not yet in PermissionModule type)
 - [Phase 25]: Frontend hooks follow useState+useCallback pattern (no SWR) matching existing useAnimals pattern
+- [Phase 25]: Bulk preview uses two-level validation: ERROR blocks confirm, WARNING allows confirm
 
 ### Pending Todos
 
@@ -69,7 +70,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T03:25:44.853Z
-Stopped at: Completed 25-03-PLAN.md
+Last session: 2026-03-24T03:42:10.404Z
+Stopped at: Completed 25-04-PLAN.md — awaiting human verification (Task 3)
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
