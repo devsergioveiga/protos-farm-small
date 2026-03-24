@@ -488,14 +488,15 @@ Plans:
 3. Sistema calcula automaticamente horas extras (50% dias normais, 100% domingos/feriados com DSR), banco de horas com alerta de vencimento em 6 meses, adicional noturno rural (21h-5h, 25%, hora reduzida 52m30s) e alerta de interjornada menor que 11 horas
 4. Gerente pode revisar espelho de ponto mensal com identificação visual de inconsistências, corrigir registros com justificativa, conduzir fluxo de aprovação (gerente → RH), e o colaborador pode aceitar o espelho via app — com prazo de fechamento configurável e exportação em PDF
 
-**Plans**: 5 plans
+**Plans**: 6 plans
 
 Plans:
 - [ ] 27-01-PLAN.md — Prisma schema (5 models, 3 enums), migration, date-holidays install, TypeScript types
 - [ ] 27-02-PLAN.md — Time calculations engine (TDD): overtime, rural night premium, interjornada, holidays
-- [ ] 27-03-PLAN.md — Backend REST API: time-entries, overtime-bank, timesheets with PDF export
-- [ ] 27-04-PLAN.md — Frontend web: AttendancePage, TimesheetPage, modals, hooks
+- [ ] 27-03-PLAN.md — Backend REST API: time-entries (incl. team bulk linking), overtime-bank, timesheets with PDF export
+- [ ] 27-04-PLAN.md — Frontend web: AttendancePage with team linking, hooks, types
 - [ ] 27-05-PLAN.md — Mobile: time-punch screen with geofencing, offline storage, sync
+- [ ] 27-06-PLAN.md — Frontend web: TimesheetPage with approval flow, corrections, PDF export
 **UI hint**: yes
 
 ### Phase 28: Processamento da Folha Mensal
