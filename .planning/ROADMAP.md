@@ -4,7 +4,8 @@
 
 - ✅ **v1.0 Financeiro Base** — Phases 1-6 (shipped 2026-03-17)
 - ✅ **v1.1 Gestão de Compras** — Phases 7-15 (all complete)
-- 🚧 **v1.2 Gestão de Patrimônio** — Phases 16-24 (in progress)
+- ✅ **v1.2 Gestão de Patrimônio** — Phases 16-24 (all complete)
+- 🚧 **v1.3 RH e Folha de Pagamento Rural** — Phases 25-32 (in progress)
 
 ## Phases
 
@@ -37,9 +38,8 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 </details>
 
-### 🚧 v1.2 Gestão de Patrimônio (Active)
-
-**Milestone Goal:** Implementar o ciclo de vida completo dos ativos da fazenda — cadastro, depreciação, manutenção preventiva/corretiva, controle operacional, documentação e integração bidirecional com o módulo financeiro (compra, venda, financiamento, leasing).
+<details>
+<summary>✅ v1.2 Gestão de Patrimônio (Phases 16-24) — COMPLETE</summary>
 
 - [x] **Phase 16: Cadastro de Ativos** — Entidade raiz do patrimônio: todas as fases dependem de um ativo cadastrado e classificado corretamente (completed 2026-03-20)
 - [x] **Phase 17: Engine de Depreciação** — Cálculo mensal automático e rastreável, pré-requisito para ganho/perda na alienação (completed 2026-03-20)
@@ -50,6 +50,21 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 22: Hierarquia Avançada e Imobilizado em Andamento** — Ativo composto pai-filho, reforma/capitalização e obras em andamento (completed 2026-03-23)
 - [x] **Phase 23: Relatórios e Dashboard Patrimonial** — Visão consolidada de TCO, depreciação acumulada e indicadores — leitura sobre dados produzidos pelas fases anteriores (completed 2026-03-23)
 - [x] **Phase 24: Ativos Biológicos, Leasing e Features Avançadas** — CPC 29 fair value, CPC 06 leasing e troca de ativo com compensação financeira (completed 2026-03-23)
+
+</details>
+
+### 🚧 v1.3 RH e Folha de Pagamento Rural (Active)
+
+**Milestone Goal:** Implementar o ciclo completo de gestão de pessoas em fazendas — cadastro e contratos, controle de ponto e jornada rural, folha de pagamento com particularidades do trabalhador rural (Lei 5.889/73, NR-31), férias, 13º, rescisão, eSocial, segurança do trabalho e integração bidirecional com os módulos financeiro e contábil.
+
+- [ ] **Phase 25: Cadastro de Colaboradores e Contratos** — Fundação do módulo RH: entidade colaborador com todos os dados trabalhistas, contratuais e pessoais exigidos pela legislação e pelo eSocial
+- [ ] **Phase 26: Parâmetros de Folha e Motor de Cálculo** — Engine de cálculo brasileiro customizado: rubricas configuráveis, tabelas INSS/IRRF progressivas, FUNRURAL rural, moradia/alimentação — motor que alimenta todo o processamento de folha
+- [ ] **Phase 27: Controle de Ponto e Jornada** — Pipeline de horas: registro mobile/web, apontamento por atividade/operação com rateio por CC, cálculo de HE/noturno rural, banco de horas, aprovação do espelho
+- [ ] **Phase 28: Processamento da Folha Mensal** — Core value: folha em lote com holerite PDF, adiantamento salarial, 13º salário — o ciclo mensal completo do processamento de folha
+- [ ] **Phase 29: Férias, Afastamentos, Rescisão e Provisões** — Ciclo de vida trabalhista: férias com fracionamento, afastamentos/CAT, rescisão com TRCT, provisão mensal de férias e 13º com lançamento contábil
+- [ ] **Phase 30: Segurança do Trabalho Rural (NR-31)** — Conformidade legal NR-31: EPIs com ficha de entrega, treinamentos obrigatórios com matriz de validade, ASO/PCMSO com alertas de vencimento
+- [ ] **Phase 31: Obrigações Acessórias e eSocial** — Compliance fiscal e trabalhista: guias de recolhimento (FGTS/INSS/IRRF/FUNRURAL), eventos eSocial em XML com transmissão digital, RAIS e informe de rendimentos
+- [ ] **Phase 32: Integração Financeira, Contábil e Dashboard RH** — Fechamento do ciclo: folha→Contas a Pagar com rateio por CC, lançamentos contábeis por regime de competência, dashboard de custo de pessoal e KPIs de RH
 
 ## Phase Details
 
@@ -416,6 +431,127 @@ Plans:
 - [x] 24-02-PLAN.md — Asset leasing CPC 06: ROU asset + CP installments + frontend page
 - [x] 24-03-PLAN.md — Asset trade-in: atomic swap + financial compensation + frontend modal
 
+---
+
+### Phase 25: Cadastro de Colaboradores e Contratos
+
+**Goal**: Gerente pode cadastrar colaboradores com todos os dados trabalhistas e documentais exigidos pela legislação, registrar contratos por tipo (CLT, safra, intermitente, experiência, aprendiz), gerenciar cargos e escalas, importar em massa, e consultar a ficha completa do colaborador — tornando a entidade colaborador disponível como fundação de todo o módulo RH
+**Depends on**: Phase 24 (v1.2 completo — base financeira, compras e patrimônio existentes)
+**Requirements**: COLAB-01, COLAB-02, COLAB-03, COLAB-04, COLAB-05
+**Success Criteria** (what must be TRUE):
+
+1. Gerente pode cadastrar colaborador com CPF, PIS/PASEP, CTPS, dados bancários, dependentes com CPF (para IRRF e salário-família), upload de documentos digitalizados e associação a fazendas com status ativo/afastado/férias/desligado
+2. Gerente pode registrar contrato de trabalho por tipo (CLT indeterminado, determinado, safra, intermitente, experiência, aprendiz) com dados de admissão, cargo/CBO, salário, jornada, sindicato, aditivos com histórico e alertas automáticos de vencimento de contratos de experiência e safra
+3. Gerente pode cadastrar cargos com CBO, faixas salariais com níveis (piso/teto), escalas de trabalho configuráveis (5x2, 6x1, 12x36, turno ordenha), adicionais por cargo, quadro de lotação e histórico de movimentações (promoção, reajuste, transferência) com reajuste coletivo em lote
+4. Gerente pode importar colaboradores existentes via CSV/Excel com template, validação de CPF e PIS, preview dos dados e relatório pós-importação com saldos iniciais de férias e banco de horas
+5. Gerente pode visualizar ficha completa do colaborador em tela única com dados pessoais, contrato atual e histórico, evolução salarial em gráfico, holerites dos últimos 12 meses, saldo de férias, histórico de afastamentos, EPIs entregues, treinamentos e operações de campo vinculadas
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 26: Parâmetros de Folha e Motor de Cálculo
+
+**Goal**: Contador pode configurar o plano de rubricas (proventos e descontos) com fórmulas customizáveis e manter tabelas legais vigentes, enquanto o sistema possui um motor de cálculo brasileiro completo — INSS progressivo, IRRF com dependentes, FUNRURAL rural, moradia/alimentação — que garante cálculo correto antes de qualquer folha ser processada
+**Depends on**: Phase 25
+**Requirements**: FOLHA-01
+**Success Criteria** (what must be TRUE):
+
+1. Contador pode configurar rubricas de proventos (salário, HE 50%/100%, noturno 25%, insalubridade, periculosidade, salário-família, comissão) e descontos (INSS, IRRF, VT 6%, moradia até 25%, alimentação até 20%, adiantamento, faltas, pensão) com fórmulas customizáveis
+2. Contador pode atualizar tabelas legais com vigência (INSS progressiva, IRRF com faixas e deduções por dependente, salário mínimo, salário-família) sem necessidade de deploy — novas alíquotas entram em vigor na data configurada
+3. Sistema calcula INSS pelo método progressivo por faixa (não flat-rate), IRRF após dedução do INSS e dos dependentes, FGTS 8% sobre salário bruto e FUNRURAL com modo configurável (% receita bruta da fazenda ou % folha)
+4. Sistema aplica regras específicas do trabalhador rural: adicional noturno 21h-5h a 25% (não 22h-5h a 20%), hora noturna rural reduzida (52m30s), moradia até 25% do salário e alimentação até 20% descontados apenas sobre o piso regional
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 27: Controle de Ponto e Jornada
+
+**Goal**: Colaborador pode registrar ponto via mobile ou web, gerente pode vincular horas a atividades e operações de campo, o sistema calcula automaticamente horas extras, adicional noturno rural e banco de horas, e o gerente pode revisar e aprovar o espelho de ponto mensal antes do processamento da folha
+**Depends on**: Phase 25, Phase 26
+**Requirements**: PONTO-01, PONTO-02, PONTO-03, PONTO-04
+**Success Criteria** (what must be TRUE):
+
+1. Colaborador pode registrar ponto (entrada, intervalos, saída) via app mobile com geolocalização validada contra o perímetro da fazenda (PostGIS), funcionando offline com sincronização automática, e gerente pode registrar ponto manualmente para equipes sem celular com justificativa auditável
+2. Gerente pode vincular horas trabalhadas a atividades/operações (plantio, colheita, trato, manutenção) por talhão ou pasto com modo rápido por equipe, e o custo/hora é calculado automaticamente e lançado no centro de custo da atividade correspondente
+3. Sistema calcula automaticamente horas extras (50% dias normais, 100% domingos/feriados com DSR), banco de horas com alerta de vencimento em 6 meses, adicional noturno rural (21h-5h, 25%, hora reduzida 52m30s) e alerta de interjornada menor que 11 horas
+4. Gerente pode revisar espelho de ponto mensal com identificação visual de inconsistências, corrigir registros com justificativa, conduzir fluxo de aprovação (gerente → RH), e o colaborador pode aceitar o espelho via app — com prazo de fechamento configurável e exportação em PDF
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 28: Processamento da Folha Mensal
+
+**Goal**: Contador pode processar folha mensal em lote com cálculo automático completo por colaborador, gerar holerites em PDF para entrega por email e app, registrar e descontar adiantamentos salariais, e processar o 13º salário nas duas parcelas — com fechamento imutável e integração com ficha do colaborador
+**Depends on**: Phase 26, Phase 27
+**Requirements**: FOLHA-02, FOLHA-03, FOLHA-04, FOLHA-05
+**Success Criteria** (what must be TRUE):
+
+1. Contador pode processar folha mensal em lote para todos os colaboradores ativos, com cálculo automático de salário proporcional, horas extras com DSR, noturno rural, INSS/IRRF/FGTS, moradia/alimentação e encargos patronais (INSS 20%, RAT, FGTS 8%) — com bloqueio se espelho de ponto não estiver aprovado
+2. Contador pode revisar preview da folha antes de confirmar, recalcular individualmente um colaborador, e fechar a folha tornando-a imutável — com possibilidade de estorno completo que reverte todos os lançamentos associados
+3. Gerente pode registrar adiantamento salarial com limite configurável em percentual do salário, processar adiantamentos em lote no dia 15 com 40% do salário, gerar recibo PDF e o desconto aparece automaticamente na folha do mês
+4. Colaborador pode receber holerite detalhado com proventos, descontos, bases INSS/IRRF/FGTS e totais em PDF individual via email ou app mobile, com histórico dos últimos 12 meses acessível na ficha
+5. Contador pode processar 13º salário (1ª parcela até 30/nov sem descontos, 2ª parcela até 20/dez com INSS e IRRF) com cálculo proporcional por meses trabalhados incluindo médias de HE e noturno, recibo PDF e integração financeira
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 29: Férias, Afastamentos, Rescisão e Provisões
+
+**Goal**: Gerente pode programar e calcular férias com fracionamento, registrar afastamentos com impacto automático na folha, o contador pode processar rescisão com TRCT completo e guias, e o sistema calcula mensalmente a provisão de férias e 13º com lançamento contábil no passivo — cobrindo o ciclo completo de eventos trabalhistas ao longo da relação de emprego
+**Depends on**: Phase 28
+**Requirements**: FERIAS-01, FERIAS-02, FERIAS-03, FERIAS-04
+**Success Criteria** (what must be TRUE):
+
+1. Gerente pode controlar períodos aquisitivos, programar férias (mínimo 5 dias, até 3 frações) em calendário visual que exibe conflitos com datas de safra, calcular pagamento com salário + 1/3 + médias menos INSS e IRRF, gerar recibo PDF e receber alerta 60 dias antes do vencimento do período de dobro
+2. Gerente pode registrar afastamentos por tipo (atestado até 15 dias pela empresa / após INSS, acidente com CAT, maternidade 120 dias, paternidade, casamento, falecimento) com impacto automático na folha e controle de retorno com ASO obrigatório após acidentes
+3. Contador pode processar rescisão por tipo (sem justa causa, justa causa, pedido de demissão, fim de safra, acordo mútuo) com cálculo automático de saldo de salário, aviso prévio proporcional (30 + 3 dias/ano Lei 12.506/2011 máx 90), 13º prop., férias vencidas+prop.+1/3, multa FGTS 40%/20%, gerar TRCT em PDF e guias GRRF com alerta de prazo de 10 dias
+4. Sistema calcula mensalmente provisão de férias e 13º por colaborador (1/12 do salário + 1/3 + encargos) usando histórico salarial, faz lançamento contábil automático de despesa na DRE e passivo no BP, reverte ao efetuar o pagamento, e exibe relatório de posição com rateio por centro de custo conforme apontamento de horas
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 30: Segurança do Trabalho Rural (NR-31)
+
+**Goal**: Gerente e técnico de segurança podem controlar a entrega de EPIs, registrar e acompanhar treinamentos obrigatórios NR-31 com matriz de conformidade, e gerenciar ASOs e PCMSO com alertas de vencimento — garantindo que nenhum colaborador opere sem EPI, treinamento válido ou ASO em dia
+**Depends on**: Phase 25
+**Requirements**: SEGUR-01, SEGUR-02, SEGUR-03
+**Success Criteria** (what must be TRUE):
+
+1. Gerente pode cadastrar EPIs com número CA e validade, registrar entrega por colaborador com data e tipo consumindo do estoque de produtos existente, receber alertas de CA vencido ou necessidade de troca, e gerar ficha de EPI em PDF com relatório de conformidade por função
+2. Técnico pode registrar treinamentos NR-31 obrigatórios (integração, agrotóxicos, máquinas, animais, primeiros socorros, incêndio) com data, carga horária, instrutor e lista de presença, configurar validade por tipo, receber alerta 30 dias antes da reciclagem e gerar certificado PDF e matriz de conformidade
+3. Gerente pode registrar ASOs por tipo (admissional, periódico, retorno, mudança de função, demissional) com médico CRM, resultado e exames, e o sistema alerta 30 dias antes do vencimento, bloqueia admissão sem ASO admissional e exige ASO demissional para processar rescisão
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 31: Obrigações Acessórias e eSocial
+
+**Goal**: Contador pode gerar guias de recolhimento de FGTS, INSS, IRRF e FUNRURAL com vencimentos e alertas corretos, gerar e transmitir todos os eventos eSocial em XML conforme leiaute S-1.3 com certificado digital ICP-Brasil, e emitir RAIS e informes de rendimentos — cobrindo todas as obrigações acessórias trabalhistas e previdenciárias exigidas por lei
+**Depends on**: Phase 28, Phase 29, Phase 30
+**Requirements**: ESOCIAL-01, ESOCIAL-02, ESOCIAL-03
+**Success Criteria** (what must be TRUE):
+
+1. Contador pode gerar guias de recolhimento (FGTS via GFIP/DCTFWeb, INSS via DARF, IRRF via DARF, FUNRURAL via GPS/DARF) com calendário de vencimentos, alertas antecipados e integração automática com Contas a Pagar — sem entrada manual de valores
+2. Contador pode gerar eventos eSocial nos grupos corretos (tabela S-1000/S-1005/S-1010/S-1020, não periódicos S-2200/S-2206/S-2230/S-2299, periódicos S-1200/S-1299, SST S-2210/S-2220/S-2240) em XML assinado digitalmente com certificado ICP-Brasil, transmitir ao Web Service do governo e acompanhar protocolo, recibo e retorno em dashboard de status com reprocessamento de rejeitados
+3. Contador pode gerar informe de rendimentos por colaborador em PDF (total de renda, IRRF retido, INSS) com envio por email ou app, e consultar histórico por ano-base com validação de dados antes da emissão
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 32: Integração Financeira, Contábil e Dashboard RH
+
+**Goal**: Ao fechar a folha, o sistema lança automaticamente todas as contas a pagar correspondentes com vencimentos legais corretos e rateio por centro de custo, registra os lançamentos contábeis por regime de competência, e o gerente pode visualizar no dashboard RH os KPIs de custo de pessoal por fazenda, atividade e cultura — fechando o ciclo entre quem trabalhou, o que produziu e quanto custou
+**Depends on**: Phase 28, Phase 29, Phase 31
+**Requirements**: INTEGR-01, INTEGR-02, INTEGR-03
+**Success Criteria** (what must be TRUE):
+
+1. Ao confirmar o fechamento da folha, o sistema gera automaticamente CPs para salários líquidos (vencimento dia 5 útil), FGTS (dia 7), INSS/IRRF (dia 20), VT, pensão alimentícia e FUNRURAL — com rateio por centro de custo conforme apontamento de horas, tela de revisão pré-confirmação e capacidade de estorno completo com rollback dos CPs
+2. Ao fechar a folha, o sistema lança automaticamente os créditos contábeis por regime de competência — salários como despesa, encargos como despesa, provisões como despesa+passivo, guias como passivo a recolher — com rateio por centro de custo e baixa do passivo ao efetuar o pagamento
+3. Gerente pode visualizar dashboard RH com total de colaboradores por status e tipo de contrato, custo total da folha (bruto/líquido/encargos), custo médio por colaborador, custo de mão de obra por hectare, evolução mensal 12 meses, composição da folha em pizza, custo por atividade/cultura, turnover, previsão de encerramentos de safra em 30/60/90 dias e alertas consolidados com filtros por fazenda e departamento
+
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
 | Phase                                               | Milestone | Plans Complete | Status      | Completed  |
@@ -438,9 +574,17 @@ Plans:
 | 16. Cadastro de Ativos                              | v1.2      | 7/7            | Complete    | 2026-03-20 |
 | 17. Engine de Depreciação                           | v1.2      | 4/4            | Complete    | 2026-03-20 |
 | 18. Manutenção e Ordens de Serviço                  | v1.2      | 10/10          | Complete    | 2026-03-22 |
-| 19. Integração Financeira — Aquisição               | 3/3 | Complete    | 2026-03-22 | -          |
-| 20. Alienação e Baixa de Ativos                     | 5/5 | Complete    | 2026-03-22 | -          |
-| 21. Controle Operacional                            | 3/3 | Complete    | 2026-03-22 | -          |
-| 22. Hierarquia Avançada e Imobilizado em Andamento  | 3/3 | Complete    | 2026-03-23 | -          |
-| 23. Relatórios e Dashboard Patrimonial              | 1/3 | 3/3 | Complete    | 2026-03-23 |
-| 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 3/3 | Complete    | 2026-03-23 |
+| 19. Integração Financeira — Aquisição               | v1.2      | 3/3            | Complete    | 2026-03-22 |
+| 20. Alienação e Baixa de Ativos                     | v1.2      | 5/5            | Complete    | 2026-03-22 |
+| 21. Controle Operacional                            | v1.2      | 3/3            | Complete    | 2026-03-22 |
+| 22. Hierarquia Avançada e Imobilizado em Andamento  | v1.2      | 3/3            | Complete    | 2026-03-23 |
+| 23. Relatórios e Dashboard Patrimonial              | v1.2      | 3/3            | Complete    | 2026-03-23 |
+| 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 3/3            | Complete    | 2026-03-23 |
+| 25. Cadastro de Colaboradores e Contratos           | v1.3      | 0/TBD          | Not started | -          |
+| 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 0/TBD          | Not started | -          |
+| 27. Controle de Ponto e Jornada                     | v1.3      | 0/TBD          | Not started | -          |
+| 28. Processamento da Folha Mensal                   | v1.3      | 0/TBD          | Not started | -          |
+| 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 0/TBD          | Not started | -          |
+| 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 0/TBD          | Not started | -          |
+| 31. Obrigações Acessórias e eSocial                 | v1.3      | 0/TBD          | Not started | -          |
+| 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 0/TBD          | Not started | -          |

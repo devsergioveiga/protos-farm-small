@@ -80,13 +80,39 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated during roadmap creation) | | |
+| COLAB-01 | Phase 25 | Pending |
+| COLAB-02 | Phase 25 | Pending |
+| COLAB-03 | Phase 25 | Pending |
+| COLAB-04 | Phase 25 | Pending |
+| COLAB-05 | Phase 25 | Pending |
+| FOLHA-01 | Phase 26 | Pending |
+| PONTO-01 | Phase 27 | Pending |
+| PONTO-02 | Phase 27 | Pending |
+| PONTO-03 | Phase 27 | Pending |
+| PONTO-04 | Phase 27 | Pending |
+| FOLHA-02 | Phase 28 | Pending |
+| FOLHA-03 | Phase 28 | Pending |
+| FOLHA-04 | Phase 28 | Pending |
+| FOLHA-05 | Phase 28 | Pending |
+| FERIAS-01 | Phase 29 | Pending |
+| FERIAS-02 | Phase 29 | Pending |
+| FERIAS-03 | Phase 29 | Pending |
+| FERIAS-04 | Phase 29 | Pending |
+| SEGUR-01 | Phase 30 | Pending |
+| SEGUR-02 | Phase 30 | Pending |
+| SEGUR-03 | Phase 30 | Pending |
+| ESOCIAL-01 | Phase 31 | Pending |
+| ESOCIAL-02 | Phase 31 | Pending |
+| ESOCIAL-03 | Phase 31 | Pending |
+| INTEGR-01 | Phase 32 | Pending |
+| INTEGR-02 | Phase 32 | Pending |
+| INTEGR-03 | Phase 32 | Pending |
 
 **Coverage:**
 - v1.3 requirements: 27 total
-- Mapped to phases: 0
-- Unmapped: 27 ⚠️
+- Mapped to phases: 27
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-23*
-*Last updated: 2026-03-23 after initial definition*
+*Last updated: 2026-03-23 after roadmap creation*
