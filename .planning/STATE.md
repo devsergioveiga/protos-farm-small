@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Completed 25-01-PLAN.md
-last_updated: "2026-03-24T02:58:10.087Z"
+stopped_at: Completed 25-02-PLAN.md
+last_updated: "2026-03-24T03:05:49.648Z"
 progress:
   total_phases: 26
   completed_phases: 18
   total_plans: 82
-  completed_plans: 79
+  completed_plans: 80
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 25 (cadastro-de-colaboradores-e-contratos) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 
 ## Accumulated Context
 
@@ -51,6 +51,8 @@ Key decisions for v1.3:
 - **New npm dependencies for v1.3**: xmlbuilder2@^4.0.3 (eSocial XML), xml-crypto@^6.1.2 (ICP-Brasil signing), pdfkit-table@^0.1.99 (payslip tables), date-holidays@^3.26.11 (holiday calendars for DSR/overtime)
 - [Phase 25]: BankAccountType renamed to EmployeeBankAccountType for HR module to avoid collision with financial module's existing BankAccountType enum
 - [Phase 25]: prisma db push + migrate resolve used for employee foundation migration due to shadow DB being out of sync — migration SQL created manually and marked as applied
+- [Phase 25]: CONTRACT_EXPIRY notification type added to NOTIFICATION_TYPES for cron alerts
+- [Phase 25]: HR endpoints use farms:read permission (hr module not yet in PermissionModule type)
 
 ### Pending Todos
 
@@ -66,7 +68,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T02:58:03.256Z
-Stopped at: Completed 25-01-PLAN.md
+Last session: 2026-03-24T03:05:49.644Z
+Stopped at: Completed 25-02-PLAN.md
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
