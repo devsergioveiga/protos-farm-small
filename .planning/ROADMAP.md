@@ -446,7 +446,13 @@ Plans:
 4. Gerente pode importar colaboradores existentes via CSV/Excel com template, validação de CPF e PIS, preview dos dados e relatório pós-importação com saldos iniciais de férias e banco de horas
 5. Gerente pode visualizar ficha completa do colaborador em tela única com dados pessoais, contrato atual e histórico, evolução salarial em gráfico, holerites dos últimos 12 meses, saldo de férias, histórico de afastamentos, EPIs entregues, treinamentos e operações de campo vinculadas
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
+- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
+- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
+- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
 **UI hint**: yes
 
 ### Phase 26: Parâmetros de Folha e Motor de Cálculo
@@ -461,7 +467,13 @@ Plans:
 3. Sistema calcula INSS pelo método progressivo por faixa (não flat-rate), IRRF após dedução do INSS e dos dependentes, FGTS 8% sobre salário bruto e FUNRURAL com modo configurável (% receita bruta da fazenda ou % folha)
 4. Sistema aplica regras específicas do trabalhador rural: adicional noturno 21h-5h a 25% (não 22h-5h a 20%), hora noturna rural reduzida (52m30s), moradia até 25% do salário e alimentação até 20% descontados apenas sobre o piso regional
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
+- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
+- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
+- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
 **UI hint**: yes
 
 ### Phase 27: Controle de Ponto e Jornada
@@ -476,7 +488,13 @@ Plans:
 3. Sistema calcula automaticamente horas extras (50% dias normais, 100% domingos/feriados com DSR), banco de horas com alerta de vencimento em 6 meses, adicional noturno rural (21h-5h, 25%, hora reduzida 52m30s) e alerta de interjornada menor que 11 horas
 4. Gerente pode revisar espelho de ponto mensal com identificação visual de inconsistências, corrigir registros com justificativa, conduzir fluxo de aprovação (gerente → RH), e o colaborador pode aceitar o espelho via app — com prazo de fechamento configurável e exportação em PDF
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
+- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
+- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
+- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
 **UI hint**: yes
 
 ### Phase 28: Processamento da Folha Mensal
@@ -492,7 +510,13 @@ Plans:
 4. Colaborador pode receber holerite detalhado com proventos, descontos, bases INSS/IRRF/FGTS e totais em PDF individual via email ou app mobile, com histórico dos últimos 12 meses acessível na ficha
 5. Contador pode processar 13º salário (1ª parcela até 30/nov sem descontos, 2ª parcela até 20/dez com INSS e IRRF) com cálculo proporcional por meses trabalhados incluindo médias de HE e noturno, recibo PDF e integração financeira
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
+- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
+- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
+- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
 **UI hint**: yes
 
 ### Phase 29: Férias, Afastamentos, Rescisão e Provisões
@@ -507,7 +531,13 @@ Plans:
 3. Contador pode processar rescisão por tipo (sem justa causa, justa causa, pedido de demissão, fim de safra, acordo mútuo) com cálculo automático de saldo de salário, aviso prévio proporcional (30 + 3 dias/ano Lei 12.506/2011 máx 90), 13º prop., férias vencidas+prop.+1/3, multa FGTS 40%/20%, gerar TRCT em PDF e guias GRRF com alerta de prazo de 10 dias
 4. Sistema calcula mensalmente provisão de férias e 13º por colaborador (1/12 do salário + 1/3 + encargos) usando histórico salarial, faz lançamento contábil automático de despesa na DRE e passivo no BP, reverte ao efetuar o pagamento, e exibe relatório de posição com rateio por centro de custo conforme apontamento de horas
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
+- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
+- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
+- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
 **UI hint**: yes
 
 ### Phase 30: Segurança do Trabalho Rural (NR-31)
@@ -521,7 +551,13 @@ Plans:
 2. Técnico pode registrar treinamentos NR-31 obrigatórios (integração, agrotóxicos, máquinas, animais, primeiros socorros, incêndio) com data, carga horária, instrutor e lista de presença, configurar validade por tipo, receber alerta 30 dias antes da reciclagem e gerar certificado PDF e matriz de conformidade
 3. Gerente pode registrar ASOs por tipo (admissional, periódico, retorno, mudança de função, demissional) com médico CRM, resultado e exames, e o sistema alerta 30 dias antes do vencimento, bloqueia admissão sem ASO admissional e exige ASO demissional para processar rescisão
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
+- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
+- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
+- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
 **UI hint**: yes
 
 ### Phase 31: Obrigações Acessórias e eSocial
@@ -535,7 +571,13 @@ Plans:
 2. Contador pode gerar eventos eSocial nos grupos corretos (tabela S-1000/S-1005/S-1010/S-1020, não periódicos S-2200/S-2206/S-2230/S-2299, periódicos S-1200/S-1299, SST S-2210/S-2220/S-2240) em XML assinado digitalmente com certificado ICP-Brasil, transmitir ao Web Service do governo e acompanhar protocolo, recibo e retorno em dashboard de status com reprocessamento de rejeitados
 3. Contador pode gerar informe de rendimentos por colaborador em PDF (total de renda, IRRF retido, INSS) com envio por email ou app, e consultar histórico por ano-base com validação de dados antes da emissão
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
+- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
+- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
+- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
 **UI hint**: yes
 
 ### Phase 32: Integração Financeira, Contábil e Dashboard RH
@@ -549,7 +591,13 @@ Plans:
 2. Ao fechar a folha, o sistema lança automaticamente os créditos contábeis por regime de competência — salários como despesa, encargos como despesa, provisões como despesa+passivo, guias como passivo a recolher — com rateio por centro de custo e baixa do passivo ao efetuar o pagamento
 3. Gerente pode visualizar dashboard RH com total de colaboradores por status e tipo de contrato, custo total da folha (bruto/líquido/encargos), custo médio por colaborador, custo de mão de obra por hectare, evolução mensal 12 meses, composição da folha em pizza, custo por atividade/cultura, turnover, previsão de encerramentos de safra em 30/60/90 dias e alertas consolidados com filtros por fazenda e departamento
 
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
+- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
+- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
+- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
 **UI hint**: yes
 
 ## Progress
