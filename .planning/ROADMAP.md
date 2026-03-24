@@ -512,13 +512,15 @@ Plans:
 4. Colaborador pode receber holerite detalhado com proventos, descontos, bases INSS/IRRF/FGTS e totais em PDF individual via email ou app mobile, com histórico dos últimos 12 meses acessível na ficha
 5. Contador pode processar 13º salário (1ª parcela até 30/nov sem descontos, 2ª parcela até 20/dez com INSS e IRRF) com cálculo proporcional por meses trabalhados incluindo médias de HE e noturno, recibo PDF e integração financeira
 
-**Plans**: 4 plans
+**Plans**: 6 plans
 
 Plans:
-- [x] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
-- [x] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
-- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
-- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
+- [ ] 28-01-PLAN.md — Prisma schema (PayrollRun/PayrollRunItem/SalaryAdvance) + payroll calculation service
+- [ ] 28-02-PLAN.md — Salary advances module (service + routes + receipt PDF + tests)
+- [ ] 28-03-PLAN.md — PayrollRun orchestrator (process/close/revert) + payslip PDF + email + routes
+- [ ] 28-04-PLAN.md — Frontend types/hooks + PayrollRunsPage + wizard + detail modal + status badges
+- [ ] 28-05-PLAN.md — SalaryAdvanceModal + PayslipTab on employee ficha + sidebar/routes
+- [ ] 28-06-PLAN.md — Visual and functional verification checkpoint
 **UI hint**: yes
 
 ### Phase 29: Férias, Afastamentos, Rescisão e Provisões
@@ -633,7 +635,7 @@ Plans:
 | 25. Cadastro de Colaboradores e Contratos           | v1.3      | 4/4 | Complete    | 2026-03-24 |
 | 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 4/4 | Complete    | 2026-03-24 |
 | 27. Controle de Ponto e Jornada                     | v1.3      | 6/6 | Complete    | 2026-03-24 |
-| 28. Processamento da Folha Mensal                   | v1.3      | 0/TBD          | Not started | -          |
+| 28. Processamento da Folha Mensal                   | v1.3      | 0/6            | Planned     | -          |
 | 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 0/TBD          | Not started | -          |
 | 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 0/TBD          | Not started | -          |
 | 31. Obrigações Acessórias e eSocial                 | v1.3      | 0/TBD          | Not started | -          |
