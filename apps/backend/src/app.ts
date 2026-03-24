@@ -134,6 +134,8 @@ import { employeeContractsRouter } from './modules/employee-contracts/employee-c
 import { positionsRouter } from './modules/positions/positions.routes';
 import { workSchedulesRouter } from './modules/work-schedules/work-schedules.routes';
 import { employeeMovementsRouter } from './modules/employee-movements/employee-movements.routes';
+import { payrollRubricasRouter } from './modules/payroll-rubricas/payroll-rubricas.routes';
+import { payrollTablesRouter } from './modules/payroll-tables/payroll-tables.routes';
 
 const app = express();
 
@@ -277,5 +279,7 @@ app.use('/api', employeeContractsRouter);
 app.use('/api', positionsRouter);
 app.use('/api', workSchedulesRouter);
 app.use('/api', employeeMovementsRouter);
+app.use('/api', payrollRubricasRouter);
+app.use('/api', payrollTablesRouter);
 
 export { app };
