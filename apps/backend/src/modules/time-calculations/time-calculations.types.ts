@@ -41,6 +41,15 @@ export interface MonthlyCalculationInput {
   previousClockOut?: string; // for interjornada check
 }
 
+// Used by time-calculations.service calcMonthlyTotals
+export interface MonthlyTotals {
+  totalWorked: Decimal;
+  totalOvertime50: Decimal;
+  totalOvertime100: Decimal;
+  totalNightMinutes: Decimal;
+  totalAbsences: number;
+}
+
 export interface MonthlyCalculationResult {
   totalWorkedMinutes: Decimal;
   totalOvertime50: Decimal;
