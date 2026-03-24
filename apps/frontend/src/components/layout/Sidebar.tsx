@@ -255,6 +255,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/work-schedules', icon: Calendar, label: 'Escalas' },
       { to: '/payroll-parameters', icon: Settings, label: 'Parâmetros de Folha' },
       { to: '/attendance', icon: Clock, label: 'Controle de Ponto' },
+      { to: '/timesheets', icon: CalendarCheck, label: 'Espelho de Ponto' },
     ],
   },
   {
