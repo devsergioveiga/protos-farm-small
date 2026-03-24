@@ -129,6 +129,8 @@ import { assetWipRouter } from './modules/asset-wip/asset-wip.routes';
 import { assetReportsRouter } from './modules/asset-reports/asset-reports.routes';
 import { assetLeasingsRouter } from './modules/asset-leasings/asset-leasings.routes';
 import { assetTradeInsRouter } from './modules/asset-trade-ins/asset-trade-ins.routes';
+import { employeesRouter } from './modules/employees/employees.routes';
+import { employeeContractsRouter } from './modules/employee-contracts/employee-contracts.routes';
 
 const app = express();
 
@@ -267,5 +269,7 @@ app.use('/api', assetWipRouter);
 app.use('/api', assetReportsRouter);
 app.use('/api', assetLeasingsRouter);
 app.use('/api', assetTradeInsRouter);
+app.use('/api', employeesRouter);
+app.use('/api', employeeContractsRouter);
 
 export { app };
