@@ -1,5 +1,16 @@
 import type { TimesheetStatus } from '@prisma/client';
 
+export class TimesheetError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number = 400,
+    public data?: Record<string, unknown>,
+  ) {
+    super(message);
+    this.name = 'TimesheetError';
+  }
+}
+
 export interface CreateTimesheetInput {
   employeeId: string;
   referenceMonth: string;
