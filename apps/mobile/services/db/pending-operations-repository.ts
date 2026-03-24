@@ -23,7 +23,8 @@ export type OperationEntity =
   | 'mastitis_cases'
   | 'purchase_requests'
   | 'maintenance_requests'
-  | 'meter_readings';
+  | 'meter_readings'
+  | 'time_punches';
 
 export type OperationPriority = 0 | 1;
 export const PRIORITY_NORMAL: OperationPriority = 0;
@@ -41,6 +42,7 @@ const CRITICAL_ENTITIES: ReadonlySet<OperationEntity> = new Set([
   'mastitis_cases',
   'animal_health_records',
   'animal_reproductive_records',
+  'time_punches',
 ]);
 
 /** Determine the default priority for an entity */
