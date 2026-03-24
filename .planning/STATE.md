@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Completed 28-03-PLAN.md
-last_updated: "2026-03-24T21:31:37.104Z"
+stopped_at: Completed 28-05-PLAN.md
+last_updated: "2026-03-24T21:44:42.684Z"
 progress:
   total_phases: 26
   completed_phases: 21
   total_plans: 98
-  completed_plans: 95
+  completed_plans: 96
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 28 (processamento-da-folha-mensal) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 
 ## Accumulated Context
 
@@ -73,6 +73,8 @@ Key decisions for v1.3:
 - [Phase 28]: UTC date methods used in pro-rata (getUTCFullYear/Month/Date) to prevent timezone off-by-one on ISO date strings
 - [Phase 28]: EngineParams interface encapsulates legal table values — callers load from DB once and pass to pure calculation functions
 - [Phase 28]: THIRTEENTH runs skip timesheet gate — 13th salary calculation does not require an approved timesheet
+- [Phase 28]: SalaryAdvanceModal uses no-arg useSalaryAdvances (useAuth internally) matching project hook pattern
+- [Phase 28]: BatchAdvanceInput.percentOfSalary matches backend — linter rewrote with advances array but was reverted
 
 ### Pending Todos
 
@@ -88,7 +90,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T21:31:37.100Z
-Stopped at: Completed 28-03-PLAN.md
+Last session: 2026-03-24T21:44:42.681Z
+Stopped at: Completed 28-05-PLAN.md
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos

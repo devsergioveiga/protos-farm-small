@@ -519,7 +519,7 @@ Plans:
 - [x] 28-02-PLAN.md — Salary advances module (service + routes + receipt PDF + tests)
 - [x] 28-03-PLAN.md — PayrollRun orchestrator (process/close/revert) + payslip PDF + email + routes
 - [ ] 28-04-PLAN.md — Frontend types/hooks + PayrollRunsPage + wizard + detail modal + status badges
-- [ ] 28-05-PLAN.md — SalaryAdvanceModal + PayslipTab on employee ficha + sidebar/routes
+- [x] 28-05-PLAN.md — SalaryAdvanceModal + PayslipTab on employee ficha + sidebar/routes
 - [ ] 28-06-PLAN.md — Visual and functional verification checkpoint
 **UI hint**: yes
 
@@ -635,7 +635,7 @@ Plans:
 | 25. Cadastro de Colaboradores e Contratos           | v1.3      | 4/4 | Complete    | 2026-03-24 |
 | 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 4/4 | Complete    | 2026-03-24 |
 | 27. Controle de Ponto e Jornada                     | v1.3      | 6/6 | Complete    | 2026-03-24 |
-| 28. Processamento da Folha Mensal                   | v1.3      | 3/6 | In Progress|  |
+| 28. Processamento da Folha Mensal                   | v1.3      | 4/6 | In Progress|  |
 | 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 0/TBD          | Not started | -          |
 | 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 0/TBD          | Not started | -          |
 | 31. Obrigações Acessórias e eSocial                 | v1.3      | 0/TBD          | Not started | -          |
