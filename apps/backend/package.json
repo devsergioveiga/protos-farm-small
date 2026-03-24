@@ -35,6 +35,7 @@
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
+    "date-holidays": "^3.26.11",
     "decimal.js": "^10.6.0",
     "dotenv": "^17.3.1",
     "exceljs": "^4.4.0",

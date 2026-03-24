@@ -413,6 +413,7 @@ model Organization {
   employeeContracts        EmployeeContract[]
   payrollRubricas          PayrollRubrica[]
   payrollLegalTables       PayrollLegalTable[]
+  timeEntries              TimeEntry[]
 
   @@map("organizations")
 }
@@ -621,6 +622,7 @@ model Farm {
   assetLeasings              AssetLeasing[]
   biologicalAssetValuations  BiologicalAssetValuation[]
   employeeFarms              EmployeeFarm[]
+  timeEntries                TimeEntry[]
 
   @@map("farms")
 }
@@ -7724,7 +7726,10 @@ model Employee {
   statusHistory EmployeeStatusHistory[]
   movements     EmployeeMovement[]
   salaryHistory EmployeeSalaryHistory[]
-  fieldTeamMembers FieldTeamMember[]
+  fieldTeamMembers    FieldTeamMember[]
+  timeEntries         TimeEntry[]
+  overtimeBankEntries OvertimeBankEntry[]
+  timesheets          Timesheet[]
 
   @@unique([organizationId, cpf])
   @@index([organizationId, status])
@@ -8012,4 +8017,159 @@ model PayrollTableScalar {
   table PayrollLegalTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
 
   @@map("payroll_table_scalars")
+}
+
+// ─── Time Tracking Enums ──────────────────────────────────────────────
+
+enum TimeEntrySource {
+  MOBILE
+  WEB
+  MANAGER
+
+  @@map("time_entry_source")
+}
+
+enum OvertimeBankType {
+  CREDIT
+  COMPENSATION
+  EXPIRATION
+
+  @@map("overtime_bank_type")
+}
+
+enum TimesheetStatus {
+  DRAFT
+  PENDING_MANAGER
+  MANAGER_APPROVED
+  PENDING_RH
+  APPROVED
+  LOCKED
+  REJECTED
+
+  @@map("timesheet_status")
+}
+
+// ─── Time Tracking Models ─────────────────────────────────────────────
+
+model TimeEntry {
+  id             String          @id @default(uuid())
+  organizationId String
+  employeeId     String
+  farmId         String
+  date           DateTime        @db.Date
+  clockIn        DateTime
+  breakStart     DateTime?
+  breakEnd       DateTime?
+  clockOut       DateTime?
+  workedMinutes  Int?
+  nightMinutes   Int?
+  outOfRange     Boolean         @default(false)
+  noBoundary     Boolean         @default(false)
+  latitude       Decimal?        @db.Decimal(10, 7)
+  longitude      Decimal?        @db.Decimal(10, 7)
+  source         TimeEntrySource @default(MOBILE)
+  managerNote    String?
+  timesheetId    String?
+  payrollRunId   String?
+  createdBy      String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  organization Organization         @relation(fields: [organizationId], references: [id])
+  employee     Employee             @relation(fields: [employeeId], references: [id])
+  farm         Farm                 @relation(fields: [farmId], references: [id])
+  timesheet    Timesheet?           @relation(fields: [timesheetId], references: [id])
+  activities   TimeEntryActivity[]
+
+  @@index([employeeId, date])
+  @@index([organizationId, date])
+  @@index([timesheetId])
+  @@map("time_entries")
+}
+
+model TimeEntryActivity {
+  id               String  @id @default(uuid())
+  timeEntryId      String
+  operationType    String
+  fieldOperationId String?
+  fieldPlotId      String?
+  farmLocationId   String?
+  costCenterId     String?
+  minutes          Int
+  hourlyRate       Decimal @db.Decimal(10, 4)
+  costAmount       Decimal @db.Decimal(10, 2)
+  notes            String?
+
+  timeEntry TimeEntry @relation(fields: [timeEntryId], references: [id], onDelete: Cascade)
+
+  @@index([timeEntryId])
+  @@map("time_entry_activities")
+}
+
+model OvertimeBankEntry {
+  id             String           @id @default(uuid())
+  organizationId String
+  employeeId     String
+  referenceMonth DateTime         @db.Date
+  minutes        Int
+  balanceType    OvertimeBankType
+  description    String?
+  expiresAt      DateTime         @db.Date
+  timesheetId    String?
+  createdBy      String
+  createdAt      DateTime         @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId, referenceMonth])
+  @@index([employeeId, expiresAt])
+  @@map("overtime_bank_entries")
+}
+
+model Timesheet {
+  id                   String          @id @default(uuid())
+  organizationId       String
+  employeeId           String
+  referenceMonth       DateTime        @db.Date
+  status               TimesheetStatus @default(DRAFT)
+  totalWorked          Int             @default(0)
+  totalOvertime50      Int             @default(0)
+  totalOvertime100     Int             @default(0)
+  totalNightMinutes    Int             @default(0)
+  totalAbsences        Int             @default(0)
+  closingDeadline      DateTime?
+  managerApprovedBy    String?
+  managerApprovedAt    DateTime?
+  rhApprovedBy         String?
+  rhApprovedAt         DateTime?
+  employeeAcceptedAt   DateTime?
+  employeeDisputeNote  String?
+  payrollRunId         String?
+  notes                String?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  employee    Employee              @relation(fields: [employeeId], references: [id])
+  timeEntries TimeEntry[]
+  corrections TimesheetCorrection[]
+
+  @@unique([employeeId, referenceMonth])
+  @@index([organizationId, referenceMonth, status])
+  @@map("timesheets")
+}
+
+model TimesheetCorrection {
+  id           String   @id @default(uuid())
+  timesheetId  String
+  timeEntryId  String?
+  correctedBy  String
+  justification String
+  beforeJson   Json
+  afterJson    Json
+  createdAt    DateTime @default(now())
+
+  timesheet Timesheet @relation(fields: [timesheetId], references: [id], onDelete: Cascade)
+
+  @@index([timesheetId])
+  @@map("timesheet_corrections")
 }
