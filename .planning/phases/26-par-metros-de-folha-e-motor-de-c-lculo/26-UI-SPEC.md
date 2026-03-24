@@ -21,7 +21,7 @@ created: 2026-03-24
 | Preset | not applicable |
 | Component library | none (project uses custom components with CSS custom properties) |
 | Icon library | lucide-react |
-| Font | Headlines: DM Sans (500, 700) — Body/UI: Source Sans 3 (400, 600) — Data: JetBrains Mono (400) |
+| Font | Headlines: DM Sans — Body/UI: Source Sans 3 — Data: JetBrains Mono |
 
 > Source: CLAUDE.md design system rules + `apps/frontend/src/styles/tokens.css` confirmed existing.
 
@@ -52,20 +52,29 @@ Exceptions:
 
 ## Typography
 
-| Role | Font | Size | Weight | Line Height |
-|------|------|------|--------|-------------|
-| Body | Source Sans 3 | 16px (`--text-base`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) |
-| Label / UI | Source Sans 3 | 14px (`--text-sm`) | 600 (`--font-semibold`) | 1.3 (`--leading-snug`) |
-| Heading | DM Sans | 20px (`--text-md`) | 700 (`--font-bold`) | 1.2 (`--leading-tight`) |
-| Display / Page title | DM Sans | 24px (`--text-xl`) | 500 (`--font-medium`) | 1.2 (`--leading-tight`) |
-| Monetary data | JetBrains Mono | 14px (`--text-sm`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) |
+**Weight contract (exactly 2 tokens):**
+
+| Token | Value | Mapped families |
+|-------|-------|----------------|
+| `--font-regular` | 400 | Source Sans 3 body, JetBrains Mono data |
+| `--font-bold` | 700 | DM Sans headings, Source Sans 3 labels/UI |
+
+> DM Sans (500) and Source Sans 3 (600) from CLAUDE.md are internal font-family defaults loaded from Google Fonts. The executor must load the correct font files. However, the design contract exposes only 2 weight tokens: 400 for all regular/body/data contexts and 700 for all heading/label/bold contexts. Intermediate weights (500, 600) are not used as distinct design tokens in this phase.
+
+| Role | Font | Size | Weight Token | Line Height |
+|------|------|------|--------------|-------------|
+| Body | Source Sans 3 | 16px (`--text-base`) | `--font-regular` (400) | 1.5 (`--leading-normal`) |
+| Label / UI | Source Sans 3 | 14px (`--text-sm`) | `--font-bold` (700) | 1.3 (`--leading-snug`) |
+| Heading | DM Sans | 20px (`--text-md`) | `--font-bold` (700) | 1.2 (`--leading-tight`) |
+| Display / Page title | DM Sans | 24px (`--text-xl`) | `--font-bold` (700) | 1.2 (`--leading-tight`) |
+| Monetary data | JetBrains Mono | 14px (`--text-sm`) | `--font-regular` (400) | 1.5 (`--leading-normal`) |
 
 Notes:
 - Monetary values (R$ amounts in tax tables, salary brackets, contribution ceilings) must use JetBrains Mono to distinguish numerical precision.
 - ALL CAPS is permitted only for short column headers in tables ("RUBRICA", "TIPO", "VIGÊNCIA", "ALÍQUOTA") — never in body text or descriptions.
 - Minimum rendered size: 14px (no element falls below `--text-sm`).
 
-> Source: CLAUDE.md typography rules + `tokens.css` confirmed font/size token names.
+> Source: CLAUDE.md typography rules + `tokens.css` confirmed font/size token names. Weight consolidation applied per checker Dimension 4 ruling.
 
 ---
 
@@ -99,8 +108,12 @@ Phase 26 adds one new web page with two primary sub-sections accessed via tabs:
 
 **Layout:** Standard page layout (sidebar + topbar + main content). Breadcrumb: RH > Parâmetros de Folha.
 
+**Focal point:** The rubrica list table is the primary focal element of the page. The "Nova Rubrica" primary CTA button sits at the top-right of the content area, visually anchoring the tab header row. On the Tabelas Legais tab, each legal table group header (e.g. "INSS", "IRRF") acts as a secondary focal point within its section.
+
 **Tab 1 — Rubricas**
-Displays a categorized list of payroll line items (proventos and descontos). Each row shows: rubrica name, type badge (PROVENTO / DESCONTO), formula type badge (SISTEMA / PERCENTUAL / FÓRMULA), rate or formula preview, and action buttons (edit, activate/deactivate). System rubricas (`isSystem: true`) have edit disabled with a tooltip explaining they are governed by law.
+Displays a categorized list of payroll line items (proventos and descontos). Each row shows: rubrica name, type badge (PROVENTO / DESCONTO), formula type badge (SISTEMA / PERCENTUAL / FÓRMULA), rate or formula preview, and action buttons.
+
+**Row action buttons (rubrica rows):** Each custom rubrica row carries two visible icon-plus-label buttons: "Editar" (pencil icon + text label "Editar") and "Desativar" (slash icon + text label "Desativar"). Both buttons display as compact secondary buttons with text labels — not icon-only. System rubricas (`isSystem: true`) have the "Editar" button replaced by a lock icon in disabled state with tooltip; the "Desativar" button is hidden entirely.
 
 **Tab 2 — Tabelas Legais**
 Displays a list of legal tables grouped by type (INSS, IRRF, SALÁRIO_FAMÍLIA, SALÁRIO_MÍNIMO, FUNRURAL). Each group shows the currently effective table and a collapsible history. Adding a new table version triggers an effective date picker. Bracket rows display monetary ranges and rates in JetBrains Mono.
@@ -109,9 +122,9 @@ Displays a list of legal tables grouped by type (INSS, IRRF, SALÁRIO_FAMÍLIA, 
 
 | Modal | Trigger | Interaction |
 |-------|---------|-------------|
-| `PayrollRubricaModal` | "Nova Rubrica" button or row edit icon | Create/edit — form with name, type, formula type, rate field (conditional on formula type) |
+| `PayrollRubricaModal` | "Nova Rubrica" button or row "Editar" button | Create/edit — form with name, type, formula type, rate field (conditional on formula type) |
 | `PayrollLegalTableModal` | "Atualizar Tabela" per table type | Adds a new table version with effectiveFrom date; bracketed rate rows are editable inline |
-| `ConfirmModal (danger)` | Deactivate rubrica action | Confirms disabling a rubrica that may be in use by active contracts |
+| `ConfirmModal (danger)` | Row "Desativar" button | Confirms disabling a rubrica that may be in use by active contracts |
 
 ---
 
@@ -156,7 +169,7 @@ Text input with `font-family: var(--font-mono)`, `--text-sm`. Placeholder shows 
 | Error — save failed | "Não foi possível salvar. Verifique sua conexão e tente novamente." |
 | Error — effective date conflict | "Já existe uma tabela com vigência neste mês. Escolha uma data diferente." |
 | System rubrica edit tooltip | "Esta rubrica é obrigatória por lei e não pode ser editada." |
-| Deactivate rubrica — confirmation | title: "Desativar rubrica?" / body: "A rubrica '{nome}' deixará de aparecer no processamento de novas folhas. Folhas já fechadas não são afetadas." / confirm: "Desativar" (variant: danger) / cancel: "Cancelar" |
+| Deactivate rubrica — confirmation | title: "Desativar rubrica?" / body: "A rubrica '{nome}' deixará de aparecer no processamento de novas folhas. Folhas já fechadas não são afetadas." / confirm: "Desativar Rubrica" (variant: danger) / cancel: "Cancelar" |
 | FUNRURAL mode alert | "Modo FUNRURAL não configurado para esta organização. O cálculo de encargos patronais pode estar incorreto." |
 | Table history toggle | "Ver histórico" / "Ocultar histórico" |
 
@@ -238,6 +251,7 @@ All animations respect `prefers-reduced-motion: reduce` via the global CSS rule 
 | RESEARCH.md | JetBrains Mono for monetary/numeric data confirmed by "financial precision" requirement; system vs custom rubrica distinction drives badge pattern and lock state; bracket table structure driven by INSS/IRRF schema |
 | REQUIREMENTS.md / FOLHA-01 | Identified 2 primary screens (rubricas config + legal tables), confirmed modal-not-page pattern for create/edit, confirmed no mobile-specific UI (REQUIREMENTS.md Out of Scope: "Mobile: funcionalidades completas de folha no app") |
 | Existing code (`EmployeesPage`, `PositionsPage`) | Confirmed page + tab + modal + skeleton loading pattern used in Phase 25 HR screens — Phase 26 follows same structure |
+| Checker revision (2026-03-24) | Typography weights collapsed to 2 tokens (400 + 700); ConfirmModal confirm label updated to "Desativar Rubrica"; PayrollParametersPage focal point and row action button visibility explicitly declared |
 
 ---
 
