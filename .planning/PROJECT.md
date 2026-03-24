@@ -1,13 +1,22 @@
 # Protos Farm — Fase 3: Módulos Administrativos
 
-## Current Milestone: v1.2 Gestão de Patrimônio
+## Current Milestone: v1.3 RH e Folha de Pagamento Rural
 
-**Goal:** Implementar o ciclo de vida completo dos ativos da fazenda — cadastro, depreciação, manutenção preventiva/corretiva, controle operacional, documentação e integração bidirecional com o módulo financeiro (compra, venda, financiamento, leasing).
+**Goal:** Implementar o ciclo completo de gestão de pessoas em fazendas — cadastro e contratos, controle de ponto e jornada rural, folha de pagamento com particularidades do trabalhador rural (Lei 5.889/73, NR-31), férias, 13º, rescisão, eSocial, segurança do trabalho e integração bidirecional com os módulos financeiro e contábil.
 
 **Target features:**
 
-- Cadastro de máquinas, veículos, implementos, benfeitorias, terras e ativos biológicos
-- Imobilizado em andamento (obras) e ativo composto (hierarquia pai-filho)
+- Cadastro de colaboradores com dados pessoais, trabalhistas, dependentes, contratos (CLT, safra, intermitente)
+- Cargos, faixas salariais, escalas de trabalho, histórico de movimentações
+- Registro de ponto (mobile + web), apontamento por atividade/operação, horas extras, banco de horas
+- Folha de pagamento mensal com cálculo automático (INSS, IRRF, FGTS, FUNRURAL, moradia/alimentação)
+- Adiantamento salarial, holerites, 13º salário (1ª e 2ª parcela)
+- Férias (programação, cálculo, fracionamento), afastamentos/licenças, rescisão (TRCT e guias)
+- Provisão mensal de férias e 13º com lançamento contábil
+- Guias de recolhimento (FGTS, INSS, IRRF, FUNRURAL), eSocial (eventos XML), RAIS/DIRF
+- Controle de EPIs, treinamentos NR-31, ASO/PCMSO
+- Integração financeira (folha → Contas a Pagar) e contábil (folha → lançamentos por CC)
+- Dashboard de RH e custo de pessoal
 - Reforma/ampliação com capitalização, importação em massa, inventário e ficha completa
 - Depreciação automática (linear, horas-uso, produção, acelerada) com centro de custo
 - Valoração de ativos biológicos (CPC 29/IAS 41) e relatórios patrimoniais
@@ -60,55 +69,46 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 - ✓ Recebimento e conferência em 6 cenários com geração automática de CP — v1.1
 - ✓ Devolução com reversão de estoque, orçamento de compras, saving — v1.1
 - ✓ Kanban, dashboard executivo e notificações do fluxo de compras — v1.1
+- ✓ Cadastro de ativos (máquinas, veículos, implementos, benfeitorias, terras, biológicos) — v1.2
+- ✓ Depreciação automática (linear, horas-uso, produção, acelerada) com centro de custo — v1.2
+- ✓ Manutenção preventiva/corretiva com OS, Kanban, consumo de peças do estoque — v1.2
+- ✓ Integração financeira: compra à vista/financiada, NF-e, leasing, venda com ganho/perda — v1.2
+- ✓ Controle operacional: combustível, documentos, horímetro, custo/hora — v1.2
+- ✓ Hierarquia pai-filho, imobilizado em andamento, reforma com capitalização — v1.2
+- ✓ Ativos biológicos (CPC 29), leasing (CPC 06), troca com compensação — v1.2
+- ✓ Relatórios e dashboard patrimonial com TCO e indicadores — v1.2
 
 ### Active
 
-<!-- v1.2 Gestão de Patrimônio — 44 stories, 295 points, 6 épicos -->
+<!-- v1.3 RH e Folha de Pagamento Rural — 27 stories, 187 points, 7 épicos -->
 
-- [ ] Cadastro de máquinas, veículos e implementos com dados de aquisição e operacionais
-- [ ] Cadastro de benfeitorias e ativos imóveis com geolocalização
-- [ ] Cadastro de terras e imóveis rurais (ativo não depreciável, CPC 27)
-- [ ] Imobilizado em andamento (obras com aportes parciais até ativação)
-- [ ] Ativo composto com hierarquia pai-filho (até 3 níveis)
-- [ ] Reforma e ampliação com capitalização
-- [ ] Cadastro de implementos e equipamentos menores
-- [ ] Importação em massa de ativos (CSV/Excel)
-- [ ] Inventário e busca de ativos com exportação
-- [ ] Ficha completa do ativo (TCO, disponibilidade, timeline)
-- [ ] Baixa e transferência de ativos entre fazendas
-- [ ] Configuração de métodos de depreciação (linear, horas-uso, produção, acelerada)
-- [ ] Cálculo automático de depreciação mensal com pro rata die
-- [ ] Valoração de ativos biológicos (CPC 29/IAS 41)
-- [ ] Relatórios patrimoniais e contábeis
-- [ ] Vinculação de ativo a centro de custo (fixo, rateio %, dinâmico)
-- [ ] Apropriação de depreciação por centro de custo
-- [ ] Apropriação de custo de manutenção por centro de custo
-- [ ] Guia de decisão para criação de centro de custo
-- [ ] Plano de manutenção preventiva com gatilhos configuráveis
-- [ ] Criação e gestão de ordens de serviço (OS)
-- [ ] Solicitação de manutenção pelo operador (mobile)
-- [ ] Estoque de peças de reposição
-- [ ] Dashboard de manutenção e disponibilidade
-- [ ] Classificação contábil da OS (despesa/capitalização/diferimento)
-- [ ] Diferimento de manutenção como despesa antecipada
-- [ ] Provisão mensal de manutenção
-- [ ] Registro de abastecimentos (combustível)
-- [ ] Controle de documentos e vencimentos (CRLV, seguro, revisão)
-- [ ] Atualização de horímetro/odômetro
-- [ ] Custo/hora e custo operacional por ativo
-- [ ] Compra de ativo à vista com geração de CP
-- [ ] Compra de ativo financiada com parcelas no CP
-- [ ] Importação e cadastro via NF-e (XML)
-- [ ] Compra com múltiplos ativos na mesma NF
-- [ ] Leasing e arrendamento mercantil (CPC 06)
-- [ ] Troca de ativo com compensação financeira
-- [ ] Centro de custo e classificação contábil na aquisição
-- [ ] Venda de ativo com cálculo de ganho/perda e geração de CR
-- [ ] Baixa por sinistro, descarte ou obsolescência
-- [ ] Venda parcelada de ativo
-- [ ] Transferência entre fazendas com reavaliação
-- [ ] Conciliação patrimonial (físico vs contábil)
-- [ ] Dashboard financeiro patrimonial
+- [ ] Cadastro completo de colaboradores com dados pessoais, trabalhistas, documentos e dependentes
+- [ ] Gestão de contratos de trabalho (CLT, safra, intermitente, experiência, aprendiz)
+- [ ] Cargos, faixas salariais, escalas, quadro de lotação e histórico de movimentações
+- [ ] Importação em massa de colaboradores (CSV/Excel)
+- [ ] Ficha completa do colaborador (contrato, salário, holerites, férias, EPIs, operações)
+- [ ] Registro de ponto via mobile (geolocalização, offline) e web
+- [ ] Apontamento de horas por atividade/operação com rateio por centro de custo
+- [ ] Horas extras, banco de horas, adicional noturno rural (21h-5h, 25%)
+- [ ] Espelho de ponto com fluxo de aprovação
+- [ ] Configuração de rubricas e parâmetros da folha (INSS, IRRF, moradia, FUNRURAL)
+- [ ] Processamento da folha mensal com cálculo automático completo
+- [ ] Adiantamento salarial (vale) com desconto automático na folha
+- [ ] Geração de holerites (PDF, email, app)
+- [ ] Processamento de 13º salário (1ª e 2ª parcela)
+- [ ] Gestão de férias (programação, cálculo, fracionamento, calendário visual)
+- [ ] Gestão de afastamentos e licenças (atestado, acidente, maternidade, CAT)
+- [ ] Processamento de rescisão contratual (TRCT, guias GRRF, seguro-desemprego)
+- [ ] Provisão mensal de férias e 13º com lançamento contábil
+- [ ] Geração de guias de recolhimento (FGTS, INSS, IRRF, FUNRURAL)
+- [ ] Eventos do eSocial (XML, transmissão, dashboard de status)
+- [ ] RAIS, DIRF e informe de rendimentos
+- [ ] Controle de EPIs com ficha de entrega e alertas de vencimento
+- [ ] Controle de treinamentos obrigatórios NR-31 com matriz de conformidade
+- [ ] ASO e PCMSO com alertas de vencimento
+- [ ] Lançamento automático da folha no financeiro (Contas a Pagar)
+- [ ] Lançamento automático da folha na contabilidade (DRE/BP por centro de custo)
+- [ ] Dashboard de RH e custo de pessoal
 
 ### Out of Scope
 
@@ -125,13 +125,12 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 
 ## Context
 
-### Current State (v1.0 shipped)
+### Current State (v1.2 shipped)
 
-Shipped v1.0 Financeiro Base com ~71,600 LOC across 236 files.
+Shipped v1.0 Financeiro Base, v1.1 Compras, v1.2 Patrimônio (24 phases, 78 plans).
 Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
-10 financial pages in sidebar (Contas, CP, CR, Transferências, Cartões, Cheques, Conciliação, Fluxo de Caixa, Crédito Rural, Dashboard Financeiro).
-13 cross-phase integration flows verified.
-6 minor tech debt items (see v1.0 audit).
+Módulos financeiros, compras e patrimônio completos com integração bidirecional.
+Equipes de campo (field_teams) já existem no módulo de operações — potencial reuso para apontamento de horas.
 
 ### Particularidades do Financeiro Rural
 
@@ -141,12 +140,24 @@ Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
 - FUNRURAL: contribuição sobre receita bruta descontada pelo comprador na NF
 - Cheques pré-datados ainda são comuns em transações rurais
 
-### Integrações Futuras (preparar interfaces)
+### Integrações Existentes (reutilizar)
 
-- Compras (próximo milestone): recebimento + NF gera CP automaticamente
-- Folha (futuro): processamento gera CP (salários, encargos)
-- Patrimônio (futuro): compra gera CP, venda gera CR
-- Contabilidade (futuro): toda baixa gera lançamento contábil
+- Financeiro (v1.0): folha → Contas a Pagar (salários, guias, encargos)
+- Compras (v1.1): fornecedores para prestadores de serviço
+- Patrimônio (v1.2): custo de mão de obra em manutenção já existe (work_orders)
+- Operações de campo: field_teams e apontamento de horas parcialmente implementados
+- Contabilidade (futuro): folha → lançamentos contábeis por centro de custo
+
+### Particularidades do Trabalhador Rural
+
+- Lei 5.889/73: jornada, moradia, alimentação e contrato de safra
+- Contrato de safra (art. 14-A): prazo determinado vinculado ao ciclo produtivo
+- Adicional noturno rural: 21h-5h (não 22h-5h), 25% (não 20%)
+- Desconto de moradia: até 25% do salário; alimentação: até 20%
+- NR-31: segurança específica para trabalho rural (agrotóxicos, máquinas, animais)
+- FUNRURAL patronal: 1,5% + RAT + SENAR sobre receita bruta ou opção pela folha
+- eSocial: obrigatório para empregadores rurais
+- Safristas: direitos proporcionais pagos ao fim do contrato
 
 ### Padrões Existentes Reutilizáveis
 
@@ -182,4 +193,4 @@ Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
 
 ---
 
-_Last updated: 2026-03-19 after v1.2 milestone start_
+_Last updated: 2026-03-23 after v1.3 milestone start_
