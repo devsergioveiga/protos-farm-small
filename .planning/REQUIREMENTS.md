@@ -19,7 +19,7 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 
 - [ ] **PONTO-01**: Colaborador pode registrar ponto (entrada, intervalos, saída) via app mobile com geolocalização e timestamp, funcionamento offline com sync, ou via web para administrativos, ou por apontamento do gerente para equipes sem celular, com tolerância configurável e alerta ao gerente se ponto não registrado
 - [ ] **PONTO-02**: Gerente pode vincular horas trabalhadas a atividades/operações (plantio, colheita, trato, manutenção) por talhão ou pasto, com modo rápido por equipe, totalização diária vs jornada, custo/hora automático e integração com custo de produção por centro de custo
-- [ ] **PONTO-03**: Sistema calcula automaticamente horas extras (50% dias normais, 100% domingos/feriados), banco de horas com saldo e alerta de vencimento (6 meses), adicional noturno rural (21h-5h, 25%, hora reduzida 52m30s), calendário de feriados (nacional/estadual/municipal), alerta de interjornada <11h e DSR sobre extras
+- [x] **PONTO-03**: Sistema calcula automaticamente horas extras (50% dias normais, 100% domingos/feriados), banco de horas com saldo e alerta de vencimento (6 meses), adicional noturno rural (21h-5h, 25%, hora reduzida 52m30s), calendário de feriados (nacional/estadual/municipal), alerta de interjornada <11h e DSR sobre extras
 - [ ] **PONTO-04**: Gerente pode revisar e aprovar espelho de ponto mensal com identificação visual de inconsistências, correção com justificativa, fluxo de aprovação (gerente → RH → folha), aceite do colaborador, exportação PDF e prazo de fechamento configurável
 
 ### Cálculo e Processamento de Folha
@@ -88,7 +88,7 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 | FOLHA-01 | Phase 26 | Complete |
 | PONTO-01 | Phase 27 | Pending |
 | PONTO-02 | Phase 27 | Pending |
-| PONTO-03 | Phase 27 | Pending |
+| PONTO-03 | Phase 27 | Complete |
 | PONTO-04 | Phase 27 | Pending |
 | FOLHA-02 | Phase 28 | Pending |
 | FOLHA-03 | Phase 28 | Pending |

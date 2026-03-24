@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Ready to plan
-stopped_at: Completed 26-04-PLAN.md (payroll parameters frontend — awaiting checkpoint Task 3)
-last_updated: "2026-03-24T11:03:51.730Z"
+status: Ready to execute
+stopped_at: Completed 27-02-PLAN.md
+last_updated: "2026-03-24T14:48:39.352Z"
 progress:
   total_phases: 26
   completed_phases: 20
-  total_plans: 86
-  completed_plans: 86
+  total_plans: 92
+  completed_plans: 87
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 26 — par-metros-de-folha-e-motor-de-c-lculo
+**Current focus:** Phase 27 — controle-de-ponto-e-jornada
 
 ## Current Position
 
-Phase: 27
-Plan: Not started
+Phase: 27 (controle-de-ponto-e-jornada) — EXECUTING
+Plan: 2 of 6
 
 ## Accumulated Context
 
@@ -62,6 +62,8 @@ Key decisions for v1.3:
 - [Phase 26]: Added 'write' to PermissionAction type for payroll-params module — MANAGER gets read+write, FINANCIAL gets read
 - [Phase 26]: Route /effective registered before /:id in payroll-tables routes to prevent Express param route shadowing
 - [Phase 26]: Removed sonner dependency from payroll hooks — using error/successMessage state return pattern instead
+- [Phase 27]: calcDailyWork accepts optional previousClockOut + clockIn pair for interjornada — avoids coupling to caller's clock-in data model
+- [Phase 27]: Holiday cache keyed by BR-state-city — ensures single Holidays instance per locale across test runs
 
 ### Pending Todos
 
@@ -77,7 +79,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T10:54:56.785Z
-Stopped at: Completed 26-04-PLAN.md (payroll parameters frontend — awaiting checkpoint Task 3)
+Last session: 2026-03-24T14:48:39.348Z
+Stopped at: Completed 27-02-PLAN.md
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
