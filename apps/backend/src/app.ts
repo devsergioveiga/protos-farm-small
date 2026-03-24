@@ -133,6 +133,7 @@ import { employeesRouter } from './modules/employees/employees.routes';
 import { employeeContractsRouter } from './modules/employee-contracts/employee-contracts.routes';
 import { positionsRouter } from './modules/positions/positions.routes';
 import { workSchedulesRouter } from './modules/work-schedules/work-schedules.routes';
+import { employeeMovementsRouter } from './modules/employee-movements/employee-movements.routes';
 
 const app = express();
 
@@ -275,5 +276,6 @@ app.use('/api', employeesRouter);
 app.use('/api', employeeContractsRouter);
 app.use('/api', positionsRouter);
 app.use('/api', workSchedulesRouter);
+app.use('/api', employeeMovementsRouter);
 
 export { app };
