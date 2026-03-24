@@ -407,6 +407,10 @@ model Organization {
   assetTradeIns            AssetTradeIn[]
   assetLeasings            AssetLeasing[]
   biologicalAssetValuations BiologicalAssetValuation[]
+  employees                Employee[]
+  positions                Position[]
+  workSchedules            WorkSchedule[]
+  employeeContracts        EmployeeContract[]
 
   @@map("organizations")
 }
@@ -500,6 +504,7 @@ model User {
   assetTradeInsCreated           AssetTradeIn[]      @relation("AssetTradeInCreator")
   assetLeasingsCreated           AssetLeasing[]      @relation("AssetLeasingCreator")
   biologicalAssetValuationsCreated BiologicalAssetValuation[] @relation("BiologicalAssetValuationCreator")
+  employee                       Employee?
 
   @@map("users")
 }
@@ -613,6 +618,7 @@ model Farm {
   assetTradeIns              AssetTradeIn[]
   assetLeasings              AssetLeasing[]
   biologicalAssetValuations  BiologicalAssetValuation[]
+  employeeFarms              EmployeeFarm[]
 
   @@map("farms")
 }
@@ -1918,6 +1924,7 @@ model CostCenter {
   assets                    Asset[]
   depreciationCCItems       DepreciationEntryCCItem[]
   workOrderCCItems          WorkOrderCCItem[]
+  employeeContracts         EmployeeContract[]
 
   @@unique([farmId, code])
   @@index([farmId])
@@ -1953,18 +1960,21 @@ model FieldTeam {
 }
 
 model FieldTeamMember {
-  id        String    @id @default(uuid())
-  teamId    String
-  userId    String
-  joinedAt  DateTime  @default(now())
-  leftAt    DateTime?
+  id         String    @id @default(uuid())
+  teamId     String
+  userId     String
+  employeeId String?
+  joinedAt   DateTime  @default(now())
+  leftAt     DateTime?
 
-  team FieldTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user User      @relation(fields: [userId], references: [id])
+  team     FieldTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id])
+  employee Employee? @relation(fields: [employeeId], references: [id])
 
   @@unique([teamId, userId, leftAt])
   @@index([teamId])
   @@index([userId])
+  @@index([employeeId])
   @@map("field_team_members")
 }
 
@@ -7572,4 +7582,326 @@ model BiologicalAssetValuation {
   @@index([organizationId, valuationDate])
   @@index([organizationId, assetGroup])
   @@map("biological_asset_valuations")
+}
+
+// ─── Phase 25: Colaboradores e Contratos (RH) ─────────────────────────
+
+enum EmployeeStatus {
+  ATIVO
+  AFASTADO
+  FERIAS
+  DESLIGADO
+}
+
+enum ContractType {
+  CLT_INDETERMINATE
+  CLT_DETERMINATE
+  SEASONAL
+  INTERMITTENT
+  TRIAL
+  APPRENTICE
+}
+
+enum MovementType {
+  PROMOTION
+  SALARY_ADJUSTMENT
+  TRANSFER
+  POSITION_CHANGE
+}
+
+enum DocumentType {
+  RG
+  CPF
+  CTPS
+  ASO
+  CONTRATO
+  OUTRO
+}
+
+enum WorkScheduleType {
+  FIXED
+  SHIFT
+  CUSTOM
+}
+
+enum EmployeeBankAccountType {
+  CORRENTE
+  POUPANCA
+}
+
+enum SalaryBandLevel {
+  JUNIOR
+  PLENO
+  SENIOR
+}
+
+model Employee {
+  id                     String          @id @default(uuid())
+  organizationId         String
+  userId                 String?         @unique
+  name                   String
+  cpf                    String
+  rg                     String?
+  rgIssuer               String?
+  rgUf                   String?         @db.VarChar(2)
+  pisPassep              String?
+  ctpsNumber             String?
+  ctpsSeries             String?
+  ctpsUf                 String?         @db.VarChar(2)
+  birthDate              DateTime        @db.Date
+  motherName             String?
+  fatherName             String?
+  educationLevel         String?
+  maritalStatus          String?
+  nationality            String          @default("Brasileiro")
+  bloodType              String?
+  hasDisability          Boolean         @default(false)
+  disabilityType         String?
+  phone                  String?
+  email                  String?
+  zipCode                String?
+  street                 String?
+  number                 String?
+  complement             String?
+  neighborhood           String?
+  city                   String?
+  state                  String?         @db.VarChar(2)
+  bankCode               String?
+  bankAgency             String?
+  bankAccount            String?
+  bankAccountType        EmployeeBankAccountType?
+  bankAccountDigit       String?
+  initialVacationBalance Decimal?        @db.Decimal(5, 2)
+  initialHourBankBalance Decimal?        @db.Decimal(8, 2)
+  status                 EmployeeStatus  @default(ATIVO)
+  photoUrl               String?
+  notes                  String?
+  admissionDate          DateTime        @db.Date
+  terminationDate        DateTime?       @db.Date
+  createdBy              String
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+
+  organization  Organization          @relation(fields: [organizationId], references: [id])
+  user          User?                 @relation(fields: [userId], references: [id])
+  farms         EmployeeFarm[]
+  contracts     EmployeeContract[]
+  documents     EmployeeDocument[]
+  dependents    EmployeeDependent[]
+  statusHistory EmployeeStatusHistory[]
+  movements     EmployeeMovement[]
+  salaryHistory EmployeeSalaryHistory[]
+  fieldTeamMembers FieldTeamMember[]
+
+  @@unique([organizationId, cpf])
+  @@index([organizationId, status])
+  @@map("employees")
+}
+
+model EmployeeDependent {
+  id           String   @id @default(uuid())
+  employeeId   String
+  name         String
+  cpf          String?
+  birthDate    DateTime @db.Date
+  relationship String
+  irrf         Boolean  @default(false)
+  salaryFamily Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@map("employee_dependents")
+}
+
+model Position {
+  id              String       @id @default(uuid())
+  organizationId  String
+  name            String
+  cbo             String?
+  description     String?
+  additionalTypes String[]
+  isActive        Boolean      @default(true)
+  createdBy       String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  organization  Organization      @relation(fields: [organizationId], references: [id])
+  salaryBands   SalaryBand[]
+  contracts     EmployeeContract[]
+  employeeFarms EmployeeFarm[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("positions")
+}
+
+model SalaryBand {
+  id         String          @id @default(uuid())
+  positionId String
+  level      SalaryBandLevel
+  minSalary  Decimal         @db.Decimal(10, 2)
+  maxSalary  Decimal         @db.Decimal(10, 2)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+
+  @@unique([positionId, level])
+  @@map("salary_bands")
+}
+
+model WorkSchedule {
+  id             String           @id @default(uuid())
+  organizationId String
+  name           String
+  type           WorkScheduleType
+  workDays       Int[]
+  startTime      String
+  endTime        String
+  breakMinutes   Int              @default(60)
+  isTemplate     Boolean          @default(false)
+  notes          String?
+  createdBy      String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  organization Organization       @relation(fields: [organizationId], references: [id])
+  contracts    EmployeeContract[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("work_schedules")
+}
+
+model EmployeeFarm {
+  id         String    @id @default(uuid())
+  employeeId String
+  farmId     String
+  positionId String?
+  startDate  DateTime  @db.Date
+  endDate    DateTime? @db.Date
+  status     String    @default("ATIVO")
+  createdAt  DateTime  @default(now())
+
+  employee Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  farm     Farm      @relation(fields: [farmId], references: [id])
+  position Position? @relation(fields: [positionId], references: [id])
+
+  @@index([employeeId])
+  @@index([farmId])
+  @@index([positionId])
+  @@map("employee_farms")
+}
+
+model EmployeeStatusHistory {
+  id          String         @id @default(uuid())
+  employeeId  String
+  fromStatus  EmployeeStatus
+  toStatus    EmployeeStatus
+  reason      String
+  changedBy   String
+  effectiveAt DateTime       @default(now())
+  createdAt   DateTime       @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@map("employee_status_history")
+}
+
+model EmployeeContract {
+  id             String       @id @default(uuid())
+  employeeId     String
+  organizationId String
+  positionId     String
+  workScheduleId String?
+  contractType   ContractType
+  startDate      DateTime     @db.Date
+  endDate        DateTime?    @db.Date
+  salary         Decimal      @db.Decimal(10, 2)
+  weeklyHours    Int          @default(44)
+  union          String?
+  costCenterId   String?
+  notes          String?
+  isActive       Boolean      @default(true)
+  createdBy      String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  employee     Employee          @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  organization Organization      @relation(fields: [organizationId], references: [id])
+  position     Position          @relation(fields: [positionId], references: [id])
+  workSchedule WorkSchedule?     @relation(fields: [workScheduleId], references: [id])
+  costCenter   CostCenter?       @relation(fields: [costCenterId], references: [id])
+  amendments   ContractAmendment[]
+
+  @@index([employeeId])
+  @@index([organizationId, contractType])
+  @@index([endDate])
+  @@map("employee_contracts")
+}
+
+model ContractAmendment {
+  id          String   @id @default(uuid())
+  contractId  String
+  description String
+  effectiveAt DateTime @db.Date
+  changes     Json
+  createdBy   String
+  createdAt   DateTime @default(now())
+
+  contract EmployeeContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+  @@map("contract_amendments")
+}
+
+model EmployeeMovement {
+  id           String       @id @default(uuid())
+  employeeId   String
+  movementType MovementType
+  effectiveAt  DateTime     @db.Date
+  fromValue    String?
+  toValue      String?
+  reason       String
+  approvedBy   String?
+  createdBy    String
+  createdAt    DateTime     @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, movementType])
+  @@map("employee_movements")
+}
+
+model EmployeeSalaryHistory {
+  id           String       @id @default(uuid())
+  employeeId   String
+  salary       Decimal      @db.Decimal(10, 2)
+  effectiveAt  DateTime     @db.Date
+  movementType MovementType
+  reason       String?
+  createdAt    DateTime     @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, effectiveAt])
+  @@map("employee_salary_history")
+}
+
+model EmployeeDocument {
+  id           String       @id @default(uuid())
+  employeeId   String
+  documentType DocumentType
+  fileName     String
+  filePath     String
+  uploadedBy   String
+  uploadedAt   DateTime     @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@map("employee_documents")
 }

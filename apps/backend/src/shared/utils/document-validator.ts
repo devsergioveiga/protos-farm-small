@@ -62,6 +62,21 @@ export function isValidCNPJ(cnpj: string): boolean {
   return true;
 }
 
+export function isValidPIS(pis: string): boolean {
+  const cleaned = cleanDocument(pis);
+  if (cleaned.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(cleaned)) return false;
+
+  const weights = [3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  let sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cleaned[i]) * weights[i];
+  }
+  const remainder = sum % 11;
+  const digit = remainder < 2 ? 0 : 11 - remainder;
+  return digit === parseInt(cleaned[10]);
+}
+
 export function validateDocument(document: string, type: 'PF' | 'PJ'): boolean {
   if (type === 'PF') return isValidCPF(document);
   return isValidCNPJ(document);
