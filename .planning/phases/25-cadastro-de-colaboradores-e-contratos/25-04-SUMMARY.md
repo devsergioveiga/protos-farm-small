@@ -45,7 +45,7 @@ decisions:
 metrics:
   duration_minutes: 15
   completed_date: "2026-03-24"
-  tasks_completed: 2
+  tasks_completed: 3
   tasks_total: 3
   files_created: 13
   files_modified: 3
@@ -61,7 +61,7 @@ CSV/XLSX bulk import with CPF error/PIS warning validation plus complete employe
 |------|-------------|--------|
 | 1 | Backend bulk import: parser, preview/confirm/template endpoints + 6 new tests | 31723aeb |
 | 2 | Frontend: EmployeeDetailPage (5 tabs), SalaryEvolutionChart, EmployeeBulkImportModal | 99b80392 |
-| 3 | Human verification | PENDING — checkpoint returned |
+| 3 | Human verification | APPROVED — user confirmed complete system |
 
 ## Key Deliverables
 

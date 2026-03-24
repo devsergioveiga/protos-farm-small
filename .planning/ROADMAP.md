@@ -473,7 +473,7 @@ Plans:
 - [x] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
 - [x] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
 - [x] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
-- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
+- [x] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
 **UI hint**: yes
 
 ### Phase 27: Controle de Ponto e Jornada
@@ -493,7 +493,7 @@ Plans:
 Plans:
 - [x] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
 - [x] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
-- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
+- [x] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
 - [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
 **UI hint**: yes
 
@@ -514,7 +514,7 @@ Plans:
 
 Plans:
 - [x] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
-- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
+- [x] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
 - [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
 - [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
 **UI hint**: yes
@@ -534,7 +534,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
+- [x] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
 - [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
 - [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
 - [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
