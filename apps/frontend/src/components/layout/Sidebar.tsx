@@ -71,6 +71,7 @@ import {
   Handshake,
   ShoppingCart,
   Settings2,
+  Settings,
   FileSearch,
   PackageCheck,
   Undo2,
@@ -250,6 +251,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/employees', icon: UserRound, label: 'Colaboradores' },
       { to: '/positions', icon: Briefcase, label: 'Cargos' },
       { to: '/work-schedules', icon: Calendar, label: 'Escalas' },
+      { to: '/payroll-parameters', icon: Settings, label: 'Parâmetros de Folha' },
     ],
   },
   {
