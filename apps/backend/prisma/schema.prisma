@@ -411,6 +411,8 @@ model Organization {
   positions                Position[]
   workSchedules            WorkSchedule[]
   employeeContracts        EmployeeContract[]
+  payrollRubricas          PayrollRubrica[]
+  payrollLegalTables       PayrollLegalTable[]
 
   @@map("organizations")
 }
@@ -7635,6 +7637,37 @@ enum SalaryBandLevel {
   SENIOR
 }
 
+// ─── Payroll Enums ────────────────────────────────────────────────────
+
+enum RubricaType {
+  PROVENTO
+  DESCONTO
+  INFORMATIVO
+}
+
+enum CalculationType {
+  FIXED_VALUE
+  PERCENTAGE
+  FORMULA
+  SYSTEM
+}
+
+enum SystemFormulaType {
+  SYSTEM_INSS
+  SYSTEM_IRRF
+  SYSTEM_FGTS
+  SYSTEM_SALARY_FAMILY
+  SYSTEM_FUNRURAL
+}
+
+enum LegalTableType {
+  INSS
+  IRRF
+  SALARY_FAMILY
+  MINIMUM_WAGE
+  FUNRURAL
+}
+
 model Employee {
   id                     String          @id @default(uuid())
   organizationId         String
@@ -7904,4 +7937,79 @@ model EmployeeDocument {
 
   @@index([employeeId])
   @@map("employee_documents")
+}
+
+// ─── Payroll Models ───────────────────────────────────────────────────
+
+model PayrollRubrica {
+  id              String             @id @default(uuid())
+  organizationId  String
+  code            String
+  name            String
+  rubricaType     RubricaType
+  calculationType CalculationType
+  formulaType     SystemFormulaType?
+  baseFormula     String?
+  rate            Decimal?           @db.Decimal(8, 6)
+  fixedValue      Decimal?           @db.Decimal(10, 2)
+  incideINSS      Boolean            @default(false)
+  incideFGTS      Boolean            @default(false)
+  incideIRRF      Boolean            @default(false)
+  isSystem        Boolean            @default(false)
+  isActive        Boolean            @default(true)
+  eSocialCode     String?
+  createdBy       String
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, code])
+  @@index([organizationId, rubricaType])
+  @@map("payroll_rubricas")
+}
+
+model PayrollLegalTable {
+  id             String         @id @default(uuid())
+  organizationId String?
+  tableType      LegalTableType
+  stateCode      String?
+  effectiveFrom  DateTime       @db.Date
+  notes          String?
+  createdBy      String
+  createdAt      DateTime       @default(now())
+
+  brackets     PayrollTableBracket[]
+  scalarValues PayrollTableScalar[]
+  organization Organization?         @relation(fields: [organizationId], references: [id])
+
+  @@index([tableType, effectiveFrom])
+  @@index([organizationId, tableType, effectiveFrom])
+  @@map("payroll_legal_tables")
+}
+
+model PayrollTableBracket {
+  id        String   @id @default(uuid())
+  tableId   String
+  fromValue Decimal  @db.Decimal(12, 2)
+  upTo      Decimal? @db.Decimal(12, 2)
+  rate      Decimal  @db.Decimal(8, 6)
+  deduction Decimal? @db.Decimal(10, 2)
+  order     Int
+
+  table PayrollLegalTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@index([tableId, order])
+  @@map("payroll_table_brackets")
+}
+
+model PayrollTableScalar {
+  id      String  @id @default(uuid())
+  tableId String
+  key     String
+  value   Decimal @db.Decimal(12, 2)
+
+  table PayrollLegalTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@map("payroll_table_scalars")
 }
