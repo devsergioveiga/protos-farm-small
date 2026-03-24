@@ -2,15 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: planning
-stopped_at: Phase 25 context gathered
-last_updated: "2026-03-24T01:22:54.264Z"
-last_activity: 2026-03-23 — Roadmap v1.3 created (Phases 25-32, 27 requirements mapped)
+status: Ready to execute
+stopped_at: Completed 25-01-PLAN.md
+last_updated: "2026-03-24T02:58:10.087Z"
 progress:
   total_phases: 26
   completed_phases: 18
-  total_plans: 78
-  completed_plans: 78
+  total_plans: 82
+  completed_plans: 79
 ---
 
 # Project State
@@ -20,16 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** v1.3 RH e Folha de Pagamento Rural — Phase 25 is next (Cadastro de Colaboradores e Contratos)
+**Current focus:** Phase 25 — cadastro-de-colaboradores-e-contratos
 
 ## Current Position
 
-Phase: 25 — Cadastro de Colaboradores e Contratos (not started)
-Plan: —
-Status: Roadmap created, ready to plan Phase 25
-Last activity: 2026-03-23 — Roadmap v1.3 created (Phases 25-32, 27 requirements mapped)
-
-Progress bar: [........] 0/8 phases complete
+Phase: 25 (cadastro-de-colaboradores-e-contratos) — EXECUTING
+Plan: 2 of 4
 
 ## Accumulated Context
 
@@ -54,6 +49,8 @@ Key decisions for v1.3:
 - **Rural labor rules diverge from urban CLT**: Night shift 21h-5h at 25% (not 22h-5h at 20%), safra termination has no 40% FGTS penalty, FUNRURAL is farm-level annual election
 - **eSocial events transmitted in strict order via BullMQ**: table events (S-1010) → cadastral events (S-2200) → periodic events (S-1200) — separate named queues enforce ordering
 - **New npm dependencies for v1.3**: xmlbuilder2@^4.0.3 (eSocial XML), xml-crypto@^6.1.2 (ICP-Brasil signing), pdfkit-table@^0.1.99 (payslip tables), date-holidays@^3.26.11 (holiday calendars for DSR/overtime)
+- [Phase 25]: BankAccountType renamed to EmployeeBankAccountType for HR module to avoid collision with financial module's existing BankAccountType enum
+- [Phase 25]: prisma db push + migrate resolve used for employee foundation migration due to shadow DB being out of sync — migration SQL created manually and marked as applied
 
 ### Pending Todos
 
@@ -69,7 +66,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T01:22:54.251Z
-Stopped at: Phase 25 context gathered
-Resume file: .planning/phases/25-cadastro-de-colaboradores-e-contratos/25-CONTEXT.md
+Last session: 2026-03-24T02:58:03.256Z
+Stopped at: Completed 25-01-PLAN.md
+Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos

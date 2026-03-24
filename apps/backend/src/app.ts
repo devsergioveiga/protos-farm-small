@@ -131,6 +131,8 @@ import { assetLeasingsRouter } from './modules/asset-leasings/asset-leasings.rou
 import { assetTradeInsRouter } from './modules/asset-trade-ins/asset-trade-ins.routes';
 import { employeesRouter } from './modules/employees/employees.routes';
 import { employeeContractsRouter } from './modules/employee-contracts/employee-contracts.routes';
+import { positionsRouter } from './modules/positions/positions.routes';
+import { workSchedulesRouter } from './modules/work-schedules/work-schedules.routes';
 
 const app = express();
 
@@ -271,5 +273,7 @@ app.use('/api', assetLeasingsRouter);
 app.use('/api', assetTradeInsRouter);
 app.use('/api', employeesRouter);
 app.use('/api', employeeContractsRouter);
+app.use('/api', positionsRouter);
+app.use('/api', workSchedulesRouter);
 
 export { app };
