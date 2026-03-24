@@ -54,12 +54,14 @@ Exceptions:
 
 All sizes from `tokens.css`. Use CSS vars — never hardcode.
 
+Two weights only: 400 (`--font-regular`) and 600 (`--font-semibold`). No `--font-bold` (700) is used in this phase — aligns with CLAUDE.md's DM Sans specification (500, 700 for headlines is the font capability, but the project token scale declares 400 and 600 as the two allowed weights in UI).
+
 | Role | Size | Weight | Line Height | Font | Usage |
 |------|------|--------|-------------|------|-------|
 | Body | 16px (`--text-base`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) | Source Sans 3 | Row labels, table cells, form help text |
 | Label | 14px (`--text-sm`) | 600 (`--font-semibold`) | 1.3 (`--leading-snug`) | Source Sans 3 | Table headers, form labels, badge text, status chips |
-| Heading | 20px (`--text-md`) | 700 (`--font-bold`) | 1.2 (`--leading-tight`) | DM Sans | Page section titles, modal titles |
-| Display | 24px (`--text-xl`) | 700 (`--font-bold`) | 1.2 (`--leading-tight`) | DM Sans | Page `<h1>` title |
+| Heading | 20px (`--text-md`) | 600 (`--font-semibold`) | 1.2 (`--leading-tight`) | DM Sans | Page section titles, modal titles |
+| Display | 24px (`--text-xl`) | 600 (`--font-semibold`) | 1.2 (`--leading-tight`) | DM Sans | Page `<h1>` title |
 | Mono | 14px (`--text-sm`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) | JetBrains Mono | Timestamps (08:07), durations (7h32m), hour totals, GPS coordinates |
 
 Notes:
@@ -237,13 +239,15 @@ Structure:
 
 Language: pt-BR coloquial. Never use system-language ("recurso criado", "registro excluído").
 
+Mobile clock-in/out buttons display a primary label (large) and a sub-label below it at 12px (`--font-regular`, Source Sans 3) to satisfy the verb+noun pattern while keeping the button face scannable at a glance.
+
 | Element | Copy |
 |---------|------|
 | Primary CTA (web) | "Registrar Ponto" |
-| Primary CTA (mobile — clock in) | "Entrar" |
-| Primary CTA (mobile — clock out) | "Sair" |
+| Primary CTA (mobile — clock in) | "Entrar" + sub-label "Registrar entrada" (12px) |
+| Primary CTA (mobile — clock out) | "Sair" + sub-label "Registrar saída" (12px) |
 | Primary CTA (mobile — interval start) | "Iniciar Intervalo" |
-| Primary CTA (mobile — interval end) | "Retornar" |
+| Primary CTA (mobile — interval end) | "Retornar" + sub-label "Registrar retorno" (12px) |
 | Approve action | "Aprovar Espelho" |
 | Reject action | "Rejeitar e Devolver" |
 | Export action | "Exportar PDF" |
