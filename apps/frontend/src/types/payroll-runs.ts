@@ -65,6 +65,18 @@ export interface SalaryAdvance {
   createdAt: string;
 }
 
+export interface Payslip {
+  id: string;
+  employeeId: string;
+  payrollRunId: string;
+  referenceMonth: string; // YYYY-MM
+  runType: PayrollRunType;
+  grossSalary: number;
+  totalDeductions: number;
+  netSalary: number;
+  status: PayrollRunStatus;
+}
+
 export interface WizardEmployeePreview {
   id: string;
   name: string;

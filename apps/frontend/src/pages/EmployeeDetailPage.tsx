@@ -13,12 +13,13 @@ import ContractTab from '@/components/employees/tabs/ContractTab';
 import EvolutionTab from '@/components/employees/tabs/EvolutionTab';
 import DocumentsTab from '@/components/employees/tabs/DocumentsTab';
 import HistoryTab from '@/components/employees/tabs/HistoryTab';
+import PayslipTab from '@/components/employees/tabs/PayslipTab';
 import type { DocumentType } from '@/types/employee';
 import './EmployeeDetailPage.css';
 
 // ─── Tab definitions ────────────────────────────────────────────────
 
-type TabId = 'personal' | 'contract' | 'evolution' | 'documents' | 'history';
+type TabId = 'personal' | 'contract' | 'evolution' | 'documents' | 'history' | 'payslips';
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'personal', label: 'Dados Pessoais' },
@@ -26,6 +27,7 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'evolution', label: 'Evolução' },
   { id: 'documents', label: 'Documentos' },
   { id: 'history', label: 'Histórico' },
+  { id: 'payslips', label: 'Holerites' },
 ];
 
 // ─── Skeleton ───────────────────────────────────────────────────────
@@ -273,6 +275,13 @@ export default function EmployeeDetailPage() {
                 <HistoryTab
                   timeline={timeline}
                   isLoading={timelineLoading}
+                />
+              )}
+              {tab.id === 'payslips' && (
+                <PayslipTab
+                  orgId={orgId}
+                  employeeId={employee.id}
+                  employeeEmail={employee.email ?? undefined}
                 />
               )}
             </>
