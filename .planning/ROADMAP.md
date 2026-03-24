@@ -59,7 +59,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 - [x] **Phase 25: Cadastro de Colaboradores e Contratos** — Fundação do módulo RH: entidade colaborador com todos os dados trabalhistas, contratuais e pessoais exigidos pela legislação e pelo eSocial (completed 2026-03-24)
 - [x] **Phase 26: Parâmetros de Folha e Motor de Cálculo** — Engine de cálculo brasileiro customizado: rubricas configuráveis, tabelas INSS/IRRF progressivas, FUNRURAL rural, moradia/alimentação — motor que alimenta todo o processamento de folha (completed 2026-03-24)
-- [ ] **Phase 27: Controle de Ponto e Jornada** — Pipeline de horas: registro mobile/web, apontamento por atividade/operação com rateio por CC, cálculo de HE/noturno rural, banco de horas, aprovação do espelho
+- [x] **Phase 27: Controle de Ponto e Jornada** — Pipeline de horas: registro mobile/web, apontamento por atividade/operação com rateio por CC, cálculo de HE/noturno rural, banco de horas, aprovação do espelho (completed 2026-03-24)
 - [ ] **Phase 28: Processamento da Folha Mensal** — Core value: folha em lote com holerite PDF, adiantamento salarial, 13º salário — o ciclo mensal completo do processamento de folha
 - [ ] **Phase 29: Férias, Afastamentos, Rescisão e Provisões** — Ciclo de vida trabalhista: férias com fracionamento, afastamentos/CAT, rescisão com TRCT, provisão mensal de férias e 13º com lançamento contábil
 - [ ] **Phase 30: Segurança do Trabalho Rural (NR-31)** — Conformidade legal NR-31: EPIs com ficha de entrega, treinamentos obrigatórios com matriz de validade, ASO/PCMSO com alertas de vencimento
@@ -496,7 +496,7 @@ Plans:
 - [x] 27-03-PLAN.md — Backend REST API: time-entries (incl. team bulk linking), overtime-bank, timesheets with PDF export
 - [x] 27-04-PLAN.md — Frontend web: AttendancePage with team linking, hooks, types
 - [x] 27-05-PLAN.md — Mobile: time-punch screen with geofencing, offline storage, sync
-- [ ] 27-06-PLAN.md — Frontend web: TimesheetPage with approval flow, corrections, PDF export
+- [x] 27-06-PLAN.md — Frontend web: TimesheetPage with approval flow, corrections, PDF export
 **UI hint**: yes
 
 ### Phase 28: Processamento da Folha Mensal
@@ -632,7 +632,7 @@ Plans:
 | 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 3/3            | Complete    | 2026-03-23 |
 | 25. Cadastro de Colaboradores e Contratos           | v1.3      | 4/4 | Complete    | 2026-03-24 |
 | 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 4/4 | Complete    | 2026-03-24 |
-| 27. Controle de Ponto e Jornada                     | v1.3      | 5/6 | In Progress|  |
+| 27. Controle de Ponto e Jornada                     | v1.3      | 6/6 | Complete    | 2026-03-24 |
 | 28. Processamento da Folha Mensal                   | v1.3      | 0/TBD          | Not started | -          |
 | 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 0/TBD          | Not started | -          |
 | 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 0/TBD          | Not started | -          |
