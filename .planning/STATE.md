@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Completed 29-01-PLAN.md
-last_updated: "2026-03-25T16:26:25.433Z"
+stopped_at: "Completed 29-03: payroll-provisions backend — routes + app.ts registration"
+last_updated: "2026-03-25T19:41:39.602Z"
 progress:
   total_phases: 26
   completed_phases: 22
   total_plans: 103
-  completed_plans: 99
+  completed_plans: 100
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 29 (f-rias-afastamentos-rescis-o-e-provis-es) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 
 ## Accumulated Context
 
@@ -79,6 +79,8 @@ Key decisions for v1.3:
 - [Phase 29]: calcPaymentDueDate skips weekends only (no holiday lib) — CLT Art. 145 minimum requirement met
 - [Phase 29]: Absence overlap check uses returnDate=null (open absence) not date-range — correct for Brazilian labor law
 - [Phase 29]: getAbsenceImpactForMonth accepts TxClient directly — called from payroll engine inside transactions
+- [Phase 29-ferias-afastamentos-rescisao-e-provisoes]: Route order: /report/export before /report before /:id prevents Express 5 param shadowing (payroll-provisions)
+- [Phase 29-ferias-afastamentos-rescisao-e-provisoes]: Accounting entry JSON stubs stored now, Phase 32 will wire to real GL entries (debit 6.1.01/6.1.02, credit 2.2.01/2.2.02)
 
 ### Pending Todos
 
@@ -94,7 +96,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T16:26:25.430Z
-Stopped at: Completed 29-01-PLAN.md
+Last session: 2026-03-25T19:41:39.598Z
+Stopped at: Completed 29-03: payroll-provisions backend — routes + app.ts registration
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos

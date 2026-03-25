@@ -35,7 +35,7 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 - [x] **FERIAS-01**: Gerente pode controlar períodos aquisitivos, programar férias (mín 5 dias, até 3 frações), calcular pagamento (salário + 1/3 + médias – INSS – IRRF), abono pecuniário, alertas de vencimento (60 dias antes do dobro), recibo PDF, pagamento 2 dias antes e calendário visual evitando conflitos com safra
 - [x] **FERIAS-02**: Gerente pode registrar afastamentos (atestado até 15 dias empresa / após INSS, acidente CAT, maternidade 120 dias, paternidade, casamento, falecimento), com impacto automático na folha, estabilidade provisória pós-acidente e controle de retorno com ASO
 - [ ] **FERIAS-03**: Contador pode processar rescisão por tipo (sem justa causa, justa causa, pedido, fim safra, acordo mútuo) com cálculo automático (saldo salário, aviso prévio proporcional, 13º prop., férias vencidas+prop.+1/3, multa FGTS 40%/20%), TRCT em PDF, guias GRRF e seguro-desemprego, alerta de prazo 10 dias e integração financeira/contábil
-- [ ] **FERIAS-04**: Sistema calcula mensalmente provisão de férias e 13º por colaborador (1/12 salário + 1/3 + encargos), com lançamento contábil automático (despesa DRE + passivo BP), reversão ao pagar, relatório de posição e rateio por centro de custo conforme apontamento de horas
+- [x] **FERIAS-04**: Sistema calcula mensalmente provisão de férias e 13º por colaborador (1/12 salário + 1/3 + encargos), com lançamento contábil automático (despesa DRE + passivo BP), reversão ao pagar, relatório de posição e rateio por centro de custo conforme apontamento de horas
 
 ### Obrigações Acessórias e eSocial
 
@@ -97,7 +97,7 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 | FERIAS-01 | Phase 29 | Complete |
 | FERIAS-02 | Phase 29 | Complete |
 | FERIAS-03 | Phase 29 | Pending |
-| FERIAS-04 | Phase 29 | Pending |
+| FERIAS-04 | Phase 29 | Complete |
 | SEGUR-01 | Phase 30 | Pending |
 | SEGUR-02 | Phase 30 | Pending |
 | SEGUR-03 | Phase 30 | Pending |
