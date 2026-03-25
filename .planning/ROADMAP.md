@@ -535,13 +535,14 @@ Plans:
 3. Contador pode processar rescisão por tipo (sem justa causa, justa causa, pedido de demissão, fim de safra, acordo mútuo) com cálculo automático de saldo de salário, aviso prévio proporcional (30 + 3 dias/ano Lei 12.506/2011 máx 90), 13º prop., férias vencidas+prop.+1/3, multa FGTS 40%/20%, gerar TRCT em PDF e guias GRRF com alerta de prazo de 10 dias
 4. Sistema calcula mensalmente provisão de férias e 13º por colaborador (1/12 do salário + 1/3 + encargos) usando histórico salarial, faz lançamento contábil automático de despesa na DRE e passivo no BP, reverte ao efetuar o pagamento, e exibe relatório de posição com rateio por centro de custo conforme apontamento de horas
 
-**Plans**: 4 plans
+**Plans**: 5 plans
 
 Plans:
-- [x] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
-- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
-- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
-- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
+- [ ] 29-01-PLAN.md — Prisma schema (5 models, 7 enums, migration) + vacation-schedules + employee-absences backend
+- [ ] 29-02-PLAN.md — Employee-terminations backend (calculation + TRCT/GRRF PDF + CRUD)
+- [ ] 29-03-PLAN.md — Payroll-provisions backend (monthly calculation + reversal + cost center report)
+- [ ] 29-04-PLAN.md — Frontend types, hooks, VacationSchedulesPage, EmployeeAbsencesPage, sidebar + App.tsx
+- [ ] 29-05-PLAN.md — Frontend EmployeeTerminationsPage, PayrollProvisionsPage + visual checkpoint
 **UI hint**: yes
 
 ### Phase 30: Segurança do Trabalho Rural (NR-31)
