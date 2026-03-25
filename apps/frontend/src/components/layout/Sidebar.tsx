@@ -257,6 +257,8 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/attendance', icon: Clock, label: 'Controle de Ponto' },
       { to: '/timesheets', icon: CalendarCheck, label: 'Espelho de Ponto' },
       { to: '/payroll-runs', icon: Receipt, label: 'Folha de Pagamento' },
+      { to: '/vacation-schedules', icon: CalendarCheck, label: 'Ferias' },
+      { to: '/employee-absences', icon: Stethoscope, label: 'Afastamentos' },
     ],
   },
   {
