@@ -129,6 +129,8 @@ const TimesheetPage = lazy(() => import('@/pages/TimesheetPage'));
 const PayrollRunsPage = lazy(() => import('@/pages/PayrollRunsPage'));
 const VacationSchedulesPage = lazy(() => import('@/pages/VacationSchedulesPage'));
 const EmployeeAbsencesPage = lazy(() => import('@/pages/EmployeeAbsencesPage'));
+const EmployeeTerminationsPage = lazy(() => import('@/pages/EmployeeTerminationsPage'));
+const PayrollProvisionsPage = lazy(() => import('@/pages/PayrollProvisionsPage'));
 
 export function App() {
   return (
@@ -249,6 +251,8 @@ export function App() {
                 <Route path="/payroll-runs" element={<PayrollRunsPage />} />
                 <Route path="/vacation-schedules" element={<VacationSchedulesPage />} />
                 <Route path="/employee-absences" element={<EmployeeAbsencesPage />} />
+                <Route path="/employee-terminations" element={<EmployeeTerminationsPage />} />
+                <Route path="/payroll-provisions" element={<PayrollProvisionsPage />} />
                 <Route path="/assets" element={<AssetsPage />} />
                 <Route path="/depreciation" element={<DepreciationPage />} />
                 <Route path="/maintenance-plans" element={<MaintenancePlansPage />} />

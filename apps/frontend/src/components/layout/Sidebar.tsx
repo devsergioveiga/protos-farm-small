@@ -86,6 +86,8 @@ import {
   Calendar,
   Clock,
   CalendarCheck,
+  UserMinus,
+  PiggyBank,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -259,6 +261,8 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/payroll-runs', icon: Receipt, label: 'Folha de Pagamento' },
       { to: '/vacation-schedules', icon: CalendarCheck, label: 'Ferias' },
       { to: '/employee-absences', icon: Stethoscope, label: 'Afastamentos' },
+      { to: '/employee-terminations', icon: UserMinus, label: 'Rescisoes' },
+      { to: '/payroll-provisions', icon: PiggyBank, label: 'Provisoes' },
     ],
   },
   {
