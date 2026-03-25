@@ -1931,6 +1931,7 @@ model CostCenter {
   depreciationCCItems       DepreciationEntryCCItem[]
   workOrderCCItems          WorkOrderCCItem[]
   employeeContracts         EmployeeContract[]
+  provisions                PayrollProvision[]
 
   @@unique([farmId, code])
   @@index([farmId])
@@ -7734,6 +7735,11 @@ model Employee {
   timesheets          Timesheet[]
   payrollRunItems     PayrollRunItem[]
   salaryAdvances      SalaryAdvance[]
+  vacationPeriods     VacationAcquisitivePeriod[]
+  vacationSchedules   VacationSchedule[]
+  absences            EmployeeAbsence[]
+  termination         EmployeeTermination?
+  provisions          PayrollProvision[]
 
   @@unique([organizationId, cpf])
   @@index([organizationId, status])
@@ -8283,4 +8289,188 @@ model SalaryAdvance {
   @@index([organizationId, referenceMonth])
   @@index([employeeId, referenceMonth])
   @@map("salary_advances")
+}
+
+// ─── Phase 29: Férias, Afastamentos, Rescisão e Provisões ─────────────
+
+enum VacationPeriodStatus {
+  ACCRUING
+  AVAILABLE
+  SCHEDULED
+  EXPIRED
+}
+
+enum VacationScheduleStatus {
+  SCHEDULED
+  PAID
+  CANCELLED
+}
+
+enum AbsenceType {
+  MEDICAL_CERTIFICATE
+  INSS_LEAVE
+  WORK_ACCIDENT
+  MATERNITY
+  PATERNITY
+  MARRIAGE
+  BEREAVEMENT
+  MILITARY
+  OTHER
+}
+
+enum TerminationType {
+  WITHOUT_CAUSE
+  WITH_CAUSE
+  VOLUNTARY
+  SEASONAL_END
+  MUTUAL_AGREEMENT
+}
+
+enum NoticePeriodType {
+  WORKED
+  COMPENSATED
+  WAIVED
+}
+
+enum TerminationStatus {
+  DRAFT
+  PROCESSED
+  PAID
+}
+
+enum ProvisionType {
+  VACATION
+  THIRTEENTH
+}
+
+model VacationAcquisitivePeriod {
+  id         String               @id @default(uuid())
+  employeeId String
+  startDate  DateTime             @db.Date
+  endDate    DateTime             @db.Date
+  daysEarned Int                  @default(30)
+  daysTaken  Int                  @default(0)
+  daysLost   Int                  @default(0)
+  status     VacationPeriodStatus @default(ACCRUING)
+  createdAt  DateTime             @default(now())
+
+  employee  Employee          @relation(fields: [employeeId], references: [id])
+  schedules VacationSchedule[]
+
+  @@index([employeeId, status])
+  @@map("vacation_acquisitive_periods")
+}
+
+model VacationSchedule {
+  id                  String                 @id @default(uuid())
+  organizationId      String
+  employeeId          String
+  acquisitivePeriodId String
+  startDate           DateTime               @db.Date
+  endDate             DateTime               @db.Date
+  totalDays           Int
+  abono               Int                    @default(0)
+  grossAmount         Decimal                @db.Decimal(10, 2)
+  inssAmount          Decimal                @db.Decimal(10, 2)
+  irrfAmount          Decimal                @db.Decimal(10, 2)
+  netAmount           Decimal                @db.Decimal(10, 2)
+  fgtsAmount          Decimal                @db.Decimal(10, 2)
+  paymentDueDate      DateTime               @db.Date
+  status              VacationScheduleStatus @default(SCHEDULED)
+  receiptUrl          String?
+  processedAt         DateTime?
+  createdBy           String
+  createdAt           DateTime               @default(now())
+
+  employee          Employee                  @relation(fields: [employeeId], references: [id])
+  acquisitivePeriod VacationAcquisitivePeriod @relation(fields: [acquisitivePeriodId], references: [id])
+
+  @@index([employeeId, status])
+  @@index([paymentDueDate])
+  @@map("vacation_schedules")
+}
+
+model EmployeeAbsence {
+  id              String      @id @default(uuid())
+  organizationId  String
+  employeeId      String
+  absenceType     AbsenceType
+  startDate       DateTime    @db.Date
+  endDate         DateTime?   @db.Date
+  totalDays       Int?
+  catNumber       String?
+  inssStartDate   DateTime?   @db.Date
+  stabilityEndsAt DateTime?   @db.Date
+  returnDate      DateTime?   @db.Date
+  asoRequired     Boolean     @default(false)
+  asoDocumentId   String?
+  payrollImpact   String?
+  notes           String?
+  createdBy       String
+  createdAt       DateTime    @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId, absenceType])
+  @@index([organizationId, startDate])
+  @@map("employee_absences")
+}
+
+model EmployeeTermination {
+  id               String            @id @default(uuid())
+  organizationId   String
+  employeeId       String
+  terminationType  TerminationType
+  terminationDate  DateTime          @db.Date
+  noticePeriodDays Int
+  noticePeriodType NoticePeriodType
+  balanceSalary    Decimal           @db.Decimal(10, 2)
+  thirteenthProp   Decimal           @db.Decimal(10, 2)
+  vacationVested   Decimal           @db.Decimal(10, 2)
+  vacationProp     Decimal           @db.Decimal(10, 2)
+  vacationBonus    Decimal           @db.Decimal(10, 2)
+  noticePay        Decimal           @db.Decimal(10, 2)
+  fgtsBalance      Decimal           @db.Decimal(10, 2)
+  fgtsPenalty      Decimal           @db.Decimal(10, 2)
+  totalGross       Decimal           @db.Decimal(10, 2)
+  inssAmount       Decimal           @db.Decimal(10, 2)
+  irrfAmount       Decimal           @db.Decimal(10, 2)
+  totalNet         Decimal           @db.Decimal(10, 2)
+  paymentDeadline  DateTime          @db.Date
+  trctPdfUrl       String?
+  grfPdfUrl        String?
+  status           TerminationStatus @default(DRAFT)
+  processedAt      DateTime?
+  createdBy        String
+  createdAt        DateTime          @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([employeeId])
+  @@index([organizationId, status])
+  @@map("employee_terminations")
+}
+
+model PayrollProvision {
+  id                  String        @id @default(uuid())
+  organizationId      String
+  employeeId          String
+  referenceMonth      DateTime      @db.Date
+  provisionType       ProvisionType
+  baseSalary          Decimal       @db.Decimal(10, 2)
+  provisionAmount     Decimal       @db.Decimal(10, 2)
+  chargesAmount       Decimal       @db.Decimal(10, 2)
+  totalAmount         Decimal       @db.Decimal(10, 2)
+  costCenterId        String?
+  accountingEntryJson Json?
+  reversedAt          DateTime?
+  reversedBy          String?
+  createdAt           DateTime      @default(now())
+
+  employee   Employee    @relation(fields: [employeeId], references: [id])
+  costCenter CostCenter? @relation(fields: [costCenterId], references: [id])
+
+  @@unique([employeeId, referenceMonth, provisionType])
+  @@index([organizationId, referenceMonth])
+  @@map("payroll_provisions")
 }
