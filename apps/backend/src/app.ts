@@ -143,6 +143,8 @@ import { salaryAdvancesRouter } from './modules/salary-advances/salary-advances.
 import { payrollRunsRouter } from './modules/payroll-runs/payroll-runs.routes';
 import { vacationSchedulesRouter } from './modules/vacation-schedules/vacation-schedules.routes';
 import { employeeAbsencesRouter } from './modules/employee-absences/employee-absences.routes';
+import { payrollProvisionsRouter } from './modules/payroll-provisions/payroll-provisions.routes';
+import { employeeTerminationsRouter } from './modules/employee-terminations/employee-terminations.routes';
 
 const app = express();
 
@@ -295,5 +297,7 @@ app.use('/api', salaryAdvancesRouter);
 app.use('/api', payrollRunsRouter);
 app.use('/api', vacationSchedulesRouter);
 app.use('/api', employeeAbsencesRouter);
+app.use('/api', payrollProvisionsRouter);
+app.use('/api', employeeTerminationsRouter);
 
 export { app };
