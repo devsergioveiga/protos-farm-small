@@ -539,7 +539,7 @@ Plans:
 
 Plans:
 - [x] 29-01-PLAN.md — Prisma schema (5 models, 7 enums, migration) + vacation-schedules + employee-absences backend
-- [ ] 29-02-PLAN.md — Employee-terminations backend (calculation + TRCT/GRRF PDF + CRUD)
+- [x] 29-02-PLAN.md — Employee-terminations backend (calculation + TRCT/GRRF PDF + CRUD)
 - [x] 29-03-PLAN.md — Payroll-provisions backend (monthly calculation + reversal + cost center report)
 - [ ] 29-04-PLAN.md — Frontend types, hooks, VacationSchedulesPage, EmployeeAbsencesPage, sidebar + App.tsx
 - [ ] 29-05-PLAN.md — Frontend EmployeeTerminationsPage, PayrollProvisionsPage + visual checkpoint
@@ -637,7 +637,7 @@ Plans:
 | 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 4/4 | Complete    | 2026-03-24 |
 | 27. Controle de Ponto e Jornada                     | v1.3      | 6/6 | Complete    | 2026-03-24 |
 | 28. Processamento da Folha Mensal                   | v1.3      | 6/6 | Complete    | 2026-03-25 |
-| 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 2/5 | In Progress|  |
+| 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 3/5 | In Progress|  |
 | 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 0/TBD          | Not started | -          |
 | 31. Obrigações Acessórias e eSocial                 | v1.3      | 0/TBD          | Not started | -          |
 | 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 0/TBD          | Not started | -          |
