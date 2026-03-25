@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Ready to plan
-stopped_at: Completed 28-04-PLAN.md
-last_updated: "2026-03-25T03:00:12.558Z"
+status: Ready to execute
+stopped_at: Completed 29-01-PLAN.md
+last_updated: "2026-03-25T16:26:25.433Z"
 progress:
   total_phases: 26
   completed_phases: 22
-  total_plans: 98
-  completed_plans: 98
+  total_plans: 103
+  completed_plans: 99
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 28 — processamento-da-folha-mensal
+**Current focus:** Phase 29 — f-rias-afastamentos-rescis-o-e-provis-es
 
 ## Current Position
 
-Phase: 29
-Plan: Not started
+Phase: 29 (f-rias-afastamentos-rescis-o-e-provis-es) — EXECUTING
+Plan: 2 of 5
 
 ## Accumulated Context
 
@@ -76,6 +76,9 @@ Key decisions for v1.3:
 - [Phase 28]: SalaryAdvanceModal uses no-arg useSalaryAdvances (useAuth internally) matching project hook pattern
 - [Phase 28]: BatchAdvanceInput.percentOfSalary matches backend — linter rewrote with advances array but was reverted
 - [Phase 28-processamento-da-folha-mensal]: ConfirmDeleteModal reused for estorno typing confirmation — matches high-criticality pattern from CLAUDE.md
+- [Phase 29]: calcPaymentDueDate skips weekends only (no holiday lib) — CLT Art. 145 minimum requirement met
+- [Phase 29]: Absence overlap check uses returnDate=null (open absence) not date-range — correct for Brazilian labor law
+- [Phase 29]: getAbsenceImpactForMonth accepts TxClient directly — called from payroll engine inside transactions
 
 ### Pending Todos
 
@@ -91,7 +94,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T21:45:30.389Z
-Stopped at: Completed 28-04-PLAN.md
+Last session: 2026-03-25T16:26:25.430Z
+Stopped at: Completed 29-01-PLAN.md
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
