@@ -6,6 +6,7 @@ import { useSalaryAdvances } from '@/hooks/useSalaryAdvances';
 import PayrollRunStatusBadge from '@/components/payroll/PayrollRunStatusBadge';
 import PayrollRunWizard from '@/components/payroll/PayrollRunWizard';
 import PayrollRunDetailModal from '@/components/payroll/PayrollRunDetailModal';
+import SalaryAdvanceModal from '@/components/payroll/SalaryAdvanceModal';
 import type { PayrollRun, SalaryAdvance } from '@/types/payroll-runs';
 import { RUN_TYPE_LABELS, RUN_STATUS_LABELS } from '@/types/payroll-runs';
 import './PayrollRunsPage.css';
@@ -72,6 +73,7 @@ export default function PayrollRunsPage() {
   const [filterStatus, setFilterStatus] = useState('');
 
   const [showWizard, setShowWizard] = useState(false);
+  const [showAdvanceModal, setShowAdvanceModal] = useState(false);
   const [selectedRun, setSelectedRun] = useState<PayrollRun | null>(null);
   const [showDetail, setShowDetail] = useState(false);
 
@@ -187,7 +189,7 @@ export default function PayrollRunsPage() {
           <button
             type="button"
             className="payroll-runs-page__cta-btn"
-            onClick={() => {/* TODO: open advance modal */}}
+            onClick={() => setShowAdvanceModal(true)}
           >
             Registrar Adiantamento
           </button>
@@ -591,6 +593,18 @@ export default function PayrollRunsPage() {
         onRevertRun={revertRun}
         onRecalculateEmployee={recalculateEmployee}
         onDownloadItemPayslip={downloadItemPayslip}
+      />
+
+      {/* Salary advance modal */}
+      <SalaryAdvanceModal
+        isOpen={showAdvanceModal}
+        onClose={() => setShowAdvanceModal(false)}
+        orgId={user?.organizationId ?? ''}
+        mode="individual"
+        onSuccess={() => {
+          setShowAdvanceModal(false);
+          fetchAdvances({ month: buildMonthFilter() });
+        }}
       />
     </main>
   );
