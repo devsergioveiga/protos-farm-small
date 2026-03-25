@@ -637,7 +637,7 @@ Plans:
 | 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 4/4 | Complete    | 2026-03-24 |
 | 27. Controle de Ponto e Jornada                     | v1.3      | 6/6 | Complete    | 2026-03-24 |
 | 28. Processamento da Folha Mensal                   | v1.3      | 6/6 | Complete    | 2026-03-25 |
-| 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 5/5 | Complete   | 2026-03-25 |
+| 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 5/5 | Complete    | 2026-03-25 |
 | 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 0/TBD          | Not started | -          |
 | 31. Obrigações Acessórias e eSocial                 | v1.3      | 0/TBD          | Not started | -          |
 | 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 0/TBD          | Not started | -          |

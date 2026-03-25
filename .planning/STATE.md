@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Phase complete — ready for verification
+status: Ready to plan
 stopped_at: Completed 29-05-PLAN.md — all Phase 29 frontend pages done, awaiting visual verification checkpoint
-last_updated: "2026-03-25T20:43:21.942Z"
+last_updated: "2026-03-25T20:57:19.489Z"
 progress:
   total_phases: 26
   completed_phases: 23
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 
 ## Current Position
 
-Phase: 29 (f-rias-afastamentos-rescis-o-e-provis-es) — EXECUTING
-Plan: 5 of 5
+Phase: 30
+Plan: Not started
 
 ## Accumulated Context
 
