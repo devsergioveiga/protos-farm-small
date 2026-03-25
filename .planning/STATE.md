@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Ready to execute
-stopped_at: Completed 29-04-PLAN.md — vacation schedules + employee absences frontend pages
-last_updated: "2026-03-25T20:26:14.016Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 29-05-PLAN.md — all Phase 29 frontend pages done, awaiting visual verification checkpoint
+last_updated: "2026-03-25T20:43:21.942Z"
 progress:
   total_phases: 26
-  completed_phases: 22
+  completed_phases: 23
   total_plans: 103
-  completed_plans: 102
+  completed_plans: 103
 ---
 
 # Project State
@@ -85,6 +85,7 @@ Key decisions for v1.3:
 - [Phase 29-02]: fgtsBalanceOverride field allows manual override for actual CAIXA FGTS statement; otherwise estimates from 8% x gross payroll items
 - [Phase 29]: All column headers rendered ALL CAPS per design system — acceptance criterion verified case-insensitively
 - [Phase 29]: VacationScheduleModal Step 3 shows estimated calculation — definitive values computed server-side on confirm
+- [Phase 29]: ConfirmModal variant=danger for rescisao (medium criticality), variant=warning for estorno (reversible)
 
 ### Pending Todos
 
@@ -100,7 +101,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T20:26:14.011Z
-Stopped at: Completed 29-04-PLAN.md — vacation schedules + employee absences frontend pages
+Last session: 2026-03-25T20:43:21.938Z
+Stopped at: Completed 29-05-PLAN.md — all Phase 29 frontend pages done, awaiting visual verification checkpoint
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
