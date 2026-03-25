@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Completed 29-02-PLAN.md — employee-terminations module with TRCT/GRRF PDF generation
-last_updated: "2026-03-25T19:44:13.188Z"
+stopped_at: Completed 29-04-PLAN.md — vacation schedules + employee absences frontend pages
+last_updated: "2026-03-25T20:26:14.016Z"
 progress:
   total_phases: 26
   completed_phases: 22
   total_plans: 103
-  completed_plans: 101
+  completed_plans: 102
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 29 (f-rias-afastamentos-rescis-o-e-provis-es) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 
 ## Accumulated Context
 
@@ -83,6 +83,8 @@ Key decisions for v1.3:
 - [Phase 29-ferias-afastamentos-rescisao-e-provisoes]: Accounting entry JSON stubs stored now, Phase 32 will wire to real GL entries (debit 6.1.01/6.1.02, credit 2.2.01/2.2.02)
 - [Phase 29-02]: FGTS penalty rates: WITHOUT_CAUSE=40%, MUTUAL_AGREEMENT=20% (Lei 13.467/2017), others=0% — single source of truth in FGTS_PENALTY constant
 - [Phase 29-02]: fgtsBalanceOverride field allows manual override for actual CAIXA FGTS statement; otherwise estimates from 8% x gross payroll items
+- [Phase 29]: All column headers rendered ALL CAPS per design system — acceptance criterion verified case-insensitively
+- [Phase 29]: VacationScheduleModal Step 3 shows estimated calculation — definitive values computed server-side on confirm
 
 ### Pending Todos
 
@@ -98,7 +100,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T19:44:13.185Z
-Stopped at: Completed 29-02-PLAN.md — employee-terminations module with TRCT/GRRF PDF generation
+Last session: 2026-03-25T20:26:14.011Z
+Stopped at: Completed 29-04-PLAN.md — vacation schedules + employee absences frontend pages
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
