@@ -44,7 +44,7 @@ Declared values (multiples of 4 only — project rule from CLAUDE.md):
 Exceptions:
 - Touch targets: minimum 48x48px for all interactive elements (buttons, tabs, row actions)
 - Input padding: 12px vertical, 16px horizontal (project minimum)
-- Breadcrumb separator gap: 6px (matches existing pages — carried from PayrollRunsPage pattern)
+- Breadcrumb separator gap: 8px (--space-sm) — aligned to 4px grid
 
 ---
 
@@ -106,6 +106,7 @@ Four new pages follow the established HR payroll pattern (PayrollRunsPage patter
 
 - URL: `/vacation-schedules`
 - Breadcrumb: RH > Férias
+- Primary visual anchor: the "Agendar Férias" CTA button in the page header
 - Layout: two tabs — "Períodos Aquisitivos" | "Agendamentos"
 - Tab "Períodos Aquisitivos": table with columns — Colaborador, Início Aquisição, Fim Aquisição, Dias Ganhos, Dias Gozados, Saldo, Status, Ações
 - Tab "Agendamentos": table with columns — Colaborador, Período, Data Início, Data Fim, Dias, Abono, Valor Líquido, Pagamento Até, Status, Ações
@@ -119,6 +120,7 @@ Four new pages follow the established HR payroll pattern (PayrollRunsPage patter
 
 - URL: `/employee-absences`
 - Breadcrumb: RH > Afastamentos
+- Primary visual anchor: the "Registrar Afastamento" CTA button in the page header
 - Layout: single list with filter bar (type, status, date range, employee search)
 - Table columns: Colaborador, Tipo, Data Início, Data Fim, Dias, CAT, Impacto Folha, Status Retorno, Ações
 - Primary CTA: "Registrar Afastamento" — opens EmployeeAbsenceModal
@@ -131,6 +133,7 @@ Four new pages follow the established HR payroll pattern (PayrollRunsPage patter
 
 - URL: `/employee-terminations`
 - Breadcrumb: RH > Rescisões
+- Primary visual anchor: the "Iniciar Rescisão" CTA button in the page header
 - Layout: single list — terminated employees, filterable by type and status
 - Table columns: Colaborador, Tipo Rescisão, Data Rescisão, Aviso Prévio, Saldo Salário, Total Bruto, Total Líquido, Prazo Pagamento, Status, Ações
 - Primary CTA: "Iniciar Rescisão" — opens EmployeeTerminationModal
@@ -144,6 +147,7 @@ Four new pages follow the established HR payroll pattern (PayrollRunsPage patter
 
 - URL: `/payroll-provisions`
 - Breadcrumb: RH > Provisões
+- Primary visual anchor: the "Calcular Provisões" CTA button in the page header
 - Layout: two tabs — "Provisões do Mês" | "Relatório de Posição"
 - Tab "Provisões do Mês": table grouped by employee, columns — Colaborador, Mês Referência, Tipo, Salário Base, Provisão, Encargos, Total, Centro de Custo, Ações
 - Tab "Relatório de Posição": summary totals by cost center and provision type — totals table + breakdown
