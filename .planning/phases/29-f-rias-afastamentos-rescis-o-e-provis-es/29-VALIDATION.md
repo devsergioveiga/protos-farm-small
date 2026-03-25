@@ -19,7 +19,7 @@ created: 2026-03-25
 |----------|-------|
 | **Framework** | jest 29.x (backend), vitest (frontend) |
 | **Config file** | `apps/backend/jest.config.ts`, `apps/frontend/vitest.config.ts` |
-| **Quick run command** | `cd apps/backend && npx jest --testPathPattern="vacations|absences|terminations|provisions" --no-coverage -q` |
+| **Quick run command** | `cd apps/backend && npx jest --testPathPattern="vacation-schedules\|employee-absences\|employee-terminations\|termination-calculation\|payroll-provisions" --no-coverage -q` |
 | **Full suite command** | `cd apps/backend && npx jest --no-coverage -q` |
 | **Estimated runtime** | ~30 seconds |
 
@@ -38,12 +38,21 @@ created: 2026-03-25
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 29-01-01 | 01 | 1 | FERIAS-01 | unit | `npx jest vacations` | ❌ W0 | ⬜ pending |
-| 29-01-02 | 01 | 1 | FERIAS-02 | unit | `npx jest absences` | ❌ W0 | ⬜ pending |
-| 29-01-03 | 01 | 1 | FERIAS-03 | unit | `npx jest terminations` | ❌ W0 | ⬜ pending |
-| 29-01-04 | 01 | 1 | FERIAS-04 | unit | `npx jest provisions` | ❌ W0 | ⬜ pending |
+| 29-01-T1 | 01 | 1 | FERIAS-01, FERIAS-02 | schema | `cd apps/backend && npx prisma validate && npx prisma generate` | N/A | pending |
+| 29-01-T2 | 01 | 1 | FERIAS-01 | integration | `cd apps/backend && npx jest --testPathPattern="vacation-schedules" --no-coverage -q` | W0 | pending |
+| 29-01-T3 | 01 | 1 | FERIAS-02 | integration | `cd apps/backend && npx jest --testPathPattern="employee-absences" --no-coverage -q` | W0 | pending |
+| 29-02-T1 | 02 | 2 | FERIAS-03 | unit | `cd apps/backend && npx jest --testPathPattern="termination-calculation" --no-coverage -q` | W0 | pending |
+| 29-02-T2 | 02 | 2 | FERIAS-03 | integration | `cd apps/backend && npx jest --testPathPattern="employee-terminations" --no-coverage -q` | W0 | pending |
+| 29-03-T1 | 03 | 2 | FERIAS-04 | integration | `cd apps/backend && npx jest --testPathPattern="payroll-provisions" --no-coverage -q` | W0 | pending |
+| 29-03-T2 | 03 | 2 | FERIAS-04 | compile | `cd apps/backend && npx jest --testPathPattern="payroll-provisions" --no-coverage -q && npx tsc --noEmit` | N/A | pending |
+| 29-04-T1 | 04 | 3 | FERIAS-01, FERIAS-02 | compile | `cd apps/frontend && npx tsc --noEmit` | N/A | pending |
+| 29-04-T2 | 04 | 3 | FERIAS-01 | compile | `cd apps/frontend && npx tsc --noEmit` | N/A | pending |
+| 29-04-T3 | 04 | 3 | FERIAS-02 | compile | `cd apps/frontend && npx tsc --noEmit` | N/A | pending |
+| 29-05-T1 | 05 | 4 | FERIAS-03 | compile | `cd apps/frontend && npx tsc --noEmit` | N/A | pending |
+| 29-05-T2 | 05 | 4 | FERIAS-04 | compile | `cd apps/frontend && npx tsc --noEmit` | N/A | pending |
+| 29-05-T3 | 05 | 4 | all | manual | Visual verification checkpoint | N/A | pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: pending / green / red / flaky*
 
 ---
 
