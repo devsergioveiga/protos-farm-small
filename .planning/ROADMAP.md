@@ -682,5 +682,5 @@ Plans:
 | 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 7/7 | Complete   | 2026-03-26 |
 | 31. Obrigações Acessórias e eSocial                 | v1.3      | 5/5 | Complete    | 2026-03-26 |
 | 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 5/5 | Complete    | 2026-03-26 |
-| 33. Wire Employee Data to Safety Pages              | v1.3      | 1/1 | Complete   | 2026-03-26 |
+| 33. Wire Employee Data to Safety Pages              | v1.3      | 1/1 | Complete    | 2026-03-26 |
 | 34. Wire Absence Impact to Payroll Engine           | v1.3      | TBD | Pending     | —          |
