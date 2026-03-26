@@ -50,7 +50,7 @@ export function useEsocialEvents() {
         if (params?.eventType) qs.set('eventType', params.eventType);
         if (params?.status) qs.set('status', params.status);
         const query = qs.toString();
-        const path = `/v1/org/${orgId}/esocial-events${query ? `?${query}` : ''}`;
+        const path = `/org/${orgId}/esocial-events${query ? `?${query}` : ''}`;
         const result = await api.get<EsocialEvent[] | { data: EsocialEvent[] }>(path);
         const items = Array.isArray(result) ? result : (result as { data: EsocialEvent[] }).data;
         setEvents(items);
@@ -70,7 +70,7 @@ export function useEsocialEvents() {
       if (!orgId) return;
       try {
         const data = await api.get<EsocialDashboard>(
-          `/v1/org/${orgId}/esocial-events/dashboard?referenceMonth=${referenceMonth}`,
+          `/org/${orgId}/esocial-events/dashboard?referenceMonth=${referenceMonth}`,
         );
         setDashboard(data);
       } catch (err) {
@@ -88,7 +88,7 @@ export function useEsocialEvents() {
       setError(null);
       setSuccessMessage(null);
       try {
-        await api.post(`/v1/org/${orgId}/esocial-events/generate-batch`, input);
+        await api.post(`/org/${orgId}/esocial-events/generate-batch`, input);
         setSuccessMessage('Eventos gerados com sucesso');
         return true;
       } catch (err) {
@@ -119,7 +119,7 @@ export function useEsocialEvents() {
         const headers: Record<string, string> = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
-        const response = await fetch(`/api/v1/org/${orgId}/esocial-events/${id}/download`, {
+        const response = await fetch(`/api/org/${orgId}/esocial-events/${id}/download`, {
           method: 'GET',
           headers,
         });
@@ -161,7 +161,7 @@ export function useEsocialEvents() {
     async (ids: string[]): Promise<void> => {
       if (!orgId) return;
       try {
-        const blob = await api.getBlob(`/v1/org/${orgId}/esocial-events/download-batch`);
+        const blob = await api.getBlob(`/org/${orgId}/esocial-events/download-batch`);
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -185,7 +185,7 @@ export function useEsocialEvents() {
       setError(null);
       setSuccessMessage(null);
       try {
-        await api.patch(`/v1/org/${orgId}/esocial-events/${id}/status`, input);
+        await api.patch(`/org/${orgId}/esocial-events/${id}/status`, input);
         const label = input.status === 'ACEITO' ? 'aceito' : 'rejeitado';
         setSuccessMessage(`Evento marcado como ${label}`);
         return true;
@@ -207,7 +207,7 @@ export function useEsocialEvents() {
       setError(null);
       setSuccessMessage(null);
       try {
-        await api.post(`/v1/org/${orgId}/esocial-events/${id}/reprocess`, {});
+        await api.post(`/org/${orgId}/esocial-events/${id}/reprocess`, {});
         setSuccessMessage('Evento reprocessado com sucesso');
         return true;
       } catch (err) {

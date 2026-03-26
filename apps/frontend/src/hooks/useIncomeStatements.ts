@@ -37,7 +37,7 @@ export function useIncomeStatements() {
         const qs = new URLSearchParams();
         if (yearBase) qs.set('yearBase', String(yearBase));
         const query = qs.toString();
-        const path = `/v1/org/${orgId}/income-statements${query ? `?${query}` : ''}`;
+        const path = `/org/${orgId}/income-statements${query ? `?${query}` : ''}`;
         const result = await api.get<{ data: IncomeStatement[]; total: number } | IncomeStatement[]>(path);
         const items = Array.isArray(result) ? result : (result as { data: IncomeStatement[] }).data;
         setStatements(items);
@@ -59,7 +59,7 @@ export function useIncomeStatements() {
       setError(null);
       setSuccessMessage(null);
       try {
-        await api.post(`/v1/org/${orgId}/income-statements/generate`, input);
+        await api.post(`/org/${orgId}/income-statements/generate`, input);
         setSuccessMessage('Informes gerados com sucesso');
         return true;
       } catch (err) {
@@ -77,7 +77,7 @@ export function useIncomeStatements() {
     async (id: string, employeeName: string, yearBase: number): Promise<void> => {
       if (!orgId) return;
       try {
-        const blob = await api.getBlob(`/v1/org/${orgId}/income-statements/${id}/download`);
+        const blob = await api.getBlob(`/org/${orgId}/income-statements/${id}/download`);
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -102,7 +102,7 @@ export function useIncomeStatements() {
       setError(null);
       setSuccessMessage(null);
       try {
-        const result = await api.post<SendResult>(`/v1/org/${orgId}/income-statements/send`, input);
+        const result = await api.post<SendResult>(`/org/${orgId}/income-statements/send`, input);
         setSuccessMessage(`Informes enviados: ${result.sent} enviados, ${result.skipped} sem email`);
         return result;
       } catch (err) {
@@ -123,7 +123,7 @@ export function useIncomeStatements() {
       setError(null);
       try {
         const result = await api.get<RaisConsistency>(
-          `/v1/org/${orgId}/income-statements/rais-consistency?yearBase=${yearBase}`,
+          `/org/${orgId}/income-statements/rais-consistency?yearBase=${yearBase}`,
         );
         setRaisConsistency(result);
       } catch (err) {
