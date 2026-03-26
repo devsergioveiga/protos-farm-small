@@ -643,7 +643,10 @@ Plans:
 3. Payslip shows absence deduction breakdown (company-paid days vs INSS-paid days)
 4. E2E flow "Employee INSS leave → Payroll deducts correctly" passes with proper INSS split
 
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 34-01-PLAN.md — TDD: types + absence deduction logic in calculation engine
+- [ ] 34-02-PLAN.md — Wire orchestrator + PDF rodape update
 **UI hint**: no
 
 ## Progress
