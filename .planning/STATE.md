@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Completed 32-01-PLAN.md
-last_updated: "2026-03-26T19:28:17.477Z"
+stopped_at: Completed 32-integra-o-financeira-cont-bil-e-dashboard-rh-02-PLAN.md
+last_updated: "2026-03-26T20:03:54.248Z"
 progress:
   total_phases: 26
   completed_phases: 25
   total_plans: 120
-  completed_plans: 116
+  completed_plans: 118
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 32 (integra-o-financeira-cont-bil-e-dashboard-rh) — EXECUTING
-Plan: 2 of 5
+Plan: 4 of 5
 
 ## Accumulated Context
 
@@ -108,6 +108,8 @@ Key decisions for v1.3:
 - [Phase 31-obriga-es-acess-rias-e-esocial]: EsocialEventsPage and IncomeStatementsPage created in plan-05 (missing from plan-04 disk)
 - [Phase 32]: IRRF is aggregated per run (one CP), not per employee — simplifies reconciliation
 - [Phase 32]: revertRun uses PAYROLL_ORIGIN_TYPES const array covering all 7 types in a single OR filter
+- [Phase 32-integra-o-financeira-cont-bil-e-dashboard-rh]: HR dashboard uses farms:read permission (Phase 25 pattern); PayrollRun pre-computed totals used for 12-month trend to avoid PayrollRunItem scan
+- [Phase 32]: PAYROLL_PROVISION entries use runId as sourceId for easy revert by run; revertPayrollEntries makes 2 deleteMany calls to cover all 5 entry types
 
 ### Pending Todos
 
@@ -123,7 +125,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T19:28:17.330Z
-Stopped at: Completed 32-01-PLAN.md
+Last session: 2026-03-26T20:03:54.232Z
+Stopped at: Completed 32-integra-o-financeira-cont-bil-e-dashboard-rh-02-PLAN.md
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos

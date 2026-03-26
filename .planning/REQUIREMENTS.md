@@ -52,8 +52,8 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 ### Integração Financeira e Contábil
 
 - [x] **INTEGR-01**: Ao fechar folha, sistema gera automaticamente lançamentos no Contas a Pagar (salários líquidos, INSS, FGTS, IRRF, contribuição sindical, pensão, VT, FUNRURAL) com vencimentos corretos (salários 5º dia útil, FGTS dia 7, INSS/IRRF dia 20), rateio por centro de custo conforme apontamento, tela de revisão pré-confirmação, estorno/rollback e reconciliação total folha vs total CPs
-- [ ] **INTEGR-02**: Ao fechar folha, sistema gera lançamentos contábeis (salários/ordenados despesa, encargos despesa, provisão férias/13º despesa+passivo, INSS/FGTS/IRRF a recolher passivo, salários a pagar passivo) com rateio por centro de custo, regime de competência, baixa de passivo ao pagar, tela de revisão e drill-down DRE por rubrica/departamento/fazenda
-- [ ] **INTEGR-03**: Gerente pode visualizar dashboard RH com indicadores (total colaboradores por status/tipo contrato, custo total folha bruto/líquido/encargos, custo médio por colaborador, custo MO por hectare), evolução mensal 12 meses, composição folha (pizza), custo por atividade/cultura, turnover, previsão encerramentos safra 30/60/90 dias, alertas consolidados e filtros por fazenda/departamento/contrato
+- [x] **INTEGR-02**: Ao fechar folha, sistema gera lançamentos contábeis (salários/ordenados despesa, encargos despesa, provisão férias/13º despesa+passivo, INSS/FGTS/IRRF a recolher passivo, salários a pagar passivo) com rateio por centro de custo, regime de competência, baixa de passivo ao pagar, tela de revisão e drill-down DRE por rubrica/departamento/fazenda
+- [x] **INTEGR-03**: Gerente pode visualizar dashboard RH com indicadores (total colaboradores por status/tipo contrato, custo total folha bruto/líquido/encargos, custo médio por colaborador, custo MO por hectare), evolução mensal 12 meses, composição folha (pizza), custo por atividade/cultura, turnover, previsão encerramentos safra 30/60/90 dias, alertas consolidados e filtros por fazenda/departamento/contrato
 
 ## v2 Requirements (Deferred)
 
@@ -105,8 +105,8 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 | ESOCIAL-02 | Phase 31 | Complete |
 | ESOCIAL-03 | Phase 31 | Complete |
 | INTEGR-01 | Phase 32 | Complete |
-| INTEGR-02 | Phase 32 | Pending |
-| INTEGR-03 | Phase 32 | Pending |
+| INTEGR-02 | Phase 32 | Complete |
+| INTEGR-03 | Phase 32 | Complete |
 
 **Coverage:**
 - v1.3 requirements: 27 total
