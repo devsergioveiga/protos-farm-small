@@ -1,265 +1,755 @@
 import { useState, useEffect } from 'react';
 import {
-  FileCode,
   Download,
-  RefreshCw,
-  XCircle,
   CheckCircle,
-  AlertCircle,
-  Clock,
-  Plus,
+  XCircle,
+  RefreshCw,
+  FileCode,
+  AlertTriangle,
+  Eye,
+  Play,
 } from 'lucide-react';
-import { useEsocialEvents } from '@/hooks/useEsocialEvents';
+import { useEsocialEvents, type EsocialXsdError } from '@/hooks/useEsocialEvents';
+import type { EsocialEvent, EsocialGroup, EsocialStatus } from '@/types/esocial-event';
+import {
+  ESOCIAL_GROUP_LABELS,
+  ESOCIAL_STATUS_LABELS,
+  ESOCIAL_EVENT_TYPE_LABELS,
+} from '@/types/esocial-event';
 
-const GROUP_TABS = [
-  { key: '', label: 'Todos' },
-  { key: 'TABELA', label: 'Tabela' },
-  { key: 'NAO_PERIODICO', label: 'Não Periódicos' },
-  { key: 'PERIODICO', label: 'Periódicos' },
-  { key: 'SST', label: 'SST' },
-] as const;
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
-const STATUS_LABELS: Record<string, string> = {
-  PENDENTE: 'Pendente',
-  EXPORTADO: 'Exportado',
-  ACEITO: 'Aceito',
-  REJEITADO: 'Rejeitado',
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('pt-BR');
+}
+
+function getCurrentYearMonth(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
+
+// ─── Status chip ────────────────────────────────────────────────────────────
+
+const STATUS_CHIP_CLASSES: Record<EsocialStatus, string> = {
+  PENDENTE: 'esocial-events-page__chip esocial-events-page__chip--gray',
+  EXPORTADO: 'esocial-events-page__chip esocial-events-page__chip--blue',
+  ACEITO: 'esocial-events-page__chip esocial-events-page__chip--green',
+  REJEITADO: 'esocial-events-page__chip esocial-events-page__chip--red',
 };
 
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    PENDENTE: 'bg-yellow-100 text-yellow-800',
-    EXPORTADO: 'bg-blue-100 text-blue-800',
-    ACEITO: 'bg-green-100 text-green-800',
-    REJEITADO: 'bg-red-100 text-red-800',
-  };
+function StatusChip({ status }: { status: EsocialStatus }) {
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${map[status] ?? 'bg-gray-100 text-gray-700'}`}>
-      {STATUS_LABELS[status] ?? status}
+    <span className={STATUS_CHIP_CLASSES[status]}>
+      {ESOCIAL_STATUS_LABELS[status]}
     </span>
   );
 }
 
-export default function EsocialEventsPage() {
-  const { events, stats, loading, error, generating, fetchEvents, generateEvents, downloadEvent, rejectEvent, reprocessEvent } = useEsocialEvents();
-  const [activeGroup, setActiveGroup] = useState('');
-  const [referenceMonth, setReferenceMonth] = useState(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-  });
-  const [rejectModal, setRejectModal] = useState<{ id: string; open: boolean }>({ id: '', open: false });
-  const [rejectReason, setRejectReason] = useState('');
+// ─── Skeleton row ───────────────────────────────────────────────────────────
 
-  useEffect(() => {
-    void fetchEvents(activeGroup || undefined, referenceMonth);
-  }, [activeGroup, referenceMonth, fetchEvents]);
+function SkeletonRow({ cols }: { cols: number }) {
+  return (
+    <tr aria-hidden="true">
+      {Array.from({ length: cols }).map((_, i) => (
+        <td key={i} className="esocial-events-page__skeleton-cell">
+          <div className="esocial-events-page__skeleton-pulse" />
+        </td>
+      ))}
+    </tr>
+  );
+}
 
-  async function handleGenerate() {
-    await generateEvents(`${referenceMonth}-01`);
-  }
+// ─── Generate Modal ─────────────────────────────────────────────────────────
 
-  async function handleDownload(id: string) {
-    await downloadEvent(id);
-  }
+const ALL_EVENT_TYPE_OPTIONS = Object.entries(ESOCIAL_EVENT_TYPE_LABELS).map(
+  ([value, label]) => ({ value, label: `${value} — ${label}` }),
+);
 
-  async function handleRejectConfirm() {
-    if (!rejectReason.trim()) return;
-    await rejectEvent(rejectModal.id, rejectReason);
-    setRejectModal({ id: '', open: false });
-    setRejectReason('');
-  }
+interface GenerateModalProps {
+  onClose: () => void;
+  onSubmit: (eventType: string, referenceMonth?: string) => Promise<void>;
+}
 
-  async function handleReprocess(id: string) {
-    await reprocessEvent(id);
+function GenerateModal({ onClose, onSubmit }: GenerateModalProps) {
+  const [eventType, setEventType] = useState('');
+  const [referenceMonth, setReferenceMonth] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!eventType) return;
+    setSubmitting(true);
+    await onSubmit(eventType, referenceMonth || undefined);
+    setSubmitting(false);
+    onClose();
   }
 
   return (
-    <main className="p-6 max-w-screen-xl mx-auto">
-      <nav aria-label="Breadcrumb" className="text-sm text-[var(--color-neutral-500)] mb-4">
-        <span>RH</span>
-        <span className="mx-2">/</span>
-        <span className="text-[var(--color-neutral-700)]">Eventos eSocial</span>
-      </nav>
-
-      <header className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold text-[var(--color-neutral-800)]" style={{ fontFamily: 'DM Sans, system-ui, sans-serif' }}>
-          Eventos eSocial
-        </h1>
-        <div className="flex gap-3">
-          <input
-            type="month"
-            value={referenceMonth}
-            onChange={(e) => setReferenceMonth(e.target.value)}
-            aria-label="Competência de referência"
-            className="border border-[var(--color-neutral-300)] rounded px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-[var(--color-primary-500)]"
-          />
+    <div
+      className="esocial-events-page__modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="generate-modal-title"
+    >
+      <div className="esocial-events-page__modal">
+        <header className="esocial-events-page__modal-header">
+          <h2 id="generate-modal-title" className="esocial-events-page__modal-title">
+            Gerar Eventos eSocial
+          </h2>
           <button
             type="button"
-            onClick={() => void handleGenerate()}
-            disabled={generating}
-            aria-label="Gerar eventos eSocial"
-            className="flex items-center gap-2 bg-[var(--color-primary-600)] text-white px-4 py-2 rounded text-sm font-medium hover:bg-[var(--color-primary-700)] disabled:opacity-50 min-h-[48px]"
+            className="esocial-events-page__modal-close"
+            onClick={onClose}
+            aria-label="Fechar modal"
           >
-            <Plus size={16} aria-hidden="true" />
-            {generating ? 'Gerando...' : 'Gerar Eventos'}
+            &times;
           </button>
-        </div>
-      </header>
-
-      {/* Dashboard cards */}
-      <section aria-label="Resumo de eventos" className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        {[
-          { label: 'Total', value: stats.total, icon: FileCode, color: 'text-[var(--color-neutral-700)]' },
-          { label: 'Pendentes', value: stats.pendente, icon: Clock, color: 'text-yellow-600' },
-          { label: 'Exportados', value: stats.exportado, icon: CheckCircle, color: 'text-blue-600' },
-          { label: 'Rejeitados', value: stats.rejeitado, icon: XCircle, color: 'text-[var(--color-error-500)]' },
-        ].map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="bg-white border border-[var(--color-neutral-200)] rounded-lg p-4">
-            <div className={`flex items-center gap-2 mb-1 ${color}`}>
-              <Icon size={20} aria-hidden="true" />
-              <span className="text-sm font-medium">{label}</span>
-            </div>
-            <p className="text-2xl font-bold text-[var(--color-neutral-800)]" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{value}</p>
+        </header>
+        <form onSubmit={handleSubmit} className="esocial-events-page__modal-body">
+          <div className="esocial-events-page__form-group">
+            <label htmlFor="gen-event-type" className="esocial-events-page__label">
+              Tipo de Evento <span aria-hidden="true">*</span>
+            </label>
+            <select
+              id="gen-event-type"
+              value={eventType}
+              onChange={(e) => setEventType(e.target.value)}
+              required
+              aria-required="true"
+              className="esocial-events-page__select"
+            >
+              <option value="">Selecione o tipo</option>
+              {ALL_EVENT_TYPE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
-        ))}
-      </section>
-
-      {error && (
-        <div role="alert" className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded p-3 mb-4 text-sm">
-          <AlertCircle size={16} aria-hidden="true" />
-          {error}
-        </div>
-      )}
-
-      {/* Group tabs */}
-      <div role="tablist" aria-label="Grupos de eventos" className="flex gap-1 border-b border-[var(--color-neutral-200)] mb-4 overflow-x-auto">
-        {GROUP_TABS.map(({ key, label }) => (
-          <button
-            key={key}
-            role="tab"
-            aria-selected={activeGroup === key}
-            onClick={() => setActiveGroup(key)}
-            className={`px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${activeGroup === key ? 'border-[var(--color-primary-600)] text-[var(--color-primary-600)]' : 'border-transparent text-[var(--color-neutral-600)] hover:text-[var(--color-neutral-800)]'}`}
-          >
-            {label}
-          </button>
-        ))}
+          <div className="esocial-events-page__form-group">
+            <label htmlFor="gen-ref-month" className="esocial-events-page__label">
+              Competência (opcional)
+            </label>
+            <input
+              id="gen-ref-month"
+              type="month"
+              value={referenceMonth}
+              onChange={(e) => setReferenceMonth(e.target.value)}
+              className="esocial-events-page__input"
+            />
+          </div>
+          <footer className="esocial-events-page__modal-footer">
+            <button
+              type="button"
+              className="esocial-events-page__btn esocial-events-page__btn--secondary"
+              onClick={onClose}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={submitting || !eventType}
+              className="esocial-events-page__btn esocial-events-page__btn--primary"
+            >
+              {submitting ? 'Gerando...' : 'Gerar Eventos'}
+            </button>
+          </footer>
+        </form>
       </div>
+    </div>
+  );
+}
 
-      {/* Events table */}
-      {loading ? (
-        <div className="space-y-2" aria-busy="true" aria-label="Carregando eventos">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-12 bg-[var(--color-neutral-100)] rounded animate-pulse" />
-          ))}
-        </div>
-      ) : events.length === 0 ? (
-        <div className="text-center py-16">
-          <FileCode size={48} className="mx-auto text-[var(--color-neutral-400)] mb-3" aria-hidden="true" />
-          <p className="font-semibold text-[var(--color-neutral-700)]">Nenhum evento encontrado</p>
-          <p className="text-sm text-[var(--color-neutral-500)] mt-1">Clique em "Gerar Eventos" para criar os eventos da competência selecionada.</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
-            <caption className="sr-only">Lista de eventos eSocial</caption>
+// ─── Rejection Modal ─────────────────────────────────────────────────────────
+
+interface RejectionModalProps {
+  eventId: string;
+  onClose: () => void;
+  onSubmit: (eventId: string, reason: string) => Promise<void>;
+}
+
+function RejectionModal({ eventId, onClose, onSubmit }: RejectionModalProps) {
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!rejectionReason.trim()) return;
+    setSubmitting(true);
+    await onSubmit(eventId, rejectionReason.trim());
+    setSubmitting(false);
+    onClose();
+  }
+
+  return (
+    <div
+      className="esocial-events-page__modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="rejection-modal-title"
+    >
+      <div className="esocial-events-page__modal">
+        <header className="esocial-events-page__modal-header">
+          <h2 id="rejection-modal-title" className="esocial-events-page__modal-title">
+            Motivo da Rejeicao
+          </h2>
+          <button
+            type="button"
+            className="esocial-events-page__modal-close"
+            onClick={onClose}
+            aria-label="Fechar modal"
+          >
+            &times;
+          </button>
+        </header>
+        <form onSubmit={handleSubmit} className="esocial-events-page__modal-body">
+          <div className="esocial-events-page__form-group">
+            <label htmlFor="rejection-reason" className="esocial-events-page__label">
+              Motivo da Rejeicao <span aria-hidden="true">*</span>
+            </label>
+            <textarea
+              id="rejection-reason"
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              required
+              aria-required="true"
+              rows={4}
+              placeholder="Descreva o motivo da rejeicao pelo eSocial..."
+              className="esocial-events-page__textarea"
+            />
+          </div>
+          <footer className="esocial-events-page__modal-footer">
+            <button
+              type="button"
+              className="esocial-events-page__btn esocial-events-page__btn--secondary"
+              onClick={onClose}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={submitting || !rejectionReason.trim()}
+              className="esocial-events-page__btn esocial-events-page__btn--warning"
+            >
+              {submitting ? 'Salvando...' : 'Confirmar Rejeicao'}
+            </button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── XSD Validation Errors Modal ─────────────────────────────────────────────
+
+interface XsdErrorModalProps {
+  errors: EsocialXsdError;
+  onClose: () => void;
+}
+
+function XsdErrorModal({ errors, onClose }: XsdErrorModalProps) {
+  return (
+    <div
+      className="esocial-events-page__modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="xsd-error-modal-title"
+    >
+      <div className="esocial-events-page__modal esocial-events-page__modal--wide">
+        <header className="esocial-events-page__modal-header">
+          <div className="esocial-events-page__modal-title-row">
+            <AlertTriangle
+              size={20}
+              className="esocial-events-page__icon--warning"
+              aria-hidden="true"
+            />
+            <h2 id="xsd-error-modal-title" className="esocial-events-page__modal-title">
+              Erros de Validacao XSD
+            </h2>
+          </div>
+          <button
+            type="button"
+            className="esocial-events-page__modal-close"
+            onClick={onClose}
+            aria-label="Fechar modal"
+          >
+            &times;
+          </button>
+        </header>
+        <div className="esocial-events-page__modal-body">
+          <p className="esocial-events-page__modal-description">
+            O XML do evento nao passou na validacao do schema XSD. Corrija os campos abaixo antes
+            de tentar novamente.
+          </p>
+          <table className="esocial-events-page__table" aria-label="Erros de validacao XSD">
             <thead>
-              <tr className="border-b border-[var(--color-neutral-200)] text-left text-xs uppercase text-[var(--color-neutral-500)]">
-                <th scope="col" className="py-3 pr-4 font-medium">TIPO</th>
-                <th scope="col" className="py-3 pr-4 font-medium">GRUPO</th>
-                <th scope="col" className="py-3 pr-4 font-medium">COMPETÊNCIA</th>
-                <th scope="col" className="py-3 pr-4 font-medium">STATUS</th>
-                <th scope="col" className="py-3 font-medium">AÇÕES</th>
+              <tr>
+                <th scope="col">CAMPO</th>
+                <th scope="col">MENSAGEM</th>
               </tr>
             </thead>
             <tbody>
-              {events.map((ev) => (
-                <tr key={ev.id} className="border-b border-[var(--color-neutral-100)] hover:bg-[var(--color-neutral-50)]">
-                  <td className="py-3 pr-4 font-mono text-xs">{ev.eventType}</td>
-                  <td className="py-3 pr-4 text-[var(--color-neutral-600)]">{ev.eventGroup}</td>
-                  <td className="py-3 pr-4 text-[var(--color-neutral-600)]">
-                    {ev.referenceMonth ? ev.referenceMonth.slice(0, 7) : '—'}
-                  </td>
-                  <td className="py-3 pr-4"><StatusBadge status={ev.status} /></td>
-                  <td className="py-3">
-                    <div className="flex gap-2">
-                      {ev.status !== 'REJEITADO' && (
-                        <button
-                          type="button"
-                          onClick={() => void handleDownload(ev.id)}
-                          aria-label={`Baixar XML do evento ${ev.eventType}`}
-                          className="p-1 text-[var(--color-neutral-500)] hover:text-[var(--color-primary-600)] min-h-[48px] min-w-[48px] flex items-center justify-center"
-                        >
-                          <Download size={16} aria-hidden="true" />
-                        </button>
-                      )}
-                      {ev.status === 'EXPORTADO' && (
-                        <button
-                          type="button"
-                          onClick={() => setRejectModal({ id: ev.id, open: true })}
-                          aria-label={`Marcar evento ${ev.eventType} como rejeitado`}
-                          className="p-1 text-[var(--color-neutral-500)] hover:text-[var(--color-error-500)] min-h-[48px] min-w-[48px] flex items-center justify-center"
-                        >
-                          <XCircle size={16} aria-hidden="true" />
-                        </button>
-                      )}
-                      {ev.status === 'REJEITADO' && (
-                        <button
-                          type="button"
-                          onClick={() => void handleReprocess(ev.id)}
-                          aria-label={`Reprocessar evento ${ev.eventType}`}
-                          className="p-1 text-[var(--color-neutral-500)] hover:text-[var(--color-primary-600)] min-h-[48px] min-w-[48px] flex items-center justify-center"
-                        >
-                          <RefreshCw size={16} aria-hidden="true" />
-                        </button>
-                      )}
-                    </div>
-                  </td>
+              {errors.validationErrors.map((err, i) => (
+                <tr key={i}>
+                  <td className="esocial-events-page__mono">{err.field}</td>
+                  <td>{err.message}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <footer className="esocial-events-page__modal-footer">
+          <button
+            type="button"
+            className="esocial-events-page__btn esocial-events-page__btn--secondary"
+            onClick={onClose}
+          >
+            Fechar
+          </button>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+// ─── Rejection Reason View Modal ─────────────────────────────────────────────
+
+interface ViewRejectionModalProps {
+  reason: string;
+  onClose: () => void;
+}
+
+function ViewRejectionModal({ reason, onClose }: ViewRejectionModalProps) {
+  return (
+    <div
+      className="esocial-events-page__modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="view-rejection-modal-title"
+    >
+      <div className="esocial-events-page__modal">
+        <header className="esocial-events-page__modal-header">
+          <h2 id="view-rejection-modal-title" className="esocial-events-page__modal-title">
+            Motivo da Rejeicao
+          </h2>
+          <button
+            type="button"
+            className="esocial-events-page__modal-close"
+            onClick={onClose}
+            aria-label="Fechar modal"
+          >
+            &times;
+          </button>
+        </header>
+        <div className="esocial-events-page__modal-body">
+          <p className="esocial-events-page__rejection-reason">{reason}</p>
+        </div>
+        <footer className="esocial-events-page__modal-footer">
+          <button
+            type="button"
+            className="esocial-events-page__btn esocial-events-page__btn--secondary"
+            onClick={onClose}
+          >
+            Fechar
+          </button>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+// ─── Events Table ────────────────────────────────────────────────────────────
+
+interface EventsTableProps {
+  events: EsocialEvent[];
+  loading: boolean;
+  onDownload: (event: EsocialEvent) => void;
+  onAccept: (event: EsocialEvent) => void;
+  onReject: (event: EsocialEvent) => void;
+  onReprocess: (event: EsocialEvent) => void;
+  onViewRejection: (event: EsocialEvent) => void;
+}
+
+function EventsTable({
+  events,
+  loading,
+  onDownload,
+  onAccept,
+  onReject,
+  onReprocess,
+  onViewRejection,
+}: EventsTableProps) {
+  return (
+    <div className="esocial-events-page__table-wrapper">
+      <table className="esocial-events-page__table" aria-label="Eventos eSocial">
+        <thead>
+          <tr>
+            <th scope="col">EVENTO</th>
+            <th scope="col">FONTE</th>
+            <th scope="col">VERSAO</th>
+            <th scope="col">STATUS</th>
+            <th scope="col">CRIADO EM</th>
+            <th scope="col">ACOES</th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading
+            ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={6} />)
+            : events.map((event) => (
+                <tr key={event.id}>
+                  <td>
+                    <span className="esocial-events-page__event-type">{event.eventType}</span>
+                    <span className="esocial-events-page__event-label">
+                      {ESOCIAL_EVENT_TYPE_LABELS[event.eventType] ?? ''}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="esocial-events-page__source-type">{event.sourceType}</span>
+                    <span className="esocial-events-page__source-id">
+                      {event.sourceId.slice(0, 8)}...
+                    </span>
+                  </td>
+                  <td>v{event.version}</td>
+                  <td>
+                    <StatusChip status={event.status} />
+                  </td>
+                  <td>{formatDate(event.createdAt)}</td>
+                  <td className="esocial-events-page__actions">
+                    {event.status === 'PENDENTE' && (
+                      <button
+                        type="button"
+                        className="esocial-events-page__action-btn"
+                        onClick={() => onDownload(event)}
+                        aria-label="Baixar XML"
+                        title="Baixar XML"
+                      >
+                        <Download size={16} aria-hidden="true" />
+                      </button>
+                    )}
+                    {event.status === 'EXPORTADO' && (
+                      <>
+                        <button
+                          type="button"
+                          className="esocial-events-page__action-btn esocial-events-page__action-btn--success"
+                          onClick={() => onAccept(event)}
+                          aria-label="Marcar como aceito"
+                          title="Marcar como aceito"
+                        >
+                          <CheckCircle size={16} aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          className="esocial-events-page__action-btn esocial-events-page__action-btn--danger"
+                          onClick={() => onReject(event)}
+                          aria-label="Marcar como rejeitado"
+                          title="Marcar como rejeitado"
+                        >
+                          <XCircle size={16} aria-hidden="true" />
+                        </button>
+                      </>
+                    )}
+                    {event.status === 'REJEITADO' && (
+                      <>
+                        <button
+                          type="button"
+                          className="esocial-events-page__action-btn"
+                          onClick={() => onReprocess(event)}
+                          aria-label="Reprocessar evento"
+                          title="Reprocessar evento"
+                        >
+                          <RefreshCw size={16} aria-hidden="true" />
+                        </button>
+                        {event.rejectionReason && (
+                          <button
+                            type="button"
+                            className="esocial-events-page__action-btn"
+                            onClick={() => onViewRejection(event)}
+                            aria-label="Ver motivo da rejeicao"
+                            title="Ver motivo da rejeicao"
+                          >
+                            <Eye size={16} aria-hidden="true" />
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+        </tbody>
+      </table>
+      {!loading && events.length === 0 && (
+        <div className="esocial-events-page__empty" role="status">
+          <FileCode size={48} aria-hidden="true" className="esocial-events-page__empty-icon" />
+          <p className="esocial-events-page__empty-title">Nenhum evento eSocial</p>
+          <p className="esocial-events-page__empty-desc">
+            Gere eventos a partir de admissoes, folhas e ASOs
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Dashboard Cards ─────────────────────────────────────────────────────────
+
+interface DashboardCardsProps {
+  total: number;
+  pendente: number;
+  exportado: number;
+  rejeitado: number;
+}
+
+function DashboardCards({ total, pendente, exportado, rejeitado }: DashboardCardsProps) {
+  return (
+    <div className="esocial-events-page__cards" role="region" aria-label="Resumo de eventos">
+      <div className="esocial-events-page__card">
+        <p className="esocial-events-page__card-label">TOTAL EVENTOS</p>
+        <p className="esocial-events-page__card-value">{total}</p>
+      </div>
+      <div className="esocial-events-page__card esocial-events-page__card--amber">
+        <p className="esocial-events-page__card-label">PENDENTES</p>
+        <p className="esocial-events-page__card-value">{pendente}</p>
+      </div>
+      <div className="esocial-events-page__card esocial-events-page__card--blue">
+        <p className="esocial-events-page__card-label">EXPORTADOS</p>
+        <p className="esocial-events-page__card-value">{exportado}</p>
+      </div>
+      <div className="esocial-events-page__card esocial-events-page__card--red">
+        <p className="esocial-events-page__card-label">REJEITADOS</p>
+        <p className="esocial-events-page__card-value">{rejeitado}</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Group tabs ──────────────────────────────────────────────────────────────
+
+const GROUP_TABS: EsocialGroup[] = ['TABELA', 'NAO_PERIODICO', 'PERIODICO', 'SST'];
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
+export default function EsocialEventsPage() {
+  const {
+    events,
+    dashboard,
+    loading,
+    error,
+    successMessage,
+    fetchEvents,
+    fetchDashboard,
+    generateBatch,
+    downloadEvent,
+    updateStatus,
+    reprocessEvent,
+  } = useEsocialEvents();
+
+  const [activeGroup, setActiveGroup] = useState<EsocialGroup>('TABELA');
+  const [referenceMonth, setReferenceMonth] = useState(getCurrentYearMonth());
+
+  // Modals
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [rejectionEventId, setRejectionEventId] = useState<string | null>(null);
+  const [xsdErrors, setXsdErrors] = useState<EsocialXsdError | null>(null);
+  const [viewRejectionReason, setViewRejectionReason] = useState<string | null>(null);
+
+  // Load data when month changes
+  useEffect(() => {
+    const refDate = `${referenceMonth}-01`;
+    void fetchEvents({ referenceMonth: refDate, eventGroup: activeGroup });
+    void fetchDashboard(refDate);
+  }, [referenceMonth, activeGroup, fetchEvents, fetchDashboard]);
+
+  async function handleGenerateBatch(eventType: string, month?: string) {
+    const refMonth = month ? `${month}-01` : `${referenceMonth}-01`;
+    const ok = await generateBatch({ eventType, referenceMonth: refMonth });
+    if (ok) {
+      const refDate = `${referenceMonth}-01`;
+      void fetchEvents({ referenceMonth: refDate, eventGroup: activeGroup });
+      void fetchDashboard(refDate);
+    }
+  }
+
+  async function handleDownload(event: EsocialEvent) {
+    const result = await downloadEvent(event.id, event.eventType, event.version);
+    if (result && result.validationErrors.length > 0) {
+      setXsdErrors(result);
+    } else {
+      // Refresh to reflect status change to EXPORTADO
+      const refDate = `${referenceMonth}-01`;
+      void fetchEvents({ referenceMonth: refDate, eventGroup: activeGroup });
+      void fetchDashboard(refDate);
+    }
+  }
+
+  async function handleAccept(event: EsocialEvent) {
+    const ok = await updateStatus(event.id, { status: 'ACEITO' });
+    if (ok) {
+      const refDate = `${referenceMonth}-01`;
+      void fetchEvents({ referenceMonth: refDate, eventGroup: activeGroup });
+      void fetchDashboard(refDate);
+    }
+  }
+
+  function handleOpenReject(event: EsocialEvent) {
+    setRejectionEventId(event.id);
+  }
+
+  async function handleConfirmReject(eventId: string, reason: string) {
+    const ok = await updateStatus(eventId, { status: 'REJEITADO', rejectionReason: reason });
+    if (ok) {
+      const refDate = `${referenceMonth}-01`;
+      void fetchEvents({ referenceMonth: refDate, eventGroup: activeGroup });
+      void fetchDashboard(refDate);
+    }
+  }
+
+  async function handleReprocess(event: EsocialEvent) {
+    const ok = await reprocessEvent(event.id);
+    if (ok) {
+      const refDate = `${referenceMonth}-01`;
+      void fetchEvents({ referenceMonth: refDate, eventGroup: activeGroup });
+      void fetchDashboard(refDate);
+    }
+  }
+
+  function handleViewRejection(event: EsocialEvent) {
+    if (event.rejectionReason) {
+      setViewRejectionReason(event.rejectionReason);
+    }
+  }
+
+  const filteredEvents = events.filter((e) => e.eventGroup === activeGroup);
+
+  return (
+    <main className="esocial-events-page">
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="esocial-events-page__breadcrumb">
+        <ol>
+          <li>Obrigacoes Acessorias</li>
+          <li aria-current="page">Eventos eSocial</li>
+        </ol>
+      </nav>
+
+      {/* Header */}
+      <header className="esocial-events-page__header">
+        <h1 className="esocial-events-page__title">Eventos eSocial</h1>
+        <button
+          type="button"
+          className="esocial-events-page__btn esocial-events-page__btn--primary"
+          onClick={() => setShowGenerateModal(true)}
+        >
+          <Play size={16} aria-hidden="true" />
+          Gerar Eventos
+        </button>
+      </header>
+
+      {/* Alerts */}
+      {error && (
+        <div className="esocial-events-page__alert esocial-events-page__alert--error" role="alert">
+          <AlertTriangle size={16} aria-hidden="true" />
+          {error}
+        </div>
+      )}
+      {successMessage && (
+        <div
+          className="esocial-events-page__alert esocial-events-page__alert--success"
+          role="status"
+        >
+          {successMessage}
+        </div>
       )}
 
-      {/* Rejection modal */}
-      {rejectModal.open && (
-        <div role="dialog" aria-modal="true" aria-labelledby="reject-modal-title" className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h2 id="reject-modal-title" className="text-lg font-bold text-[var(--color-neutral-800)] mb-4" style={{ fontFamily: 'DM Sans, system-ui, sans-serif' }}>
-              Informar motivo de rejeição
-            </h2>
-            <label htmlFor="reject-reason" className="block text-sm font-medium text-[var(--color-neutral-700)] mb-1">
-              Motivo da rejeição <span aria-hidden="true">*</span>
-            </label>
-            <textarea
-              id="reject-reason"
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              rows={3}
-              aria-required="true"
-              className="w-full border border-[var(--color-neutral-300)] rounded px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-[var(--color-primary-500)] mb-4"
-              placeholder="Descreva o motivo da rejeição pelo eSocial..."
-            />
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => { setRejectModal({ id: '', open: false }); setRejectReason(''); }}
-                className="px-4 py-2 text-sm text-[var(--color-neutral-700)] border border-[var(--color-neutral-300)] rounded hover:bg-[var(--color-neutral-50)] min-h-[48px]"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={() => void handleRejectConfirm()}
-                disabled={!rejectReason.trim()}
-                className="px-4 py-2 text-sm bg-[var(--color-error-500)] text-white rounded hover:bg-[var(--color-error-600)] disabled:opacity-50 min-h-[48px]"
-              >
-                Confirmar rejeição
-              </button>
-            </div>
-          </div>
+      {/* Month selector */}
+      <section className="esocial-events-page__filters" aria-label="Filtros">
+        <div className="esocial-events-page__form-group">
+          <label htmlFor="ref-month" className="esocial-events-page__label">
+            Competencia
+          </label>
+          <input
+            id="ref-month"
+            type="month"
+            value={referenceMonth}
+            onChange={(e) => setReferenceMonth(e.target.value)}
+            className="esocial-events-page__input"
+          />
         </div>
+      </section>
+
+      {/* Dashboard cards */}
+      {dashboard && (
+        <DashboardCards
+          total={dashboard.total}
+          pendente={dashboard.pendente}
+          exportado={dashboard.exportado}
+          rejeitado={dashboard.rejeitado}
+        />
+      )}
+
+      {/* Group tabs */}
+      <nav
+        className="esocial-events-page__tabs"
+        aria-label="Grupos de eventos"
+        role="tablist"
+      >
+        {GROUP_TABS.map((group) => (
+          <button
+            key={group}
+            type="button"
+            role="tab"
+            aria-selected={activeGroup === group}
+            aria-controls={`tabpanel-${group}`}
+            className={`esocial-events-page__tab${activeGroup === group ? ' esocial-events-page__tab--active' : ''}`}
+            onClick={() => setActiveGroup(group)}
+          >
+            {ESOCIAL_GROUP_LABELS[group]}
+          </button>
+        ))}
+      </nav>
+
+      {/* Events table per group */}
+      <section
+        id={`tabpanel-${activeGroup}`}
+        role="tabpanel"
+        aria-label={`Eventos do grupo ${ESOCIAL_GROUP_LABELS[activeGroup]}`}
+      >
+        <EventsTable
+          events={filteredEvents}
+          loading={loading}
+          onDownload={handleDownload}
+          onAccept={handleAccept}
+          onReject={handleOpenReject}
+          onReprocess={handleReprocess}
+          onViewRejection={handleViewRejection}
+        />
+      </section>
+
+      {/* Modals */}
+      {showGenerateModal && (
+        <GenerateModal
+          onClose={() => setShowGenerateModal(false)}
+          onSubmit={handleGenerateBatch}
+        />
+      )}
+
+      {rejectionEventId && (
+        <RejectionModal
+          eventId={rejectionEventId}
+          onClose={() => setRejectionEventId(null)}
+          onSubmit={handleConfirmReject}
+        />
+      )}
+
+      {xsdErrors && (
+        <XsdErrorModal errors={xsdErrors} onClose={() => setXsdErrors(null)} />
+      )}
+
+      {viewRejectionReason && (
+        <ViewRejectionModal
+          reason={viewRejectionReason}
+          onClose={() => setViewRejectionReason(null)}
+        />
       )}
     </main>
   );

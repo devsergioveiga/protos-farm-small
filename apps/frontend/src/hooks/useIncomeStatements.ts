@@ -1,120 +1,151 @@
 import { useState, useCallback } from 'react';
+import { api } from '@/services/api';
+import { useAuth } from '@/stores/AuthContext';
+import type {
+  IncomeStatement,
+  RaisConsistency,
+  GenerateIncomeStatementsInput,
+} from '@/types/income-statement';
 
-export interface IncomeStatement {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  cpf: string;
-  year: number;
-  totalIncome: string;
-  totalDeductions: string;
-  netIncome: string;
-  irrf: string;
-  status: string;
-  fileKey: string | null;
-  createdAt: string;
+interface SendInput {
+  yearBase: number;
+  employeeIds?: string[];
 }
 
-export interface RaisConsistencyReport {
-  consistent: boolean;
-  issues: Array<{ employeeId: string; employeeName: string; description: string }>;
+interface SendResult {
+  sent: number;
+  skipped: number;
+  errors: string[];
 }
 
-interface UseIncomeStatementsResult {
-  statements: IncomeStatement[];
-  loading: boolean;
-  error: string | null;
-  generating: boolean;
-  consistencyReport: RaisConsistencyReport | null;
-  fetchStatements: (year?: number) => Promise<void>;
-  generateStatements: (year: number) => Promise<void>;
-  downloadStatement: (id: string) => Promise<void>;
-  sendStatement: (id: string) => Promise<void>;
-  checkConsistency: (year: number) => Promise<void>;
-}
-
-export function useIncomeStatements(): UseIncomeStatementsResult {
+export function useIncomeStatements() {
+  const { user } = useAuth();
   const [statements, setStatements] = useState<IncomeStatement[]>([]);
+  const [raisConsistency, setRaisConsistency] = useState<RaisConsistency | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [generating, setGenerating] = useState(false);
-  const [consistencyReport, setConsistencyReport] = useState<RaisConsistencyReport | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const fetchStatements = useCallback(async (year?: number) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const query = year ? `?year=${year}` : '';
-      const res = await fetch(`/api/income-statements${query}`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Erro ao carregar informes de rendimentos');
-      const data = await res.json() as { data: IncomeStatement[] };
-      setStatements(data.data ?? []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro desconhecido');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const orgId = user?.organizationId;
 
-  const generateStatements = useCallback(async (year: number) => {
-    setGenerating(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/income-statements/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ year }),
-      });
-      if (!res.ok) throw new Error('Erro ao gerar informes de rendimentos');
-      await fetchStatements(year);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro desconhecido');
-    } finally {
-      setGenerating(false);
-    }
-  }, [fetchStatements]);
+  const fetchStatements = useCallback(
+    async (yearBase?: number) => {
+      if (!orgId) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const qs = new URLSearchParams();
+        if (yearBase) qs.set('yearBase', String(yearBase));
+        const query = qs.toString();
+        const path = `/v1/org/${orgId}/income-statements${query ? `?${query}` : ''}`;
+        const result = await api.get<{ data: IncomeStatement[]; total: number } | IncomeStatement[]>(path);
+        const items = Array.isArray(result) ? result : (result as { data: IncomeStatement[] }).data;
+        setStatements(items);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Erro ao carregar informes de rendimentos';
+        setError(message);
+        setStatements([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [orgId],
+  );
 
-  const downloadStatement = useCallback(async (id: string) => {
-    try {
-      const res = await fetch(`/api/income-statements/${id}/pdf`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Erro ao baixar informe');
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `informe-rendimentos-${id}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro desconhecido');
-    }
-  }, []);
+  const generateStatements = useCallback(
+    async (input: GenerateIncomeStatementsInput): Promise<boolean> => {
+      if (!orgId) return false;
+      setLoading(true);
+      setError(null);
+      setSuccessMessage(null);
+      try {
+        await api.post(`/v1/org/${orgId}/income-statements/generate`, input);
+        setSuccessMessage('Informes gerados com sucesso');
+        return true;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Erro ao gerar informes';
+        setError(message);
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [orgId],
+  );
 
-  const sendStatement = useCallback(async (id: string) => {
-    try {
-      const res = await fetch(`/api/income-statements/${id}/send`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('Erro ao enviar informe por email');
-      await fetchStatements();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro desconhecido');
-    }
-  }, [fetchStatements]);
+  const downloadStatement = useCallback(
+    async (id: string, employeeName: string, yearBase: number): Promise<void> => {
+      if (!orgId) return;
+      try {
+        const blob = await api.getBlob(`/v1/org/${orgId}/income-statements/${id}/download`);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const safeName = employeeName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        a.download = `informe-rendimentos-${safeName}-${yearBase}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Erro ao baixar informe';
+        setError(message);
+      }
+    },
+    [orgId],
+  );
 
-  const checkConsistency = useCallback(async (year: number) => {
-    setError(null);
-    try {
-      const res = await fetch(`/api/income-statements/rais-consistency?year=${year}`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Erro ao verificar consistência RAIS');
-      const data = await res.json() as RaisConsistencyReport;
-      setConsistencyReport(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro desconhecido');
-    }
-  }, []);
+  const sendStatements = useCallback(
+    async (input: SendInput): Promise<SendResult | null> => {
+      if (!orgId) return null;
+      setLoading(true);
+      setError(null);
+      setSuccessMessage(null);
+      try {
+        const result = await api.post<SendResult>(`/v1/org/${orgId}/income-statements/send`, input);
+        setSuccessMessage(`Informes enviados: ${result.sent} enviados, ${result.skipped} sem email`);
+        return result;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Erro ao enviar informes';
+        setError(message);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [orgId],
+  );
 
-  return { statements, loading, error, generating, consistencyReport, fetchStatements, generateStatements, downloadStatement, sendStatement, checkConsistency };
+  const fetchRaisConsistency = useCallback(
+    async (yearBase: number): Promise<void> => {
+      if (!orgId) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await api.get<RaisConsistency>(
+          `/v1/org/${orgId}/income-statements/rais-consistency?yearBase=${yearBase}`,
+        );
+        setRaisConsistency(result);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Erro ao verificar consistencia RAIS';
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [orgId],
+  );
+
+  return {
+    statements,
+    raisConsistency,
+    loading,
+    error,
+    successMessage,
+    fetchStatements,
+    generateStatements,
+    downloadStatement,
+    sendStatements,
+    fetchRaisConsistency,
+  };
 }

@@ -1,206 +1,458 @@
 import { useState, useEffect } from 'react';
-import {
-  FileBarChart2,
-  Download,
-  Send,
-  AlertCircle,
-  CheckCircle,
-  Info,
-  Plus,
-} from 'lucide-react';
+import { FileText, Download, Mail, AlertTriangle, CheckCircle, Info, Search } from 'lucide-react';
 import { useIncomeStatements } from '@/hooks/useIncomeStatements';
+import type { IncomeStatement } from '@/types/income-statement';
 
-const CURRENT_YEAR = new Date().getFullYear();
-const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => CURRENT_YEAR - i);
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const STATUS_LABELS: Record<string, string> = {
-  PENDING: 'Pendente',
-  GENERATED: 'Gerado',
-  SENT: 'Enviado',
-};
+function formatCurrency(value: string | null | undefined): string {
+  if (!value) return 'R$ 0,00';
+  const n = parseFloat(value);
+  if (isNaN(n)) return 'R$ 0,00';
+  return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
 
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    PENDING: 'bg-yellow-100 text-yellow-800',
-    GENERATED: 'bg-blue-100 text-blue-800',
-    SENT: 'bg-green-100 text-green-800',
-  };
+function formatCpf(cpf: string): string {
+  const d = cpf.replace(/\D/g, '');
+  if (d.length !== 11) return cpf;
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+}
+
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('pt-BR');
+}
+
+function getCurrentYear(): number {
+  return new Date().getFullYear();
+}
+
+// ─── Skeleton row ─────────────────────────────────────────────────────────────
+
+function SkeletonRow({ cols }: { cols: number }) {
   return (
-    <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${map[status] ?? 'bg-gray-100 text-gray-700'}`}>
-      {STATUS_LABELS[status] ?? status}
-    </span>
+    <tr aria-hidden="true">
+      {Array.from({ length: cols }).map((_, i) => (
+        <td key={i} className="income-statements-page__skeleton-cell">
+          <div className="income-statements-page__skeleton-pulse" />
+        </td>
+      ))}
+    </tr>
   );
 }
 
-function formatCurrency(value: string): string {
-  const num = parseFloat(value);
-  if (isNaN(num)) return value;
-  return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+// ─── Generate Modal ───────────────────────────────────────────────────────────
+
+interface GenerateModalProps {
+  onClose: () => void;
+  onSubmit: (yearBase: number) => Promise<void>;
 }
 
-export default function IncomeStatementsPage() {
-  const { statements, loading, error, generating, consistencyReport, fetchStatements, generateStatements, downloadStatement, sendStatement, checkConsistency } = useIncomeStatements();
-  const [year, setYear] = useState(CURRENT_YEAR);
+function GenerateModal({ onClose, onSubmit }: GenerateModalProps) {
+  const [yearBase, setYearBase] = useState(getCurrentYear() - 1);
+  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    void fetchStatements(year);
-  }, [year, fetchStatements]);
-
-  async function handleGenerate() {
-    await generateStatements(year);
-  }
-
-  async function handleCheckConsistency() {
-    await checkConsistency(year);
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    await onSubmit(yearBase);
+    setSubmitting(false);
+    onClose();
   }
 
   return (
-    <main className="p-6 max-w-screen-xl mx-auto">
-      <nav aria-label="Breadcrumb" className="text-sm text-[var(--color-neutral-500)] mb-4">
-        <span>RH</span>
-        <span className="mx-2">/</span>
-        <span className="text-[var(--color-neutral-700)]">Informes de Rendimentos</span>
-      </nav>
-
-      <header className="flex flex-wrap items-center justify-between gap-4 mb-4">
-        <h1 className="text-2xl font-bold text-[var(--color-neutral-800)]" style={{ fontFamily: 'DM Sans, system-ui, sans-serif' }}>
-          Informes de Rendimentos
-        </h1>
-        <div className="flex gap-3">
-          <label htmlFor="year-select" className="sr-only">Ano de referência</label>
-          <select
-            id="year-select"
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-            className="border border-[var(--color-neutral-300)] rounded px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-[var(--color-primary-500)]"
-          >
-            {YEAR_OPTIONS.map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
+    <div
+      className="income-statements-page__modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="generate-stmt-modal-title"
+    >
+      <div className="income-statements-page__modal">
+        <header className="income-statements-page__modal-header">
+          <h2 id="generate-stmt-modal-title" className="income-statements-page__modal-title">
+            Gerar Informes de Rendimentos
+          </h2>
           <button
             type="button"
-            onClick={() => void handleCheckConsistency()}
-            aria-label="Verificar consistência com RAIS"
-            className="flex items-center gap-2 border border-[var(--color-neutral-300)] text-[var(--color-neutral-700)] px-4 py-2 rounded text-sm font-medium hover:bg-[var(--color-neutral-50)] min-h-[48px]"
+            className="income-statements-page__modal-close"
+            onClick={onClose}
+            aria-label="Fechar modal"
           >
-            <CheckCircle size={16} aria-hidden="true" />
-            Verificar Consistência
+            &times;
+          </button>
+        </header>
+        <form onSubmit={handleSubmit} className="income-statements-page__modal-body">
+          <div className="income-statements-page__form-group">
+            <label htmlFor="gen-year-base" className="income-statements-page__label">
+              Ano-Base <span aria-hidden="true">*</span>
+            </label>
+            <input
+              id="gen-year-base"
+              type="number"
+              value={yearBase}
+              onChange={(e) => setYearBase(parseInt(e.target.value, 10))}
+              min={2020}
+              max={getCurrentYear()}
+              required
+              aria-required="true"
+              className="income-statements-page__input"
+            />
+          </div>
+          <footer className="income-statements-page__modal-footer">
+            <button
+              type="button"
+              className="income-statements-page__btn income-statements-page__btn--secondary"
+              onClick={onClose}
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="income-statements-page__btn income-statements-page__btn--primary"
+            >
+              {submitting ? 'Gerando...' : 'Gerar Informes'}
+            </button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── RAIS Banner ──────────────────────────────────────────────────────────────
+
+interface RaisBannerProps {
+  yearBase: number;
+  onCheckConsistency: () => void;
+  consistency: {
+    loaded: boolean;
+    isConsistent: boolean;
+    totalEmployees: number;
+    employeesWithAdmission: number;
+    employeesWithRemuneration: number;
+    employeesWithTermination: number;
+    missingAdmissionEvents: string[];
+    missingRemunerationEvents: string[];
+  } | null;
+  checking: boolean;
+}
+
+function RaisBanner({
+  yearBase,
+  onCheckConsistency,
+  consistency,
+  checking,
+}: RaisBannerProps) {
+  return (
+    <section
+      className="income-statements-page__rais-banner"
+      aria-label="Informacoes sobre a RAIS"
+    >
+      <div className="income-statements-page__rais-banner-header">
+        <Info size={16} aria-hidden="true" className="income-statements-page__icon--info" />
+        <p className="income-statements-page__rais-banner-text">
+          <strong>RAIS substituida pelo eSocial desde 2023.</strong> Use o relatorio de
+          consistencia abaixo para verificar se todos os eventos foram gerados corretamente para o
+          ano-base {yearBase}.
+        </p>
+        <button
+          type="button"
+          className="income-statements-page__btn income-statements-page__btn--outline"
+          onClick={onCheckConsistency}
+          disabled={checking}
+          aria-label={`Verificar consistencia dos eventos eSocial para ${yearBase}`}
+        >
+          <Search size={14} aria-hidden="true" />
+          {checking ? 'Verificando...' : 'Verificar Consistencia'}
+        </button>
+      </div>
+
+      {consistency && consistency.loaded && (
+        <div
+          className={`income-statements-page__rais-result${consistency.isConsistent ? ' income-statements-page__rais-result--ok' : ' income-statements-page__rais-result--warn'}`}
+          role="alert"
+          aria-live="polite"
+        >
+          {consistency.isConsistent ? (
+            <div className="income-statements-page__rais-ok">
+              <CheckCircle size={16} aria-hidden="true" />
+              <span>
+                Consistencia OK — {consistency.totalEmployees} colaboradores,{' '}
+                {consistency.employeesWithAdmission} admissoes,{' '}
+                {consistency.employeesWithRemuneration} remuneracoes,{' '}
+                {consistency.employeesWithTermination} desligamentos no eSocial.
+              </span>
+            </div>
+          ) : (
+            <div className="income-statements-page__rais-warn">
+              <AlertTriangle size={16} aria-hidden="true" />
+              <div>
+                <p>
+                  <strong>Inconsistencias encontradas.</strong>{' '}
+                  {consistency.totalEmployees} colaboradores verificados.
+                </p>
+                {consistency.missingAdmissionEvents.length > 0 && (
+                  <p>
+                    <strong>Sem S-2200 (admissao):</strong>{' '}
+                    {consistency.missingAdmissionEvents.join(', ')}
+                  </p>
+                )}
+                {consistency.missingRemunerationEvents.length > 0 && (
+                  <p>
+                    <strong>Sem S-1200 (remuneracao):</strong>{' '}
+                    {consistency.missingRemunerationEvents.join(', ')}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
+export default function IncomeStatementsPage() {
+  const {
+    statements,
+    raisConsistency,
+    loading,
+    error,
+    successMessage,
+    fetchStatements,
+    generateStatements,
+    downloadStatement,
+    sendStatements,
+    fetchRaisConsistency,
+  } = useIncomeStatements();
+
+  const [yearBase, setYearBase] = useState(getCurrentYear() - 1);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [checkingRais, setCheckingRais] = useState(false);
+  const [raisLoaded, setRaisLoaded] = useState(false);
+
+  useEffect(() => {
+    void fetchStatements(yearBase);
+    setRaisLoaded(false);
+  }, [yearBase, fetchStatements]);
+
+  async function handleGenerate(year: number) {
+    const ok = await generateStatements({ yearBase: year });
+    if (ok) {
+      void fetchStatements(yearBase);
+    }
+  }
+
+  async function handleCheckRais() {
+    setCheckingRais(true);
+    await fetchRaisConsistency(yearBase);
+    setRaisLoaded(true);
+    setCheckingRais(false);
+  }
+
+  async function handleSendAll() {
+    await sendStatements({ yearBase });
+    void fetchStatements(yearBase);
+  }
+
+  async function handleSendSingle(stmt: IncomeStatement) {
+    await sendStatements({ yearBase: stmt.yearBase, employeeIds: [stmt.employeeId] });
+    void fetchStatements(yearBase);
+  }
+
+  const consistencyForBanner = raisLoaded && raisConsistency
+    ? {
+        loaded: true,
+        isConsistent: raisConsistency.isConsistent,
+        totalEmployees: raisConsistency.totalEmployees,
+        employeesWithAdmission: raisConsistency.employeesWithAdmission,
+        employeesWithRemuneration: raisConsistency.employeesWithRemuneration,
+        employeesWithTermination: raisConsistency.employeesWithTermination,
+        missingAdmissionEvents: raisConsistency.missingAdmissionEvents,
+        missingRemunerationEvents: raisConsistency.missingRemunerationEvents,
+      }
+    : null;
+
+  return (
+    <main className="income-statements-page">
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="income-statements-page__breadcrumb">
+        <ol>
+          <li>Obrigacoes Acessorias</li>
+          <li aria-current="page">Informes de Rendimentos</li>
+        </ol>
+      </nav>
+
+      {/* Header */}
+      <header className="income-statements-page__header">
+        <h1 className="income-statements-page__title">Informes de Rendimentos</h1>
+        <div className="income-statements-page__header-actions">
+          <button
+            type="button"
+            className="income-statements-page__btn income-statements-page__btn--secondary"
+            onClick={handleSendAll}
+            disabled={loading || statements.length === 0}
+            aria-label={`Enviar todos os informes do ano ${yearBase} por email`}
+          >
+            <Mail size={16} aria-hidden="true" />
+            Enviar por Email
           </button>
           <button
             type="button"
-            onClick={() => void handleGenerate()}
-            disabled={generating}
-            aria-label="Gerar informes de rendimentos"
-            className="flex items-center gap-2 bg-[var(--color-primary-600)] text-white px-4 py-2 rounded text-sm font-medium hover:bg-[var(--color-primary-700)] disabled:opacity-50 min-h-[48px]"
+            className="income-statements-page__btn income-statements-page__btn--primary"
+            onClick={() => setShowGenerateModal(true)}
           >
-            <Plus size={16} aria-hidden="true" />
-            {generating ? 'Gerando...' : 'Gerar Informes'}
+            <FileText size={16} aria-hidden="true" />
+            Gerar Informes
           </button>
         </div>
       </header>
 
-      {/* RAIS banner */}
-      <div role="note" className="flex items-start gap-3 bg-blue-50 border border-blue-200 text-blue-800 rounded p-4 mb-6 text-sm">
-        <Info size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-        <p>
-          <strong>Informação RAIS:</strong> A partir de 2025, a DIRF foi abolida e substituída pelos informes de rendimentos entregues diretamente aos trabalhadores. Os dados enviados ao eSocial substituem a entrega ao Fisco.
-        </p>
-      </div>
-
+      {/* Alerts */}
       {error && (
-        <div role="alert" className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded p-3 mb-4 text-sm">
-          <AlertCircle size={16} aria-hidden="true" />
+        <div
+          className="income-statements-page__alert income-statements-page__alert--error"
+          role="alert"
+        >
+          <AlertTriangle size={16} aria-hidden="true" />
           {error}
         </div>
       )}
-
-      {/* Consistency report */}
-      {consistencyReport && (
-        <section aria-labelledby="consistency-heading" className="mb-6 border border-[var(--color-neutral-200)] rounded-lg p-4">
-          <h2 id="consistency-heading" className="font-semibold text-[var(--color-neutral-800)] mb-3 flex items-center gap-2" style={{ fontFamily: 'DM Sans, system-ui, sans-serif' }}>
-            {consistencyReport.consistent
-              ? <><CheckCircle size={16} className="text-green-600" aria-hidden="true" /> Consistência verificada — sem divergências</>
-              : <><AlertCircle size={16} className="text-[var(--color-error-500)]" aria-hidden="true" /> {consistencyReport.issues.length} divergência(s) encontrada(s)</>
-            }
-          </h2>
-          {!consistencyReport.consistent && (
-            <ul className="space-y-1 text-sm text-[var(--color-neutral-700)]">
-              {consistencyReport.issues.map((issue, idx) => (
-                <li key={idx} className="flex gap-2">
-                  <span className="font-medium">{issue.employeeName}:</span>
-                  <span>{issue.description}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+      {successMessage && (
+        <div
+          className="income-statements-page__alert income-statements-page__alert--success"
+          role="status"
+        >
+          {successMessage}
+        </div>
       )}
 
-      {/* Statements table */}
-      {loading ? (
-        <div className="space-y-2" aria-busy="true" aria-label="Carregando informes">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-12 bg-[var(--color-neutral-100)] rounded animate-pulse" />
-          ))}
+      {/* Year selector */}
+      <section className="income-statements-page__filters" aria-label="Filtros">
+        <div className="income-statements-page__form-group">
+          <label htmlFor="year-base-filter" className="income-statements-page__label">
+            Ano-Base
+          </label>
+          <input
+            id="year-base-filter"
+            type="number"
+            value={yearBase}
+            onChange={(e) => setYearBase(parseInt(e.target.value, 10))}
+            min={2000}
+            max={getCurrentYear()}
+            className="income-statements-page__input income-statements-page__input--year"
+          />
         </div>
-      ) : statements.length === 0 ? (
-        <div className="text-center py-16">
-          <FileBarChart2 size={48} className="mx-auto text-[var(--color-neutral-400)] mb-3" aria-hidden="true" />
-          <p className="font-semibold text-[var(--color-neutral-700)]">Nenhum informe gerado</p>
-          <p className="text-sm text-[var(--color-neutral-500)] mt-1">Clique em "Gerar Informes" para criar os informes de rendimentos do ano selecionado.</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
-            <caption className="sr-only">Lista de informes de rendimentos</caption>
+      </section>
+
+      {/* RAIS Banner (per D-15) */}
+      <RaisBanner
+        yearBase={yearBase}
+        onCheckConsistency={handleCheckRais}
+        consistency={consistencyForBanner}
+        checking={checkingRais}
+      />
+
+      {/* Statements Table */}
+      <section className="income-statements-page__table-section" aria-label="Informes de rendimentos">
+        <div className="income-statements-page__table-wrapper">
+          <table
+            className="income-statements-page__table"
+            aria-label={`Informes de rendimentos ${yearBase}`}
+          >
             <thead>
-              <tr className="border-b border-[var(--color-neutral-200)] text-left text-xs uppercase text-[var(--color-neutral-500)]">
-                <th scope="col" className="py-3 pr-4 font-medium">COLABORADOR</th>
-                <th scope="col" className="py-3 pr-4 font-medium">CPF</th>
-                <th scope="col" className="py-3 pr-4 font-medium">RENDIMENTOS</th>
-                <th scope="col" className="py-3 pr-4 font-medium">DEDUÇÕES</th>
-                <th scope="col" className="py-3 pr-4 font-medium">IRRF</th>
-                <th scope="col" className="py-3 pr-4 font-medium">STATUS</th>
-                <th scope="col" className="py-3 font-medium">AÇÕES</th>
+              <tr>
+                <th scope="col">COLABORADOR</th>
+                <th scope="col">CPF</th>
+                <th scope="col">ANO-BASE</th>
+                <th scope="col">TRIBUTAVEL</th>
+                <th scope="col">INSS</th>
+                <th scope="col">IRRF</th>
+                <th scope="col">ISENTOS</th>
+                <th scope="col">ENVIADO</th>
+                <th scope="col">ACOES</th>
               </tr>
             </thead>
             <tbody>
-              {statements.map((stmt) => (
-                <tr key={stmt.id} className="border-b border-[var(--color-neutral-100)] hover:bg-[var(--color-neutral-50)]">
-                  <td className="py-3 pr-4 font-medium text-[var(--color-neutral-800)]">{stmt.employeeName}</td>
-                  <td className="py-3 pr-4 font-mono text-xs text-[var(--color-neutral-600)]">{stmt.cpf}</td>
-                  <td className="py-3 pr-4 font-mono text-xs text-[var(--color-neutral-700)]">{formatCurrency(stmt.totalIncome)}</td>
-                  <td className="py-3 pr-4 font-mono text-xs text-[var(--color-neutral-700)]">{formatCurrency(stmt.totalDeductions)}</td>
-                  <td className="py-3 pr-4 font-mono text-xs text-[var(--color-neutral-700)]">{formatCurrency(stmt.irrf)}</td>
-                  <td className="py-3 pr-4"><StatusBadge status={stmt.status} /></td>
-                  <td className="py-3">
-                    <div className="flex gap-1">
-                      <button
-                        type="button"
-                        onClick={() => void downloadStatement(stmt.id)}
-                        aria-label={`Baixar informe de ${stmt.employeeName}`}
-                        className="p-1 text-[var(--color-neutral-500)] hover:text-[var(--color-primary-600)] min-h-[48px] min-w-[48px] flex items-center justify-center"
-                      >
-                        <Download size={16} aria-hidden="true" />
-                      </button>
-                      {stmt.status === 'GENERATED' && (
+              {loading
+                ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={9} />)
+                : statements.map((stmt) => (
+                    <tr key={stmt.id}>
+                      <td className="income-statements-page__employee-name">
+                        {stmt.employeeName}
+                      </td>
+                      <td className="income-statements-page__mono">{formatCpf(stmt.employeeCpf)}</td>
+                      <td>{stmt.yearBase}</td>
+                      <td className="income-statements-page__currency">
+                        {formatCurrency(stmt.totalTaxable)}
+                      </td>
+                      <td className="income-statements-page__currency">
+                        {formatCurrency(stmt.totalInss)}
+                      </td>
+                      <td className="income-statements-page__currency">
+                        {formatCurrency(stmt.totalIrrf)}
+                      </td>
+                      <td className="income-statements-page__currency">
+                        {formatCurrency(stmt.totalExempt)}
+                      </td>
+                      <td>{formatDate(stmt.sentAt)}</td>
+                      <td className="income-statements-page__actions">
                         <button
                           type="button"
-                          onClick={() => void sendStatement(stmt.id)}
-                          aria-label={`Enviar informe de ${stmt.employeeName} por email`}
-                          className="p-1 text-[var(--color-neutral-500)] hover:text-[var(--color-primary-600)] min-h-[48px] min-w-[48px] flex items-center justify-center"
+                          className="income-statements-page__action-btn"
+                          onClick={() => downloadStatement(stmt.id, stmt.employeeName, stmt.yearBase)}
+                          aria-label={`Baixar informe de ${stmt.employeeName}`}
+                          title="Baixar PDF"
                         >
-                          <Send size={16} aria-hidden="true" />
+                          <Download size={16} aria-hidden="true" />
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        <button
+                          type="button"
+                          className="income-statements-page__action-btn"
+                          onClick={() => handleSendSingle(stmt)}
+                          aria-label={`Enviar informe de ${stmt.employeeName} por email`}
+                          title="Enviar por email"
+                        >
+                          <Mail size={16} aria-hidden="true" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
+          {!loading && statements.length === 0 && (
+            <div className="income-statements-page__empty" role="status">
+              <FileText
+                size={48}
+                aria-hidden="true"
+                className="income-statements-page__empty-icon"
+              />
+              <p className="income-statements-page__empty-title">Nenhum informe gerado</p>
+              <p className="income-statements-page__empty-desc">
+                Gere os informes a partir das folhas do ano-base {yearBase}
+              </p>
+              <button
+                type="button"
+                className="income-statements-page__btn income-statements-page__btn--primary"
+                onClick={() => setShowGenerateModal(true)}
+              >
+                <FileText size={16} aria-hidden="true" />
+                Gerar Informes
+              </button>
+            </div>
+          )}
         </div>
+      </section>
+
+      {/* Generate Modal */}
+      {showGenerateModal && (
+        <GenerateModal
+          onClose={() => setShowGenerateModal(false)}
+          onSubmit={handleGenerate}
+        />
       )}
     </main>
   );
