@@ -600,13 +600,14 @@ Plans:
 2. Ao fechar a folha, o sistema lança automaticamente os créditos contábeis por regime de competência — salários como despesa, encargos como despesa, provisões como despesa+passivo, guias como passivo a recolher — com rateio por centro de custo e baixa do passivo ao efetuar o pagamento
 3. Gerente pode visualizar dashboard RH com total de colaboradores por status e tipo de contrato, custo total da folha (bruto/líquido/encargos), custo médio por colaborador, custo de mão de obra por hectare, evolução mensal 12 meses, composição da folha em pizza, custo por atividade/cultura, turnover, previsão de encerramentos de safra em 30/60/90 dias e alertas consolidados com filtros por fazenda e departamento
 
-**Plans**: 4 plans
+**Plans**: 5 plans
 
 Plans:
-- [ ] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
-- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
-- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
-- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
+- [ ] 32-01-PLAN.md — CP completion + cost-center rateio (IRRF, VT, pension) + cp-preview endpoint
+- [ ] 32-02-PLAN.md — AccountingEntry model + accounting entries module + hooks in closeRun/settlePayment
+- [ ] 32-03-PLAN.md — HR Dashboard backend endpoint (headcount, cost, trend, turnover, expirations, alerts)
+- [ ] 32-04-PLAN.md — PayrollCpReviewModal + AccountingEntriesPage frontend
+- [ ] 32-05-PLAN.md — HrDashboardPage frontend with charts, KPI cards, filters
 **UI hint**: yes
 
 ## Progress
