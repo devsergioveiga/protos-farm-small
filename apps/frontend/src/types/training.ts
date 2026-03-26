@@ -55,6 +55,13 @@ export interface CreateTrainingTypeInput {
   isGlobal?: boolean;
 }
 
+export type UpdateTrainingTypeInput = Partial<CreateTrainingTypeInput>;
+
+export interface CreatePositionTrainingRequirementInput {
+  positionId: string;
+  trainingTypeId: string;
+}
+
 export interface CreateTrainingRecordInput {
   trainingTypeId: string;
   date: string;
