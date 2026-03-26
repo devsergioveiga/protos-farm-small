@@ -140,6 +140,7 @@ const SafetyDashboardPage = lazy(() => import('@/pages/SafetyDashboardPage'));
 const TaxGuidesPage = lazy(() => import('@/pages/TaxGuidesPage'));
 const EsocialEventsPage = lazy(() => import('@/pages/EsocialEventsPage'));
 const IncomeStatementsPage = lazy(() => import('@/pages/IncomeStatementsPage'));
+const AccountingEntriesPage = lazy(() => import('@/pages/AccountingEntriesPage'));
 
 export function App() {
   return (
@@ -271,6 +272,7 @@ export function App() {
                 <Route path="/tax-guides" element={<TaxGuidesPage />} />
                 <Route path="/esocial-events" element={<EsocialEventsPage />} />
                 <Route path="/income-statements" element={<IncomeStatementsPage />} />
+                <Route path="/accounting-entries" element={<AccountingEntriesPage />} />
                 <Route path="/assets" element={<AssetsPage />} />
                 <Route path="/depreciation" element={<DepreciationPage />} />
                 <Route path="/maintenance-plans" element={<MaintenancePlansPage />} />

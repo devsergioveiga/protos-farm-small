@@ -92,6 +92,7 @@ import {
   GraduationCap,
   FileBarChart2,
   FileCode,
+  BookOpen,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -286,6 +287,12 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/tax-guides', icon: Receipt, label: 'Guias de Recolhimento' },
       { to: '/esocial-events', icon: FileCode, label: 'Eventos eSocial' },
       { to: '/income-statements', icon: FileBarChart2, label: 'Informes de Rendimentos' },
+    ],
+  },
+  {
+    title: 'CONTABILIDADE',
+    items: [
+      { to: '/accounting-entries', icon: BookOpen, label: 'Lançamentos Contábeis' },
     ],
   },
   {
