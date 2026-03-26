@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Ready to plan
-stopped_at: Phase 30 UI-SPEC approved
-last_updated: "2026-03-26T09:43:00.776Z"
+status: Ready to execute
+stopped_at: Completed 30-01-PLAN.md — schema migration + types foundation
+last_updated: "2026-03-26T10:21:04.552Z"
 progress:
   total_phases: 26
   completed_phases: 23
-  total_plans: 103
-  completed_plans: 103
+  total_plans: 110
+  completed_plans: 104
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 29 — f-rias-afastamentos-rescis-o-e-provis-es
+**Current focus:** Phase 30 — seguranca-trabalho-nr31
 
 ## Current Position
 
-Phase: 30
-Plan: Not started
+Phase: 30 (seguranca-trabalho-nr31) — EXECUTING
+Plan: 2 of 7
 
 ## Accumulated Context
 
@@ -86,6 +86,7 @@ Key decisions for v1.3:
 - [Phase 29]: All column headers rendered ALL CAPS per design system — acceptance criterion verified case-insensitively
 - [Phase 29]: VacationScheduleModal Step 3 shows estimated calculation — definitive values computed server-side on confirm
 - [Phase 29]: ConfirmModal variant=danger for rescisao (medium criticality), variant=warning for estorno (reversible)
+- [Phase 30-seguranca-trabalho-nr31]: TrainingType.organizationId is nullable for system-global NR-31 types; classifyExpiryAlert() shared helper in safety-compliance.types.ts
 
 ### Pending Todos
 
@@ -101,7 +102,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T09:43:00.764Z
-Stopped at: Phase 30 UI-SPEC approved
-Resume file: .planning/phases/30-seguranca-trabalho-nr31/30-UI-SPEC.md
+Last session: 2026-03-26T10:21:04.540Z
+Stopped at: Completed 30-01-PLAN.md — schema migration + types foundation
+Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos

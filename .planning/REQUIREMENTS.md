@@ -45,9 +45,9 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 
 ### Segurança do Trabalho Rural (NR-31)
 
-- [ ] **SEGUR-01**: Gerente pode controlar EPIs (cadastro com CA e validade, ficha de entrega por colaborador com data/tipo/assinatura, alertas de vencimento CA e troca, alertas de EPIs obrigatórios por função, controle de estoque, ficha impressa PDF e relatório de conformidade)
-- [ ] **SEGUR-02**: Técnico pode gerenciar treinamentos obrigatórios NR-31 (integração, agrotóxicos, máquinas, animais, primeiros socorros, incêndio) com registro (data, carga horária, instrutor, lista presença), validade configurável, alerta de reciclagem 30 dias antes, certificado PDF, matriz de conformidade e alerta ao escalar colaborador sem treinamento válido
-- [ ] **SEGUR-03**: Gerente pode controlar ASOs (admissional, periódico, retorno, mudança função, demissional) com registro (médico CRM, resultado apto/inapto, exames), periodicidade configurável, alerta vencimento 30 dias, upload ASO digitalizado, integração com admissão (obrigatório) e rescisão (obrigatório) e relatório de conformidade
+- [x] **SEGUR-01**: Gerente pode controlar EPIs (cadastro com CA e validade, ficha de entrega por colaborador com data/tipo/assinatura, alertas de vencimento CA e troca, alertas de EPIs obrigatórios por função, controle de estoque, ficha impressa PDF e relatório de conformidade)
+- [x] **SEGUR-02**: Técnico pode gerenciar treinamentos obrigatórios NR-31 (integração, agrotóxicos, máquinas, animais, primeiros socorros, incêndio) com registro (data, carga horária, instrutor, lista presença), validade configurável, alerta de reciclagem 30 dias antes, certificado PDF, matriz de conformidade e alerta ao escalar colaborador sem treinamento válido
+- [x] **SEGUR-03**: Gerente pode controlar ASOs (admissional, periódico, retorno, mudança função, demissional) com registro (médico CRM, resultado apto/inapto, exames), periodicidade configurável, alerta vencimento 30 dias, upload ASO digitalizado, integração com admissão (obrigatório) e rescisão (obrigatório) e relatório de conformidade
 
 ### Integração Financeira e Contábil
 
@@ -98,9 +98,9 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 | FERIAS-02 | Phase 29 | Complete |
 | FERIAS-03 | Phase 29 | Complete |
 | FERIAS-04 | Phase 29 | Complete |
-| SEGUR-01 | Phase 30 | Pending |
-| SEGUR-02 | Phase 30 | Pending |
-| SEGUR-03 | Phase 30 | Pending |
+| SEGUR-01 | Phase 30 | Complete |
+| SEGUR-02 | Phase 30 | Complete |
+| SEGUR-03 | Phase 30 | Complete |
 | ESOCIAL-01 | Phase 31 | Pending |
 | ESOCIAL-02 | Phase 31 | Pending |
 | ESOCIAL-03 | Phase 31 | Pending |
