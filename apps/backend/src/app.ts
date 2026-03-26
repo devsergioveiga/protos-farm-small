@@ -154,6 +154,7 @@ import trainingTypesRouter from './modules/training-types/training-types.routes'
 import trainingRecordsRouter from './modules/training-records/training-records.routes';
 import medicalExamsRouter from './modules/medical-exams/medical-exams.routes';
 import safetyComplianceRouter from './modules/safety-compliance/safety-compliance.routes';
+import { hrDashboardRouter } from './modules/hr-dashboard/hr-dashboard.routes';
 
 const app = express();
 
@@ -321,5 +322,6 @@ app.use('/api', employeeAbsencesRouter);
 app.use('/api', payrollProvisionsRouter);
 app.use('/api', employeeTerminationsRouter);
 app.use('/api', esocialEventsRouter);
+app.use('/api', hrDashboardRouter);
 
 export { app };
