@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   ClipboardList,
   ChevronDown,
@@ -7,6 +7,7 @@ import {
   Trash2,
   AlertCircle,
 } from 'lucide-react';
+import { useEmployees } from '@/hooks/useEmployees';
 import { useTrainingRecords } from '@/hooks/useTrainingRecords';
 import { useTrainingTypes } from '@/hooks/useTrainingTypes';
 import { ComplianceStatusBadge } from '@/components/shared/ComplianceStatusBadge';
@@ -30,8 +31,6 @@ function getExpiryStatus(expiresAt: string): 'OK' | 'YELLOW' | 'RED' | 'EXPIRED'
   return 'OK';
 }
 
-// Placeholder employees — in real app, fetched from API
-const MOCK_EMPLOYEES: Array<{ id: string; name: string; positionName: string | null }> = [];
 
 export default function TrainingRecordsPage() {
   const [showModal, setShowModal] = useState(false);
@@ -58,6 +57,18 @@ export default function TrainingRecordsPage() {
   } = useTrainingRecords();
 
   const { trainingTypes, fetchTrainingTypes } = useTrainingTypes();
+
+  const { employees } = useEmployees({ status: 'ATIVO', limit: 200 });
+
+  const employeeOptions = useMemo(
+    () =>
+      employees.map((emp) => ({
+        id: emp.id,
+        name: emp.name,
+        positionName: emp.farms?.[0]?.position?.name ?? null,
+      })),
+    [employees],
+  );
 
   const load = useCallback(() => {
     void fetchTrainingRecords({
@@ -352,7 +363,7 @@ export default function TrainingRecordsPage() {
       <TrainingRecordModal
         isOpen={showModal}
         trainingTypes={trainingTypes}
-        employees={MOCK_EMPLOYEES}
+        employees={employeeOptions}
         onClose={() => setShowModal(false)}
         onSave={handleSave}
       />
