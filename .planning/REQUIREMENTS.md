@@ -1,155 +1,118 @@
-# Requirements: Protos Farm — v1.2 Gestao de Patrimonio
+# Requirements: Protos Farm — v1.3 RH e Folha de Pagamento Rural
 
-**Defined:** 2026-03-19
-**Core Value:** O proprietario/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visao consolidada por fazenda e conta bancaria.
+**Defined:** 2026-03-23
+**Core Value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
 
-## v1.2 Requirements
+## v1.3 Requirements
 
-Requirements for asset lifecycle management. Each maps to roadmap phases.
+Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 
-### Cadastro de Ativos
+### Cadastro de Colaboradores e Contratos
 
-- [ ] **ATIV-01**: Gerente pode cadastrar maquinas, veiculos e implementos com dados de aquisicao (NF, fornecedor, valor), operacionais (horimetro, odometro, potencia, combustivel), status e fotos
-- [ ] **ATIV-02**: Gerente pode cadastrar benfeitorias e ativos imoveis com geolocalizacao (ponto, linha ou poligono), material de construcao, area e capacidade, visualizando no mapa da fazenda
-- [ ] **ATIV-03**: Proprietario pode cadastrar terras e imoveis rurais como ativo nao depreciavel (CPC 27) com documentacao cartoraria, despesas de aquisicao e historico de avaliacoes/reavaliacao
-- [ ] **ATIV-04**: Gerente pode cadastrar implementos e equipamentos menores (grades, ordenhadeiras, balancas) com vinculacao a maquina principal quando aplicavel
-- [ ] **ATIV-05**: Gerente pode importar ativos em massa via CSV/Excel com mapeamento flexivel de colunas, preview e relatorio pos-importacao
-- [ ] **ATIV-06**: Gerente pode visualizar inventario completo com filtros (tipo, categoria, fazenda, status, faixa de valor), busca, totalizacao, exportacao CSV/Excel/PDF e visao em mapa
-- [ ] **ATIV-07**: Gerente pode ver ficha completa do ativo com grafico de depreciacao, historico de manutencoes, TCO, indicadores (disponibilidade, custo/hora), timeline de eventos e documentos
+- [x] **COLAB-01**: Gerente pode cadastrar colaborador com dados pessoais completos (CPF, RG, PIS/PASEP, CTPS), dados bancários, dependentes (CPF obrigatório, para IRRF e salário-família), dados de saúde, upload de documentos digitalizados, associação a fazendas e status (ativo/afastado/férias/desligado)
+- [x] **COLAB-02**: Gerente pode registrar contrato de trabalho com tipo (CLT indeterminado, determinado, safra, intermitente, experiência, aprendiz), dados contratuais (admissão, cargo/CBO, salário, jornada, sindicato), aditivos com histórico, alertas de vencimento (experiência, safra) e geração de PDF
+- [x] **COLAB-03**: Gerente pode cadastrar cargos com CBO, faixas salariais (piso/teto + níveis), escalas de trabalho configuráveis (5x2, 6x1, 12x36, turno ordenha), adicionais por cargo, quadro de lotação, histórico de movimentações (promoção, reajuste, transferência) com timeline e reajuste coletivo em lote
+- [x] **COLAB-04**: Gerente pode importar colaboradores existentes em massa via CSV/Excel com template, mapeamento flexível, validação (CPF, PIS), preview, relatório pós-importação e saldos iniciais de férias/banco de horas
+- [x] **COLAB-05**: Gerente pode visualizar ficha completa do colaborador em tela única com dados pessoais, contrato atual e histórico, evolução salarial (gráfico), holerites 12 meses, saldo de férias/banco de horas, histórico de afastamentos, EPIs entregues, treinamentos e operações de campo vinculadas
 
-### Hierarquia e Imobilizado em Andamento
+### Controle de Ponto e Jornada
 
-- [ ] **HIER-01**: Gerente pode cadastrar ativo composto (hierarquia pai-filho ate 3 niveis) onde o pai totaliza valores dos filhos e cada filho tem depreciacao independente
-- [ ] **HIER-02**: Gerente pode registrar reforma ou ampliacao de ativo existente com decisao de capitalizar (soma ao valor contabil + reavalia vida util) ou despesa (vai para DRE)
-- [ ] **HIER-03**: Gerente pode registrar imobilizado em andamento (obras) acumulando aportes parciais com cronograma de etapas, alerta de orcamento e ativacao ao concluir (inicia depreciacao)
+- [x] **PONTO-01**: Colaborador pode registrar ponto (entrada, intervalos, saída) via app mobile com geolocalização e timestamp, funcionamento offline com sync, ou via web para administrativos, ou por apontamento do gerente para equipes sem celular, com tolerância configurável e alerta ao gerente se ponto não registrado
+- [x] **PONTO-02**: Gerente pode vincular horas trabalhadas a atividades/operações (plantio, colheita, trato, manutenção) por talhão ou pasto, com modo rápido por equipe, totalização diária vs jornada, custo/hora automático e integração com custo de produção por centro de custo
+- [x] **PONTO-03**: Sistema calcula automaticamente horas extras (50% dias normais, 100% domingos/feriados), banco de horas com saldo e alerta de vencimento (6 meses), adicional noturno rural (21h-5h, 25%, hora reduzida 52m30s), calendário de feriados (nacional/estadual/municipal), alerta de interjornada <11h e DSR sobre extras
+- [x] **PONTO-04**: Gerente pode revisar e aprovar espelho de ponto mensal com identificação visual de inconsistências, correção com justificativa, fluxo de aprovação (gerente → RH → folha), aceite do colaborador, exportação PDF e prazo de fechamento configurável
 
-### Depreciacao e Valoracao
+### Cálculo e Processamento de Folha
 
-- [ ] **DEPR-01**: Contador pode configurar metodo de depreciacao por ativo ou categoria (linear, horas-uso, producao, acelerada) com taxas pre-configuradas RFB e suporte a taxa fiscal vs gerencial
-- [ ] **DEPR-02**: Sistema calcula depreciacao mensal automaticamente (job ou gatilho manual) com pro rata die, parada em valor residual, relatorio mensal e possibilidade de estorno/recalculo
-- [ ] **DEPR-03**: Contador pode registrar valor justo de ativos biologicos (CPC 29/IAS 41) — rebanho por categoria com preco de mercado e culturas perenes por estagio — com variacao registrada no resultado
-- [ ] **DEPR-04**: Contador pode gerar relatorios patrimoniais (inventario geral, depreciacao acumulada, movimentacao, ativos biologicos, TCO) com filtros e exportacao PDF/Excel/CSV
+- [x] **FOLHA-01**: Contador pode configurar rubricas de proventos (salário, HE 50%/100%, noturno 25%, insalubridade, periculosidade, salário-família, comissão) e descontos (INSS progressiva, IRRF progressiva, VT 6%, moradia até 25%, alimentação até 20%, adiantamento, faltas, pensão), com fórmulas customizáveis e tabelas legais atualizáveis (INSS, IRRF, salário-família com vigência)
+- [x] **FOLHA-02**: Contador pode processar folha mensal em lote com cálculo automático por colaborador (salário proporcional, HE com DSR, noturno, insalubridade, INSS/IRRF/FGTS, moradia/alimentação), encargos patronais (INSS 20%, RAT, FGTS 8%), preview antes de confirmar, recálculo individual, bloqueio se ponto não aprovado e fechamento imutável com possibilidade de estorno
+- [x] **FOLHA-03**: Gerente pode registrar adiantamentos salariais com limite configurável (% do salário), adiantamento em lote (dia 15, 40%), desconto automático na folha, recibo PDF e integração com Contas a Pagar
+- [x] **FOLHA-04**: Colaborador pode receber holerite detalhado (proventos, descontos, totais, bases INSS/IRRF/FGTS) em PDF individual ou lote, via email ou app mobile, com histórico acessível na ficha e formato compatível eSocial
+- [x] **FOLHA-05**: Contador pode processar 13º salário em duas parcelas (1ª até 30/nov sem descontos, 2ª até 20/dez com INSS/IRRF), proporcional por meses trabalhados, incluindo médias de HE/noturno, com recibo PDF, encargos patronais e integração financeira/contábil
 
-### Centro de Custo Patrimonial
+### Férias, Afastamentos e Rescisão
 
-- [ ] **CCPA-01**: Contador pode vincular cada ativo a centro de custo (fixo, rateio % ou dinamico por horas-maquina do periodo) para depreciacao e manutencao serem apropriadas corretamente
-- [ ] **CCPA-02**: Processamento mensal de depreciacao gera lancamentos detalhados por centro de custo com conciliacao automatica (soma CCs = total depreciacao)
-- [ ] **CCPA-03**: Custos de manutencao (OS) sao apropriados por centro de custo com possibilidade de rateio manual ou heranca do CC do ativo
-- [ ] **CCPA-04**: Sistema oferece guia de decisao (wizard) para orientar criacao de centro de custo por ativo com exemplos e templates por tipo de fazenda
+- [x] **FERIAS-01**: Gerente pode controlar períodos aquisitivos, programar férias (mín 5 dias, até 3 frações), calcular pagamento (salário + 1/3 + médias – INSS – IRRF), abono pecuniário, alertas de vencimento (60 dias antes do dobro), recibo PDF, pagamento 2 dias antes e calendário visual evitando conflitos com safra
+- [x] **FERIAS-02**: Gerente pode registrar afastamentos (atestado até 15 dias empresa / após INSS, acidente CAT, maternidade 120 dias, paternidade, casamento, falecimento), com impacto automático na folha, estabilidade provisória pós-acidente e controle de retorno com ASO
+- [x] **FERIAS-03**: Contador pode processar rescisão por tipo (sem justa causa, justa causa, pedido, fim safra, acordo mútuo) com cálculo automático (saldo salário, aviso prévio proporcional, 13º prop., férias vencidas+prop.+1/3, multa FGTS 40%/20%), TRCT em PDF, guias GRRF e seguro-desemprego, alerta de prazo 10 dias e integração financeira/contábil
+- [x] **FERIAS-04**: Sistema calcula mensalmente provisão de férias e 13º por colaborador (1/12 salário + 1/3 + encargos), com lançamento contábil automático (despesa DRE + passivo BP), reversão ao pagar, relatório de posição e rateio por centro de custo conforme apontamento de horas
 
-### Manutencao e Ordens de Servico
+### Obrigações Acessórias e eSocial
 
-- [ ] **MANU-01**: Gerente pode criar planos de manutencao preventiva com gatilhos configuraveis (horimetro, km, tempo), calculo automatico da proxima execucao e alerta antecipado
-- [ ] **MANU-02**: Gerente pode abrir, acompanhar e encerrar ordens de servico (OS) com registro de pecas (baixa automatica no estoque), horas de mao de obra, custo externo e fotos
-- [ ] **MANU-03**: Operador pode solicitar manutencao pelo celular com foto, geolocalizacao automatica e notificacao push ao responsavel, funcionando offline
-- [ ] **MANU-04**: Gerente pode controlar estoque de pecas de reposicao com ponto de reposicao, vinculacao de pecas compativeis por maquina e inventario periodico
-- [ ] **MANU-05**: Gerente pode ver dashboard de manutencao com disponibilidade mecanica, MTBF, MTTR, custo acumulado, OS abertas (kanban) e alertas de manutencoes vencidas
-- [ ] **MANU-06**: Ao encerrar OS de alto valor, sistema apresenta assistente de classificacao contabil (despesa imediata, capitalizacao ou diferimento) com criterios-guia
-- [ ] **MANU-07**: Contador pode diferenciar e apropriar despesas antecipadas (diferimento) de manutencoes grandes que restauram condicao original sem aumentar vida util
-- [ ] **MANU-08**: Contador pode configurar provisao mensal de manutencao por ativo ou frota com lancamento automatico e conciliacao com gastos reais
+- [x] **ESOCIAL-01**: Contador pode gerar guias de recolhimento (FGTS via GFIP/DCTFWeb, INSS via DARF, IRRF via DARF, contribuição sindical, FUNRURAL via GPS/DARF com alíquota configurável receita bruta vs folha), com calendário de vencimentos, alertas antecipados, histórico e integração com Contas a Pagar
+- [x] **ESOCIAL-02**: Contador pode gerar e transmitir eventos eSocial (tabela: S-1000/S-1005/S-1010/S-1020; não periódicos: S-2190/S-2200/S-2206/S-2230/S-2299; periódicos: S-1200/S-1210/S-1299; SST: S-2210/S-2220/S-2240) em XML conforme leiaute S-1.3, com validação, transmissão via Web Service com certificado digital, controle de protocolo/recibo/retorno, dashboard de status e reprocessamento de rejeitados
+- [x] **ESOCIAL-03**: Contador pode gerar RAIS anual (ou verificar substituição por eSocial), informe de rendimentos por colaborador em PDF (total renda, IRRF retido, INSS), envio por email ou app, com validação de dados e histórico por ano-base
 
-### Controle Operacional e Documentacao
+### Segurança do Trabalho Rural (NR-31)
 
-- [ ] **OPER-01**: Gerente pode registrar abastecimentos (combustivel) por ativo com custo/litro, custo/hora e benchmarking de eficiencia contra media da frota
-- [ ] **OPER-02**: Gerente pode controlar documentos com vencimento (CRLV, seguro, revisao) com alertas automaticos antecipados e calendario de vencimentos
-- [ ] **OPER-03**: Operador pode atualizar horimetro/odometro de forma rapida pelo mobile com validacao anti-regressao
-- [ ] **OPER-04**: Sistema calcula custo/hora e custo operacional por ativo (aquisicao + depreciacao + manutencao + combustivel + seguro) para analise de viabilidade
+- [x] **SEGUR-01**: Gerente pode controlar EPIs (cadastro com CA e validade, ficha de entrega por colaborador com data/tipo/assinatura, alertas de vencimento CA e troca, alertas de EPIs obrigatórios por função, controle de estoque, ficha impressa PDF e relatório de conformidade)
+- [x] **SEGUR-02**: Técnico pode gerenciar treinamentos obrigatórios NR-31 (integração, agrotóxicos, máquinas, animais, primeiros socorros, incêndio) com registro (data, carga horária, instrutor, lista presença), validade configurável, alerta de reciclagem 30 dias antes, certificado PDF, matriz de conformidade e alerta ao escalar colaborador sem treinamento válido
+- [x] **SEGUR-03**: Gerente pode controlar ASOs (admissional, periódico, retorno, mudança função, demissional) com registro (médico CRM, resultado apto/inapto, exames), periodicidade configurável, alerta vencimento 30 dias, upload ASO digitalizado, integração com admissão (obrigatório) e rescisão (obrigatório) e relatório de conformidade
 
-### Integracao Financeira — Aquisicao
+### Integração Financeira e Contábil
 
-- [ ] **AQUI-01**: Ao cadastrar ativo com valor de aquisicao, sistema gera CP automaticamente no modulo financeiro com fornecedor, valor, vencimento e centro de custo
-- [ ] **AQUI-02**: Gerente pode registrar compra financiada de ativo com dados do financiamento e parcelas geradas automaticamente no CP (reuso do installmentGenerator)
-- [ ] **AQUI-03**: Gerente pode importar dados do ativo a partir de NF-e (XML) com preenchimento automatico de fornecedor, valor, itens e dados fiscais
-- [ ] **AQUI-04**: Gerente pode registrar compra com multiplos ativos na mesma NF, cada um gerando registro patrimonial e rateio proporcional das despesas acessorias
-- [ ] **AQUI-05**: Gerente pode registrar leasing e arrendamento mercantil (CPC 06) com parcelas no CP e controle de opcao de compra ao final do contrato
-- [ ] **AQUI-06**: Gerente pode registrar troca de ativo (trade-in) com compensacao financeira automatica (valor do ativo antigo abatido do novo)
-- [ ] **AQUI-07**: Cada aquisicao tem centro de custo e classificacao contabil definidos para apropriacao correta de depreciacao futura
+- [ ] **INTEGR-01**: Ao fechar folha, sistema gera automaticamente lançamentos no Contas a Pagar (salários líquidos, INSS, FGTS, IRRF, contribuição sindical, pensão, VT, FUNRURAL) com vencimentos corretos (salários 5º dia útil, FGTS dia 7, INSS/IRRF dia 20), rateio por centro de custo conforme apontamento, tela de revisão pré-confirmação, estorno/rollback e reconciliação total folha vs total CPs
+- [ ] **INTEGR-02**: Ao fechar folha, sistema gera lançamentos contábeis (salários/ordenados despesa, encargos despesa, provisão férias/13º despesa+passivo, INSS/FGTS/IRRF a recolher passivo, salários a pagar passivo) com rateio por centro de custo, regime de competência, baixa de passivo ao pagar, tela de revisão e drill-down DRE por rubrica/departamento/fazenda
+- [ ] **INTEGR-03**: Gerente pode visualizar dashboard RH com indicadores (total colaboradores por status/tipo contrato, custo total folha bruto/líquido/encargos, custo médio por colaborador, custo MO por hectare), evolução mensal 12 meses, composição folha (pizza), custo por atividade/cultura, turnover, previsão encerramentos safra 30/60/90 dias, alertas consolidados e filtros por fazenda/departamento/contrato
 
-### Integracao Financeira — Venda, Baixa e Saida
+## v2 Requirements (Deferred)
 
-- [ ] **DISP-01**: Gerente pode registrar venda de ativo com calculo automatico de ganho/perda contabil (valor venda vs valor contabil) e geracao de CR
-- [ ] **DISP-02**: Gerente pode registrar baixa por sinistro, descarte ou obsolescencia com motivo, laudo, valor residual e lancamento de perda
-- [ ] **DISP-03**: Gerente pode registrar venda parcelada de ativo com parcelas no CR
-- [ ] **DISP-04**: Gerente pode transferir ativo entre fazendas da mesma organizacao com historico e reavaliacao opcional
-- [ ] **DISP-05**: Contador pode conciliar patrimonio fisico vs contabil com inventario (contagem fisica vs registro) e gerar ajustes
-- [ ] **DISP-06**: Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciacao acumulada, aquisicoes/baixas do periodo e indicadores
+### Funcionalidades Avançadas
 
-## v2 Requirements
-
-Deferred to future milestone. Tracked but not in current roadmap.
-
-### Integracao Avancada
-
-- **INTG-01**: Integracao com telematics/IoT para leitura automatica de horimetro e localizacao GPS
-- **INTG-02**: CIAP (credito ICMS sobre ativo) — requer modulo fiscal como prerequisito
-- **INTG-03**: NF-e importacao via SEFAZ (consulta automatica) — requer integracao fiscal
-- **INTG-04**: Manutencao preditiva baseada em historico de falhas (requer 2-3 anos de dados)
+- **ADV-01**: Pagamento por produção (pagamento por tarefa/peça) com integração dados colheita — complexidade alta, risco trabalhista
+- **ADV-02**: Integração WhatsApp Business API para envio de holerites — requer aprovação Meta e custos mensais
+- **ADV-03**: Relógio de ponto biométrico (hardware) — depende de infraestrutura física por fazenda
+- **ADV-04**: Homologação sindical digital de rescisões — dispensada desde Reforma Trabalhista 2017 para maioria dos casos
+- **ADV-05**: Background location tracking contínuo durante jornada — requer permissões especiais iOS/Android e EAS custom build
 
 ## Out of Scope
 
-| Feature                               | Reason                                                              |
-| ------------------------------------- | ------------------------------------------------------------------- |
-| Emissao de NF-e                       | Modulo fiscal separado, complexidade regulatoria                    |
-| Integracao IoT/telematics             | Complexidade vs beneficio nao justificada no escopo atual           |
-| Manutencao preditiva                  | Requer historico de falhas que ainda nao existe                     |
-| CIAP (credito ICMS)                   | Pre-requisito: modulo fiscal                                        |
-| Gestao de projetos (Gantt) para obras | Excessivo para o escopo — cronograma de etapas simples e suficiente |
+| Feature | Reason |
+|---------|--------|
+| Plano de contas contábil completo | Módulo contabilidade é milestone separado (v1.4) — cost center suficiente para v1.3 |
+| Cálculo de folha em tempo real durante registro de ponto | Cria expectativas falsas com dados incompletos; calcular apenas no fechamento |
+| Transmissão eSocial síncrona (sem fila) | Portal tem rate limits e janelas de manutenção; fila assíncrona obrigatória |
+| DIRF (Declaração do Imposto sobre a Renda Retido na Fonte) | Abolida em 2025, dados fluem via eSocial + EFD-Reinf |
+| Pagamento por produção (peça/tarefa) | Complexidade de DSR (OJ 235 TST) e integração com dados colheita — futuro |
+| Mobile: funcionalidades completas de folha no app | Web-only para processamento; mobile apenas para ponto e consulta de holerite |
 
 ## Traceability
 
-| Requirement | Phase    | Status  |
-| ----------- | -------- | ------- |
-| ATIV-01     | Phase 16 | Pending |
-| ATIV-02     | Phase 16 | Pending |
-| ATIV-03     | Phase 16 | Pending |
-| ATIV-04     | Phase 16 | Pending |
-| ATIV-05     | Phase 16 | Pending |
-| ATIV-06     | Phase 16 | Pending |
-| ATIV-07     | Phase 16 | Pending |
-| DEPR-01     | Phase 17 | Pending |
-| DEPR-02     | Phase 17 | Pending |
-| CCPA-01     | Phase 17 | Pending |
-| CCPA-02     | Phase 17 | Pending |
-| MANU-01     | Phase 18 | Pending |
-| MANU-02     | Phase 18 | Pending |
-| MANU-03     | Phase 18 | Pending |
-| MANU-04     | Phase 18 | Pending |
-| MANU-05     | Phase 18 | Pending |
-| MANU-06     | Phase 18 | Pending |
-| MANU-07     | Phase 18 | Pending |
-| MANU-08     | Phase 18 | Pending |
-| CCPA-03     | Phase 18 | Pending |
-| AQUI-01     | Phase 19 | Pending |
-| AQUI-02     | Phase 19 | Pending |
-| AQUI-03     | Phase 19 | Pending |
-| AQUI-04     | Phase 19 | Pending |
-| AQUI-07     | Phase 19 | Pending |
-| DISP-01     | Phase 20 | Pending |
-| DISP-02     | Phase 20 | Pending |
-| DISP-03     | Phase 20 | Pending |
-| DISP-04     | Phase 20 | Pending |
-| DISP-05     | Phase 20 | Pending |
-| DISP-06     | Phase 20 | Pending |
-| OPER-01     | Phase 21 | Pending |
-| OPER-02     | Phase 21 | Pending |
-| OPER-03     | Phase 21 | Pending |
-| OPER-04     | Phase 21 | Pending |
-| HIER-01     | Phase 22 | Pending |
-| HIER-02     | Phase 22 | Pending |
-| HIER-03     | Phase 22 | Pending |
-| DEPR-04     | Phase 23 | Pending |
-| CCPA-04     | Phase 23 | Pending |
-| DEPR-03     | Phase 24 | Pending |
-| AQUI-05     | Phase 24 | Pending |
-| AQUI-06     | Phase 24 | Pending |
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| COLAB-01 | Phase 25 | Complete |
+| COLAB-02 | Phase 25 | Complete |
+| COLAB-03 | Phase 25 | Complete |
+| COLAB-04 | Phase 25 | Complete |
+| COLAB-05 | Phase 25 | Complete |
+| FOLHA-01 | Phase 26 | Complete |
+| PONTO-01 | Phase 27 | Complete |
+| PONTO-02 | Phase 27 | Complete |
+| PONTO-03 | Phase 27 | Complete |
+| PONTO-04 | Phase 27 | Complete |
+| FOLHA-02 | Phase 28 | Complete |
+| FOLHA-03 | Phase 28 | Complete |
+| FOLHA-04 | Phase 28 | Complete |
+| FOLHA-05 | Phase 28 | Complete |
+| FERIAS-01 | Phase 29 | Complete |
+| FERIAS-02 | Phase 29 | Complete |
+| FERIAS-03 | Phase 29 | Complete |
+| FERIAS-04 | Phase 29 | Complete |
+| SEGUR-01 | Phase 30 | Complete |
+| SEGUR-02 | Phase 30 | Complete |
+| SEGUR-03 | Phase 30 | Complete |
+| ESOCIAL-01 | Phase 31 | Complete |
+| ESOCIAL-02 | Phase 31 | Complete |
+| ESOCIAL-03 | Phase 31 | Complete |
+| INTEGR-01 | Phase 32 | Pending |
+| INTEGR-02 | Phase 32 | Pending |
+| INTEGR-03 | Phase 32 | Pending |
 
 **Coverage:**
-
-- v1.2 requirements: 43 total
-- Mapped to phases: 43
-- Unmapped: 0
+- v1.3 requirements: 27 total
+- Mapped to phases: 27
+- Unmapped: 0 ✓
 
 ---
-
-_Requirements defined: 2026-03-19_
-_Last updated: 2026-03-19 after roadmap creation_
+*Requirements defined: 2026-03-23*
+*Last updated: 2026-03-23 after roadmap creation*

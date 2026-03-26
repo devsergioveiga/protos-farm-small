@@ -1,0 +1,97 @@
+.tco-fleet {
+  width: 100%;
+}
+
+.tco-fleet__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tco-fleet__cards {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (max-width: 639px) {
+  .tco-fleet__table {
+    display: none;
+  }
+
+  .tco-fleet__cards {
+    display: flex;
+  }
+}
+
+.tco-fleet__card {
+  background: white;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md, 8px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tco-fleet__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm, 6px);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tco-fleet__badge--ok {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+}
+
+.tco-fleet__badge--monitor {
+  background: #fff8e1;
+  color: var(--color-warning-500, #f9a825);
+}
+
+.tco-fleet__badge--replace {
+  background: #ffebee;
+  color: var(--color-error-500);
+}
+
+.tco-fleet__badge--no-data {
+  color: var(--color-neutral-400);
+}
+
+.tco-fleet__group summary {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+  color: var(--color-neutral-700);
+}
+
+.tco-fleet__th {
+  text-transform: uppercase;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--color-neutral-200);
+}
+
+.tco-fleet__td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 16px;
+  color: var(--color-neutral-700);
+}
+
+.tco-fleet__td--mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}

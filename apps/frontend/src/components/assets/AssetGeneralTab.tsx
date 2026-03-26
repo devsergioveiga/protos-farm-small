@@ -1,5 +1,8 @@
+import { useState } from 'react';
+import { Wrench } from 'lucide-react';
 import type { Asset } from '@/types/asset';
 import { ASSET_TYPE_LABELS, ASSET_CLASSIFICATION_LABELS, ASSET_STATUS_LABELS } from '@/types/asset';
+import AssetRenovationModal from './AssetRenovationModal';
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -54,11 +57,29 @@ function Field({
 
 interface AssetGeneralTabProps {
   asset: Asset;
+  onRefresh?: () => void;
 }
 
-export default function AssetGeneralTab({ asset }: AssetGeneralTabProps) {
+export default function AssetGeneralTab({ asset, onRefresh }: AssetGeneralTabProps) {
+  const [showRenovationModal, setShowRenovationModal] = useState(false);
+  const canRenovate = asset.status === 'ATIVO' || asset.status === 'INATIVO';
+
   return (
     <div className="asset-general-tab">
+      {/* Actions */}
+      {canRenovate && (
+        <div className="asset-general-tab__actions">
+          <button
+            type="button"
+            className="asset-general-tab__action-btn"
+            onClick={() => setShowRenovationModal(true)}
+          >
+            <Wrench size={16} aria-hidden="true" />
+            Registrar Reforma
+          </button>
+        </div>
+      )}
+
       {/* Dados Gerais */}
       <section className="asset-general-tab__section">
         <h3 className="asset-general-tab__section-title">Dados Gerais</h3>
@@ -229,6 +250,19 @@ export default function AssetGeneralTab({ asset }: AssetGeneralTabProps) {
           <Field label="Ultima atualizacao" value={formatDateTime(asset.updatedAt)} />
         </div>
       </section>
+
+      {/* Renovation modal */}
+      {showRenovationModal && (
+        <AssetRenovationModal
+          isOpen={showRenovationModal}
+          onClose={() => setShowRenovationModal(false)}
+          onSuccess={() => {
+            setShowRenovationModal(false);
+            onRefresh?.();
+          }}
+          assetId={asset.id}
+        />
+      )}
     </div>
   );
 }

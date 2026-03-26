@@ -297,6 +297,7 @@ model Organization {
   maxFarms  Int              @default(5)
   allowMultipleSessions Boolean @default(true)
   allowSocialLogin     Boolean @default(true)
+  funruralBasis        FunruralBasis @default(PAYROLL)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 
@@ -355,6 +356,7 @@ model Organization {
   mastitisCases            MastitisCase[]
   coolingTanks             CoolingTank[]
   milkCollections          MilkCollection[]
+  dailyMilkProductions     DailyMilkProduction[]
   lactations               Lactation[]
   feedIngredients          FeedIngredient[]
   bromatologicalAnalyses   BromatologicalAnalysis[]
@@ -387,6 +389,43 @@ model Organization {
   purchaseBudgets          PurchaseBudget[]
   notificationPreferences  NotificationPreference[]
   assets                   Asset[]
+  depreciationConfigs      DepreciationConfig[]
+  depreciationEntries      DepreciationEntry[]
+  depreciationRuns         DepreciationRun[]
+  animalExits              AnimalExit[]
+  activeIngredients        ActiveIngredient[]
+  storageLocations         StorageLocation[]
+  maintenancePlans         MaintenancePlan[]
+  workOrders               WorkOrder[]
+  deferredMaintenances     DeferredMaintenance[]
+  maintenanceProvisions    MaintenanceProvision[]
+  assetDisposals           AssetDisposal[]
+  assetFarmTransfers       AssetFarmTransfer[]
+  assetInventories         AssetInventory[]
+  assetRenovations         AssetRenovation[]
+  assetWipStages           AssetWipStage[]
+  assetWipContributions    AssetWipContribution[]
+  assetTradeIns            AssetTradeIn[]
+  assetLeasings            AssetLeasing[]
+  biologicalAssetValuations BiologicalAssetValuation[]
+  employees                Employee[]
+  positions                Position[]
+  workSchedules            WorkSchedule[]
+  employeeContracts        EmployeeContract[]
+  payrollRubricas          PayrollRubrica[]
+  payrollLegalTables       PayrollLegalTable[]
+  timeEntries              TimeEntry[]
+  payrollRuns              PayrollRun[]
+  salaryAdvances           SalaryAdvance[]
+  epiProducts              EpiProduct[]
+  epiDeliveries            EpiDelivery[]
+  positionEpiRequirements  PositionEpiRequirement[]
+  trainingRecords          TrainingRecord[]
+  positionTrainingRequirements PositionTrainingRequirement[]
+  medicalExams             MedicalExam[]
+  taxGuides                TaxGuide[]
+  esocialEvents            EsocialEvent[]
+  incomeStatements         IncomeStatement[]
 
   @@map("organizations")
 }
@@ -475,6 +514,12 @@ model User {
   goodsReturnsCreated            GoodsReturn[]            @relation("GRReturnCreator")
   purchaseBudgetsCreated         PurchaseBudget[]         @relation("PBCreator")
   notificationPreferences        NotificationPreference[] @relation("NotificationPreferences")
+  createdAnimalOwnerships        AnimalOwnership[]
+  createdAnimalExits             AnimalExit[]        @relation("AnimalExitCreator")
+  assetTradeInsCreated           AssetTradeIn[]      @relation("AssetTradeInCreator")
+  assetLeasingsCreated           AssetLeasing[]      @relation("AssetLeasingCreator")
+  biologicalAssetValuationsCreated BiologicalAssetValuation[] @relation("BiologicalAssetValuationCreator")
+  employee                       Employee?
 
   @@map("users")
 }
@@ -569,6 +614,7 @@ model Farm {
   mastitisCases              MastitisCase[]
   coolingTanks               CoolingTank[]
   milkCollections            MilkCollection[]
+  dailyMilkProductions       DailyMilkProduction[]
   lactations                 Lactation[]
   feedingRecords             FeedingRecord[]
   bankAccountFarms           BankAccountFarm[]
@@ -581,6 +627,14 @@ model Farm {
   ruralCreditContracts       RuralCreditContract[]
   purchaseRequests           PurchaseRequest[]
   assets                     Asset[]
+  animalExits                AnimalExit[]
+  assetTransfersFrom         AssetFarmTransfer[] @relation("AssetTransferFrom")
+  assetTransfersTo           AssetFarmTransfer[] @relation("AssetTransferTo")
+  assetTradeIns              AssetTradeIn[]
+  assetLeasings              AssetLeasing[]
+  biologicalAssetValuations  BiologicalAssetValuation[]
+  employeeFarms              EmployeeFarm[]
+  timeEntries                TimeEntry[]
 
   @@map("farms")
 }
@@ -756,6 +810,7 @@ model Producer {
   bankAccounts       BankAccount[]
   payables           Payable[]
   receivables        Receivable[]
+  animalOwnerships   AnimalOwnership[]
 
   @@unique([document, organizationId])
   @@index([organizationId])
@@ -1190,6 +1245,8 @@ model Animal {
   earTag                 String
   rfidTag                String?
   name                   String?
+  registeredName         String?
+  registrationNumber     String?
   sex                    AnimalSex
   birthDate              DateTime?       @db.Date
   birthDateEstimated     Boolean         @default(false)
@@ -1250,6 +1307,8 @@ model Animal {
   milkAnalyses            MilkAnalysis[]
   mastitisCases           MastitisCase[]
   lactations              Lactation[]
+  ownerships              AnimalOwnership[]
+  animalExit              AnimalExit?
 
   @@unique([farmId, earTag])
   @@index([farmId])
@@ -1879,6 +1938,10 @@ model CostCenter {
   receivableCostCenterItems ReceivableCostCenterItem[]
   purchaseRequests          PurchaseRequest[]
   assets                    Asset[]
+  depreciationCCItems       DepreciationEntryCCItem[]
+  workOrderCCItems          WorkOrderCCItem[]
+  employeeContracts         EmployeeContract[]
+  provisions                PayrollProvision[]
 
   @@unique([farmId, code])
   @@index([farmId])
@@ -1914,18 +1977,21 @@ model FieldTeam {
 }
 
 model FieldTeamMember {
-  id        String    @id @default(uuid())
-  teamId    String
-  userId    String
-  joinedAt  DateTime  @default(now())
-  leftAt    DateTime?
+  id         String    @id @default(uuid())
+  teamId     String
+  userId     String
+  employeeId String?
+  joinedAt   DateTime  @default(now())
+  leftAt     DateTime?
 
-  team FieldTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user User      @relation(fields: [userId], references: [id])
+  team     FieldTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id])
+  employee Employee? @relation(fields: [employeeId], references: [id])
 
   @@unique([teamId, userId, leftAt])
   @@index([teamId])
   @@index([userId])
+  @@index([employeeId])
   @@map("field_team_members")
 }
 
@@ -2767,6 +2833,7 @@ model Product {
   cultivar         Cultivar?        @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
 
   compositions     ProductComposition[]
+  activeIngredients ProductActiveIngredient[]
   compositeIngredients  CompositeIngredient[] @relation("CompositeIngredients")
   ingredientOf          CompositeIngredient[] @relation("IngredientOf")
   compositeProductions  CompositeProduction[] @relation("CompositeProductions")
@@ -2787,6 +2854,8 @@ model Product {
   treatmentApplications  TreatmentApplication[]
   iatfStepProducts       IatfProtocolStepProduct[] @relation("IatfStepProduct")
   mastitisApplications   MastitisApplication[]    @relation("MastitisProduct")
+  workOrderParts         WorkOrderPart[]
+  epiProduct             EpiProduct?
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -2813,11 +2882,79 @@ model Manufacturer {
   @@map("manufacturers")
 }
 
-// CA7: Composição / princípio ativo
+// ─── Princípio Ativo (normalizado) ─────────────────────────────────
+
+enum ActiveIngredientType {
+  VETERINARY    // medicamentos veterinários
+  AGROCHEMICAL  // defensivos agrícolas
+  FERTILIZER    // nutrientes / fertilizantes
+  OTHER
+}
+
+model ActiveIngredient {
+  id             String               @id @default(uuid())
+  organizationId String
+  name           String
+  type           ActiveIngredientType @default(OTHER)
+  casNumber      String?              // CAS Registry Number (ex: "70288-86-7")
+  notes          String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  organization Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  products     ProductActiveIngredient[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([organizationId, type])
+  @@map("active_ingredients")
+}
+
+model ProductActiveIngredient {
+  id                 String  @id @default(uuid())
+  productId          String
+  activeIngredientId String
+  concentration      String? // ex: "480 g/L", "10%", "150 mg/mL"
+  function           String? // ex: herbicida, bactericida, nutriente
+
+  product          Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  activeIngredient ActiveIngredient @relation(fields: [activeIngredientId], references: [id], onDelete: Restrict)
+
+  @@unique([productId, activeIngredientId])
+  @@index([productId])
+  @@index([activeIngredientId])
+  @@map("product_active_ingredients")
+}
+
+// ─── Local de Armazenamento ───────────────────────────────────────
+
+model StorageLocation {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  code           String?  // sigla curta (ex: "DEP-01", "GALP-A")
+  assetId        String?  // vínculo opcional com patrimônio (galpão, silo)
+  isDefault      Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  asset        Asset?       @relation(fields: [assetId], references: [id], onDelete: SetNull)
+  stockEntries StockEntry[]
+
+  @@unique([organizationId, name])
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@map("storage_locations")
+}
+
+// CA7: Composição / princípio ativo (legado — string livre)
 model ProductComposition {
   id              String  @id @default(uuid())
   productId       String
-  activeIngredient String  // nome do princípio ativo ou nutriente
+  activeIngredient String  // nome do princípio ativo ou nutriente (legado)
   concentration   String? // ex: "480 g/L", "10%", "150 mg/mL"
   function        String? // ex: herbicida, bactericida, nutriente
 
@@ -2934,7 +3071,8 @@ model StockEntry {
   invoiceNumber        String?
   invoiceFileUrl       String?
   storageFarmId        String?
-  storageLocation      String?          // depósito/galpão
+  storageLocationId    String?          // FK para StorageLocation
+  storageLocation      String?          // depósito/galpão (legado, texto livre)
   storageSublocation   String?          // prateleira
   notes                String?
   totalMerchandiseCost Decimal          @default(0) @db.Decimal(14, 2)
@@ -2946,10 +3084,11 @@ model StockEntry {
   updatedAt            DateTime         @updatedAt
   cancelledAt          DateTime?
 
-  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  storageFarm  Farm?              @relation(fields: [storageFarmId], references: [id], onDelete: SetNull)
-  items        StockEntryItem[]
-  expenses     StockEntryExpense[]
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  storageFarm     Farm?              @relation(fields: [storageFarmId], references: [id], onDelete: SetNull)
+  storageLocationRef StorageLocation? @relation(fields: [storageLocationId], references: [id], onDelete: SetNull)
+  items           StockEntryItem[]
+  expenses        StockEntryExpense[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -3096,6 +3235,7 @@ model StockOutput {
   vaccinations           Vaccination[]
   dewormings             Deworming[]
   treatmentApplications  TreatmentApplication[]
+  epiDelivery            EpiDelivery?
 
   @@index([organizationId])
   @@index([organizationId, type])
@@ -4680,6 +4820,10 @@ model WeaningCriteria {
   minConcentrateGrams Float?
   consecutiveDays     Int?     @default(3)
   targetLotId         String?
+  weaningDaysMale     Int?
+  weaningDaysFemale   Int?
+  minWeightKgMale     Float?
+  minWeightKgFemale   Float?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
@@ -5001,6 +5145,43 @@ model MilkCollection {
   @@index([farmId])
   @@index([collectionDate])
   @@map("milk_collections")
+}
+
+// ─── Produção Diária Histórica (importação cadernos de leite) ────────
+
+model DailyMilkProduction {
+  id               String   @id @default(uuid())
+  organizationId   String
+  farmId           String
+  productionDate   DateTime @db.Date
+  totalLiters      Float
+  cowCount         Int?
+  avgPerCow        Float?
+
+  // Detalhamento por turno (litros)
+  morningLiters    Float?
+  afternoonLiters  Float?
+  nightLiters      Float?
+  dawnLiters       Float?
+
+  // Coleta e destinos
+  collectionLiters Float?
+  nurseryLiters    Float?
+  discardLiters    Float?
+  calfLiters       Float?
+
+  notes            String?
+  source           String?  // ex: "caderno_leite_2013.xlsx"
+  importedAt       DateTime @default(now())
+
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  farm             Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+
+  @@unique([farmId, productionDate])
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([productionDate])
+  @@map("daily_milk_productions")
 }
 
 // ─── EPIC-13 US-122: Lactação ────────────────────────────────────────
@@ -5430,6 +5611,7 @@ enum PayableCategory {
   FINANCING
   OTHER
   CARTAO_CREDITO
+  ASSET_ACQUISITION
 }
 
 // ─── Phase 4: Payment Instruments Enums ──────────────────────────────
@@ -5474,6 +5656,7 @@ enum ReceivableCategory {
   MILK_SALE
   LEASE
   SERVICES
+  ASSET_SALE
   OTHER
 }
 
@@ -6650,6 +6833,25 @@ enum AssetDocumentType {
   OUTRO
 }
 
+enum AssetDisposalType {
+  VENDA
+  DESCARTE
+  SINISTRO
+  OBSOLESCENCIA
+}
+
+enum AssetInventoryStatus {
+  DRAFT
+  COUNTING
+  RECONCILED
+  CANCELLED
+}
+
+enum AssetRenovationDecision {
+  CAPITALIZAR
+  DESPESA
+}
+
 model Asset {
   id                   String              @id @default(uuid())
   organizationId       String
@@ -6688,6 +6890,9 @@ model Asset {
   currentOdometer      Decimal?            @db.Decimal(12, 2)
   photoUrls            Json?               @default("[]")
   notes                String?
+  disposalDate         DateTime?
+  wipBudget            Decimal?            @db.Decimal(15, 2)
+  wipBudgetAlertPct    Decimal?            @db.Decimal(5, 2)
   deletedAt            DateTime?
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
@@ -6698,15 +6903,92 @@ model Asset {
   costCenter   CostCenter?   @relation(fields: [costCenterId], references: [id])
   parentAsset  Asset?        @relation("AssetHierarchy", fields: [parentAssetId], references: [id])
   childAssets  Asset[]       @relation("AssetHierarchy")
-  fuelRecords  FuelRecord[]
-  meterReadings MeterReading[]
-  documents    AssetDocument[]
+  fuelRecords         FuelRecord[]
+  meterReadings       MeterReading[]
+  documents           AssetDocument[]
+  depreciationConfig  DepreciationConfig?
+  depreciationEntries DepreciationEntry[]
+  storageLocations    StorageLocation[]
+  maintenancePlans    MaintenancePlan[]
+  workOrders          WorkOrder[]
+  maintenanceProvisions MaintenanceProvision[]
+  sparePartCompat     SparePartAssetCompat[]
+  disposal            AssetDisposal?
+  farmTransfers       AssetFarmTransfer[]
+  inventoryItems      AssetInventoryItem[]
+  renovations         AssetRenovation[]
+  wipContributions    AssetWipContribution[]
+  wipStages           AssetWipStage[]
+  tradeInAsOld        AssetTradeIn?         @relation("TradeInOld")
+  tradeInAsNew        AssetTradeIn?         @relation("TradeInNew")
+  leasingRou          AssetLeasing?         @relation("LeasingROU")
 
   @@unique([organizationId, assetTag])
   @@index([organizationId, assetType])
   @@index([organizationId, status])
   @@index([farmId])
   @@map("assets")
+}
+
+model AssetRenovation {
+  id                  String                   @id @default(uuid())
+  organizationId      String
+  assetId             String
+  description         String
+  renovationDate      DateTime
+  totalCost           Decimal                  @db.Decimal(15, 2)
+  accountingDecision  AssetRenovationDecision
+  newUsefulLifeMonths Int?
+  notes               String?
+  createdAt           DateTime                 @default(now())
+
+  asset        Asset        @relation(fields: [assetId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([assetId])
+  @@index([organizationId])
+  @@map("asset_renovations")
+}
+
+model AssetWipStage {
+  id             String   @id @default(uuid())
+  organizationId String
+  assetId        String
+  name           String
+  targetDate     DateTime?
+  completedAt    DateTime?
+  notes          String?
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  asset         Asset                  @relation(fields: [assetId], references: [id])
+  organization  Organization           @relation(fields: [organizationId], references: [id])
+  contributions AssetWipContribution[]
+
+  @@index([assetId])
+  @@map("asset_wip_stages")
+}
+
+model AssetWipContribution {
+  id               String   @id @default(uuid())
+  organizationId   String
+  assetId          String
+  stageId          String?
+  contributionDate DateTime
+  amount           Decimal             @db.Decimal(15, 2)
+  description      String
+  supplierId       String?
+  invoiceRef       String?
+  notes            String?
+  createdAt        DateTime @default(now())
+
+  asset        Asset          @relation(fields: [assetId], references: [id])
+  organization Organization   @relation(fields: [organizationId], references: [id])
+  stage        AssetWipStage? @relation(fields: [stageId], references: [id])
+
+  @@index([assetId])
+  @@index([organizationId])
+  @@map("asset_wip_contributions")
 }
 
 model FuelRecord {
@@ -6767,4 +7049,1762 @@ model AssetDocument {
   @@index([assetId])
   @@index([organizationId, expiresAt])
   @@map("asset_documents")
+}
+
+// ─── Asset Disposals ───────────────────────────────────────────────────────
+
+model AssetDisposal {
+  id                         String            @id @default(uuid())
+  organizationId             String
+  assetId                    String            @unique
+  disposalType               AssetDisposalType
+  disposalDate               DateTime
+  saleValue                  Decimal?          @db.Decimal(15, 2)
+  netBookValue               Decimal           @db.Decimal(15, 2)
+  gainLoss                   Decimal           @db.Decimal(15, 2)
+  buyerName                  String?
+  motivation                 String?
+  documentUrl                String?
+  receivableId               String?
+  cancelledDepreciationCount Int               @default(0)
+  createdBy                  String
+  createdAt                  DateTime          @default(now())
+
+  asset        Asset         @relation(fields: [assetId], references: [id])
+  organization Organization  @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, disposalDate])
+  @@map("asset_disposals")
+}
+
+model AssetFarmTransfer {
+  id               String   @id @default(uuid())
+  organizationId   String
+  assetId          String
+  fromFarmId       String
+  toFarmId         String
+  transferDate     DateTime
+  fromCostCenterId String?
+  toCostCenterId   String?
+  notes            String?
+  createdBy        String
+  createdAt        DateTime @default(now())
+
+  asset        Asset         @relation(fields: [assetId], references: [id])
+  fromFarm     Farm          @relation("AssetTransferFrom", fields: [fromFarmId], references: [id])
+  toFarm       Farm          @relation("AssetTransferTo", fields: [toFarmId], references: [id])
+  organization Organization  @relation(fields: [organizationId], references: [id])
+
+  @@index([assetId])
+  @@index([organizationId, transferDate])
+  @@map("asset_farm_transfers")
+}
+
+model AssetInventory {
+  id             String               @id @default(uuid())
+  organizationId String
+  farmId         String?
+  status         AssetInventoryStatus @default(DRAFT)
+  notes          String?
+  reconciledAt   DateTime?
+  reconciledBy   String?
+  createdBy      String
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  items        AssetInventoryItem[]
+  organization Organization          @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, status])
+  @@map("asset_inventories")
+}
+
+model AssetInventoryItem {
+  id               String      @id @default(uuid())
+  inventoryId      String
+  assetId          String
+  registeredStatus AssetStatus
+  physicalStatus   String?
+  notes            String?
+  updatedAt        DateTime    @updatedAt
+
+  inventory AssetInventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  asset     Asset          @relation(fields: [assetId], references: [id])
+
+  @@unique([inventoryId, assetId])
+  @@map("asset_inventory_items")
+}
+
+// ─── Depreciation Engine ───────────────────────────────────────────────────
+
+enum DepreciationMethod {
+  STRAIGHT_LINE
+  HOURS_OF_USE
+  UNITS_OF_PRODUCTION
+  ACCELERATED
+}
+
+enum DepreciationTrack {
+  FISCAL
+  MANAGERIAL
+}
+
+model DepreciationConfig {
+  id                    String             @id @default(uuid())
+  organizationId        String
+  assetId               String             @unique
+  method                DepreciationMethod @default(STRAIGHT_LINE)
+  fiscalAnnualRate      Decimal?           @db.Decimal(7, 4)
+  managerialAnnualRate  Decimal?           @db.Decimal(7, 4)
+  usefulLifeMonths      Int?
+  residualValue         Decimal            @db.Decimal(15, 2) @default(0)
+  totalHours            Decimal?           @db.Decimal(12, 2)
+  totalUnits            Decimal?           @db.Decimal(14, 2)
+  accelerationFactor    Decimal?           @db.Decimal(5, 2)
+  activeTrack           DepreciationTrack  @default(FISCAL)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  asset        Asset        @relation(fields: [assetId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("depreciation_configs")
+}
+
+model DepreciationEntry {
+  id                  String            @id @default(uuid())
+  organizationId      String
+  assetId             String
+  runId               String
+  periodYear          Int
+  periodMonth         Int
+  track               DepreciationTrack
+  openingBookValue    Decimal           @db.Decimal(15, 2)
+  depreciationAmount  Decimal           @db.Decimal(15, 2)
+  closingBookValue    Decimal           @db.Decimal(15, 2)
+  proRataDays         Int?
+  daysInMonth         Int
+  reversedAt          DateTime?
+  reversalEntryId     String?
+  notes               String?
+  createdAt           DateTime          @default(now())
+
+  asset        Asset                     @relation(fields: [assetId], references: [id])
+  run          DepreciationRun           @relation(fields: [runId], references: [id])
+  organization Organization              @relation(fields: [organizationId], references: [id])
+  ccItems      DepreciationEntryCCItem[]
+
+  @@unique([assetId, periodYear, periodMonth, track])
+  @@index([organizationId, periodYear, periodMonth])
+  @@index([assetId])
+  @@map("depreciation_entries")
+}
+
+model DepreciationRun {
+  id             String            @id @default(uuid())
+  organizationId String
+  periodYear     Int
+  periodMonth    Int
+  track          DepreciationTrack
+  status         String            @default("PENDING")
+  totalAssets    Int               @default(0)
+  processedCount Int               @default(0)
+  skippedCount   Int               @default(0)
+  totalAmount    Decimal           @db.Decimal(15, 2) @default(0)
+  triggeredBy    String
+  startedAt      DateTime          @default(now())
+  completedAt    DateTime?
+  errorMessage   String?
+
+  organization Organization       @relation(fields: [organizationId], references: [id])
+  entries      DepreciationEntry[]
+
+  @@index([organizationId, periodYear, periodMonth])
+  @@map("depreciation_runs")
+}
+
+model DepreciationEntryCCItem {
+  id           String  @id @default(uuid())
+  entryId      String
+  costCenterId String
+  farmId       String
+  amount       Decimal @db.Decimal(15, 2)
+  percentage   Decimal @db.Decimal(5, 2)
+
+  entry      DepreciationEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  costCenter CostCenter        @relation(fields: [costCenterId], references: [id])
+
+  @@index([entryId])
+  @@map("depreciation_entry_cc_items")
+}
+
+// ─── Animal Ownership ──────────────────────────────────────────────
+
+enum AnimalOwnershipType {
+  PROPRIETARIO
+  PARCEIRO
+  COMODATARIO
+  DEPOSITARIO
+}
+
+model AnimalOwnership {
+  id               String               @id @default(uuid())
+  animalId         String
+  producerId       String
+  ownershipType    AnimalOwnershipType   @default(PROPRIETARIO)
+  participationPct Decimal?             @db.Decimal(5, 2)
+  startDate        DateTime             @db.Date
+  endDate          DateTime?            @db.Date
+  notes            String?
+  createdBy        String
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  animal   Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  producer Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  creator  User     @relation(fields: [createdBy], references: [id])
+
+  @@unique([animalId, producerId, ownershipType, startDate])
+  @@index([animalId])
+  @@index([producerId])
+  @@index([endDate])
+  @@map("animal_ownerships")
+}
+
+// ─── Animal Exit ──────────────────────────────────────────────────
+
+enum AnimalExitType {
+  MORTE
+  VENDA
+  DOACAO
+  ABATE
+  TRANSFERENCIA
+  PERDA
+}
+
+model AnimalExit {
+  id               String         @id @default(uuid())
+  organizationId   String
+  animalId         String         @unique
+  farmId           String
+  exitType         AnimalExitType
+  exitDate         DateTime       @db.Date
+  deathType        String?
+  deathCause       String?
+  buyerName        String?
+  salePriceTotal   Decimal?       @db.Decimal(12, 2)
+  salePricePerKg   Decimal?       @db.Decimal(10, 4)
+  saleWeightKg     Decimal?       @db.Decimal(10, 2)
+  gtaNumber        String?
+  destinationFarm  String?
+  notes            String?
+  createdBy        String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  animal       Animal       @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  farm         Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  creator      User         @relation("AnimalExitCreator", fields: [createdBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@index([exitType])
+  @@index([exitDate])
+  @@map("animal_exits")
+}
+
+// ─── Maintenance & Work Orders ─────────────────────────────────────────────
+
+enum MaintenanceTriggerType {
+  HOURMETER
+  ODOMETER
+  CALENDAR
+}
+
+enum WorkOrderStatus {
+  ABERTA
+  EM_ANDAMENTO
+  AGUARDANDO_PECA
+  ENCERRADA
+  CANCELADA
+}
+
+enum WorkOrderType {
+  PREVENTIVA
+  CORRETIVA
+  SOLICITACAO
+}
+
+enum WorkOrderAccountingTreatment {
+  DESPESA
+  CAPITALIZACAO
+  DIFERIMENTO
+}
+
+model MaintenancePlan {
+  id               String                 @id @default(uuid())
+  organizationId   String
+  assetId          String
+  name             String
+  description      String?
+  triggerType      MaintenanceTriggerType
+  intervalValue    Decimal                @db.Decimal(12, 2)
+  alertBeforeValue Decimal                @db.Decimal(12, 2)
+  lastExecutedAt   DateTime?
+  lastMeterValue   Decimal?               @db.Decimal(12, 2)
+  nextDueAt        DateTime?
+  nextDueMeter     Decimal?               @db.Decimal(12, 2)
+  isActive         Boolean                @default(true)
+  createdBy        String
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  asset        Asset        @relation(fields: [assetId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  workOrders   WorkOrder[]
+
+  @@index([organizationId, assetId])
+  @@index([nextDueAt])
+  @@map("maintenance_plans")
+}
+
+model WorkOrder {
+  id                  String                        @id @default(uuid())
+  organizationId      String
+  assetId             String
+  sequentialNumber    Int
+  type                WorkOrderType
+  status              WorkOrderStatus               @default(ABERTA)
+  title               String
+  description         String?
+  maintenancePlanId   String?
+  requestedBy         String?
+  assignedTo          String?
+  openedAt            DateTime                      @default(now())
+  startedAt           DateTime?
+  closedAt            DateTime?
+  hourmeterAtOpen     Decimal?                      @db.Decimal(12, 2)
+  odometerAtOpen      Decimal?                      @db.Decimal(12, 2)
+  externalCost        Decimal?                      @db.Decimal(15, 2)
+  externalSupplier    String?
+  laborHours          Decimal?                      @db.Decimal(8, 2)
+  laborCostPerHour    Decimal?                      @db.Decimal(10, 2)
+  totalPartsCost      Decimal?                      @db.Decimal(15, 2)
+  totalLaborCost      Decimal?                      @db.Decimal(15, 2)
+  totalCost           Decimal?                      @db.Decimal(15, 2)
+  accountingTreatment WorkOrderAccountingTreatment?
+  accountingThreshold Decimal?                      @db.Decimal(15, 2)
+  photoUrls           Json?                         @default("[]")
+  geoLat              Decimal?                      @db.Decimal(9, 6)
+  geoLon              Decimal?                      @db.Decimal(9, 6)
+  stockOutputId       String?
+  costCenterId        String?
+  costCenterMode      String                        @default("INHERITED")
+  notes               String?
+  createdBy           String
+  createdAt           DateTime                      @default(now())
+  updatedAt           DateTime                      @updatedAt
+
+  asset           Asset            @relation(fields: [assetId], references: [id])
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  maintenancePlan MaintenancePlan? @relation(fields: [maintenancePlanId], references: [id])
+  parts           WorkOrderPart[]
+  ccItems         WorkOrderCCItem[]
+  deferredMaint   DeferredMaintenance?
+
+  @@unique([organizationId, sequentialNumber])
+  @@index([organizationId, status])
+  @@index([assetId])
+  @@map("work_orders")
+}
+
+model WorkOrderPart {
+  id          String   @id @default(uuid())
+  workOrderId String
+  productId   String
+  quantity    Decimal  @db.Decimal(10, 3)
+  unitCost    Decimal  @db.Decimal(10, 4)
+  totalCost   Decimal  @db.Decimal(15, 2)
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id])
+
+  @@index([workOrderId])
+  @@map("work_order_parts")
+}
+
+model WorkOrderCCItem {
+  id           String  @id @default(uuid())
+  workOrderId  String
+  costCenterId String
+  farmId       String
+  amount       Decimal @db.Decimal(15, 2)
+  percentage   Decimal @db.Decimal(5, 2)
+
+  workOrder  WorkOrder  @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  costCenter CostCenter @relation(fields: [costCenterId], references: [id])
+
+  @@index([workOrderId])
+  @@map("work_order_cc_items")
+}
+
+model DeferredMaintenance {
+  id                  String   @id @default(uuid())
+  organizationId      String
+  workOrderId         String   @unique
+  totalAmount         Decimal  @db.Decimal(15, 2)
+  monthlyAmortization Decimal  @db.Decimal(15, 2)
+  startMonth          Int
+  startYear           Int
+  endMonth            Int
+  endYear             Int
+  amortizedToDate     Decimal  @db.Decimal(15, 2) @default(0)
+  isFullyAmortized    Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  workOrder    WorkOrder    @relation(fields: [workOrderId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, isFullyAmortized])
+  @@map("deferred_maintenances")
+}
+
+model MaintenanceProvision {
+  id             String   @id @default(uuid())
+  organizationId String
+  assetId        String?
+  monthlyAmount  Decimal  @db.Decimal(15, 2)
+  costCenterId   String?
+  isActive       Boolean  @default(true)
+  description    String?
+  createdBy      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  asset        Asset?       @relation(fields: [assetId], references: [id])
+
+  @@index([organizationId, isActive])
+  @@map("maintenance_provisions")
+}
+
+model SparePartAssetCompat {
+  id        String   @id @default(uuid())
+  productId String
+  assetId   String
+  notes     String?
+  createdAt DateTime @default(now())
+
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  @@unique([productId, assetId])
+  @@index([assetId])
+  @@map("spare_part_asset_compat")
+}
+
+// ─── Phase 24: Leasing (CPC 06) ──────────────────────────────────────
+
+enum LeasingStatus {
+  ACTIVE
+  PURCHASE_OPTION_EXERCISED
+  RETURNED
+  CANCELLED
+}
+
+model AssetLeasing {
+  id                  String        @id @default(uuid())
+  organizationId      String
+  farmId              String
+  rouAssetId          String        @unique
+  lessorName          String
+  lessorDocument      String?
+  contractNumber      String?
+  contractDate        DateTime      @db.Date
+  startDate           DateTime      @db.Date
+  endDate             DateTime      @db.Date
+  totalContractValue  Decimal       @db.Decimal(15, 2)
+  monthlyInstallment  Decimal       @db.Decimal(15, 2)
+  installmentCount    Int
+  purchaseOptionValue Decimal?      @db.Decimal(15, 2)
+  purchaseOptionDate  DateTime?     @db.Date
+  hasPurchaseOption   Boolean       @default(false)
+  status              LeasingStatus @default(ACTIVE)
+  payableId           String?
+  notes               String?
+  createdBy           String
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  farm         Farm         @relation(fields: [farmId], references: [id])
+  rouAsset     Asset        @relation("LeasingROU", fields: [rouAssetId], references: [id])
+  creator      User         @relation("AssetLeasingCreator", fields: [createdBy], references: [id])
+
+  @@index([organizationId, status])
+  @@map("asset_leasings")
+}
+
+model AssetTradeIn {
+  id               String   @id @default(uuid())
+  organizationId   String
+  farmId           String
+  tradedAssetId    String   @unique
+  newAssetId       String   @unique
+  tradeInDate      DateTime @db.Date
+  tradedAssetValue Decimal  @db.Decimal(15, 2)
+  newAssetValue    Decimal  @db.Decimal(15, 2)
+  netPayable       Decimal  @db.Decimal(15, 2)
+  payableId        String?
+  gainLossOnTrade  Decimal  @db.Decimal(15, 2)
+  supplierName     String?
+  notes            String?
+  createdBy        String
+  createdAt        DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  farm         Farm         @relation(fields: [farmId], references: [id])
+  tradedAsset  Asset        @relation("TradeInOld", fields: [tradedAssetId], references: [id])
+  newAsset     Asset        @relation("TradeInNew", fields: [newAssetId], references: [id])
+  creator      User         @relation("AssetTradeInCreator", fields: [createdBy], references: [id])
+
+  @@index([organizationId])
+  @@index([farmId])
+  @@map("asset_trade_ins")
+}
+
+model BiologicalAssetValuation {
+  id              String   @id @default(uuid())
+  organizationId  String
+  farmId          String
+  valuationDate   DateTime @db.Date
+  assetGroup      String
+  groupType       String
+  headCount       Int?
+  areaHa          Decimal? @db.Decimal(12, 4)
+  pricePerUnit    Decimal  @db.Decimal(15, 4)
+  totalFairValue  Decimal  @db.Decimal(15, 2)
+  previousValue   Decimal? @db.Decimal(15, 2)
+  fairValueChange Decimal? @db.Decimal(15, 2)
+  notes           String?
+  createdBy       String
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  farm         Farm         @relation(fields: [farmId], references: [id])
+  creator      User         @relation("BiologicalAssetValuationCreator", fields: [createdBy], references: [id])
+
+  @@index([organizationId, valuationDate])
+  @@index([organizationId, assetGroup])
+  @@map("biological_asset_valuations")
+}
+
+// ─── Phase 25: Colaboradores e Contratos (RH) ─────────────────────────
+
+enum EmployeeStatus {
+  ATIVO
+  AFASTADO
+  FERIAS
+  DESLIGADO
+}
+
+enum ContractType {
+  CLT_INDETERMINATE
+  CLT_DETERMINATE
+  SEASONAL
+  INTERMITTENT
+  TRIAL
+  APPRENTICE
+}
+
+enum MovementType {
+  PROMOTION
+  SALARY_ADJUSTMENT
+  TRANSFER
+  POSITION_CHANGE
+}
+
+enum DocumentType {
+  RG
+  CPF
+  CTPS
+  ASO
+  CONTRATO
+  OUTRO
+}
+
+enum WorkScheduleType {
+  FIXED
+  SHIFT
+  CUSTOM
+}
+
+enum EmployeeBankAccountType {
+  CORRENTE
+  POUPANCA
+}
+
+enum SalaryBandLevel {
+  JUNIOR
+  PLENO
+  SENIOR
+}
+
+// ─── Payroll Enums ────────────────────────────────────────────────────
+
+enum RubricaType {
+  PROVENTO
+  DESCONTO
+  INFORMATIVO
+}
+
+enum CalculationType {
+  FIXED_VALUE
+  PERCENTAGE
+  FORMULA
+  SYSTEM
+}
+
+enum SystemFormulaType {
+  SYSTEM_INSS
+  SYSTEM_IRRF
+  SYSTEM_FGTS
+  SYSTEM_SALARY_FAMILY
+  SYSTEM_FUNRURAL
+}
+
+enum LegalTableType {
+  INSS
+  IRRF
+  SALARY_FAMILY
+  MINIMUM_WAGE
+  FUNRURAL
+}
+
+model Employee {
+  id                     String          @id @default(uuid())
+  organizationId         String
+  userId                 String?         @unique
+  name                   String
+  cpf                    String
+  rg                     String?
+  rgIssuer               String?
+  rgUf                   String?         @db.VarChar(2)
+  pisPassep              String?
+  ctpsNumber             String?
+  ctpsSeries             String?
+  ctpsUf                 String?         @db.VarChar(2)
+  birthDate              DateTime        @db.Date
+  motherName             String?
+  fatherName             String?
+  educationLevel         String?
+  maritalStatus          String?
+  nationality            String          @default("Brasileiro")
+  bloodType              String?
+  hasDisability          Boolean         @default(false)
+  disabilityType         String?
+  phone                  String?
+  email                  String?
+  zipCode                String?
+  street                 String?
+  number                 String?
+  complement             String?
+  neighborhood           String?
+  city                   String?
+  state                  String?         @db.VarChar(2)
+  bankCode               String?
+  bankAgency             String?
+  bankAccount            String?
+  bankAccountType        EmployeeBankAccountType?
+  bankAccountDigit       String?
+  initialVacationBalance Decimal?        @db.Decimal(5, 2)
+  initialHourBankBalance Decimal?        @db.Decimal(8, 2)
+  status                 EmployeeStatus  @default(ATIVO)
+  photoUrl               String?
+  notes                  String?
+  admissionDate          DateTime        @db.Date
+  terminationDate        DateTime?       @db.Date
+  createdBy              String
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+
+  organization  Organization          @relation(fields: [organizationId], references: [id])
+  user          User?                 @relation(fields: [userId], references: [id])
+  farms         EmployeeFarm[]
+  contracts     EmployeeContract[]
+  documents     EmployeeDocument[]
+  dependents    EmployeeDependent[]
+  statusHistory EmployeeStatusHistory[]
+  movements     EmployeeMovement[]
+  salaryHistory EmployeeSalaryHistory[]
+  fieldTeamMembers    FieldTeamMember[]
+  timeEntries         TimeEntry[]
+  overtimeBankEntries OvertimeBankEntry[]
+  timesheets          Timesheet[]
+  payrollRunItems     PayrollRunItem[]
+  salaryAdvances      SalaryAdvance[]
+  vacationPeriods     VacationAcquisitivePeriod[]
+  vacationSchedules   VacationSchedule[]
+  absences                 EmployeeAbsence[]
+  termination              EmployeeTermination?
+  provisions               PayrollProvision[]
+  epiDeliveries            EpiDelivery[]
+  employeeTrainingRecords  EmployeeTrainingRecord[]
+  medicalExams             MedicalExam[]
+  incomeStatements         IncomeStatement[]
+
+  @@unique([organizationId, cpf])
+  @@index([organizationId, status])
+  @@map("employees")
+}
+
+model EmployeeDependent {
+  id           String   @id @default(uuid())
+  employeeId   String
+  name         String
+  cpf          String?
+  birthDate    DateTime @db.Date
+  relationship String
+  irrf         Boolean  @default(false)
+  salaryFamily Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@map("employee_dependents")
+}
+
+model Position {
+  id                   String       @id @default(uuid())
+  organizationId       String
+  name                 String
+  cbo                  String?
+  description          String?
+  additionalTypes      String[]
+  isActive             Boolean      @default(true)
+  asoPeriodicityMonths Int          @default(12)
+  createdBy            String
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  organization        Organization               @relation(fields: [organizationId], references: [id])
+  salaryBands         SalaryBand[]
+  contracts           EmployeeContract[]
+  employeeFarms       EmployeeFarm[]
+  epiRequirements     PositionEpiRequirement[]
+  trainingRequirements PositionTrainingRequirement[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("positions")
+}
+
+model SalaryBand {
+  id         String          @id @default(uuid())
+  positionId String
+  level      SalaryBandLevel
+  minSalary  Decimal         @db.Decimal(10, 2)
+  maxSalary  Decimal         @db.Decimal(10, 2)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+
+  @@unique([positionId, level])
+  @@map("salary_bands")
+}
+
+model WorkSchedule {
+  id             String           @id @default(uuid())
+  organizationId String
+  name           String
+  type           WorkScheduleType
+  workDays       Int[]
+  startTime      String
+  endTime        String
+  breakMinutes   Int              @default(60)
+  isTemplate     Boolean          @default(false)
+  notes          String?
+  createdBy      String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  organization Organization       @relation(fields: [organizationId], references: [id])
+  contracts    EmployeeContract[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("work_schedules")
+}
+
+model EmployeeFarm {
+  id         String    @id @default(uuid())
+  employeeId String
+  farmId     String
+  positionId String?
+  startDate  DateTime  @db.Date
+  endDate    DateTime? @db.Date
+  status     String    @default("ATIVO")
+  createdAt  DateTime  @default(now())
+
+  employee Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  farm     Farm      @relation(fields: [farmId], references: [id])
+  position Position? @relation(fields: [positionId], references: [id])
+
+  @@index([employeeId])
+  @@index([farmId])
+  @@index([positionId])
+  @@map("employee_farms")
+}
+
+model EmployeeStatusHistory {
+  id          String         @id @default(uuid())
+  employeeId  String
+  fromStatus  EmployeeStatus
+  toStatus    EmployeeStatus
+  reason      String
+  changedBy   String
+  effectiveAt DateTime       @default(now())
+  createdAt   DateTime       @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@map("employee_status_history")
+}
+
+model EmployeeContract {
+  id             String       @id @default(uuid())
+  employeeId     String
+  organizationId String
+  positionId     String
+  workScheduleId String?
+  contractType   ContractType
+  startDate      DateTime     @db.Date
+  endDate        DateTime?    @db.Date
+  salary         Decimal      @db.Decimal(10, 2)
+  weeklyHours    Int          @default(44)
+  union          String?
+  costCenterId   String?
+  notes          String?
+  isActive       Boolean      @default(true)
+  createdBy      String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  employee     Employee          @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  organization Organization      @relation(fields: [organizationId], references: [id])
+  position     Position          @relation(fields: [positionId], references: [id])
+  workSchedule WorkSchedule?     @relation(fields: [workScheduleId], references: [id])
+  costCenter   CostCenter?       @relation(fields: [costCenterId], references: [id])
+  amendments   ContractAmendment[]
+
+  @@index([employeeId])
+  @@index([organizationId, contractType])
+  @@index([endDate])
+  @@map("employee_contracts")
+}
+
+model ContractAmendment {
+  id          String   @id @default(uuid())
+  contractId  String
+  description String
+  effectiveAt DateTime @db.Date
+  changes     Json
+  createdBy   String
+  createdAt   DateTime @default(now())
+
+  contract EmployeeContract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+  @@map("contract_amendments")
+}
+
+model EmployeeMovement {
+  id           String       @id @default(uuid())
+  employeeId   String
+  movementType MovementType
+  effectiveAt  DateTime     @db.Date
+  fromValue    String?
+  toValue      String?
+  reason       String
+  approvedBy   String?
+  createdBy    String
+  createdAt    DateTime     @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, movementType])
+  @@map("employee_movements")
+}
+
+model EmployeeSalaryHistory {
+  id           String       @id @default(uuid())
+  employeeId   String
+  salary       Decimal      @db.Decimal(10, 2)
+  effectiveAt  DateTime     @db.Date
+  movementType MovementType
+  reason       String?
+  createdAt    DateTime     @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, effectiveAt])
+  @@map("employee_salary_history")
+}
+
+model EmployeeDocument {
+  id           String       @id @default(uuid())
+  employeeId   String
+  documentType DocumentType
+  fileName     String
+  filePath     String
+  uploadedBy   String
+  uploadedAt   DateTime     @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@map("employee_documents")
+}
+
+// ─── Payroll Models ───────────────────────────────────────────────────
+
+model PayrollRubrica {
+  id              String             @id @default(uuid())
+  organizationId  String
+  code            String
+  name            String
+  rubricaType     RubricaType
+  calculationType CalculationType
+  formulaType     SystemFormulaType?
+  baseFormula     String?
+  rate            Decimal?           @db.Decimal(8, 6)
+  fixedValue      Decimal?           @db.Decimal(10, 2)
+  incideINSS      Boolean            @default(false)
+  incideFGTS      Boolean            @default(false)
+  incideIRRF      Boolean            @default(false)
+  isSystem        Boolean            @default(false)
+  isActive        Boolean            @default(true)
+  eSocialCode     String?
+  createdBy       String
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, code])
+  @@index([organizationId, rubricaType])
+  @@map("payroll_rubricas")
+}
+
+model PayrollLegalTable {
+  id             String         @id @default(uuid())
+  organizationId String?
+  tableType      LegalTableType
+  stateCode      String?
+  effectiveFrom  DateTime       @db.Date
+  notes          String?
+  createdBy      String
+  createdAt      DateTime       @default(now())
+
+  brackets     PayrollTableBracket[]
+  scalarValues PayrollTableScalar[]
+  organization Organization?         @relation(fields: [organizationId], references: [id])
+
+  @@index([tableType, effectiveFrom])
+  @@index([organizationId, tableType, effectiveFrom])
+  @@map("payroll_legal_tables")
+}
+
+model PayrollTableBracket {
+  id        String   @id @default(uuid())
+  tableId   String
+  fromValue Decimal  @db.Decimal(12, 2)
+  upTo      Decimal? @db.Decimal(12, 2)
+  rate      Decimal  @db.Decimal(8, 6)
+  deduction Decimal? @db.Decimal(10, 2)
+  order     Int
+
+  table PayrollLegalTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@index([tableId, order])
+  @@map("payroll_table_brackets")
+}
+
+model PayrollTableScalar {
+  id      String  @id @default(uuid())
+  tableId String
+  key     String
+  value   Decimal @db.Decimal(12, 2)
+
+  table PayrollLegalTable @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@map("payroll_table_scalars")
+}
+
+// ─── Time Tracking Enums ──────────────────────────────────────────────
+
+enum TimeEntrySource {
+  MOBILE
+  WEB
+  MANAGER
+
+  @@map("time_entry_source")
+}
+
+enum OvertimeBankType {
+  CREDIT
+  COMPENSATION
+  EXPIRATION
+
+  @@map("overtime_bank_type")
+}
+
+enum TimesheetStatus {
+  DRAFT
+  PENDING_MANAGER
+  MANAGER_APPROVED
+  PENDING_RH
+  APPROVED
+  LOCKED
+  REJECTED
+
+  @@map("timesheet_status")
+}
+
+// ─── Time Tracking Models ─────────────────────────────────────────────
+
+model TimeEntry {
+  id             String          @id @default(uuid())
+  organizationId String
+  employeeId     String
+  farmId         String
+  date           DateTime        @db.Date
+  clockIn        DateTime
+  breakStart     DateTime?
+  breakEnd       DateTime?
+  clockOut       DateTime?
+  workedMinutes  Int?
+  nightMinutes   Int?
+  outOfRange     Boolean         @default(false)
+  noBoundary     Boolean         @default(false)
+  latitude       Decimal?        @db.Decimal(10, 7)
+  longitude      Decimal?        @db.Decimal(10, 7)
+  source         TimeEntrySource @default(MOBILE)
+  managerNote    String?
+  timesheetId    String?
+  payrollRunId   String?
+  createdBy      String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  organization Organization         @relation(fields: [organizationId], references: [id])
+  employee     Employee             @relation(fields: [employeeId], references: [id])
+  farm         Farm                 @relation(fields: [farmId], references: [id])
+  timesheet    Timesheet?           @relation(fields: [timesheetId], references: [id])
+  activities   TimeEntryActivity[]
+
+  @@index([employeeId, date])
+  @@index([organizationId, date])
+  @@index([timesheetId])
+  @@map("time_entries")
+}
+
+model TimeEntryActivity {
+  id               String  @id @default(uuid())
+  timeEntryId      String
+  operationType    String
+  fieldOperationId String?
+  fieldPlotId      String?
+  farmLocationId   String?
+  costCenterId     String?
+  minutes          Int
+  hourlyRate       Decimal @db.Decimal(10, 4)
+  costAmount       Decimal @db.Decimal(10, 2)
+  notes            String?
+
+  timeEntry TimeEntry @relation(fields: [timeEntryId], references: [id], onDelete: Cascade)
+
+  @@index([timeEntryId])
+  @@map("time_entry_activities")
+}
+
+model OvertimeBankEntry {
+  id             String           @id @default(uuid())
+  organizationId String
+  employeeId     String
+  referenceMonth DateTime         @db.Date
+  minutes        Int
+  balanceType    OvertimeBankType
+  description    String?
+  expiresAt      DateTime         @db.Date
+  timesheetId    String?
+  createdBy      String
+  createdAt      DateTime         @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId, referenceMonth])
+  @@index([employeeId, expiresAt])
+  @@map("overtime_bank_entries")
+}
+
+model Timesheet {
+  id                   String          @id @default(uuid())
+  organizationId       String
+  employeeId           String
+  referenceMonth       DateTime        @db.Date
+  status               TimesheetStatus @default(DRAFT)
+  totalWorked          Int             @default(0)
+  totalOvertime50      Int             @default(0)
+  totalOvertime100     Int             @default(0)
+  totalNightMinutes    Int             @default(0)
+  totalAbsences        Int             @default(0)
+  closingDeadline      DateTime?
+  managerApprovedBy    String?
+  managerApprovedAt    DateTime?
+  rhApprovedBy         String?
+  rhApprovedAt         DateTime?
+  employeeAcceptedAt   DateTime?
+  employeeDisputeNote  String?
+  payrollRunId         String?
+  notes                String?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  employee    Employee              @relation(fields: [employeeId], references: [id])
+  timeEntries TimeEntry[]
+  corrections TimesheetCorrection[]
+
+  @@unique([employeeId, referenceMonth])
+  @@index([organizationId, referenceMonth, status])
+  @@map("timesheets")
+}
+
+model TimesheetCorrection {
+  id           String   @id @default(uuid())
+  timesheetId  String
+  timeEntryId  String?
+  correctedBy  String
+  justification String
+  beforeJson   Json
+  afterJson    Json
+  createdAt    DateTime @default(now())
+
+  timesheet Timesheet @relation(fields: [timesheetId], references: [id], onDelete: Cascade)
+
+  @@index([timesheetId])
+  @@map("timesheet_corrections")
+}
+
+// ─── Payroll Run Models ───────────────────────────────────────────────
+
+enum PayrollRunType {
+  MONTHLY
+  ADVANCE
+  THIRTEENTH_FIRST
+  THIRTEENTH_SECOND
+
+  @@map("payroll_run_type")
+}
+
+enum PayrollRunStatus {
+  PENDING
+  PROCESSING
+  CALCULATED
+  COMPLETED
+  ERROR
+  REVERTED
+
+  @@map("payroll_run_status")
+}
+
+model PayrollRun {
+  id             String           @id @default(uuid())
+  organizationId String
+  referenceMonth DateTime         @db.Date
+  runType        PayrollRunType
+  status         PayrollRunStatus @default(PENDING)
+  triggeredBy    String
+  closedAt       DateTime?
+  closedBy       String?
+  revertedAt     DateTime?
+  revertedBy     String?
+  totalGross     Decimal?         @db.Decimal(14, 2)
+  totalNet       Decimal?         @db.Decimal(14, 2)
+  totalCharges   Decimal?         @db.Decimal(14, 2)
+  employeeCount  Int              @default(0)
+  notes          String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  items        PayrollRunItem[]
+
+  @@unique([organizationId, referenceMonth, runType])
+  @@index([organizationId, status])
+  @@map("payroll_runs")
+}
+
+model PayrollRunItem {
+  id               String   @id @default(uuid())
+  payrollRunId     String
+  employeeId       String
+  status           String   @default("CALCULATED")
+  baseSalary       Decimal  @db.Decimal(10, 2)
+  proRataDays      Int?
+  overtime50       Decimal  @db.Decimal(10, 2) @default(0)
+  overtime100      Decimal  @db.Decimal(10, 2) @default(0)
+  dsrValue         Decimal  @db.Decimal(10, 2) @default(0)
+  nightPremium     Decimal  @db.Decimal(10, 2) @default(0)
+  salaryFamily     Decimal  @db.Decimal(10, 2) @default(0)
+  otherProvisions  Decimal  @db.Decimal(10, 2) @default(0)
+  grossSalary      Decimal  @db.Decimal(10, 2)
+  inssAmount       Decimal  @db.Decimal(10, 2) @default(0)
+  irrfAmount       Decimal  @db.Decimal(10, 2) @default(0)
+  vtDeduction      Decimal  @db.Decimal(10, 2) @default(0)
+  housingDeduction Decimal  @db.Decimal(10, 2) @default(0)
+  foodDeduction    Decimal  @db.Decimal(10, 2) @default(0)
+  advanceDeduction Decimal  @db.Decimal(10, 2) @default(0)
+  otherDeductions  Decimal  @db.Decimal(10, 2) @default(0)
+  netSalary        Decimal  @db.Decimal(10, 2)
+  fgtsAmount       Decimal  @db.Decimal(10, 2) @default(0)
+  inssPatronal     Decimal  @db.Decimal(10, 2) @default(0)
+  lineItemsJson    Json?
+  payslipSentAt    DateTime?
+  createdAt        DateTime @default(now())
+
+  payrollRun PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employee   Employee   @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@unique([payrollRunId, employeeId])
+  @@index([employeeId])
+  @@map("payroll_run_items")
+}
+
+model SalaryAdvance {
+  id              String   @id @default(uuid())
+  organizationId  String
+  employeeId      String
+  referenceMonth  DateTime @db.Date
+  amount          Decimal  @db.Decimal(10, 2)
+  advanceDate     DateTime @db.Date
+  batchId         String?
+  notes           String?
+  payableId       String?  @unique
+  deductedInRunId String?
+  createdBy       String
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employee     Employee     @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId, referenceMonth])
+  @@index([employeeId, referenceMonth])
+  @@map("salary_advances")
+}
+
+// ─── Phase 29: Férias, Afastamentos, Rescisão e Provisões ─────────────
+
+enum VacationPeriodStatus {
+  ACCRUING
+  AVAILABLE
+  SCHEDULED
+  EXPIRED
+}
+
+enum VacationScheduleStatus {
+  SCHEDULED
+  PAID
+  CANCELLED
+}
+
+enum AbsenceType {
+  MEDICAL_CERTIFICATE
+  INSS_LEAVE
+  WORK_ACCIDENT
+  MATERNITY
+  PATERNITY
+  MARRIAGE
+  BEREAVEMENT
+  MILITARY
+  OTHER
+}
+
+enum TerminationType {
+  WITHOUT_CAUSE
+  WITH_CAUSE
+  VOLUNTARY
+  SEASONAL_END
+  MUTUAL_AGREEMENT
+}
+
+enum NoticePeriodType {
+  WORKED
+  COMPENSATED
+  WAIVED
+}
+
+enum TerminationStatus {
+  DRAFT
+  PROCESSED
+  PAID
+}
+
+enum ProvisionType {
+  VACATION
+  THIRTEENTH
+}
+
+// ── Phase 30: Segurança do Trabalho NR-31 ──
+enum EpiType {
+  CAPACETE
+  LUVA
+  BOTA
+  OCULOS
+  PROTETOR_AURICULAR
+  MASCARA
+  AVENTAL
+  CINTO
+  PERNEIRA
+  OUTROS
+}
+
+enum EpiDeliveryReason {
+  NOVO
+  TROCA
+  DANIFICADO
+  EXTRAVIO
+}
+
+enum InstructorType {
+  INTERNO
+  EXTERNO
+}
+
+enum AsoType {
+  ADMISSIONAL
+  PERIODICO
+  RETORNO_TRABALHO
+  MUDANCA_RISCO
+  DEMISSIONAL
+}
+
+enum AsoResult {
+  APTO
+  INAPTO
+  APTO_COM_RESTRICAO
+}
+
+model VacationAcquisitivePeriod {
+  id         String               @id @default(uuid())
+  employeeId String
+  startDate  DateTime             @db.Date
+  endDate    DateTime             @db.Date
+  daysEarned Int                  @default(30)
+  daysTaken  Int                  @default(0)
+  daysLost   Int                  @default(0)
+  status     VacationPeriodStatus @default(ACCRUING)
+  createdAt  DateTime             @default(now())
+
+  employee  Employee          @relation(fields: [employeeId], references: [id])
+  schedules VacationSchedule[]
+
+  @@index([employeeId, status])
+  @@map("vacation_acquisitive_periods")
+}
+
+model VacationSchedule {
+  id                  String                 @id @default(uuid())
+  organizationId      String
+  employeeId          String
+  acquisitivePeriodId String
+  startDate           DateTime               @db.Date
+  endDate             DateTime               @db.Date
+  totalDays           Int
+  abono               Int                    @default(0)
+  grossAmount         Decimal                @db.Decimal(10, 2)
+  inssAmount          Decimal                @db.Decimal(10, 2)
+  irrfAmount          Decimal                @db.Decimal(10, 2)
+  netAmount           Decimal                @db.Decimal(10, 2)
+  fgtsAmount          Decimal                @db.Decimal(10, 2)
+  paymentDueDate      DateTime               @db.Date
+  status              VacationScheduleStatus @default(SCHEDULED)
+  receiptUrl          String?
+  processedAt         DateTime?
+  createdBy           String
+  createdAt           DateTime               @default(now())
+
+  employee          Employee                  @relation(fields: [employeeId], references: [id])
+  acquisitivePeriod VacationAcquisitivePeriod @relation(fields: [acquisitivePeriodId], references: [id])
+
+  @@index([employeeId, status])
+  @@index([paymentDueDate])
+  @@map("vacation_schedules")
+}
+
+model EmployeeAbsence {
+  id              String      @id @default(uuid())
+  organizationId  String
+  employeeId      String
+  absenceType     AbsenceType
+  startDate       DateTime    @db.Date
+  endDate         DateTime?   @db.Date
+  totalDays       Int?
+  catNumber       String?
+  inssStartDate   DateTime?   @db.Date
+  stabilityEndsAt DateTime?   @db.Date
+  returnDate      DateTime?   @db.Date
+  asoRequired     Boolean     @default(false)
+  asoDocumentId   String?
+  payrollImpact   String?
+  notes           String?
+  createdBy       String
+  createdAt       DateTime    @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId, absenceType])
+  @@index([organizationId, startDate])
+  @@map("employee_absences")
+}
+
+model EmployeeTermination {
+  id               String            @id @default(uuid())
+  organizationId   String
+  employeeId       String
+  terminationType  TerminationType
+  terminationDate  DateTime          @db.Date
+  noticePeriodDays Int
+  noticePeriodType NoticePeriodType
+  balanceSalary    Decimal           @db.Decimal(10, 2)
+  thirteenthProp   Decimal           @db.Decimal(10, 2)
+  vacationVested   Decimal           @db.Decimal(10, 2)
+  vacationProp     Decimal           @db.Decimal(10, 2)
+  vacationBonus    Decimal           @db.Decimal(10, 2)
+  noticePay        Decimal           @db.Decimal(10, 2)
+  fgtsBalance      Decimal           @db.Decimal(10, 2)
+  fgtsPenalty      Decimal           @db.Decimal(10, 2)
+  totalGross       Decimal           @db.Decimal(10, 2)
+  inssAmount       Decimal           @db.Decimal(10, 2)
+  irrfAmount       Decimal           @db.Decimal(10, 2)
+  totalNet         Decimal           @db.Decimal(10, 2)
+  paymentDeadline  DateTime          @db.Date
+  trctPdfUrl       String?
+  grfPdfUrl        String?
+  status           TerminationStatus @default(DRAFT)
+  processedAt      DateTime?
+  createdBy        String
+  createdAt        DateTime          @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([employeeId])
+  @@index([organizationId, status])
+  @@map("employee_terminations")
+}
+
+model PayrollProvision {
+  id                  String        @id @default(uuid())
+  organizationId      String
+  employeeId          String
+  referenceMonth      DateTime      @db.Date
+  provisionType       ProvisionType
+  baseSalary          Decimal       @db.Decimal(10, 2)
+  provisionAmount     Decimal       @db.Decimal(10, 2)
+  chargesAmount       Decimal       @db.Decimal(10, 2)
+  totalAmount         Decimal       @db.Decimal(10, 2)
+  costCenterId        String?
+  accountingEntryJson Json?
+  reversedAt          DateTime?
+  reversedBy          String?
+  createdAt           DateTime      @default(now())
+
+  employee   Employee    @relation(fields: [employeeId], references: [id])
+  costCenter CostCenter? @relation(fields: [costCenterId], references: [id])
+
+  @@unique([employeeId, referenceMonth, provisionType])
+  @@index([organizationId, referenceMonth])
+  @@map("payroll_provisions")
+}
+
+// ── Phase 30: Segurança do Trabalho NR-31 Models ──
+
+model EpiProduct {
+  id             String    @id @default(uuid())
+  organizationId String
+  productId      String    @unique
+  caNumber       String
+  caExpiry       DateTime?
+  epiType        EpiType
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization        Organization             @relation(fields: [organizationId], references: [id])
+  product             Product                  @relation(fields: [productId], references: [id])
+  deliveries          EpiDelivery[]
+  positionRequirements PositionEpiRequirement[]
+
+  @@index([organizationId])
+  @@map("epi_products")
+}
+
+model EpiDelivery {
+  id             String            @id @default(uuid())
+  organizationId String
+  employeeId     String
+  epiProductId   String
+  date           DateTime
+  quantity       Int
+  reason         EpiDeliveryReason
+  signatureUrl   String?
+  observations   String?
+  stockOutputId  String?           @unique
+  createdBy      String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+  epiProduct   EpiProduct   @relation(fields: [epiProductId], references: [id])
+  stockOutput  StockOutput? @relation(fields: [stockOutputId], references: [id])
+
+  @@index([organizationId])
+  @@index([employeeId])
+  @@map("epi_deliveries")
+}
+
+model PositionEpiRequirement {
+  id             String   @id @default(uuid())
+  organizationId String
+  positionId     String
+  epiProductId   String
+  quantity       Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  position     Position     @relation(fields: [positionId], references: [id])
+  epiProduct   EpiProduct   @relation(fields: [epiProductId], references: [id])
+
+  @@unique([positionId, epiProductId])
+  @@map("position_epi_requirements")
+}
+
+model TrainingType {
+  id                     String    @id @default(uuid())
+  organizationId         String?
+  name                   String
+  description            String?
+  minHours               Int
+  defaultValidityMonths  Int
+  nrReference            String?
+  isSystem               Boolean   @default(false)
+  isGlobal               Boolean   @default(false)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  trainingRecords      TrainingRecord[]
+  positionRequirements PositionTrainingRequirement[]
+
+  @@unique([organizationId, name])
+  @@map("training_types")
+}
+
+model TrainingRecord {
+  id                      String         @id @default(uuid())
+  organizationId          String
+  farmId                  String?
+  trainingTypeId          String
+  date                    DateTime
+  instructorName          String
+  instructorType          InstructorType
+  instructorRegistration  String?
+  effectiveHours          Decimal        @db.Decimal(5, 1)
+  location                String?
+  observations            String?
+  certificateUrl          String?
+  attendanceListUrl       String?
+  createdBy               String
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+
+  organization     Organization             @relation(fields: [organizationId], references: [id])
+  trainingType     TrainingType             @relation(fields: [trainingTypeId], references: [id])
+  employeeRecords  EmployeeTrainingRecord[]
+
+  @@index([organizationId])
+  @@map("training_records")
+}
+
+model EmployeeTrainingRecord {
+  id               String   @id @default(uuid())
+  trainingRecordId String
+  employeeId       String
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+
+  trainingRecord TrainingRecord @relation(fields: [trainingRecordId], references: [id])
+  employee       Employee       @relation(fields: [employeeId], references: [id])
+
+  @@unique([trainingRecordId, employeeId])
+  @@index([employeeId])
+  @@map("employee_training_records")
+}
+
+model PositionTrainingRequirement {
+  id             String   @id @default(uuid())
+  organizationId String
+  positionId     String
+  trainingTypeId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  position     Position     @relation(fields: [positionId], references: [id])
+  trainingType TrainingType @relation(fields: [trainingTypeId], references: [id])
+
+  @@unique([positionId, trainingTypeId])
+  @@map("position_training_requirements")
+}
+
+model MedicalExam {
+  id             String    @id @default(uuid())
+  organizationId String
+  employeeId     String
+  farmId         String?
+  type           AsoType
+  date           DateTime
+  doctorName     String
+  doctorCrm      String
+  result         AsoResult
+  restrictions   String?
+  nextExamDate   DateTime?
+  documentUrl    String?
+  observations   String?
+  createdBy      String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+
+  @@index([organizationId])
+  @@index([employeeId])
+  @@map("medical_exams")
+}
+
+// ── Phase 31: Obrigações Acessórias e eSocial ──
+
+enum TaxGuideType {
+  FGTS
+  INSS
+  IRRF
+  FUNRURAL
+}
+
+enum TaxGuideStatus {
+  PENDING
+  GENERATED
+  PAID
+  OVERDUE
+}
+
+enum EsocialGroup {
+  TABELA
+  NAO_PERIODICO
+  PERIODICO
+  SST
+}
+
+enum EsocialStatus {
+  PENDENTE
+  EXPORTADO
+  ACEITO
+  REJEITADO
+}
+
+enum FunruralBasis {
+  GROSS_REVENUE
+  PAYROLL
+}
+
+model TaxGuide {
+  id             String         @id @default(uuid())
+  organizationId String
+  guideType      TaxGuideType
+  referenceMonth DateTime       @db.Date
+  dueDate        DateTime       @db.Date
+  totalAmount    Decimal        @db.Decimal(14, 2)
+  status         TaxGuideStatus @default(PENDING)
+  fileKey        String?
+  payrollRunId   String?
+  generatedBy    String?
+  generatedAt    DateTime?
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, guideType, referenceMonth])
+  @@index([organizationId, status])
+  @@map("tax_guides")
+}
+
+model EsocialEvent {
+  id              String        @id @default(uuid())
+  organizationId  String
+  eventType       String
+  eventGroup      EsocialGroup
+  referenceMonth  DateTime?     @db.Date
+  sourceType      String
+  sourceId        String
+  status          EsocialStatus @default(PENDENTE)
+  version         Int           @default(1)
+  xmlContent      String?       @db.Text
+  rejectionReason String?
+  exportedAt      DateTime?
+  acceptedAt      DateTime?
+  rejectedAt      DateTime?
+  createdBy       String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, eventGroup, status])
+  @@index([organizationId, referenceMonth])
+  @@index([sourceType, sourceId])
+  @@map("esocial_events")
+}
+
+model IncomeStatement {
+  id                 String   @id @default(uuid())
+  organizationId     String
+  employeeId         String
+  yearBase           Int
+  totalTaxable       Decimal  @db.Decimal(14, 2)
+  totalInss          Decimal  @db.Decimal(14, 2)
+  totalIrrf          Decimal  @db.Decimal(14, 2)
+  totalExempt        Decimal  @db.Decimal(14, 2)
+  dependentDeduction Decimal  @db.Decimal(14, 2) @default(0)
+  pdfKey             String?
+  sentAt             DateTime?
+  sentTo             String?
+  createdBy          String
+  createdAt          DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+
+  @@unique([organizationId, employeeId, yearBase])
+  @@index([organizationId, yearBase])
+  @@map("income_statements")
 }

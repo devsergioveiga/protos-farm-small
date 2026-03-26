@@ -3,15 +3,7 @@ import { app } from '../../app';
 import * as weaningService from './weaning.service';
 import * as authService from '../auth/auth.service';
 import * as auditService from '../../shared/audit/audit.service';
-import {
-  WeaningError,
-  type SeparationItem,
-  type FeedingProtocolItem,
-  type WeaningItem,
-  type WeaningCriteriaItem,
-  type WeaningCandidateItem,
-  type WeaningIndicators,
-} from './weaning.types';
+import { WeaningError, type WeaningItem } from './weaning.types';
 
 jest.mock('../../shared/audit/audit.service', () => ({
   logAudit: jest.fn().mockResolvedValue(undefined),
@@ -30,19 +22,14 @@ import { DEFAULT_ROLE_PERMISSIONS } from '../../shared/rbac/permissions';
 const mockGetUserPermissions = getUserPermissions as jest.MockedFunction<typeof getUserPermissions>;
 
 jest.mock('./weaning.service', () => ({
-  createSeparation: jest.fn(),
-  setFeedingProtocol: jest.fn(),
-  listSeparations: jest.fn(),
-  getSeparation: jest.fn(),
-  deleteSeparation: jest.fn(),
-  setCriteria: jest.fn(),
-  getCriteria: jest.fn(),
-  getWeaningCandidates: jest.fn(),
+  getWeaningConfig: jest.fn(),
+  setWeaningConfig: jest.fn(),
+  getUnweanedAnimals: jest.fn(),
   createWeaning: jest.fn(),
+  createBulkWeaning: jest.fn(),
   listWeanings: jest.fn(),
   getWeaning: jest.fn(),
   deleteWeaning: jest.fn(),
-  getWeaningIndicators: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -75,43 +62,6 @@ function authAs(payload: authService.TokenPayload) {
   mockGetUserPermissions.mockResolvedValue(rolePerms);
 }
 
-const SAMPLE_FEEDING_PROTOCOL: FeedingProtocolItem = {
-  id: 'fp-1',
-  separationId: 'sep-1',
-  feedType: 'WHOLE_MILK',
-  feedTypeLabel: 'Leite integral',
-  dailyVolumeLiters: 4,
-  frequencyPerDay: 2,
-  feedingMethod: 'BUCKET_NIPPLE',
-  feedingMethodLabel: 'Balde com bico',
-  concentrateStartDate: '2026-03-20',
-  concentrateGramsPerDay: 200,
-  roughageType: 'feno',
-  targetWeaningWeightKg: 70,
-  notes: null,
-  createdAt: '2026-03-15T10:00:00.000Z',
-  updatedAt: '2026-03-15T10:00:00.000Z',
-};
-
-const SAMPLE_SEPARATION: SeparationItem = {
-  id: 'sep-1',
-  farmId: 'farm-1',
-  calfId: 'calf-1',
-  calfEarTag: '001-1',
-  calfName: null,
-  motherId: 'cow-1',
-  motherEarTag: '001',
-  motherName: 'Mimosa',
-  separationDate: '2026-03-10',
-  reason: 'Desmama programada',
-  destination: 'CALF_PEN',
-  destinationLabel: 'Bezerreiro',
-  feedingProtocol: SAMPLE_FEEDING_PROTOCOL,
-  recordedBy: 'admin-1',
-  recorderName: 'Admin',
-  createdAt: '2026-03-10T10:00:00.000Z',
-};
-
 const SAMPLE_WEANING: WeaningItem = {
   id: 'wean-1',
   farmId: 'farm-1',
@@ -120,54 +70,11 @@ const SAMPLE_WEANING: WeaningItem = {
   calfName: null,
   weaningDate: '2026-05-10',
   weightKg: 75,
-  ageMonths: 3,
-  concentrateConsumptionGrams: 900,
-  previousCategory: 'BEZERRO',
   targetLotId: 'lot-recria',
   observations: 'Bezerro saudável',
   recordedBy: 'admin-1',
   recorderName: 'Admin',
   createdAt: '2026-05-10T10:00:00.000Z',
-};
-
-const SAMPLE_CRITERIA: WeaningCriteriaItem = {
-  id: 'crit-1',
-  organizationId: 'org-1',
-  minAgeDays: 60,
-  minWeightKg: 70,
-  minConcentrateGrams: 800,
-  consecutiveDays: 3,
-  targetLotId: 'lot-recria',
-  createdAt: '2026-03-01T10:00:00.000Z',
-  updatedAt: '2026-03-01T10:00:00.000Z',
-};
-
-const SAMPLE_CANDIDATES: WeaningCandidateItem[] = [
-  {
-    calfId: 'calf-1',
-    calfEarTag: '001-1',
-    calfName: null,
-    birthDate: '2026-01-10',
-    ageDays: 64,
-    currentWeightKg: 72,
-    motherId: 'cow-1',
-    motherEarTag: '001',
-    meetsAge: true,
-    meetsWeight: true,
-    meetsAllCriteria: true,
-  },
-];
-
-const SAMPLE_INDICATORS: WeaningIndicators = {
-  totalWeanings: 15,
-  avgWeaningWeightKg: 72.3,
-  avgWeaningAgeMonths: 2.8,
-  totalSeparations: 20,
-  nursingCalves: 5,
-  mortalityRate: 3.5,
-  feedingCostPlaceholder: null,
-  periodStart: '2025-03-15',
-  periodEnd: '2026-03-15',
 };
 
 describe('Weaning routes', () => {
@@ -176,338 +83,13 @@ describe('Weaning routes', () => {
     authAs(ADMIN_PAYLOAD);
   });
 
-  // ─── CREATE SEPARATION (CA1) ──────────────────────────────────────
-
-  describe('POST /api/org/farms/:farmId/calf-separations', () => {
-    const validInput = {
-      calfId: 'calf-1',
-      motherId: 'cow-1',
-      separationDate: '2026-03-10',
-      reason: 'Desmama programada',
-      destination: 'CALF_PEN',
-    };
-
-    it('deve criar separação e retornar 201', async () => {
-      mockedService.createSeparation.mockResolvedValue(SAMPLE_SEPARATION);
-
-      const res = await request(app)
-        .post('/api/org/farms/farm-1/calf-separations')
-        .set('Authorization', 'Bearer tok')
-        .send(validInput);
-
-      expect(res.status).toBe(201);
-      expect(res.body.id).toBe('sep-1');
-      expect(res.body.calfEarTag).toBe('001-1');
-      expect(res.body.motherEarTag).toBe('001');
-      expect(res.body.destination).toBe('CALF_PEN');
-      expect(res.body.destinationLabel).toBe('Bezerreiro');
-      expect(mockedService.createSeparation).toHaveBeenCalledWith(
-        { organizationId: 'org-1' },
-        'farm-1',
-        'admin-1',
-        validInput,
-      );
-      expect(mockedAudit.logAudit).toHaveBeenCalled();
-    });
-
-    it('deve retornar 404 quando bezerro não encontrado', async () => {
-      mockedService.createSeparation.mockRejectedValue(
-        new WeaningError('Bezerro não encontrado', 404),
-      );
-
-      const res = await request(app)
-        .post('/api/org/farms/farm-1/calf-separations')
-        .set('Authorization', 'Bearer tok')
-        .send(validInput);
-
-      expect(res.status).toBe(404);
-      expect(res.body.error).toBe('Bezerro não encontrado');
-    });
-
-    it('deve retornar 409 para separação duplicada', async () => {
-      mockedService.createSeparation.mockRejectedValue(
-        new WeaningError('Bezerro 001-1 já possui registro de separação', 409),
-      );
-
-      const res = await request(app)
-        .post('/api/org/farms/farm-1/calf-separations')
-        .set('Authorization', 'Bearer tok')
-        .send(validInput);
-
-      expect(res.status).toBe(409);
-      expect(res.body.error).toContain('já possui registro de separação');
-    });
-
-    it('deve negar acesso ao OPERATOR sem animals:update', async () => {
-      authAs(OPERATOR_PAYLOAD);
-
-      const res = await request(app)
-        .post('/api/org/farms/farm-1/calf-separations')
-        .set('Authorization', 'Bearer tok')
-        .send(validInput);
-
-      expect(res.status).toBe(403);
-    });
-  });
-
-  // ─── LIST SEPARATIONS ────────────────────────────────────────────
-
-  describe('GET /api/org/farms/:farmId/calf-separations', () => {
-    it('deve listar separações com paginação', async () => {
-      mockedService.listSeparations.mockResolvedValue({
-        data: [SAMPLE_SEPARATION],
-        total: 1,
-      });
-
-      const res = await request(app)
-        .get('/api/org/farms/farm-1/calf-separations')
-        .set('Authorization', 'Bearer tok');
-
-      expect(res.status).toBe(200);
-      expect(res.body.data).toHaveLength(1);
-      expect(res.body.total).toBe(1);
-    });
-
-    it('deve filtrar por calfId e intervalo de datas', async () => {
-      mockedService.listSeparations.mockResolvedValue({ data: [], total: 0 });
-
-      await request(app)
-        .get(
-          '/api/org/farms/farm-1/calf-separations?calfId=calf-1&dateFrom=2026-01-01&dateTo=2026-12-31',
-        )
-        .set('Authorization', 'Bearer tok');
-
-      expect(mockedService.listSeparations).toHaveBeenCalledWith(
-        { organizationId: 'org-1' },
-        'farm-1',
-        expect.objectContaining({
-          calfId: 'calf-1',
-          dateFrom: '2026-01-01',
-          dateTo: '2026-12-31',
-        }),
-      );
-    });
-  });
-
-  // ─── GET SEPARATION ──────────────────────────────────────────────
-
-  describe('GET /api/org/farms/:farmId/calf-separations/:separationId', () => {
-    it('deve retornar detalhe da separação com protocolo de aleitamento', async () => {
-      mockedService.getSeparation.mockResolvedValue(SAMPLE_SEPARATION);
-
-      const res = await request(app)
-        .get('/api/org/farms/farm-1/calf-separations/sep-1')
-        .set('Authorization', 'Bearer tok');
-
-      expect(res.status).toBe(200);
-      expect(res.body.id).toBe('sep-1');
-      expect(res.body.feedingProtocol).toBeDefined();
-      expect(res.body.feedingProtocol.feedType).toBe('WHOLE_MILK');
-      expect(res.body.feedingProtocol.feedingMethod).toBe('BUCKET_NIPPLE');
-    });
-
-    it('deve retornar 404 quando não encontrada', async () => {
-      mockedService.getSeparation.mockRejectedValue(
-        new WeaningError('Registro de separação não encontrado', 404),
-      );
-
-      const res = await request(app)
-        .get('/api/org/farms/farm-1/calf-separations/unknown')
-        .set('Authorization', 'Bearer tok');
-
-      expect(res.status).toBe(404);
-    });
-  });
-
-  // ─── SET FEEDING PROTOCOL (CA2) ──────────────────────────────────
-
-  describe('PUT /api/org/farms/:farmId/calf-separations/:separationId/feeding-protocol', () => {
-    const validProtocol = {
-      feedType: 'WHOLE_MILK',
-      dailyVolumeLiters: 4,
-      frequencyPerDay: 2,
-      feedingMethod: 'BUCKET_NIPPLE',
-      concentrateStartDate: '2026-03-20',
-      concentrateGramsPerDay: 200,
-      roughageType: 'feno',
-      targetWeaningWeightKg: 70,
-    };
-
-    it('deve definir protocolo de aleitamento', async () => {
-      mockedService.setFeedingProtocol.mockResolvedValue(SAMPLE_FEEDING_PROTOCOL);
-
-      const res = await request(app)
-        .put('/api/org/farms/farm-1/calf-separations/sep-1/feeding-protocol')
-        .set('Authorization', 'Bearer tok')
-        .send(validProtocol);
-
-      expect(res.status).toBe(200);
-      expect(res.body.feedType).toBe('WHOLE_MILK');
-      expect(res.body.feedTypeLabel).toBe('Leite integral');
-      expect(res.body.dailyVolumeLiters).toBe(4);
-      expect(res.body.feedingMethodLabel).toBe('Balde com bico');
-      expect(mockedAudit.logAudit).toHaveBeenCalled();
-    });
-
-    it('deve retornar 404 para separação inexistente', async () => {
-      mockedService.setFeedingProtocol.mockRejectedValue(
-        new WeaningError('Registro de separação não encontrado', 404),
-      );
-
-      const res = await request(app)
-        .put('/api/org/farms/farm-1/calf-separations/unknown/feeding-protocol')
-        .set('Authorization', 'Bearer tok')
-        .send(validProtocol);
-
-      expect(res.status).toBe(404);
-    });
-
-    it('deve retornar 400 para tipo de alimento inválido', async () => {
-      mockedService.setFeedingProtocol.mockRejectedValue(
-        new WeaningError(
-          'Tipo de alimento inválido. Use WHOLE_MILK, PASTEURIZED_DISCARD_MILK ou MILK_REPLACER',
-          400,
-        ),
-      );
-
-      const res = await request(app)
-        .put('/api/org/farms/farm-1/calf-separations/sep-1/feeding-protocol')
-        .set('Authorization', 'Bearer tok')
-        .send({ ...validProtocol, feedType: 'INVALID' });
-
-      expect(res.status).toBe(400);
-    });
-  });
-
-  // ─── DELETE SEPARATION ───────────────────────────────────────────
-
-  describe('DELETE /api/org/farms/:farmId/calf-separations/:separationId', () => {
-    it('deve excluir separação', async () => {
-      mockedService.deleteSeparation.mockResolvedValue(undefined);
-
-      const res = await request(app)
-        .delete('/api/org/farms/farm-1/calf-separations/sep-1')
-        .set('Authorization', 'Bearer tok');
-
-      expect(res.status).toBe(200);
-      expect(res.body.message).toBe('Registro de separação excluído com sucesso');
-      expect(mockedAudit.logAudit).toHaveBeenCalled();
-    });
-
-    it('deve retornar 404 quando não encontrada', async () => {
-      mockedService.deleteSeparation.mockRejectedValue(
-        new WeaningError('Registro de separação não encontrado', 404),
-      );
-
-      const res = await request(app)
-        .delete('/api/org/farms/farm-1/calf-separations/unknown')
-        .set('Authorization', 'Bearer tok');
-
-      expect(res.status).toBe(404);
-    });
-
-    it('deve negar OPERATOR', async () => {
-      authAs(OPERATOR_PAYLOAD);
-
-      const res = await request(app)
-        .delete('/api/org/farms/farm-1/calf-separations/sep-1')
-        .set('Authorization', 'Bearer tok');
-
-      expect(res.status).toBe(403);
-    });
-  });
-
-  // ─── WEANING CRITERIA (CA4) ──────────────────────────────────────
-
-  describe('GET /api/org/weaning-criteria', () => {
-    it('deve retornar critérios configurados', async () => {
-      mockedService.getCriteria.mockResolvedValue(SAMPLE_CRITERIA);
-
-      const res = await request(app)
-        .get('/api/org/weaning-criteria')
-        .set('Authorization', 'Bearer tok');
-
-      expect(res.status).toBe(200);
-      expect(res.body.minAgeDays).toBe(60);
-      expect(res.body.minWeightKg).toBe(70);
-      expect(res.body.minConcentrateGrams).toBe(800);
-      expect(res.body.consecutiveDays).toBe(3);
-    });
-
-    it('deve retornar null quando sem critérios', async () => {
-      mockedService.getCriteria.mockResolvedValue(null);
-
-      const res = await request(app)
-        .get('/api/org/weaning-criteria')
-        .set('Authorization', 'Bearer tok');
-
-      expect(res.status).toBe(200);
-      expect(res.body).toBeNull();
-    });
-  });
-
-  describe('PUT /api/org/weaning-criteria', () => {
-    it('deve definir critérios de desmame', async () => {
-      mockedService.setCriteria.mockResolvedValue(SAMPLE_CRITERIA);
-
-      const res = await request(app)
-        .put('/api/org/weaning-criteria')
-        .set('Authorization', 'Bearer tok')
-        .send({
-          minAgeDays: 60,
-          minWeightKg: 70,
-          minConcentrateGrams: 800,
-          consecutiveDays: 3,
-          targetLotId: 'lot-recria',
-        });
-
-      expect(res.status).toBe(200);
-      expect(res.body.minAgeDays).toBe(60);
-      expect(mockedAudit.logAudit).toHaveBeenCalled();
-    });
-
-    it('deve retornar 400 para idade mínima inválida', async () => {
-      mockedService.setCriteria.mockRejectedValue(
-        new WeaningError('Idade mínima deve ser pelo menos 1 dia', 400),
-      );
-
-      const res = await request(app)
-        .put('/api/org/weaning-criteria')
-        .set('Authorization', 'Bearer tok')
-        .send({ minAgeDays: 0 });
-
-      expect(res.status).toBe(400);
-    });
-  });
-
-  // ─── WEANING CANDIDATES (CA4) ────────────────────────────────────
-
-  describe('GET /api/org/farms/:farmId/weanings/candidates', () => {
-    it('deve retornar candidatos a desmame', async () => {
-      mockedService.getWeaningCandidates.mockResolvedValue(SAMPLE_CANDIDATES);
-
-      const res = await request(app)
-        .get('/api/org/farms/farm-1/weanings/candidates')
-        .set('Authorization', 'Bearer tok');
-
-      expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(1);
-      expect(res.body[0].calfEarTag).toBe('001-1');
-      expect(res.body[0].meetsAge).toBe(true);
-      expect(res.body[0].meetsWeight).toBe(true);
-      expect(res.body[0].meetsAllCriteria).toBe(true);
-    });
-  });
-
-  // ─── CREATE WEANING (CA5-CA7, CA9) ───────────────────────────────
+  // ─── CREATE WEANING ─────────────────────────────────────────────────
 
   describe('POST /api/org/farms/:farmId/weanings', () => {
     const validInput = {
       calfId: 'calf-1',
       weaningDate: '2026-05-10',
       weightKg: 75,
-      ageMonths: 3,
-      concentrateConsumptionGrams: 900,
       targetLotId: 'lot-recria',
       observations: 'Bezerro saudável',
     };
@@ -524,8 +106,6 @@ describe('Weaning routes', () => {
       expect(res.body.id).toBe('wean-1');
       expect(res.body.calfEarTag).toBe('001-1');
       expect(res.body.weightKg).toBe(75);
-      expect(res.body.ageMonths).toBe(3);
-      expect(res.body.previousCategory).toBe('BEZERRO');
       expect(res.body.targetLotId).toBe('lot-recria');
       expect(mockedService.createWeaning).toHaveBeenCalledWith(
         { organizationId: 'org-1' },
@@ -593,11 +173,11 @@ describe('Weaning routes', () => {
       expect(res.body.total).toBe(1);
     });
 
-    it('deve filtrar por intervalo de datas', async () => {
+    it('deve filtrar por intervalo de datas e busca', async () => {
       mockedService.listWeanings.mockResolvedValue({ data: [], total: 0 });
 
       await request(app)
-        .get('/api/org/farms/farm-1/weanings?dateFrom=2026-01-01&dateTo=2026-12-31')
+        .get('/api/org/farms/farm-1/weanings?dateFrom=2026-01-01&dateTo=2026-12-31&search=001')
         .set('Authorization', 'Bearer tok');
 
       expect(mockedService.listWeanings).toHaveBeenCalledWith(
@@ -606,6 +186,7 @@ describe('Weaning routes', () => {
         expect.objectContaining({
           dateFrom: '2026-01-01',
           dateTo: '2026-12-31',
+          search: '001',
         }),
       );
     });
@@ -624,7 +205,6 @@ describe('Weaning routes', () => {
       expect(res.status).toBe(200);
       expect(res.body.id).toBe('wean-1');
       expect(res.body.weightKg).toBe(75);
-      expect(res.body.concentrateConsumptionGrams).toBe(900);
     });
 
     it('deve retornar 404 quando não encontrado', async () => {
@@ -678,24 +258,115 @@ describe('Weaning routes', () => {
     });
   });
 
-  // ─── INDICATORS (CA8) ───────────────────────────────────────────
+  // ─── WEANING CONFIG ─────────────────────────────────────────────
 
-  describe('GET /api/org/farms/:farmId/weanings/indicators', () => {
-    it('deve retornar indicadores de desmame', async () => {
-      mockedService.getWeaningIndicators.mockResolvedValue(SAMPLE_INDICATORS);
+  describe('GET /api/org/weaning-config', () => {
+    it('deve retornar configuração de desmama', async () => {
+      mockedService.getWeaningConfig.mockResolvedValue({
+        weaningDaysMale: 210,
+        weaningDaysFemale: 180,
+        minWeightKgMale: 180,
+        minWeightKgFemale: 160,
+      });
 
       const res = await request(app)
-        .get('/api/org/farms/farm-1/weanings/indicators')
+        .get('/api/org/weaning-config')
         .set('Authorization', 'Bearer tok');
 
       expect(res.status).toBe(200);
-      expect(res.body.totalWeanings).toBe(15);
-      expect(res.body.avgWeaningWeightKg).toBe(72.3);
-      expect(res.body.avgWeaningAgeMonths).toBe(2.8);
-      expect(res.body.totalSeparations).toBe(20);
-      expect(res.body.nursingCalves).toBe(5);
-      expect(res.body.mortalityRate).toBe(3.5);
-      expect(res.body.feedingCostPlaceholder).toBeNull();
+      expect(res.body.weaningDaysMale).toBe(210);
+      expect(res.body.minWeightKgFemale).toBe(160);
+    });
+  });
+
+  describe('PUT /api/org/weaning-config', () => {
+    it('deve salvar configuração de desmama', async () => {
+      mockedService.setWeaningConfig.mockResolvedValue({
+        weaningDaysMale: 210,
+        weaningDaysFemale: 180,
+        minWeightKgMale: 180,
+        minWeightKgFemale: 160,
+      });
+
+      const res = await request(app)
+        .put('/api/org/weaning-config')
+        .set('Authorization', 'Bearer tok')
+        .send({ weaningDaysMale: 210, weaningDaysFemale: 180, minWeightKgMale: 180, minWeightKgFemale: 160 });
+
+      expect(res.status).toBe(200);
+      expect(res.body.weaningDaysMale).toBe(210);
+    });
+
+    it('deve negar OPERATOR', async () => {
+      authAs(OPERATOR_PAYLOAD);
+
+      const res = await request(app)
+        .put('/api/org/weaning-config')
+        .set('Authorization', 'Bearer tok')
+        .send({ weaningDaysMale: 210 });
+
+      expect(res.status).toBe(403);
+    });
+  });
+
+  // ─── UNWEANED ANIMALS ──────────────────────────────────────────
+
+  describe('GET /api/org/farms/:farmId/weanings/unweaned', () => {
+    it('deve retornar lista de animais não desmamados', async () => {
+      mockedService.getUnweanedAnimals.mockResolvedValue([
+        {
+          id: 'calf-1',
+          earTag: '001-1',
+          name: null,
+          sex: 'MALE',
+          category: 'BEZERRO',
+          birthDate: '2025-09-01',
+          ageDays: 202,
+          expectedWeaningDate: '2026-03-30',
+          isOverdue: false,
+          lastWeightKg: 165,
+          lastWeighingDate: '2026-03-15',
+          lotId: null,
+          lotName: null,
+        },
+      ]);
+
+      const res = await request(app)
+        .get('/api/org/farms/farm-1/weanings/unweaned')
+        .set('Authorization', 'Bearer tok');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(1);
+      expect(res.body[0].earTag).toBe('001-1');
+      expect(res.body[0].expectedWeaningDate).toBe('2026-03-30');
+    });
+  });
+
+  // ─── BULK WEANING ──────────────────────────────────────────────
+
+  describe('POST /api/org/farms/:farmId/weanings/bulk', () => {
+    it('deve registrar desmame em lote e retornar 201', async () => {
+      mockedService.createBulkWeaning.mockResolvedValue([
+        { calfId: 'calf-1', calfEarTag: '001-1', status: 'created', weaningId: 'w-1', weightWarning: null },
+        { calfId: 'calf-2', calfEarTag: '002-1', status: 'created', weaningId: 'w-2', weightWarning: 'Peso 150 kg abaixo do mínimo configurado (180 kg)' },
+      ]);
+
+      const res = await request(app)
+        .post('/api/org/farms/farm-1/weanings/bulk')
+        .set('Authorization', 'Bearer tok')
+        .send({
+          weaningDate: '2026-03-22',
+          animals: [
+            { calfId: 'calf-1', weightKg: 185 },
+            { calfId: 'calf-2', weightKg: 150 },
+          ],
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body).toHaveLength(2);
+      expect(res.body[0].status).toBe('created');
+      expect(res.body[1].weightWarning).toContain('abaixo do mínimo');
+      expect(mockedAudit.logAudit).toHaveBeenCalled();
     });
   });
 });

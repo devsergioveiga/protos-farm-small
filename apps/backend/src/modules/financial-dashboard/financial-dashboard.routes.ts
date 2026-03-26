@@ -2,10 +2,15 @@ import { Router } from 'express';
 import { authenticate } from '../../middleware/auth';
 import { checkPermission } from '../../middleware/check-permission';
 import type { RlsContext } from '../../database/rls';
-import { FinancialDashboardError, type FinancialDashboardQuery } from './financial-dashboard.types';
+import {
+  FinancialDashboardError,
+  type FinancialDashboardQuery,
+  type PatrimonyDashboardQuery,
+} from './financial-dashboard.types';
 import {
   getFinancialDashboard,
   getNegativeBalanceAlertForDashboard,
+  getPatrimonyDashboard,
 } from './financial-dashboard.service';
 
 export const financialDashboardRouter = Router();
@@ -45,6 +50,29 @@ financialDashboardRouter.get(
       } else {
         res.json(result);
       }
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── GET /org/financial-dashboard/patrimony ──────────────────────────
+
+financialDashboardRouter.get(
+  '/org/financial-dashboard/patrimony',
+  authenticate,
+  checkPermission('assets:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const now = new Date();
+      const query: PatrimonyDashboardQuery = {
+        farmId: req.query.farmId as string | undefined,
+        year: req.query.year ? parseInt(req.query.year as string, 10) : now.getFullYear(),
+        month: req.query.month ? parseInt(req.query.month as string, 10) : now.getMonth() + 1,
+      };
+      const result = await getPatrimonyDashboard(ctx, query);
+      res.json(result);
     } catch (err) {
       handleError(err, res);
     }

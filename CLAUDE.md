@@ -23,6 +23,44 @@ Sistema de gestão agrícola. Monorepo pnpm com:
 - ESLint 9 flat config, Prettier, Husky pre-commit
 - `app.ts` separado de `main.ts` no backend (testabilidade)
 
+## Regras de TypeScript — OBRIGATÓRIO
+
+### Express 5: `req.params` e `req.query` retornam `string | string[]`
+
+- **Sempre** usar `as string` ao acessar params: `req.params.id as string`
+- **Nunca** desestruturar params sem cast: ~~`const { id } = req.params`~~ → `const id = req.params.id as string`
+- Query params opcionais: `req.query.farmId as string | undefined`
+
+### Prisma: enums devem ser tipados, nunca `string`
+
+- Ao retornar valores que mapeiam para enums Prisma, **nunca** tipar como `: string`
+- Usar `as const` nos retornos literais: `return 'WEIGHT' as const` (não `return 'WEIGHT'` com `: string`)
+- Ou importar e tipar com o enum: `import type { AnimalCategory } from '@prisma/client'`
+- Em dados mock de testes, usar `as const` nos campos enum: `disposalType: 'VENDA' as const`
+
+### Prisma: usar nomes corretos dos campos do schema
+
+- Antes de usar `select: { field: true }`, verificar o nome exato no `schema.prisma`
+- Exemplos comuns: `measurementUnit` (não `unit`), `currentQuantity` (não `quantity`)
+- Relações: usar `select: { measurementUnit: { select: { abbreviation: true } } }` para acessar campos de relação
+
+### Decimal.js: métodos estáticos vs instância
+
+- `Decimal.max(a, b)` — **estático**, correto
+- ~~`a.max(b)`~~ — **não existe** como método de instância
+
+### Frontend: tipos devem espelhar o backend
+
+- Ao criar hooks/componentes que consomem endpoints, verificar se os tipos existem em `src/types/`
+- Se o backend tem `MaintenanceProvisionOutput`, o frontend precisa de `MaintenanceProvision` em `@/types/maintenance`
+- Props de componentes: verificar o nome exato na interface antes de passar (ex: `assetId`, não `prefilledAssetId`)
+
+### null vs undefined em interfaces
+
+- Prisma usa `null` para campos opcionais do banco
+- Interfaces de input do frontend devem usar `undefined` (campo opcional com `?:`)
+- Na conversão: `value || undefined` (não `value || null`) ao preencher inputs para funções tipadas
+
 ---
 
 # REGRAS DE UI/UX — OBRIGATÓRIO

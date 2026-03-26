@@ -1,127 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/services/api';
 import type {
-  SeparationItem,
-  SeparationsResponse,
-  WeaningCandidateItem,
   WeaningItem,
   WeaningsResponse,
-  WeaningIndicators,
-  WeaningCriteria,
+  WeaningConfig,
+  UnweanedAnimal,
 } from '@/types/weaning';
 import type { PaginationMeta } from '@/types/admin';
-
-/* ─── useSeparations ─────────────────────────────────────────────── */
-
-interface UseSeparationsParams {
-  farmId: string | null;
-  page?: number;
-  limit?: number;
-  search?: string;
-}
-
-interface UseSeparationsResult {
-  separations: SeparationItem[];
-  meta: PaginationMeta | null;
-  isLoading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-}
-
-export function useSeparations(params: UseSeparationsParams): UseSeparationsResult {
-  const [separations, setSeparations] = useState<SeparationItem[]>([]);
-  const [meta, setMeta] = useState<PaginationMeta | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const { farmId, page, limit, search } = params;
-
-  const fetch = useCallback(async () => {
-    if (!farmId) {
-      setSeparations([]);
-      setMeta(null);
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
-    try {
-      const query = new URLSearchParams();
-      if (page) query.set('page', String(page));
-      if (limit) query.set('limit', String(limit));
-      if (search) query.set('search', search);
-      const qs = query.toString();
-      const path = `/org/farms/${farmId}/calf-separations${qs ? `?${qs}` : ''}`;
-      const result = await api.get<SeparationsResponse>(path);
-      setSeparations(result.data);
-      setMeta(result.meta);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao carregar separações';
-      setError(message);
-      setSeparations([]);
-      setMeta(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [farmId, page, limit, search]);
-
-  useEffect(() => {
-    void fetch();
-  }, [fetch]);
-
-  return { separations, meta, isLoading, error, refetch: fetch };
-}
-
-/* ─── useWeaningCandidates ───────────────────────────────────────── */
-
-interface UseWeaningCandidatesParams {
-  farmId: string | null;
-}
-
-interface UseWeaningCandidatesResult {
-  candidates: WeaningCandidateItem[];
-  isLoading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-}
-
-export function useWeaningCandidates(
-  params: UseWeaningCandidatesParams,
-): UseWeaningCandidatesResult {
-  const [candidates, setCandidates] = useState<WeaningCandidateItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const { farmId } = params;
-
-  const fetch = useCallback(async () => {
-    if (!farmId) {
-      setCandidates([]);
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await api.get<{ data: WeaningCandidateItem[] }>(
-        `/org/farms/${farmId}/weanings/candidates`,
-      );
-      setCandidates(result.data);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao carregar candidatos';
-      setError(message);
-      setCandidates([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [farmId]);
-
-  useEffect(() => {
-    void fetch();
-  }, [fetch]);
-
-  return { candidates, isLoading, error, refetch: fetch };
-}
 
 /* ─── useWeanings ────────────────────────────────────────────────── */
 
@@ -184,66 +69,17 @@ export function useWeanings(params: UseWeaningsParams): UseWeaningsResult {
   return { weanings, meta, isLoading, error, refetch: fetch };
 }
 
-/* ─── useWeaningIndicators ───────────────────────────────────────── */
+/* ─── useWeaningConfig ───────────────────────────────────────────── */
 
-interface UseWeaningIndicatorsParams {
-  farmId: string | null;
-}
-
-interface UseWeaningIndicatorsResult {
-  indicators: WeaningIndicators | null;
+interface UseWeaningConfigResult {
+  config: WeaningConfig | null;
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
 }
 
-export function useWeaningIndicators(
-  params: UseWeaningIndicatorsParams,
-): UseWeaningIndicatorsResult {
-  const [indicators, setIndicators] = useState<WeaningIndicators | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const { farmId } = params;
-
-  const fetch = useCallback(async () => {
-    if (!farmId) {
-      setIndicators(null);
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await api.get<WeaningIndicators>(`/org/farms/${farmId}/weanings/indicators`);
-      setIndicators(result);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao carregar indicadores';
-      setError(message);
-      setIndicators(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [farmId]);
-
-  useEffect(() => {
-    void fetch();
-  }, [fetch]);
-
-  return { indicators, isLoading, error, refetch: fetch };
-}
-
-/* ─── useWeaningCriteria ─────────────────────────────────────────── */
-
-interface UseWeaningCriteriaResult {
-  criteria: WeaningCriteria | null;
-  isLoading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-}
-
-export function useWeaningCriteria(): UseWeaningCriteriaResult {
-  const [criteria, setCriteria] = useState<WeaningCriteria | null>(null);
+export function useWeaningConfig(): UseWeaningConfigResult {
+  const [config, setConfig] = useState<WeaningConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -251,12 +87,12 @@ export function useWeaningCriteria(): UseWeaningCriteriaResult {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await api.get<WeaningCriteria>('/org/weaning-criteria');
-      setCriteria(result);
+      const result = await api.get<WeaningConfig>('/org/weaning-config');
+      setConfig(result);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erro ao carregar critérios';
+      const message = err instanceof Error ? err.message : 'Erro ao carregar configuração';
       setError(message);
-      setCriteria(null);
+      setConfig(null);
     } finally {
       setIsLoading(false);
     }
@@ -266,5 +102,52 @@ export function useWeaningCriteria(): UseWeaningCriteriaResult {
     void fetch();
   }, [fetch]);
 
-  return { criteria, isLoading, error, refetch: fetch };
+  return { config, isLoading, error, refetch: fetch };
+}
+
+/* ─── useUnweanedAnimals ─────────────────────────────────────────── */
+
+interface UseUnweanedAnimalsParams {
+  farmId: string | null;
+}
+
+interface UseUnweanedAnimalsResult {
+  animals: UnweanedAnimal[];
+  isLoading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+}
+
+export function useUnweanedAnimals(params: UseUnweanedAnimalsParams): UseUnweanedAnimalsResult {
+  const [animals, setAnimals] = useState<UnweanedAnimal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const { farmId } = params;
+
+  const fetch = useCallback(async () => {
+    if (!farmId) {
+      setAnimals([]);
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await api.get<UnweanedAnimal[]>(`/org/farms/${farmId}/weanings/unweaned`);
+      setAnimals(result);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao carregar animais';
+      setError(message);
+      setAnimals([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [farmId]);
+
+  useEffect(() => {
+    void fetch();
+  }, [fetch]);
+
+  return { animals, isLoading, error, refetch: fetch };
 }

@@ -90,6 +90,8 @@ export interface CreateAnimalInput {
   earTag: string;
   rfidTag?: string;
   name?: string;
+  registeredName?: string;
+  registrationNumber?: string;
   sex: string;
   birthDate?: string;
   birthDateEstimated?: boolean;
@@ -110,6 +112,8 @@ export interface UpdateAnimalInput {
   earTag?: string;
   rfidTag?: string;
   name?: string;
+  registeredName?: string | null;
+  registrationNumber?: string | null;
   sex?: string;
   birthDate?: string;
   birthDateEstimated?: boolean;
@@ -164,6 +168,7 @@ export interface ListAnimalsQuery {
   origin?: string;
   lotId?: string;
   locationId?: string;
+  ownerId?: string;
   birthDateFrom?: string;
   birthDateTo?: string;
   minWeightKg?: number;
@@ -317,10 +322,13 @@ export const CATEGORY_ALIASES: Record<string, string> = {
   vaca_lactacao: 'VACA_LACTACAO',
   'vaca seca': 'VACA_SECA',
   vaca_seca: 'VACA_SECA',
+  vaca: 'VACA_SECA',
   'touro reprodutor': 'TOURO_REPRODUTOR',
   touro_reprodutor: 'TOURO_REPRODUTOR',
   touro: 'TOURO_REPRODUTOR',
+  reprodutor: 'TOURO_REPRODUTOR',
   descarte: 'DESCARTE',
+  'em crescimento': 'BEZERRO',
 };
 
 // Auto-mapping: header label → AnimalColumnMapping key
@@ -330,16 +338,20 @@ export const COLUMN_AUTO_MAP: Record<string, keyof AnimalColumnMapping> = {
   eartag: 'earTag',
   identificacao: 'earTag',
   identificação: 'earTag',
+  numero: 'earTag',
+  'número': 'earTag',
   nome: 'name',
   name: 'name',
   sexo: 'sex',
   sex: 'sex',
   nascimento: 'birthDate',
   'data nascimento': 'birthDate',
+  dtnascimento: 'birthDate',
   birthdate: 'birthDate',
   'birth date': 'birthDate',
   categoria: 'category',
   category: 'category',
+  nome_1: 'category',
   origem: 'origin',
   origin: 'origin',
   raca: 'breed1',
@@ -372,6 +384,9 @@ export const COLUMN_AUTO_MAP: Record<string, keyof AnimalColumnMapping> = {
   dam: 'damEarTag',
   rfid: 'rfidTag',
   'rfid tag': 'rfidTag',
+  brincoeletronico: 'rfidTag',
+  'brinco eletronico': 'rfidTag',
+  'brinco eletrônico': 'rfidTag',
   notas: 'notes',
   notes: 'notes',
   obs: 'notes',

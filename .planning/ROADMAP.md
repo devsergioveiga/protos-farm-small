@@ -4,7 +4,8 @@
 
 - ✅ **v1.0 Financeiro Base** — Phases 1-6 (shipped 2026-03-17)
 - ✅ **v1.1 Gestão de Compras** — Phases 7-15 (all complete)
-- 🚧 **v1.2 Gestão de Patrimônio** — Phases 16-24 (in progress)
+- ✅ **v1.2 Gestão de Patrimônio** — Phases 16-24 (all complete)
+- 🚧 **v1.3 RH e Folha de Pagamento Rural** — Phases 25-32 (in progress)
 
 ## Phases
 
@@ -37,19 +38,33 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 </details>
 
-### 🚧 v1.2 Gestão de Patrimônio (Active)
+<details>
+<summary>✅ v1.2 Gestão de Patrimônio (Phases 16-24) — COMPLETE</summary>
 
-**Milestone Goal:** Implementar o ciclo de vida completo dos ativos da fazenda — cadastro, depreciação, manutenção preventiva/corretiva, controle operacional, documentação e integração bidirecional com o módulo financeiro (compra, venda, financiamento, leasing).
+- [x] **Phase 16: Cadastro de Ativos** — Entidade raiz do patrimônio: todas as fases dependem de um ativo cadastrado e classificado corretamente (completed 2026-03-20)
+- [x] **Phase 17: Engine de Depreciação** — Cálculo mensal automático e rastreável, pré-requisito para ganho/perda na alienação (completed 2026-03-20)
+- [x] **Phase 18: Manutenção e Ordens de Serviço** — CMMS completo com consumo de peças do estoque existente e classificação contábil obrigatória (completed 2026-03-22)
+- [x] **Phase 19: Integração Financeira — Aquisição** — Compra à vista e financiada geram CP automaticamente sem contaminar o fluxo de recebimento de mercadorias (completed 2026-03-22)
+- [x] **Phase 20: Alienação e Baixa de Ativos** — Venda, descarte, sinistro e transferência com cálculo automático de ganho/perda e geração de CR (completed 2026-03-22)
+- [x] **Phase 21: Controle Operacional** — Combustível, documentos, horímetro e custo operacional por ativo (completed 2026-03-22)
+- [x] **Phase 22: Hierarquia Avançada e Imobilizado em Andamento** — Ativo composto pai-filho, reforma/capitalização e obras em andamento (completed 2026-03-23)
+- [x] **Phase 23: Relatórios e Dashboard Patrimonial** — Visão consolidada de TCO, depreciação acumulada e indicadores — leitura sobre dados produzidos pelas fases anteriores (completed 2026-03-23)
+- [x] **Phase 24: Ativos Biológicos, Leasing e Features Avançadas** — CPC 29 fair value, CPC 06 leasing e troca de ativo com compensação financeira (completed 2026-03-23)
 
-- [ ] **Phase 16: Cadastro de Ativos** — Entidade raiz do patrimônio: todas as fases dependem de um ativo cadastrado e classificado corretamente
-- [ ] **Phase 17: Engine de Depreciação** — Cálculo mensal automático e rastreável, pré-requisito para ganho/perda na alienação
-- [ ] **Phase 18: Manutenção e Ordens de Serviço** — CMMS completo com consumo de peças do estoque existente e classificação contábil obrigatória
-- [ ] **Phase 19: Integração Financeira — Aquisição** — Compra à vista e financiada geram CP automaticamente sem contaminar o fluxo de recebimento de mercadorias
-- [ ] **Phase 20: Alienação e Baixa de Ativos** — Venda, descarte, sinistro e transferência com cálculo automático de ganho/perda e geração de CR
-- [ ] **Phase 21: Controle Operacional** — Combustível, documentos, horímetro e custo operacional por ativo
-- [ ] **Phase 22: Hierarquia Avançada e Imobilizado em Andamento** — Ativo composto pai-filho, reforma/capitalização e obras em andamento
-- [ ] **Phase 23: Relatórios e Dashboard Patrimonial** — Visão consolidada de TCO, depreciação acumulada e indicadores — leitura sobre dados produzidos pelas fases anteriores
-- [ ] **Phase 24: Ativos Biológicos, Leasing e Features Avançadas** — CPC 29 fair value, CPC 06 leasing e troca de ativo com compensação financeira
+</details>
+
+### 🚧 v1.3 RH e Folha de Pagamento Rural (Active)
+
+**Milestone Goal:** Implementar o ciclo completo de gestão de pessoas em fazendas — cadastro e contratos, controle de ponto e jornada rural, folha de pagamento com particularidades do trabalhador rural (Lei 5.889/73, NR-31), férias, 13º, rescisão, eSocial, segurança do trabalho e integração bidirecional com os módulos financeiro e contábil.
+
+- [x] **Phase 25: Cadastro de Colaboradores e Contratos** — Fundação do módulo RH: entidade colaborador com todos os dados trabalhistas, contratuais e pessoais exigidos pela legislação e pelo eSocial (completed 2026-03-24)
+- [x] **Phase 26: Parâmetros de Folha e Motor de Cálculo** — Engine de cálculo brasileiro customizado: rubricas configuráveis, tabelas INSS/IRRF progressivas, FUNRURAL rural, moradia/alimentação — motor que alimenta todo o processamento de folha (completed 2026-03-24)
+- [x] **Phase 27: Controle de Ponto e Jornada** — Pipeline de horas: registro mobile/web, apontamento por atividade/operação com rateio por CC, cálculo de HE/noturno rural, banco de horas, aprovação do espelho (completed 2026-03-24)
+- [x] **Phase 28: Processamento da Folha Mensal** — Core value: folha em lote com holerite PDF, adiantamento salarial, 13º salário — o ciclo mensal completo do processamento de folha (completed 2026-03-25)
+- [x] **Phase 29: Férias, Afastamentos, Rescisão e Provisões** — Ciclo de vida trabalhista: férias com fracionamento, afastamentos/CAT, rescisão com TRCT, provisão mensal de férias e 13º com lançamento contábil (completed 2026-03-25)
+- [x] **Phase 30: Segurança do Trabalho Rural (NR-31)** — Conformidade legal NR-31: EPIs com ficha de entrega, treinamentos obrigatórios com matriz de validade, ASO/PCMSO com alertas de vencimento (completed 2026-03-26)
+- [ ] **Phase 31: Obrigações Acessórias e eSocial** — Compliance fiscal e trabalhista: guias de recolhimento (FGTS/INSS/IRRF/FUNRURAL), eventos eSocial em XML com transmissão digital, RAIS e informe de rendimentos
+- [ ] **Phase 32: Integração Financeira, Contábil e Dashboard RH** — Fechamento do ciclo: folha→Contas a Pagar com rateio por CC, lançamentos contábeis por regime de competência, dashboard de custo de pessoal e KPIs de RH
 
 ## Phase Details
 
@@ -234,7 +249,17 @@ Plans:
 4. Gerente pode acessar a ficha completa do ativo com histórico de manutenções, documentos e timeline de eventos desde o cadastro
 5. Ativo de benfeitoria aparece com marcação georreferenciada no mapa da fazenda usando coordenada ou polígono informado no cadastro
 
-**Plans**: TBD
+**Plans:** 7/7 plans complete
+
+Plans:
+
+- [x] 16-00-PLAN.md — Wave 0: Prisma schema, migration, backend types, RBAC permissions
+- [x] 16-01-PLAN.md — Backend CRUD service, routes, sequential tag, tests
+- [x] 16-02-PLAN.md — Backend bulk import, export CSV/PDF, fuel records, meter readings
+- [x] 16-03-PLAN.md — Frontend AssetsPage, AssetModal, types, hooks, sidebar wiring
+- [x] 16-04-PLAN.md — Frontend AssetDrawer with tabs (fuel, readings, documents, timeline)
+- [x] 16-05-PLAN.md — Frontend AssetImportModal (5-step bulk import wizard)
+- [ ] 16-06-PLAN.md — Gap closure: backend assets/map endpoint + FarmMapPage asset layer + AssetsPage map view toggle
 
 ### Phase 17: Engine de Depreciação
 
@@ -249,7 +274,13 @@ Plans:
 4. Contador pode ver relatório mensal de depreciação por ativo com valor antes/depois e lançamento por centro de custo
 5. Ativo com status EM_ANDAMENTO é excluído do lote de depreciação — depreciação só inicia após ativação
 
-**Plans**: TBD
+**Plans:** 4/4 plans complete
+
+Plans:
+
+- [ ] 17-01-PLAN.md — Prisma schema (4 models, 2 enums, migration) + depreciation engine arithmetic + unit tests
+- [ ] 17-02-PLAN.md — Backend config CRUD + batch processor + cron + routes + integration tests
+- [ ] 17-03-PLAN.md — Frontend DepreciationPage + ConfigModal + ReportTable + RunBadge + AssetDrawer tab + sidebar
 
 ### Phase 18: Manutenção e Ordens de Serviço
 
@@ -264,7 +295,21 @@ Plans:
 4. Gerente pode controlar estoque de peças de reposição com ponto de reposição e vinculação de peças compatíveis por máquina
 5. Gerente pode ver dashboard de manutenção com disponibilidade mecânica, MTBF, MTTR, custo acumulado e kanban de OS abertas
 
-**Plans**: TBD
+**Plans:** 10/10 plans complete
+**Gap Closure:** Closes 4 gaps from verification (cron wiring, integration tests)
+
+Plans:
+
+- [ ] 18-00-PLAN.md — Wave 0: Prisma schema (7 models, 4 enums, migration), types, RBAC, test stubs
+- [ ] 18-01-PLAN.md — Maintenance plans backend: CRUD, next-due calculation, daily alert cron, tests
+- [ ] 18-02-PLAN.md — Work orders backend: CRUD, close with accounting treatment, stock deduction, CC, dashboard, tests
+- [ ] 18-03-PLAN.md — Spare parts compatibility + maintenance provisions backend: CRUD, reconciliation, monthly cron, tests
+- [ ] 18-04-PLAN.md — Frontend: types, hooks, MaintenancePlansPage, WorkOrdersPage, modals, sidebar, routes
+- [ ] 18-05-PLAN.md — Frontend: dashboard, kanban, close wizard, provision modal, AssetMaintenanceTab
+- [ ] 18-06-PLAN.md — Mobile: maintenance request screen with offline queue, photo, geolocation
+- [ ] 18-07-PLAN.md — Gap closure: wire maintenance crons to main.ts startup
+- [ ] 18-08-PLAN.md — Gap closure: work orders integration tests (35 stubs to real tests)
+- [ ] 18-09-PLAN.md — Gap closure: maintenance provisions integration tests (19 stubs to real tests)
 
 ### Phase 19: Integração Financeira — Aquisição
 
@@ -279,7 +324,13 @@ Plans:
 4. Gerente pode registrar NF com múltiplos ativos, cada um gerando seu registro patrimonial com rateio proporcional das despesas acessórias
 5. Cada aquisição tem centro de custo e classificação contábil definidos para apropriação correta da depreciação futura
 
-**Plans**: TBD
+**Plans:** 3/3 plans complete
+
+Plans:
+
+- [ ] 19-01-PLAN.md — Backend: migration (PayableCategory enum), types, NF-e parser, service, routes, integration tests
+- [ ] 19-02-PLAN.md — Frontend: AssetModal "Dados Financeiros" section, InstallmentPreviewTable, useAssetAcquisition hook
+- [ ] 19-03-PLAN.md — Frontend: AssetNfeImportModal 3-step wizard, wiring from AssetModal and AssetsPage
 
 ### Phase 20: Alienação e Baixa de Ativos
 
@@ -295,7 +346,14 @@ Plans:
 5. Contador pode conciliar patrimônio físico vs contábil com inventário (contagem física vs registro) e gerar ajustes
 6. Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciação acumulada, aquisições/baixas do período e indicadores de rentabilidade
 
-**Plans**: TBD
+**Plans:** 5/5 plans complete
+
+Plans:
+- [ ] 20-00-PLAN.md — Wave 0: Prisma schema (4 models, 2 enums), migration, type files, depreciation batch exclusion fix
+- [ ] 20-01-PLAN.md — Backend: asset disposals (sale + write-off + installment) with atomic CR generation
+- [ ] 20-02-PLAN.md — Backend: farm transfers + inventory reconciliation modules
+- [ ] 20-03-PLAN.md — Backend: patrimony dashboard endpoint on financial-dashboard module
+- [ ] 20-04-PLAN.md — Frontend: DisposalModal, TransferModal, InventoryPage, PatrimonyDashboardPage, sidebar wiring
 
 ### Phase 21: Controle Operacional
 
@@ -309,7 +367,13 @@ Plans:
 3. Operador pode atualizar horímetro/odômetro pelo celular com validação anti-regressão
 4. Sistema exibe custo operacional por ativo composto por aquisição, depreciação, manutenção, combustível e seguro para análise de viabilidade
 
-**Plans**: TBD
+**Plans:** 3/3 plans complete
+
+Plans:
+
+- [ ] 21-01-PLAN.md — Backend operational cost endpoint + frontend document expiry alerts view
+- [ ] 21-02-PLAN.md — Frontend AssetCostTab + useAssetOperationalCost + AssetDrawer custo tab wiring
+- [ ] 21-03-PLAN.md — Mobile meter-reading screen + More tab quick action wiring
 
 ### Phase 22: Hierarquia Avançada e Imobilizado em Andamento
 
@@ -322,7 +386,12 @@ Plans:
 2. Gerente pode registrar reforma ou ampliação de ativo existente com decisão explícita de capitalizar (soma ao valor contábil e reavaliar vida útil) ou tratar como despesa imediata (vai para DRE)
 3. Gerente pode registrar imobilizado em andamento acumulando aportes parciais com cronograma de etapas, alerta de orçamento e ativação ao concluir a obra — iniciando a depreciação somente após a ativação
 
-**Plans**: TBD
+**Plans:** 3/3 plans complete
+
+Plans:
+- [x] 22-01-PLAN.md — Schema migration + HIER-01 hierarchy depth guard + parent totalization
+- [x] 22-02-PLAN.md — HIER-02 renovation module + HIER-03 WIP module backend
+- [x] 22-03-PLAN.md — Frontend: hierarchy tab, renovation modal, WIP contributions tab
 
 ### Phase 23: Relatórios e Dashboard Patrimonial
 
@@ -336,7 +405,12 @@ Plans:
 3. Sistema exibe dashboard de TCO por ativo e por frota, com alerta de "reparar vs substituir" quando custo acumulado de manutenção ultrapassa 60-70% do custo de reposição
 4. Sistema oferece wizard de decisão para orientar o gerente na criação de centro de custo por tipo de ativo, com exemplos e templates por tipo de fazenda
 
-**Plans**: TBD
+**Plans:** 3/3 plans complete
+
+Plans:
+- [x] 23-01-PLAN.md — Backend asset-reports module: inventory, depreciation projection, TCO fleet, export
+- [x] 23-02-PLAN.md — Frontend CostCenterWizardModal: 4-step wizard with templates by asset type
+- [x] 23-03-PLAN.md — Frontend AssetReportsPage: 3 tabs, charts, fleet view, routing, sidebar
 
 ### Phase 24: Ativos Biológicos, Leasing e Features Avançadas
 
@@ -350,7 +424,190 @@ Plans:
 3. Gerente pode registrar leasing e arrendamento mercantil (CPC 06) com ROU asset criado automaticamente, parcelas geradas no módulo CP e controle da opção de compra ao final do contrato
 4. Gerente pode registrar troca de ativo (trade-in) com compensação financeira automática — valor do ativo antigo abatido do novo — gerando baixa e aquisição no mesmo lançamento
 
-**Plans**: TBD
+**Plans:** 3/3 plans complete
+
+Plans:
+- [x] 24-01-PLAN.md — Biological assets CPC 29 fair value: backend module + frontend page
+- [x] 24-02-PLAN.md — Asset leasing CPC 06: ROU asset + CP installments + frontend page
+- [x] 24-03-PLAN.md — Asset trade-in: atomic swap + financial compensation + frontend modal
+
+---
+
+### Phase 25: Cadastro de Colaboradores e Contratos
+
+**Goal**: Gerente pode cadastrar colaboradores com todos os dados trabalhistas e documentais exigidos pela legislação, registrar contratos por tipo (CLT, safra, intermitente, experiência, aprendiz), gerenciar cargos e escalas, importar em massa, e consultar a ficha completa do colaborador — tornando a entidade colaborador disponível como fundação de todo o módulo RH
+**Depends on**: Phase 24 (v1.2 completo — base financeira, compras e patrimônio existentes)
+**Requirements**: COLAB-01, COLAB-02, COLAB-03, COLAB-04, COLAB-05
+**Success Criteria** (what must be TRUE):
+
+1. Gerente pode cadastrar colaborador com CPF, PIS/PASEP, CTPS, dados bancários, dependentes com CPF (para IRRF e salário-família), upload de documentos digitalizados e associação a fazendas com status ativo/afastado/férias/desligado
+2. Gerente pode registrar contrato de trabalho por tipo (CLT indeterminado, determinado, safra, intermitente, experiência, aprendiz) com dados de admissão, cargo/CBO, salário, jornada, sindicato, aditivos com histórico e alertas automáticos de vencimento de contratos de experiência e safra
+3. Gerente pode cadastrar cargos com CBO, faixas salariais com níveis (piso/teto), escalas de trabalho configuráveis (5x2, 6x1, 12x36, turno ordenha), adicionais por cargo, quadro de lotação e histórico de movimentações (promoção, reajuste, transferência) com reajuste coletivo em lote
+4. Gerente pode importar colaboradores existentes via CSV/Excel com template, validação de CPF e PIS, preview dos dados e relatório pós-importação com saldos iniciais de férias e banco de horas
+5. Gerente pode visualizar ficha completa do colaborador em tela única com dados pessoais, contrato atual e histórico, evolução salarial em gráfico, holerites dos últimos 12 meses, saldo de férias, histórico de afastamentos, EPIs entregues, treinamentos e operações de campo vinculadas
+
+**Plans**: 4 plans
+
+Plans:
+- [x] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
+- [x] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
+- [x] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
+- [x] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
+**UI hint**: yes
+
+### Phase 26: Parâmetros de Folha e Motor de Cálculo
+
+**Goal**: Contador pode configurar o plano de rubricas (proventos e descontos) com fórmulas customizáveis e manter tabelas legais vigentes, enquanto o sistema possui um motor de cálculo brasileiro completo — INSS progressivo, IRRF com dependentes, FUNRURAL rural, moradia/alimentação — que garante cálculo correto antes de qualquer folha ser processada
+**Depends on**: Phase 25
+**Requirements**: FOLHA-01
+**Success Criteria** (what must be TRUE):
+
+1. Contador pode configurar rubricas de proventos (salário, HE 50%/100%, noturno 25%, insalubridade, periculosidade, salário-família, comissão) e descontos (INSS, IRRF, VT 6%, moradia até 25%, alimentação até 20%, adiantamento, faltas, pensão) com fórmulas customizáveis
+2. Contador pode atualizar tabelas legais com vigência (INSS progressiva, IRRF com faixas e deduções por dependente, salário mínimo, salário-família) sem necessidade de deploy — novas alíquotas entram em vigor na data configurada
+3. Sistema calcula INSS pelo método progressivo por faixa (não flat-rate), IRRF após dedução do INSS e dos dependentes, FGTS 8% sobre salário bruto e FUNRURAL com modo configurável (% receita bruta da fazenda ou % folha)
+4. Sistema aplica regras específicas do trabalhador rural: adicional noturno 21h-5h a 25% (não 22h-5h a 20%), hora noturna rural reduzida (52m30s), moradia até 25% do salário e alimentação até 20% descontados apenas sobre o piso regional
+
+**Plans**: 4 plans
+
+Plans:
+- [x] 26-01-PLAN.md — Prisma schema (4 models, 4 enums), migration, seed 2026 legal tables, TypeScript types
+- [x] 26-02-PLAN.md — Payroll engine TDD (INSS progressive, IRRF two-step, FGTS, rural rules, formula eval)
+- [x] 26-03-PLAN.md — Backend REST endpoints (rubricas CRUD + legal tables CRUD + RBAC)
+- [x] 26-04-PLAN.md — Frontend PayrollParametersPage (rubricas tab + legal tables tab + modals)
+**UI hint**: yes
+
+### Phase 27: Controle de Ponto e Jornada
+
+**Goal**: Colaborador pode registrar ponto via mobile ou web, gerente pode vincular horas a atividades e operações de campo, o sistema calcula automaticamente horas extras, adicional noturno rural e banco de horas, e o gerente pode revisar e aprovar o espelho de ponto mensal antes do processamento da folha
+**Depends on**: Phase 25, Phase 26
+**Requirements**: PONTO-01, PONTO-02, PONTO-03, PONTO-04
+**Success Criteria** (what must be TRUE):
+
+1. Colaborador pode registrar ponto (entrada, intervalos, saída) via app mobile com geolocalização validada contra o perímetro da fazenda (PostGIS), funcionando offline com sincronização automática, e gerente pode registrar ponto manualmente para equipes sem celular com justificativa auditável
+2. Gerente pode vincular horas trabalhadas a atividades/operações (plantio, colheita, trato, manutenção) por talhão ou pasto com modo rápido por equipe, e o custo/hora é calculado automaticamente e lançado no centro de custo da atividade correspondente
+3. Sistema calcula automaticamente horas extras (50% dias normais, 100% domingos/feriados com DSR), banco de horas com alerta de vencimento em 6 meses, adicional noturno rural (21h-5h, 25%, hora reduzida 52m30s) e alerta de interjornada menor que 11 horas
+4. Gerente pode revisar espelho de ponto mensal com identificação visual de inconsistências, corrigir registros com justificativa, conduzir fluxo de aprovação (gerente → RH), e o colaborador pode aceitar o espelho via app — com prazo de fechamento configurável e exportação em PDF
+
+**Plans**: 6 plans
+
+Plans:
+- [x] 27-01-PLAN.md — Prisma schema (5 models, 3 enums), migration, date-holidays install, TypeScript types
+- [x] 27-02-PLAN.md — Time calculations engine (TDD): overtime, rural night premium, interjornada, holidays
+- [x] 27-03-PLAN.md — Backend REST API: time-entries (incl. team bulk linking), overtime-bank, timesheets with PDF export
+- [x] 27-04-PLAN.md — Frontend web: AttendancePage with team linking, hooks, types
+- [x] 27-05-PLAN.md — Mobile: time-punch screen with geofencing, offline storage, sync
+- [x] 27-06-PLAN.md — Frontend web: TimesheetPage with approval flow, corrections, PDF export
+**UI hint**: yes
+
+### Phase 28: Processamento da Folha Mensal
+
+**Goal**: Contador pode processar folha mensal em lote com cálculo automático completo por colaborador, gerar holerites em PDF para entrega por email e app, registrar e descontar adiantamentos salariais, e processar o 13º salário nas duas parcelas — com fechamento imutável e integração com ficha do colaborador
+**Depends on**: Phase 26, Phase 27
+**Requirements**: FOLHA-02, FOLHA-03, FOLHA-04, FOLHA-05
+**Success Criteria** (what must be TRUE):
+
+1. Contador pode processar folha mensal em lote para todos os colaboradores ativos, com cálculo automático de salário proporcional, horas extras com DSR, noturno rural, INSS/IRRF/FGTS, moradia/alimentação e encargos patronais (INSS 20%, RAT, FGTS 8%) — com bloqueio se espelho de ponto não estiver aprovado
+2. Contador pode revisar preview da folha antes de confirmar, recalcular individualmente um colaborador, e fechar a folha tornando-a imutável — com possibilidade de estorno completo que reverte todos os lançamentos associados
+3. Gerente pode registrar adiantamento salarial com limite configurável em percentual do salário, processar adiantamentos em lote no dia 15 com 40% do salário, gerar recibo PDF e o desconto aparece automaticamente na folha do mês
+4. Colaborador pode receber holerite detalhado com proventos, descontos, bases INSS/IRRF/FGTS e totais em PDF individual via email ou app mobile, com histórico dos últimos 12 meses acessível na ficha
+5. Contador pode processar 13º salário (1ª parcela até 30/nov sem descontos, 2ª parcela até 20/dez com INSS e IRRF) com cálculo proporcional por meses trabalhados incluindo médias de HE e noturno, recibo PDF e integração financeira
+
+**Plans**: 6 plans
+
+Plans:
+- [x] 28-01-PLAN.md — Prisma schema (PayrollRun/PayrollRunItem/SalaryAdvance) + payroll calculation service
+- [x] 28-02-PLAN.md — Salary advances module (service + routes + receipt PDF + tests)
+- [x] 28-03-PLAN.md — PayrollRun orchestrator (process/close/revert) + payslip PDF + email + routes
+- [x] 28-04-PLAN.md — Frontend types/hooks + PayrollRunsPage + wizard + detail modal + status badges
+- [x] 28-05-PLAN.md — SalaryAdvanceModal + PayslipTab on employee ficha + sidebar/routes
+- [x] 28-06-PLAN.md — Visual and functional verification checkpoint
+**UI hint**: yes
+
+### Phase 29: Férias, Afastamentos, Rescisão e Provisões
+
+**Goal**: Gerente pode programar e calcular férias com fracionamento, registrar afastamentos com impacto automático na folha, o contador pode processar rescisão com TRCT completo e guias, e o sistema calcula mensalmente a provisão de férias e 13º com lançamento contábil no passivo — cobrindo o ciclo completo de eventos trabalhistas ao longo da relação de emprego
+**Depends on**: Phase 28
+**Requirements**: FERIAS-01, FERIAS-02, FERIAS-03, FERIAS-04
+**Success Criteria** (what must be TRUE):
+
+1. Gerente pode controlar períodos aquisitivos, programar férias (mínimo 5 dias, até 3 frações) em calendário visual que exibe conflitos com datas de safra, calcular pagamento com salário + 1/3 + médias menos INSS e IRRF, gerar recibo PDF e receber alerta 60 dias antes do vencimento do período de dobro
+2. Gerente pode registrar afastamentos por tipo (atestado até 15 dias pela empresa / após INSS, acidente com CAT, maternidade 120 dias, paternidade, casamento, falecimento) com impacto automático na folha e controle de retorno com ASO obrigatório após acidentes
+3. Contador pode processar rescisão por tipo (sem justa causa, justa causa, pedido de demissão, fim de safra, acordo mútuo) com cálculo automático de saldo de salário, aviso prévio proporcional (30 + 3 dias/ano Lei 12.506/2011 máx 90), 13º prop., férias vencidas+prop.+1/3, multa FGTS 40%/20%, gerar TRCT em PDF e guias GRRF com alerta de prazo de 10 dias
+4. Sistema calcula mensalmente provisão de férias e 13º por colaborador (1/12 do salário + 1/3 + encargos) usando histórico salarial, faz lançamento contábil automático de despesa na DRE e passivo no BP, reverte ao efetuar o pagamento, e exibe relatório de posição com rateio por centro de custo conforme apontamento de horas
+
+**Plans**: 5 plans
+
+Plans:
+- [x] 29-01-PLAN.md — Prisma schema (5 models, 7 enums, migration) + vacation-schedules + employee-absences backend
+- [x] 29-02-PLAN.md — Employee-terminations backend (calculation + TRCT/GRRF PDF + CRUD)
+- [x] 29-03-PLAN.md — Payroll-provisions backend (monthly calculation + reversal + cost center report)
+- [x] 29-04-PLAN.md — Frontend types, hooks, VacationSchedulesPage, EmployeeAbsencesPage, sidebar + App.tsx
+- [x] 29-05-PLAN.md — Frontend EmployeeTerminationsPage, PayrollProvisionsPage + visual checkpoint
+**UI hint**: yes
+
+### Phase 30: Segurança do Trabalho Rural (NR-31)
+
+**Goal**: Gerente e técnico de segurança podem controlar a entrega de EPIs, registrar e acompanhar treinamentos obrigatórios NR-31 com matriz de conformidade, e gerenciar ASOs e PCMSO com alertas de vencimento — garantindo que nenhum colaborador opere sem EPI, treinamento válido ou ASO em dia
+**Depends on**: Phase 25
+**Requirements**: SEGUR-01, SEGUR-02, SEGUR-03
+**Success Criteria** (what must be TRUE):
+
+1. Gerente pode cadastrar EPIs com número CA e validade, registrar entrega por colaborador com data e tipo consumindo do estoque de produtos existente, receber alertas de CA vencido ou necessidade de troca, e gerar ficha de EPI em PDF com relatório de conformidade por função
+2. Técnico pode registrar treinamentos NR-31 obrigatórios (integração, agrotóxicos, máquinas, animais, primeiros socorros, incêndio) com data, carga horária, instrutor e lista de presença, configurar validade por tipo, receber alerta 30 dias antes da reciclagem e gerar certificado PDF e matriz de conformidade
+3. Gerente pode registrar ASOs por tipo (admissional, periódico, retorno, mudança de função, demissional) com médico CRM, resultado e exames, e o sistema alerta 30 dias antes do vencimento, bloqueia admissão sem ASO admissional e exige ASO demissional para processar rescisão
+
+**Plans**: 7 plans
+
+Plans:
+- [x] 30-01-PLAN.md — Schema migration (8 tables, 5 enums) + types files + app.ts wiring
+- [x] 30-02-PLAN.md — EPI backend: epi-products CRUD + epi-deliveries with stock integration + PDF
+- [x] 30-03-PLAN.md — Training backend: training-types with NR-31 seed + training-records + certificate PDF
+- [x] 30-04-PLAN.md — ASO backend: medical-exams + safety-compliance dashboard aggregation + reports
+- [x] 30-05-PLAN.md — Frontend: types, hooks, ComplianceStatusBadge, sidebar, router, EPI pages
+- [x] 30-06-PLAN.md — Frontend: TrainingTypesPage, TrainingRecordsPage, MedicalExamsPage
+- [x] 30-07-PLAN.md — Frontend: SafetyDashboardPage with KPIs and 4 tabs + visual verification
+**UI hint**: yes
+
+### Phase 31: Obrigações Acessórias e eSocial
+
+**Goal**: Contador pode gerar guias de recolhimento de FGTS, INSS, IRRF e FUNRURAL com vencimentos e alertas corretos, gerar eventos eSocial em XML conforme leiaute S-1.3 para download e transmissao manual, e emitir informes de rendimentos em PDF com relatorio de consistencia RAIS — cobrindo todas as obrigacoes acessorias trabalhistas
+**Depends on**: Phase 28, Phase 29, Phase 30
+**Requirements**: ESOCIAL-01, ESOCIAL-02, ESOCIAL-03
+**Success Criteria** (what must be TRUE):
+
+1. Contador pode gerar guias de recolhimento (FGTS via GFIP/DCTFWeb, INSS via DARF, IRRF via DARF, FUNRURAL via GPS/DARF) com calendário de vencimentos, alertas antecipados e integração automática com Contas a Pagar — sem entrada manual de valores
+2. Contador pode gerar eventos eSocial nos grupos corretos (tabela S-1000/S-1005/S-1010/S-1020, não periódicos S-2200/S-2206/S-2230/S-2299, periódicos S-1200/S-1299, SST S-2210/S-2220/S-2240) em XML assinado digitalmente com certificado ICP-Brasil, transmitir ao Web Service do governo e acompanhar protocolo, recibo e retorno em dashboard de status com reprocessamento de rejeitados
+3. Contador pode gerar informe de rendimentos por colaborador em PDF (total de renda, IRRF retido, INSS) com envio por email ou app, e consultar histórico por ano-base com validação de dados antes da emissão
+
+**Plans**: 5 plans
+
+Plans:
+- [x] 31-01-PLAN.md — Prisma schema (TaxGuide, EsocialEvent, IncomeStatement), enums, funruralBasis, xmlbuilder2 install, backend+frontend types
+- [x] 31-02-PLAN.md — Tax guides backend (SEFIP .RE, DARF PDF, GPS PDF, payables integration) + frontend page
+- [x] 31-03-PLAN.md — eSocial events backend (15 XML builders, validators, state machine, dashboard)
+- [ ] 31-04-PLAN.md — eSocial events frontend + income statements full stack (PDF, email, RAIS consistency)
+- [ ] 31-05-PLAN.md — Integration wiring (cron alerts, sidebar OBRIGACOES group, routes) + visual verification
+**UI hint**: yes
+
+### Phase 32: Integração Financeira, Contábil e Dashboard RH
+
+**Goal**: Ao fechar a folha, o sistema lança automaticamente todas as contas a pagar correspondentes com vencimentos legais corretos e rateio por centro de custo, registra os lançamentos contábeis por regime de competência, e o gerente pode visualizar no dashboard RH os KPIs de custo de pessoal por fazenda, atividade e cultura — fechando o ciclo entre quem trabalhou, o que produziu e quanto custou
+**Depends on**: Phase 28, Phase 29, Phase 31
+**Requirements**: INTEGR-01, INTEGR-02, INTEGR-03
+**Success Criteria** (what must be TRUE):
+
+1. Ao confirmar o fechamento da folha, o sistema gera automaticamente CPs para salários líquidos (vencimento dia 5 útil), FGTS (dia 7), INSS/IRRF (dia 20), VT, pensão alimentícia e FUNRURAL — com rateio por centro de custo conforme apontamento de horas, tela de revisão pré-confirmação e capacidade de estorno completo com rollback dos CPs
+2. Ao fechar a folha, o sistema lança automaticamente os créditos contábeis por regime de competência — salários como despesa, encargos como despesa, provisões como despesa+passivo, guias como passivo a recolher — com rateio por centro de custo e baixa do passivo ao efetuar o pagamento
+3. Gerente pode visualizar dashboard RH com total de colaboradores por status e tipo de contrato, custo total da folha (bruto/líquido/encargos), custo médio por colaborador, custo de mão de obra por hectare, evolução mensal 12 meses, composição da folha em pizza, custo por atividade/cultura, turnover, previsão de encerramentos de safra em 30/60/90 dias e alertas consolidados com filtros por fazenda e departamento
+
+**Plans**: 4 plans
+
+Plans:
+- [ ] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
+- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
+- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
+- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
+**UI hint**: yes
 
 ## Progress
 
@@ -371,12 +628,20 @@ Plans:
 | 13. Kanban DnD Fixes + Notification Wiring          | v1.1      | 3/3            | Complete    | 2026-03-19 |
 | 14. Stock Reversal + Supplier Rating Completion     | v1.1      | 2/2            | Complete    | 2026-03-19 |
 | 15. Frontend API Path Fixes                         | v1.1      | 1/1            | Complete    | 2026-03-19 |
-| 16. Cadastro de Ativos                              | v1.2      | 0/?            | Not started | -          |
-| 17. Engine de Depreciação                           | v1.2      | 0/?            | Not started | -          |
-| 18. Manutenção e Ordens de Serviço                  | v1.2      | 0/?            | Not started | -          |
-| 19. Integração Financeira — Aquisição               | v1.2      | 0/?            | Not started | -          |
-| 20. Alienação e Baixa de Ativos                     | v1.2      | 0/?            | Not started | -          |
-| 21. Controle Operacional                            | v1.2      | 0/?            | Not started | -          |
-| 22. Hierarquia Avançada e Imobilizado em Andamento  | v1.2      | 0/?            | Not started | -          |
-| 23. Relatórios e Dashboard Patrimonial              | v1.2      | 0/?            | Not started | -          |
-| 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 0/?            | Not started | -          |
+| 16. Cadastro de Ativos                              | v1.2      | 7/7            | Complete    | 2026-03-20 |
+| 17. Engine de Depreciação                           | v1.2      | 4/4            | Complete    | 2026-03-20 |
+| 18. Manutenção e Ordens de Serviço                  | v1.2      | 10/10          | Complete    | 2026-03-22 |
+| 19. Integração Financeira — Aquisição               | v1.2      | 3/3            | Complete    | 2026-03-22 |
+| 20. Alienação e Baixa de Ativos                     | v1.2      | 5/5            | Complete    | 2026-03-22 |
+| 21. Controle Operacional                            | v1.2      | 3/3            | Complete    | 2026-03-22 |
+| 22. Hierarquia Avançada e Imobilizado em Andamento  | v1.2      | 3/3            | Complete    | 2026-03-23 |
+| 23. Relatórios e Dashboard Patrimonial              | v1.2      | 3/3            | Complete    | 2026-03-23 |
+| 24. Ativos Biológicos, Leasing e Features Avançadas | v1.2      | 3/3            | Complete    | 2026-03-23 |
+| 25. Cadastro de Colaboradores e Contratos           | v1.3      | 4/4 | Complete    | 2026-03-24 |
+| 26. Parâmetros de Folha e Motor de Cálculo          | v1.3      | 4/4 | Complete    | 2026-03-24 |
+| 27. Controle de Ponto e Jornada                     | v1.3      | 6/6 | Complete    | 2026-03-24 |
+| 28. Processamento da Folha Mensal                   | v1.3      | 6/6 | Complete    | 2026-03-25 |
+| 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 5/5 | Complete    | 2026-03-25 |
+| 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 7/7 | Complete   | 2026-03-26 |
+| 31. Obrigações Acessórias e eSocial                 | v1.3      | 3/5 | In Progress|  |
+| 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 0/TBD          | Not started | -          |

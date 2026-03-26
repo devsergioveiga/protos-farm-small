@@ -320,6 +320,11 @@
   color: var(--color-neutral-600);
 }
 
+.animals__owner-summary {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+}
+
 /* ─── Checkbox & Selection ───────────────────────────────────── */
 
 .animals__th-check,

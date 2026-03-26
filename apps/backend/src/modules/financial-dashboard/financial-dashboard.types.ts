@@ -60,6 +60,31 @@ export interface FinancialDashboardOutput {
   };
 }
 
+// ─── Patrimony Dashboard ─────────────────────────────────────────────
+
+export interface PatrimonyDashboardQuery {
+  farmId?: string;
+  year: number;
+  month: number;
+}
+
+export interface PatrimonyDashboardOutput {
+  totalActiveValue: number;
+  accumulatedDepreciation: number;
+  netBookValue: number;
+  acquisitionsInPeriod: {
+    count: number;
+    totalValue: number;
+  };
+  disposalsInPeriod: {
+    count: number;
+    totalSaleValue: number;
+    totalGainLoss: number;
+  };
+  assetCountByType: Array<{ assetType: string; count: number }>;
+  assetCountByStatus: Array<{ status: string; count: number }>;
+}
+
 // ─── Error ───────────────────────────────────────────────────────────
 
 export class FinancialDashboardError extends Error {

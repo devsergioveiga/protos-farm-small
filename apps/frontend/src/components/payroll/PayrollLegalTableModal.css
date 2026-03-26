@@ -1,0 +1,353 @@
+/* ─── PayrollLegalTableModal ────────────────────────────────────── */
+
+.legal-table-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.legal-table-modal {
+  background: var(--color-neutral-0);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: legal-table-modal-enter 300ms ease-out;
+}
+
+@keyframes legal-table-modal-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .legal-table-modal {
+    animation: none;
+  }
+}
+
+.legal-table-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 0;
+  flex-shrink: 0;
+}
+
+.legal-table-modal__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.legal-table-modal__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  padding: 8px;
+  border-radius: 6px;
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 100ms ease-out;
+}
+
+.legal-table-modal__close:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.legal-table-modal__close:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.legal-table-modal__body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.legal-table-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.legal-table-modal__field--scalar {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.legal-table-modal__label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-neutral-700);
+}
+
+.legal-table-modal__label--small {
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.legal-table-modal__readonly {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  padding: 12px 16px;
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+}
+
+.legal-table-modal__input {
+  padding: 12px 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  transition: border-color 200ms;
+  min-height: 48px;
+  box-sizing: border-box;
+}
+
+.legal-table-modal__input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.legal-table-modal__input--error {
+  border-color: var(--color-error-500);
+}
+
+.legal-table-modal__error {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-error-500);
+}
+
+/* ─── Brackets table ─────────────────────────────────────────── */
+
+.legal-table-modal__brackets-section,
+.legal-table-modal__scalars-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legal-table-modal__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.legal-table-modal__bracket-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+}
+
+.legal-table-modal__bracket-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+}
+
+.legal-table-modal__bracket-table th {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-neutral-500);
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-neutral-200);
+  white-space: nowrap;
+}
+
+.legal-table-modal__bracket-table td {
+  padding: 8px 8px;
+  border-bottom: 1px solid var(--color-neutral-100);
+  vertical-align: top;
+}
+
+.legal-table-modal__bracket-table tr:last-child td {
+  border-bottom: none;
+}
+
+.legal-table-modal__bracket-input {
+  width: 100%;
+  padding: 8px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  min-height: 40px;
+  box-sizing: border-box;
+  transition: border-color 200ms;
+  min-width: 80px;
+}
+
+.legal-table-modal__bracket-input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.legal-table-modal__bracket-input:disabled {
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-400);
+  cursor: not-allowed;
+}
+
+.legal-table-modal__bracket-input::placeholder {
+  color: var(--color-neutral-400);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+}
+
+.legal-table-modal__remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-error-500);
+  padding: 6px;
+  border-radius: 6px;
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 100ms ease-out;
+}
+
+.legal-table-modal__remove-btn:hover {
+  background: var(--color-error-100);
+}
+
+.legal-table-modal__remove-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.legal-table-modal__add-bracket-btn {
+  background: none;
+  border: 1px dashed var(--color-neutral-300);
+  cursor: pointer;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-primary-600);
+  padding: 10px 16px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  transition: background 100ms ease-out;
+  align-self: flex-start;
+}
+
+.legal-table-modal__add-bracket-btn:hover {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-300);
+}
+
+.legal-table-modal__add-bracket-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────── */
+
+.legal-table-modal__footer {
+  padding: 16px 24px 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+.legal-table-modal__btn {
+  min-height: 48px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: background 100ms ease-out;
+}
+
+.legal-table-modal__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.legal-table-modal__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.legal-table-modal__btn--primary {
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+}
+
+.legal-table-modal__btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+}
+
+.legal-table-modal__btn--secondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.legal-table-modal__btn--secondary:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+}
+
+/* ─── Accessibility ──────────────────────────────────────────── */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

@@ -2,6 +2,35 @@
 /* Imports shared modal, upload, report styles */
 @import '../bulk-import/BulkImportModal.css';
 
+/* ─── Upload Zone Template Button ────────────────────────────────── */
+
+.bulk-upload-zone__template-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary-600);
+  background: transparent;
+  border: 1px solid var(--color-primary-600);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  min-height: 48px;
+  transition: background 200ms ease-out, color 200ms ease-out;
+}
+
+.bulk-upload-zone__template-btn:hover {
+  background: var(--color-primary-50, #e8f5e9);
+}
+
+.bulk-upload-zone__template-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
 /* ─── Animal Column Mapping ───────────────────────────────────────── */
 
 .animal-column-mapping {
@@ -112,6 +141,64 @@
   font-size: 0.8125rem;
   color: #f57f17;
   padding: var(--space-1) 0;
+}
+
+/* ─── Report Tabs ────────────────────────────────────────────────── */
+
+.bulk-report__tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: var(--space-3);
+  border-bottom: 2px solid var(--color-neutral-200);
+}
+
+.bulk-report__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-2) var(--space-4);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  min-height: 40px;
+  transition: color 200ms ease-out, border-color 200ms ease-out;
+}
+
+.bulk-report__tab:hover {
+  color: var(--color-neutral-700);
+}
+
+.bulk-report__tab--active {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+
+.bulk-report__tab--skipped {
+  color: var(--color-error-500);
+}
+
+.bulk-report__tab--skipped.bulk-report__tab--active {
+  border-bottom-color: var(--color-error-500);
+}
+
+.bulk-report__tab:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.bulk-report__empty {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  text-align: center;
+  padding: var(--space-5) var(--space-4);
+  margin: 0;
 }
 
 /* ─── Responsive ──────────────────────────────────────────────────── */

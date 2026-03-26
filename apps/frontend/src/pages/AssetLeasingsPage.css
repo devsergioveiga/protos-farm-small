@@ -1,0 +1,512 @@
+/* ─── AssetLeasingsPage ──────────────────────────────────────────────────────── */
+
+.leasing-page {
+  padding: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ─── Breadcrumb ─────────────────────────────────────────────────────────────── */
+
+.leasing-page__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  margin-bottom: 16px;
+}
+
+.leasing-page__breadcrumb span[aria-current="page"] {
+  color: var(--color-neutral-800);
+  font-weight: 600;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+
+.leasing-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.leasing-page__header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.leasing-page__header-icon {
+  color: var(--color-primary-600);
+}
+
+.leasing-page__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-neutral-900);
+  margin: 0;
+}
+
+.leasing-page__btn-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  border: none;
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  transition: background 200ms ease-out;
+}
+
+.leasing-page__btn-new:hover {
+  background: var(--color-primary-700);
+}
+
+.leasing-page__btn-new:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Filters ────────────────────────────────────────────────────────────── */
+
+.leasing-page__filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.leasing-page__filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+
+.leasing-page__filter-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+}
+
+.leasing-page__select {
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-800);
+  background: var(--color-neutral-0);
+  transition: border-color 200ms ease-out;
+  min-height: 48px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+}
+
+.leasing-page__select:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+/* ─── Error / Success ────────────────────────────────────────────────────── */
+
+.leasing-page__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-error-50, #ffebee);
+  border: 1px solid var(--color-error-200, #ef9a9a);
+  border-radius: 6px;
+  color: var(--color-error-700, #c62828);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  margin-bottom: 24px;
+}
+
+.leasing-page__success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-primary-50, #f1f8e9);
+  border: 1px solid var(--color-primary-200, #a5d6a7);
+  border-radius: 6px;
+  color: var(--color-primary-700, #2e7d32);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  margin-bottom: 24px;
+}
+
+/* ─── Table (desktop) ────────────────────────────────────────────────────── */
+
+.leasing-page__table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+}
+
+.leasing-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+}
+
+.leasing-page__table caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.leasing-page__table th {
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--color-neutral-50);
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--color-neutral-200);
+  white-space: nowrap;
+}
+
+.leasing-page__table td {
+  padding: 12px 16px;
+  color: var(--color-neutral-800);
+  border-bottom: 1px solid var(--color-neutral-100);
+  vertical-align: middle;
+}
+
+.leasing-page__table tbody tr:hover {
+  background: var(--color-neutral-50);
+}
+
+.leasing-page__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Cell specifics */
+.leasing-page__cell-contract {
+  font-weight: 600;
+  color: var(--color-neutral-900);
+}
+
+.leasing-page__cell-currency {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.leasing-page__cell-dates {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+  white-space: nowrap;
+}
+
+/* ─── Badge ──────────────────────────────────────────────────────────────── */
+
+.leasing-page__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.leasing-page__badge--success {
+  background: var(--color-primary-50, #f1f8e9);
+  color: var(--color-primary-700, #2e7d32);
+}
+
+.leasing-page__badge--info {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.leasing-page__badge--warning {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.leasing-page__badge--error {
+  background: var(--color-error-50, #ffebee);
+  color: var(--color-error-700, #c62828);
+}
+
+/* ─── Actions ────────────────────────────────────────────────────────────── */
+
+.leasing-page__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+.leasing-page__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  cursor: pointer;
+  min-height: 36px;
+  white-space: nowrap;
+  transition: background 200ms ease-out, border-color 200ms ease-out;
+}
+
+.leasing-page__action-btn:hover {
+  background: var(--color-neutral-50);
+  border-color: var(--color-neutral-400);
+}
+
+.leasing-page__action-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.leasing-page__action-btn--primary {
+  border-color: var(--color-primary-600);
+  color: var(--color-primary-700);
+}
+
+.leasing-page__action-btn--primary:hover {
+  background: var(--color-primary-50, #f1f8e9);
+}
+
+.leasing-page__action-btn--danger {
+  border-color: var(--color-error-300, #ef9a9a);
+  color: var(--color-error-700, #c62828);
+}
+
+.leasing-page__action-btn--danger:hover {
+  background: var(--color-error-50, #ffebee);
+}
+
+/* ─── Empty state ────────────────────────────────────────────────────────── */
+
+.leasing-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 64px 24px;
+  text-align: center;
+}
+
+.leasing-page__empty-icon {
+  color: var(--color-neutral-300);
+}
+
+.leasing-page__empty-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.leasing-page__empty-desc {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 0;
+  max-width: 360px;
+}
+
+.leasing-page__empty-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  border: none;
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  transition: background 200ms ease-out;
+}
+
+.leasing-page__empty-btn:hover {
+  background: var(--color-primary-700);
+}
+
+.leasing-page__empty-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Skeleton ───────────────────────────────────────────────────────────── */
+
+.leasing-page__skeleton-row {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.leasing-page__skeleton-cell {
+  height: 16px;
+  background: var(--color-neutral-200);
+  border-radius: 4px;
+  animation: leasing-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.leasing-page__skeleton-cell--sm { width: 80px; }
+.leasing-page__skeleton-cell--md { width: 140px; }
+.leasing-page__skeleton-cell--lg { width: 200px; }
+.leasing-page__skeleton-cell--xl { width: 100px; }
+
+@keyframes leasing-skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leasing-page__skeleton-cell { animation: none; opacity: 0.5; }
+}
+
+/* ─── Cards (mobile) ─────────────────────────────────────────────────────── */
+
+.leasing-page__cards {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.leasing-page__card {
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.leasing-page__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.leasing-page__card-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-neutral-900);
+  margin: 0;
+}
+
+.leasing-page__card-subtitle {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-600);
+  margin: 4px 0 0;
+}
+
+.leasing-page__card-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.leasing-page__card-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.leasing-page__card-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.leasing-page__card-value {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-800);
+}
+
+.leasing-page__card-value--mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+}
+
+.leasing-page__card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-neutral-100);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .leasing-page {
+    padding: 16px;
+  }
+
+  .leasing-page__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .leasing-page__filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .leasing-page__filter-field {
+    min-width: unset;
+  }
+
+  .leasing-page__table-wrapper {
+    display: none;
+  }
+
+  .leasing-page__cards {
+    display: flex;
+  }
+}
