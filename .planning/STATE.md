@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Ready to plan
-stopped_at: Completed 31-05-PLAN.md — Phase 31 plans complete, awaiting human verification
-last_updated: "2026-03-26T14:48:09.151Z"
+status: Ready to execute
+stopped_at: Completed 32-01-PLAN.md
+last_updated: "2026-03-26T19:28:17.477Z"
 progress:
   total_phases: 26
   completed_phases: 25
-  total_plans: 115
-  completed_plans: 115
+  total_plans: 120
+  completed_plans: 116
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 31 — obriga-es-acess-rias-e-esocial
+**Current focus:** Phase 32 — integra-o-financeira-cont-bil-e-dashboard-rh
 
 ## Current Position
 
-Phase: 32
-Plan: Not started
+Phase: 32 (integra-o-financeira-cont-bil-e-dashboard-rh) — EXECUTING
+Plan: 2 of 5
 
 ## Accumulated Context
 
@@ -106,6 +106,8 @@ Key decisions for v1.3:
 - [Phase 31-obriga-es-acess-rias-e-esocial]: downloadEvent uses raw fetch to distinguish XML blob from XSD validation JSON error by Content-Type inspection
 - [Phase 31-obriga-es-acess-rias-e-esocial]: Used body (not message) for Notification.create per schema
 - [Phase 31-obriga-es-acess-rias-e-esocial]: EsocialEventsPage and IncomeStatementsPage created in plan-05 (missing from plan-04 disk)
+- [Phase 32]: IRRF is aggregated per run (one CP), not per employee — simplifies reconciliation
+- [Phase 32]: revertRun uses PAYROLL_ORIGIN_TYPES const array covering all 7 types in a single OR filter
 
 ### Pending Todos
 
@@ -121,7 +123,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T14:31:00.016Z
-Stopped at: Completed 31-05-PLAN.md — Phase 31 plans complete, awaiting human verification
+Last session: 2026-03-26T19:28:17.330Z
+Stopped at: Completed 32-01-PLAN.md
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
