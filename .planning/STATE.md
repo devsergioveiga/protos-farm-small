@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Completed 30-01-PLAN.md — schema migration + types foundation
-last_updated: "2026-03-26T10:21:04.552Z"
+stopped_at: Completed 30-seguranca-trabalho-nr31/30-03-PLAN.md
+last_updated: "2026-03-26T10:34:39.578Z"
 progress:
   total_phases: 26
   completed_phases: 23
   total_plans: 110
-  completed_plans: 104
+  completed_plans: 106
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 30 (seguranca-trabalho-nr31) — EXECUTING
-Plan: 2 of 7
+Plan: 4 of 7
 
 ## Accumulated Context
 
@@ -87,6 +87,10 @@ Key decisions for v1.3:
 - [Phase 29]: VacationScheduleModal Step 3 shows estimated calculation — definitive values computed server-side on confirm
 - [Phase 29]: ConfirmModal variant=danger for rescisao (medium criticality), variant=warning for estorno (reversible)
 - [Phase 30-seguranca-trabalho-nr31]: TrainingType.organizationId is nullable for system-global NR-31 types; classifyExpiryAlert() shared helper in safety-compliance.types.ts
+- [Phase 30-seguranca-trabalho-nr31]: findFirst+create for NR-31 seed: Postgres null!=null in unique constraints with nullable organizationId
+- [Phase 30-seguranca-trabalho-nr31]: Training routes use employees:read/employees:manage (no hr: module in PermissionModule)
+- [Phase 30-seguranca-trabalho-nr31]: Stock deduction inline in withRlsContext transaction (not via service call) to avoid nested transaction anti-pattern
+- [Phase 30-seguranca-trabalho-nr31]: jest.config.js .js→.ts moduleNameMapper added to unblock all tests after plan 30-01 ESM-style app.ts imports
 
 ### Pending Todos
 
@@ -102,7 +106,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T10:21:04.540Z
-Stopped at: Completed 30-01-PLAN.md — schema migration + types foundation
+Last session: 2026-03-26T10:34:24.325Z
+Stopped at: Completed 30-seguranca-trabalho-nr31/30-03-PLAN.md
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos

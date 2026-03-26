@@ -560,8 +560,8 @@ Plans:
 
 Plans:
 - [x] 30-01-PLAN.md — Schema migration (8 tables, 5 enums) + types files + app.ts wiring
-- [ ] 30-02-PLAN.md — EPI backend: epi-products CRUD + epi-deliveries with stock integration + PDF
-- [ ] 30-03-PLAN.md — Training backend: training-types with NR-31 seed + training-records + certificate PDF
+- [x] 30-02-PLAN.md — EPI backend: epi-products CRUD + epi-deliveries with stock integration + PDF
+- [x] 30-03-PLAN.md — Training backend: training-types with NR-31 seed + training-records + certificate PDF
 - [ ] 30-04-PLAN.md — ASO backend: medical-exams + safety-compliance dashboard aggregation + reports
 - [ ] 30-05-PLAN.md — Frontend: types, hooks, ComplianceStatusBadge, sidebar, router, EPI pages
 - [ ] 30-06-PLAN.md — Frontend: TrainingTypesPage, TrainingRecordsPage, MedicalExamsPage
@@ -641,6 +641,6 @@ Plans:
 | 27. Controle de Ponto e Jornada                     | v1.3      | 6/6 | Complete    | 2026-03-24 |
 | 28. Processamento da Folha Mensal                   | v1.3      | 6/6 | Complete    | 2026-03-25 |
 | 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 5/5 | Complete    | 2026-03-25 |
-| 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 1/7 | In Progress|  |
+| 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 3/7 | In Progress|  |
 | 31. Obrigações Acessórias e eSocial                 | v1.3      | 0/TBD          | Not started | -          |
 | 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 0/TBD          | Not started | -          |
