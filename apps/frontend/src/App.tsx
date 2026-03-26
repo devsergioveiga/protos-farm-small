@@ -107,6 +107,12 @@ const PurchasingDashboardPage = lazy(() => import('@/pages/PurchasingDashboardPa
 const PurchasingKanbanPage = lazy(() => import('@/pages/PurchasingKanbanPage'));
 const NotificationPreferencesPage = lazy(() => import('@/pages/NotificationPreferencesPage'));
 const AssetsPage = lazy(() => import('@/pages/AssetsPage'));
+const EpiProductsPage = lazy(() => import('@/pages/EpiProductsPage'));
+const EpiDeliveriesPage = lazy(() => import('@/pages/EpiDeliveriesPage'));
+const TrainingTypesPage = lazy(() => import('@/pages/TrainingTypesPage'));
+const TrainingRecordsPage = lazy(() => import('@/pages/TrainingRecordsPage'));
+const MedicalExamsPage = lazy(() => import('@/pages/MedicalExamsPage'));
+const SafetyDashboardPage = lazy(() => import('@/pages/SafetyDashboardPage'));
 
 export function App() {
   return (
@@ -215,6 +221,12 @@ export function App() {
                 <Route path="/purchasing-kanban" element={<PurchasingKanbanPage />} />
                 <Route path="/notification-preferences" element={<NotificationPreferencesPage />} />
                 <Route path="/assets" element={<AssetsPage />} />
+                <Route path="/epi-products" element={<EpiProductsPage />} />
+                <Route path="/epi-deliveries" element={<EpiDeliveriesPage />} />
+                <Route path="/training-types" element={<TrainingTypesPage />} />
+                <Route path="/training-records" element={<TrainingRecordsPage />} />
+                <Route path="/medical-exams" element={<MedicalExamsPage />} />
+                <Route path="/safety-dashboard" element={<SafetyDashboardPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}

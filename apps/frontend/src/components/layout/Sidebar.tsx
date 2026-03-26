@@ -76,6 +76,8 @@ import {
   Undo2,
   Wallet,
   Columns3,
+  HardHat,
+  GraduationCap,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -221,6 +223,17 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/goods-returns', icon: Undo2, label: 'Devoluções' },
       { to: '/purchase-budgets', icon: Wallet, label: 'Orçamento' },
       { to: '/saving-analysis', icon: BarChart3, label: 'Análise de Saving' },
+    ],
+  },
+  {
+    title: 'SEGURANÇA DO TRABALHO',
+    items: [
+      { to: '/epi-products', icon: HardHat, label: 'EPIs' },
+      { to: '/epi-deliveries', icon: Package, label: 'Entregas EPI' },
+      { to: '/training-types', icon: GraduationCap, label: 'Treinamentos' },
+      { to: '/training-records', icon: ClipboardList, label: 'Registros de Treinamento' },
+      { to: '/medical-exams', icon: Stethoscope, label: 'ASOs' },
+      { to: '/safety-dashboard', icon: Shield, label: 'Dashboard NR-31' },
     ],
   },
   {
