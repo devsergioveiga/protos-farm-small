@@ -34,11 +34,12 @@ export function validateXmlAgainstXsd(
     const segments = constraint.path.split('/');
     let node: Element | null = doc.documentElement;
 
-    for (let i = 1; i < segments.length && node; i++) {
+    for (let i = 1; i < segments.length && node !== null; i++) {
       const segment = segments[i];
       if (!segment) { node = null; break; }
-      const children = node.getElementsByTagName(segment);
-      node = children.length > 0 ? (children[0] as Element) : null;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+      const nodeChildren: HTMLCollectionOf<Element> = (node as Element).getElementsByTagName(segment) as HTMLCollectionOf<Element>;
+      node = nodeChildren.length > 0 ? (nodeChildren[0] as Element) : null;
     }
 
     if (!node) {

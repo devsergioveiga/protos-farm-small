@@ -145,6 +145,7 @@ import { vacationSchedulesRouter } from './modules/vacation-schedules/vacation-s
 import { employeeAbsencesRouter } from './modules/employee-absences/employee-absences.routes';
 import { payrollProvisionsRouter } from './modules/payroll-provisions/payroll-provisions.routes';
 import { employeeTerminationsRouter } from './modules/employee-terminations/employee-terminations.routes';
+import { esocialEventsRouter } from './modules/esocial-events/esocial-events.routes';
 import epiProductsRouter from './modules/epi-products/epi-products.routes';
 import epiDeliveriesRouter from './modules/epi-deliveries/epi-deliveries.routes';
 import trainingTypesRouter from './modules/training-types/training-types.routes';
@@ -314,5 +315,6 @@ app.use('/api', vacationSchedulesRouter);
 app.use('/api', employeeAbsencesRouter);
 app.use('/api', payrollProvisionsRouter);
 app.use('/api', employeeTerminationsRouter);
+app.use('/api', esocialEventsRouter);
 
 export { app };
