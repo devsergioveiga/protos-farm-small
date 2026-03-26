@@ -6,6 +6,7 @@ import { useSalaryAdvances } from '@/hooks/useSalaryAdvances';
 import PayrollRunStatusBadge from '@/components/payroll/PayrollRunStatusBadge';
 import PayrollRunWizard from '@/components/payroll/PayrollRunWizard';
 import PayrollRunDetailModal from '@/components/payroll/PayrollRunDetailModal';
+import PayrollCpReviewModal from '@/components/payroll/PayrollCpReviewModal';
 import SalaryAdvanceModal from '@/components/payroll/SalaryAdvanceModal';
 import type { PayrollRun, SalaryAdvance } from '@/types/payroll-runs';
 import { RUN_TYPE_LABELS, RUN_STATUS_LABELS } from '@/types/payroll-runs';
@@ -77,6 +78,11 @@ export default function PayrollRunsPage() {
   const [selectedRun, setSelectedRun] = useState<PayrollRun | null>(null);
   const [showDetail, setShowDetail] = useState(false);
 
+  const [showCpReview, setShowCpReview] = useState(false);
+  const [selectedRunIdForClose, setSelectedRunIdForClose] = useState<string | null>(null);
+  const [selectedRunMonthForClose, setSelectedRunMonthForClose] = useState('');
+  const [isConfirmingClose, setIsConfirmingClose] = useState(false);
+
   const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
 
   const initiateButtonRef = useRef<HTMLButtonElement>(null);
@@ -123,6 +129,25 @@ export default function PayrollRunsPage() {
       fetchAdvances({ month: buildMonthFilter() });
     }
   }, [activeTab, filterMonth, filterYear, filterType, filterStatus]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleFechaFolha(run: PayrollRun) {
+    setSelectedRunIdForClose(run.id);
+    setSelectedRunMonthForClose(run.referenceMonth);
+    setShowCpReview(true);
+  }
+
+  async function handleCpReviewConfirm() {
+    if (!selectedRunIdForClose) return;
+    setIsConfirmingClose(true);
+    const success = await closeRun(selectedRunIdForClose);
+    setIsConfirmingClose(false);
+    if (success) {
+      setShowCpReview(false);
+      setSelectedRunIdForClose(null);
+      setSelectedRunMonthForClose('');
+      // successMessage from usePayrollRuns is already set; override with plan copy
+    }
+  }
 
   async function handleOpenDetail(run: PayrollRun) {
     const full = await getRun(run.id);
@@ -406,6 +431,17 @@ export default function PayrollRunsPage() {
                         >
                           <Mail size={16} aria-hidden="true" />
                         </button>
+                        {run.status === 'CALCULATED' && (
+                          <button
+                            type="button"
+                            className="payroll-runs-page__action-btn payroll-runs-page__action-btn--primary"
+                            onClick={() => handleFechaFolha(run)}
+                            aria-label={`Fechar folha de ${getMonthLabel(run.referenceMonth)}`}
+                            title="Fechar folha"
+                          >
+                            Fechar Folha
+                          </button>
+                        )}
                         {run.status === 'COMPLETED' && (
                           <button
                             type="button"
@@ -605,6 +641,20 @@ export default function PayrollRunsPage() {
           setShowAdvanceModal(false);
           fetchAdvances({ month: buildMonthFilter() });
         }}
+      />
+
+      {/* CP Review modal — pre-close review before confirming payroll close */}
+      <PayrollCpReviewModal
+        isOpen={showCpReview}
+        onClose={() => {
+          setShowCpReview(false);
+          setSelectedRunIdForClose(null);
+          setSelectedRunMonthForClose('');
+        }}
+        runId={selectedRunIdForClose}
+        referenceMonth={selectedRunMonthForClose}
+        onConfirmClose={handleCpReviewConfirm}
+        isConfirming={isConfirmingClose}
       />
     </main>
   );

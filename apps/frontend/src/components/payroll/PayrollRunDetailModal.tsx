@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { X, Lock, RotateCcw } from 'lucide-react';
 import PayrollRunStatusBadge from './PayrollRunStatusBadge';
 import PayrollRunItemRow from './PayrollRunItemRow';
-import ConfirmDeleteModal from '@/components/confirm-delete/ConfirmDeleteModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import type { PayrollRun } from '@/types/payroll-runs';
 import { RUN_TYPE_LABELS } from '@/types/payroll-runs';
 import './PayrollRunDetailModal.css';
@@ -242,14 +242,17 @@ export default function PayrollRunDetailModal({
         </div>
       </div>
 
-      {/* Revert confirmation — typing required per D-03 */}
-      <ConfirmDeleteModal
+      {/* Revert confirmation — medium criticality, ConfirmModal variant=danger per UI-SPEC */}
+      <ConfirmModal
         isOpen={showRevertConfirm}
-        farmName={runReference}
+        title="Estornar fechamento da folha?"
+        message="Esta ação cancela todas as contas a pagar geradas e os lançamentos contábeis do fechamento. O espelho de ponto volta a ficar editável. Não é possível desfazer sem reprocessar a folha."
+        confirmLabel="Estornar Folha"
+        cancelLabel="Manter Fechamento"
+        variant="danger"
+        isLoading={isReverting}
         onConfirm={handleRevertConfirm}
         onCancel={() => setShowRevertConfirm(false)}
-        isDeleting={isReverting}
-        entityLabel="folha de pagamento"
       />
     </div>
   );
