@@ -85,6 +85,7 @@ import {
   listRuns,
   getRun,
   downloadPayslipsZip,
+  cpPreview,
 } from './payroll-runs.service';
 import { payrollTablesService } from '../payroll-tables/payroll-tables.service';
 import {
@@ -574,6 +575,321 @@ describe('PayrollRuns Service', () => {
 
       expect(result).toBeDefined();
       expect((result as any).items[0].employee.name).toBe('João Silva');
+    });
+  });
+
+  // ─── Test 8b: cpPreview ────────────────────────────────────────────
+
+  describe('cpPreview', () => {
+    const mockRun = {
+      id: 'run-1',
+      organizationId: 'org-1',
+      referenceMonth: new Date('2026-03-01'),
+      runType: 'MONTHLY' as const,
+      status: 'CALCULATED' as const,
+      totalNet: new Decimal(2670),
+    };
+
+    const baseItem = {
+      id: 'item-1',
+      employeeId: 'emp-1',
+      status: 'CALCULATED' as const,
+      grossSalary: new Decimal(3000),
+      netSalary: new Decimal(2670),
+      inssPatronal: new Decimal(690),
+      fgtsAmount: new Decimal(240),
+      irrfAmount: new Decimal(0),
+      vtDeduction: new Decimal(0),
+      alimonyDeduction: null,
+      lineItemsJson: [],
+      employee: {
+        id: 'emp-1',
+        name: 'João Silva',
+        farms: [{ farmId: 'farm-1' }],
+      },
+    };
+
+    it('returns correct structure with items and taxGuideItems array', async () => {
+      (mockPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValue(mockRun);
+      (mockPrisma.payrollRunItem.findMany as jest.Mock).mockResolvedValue([baseItem]);
+      (mockPrisma.taxGuide.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await cpPreview(rls, 'run-1');
+
+      expect(result).toHaveProperty('items');
+      expect(result).toHaveProperty('taxGuideItems');
+      expect(result).toHaveProperty('totalAmount');
+      expect(result).toHaveProperty('totalTaxGuides');
+      expect(result).toHaveProperty('runTotalNet');
+      expect(result).toHaveProperty('reconciled');
+      expect(Array.isArray(result.items)).toBe(true);
+      expect(Array.isArray(result.taxGuideItems)).toBe(true);
+    });
+
+    it('includes Salario Liquido, INSS Patronal, and FGTS entries', async () => {
+      (mockPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValue(mockRun);
+      (mockPrisma.payrollRunItem.findMany as jest.Mock).mockResolvedValue([baseItem]);
+      (mockPrisma.taxGuide.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await cpPreview(rls, 'run-1');
+
+      const types = result.items.map((i) => i.type);
+      expect(types).toContain('Salario Liquido');
+      expect(types).toContain('INSS Patronal');
+      expect(types).toContain('FGTS');
+    });
+
+    it('includes IRRF entry when irrfAmount > 0', async () => {
+      (mockPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValue(mockRun);
+      (mockPrisma.payrollRunItem.findMany as jest.Mock).mockResolvedValue([
+        { ...baseItem, irrfAmount: new Decimal(150) },
+      ]);
+      (mockPrisma.taxGuide.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await cpPreview(rls, 'run-1');
+
+      const irrfEntry = result.items.find((i) => i.type === 'IRRF');
+      expect(irrfEntry).toBeDefined();
+      expect(irrfEntry!.amount).toBe(150);
+    });
+
+    it('includes VT entry when vtDeduction > 0', async () => {
+      (mockPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValue(mockRun);
+      (mockPrisma.payrollRunItem.findMany as jest.Mock).mockResolvedValue([
+        { ...baseItem, vtDeduction: new Decimal(100) },
+      ]);
+      (mockPrisma.taxGuide.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await cpPreview(rls, 'run-1');
+
+      const vtEntry = result.items.find((i) => i.type === 'VT');
+      expect(vtEntry).toBeDefined();
+      expect(vtEntry!.employeeName).toBe('João Silva');
+    });
+
+    it('includes taxGuideItems with FUNRURAL when tax guides exist', async () => {
+      (mockPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValue(mockRun);
+      (mockPrisma.payrollRunItem.findMany as jest.Mock).mockResolvedValue([baseItem]);
+      (mockPrisma.taxGuide.findMany as jest.Mock).mockResolvedValue([
+        {
+          guideType: 'FUNRURAL' as const,
+          totalAmount: new Decimal(300),
+          dueDate: new Date('2026-04-20'),
+          referenceMonth: new Date('2026-03-01'),
+        },
+      ]);
+
+      const result = await cpPreview(rls, 'run-1');
+
+      expect(result.taxGuideItems.length).toBe(1);
+      expect(result.taxGuideItems[0].type).toBe('FUNRURAL');
+      expect(result.taxGuideItems[0].amount).toBe(300);
+      expect(result.totalTaxGuides).toBe(300);
+    });
+
+    it('reconciliation flag is true when totalAmount matches runTotalNet', async () => {
+      // run.totalNet = 2670, item.netSalary = 2670 → both equal after adding INSS/FGTS
+      // Actually reconciliation compares totalAmount (all CPs) vs runTotalNet (run.totalNet)
+      // With inssPatronal=690 and fgtsAmount=240, totalAmount = 2670+690+240 = 3600
+      // runTotalNet from DB = 2670 → reconciled = false (expected difference > 0.01)
+      // We test reconciled=true by setting totalNet equal to what we'll compute
+      const runWithMatchingNet = {
+        ...mockRun,
+        totalNet: new Decimal(3600), // matches totalAmount
+      };
+      (mockPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValue(runWithMatchingNet);
+      (mockPrisma.payrollRunItem.findMany as jest.Mock).mockResolvedValue([baseItem]);
+      (mockPrisma.taxGuide.findMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await cpPreview(rls, 'run-1');
+
+      expect(result.reconciled).toBe(true);
+    });
+  });
+
+  // ─── Test 8c: closeRun creates 7 CP types ─────────────────────────
+
+  describe('closeRun with new CP types', () => {
+    it('creates IRRF CP when irrfAmount > 0', async () => {
+      const mockRun = {
+        id: 'run-1',
+        organizationId: 'org-1',
+        referenceMonth: new Date('2026-03-01'),
+        runType: 'MONTHLY' as const,
+        status: 'CALCULATED' as const,
+      };
+      const mockItems = [
+        {
+          id: 'item-1',
+          employeeId: 'emp-1',
+          status: 'CALCULATED' as const,
+          grossSalary: new Decimal(5000),
+          netSalary: new Decimal(4200),
+          inssPatronal: new Decimal(1000),
+          fgtsAmount: new Decimal(400),
+          irrfAmount: new Decimal(250),
+          vtDeduction: new Decimal(0),
+          alimonyDeduction: null,
+          lineItemsJson: [],
+          employee: {
+            id: 'emp-1',
+            name: 'Carlos Pereira',
+            cpf: '11122233344',
+            email: null,
+            admissionDate: new Date('2020-01-01'),
+            contracts: [],
+            farms: [{ farmId: 'farm-1' }],
+          },
+        },
+      ];
+
+      (mockPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValue(mockRun);
+      (mockPrisma.payrollRunItem.findMany as jest.Mock).mockResolvedValue(mockItems);
+      (mockPrisma.payable.create as jest.Mock).mockResolvedValue({ id: 'payable-x' });
+      (mockPrisma.timesheet.findFirst as jest.Mock).mockResolvedValue(null);
+      (mockPrisma.salaryAdvance.updateMany as jest.Mock).mockResolvedValue({ count: 0 });
+      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({ ...mockRun, status: 'COMPLETED' });
+
+      await closeRun(rls, 'run-1');
+
+      const payableCreates = (mockPrisma.payable.create as jest.Mock).mock.calls;
+      const irrfCall = payableCreates.find((c: any) => c[0]?.data?.originType === 'PAYROLL_EMPLOYEE_IRRF');
+      expect(irrfCall).toBeDefined();
+      expect(irrfCall![0].data.totalAmount.toNumber()).toBe(250);
+    });
+
+    it('creates VT CP when vtDeduction > 0', async () => {
+      const mockRun = {
+        id: 'run-2',
+        organizationId: 'org-1',
+        referenceMonth: new Date('2026-03-01'),
+        runType: 'MONTHLY' as const,
+        status: 'CALCULATED' as const,
+      };
+      const mockItems = [
+        {
+          id: 'item-2',
+          employeeId: 'emp-2',
+          status: 'CALCULATED' as const,
+          grossSalary: new Decimal(2000),
+          netSalary: new Decimal(1800),
+          inssPatronal: new Decimal(460),
+          fgtsAmount: new Decimal(160),
+          irrfAmount: new Decimal(0),
+          vtDeduction: new Decimal(80),
+          alimonyDeduction: null,
+          lineItemsJson: [],
+          employee: {
+            id: 'emp-2',
+            name: 'Ana Lima',
+            cpf: '22233344455',
+            email: null,
+            admissionDate: new Date('2021-01-01'),
+            contracts: [],
+            farms: [{ farmId: 'farm-1' }],
+          },
+        },
+      ];
+
+      (mockPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValue(mockRun);
+      (mockPrisma.payrollRunItem.findMany as jest.Mock).mockResolvedValue(mockItems);
+      (mockPrisma.payable.create as jest.Mock).mockResolvedValue({ id: 'payable-y' });
+      (mockPrisma.timesheet.findFirst as jest.Mock).mockResolvedValue(null);
+      (mockPrisma.salaryAdvance.updateMany as jest.Mock).mockResolvedValue({ count: 0 });
+      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({ ...mockRun, status: 'COMPLETED' });
+
+      await closeRun(rls, 'run-2');
+
+      const payableCreates = (mockPrisma.payable.create as jest.Mock).mock.calls;
+      const vtCall = payableCreates.find((c: any) => c[0]?.data?.originType === 'PAYROLL_EMPLOYEE_VT');
+      expect(vtCall).toBeDefined();
+      expect(vtCall![0].data.totalAmount.toNumber()).toBe(80);
+    });
+
+    it('creates PayableCostCenterItem entries when employee has contract cost center', async () => {
+      const mockRun = {
+        id: 'run-3',
+        organizationId: 'org-1',
+        referenceMonth: new Date('2026-03-01'),
+        runType: 'MONTHLY' as const,
+        status: 'CALCULATED' as const,
+      };
+      const mockItems = [
+        {
+          id: 'item-3',
+          employeeId: 'emp-3',
+          status: 'CALCULATED' as const,
+          grossSalary: new Decimal(2500),
+          netSalary: new Decimal(2200),
+          inssPatronal: new Decimal(575),
+          fgtsAmount: new Decimal(200),
+          irrfAmount: new Decimal(0),
+          vtDeduction: new Decimal(0),
+          alimonyDeduction: null,
+          lineItemsJson: [],
+          employee: {
+            id: 'emp-3',
+            name: 'Fernanda Costa',
+            cpf: '33344455566',
+            email: null,
+            admissionDate: new Date('2022-01-01'),
+            contracts: [],
+            farms: [{ farmId: 'farm-1' }],
+          },
+        },
+      ];
+
+      // Employee has an active contract with a cost center
+      (mockPrisma.employeeContract.findFirst as jest.Mock).mockResolvedValue({
+        costCenterId: 'cc-1',
+      });
+
+      (mockPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValue(mockRun);
+      (mockPrisma.payrollRunItem.findMany as jest.Mock).mockResolvedValue(mockItems);
+      (mockPrisma.payable.create as jest.Mock).mockResolvedValue({ id: 'payable-z' });
+      (mockPrisma.timesheet.findFirst as jest.Mock).mockResolvedValue(null);
+      (mockPrisma.salaryAdvance.updateMany as jest.Mock).mockResolvedValue({ count: 0 });
+      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({ ...mockRun, status: 'COMPLETED' });
+
+      await closeRun(rls, 'run-3');
+
+      expect(mockPrisma.payableCostCenterItem.createMany).toHaveBeenCalled();
+      const ccCall = (mockPrisma.payableCostCenterItem.createMany as jest.Mock).mock.calls[0];
+      expect(ccCall[0].data[0].costCenterId).toBe('cc-1');
+      expect(ccCall[0].data[0].percentage.toNumber()).toBe(100);
+    });
+  });
+
+  // ─── Test 8d: revertRun cancels all 7 originTypes ────────────────
+
+  describe('revertRun with 7 originTypes', () => {
+    it('cancels all 7 PAYROLL_ originTypes using in-array filter', async () => {
+      const mockRun = {
+        id: 'run-1',
+        organizationId: 'org-1',
+        referenceMonth: new Date('2026-03-01'),
+        runType: 'MONTHLY' as const,
+        status: 'COMPLETED' as const,
+        items: [{ id: 'item-1' }, { id: 'item-2' }],
+      };
+      (mockPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValue(mockRun);
+      (mockPrisma.payable.updateMany as jest.Mock).mockResolvedValue({ count: 7 });
+      (mockPrisma.timesheet.updateMany as jest.Mock).mockResolvedValue({ count: 2 });
+      (mockPrisma.salaryAdvance.updateMany as jest.Mock).mockResolvedValue({ count: 0 });
+      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({ ...mockRun, status: 'REVERTED' });
+
+      await revertRun(rls, 'run-1');
+
+      const updateCall = (mockPrisma.payable.updateMany as jest.Mock).mock.calls[0][0];
+      // The OR filter should include both item-level and run-level originTypes
+      const originTypeFilter = updateCall.where.OR[0].originType;
+      expect(originTypeFilter.in).toContain('PAYROLL_EMPLOYEE_IRRF');
+      expect(originTypeFilter.in).toContain('PAYROLL_EMPLOYEE_VT');
+      expect(originTypeFilter.in).toContain('PAYROLL_EMPLOYEE_PENSION');
+      expect(originTypeFilter.in).toContain('PAYROLL_EMPLOYEE_SINDICAL');
+      expect(originTypeFilter.in).toContain('PAYROLL_RUN_ITEM');
+      expect(originTypeFilter.in).toContain('PAYROLL_EMPLOYER_INSS');
+      expect(originTypeFilter.in).toContain('PAYROLL_EMPLOYER_FGTS');
     });
   });
 

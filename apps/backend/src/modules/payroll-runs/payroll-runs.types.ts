@@ -99,6 +99,32 @@ export interface ThirteenthSalaryInput {
   firstParcelAmount?: Decimal;
 }
 
+// ─── CP Preview Types ─────────────────────────────────────────────────
+
+export interface CpPreviewItem {
+  type: string; // "Salario Liquido", "INSS Patronal", "FGTS", "IRRF", "VT", "Pensao", "Sindical"
+  employeeName?: string;
+  amount: number;
+  dueDate: string; // ISO date
+  costCenterItems: Array<{ costCenterName: string; percentage: number }>;
+}
+
+export interface TaxGuidePreviewItem {
+  type: string; // "FUNRURAL", "SENAR", etc.
+  amount: number;
+  dueDate: string;
+  referenceMonth: string;
+}
+
+export interface CpPreviewResponse {
+  items: CpPreviewItem[];
+  taxGuideItems: TaxGuidePreviewItem[];
+  totalAmount: number;
+  totalTaxGuides: number;
+  runTotalNet: number;
+  reconciled: boolean; // abs(totalAmount - runTotalNet) < 0.01
+}
+
 export interface EngineParams {
   inssBrackets: Array<{ from: Decimal; upTo: Decimal | null; rate: Decimal }>;
   irrfBrackets: Array<{ upTo: Decimal | null; rate: Decimal; deduction: Decimal }>;

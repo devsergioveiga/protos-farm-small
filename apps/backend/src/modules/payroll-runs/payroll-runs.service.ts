@@ -20,6 +20,9 @@ import {
   type EngineParams,
   type EmployeePayrollInput,
   type ThirteenthSalaryInput,
+  type CpPreviewResponse,
+  type CpPreviewItem,
+  type TaxGuidePreviewItem,
 } from './payroll-runs.types';
 import type { PayrollRunType, PayrollRunStatus } from '@prisma/client';
 import { PayableCategory } from '@prisma/client';
@@ -1098,6 +1101,207 @@ export async function revertRun(rls: RlsContext, runId: string): Promise<void> {
       revertedBy: rls.userId ?? 'system',
     },
   });
+}
+
+// ─── cpPreview ─────────────────────────────────────────────────────────
+
+/**
+ * Dry-run preview of which CPs would be created by closeRun.
+ * Does NOT write to DB. Includes FUNRURAL from tax-guides module.
+ */
+export async function cpPreview(rls: RlsContext, runId: string): Promise<CpPreviewResponse> {
+  const run = await prisma.payrollRun.findFirst({
+    where: { id: runId, organizationId: rls.organizationId },
+  });
+
+  if (!run) {
+    throw new PayrollRunError('Folha não encontrada', 'RUN_NOT_FOUND', 404);
+  }
+
+  // Fetch CALCULATED items with employee data
+  const items = await prisma.payrollRunItem.findMany({
+    where: { payrollRunId: runId, status: 'CALCULATED' },
+    include: {
+      employee: {
+        select: {
+          id: true,
+          name: true,
+          farms: {
+            where: { status: 'ATIVO' },
+            select: { farmId: true },
+            orderBy: { startDate: 'desc' },
+            take: 1,
+          },
+        },
+      },
+    },
+  });
+
+  const refYear = run.referenceMonth.getUTCFullYear();
+  const refMonth = run.referenceMonth.getUTCMonth() + 1;
+  const nextMonth = refMonth === 12 ? 1 : refMonth + 1;
+  const nextYear = refMonth === 12 ? refYear + 1 : refYear;
+
+  const previewItems: CpPreviewItem[] = [];
+  let totalAmount = new Decimal(0);
+  let totalIrrf = new Decimal(0);
+  let runTotalNet = new Decimal(0);
+
+  for (const item of items) {
+    const farmId = item.employee.farms[0]?.farmId;
+    if (!farmId) continue;
+
+    // Net salary CP
+    const netAmount = new Decimal(item.netSalary.toString());
+    runTotalNet = runTotalNet.plus(netAmount);
+    previewItems.push({
+      type: 'Salario Liquido',
+      employeeName: item.employee.name,
+      amount: netAmount.toNumber(),
+      dueDate: nthBusinessDay(nextYear, nextMonth, 5).toISOString().split('T')[0],
+      costCenterItems: [],
+    });
+    totalAmount = totalAmount.plus(netAmount);
+
+    // VT CP
+    const vtAmount = new Decimal(item.vtDeduction.toString());
+    if (vtAmount.greaterThan(0)) {
+      previewItems.push({
+        type: 'VT',
+        employeeName: item.employee.name,
+        amount: vtAmount.toNumber(),
+        dueDate: nthBusinessDay(nextYear, nextMonth, 5).toISOString().split('T')[0],
+        costCenterItems: [],
+      });
+      totalAmount = totalAmount.plus(vtAmount);
+    }
+
+    // Pension CP
+    const alimonyAmount = item.alimonyDeduction
+      ? new Decimal(item.alimonyDeduction.toString())
+      : new Decimal(0);
+    if (alimonyAmount.greaterThan(0)) {
+      previewItems.push({
+        type: 'Pensao',
+        employeeName: item.employee.name,
+        amount: alimonyAmount.toNumber(),
+        dueDate: nthBusinessDay(nextYear, nextMonth, 5).toISOString().split('T')[0],
+        costCenterItems: [],
+      });
+      totalAmount = totalAmount.plus(alimonyAmount);
+    }
+
+    // Sindical CP
+    const lineItems = Array.isArray(item.lineItemsJson) ? (item.lineItemsJson as any[]) : [];
+    const sindicalLineItem = lineItems.find(
+      (li: any) =>
+        li.type === 'DESCONTO' &&
+        (String(li.code).startsWith('9') ||
+          String(li.description ?? '')
+            .toLowerCase()
+            .includes('sindical')),
+    );
+    if (sindicalLineItem) {
+      const sindicalAmount = new Decimal(
+        typeof sindicalLineItem.value === 'string'
+          ? parseFloat(sindicalLineItem.value)
+          : sindicalLineItem.value ?? 0,
+      );
+      if (sindicalAmount.greaterThan(0)) {
+        previewItems.push({
+          type: 'Sindical',
+          employeeName: item.employee.name,
+          amount: sindicalAmount.toNumber(),
+          dueDate: nthBusinessDay(nextYear, nextMonth + 1 > 12 ? 1 : nextMonth + 1, 5)
+            .toISOString()
+            .split('T')[0],
+          costCenterItems: [],
+        });
+        totalAmount = totalAmount.plus(sindicalAmount);
+      }
+    }
+
+    // Accumulate IRRF
+    totalIrrf = totalIrrf.plus(new Decimal(item.irrfAmount.toString()));
+  }
+
+  // INSS patronal
+  const totalInssPatronal = items.reduce(
+    (s: Decimal, i: any) => s.plus(new Decimal(i.inssPatronal.toString())),
+    new Decimal(0),
+  );
+  if (totalInssPatronal.greaterThan(0)) {
+    previewItems.push({
+      type: 'INSS Patronal',
+      amount: totalInssPatronal.toNumber(),
+      dueDate: new Date(Date.UTC(nextYear, nextMonth - 1, 20)).toISOString().split('T')[0],
+      costCenterItems: [],
+    });
+    totalAmount = totalAmount.plus(totalInssPatronal);
+  }
+
+  // FGTS
+  const totalFgts = items.reduce(
+    (s: Decimal, i: any) => s.plus(new Decimal(i.fgtsAmount.toString())),
+    new Decimal(0),
+  );
+  if (totalFgts.greaterThan(0)) {
+    previewItems.push({
+      type: 'FGTS',
+      amount: totalFgts.toNumber(),
+      dueDate: new Date(Date.UTC(nextYear, nextMonth - 1, 7)).toISOString().split('T')[0],
+      costCenterItems: [],
+    });
+    totalAmount = totalAmount.plus(totalFgts);
+  }
+
+  // IRRF (aggregated)
+  if (totalIrrf.greaterThan(0)) {
+    previewItems.push({
+      type: 'IRRF',
+      amount: totalIrrf.toNumber(),
+      dueDate: new Date(Date.UTC(nextYear, nextMonth - 1, 20)).toISOString().split('T')[0],
+      costCenterItems: [],
+    });
+    totalAmount = totalAmount.plus(totalIrrf);
+  }
+
+  // Fetch existing TaxGuide records for the same referenceMonth
+  const taxGuides = await prisma.taxGuide.findMany({
+    where: {
+      organizationId: rls.organizationId,
+      referenceMonth: run.referenceMonth,
+    },
+    select: {
+      guideType: true,
+      totalAmount: true,
+      dueDate: true,
+      referenceMonth: true,
+    },
+  });
+
+  const taxGuideItems: TaxGuidePreviewItem[] = taxGuides.map((tg: any) => ({
+    type: String(tg.guideType),
+    amount: new Decimal(tg.totalAmount.toString()).toNumber(),
+    dueDate: tg.dueDate.toISOString().split('T')[0],
+    referenceMonth: _formatIsoMonth(tg.referenceMonth),
+  }));
+
+  const totalTaxGuides = taxGuideItems.reduce((s, t) => s + t.amount, 0);
+
+  // Reconciliation: totalAmount of net-salary CPs vs run.totalNet
+  const runNetFromDb = run.totalNet ? new Decimal(run.totalNet.toString()) : runTotalNet;
+  const diff = totalAmount.minus(runNetFromDb).abs();
+  const reconciled = diff.lessThan(new Decimal('0.01'));
+
+  return {
+    items: previewItems,
+    taxGuideItems,
+    totalAmount: totalAmount.toNumber(),
+    totalTaxGuides,
+    runTotalNet: runNetFromDb.toNumber(),
+    reconciled,
+  };
 }
 
 // ─── listRuns ──────────────────────────────────────────────────────────

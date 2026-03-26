@@ -137,6 +137,25 @@ payrollRunsRouter.get(
   },
 );
 
+// ─── GET /org/:orgId/payroll-runs/:id/cp-preview — dry-run CP list ──────
+// NOTE: must be registered BEFORE /:id to prevent Express 5 route shadowing
+
+payrollRunsRouter.get(
+  `${base}/:id/cp-preview`,
+  authenticate,
+  checkPermission('payroll-params:read'),
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const orgId = req.params.orgId as string;
+      const id = req.params.id as string;
+      const result = await service.cpPreview({ organizationId: orgId, userId: req.user?.userId }, id);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
 // ─── GET /org/:orgId/payroll-runs/:id — get run details ────────────────
 
 payrollRunsRouter.get(
