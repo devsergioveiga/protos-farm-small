@@ -90,6 +90,8 @@ import {
   PiggyBank,
   HardHat,
   GraduationCap,
+  FileBarChart2,
+  FileCode,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -276,6 +278,14 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/training-records', icon: ClipboardList, label: 'Registros de Treinamento' },
       { to: '/medical-exams', icon: Stethoscope, label: 'ASOs' },
       { to: '/safety-dashboard', icon: Shield, label: 'Dashboard NR-31' },
+    ],
+  },
+  {
+    title: 'OBRIGACOES',
+    items: [
+      { to: '/tax-guides', icon: Receipt, label: 'Guias de Recolhimento' },
+      { to: '/esocial-events', icon: FileCode, label: 'Eventos eSocial' },
+      { to: '/income-statements', icon: FileBarChart2, label: 'Informes de Rendimentos' },
     ],
   },
   {

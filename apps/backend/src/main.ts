@@ -6,6 +6,7 @@ import { startDepreciationCron } from './shared/cron/depreciation.cron';
 import { startMaintenanceAlertsCron } from './shared/cron/maintenance-alerts.cron';
 import { startMaintenanceProvisionCron } from './shared/cron/maintenance-provision.cron';
 import { startContractExpiryAlertsCron } from './shared/cron/contract-expiry-alerts.cron';
+import { startTaxGuideAlertsCron } from './shared/cron/tax-guide-alerts.cron';
 
 const port = process.env.PORT ?? 3000;
 
@@ -23,5 +24,7 @@ app.listen(port, () => {
     logger.info('Maintenance provision cron scheduled');
     startContractExpiryAlertsCron();
     logger.info('Contract expiry alerts cron scheduled');
+    startTaxGuideAlertsCron();
+    logger.info('Tax guide alerts cron scheduled');
   }
 });

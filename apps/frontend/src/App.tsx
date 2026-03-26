@@ -137,6 +137,9 @@ const TrainingTypesPage = lazy(() => import('@/pages/TrainingTypesPage'));
 const TrainingRecordsPage = lazy(() => import('@/pages/TrainingRecordsPage'));
 const MedicalExamsPage = lazy(() => import('@/pages/MedicalExamsPage'));
 const SafetyDashboardPage = lazy(() => import('@/pages/SafetyDashboardPage'));
+const TaxGuidesPage = lazy(() => import('@/pages/TaxGuidesPage'));
+const EsocialEventsPage = lazy(() => import('@/pages/EsocialEventsPage'));
+const IncomeStatementsPage = lazy(() => import('@/pages/IncomeStatementsPage'));
 
 export function App() {
   return (
@@ -265,6 +268,9 @@ export function App() {
                 <Route path="/training-records" element={<TrainingRecordsPage />} />
                 <Route path="/medical-exams" element={<MedicalExamsPage />} />
                 <Route path="/safety-dashboard" element={<SafetyDashboardPage />} />
+                <Route path="/tax-guides" element={<TaxGuidesPage />} />
+                <Route path="/esocial-events" element={<EsocialEventsPage />} />
+                <Route path="/income-statements" element={<IncomeStatementsPage />} />
                 <Route path="/assets" element={<AssetsPage />} />
                 <Route path="/depreciation" element={<DepreciationPage />} />
                 <Route path="/maintenance-plans" element={<MaintenancePlansPage />} />
