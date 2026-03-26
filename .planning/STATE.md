@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to plan
-stopped_at: Completed 29-05-PLAN.md — all Phase 29 frontend pages done, awaiting visual verification checkpoint
-last_updated: "2026-03-25T20:57:19.489Z"
+stopped_at: Phase 30 UI-SPEC approved
+last_updated: "2026-03-26T09:43:00.776Z"
 progress:
   total_phases: 26
   completed_phases: 23
@@ -101,7 +101,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-25T20:43:21.938Z
-Stopped at: Completed 29-05-PLAN.md — all Phase 29 frontend pages done, awaiting visual verification checkpoint
-Resume file: None
+Last session: 2026-03-26T09:43:00.764Z
+Stopped at: Phase 30 UI-SPEC approved
+Resume file: .planning/phases/30-seguranca-trabalho-nr31/30-UI-SPEC.md
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
