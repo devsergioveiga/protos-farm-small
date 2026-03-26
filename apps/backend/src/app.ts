@@ -146,6 +146,7 @@ import { employeeAbsencesRouter } from './modules/employee-absences/employee-abs
 import { payrollProvisionsRouter } from './modules/payroll-provisions/payroll-provisions.routes';
 import { employeeTerminationsRouter } from './modules/employee-terminations/employee-terminations.routes';
 import { taxGuidesRouter } from './modules/tax-guides/tax-guides.routes';
+import { incomeStatementsRouter } from './modules/income-statements/income-statements.routes';
 import epiProductsRouter from './modules/epi-products/epi-products.routes';
 import epiDeliveriesRouter from './modules/epi-deliveries/epi-deliveries.routes';
 import trainingTypesRouter from './modules/training-types/training-types.routes';
@@ -290,7 +291,8 @@ app.use('/api', assetWipRouter);
 app.use('/api', assetReportsRouter);
 app.use('/api', assetLeasingsRouter);
 app.use('/api', assetTradeInsRouter);
-// Phase 31 tax guides registered BEFORE employeesRouter to avoid route shadowing
+// Phase 31 income statements + tax guides registered BEFORE employeesRouter to avoid route shadowing
+app.use('/api', incomeStatementsRouter);
 app.use('/api', taxGuidesRouter);
 // Phase 30 safety routers registered BEFORE employeesRouter to avoid route conflict:
 // GET /org/medical-exams/employees/:employeeId must not be caught by
