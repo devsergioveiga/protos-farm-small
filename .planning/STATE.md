@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Completed 30-02-PLAN.md — epi-products + epi-deliveries backend modules
-last_updated: "2026-03-26T10:34:45.518Z"
+stopped_at: Completed 30-04-PLAN.md — ASO management + safety compliance dashboard
+last_updated: "2026-03-26T11:04:34.785Z"
 progress:
   total_phases: 26
   completed_phases: 23
   total_plans: 110
-  completed_plans: 106
+  completed_plans: 107
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 30 (seguranca-trabalho-nr31) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 
 ## Accumulated Context
 
@@ -91,6 +91,7 @@ Key decisions for v1.3:
 - [Phase 30-seguranca-trabalho-nr31]: Training routes use employees:read/employees:manage (no hr: module in PermissionModule)
 - [Phase 30-seguranca-trabalho-nr31]: Stock deduction inline in withRlsContext transaction (not via service call) to avoid nested transaction anti-pattern
 - [Phase 30-seguranca-trabalho-nr31]: jest.config.js .js→.ts moduleNameMapper added to unblock all tests after plan 30-01 ESM-style app.ts imports
+- [Phase 30-seguranca-trabalho-nr31]: Phase 30 routers registered before employeesRouter in app.ts — GET /org/medical-exams/employees/:employeeId conflicts with GET /org/:orgId/employees/:id
 
 ### Pending Todos
 
@@ -106,7 +107,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T10:34:45.510Z
-Stopped at: Completed 30-02-PLAN.md — epi-products + epi-deliveries backend modules
+Last session: 2026-03-26T11:04:34.760Z
+Stopped at: Completed 30-04-PLAN.md — ASO management + safety compliance dashboard
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
