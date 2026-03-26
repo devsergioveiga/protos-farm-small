@@ -25,7 +25,7 @@ created: 2026-03-26
 | Preset | not applicable |
 | Component library | none (custom components, existing project patterns) |
 | Icon library | lucide-react (current project version) |
-| Font — headlines | DM Sans 500/700 via Google Fonts (already loaded in index.html) |
+| Font — headlines | DM Sans 600 via Google Fonts (already loaded in index.html) |
 | Font — body/UI | Source Sans 3 400/600 via Google Fonts (already loaded in index.html) |
 | Font — data/mono | JetBrains Mono 400 via Google Fonts (already loaded in index.html) |
 
@@ -57,12 +57,14 @@ Exceptions:
 
 Source: `tokens.css` typography scale + CLAUDE.md font rules.
 
+Two weights only: 400 (regular) and 600 (semibold). DM Sans uses weight 600 for all heading sizes.
+
 | Role | Font | Size | Weight | Line Height | Token |
 |------|------|------|--------|-------------|-------|
 | Body | Source Sans 3 | 16px (`--text-base`, 1rem) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) | text-base |
 | Label / table header | Source Sans 3 | 14px (`--text-sm`, 0.875rem) | 600 (`--font-semibold`) | 1.3 (`--leading-snug`) | text-sm |
-| Heading (card/section) | DM Sans | 20px (`--text-lg`, 1.25rem) | 500 (`--font-medium`) | 1.2 (`--leading-tight`) | text-lg |
-| Display (page title) | DM Sans | 28px (`--text-2xl`, 1.875rem) | 700 (`--font-bold`) | 1.2 (`--leading-tight`) | text-2xl |
+| Heading (card/section) | DM Sans | 20px (`--text-lg`, 1.25rem) | 600 (`--font-semibold`) | 1.2 (`--leading-tight`) | text-lg |
+| Display (page title) | DM Sans | 28px (`--text-2xl`, 1.875rem) | 600 (`--font-semibold`) | 1.2 (`--leading-tight`) | text-2xl |
 
 Additional rules carried from project conventions:
 - Table column headers: ALL CAPS, 14px, weight 600 — matches Phase 29 decision ("All column headers rendered ALL CAPS per design system")
@@ -146,7 +148,7 @@ New components this phase:
   - Monetary values: JetBrains Mono, right-aligned
   - Column headers: ALL CAPS, 14px, weight 600
 - Reconciliation row at body bottom: "Total CPs gerados: R$ X.XXX,XX — Total folha líquida: R$ X.XXX,XX" with green checkmark if difference < R$ 0,01, orange warning triangle if divergent
-- Footer: two buttons — "Cancelar" (secondary, left) and "Confirmar Fechamento" (primary green, right, 1 per screen)
+- Footer: two buttons — "Voltar à Folha" (secondary, left) and "Confirmar Fechamento" (primary green, right, 1 per screen)
 - Loading state: skeleton pulses in table cells while GET cp-preview fetches
 - Error state: inline alert above table — red border-left card with AlertCircle icon + message
 
@@ -209,6 +211,7 @@ All copy in pt-BR, direct tone ("você" form when addressing user), colloquial b
 |---------|------|
 | PayrollCpReviewModal title | "Revisão de Contas a Pagar" |
 | PayrollCpReviewModal primary CTA | "Confirmar Fechamento" |
+| PayrollCpReviewModal secondary CTA | "Voltar à Folha" |
 | PayrollCpReviewModal reconciliation OK | "Total reconciliado com a folha." |
 | PayrollCpReviewModal reconciliation divergence | "Atenção: diferença de R$ [valor] entre CPs e folha líquida. Verifique rateios por centro de custo." |
 | Estorno confirm heading | "Estornar fechamento da folha?" |
