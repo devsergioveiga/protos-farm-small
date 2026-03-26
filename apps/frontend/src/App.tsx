@@ -141,6 +141,7 @@ const TaxGuidesPage = lazy(() => import('@/pages/TaxGuidesPage'));
 const EsocialEventsPage = lazy(() => import('@/pages/EsocialEventsPage'));
 const IncomeStatementsPage = lazy(() => import('@/pages/IncomeStatementsPage'));
 const AccountingEntriesPage = lazy(() => import('@/pages/AccountingEntriesPage'));
+const HrDashboardPage = lazy(() => import('@/pages/HrDashboardPage'));
 
 export function App() {
   return (
@@ -283,6 +284,7 @@ export function App() {
                 <Route path="/asset-reports" element={<AssetReportsPage />} />
                 <Route path="/biological-assets" element={<BiologicalAssetsPage />} />
                 <Route path="/asset-leasings" element={<AssetLeasingsPage />} />
+                <Route path="/hr-dashboard" element={<HrDashboardPage />} />
                 <Route
                   path="/farms/:farmId/plots/:fieldPlotId/monitoring-points"
                   element={<MonitoringPointsPage />}
