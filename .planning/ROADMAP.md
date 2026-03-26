@@ -63,7 +63,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 28: Processamento da Folha Mensal** — Core value: folha em lote com holerite PDF, adiantamento salarial, 13º salário — o ciclo mensal completo do processamento de folha (completed 2026-03-25)
 - [x] **Phase 29: Férias, Afastamentos, Rescisão e Provisões** — Ciclo de vida trabalhista: férias com fracionamento, afastamentos/CAT, rescisão com TRCT, provisão mensal de férias e 13º com lançamento contábil (completed 2026-03-25)
 - [x] **Phase 30: Segurança do Trabalho Rural (NR-31)** — Conformidade legal NR-31: EPIs com ficha de entrega, treinamentos obrigatórios com matriz de validade, ASO/PCMSO com alertas de vencimento (completed 2026-03-26)
-- [ ] **Phase 31: Obrigações Acessórias e eSocial** — Compliance fiscal e trabalhista: guias de recolhimento (FGTS/INSS/IRRF/FUNRURAL), eventos eSocial em XML com transmissão digital, RAIS e informe de rendimentos
+- [x] **Phase 31: Obrigações Acessórias e eSocial** — Compliance fiscal e trabalhista: guias de recolhimento (FGTS/INSS/IRRF/FUNRURAL), eventos eSocial em XML com transmissão digital, RAIS e informe de rendimentos (completed 2026-03-26)
 - [ ] **Phase 32: Integração Financeira, Contábil e Dashboard RH** — Fechamento do ciclo: folha→Contas a Pagar com rateio por CC, lançamentos contábeis por regime de competência, dashboard de custo de pessoal e KPIs de RH
 
 ## Phase Details
@@ -585,8 +585,8 @@ Plans:
 - [x] 31-01-PLAN.md — Prisma schema (TaxGuide, EsocialEvent, IncomeStatement), enums, funruralBasis, xmlbuilder2 install, backend+frontend types
 - [x] 31-02-PLAN.md — Tax guides backend (SEFIP .RE, DARF PDF, GPS PDF, payables integration) + frontend page
 - [x] 31-03-PLAN.md — eSocial events backend (15 XML builders, validators, state machine, dashboard)
-- [ ] 31-04-PLAN.md — eSocial events frontend + income statements full stack (PDF, email, RAIS consistency)
-- [ ] 31-05-PLAN.md — Integration wiring (cron alerts, sidebar OBRIGACOES group, routes) + visual verification
+- [x] 31-04-PLAN.md — eSocial events frontend + income statements full stack (PDF, email, RAIS consistency)
+- [x] 31-05-PLAN.md — Integration wiring (cron alerts, sidebar OBRIGACOES group, routes) + visual verification
 **UI hint**: yes
 
 ### Phase 32: Integração Financeira, Contábil e Dashboard RH
@@ -643,5 +643,5 @@ Plans:
 | 28. Processamento da Folha Mensal                   | v1.3      | 6/6 | Complete    | 2026-03-25 |
 | 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 5/5 | Complete    | 2026-03-25 |
 | 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 7/7 | Complete   | 2026-03-26 |
-| 31. Obrigações Acessórias e eSocial                 | v1.3      | 3/5 | In Progress|  |
+| 31. Obrigações Acessórias e eSocial                 | v1.3      | 5/5 | Complete   | 2026-03-26 |
 | 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 0/TBD          | Not started | -          |

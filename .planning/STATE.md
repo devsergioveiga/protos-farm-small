@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Ready to execute
-stopped_at: Completed 31-03-PLAN.md — eSocial Events Backend Module
-last_updated: "2026-03-26T14:00:55.200Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 31-05-PLAN.md — Phase 31 plans complete, awaiting human verification
+last_updated: "2026-03-26T14:31:00.020Z"
 progress:
   total_phases: 26
-  completed_phases: 24
+  completed_phases: 25
   total_plans: 115
-  completed_plans: 113
+  completed_plans: 115
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 31 (obriga-es-acess-rias-e-esocial) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 
 ## Accumulated Context
 
@@ -102,6 +102,10 @@ Key decisions for v1.3:
 - [Phase 31-obriga-es-acess-rias-e-esocial]: FUNRURAL rate from PayrollLegalTable FUNRURAL type scalarValues[key=rate], fallback 2.7%
 - [Phase 31-obriga-es-acess-rias-e-esocial]: xmlbuilder2 for all eSocial XML generation — never string concatenation; @xmldom/xmldom for XSD structural validation via JS-translated constraint records
 - [Phase 31-obriga-es-acess-rias-e-esocial]: Auto-trigger hooks wrapped in try/catch — eSocial generation failures logged but never propagate to fail primary operations (createEmployee, confirmTermination, closeRun, createMedicalExam)
+- [Phase 31-obriga-es-acess-rias-e-esocial]: Used payroll-params:read/write permissions for income-statements routes — payroll:read/manage not in RBAC enum
+- [Phase 31-obriga-es-acess-rias-e-esocial]: downloadEvent uses raw fetch to distinguish XML blob from XSD validation JSON error by Content-Type inspection
+- [Phase 31-obriga-es-acess-rias-e-esocial]: Used body (not message) for Notification.create per schema
+- [Phase 31-obriga-es-acess-rias-e-esocial]: EsocialEventsPage and IncomeStatementsPage created in plan-05 (missing from plan-04 disk)
 
 ### Pending Todos
 
@@ -117,7 +121,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T14:00:55.196Z
-Stopped at: Completed 31-03-PLAN.md — eSocial Events Backend Module
+Last session: 2026-03-26T14:31:00.016Z
+Stopped at: Completed 31-05-PLAN.md — Phase 31 plans complete, awaiting human verification
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
