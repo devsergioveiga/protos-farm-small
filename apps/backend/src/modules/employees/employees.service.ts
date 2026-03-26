@@ -216,7 +216,7 @@ export async function listEmployees(
             select: {
               id: true,
               farm: { select: { id: true, name: true } },
-              position: { select: { id: true, name: true } },
+              position: { select: { id: true, name: true, asoPeriodicityMonths: true } },
             },
             take: 1,
           },

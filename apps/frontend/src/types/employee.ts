@@ -74,7 +74,7 @@ export interface EmployeeFarm {
   endDate?: string;
   status: string;
   farm?: { name: string };
-  position?: { name: string };
+  position?: { name: string; asoPeriodicityMonths?: number };
 }
 
 export interface EmployeeDocument {
