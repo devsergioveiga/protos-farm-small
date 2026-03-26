@@ -88,6 +88,8 @@ import {
   CalendarCheck,
   UserMinus,
   PiggyBank,
+  HardHat,
+  GraduationCap,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -263,6 +265,17 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/employee-absences', icon: Stethoscope, label: 'Afastamentos' },
       { to: '/employee-terminations', icon: UserMinus, label: 'Rescisoes' },
       { to: '/payroll-provisions', icon: PiggyBank, label: 'Provisoes' },
+    ],
+  },
+  {
+    title: 'SEGURANÇA',
+    items: [
+      { to: '/epi-products', icon: HardHat, label: 'EPIs' },
+      { to: '/epi-deliveries', icon: Package, label: 'Entregas EPI' },
+      { to: '/training-types', icon: GraduationCap, label: 'Treinamentos' },
+      { to: '/training-records', icon: ClipboardList, label: 'Registros de Treinamento' },
+      { to: '/medical-exams', icon: Stethoscope, label: 'ASOs' },
+      { to: '/safety-dashboard', icon: Shield, label: 'Dashboard NR-31' },
     ],
   },
   {
