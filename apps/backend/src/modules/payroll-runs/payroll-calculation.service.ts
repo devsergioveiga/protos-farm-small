@@ -86,6 +86,7 @@ export function calculateEmployeePayroll(
     regionalMinWage,
     vtPercent,
     timesheetData,
+    absenceData,
     pendingAdvances,
     customRubricas,
   } = input;
@@ -109,6 +110,32 @@ export function calculateEmployeePayroll(
     const proRataFactor = new Decimal(proRataDays).div(totalDays);
     adjustedSalary = baseSalary.mul(proRataFactor).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
   }
+
+  // ─── Step 1b: Absence INSS deduction (D-01, D-02) ────────────────
+  // Applied to adjustedSalary (post-prorata), giving cumulative effect (D-02)
+
+  let absenceInssDeduction = new Decimal(0);
+  let suspensionDeduction = new Decimal(0);
+
+  if (absenceData) {
+    if (absenceData.inssPaidDays > 0) {
+      absenceInssDeduction = new Decimal(absenceData.inssPaidDays)
+        .div(totalDays)
+        .mul(adjustedSalary)
+        .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+    }
+
+    // ─── Step 1c: Suspension deduction (D-09) ─────────────────────
+    if (absenceData.suspendedDays > 0) {
+      suspensionDeduction = new Decimal(absenceData.suspendedDays)
+        .div(totalDays)
+        .mul(adjustedSalary)
+        .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+    }
+  }
+
+  // ─── Step 1d: Reduced salary base for INSS/IRRF (D-04) ───────────
+  const salaryForInssBase = adjustedSalary.minus(absenceInssDeduction).minus(suspensionDeduction);
 
   // ─── Step 2: Hourly rate ───────────────────────────────────────────
 
@@ -143,6 +170,18 @@ export function calculateEmployeePayroll(
       dsrValue = overtimeTotal
         .mul(new Decimal(restDays).div(workDays))
         .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+    }
+  }
+
+  // ─── Step 4b: DSR reduction from suspension (D-10) ───────────────
+  if (absenceData && absenceData.suspendedDays > 0 && dsrValue.greaterThan(0)) {
+    const restDaysCount = countRestDays(year, month);
+    const workDaysCount = totalDays - restDaysCount;
+    if (workDaysCount > 0) {
+      const dsrReduction = dsrValue
+        .mul(new Decimal(absenceData.suspendedDays).div(workDaysCount))
+        .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+      dsrValue = dsrValue.minus(dsrReduction);
     }
   }
 
@@ -206,15 +245,26 @@ export function calculateEmployeePayroll(
     .plus(otherProvisions)
     .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
 
+  // ─── Step 8b: INSS/IRRF base (reduced by absence/suspension, D-04) ─
+
+  const inssIrrfBase = salaryForInssBase
+    .plus(overtime50)
+    .plus(overtime100)
+    .plus(dsrValue)
+    .plus(nightPremium)
+    .plus(salaryFamilyAmount)
+    .plus(otherProvisions)
+    .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+
   // ─── Step 9: INSS ─────────────────────────────────────────────────
 
-  const inssResult = calculateINSS(grossSalary, params.inssBrackets, params.inssCeiling);
+  const inssResult = calculateINSS(inssIrrfBase, params.inssBrackets, params.inssCeiling);
   const inssAmount = inssResult.contribution;
 
   // ─── Step 10: IRRF ────────────────────────────────────────────────
 
   const irrfResult = calculateIRRF({
-    grossSalary,
+    grossSalary: inssIrrfBase,
     inssContribution: inssAmount,
     dependents: dependentsCount,
     alimony: alimonyAmount,
@@ -248,7 +298,7 @@ export function calculateEmployeePayroll(
 
   // ─── Step 13: Net salary ──────────────────────────────────────────
 
-  const netSalary = grossSalary
+  let netSalary = grossSalary
     .minus(inssAmount)
     .minus(irrfAmount)
     .minus(vtDeduction)
@@ -256,11 +306,20 @@ export function calculateEmployeePayroll(
     .minus(foodDeduction)
     .minus(pendingAdvances)
     .minus(otherDeductions)
+    .minus(absenceInssDeduction)
+    .minus(suspensionDeduction)
     .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
 
-  // ─── Step 14: FGTS ────────────────────────────────────────────────
+  // Floor at zero (Pitfall 5)
+  netSalary = Decimal.max(netSalary, new Decimal(0));
 
-  const fgtsResult = calculateFGTS(grossSalary);
+  // ─── Step 14: FGTS ────────────────────────────────────────────────
+  // D-07: fgtsFullMonth => use baseSalary (pre pro-rata) for FGTS base
+
+  const fgtsBase = absenceData?.fgtsFullMonth
+    ? baseSalary.plus(overtime50).plus(overtime100).plus(dsrValue).plus(nightPremium)
+    : grossSalary;
+  const fgtsResult = calculateFGTS(fgtsBase);
   const fgtsAmount = fgtsResult.contribution;
 
   // ─── Step 15: INSS patronal ───────────────────────────────────────
@@ -392,6 +451,26 @@ export function calculateEmployeePayroll(
     });
   }
 
+  if (absenceInssDeduction.greaterThan(0)) {
+    lineItems.push({
+      code: '0900',
+      description: 'Afastamento INSS',
+      reference: `${absenceData!.inssPaidDays}/${totalDays}d`,
+      type: 'DESCONTO',
+      value: absenceInssDeduction,
+    });
+  }
+
+  if (suspensionDeduction.greaterThan(0)) {
+    lineItems.push({
+      code: '0910',
+      description: 'Suspensão Disciplinar',
+      reference: `${absenceData!.suspendedDays}/${totalDays}d`,
+      type: 'DESCONTO',
+      value: suspensionDeduction,
+    });
+  }
+
   return {
     baseSalary: adjustedSalary,
     proRataDays,
@@ -411,6 +490,9 @@ export function calculateEmployeePayroll(
     otherDeductions,
     netSalary,
     fgtsAmount,
+    absenceInssDeduction,
+    suspensionDeduction,
+    fgtsBase,
     inssPatronal,
     lineItems,
   };
@@ -482,6 +564,9 @@ export function calculateThirteenthSalary(
       otherDeductions: new Decimal(0),
       netSalary: gross,
       fgtsAmount: calculateFGTS(gross).contribution,
+      absenceInssDeduction: new Decimal(0),
+      suspensionDeduction: new Decimal(0),
+      fgtsBase: gross,
       inssPatronal: gross
         .mul('0.20')
         .plus(gross.mul(params.ratPercent).div(100))
@@ -585,6 +670,9 @@ export function calculateThirteenthSalary(
     otherDeductions: new Decimal(0),
     netSalary,
     fgtsAmount: calculateFGTS(grossBase).contribution,
+    absenceInssDeduction: new Decimal(0),
+    suspensionDeduction: new Decimal(0),
+    fgtsBase: grossBase,
     inssPatronal: grossBase
       .mul('0.20')
       .plus(grossBase.mul(params.ratPercent).div(100))
