@@ -1,0 +1,296 @@
+/* ─── Position EPI Requirements Modal ──────────────────────────────────────── */
+
+.pos-epi-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.pos-epi-modal {
+  background: var(--color-neutral-0, #fff);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 80vh;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+.pos-epi-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.pos-epi-modal__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--color-neutral-800);
+  margin: 0 0 4px;
+}
+
+.pos-epi-modal__subtitle {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+.pos-epi-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: background 100ms ease-out;
+  flex-shrink: 0;
+}
+
+.pos-epi-modal__close:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.pos-epi-modal__close:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.pos-epi-modal__body {
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pos-epi-modal__skeleton {
+  height: 60px;
+  background: var(--color-neutral-200);
+  border-radius: 6px;
+  animation: pos-epi-pulse 1.5s linear infinite;
+}
+
+@keyframes pos-epi-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pos-epi-modal__skeleton { animation: none; }
+}
+
+.pos-epi-modal__empty {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-400);
+  font-style: italic;
+  margin: 0;
+}
+
+.pos-epi-modal__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pos-epi-modal__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+}
+
+.pos-epi-modal__item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pos-epi-modal__item-name {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.pos-epi-modal__item-qty {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+
+.pos-epi-modal__btn-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 6px;
+  background: none;
+  color: var(--color-neutral-400);
+  cursor: pointer;
+  transition:
+    color 100ms ease-out,
+    border-color 100ms ease-out;
+}
+
+.pos-epi-modal__btn-delete:hover:not(:disabled) {
+  color: var(--color-error-500);
+  border-color: var(--color-error-300, #ef9a9a);
+}
+
+.pos-epi-modal__btn-delete:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.pos-epi-modal__add-section {
+  border-top: 1px solid var(--color-neutral-200);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pos-epi-modal__add-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.pos-epi-modal__add-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-error-500);
+}
+
+.pos-epi-modal__add-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pos-epi-modal__select {
+  flex: 1;
+  min-width: 180px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0, #fff);
+  min-height: 48px;
+}
+
+.pos-epi-modal__select:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 0;
+}
+
+.pos-epi-modal__qty-input {
+  width: 72px;
+  padding: 10px 8px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0, #fff);
+  min-height: 48px;
+  text-align: center;
+}
+
+.pos-epi-modal__qty-input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 0;
+}
+
+.pos-epi-modal__btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: var(--color-primary-600);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  white-space: nowrap;
+  transition: background 100ms ease-out;
+}
+
+.pos-epi-modal__btn-add:hover:not(:disabled) {
+  background: var(--color-primary-700, #1b5e20);
+}
+
+.pos-epi-modal__btn-add:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pos-epi-modal__btn-add:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.pos-epi-modal__footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-neutral-200);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.pos-epi-modal__btn-close {
+  padding: 10px 24px;
+  background: none;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  cursor: pointer;
+  min-height: 48px;
+  transition: background 100ms ease-out;
+}
+
+.pos-epi-modal__btn-close:hover {
+  background: var(--color-neutral-50);
+}
+
+.pos-epi-modal__btn-close:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
