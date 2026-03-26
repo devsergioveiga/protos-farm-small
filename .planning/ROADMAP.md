@@ -606,7 +606,7 @@ Plans:
 - [x] 32-01-PLAN.md — CP completion + cost-center rateio (IRRF, VT, pension) + cp-preview endpoint
 - [x] 32-02-PLAN.md — AccountingEntry model + accounting entries module + hooks in closeRun/settlePayment
 - [x] 32-03-PLAN.md — HR Dashboard backend endpoint (headcount, cost, trend, turnover, expirations, alerts)
-- [ ] 32-04-PLAN.md — PayrollCpReviewModal + AccountingEntriesPage frontend
+- [x] 32-04-PLAN.md — PayrollCpReviewModal + AccountingEntriesPage frontend
 - [ ] 32-05-PLAN.md — HrDashboardPage frontend with charts, KPI cards, filters
 **UI hint**: yes
 
@@ -645,4 +645,4 @@ Plans:
 | 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 5/5 | Complete    | 2026-03-25 |
 | 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 7/7 | Complete   | 2026-03-26 |
 | 31. Obrigações Acessórias e eSocial                 | v1.3      | 5/5 | Complete    | 2026-03-26 |
-| 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 3/5 | In Progress|  |
+| 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 4/5 | In Progress|  |
