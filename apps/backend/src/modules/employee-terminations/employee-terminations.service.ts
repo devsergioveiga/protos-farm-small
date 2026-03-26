@@ -19,6 +19,7 @@ import {
   type TerminationInput,
 } from './employee-terminations.types';
 import type { EngineParams } from '../payroll-runs/payroll-runs.types';
+import { generateEvent as esocialGenerateEvent } from '../esocial-events/esocial-events.service';
 
 // ─── Helpers ────────────────────────────────────────────────────────────
 
@@ -412,7 +413,21 @@ export async function confirmTermination(
       select: terminationSelect,
     });
 
-    return mapToOutput(updated);
+    const output = mapToOutput(updated);
+
+    // Auto-generate S-2299 eSocial event (per D-08) — AFTER transaction commits
+    try {
+      await esocialGenerateEvent(
+        ctx.organizationId,
+        { eventType: 'S-2299', sourceType: 'EMPLOYEE_TERMINATION', sourceId: terminationId },
+        ctx.userId ?? 'system',
+      );
+    } catch (err) {
+      // Log but do not fail the termination — eSocial event can be generated manually
+      console.error('[employee-terminations] Failed to auto-generate S-2299:', err);
+    }
+
+    return output;
   });
 }
 

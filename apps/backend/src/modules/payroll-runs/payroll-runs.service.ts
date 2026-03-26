@@ -1,6 +1,7 @@
 // ─── PayrollRun Orchestrator Service ─────────────────────────────────
 // Full lifecycle: create → process → recalculate → close → revert.
 // Per-employee transactions prevent timeout on large payrolls.
+// Per D-08: closing a run auto-generates S-1200/S-1210/S-1299 eSocial events.
 
 import Decimal from 'decimal.js';
 import JSZip from 'jszip';
@@ -21,6 +22,7 @@ import {
   type ThirteenthSalaryInput,
 } from './payroll-runs.types';
 import type { PayrollRunType, PayrollRunStatus } from '@prisma/client';
+import { generateBatch as esocialGenerateBatch } from '../esocial-events/esocial-events.service';
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -831,6 +833,17 @@ export async function closeRun(rls: RlsContext, runId: string): Promise<void> {
       closedBy: rls.userId ?? 'system',
     },
   });
+
+  // Auto-generate periodic eSocial events (per D-08)
+  const referenceMonth = `${run.referenceMonth.getUTCFullYear()}-${String(run.referenceMonth.getUTCMonth() + 1).padStart(2, '0')}`;
+  try {
+    await esocialGenerateBatch(rls.organizationId, 'S-1200', referenceMonth, rls.userId ?? 'system');
+    await esocialGenerateBatch(rls.organizationId, 'S-1210', referenceMonth, rls.userId ?? 'system');
+    // S-1299 guard is enforced internally — will block if S-1200/S-1210 not all EXPORTADO
+    await esocialGenerateBatch(rls.organizationId, 'S-1299', referenceMonth, rls.userId ?? 'system');
+  } catch (err) {
+    console.error('[payroll-runs] Failed to auto-generate periodic eSocial events:', err);
+  }
 }
 
 // ─── revertRun ─────────────────────────────────────────────────────────

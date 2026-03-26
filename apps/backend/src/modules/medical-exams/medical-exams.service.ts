@@ -7,6 +7,7 @@ import {
   type MedicalExamListQuery,
 } from './medical-exams.types';
 import { classifyExpiryAlert } from '../safety-compliance/safety-compliance.types';
+import { generateEvent as esocialGenerateEvent } from '../esocial-events/esocial-events.service';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TxClient = any;
@@ -108,7 +109,21 @@ export async function createMedicalExam(
       include: EXAM_INCLUDE,
     });
 
-    return mapExam(created);
+    const output = mapExam(created);
+
+    // Auto-generate S-2220 eSocial event (per D-08) — after exam is saved
+    try {
+      await esocialGenerateEvent(
+        ctx.organizationId,
+        { eventType: 'S-2220', sourceType: 'MEDICAL_EXAM', sourceId: created.id },
+        createdBy,
+      );
+    } catch (err) {
+      // Log but do not fail the ASO creation — eSocial event can be generated manually
+      console.error('[medical-exams] Failed to auto-generate S-2220:', err);
+    }
+
+    return output;
   });
 }
 

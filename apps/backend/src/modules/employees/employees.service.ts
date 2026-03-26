@@ -2,6 +2,7 @@ import fs from 'fs';
 import { withRlsContext, type RlsContext, type TxClient } from '../../database/rls';
 import { isValidCPF, isValidPIS } from '../../shared/utils/document-validator';
 import { EmployeeError } from './employees.types';
+import { generateEvent as esocialGenerateEvent } from '../esocial-events/esocial-events.service';
 import type {
   CreateEmployeeInput,
   UpdateEmployeeInput,
@@ -147,6 +148,18 @@ export async function createEmployee(
 
     return emp;
   });
+
+  // Auto-generate S-2200 eSocial event (per D-08)
+  try {
+    await esocialGenerateEvent(
+      ctx.organizationId,
+      { eventType: 'S-2200', sourceType: 'EMPLOYEE', sourceId: (employee as { id: string }).id },
+      ctx.userId ?? 'system',
+    );
+  } catch (err) {
+    // Log but do not fail the admission — eSocial event can be generated manually
+    console.error('[employees] Failed to auto-generate S-2200:', err);
+  }
 
   return { employee: employee as unknown as Record<string, unknown>, warnings };
 }
