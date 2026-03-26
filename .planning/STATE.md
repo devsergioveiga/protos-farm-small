@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Phase complete — ready for verification
+status: Milestone complete
 stopped_at: Completed 32-integra-o-financeira-cont-bil-e-dashboard-rh-05-PLAN.md
-last_updated: "2026-03-26T20:27:21.563Z"
+last_updated: "2026-03-26T21:02:02.692Z"
 progress:
   total_phases: 26
   completed_phases: 26
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 
 ## Current Position
 
-Phase: 32 (integra-o-financeira-cont-bil-e-dashboard-rh) — EXECUTING
-Plan: 5 of 5
+Phase: 32
+Plan: Not started
 
 ## Accumulated Context
 
