@@ -39,9 +39,9 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 
 ### Obrigações Acessórias e eSocial
 
-- [ ] **ESOCIAL-01**: Contador pode gerar guias de recolhimento (FGTS via GFIP/DCTFWeb, INSS via DARF, IRRF via DARF, contribuição sindical, FUNRURAL via GPS/DARF com alíquota configurável receita bruta vs folha), com calendário de vencimentos, alertas antecipados, histórico e integração com Contas a Pagar
-- [ ] **ESOCIAL-02**: Contador pode gerar e transmitir eventos eSocial (tabela: S-1000/S-1005/S-1010/S-1020; não periódicos: S-2190/S-2200/S-2206/S-2230/S-2299; periódicos: S-1200/S-1210/S-1299; SST: S-2210/S-2220/S-2240) em XML conforme leiaute S-1.3, com validação, transmissão via Web Service com certificado digital, controle de protocolo/recibo/retorno, dashboard de status e reprocessamento de rejeitados
-- [ ] **ESOCIAL-03**: Contador pode gerar RAIS anual (ou verificar substituição por eSocial), informe de rendimentos por colaborador em PDF (total renda, IRRF retido, INSS), envio por email ou app, com validação de dados e histórico por ano-base
+- [x] **ESOCIAL-01**: Contador pode gerar guias de recolhimento (FGTS via GFIP/DCTFWeb, INSS via DARF, IRRF via DARF, contribuição sindical, FUNRURAL via GPS/DARF com alíquota configurável receita bruta vs folha), com calendário de vencimentos, alertas antecipados, histórico e integração com Contas a Pagar
+- [x] **ESOCIAL-02**: Contador pode gerar e transmitir eventos eSocial (tabela: S-1000/S-1005/S-1010/S-1020; não periódicos: S-2190/S-2200/S-2206/S-2230/S-2299; periódicos: S-1200/S-1210/S-1299; SST: S-2210/S-2220/S-2240) em XML conforme leiaute S-1.3, com validação, transmissão via Web Service com certificado digital, controle de protocolo/recibo/retorno, dashboard de status e reprocessamento de rejeitados
+- [x] **ESOCIAL-03**: Contador pode gerar RAIS anual (ou verificar substituição por eSocial), informe de rendimentos por colaborador em PDF (total renda, IRRF retido, INSS), envio por email ou app, com validação de dados e histórico por ano-base
 
 ### Segurança do Trabalho Rural (NR-31)
 
@@ -101,9 +101,9 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 | SEGUR-01 | Phase 30 | Complete |
 | SEGUR-02 | Phase 30 | Complete |
 | SEGUR-03 | Phase 30 | Complete |
-| ESOCIAL-01 | Phase 31 | Pending |
-| ESOCIAL-02 | Phase 31 | Pending |
-| ESOCIAL-03 | Phase 31 | Pending |
+| ESOCIAL-01 | Phase 31 | Complete |
+| ESOCIAL-02 | Phase 31 | Complete |
+| ESOCIAL-03 | Phase 31 | Complete |
 | INTEGR-01 | Phase 32 | Pending |
 | INTEGR-02 | Phase 32 | Pending |
 | INTEGR-03 | Phase 32 | Pending |

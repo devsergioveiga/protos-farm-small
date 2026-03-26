@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Phase complete — ready for verification
-stopped_at: Phase 31 context gathered
-last_updated: "2026-03-26T12:31:34.402Z"
+status: Ready to execute
+stopped_at: Completed 31-01-PLAN.md
+last_updated: "2026-03-26T13:34:24.819Z"
 progress:
   total_phases: 26
   completed_phases: 24
-  total_plans: 110
-  completed_plans: 110
+  total_plans: 115
+  completed_plans: 111
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 30 — seguranca-trabalho-nr31
+**Current focus:** Phase 31 — obriga-es-acess-rias-e-esocial
 
 ## Current Position
 
-Phase: 30 (seguranca-trabalho-nr31) — EXECUTING
-Plan: 7 of 7
+Phase: 31 (obriga-es-acess-rias-e-esocial) — EXECUTING
+Plan: 2 of 5
 
 ## Accumulated Context
 
@@ -96,6 +96,8 @@ Key decisions for v1.3:
 - [Phase 30]: ComplianceStatusBadge shared between training and ASO expiry tracking
 - [Phase 30]: Multi-step modal for TrainingRecordModal (Step 1 data, Step 2 participants); hours warning does not block save
 - [Phase 30]: SafetyKpiCard in components/shared/ (not payroll/) for reuse; exportPdf opens blob URL in new tab with 10s revoke
+- [Phase 31]: FunruralBasis defaults to PAYROLL on Organization — rural employers who opted for payroll-based FUNRURAL (more common in small farms)
+- [Phase 31]: EsocialStatus uses Portuguese values (PENDENTE/EXPORTADO/ACEITO/REJEITADO) per eSocial specification naming
 
 ### Pending Todos
 
@@ -111,7 +113,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T12:31:34.393Z
-Stopped at: Phase 31 context gathered
-Resume file: .planning/phases/31-obriga-es-acess-rias-e-esocial/31-CONTEXT.md
+Last session: 2026-03-26T13:34:24.815Z
+Stopped at: Completed 31-01-PLAN.md
+Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos

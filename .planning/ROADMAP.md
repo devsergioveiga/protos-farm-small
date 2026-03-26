@@ -582,7 +582,7 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 31-01-PLAN.md — Prisma schema (TaxGuide, EsocialEvent, IncomeStatement), enums, funruralBasis, xmlbuilder2 install, backend+frontend types
+- [x] 31-01-PLAN.md — Prisma schema (TaxGuide, EsocialEvent, IncomeStatement), enums, funruralBasis, xmlbuilder2 install, backend+frontend types
 - [ ] 31-02-PLAN.md — Tax guides backend (SEFIP .RE, DARF PDF, GPS PDF, payables integration) + frontend page
 - [ ] 31-03-PLAN.md — eSocial events backend (15 XML builders, validators, state machine, dashboard)
 - [ ] 31-04-PLAN.md — eSocial events frontend + income statements full stack (PDF, email, RAIS consistency)
@@ -643,5 +643,5 @@ Plans:
 | 28. Processamento da Folha Mensal                   | v1.3      | 6/6 | Complete    | 2026-03-25 |
 | 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 5/5 | Complete    | 2026-03-25 |
 | 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 7/7 | Complete   | 2026-03-26 |
-| 31. Obrigações Acessórias e eSocial                 | v1.3      | 0/5            | Planning    | -          |
+| 31. Obrigações Acessórias e eSocial                 | v1.3      | 1/5 | In Progress|  |
 | 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 0/TBD          | Not started | -          |
