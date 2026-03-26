@@ -34,6 +34,7 @@ const mockData: PayslipData = {
   inssBase: 3000,
   irrfBase: 2670,
   fgtsMonth: 240,
+  fgtsBase: 3000,
 };
 
 describe('generatePayslipPdf', () => {

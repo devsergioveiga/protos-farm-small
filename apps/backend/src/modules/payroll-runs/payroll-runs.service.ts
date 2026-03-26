@@ -32,6 +32,7 @@ import {
   createPayrollEntries,
   revertPayrollEntries,
 } from '../accounting-entries/accounting-entries.service';
+import { getAbsenceImpactForMonth } from '../employee-absences/employee-absences.service';
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -350,6 +351,10 @@ async function calculateAndCreateItem(
     result = calculateThirteenthSalary(thirteenthInput, engineParams);
   } else {
     // MONTHLY or ADVANCE
+
+    // Fetch absence impact for this employee in the reference month
+    const absenceData = await getAbsenceImpactForMonth(employee.id, referenceMonth, tx);
+
     const payrollInput: EmployeePayrollInput = {
       employeeId: employee.id,
       baseSalary,
@@ -371,6 +376,7 @@ async function calculateAndCreateItem(
       },
       pendingAdvances,
       customRubricas: [],
+      absenceData, // NEW — wired from getAbsenceImpactForMonth
     };
 
     result = calculateEmployeePayroll(payrollInput, referenceMonth, engineParams);
@@ -994,6 +1000,12 @@ export async function closeRun(rls: RlsContext, runId: string): Promise<void> {
         inssBase: new Decimal(item.grossSalary.toString()).toNumber(),
         irrfBase: new Decimal(item.grossSalary.toString()).toNumber(),
         fgtsMonth: new Decimal(item.fgtsAmount.toString()).toNumber(),
+        // NOTE: Derives fgtsBase from fgtsAmount assuming standard 8% FGTS rate (Lei 8.036/90).
+        // This is correct for all CLT employees. Apprentices (2% rate) are not yet supported
+        // in this payroll engine. If apprentice support is added, store fgtsBase in the DB item.
+        fgtsBase: new Decimal(item.fgtsAmount.toString()).isZero()
+          ? 0
+          : new Decimal(item.fgtsAmount.toString()).div('0.08').toDecimalPlaces(2).toNumber(),
       });
 
       // Send email if employee has email
@@ -1461,6 +1473,12 @@ export async function downloadPayslipsZip(
       inssBase: new Decimal(item.grossSalary.toString()).toNumber(),
       irrfBase: new Decimal(item.grossSalary.toString()).toNumber(),
       fgtsMonth: new Decimal(item.fgtsAmount.toString()).toNumber(),
+      // NOTE: Derives fgtsBase from fgtsAmount assuming standard 8% FGTS rate (Lei 8.036/90).
+      // This is correct for all CLT employees. Apprentices (2% rate) are not yet supported
+      // in this payroll engine. If apprentice support is added, store fgtsBase in the DB item.
+      fgtsBase: new Decimal(item.fgtsAmount.toString()).isZero()
+        ? 0
+        : new Decimal(item.fgtsAmount.toString()).div('0.08').toDecimalPlaces(2).toNumber(),
     });
 
     const filename = `holerite_${isoMonth}_${item.employee.name.toUpperCase().replace(/\s+/g, '-')}.pdf`;

@@ -29,6 +29,7 @@ export interface PayslipData {
   inssBase: number;
   irrfBase: number;
   fgtsMonth: number;
+  fgtsBase: number;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────
@@ -254,7 +255,7 @@ export async function generatePayslipPdf(data: PayslipData): Promise<Buffer> {
     // ─── Bases (rodapé) ───────────────────────────────────────────────
     doc.font('Helvetica').fontSize(9);
     doc.text(
-      `Base INSS: ${formatCurrency(data.inssBase)}    Base IRRF: ${formatCurrency(data.irrfBase)}    FGTS do Mês: ${formatCurrency(data.fgtsMonth)}`,
+      `Base INSS: ${formatCurrency(data.inssBase)}    Base IRRF: ${formatCurrency(data.irrfBase)}    Base FGTS: ${formatCurrency(data.fgtsBase)}    FGTS do Mês: ${formatCurrency(data.fgtsMonth)}`,
       margin,
       y,
     );

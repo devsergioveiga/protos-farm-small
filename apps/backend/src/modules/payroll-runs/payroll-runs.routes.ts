@@ -352,6 +352,10 @@ payrollRunsRouter.get(
         inssBase: parseFloat(item.grossSalary.toString()),
         irrfBase: parseFloat(item.grossSalary.toString()),
         fgtsMonth: parseFloat(item.fgtsAmount.toString()),
+        // NOTE: Derives fgtsBase from fgtsAmount assuming standard 8% FGTS rate (Lei 8.036/90).
+        fgtsBase: parseFloat(item.fgtsAmount.toString()) === 0
+          ? 0
+          : parseFloat((parseFloat(item.fgtsAmount.toString()) / 0.08).toFixed(2)),
       });
 
       const filename = `holerite_${item.payrollRun.referenceMonth.getUTCFullYear()}-${String(item.payrollRun.referenceMonth.getUTCMonth() + 1).padStart(2, '0')}_${item.employee.name.toUpperCase().replace(/\s+/g, '-')}.pdf`;
