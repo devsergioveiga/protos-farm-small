@@ -416,6 +416,12 @@ model Organization {
   timeEntries              TimeEntry[]
   payrollRuns              PayrollRun[]
   salaryAdvances           SalaryAdvance[]
+  epiProducts              EpiProduct[]
+  epiDeliveries            EpiDelivery[]
+  positionEpiRequirements  PositionEpiRequirement[]
+  trainingRecords          TrainingRecord[]
+  positionTrainingRequirements PositionTrainingRequirement[]
+  medicalExams             MedicalExam[]
 
   @@map("organizations")
 }
@@ -2845,6 +2851,7 @@ model Product {
   iatfStepProducts       IatfProtocolStepProduct[] @relation("IatfStepProduct")
   mastitisApplications   MastitisApplication[]    @relation("MastitisProduct")
   workOrderParts         WorkOrderPart[]
+  epiProduct             EpiProduct?
 
   @@unique([organizationId, name, nature])
   @@index([organizationId])
@@ -3224,6 +3231,7 @@ model StockOutput {
   vaccinations           Vaccination[]
   dewormings             Deworming[]
   treatmentApplications  TreatmentApplication[]
+  epiDelivery            EpiDelivery?
 
   @@index([organizationId])
   @@index([organizationId, type])
@@ -7737,9 +7745,12 @@ model Employee {
   salaryAdvances      SalaryAdvance[]
   vacationPeriods     VacationAcquisitivePeriod[]
   vacationSchedules   VacationSchedule[]
-  absences            EmployeeAbsence[]
-  termination         EmployeeTermination?
-  provisions          PayrollProvision[]
+  absences                 EmployeeAbsence[]
+  termination              EmployeeTermination?
+  provisions               PayrollProvision[]
+  epiDeliveries            EpiDelivery[]
+  employeeTrainingRecords  EmployeeTrainingRecord[]
+  medicalExams             MedicalExam[]
 
   @@unique([organizationId, cpf])
   @@index([organizationId, status])
@@ -7764,21 +7775,24 @@ model EmployeeDependent {
 }
 
 model Position {
-  id              String       @id @default(uuid())
-  organizationId  String
-  name            String
-  cbo             String?
-  description     String?
-  additionalTypes String[]
-  isActive        Boolean      @default(true)
-  createdBy       String
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id                   String       @id @default(uuid())
+  organizationId       String
+  name                 String
+  cbo                  String?
+  description          String?
+  additionalTypes      String[]
+  isActive             Boolean      @default(true)
+  asoPeriodicityMonths Int          @default(12)
+  createdBy            String
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 
-  organization  Organization      @relation(fields: [organizationId], references: [id])
-  salaryBands   SalaryBand[]
-  contracts     EmployeeContract[]
-  employeeFarms EmployeeFarm[]
+  organization        Organization               @relation(fields: [organizationId], references: [id])
+  salaryBands         SalaryBand[]
+  contracts           EmployeeContract[]
+  employeeFarms       EmployeeFarm[]
+  epiRequirements     PositionEpiRequirement[]
+  trainingRequirements PositionTrainingRequirement[]
 
   @@unique([organizationId, name])
   @@index([organizationId])
@@ -8343,6 +8357,46 @@ enum ProvisionType {
   THIRTEENTH
 }
 
+// ── Phase 30: Segurança do Trabalho NR-31 ──
+enum EpiType {
+  CAPACETE
+  LUVA
+  BOTA
+  OCULOS
+  PROTETOR_AURICULAR
+  MASCARA
+  AVENTAL
+  CINTO
+  PERNEIRA
+  OUTROS
+}
+
+enum EpiDeliveryReason {
+  NOVO
+  TROCA
+  DANIFICADO
+  EXTRAVIO
+}
+
+enum InstructorType {
+  INTERNO
+  EXTERNO
+}
+
+enum AsoType {
+  ADMISSIONAL
+  PERIODICO
+  RETORNO_TRABALHO
+  MUDANCA_RISCO
+  DEMISSIONAL
+}
+
+enum AsoResult {
+  APTO
+  INAPTO
+  APTO_COM_RESTRICAO
+}
+
 model VacationAcquisitivePeriod {
   id         String               @id @default(uuid())
   employeeId String
@@ -8473,4 +8527,170 @@ model PayrollProvision {
   @@unique([employeeId, referenceMonth, provisionType])
   @@index([organizationId, referenceMonth])
   @@map("payroll_provisions")
+}
+
+// ── Phase 30: Segurança do Trabalho NR-31 Models ──
+
+model EpiProduct {
+  id             String    @id @default(uuid())
+  organizationId String
+  productId      String    @unique
+  caNumber       String
+  caExpiry       DateTime?
+  epiType        EpiType
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization        Organization             @relation(fields: [organizationId], references: [id])
+  product             Product                  @relation(fields: [productId], references: [id])
+  deliveries          EpiDelivery[]
+  positionRequirements PositionEpiRequirement[]
+
+  @@index([organizationId])
+  @@map("epi_products")
+}
+
+model EpiDelivery {
+  id             String            @id @default(uuid())
+  organizationId String
+  employeeId     String
+  epiProductId   String
+  date           DateTime
+  quantity       Int
+  reason         EpiDeliveryReason
+  signatureUrl   String?
+  observations   String?
+  stockOutputId  String?           @unique
+  createdBy      String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+  epiProduct   EpiProduct   @relation(fields: [epiProductId], references: [id])
+  stockOutput  StockOutput? @relation(fields: [stockOutputId], references: [id])
+
+  @@index([organizationId])
+  @@index([employeeId])
+  @@map("epi_deliveries")
+}
+
+model PositionEpiRequirement {
+  id             String   @id @default(uuid())
+  organizationId String
+  positionId     String
+  epiProductId   String
+  quantity       Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  position     Position     @relation(fields: [positionId], references: [id])
+  epiProduct   EpiProduct   @relation(fields: [epiProductId], references: [id])
+
+  @@unique([positionId, epiProductId])
+  @@map("position_epi_requirements")
+}
+
+model TrainingType {
+  id                     String    @id @default(uuid())
+  organizationId         String?
+  name                   String
+  description            String?
+  minHours               Int
+  defaultValidityMonths  Int
+  nrReference            String?
+  isSystem               Boolean   @default(false)
+  isGlobal               Boolean   @default(false)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  trainingRecords      TrainingRecord[]
+  positionRequirements PositionTrainingRequirement[]
+
+  @@unique([organizationId, name])
+  @@map("training_types")
+}
+
+model TrainingRecord {
+  id                      String         @id @default(uuid())
+  organizationId          String
+  farmId                  String?
+  trainingTypeId          String
+  date                    DateTime
+  instructorName          String
+  instructorType          InstructorType
+  instructorRegistration  String?
+  effectiveHours          Decimal        @db.Decimal(5, 1)
+  location                String?
+  observations            String?
+  certificateUrl          String?
+  attendanceListUrl       String?
+  createdBy               String
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+
+  organization     Organization             @relation(fields: [organizationId], references: [id])
+  trainingType     TrainingType             @relation(fields: [trainingTypeId], references: [id])
+  employeeRecords  EmployeeTrainingRecord[]
+
+  @@index([organizationId])
+  @@map("training_records")
+}
+
+model EmployeeTrainingRecord {
+  id               String   @id @default(uuid())
+  trainingRecordId String
+  employeeId       String
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+
+  trainingRecord TrainingRecord @relation(fields: [trainingRecordId], references: [id])
+  employee       Employee       @relation(fields: [employeeId], references: [id])
+
+  @@unique([trainingRecordId, employeeId])
+  @@index([employeeId])
+  @@map("employee_training_records")
+}
+
+model PositionTrainingRequirement {
+  id             String   @id @default(uuid())
+  organizationId String
+  positionId     String
+  trainingTypeId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  position     Position     @relation(fields: [positionId], references: [id])
+  trainingType TrainingType @relation(fields: [trainingTypeId], references: [id])
+
+  @@unique([positionId, trainingTypeId])
+  @@map("position_training_requirements")
+}
+
+model MedicalExam {
+  id             String    @id @default(uuid())
+  organizationId String
+  employeeId     String
+  farmId         String?
+  type           AsoType
+  date           DateTime
+  doctorName     String
+  doctorCrm      String
+  result         AsoResult
+  restrictions   String?
+  nextExamDate   DateTime?
+  documentUrl    String?
+  observations   String?
+  createdBy      String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+
+  @@index([organizationId])
+  @@index([employeeId])
+  @@map("medical_exams")
 }
