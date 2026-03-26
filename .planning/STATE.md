@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Ready to execute
-stopped_at: Completed 32-integra-o-financeira-cont-bil-e-dashboard-rh-04-PLAN.md
-last_updated: "2026-03-26T20:25:58.853Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 32-integra-o-financeira-cont-bil-e-dashboard-rh-05-PLAN.md
+last_updated: "2026-03-26T20:27:21.563Z"
 progress:
   total_phases: 26
-  completed_phases: 25
+  completed_phases: 26
   total_plans: 120
-  completed_plans: 119
+  completed_plans: 120
 ---
 
 # Project State
@@ -112,6 +112,7 @@ Key decisions for v1.3:
 - [Phase 32]: PAYROLL_PROVISION entries use runId as sourceId for easy revert by run; revertPayrollEntries makes 2 deleteMany calls to cover all 5 entry types
 - [Phase 32-integra-o-financeira-cont-bil-e-dashboard-rh]: ConfirmModal variant=danger replaces ConfirmDeleteModal for payroll estorno (medium criticality, reversible)
 - [Phase 32-integra-o-financeira-cont-bil-e-dashboard-rh]: CONTABILIDADE sidebar group added (separate from RH) for accounting entries
+- [Phase 32-integra-o-financeira-cont-bil-e-dashboard-rh]: HrDashboardPage uses inline year+month selects (not period picker) to match backend hr-dashboard explicit year+month params
 
 ### Pending Todos
 
@@ -127,7 +128,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T20:25:58.849Z
-Stopped at: Completed 32-integra-o-financeira-cont-bil-e-dashboard-rh-04-PLAN.md
+Last session: 2026-03-26T20:27:21.548Z
+Stopped at: Completed 32-integra-o-financeira-cont-bil-e-dashboard-rh-05-PLAN.md
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
