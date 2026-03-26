@@ -4,6 +4,7 @@ module.exports = {
   testMatch: ['**/*.spec.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   maxWorkers: '50%',
   transform: {
