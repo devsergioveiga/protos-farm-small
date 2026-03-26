@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Completed 31-01-PLAN.md
-last_updated: "2026-03-26T13:34:24.819Z"
+stopped_at: Completed 31-02-PLAN.md — Tax Guides full stack
+last_updated: "2026-03-26T13:50:40.374Z"
 progress:
   total_phases: 26
   completed_phases: 24
   total_plans: 115
-  completed_plans: 111
+  completed_plans: 112
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 31 (obriga-es-acess-rias-e-esocial) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 
 ## Accumulated Context
 
@@ -98,6 +98,8 @@ Key decisions for v1.3:
 - [Phase 30]: SafetyKpiCard in components/shared/ (not payroll/) for reuse; exportPdf opens blob URL in new tab with 10s revoke
 - [Phase 31]: FunruralBasis defaults to PAYROLL on Organization — rural employers who opted for payroll-based FUNRURAL (more common in small farms)
 - [Phase 31]: EsocialStatus uses Portuguese values (PENDENTE/EXPORTADO/ACEITO/REJEITADO) per eSocial specification naming
+- [Phase 31-obriga-es-acess-rias-e-esocial]: Permission strings use payroll-params:read/write (not payroll:read/manage) matching existing enum
+- [Phase 31-obriga-es-acess-rias-e-esocial]: FUNRURAL rate from PayrollLegalTable FUNRURAL type scalarValues[key=rate], fallback 2.7%
 
 ### Pending Todos
 
@@ -113,7 +115,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T13:34:24.815Z
-Stopped at: Completed 31-01-PLAN.md
+Last session: 2026-03-26T13:50:40.370Z
+Stopped at: Completed 31-02-PLAN.md — Tax Guides full stack
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
