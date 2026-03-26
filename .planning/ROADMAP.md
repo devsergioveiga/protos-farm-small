@@ -623,7 +623,11 @@ Plans:
 3. E2E flow "Register NR-31 training for employees" completes end-to-end (select employees → save → record persisted)
 4. E2E flow "Record ASO exam for employee" completes end-to-end (select employee → fill form → save)
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+
+- [ ] 33-01-PLAN.md — Backend asoPeriodicityMonths select + wire useEmployees into TrainingRecordsPage and MedicalExamsPage
 **UI hint**: yes
 
 ### Phase 34: Wire Absence Impact to Payroll Engine
