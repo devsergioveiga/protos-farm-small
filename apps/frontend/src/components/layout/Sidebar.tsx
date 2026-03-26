@@ -224,6 +224,12 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    title: 'RH',
+    items: [
+      { to: '/hr-dashboard', icon: BarChart3, label: 'Dashboard RH' },
+    ],
+  },
+  {
     title: 'CONFIGURAÇÃO',
     items: [
       { to: '/users', icon: Users, label: 'Usuários' },
