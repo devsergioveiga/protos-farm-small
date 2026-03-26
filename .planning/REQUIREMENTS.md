@@ -33,7 +33,7 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 ### Férias, Afastamentos e Rescisão
 
 - [x] **FERIAS-01**: Gerente pode controlar períodos aquisitivos, programar férias (mín 5 dias, até 3 frações), calcular pagamento (salário + 1/3 + médias – INSS – IRRF), abono pecuniário, alertas de vencimento (60 dias antes do dobro), recibo PDF, pagamento 2 dias antes e calendário visual evitando conflitos com safra
-- [x] **FERIAS-02**: Gerente pode registrar afastamentos (atestado até 15 dias empresa / após INSS, acidente CAT, maternidade 120 dias, paternidade, casamento, falecimento), com impacto automático na folha, estabilidade provisória pós-acidente e controle de retorno com ASO
+- [ ] **FERIAS-02**: Gerente pode registrar afastamentos (atestado até 15 dias empresa / após INSS, acidente CAT, maternidade 120 dias, paternidade, casamento, falecimento), com impacto automático na folha, estabilidade provisória pós-acidente e controle de retorno com ASO
 - [x] **FERIAS-03**: Contador pode processar rescisão por tipo (sem justa causa, justa causa, pedido, fim safra, acordo mútuo) com cálculo automático (saldo salário, aviso prévio proporcional, 13º prop., férias vencidas+prop.+1/3, multa FGTS 40%/20%), TRCT em PDF, guias GRRF e seguro-desemprego, alerta de prazo 10 dias e integração financeira/contábil
 - [x] **FERIAS-04**: Sistema calcula mensalmente provisão de férias e 13º por colaborador (1/12 salário + 1/3 + encargos), com lançamento contábil automático (despesa DRE + passivo BP), reversão ao pagar, relatório de posição e rateio por centro de custo conforme apontamento de horas
 
@@ -46,8 +46,8 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 ### Segurança do Trabalho Rural (NR-31)
 
 - [x] **SEGUR-01**: Gerente pode controlar EPIs (cadastro com CA e validade, ficha de entrega por colaborador com data/tipo/assinatura, alertas de vencimento CA e troca, alertas de EPIs obrigatórios por função, controle de estoque, ficha impressa PDF e relatório de conformidade)
-- [x] **SEGUR-02**: Técnico pode gerenciar treinamentos obrigatórios NR-31 (integração, agrotóxicos, máquinas, animais, primeiros socorros, incêndio) com registro (data, carga horária, instrutor, lista presença), validade configurável, alerta de reciclagem 30 dias antes, certificado PDF, matriz de conformidade e alerta ao escalar colaborador sem treinamento válido
-- [x] **SEGUR-03**: Gerente pode controlar ASOs (admissional, periódico, retorno, mudança função, demissional) com registro (médico CRM, resultado apto/inapto, exames), periodicidade configurável, alerta vencimento 30 dias, upload ASO digitalizado, integração com admissão (obrigatório) e rescisão (obrigatório) e relatório de conformidade
+- [ ] **SEGUR-02**: Técnico pode gerenciar treinamentos obrigatórios NR-31 (integração, agrotóxicos, máquinas, animais, primeiros socorros, incêndio) com registro (data, carga horária, instrutor, lista presença), validade configurável, alerta de reciclagem 30 dias antes, certificado PDF, matriz de conformidade e alerta ao escalar colaborador sem treinamento válido
+- [ ] **SEGUR-03**: Gerente pode controlar ASOs (admissional, periódico, retorno, mudança função, demissional) com registro (médico CRM, resultado apto/inapto, exames), periodicidade configurável, alerta vencimento 30 dias, upload ASO digitalizado, integração com admissão (obrigatório) e rescisão (obrigatório) e relatório de conformidade
 
 ### Integração Financeira e Contábil
 
@@ -95,12 +95,12 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 | FOLHA-04 | Phase 28 | Complete |
 | FOLHA-05 | Phase 28 | Complete |
 | FERIAS-01 | Phase 29 | Complete |
-| FERIAS-02 | Phase 29 | Complete |
+| FERIAS-02 | Phase 34 | Pending |
 | FERIAS-03 | Phase 29 | Complete |
 | FERIAS-04 | Phase 29 | Complete |
 | SEGUR-01 | Phase 30 | Complete |
-| SEGUR-02 | Phase 30 | Complete |
-| SEGUR-03 | Phase 30 | Complete |
+| SEGUR-02 | Phase 33 | Pending |
+| SEGUR-03 | Phase 33 | Pending |
 | ESOCIAL-01 | Phase 31 | Complete |
 | ESOCIAL-02 | Phase 31 | Complete |
 | ESOCIAL-03 | Phase 31 | Complete |
@@ -110,6 +110,8 @@ Requirements for HR and Rural Payroll module. Each maps to roadmap phases.
 
 **Coverage:**
 - v1.3 requirements: 27 total
+- Satisfied: 24
+- Pending (gap closure): 3 (FERIAS-02 → Phase 34, SEGUR-02/03 → Phase 33)
 - Mapped to phases: 27
 - Unmapped: 0 ✓
 

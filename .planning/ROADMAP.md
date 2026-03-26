@@ -5,7 +5,7 @@
 - ✅ **v1.0 Financeiro Base** — Phases 1-6 (shipped 2026-03-17)
 - ✅ **v1.1 Gestão de Compras** — Phases 7-15 (all complete)
 - ✅ **v1.2 Gestão de Patrimônio** — Phases 16-24 (all complete)
-- 🚧 **v1.3 RH e Folha de Pagamento Rural** — Phases 25-32 (in progress)
+- 🚧 **v1.3 RH e Folha de Pagamento Rural** — Phases 25-34 (in progress)
 
 ## Phases
 
@@ -610,6 +610,38 @@ Plans:
 - [x] 32-05-PLAN.md — HrDashboardPage frontend with charts, KPI cards, filters
 **UI hint**: yes
 
+### Phase 33: Wire Employee Data to Safety Pages
+
+**Goal**: Replace MOCK_EMPLOYEES stubs in TrainingRecordsPage and MedicalExamsPage with real employee data so that NR-31 training records and ASO exams can actually be created with employee selection
+**Depends on**: Phase 25, Phase 30
+**Requirements**: SEGUR-02, SEGUR-03
+**Gap Closure**: Closes gaps from v1.3 audit
+**Success Criteria** (what must be TRUE):
+
+1. TrainingRecordsPage fetches real employees from API and displays them in the multi-select for participant selection
+2. MedicalExamsPage fetches real employees from API and displays them in the combobox for ASO creation
+3. E2E flow "Register NR-31 training for employees" completes end-to-end (select employees → save → record persisted)
+4. E2E flow "Record ASO exam for employee" completes end-to-end (select employee → fill form → save)
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 34: Wire Absence Impact to Payroll Engine
+
+**Goal**: Import and consume getAbsenceImpactForMonth in the payroll engine so that INSS-paid vs company-paid absence days are correctly split and applied in payroll calculation
+**Depends on**: Phase 28, Phase 29
+**Requirements**: FERIAS-02
+**Gap Closure**: Closes gaps from v1.3 audit
+**Success Criteria** (what must be TRUE):
+
+1. Payroll engine imports getAbsenceImpactForMonth from employee-absences.service.ts
+2. When processing payroll for an employee with INSS-paid absence (>15 days), the salary is prorated correctly (company pays first 15 days, INSS pays remainder)
+3. Payslip shows absence deduction breakdown (company-paid days vs INSS-paid days)
+4. E2E flow "Employee INSS leave → Payroll deducts correctly" passes with proper INSS split
+
+**Plans**: TBD
+**UI hint**: no
+
 ## Progress
 
 | Phase                                               | Milestone | Plans Complete | Status      | Completed  |
@@ -646,3 +678,5 @@ Plans:
 | 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 7/7 | Complete   | 2026-03-26 |
 | 31. Obrigações Acessórias e eSocial                 | v1.3      | 5/5 | Complete    | 2026-03-26 |
 | 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 5/5 | Complete    | 2026-03-26 |
+| 33. Wire Employee Data to Safety Pages              | v1.3      | TBD | Pending     | —          |
+| 34. Wire Absence Impact to Payroll Engine           | v1.3      | TBD | Pending     | —          |
