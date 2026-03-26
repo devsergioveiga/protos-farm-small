@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Ready to plan
-stopped_at: Phase 34 context gathered
-last_updated: "2026-03-26T22:35:23.471Z"
+status: Ready to execute
+stopped_at: Completed 34-01-PLAN.md
+last_updated: "2026-03-26T23:50:19.832Z"
 progress:
   total_phases: 28
   completed_phases: 27
-  total_plans: 121
-  completed_plans: 121
+  total_plans: 123
+  completed_plans: 122
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 33 — wire-employee-data-safety-pages
+**Current focus:** Phase 34 — wire-absence-impact-payroll-engine
 
 ## Current Position
 
-Phase: 34
-Plan: Not started
+Phase: 34 (wire-absence-impact-payroll-engine) — EXECUTING
+Plan: 2 of 2
 
 ## Accumulated Context
 
@@ -115,6 +115,7 @@ Key decisions for v1.3:
 - [Phase 32-integra-o-financeira-cont-bil-e-dashboard-rh]: HrDashboardPage uses inline year+month selects (not period picker) to match backend hr-dashboard explicit year+month params
 - [Phase 33]: employeeOptions useMemo mapping uses farms[0].position for flat shape — matches existing modal prop contracts
 - [Phase 33]: listEmployees position select extended with asoPeriodicityMonths only — getEmployee detail method left unchanged
+- [Phase 34-wire-absence-impact-payroll-engine]: absenceInssDeduction applied to adjustedSalary for cumulative pro-rata effect (D-02); inssIrrfBase uses reduced salary (D-04); fgtsFullMonth uses baseSalary (D-07); DSR reduced by suspendedDays/workDays (D-10)
 
 ### Pending Todos
 
@@ -130,7 +131,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T22:35:23.462Z
-Stopped at: Phase 34 context gathered
-Resume file: .planning/phases/34-wire-absence-impact-payroll-engine/34-CONTEXT.md
+Last session: 2026-03-26T23:50:19.827Z
+Stopped at: Completed 34-01-PLAN.md
+Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
