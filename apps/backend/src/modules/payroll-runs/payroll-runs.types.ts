@@ -1,6 +1,7 @@
 // ─── Payroll Runs Types ────────────────────────────────────────────────
 
 import Decimal from 'decimal.js';
+import type { AbsencePayrollImpact } from '../employee-absences/employee-absences.types';
 
 // ─── Error class ──────────────────────────────────────────────────────
 
@@ -47,6 +48,7 @@ export interface EmployeePayrollInput {
     totalNightMinutes: number;
     totalAbsences: number;
   } | null;
+  absenceData?: AbsencePayrollImpact | null;
   pendingAdvances: Decimal;
   customRubricas: Array<{
     code: string;
@@ -75,6 +77,9 @@ export interface EmployeePayrollResult {
   otherDeductions: Decimal;
   netSalary: Decimal;
   fgtsAmount: Decimal;
+  absenceInssDeduction: Decimal;
+  suspensionDeduction: Decimal;
+  fgtsBase: Decimal;
   inssPatronal: Decimal;
   lineItems: Array<{
     code: string;

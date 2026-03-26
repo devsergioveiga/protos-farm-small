@@ -218,6 +218,113 @@ describe('calculateEmployeePayroll', () => {
       .toDecimalPlaces(2);
     expect(result.inssPatronal.toFixed(2)).toBe(expectedPatronal.toFixed(2));
   });
+
+  describe('absence impact', () => {
+    it('INSS absence 10 days generates desconto rubrica with proportional deduction (D-01)', () => {
+      const input = makeBaseInput({
+        absenceData: { companyPaidDays: 15, inssPaidDays: 10, suspendedDays: 0, fgtsFullMonth: true },
+      });
+      const result = calculateEmployeePayroll(input, referenceMonth, params);
+      const rubrica = result.lineItems.find((li) => li.code === '0900');
+      expect(rubrica).toBeDefined();
+      expect(rubrica!.description).toBe('Afastamento INSS');
+      expect(rubrica!.reference).toBe('10/31d');
+      expect(rubrica!.type).toBe('DESCONTO');
+      expect(rubrica!.value.toFixed(2)).toBe('967.74'); // 10/31 * 3000
+      expect(result.absenceInssDeduction.toFixed(2)).toBe('967.74');
+    });
+
+    it('suspension 3 days generates desconto rubrica with proportional deduction (D-09)', () => {
+      const input = makeBaseInput({
+        absenceData: { companyPaidDays: 0, inssPaidDays: 0, suspendedDays: 3, fgtsFullMonth: false },
+      });
+      const result = calculateEmployeePayroll(input, referenceMonth, params);
+      const rubrica = result.lineItems.find((li) => li.code === '0910');
+      expect(rubrica).toBeDefined();
+      expect(rubrica!.description).toBe('Suspensão Disciplinar');
+      expect(rubrica!.reference).toBe('3/31d');
+      expect(rubrica!.type).toBe('DESCONTO');
+      expect(rubrica!.value.toFixed(2)).toBe('290.32'); // 3/31 * 3000
+      expect(result.suspensionDeduction.toFixed(2)).toBe('290.32');
+    });
+
+    it('INSS and IRRF are calculated on salary reduced by absence and suspension deductions (D-04)', () => {
+      const input = makeBaseInput({
+        absenceData: { companyPaidDays: 0, inssPaidDays: 10, suspendedDays: 3, fgtsFullMonth: false },
+      });
+      const result = calculateEmployeePayroll(input, referenceMonth, params);
+      // reducedBase = 3000 - 967.74 - 290.32 = 1741.94 — INSS on this should be less than on 3000
+      const fullResult = calculateEmployeePayroll(makeBaseInput(), referenceMonth, params);
+      expect(result.inssAmount.lessThan(fullResult.inssAmount)).toBe(true);
+    });
+
+    it('fgtsFullMonth=true uses full baseSalary for FGTS, not adjusted (D-07)', () => {
+      const input = makeBaseInput({
+        absenceData: { companyPaidDays: 15, inssPaidDays: 10, suspendedDays: 0, fgtsFullMonth: true },
+      });
+      const result = calculateEmployeePayroll(input, referenceMonth, params);
+      // FGTS base should be 3000 (full baseSalary), not prorated
+      expect(result.fgtsBase.toFixed(2)).toBe('3000.00');
+      expect(result.fgtsAmount.toFixed(2)).toBe('240.00'); // 8% of 3000
+    });
+
+    it('mid-month admission + INSS absence = cumulative pro-rata (D-02)', () => {
+      const input = makeBaseInput({
+        admissionDate: new Date('2026-03-16'), // 16 days worked (16th to 31st)
+        absenceData: { companyPaidDays: 5, inssPaidDays: 5, suspendedDays: 0, fgtsFullMonth: true },
+      });
+      const result = calculateEmployeePayroll(input, referenceMonth, params);
+      // proRataDays = 31-16+1 = 16; adjustedSalary = 3000 * 16/31 = 1548.39
+      // absenceInssDeduction = 5/31 * 1548.39 = 249.74
+      expect(result.proRataDays).toBe(16);
+      expect(result.absenceInssDeduction.toFixed(2)).toBe('249.74');
+    });
+
+    it('suspension reduces DSR proportionally (D-10)', () => {
+      const input = makeBaseInput({
+        timesheetData: { totalOvertime50: 600, totalOvertime100: 0, totalNightMinutes: 0, totalAbsences: 0 },
+        absenceData: { companyPaidDays: 0, inssPaidDays: 0, suspendedDays: 2, fgtsFullMonth: false },
+      });
+      const result = calculateEmployeePayroll(input, referenceMonth, params);
+      const noSuspResult = calculateEmployeePayroll(
+        makeBaseInput({
+          timesheetData: { totalOvertime50: 600, totalOvertime100: 0, totalNightMinutes: 0, totalAbsences: 0 },
+        }),
+        referenceMonth,
+        params,
+      );
+      expect(result.dsrValue.lessThan(noSuspResult.dsrValue)).toBe(true);
+    });
+
+    it('no absenceData produces identical result to current behavior (regression)', () => {
+      const input = makeBaseInput(); // absenceData undefined
+      const result = calculateEmployeePayroll(input, referenceMonth, params);
+      expect(result.absenceInssDeduction.toFixed(2)).toBe('0.00');
+      expect(result.suspensionDeduction.toFixed(2)).toBe('0.00');
+      expect(result.fgtsBase.toFixed(2)).toBe('3000.00');
+    });
+
+    it('absenceData with all zeros produces zero deductions', () => {
+      const input = makeBaseInput({
+        absenceData: { companyPaidDays: 0, inssPaidDays: 0, suspendedDays: 0, fgtsFullMonth: false },
+      });
+      const result = calculateEmployeePayroll(input, referenceMonth, params);
+      expect(result.absenceInssDeduction.toFixed(2)).toBe('0.00');
+      expect(result.suspensionDeduction.toFixed(2)).toBe('0.00');
+      expect(result.lineItems.find((li) => li.code === '0900')).toBeUndefined();
+      expect(result.lineItems.find((li) => li.code === '0910')).toBeUndefined();
+    });
+
+    it('net salary floors at zero when deductions exceed gross (Pitfall 5)', () => {
+      const input = makeBaseInput({
+        baseSalary: new Decimal('1000.00'),
+        absenceData: { companyPaidDays: 0, inssPaidDays: 28, suspendedDays: 0, fgtsFullMonth: false },
+        pendingAdvances: new Decimal('500'),
+      });
+      const result = calculateEmployeePayroll(input, referenceMonth, params);
+      expect(result.netSalary.greaterThanOrEqualTo(0)).toBe(true);
+    });
+  });
 });
 
 describe('calculateThirteenthSalary', () => {
