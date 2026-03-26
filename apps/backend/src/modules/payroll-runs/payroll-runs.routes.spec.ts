@@ -40,6 +40,19 @@ jest.mock('../../database/prisma', () => ({
     payable: {
       create: jest.fn(),
       updateMany: jest.fn(),
+      findMany: jest.fn(),
+    },
+    payableCostCenterItem: {
+      createMany: jest.fn(),
+    },
+    timeEntry: {
+      findMany: jest.fn(),
+    },
+    employeeContract: {
+      findFirst: jest.fn(),
+    },
+    taxGuide: {
+      findMany: jest.fn(),
     },
     $transaction: jest.fn(),
   },
@@ -133,6 +146,13 @@ describe('PayrollRuns Service', () => {
     (mockPrisma.$transaction as jest.Mock).mockImplementation((fn: any) =>
       typeof fn === 'function' ? fn(mockPrisma) : Promise.resolve(),
     );
+
+    // Default: timeEntry and employeeContract return empty (no cost-center data)
+    (mockPrisma.timeEntry.findMany as jest.Mock).mockResolvedValue([]);
+    (mockPrisma.employeeContract.findFirst as jest.Mock).mockResolvedValue(null);
+    (mockPrisma.payableCostCenterItem.createMany as jest.Mock).mockResolvedValue({ count: 0 });
+    (mockPrisma.taxGuide.findMany as jest.Mock).mockResolvedValue([]);
+    (mockPrisma.payable.findMany as jest.Mock).mockResolvedValue([]);
   });
 
   // ─── Test 1: createRun ──────────────────────────────────────────────
@@ -395,6 +415,9 @@ describe('PayrollRuns Service', () => {
           netSalary: new Decimal(2670),
           inssPatronal: new Decimal(690),
           fgtsAmount: new Decimal(240),
+          irrfAmount: new Decimal(0),
+          vtDeduction: new Decimal(0),
+          alimonyDeduction: null,
           lineItemsJson: mockCalcResult.lineItems.map(li => ({ ...li, value: li.value.toNumber() })),
           employee: {
             id: 'emp-1',
@@ -414,6 +437,9 @@ describe('PayrollRuns Service', () => {
           netSalary: new Decimal(2500),
           inssPatronal: new Decimal(644),
           fgtsAmount: new Decimal(224),
+          irrfAmount: new Decimal(0),
+          vtDeduction: new Decimal(0),
+          alimonyDeduction: null,
           lineItemsJson: [],
           employee: {
             id: 'emp-2',

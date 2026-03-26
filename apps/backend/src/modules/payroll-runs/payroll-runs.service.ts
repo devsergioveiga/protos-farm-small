@@ -22,7 +22,9 @@ import {
   type ThirteenthSalaryInput,
 } from './payroll-runs.types';
 import type { PayrollRunType, PayrollRunStatus } from '@prisma/client';
+import { PayableCategory } from '@prisma/client';
 import { generateBatch as esocialGenerateBatch } from '../esocial-events/esocial-events.service';
+import { nthBusinessDay } from './payroll-date-utils';
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -46,24 +48,6 @@ export interface ListRunsInput {
 // ─── Helpers ────────────────────────────────────────────────────────────
 
 /**
- * Returns the Nth business day (Mon–Fri, ignoring holidays for simplicity) of a given month.
- */
-function nthBusinessDay(year: number, month: number, n: number): Date {
-  let count = 0;
-  for (let day = 1; day <= 31; day++) {
-    const d = new Date(Date.UTC(year, month - 1, day));
-    if (d.getUTCMonth() !== month - 1) break;
-    const dow = d.getUTCDay();
-    if (dow !== 0 && dow !== 6) {
-      count++;
-      if (count === n) return d;
-    }
-  }
-  // Fallback: last day of month
-  return new Date(Date.UTC(year, month - 1, 0));
-}
-
-/**
  * Validate and apply a state machine transition. Throws PayrollRunError on invalid transition.
  */
 function applyTransition(currentStatus: string, transitionName: string): string {
@@ -76,6 +60,92 @@ function applyTransition(currentStatus: string, transitionName: string): string 
     );
   }
   return transition[currentStatus];
+}
+
+/**
+ * Build cost-center allocation items for a payable.
+ * Groups TimeEntryActivity by costCenterId for the employee in the reference month.
+ * Falls back to EmployeeContract.costCenterId at 100% if no time entries found.
+ * Returns empty array if no cost center is available.
+ */
+async function buildCostCenterItems(
+  tx: TxClient,
+  employeeId: string,
+  referenceMonth: Date,
+  farmId: string,
+): Promise<Array<{ costCenterId: string; farmId: string; allocMode: string; percentage: Decimal }>> {
+  // Compute month range for time entry lookup
+  const year = referenceMonth.getUTCFullYear();
+  const month = referenceMonth.getUTCMonth();
+  const monthStart = new Date(Date.UTC(year, month, 1));
+  const monthEnd = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999));
+
+  // Find time entries for this employee in the reference month
+  const timeEntries = await tx.timeEntry.findMany({
+    where: {
+      employeeId,
+      workDate: { gte: monthStart, lte: monthEnd },
+    },
+    select: {
+      activities: {
+        where: { costCenterId: { not: null } },
+        select: { costCenterId: true, minutes: true },
+      },
+    },
+  });
+
+  // Aggregate minutes per cost center
+  const ccMinutes = new Map<string, number>();
+  for (const entry of timeEntries) {
+    for (const act of entry.activities) {
+      if (act.costCenterId) {
+        ccMinutes.set(act.costCenterId, (ccMinutes.get(act.costCenterId) ?? 0) + act.minutes);
+      }
+    }
+  }
+
+  if (ccMinutes.size > 0) {
+    const totalMinutes = [...ccMinutes.values()].reduce((a, b) => a + b, 0);
+    if (totalMinutes === 0) return [];
+
+    const entries = [...ccMinutes.entries()];
+    const result: Array<{ costCenterId: string; farmId: string; allocMode: string; percentage: Decimal }> = [];
+
+    let sumSoFar = new Decimal(0);
+    for (let i = 0; i < entries.length; i++) {
+      const [ccId, minutes] = entries[i];
+      let pct: Decimal;
+      if (i === entries.length - 1) {
+        // Last entry: remainder to ensure sum = 100
+        pct = new Decimal(100).minus(sumSoFar);
+      } else {
+        pct = new Decimal(minutes).div(totalMinutes).mul(100).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+        sumSoFar = sumSoFar.plus(pct);
+      }
+      result.push({ costCenterId: ccId, farmId, allocMode: 'PERCENTAGE', percentage: pct });
+    }
+    return result;
+  }
+
+  // Fallback: employee contract cost center at 100%
+  const contract = await tx.employeeContract.findFirst({
+    where: { employeeId, isActive: true },
+    select: { costCenterId: true },
+    orderBy: { startDate: 'desc' },
+  });
+
+  if (contract?.costCenterId) {
+    return [
+      {
+        costCenterId: contract.costCenterId,
+        farmId,
+        allocMode: 'PERCENTAGE',
+        percentage: new Decimal(100),
+      },
+    ];
+  }
+
+  return [];
 }
 
 /**
@@ -681,19 +751,25 @@ export async function closeRun(rls: RlsContext, runId: string): Promise<void> {
   let totalInssPatronal = new Decimal(0);
   let totalFgts = new Decimal(0);
 
+  // Accumulate IRRF for aggregated CP
+  let totalIrrf = new Decimal(0);
+
   // Per-employee: create payable, lock timesheet, deduct advances
   for (const item of items) {
     const farmId = item.employee.farms[0]?.farmId;
     if (!farmId) continue;
 
     await prisma.$transaction(async (tx) => {
+      // Build cost-center items for this employee
+      const ccItems = await buildCostCenterItems(tx, item.employeeId, run.referenceMonth, farmId);
+
       // Create Payable for net salary
-      await tx.payable.create({
+      const salaryPayable = await tx.payable.create({
         data: {
           organizationId: rls.organizationId,
           farmId,
           supplierName: item.employee.name,
-          category: 'PAYROLL' as any,
+          category: PayableCategory.PAYROLL,
           description: `Salário ${_formatMonthLabel(run.referenceMonth)} — ${item.employee.name}`,
           totalAmount: new Decimal(item.netSalary.toString()),
           dueDate: salaryDueDate,
@@ -701,6 +777,101 @@ export async function closeRun(rls: RlsContext, runId: string): Promise<void> {
           originId: item.id,
         },
       });
+      if (ccItems.length > 0) {
+        await tx.payableCostCenterItem.createMany({
+          data: ccItems.map((cc) => ({ ...cc, payableId: salaryPayable.id })),
+        });
+      }
+
+      // Create VT payable if vtDeduction > 0
+      const vtAmount = new Decimal(item.vtDeduction.toString());
+      if (vtAmount.greaterThan(0)) {
+        const vtDueDate = nthBusinessDay(nextYear, nextMonth, 5);
+        const vtPayable = await tx.payable.create({
+          data: {
+            organizationId: rls.organizationId,
+            farmId,
+            supplierName: 'Vale-Transporte',
+            category: PayableCategory.PAYROLL,
+            description: `Vale-Transporte ${_formatMonthLabel(run.referenceMonth)} — ${item.employee.name}`,
+            totalAmount: vtAmount,
+            dueDate: vtDueDate,
+            originType: 'PAYROLL_EMPLOYEE_VT',
+            originId: item.id,
+          },
+        });
+        if (ccItems.length > 0) {
+          await tx.payableCostCenterItem.createMany({
+            data: ccItems.map((cc) => ({ ...cc, payableId: vtPayable.id })),
+          });
+        }
+      }
+
+      // Create Pension (alimony) payable if alimonyDeduction > 0
+      const alimonyAmount = item.alimonyDeduction
+        ? new Decimal(item.alimonyDeduction.toString())
+        : new Decimal(0);
+      if (alimonyAmount.greaterThan(0)) {
+        const pensionDueDate = nthBusinessDay(nextYear, nextMonth, 5);
+        const pensionPayable = await tx.payable.create({
+          data: {
+            organizationId: rls.organizationId,
+            farmId,
+            supplierName: `Pensão Alimentícia — ${item.employee.name}`,
+            category: PayableCategory.PAYROLL,
+            description: `Pensão Alimentícia ${_formatMonthLabel(run.referenceMonth)} — ${item.employee.name}`,
+            totalAmount: alimonyAmount,
+            dueDate: pensionDueDate,
+            originType: 'PAYROLL_EMPLOYEE_PENSION',
+            originId: item.id,
+          },
+        });
+        if (ccItems.length > 0) {
+          await tx.payableCostCenterItem.createMany({
+            data: ccItems.map((cc) => ({ ...cc, payableId: pensionPayable.id })),
+          });
+        }
+      }
+
+      // Create Sindical payable if sindicalDeduction exists in lineItemsJson
+      const lineItems = Array.isArray(item.lineItemsJson) ? (item.lineItemsJson as any[]) : [];
+      const sindicalLineItem = lineItems.find(
+        (li: any) =>
+          li.type === 'DESCONTO' &&
+          (String(li.code).startsWith('9') || // Contribuição sindical typically code 9xx
+            String(li.description ?? '')
+              .toLowerCase()
+              .includes('sindical')),
+      );
+      if (sindicalLineItem) {
+        const sindicalAmount = new Decimal(
+          typeof sindicalLineItem.value === 'string'
+            ? parseFloat(sindicalLineItem.value)
+            : sindicalLineItem.value ?? 0,
+        );
+        if (sindicalAmount.greaterThan(0)) {
+          // Due date: last business day of month following deduction
+          const sindicalDueDate = nthBusinessDay(nextYear, nextMonth + 1 > 12 ? 1 : nextMonth + 1, 5);
+          const sindicalPayable = await tx.payable.create({
+            data: {
+              organizationId: rls.organizationId,
+              farmId,
+              supplierName: `Contribuição Sindical — ${item.employee.name}`,
+              category: PayableCategory.PAYROLL,
+              description: `Contribuição Sindical ${_formatMonthLabel(run.referenceMonth)} — ${item.employee.name}`,
+              totalAmount: sindicalAmount,
+              dueDate: sindicalDueDate,
+              originType: 'PAYROLL_EMPLOYEE_SINDICAL',
+              originId: item.id,
+            },
+          });
+          if (ccItems.length > 0) {
+            await tx.payableCostCenterItem.createMany({
+              data: ccItems.map((cc) => ({ ...cc, payableId: sindicalPayable.id })),
+            });
+          }
+        }
+      }
 
       // Lock timesheet
       const timesheet = await tx.timesheet.findFirst({
@@ -727,6 +898,7 @@ export async function closeRun(rls: RlsContext, runId: string): Promise<void> {
 
     totalInssPatronal = totalInssPatronal.plus(new Decimal(item.inssPatronal.toString()));
     totalFgts = totalFgts.plus(new Decimal(item.fgtsAmount.toString()));
+    totalIrrf = totalIrrf.plus(new Decimal(item.irrfAmount.toString()));
   }
 
   // Get any farm for employer CPs (use from first item)
@@ -740,7 +912,7 @@ export async function closeRun(rls: RlsContext, runId: string): Promise<void> {
           organizationId: rls.organizationId,
           farmId: anyFarmId,
           supplierName: 'INSS Patronal',
-          category: 'PAYROLL' as any,
+          category: PayableCategory.PAYROLL,
           description: `INSS Patronal ${_formatMonthLabel(run.referenceMonth)}`,
           totalAmount: totalInssPatronal,
           dueDate: inssPatronalDueDate,
@@ -757,11 +929,29 @@ export async function closeRun(rls: RlsContext, runId: string): Promise<void> {
           organizationId: rls.organizationId,
           farmId: anyFarmId,
           supplierName: 'FGTS',
-          category: 'PAYROLL' as any,
+          category: PayableCategory.PAYROLL,
           description: `FGTS ${_formatMonthLabel(run.referenceMonth)}`,
           totalAmount: totalFgts,
           dueDate: fgtsDueDate,
           originType: 'PAYROLL_EMPLOYER_FGTS',
+          originId: runId,
+        },
+      });
+    }
+
+    // Create aggregated IRRF CP (one per run, 20th of next month)
+    if (totalIrrf.greaterThan(0)) {
+      const irrfDueDate = new Date(Date.UTC(nextYear, nextMonth - 1, 20));
+      await prisma.payable.create({
+        data: {
+          organizationId: rls.organizationId,
+          farmId: anyFarmId,
+          supplierName: `IRRF Retido — Folha ${_formatMonthLabel(run.referenceMonth)}`,
+          category: PayableCategory.PAYROLL,
+          description: `IRRF Retido na Fonte ${_formatMonthLabel(run.referenceMonth)}`,
+          totalAmount: totalIrrf,
+          dueDate: irrfDueDate,
+          originType: 'PAYROLL_EMPLOYEE_IRRF',
           originId: runId,
         },
       });
@@ -863,13 +1053,25 @@ export async function revertRun(rls: RlsContext, runId: string): Promise<void> {
 
   const itemIds = run.items.map((i: any) => i.id);
 
-  // Cancel all Payables linked to this run
+  // All payroll originTypes that can be created by closeRun
+  const PAYROLL_ORIGIN_TYPES = [
+    'PAYROLL_RUN_ITEM',
+    'PAYROLL_EMPLOYER_INSS',
+    'PAYROLL_EMPLOYER_FGTS',
+    'PAYROLL_EMPLOYEE_IRRF',
+    'PAYROLL_EMPLOYEE_VT',
+    'PAYROLL_EMPLOYEE_PENSION',
+    'PAYROLL_EMPLOYEE_SINDICAL',
+  ] as const;
+
+  // Cancel all Payables linked to this run (per-item or run-level)
   await prisma.payable.updateMany({
     where: {
       OR: [
-        { originType: 'PAYROLL_RUN_ITEM', originId: { in: itemIds } },
-        { originType: 'PAYROLL_EMPLOYER_INSS', originId: runId },
-        { originType: 'PAYROLL_EMPLOYER_FGTS', originId: runId },
+        {
+          originType: { in: [...PAYROLL_ORIGIN_TYPES] as string[] },
+          originId: { in: [...itemIds, runId] },
+        },
       ],
     },
     data: { status: 'CANCELLED' as any },
