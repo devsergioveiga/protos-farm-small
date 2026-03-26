@@ -1,0 +1,358 @@
+.training-record-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.training-record-modal {
+  background: var(--color-neutral-0, #fff);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  animation: trmmodal-enter 300ms ease-out;
+}
+
+@keyframes trmmodal-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .training-record-modal {
+    animation: none;
+  }
+}
+
+.training-record-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+.training-record-modal__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-neutral-800);
+  margin: 0 0 8px;
+}
+
+.training-record-modal__stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+}
+
+.training-record-modal__step {
+  color: var(--color-neutral-400);
+  font-weight: 400;
+}
+
+.training-record-modal__step--active {
+  color: var(--color-primary-600);
+  font-weight: 600;
+}
+
+.training-record-modal__step--done {
+  color: var(--color-neutral-500);
+  font-weight: 400;
+}
+
+.training-record-modal__step-sep {
+  color: var(--color-neutral-300);
+}
+
+.training-record-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: background 100ms ease-out;
+}
+
+.training-record-modal__close:hover {
+  background: var(--color-neutral-100);
+}
+
+.training-record-modal__body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.training-record-modal__api-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+}
+
+.training-record-modal__step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.training-record-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.training-record-modal__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 480px) {
+  .training-record-modal__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.training-record-modal__label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.training-record-modal__input,
+.training-record-modal__select,
+.training-record-modal__textarea {
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0, #fff);
+  min-height: 48px;
+  transition: border-color 100ms ease-out;
+}
+
+.training-record-modal__input:focus,
+.training-record-modal__select:focus,
+.training-record-modal__textarea:focus {
+  outline: 2px solid var(--color-primary-500, #388e3c);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500, #388e3c);
+}
+
+.training-record-modal__input--error {
+  border-color: var(--color-error-500);
+}
+
+.training-record-modal__textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.training-record-modal__error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-error-500);
+}
+
+.training-record-modal__warning {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-warning-500);
+  background: var(--color-warning-100);
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.training-record-modal__fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.training-record-modal__radio-group {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.training-record-modal__radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+}
+
+/* Step 2 — employees */
+.training-record-modal__selected-count {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary-600);
+  margin: 0;
+}
+
+.training-record-modal__employee-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+}
+
+.training-record-modal__no-employees {
+  padding: 20px;
+  text-align: center;
+  color: var(--color-neutral-400);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-style: italic;
+}
+
+.training-record-modal__employee-item {
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.training-record-modal__employee-item:last-child {
+  border-bottom: none;
+}
+
+.training-record-modal__employee-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 100ms ease-out;
+}
+
+.training-record-modal__employee-label:hover {
+  background: var(--color-neutral-50);
+}
+
+.training-record-modal__checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary-600);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.training-record-modal__employee-name {
+  display: block;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.training-record-modal__employee-position {
+  display: block;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+
+.training-record-modal__employee-expiry {
+  display: block;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-success-500, #2e7d32);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Footer */
+.training-record-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+.training-record-modal__btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  transition: background 100ms ease-out;
+}
+
+.training-record-modal__btn--cancel {
+  background: none;
+  border: 1px solid var(--color-neutral-300);
+  color: var(--color-neutral-700);
+}
+
+.training-record-modal__btn--cancel:hover {
+  background: var(--color-neutral-100);
+}
+
+.training-record-modal__btn--primary {
+  background: var(--color-primary-600);
+  border: none;
+  color: #fff;
+}
+
+.training-record-modal__btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-700, #1b5e20);
+}
+
+.training-record-modal__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
