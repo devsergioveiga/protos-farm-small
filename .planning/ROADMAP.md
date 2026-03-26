@@ -556,13 +556,16 @@ Plans:
 2. Técnico pode registrar treinamentos NR-31 obrigatórios (integração, agrotóxicos, máquinas, animais, primeiros socorros, incêndio) com data, carga horária, instrutor e lista de presença, configurar validade por tipo, receber alerta 30 dias antes da reciclagem e gerar certificado PDF e matriz de conformidade
 3. Gerente pode registrar ASOs por tipo (admissional, periódico, retorno, mudança de função, demissional) com médico CRM, resultado e exames, e o sistema alerta 30 dias antes do vencimento, bloqueia admissão sem ASO admissional e exige ASO demissional para processar rescisão
 
-**Plans**: 4 plans
+**Plans**: 7 plans
 
 Plans:
-- [ ] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
-- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
-- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
-- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
+- [ ] 30-01-PLAN.md — Schema migration (8 tables, 5 enums) + types files + app.ts wiring
+- [ ] 30-02-PLAN.md — EPI backend: epi-products CRUD + epi-deliveries with stock integration + PDF
+- [ ] 30-03-PLAN.md — Training backend: training-types with NR-31 seed + training-records + certificate PDF
+- [ ] 30-04-PLAN.md — ASO backend: medical-exams + safety-compliance dashboard aggregation + reports
+- [ ] 30-05-PLAN.md — Frontend: types, hooks, ComplianceStatusBadge, sidebar, router, EPI pages
+- [ ] 30-06-PLAN.md — Frontend: TrainingTypesPage, TrainingRecordsPage, MedicalExamsPage
+- [ ] 30-07-PLAN.md — Frontend: SafetyDashboardPage with KPIs and 4 tabs + visual verification
 **UI hint**: yes
 
 ### Phase 31: Obrigações Acessórias e eSocial
