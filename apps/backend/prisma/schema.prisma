@@ -297,6 +297,7 @@ model Organization {
   maxFarms  Int              @default(5)
   allowMultipleSessions Boolean @default(true)
   allowSocialLogin     Boolean @default(true)
+  funruralBasis        FunruralBasis @default(PAYROLL)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 
@@ -422,6 +423,9 @@ model Organization {
   trainingRecords          TrainingRecord[]
   positionTrainingRequirements PositionTrainingRequirement[]
   medicalExams             MedicalExam[]
+  taxGuides                TaxGuide[]
+  esocialEvents            EsocialEvent[]
+  incomeStatements         IncomeStatement[]
 
   @@map("organizations")
 }
@@ -7751,6 +7755,7 @@ model Employee {
   epiDeliveries            EpiDelivery[]
   employeeTrainingRecords  EmployeeTrainingRecord[]
   medicalExams             MedicalExam[]
+  incomeStatements         IncomeStatement[]
 
   @@unique([organizationId, cpf])
   @@index([organizationId, status])
@@ -8693,4 +8698,113 @@ model MedicalExam {
   @@index([organizationId])
   @@index([employeeId])
   @@map("medical_exams")
+}
+
+// ── Phase 31: Obrigações Acessórias e eSocial ──
+
+enum TaxGuideType {
+  FGTS
+  INSS
+  IRRF
+  FUNRURAL
+}
+
+enum TaxGuideStatus {
+  PENDING
+  GENERATED
+  PAID
+  OVERDUE
+}
+
+enum EsocialGroup {
+  TABELA
+  NAO_PERIODICO
+  PERIODICO
+  SST
+}
+
+enum EsocialStatus {
+  PENDENTE
+  EXPORTADO
+  ACEITO
+  REJEITADO
+}
+
+enum FunruralBasis {
+  GROSS_REVENUE
+  PAYROLL
+}
+
+model TaxGuide {
+  id             String         @id @default(uuid())
+  organizationId String
+  guideType      TaxGuideType
+  referenceMonth DateTime       @db.Date
+  dueDate        DateTime       @db.Date
+  totalAmount    Decimal        @db.Decimal(14, 2)
+  status         TaxGuideStatus @default(PENDING)
+  fileKey        String?
+  payrollRunId   String?
+  generatedBy    String?
+  generatedAt    DateTime?
+  notes          String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, guideType, referenceMonth])
+  @@index([organizationId, status])
+  @@map("tax_guides")
+}
+
+model EsocialEvent {
+  id              String        @id @default(uuid())
+  organizationId  String
+  eventType       String
+  eventGroup      EsocialGroup
+  referenceMonth  DateTime?     @db.Date
+  sourceType      String
+  sourceId        String
+  status          EsocialStatus @default(PENDENTE)
+  version         Int           @default(1)
+  xmlContent      String?       @db.Text
+  rejectionReason String?
+  exportedAt      DateTime?
+  acceptedAt      DateTime?
+  rejectedAt      DateTime?
+  createdBy       String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, eventGroup, status])
+  @@index([organizationId, referenceMonth])
+  @@index([sourceType, sourceId])
+  @@map("esocial_events")
+}
+
+model IncomeStatement {
+  id                 String   @id @default(uuid())
+  organizationId     String
+  employeeId         String
+  yearBase           Int
+  totalTaxable       Decimal  @db.Decimal(14, 2)
+  totalInss          Decimal  @db.Decimal(14, 2)
+  totalIrrf          Decimal  @db.Decimal(14, 2)
+  totalExempt        Decimal  @db.Decimal(14, 2)
+  dependentDeduction Decimal  @db.Decimal(14, 2) @default(0)
+  pdfKey             String?
+  sentAt             DateTime?
+  sentTo             String?
+  createdBy          String
+  createdAt          DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  employee     Employee     @relation(fields: [employeeId], references: [id])
+
+  @@unique([organizationId, employeeId, yearBase])
+  @@index([organizationId, yearBase])
+  @@map("income_statements")
 }
