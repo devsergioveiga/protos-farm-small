@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Stethoscope,
   CheckCircle,
@@ -8,6 +8,7 @@ import {
   Download,
   AlertCircle,
 } from 'lucide-react';
+import { useEmployees } from '@/hooks/useEmployees';
 import { useMedicalExams } from '@/hooks/useMedicalExams';
 import { ComplianceStatusBadge } from '@/components/shared/ComplianceStatusBadge';
 import MedicalExamModal from '@/components/medical-exams/MedicalExamModal';
@@ -63,13 +64,6 @@ function AsoResultBadge({ result }: ResultBadgeProps) {
   );
 }
 
-// Placeholder employees
-const MOCK_EMPLOYEES: Array<{
-  id: string;
-  name: string;
-  positionName: string | null;
-  asoPeriodicityMonths: number | null;
-}> = [];
 
 export default function MedicalExamsPage() {
   const [showModal, setShowModal] = useState(false);
@@ -92,6 +86,19 @@ export default function MedicalExamsPage() {
     createMedicalExam,
     deleteMedicalExam,
   } = useMedicalExams();
+
+  const { employees } = useEmployees({ status: 'ATIVO', limit: 200 });
+
+  const employeeOptions = useMemo(
+    () =>
+      employees.map((emp) => ({
+        id: emp.id,
+        name: emp.name,
+        positionName: emp.farms?.[0]?.position?.name ?? null,
+        asoPeriodicityMonths: emp.farms?.[0]?.position?.asoPeriodicityMonths ?? null,
+      })),
+    [employees],
+  );
 
   const load = useCallback(() => {
     void fetchMedicalExams({
@@ -339,7 +346,7 @@ export default function MedicalExamsPage() {
 
       <MedicalExamModal
         isOpen={showModal}
-        employees={MOCK_EMPLOYEES}
+        employees={employeeOptions}
         onClose={() => setShowModal(false)}
         onSave={handleSave}
       />
