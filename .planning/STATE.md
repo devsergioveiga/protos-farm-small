@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Completed 31-02-PLAN.md — Tax Guides full stack
-last_updated: "2026-03-26T13:50:40.374Z"
+stopped_at: Completed 31-03-PLAN.md — eSocial Events Backend Module
+last_updated: "2026-03-26T14:00:55.200Z"
 progress:
   total_phases: 26
   completed_phases: 24
   total_plans: 115
-  completed_plans: 112
+  completed_plans: 113
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 31 (obriga-es-acess-rias-e-esocial) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 
 ## Accumulated Context
 
@@ -100,6 +100,8 @@ Key decisions for v1.3:
 - [Phase 31]: EsocialStatus uses Portuguese values (PENDENTE/EXPORTADO/ACEITO/REJEITADO) per eSocial specification naming
 - [Phase 31-obriga-es-acess-rias-e-esocial]: Permission strings use payroll-params:read/write (not payroll:read/manage) matching existing enum
 - [Phase 31-obriga-es-acess-rias-e-esocial]: FUNRURAL rate from PayrollLegalTable FUNRURAL type scalarValues[key=rate], fallback 2.7%
+- [Phase 31-obriga-es-acess-rias-e-esocial]: xmlbuilder2 for all eSocial XML generation — never string concatenation; @xmldom/xmldom for XSD structural validation via JS-translated constraint records
+- [Phase 31-obriga-es-acess-rias-e-esocial]: Auto-trigger hooks wrapped in try/catch — eSocial generation failures logged but never propagate to fail primary operations (createEmployee, confirmTermination, closeRun, createMedicalExam)
 
 ### Pending Todos
 
@@ -115,7 +117,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T13:50:40.370Z
-Stopped at: Completed 31-02-PLAN.md — Tax Guides full stack
+Last session: 2026-03-26T14:00:55.196Z
+Stopped at: Completed 31-03-PLAN.md — eSocial Events Backend Module
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
