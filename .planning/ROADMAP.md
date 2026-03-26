@@ -62,7 +62,7 @@ Full details: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 27: Controle de Ponto e Jornada** — Pipeline de horas: registro mobile/web, apontamento por atividade/operação com rateio por CC, cálculo de HE/noturno rural, banco de horas, aprovação do espelho (completed 2026-03-24)
 - [x] **Phase 28: Processamento da Folha Mensal** — Core value: folha em lote com holerite PDF, adiantamento salarial, 13º salário — o ciclo mensal completo do processamento de folha (completed 2026-03-25)
 - [x] **Phase 29: Férias, Afastamentos, Rescisão e Provisões** — Ciclo de vida trabalhista: férias com fracionamento, afastamentos/CAT, rescisão com TRCT, provisão mensal de férias e 13º com lançamento contábil (completed 2026-03-25)
-- [ ] **Phase 30: Segurança do Trabalho Rural (NR-31)** — Conformidade legal NR-31: EPIs com ficha de entrega, treinamentos obrigatórios com matriz de validade, ASO/PCMSO com alertas de vencimento
+- [x] **Phase 30: Segurança do Trabalho Rural (NR-31)** — Conformidade legal NR-31: EPIs com ficha de entrega, treinamentos obrigatórios com matriz de validade, ASO/PCMSO com alertas de vencimento (completed 2026-03-26)
 - [ ] **Phase 31: Obrigações Acessórias e eSocial** — Compliance fiscal e trabalhista: guias de recolhimento (FGTS/INSS/IRRF/FUNRURAL), eventos eSocial em XML com transmissão digital, RAIS e informe de rendimentos
 - [ ] **Phase 32: Integração Financeira, Contábil e Dashboard RH** — Fechamento do ciclo: folha→Contas a Pagar com rateio por CC, lançamentos contábeis por regime de competência, dashboard de custo de pessoal e KPIs de RH
 
@@ -564,8 +564,8 @@ Plans:
 - [x] 30-03-PLAN.md — Training backend: training-types with NR-31 seed + training-records + certificate PDF
 - [x] 30-04-PLAN.md — ASO backend: medical-exams + safety-compliance dashboard aggregation + reports
 - [x] 30-05-PLAN.md — Frontend: types, hooks, ComplianceStatusBadge, sidebar, router, EPI pages
-- [ ] 30-06-PLAN.md — Frontend: TrainingTypesPage, TrainingRecordsPage, MedicalExamsPage
-- [ ] 30-07-PLAN.md — Frontend: SafetyDashboardPage with KPIs and 4 tabs + visual verification
+- [x] 30-06-PLAN.md — Frontend: TrainingTypesPage, TrainingRecordsPage, MedicalExamsPage
+- [x] 30-07-PLAN.md — Frontend: SafetyDashboardPage with KPIs and 4 tabs + visual verification
 **UI hint**: yes
 
 ### Phase 31: Obrigações Acessórias e eSocial
@@ -641,6 +641,6 @@ Plans:
 | 27. Controle de Ponto e Jornada                     | v1.3      | 6/6 | Complete    | 2026-03-24 |
 | 28. Processamento da Folha Mensal                   | v1.3      | 6/6 | Complete    | 2026-03-25 |
 | 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 5/5 | Complete    | 2026-03-25 |
-| 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 5/7 | In Progress|  |
+| 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 7/7 | Complete   | 2026-03-26 |
 | 31. Obrigações Acessórias e eSocial                 | v1.3      | 0/TBD          | Not started | -          |
 | 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 0/TBD          | Not started | -          |

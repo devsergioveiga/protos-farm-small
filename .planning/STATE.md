@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Ready to execute
-stopped_at: Completed 30-05-PLAN.md — EpiProductsPage + EpiDeliveriesPage + sidebar SEGURANÇA
-last_updated: "2026-03-26T11:20:14.866Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 30-07-PLAN.md — Safety Dashboard + awaiting human verify checkpoint
+last_updated: "2026-03-26T11:37:53.168Z"
 progress:
   total_phases: 26
-  completed_phases: 23
+  completed_phases: 24
   total_plans: 110
-  completed_plans: 108
+  completed_plans: 110
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 ## Current Position
 
 Phase: 30 (seguranca-trabalho-nr31) — EXECUTING
-Plan: 6 of 7
+Plan: 7 of 7
 
 ## Accumulated Context
 
@@ -93,6 +93,9 @@ Key decisions for v1.3:
 - [Phase 30-seguranca-trabalho-nr31]: jest.config.js .js→.ts moduleNameMapper added to unblock all tests after plan 30-01 ESM-style app.ts imports
 - [Phase 30-seguranca-trabalho-nr31]: Phase 30 routers registered before employeesRouter in app.ts — GET /org/medical-exams/employees/:employeeId conflicts with GET /org/:orgId/employees/:id
 - [Phase 30-seguranca-trabalho-nr31]: ComplianceStatusBadge in components/shared/ (reused by EPI, training, ASO); placeholder pages for plans 06/07
+- [Phase 30]: ComplianceStatusBadge shared between training and ASO expiry tracking
+- [Phase 30]: Multi-step modal for TrainingRecordModal (Step 1 data, Step 2 participants); hours warning does not block save
+- [Phase 30]: SafetyKpiCard in components/shared/ (not payroll/) for reuse; exportPdf opens blob URL in new tab with 10s revoke
 
 ### Pending Todos
 
@@ -108,7 +111,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T11:20:14.862Z
-Stopped at: Completed 30-05-PLAN.md — EpiProductsPage + EpiDeliveriesPage + sidebar SEGURANÇA
+Last session: 2026-03-26T11:37:53.164Z
+Stopped at: Completed 30-07-PLAN.md — Safety Dashboard + awaiting human verify checkpoint
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
