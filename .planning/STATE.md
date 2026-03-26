@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
-status: Milestone complete
-stopped_at: Completed 32-integra-o-financeira-cont-bil-e-dashboard-rh-05-PLAN.md
-last_updated: "2026-03-26T21:02:02.692Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 33-wire-employee-data-safety-pages-01-PLAN.md
+last_updated: "2026-03-26T22:04:09.074Z"
 progress:
-  total_phases: 26
-  completed_phases: 26
-  total_plans: 120
-  completed_plans: 120
+  total_phases: 28
+  completed_phases: 27
+  total_plans: 121
+  completed_plans: 121
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 32 — integra-o-financeira-cont-bil-e-dashboard-rh
+**Current focus:** Phase 33 — wire-employee-data-safety-pages
 
 ## Current Position
 
-Phase: 32
-Plan: Not started
+Phase: 33 (wire-employee-data-safety-pages) — EXECUTING
+Plan: 1 of 1
 
 ## Accumulated Context
 
@@ -113,6 +113,8 @@ Key decisions for v1.3:
 - [Phase 32-integra-o-financeira-cont-bil-e-dashboard-rh]: ConfirmModal variant=danger replaces ConfirmDeleteModal for payroll estorno (medium criticality, reversible)
 - [Phase 32-integra-o-financeira-cont-bil-e-dashboard-rh]: CONTABILIDADE sidebar group added (separate from RH) for accounting entries
 - [Phase 32-integra-o-financeira-cont-bil-e-dashboard-rh]: HrDashboardPage uses inline year+month selects (not period picker) to match backend hr-dashboard explicit year+month params
+- [Phase 33]: employeeOptions useMemo mapping uses farms[0].position for flat shape — matches existing modal prop contracts
+- [Phase 33]: listEmployees position select extended with asoPeriodicityMonths only — getEmployee detail method left unchanged
 
 ### Pending Todos
 
@@ -128,7 +130,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T20:27:21.548Z
-Stopped at: Completed 32-integra-o-financeira-cont-bil-e-dashboard-rh-05-PLAN.md
+Last session: 2026-03-26T22:04:09.070Z
+Stopped at: Completed 33-wire-employee-data-safety-pages-01-PLAN.md
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos
