@@ -643,5 +643,5 @@ Plans:
 | 28. Processamento da Folha Mensal                   | v1.3      | 6/6 | Complete    | 2026-03-25 |
 | 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 5/5 | Complete    | 2026-03-25 |
 | 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 7/7 | Complete   | 2026-03-26 |
-| 31. Obrigações Acessórias e eSocial                 | v1.3      | 5/5 | Complete   | 2026-03-26 |
+| 31. Obrigações Acessórias e eSocial                 | v1.3      | 5/5 | Complete    | 2026-03-26 |
 | 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 0/TBD          | Not started | -          |
