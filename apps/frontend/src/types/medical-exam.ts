@@ -42,6 +42,8 @@ export interface CreateMedicalExamInput {
   observations?: string;
 }
 
+export type UpdateMedicalExamInput = Partial<CreateMedicalExamInput>;
+
 export interface MedicalExamsResponse {
   data: MedicalExam[];
   total: number;
