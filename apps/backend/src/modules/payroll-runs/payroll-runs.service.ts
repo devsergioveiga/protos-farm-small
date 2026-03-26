@@ -28,6 +28,10 @@ import type { PayrollRunType, PayrollRunStatus } from '@prisma/client';
 import { PayableCategory } from '@prisma/client';
 import { generateBatch as esocialGenerateBatch } from '../esocial-events/esocial-events.service';
 import { nthBusinessDay } from './payroll-date-utils';
+import {
+  createPayrollEntries,
+  revertPayrollEntries,
+} from '../accounting-entries/accounting-entries.service';
 
 // ─── Types ─────────────────────────────────────────────────────────────
 
@@ -1037,6 +1041,13 @@ export async function closeRun(rls: RlsContext, runId: string): Promise<void> {
   } catch (err) {
     console.error('[payroll-runs] Failed to auto-generate periodic eSocial events:', err);
   }
+
+  // Auto-create accounting entries (non-blocking — failure must not abort payroll close)
+  try {
+    await createPayrollEntries(rls.organizationId, runId);
+  } catch (err) {
+    console.error('[payroll-runs] Failed to create accounting entries:', err);
+  }
 }
 
 // ─── revertRun ─────────────────────────────────────────────────────────
@@ -1101,6 +1112,13 @@ export async function revertRun(rls: RlsContext, runId: string): Promise<void> {
       revertedBy: rls.userId ?? 'system',
     },
   });
+
+  // Delete accounting entries for this run (non-blocking)
+  try {
+    await revertPayrollEntries(rls.organizationId, runId);
+  } catch (err) {
+    console.error('[payroll-runs] Failed to revert accounting entries:', err);
+  }
 }
 
 // ─── cpPreview ─────────────────────────────────────────────────────────
