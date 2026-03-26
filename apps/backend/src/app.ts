@@ -145,12 +145,12 @@ import { vacationSchedulesRouter } from './modules/vacation-schedules/vacation-s
 import { employeeAbsencesRouter } from './modules/employee-absences/employee-absences.routes';
 import { payrollProvisionsRouter } from './modules/payroll-provisions/payroll-provisions.routes';
 import { employeeTerminationsRouter } from './modules/employee-terminations/employee-terminations.routes';
-import epiProductsRouter from './modules/epi-products/epi-products.routes.js';
-import epiDeliveriesRouter from './modules/epi-deliveries/epi-deliveries.routes.js';
-import trainingTypesRouter from './modules/training-types/training-types.routes.js';
-import trainingRecordsRouter from './modules/training-records/training-records.routes.js';
-import medicalExamsRouter from './modules/medical-exams/medical-exams.routes.js';
-import safetyComplianceRouter from './modules/safety-compliance/safety-compliance.routes.js';
+import epiProductsRouter from './modules/epi-products/epi-products.routes';
+import epiDeliveriesRouter from './modules/epi-deliveries/epi-deliveries.routes';
+import trainingTypesRouter from './modules/training-types/training-types.routes';
+import trainingRecordsRouter from './modules/training-records/training-records.routes';
+import medicalExamsRouter from './modules/medical-exams/medical-exams.routes';
+import safetyComplianceRouter from './modules/safety-compliance/safety-compliance.routes';
 
 const app = express();
 
@@ -289,6 +289,15 @@ app.use('/api', assetWipRouter);
 app.use('/api', assetReportsRouter);
 app.use('/api', assetLeasingsRouter);
 app.use('/api', assetTradeInsRouter);
+// Phase 30 safety routers registered BEFORE employeesRouter to avoid route conflict:
+// GET /org/medical-exams/employees/:employeeId must not be caught by
+// GET /org/:orgId/employees/:id (employeesRouter).
+app.use('/api', medicalExamsRouter);
+app.use('/api', safetyComplianceRouter);
+app.use('/api', epiProductsRouter);
+app.use('/api', epiDeliveriesRouter);
+app.use('/api', trainingTypesRouter);
+app.use('/api', trainingRecordsRouter);
 app.use('/api', employeesRouter);
 app.use('/api', employeeContractsRouter);
 app.use('/api', positionsRouter);
@@ -305,11 +314,5 @@ app.use('/api', vacationSchedulesRouter);
 app.use('/api', employeeAbsencesRouter);
 app.use('/api', payrollProvisionsRouter);
 app.use('/api', employeeTerminationsRouter);
-app.use('/api', epiProductsRouter);
-app.use('/api', epiDeliveriesRouter);
-app.use('/api', trainingTypesRouter);
-app.use('/api', trainingRecordsRouter);
-app.use('/api', medicalExamsRouter);
-app.use('/api', safetyComplianceRouter);
 
 export { app };
