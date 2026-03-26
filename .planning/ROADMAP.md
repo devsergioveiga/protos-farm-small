@@ -570,7 +570,7 @@ Plans:
 
 ### Phase 31: Obrigações Acessórias e eSocial
 
-**Goal**: Contador pode gerar guias de recolhimento de FGTS, INSS, IRRF e FUNRURAL com vencimentos e alertas corretos, gerar e transmitir todos os eventos eSocial em XML conforme leiaute S-1.3 com certificado digital ICP-Brasil, e emitir RAIS e informes de rendimentos — cobrindo todas as obrigações acessórias trabalhistas e previdenciárias exigidas por lei
+**Goal**: Contador pode gerar guias de recolhimento de FGTS, INSS, IRRF e FUNRURAL com vencimentos e alertas corretos, gerar eventos eSocial em XML conforme leiaute S-1.3 para download e transmissao manual, e emitir informes de rendimentos em PDF com relatorio de consistencia RAIS — cobrindo todas as obrigacoes acessorias trabalhistas
 **Depends on**: Phase 28, Phase 29, Phase 30
 **Requirements**: ESOCIAL-01, ESOCIAL-02, ESOCIAL-03
 **Success Criteria** (what must be TRUE):
@@ -579,13 +579,14 @@ Plans:
 2. Contador pode gerar eventos eSocial nos grupos corretos (tabela S-1000/S-1005/S-1010/S-1020, não periódicos S-2200/S-2206/S-2230/S-2299, periódicos S-1200/S-1299, SST S-2210/S-2220/S-2240) em XML assinado digitalmente com certificado ICP-Brasil, transmitir ao Web Service do governo e acompanhar protocolo, recibo e retorno em dashboard de status com reprocessamento de rejeitados
 3. Contador pode gerar informe de rendimentos por colaborador em PDF (total de renda, IRRF retido, INSS) com envio por email ou app, e consultar histórico por ano-base com validação de dados antes da emissão
 
-**Plans**: 4 plans
+**Plans**: 5 plans
 
 Plans:
-- [ ] 25-01-PLAN.md — Prisma schema (13 models), migrations, isValidPIS, employees backend CRUD with status machine
-- [ ] 25-02-PLAN.md — Contracts, positions, work schedules, movements modules + contract expiry cron
-- [ ] 25-03-PLAN.md — Frontend types, hooks, EmployeesPage, PositionsPage, WorkSchedulesPage, all modals, sidebar
-- [ ] 25-04-PLAN.md — Bulk import backend + EmployeeDetailPage with tabs and chart + visual verification
+- [ ] 31-01-PLAN.md — Prisma schema (TaxGuide, EsocialEvent, IncomeStatement), enums, funruralBasis, xmlbuilder2 install, backend+frontend types
+- [ ] 31-02-PLAN.md — Tax guides backend (SEFIP .RE, DARF PDF, GPS PDF, payables integration) + frontend page
+- [ ] 31-03-PLAN.md — eSocial events backend (15 XML builders, validators, state machine, dashboard)
+- [ ] 31-04-PLAN.md — eSocial events frontend + income statements full stack (PDF, email, RAIS consistency)
+- [ ] 31-05-PLAN.md — Integration wiring (cron alerts, sidebar OBRIGACOES group, routes) + visual verification
 **UI hint**: yes
 
 ### Phase 32: Integração Financeira, Contábil e Dashboard RH
@@ -642,5 +643,5 @@ Plans:
 | 28. Processamento da Folha Mensal                   | v1.3      | 6/6 | Complete    | 2026-03-25 |
 | 29. Férias, Afastamentos, Rescisão e Provisões      | v1.3      | 5/5 | Complete    | 2026-03-25 |
 | 30. Segurança do Trabalho Rural (NR-31)             | v1.3      | 7/7 | Complete   | 2026-03-26 |
-| 31. Obrigações Acessórias e eSocial                 | v1.3      | 0/TBD          | Not started | -          |
+| 31. Obrigações Acessórias e eSocial                 | v1.3      | 0/5            | Planning    | -          |
 | 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 0/TBD          | Not started | -          |
