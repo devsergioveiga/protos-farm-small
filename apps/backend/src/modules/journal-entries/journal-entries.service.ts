@@ -3,7 +3,7 @@
 // Handles: draft creation, posting (atomic with AccountBalance update),
 // reversal, templates, CSV import (LANC-03).
 
-import { prisma } from '../../lib/prisma';
+import { prisma } from '../../database/prisma';
 import {
   assertBalanced,
   assertPeriodOpen,
