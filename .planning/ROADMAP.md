@@ -119,9 +119,9 @@ Plans:
 - [x] 36-05-PLAN.md — Frontend: LedgerPage + TrialBalancePage (with daily book) + sidebar + routing
 
 ### Phase 37: Regras e Lançamentos Automáticos
-**Goal:** Regras de lançamento por tipo de operação (mapeamento conta débito/crédito), PendingJournalPosting queue com BullMQ, GL hooks para: liquidação CP, recebimento CR, fechamento folha, depreciação, entrada/saída estoque; idempotência via UNIQUE(sourceType, sourceId)
+**Goal:** Regras de lançamento por tipo de operação (mapeamento conta débito/crédito), PendingJournalPosting queue Postgres-native, GL hooks para: liquidação CP, recebimento CR, fechamento folha, depreciação, entrada/saída estoque; idempotência via UNIQUE(sourceType, sourceId)
 **Requirements:** LANC-01, LANC-02, LANC-06
-**Models:** AccountingRule, PendingJournalPosting
+**Models:** AccountingRule, AccountingRuleLine, PendingJournalPosting
 **Depends on:** Phase 36 (JournalEntry tables)
 **Modifies:** payroll-runs, depreciation-runs, payables, receivables, stock-entries, stock-outputs
 **Success criteria:**
@@ -129,6 +129,12 @@ Plans:
 2. Liquidação de CP, recebimento de CR, fechamento de folha, depreciação, entrada/saída de estoque geram lançamento GL automático
 3. Re-processamento da mesma operação NÃO gera duplicata (constraint sourceType+sourceId)
 4. Fila de pendências mostra lançamentos automáticos com status pendente/processado/erro
+
+**Plans:** 3 plans
+Plans:
+- [ ] 37-01-PLAN.md — Prisma migration + auto-posting service + routes + tests
+- [ ] 37-02-PLAN.md — Hook wiring in 6 modules + legacy removal + seed rules
+- [ ] 37-03-PLAN.md — Frontend: types, hooks, PendingPostingsTab, AccountingRulesTab, AccountingRuleModal, JournalEntriesPage tabs
 
 ### Phase 38: Fechamento Mensal e Conciliação Contábil
 **Goal:** Checklist de fechamento com consultas automáticas aos módulos, conciliação bancária contábil (razão vs extrato v1.0), bloqueio de período, reabertura controlada com auditoria
@@ -177,7 +183,7 @@ Plans:
 | 7-15 | v1.1 | 37/37 | Complete | 2026-03-19 |
 | 16-24 | v1.2 | 41/41 | Complete | 2026-03-23 |
 | 25-34 | v1.3 | 45/45 | Complete | 2026-03-27 |
-| 35-41 | v1.4 | 4/~35 | In Progress | — |
+| 35-41 | v1.4 | 9/~35 | In Progress | — |
 
 ---
-*Last updated: 2026-03-27 after Phase 36 planning*
+*Last updated: 2026-03-27 after Phase 37 planning*
