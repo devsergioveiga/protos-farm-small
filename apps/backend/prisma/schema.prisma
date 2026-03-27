@@ -426,7 +426,6 @@ model Organization {
   taxGuides                TaxGuide[]
   esocialEvents            EsocialEvent[]
   incomeStatements         IncomeStatement[]
-  accountingEntries        AccountingEntry[]
   chartOfAccounts          ChartOfAccount[]
   fiscalYears              FiscalYear[]
   accountingPeriods        AccountingPeriod[]
@@ -646,7 +645,6 @@ model Farm {
   biologicalAssetValuations  BiologicalAssetValuation[]
   employeeFarms              EmployeeFarm[]
   timeEntries                TimeEntry[]
-  accountingEntries          AccountingEntry[]
 
   @@map("farms")
 }
@@ -1954,7 +1952,6 @@ model CostCenter {
   workOrderCCItems          WorkOrderCCItem[]
   employeeContracts         EmployeeContract[]
   provisions                PayrollProvision[]
-  accountingEntries         AccountingEntry[]
   accountBalances           AccountBalance[]
   journalEntries            JournalEntry[]      @relation("JournalEntryCostCenter")
   journalEntryLines         JournalEntryLine[]  @relation("JournalEntryLineCostCenter")
@@ -8752,21 +8749,6 @@ enum FunruralBasis {
   PAYROLL
 }
 
-enum AccountingSourceType {
-  PAYROLL_RUN
-  PAYROLL_PROVISION
-  PAYABLE_SETTLEMENT
-}
-
-enum AccountingEntryType {
-  PAYROLL_SALARY
-  PAYROLL_CHARGES
-  VACATION_PROVISION
-  THIRTEENTH_PROVISION
-  TAX_LIABILITY
-  SALARY_REVERSAL
-}
-
 // ── Phase 35 Plan 01: Chart of Accounts & Fiscal Periods ──
 
 enum AccountType {
@@ -9041,32 +9023,6 @@ model JournalEntryLine {
   @@index([journalEntryId])
   @@index([accountId])
   @@map("journal_entry_lines")
-}
-
-model AccountingEntry {
-  id                String               @id @default(uuid())
-  organizationId    String
-  organization      Organization         @relation(fields: [organizationId], references: [id])
-  referenceMonth    DateTime             @db.Date
-  entryType         AccountingEntryType
-  debitAccount      String
-  debitLabel        String
-  creditAccount     String
-  creditLabel       String
-  amount            Decimal              @db.Decimal(14, 2)
-  costCenterId      String?
-  costCenter        CostCenter?          @relation(fields: [costCenterId], references: [id])
-  farmId            String?
-  farm              Farm?                @relation(fields: [farmId], references: [id])
-  sourceType        AccountingSourceType
-  sourceId          String
-  reversedByEntryId String?
-  notes             String?
-  createdAt         DateTime             @default(now())
-
-  @@index([organizationId, referenceMonth])
-  @@index([sourceType, sourceId])
-  @@map("accounting_entries")
 }
 
 // ── Phase 37 Plan 01: Auto-Posting Engine ──

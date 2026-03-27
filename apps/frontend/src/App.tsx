@@ -140,7 +140,6 @@ const SafetyDashboardPage = lazy(() => import('@/pages/SafetyDashboardPage'));
 const TaxGuidesPage = lazy(() => import('@/pages/TaxGuidesPage'));
 const EsocialEventsPage = lazy(() => import('@/pages/EsocialEventsPage'));
 const IncomeStatementsPage = lazy(() => import('@/pages/IncomeStatementsPage'));
-const AccountingEntriesPage = lazy(() => import('@/pages/AccountingEntriesPage'));
 const JournalEntriesPage = lazy(() => import('@/pages/JournalEntriesPage'));
 const ChartOfAccountsPage = lazy(() => import('@/pages/ChartOfAccountsPage'));
 const FiscalPeriodsPage = lazy(() => import('@/pages/FiscalPeriodsPage'));
