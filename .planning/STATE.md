@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
 status: Ready to execute
-stopped_at: Completed 36-03-PLAN.md
-last_updated: "2026-03-27T12:12:24.986Z"
+stopped_at: Completed 36-05-PLAN.md
+last_updated: "2026-03-27T12:23:04.517Z"
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 9
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 ## Current Position
 
 Phase: 36 (lan-amentos-manuais-raz-o-e-saldo-de-abertura) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 
 ## Accumulated Context
 
@@ -52,6 +52,8 @@ Key decisions carried from v1.3:
 - [Phase 36]: CSV import returns preview only (no auto-create) per LANC-03 spec
 - [Phase 36]: Ledger running balance uses SQL window function SUM OVER (ORDER BY entryDate, entryNumber) starting from previousBalance — single query, avoids N+1
 - [Phase 36]: getTrialBalance aggregates synthetic accounts recursively, grandTotals from analytic-only to avoid double-counting
+- [Phase 36-lan-amentos-manuais-raz-o-e-saldo-de-abertura]: useLedger derives startDate/endDate from fiscalYearId+month client-side — avoids extra API call
+- [Phase 36-lan-amentos-manuais-raz-o-e-saldo-de-abertura]: TrialBalancePage uses tab pattern (Balancete + Livro Diário) — single page, two panels per UI-SPEC
 
 ### Pending Todos
 
@@ -66,7 +68,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T12:12:24.984Z
-Stopped at: Completed 36-03-PLAN.md
+Last session: 2026-03-27T12:23:04.514Z
+Stopped at: Completed 36-05-PLAN.md
 Resume file: None
 Next action: Define requirements and create roadmap for v1.4
