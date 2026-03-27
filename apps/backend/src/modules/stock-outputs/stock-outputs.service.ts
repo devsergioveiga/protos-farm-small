@@ -1,4 +1,6 @@
 import { withRlsContext, type RlsContext, type TxClient } from '../../database/rls';
+import { process as autoPost } from '../auto-posting/auto-posting.service';
+import type { AutoPostingSourceType } from '@prisma/client';
 import {
   StockOutputError,
   STOCK_OUTPUT_TYPES,
@@ -297,7 +299,7 @@ export async function createStockOutput(
   validateItems(input.items);
   validateByType(input);
 
-  return withRlsContext(ctx, async (tx) => {
+  const result = await withRlsContext(ctx, async (tx) => {
     // Check stock availability (CA6)
     const alerts = await checkStockAvailability(tx, ctx.organizationId, input.items);
 
@@ -390,6 +392,22 @@ export async function createStockOutput(
       insufficientStockAlerts: alerts,
     };
   });
+
+  // Auto-posting GL entry after stock output creation (non-blocking — per D-15)
+  const sourceTypeMap: Record<string, AutoPostingSourceType> = {
+    CONSUMPTION: 'STOCK_OUTPUT_CONSUMPTION',
+    MANUAL_CONSUMPTION: 'STOCK_OUTPUT_CONSUMPTION',
+    TRANSFER: 'STOCK_OUTPUT_TRANSFER',
+    DISPOSAL: 'STOCK_OUTPUT_DISPOSAL',
+  };
+  const outputSourceType = sourceTypeMap[result.output.type] ?? 'STOCK_OUTPUT_CONSUMPTION';
+  try {
+    await autoPost(outputSourceType, result.output.id, ctx.organizationId);
+  } catch (err) {
+    console.error('[stock-outputs] Auto-posting failed:', err);
+  }
+
+  return result;
 }
 
 // ═══════════════════════════════════════════════════════════════════════

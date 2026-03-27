@@ -1,7 +1,7 @@
 import { Money } from '@protos-farm/shared';
 import { generateInstallments, validateCostCenterItems } from '@protos-farm/shared';
 import { withRlsContext, type RlsContext } from '../../database/rls';
-import { createReversalEntry } from '../accounting-entries/accounting-entries.service';
+import { process as autoPost } from '../auto-posting/auto-posting.service';
 import {
   PayableError,
   PAYABLE_CATEGORY_LABELS,
@@ -462,29 +462,11 @@ export async function settlePayment(
     });
   });
 
-  // Create accounting reversal entry for payroll-origin payables (non-blocking)
-  // Uses explicit array check — NOT string prefix comparison (per plan anti-pattern note)
-  const PAYROLL_ORIGIN_TYPES = [
-    'PAYROLL_RUN_ITEM',
-    'PAYROLL_EMPLOYER_INSS',
-    'PAYROLL_EMPLOYER_FGTS',
-    'PAYROLL_EMPLOYEE_IRRF',
-    'PAYROLL_EMPLOYEE_VT',
-    'PAYROLL_EMPLOYEE_PENSION',
-    'PAYROLL_EMPLOYEE_SINDICAL',
-  ] as const;
-
-  if (PAYROLL_ORIGIN_TYPES.includes((payable as any).originType as (typeof PAYROLL_ORIGIN_TYPES)[number])) {
-    try {
-      await createReversalEntry(
-        ctx.organizationId,
-        payableId,
-        (payable as any).totalAmount,
-        (payable as any).farmId ?? null,
-      );
-    } catch (err) {
-      console.error('[payables] Failed to create reversal entry:', err);
-    }
+  // Auto-posting GL entry after settlement (non-blocking — per D-15)
+  try {
+    await autoPost('PAYABLE_SETTLEMENT', payableId, ctx.organizationId);
+  } catch (err) {
+    console.error('[payables] Auto-posting failed:', err);
   }
 
   return toPayableOutput(payable);
@@ -687,6 +669,13 @@ export async function reversePayment(ctx: RlsContext, payableId: string): Promis
       include: PAYABLE_INCLUDE,
     });
   });
+
+  // Auto-posting GL entry after reversal (non-blocking — per D-15)
+  try {
+    await autoPost('PAYABLE_REVERSAL', payableId, ctx.organizationId);
+  } catch (err) {
+    console.error('[payables] Auto-posting reversal failed:', err);
+  }
 
   return toPayableOutput(payable);
 }

@@ -1,6 +1,7 @@
 import Decimal from 'decimal.js';
 import { prisma } from '../../database/prisma';
 import { computeDepreciation } from './depreciation-engine.service';
+import { process as autoPost } from '../auto-posting/auto-posting.service';
 import {
   DepreciationError,
   type RunDepreciationInput,
@@ -255,6 +256,14 @@ export async function runDepreciationBatch(input: RunDepreciationInput) {
         totalSkipped += result.skippedCount;
         grandTotal = grandTotal.plus(result.totalAmount);
         lastRun = result;
+        // Auto-posting GL entry after batch COMPLETED (non-blocking — per D-15)
+        if (result.status === 'COMPLETED') {
+          try {
+            await autoPost('DEPRECIATION_RUN', result.id, org.id);
+          } catch (postErr) {
+            console.error('[depreciation] Auto-posting failed:', postErr);
+          }
+        }
       } catch (err) {
         // Skip DepreciationError 409 (already run) and continue
         if (err instanceof DepreciationError && err.statusCode === 409) {
@@ -275,7 +284,16 @@ export async function runDepreciationBatch(input: RunDepreciationInput) {
     );
   }
 
-  return _processOrganization(organizationId, input);
+  const result = await _processOrganization(organizationId, input);
+  // Auto-posting GL entry after batch COMPLETED (non-blocking — per D-15)
+  if (result.status === 'COMPLETED') {
+    try {
+      await autoPost('DEPRECIATION_RUN', result.id, organizationId);
+    } catch (err) {
+      console.error('[depreciation] Auto-posting failed:', err);
+    }
+  }
+  return result;
 }
 
 export async function reverseEntry(rls: RlsContext, entryId: string) {

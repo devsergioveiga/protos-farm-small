@@ -5,6 +5,7 @@
 import Decimal from 'decimal.js';
 import { prisma } from '../../database/prisma';
 import { withRlsContext, type RlsContext, type TxClient } from '../../database/rls';
+import { process as autoPost } from '../auto-posting/auto-posting.service';
 import { payrollTablesService } from '../payroll-tables/payroll-tables.service';
 import {
   PayrollProvisionError,
@@ -236,8 +237,8 @@ export async function calculateMonthlyProvisions(
     }
 
     // Create VACATION and THIRTEENTH provision records per employee
-    await withRlsContext(ctx, async (tx) => {
-      await tx.payrollProvision.create({
+    const { vacationId, thirteenthId } = await withRlsContext(ctx, async (tx) => {
+      const vacation = await tx.payrollProvision.create({
         data: {
           organizationId: input.organizationId,
           employeeId: employee.id,
@@ -255,9 +256,10 @@ export async function calculateMonthlyProvisions(
             employee.id,
           ),
         },
+        select: { id: true },
       });
 
-      await tx.payrollProvision.create({
+      const thirteenth = await tx.payrollProvision.create({
         data: {
           organizationId: input.organizationId,
           employeeId: employee.id,
@@ -275,8 +277,23 @@ export async function calculateMonthlyProvisions(
             employee.id,
           ),
         },
+        select: { id: true },
       });
+
+      return { vacationId: vacation.id, thirteenthId: thirteenth.id };
     });
+
+    // Auto-posting GL entries after provision creation (non-blocking — per D-15)
+    try {
+      await autoPost('PAYROLL_PROVISION_VACATION', vacationId, input.organizationId);
+    } catch (err) {
+      console.error('[payroll-provisions] Auto-posting vacation failed:', err);
+    }
+    try {
+      await autoPost('PAYROLL_PROVISION_THIRTEENTH', thirteenthId, input.organizationId);
+    } catch (err) {
+      console.error('[payroll-provisions] Auto-posting thirteenth failed:', err);
+    }
 
     processedCount++;
     totalVacation = totalVacation.add(calc.vacationProvision);
