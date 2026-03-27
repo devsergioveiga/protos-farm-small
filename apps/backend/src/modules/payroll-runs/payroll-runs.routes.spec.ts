@@ -62,6 +62,15 @@ jest.mock('../payroll-tables/payroll-tables.service', () => ({
   payrollTablesService: { getEffective: jest.fn() },
 }));
 
+jest.mock('../employee-absences/employee-absences.service', () => ({
+  getAbsenceImpactForMonth: jest.fn().mockResolvedValue({
+    companyPaidDays: 0,
+    inssPaidDays: 0,
+    suspendedDays: 0,
+    fgtsFullMonth: false,
+  }),
+}));
+
 jest.mock('./payroll-calculation.service', () => ({
   calculateEmployeePayroll: jest.fn(),
   calculateThirteenthSalary: jest.fn(),
