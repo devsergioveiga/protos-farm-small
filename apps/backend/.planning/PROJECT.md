@@ -27,37 +27,36 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 - ✓ Produção de leite: ordenha, análise, mastite, tanque, lactação — EPIC-13
 - ✓ Sincronização offline avançada — EPIC-14
 - ✓ Nutrição animal: alimentos, dietas, trato/fornecimento — EPIC-15
+- ✓ Contas bancárias: CRUD, saldo real-time, extrato, export PDF/Excel, dashboard — v1.0 Phase 1
+- ✓ Contas a pagar: CRUD, parcelamento, rateio CC, baixa, CNAB 240/400, aging, alertas — v1.0 Phase 2
+- ✓ Contas a receber: CRUD, FUNRURAL, baixa, renegociação, aging — v1.0 Phase 2
+- ✓ Dashboard financeiro: saldo consolidado, CP/CR 7/30d, resultado mês, endividamento — v1.0 Phase 3
+- ✓ Transferências entre contas: espelhada, tarifa, aplicação/resgate — v1.0 Phase 4
+- ✓ Cartões corporativos: CRUD, fatura, fechamento → CP, parcelamento — v1.0 Phase 4
+- ✓ Cheques pré-datados: máquina de estados, compensação, saldo contábil vs bancário — v1.0 Phase 4
 
 ### Active
 
-<!-- Milestone: Financeiro Base (EPIC-FN1 a FN4) — 15 stories, 110 pts -->
+<!-- Milestone v1.1: Conciliação, Fluxo de Caixa e Crédito Rural -->
 
-#### EPIC-FN1: Contas Bancárias (6 stories, 44 pts)
+## Current Milestone: v1.1 Conciliação, Fluxo de Caixa e Crédito Rural
 
-- [ ] US-FN01: Cadastro de contas bancárias (tipos, dados FEBRABAN, vinculação fazenda, saldo inicial, convênio CNAB)
-- [ ] US-FN02: Cadastro de cartões de crédito corporativos (bandeira, limite, fechamento, portador, centro de custo)
-- [ ] US-FN03: Saldo e extrato por conta bancária (saldo real-time, projetado, dashboard contas, export PDF/Excel)
-- [ ] US-FN04: Transferências entre contas (espelhada, tarifa, aplicação/resgate, entre fazendas)
-- [ ] US-FN05: Gestão de fatura de cartão (lançamentos, parcelamento, fechamento → CP, pagamento, import CSV/OFX)
+**Goal:** Completar o módulo financeiro base com conciliação bancária automática, projeção de fluxo de caixa 12 meses e gestão de crédito rural
+
+**Target features:**
+- Import OFX/CSV com matching por score de confiança (exato/provável/sem match)
+- Fluxo de caixa projetado 12 meses com cenários otimista/realista/pessimista e alerta saldo negativo
+- Gestão de crédito rural (PRONAF/PRONAMP/Funcafé/CPR) com cronograma SAC/Price/Bullet e carência
+- Parcelas de crédito rural alimentam fluxo de caixa e módulo CP
+
+#### EPIC-FN1: Conciliação Bancária
+
 - [ ] US-FN06: Conciliação bancária automática (import OFX/CSV/PDF, pareamento com confiança, conciliação mensal)
 
-#### EPIC-FN2: Contas a Pagar (4 stories, 29 pts)
-
-- [ ] US-FN07: Lançamento de contas a pagar (fornecedor, categoria, rateio CC, parcelamento, recorrência, multi-origem)
-- [ ] US-FN08: Baixa de pagamento individual e em lote (juros/multa/desconto, CNAB 240/400, retorno bancário, estorno)
-- [ ] US-FN09: Gestão de cheques emitidos e recebidos (pré-datados, compensação, saldo contábil vs bancário, folha de cheques)
-- [ ] US-FN10: Aging e alertas de contas a pagar (faixas vencimento, alertas configuráveis, digest matinal, calendário)
-
-#### EPIC-FN3: Contas a Receber (2 stories, 16 pts)
-
-- [ ] US-FN11: Lançamento de contas a receber (cliente, categorias rurais, vinculação NF-e, parcelamento, recorrência)
-- [ ] US-FN12: Baixa de recebimento e inadimplência (juros/multa/glosa, PDD automática, renegociação, aging)
-
-#### EPIC-FN4: Fluxo de Caixa e Crédito Rural (3 stories, 21 pts)
+#### EPIC-FN4: Fluxo de Caixa e Crédito Rural
 
 - [ ] US-FN13: Fluxo de caixa realizado e projetado (cenários otimista/realista/pessimista, alerta saldo negativo, classificação DFC)
 - [ ] US-FN14: Gestão de operações de crédito rural (PRONAF/PRONAMP/funcafé/CPR, cronograma parcelas, amortização SAC/Price/Bullet)
-- [ ] US-FN15: Dashboard financeiro consolidado (saldo total, CP vs CR 7/30d, resultado mês, endividamento, top despesas/receitas)
 
 ### Out of Scope
 
@@ -113,6 +112,23 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 | Web-only neste milestone                     | Financeiro é operação de escritório, não de campo               | — Pending |
 | Preparar interfaces para integrações futuras | Compras, Folha, Patrimônio vão gerar CP/CR automaticamente      | — Pending |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd:transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
 
-_Last updated: 2026-03-15 after initialization_
+_Last updated: 2026-03-26 after milestone v1.1 started_
