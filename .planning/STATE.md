@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
-status: Ready to execute
-stopped_at: Completed 36-05-PLAN.md
-last_updated: "2026-03-27T12:23:04.517Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 36-04-PLAN.md
+last_updated: "2026-03-27T12:29:15.464Z"
 progress:
   total_phases: 7
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
 ---
 
 # Project State
@@ -54,6 +54,8 @@ Key decisions carried from v1.3:
 - [Phase 36]: getTrialBalance aggregates synthetic accounts recursively, grandTotals from analytic-only to avoid double-counting
 - [Phase 36-lan-amentos-manuais-raz-o-e-saldo-de-abertura]: useLedger derives startDate/endDate from fiscalYearId+month client-side — avoids extra API call
 - [Phase 36-lan-amentos-manuais-raz-o-e-saldo-de-abertura]: TrialBalancePage uses tab pattern (Balancete + Livro Diário) — single page, two panels per UI-SPEC
+- [Phase 36]: /accounting-entries route now points to JournalEntriesPage — full manual entry UI replaces payroll-only accounting entries page
+- [Phase 36]: CSV import uses preview-first flow: upload -> importCsv() -> CsvPreviewModal -> createDraft per entry (per LANC-03 spec)
 
 ### Pending Todos
 
@@ -68,7 +70,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T12:23:04.514Z
-Stopped at: Completed 36-05-PLAN.md
+Last session: 2026-03-27T12:29:15.461Z
+Stopped at: Completed 36-04-PLAN.md
 Resume file: None
 Next action: Define requirements and create roadmap for v1.4
