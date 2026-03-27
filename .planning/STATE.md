@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
 status: Phase complete — ready for verification
-stopped_at: Completed 36-04-PLAN.md
-last_updated: "2026-03-27T12:29:15.464Z"
+stopped_at: Phase 37 context gathered
+last_updated: "2026-03-27T18:41:49.596Z"
 progress:
   total_phases: 7
   completed_phases: 2
@@ -70,7 +70,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T12:29:15.461Z
-Stopped at: Completed 36-04-PLAN.md
-Resume file: None
+Last session: 2026-03-27T18:41:49.590Z
+Stopped at: Phase 37 context gathered
+Resume file: .planning/phases/37-regras-e-lan-amentos-autom-ticos/37-CONTEXT.md
 Next action: Define requirements and create roadmap for v1.4
