@@ -110,6 +110,14 @@ Plans:
 4. Razão por conta mostra saldo progressivo com drill-down para lançamento original
 5. Balancete 3 colunas (saldo anterior, movimento, saldo atual) com totais por grupo e validação de equilíbrio
 
+**Plans:** 5 plans
+Plans:
+- [ ] 36-01-PLAN.md — Prisma migration (JournalEntry + JournalEntryLine) + journal-entries service (create/post/reverse/templates) + routes
+- [ ] 36-02-PLAN.md — Opening balance wizard backend: preview aggregation from 5 modules + post as OPENING_BALANCE entry
+- [ ] 36-03-PLAN.md — Ledger, trial balance, daily book services + PDF/CSV/XLSX exports + routes
+- [ ] 36-04-PLAN.md — Frontend: JournalEntriesPage + JournalEntryModal + ReversalModal + OpeningBalanceWizard
+- [ ] 36-05-PLAN.md — Frontend: LedgerPage + TrialBalancePage (with daily book) + sidebar + routing
+
 ### Phase 37: Regras e Lançamentos Automáticos
 **Goal:** Regras de lançamento por tipo de operação (mapeamento conta débito/crédito), PendingJournalPosting queue com BullMQ, GL hooks para: liquidação CP, recebimento CR, fechamento folha, depreciação, entrada/saída estoque; idempotência via UNIQUE(sourceType, sourceId)
 **Requirements:** LANC-01, LANC-02, LANC-06
@@ -169,7 +177,7 @@ Plans:
 | 7-15 | v1.1 | 37/37 | Complete | 2026-03-19 |
 | 16-24 | v1.2 | 41/41 | Complete | 2026-03-23 |
 | 25-34 | v1.3 | 45/45 | Complete | 2026-03-27 |
-| 35-41 | v1.4 | 0/~35 | Pending | — |
+| 35-41 | v1.4 | 4/~35 | In Progress | — |
 
 ---
-*Last updated: 2026-03-26 after v1.4 roadmap creation*
+*Last updated: 2026-03-27 after Phase 36 planning*
