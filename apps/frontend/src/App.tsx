@@ -141,6 +141,7 @@ const TaxGuidesPage = lazy(() => import('@/pages/TaxGuidesPage'));
 const EsocialEventsPage = lazy(() => import('@/pages/EsocialEventsPage'));
 const IncomeStatementsPage = lazy(() => import('@/pages/IncomeStatementsPage'));
 const AccountingEntriesPage = lazy(() => import('@/pages/AccountingEntriesPage'));
+const JournalEntriesPage = lazy(() => import('@/pages/JournalEntriesPage'));
 const ChartOfAccountsPage = lazy(() => import('@/pages/ChartOfAccountsPage'));
 const FiscalPeriodsPage = lazy(() => import('@/pages/FiscalPeriodsPage'));
 const LedgerPage = lazy(() => import('@/pages/LedgerPage'));
@@ -277,7 +278,7 @@ export function App() {
                 <Route path="/tax-guides" element={<TaxGuidesPage />} />
                 <Route path="/esocial-events" element={<EsocialEventsPage />} />
                 <Route path="/income-statements" element={<IncomeStatementsPage />} />
-                <Route path="/accounting-entries" element={<AccountingEntriesPage />} />
+                <Route path="/accounting-entries" element={<JournalEntriesPage />} />
                 <Route path="/chart-of-accounts" element={<ChartOfAccountsPage />} />
                 <Route path="/fiscal-periods" element={<FiscalPeriodsPage />} />
                 <Route path="/ledger" element={<LedgerPage />} />
