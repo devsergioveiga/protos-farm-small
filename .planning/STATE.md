@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: RH e Folha de Pagamento Rural
 status: Ready to execute
-stopped_at: Completed 34-01-PLAN.md
-last_updated: "2026-03-26T23:50:19.832Z"
+stopped_at: Completed 34-02-PLAN.md
+last_updated: "2026-03-27T01:18:32.655Z"
 progress:
   total_phases: 28
-  completed_phases: 27
+  completed_phases: 28
   total_plans: 123
-  completed_plans: 122
+  completed_plans: 123
 ---
 
 # Project State
@@ -116,6 +116,7 @@ Key decisions for v1.3:
 - [Phase 33]: employeeOptions useMemo mapping uses farms[0].position for flat shape — matches existing modal prop contracts
 - [Phase 33]: listEmployees position select extended with asoPeriodicityMonths only — getEmployee detail method left unchanged
 - [Phase 34-wire-absence-impact-payroll-engine]: absenceInssDeduction applied to adjustedSalary for cumulative pro-rata effect (D-02); inssIrrfBase uses reduced salary (D-04); fgtsFullMonth uses baseSalary (D-07); DSR reduced by suspendedDays/workDays (D-10)
+- [Phase 34-wire-absence-impact-payroll-engine]: Both PDF call sites use fgtsAmount/0.08 derivation (not result.fgtsBase) — consistent approach since both sites read from stored DB items; 8% FGTS rate assumption documented per Lei 8.036/90
 
 ### Pending Todos
 
@@ -131,7 +132,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-26T23:50:19.827Z
-Stopped at: Completed 34-01-PLAN.md
+Last session: 2026-03-27T01:18:32.651Z
+Stopped at: Completed 34-02-PLAN.md
 Resume file: None
 Next action: Run /gsd:plan-phase 25 to plan Cadastro de Colaboradores e Contratos

@@ -646,7 +646,7 @@ Plans:
 **Plans**: 2 plans
 Plans:
 - [x] 34-01-PLAN.md — TDD: types + absence deduction logic in calculation engine
-- [ ] 34-02-PLAN.md — Wire orchestrator + PDF rodape update
+- [x] 34-02-PLAN.md — Wire orchestrator + PDF rodape update
 **UI hint**: no
 
 ## Progress
@@ -686,4 +686,4 @@ Plans:
 | 31. Obrigações Acessórias e eSocial                 | v1.3      | 5/5 | Complete    | 2026-03-26 |
 | 32. Integração Financeira, Contábil e Dashboard RH  | v1.3      | 5/5 | Complete    | 2026-03-26 |
 | 33. Wire Employee Data to Safety Pages              | v1.3      | 1/1 | Complete    | 2026-03-26 |
-| 34. Wire Absence Impact to Payroll Engine           | v1.3      | 1/2 | In Progress|  |
+| 34. Wire Absence Impact to Payroll Engine           | v1.3      | 2/2 | Complete   | 2026-03-27 |
