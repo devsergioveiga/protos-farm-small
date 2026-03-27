@@ -1,30 +1,10 @@
 # Protos Farm — Fase 3: Módulos Administrativos
 
-## Current Milestone: v1.3 RH e Folha de Pagamento Rural
+## Current State: v1.3 Complete — Planning Next Milestone
 
-**Goal:** Implementar o ciclo completo de gestão de pessoas em fazendas — cadastro e contratos, controle de ponto e jornada rural, folha de pagamento com particularidades do trabalhador rural (Lei 5.889/73, NR-31), férias, 13º, rescisão, eSocial, segurança do trabalho e integração bidirecional com os módulos financeiro e contábil.
-
-**Target features:**
-
-- Cadastro de colaboradores com dados pessoais, trabalhistas, dependentes, contratos (CLT, safra, intermitente)
-- Cargos, faixas salariais, escalas de trabalho, histórico de movimentações
-- Registro de ponto (mobile + web), apontamento por atividade/operação, horas extras, banco de horas
-- Folha de pagamento mensal com cálculo automático (INSS, IRRF, FGTS, FUNRURAL, moradia/alimentação)
-- Adiantamento salarial, holerites, 13º salário (1ª e 2ª parcela)
-- Férias (programação, cálculo, fracionamento), afastamentos/licenças, rescisão (TRCT e guias)
-- Provisão mensal de férias e 13º com lançamento contábil
-- Guias de recolhimento (FGTS, INSS, IRRF, FUNRURAL), eSocial (eventos XML), RAIS/DIRF
-- Controle de EPIs, treinamentos NR-31, ASO/PCMSO
-- Integração financeira (folha → Contas a Pagar) e contábil (folha → lançamentos por CC)
-- Dashboard de RH e custo de pessoal
-- Reforma/ampliação com capitalização, importação em massa, inventário e ficha completa
-- Depreciação automática (linear, horas-uso, produção, acelerada) com centro de custo
-- Valoração de ativos biológicos (CPC 29/IAS 41) e relatórios patrimoniais
-- Manutenção preventiva com planos, OS (CRUD), solicitação mobile, estoque de peças
-- Dashboard de manutenção, classificação contábil de OS (despesa/capitalização/diferimento)
-- Controle operacional: combustível, documentos, horímetro, custo/hora
-- Integração financeira: compra à vista/financiada, NF-e, leasing, troca, venda com ganho/perda
-- Baixa por sinistro/descarte, transferência entre fazendas, conciliação patrimonial, dashboard financeiro
+**Shipped:** v1.0 Financeiro Base, v1.1 Compras, v1.2 Patrimonio, v1.3 RH e Folha
+**Total:** 34 phases, 153 plans shipped across 4 milestones (2026-03-16 to 2026-03-27)
+**Next:** v1.4 (to be defined via `/gsd:new-milestone`)
 
 ## What This Is
 
@@ -77,38 +57,18 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 - ✓ Hierarquia pai-filho, imobilizado em andamento, reforma com capitalização — v1.2
 - ✓ Ativos biológicos (CPC 29), leasing (CPC 06), troca com compensação — v1.2
 - ✓ Relatórios e dashboard patrimonial com TCO e indicadores — v1.2
+- ✓ Cadastro de colaboradores com dados pessoais, trabalhistas, contratos, cargos, escalas — v1.3
+- ✓ Registro de ponto mobile+web, apontamento por atividade, HE/noturno rural, banco de horas — v1.3
+- ✓ Folha de pagamento mensal com INSS/IRRF/FGTS/FUNRURAL/moradia, adiantamento, 13º, holerite PDF — v1.3
+- ✓ Férias (programação, cálculo, fracionamento), afastamentos com impacto na folha, rescisão com TRCT/GRRF — v1.3
+- ✓ Provisão mensal de férias e 13º com lançamento contábil e rateio por CC — v1.3
+- ✓ Segurança do trabalho NR-31: EPIs, treinamentos, ASO/PCMSO com alertas e conformidade — v1.3
+- ✓ eSocial eventos XML (S-1.3), guias de recolhimento, RAIS, informe de rendimentos — v1.3
+- ✓ Integração financeira (folha→CP) e contábil (folha→DRE/BP por CC), dashboard RH — v1.3
 
 ### Active
 
-<!-- v1.3 RH e Folha de Pagamento Rural — 27 stories, 187 points, 7 épicos -->
-
-- [ ] Cadastro completo de colaboradores com dados pessoais, trabalhistas, documentos e dependentes
-- [ ] Gestão de contratos de trabalho (CLT, safra, intermitente, experiência, aprendiz)
-- [ ] Cargos, faixas salariais, escalas, quadro de lotação e histórico de movimentações
-- [ ] Importação em massa de colaboradores (CSV/Excel)
-- [ ] Ficha completa do colaborador (contrato, salário, holerites, férias, EPIs, operações)
-- [ ] Registro de ponto via mobile (geolocalização, offline) e web
-- [ ] Apontamento de horas por atividade/operação com rateio por centro de custo
-- [ ] Horas extras, banco de horas, adicional noturno rural (21h-5h, 25%)
-- [ ] Espelho de ponto com fluxo de aprovação
-- [ ] Configuração de rubricas e parâmetros da folha (INSS, IRRF, moradia, FUNRURAL)
-- [ ] Processamento da folha mensal com cálculo automático completo
-- [ ] Adiantamento salarial (vale) com desconto automático na folha
-- [ ] Geração de holerites (PDF, email, app)
-- [ ] Processamento de 13º salário (1ª e 2ª parcela)
-- [ ] Gestão de férias (programação, cálculo, fracionamento, calendário visual)
-- [ ] Gestão de afastamentos e licenças (atestado, acidente, maternidade, CAT)
-- [ ] Processamento de rescisão contratual (TRCT, guias GRRF, seguro-desemprego)
-- [ ] Provisão mensal de férias e 13º com lançamento contábil
-- [ ] Geração de guias de recolhimento (FGTS, INSS, IRRF, FUNRURAL)
-- [ ] Eventos do eSocial (XML, transmissão, dashboard de status)
-- [ ] RAIS, DIRF e informe de rendimentos
-- [ ] Controle de EPIs com ficha de entrega e alertas de vencimento
-- [ ] Controle de treinamentos obrigatórios NR-31 com matriz de conformidade
-- [ ] ASO e PCMSO com alertas de vencimento
-- [ ] Lançamento automático da folha no financeiro (Contas a Pagar)
-- [ ] Lançamento automático da folha na contabilidade (DRE/BP por centro de custo)
-- [ ] Dashboard de RH e custo de pessoal
+<!-- To be defined in next milestone -->
 
 ### Out of Scope
 
@@ -125,16 +85,13 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 
 ## Context
 
-### Current State (v1.3 in progress — Phase 28 complete)
+### Current State (v1.3 complete — 2026-03-27)
 
-Shipped v1.0 Financeiro Base, v1.1 Compras, v1.2 Patrimônio (24 phases, 78 plans).
-Phase 25 complete — Cadastro de Colaboradores e Contratos: 13 models, 7 enums, 5 backend modules (employees, contracts, positions, work-schedules, movements), full frontend with 3 pages, 14 modals/components, bulk CSV/XLSX import, 5-tab employee detail page with salary evolution chart. 69 backend tests passing.
-Phase 26 complete — Parâmetros de Folha e Motor de Cálculo: 4 Prisma models (PayrollRubrica, PayrollLegalTable, PayrollTableBracket, PayrollTableScalar), 4 enums, 7 pure engine functions (INSS progressivo, IRRF two-step com redutor 2026, FGTS, salário-família, noturno rural, moradia/alimentação, fórmula customizada), 65 tests, REST API com auto-seed de 18 rubricas-sistema, frontend PayrollParametersPage com 2 abas.
-Phase 27 complete — Controle de Ponto e Jornada: TimeEntry/Timesheet models, calcDailyWork with rural night shift (21h-5h/25%), interjornada/intrajornada alerts, timesheet approval state machine, frontend TimesheetPage with PDF export.
-Phase 28 complete — Processamento da Folha Mensal: PayrollRun state machine (PENDING→PROCESSING→CALCULATED→COMPLETED→REVERTED), per-employee calculation with INSS/IRRF/FGTS/DSR/noturno, salary advances with CP integration, payslip PDF (pdfkit), 13th salary two-parcel, 4-step wizard frontend, 95 backend tests.
+Shipped 4 milestones across Fase 3: Financeiro (v1.0), Compras (v1.1), Patrimônio (v1.2), RH/Folha (v1.3).
+34 phases, 153 plans, ~325 files, ~87K LOC added.
 Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
-Módulos financeiros, compras e patrimônio completos com integração bidirecional.
-Equipes de campo (field_teams) já existem no módulo de operações — potencial reuso para apontamento de horas.
+All administrative modules complete with bidirectional financial/accounting integration.
+27 HR requirements delivered: employee management, payroll engine, time tracking, vacations/termination, NR-31 safety, eSocial compliance, and HR dashboard.
 
 ### Particularidades do Financeiro Rural
 
@@ -194,7 +151,12 @@ Equipes de campo (field_teams) já existem no módulo de operações — potenci
 | OFX parser custom (regex SGML, não ofx-js)   | Baixa manutenção, mirrors CNAB pattern                          | ✓ Good — funciona                      |
 | Fluxo de caixa 12 meses (não 90 dias)        | Sazonalidade agrícola                                           | ✓ Good — essential                     |
 | reconciliation:manage permission separada    | Não financial:\* per spec                                       | ✓ Good — granular                      |
+| Pure calculation engine separado de service  | Testabilidade: 43 tests sem DB, payroll-calculation.service.ts  | ✓ Good — facilita TDD                  |
+| Rubricas-sistema auto-seed na migration      | 18 rubricas legais não devem depender de setup manual           | ✓ Good — onboarding instantâneo        |
+| Rural night shift 21h-5h hardcoded           | Lei 5.889/73 não permite configuração — jurisprudência clara    | ✓ Good — compliance correto            |
+| eSocial XML geração local, transmissão async | Portal tem rate limits e janelas de manutenção                  | ✓ Good — resiliente                    |
+| Absence impact calculado dentro da tx payroll| Consistência: dados de ausência lidos no mesmo snapshot         | ✓ Good — sem race conditions           |
 
 ---
 
-_Last updated: 2026-03-25 after Phase 28 complete_
+_Last updated: 2026-03-27 after v1.3 milestone complete_
