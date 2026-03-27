@@ -1,485 +1,666 @@
 # Architecture Research
 
-**Domain:** HR and Rural Payroll module integrated into Protos Farm monolith
-**Researched:** 2026-03-23
-**Confidence:** HIGH — derived from direct analysis of existing codebase (schema 7400+ lines, all modules, cron/batch infrastructure, integration patterns from v1.0–v1.2)
+**Domain:** Rural accounting and financial statements module (v1.4 Contabilidade e Demonstrações Financeiras)
+**Researched:** 2026-03-26
+**Confidence:** HIGH — based on direct codebase inspection + SPED ECD official spec review
 
 ---
 
-## Context: Existing Architecture This Milestone Extends
+## Context: What Already Exists vs. What Is New
 
-This is the v1.3 milestone. All architectural contracts established in v1.0–v1.2 apply without exception.
-
-| Existing Component | Relevance to HR/Payroll |
-|--------------------|------------------------|
-| `modules/payables/` + `tx.payable.create` pattern | Payroll run → Contas a Pagar (salários, FGTS, INSS, IRRF, FUNRURAL) |
-| `modules/cost-centers/` + `validateCostCenterItems` (shared) | Labor cost allocated per farm/cost center |
-| `modules/field-teams/` + `TeamOperation` + `TeamOperationEntry` | Existing hours data per worker per operation — time tracking integrates here |
-| `modules/work-orders/` with `laborHours` + `laborCostPerHour` | Maintenance OS already tracks labor hours; employee link adds precision |
-| `shared/cron/` with `node-cron` + Redis distributed lock | Payroll batch processing follows same pattern as depreciation batch |
-| `modules/depreciation/` `DepreciationRun` state machine | `PayrollRun` model mirrors this: PENDING → PROCESSING → COMPLETED/ERROR |
-| `withRlsContext` / `RlsContext` | Every new module follows this — no exceptions |
-| `Money` factory (decimal.js) | All monetary computations: gross salary, deductions, net pay, provisions |
-| `generateInstallments` (shared) | Payroll installment-like patterns (13th salary in two parcels) |
-| `@xmldom/xmldom` (already installed) | eSocial XML generation — no new dep required |
-| `pdfkit` (already installed) | Payslip PDF generation — no new dep required |
-| `nodemailer` (already installed) | Payslip email delivery — no new dep required |
-| `exceljs` (already installed) | RAIS/DIRF export, bulk employee import |
-| `Producer` model | Employees belong to a farm under a producer; FUNRURAL linked to producer's tax regime |
-| `modules/suppliers/` | Service providers (prestadores) reuse supplier entity for freelancers/contractors |
+This milestone adds a full double-entry general ledger on top of four complete milestones. The
+existing `accounting-entries` module is a stub: it writes payroll-origin journal entries using
+**hardcoded account codes** stored directly in `ACCOUNT_CODES` constants (no Chart of Accounts
+table). Account codes like `6.1.01`, `2.1.01` are strings — they have no parent/child structure
+and no linking to a `ChartOfAccount` row. The entire v1.4 milestone exists to replace this
+hardcoded pattern with a proper hierarchical COA, period management, and statement engine.
 
 ---
 
 ## System Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           Frontend (React 19)                               │
-│  ┌──────────────┐  ┌─────────────────┐  ┌────────────────┐  ┌───────────┐  │
-│  │ Employees /  │  │ Time Tracking   │  │ Payroll Run    │  │ Safety /  │  │
-│  │ Contracts    │  │ Approval        │  │ Dashboard      │  │ eSocial   │  │
-│  └──────┬───────┘  └────────┬────────┘  └───────┬────────┘  └─────┬─────┘  │
-└─────────┼────────────────────┼────────────────────┼────────────────┼────────┘
-          │  REST API          │                    │                │
-┌─────────┼────────────────────┼────────────────────┼────────────────┼────────┐
-│         │       Backend (Express 5 + TypeScript)   │                │        │
-│  ┌──────▼──────────────────────────────────────────▼────────────────▼─────┐ │
-│  │                    New HR/Payroll Modules                               │ │
-│  │  employees  contracts  job-positions  time-entries  payroll-runs        │ │
-│  │  payroll-items  rubrics  vacations  leaves  terminations               │ │
-│  │  epi-deliveries  trainings  asos  esocial-events                       │ │
-│  └────────────────────────────────┬────────────────────────────────────────┘ │
-│                                   │ integration                              │
-│  ┌────────────────────────────────▼────────────────────────────────────────┐ │
-│  │                  Existing Modules (unchanged)                           │ │
-│  │  payables  cost-centers  field-teams  work-orders  producers  farms     │ │
-│  └────────────────────────────────┬────────────────────────────────────────┘ │
-│                                   │                                          │
-│  ┌────────────────────────────────▼────────────────────────────────────────┐ │
-│  │              Batch Infrastructure (node-cron + Redis + Prisma)          │ │
-│  │  payroll-batch.service  payroll-cron  esocial-queue  provision-cron     │ │
-│  └────────────────────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────────────────┘
-          │                                         │
-┌─────────▼──────────────────┐     ┌───────────────▼─────────────────────────┐
-│   Mobile (React Native +   │     │   PostgreSQL 16 + Prisma 7               │
-│   Expo) — Time Tracking    │     │   New tables: employees, contracts,       │
-│   with geolocation +       │     │   time_entries, payroll_runs,            │
-│   offline sync             │     │   payroll_items, rubrics, etc.           │
-└────────────────────────────┘     └─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          Frontend (React 19 + Vite)                     │
+│                                                                          │
+│  CONTABILIDADE sidebar group (currently 1 item → grows to ~9 items)     │
+│  ┌───────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐ ┌────────────┐  │
+│  │  Plano de │ │Lançamen- │ │Fechamento│ │    DRE    │ │ Dashboard  │  │
+│  │  Contas   │ │  tos GL  │ │ Mensal   │ │  BP  DFC  │ │ Contábil  │  │
+│  └─────┬─────┘ └────┬─────┘ └────┬─────┘ └─────┬─────┘ └─────┬──────┘  │
+└────────┼────────────┼────────────┼──────────────┼─────────────┼─────────┘
+         │            │            │              │             │
+         │        REST API /api/org/:orgId/...    │             │
+         │            │            │              │             │
+┌────────┼────────────┼────────────┼──────────────┼─────────────┼─────────┐
+│        │         Backend (Express 5 + TypeScript)              │         │
+│  ┌─────▼──────┐ ┌───▼───────┐ ┌──▼──────────┐ ┌──▼──────────┐│         │
+│  │chart-of-   │ │journal-   │ │fiscal-      │ │financial-   ││         │
+│  │accounts    │ │entries    │ │periods      │ │statements   ││         │
+│  │(COA CRUD + │ │(GL engine │ │(open/close/ │ │(DRE/BP/DFC  ││         │
+│  │ seed rural)│ │ + rules)  │ │ reopen)     │ │ calculator) ││         │
+│  └─────┬──────┘ └───┬───────┘ └──┬──────────┘ └──┬──────────┘│         │
+│        │            │            │                │           │         │
+│  ┌─────▼────────────▼────────────▼────────────────▼───────────┘         │
+│  │                    PostgreSQL 16 / Prisma 7                           │
+│  │   ChartOfAccount   JournalEntry   FiscalPeriod   (new tables)        │
+│  │   AccountingEntry  (existing — kept read-only, not migrated)         │
+│  └──────────────────────────────────────────────────────────────────────┘
+│                                                                          │
+│  EXISTING MODULES THAT GET GL HOOKS ADDED                               │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐  │
+│  │payroll-runs │  │  depreciation│  │  payables /  │  │stock-entries│  │
+│  │(already has │  │  (no GL hook │  │  receivables │  │stock-outputs│  │
+│  │ old stub)   │  │  yet)        │  │  (no GL hook)│  │(no GL hook) │  │
+│  └─────────────┘  └──────────────┘  └──────────────┘  └─────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Component Responsibilities
+---
 
-| Component | Responsibility | Implementation |
-|-----------|---------------|----------------|
-| `modules/employees/` | Employee master record — personal, fiscal, employment data | `employees.service.ts` + CRUD routes |
-| `modules/contracts/` | Employment contracts (CLT, safra, intermitente, experiência, aprendiz) and salary history | `contracts.service.ts` — links Employee + Farm |
-| `modules/job-positions/` | Job titles, salary bands, work schedules, headcount | `job-positions.service.ts` |
-| `modules/time-entries/` | Time clock records: clock-in/out, geolocation, manual, linked to operation | `time-entries.service.ts`; mobile-first |
-| `modules/time-approval/` | Espelho de ponto, approval workflow (mirrors `purchase-requests` approval pattern) | Reuses `approval-rules` infrastructure |
-| `modules/payroll-runs/` | Payroll calculation engine + run orchestration + payslip PDF | `payroll-engine.service.ts` + `payroll-batch.service.ts` |
-| `modules/payroll-items/` | Line-item breakdown per employee per run (rubrics, amounts, bases) | Owned by payroll-runs, not standalone routes |
-| `modules/rubrics/` | Configurable earnings/deductions rubrics (INSS tables, IRRF tables, FUNRURAL %, rural specifics) | `rubrics.service.ts` — seeded with defaults, org-customizable |
-| `modules/vacations/` | Vacation scheduling, calculation (30-day rural), fractionation | `vacations.service.ts` |
-| `modules/leaves/` | Absences: medical leave, accident (CAT), maternity, license | `leaves.service.ts` |
-| `modules/terminations/` | TRCT, homologação, GRRF, unemployment insurance | `terminations.service.ts` — complex multi-step |
-| `modules/payroll-provisions/` | Monthly vacation + 13th-salary accrual with CC allocation (mirrors `maintenance-provisions` pattern) | `payroll-provisions.service.ts` |
-| `modules/epi-deliveries/` | EPI delivery record per employee, expiry alerts | `epi-deliveries.service.ts` |
-| `modules/trainings/` | NR-31 training matrix, certificates, expiry | `trainings.service.ts` |
-| `modules/asos/` | ASO/PCMSO records, expiry alerts | `asos.service.ts` |
-| `modules/esocial-events/` | eSocial XML generation, transmission log, status tracking | `esocial-xml.service.ts` + `esocial-transmission.service.ts` |
-| `modules/hr-dashboard/` | HR KPIs: headcount, turnover, cost per CC, compliance score | `hr-dashboard.service.ts` |
+## Component Responsibilities
+
+| Component | Responsibility | Status |
+|-----------|---------------|--------|
+| `modules/chart-of-accounts/` | CRUD for hierarchical COA; seed rural model; COA code validation | NEW |
+| `modules/fiscal-periods/` | Fiscal year and monthly period management; open/close/reopen with checklist | NEW |
+| `modules/journal-entries/` | Manual and automatic GL entries; reversal; period-lock guard; razão/livro diário | NEW (supersedes stub in `accounting-entries`) |
+| `modules/accounting-rules/` | Mapping table: sourceType → debit/credit account codes; replaces `ACCOUNT_CODES` const | NEW |
+| `modules/ledger/` | Read-side: razão por conta, balancete de verificação, saldo progressivo | NEW |
+| `modules/financial-statements/` | DRE / BP / DFC calculators; vinculação cruzada validation; PDF export | NEW |
+| `modules/sped-ecd/` | SPED ECD Leiaute 9 file generator (pipe-delimited text, Blocos 0/I/J/K/9) | NEW |
+| `modules/accounting-dashboard/` | Executive KPI aggregation endpoint | NEW |
+| `modules/accounting-entries/` | Existing payroll stub — kept read-only, not deleted | UNCHANGED (frozen) |
+| `modules/payroll-runs/` | Calls `createPayrollEntries()` after close | MODIFIED — add new journal-entries hook alongside existing stub |
+| `modules/depreciation/` | No GL hook yet | MODIFIED — add post-run GL hook |
+| `modules/payables/` | Calls `createReversalEntry()` on settlement | MODIFIED — add new journal-entries hook |
+| `modules/receivables/` | No GL hook | MODIFIED — add GL hook on receipt |
+| `modules/stock-entries/` | No GL hook | MODIFIED — add GL hook for inventory increase |
+| `modules/stock-outputs/` | No GL hook | MODIFIED — add GL hook for consumption |
 
 ---
 
 ## Recommended Project Structure
 
-Backend additions (all under `apps/backend/src/`):
+New backend modules follow the established colocation pattern exactly:
 
 ```
-modules/
-├── employees/
-│   ├── employees.routes.ts
-│   ├── employees.service.ts
-│   ├── employees.types.ts
-│   └── employees.routes.spec.ts
-├── contracts/
-│   ├── contracts.routes.ts
-│   ├── contracts.service.ts
-│   ├── contracts.types.ts
-│   └── contracts.routes.spec.ts
-├── job-positions/
-│   ├── job-positions.routes.ts
-│   ├── job-positions.service.ts
-│   ├── job-positions.types.ts
-│   └── job-positions.routes.spec.ts
-├── time-entries/
-│   ├── time-entries.routes.ts
-│   ├── time-entries.service.ts
-│   ├── time-entries.types.ts
-│   └── time-entries.routes.spec.ts
-├── time-approval/
-│   ├── time-approval.routes.ts
-│   ├── time-approval.service.ts
-│   └── time-approval.types.ts
-├── rubrics/
-│   ├── rubrics.routes.ts
-│   ├── rubrics.service.ts
-│   └── rubrics.types.ts
-├── payroll-runs/
-│   ├── payroll-runs.routes.ts
-│   ├── payroll-runs.service.ts        ← orchestration
-│   ├── payroll-engine.service.ts      ← calculation engine (pure functions)
-│   ├── payroll-batch.service.ts       ← async batch processor (mirrors depreciation-batch)
-│   ├── payslip.service.ts             ← PDF generation (reuses pdfkit)
-│   ├── payroll-runs.types.ts
-│   └── payroll-runs.routes.spec.ts
-├── payroll-provisions/
-│   ├── payroll-provisions.routes.ts
-│   ├── payroll-provisions.service.ts
-│   └── payroll-provisions.types.ts
-├── vacations/
-│   ├── vacations.routes.ts
-│   ├── vacations.service.ts
-│   └── vacations.types.ts
-├── leaves/
-│   ├── leaves.routes.ts
-│   ├── leaves.service.ts
-│   └── leaves.types.ts
-├── terminations/
-│   ├── terminations.routes.ts
-│   ├── terminations.service.ts        ← complex: TRCT + payable + eSocial S-2299
-│   └── terminations.types.ts
-├── epi-deliveries/
-│   ├── epi-deliveries.routes.ts
-│   ├── epi-deliveries.service.ts
-│   └── epi-deliveries.types.ts
-├── trainings/
-│   ├── trainings.routes.ts
-│   ├── trainings.service.ts
-│   └── trainings.types.ts
-├── asos/
-│   ├── asos.routes.ts
-│   ├── asos.service.ts
-│   └── asos.types.ts
-├── esocial-events/
-│   ├── esocial-events.routes.ts
-│   ├── esocial-events.service.ts      ← status + dashboard
-│   ├── esocial-xml.service.ts         ← XML generation per event type
-│   ├── esocial-transmission.service.ts ← HTTP send to gov API + status polling
-│   └── esocial-events.types.ts
-└── hr-dashboard/
-    ├── hr-dashboard.routes.ts
-    ├── hr-dashboard.service.ts
-    └── hr-dashboard.types.ts
-
-shared/cron/
-├── payroll-provision.cron.ts          ← monthly accrual (mirrors maintenance-provision.cron.ts)
-└── esocial-retry.cron.ts              ← retry failed eSocial transmissions
+apps/backend/src/modules/
+├── chart-of-accounts/
+│   ├── chart-of-accounts.service.ts       # CRUD + seed rural COA (CPC 29 agro model)
+│   ├── chart-of-accounts.routes.ts        # Express Router + auth middleware
+│   ├── chart-of-accounts.types.ts         # Input/output interfaces + error class
+│   └── chart-of-accounts.routes.spec.ts
+│
+├── fiscal-periods/
+│   ├── fiscal-periods.service.ts          # Open/close/reopen period with checklist validation
+│   ├── fiscal-periods.routes.ts
+│   ├── fiscal-periods.types.ts
+│   └── fiscal-periods.routes.spec.ts
+│
+├── journal-entries/
+│   ├── journal-entries.service.ts         # GL write engine + period-lock guard
+│   ├── journal-entries-calculator.service.ts  # Pure calc, no DB (mirrors payroll-calculation.service.ts)
+│   ├── journal-entries.routes.ts
+│   ├── journal-entries.types.ts
+│   └── journal-entries.routes.spec.ts
+│
+├── accounting-rules/
+│   ├── accounting-rules.service.ts        # Mapping: sourceType → COA account IDs
+│   ├── accounting-rules.routes.ts
+│   ├── accounting-rules.types.ts
+│   └── accounting-rules.routes.spec.ts
+│
+├── ledger/
+│   ├── ledger.service.ts                  # Razão, balancete, livro diário
+│   ├── ledger.routes.ts
+│   ├── ledger.types.ts
+│   └── ledger.routes.spec.ts
+│
+├── financial-statements/
+│   ├── financial-statements.service.ts    # DRE + BP + DFC orchestrator
+│   ├── dre-calculator.service.ts          # Pure DRE calc (testable without DB)
+│   ├── bp-calculator.service.ts           # Pure BP calc
+│   ├── dfc-calculator.service.ts          # Pure DFC calc (direct + indirect)
+│   ├── financial-statements-pdf.service.ts  # pdfkit multi-statement PDF
+│   ├── financial-statements.routes.ts
+│   ├── financial-statements.types.ts
+│   └── financial-statements.routes.spec.ts
+│
+├── sped-ecd/
+│   ├── sped-ecd.service.ts               # Orchestrator: loads data + calls builders
+│   ├── sped-ecd-builder.ts               # Record builders (I010, I050, I150/I155, I200/I250, I350/I355)
+│   ├── sped-ecd.routes.ts
+│   ├── sped-ecd.types.ts
+│   └── sped-ecd.routes.spec.ts
+│
+└── accounting-dashboard/
+    ├── accounting-dashboard.service.ts
+    ├── accounting-dashboard.routes.ts
+    ├── accounting-dashboard.types.ts
+    └── accounting-dashboard.routes.spec.ts
 ```
 
-Frontend additions (all under `apps/frontend/src/`):
+New frontend pages follow `pages/XxxPage.tsx + XxxPage.css` colocation. Modals go in
+`components/accounting/`:
 
 ```
-pages/
-├── EmployeesPage.tsx                  ← list + EmployeeModal (create/edit)
-├── EmployeeDetailPage.tsx             ← ficha completa (tabs: contrato, holerites, férias, EPIs, operações)
-├── JobPositionsPage.tsx
-├── TimeEntriesPage.tsx                ← espelho de ponto + approval flow
-├── RubricsPage.tsx                    ← tabelas INSS/IRRF, parâmetros
-├── PayrollRunsPage.tsx                ← list + trigger + status polling
-├── PayrollRunDetailPage.tsx           ← per-employee breakdown, approve, download PDF
-├── VacationsPage.tsx                  ← calendar view + scheduling modal
-├── LeavesPage.tsx
-├── TerminationsPage.tsx
-├── EpiDeliveriesPage.tsx
-├── TrainingsPage.tsx
-├── AsosPage.tsx
-├── EsocialEventsPage.tsx              ← status dashboard, retry
-└── HrDashboardPage.tsx
-
-types/
-├── employee.ts
-├── contract.ts
-├── time-entry.ts
-├── payroll.ts
-├── vacation.ts
-└── esocial.ts
+apps/frontend/src/
+├── pages/
+│   ├── AccountingDashboardPage.tsx + .css
+│   ├── ChartOfAccountsPage.tsx + .css
+│   ├── FiscalPeriodsPage.tsx + .css
+│   ├── JournalEntriesPage.tsx + .css      # extends/replaces AccountingEntriesPage
+│   ├── LedgerPage.tsx + .css
+│   ├── BalancetePage.tsx + .css
+│   ├── FinancialStatementsPage.tsx + .css # tabs: DRE / Balanço / DFC
+│   ├── StatementLinkagePage.tsx + .css    # DRE↔BP↔DFC cross-validation panel
+│   └── SpedEcdPage.tsx + .css
+│
+├── components/
+│   └── accounting/
+│       ├── AccountModal.tsx + .css        # COA account create/edit
+│       ├── JournalEntryModal.tsx + .css   # Manual entry form (partidas dobradas)
+│       ├── PeriodCloseModal.tsx + .css    # Closing checklist steps
+│       ├── SpedEcdExportModal.tsx + .css  # Export parameters + download
+│       └── StatementDrilldownModal.tsx + .css
+│
+├── hooks/
+│   ├── useChartOfAccounts.ts
+│   ├── useJournalEntries.ts              # extends useAccountingEntries pattern
+│   ├── useFiscalPeriods.ts
+│   ├── useLedger.ts
+│   └── useFinancialStatements.ts
+│
+└── types/
+    ├── chart-of-accounts.ts
+    ├── journal-entries.ts
+    ├── fiscal-periods.ts
+    └── financial-statements.ts
 ```
 
-Mobile additions (under `apps/mobile/`):
+---
+
+## Data Model
+
+### New Prisma Models
 
 ```
-app/(app)/
-├── time-clock.tsx                     ← clock in/out with geolocation
-└── time-entries.tsx                   ← personal time history
+ChartOfAccount
+  id             String       @id @default(uuid())
+  organizationId String
+  code           String       -- "1.1.01.001" (dot-separated, hierarchical, sortable)
+  parentCode     String?      -- null for level-1 root nodes
+  name           String
+  accountType    AccountType  -- ATIVO | PASSIVO | PL | RECEITA | DESPESA | CUSTO
+  nature         AccountNature -- DEVEDORA | CREDORA
+  level          Int          -- 1=grupo, 2=subgrupo, 3=conta, 4=subconta
+  isAnalytic     Boolean      @default(false)  -- only analytics accept journal entries
+  isActive       Boolean      @default(true)
+  isSystem       Boolean      @default(false)  -- seeded rural accounts, cannot delete
+  dreLineCode    String?      -- optional mapping to DRE/BP statement line position
+  createdAt      DateTime     @default(now())
+  @@unique([organizationId, code])
+  @@index([organizationId, accountType])
+  @@map("chart_of_accounts")
 
-services/db/
-└── time-entry-repository.ts           ← offline SQLite store (mirrors operation-repository.ts)
+FiscalPeriod
+  id             String        @id @default(uuid())
+  organizationId String
+  year           Int
+  month          Int           -- 1–12, or 0 for the annual period
+  status         PeriodStatus  -- OPEN | CLOSING | CLOSED | REOPENED
+  closedAt       DateTime?
+  closedBy       String?
+  reopenedAt     DateTime?
+  reopenedBy     String?
+  notes          String?
+  @@unique([organizationId, year, month])
+  @@map("fiscal_periods")
+
+JournalEntry                           -- supersedes AccountingEntry for new GL data
+  id             String       @id @default(uuid())
+  organizationId String
+  entryNumber    Int          -- sequential per org per year (for livro diário)
+  entryDate      DateTime     @db.Date
+  referenceMonth DateTime     @db.Date
+  description    String
+  entryOrigin    EntryOrigin  -- MANUAL | AUTO_PAYROLL | AUTO_DEPRECIATION | AUTO_CP | AUTO_CR | AUTO_STOCK_IN | AUTO_STOCK_OUT
+  sourceType     String?      -- mirrors AccountingSourceType for back-compat
+  sourceId       String?
+  periodId       String       -- FK to FiscalPeriod
+  isReversed     Boolean      @default(false)
+  reversalOfId   String?      -- FK to original entry being reversed
+  createdBy      String
+  createdAt      DateTime     @default(now())
+  lines          JournalEntryLine[]
+  period         FiscalPeriod @relation(...)
+  @@index([organizationId, referenceMonth])
+  @@index([sourceType, sourceId])
+  @@map("journal_entries")
+
+JournalEntryLine
+  id             String     @id @default(uuid())
+  journalEntryId String
+  accountCode    String     -- denormalized from ChartOfAccount.code (display performance)
+  accountId      String     -- FK to ChartOfAccount.id (referential integrity)
+  nature         LineSide   -- DEBIT | CREDIT
+  amount         Decimal    @db.Decimal(14,2)
+  costCenterId   String?
+  farmId         String?
+  memo           String?
+  @@map("journal_entry_lines")
+
+AccountingRule
+  id              String   @id @default(uuid())
+  organizationId  String
+  ruleCode        String   -- "PAYROLL_SALARY", "DEPRECIATION_BOOK", "STOCK_CONSUMPTION", etc.
+  description     String
+  debitAccountId  String   -- FK to ChartOfAccount
+  creditAccountId String   -- FK to ChartOfAccount
+  isActive        Boolean  @default(true)
+  @@unique([organizationId, ruleCode])
+  @@map("accounting_rules")
 ```
+
+### Additions to Existing Models
+
+```
+DepreciationEntry
+  + journalEntryId String?   -- FK to JournalEntry (added via migration, nullable backfill)
+
+Payable
+  + journalEntryId String?   -- FK to JournalEntry for settlement GL entry
+
+Receivable
+  + journalEntryId String?   -- FK to JournalEntry for receipt GL entry
+```
+
+The existing `AccountingEntry` model is **not changed**. It stays read-only and serves the
+existing `AccountingEntriesPage` frontend unmodified. New code does not write to it.
 
 ---
 
 ## Architectural Patterns
 
-### Pattern 1: PayrollRun State Machine (mirrors DepreciationRun)
+### Pattern 1: GL Hook — Non-blocking Fire-and-Forget
 
-**What:** Payroll processing is a multi-step computation that must not be partial. A `PayrollRun` record tracks state: `PENDING → PROCESSING → COMPLETED | ERROR`. The HTTP endpoint creates the run synchronously then hands off to a batch service that processes all employees for that competence period.
+The existing pattern established in `payroll-runs.service.ts` line 1059 is the canonical model
+for all automatic GL entry creation. It must be followed for every new source module hook.
 
-**When to use:** Any computation that touches many employees (monthly payroll, 13th salary, vacation batch recalculation).
+**What:** After the primary transaction commits, call the GL hook outside the transaction. Wrap
+in `try/catch` with structured logging — GL failure must never abort the source operation.
 
-**Trade-offs:** Requires polling or SSE for progress feedback. Simpler than a full queue (no BullMQ needed given existing Redis lock pattern works for depreciation).
+**When to use:** Every module that generates automatic `JournalEntry` records (payroll, depreciation,
+payables settlement, receivables receipt, stock in/out).
 
-**Example:**
+**Trade-offs:** GL can drift if the hook throws and is not retried. Mitigation: log `sourceType` +
+`sourceId` on every failure so a manual reconciliation query can detect and replay missing entries.
+
 ```typescript
-// payroll-runs.routes.ts
-router.post('/', authenticate, requirePermission('hr:payroll:run'), async (req, res) => {
-  const run = await createPayrollRun(ctx, input); // creates PENDING record
-  void runPayrollBatch(run.id);                   // fire-and-forget, like depreciation cron
-  res.status(202).json({ id: run.id, status: 'PENDING' });
-});
+// Pattern: depreciation GL hook (mirrors existing payroll pattern)
+export async function processDepreciationRun(rls: RlsContext, runId: string): Promise<void> {
+  // Primary operation — inside transaction
+  await prisma.$transaction(async (tx) => { /* ... */ });
 
-// payroll-batch.service.ts — mirrors depreciation-batch.service.ts
-export async function runPayrollBatch(runId: string): Promise<void> {
-  const lockKey = `payroll:run:${runId}`;
-  const locked = await redis.set(lockKey, '1', 'EX', 1800, 'NX');
-  if (!locked) return;
-  // ... fetch contracts, compute each employee, create PayrollItem rows, generate Payables in tx
+  // GL hook — OUTSIDE transaction, non-blocking
+  try {
+    await createDepreciationGlEntries(rls.organizationId, runId);
+  } catch (err) {
+    logger.error({ err, runId }, 'depreciation GL hook failed — manual reconciliation needed');
+  }
 }
 ```
 
-### Pattern 2: Payroll → Payables Integration (mirrors asset-acquisitions pattern)
+### Pattern 2: COA Code as Hierarchical String Key
 
-**What:** When a payroll run completes (or is approved), financial entries are created atomically in a transaction using `tx.payable.create` directly — never by calling `payables.service.createPayable()`. This avoids nested `withRlsContext` deadlocks.
+**What:** Account codes are dot-separated strings (`1.1.01.001`) that encode hierarchy. The `level`
+field (1–4) and `parentCode` are explicit for fast tree queries. Only accounts with `isAnalytic: true`
+accept `JournalEntryLine` records — the service enforces this before any write.
 
-**When to use:** Any payroll event that creates a financial obligation: monthly payroll, 13th salary parcels, termination payments, vacation payments, FGTS/INSS/IRRF guide generation.
+**When to use:** Every GL write path, every statement aggregation query, every AccountingRule validation.
 
-**Critical:** Document this as the established pattern in the service file comment.
+**Trade-offs:** Account code renames cascade to display strings (the `accountCode` denormalized in
+`JournalEntryLine`). The `isSystem: true` flag blocks deletion of seeded rural accounts. The rural
+seed must include CPC 29 biological asset accounts and FUNRURAL-specific groupings.
 
-**Example:**
 ```typescript
-// Inside payroll-batch.service.ts — inside prisma.$transaction(async (tx) => { ... })
-// CRITICAL: tx.payable.create directly (NOT payables.service) to avoid deadlocks
-await tx.payable.create({
-  data: {
-    organizationId,
-    farmId,
-    producerId: contract.producerId,
-    supplierName: employee.fullName,
-    category: 'PAYROLL',
-    description: `Folha ${month}/${year} — ${employee.fullName}`,
-    totalAmount: netPay,
-    dueDate: paymentDate,
-    installments: { create: [{ number: 1, amount: netPay, dueDate: paymentDate }] },
-    costCenterItems: { create: ccItems },
-  },
-});
-```
-
-### Pattern 3: eSocial XML Generation (xmldom already available)
-
-**What:** eSocial events are generated as XML strings using `@xmldom/xmldom` (already installed). Each event type (S-2200 admission, S-1200 payroll, S-2299 termination, etc.) has a dedicated generator function. Signed XML is transmitted to the eSocial REST API. The `EsocialEvent` model tracks transmission status.
-
-**When to use:** Any employee lifecycle change that triggers a mandatory government notification.
-
-**Trade-offs:** eSocial layout version S-1.3 (NT 05/2025) must be targeted — not the older S-1.0/S-1.1. Digital certificate (A1 PKCS#12) is needed for production; bypass with unsigned XML in development/staging.
-
-**Example:**
-```typescript
-// esocial-xml.service.ts
-export function generateS2200(employee: EmployeeForEsocial): string {
-  const doc = new DOMImplementation().createDocument(
-    'http://www.esocial.gov.br/schema/evt/evtAdmissao/v03_00_00',
-    'eSocial', null
-  );
-  // ... build XML tree using xmldom
-  return new XMLSerializer().serialize(doc);
+// Enforce analytic-only before writing a JournalEntryLine
+function assertAnalytic(account: ChartOfAccount): void {
+  if (!account.isAnalytic) {
+    throw new JournalEntryError(
+      `Conta ${account.code} é sintética e não aceita lançamentos diretos`,
+      'SYNTHETIC_ACCOUNT',
+      400,
+    );
+  }
 }
 ```
 
-### Pattern 4: Time Entry → Payroll Linkage
+### Pattern 3: Period Lock Guard
 
-**What:** `TimeEntry` records link to `Employee` and optionally to a `TeamOperationEntry` (existing model). The payroll engine aggregates approved time entries for the competence period to compute worked hours, overtime, night premium (21h–5h rural), and hour bank delta. This is a read-only integration — the payroll engine reads `TeamOperationEntry` but never writes to it.
+**What:** Every `JournalEntry` write first checks that the target `FiscalPeriod` has `status: OPEN`
+or `REOPENED`. Closed periods reject writes at the service layer with HTTP 409.
 
-**When to use:** Monthly payroll computation and time-based cost allocation per operation.
+**When to use:** `createJournalEntry()` service function, always — for both manual and automatic entries.
 
-**Trade-offs:** Requires a migration to add `employeeId` as nullable FK on `TeamOperationEntry` (or a join table). Mobile time entries sync through the same offline queue as operations.
+**Trade-offs:** A late correction (e.g., payroll adjustment after period close) requires an explicit
+reopen. This is intentional — accounting period integrity requires human acknowledgment.
 
-### Pattern 5: Mobile Offline Time Clock
+```typescript
+async function assertPeriodOpen(
+  organizationId: string,
+  referenceMonth: Date,
+): Promise<FiscalPeriod> {
+  const period = await prisma.fiscalPeriod.findFirst({
+    where: {
+      organizationId,
+      year: referenceMonth.getUTCFullYear(),
+      month: referenceMonth.getUTCMonth() + 1,
+    },
+  });
+  if (!period || period.status === 'CLOSED') {
+    throw new JournalEntryError('Período contábil fechado', 'PERIOD_CLOSED', 409);
+  }
+  return period;
+}
+```
 
-**What:** Clock-in/out with geolocation captured on mobile. Stored in SQLite via a new `time-entry-repository.ts` (mirrors `operation-repository.ts`). Synced via the existing offline queue with operation type `TIME_ENTRY`. Backend validates geo-fence against the employee's assigned farm.
+### Pattern 4: Pure Calculation Engine for Financial Statements
 
-**When to use:** All field worker time tracking.
+**What:** DRE, BP, and DFC calculation logic lives in separate files (`dre-calculator.service.ts`,
+`bp-calculator.service.ts`, `dfc-calculator.service.ts`) with no Prisma imports. Each receives
+account balance maps as input and returns structured statement output. This mirrors the
+`payroll-calculation.service.ts` pattern used in v1.3 (43 tests without DB).
 
-**Trade-offs:** Geo-fence validation happens server-side on sync; offline mode accepts any clock-in and flags for supervisor review if outside boundaries.
+**When to use:** All statement calculation tests. The orchestrator in `financial-statements.service.ts`
+loads balance data from DB and passes it to the calculators.
+
+**Trade-offs:** Requires a thin loader-orchestrator split. More files, but calculators are fast,
+deterministic, and independently testable.
+
+### Pattern 5: SPED ECD Builder — Record-by-Record String Concatenation
+
+**What:** SPED ECD Leiaute 9 (RFB 2023-12-21) is a pipe-delimited (`|`) plain-text file. Each
+line is a "registro" prefixed with its type code (e.g., `|I050|1.1.01|2|S|Bancos|...|`). The
+`sped-ecd-builder.ts` exports one function per registro type. The orchestrator concatenates all
+lines, adds `|0000|` header (Bloco 0) and terminates with `|9999|`. Encoding: UTF-8, no BOM.
+
+File blocks in order: `0` (identification) → `I` (COA + balances + entries) → `J` (statements) →
+`K` (demonstração mutação PL, optional) → `9` (totals/closing).
+
+**Key registers:**
+- `I010` — escrituração identifier (LALUR indicator, audit flag)
+- `I050` — plano de contas (one row per ChartOfAccount)
+- `I100` — centros de custo (optional)
+- `I150/I155` — monthly balance per account (saldo inicial, movimentos, saldo final)
+- `I200/I250` — each journal entry header / each entry line
+- `I350/I355` — resultado antes do fechamento (result accounts per date)
+- `J150/J210` — demonstrações contábeis (DRE, BP)
+
+**Trade-offs:** The RFB PVA validator is strict about field ordering, record counts, and line
+counter accuracy (`|9001|`, `|9900|`). Tests must assert line counts match register totals.
+
+```typescript
+// Example registro builder
+function buildI050(account: ChartOfAccount): string {
+  // |I050|COD_CTA|NIVEL|IND_CTA|DESC_CTA|COD_CTA_REF|
+  const ind = account.isAnalytic ? 'A' : 'S'; // A=analítica, S=sintética
+  return `|I050|${account.code}|${account.level}|${ind}|${account.name}||`;
+}
+```
+
+### Pattern 6: AccountingRule Table Replaces ACCOUNT_CODES Constant
+
+**What:** The hardcoded `ACCOUNT_CODES` object in `accounting-entries.types.ts` is replaced by
+rows in the `accounting_rules` table, seeded per organization on first COA setup. Each rule maps a
+`ruleCode` string to real `ChartOfAccount` IDs. The GL engine reads the rule at runtime rather than
+at compile time, making account remapping possible without a code deploy.
+
+**When to use:** Every automatic journal entry source (payroll, depreciation, stock, CP/CR).
+
+**Trade-offs:** Rules must be seeded for every new organization. A missing rule causes a logged
+error (not a crash) following the non-blocking GL hook pattern.
 
 ---
 
 ## Data Flow
 
-### Payroll Run Flow (Primary Flow)
+### Automatic Journal Entry Flow (Example: Payroll Close)
 
 ```
-HR Manager triggers run (POST /payroll-runs)
-        ↓
-Creates PayrollRun { status: PENDING }  → responds 202
-        ↓
-runPayrollBatch(runId) — async, Redis-locked
-        ↓
-For each active contract in competence period:
-    1. Aggregate approved TimeEntries → workedHours, overtimeHours, nightHours
-    2. Apply rubric tables: gross = baseSalary + overtime + nightPremium + alimentação + moradia
-    3. Compute INSS bracket → inssDeduction
-    4. Compute IRRF bracket (after INSS) → irrfDeduction
-    5. Compute FUNRURAL (patronal, on gross) → funruralAmount
-    6. Compute FGTS (8% of gross) → fgtsAmount
-    7. net = gross - inssDeduction - irrfDeduction - advanceDeductions
-    8. Create PayrollItem record
-        ↓
-prisma.$transaction:
-    9. Update PayrollRun { status: PROCESSING → COMPLETED }
-   10. tx.payable.create per employee (category: PAYROLL, dueDate: payment date)
-   11. tx.payable.create for INSS guide (category: TAXES)
-   12. tx.payable.create for FGTS guide (category: TAXES)
-   13. tx.payable.create for IRRF guide (category: TAXES)
-        ↓
-Trigger eSocial S-1200 event generation (async, non-blocking)
-        ↓
-Frontend polls GET /payroll-runs/:id → shows COMPLETED + summary
+PayrollRun.closeRun() [primary tx commits]
+    │
+    ▼  non-blocking try/catch
+createPayrollGlEntries(orgId, runId)
+    │
+    ├─ load AccountingRule WHERE ruleCode IN ['PAYROLL_SALARY', 'PAYROLL_CHARGES', ...]
+    │   (these rows point to real ChartOfAccount IDs, replacing ACCOUNT_CODES const)
+    │
+    ├─ assertPeriodOpen(orgId, referenceMonth)  → FiscalPeriod with status OPEN
+    │
+    ├─ compute totals from PayrollRunItem rows (same logic as existing createPayrollEntries)
+    │
+    └─ prisma.journalEntry.create({
+         entryOrigin: 'AUTO_PAYROLL',
+         sourceType: 'PAYROLL_RUN', sourceId: runId,
+         lines: [
+           { accountId: rule.debitAccountId,  nature: 'DEBIT',  amount: total },
+           { accountId: rule.creditAccountId, nature: 'CREDIT', amount: total },
+         ]
+       })
 ```
 
-### Time Entry Sync Flow (Mobile)
+### Financial Statement Calculation Flow
 
 ```
-Worker clocks in on mobile (offline or online)
-        ↓
-time-entry-repository.ts → SQLite local store
-        ↓ (on connectivity)
-offline-queue.ts → POST /time-entries/sync (batch)
-        ↓
-Backend: validate geo-fence, detect overlaps, flag anomalies
-        ↓
-TimeEntry records created with status PENDING_APPROVAL
-        ↓
-Supervisor reviews espelho de ponto → APPROVED
-        ↓
-PayrollEngine reads APPROVED entries for period
+GET /org/:orgId/financial-statements/dre?year=2026&month=3
+    │
+    ├─ Load JournalEntryLine aggregates by accountCode for period
+    │   (SUM debits - credits per account, or credits - debits per account nature)
+    │
+    ├─ Load ChartOfAccount tree (for hierarchy grouping)
+    │
+    └─ dreCalculator.calculate(balanceMap, coaTree)
+            │
+            └─ returns DreOutput: { receitas, custos, despesas, resultado, ... }
+               (pure function, no DB, testable in isolation)
 ```
 
-### eSocial Event Flow
+### SPED ECD Generation Flow
 
 ```
-Employee lifecycle event occurs (hire, payroll, termination, leave)
-        ↓
-Corresponding module calls createEsocialEvent(type, referenceId)
-        ↓
-EsocialEvent created { status: PENDING, xmlContent: null }
-        ↓
-esocial-retry.cron.ts (or immediate trigger):
-    generateXML(event) → xmlContent
-    transmitToGov(xmlContent) → receiptNumber | error
-        ↓
-EsocialEvent updated { status: TRANSMITTED | ERROR, receiptNumber, sentAt }
-        ↓
-Poll government API for processing result → PROCESSED | REJECTED
-        ↓
-Dashboard shows compliance status per event type
+POST /org/:orgId/sped-ecd/generate  { year: 2025 }
+    │
+    ├─ Assert all FiscalPeriods for year have status CLOSED
+    ├─ Load ChartOfAccounts for org (for I050 records)
+    ├─ Load CostCenters for org (for I100 records, optional)
+    ├─ Load monthly JournalEntryLine aggregates per account (for I150/I155)
+    ├─ Load all JournalEntry + lines for year (for I200/I250)
+    ├─ Load year-end result account balances (for I350/I355)
+    ├─ Load DRE + BP for J150/J210 (reuses financial-statements calculator)
+    │
+    ├─ spedEcdBuilder.build(allData) → UTF-8 string, pipe-delimited, ~10MB typical
+    │
+    └─ res.setHeader('Content-Disposition', 'attachment; filename="ECD_2025.txt"')
+       res.send(fileContent)
+       -- Note: for large orgs (>50K entries), consider streaming via res.write()
 ```
 
-### Vacation Provision Flow (mirrors maintenance-provision pattern)
+### Frontend State Flow (Journal Entries Page)
 
 ```
-payroll-provision.cron.ts → runs monthly (1st of month, 3am)
-        ↓
-For each org → for each active contract:
-    vacationProvision = grossSalary / 12 * (1 + 1/3)
-    thirteenthProvision = grossSalary / 12
-        ↓
-Create PayrollProvision records for accrual tracking
-        ↓
-Future: tx.payable.create when vacation is actually paid out
+JournalEntriesPage mounts
+    │
+    ├─ useJournalEntries({ referenceMonth, farmId, entryOrigin }) → fetch
+    │   (same shape as useAccountingEntries, extended with new filter options)
+    │
+    ├─ User opens "Novo Lançamento" → JournalEntryModal
+    │   ├─ COA account picker (searches ChartOfAccount, analytic only)
+    │   ├─ Partidas dobradas: debit line(s) + credit line(s), amounts must balance
+    │   └─ POST /journal-entries → refetch list
+    │
+    └─ User clicks entry row → StatementDrilldownModal (source document link)
 ```
 
 ---
 
 ## Integration Points
 
-### New Modules → Existing Modules
+### Existing Modules That Get Modified
 
-| Integration | Direction | Mechanism | Notes |
-|-------------|-----------|-----------|-------|
-| `payroll-runs` → `payables` | Payroll creates CP | `tx.payable.create` inside `$transaction` | CRITICAL: not via `payables.service` |
-| `payroll-runs` → `cost-centers` | Labor cost rateio | `validateCostCenterItems` from `@protos-farm/shared` | Same as all other CC allocations |
-| `time-entries` → `field-teams` (`TeamOperationEntry`) | Link hours to operations | Read-only FK: `timeEntryId` on `TeamOperationEntry` | Migration adds nullable FK |
-| `employees` → `producers` | Employee's CPF/fiscal link | `Employee.producerFarmLinkId` optional FK | Safristas tied to producer's rural fiscal entity |
-| `contracts` → `farms` | Employee assigned to farm | `Contract.farmId` FK | Drives FUNRURAL calculation and CC |
-| `terminations` → `payables` | TRCT creates CP | Same `tx.payable.create` pattern | Plus GRRF guide payable |
-| `asos` → notifications | Expiry alert | `shared/cron` polls, uses existing notifications module | Same pattern as stock-alerts |
-| `epi-deliveries` → products | EPI items from stock | `Product.productType = 'EPI'` filter | Reuses product catalog, no separate table |
+| Module | Current State | v1.4 Change | Hook Location |
+|--------|--------------|-------------|---------------|
+| `payroll-runs` | Calls `createPayrollEntries()` from `accounting-entries` stub | ADD new `createPayrollGlEntries()` call from `journal-entries` module. Keep existing call to not break `AccountingEntriesPage`. | After `closeRun()` — same non-blocking position |
+| `payables` | Calls `createReversalEntry()` on settlement | ADD new GL hook for CP settlement | After `settlePayable()` |
+| `depreciation` | No GL hook | ADD `createDepreciationGlEntries()` post-run | After `processRun()` batch commits |
+| `receivables` | No GL hook | ADD GL hook on receipt status change | After receipt confirmation |
+| `stock-entries` | No GL hook | ADD GL hook for inventory increase + cost | After `create()` |
+| `stock-outputs` | No GL hook | ADD GL hook for inventory decrease + COGS | After `create()` |
 
-### New Modules → External Systems
+### Existing Data — No Migration Required for v1.4
 
-| External System | Integration Pattern | Library | Notes |
-|----------------|---------------------|---------|-------|
-| eSocial REST API (gov.br) | HTTP POST XML, poll for result | `node-fetch` or `https` built-in | Requires PKCS#12 cert for production |
-| eSocial XML Schema S-1.3 | XML generation | `@xmldom/xmldom` (already installed) | Target NT 05/2025 layout |
-| Payslip PDF | PDF generation | `pdfkit` (already installed) | Mirror `pesticide-prescriptions` PDF pattern |
-| Payslip email | Email delivery | `nodemailer` (already installed) | Mirror `notifications` pattern |
-| Bulk employee import | XLSX/CSV parse | `exceljs` (already installed) | Mirror `animals` bulk import pattern |
+The existing `accounting_entries` table (6 entry types, payroll-only) stays unchanged and
+continues to serve `AccountingEntriesPage`. New GL data writes to `journal_entries` only.
 
-### Modifications to Existing Models
+- `AccountingEntriesPage` keeps working with no changes.
+- For a future SPED ECD covering a year that predates v1.4, a one-off migration script could
+  backfill payroll-only `AccountingEntry` rows into `JournalEntry`. That is out of scope for v1.4.
 
-| Model | Change | Rationale |
-|-------|--------|-----------|
-| `PayableCategory` enum | Already has `PAYROLL` + `TAXES` — no change needed | Payroll payables use existing categories |
-| `TeamOperationEntry` | Add nullable `timeEntryId String?` FK | Links official time record to team operation entry |
-| `Organization` | Add HR-related relation collections | Standard pattern for all new models |
-| `Farm` | Add `employees` relation | Each farm has contracted employees |
-| `User` | Add nullable `employeeId String?` FK | Maps system users to employee records (optional) |
+### Frontend Sidebar Extension
+
+The existing `CONTABILIDADE` group in `Sidebar.tsx` (lines 294–298, currently 1 item) expands to:
+
+```
+CONTABILIDADE
+  Dashboard Contábil       /accounting-dashboard
+  Plano de Contas          /chart-of-accounts
+  Períodos Fiscais         /fiscal-periods
+  Lançamentos              /journal-entries
+  Razão Contábil           /ledger
+  Balancete                /balancete
+  Demonstrações            /financial-statements    (tabs: DRE / Balanço / DFC)
+  Vinculação DRE↔BP↔DFC    /statement-linkage
+  SPED ECD                 /sped-ecd
+```
+
+The existing `/accounting-entries` route is kept as-is (backward compatibility). It can be linked
+from the `JournalEntriesPage` as "ver lançamentos legados (folha)".
 
 ---
 
-## Build Order (Dependency-Respecting)
+## Build Order
 
-Dependencies flow top-down. Each group can only start after the previous group is complete.
+Modules have strict data dependencies. Build in this order:
 
-### Group 1 — Foundation (no dependencies on new modules)
-- `job-positions` — standalone master data (cargos, faixas salariais)
-- `rubrics` — standalone configuration (INSS/IRRF/FUNRURAL tables)
-- `employees` — core entity; depends only on existing `farms`, `producers`
+**Phase 1 — Foundation (no deps on other v1.4 work)**
+1. `chart-of-accounts` — COA CRUD + rural model seed (CPC 29 agro accounts) + frontend page
+2. `fiscal-periods` — period management: open/close/reopen + frontend page
+3. `accounting-rules` — rule mapping table that replaces `ACCOUNT_CODES` const
 
-### Group 2 — Contracts and Schedules (depends on Group 1)
-- `contracts` — depends on `employees`, `job-positions`, `farms`
-- `time-entries` (backend model + sync endpoint) — depends on `employees`, `contracts`
+**Phase 2 — GL Engine (depends on Phase 1)**
+4. `journal-entries` — write engine: period-lock guard + manual entry + debit=credit validation + reversal
+5. `journal-entries` frontend page (replaces AccountingEntriesPage visually but coexists)
 
-### Group 3 — Time Approval and Mobile (depends on Group 2)
-- `time-approval` — depends on `time-entries`, reuses `approval-rules` infrastructure
-- Mobile `time-clock` screen — depends on `time-entries` sync endpoint
+**Phase 3 — Expand Auto-Entry Hooks (depends on Phase 2 engine being live)**
+6. Wire payroll-runs to journal-entries (GL hook alongside existing accounting-entries hook)
+7. Wire payables settlement to journal-entries
+8. Wire depreciation run to journal-entries
+9. Wire receivables receipt to journal-entries
+10. Wire stock-entries / stock-outputs to journal-entries
 
-### Group 4 — Payroll Engine (depends on Groups 1-3)
-- `payroll-runs` — depends on all above + `payables`, `cost-centers`
-- `payroll-provisions` cron — depends on `payroll-runs` models
+**Phase 4 — Read Side / Ledger (depends on Phase 3 data existing)**
+11. `ledger` — razão contábil endpoint: saldo progressivo per account + livro diário
+12. `ledger` frontend — LedgerPage with account picker and date range drill-down
+13. `balancete` — balancete de verificação endpoint + BalancetePage
 
-### Group 5 — Lifecycle Events (depends on Groups 1-4)
-- `vacations` — depends on `contracts`, `payroll-runs`
-- `leaves` — depends on `employees`, `contracts`
-- `terminations` — depends on `employees`, `contracts`, `payroll-runs`, `payables`
-- Salary advance (`payroll-runs` sub-feature) — depends on `payroll-runs`
+**Phase 5 — Period Closing (depends on ledger for checklist validation)**
+14. `fiscal-periods` — closing checklist endpoint (validates: balancete balanced, all hooks fired)
+15. Frontend: PeriodCloseModal with checklist steps and reopen confirmation
 
-### Group 6 — Compliance and Safety (depends on Group 1, mostly standalone)
-- `epi-deliveries` — depends on `employees`, `products` (EPI type)
-- `trainings` — depends on `employees`
-- `asos` — depends on `employees`
+**Phase 6 — Financial Statements (depends on COA + journal data + periods)**
+16. `dre-calculator.service.ts` + DRE endpoint (pure engine first, verified by tests)
+17. `bp-calculator.service.ts` + BP endpoint
+18. `dfc-calculator.service.ts` + DFC endpoint (most complex — requires DFC classification per account)
+19. Cross-validation endpoint: DRE net income == BP equity change (DRE↔BP↔DFC linkage)
+20. `financial-statements-pdf.service.ts` — pdfkit multi-statement PDF (reuses pdfkit pattern)
 
-### Group 7 — eSocial (depends on all above)
-- `esocial-events` XML generation + transmission — depends on events from Groups 1-6
-- `esocial-retry.cron.ts` — depends on `esocial-events`
+**Phase 7 — SPED ECD (depends on all journal data + COA + closed periods)**
+21. `sped-ecd-builder.ts` — record builders with unit tests against known-good samples
+22. `sped-ecd.service.ts` + route + SpedEcdPage frontend
 
-### Group 8 — Reports and Dashboard (depends on all above)
-- `hr-dashboard` — aggregates from all HR modules
-- RAIS/DIRF export endpoints — depends on `payroll-runs`, `employees`
-- Informe de rendimentos PDF — depends on `payroll-runs`
+**Phase 8 — Dashboard and Executive UI**
+23. `accounting-dashboard` — executive KPIs (indicadores: liquidez, endividamento, PL/ha)
+24. Frontend: AccountingDashboardPage, StatementLinkagePage (DRE↔BP↔DFC panel)
+
+---
+
+## Anti-Patterns
+
+### Anti-Pattern 1: Writing GL Entries Inside the Source Transaction
+
+**What people do:** Wrap both the source operation (payroll close) and the GL entry creation in a
+single `prisma.$transaction()`.
+
+**Why it's wrong:** A GL failure (period closed, COA account not found, rule missing) rolls back
+the entire payroll close. The payroll is the source of truth — its state must not depend on GL
+module health.
+
+**Do this instead:** Follow the existing `payroll-runs.service.ts` line 1059 pattern: commit the
+primary transaction first, then call the GL hook in `try/catch` outside the transaction.
+
+### Anti-Pattern 2: Allowing Synthetic (Non-Analytic) Accounts to Receive Entries
+
+**What people do:** Accept any account code in a `JournalEntryLine` without checking `isAnalytic`.
+
+**Why it's wrong:** Synthetic accounts aggregate children. Posting to them bypasses the COA
+hierarchy and corrupts balancete calculations silently.
+
+**Do this instead:** `assertAnalytic(account)` check before any `JournalEntryLine` write. Return
+HTTP 400: "Conta X é sintética e não aceita lançamentos diretos."
+
+### Anti-Pattern 3: Carrying the Hardcoded ACCOUNT_CODES Pattern Forward
+
+**What people do:** Add new entries to the `ACCOUNT_CODES` constant in `accounting-entries.types.ts`
+for depreciation, stock, or CP hooks.
+
+**Why it's wrong:** That constant was an explicit stub pending v1.4. Extending it adds more
+hardcoded strings disconnected from any COA table, making them impossible to remap without a
+code deploy and invisible to period statements.
+
+**Do this instead:** New hooks use `AccountingRule` rows loaded at runtime from the DB. Seed the
+rules on COA setup.
+
+### Anti-Pattern 4: Building Financial Statements from the Old accounting_entries Table
+
+**What people do:** Query `accounting_entries` to build DRE totals.
+
+**Why it's wrong:** `accounting_entries` only contains 6 payroll entry types. A DRE needs all
+revenue/expense/cost entries — depreciation, COGS, CP interest, bank charges, rural credit interest.
+
+**Do this instead:** All statement calculations read from `journal_entry_lines` joined to
+`chart_of_accounts.accountType`. `accounting_entries` is a pre-v1.4 artifact.
+
+### Anti-Pattern 5: Using xmlbuilder2 for SPED ECD Generation
+
+**What people do:** Use `xmlbuilder2` (already in use for eSocial) to generate the ECD file.
+
+**Why it's wrong:** SPED ECD Leiaute 9 is NOT XML. It is pipe-delimited plain text
+(`|I050|1.1.01|2|S|Bancos||`). Using an XML builder would require stripping all XML markup.
+
+**Do this instead:** Plain string concatenation, one function per registro type, UTF-8 output
+(no BOM). The pattern mirrors the CNAB builder (`CnabAdapter`) already in the codebase.
+
+### Anti-Pattern 6: DFC Using Only Cash Account Movements
+
+**What people do:** Build the DFC by filtering journal entries on the bank account GL code only.
+
+**Why it's wrong:** DFC (both direct and indirect methods) requires classifying entries into
+operating / investing / financing sections — a classification that depends on the originating
+account type and the source operation type, not just whether money moved through a bank account.
+
+**Do this instead:** Add a `dfcCategory` field to `ChartOfAccount` (`OPERACIONAL | INVESTIMENTO |
+FINANCIAMENTO | null`). The DFC calculator aggregates by this category, not by account group alone.
 
 ---
 
@@ -487,71 +668,35 @@ Dependencies flow top-down. Each group can only start after the previous group i
 
 | Scale | Architecture Adjustments |
 |-------|--------------------------|
-| 0–200 employees | node-cron batch is sufficient — same as depreciation. No BullMQ needed. |
-| 200–2000 employees | Payroll batch may take 10–60s; acceptable. Add progress streaming via SSE if UX requires it. |
-| 2000+ employees | Partition batch by farm (already possible with Redis lock per runId). BullMQ migration straightforward since Redis already present. |
+| Single farm, < 500 entries/month | Current architecture sufficient. No special indexing needed beyond `@@index([organizationId, referenceMonth])`. |
+| Multi-farm org, 5K–50K entries/month | Statement queries aggregate all `journal_entry_lines` per period. Add a `account_monthly_balances` materialized snapshot table updated on each JournalEntry commit. Statements read from snapshot. |
+| Large agribusiness, 500K+ entries/year | SPED ECD generation becomes a background job with polling endpoint (mirrors eSocial async pattern). Monthly balance snapshots mandatory. |
 
-### Scaling Priorities
+### First Bottleneck
 
-1. **First bottleneck — payroll calculation time:** The engine is CPU-bound (tax bracket computation per employee). Solution: run in background (already the pattern), expose progress endpoint.
-2. **Second bottleneck — eSocial transmission:** Gov API is slow and rate-limited. Solution: already async via cron. Add exponential backoff in `esocial-retry.cron.ts`.
-
----
-
-## Anti-Patterns
-
-### Anti-Pattern 1: Calling payables.service Inside Payroll Transaction
-
-**What people do:** `await createPayable(ctx, payableInput)` inside a `prisma.$transaction()` block when finalizing payroll.
-
-**Why it's wrong:** `createPayable` calls `withRlsContext` which opens a nested transaction. In Prisma 7 with PostgreSQL, nested `$transaction` calls with different clients deadlock.
-
-**Do this instead:** Use `tx.payable.create(...)` directly inside the transaction, as established by `asset-acquisitions.service.ts` (the comment in that file is canonical).
-
-### Anti-Pattern 2: Separate PayrollItem Routes
-
-**What people do:** Create a full CRUD module for `PayrollItem` with its own routes.
-
-**Why it's wrong:** Payroll items are owned by a payroll run. They are computed, not manually created. Exposing create/update routes invites data integrity issues.
-
-**Do this instead:** `PayrollItem` has no create/update routes. Access is via `GET /payroll-runs/:id/items`. The payroll engine writes items atomically during the run.
-
-### Anti-Pattern 3: Storing Calculated Tax Values as Business Logic in the DB
-
-**What people do:** Put INSS/IRRF bracket tables as hardcoded values in the schema (enum or constant column).
-
-**Why it's wrong:** Government updates brackets annually (sometimes mid-year). Hardcoded schema values require a migration for every table update.
-
-**Do this instead:** `Rubric` model stores configurable tables with effective dates. The payroll engine fetches the rubric valid for the competence period. Seed data provides 2025 defaults; org can override.
-
-### Anti-Pattern 4: One eSocial Module Doing Everything
-
-**What people do:** Create one monolithic `esocial.service.ts` that handles admission, payroll, termination, leaves, and all other events.
-
-**Why it's wrong:** Each event type has different data requirements, validation rules, and triggers. A single module becomes impossible to test and maintain.
-
-**Do this instead:** Each module triggers its own eSocial event via a shared `createEsocialEvent(type, referenceId, orgId)` helper. The `esocial-events` module handles XML generation and transmission generically using the reference to load the required data.
-
-### Anti-Pattern 5: Mixing Employee (RH) with User (Auth)
-
-**What people do:** Add HR fields (CPF, PIS, bank account for salary) directly to the existing `User` model.
-
-**Why it's wrong:** Many employees are not system users (field workers without smartphones). Many users are not employees (consultants, admins). Coupling them creates nullability explosion and auth complexity.
-
-**Do this instead:** `Employee` is a separate entity. An optional `employeeId` FK on `User` links them when the person has both a system account and an employment contract. `Contract.createdBy` references `User.id`; `Contract.employeeId` references `Employee.id`.
+Statement calculation reads all `journal_entry_lines` for a period grouped by `accountCode`. With a
+full year of multi-module data (payroll + depreciation + stock + CP/CR), this can be 50K–500K rows
+per query. The mitigation is a `account_monthly_balances` table (opening balance, total debits,
+total credits, closing balance per account per month) updated on every JournalEntry commit. Defer
+until first production slowness is observed — premature caching is the primary source of statement
+reconciliation bugs.
 
 ---
 
 ## Sources
 
-- Direct codebase analysis: `apps/backend/prisma/schema.prisma` (7400+ lines), `modules/asset-acquisitions/`, `modules/depreciation/`, `modules/field-teams/`, `modules/payables/`, `modules/maintenance-provisions/`
-- Existing batch infrastructure: `shared/cron/depreciation.cron.ts` — DepreciationRun state machine pattern
-- Integration contract: `asset-acquisitions.service.ts` comment on `tx.payable.create` deadlock avoidance
-- eSocial layout: [Brazil eSocial NT 05/2025 production](https://mercans.com/resources/statutory-alerts/brazil-esocial-layout-update-nt-05-2025-moves-to-production/) — S-1.3 schema
-- eSocial events S-1200/S-2200: [@xmldom/xmldom](https://www.npmjs.com/package/@xmldom/xmldom) — already in backend package.json
-- Brazilian rural labor: Lei 5.889/73, NR-31, FUNRURAL Lei 10.256/2001
+- SPED ECD Leiaute 9 (official): [Manual de Orientação da ECD Leiaute 9 — RFB 2023-12-21](http://sped.rfb.gov.br/estatico/2D/9C01A0E619B48BAB27486D63FF9E4E750025D0/Manual_de_Orienta%C3%A7%C3%A3o_da_ECD_Leiaute9_2023_12_21.pdf)
+- SPED ECD Bloco I structure: [Bloco I da ECD: um guia completo (e-auditoria.com.br)](https://www.e-auditoria.com.br/blog/bloco-i-ecd-um-guia-completo/)
+- SPED ECD Registro I200/I250: [Registro I200 da ECD — Lançamento contábil (vriconsulting.com.br)](https://www.vriconsulting.com.br/guias/guiasIndex.php?idGuia=678)
+- Plano de contas rural / CPC 29: [Contabilidade Rural e Obrigações Acessórias — CRCMS 2024-08](https://crcms.org.br/wp-content/uploads/2024/08/Contabilidade-Rural-e-Obrigac%CC%A7o%CC%83es-Acesso%CC%81rias-21_08_2024-Finalizada.pdf)
+- CPC 29 Ativos Biológicos: [O que são Ativos Biológicos? CPC 29 (grupocpcon.com)](https://www.grupocpcon.com/o-que-sao-ativos-biologicos-cpc-29-contabilidade/)
+- Existing stub: `apps/backend/src/modules/accounting-entries/accounting-entries.types.ts` (ACCOUNT_CODES constant, lines 26–63)
+- Existing stub: `apps/backend/src/modules/accounting-entries/accounting-entries.service.ts` (createPayrollEntries pattern, line 52)
+- GL hook call site: `apps/backend/src/modules/payroll-runs/payroll-runs.service.ts` (line 1059)
+- Reversal hook call site: `apps/backend/src/modules/payables/payables.service.ts` (line 4)
+- Prisma schema: `apps/backend/prisma/schema.prisma` lines 8742–8857 (AccountingEntry model + enums)
+- Sidebar structure: `apps/frontend/src/components/layout/Sidebar.tsx` lines 294–298 (CONTABILIDADE group)
 
 ---
-
-*Architecture research for: HR and Rural Payroll module (v1.3), Protos Farm monolith*
-*Researched: 2026-03-23*
+*Architecture research for: v1.4 Contabilidade e Demonstrações Financeiras — Protos Farm*
+*Researched: 2026-03-26*

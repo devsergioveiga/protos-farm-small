@@ -1,19 +1,19 @@
 # Project Research Summary
 
-**Project:** Protos Farm — v1.3 RH e Folha de Pagamento Rural
-**Domain:** HR and Rural Payroll module integrated into existing agricultural ERP monolith
-**Researched:** 2026-03-23
-**Confidence:** HIGH overall — research is grounded in direct codebase analysis, official Brazilian labor law (Lei 5.889/73, CLT, eSocial S-1.3), and verified npm package metadata.
+**Project:** Protos Farm — v1.4 Contabilidade e Demonstrações Financeiras
+**Domain:** Rural farm accounting, double-entry GL, Brazilian SPED ECD compliance
+**Researched:** 2026-03-26 / 2026-03-27
+**Confidence:** HIGH (stack, architecture, pitfalls based on direct codebase inspection and official RFB sources); MEDIUM (SPED ECD edge cases, CPC 29 biological asset treatment)
 
 ---
 
 ## Executive Summary
 
-This milestone adds a complete HR and Rural Payroll module to an existing, well-structured agricultural ERP. The system already has financial (payables, cost centers), procurement (stock, products), asset (depreciation, maintenance), and field operations modules live. The HR module is the missing link between "who did the work" and "what it cost." Building on top of v1.0–v1.2 means the architectural contracts, integration patterns, and infrastructure are already established — new work must extend them, not re-create them.
+This milestone adds a full double-entry general ledger and financial statement engine to a system that already has four complete milestones of operational data (payables/receivables, assets/depreciation, stock, HR/payroll). The accounting module does not build new financial infrastructure — it aggregates events from every existing module into journal entries, then produces DRE, Balanço Patrimonial, and DFC alongside a SPED ECD export. The most important design constraint is that the existing `accounting-entries` module is a flat-column stub (used only by payroll integration) and **must be superseded** by a proper two-table `journal_entries` + `journal_entry_lines` schema before any other work can proceed.
 
-The recommended approach is additive and dependency-respecting: build the employee and contract foundation first, then the payroll calculation engine (which is custom — no npm library exists for Brazilian payroll), then time tracking and approval, and finally the payroll-to-payables integration and eSocial obligations. The existing BullMQ, pdfkit, nodemailer, exceljs, and @xmldom/xmldom stack covers most needs. Only four new dependencies are required: `xmlbuilder2` for eSocial XML generation, `xml-crypto` for digital signing, `pdfkit-table` for payslip table layout, and `date-holidays` for Brazilian holiday calendars.
+The recommended approach is a strictly sequential foundation-first build: chart of accounts and fiscal period management first, then journal entry engine (manual + automatic), then closing workflow, then financial statements, then SPED ECD last. This order is forced by hard dependencies — nothing else produces meaningful output without a valid chart of accounts and open periods. Zero new npm packages are required; the entire milestone is implementable with existing dependencies (pdfkit, decimal.js, exceljs, BullMQ, date-fns, recharts). The custom `SpedEcdWriter` pattern (mirroring the existing `CnabAdapter`) is the right approach for ECD generation since no production-ready Node.js library exists.
 
-The dominant risks are correctness risks, not technical risks. Brazilian payroll law has several non-obvious rules that differ from urban CLT defaults: progressive INSS (not flat-rate), IRRF calculated after INSS deduction, rural night shift at 21h–5h with 25% premium (not 22h–5h with 20%), and FUNRURAL as a farm-level annual election with different calculation bases. eSocial adds compliance risk — events must be transmitted in strict ordering (table events → cadastral events → periodic events) and the XML must be digitally signed with an ICP-Brasil certificate. The atomicity of payroll runs and the locking of time entries before payroll approval are the critical engineering design decisions to get right early.
+The key risks are: (1) the flat-row `AccountingEntry` model being extended instead of replaced, which will permanently block trial balance and cost-center DRE; (2) non-idempotent auto-generation hooks creating duplicate entries on retry; (3) rounding on rateio splits causing trial balance imbalances that the PVA validator will reject; and (4) ignoring the historical data continuity problem — the system needs an opening balance wizard before any financial statement is meaningful. All four risks are preventable with patterns already established in the codebase (StockBalance, CnabAdapter, installment-generator).
 
 ---
 
@@ -21,188 +21,172 @@ The dominant risks are correctness risks, not technical risks. Brazilian payroll
 
 ### Recommended Stack
 
-The existing monorepo stack handles almost everything. No new framework, ORM, or infrastructure is needed. The four net-new backend packages are surgical additions. See `STACK.md` for full detail.
+The milestone requires zero new npm packages. Every capability needed already exists in the installed dependency set. `pdfkit ^0.17.2` covers DRE/BP/DFC PDF generation following established patterns from payslips and pesticide prescriptions. `decimal.js ^10.6.0` via the existing `Money()` factory handles all monetary arithmetic with correct `ROUND_HALF_UP` for BRL. `exceljs ^4.4.0` covers trial balance and ledger exports. BullMQ (via ioredis) handles async SPED ECD generation for large files. `date-fns ^4.1.0` handles fiscal period and ECD deadline calculations.
 
-**Core technologies (new additions only):**
-- `xmlbuilder2@^4.0.3`: eSocial XML event generation — fluent API handles namespaces and character encoding; replaces verbose @xmldom/xmldom API for generation (keep @xmldom for existing uses)
-- `xml-crypto@^6.1.2`: ICP-Brasil XMLDSig signing — 1.98M weekly downloads, RSA-SHA256 and X509 embedding, protects against signature wrapping attacks
-- `pdfkit-table@^0.1.99`: tabular layout for payslips and TRCT — wraps existing pdfkit, data-driven row/column API
-- `date-holidays@^3.26.11`: Brazilian national + 26 state holiday calendars — actively maintained (published 8 days ago), required for DSR and overtime classification
-- `expo-task-manager@~14.0.9` (mobile, conditional): background geolocation for continuous shift tracking — only needed if background tracking is required; foreground-only punch-in/out works with existing `expo-location`
+The one architectural decision with no off-the-shelf solution is SPED ECD file generation. No production-ready Node.js library exists (the `sped-br` GitHub org is Python-only; `sped-checker` npm package validates only, does not generate). The correct approach is a custom `SpedEcdWriter` class in `src/shared/sped/` using the same record-by-record string accumulation pattern as the existing `CnabAdapter`.
 
-**Custom-built (no library exists):**
-- `PayrollEngine` in `packages/shared` — Brazilian tax bracket calculations (INSS progressive, IRRF with dependent deductions, FUNRURAL rural-specific rates)
-- eSocial XML builders — one builder per event type (S-2200, S-1200, S-2299, etc.) using `xmlbuilder2`
+**Core technologies:**
+- `pdfkit` (existing): PDF generation for DRE, BP, DFC, closing reports — reuse established page-break pattern
+- `decimal.js` via `Money()` (existing): All GL amounts, rateio splits, account balances — mandatory for BRL precision
+- `exceljs` (existing): Trial balance and ledger CSV/XLSX export
+- Custom `SpedEcdWriter`: SPED ECD Leiaute 9/12 pipe-delimited file — no Node.js library available; mirrors CnabAdapter
+- `AccountBalance` incremental cache table: Balance computation (same pattern as `StockBalance`) — no materialized views
+- PostgreSQL `WITH RECURSIVE` via `prisma.$queryRaw`: Chart-of-accounts tree traversal — Prisma does not support recursive CTEs natively
+- BullMQ (existing): Async SPED ECD generation for large files, same pattern as eSocial batch export
 
 ### Expected Features
 
-See `FEATURES.md` for full feature tables with legal basis citations.
+All three research files converge on the same feature dependency chain: Chart of Accounts is the gate for everything else.
 
-**Must have (table stakes) — cannot legally employ workers without these:**
-- Employee profile with CPF, PIS/PASEP, CTPS, CBO code — required for eSocial S-2200 and IRRF/FGTS calculations
-- Contract types: CLT permanent, safra, intermitente, experiência, aprendiz — each has different termination rules and eSocial event variants
-- Work schedule assignment — 44h/week rural standard, night shift 21h–5h window, multiple escalas
-- Salary history (not just current salary) — required for correct vacation/13th provision recalculation after raises
-- Mobile time clock with GPS geofence — field workers cannot use web; reuses PostGIS farm boundary for validation
-- INSS progressive table, IRRF with dependent deductions, FGTS 8%, FUNRURAL — all required for legal payroll
-- Payslip (holerite) generation and delivery — employee legal right; digital PDF via mobile app
-- Vacation accrual, scheduling, and payment calculation — 30-day rural, fractionable to 3 periods
-- Leave of absence management (sick leave, CAT, maternity) — CAT is also an eSocial event (S-2210)
-- Termination calculation (TRCT) with proportional aviso prévio extension — Lei 12.506/2011: 30 + 3 days/year, max 90
-- eSocial XML event generation and transmission — mandatory for rural employers since 2021, version S-1.3
-- Payroll-to-payables integration — creates AP entries for net salaries and FGTS/INSS/IRRF/FUNRURAL guides
+**Must have — v1.4 MVP (P1):**
+- Hierarchical chart of accounts (5 levels) with pre-loaded rural template (CFC/Embrapa model) and SPED referential account mapping
+- Accounting periods with open/closed/reopened status and period-lock enforcement on every GL write
+- Automatic journal entry generation for the four highest-volume event types: AP settlement, AR receipt, payroll run close, depreciation run
+- Manual journal entries with `assertBalanced()` guard (debits must equal credits) and entry reversal (estorno) with full audit trail
+- Opening balance wizard pre-populating from existing module data (bank balances, outstanding CP/CR, asset book values, payroll provisions)
+- General ledger (Razão) per account with running balance (saldo progressivo), exportable to CSV/PDF
+- Trial balance (Balancete de Verificação) in three-column format
+- Monthly closing checklist with automated status queries against existing modules
+- DRE with rural layout, vertical/horizontal analysis, comparison columns
+- Balanço Patrimonial with rural asset classes (CPC 29 biological assets, terras rurais, crédito rural) and financial indicators
+- DFC direct method leveraging existing cash flow classification from v1.0
 
-**Should have (competitive differentiators):**
-- Activity-linked time entries from field operations — bridges "who worked" to "what it cost per talhão/crop" (unique to this system)
-- Safra contract lifecycle bulk termination wizard — 50+ safristas auto-terminated at harvest end with full TRCT
-- Mobile payslip delivery — rural workers rarely have email; push notification + in-app PDF
-- eSocial error triage workflow — maps government rejection codes to human-readable fix actions
-- FUNRURAL regime comparison calculator — annual election (receita bruta vs folha) with cost comparison
-- Vacation planning calendar with crop cycle overlay — prevents conflicts with harvest peaks
-- Labor cost per hectare reporting — payroll cost center + PostGIS plot area = R$/ha KPI
+**Should have — v1.4 completion (P2):**
+- DFC indirect method (requires BP working first — CPC 03 R2)
+- Per-culture / per-farm DRE drill-down via cost center attribution — the key rural differentiator
+- Cross-statement validation panel (DRE net income = BP retained earnings change; DFC = BP cash change; BP assets = liabilities + PL)
+- SPED ECD export with pre-submission validation against PVA rules
+- PDF integrated financial report with explanatory notes (required for PRONAF/Funcafé credit applications)
+- CPC 29 biological asset fair value adjustment with dedicated DRE section (non-cash item, reversed in DFC indirect)
+- Executive accounting dashboard
 
-**Defer to v2+:**
-- Biometric hardware integration — GPS geofencing achieves same anti-fraud goal without infrastructure dependency
-- Real-time payroll calculation during time entry — creates false expectations; label estimates clearly
-- Full accounting chart of accounts — deferred to v1.4 contabilidade milestone
-- WhatsApp payslip delivery — Meta approval complexity, out of scope for v1.3
-- Production-based pay (piece-rate) — high litigation risk, deferred to future epic
-- Homologação sindical workflow — repealed by 2017 Labor Reform for most scenarios
+**Defer to v1.5+:**
+- Full LALUR / ECF (tax compliance scope, specialist complexity, separate product category)
+- Budget planning module (separate product category)
+- NF-e emission (requires SEFAZ homologation and digital certificate management)
 
 ### Architecture Approach
 
-The architecture extends the existing monolith with 14 new collocated modules under `apps/backend/src/modules/`, following the exact same controller+service+routes+types pattern used by all v1.0–v1.2 modules. Two new cron jobs are added to `shared/cron/`. The build order is strictly dependency-respecting: foundation (employees, rubrics, job-positions) → contracts and time entries → time approval + mobile clock → payroll engine → lifecycle events (vacations, leaves, terminations) → compliance/safety (EPI, trainings, ASOs) → eSocial → dashboard and reports. See `ARCHITECTURE.md` for the complete module map and data flow diagrams.
+The architecture is built around 8 new backend modules following the established colocation pattern, plus GL hooks added to 6 existing modules (payroll, depreciation, payables, receivables, stock-entries, stock-outputs). The existing `accounting-entries` module is frozen read-only — it must not be extended. The new module boundary follows a clear write-side (`journal-entries`) / read-side (`ledger`) split with pure calculation engines for DRE/BP/DFC that have no Prisma imports, mirroring the `payroll-calculation.service.ts` pattern that produced 43 tests without a database.
 
 **Major components:**
-1. `modules/employees/` + `modules/contracts/` + `modules/job-positions/` — foundation; everything else depends on this
-2. `modules/time-entries/` + `modules/time-approval/` + mobile `time-clock.tsx` — time tracking pipeline; feeds payroll engine
-3. `modules/rubrics/` + `modules/payroll-runs/` (with `payroll-engine.service.ts`) — core value delivery; mirrors `DepreciationRun` state machine
-4. `modules/vacations/` + `modules/leaves/` + `modules/terminations/` + `modules/payroll-provisions/` — lifecycle events
-5. `modules/epi-deliveries/` + `modules/trainings/` + `modules/asos/` — NR-31 compliance safety layer
-6. `modules/esocial-events/` (with `esocial-xml.service.ts` and `esocial-transmission.service.ts`) — government obligations
-7. `modules/hr-dashboard/` — KPI aggregation
+1. `modules/chart-of-accounts/` — Hierarchical COA CRUD, rural template seed, SPED referential mapping; foundation for all GL writes
+2. `modules/fiscal-periods/` — Period open/close/reopen with closing checklist; `assertPeriodOpen()` wired on every GL write
+3. `modules/journal-entries/` — Manual and automatic GL write engine; supersedes `accounting-entries` stub; enforces `assertBalanced()` and period lock
+4. `modules/accounting-rules/` — Mapping table: `sourceType` → debit/credit account IDs; replaces hardcoded `ACCOUNT_CODES` constants
+5. `modules/ledger/` — Read-side: Razão, Balancete, Livro Diário; no writes
+6. `modules/financial-statements/` — DRE/BP/DFC orchestrator with pure calculator services (`dre-calculator.service.ts`, `bp-calculator.service.ts`, `dfc-calculator.service.ts`); pdfkit PDF export
+7. `modules/sped-ecd/` — `SpedEcdWriter` + block builders for Blocos 0, I, J, K (optional), 9; async via BullMQ; pre-submission validation
+8. `modules/accounting-dashboard/` — Executive KPI aggregation endpoint (presentation only, no new data sources)
 
-**Key patterns to follow:**
-- `PayrollRun` state machine: `PENDING → PROCESSING → COMPLETED | ERROR` (mirrors `DepreciationRun`)
-- Payroll to Payables: always `tx.payable.create(...)` inside `prisma.$transaction`, never `payablesService.createPayable()` — established deadlock avoidance pattern from `asset-acquisitions.service.ts`
-- eSocial events: each module triggers its own event via shared `createEsocialEvent()` helper; `esocial-events` module handles XML and transmission generically
-- BullMQ queues: `payroll-processing`, `payslip-generation`, `esocial-events` — add to existing infrastructure
+**Key data model decisions:**
+- Two-table GL: `JournalEntry` (header) + `JournalEntryLine` (account, side, amount, cost center) — never flat columns
+- `AccountBalance` incremental cache table updated in the same Prisma transaction as journal entry posting (mirrors `StockBalance`)
+- `PendingJournalPosting` queue table with `UNIQUE(sourceType, sourceId)` constraint for idempotent auto-generation
+- `ChartOfAccount.isFairValueAdjustment: Boolean` flag required for CPC 29 DFC indirect reversal logic
+- `FiscalYear` model with `startDate`/`endDate` (not just `year: Int`) to support safra-aligned fiscal years
 
 ### Critical Pitfalls
 
-See `PITFALLS.md` for full prevention detail, warning signs, and phase assignments.
+All 4 research files independently identified the same failure modes. Consensus is strong on all five.
 
-1. **INSS calculated as flat rate instead of progressive** — over-deducts R$100–200/employee/month; implement bracket accumulation with `Decimal.js` and unit-test against official Receita Federal tables for 2025 and 2026
-2. **IRRF calculated before INSS deduction or without dependent deductions** — inflates IRRF base; enforce strict calculation order (gross → INSS → dependents deduction → IRRF base → IRRF); add 2026 partial exemption for R$5,000–R$7,350 band
-3. **Payroll run not atomic** — partial failure leaves inconsistent state; entire employee batch must be inside `prisma.$transaction()`; idempotency key = `runId + employeeId`; payables only created on APPROVE, not during calculation
-4. **eSocial events sent out of order** — S-1010 rubrics table must exist before S-2200 admission; S-2200 before S-1200 payroll; enforce via BullMQ job dependencies with separate named queues
-5. **Rural labor rules defaulted to urban CLT** — night shift 21h–5h at 25% (not 22h–5h at 20%); housing/food deductions against regional minimum wage (not salary); safra termination has no 40% FGTS penalty; FUNRURAL is a farm-level annual election
-6. **Payroll to Payables creates duplicates on re-processing** — add `originType` + `originId` unique constraint to `Payable` model in Phase 1 schema; use upsert not create
-7. **Time entries editable after payroll calculation** — add `lockedByPayrollRunId` to attendance records; mobile offline sync must check lock before applying edits
-8. **Vacation/13th provision uses simple accrual instead of provision/reversal** — must store `EmployeeSalaryHistory` (not just current salary); provision = `currentSalary × elapsed / 12` recalculated monthly
-9. **Termination omits proportional aviso prévio extension** — Lei 12.506/2011: 30 + 3 days/complete year, max 90 days; affects all downstream termination calculations
+1. **Flat-row AccountingEntry extended instead of replaced** — Creates a schema where trial balance requires UNION hacks, cost-center splits are impossible, and SPED I155 generation is blocked. Prevention: create `journal_entries` + `journal_entry_lines` tables in Phase 1 and freeze the old table read-only immediately.
+
+2. **Non-idempotent auto-generation hooks create duplicate GL entries** — The existing `createPayrollEntries` has no duplicate guard. Prevention: add `UNIQUE(sourceType, sourceId)` constraint and `PendingJournalPosting` queue table before wiring any new module hooks. This is a pre-existing bug needing a hotfix now.
+
+3. **Rateio rounding breaks trial balance and SPED ECD validation** — Naive `total * rate` per line accumulates rounding error; PVA validator rejects files where `SUM(debits) != SUM(credits)` to the centavo. Prevention: `rateio()` utility in `packages/shared` where the largest-share line absorbs the remainder (adapt `installment-generator.ts` pattern); store percentages as `DECIMAL(7,6)`.
+
+4. **Period closing without immutability enforcement allows retroactive edits** — Auto-generated entries land in closed periods when source records are edited retroactively. Prevention: `assertPeriodOpen()` must be called on every GL write path, wired before any module integration begins.
+
+5. **Historical data continuity gap** — System has 4 milestones of operational data with no corresponding GL history. Opening balance wizard must be built before any financial statement is meaningful. Prevention: "Saldo de Abertura" wizard pre-populates from existing modules; no retroactive GL generation needed.
 
 ---
 
 ## Implications for Roadmap
 
-Based on the dependency graph from FEATURES.md and the build order from ARCHITECTURE.md, the natural phase structure follows the prerequisite chain strictly.
+The dependency chain from FEATURES.md is strict and leaves no room for parallel phasing:
 
-### Phase 1: Cadastro de Colaboradores e Contratos
+```
+ChartOfAccounts + FiscalPeriods (foundation)
+    → JournalEntries engine (write side)
+        → AutomaticRules + ModuleHooks (event integration)
+            → Closing checklist + period lock (workflow)
+                → DRE + BP (statements)
+                    → DFC direct (cash flow)
+                        → DFC indirect + per-culture DRE (advanced statements)
+                            → SPED ECD (compliance export)
+```
 
-**Rationale:** Nothing else is buildable without employees, contracts, job positions, and salary history. eSocial S-2200 events, INSS/IRRF calculations, and time tracking all depend on this foundation. This phase also includes the `EmployeeSalaryHistory` table (Pitfall 8) and the `originType`/`originId` constraint on `Payable` (Pitfall 6) — two schema decisions that must be in place before any other module writes data.
+### Phase 1: Plano de Contas e Períodos Fiscais
+**Rationale:** Hard gate for everything else. No GL write can proceed without a valid COA and an open period. This phase also introduces the two-table schema that unfreezes the rest of the milestone and establishes all shared utilities.
+**Delivers:** `ChartOfAccount` model + rural template seed (CFC/Embrapa model + SPED referential mapping), `FiscalPeriod` + `FiscalYear` models, `AccountBalance` cache table, `assertPeriodOpen()` utility, `assertBalanced()` utility, `rateio()` utility, COA CRUD API + frontend page, `isFairValueAdjustment` flag in model
+**Addresses:** EPIC-C1 (Chart of Accounts, Accounting Periods, SPED referential mapping, Cost center linkage)
+**Avoids:** Pitfall 1 (flat-row extension), Pitfall 3 (period immutability), Pitfall 2 (rounding utilities built here), Pitfall 8 (safra fiscal year support via `FiscalYear.startDate/endDate`)
+**Research flag:** Standard patterns — PostgreSQL recursive CTE + Prisma self-referential model are well-documented; no additional research needed
 
-**Delivers:** Employee registration (CPF, PIS/PASEP, CTPS, dependents), contract type management (CLT/safra/intermitente/experiência/aprendiz), CBO/job position catalog, work schedule configuration, salary history, mass import via CSV/XLSX, complete employee ficha (tabbed UI).
+### Phase 2: Lançamentos Manuais e Saldo de Abertura
+**Rationale:** Manual journal entry engine must exist before any module integration. The opening balance wizard must be available before financial statements produce meaningful output.
+**Delivers:** `JournalEntry` + `JournalEntryLine` tables and service, manual entry form with `assertBalanced()`, entry reversal (estorno) with audit trail, opening balance wizard pre-populating from existing modules, General Ledger (Razão) read view, Trial Balance (Balancete de Verificação) in three-column format
+**Addresses:** EPIC-C2 (manual entries, reversal, Razão, Balancete); Pitfall 7 (historical data continuity)
+**Avoids:** Pitfall 4 (flat-row schema replaced by new tables here), Pitfall 3 (period lock enforced from first write)
+**Research flag:** Standard patterns — double-entry two-table schema is industry standard; no additional research needed
 
-**Addresses:** EPIC-RH1 table stakes — all employee and contract features.
+### Phase 3: Regras e Lançamentos Automáticos
+**Rationale:** The highest-value deliverable. Connects all 4 existing milestones to the GL engine without manual re-entry. Must follow Phase 2 (writes to new tables). `PendingJournalPosting` queue is the idempotency mechanism.
+**Delivers:** `AccountingRule` model and admin UI, `PendingJournalPosting` queue table with BullMQ processor, GL hooks for payroll close, depreciation run, AP settlement, AR receipt, stock entries/outputs; accounting dashboard "missing postings" alert section; fix for existing `createPayrollEntries` duplicate bug
+**Addresses:** EPIC-C2 (automatic journal entries — all module event types); differentiator "zero manual mapping for standard farms"
+**Avoids:** Pitfall 5 (non-idempotent triggers via queue + unique constraint), Pitfall 10 (FUNRURAL — two separate accounts: `3.1.03 FUNRURAL s/ Vendas` vs. `FUNRURAL Patronal` in payroll rules)
+**Research flag:** Needs phase research — mapping rules for all 40-60 auto-generation rule types, FUNRURAL producer vs. employer account code distinction, and cost center attribution requirements per event type need precise Brazilian accounting guidance before implementation
 
-**Avoids:** Pitfall 5 (rural vs urban rules — contract type enum established here), Pitfall 6 (schema constraint added here), Pitfall 8 (salary history table created here).
+### Phase 4: Fechamento Mensal
+**Rationale:** Cannot close a period without confirmed postings from all modules. Phase 3 (auto-generation) must be complete first. Period close is the workflow gate before financial statements carry legal weight.
+**Delivers:** Monthly closing checklist with automated status queries (payroll closed? depreciation posted? bank reconciliation done?), period lock enforcement on all GL writes, controlled reopening with audit log (`reopenedBy`, reason), accounting bank reconciliation (razão vs. extrato) as second layer on v1.0 bank reconciliation
+**Addresses:** EPIC-C3 (closing checklist, accounting bank reconciliation, period lock and controlled reopening)
+**Avoids:** Pitfall 3 (retroactive edits after close — period lock fully operational here)
+**Research flag:** Standard patterns — closing checklist pattern already established in codebase (sanitary protocols, payroll close workflow)
 
-### Phase 2: Parâmetros de Rubrica e Motor de Cálculo da Folha
+### Phase 5: DRE e Balanço Patrimonial
+**Rationale:** Financial statements are the primary end-user deliverable. DRE and BP are built together because cross-validation (DRE net income = BP retained earnings change) requires both simultaneously.
+**Delivers:** Pure `DreCalculatorService` and `BpCalculatorService` (no Prisma imports, independently testable), DRE with rural layout + vertical/horizontal analysis + comparison columns, BP with CPC 29 biological asset classes + financial indicators (Liquidez Corrente, Liquidez Seca, Endividamento Geral, PL/hectare), cross-statement validation panel (4 invariant checks), PDF integrated financial report with explanatory notes
+**Addresses:** EPIC-C4 (DRE), EPIC-C5 (BP), differentiator "per-culture DRE drill-down" (via cost center filter on journal entries), differentiator "cross-statement validation panel"
+**Avoids:** Pitfall 9 (CPC 29 fair value — dedicated `Variação Valor Justo Ativo Biológico` DRE section using `isFairValueAdjustment` flag set in Phase 1), Pitfall 6 (J100/J150 subtotals derived from same GL query as trial balance, never computed independently)
+**Research flag:** Needs phase research — CPC 29 biological asset DRE section layout and exact rural account group codes for fair value adjustments are sparsely documented; verify against current CFC/Embrapa model before implementation
 
-**Rationale:** The payroll calculation engine is custom-built with no npm library available. It must be fully implemented and unit-tested (with official Receita Federal table values) before time tracking UI is built — time entries feed this engine. Rubric master data also seeds the eSocial S-1010 table event, which must precede all other eSocial transmissions.
+### Phase 6: DFC e Dashboard Executivo
+**Rationale:** DFC direct method reuses v1.0 cash flow classification (already built). DFC indirect method requires BP beginning/ending balances — Phase 5 must be complete first. Executive dashboard is presentation-only (no new data sources).
+**Delivers:** `DfcCalculatorService` (direct + indirect), DFC direct using v1.0 cash event classification aggregated into CPC 03 R2 sections (Operacional, Investimento, Financiamento), DFC indirect method with working capital deltas and non-cash reversal (depreciation, provisions, biological asset fair value via `isFairValueAdjustment`), DFC cross-validation against BP cash change, executive accounting dashboard with 12-month trend charts (Recharts, already installed)
+**Addresses:** EPIC-C6 (DFC direct + indirect), executive dashboard differentiator
+**Avoids:** Pitfall 9 (CPC 29 phantom income correctly reversed in DFC indirect)
+**Research flag:** Needs phase research — DFC indirect method CPC 03 R2 reconciliation line items and biological asset fair value reversal treatment need verification against official CVM source
 
-**Delivers:** Configurable rubric/event system (proventos e descontos), INSS progressive table calculation, IRRF with dependents and 2026 partial exemption, FGTS 8%, FUNRURAL dual-mode (receita bruta vs folha), moradia/alimentação deductions against regional minimum wage, DSR calculation, payroll calculation unit test suite with known official values.
-
-**Uses:** `date-holidays@3.26.11` for DSR and overtime classification; `Decimal.js` `Money()` factory throughout.
-
-**Avoids:** Pitfall 1 (INSS progressive), Pitfall 2 (IRRF order and dependent deductions), Pitfall 5 (rural-specific rates and deduction bases).
-
-### Phase 3: Controle de Ponto e Jornada
-
-**Rationale:** Time tracking must exist before payroll can process real hours. This phase builds the mobile-first time clock (reusing existing offline sync infrastructure), the web clock for administrative staff, and the approval workflow (espelho de ponto). Critically, the attendance locking mechanism (Pitfall 7) must be designed into the model from the start.
-
-**Delivers:** Mobile time clock with GPS geofence validation (PostGIS), offline sync via existing queue infrastructure, overtime calculation with rural rules (21h–5h at 25%), banco de horas, web time clock, time sheet mirror with approval workflow, attendance record locking on payroll calculation, PDF export for audit.
-
-**Implements:** `modules/time-entries/`, `modules/time-approval/`, mobile `time-clock.tsx`, `time-entry-repository.ts` (SQLite offline store mirrors `operation-repository.ts`).
-
-**Avoids:** Pitfall 7 (time entries locked by payroll run ID when run reaches CALCULATED).
-
-### Phase 4: Processamento da Folha Mensal
-
-**Rationale:** With employees, rubrics, and time tracking in place, the payroll run orchestration can be built. This is the core value delivery of v1.3. The state machine, atomicity design, and BullMQ processing must be implemented correctly before any live payroll is run.
-
-**Delivers:** Payroll run creation and batch processing (BullMQ), per-employee payroll item calculation, payslip PDF generation (pdfkit + pdfkit-table), email and mobile delivery (nodemailer), 13th salary processing (1st and 2nd installments), salary advance management, payroll run status dashboard with progress polling.
-
-**Implements:** `modules/payroll-runs/` with `payroll-engine.service.ts`, `payroll-batch.service.ts`, `payslip.service.ts`.
-
-**Avoids:** Pitfall 3 (payroll atomicity — `prisma.$transaction()` for all employee items; payables only on APPROVE), Pitfall 7 (lock attendance records when run reaches CALCULATED).
-
-### Phase 5: Férias, Afastamentos, Rescisão e Integração Financeira
-
-**Rationale:** Lifecycle events (vacation, leave, termination) depend on the payroll engine and salary history from earlier phases. Financial integration (payroll to payables) is last in the chain — payable entries must only be created after payroll approval, and termination payments require accurate vacation and 13th balances.
-
-**Delivers:** Vacation accrual with provision/reversal method, vacation scheduling calendar with crop cycle overlay, leave management (sick leave, CAT, maternity), TRCT calculation with proportional aviso prévio extension (Lei 12.506/2011), safra bulk termination wizard, monthly provision cron for vacation and 13th, automatic payables creation for net salaries and tax guides, cost center rateio per employee activity.
-
-**Implements:** `modules/vacations/`, `modules/leaves/`, `modules/terminations/`, `modules/payroll-provisions/`, `shared/cron/payroll-provision.cron.ts`, payroll to payables integration with `originType`/`originId` upsert.
-
-**Avoids:** Pitfall 6 (duplicate payables via originId upsert), Pitfall 8 (provision/reversal method), Pitfall 9 (proportional aviso prévio extension).
-
-### Phase 6: Segurança do Trabalho (NR-31) e eSocial
-
-**Rationale:** Safety compliance (EPI, trainings, ASOs) can be built largely independently since it only depends on the employee record. eSocial is deferred to last because it wraps all previous modules — admission, payroll, leaves, accidents, and terminations must all be working before their XML events can be correctly generated and transmitted.
-
-**Delivers:** EPI delivery records consuming existing products/stock module, NR-31 training matrix with certificate tracking, ASO/PCMSO records with expiry alerts, eSocial XML generation for all event types using `xmlbuilder2`, ICP-Brasil digital signing with `xml-crypto`, eSocial transmission with BullMQ job ordering (table events → cadastral events → periodic events), transmission status dashboard with error triage workflow, RAIS export, Informe de Rendimentos PDF.
-
-**Implements:** `modules/epi-deliveries/`, `modules/trainings/`, `modules/asos/`, `modules/esocial-events/` with `esocial-xml.service.ts`, `esocial-signer.service.ts`, `esocial-transmission.service.ts`, `shared/cron/esocial-retry.cron.ts`.
-
-**Avoids:** Pitfall 4 (eSocial event ordering via BullMQ job dependencies with strict queue sequencing).
-
-### Phase 7: Dashboard RH e Relatórios
-
-**Rationale:** Aggregation and reporting can only be meaningful after all previous modules are live and generating data. This phase is pure read-side — no new writes to any existing module.
-
-**Delivers:** HR KPI dashboard (headcount by contract type, payroll cost vs prior month, cost per activity/crop, overtime hours by team, NR-31 compliance %), labor cost per hectare report (payroll cost center + PostGIS talhão area), FUNRURAL regime comparison calculator, headcount and payroll cost export to CSV.
-
-**Implements:** `modules/hr-dashboard/`.
-
----
+### Phase 7: SPED ECD
+**Rationale:** Strictly last. Requires validated closed-period balances and a working financial statement pipeline. Cannot produce a valid file before all other phases compute correct data.
+**Delivers:** Custom `SpedEcdWriter` class in `src/shared/sped/`, all ECD block builders (Blocos 0, I, J, K optional, 9), key registers: I010, I050, I100, I150/I155, I200/I250, I350/I355, J150/J210, pre-submission validator against PVA rules (I050 uniqueness, period balance, analytic-only postings), async BullMQ generation for large files, safra fiscal year support in `DT_INI`/`DT_FIN`
+**Addresses:** EPIC-C7 (SPED ECD generation + pre-submission validation)
+**Avoids:** Pitfall 6 (structural mismatches — pre-validator checks all I050 constraints before file is written), Pitfall 8 (safra fiscal year via `FiscalYear.startDate/endDate` from Phase 1, never hardcoded), Pitfall 2 (rateio rounding — assertion `abs(sumDebits - sumCredits) < 0.005` before each I150/I155 block)
+**Research flag:** Needs phase research — SPED ECD Leiaute 11 vs. 12 specific record differences (I155 and I157 changes for 2025 fiscal year); rural account referential codes L300R; current PGE validator version for CI integration
 
 ### Phase Ordering Rationale
 
-- Phases 1–2 establish the foundation and the calculation engine that all other phases depend on — no downstream work is valid without correct employees, contracts, and tax calculations.
-- Phase 3 (time tracking) is sequenced after Phase 2 so time entry data can be immediately validated against calculation requirements; they could be built in parallel if sprint capacity allows.
-- Phase 4 (payroll runs) is gated on Phases 1–3 — it reads all three to produce a correct payroll.
-- Phase 5 bundles lifecycle events and financial integration because vacation/13th/termination balances are all prerequisites for generating payables — splitting them would leave an incomplete integration for the first deployable payroll run.
-- Phase 6 (eSocial) is explicitly last because it wraps all previous events. Retroactive eSocial correction events are costly and error-prone; building eSocial last means events are generated from correct, approved data.
-- Phase 7 is pure aggregation and can be developed incrementally alongside Phases 4–6 if sprint capacity allows.
-
----
+- Phases 1 and 2 are strictly foundational and cannot be parallelized with anything. Every subsequent phase writes to tables and uses utilities created here.
+- Phase 3 (automatic rules) is the highest-value phase but depends on Phase 2 (tables) and Phase 1 (period enforcement and COA).
+- Phase 4 (closing workflow) must precede financial statements because official statements require closed periods.
+- Phases 5 and 6 are both statement phases but DFC indirect depends on BP balances, so Phase 5 precedes Phase 6.
+- Phase 7 (SPED ECD) is explicitly last — it validates and exports what all prior phases computed.
+- The system becomes useful to a working contador at Phase 4 completion (trial balance + period close) and fully useful at Phase 5 completion (DRE + BP available for review and credit applications).
 
 ### Research Flags
 
-**Phases needing `/gsd:research-phase` during planning:**
+Phases needing deeper research during planning:
+- **Phase 3:** Brazilian accounting rules for all 40-60 auto-generation rule types; FUNRURAL producer vs. employer account code distinction (two different legal instruments); cost center attribution requirements per event type
+- **Phase 5:** CPC 29 biological asset DRE presentation and exact account group codes for `Variação Valor Justo Ativo Biológico` in Brazilian rural GAAP; verify against current CFC/Embrapa rural chart-of-accounts model
+- **Phase 6:** DFC indirect method CPC 03 R2 reconciliation items; biological asset fair value reversal treatment; verify against official CVM publication
+- **Phase 7:** SPED ECD Leiaute 11 vs. 12 specific record differences (I155, I157 changes for 2025 fiscal year); L300R rural referential account codes; PGE validator version for CI use
 
-- **Phase 6 (eSocial):** ICP-Brasil certificate management in cloud environments (AWS Secrets Manager vs KMS vs HSM), eSocial sandbox endpoint URLs and mTLS configuration for development, S-1.3 XSD files download and validation setup, specific XML structure for rural employer (PF vs PJ) eSocial S-1000 employer table. High complexity, sparse Node.js documentation.
-- **Phase 5 (Termination / TRCT):** Validation of CCT edge cases per collective agreement (homologação residual risk), GRRF guide generation specifics, seguro-desemprego eligibility check logic for safra workers. Legal edge cases may surface implementation details not covered in general research.
-
-**Phases with standard/well-documented patterns (skip research-phase):**
-
-- **Phase 1 (Employee + Contracts):** Standard CRUD following existing module patterns. Brazilian CPF and PIS/NIT checksum algorithms are well-known and trivially tested.
-- **Phase 2 (Rubrics + Calculation Engine):** Tax tables and formulas are officially published. Calculation logic is pure functions amenable to comprehensive unit testing.
-- **Phase 3 (Time Tracking):** Reuses existing mobile offline sync infrastructure and PostGIS geofence from EPIC-06. Pattern is established in the codebase.
-- **Phase 4 (Payroll Runs):** Mirrors `DepreciationRun` state machine exactly. BullMQ pattern already proven in the codebase.
-- **Phase 7 (Dashboard):** Pure aggregation using existing recharts setup and established service patterns.
+Phases with standard patterns (skip research-phase):
+- **Phase 1:** PostgreSQL recursive CTE, self-referential Prisma model, period management — well-documented and directly analogous to existing patterns
+- **Phase 2:** Two-table double-entry schema, manual entry form with balance validation, reversal pattern — industry standard
+- **Phase 4:** Closing checklist pattern already established in codebase (sanitary protocols module, payroll close); period lock is a straightforward service guard
 
 ---
 
@@ -210,46 +194,43 @@ Based on the dependency graph from FEATURES.md and the build order from ARCHITEC
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | xmlbuilder2, xml-crypto, date-holidays verified at specific versions via npm (March 2026). pdfkit-table is MEDIUM confidence (0.x semver). expo-task-manager is MEDIUM (iOS/Android permission complexity). All existing libraries are production-proven in the codebase. |
-| Features | HIGH | Brazilian labor law (Lei 5.889/73, CLT, eSocial S-1.3) is codified and unambiguous. Feature scope verified against TOTVS RM and Senior HCM documentation. 2026 INSS/IRRF tables cross-checked across 3 sources. |
-| Architecture | HIGH | Derived from direct codebase analysis of schema.prisma (7400+ lines) and all existing modules. Integration patterns (`tx.payable.create`, `withRlsContext`, batch state machine) are live in production. |
-| Pitfalls | HIGH | Brazilian labor law pitfalls sourced from official legislation and current-year searches. Payroll atomicity and concurrency design is established ERP practice verified by multiple sources. |
+| Stack | HIGH | Zero new packages confirmed. All existing library versions verified on npm registry March 2026. SpedEcdWriter approach confirmed — no Node.js library exists for ECD generation. |
+| Features | HIGH | Brazilian accounting law (Lei 6.404/76), CPC standards, SPED ECD obligations, and rural accounting requirements are officially published. Competitor landscape verified against Aegro, Omie, Senior, TOTVS. |
+| Architecture | HIGH | Based on direct codebase inspection of all 4 prior milestones. Existing patterns (StockBalance, CnabAdapter, payroll-calculation.service.ts) are directly applicable and confirmed. |
+| Pitfalls | HIGH for integration pitfalls (derived from direct code analysis of existing accounting-entries, payroll, depreciation modules); MEDIUM for CPC 29 biological asset GL treatment (principle clear, Brazilian application sparsely documented); LOW for safra-year edge cases (community forum only) |
 
-**Overall confidence:** HIGH
+**Overall confidence:** HIGH for Phases 1-4 and 7. MEDIUM for Phases 5-6 (CPC 29 fair value treatment, DFC indirect reconciliation) — these need phase-level research before requirements are written.
 
 ### Gaps to Address
 
-- **2026 INSS and IRRF exact table values:** Sourced from contabilizei.com.br and praticasdepessoal.com.br, not directly from the Receita Federal portal. Recommend cross-checking against official RFB Instrução Normativa before implementing the production tax engine.
-- **eSocial sandbox access:** Development and testing require access to the eSocial sandbox (Ambiente de Produção Restrita). Confirm credentials and endpoint URLs with the client before Phase 6 begins.
-- **ICP-Brasil certificate in production:** Where the PFX is stored, how it is rotated, and whether AWS KMS is used must be decided before Phase 6 starts. This is an infrastructure decision outside the scope of code.
-- **FUNRURAL receita bruta integration:** The receita-bruta option requires reading commercialization totals from the receivables module (v1.1). Confirm the receivables module exposes the necessary data before Phase 2 configures the FUNRURAL rubric.
-- **Regional minimum wage values:** Housing and food deductions are capped against the regional minimum wage (varies by state). Confirm whether a configurable table per state is required or whether the federal minimum wage is an acceptable approximation for v1.3.
+- **CPC 29 fair value account codes:** The exact Brazilian rural account group structure for biological asset fair value adjustments (gain and loss accounts) needs verification against a current CFC/Embrapa chart-of-accounts model before the rural seed data is designed in Phase 1. Do not hardcode account codes without this verification.
+- **SPED ECD Leiaute 12 scope:** Architecture references Leiaute 9 as the base. The 2025 fiscal year ECD uses Leiaute 12 (alphanumeric CNPJ support + I155/I157 record changes). Confirm current layout version and changed records before Phase 7 begins.
+- **pdfkit-table dependency decision:** If trial balance PDFs exceed ~200 line items (large chart of accounts), `pdfkit-table ^0.1.45` may be needed. Verify pdfkit 0.17.2 compatibility before adding to avoid mid-phase dependency issues.
+- **Existing `createPayrollEntries` duplicate bug:** The current payroll module creates duplicate GL entries if called more than once for the same run. This is a confirmed bug that needs a hotfix (idempotency guard) independently of when Phase 3 is executed — it should be addressed as a standalone fix on the current branch.
 
 ---
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct codebase analysis: `apps/backend/prisma/schema.prisma` (7400+ lines), `modules/asset-acquisitions/`, `modules/depreciation/`, `modules/field-teams/`, `modules/payables/`, `modules/maintenance-provisions/`
-- Lei 5.889/73 — Rural Labor Statute (night shift, housing, food, safra contract rules)
-- CLT — Consolidação das Leis do Trabalho (general labor law base)
-- eSocial S-1.3 schema (NT 05/2025) — event ordering and XML structure requirements
-- Lei 8.212/91 + IN 2.110/2022 — FUNRURAL calculation and election rules
-- Lei 8.036/1990 — FGTS
-- Lei 12.506/2011 — proportional aviso prévio extension
-- npm registry — xmlbuilder2@4.0.3, xml-crypto@6.1.2, date-holidays@3.26.11 (verified March 2026)
+- RFB SPED ECD official documentation (sped.rfb.gov.br) — block structure, Leiaute 9/11/12, L300R rural referential accounts
+- CVM CPC 03 R2 (official) — DFC direct and indirect method requirements
+- CPC 29 / IAS 41 (official, via Unifaj academic publication) — biological asset fair value treatment
+- Direct codebase inspection — `accounting-entries` module, `payroll-runs.service.ts`, `StockBalance` pattern, `CnabAdapter` pattern, `installment-generator.ts`
+- npm registry (March 2026) — pdfkit 0.17.2, decimal.js 10.6.0, exceljs 4.4.0 verified
 
 ### Secondary (MEDIUM confidence)
-- contabilizei.com.br + praticasdepessoal.com.br — 2026 INSS/IRRF table values (cross-checked 3 sources, not fetched from RFB directly)
-- TOTVS RM and Senior HCM documentation — feature scope validation for Brazilian HR ERP
-- eSocial NT 05/2025 production move announcement — S-1.3 schema confirmation
-- pdfkit-table@0.1.99 — npm-verified compatibility with pdfkit@0.17.x; community-use confirmed
+- Qive Blog, Econet — SPED ECD 2025 obligations and deadlines
+- Senior ERP documentation — integration contábil patterns reference
+- Aegro, Omie product analysis — rural accounting competitor feature landscape
+- Square Books engineering post — double-entry schema pattern (accounts + journal_entries + book_entries)
+- Journalize.io DB schema post — journal entry / ledger line schema pattern
+- CNA Brasil — rural accounting Brazilian particularities
 
 ### Tertiary (LOW confidence)
-- No npm source for payroll calculation libraries — confirmed absence by registry search; custom engine is the only option
-- expo-task-manager background location behavior on iOS 17+ — documentation exists but app store submission complexity not fully characterized
+- pdfkit-table 0.1.45 compatibility with pdfkit 0.17 — community, needs verification before use
+- Safra-year fiscal calendar ECD submission edge cases — community forum only; needs RFB official source
 
 ---
-
-*Research completed: 2026-03-23*
+*Research completed: 2026-03-27*
 *Ready for roadmap: yes*

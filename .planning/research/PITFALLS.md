@@ -1,392 +1,389 @@
 # Pitfalls Research
 
-**Domain:** HR and Rural Payroll module added to existing agricultural ERP (financial v1.0, procurement v1.1, assets v1.2 already live)
-**Researched:** 2026-03-23
-**Confidence:** HIGH for Brazilian labor law specifics (Lei 5.889/73, INSS/IRRF progressive tables, eSocial event ordering — verified with official sources and current-year searches); HIGH for integration pitfalls (derived from codebase analysis of existing payables/team-operations modules); MEDIUM for payroll atomicity and concurrency design (established ERP practice verified by multiple sources); LOW where only training data supports a claim.
+**Domain:** Adding accounting/GL, chart of accounts, journal entries, and financial statements (DRE/BP/DFC/SPED ECD) to an existing rural farm management ERP (v1.0–v1.3 already live: financials, procurement, assets, HR/payroll)
+**Researched:** 2026-03-26
+**Confidence:** HIGH for double-entry consistency and Brazilian SPED ECD validation rules (verified with official RFB sources and direct schema analysis); HIGH for integration pitfalls (derived from codebase analysis of existing accounting-entries module, payroll, depreciation, and stock modules); MEDIUM for CPC 29 / biological asset GL treatment (verified with IFRS/IAS 41 sources, Brazilian application is sparsely documented); MEDIUM for DFC cross-validation mechanics (multiple sources agree on principle, implementation detail LOW); LOW for safra-year fiscal calendar edge cases (community forum only).
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: INSS Progressive Table Calculated as Flat Rate Instead of Per-Bracket
+### Pitfall 1: Double-Entry Broken by Aggregate-Amount Journal Entries
 
 **What goes wrong:**
-The INSS contribution since 2020 uses a fully progressive table (7.5%, 9%, 12%, 14%), not a flat rate applied to the total salary. The common incorrect implementation multiplies the total gross salary by the rate for the bracket it falls into. For a worker earning R$ 5,000/month in 2026, the incorrect flat-rate calculation gives R$ 700.00 (14% × R$ 5,000). The correct progressive calculation gives R$ 527.27 — a difference of R$ 172.73 per employee per month. Multiplied across a 20-person rural team, this is R$ 3,454.60/month in over-deductions, which are illegal discounts from the worker's salary.
+The existing `accounting-entries` module (INTEGR-02) creates one journal entry per payroll run aggregated to a single amount — e.g., one `PAYROLL_SALARY` entry for the total gross of all employees, not one per employee. When the new chart-of-accounts module adds support for cost-center rateio (split by farm/setor), the per-run aggregate model silently breaks double-entry because each split line has a debit but only the aggregate has a credit. The resulting ledger fails the invariant: `SUM(debits) = SUM(credits)` per period when queried by cost center.
+
+Separately: any place where a journal entry is created without an atomic check that `debit_amount = credit_amount` will pass unit tests that only inspect the created record but will corrupt the GL the moment a rounding or logic bug in the calling code produces an imbalanced entry.
 
 **Why it happens:**
-Older payroll reference material and informal tax calculators still describe the pre-2020 flat-rate method. Developers searching for "como calcular INSS" will find both methods mixed in results, and the flat-rate is simpler to code. The progressive method requires applying each rate only to the portion of salary within that bracket, then summing all brackets — the same logic as IRRF but with different table values.
+The existing module was built as a "shadow ledger" for payroll only — it does not need cost-center splits to show on payslips. When full double-entry GL is added, the aggregate pattern is carried forward because it already works for its original purpose.
 
 **How to avoid:**
-- Implement `calculateINSS(grossSalary: Decimal): Decimal` in `packages/shared/src/utils/payroll-calculations.ts` using bracket-by-bracket accumulation, not `Decimal.mul(rate)` on total.
-- Use the "parcela a deduzir" shortcut as cross-check: `INSS = salary × topRateForBracket - deductionAmount`. Both methods must return the same result to ±R$ 0.01 (rounding difference only).
-- Store the INSS table as a versioned config (year → brackets array), not hardcoded — tables change annually with inflation. Structure: `{ year: 2026, brackets: [{ upTo: 1518.00, rate: 0.075, deduction: 0 }, ...] }`.
-- Use `Decimal.js` throughout — never `number` for any intermediate calculation. The existing `Money()` factory in `packages/shared` must wrap all payroll arithmetic.
-- Write parametric unit tests with known-correct values from the official Receita Federal table for 2025 and 2026.
+- Implement a DB-level CHECK constraint on the `journal_entries` table: the sum of all lines with `side = 'DEBIT'` must equal the sum of all lines with `side = 'CREDIT'` for each journal entry. Use a PostgreSQL trigger or a deferred constraint on `journal_entry_lines`.
+- Never store `debitAccount`/`creditAccount`/`amount` as flat columns on a single row. Use the canonical two-table design: `JournalEntry` (header: period, source, description) + `JournalEntryLine` (account_code, side, amount, cost_center_id). The existing `AccountingEntry` flat-column model must be replaced or adapted — do NOT extend it.
+- For the migration of existing `AccountingEntry` records into the new schema: each old record maps to one `JournalEntry` with exactly two `JournalEntryLine` rows (one DEBIT, one CREDIT). Write a migration script that validates `count(AccountingEntry) * 2 = count(JournalEntryLine)` before marking migration complete.
+- Add a service-level guard: `assertBalanced(lines: JournalEntryLine[]): void` that throws before any `prisma.create` if `sumDebits !== sumCredits`. Call it in every auto-generation path (payroll, depreciation, stock, payables).
 
 **Warning signs:**
-- Unit test with salary = R$ 3,000 passes but salary = R$ 4,500 gives wrong result (straddles a bracket boundary).
-- INSS deduction matches gross × 14% exactly (indicates flat-rate bug).
-- The same function is used for both INSS and IRRF with just different table parameters — IRRF has dependent deductions and INSS does not; conflating them causes silent errors.
+- Balancete de verificação (trial balance) shows non-zero `SUM(debits) - SUM(credits)`.
+- A cost center DRE shows expenses without matching liability credits.
+- Tests pass by asserting only on the created record, not on the aggregate balance of the period.
 
-**Phase to address:** Parâmetros e Rubricas da Folha (Phase 2) — the calculation engine must exist and be fully tested before any payroll run phase.
+**Phase to address:** Plano de Contas e Estrutura do Livro Diário (first accounting phase) — the `JournalEntry` + `JournalEntryLine` schema must be the foundation before any auto-generation wiring.
 
 ---
 
-### Pitfall 2: IRRF Calculated Before INSS Deduction, or Without Dependent Deductions
+### Pitfall 2: Rounding on Journal Entry Lines Breaks the Period Trial Balance
 
 **What goes wrong:**
-IRRF (income tax) in Brazil is calculated on the salary minus: (a) the INSS contribution already withheld, (b) R$ 189.59 per legal dependent per month (2026 value). Skipping step (a) inflates the IRRF base. A worker earning R$ 4,000 gross with two dependents and INSS of R$ 348.52: correct IRRF base = R$ 4,000 - R$ 348.52 - R$ 379.18 = R$ 3,272.30 (zero tax at 2026 rates). Calculated incorrectly on R$ 4,000 gross, tax = R$ 214.62. Every worker at that salary level would be over-taxed by R$ 214.62/month.
+The system already uses `Decimal.js` and stores `Decimal(14,2)` in PostgreSQL — this is correct for individual amounts. The problem emerges when a single source amount must be split across multiple cost centers (rateio). For example, a payroll of R$ 10,000.00 split 33.33% / 33.33% / 33.34% across three farms gives R$ 3,333.33 + R$ 3,333.33 + R$ 3,333.34 = R$ 10,000.00. However, if the percentages are stored as floats (not Decimal) and applied naively, the common result is R$ 3,333.33 + R$ 3,333.33 + R$ 3,333.33 = R$ 9,999.99 — one cent off. Multiplied across all entries in a fiscal year, the trial balance shows a mysterious imbalance of a few reais that requires hours to trace.
 
-Additionally, from January 2026, monthly income up to R$ 5,000.00 is fully exempt from IRRF. Income between R$ 5,000.01 and R$ 7,350.00 has a partial exemption mechanism. Systems that apply the standard progressive table without this 2026 exemption rule will over-withhold IRRF for workers in that band.
+In SPED ECD, the I150/I155 registros require that debit totals equal credit totals exactly to the centavo. A trial balance that is off by R$ 0.01 causes the PVA validator to reject the entire file.
 
 **Why it happens:**
-The sequence dependency (INSS first, then IRRF on reduced base) is non-obvious to developers who have not processed Brazilian payroll before. The 2026 exemption rule is new and pre-2026 code examples do not implement it. Dependents must be registered in the system and linked to the `Employee` record for the deduction to apply — missing the dependent table integration causes this error silently.
+Rateio percentages come from the UI as user-entered floats, are stored as `DECIMAL(5,4)`, and when applied to a Decimal amount the last line is calculated as `total - sum(otherLines)` in some implementations but as `total * rate` in others. The "apply rate to each line" approach accumulates rounding error; the "last line takes the remainder" approach is correct but rarely implemented from the start.
 
 **How to avoid:**
-- Enforce calculation order in the payroll engine: `grossSalary → otherAdditions → grossBase → INSS deduction → dependentDeductions → IRRFBase → IRRF calculation → netSalary`.
-- The `Employee` model must have a `dependents` relation before any payroll run; the payroll engine reads `dependents.filter(d => d.isIRRFEligible).length` at calculation time.
-- Store the IRRF table with year flag, and add a boolean `hasPartialExemption` for the 2026+ bands (R$ 5,000–R$ 7,350).
-- Write a regression test for the 2026 partial exemption scenario. Salary = R$ 6,000, two dependents: expected IRRF = R$ 0 (within exemption band after deductions).
+- Implement a `rateio(total: Decimal, portions: {rate: Decimal, costCenterId: string}[]): {costCenterId: string, amount: Decimal}[]` utility in `packages/shared/src/utils/rateio.ts`. The algorithm: calculate each line as `total.mul(rate).toDecimalPlaces(2, Decimal.ROUND_HALF_UP)`. Then compute `remainder = total - sum(calculatedLines)`. Add the remainder to the line with the largest share (not the last line — the largest share absorbs rounding most naturally). The existing `installment-generator.ts` uses a similar pattern for CP installments — adapt it.
+- Store rateio percentages as `DECIMAL(7,6)` (6 decimal places) in the DB, never as JavaScript `number`.
+- Write a unit test: `rateio(10000.00, [{rate: 0.3333, ...}, {rate: 0.3333, ...}, {rate: 0.3334, ...}])` must sum to exactly `10000.00`.
+- In the SPED ECD generator, before writing I150/I155, add an assertion: `abs(sumDebits - sumCredits) < 0.005`. If it fires, log the offending period and throw — never generate a file with an unbalanced period.
 
 **Warning signs:**
-- IRRF for a worker with two dependents equals IRRF for a worker with zero dependents at the same salary.
-- IRRF is non-zero for a worker with gross salary = R$ 4,800 and 2+ dependents in 2026.
-- Payslip shows IRRF deduction that is exactly gross × applicable rate without any base reduction.
+- Trial balance shows `SUM(DEBIT) - SUM(CREDIT)` = R$ 0.01 or R$ 0.02 for any period.
+- SPED ECD validator returns error code on I155 "totais não conferem".
+- Rateio utility uses `parseFloat()` or `Number()` anywhere in the calculation chain.
 
-**Phase to address:** Parâmetros e Rubricas da Folha (Phase 2) — same payroll calculation engine phase as INSS.
+**Phase to address:** Rateio and cost-center split logic should be in the chart-of-accounts foundation phase. SPED ECD generator must re-validate before writing.
 
 ---
 
-### Pitfall 3: Payroll Run is Not Atomic — Partial Failures Leave Inconsistent State
+### Pitfall 3: Period Closing Without Immutability Enforcement — Retroactive Edits Corrupt Statements
 
 **What goes wrong:**
-Payroll generation touches multiple tables: `PayrollRun`, `PayrollEntry` (one per employee), `PayrollRubric` (line items per entry), `StockEntry` (housing/meal deductions if controlled by stock), and `Payable` records (FGTS guide, INSS guide, IRRF guide, net salary). If the process crashes after creating 15 of 30 employee payroll entries, the run is in a partial state. Re-running creates duplicate entries. Rolling back manually requires identifying which records were written — impossible without an audit table.
+A period (e.g., December 2025) is closed and the DRE/BP/DFC for that period are generated and presented to the accountant. A user then edits a CP (contas a pagar) payment date or a depreciation amount for November 2025, which triggers auto-generation of a corrected accounting entry. The new entry lands in the closed period because the auto-generation code uses `referenceMonth = source.referenceDate` without checking period status. The November BP changes silently. The accountant does not notice because the financial statements are cached views, not snapshots.
 
 **Why it happens:**
-Payroll generation is a BullMQ background job (the project already uses BullMQ for async). Jobs that span multiple Prisma operations across many employees tend to be written as sequential `await prisma.create()` calls. A timeout, DB connection drop, or code error mid-run leaves orphaned records. The BullMQ retry mechanism will re-enqueue the job, creating duplicates.
+The existing `AccountingEntry` model has no `periodId` foreign key — it uses `referenceMonth: DateTime @db.Date`. No `AccountingPeriod` table exists yet. Until the period-status check is wired into every entry-creation path, retroactive entries slip through.
 
 **How to avoid:**
-- The `PayrollRun` record has a `status` field: `DRAFT | PROCESSING | CALCULATED | APPROVED | PAID | CANCELLED | FAILED`.
-- All `PayrollEntry` records for a run must be created inside a single `prisma.$transaction()`. If the transaction fails, nothing is written. Use `prisma.$transaction([], { maxWait: 10000, timeout: 30000 })` for large farms.
-- For large payrolls (>50 employees), use batched transactions: process in batches of 10 with each batch in its own transaction; the `PayrollRun.status` tracks `processedCount`. A re-run skips already-processed employees (idempotency key = `runId + employeeId`).
-- The `Payable` records (FGTS guide, INSS guide, etc.) are NOT created during calculation — they are created on `APPROVE` action only, in a separate transaction. This keeps the financial module clean of unapproved data.
-- Approved `PayrollRun` records and their `PayrollEntry` children are immutable. Any correction requires creating a new supplementary run (`runType: COMPLEMENTAR`), never editing an approved run.
+- Create an `AccountingPeriod` model: `{ id, organizationId, year, month, status: OPEN|CLOSED|LOCKED, closedAt, closedBy }`. CLOSED = no new auto-entries; LOCKED = no manual entries either (post-SPED submission).
+- Add a `periodId` FK on `JournalEntry`. Every service that creates a journal entry must call `assertPeriodOpen(organizationId, year, month)` before `prisma.create`. Make this a shared utility so it cannot be bypassed.
+- Closing a period requires a checklist: all pending payables reconciled, all depreciation runs posted, all payroll runs closed. The checklist is modeled as checkboxes on the period record, not a free-form comment.
+- Re-opening a period requires an explicit admin action with an audit log entry (`openedBy`, `reason`). The default is that re-opening creates a "prior period adjustment" entry rather than modifying existing entries.
+- Financial statement snapshots (DRE/BP/DFC) store a `snapshotHash` of the underlying GL data. If the GL changes for that period, the snapshot is marked STALE and requires re-generation — the UI shows a warning.
 
 **Warning signs:**
-- `PayrollEntry` records exist for a `PayrollRun` with `status = FAILED`.
-- Re-running a failed payroll without idempotency check doubles entries.
-- `Payable` records for a payroll run exist with `status = PENDING` before the run is `APPROVED`.
-- No `$transaction` wrapping in the payroll calculation service.
+- `AccountingEntry` records with `referenceMonth` earlier than the latest closed month.
+- No `AccountingPeriod` table in the schema at the time auto-generation is wired to CP/CR/depreciation.
+- Financial statements show different numbers on consecutive days without any approved changes.
 
-**Phase to address:** Processamento da Folha Mensal (Phase 4) — atomicity design must be the first implementation decision in that phase.
+**Phase to address:** Períodos Contábeis e Fechamento (must be second phase after chart-of-accounts) — all other phases depend on period status.
 
 ---
 
-### Pitfall 4: eSocial Events Sent Out of Order — Table Events Must Precede Cadastral Events
+### Pitfall 4: Existing `AccountingEntry` Flat-Row Model Cannot Support Full Double-Entry GL
 
 **What goes wrong:**
-eSocial has a strict prerequisite chain: table events must be transmitted before cadastral events, and cadastral events must be transmitted before periodic events. The order is: `S-1000/S-1005/S-1010/S-1020` (employer tables + rubrics table + cost centers) → `S-2200` (employee admission) → `S-1200/S-1210` (monthly payroll remunerations and payments) → `S-1299` (payroll period closing). If `S-2200` for a new rural employee is sent before `S-1010` (rubrics table), the government server returns error 0237 ("Categoria do trabalhador incompatível com a classificação tributária"). If `S-1200` is sent before the payroll is closed in the system, the eSocial server calculates its own INSS value and may reject the event if it diverges from the transmitted value by more than R$ 0.01.
+The current `AccountingEntry` model stores `debitAccount`, `creditAccount`, and `amount` as three columns on one row — a two-leg, single-amount design adequate for simple payroll entries. Full double-entry requires entries with 3+ lines (e.g., cost-center split: debit Expense Farm A / debit Expense Farm B / credit Salaries Payable). The existing model cannot represent this. If the new GL module extends the existing table by adding a nullable `lineIndex` or similar, the schema becomes ambiguous: some records are flat two-leg entries, others are multi-line. Queries for trial balance must handle both shapes.
 
 **Why it happens:**
-Developers treat eSocial as a simple "POST XML to endpoint" integration. The prerequisite chain and idempotency rules are buried in the Manual de Orientação do eSocial (MoS S-1.3), which is 400+ pages. The rubrics table (S-1010) in particular is easy to forget — it must list every payroll rubric (earnings and deductions) your system uses before any employee's payroll data is transmitted.
+The existing module was explicitly scoped to payroll integration only (comment in `accounting-entries.service.ts`: "5 entry types created at payroll close"). The schema was intentionally minimal. The mistake is extending it instead of replacing it.
 
 **How to avoid:**
-- Model eSocial transmission as a state machine per event: `PENDING → QUEUED → SENT → ACCEPTED | REJECTED → CORRECTED`.
-- Enforce prerequisite ordering in the BullMQ job queue: table jobs (S-1000 group) complete before cadastral jobs (S-2200 group); cadastral jobs complete before periodic jobs (S-1200 group). Use BullMQ job dependencies or separate named queues with explicit ordering.
-- The `S-1010` rubrics table must be populated from the system's `PayrollRubric` master data when the payroll module is first configured — this is a setup wizard step, not optional.
-- For `S-1200`: only generate the XML after the `PayrollRun` is in `CALCULATED` status and the internal INSS values have been frozen. The eSocial server validates the INSS independently; if your internal calculation differs by more than rounding tolerance, the event is rejected.
-- For rural employers (`tipInscr = employer PF` using the FUNRURAL on gross revenue option): use `indMEI = N`, `classTrib = 01` (Pessoa Física), and the `tpCR` contribution type for FUNRURAL — not the standard INSS patronal fields. Getting this wrong means eSocial accepts the event but the tax calculation is wrong.
+- Create new tables: `journal_entries` (header) and `journal_entry_lines` (lines). Migrate existing `accounting_entries` records to the new structure as part of the chart-of-accounts phase migration.
+- Keep `accounting_entries` table and its existing code intact as a read-only historical table until the full migration is verified. Add a `migratedToJournalEntryId` column to `accounting_entries` so the migration is auditable and reversible.
+- The new `JournalEntryLine` table: `{ id, journalEntryId, accountId (FK → ChartOfAccount), side: DEBIT|CREDIT, amount: Decimal(14,2), costCenterId?, farmId?, description? }`.
+- Update the `createPayrollEntries` and `createReversalEntry` functions to write to the new tables, not the old ones. Do this in the "Lançamentos Automáticos" phase, after the new schema is stable.
 
 **Warning signs:**
-- eSocial returns error code "S-1010 rubrica não cadastrada" on first S-1200 submission.
-- Error 0237 on S-2200 for any employee.
-- S-1299 (closing event) sent before S-1200 for all employees.
-- System sends S-1200 events immediately after payroll calculation without waiting for closed status.
+- A migration adds columns to `accounting_entries` instead of creating new tables.
+- Trial balance query JOINs both `accounting_entries` and `journal_entries`.
+- `AccountingEntryType` enum is extended with non-payroll types (stock, depreciation, etc.) before the schema refactor.
 
-**Phase to address:** eSocial e Obrigações Acessórias (Phase 6) — but prerequisite: payroll rubric master data must be defined in Phase 2.
+**Phase to address:** Plano de Contas (foundation phase) — new schema must be in place before any other module writes accounting data.
 
 ---
 
-### Pitfall 5: Rural-Specific Labor Rules Applied as Urban CLT Defaults
+### Pitfall 5: Auto-Generated Journal Entries Duplicate or Are Skipped Due to Non-Idempotent Triggers
 
 **What goes wrong:**
-The system is built for rural farms, but a developer implementing the payroll engine without deep domain knowledge defaults to the CLT urban rules. Five specific rural rules differ:
+Every existing module (payroll close, depreciation run, stock output, payables settlement) will gain a hook that generates journal entries. If those hooks are not idempotent, retries and re-runs create duplicate entries. The existing `createPayrollEntries` is already called "outside and after the closeRun transaction (non-blocking)" — if it crashes and is retried, it creates a second set of 5 payroll entries. The current code has no duplicate guard.
 
-1. **Night shift**: Rural agriculture = 21h–5h (not 22h–5h), adicional = 25% (not 20%). Livestock = 20h–4h, also 25%. The `hora noturna reduzida` (52.5-min urban night hour) does NOT apply in rural work — each night hour is 60 minutes.
-2. **Housing deduction**: Deducted from salary up to 20% of the regional minimum wage (not 20% of the worker's salary). Combined cap with food at 25% of minimum wage.
-3. **Food deduction**: Up to 25% of minimum wage (not percentage of salary). Both housing and food deductions require written contract and worker consent — without a signed addendum, they count as salary in natura and inflate FGTS/INSS base.
-4. **Harvest contract (safra)**: No `aviso prévio` on normal termination (contract ends naturally with harvest). No 40% FGTS penalty. But the employer must pay proportional 13th and proportional vacation + 1/3. Incorrectly applying the 40% FGTS penalty to a safra termination overpays; incorrectly applying the CLT permanent contract rules to safra reopens months of FGTS liability.
-5. **FUNRURAL patronal**: Rural PF employers contributing on gross revenue pay 1.5% (PF) or 2.05% (PJ) of commercialization, NOT the 20% INSS patronal of urban employers. This election is annual (must be formalized in January). If the employer switches from gross-revenue to payroll-based, SENAR (0.2%) continues on gross revenue regardless.
+Conversely, if the hook fires but the period is closed or the GL module is not yet configured (no chart of accounts seeded), the entry is silently skipped with no alert. The accountant discovers missing entries at month-end close.
 
 **Why it happens:**
-Express + Prisma give no guardrails for labor law domain logic. Enum values like `CONTRACT_TYPE` or `NIGHT_SHIFT_RULES` default to the urban CLT variant in most code examples. The 5.889/73 distinctions exist in HR textbooks but not in any npm package or widely-searched Stack Overflow answer.
+Non-blocking fire-and-forget patterns (`try { createPayrollEntries(...) } catch {}`) are used to prevent accounting failures from rolling back business transactions. This is correct for user experience but wrong for data completeness. The two concerns — "don't block the business event" and "guarantee the accounting entry" — are conflated.
 
 **How to avoid:**
-- The `Employee` record must have `contractType: ContractType` enum with values: `CLT_PERMANENT | CLT_EXPERIENCE | CLT_HARVEST | CLT_INTERMITTENT | CLT_APPRENTICE`. The payroll engine switches rule sets based on this field.
-- Implement rural night shift detection separately from urban: the time range check differs, the percentage differs, and the hour reduction never applies.
-- Housing/food deductions: calculate against `regionalMinimumWage` (configurable per state/region), not against the worker's salary.
-- For safra termination: the system must check `contractType === 'CLT_HARVEST'` and apply the termination variant that excludes `aviso prévio` and 40% FGTS penalty but includes proportional 13th and vacation.
-- FUNRURAL mode: store as an annual election on the `Organization` record — `funruralBasis: 'GROSS_REVENUE' | 'PAYROLL'` — and apply the correct contribution type in payroll calculation and eSocial events.
+- Use a `pending_journal_postings` queue table: when a business event fires (payroll close, depreciation, stock output, CP payment), insert a `PendingJournalPosting` record with `sourceType`, `sourceId`, `status: PENDING`. A background job (BullMQ, already in the stack) processes the queue and creates the actual journal entry.
+- The `PendingJournalPosting` has a `UNIQUE(sourceType, sourceId)` constraint — duplicate triggers hit the unique constraint and are ignored.
+- Failed postings set `status: FAILED` with `failureReason` — visible in the accounting dashboard. Accountant can manually retry or create a manual entry.
+- For the existing `createPayrollEntries`: before `createMany`, check `count(AccountingEntry WHERE sourceType = PAYROLL_RUN AND sourceId = runId)`. If > 0, skip. Add this guard immediately (it is a bug in the current code).
 
 **Warning signs:**
-- Night shift additional of 20% or a time range starting at 22h in the payroll for a rural worker.
-- FGTS penalty charge on a safra contract termination.
-- Housing deduction exceeds 25% of regional minimum wage.
-- FUNRURAL patronal calculated as 20% of payroll for a PF employer who elected gross-revenue basis.
+- `AccountingEntry.count WHERE sourceType = PAYROLL_RUN AND sourceId = X` returns > 5 (more than the expected 5 entry types).
+- No `pending_journal_postings` table or equivalent deduplication mechanism exists when wiring depreciation/stock hooks.
+- Accounting dashboard has no "missing postings" alert section.
 
-**Phase to address:** Contratos e Jornada de Trabalho (Phase 1) — contract type differentiation and rural-specific rule sets must be established before any payroll calculation is written.
+**Phase to address:** Regras de Lançamento Automático (the auto-generation wiring phase) — the queue table and idempotency guard must be designed before any new auto-generation hooks are wired.
 
 ---
 
-### Pitfall 6: Payroll → Payables Integration Creates Duplicate CPs on Re-Processing
+### Pitfall 6: SPED ECD File Fails PVA Validation Due to Chart of Accounts Structural Mismatches
 
 **What goes wrong:**
-When a payroll run is approved, the system generates `Payable` records in the existing financial module: one CP for net salary (per employee or batched), one CP for FGTS guide (per competence), one CP for INSS guide, one CP for IRRF guide, one CP for FUNRURAL (if applicable). If a payroll run is recalculated (e.g., after a retroactive salary adjustment), the integration creates new CPs without voiding the previous ones. The accounts payable module now shows double the payroll obligation, which overstates liabilities in the financial dashboard and cash flow projection.
+The RFB's PVA (Programa Validador e Assinador) for ECD enforces strict structural rules that go beyond data formatting. Common rejection causes:
+
+1. **I050 — Duplicate `COD_CTA`**: if the chart of accounts allows the same account code at two different nodes (e.g., code `1.1.01` exists both in the user-created tree and in a seeded "model" tree after a chart merge), the I050 registro rejects with "conta duplicada".
+2. **I050 — Missing `COD_CTA_SUP`**: every non-root account must reference its parent code. A chart-of-accounts UI that allows orphan accounts (no parent) produces invalid I050 records.
+3. **I155 — Cost-center inconsistency**: if an account has entries with cost center in I155 records but the I050 registro for that account does not set `IND_CTA = A` (analytic) and `COD_CTA_NATU` properly, validation fails.
+4. **J100/J150 — Aggregation hierarchy imbalance**: DRE/BP blocks in the ECD require that every totaling line equals the sum of its children exactly. If the financial statement module computes subtotals independently from the chart of accounts hierarchy, rounding differences cause J100/J150 rejection.
+5. **0000 — Incorrect `IND_SIT_ESP`**: special situation codes (merger, split, closing) require specific J block structures. Setting `IND_SIT_ESP = 0` (normal) when the company had a name change causes schema validation failure.
 
 **Why it happens:**
-The existing `payables.service.ts` has a `createPayable()` method that creates a new record unconditionally. It has no concept of an `originType/originId` deduplication check. The payroll module developer calls `createPayable()` on each approved run without checking whether a CP for that `runId + guideType` already exists.
+The ECD format specification (Manual de Orientação da ECD, latest version for AC 2025) is a 300+ page PDF. Most implementations copy existing ECD files from accounting software as templates without reading the full spec. The PVA validator messages are cryptic (error codes without plain-text descriptions in the default view) and require cross-referencing the manual.
 
 **How to avoid:**
-- Add `originType: 'PAYROLL_RUN' | 'PAYROLL_FGTS' | 'PAYROLL_INSS' | 'PAYROLL_IRRF' | 'PAYROLL_FUNRURAL'` and `originId: string` to the `Payable` model (the pattern already exists: `ASSET_ACQUISITION` uses this same field).
-- Add a unique constraint on `(originType, originId)` in the Prisma schema so a duplicate insert fails at the DB level.
-- The payroll → CP integration must be: `upsert` (create if not exists, update amount if exists and status is PENDING) — never `create` unconditionally.
-- A re-processed payroll run creates a new `PayrollRun` with `runType: COMPLEMENTAR` — it does NOT modify or reprocess the approved run. The complementary run generates its own CPs via the same idempotency path.
-- On `PayrollRun` cancellation: void (not delete) the associated CPs by setting their status to `CANCELLED`. The `PayableStatus` enum already has `CANCELADO` in the existing system.
+- Download and read the current Manual de Orientação da ECD (available at `sped.rfb.gov.br`). At minimum read Blocos 0, I, and J completely — these are the ones that fail most often.
+- Implement a pre-generation validator that checks all I050 constraints (no duplicate COD_CTA, all COD_CTA_SUP resolve to existing parents, no orphans) before writing the file.
+- The J100/J150 subtotals must be computed from the same GL query that produces the trial balance — never computed independently in the financial-statement layer.
+- Add a `UNIQUE(organizationId, code)` DB constraint on `ChartOfAccount` to prevent duplicate codes at the DB level, not just UI validation.
+- Before generating ECD for a period, run the full PVA locally in a CI/test step. The PVA is a free download and can be invoked headlessly (though not officially documented — community workarounds exist via WINE on Linux).
 
 **Warning signs:**
-- Multiple `Payable` records with `category = PAYROLL` for the same `farmId` and same `competenceMonth`.
-- Financial dashboard shows payroll liability double the expected amount.
-- The payroll service calls `payablesService.create()` without querying for existing records by origin first.
-- `Payable.originType` is NULL for any payroll-generated CP.
+- Chart-of-accounts UI allows creating an account without selecting a parent.
+- Financial statement subtotals are computed with `SUM(childLines)` queries that differ from the trial balance query path.
+- No local PVA validation step in the SPED ECD generation service.
+- ECD file hardcodes `IND_SIT_ESP = 0` for all organizations.
 
-**Phase to address:** Integração Financeira (Phase 5) — but the `originType` unique constraint must be added to the schema in Phase 1 before any payroll data is written.
+**Phase to address:** SPED ECD (last phase of the milestone) — but the COD_CTA uniqueness constraint and the J100/J150 derivation-from-GL rule must be decided in the chart-of-accounts foundation phase.
 
 ---
 
-### Pitfall 7: Time Tracking → Payroll Pipeline Has No Approval Lock — Edits After Payroll Calculation Invalidate the Run
+### Pitfall 7: Historical Data Gap — Existing Operations Have No GL Entries
 
 **What goes wrong:**
-A time sheet entry (ponto) is edited after the payroll run that includes it has been calculated. The `PayrollEntry` for that employee already captured 176 hours; the corrected time sheet now shows 184 hours (8 hours of overtime that were missed). The payroll run is internally consistent but wrong. If the system does not prevent this, the approved holerite does not match the actual hours, creating a labor law exposure.
+The system has 4 milestones of operational data (v1.0–v1.3): payables, receivables, stock movements, depreciation runs, payroll runs, and asset acquisitions — none with corresponding GL entries (except 6 INTEGR-02 payroll entry types). When accounting goes live, the opening balance of every account must be correct. If the migration approach is "go live from today with a clean slate," the BP for the first period will show zero assets, zero liabilities, and zero equity — which is obviously wrong. If the migration approach is "retroactively generate GL entries from all historical data," the volume is potentially tens of thousands of entries per year and the logic to re-derive them is complex.
 
 **Why it happens:**
-The time tracking module (registro de ponto) and the payroll calculation module operate independently. There is no foreign key or status check that prevents editing a time sheet record whose competence period has been locked by an approved payroll run. The offline sync pattern (already proven in the project for mobile) makes this worse: offline edits sync after the payroll is approved, silently overwriting the payroll's source data.
+This is a classic ERP accounting bolt-on problem. The business ran without a ledger and built up operational history. Adding the ledger creates a continuity problem. Teams often defer the decision until go-live and then find neither approach is fast.
 
 **How to avoid:**
-- The `AttendanceRecord` (ponto) must have a `lockedByPayrollRunId: string | null` field. When a `PayrollRun` transitions to `CALCULATED`, lock all attendance records for the competence period and all employees in that run.
-- Attempting to edit a locked attendance record returns HTTP 409 with message: "Ponto bloqueado — folha de [competence] já calculada. Use a folha complementar para ajustes."
-- Mobile offline sync: when syncing an attendance record, check if `lockedByPayrollRunId` is non-null before applying the sync. If locked, queue the edit as a "pending correction" instead of applying it, and surface an alert to the HR manager.
-- The `MirrorReport` (espelho de ponto) is a read-only snapshot generated when the payroll is calculated — never a live view of attendance records.
+- Adopt the "opening balance entry" approach: create one manual `JournalEntry` per account with a single line establishing the opening balance as of the date accounting goes live (e.g., 2026-04-01). The values come from the existing financial module data (bank balances, outstanding CP/CR, asset book values, payroll provisions).
+- Provide a "Saldo de Abertura" wizard in the UI that pre-populates opening balances from existing module data: bank account balances from `BankAccount.currentBalance`, outstanding CP from `Payable.remainingAmount`, asset book values from `Asset.currentBookValue`, payroll provisions from `PayrollProvision.totalAmount`. The accountant reviews and confirms before posting.
+- Do NOT retroactively generate GL entries for historical periods unless required for SPED ECD (which only applies from the fiscal year of go-live forward). The SPED ECD for 2026 starts from the opening balance — prior years are not required.
+- Document in the "Saldo de Abertura" wizard that the opening balance entry is a manual adjustment — tag it with `sourceType = OPENING_BALANCE` so it is excluded from the automatic-entry deduplication checks.
 
 **Warning signs:**
-- Attendance records for a closed competence period have `updatedAt` after the `PayrollRun.calculatedAt`.
-- Mobile sync applies hours edits without checking payroll lock status.
-- The payroll run service reads attendance records directly at payment time (not from a frozen snapshot).
-- `MirrorReport` and the actual attendance records diverge for the same employee and period.
+- Migration plan says "generate GL entries for all historical transactions retroactively" without a time estimate.
+- No `OPENING_BALANCE` source type on the `JournalEntry` model.
+- Opening balance wizard is missing and accountant must create opening entries manually — high risk of errors.
 
-**Phase to address:** Controle de Ponto e Jornada (Phase 3) — the locking mechanism must be designed into the attendance model from the start.
+**Phase to address:** Lançamentos Manuais e Saldo de Abertura (an early phase, before DRE/BP generation) — the opening balance feature is a pre-requisite for any meaningful financial statement output.
 
 ---
 
-### Pitfall 8: Vacation and 13th Salary Provisioning Uses Simple Accrual, Not Salary-at-Current-Rate
+### Pitfall 8: Safra Fiscal Year vs. Calendar Year Mismatch Breaks SPED ECD Period Structure
 
 **What goes wrong:**
-Monthly vacation provision should be `1/12 of current monthly salary × (1 + 1/3)` — based on the current salary at the time of provisioning, not the salary at the time of accrual. If a worker earns R$ 2,000 in January–June and gets a raise to R$ 2,500 in July, the system must recalculate the entire provision balance at the new rate for months 1–6, not just accrue at R$ 2,500 from month 7 onward. The "accumulated months × old rate" approach understates the provision by the raise delta times months elapsed, which means when the worker takes vacation and the provision is reversed, the reversal exceeds the balance — creating a negative provision account.
-
-The same issue applies to 13th salary provision: the provision must always reflect `months elapsed × current salary / 12`.
+Fazendas planning their exercise fiscal around the safra cycle (July–June, aligning with Plano Safra) rather than the calendar year (January–December) require SPED ECD to reflect a non-standard period. The 0000 registro has `DT_INI` and `DT_FIN` fields. If the system hardcodes `DT_INI = YYYY-01-01` and `DT_FIN = YYYY-12-31`, it will generate an invalid ECD for any client using a safra-aligned fiscal year. Additionally, for legal entity producers (PJ), the ECD deadline is the last business day of May following the year-end — for a July–June year, that means the ECD for year ending June 2026 is due May 2027. If the system uses calendar year for all deadline calculations, it will show wrong due dates.
 
 **Why it happens:**
-The "accrual-only" method (add 1/12 per month) is simpler and used in many basic payroll guides. The correct "provision/reversal" method (fully recalculate the provision each month and reverse the previous month's balance) requires storing the current provision balance per employee and recalculating it on every salary change. Under salary stability this is invisible — the bug only manifests on raises, which happen infrequently.
+The `AccountingPeriod` model is often designed with `year` and `month` integer columns, implicitly assuming January–December. A safra fiscal year spans two calendar years (e.g., Jul-2025 to Jun-2026) and cannot be represented as a single integer year.
 
 **How to avoid:**
-- Use the provision/reversal method: each monthly payroll run calculates `vacationProvision = currentMonthlySalary × monthsElapsed / 12 × 1.333`. Compare this to `previousMonthProvision`. The delta is the monthly provision entry (can be negative on salary decrease).
-- The `EmployeeSalaryHistory` table must exist (not just a current salary field on `Employee`) so the system can always determine the salary valid at any point in time. Salary history is the foundation of correct provision calculation and retroactive corrections.
-- The provision ledger entry (to a liability account) records both the provision amount and the employee reference. When vacation is taken, the provision is reversed (not debited as new expense) and only the difference (if any, due to INSS/IRRF on vacation payout) is a new entry.
+- The `AccountingPeriod` model must have `startDate: Date` and `endDate: Date`, not just `year: Int`. The `FiscalYear` model (one level above) has `startDate`, `endDate`, and `type: CALENDAR | SAFRA | CUSTOM`.
+- The SPED ECD generator reads `FiscalYear.startDate` and `FiscalYear.endDate` for the 0000 registro — never derives them from the period list.
+- ECD deadline calculation: `lastBusinessDayOfMay(fiscalYear.endDate.year + 1)`. Use `date-fns` (already in stack) for business day calculation.
+- For calendar-year clients (the majority), `FiscalYear.type = CALENDAR` and `startDate = YYYY-01-01`. The safra option is configurable at org setup, not hardcoded.
 
 **Warning signs:**
-- After a salary raise, the vacation provision for months 1–6 is not retroactively corrected.
-- Provision balance is calculated as a running sum of monthly additions rather than `currentSalary × elapsed / 12`.
-- `Employee` model has a `salary: Decimal` field but no `salaryHistory: SalaryHistory[]` relation.
-- Accounting entries for vacation provision become negative after a salary increase.
+- `AccountingPeriod` schema has `year: Int` and `month: Int` but no `date` fields.
+- SPED ECD generator has `new Date(year, 0, 1)` hardcoded for `DT_INI`.
+- ECD deadline is calculated as `new Date(year + 1, 4, 31)` without business-day adjustment.
 
-**Phase to address:** Férias e 13º Salário (Phase 5) — but `EmployeeSalaryHistory` table must be created in Phase 1 (Cadastro de Colaboradores), not deferred.
+**Phase to address:** Períodos Contábeis (second phase) — fiscal year configuration must be done before any period is created.
 
 ---
 
-### Pitfall 9: Termination Calculation Omits Proportional Aviso Prévio Extension
+### Pitfall 9: CPC 29 Biological Assets — Fair Value Change Creates Phantom Income in DRE
 
 **What goes wrong:**
-Since Lei 12.506/2011, the aviso prévio is not flat 30 days. It is 30 days + 3 days per complete year of service, up to a maximum of 90 days. A worker with 12 years of service has 30 + (12 × 3) = 66 days of aviso prévio. This extension directly impacts: (a) the termination date for proportional 13th calculation, (b) the proportional vacation base period (includes the aviso period), and (c) the FGTS 40% penalty base (must include deposits for the aviso period). A flat 30-day aviso prévio for a 12-year employee underpays the worker by roughly 36 days of rights — a labor lawsuit risk.
+The system already models biological assets (ativos biológicos) in v1.2 — cattle herds, perennial crops (coffee, orange), standing timber. Under CPC 29 / IAS 41, biological assets are measured at fair value less costs to sell at each reporting date. The change in fair value (gain or loss) goes directly to profit or loss (DRE), not to equity. A 20% appreciation of a cattle herd with book value R$ 500,000 generates R$ 100,000 of revenue on the DRE — without any cash inflow. This "phantom income" is non-cash and must be presented separately in the DRE and in the DFC indirect method (where it is reversed out under operating activities).
+
+If the auto-generation rule for biological asset revaluation creates a `REVENUE` entry in the standard revenue group of the DRE, the DFC indirect method reconciliation will fail: `Net Income - (increase in biological assets) = Operating Cash Flow` — but if the DRE does not segregate the fair value gain, the DFC cannot subtract it back automatically.
 
 **Why it happens:**
-Aviso prévio proportional extension is a 2011 law that many online examples still ignore. Termination calculators that omit it produce plausible-looking (but wrong) numbers for workers under 2 years.
+Developers implementing the fair value revaluation entry copy the pattern from depreciation (Debit: Asset / Credit: Depreciation Expense) and invert it to (Debit: Biological Asset / Credit: Revenue). The credit account is mapped to a standard revenue code. The DFC module then cannot identify this as a non-cash item to reverse.
 
 **How to avoid:**
-- Implement `calculateNoticePeriodDays(admissionDate: Date, terminationDate: Date): number` returning `Math.min(90, 30 + 3 * completeYears)`.
-- The termination service must use the extended notice period for all downstream calculations (13th base months, vacation base period, FGTS penalty period).
-- Add a dedicated `TerminationCalculation` record that stores each input and output component: `admissionDate, terminationDate, contractType, noticePeriodDays, fgtsBalanceAtTermination, 13thPropSalary, vacationBalance, irrf, inss, netTerminationAmount`. This makes auditing and correction possible.
-- Unit test with a 12-year employee, 8-year employee, and 1-year employee to cover boundary cases.
+- Create dedicated account codes in the rural chart-of-accounts model for biological asset fair value: `3.5.01 — Variação Valor Justo Ativo Biológico` (revenue) and `4.5.01 — Perda Valor Justo Ativo Biológico` (expense). These must be flagged with `isFairValueAdjustment: Boolean` in the `ChartOfAccount` model.
+- The DFC indirect method generator identifies all accounts with `isFairValueAdjustment = true` and lists them as "non-cash adjustments" in the operating activities section, reversing their DRE impact.
+- The DRE layout must have a distinct section for "Resultado de Variação de Valor Justo" separate from "Receita Bruta de Vendas". This allows the user to see operating revenue separately from valuation adjustments.
+- CPC 29 also requires disclosure of changes in quantity (births, deaths, acquisitions, sales) separately from fair value changes. Model the `BiologicalAssetMovement` table with `movementType: BIRTH | DEATH | ACQUISITION | SALE | FAIR_VALUE_ADJUSTMENT` — the GL entry differs by type.
 
 **Warning signs:**
-- `noticePeriodDays` is always 30 regardless of service duration.
-- The termination service does not query `admissionDate` from the employee record.
-- 13th proportional calculation uses the calendar year end as the termination month, ignoring the notice period extension.
+- The rural chart-of-accounts preload has no `isFairValueAdjustment` flag.
+- DFC indirect method uses `Net Income` as starting point but does not subtract biological asset fair value gains.
+- DRE shows a single "Receitas" subtotal that mixes cash sales with fair value gains.
 
-**Phase to address:** Rescisão Contratual (Phase 6) — notice period calculation must be the first implemented function in the termination feature.
+**Phase to address:** Plano de Contas (flag `isFairValueAdjustment` in model) + DFC (reversal logic). The DRE layout must have the CPC 29 section before biological asset revaluation entries are connected.
+
+---
+
+### Pitfall 10: FUNRURAL Accounting Entry Posted as Expense Without Tax Liability Credit
+
+**What goes wrong:**
+FUNRURAL is a social contribution withheld by the buyer from the producer's invoice and remitted directly to the RFB. For the producer (seller), FUNRURAL is a deduction from gross revenue — not a payroll expense. The incorrect implementation debits `Despesa FUNRURAL` and credits `FUNRURAL a Recolher`, mirroring the INSS patronal structure. The correct entry for the producer is: Debit `FUNRURAL s/ Receita Bruta` (contra-revenue account, group 3) / Credit `FUNRURAL a Recolher` (current liability). The DRE impact differs: the expense account inflates operating costs; the contra-revenue account correctly reduces net operating revenue. Both produce the same net income but the DRE layout (required for SPED ECF) will be rejected if FUNRURAL is in the expense group instead of the revenue deduction group.
+
+The v1.3 payroll module already handles FUNRURAL for the employer contribution (1.5% on gross revenue or 20% on payroll). The accounting entry for the employer FUNRURAL is a payroll expense — this is correct. The confusion arises because the same word covers two different things: the producer's FUNRURAL (withheld from sales) and the employer's FUNRURAL (added to payroll cost).
+
+**Why it happens:**
+The payroll module code path uses `ACCOUNT_CODES.PAYROLL_CHARGES` for employer social charges including FUNRURAL. When the accounting team maps "FUNRURAL" to an account, they find the existing payroll FUNRURAL code and reuse it for the revenue-deduction FUNRURAL. The accounts are different legal instruments.
+
+**How to avoid:**
+- The rural chart-of-accounts model must have two separate FUNRURAL accounts:
+  - `3.1.03 — Deduções da Receita — FUNRURAL s/ Vendas` (account type: CONTRA_REVENUE, nature: DEBIT)
+  - `2.1.04 — FUNRURAL a Recolher` (liability, nature: CREDIT)
+- The CR (contas a receber) module, when a receivable with `funruralRate > 0` is settled, generates a GL entry to `3.1.03` (debit) / `2.1.04` (credit) for the FUNRURAL amount, not to the payroll expense group.
+- Label the chart-of-accounts entries clearly: `FUNRURAL (Receita Bruta — art. 25 Lei 8.212)` vs. `FUNRURAL Patronal (Folha — art. 22a)`.
+
+**Warning signs:**
+- A single `FUNRURAL` account code is used by both the payroll module and the receivables settlement module.
+- DRE shows FUNRURAL in `Despesas Operacionais` (expense group) instead of `Deduções da Receita Bruta`.
+- `AccountingSourceType` enum has `PAYABLE_SETTLEMENT` but no `RECEIVABLE_SETTLEMENT` type — the missing type is a sign the CR→GL integration has not been designed yet.
+
+**Phase to address:** Plano de Contas (model must distinguish the two FUNRURAL accounts) + Lançamentos Automáticos — CR settlement hook.
 
 ---
 
 ## Technical Debt Patterns
 
-Shortcuts that seem reasonable but create long-term problems.
-
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Hardcode 2025 INSS/IRRF table values as constants | Fast to ship | Annual table updates require code deploys; wrong deductions in new year | Never — use versioned config table in DB |
-| Store payroll amounts as `number` (float) instead of `Decimal` | Less code | Rounding drift creates irreconcilable ledger; INSS and IRRF differ by centavos from government systems | Never — the project already uses `Decimal.js` everywhere |
-| Reuse existing `FieldTeamMember` as the Employee entity | Avoids new model | `FieldTeamMember` has no CPF, PIS, admission date, contract type; extending it with nullable fields creates a monster model | Never — create `Employee` as a separate model with optional `fieldTeamMemberId` link |
-| Create one "HR payroll" Payable per payroll run (batched) | Fewer CP records | Cannot identify per-employee costs in financial reports; cannot reconcile holerite with CP | Never for FGTS/INSS guides (must be individual); acceptable for batching individual net salaries if `originId` is preserved |
-| Skip eSocial transmission until after payroll is live | Faster initial delivery | eSocial acceptance is a legal requirement; cannot retroactively transmit months of S-1200 events without correction events | Only if the milestone explicitly designates eSocial as Phase 6 (acceptable phase deferral, not permanent skip) |
-| Use `date` JS type for payroll competence period | Simple | Rural payroll has multiple competence types (monthly, safra, intermittent) that need typed period representation | Only for MVP if `competencePeriod` is typed as `{ year: number; month: number }` not raw `Date` |
-| Allow editing approved payroll runs "by admin" | Faster fixes | Destroys audit trail; eSocial retification events (S-1295) are complex and legally required | Never — use supplementary/complementary run instead |
+| Extend existing `accounting_entries` flat-column table instead of creating `journal_entries` + `journal_entry_lines` | Saves one phase of schema work | Trial balance queries require UNION hacks; cost-center splits impossible; SPED I155 lines cannot be generated correctly | Never — schema must be two-table from the start |
+| Cache DRE/BP/DFC as materialized views without invalidation on GL change | Reporting queries are fast | Stale statements show to users; accountant closes period based on wrong data | Only acceptable if view has a `last_updated` timestamp shown in the UI and auto-refresh on GL write |
+| Store chart-of-accounts as flat list with `parentCode: String?` instead of `parentId: UUID?` | Avoids FK lookup for codes | Code changes break the tree; code uniqueness cannot be enforced at DB level with a simple string | Never — use `parentId UUID FK` and enforce `UNIQUE(orgId, code)` |
+| Hardcode the rural chart-of-accounts as a TypeScript constant | Faster to seed | Cannot be customized per client; account codes are spread across codebase; adding a new account requires a code deploy | Acceptable for the seed/template, but the working tree must live in the DB |
+| Skip `PendingJournalPosting` queue table — call auto-generation synchronously inside business transaction | Simpler code | A GL failure rolls back the business event (CP payment rollback because accounting failed); or GL failure is silently swallowed | Never in production — the queue pattern is required for correctness |
+| Derive DFC from DRE + BP delta instead of from GL entries | Avoids building a DFC mapping system | Indirect method reconciliation is approximate; direct method is impossible; non-cash items (CPC 29 fair value, depreciation) are not identified | Acceptable only for v1 DFC indirect method if labeled "approximation" — direct method requires proper DFC mapping |
 
 ---
 
 ## Integration Gotchas
 
-Common mistakes when connecting HR/Payroll to existing modules.
-
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
-| Payroll → Payables | Calling `payablesService.create()` unconditionally on each run approval | Use upsert with `(originType, originId)` unique constraint; void existing CP before recreating if status is still PENDING |
-| Payroll → Payables | Creating one CP for the entire payroll batch | Create separate CPs for: FGTS guide (single), INSS/INSS patronal guide (single), IRRF guide (single), FUNRURAL guide (single), individual net salaries or one batched CP with `originType = PAYROLL_NET_SALARY_BATCH` |
-| Time Tracking → Payroll | Reading live attendance records during payroll calculation | Freeze attendance snapshot when run reaches CALCULATED status; payroll engine reads from snapshot, not live records |
-| FieldTeamMember → Employee | Assuming the existing `hourlyRate` on the User model covers payroll salary | `hourlyRate` is for cost accounting; `Employee.baseSalary` follows CLT rules (monthly, not hourly); both exist but serve different purposes |
-| Work Orders → Labor Cost | Work order `laborCostPerHour` already exists but is a manual entry field | When HR module is active, `laborCostPerHour` on work orders should auto-populate from the employee's derived hourly rate (`monthlySalary / 220`); not a breaking change but must be gated on HR module enabled flag |
-| eSocial transmission | Sending events synchronously in the HTTP request cycle | All eSocial transmission must be async via BullMQ (already proven pattern in project); the API endpoint enqueues the job and returns a job ID; status is polled separately |
-| Digital certificate | Storing ICP-Brasil A1 certificate in the codebase or environment variable as base64 | Store in encrypted secrets manager (or at minimum AES-encrypted in DB); certificate rotation (annual for A1) must be a UI operation, not a deploy |
+| Payroll → GL | Use aggregate run total in one entry; no cost-center split | One `JournalEntry` per payroll run with N×2 `JournalEntryLine` rows (one debit per cost center, one aggregate credit to liability) |
+| Depreciation → GL | Generate one entry per asset per month without checking if an entry for that `assetId + period` already exists | `UNIQUE(sourceType, sourceId, periodId)` on `journal_entries` prevents duplicates; depreciation service uses upsert |
+| Stock Output → GL | Use stock output `totalCost` directly as GL amount; ignores weighted-average unit cost recalculation | Stock output GL entry must use `StockBalance.averageCost * quantity` at the time of output, not the original purchase price |
+| CP Settlement → GL | Create GL entry using `Payable.totalAmount` instead of `payment.amount` | Partial payments must generate partial GL entries; `sourceId` should be `paymentId`, not `payableId` |
+| CR Settlement → GL | Omit FUNRURAL deduction from the GL entry | CR settlement generates two GL entries: one for cash receipt (Debit Bank / Credit CR), one for FUNRURAL withheld (Debit FUNRURAL Contra-Revenue / Credit FUNRURAL Payable) |
+| Asset Sale → GL | Debit Cash / Credit Asset at book value, ignoring accumulated depreciation | Correct: Debit Cash (sale price) + Debit Accumulated Depreciation + Credit Asset (cost) + Credit/Debit Gain or Loss on Disposal |
+| SPED ECD → PVA | Generate file from computed financial statement values (which may differ from GL by rounding) | I150/I155 (balancete) must be derived from raw GL trial balance queries, not from financial statement layer |
 
 ---
 
 ## Performance Traps
 
-Patterns that work at small scale but fail as usage grows.
-
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Computing payroll for all employees in a single Prisma transaction | Timeout errors on farms with 50+ employees | Use batched transactions (10 employees per batch) with idempotency keys; BullMQ job tracks progress | Around 30–40 employees with complex rubrics |
-| Generating all eSocial S-1200 events in a single BullMQ job | Job exceeds BullMQ timeout (default 1 min), retries cause duplicates | One BullMQ job per employee per event; parent job tracks aggregate completion | Around 20 employees, sooner with slow eSocial endpoint |
-| Recalculating vacation and 13th provision for all employees every month inside the main payroll run | Payroll run takes minutes | Provision calculation can run as a separate monthly BullMQ job, not inside the main payroll run | 20+ employees with frequent salary changes |
-| Querying all time tracking records for a competence period without index on `(employeeId, competenceStart, competenceEnd)` | Slow payroll calculation | Add composite index at migration time; the payroll engine queries by these fields exclusively | Around 10,000 attendance records total |
-| Storing payroll history as JSONB snapshots in the PayrollRun record | Fast to write, but no queryability | Use normalized `PayrollEntry + PayrollRubric` tables; JSONB is acceptable only for the printable holerite PDF template data (not source of truth) | When financial reports need to query individual rubric totals across runs |
+| Recursive CTE for full chart-of-accounts subtotals on every DRE request | DRE page takes 5–10 seconds to load in December (year-end) | Materialize account hierarchy as `lpath` (ltree extension) in PostgreSQL; cache hierarchy in Redis with 5-minute TTL; use `@>` operator for subtree queries | At ~500 accounts with 4+ levels and 50K+ journal entry lines per year |
+| N+1 on `journal_entry_lines` when building trial balance | Trial balance endpoint times out; DB shows thousands of queries per request | Single query: `SELECT account_code, SUM(CASE side WHEN DEBIT THEN amount ELSE 0) - SUM(CASE side WHEN CREDIT THEN amount ELSE 0) FROM journal_entry_lines GROUP BY account_code` | At >10K lines per period, N+1 makes it unusable |
+| Full `accounting_entries` + `journal_entry_lines` table scan for balancete | Progressively slower each month as data accumulates | Composite index `(organizationId, periodId, accountId)` on `journal_entry_lines`; partial index for open periods (frequently queried); archive closed periods | At >500K lines (approx. 3 years of a mid-size fazenda) |
+| SPED ECD generation loads all journal entries into Node memory | OOM crash when generating ECD for a full year | Stream journal entries in batches of 5,000, write to file incrementally using Node.js `fs.createWriteStream`; existing CNAB adapter uses this pattern | At >100K entries per fiscal year |
+| DFC indirect method recalculates all period balances on each request | DFC takes >10 seconds | Pre-compute period balance snapshots at period close; store as `PeriodSnapshot { accountId, openingBalance, closingBalance, debitMovement, creditMovement }` | At >12 periods × 500 accounts = 6,000 rows to recalculate per request |
 
 ---
 
 ## Security Mistakes
 
-Domain-specific security issues beyond general web security.
-
 | Mistake | Risk | Prevention |
 |---------|------|------------|
-| Returning salary and INSS data in the general employee list API | Any user with `hr:read` sees all salary data | Salary fields require `hr:payroll:read` permission; base employee data (name, contract type) has lower permission level |
-| eSocial XML stored in the file system without encryption | Contains CPF, PIS, salary data for all employees | Store XML in DB column with field-level encryption or in object storage with server-side encryption; never plain filesystem |
-| Payroll run approval via a GET endpoint or without CSRF protection | CSRF attack approves payroll, triggering financial consequences | Payroll approval must be a POST/PATCH with CSRF token; add `hr:payroll:approve` permission separate from `hr:payroll:write` |
-| Allowing the same user to both calculate and approve a payroll run | Fraud risk — someone could inflate their own salary and approve it | Enforce four-eyes principle: `calculatedBy` and `approvedBy` must be different user IDs; enforce at the service level, not just UI |
-| Exporting holerite (payslip) PDF without validating the requesting user is the employee or an HR admin | Salary data leak | The payslip endpoint must verify: `requestingUser.id === payrollEntry.employeeId` OR `requestingUser.hasPermission('hr:payroll:read')` |
+| Journal entry creation endpoint accessible to any `financial:*` permission | Unauthorized manual entries; fabricated expenses | Separate permission `accounting:journal:create` for manual entries; auto-generated entries bypass permission check but are system-only (no user-facing endpoint) |
+| SPED ECD file stored in local filesystem | File accessible to all server processes; no versioning; lost on redeploy | Store in S3-compatible storage (existing pattern from pdfkit outputs); signed URL for download; access logged |
+| Period re-open available to `financial:manager` role | Manager can re-open closed period and insert backdated entries without audit trail | Period re-open requires `accounting:period:reopen` permission (separate from financial manager); creates immutable audit log entry; triggers alert to org owner |
+| Chart-of-accounts API returns all accounts for `organizationId` without RLS | Cross-tenant account code leak | All accounting models must include `organizationId` in every query `where` clause; RLS policy on `chart_of_accounts` table as with all existing models |
+| Opening balance wizard allows arbitrary amounts without source reference | Fraudulent equity inflation | Each opening balance line must reference a source (`bankAccountId`, `payableId`, etc.) or be flagged as `manualAdjustment: true` with mandatory `justification` text; auditable |
 
 ---
 
 ## UX Pitfalls
 
-Common user experience mistakes in this domain.
-
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
-| Showing raw INSS brackets and tax tables to the user | HR managers are not tax accountants — they get confused and lose trust in the system | Show the calculated result with a collapsible "Como foi calculado?" breakdown; never expose the raw table |
-| Putting the payroll approval button inside the same list view as the calculation | Accidental approvals; approved payroll cannot be reversed without complexity | Two-step flow: CALCULATED list → review screen with full breakdown → separate APPROVE action with confirmation modal |
-| Mobile ponto registration that does not validate geolocation against farm perimeter | Fraudulent clock-ins from outside the farm; labor law exposure if ponto data is contested | Validate GPS coordinates against the farm's PostGIS boundary polygon (already exists in the system); show warning if outside perimeter |
-| Displaying the payslip only as a downloadable PDF with no preview | Workers with limited connectivity cannot open the PDF on a slow mobile connection | Show an HTML payslip preview inline in the app before offering the PDF download |
-| Termination calculation presented as a single total with no itemization | Worker cannot verify the calculation; source of labor disputes | Always show the TRCT breakdown: each component (saldo de salário, férias vencidas, férias proporcionais + 1/3, 13º proporcional, FGTS penalty, net total) in a table before generating the document |
+| Show all chart-of-accounts in a flat select (400+ accounts) when creating a manual entry | Accountant cannot find the right account; wrong account selected | Hierarchical account picker with search; show account code + name + nature; most-recently-used accounts shown first |
+| Period close button available before checklist is 100% complete | Accountant closes period with unreconciled items; discovers error after SPED submission | Disable close button until all checklist items are checked; show count of blocking items ("3 itens pendentes") |
+| DRE shows YTD figures with no way to view single month | Cannot compare months; seasonal agricultural business makes YTD misleading in mid-year | DRE filter: single month / quarter / YTD / custom range; comparative column for prior year same period |
+| SPED ECD generation triggered immediately with no progress feedback | Large files take 30–60 seconds; user thinks it crashed and clicks again (duplicate generation) | Background job for ECD generation; progress indicator in UI; prevent second generation while first is running |
+| Manual journal entry form without a "verify balance" step | Accountant submits an imbalanced entry; discovers at next trial balance | Real-time debit/credit running totals in the form; submit button disabled until `|sumDebits - sumCredits| < 0.005` |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-Things that appear complete but are missing critical pieces.
-
-- [ ] **Payroll calculation engine:** Often missing the IRRF partial exemption for R$ 5,000–R$ 7,350 band valid from January 2026 — verify with salary = R$ 6,000, no dependents: expected IRRF ≠ 0 under old rules but = 0 under 2026 rules.
-- [ ] **Rural night shift:** Appears correct for urban CLT (20%, 22h–5h) but rural should be 25%, 21h–5h for agriculture or 20h–4h for livestock — verify the time window and percentage in integration tests.
-- [ ] **Vacation provisioning:** Calculates correctly at hire but does not recalculate on salary raise — verify by creating an employee, running 6 months of payroll, issuing a raise, running month 7, and checking the provision balance equals `newSalary × 7 / 12 × 1.333`.
-- [ ] **Safra contract termination:** No 40% FGTS penalty and no aviso prévio — verify no `fgtsPenalty` line item appears in the termination calculation for `contractType = CLT_HARVEST`.
-- [ ] **Payroll → Payables idempotency:** Running payroll approval twice should not create duplicate CPs — verify `(originType, originId)` constraint exists and is enforced at DB level.
-- [ ] **eSocial event ordering:** S-1010 (rubrics table) must be transmitted before the first S-2200 (employee admission) — verify the BullMQ queue ordering guarantees this for a new company setup.
-- [ ] **Employee dependents for IRRF:** Adding a dependent to an employee record should retroactively affect the current month's payroll if the run is not yet approved — verify the payroll engine reads current dependents, not a snapshot at run creation time.
-- [ ] **Housing/food deductions against minimum wage:** The cap is based on the regional minimum wage, not the employee's salary — verify the deduction calculation uses `regionalMinimumWage` as the base.
-- [ ] **Aviso prévio proportional extension:** A 12-year employee should have 66 days, not 30 — verify `calculateNoticePeriodDays` returns 66 for admissionDate 12 years ago.
-- [ ] **Payroll lock on attendance records:** After payroll run reaches CALCULATED status, editing an attendance record for that period should return 409 — verify the lock check exists and is enforced by the attendance update endpoint.
+- [ ] **Double-entry constraint:** Journal entry can be saved — verify that an imbalanced entry (debits ≠ credits) is REJECTED at the DB level, not just the service level.
+- [ ] **Period locking:** A CP payment date was edited for a closed period — verify the GL entry was NOT updated retroactively.
+- [ ] **Rateio rounding:** Create a payroll run totaling R$ 10,000.00 split 3 ways — verify all three journal entry line amounts sum to exactly R$ 10,000.00.
+- [ ] **Duplicate auto-entries:** Trigger `createPayrollEntries` twice for the same run — verify only one set of entries exists (idempotency).
+- [ ] **FUNRURAL entry type:** A receivable with FUNRURAL withheld is settled — verify the FUNRURAL GL entry lands in the contra-revenue group (3.x.xx), NOT in the expense group (6.x.xx).
+- [ ] **CPC 29 DFC reversal:** A biological asset fair value gain appears in DRE — verify the DFC indirect method shows it as a non-cash adjustment (subtracted from net income in operating activities).
+- [ ] **SPED ECD balance:** Run PVA validator on the generated ECD file — verify zero errors on I150/I155 (balancete) and J100/J150 (demonstrations).
+- [ ] **Opening balance wizard:** Create opening balances from wizard — verify `SUM(openingBalanceLines where side=DEBIT) = SUM(openingBalanceLines where side=CREDIT)`.
+- [ ] **Fiscal year type:** Configure a safra fiscal year (Jul–Jun) — verify ECD `DT_INI = 2025-07-01` and `DT_FIN = 2026-06-30` in the generated 0000 registro.
+- [ ] **Account code uniqueness:** Attempt to create two accounts with the same code — verify the DB constraint rejects it (not just application validation).
 
 ---
 
 ## Recovery Strategies
 
-When pitfalls occur despite prevention, how to recover.
-
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
-| INSS calculated as flat rate for multiple past months | HIGH | Create a supplementary `PayrollRun` (runType: COMPLEMENTAR) for each affected month with the delta; generate eSocial S-1295 retification events; reissue corrected holerites; update FGTS deposit for the delta (FGTS is calculated on gross salary, not affected by INSS error — lower impact) |
-| Duplicate Payable records from non-idempotent payroll→CP integration | MEDIUM | Write a one-time migration: identify duplicate CPs by `(category=PAYROLL, farmId, competenceMonth)`, void all but the most recent for each group; add the `(originType, originId)` unique constraint |
-| Payroll run partially committed (orphaned entries) | MEDIUM | Set `PayrollRun.status = FAILED`; run a cleanup script that deletes `PayrollEntry` records where `payrollRunId` matches the failed run; re-enqueue the job |
-| eSocial events sent in wrong order (S-1200 before S-2200 accepted) | HIGH | Transmit the missing prerequisite events first; wait for government acceptance; then use S-1295 (retification of S-1200) if values need correction; eSocial does not allow deleting accepted events — only rectification |
-| Vacation provision balance negative after salary raise | HIGH | Run a one-time "provision reset" job that recalculates each employee's provision as `currentSalary × completedMonths / 12 × 1.333` and generates an accounting adjustment entry for the delta |
-| Rural night shift calculated as urban (wrong %) for months of history | MEDIUM | Generate a supplementary payroll run for each affected competence month with the adicional noturno delta; mark the original run as `HAS_COMPLEMENTARY = true` |
+| Flat-column `accounting_entries` extended instead of replaced | HIGH | Create new `journal_entries` + `journal_entry_lines` tables; write migration script to convert old records; update all consumers; keep old table as archive with `deprecated_` prefix |
+| Period closed with unreconciled entries — wrong statement sent to accountant | MEDIUM | Re-open period (requires `accounting:period:reopen` permission); create correcting journal entry with `adjustmentType = PRIOR_PERIOD_CORRECTION`; regenerate financial statements; note correction in notes explicativas |
+| Duplicate auto-generated journal entries discovered | MEDIUM | Write a cleanup script: `DELETE FROM journal_entries WHERE id NOT IN (SELECT MIN(id) FROM journal_entries GROUP BY sourceType, sourceId, periodId)`; add `UNIQUE(sourceType, sourceId, periodId)` constraint; re-run idempotency check |
+| SPED ECD rejected by PVA with I050 duplicate accounts | LOW | Identify duplicate `COD_CTA` in chart of accounts; merge the duplicate accounts (reassign all lines); regenerate ECD; re-submit |
+| Trial balance out by R$ 0.01–R$ 0.10 (rounding) | MEDIUM | Audit rateio functions for float arithmetic; identify affected periods; create correcting entries; implement `rateio.ts` with remainder-to-largest-share logic; verify all future periods |
+| Opening balance not entered — first month BP shows zero assets | MEDIUM | Wizard creates `JournalEntry sourceType = OPENING_BALANCE` for each account with the correct balance as of go-live date; this is normal first-month-of-accounting procedure |
 
 ---
 
 ## Pitfall-to-Phase Mapping
 
-How roadmap phases should address these pitfalls.
-
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| INSS flat-rate error | Phase 2: Parâmetros e Rubricas (calculation engine) | Unit test: salary = R$ 5,000 gives INSS = R$ 518.87 (not R$ 700) |
-| IRRF without INSS deduction or dependents | Phase 2: Parâmetros e Rubricas (calculation engine) | Unit test: 2026, salary = R$ 6,000, 2 dependents: IRRF = 0 |
-| Non-atomic payroll run | Phase 4: Processamento da Folha | Integration test: simulate crash after 5/30 employees; re-run; verify no duplicates |
-| eSocial event ordering | Phase 6: eSocial e Obrigações | BullMQ queue config test: S-1010 job completes before S-2200 job starts |
-| Rural CLT vs urban CLT defaults | Phase 1: Contratos e Jornada | Unit tests per rural rule (night shift period, housing cap, safra termination) |
-| Duplicate Payables on re-processing | Phase 5: Integração Financeira | Integration test: approve payroll twice; count CPs = 1 not 2 |
-| Time tracking edit after payroll calculation | Phase 3: Controle de Ponto | Integration test: edit attendance after CALCULATED status; expect HTTP 409 |
-| Provision incorrect after salary raise | Phase 5: Férias e 13º Salário | Integration test: raise salary in month 7; verify provision balance = `newSalary × 7 / 12 × 1.333` |
-| Termination aviso prévio flat 30 days | Phase 6: Rescisão Contratual | Unit test: 12-year employee; verify noticePeriodDays = 66 |
-| FieldTeamMember/Employee model conflation | Phase 1: Cadastro de Colaboradores | Code review gate: `Employee` must be a distinct Prisma model with no inheritance from `FieldTeamMember` |
+| Double-entry broken by aggregate entries | Plano de Contas (Phase 1) — `JournalEntry + JournalEntryLine` schema | Deploy and assert: imbalanced entry rejected by DB trigger |
+| Rounding breaks trial balance | Plano de Contas (Phase 1) — `rateio.ts` utility | Unit test: `rateio(10000.00, [0.3333, 0.3333, 0.3334])` sums to exactly 10000.00 |
+| Retroactive edits corrupt closed period | Períodos Contábeis (Phase 2) — `assertPeriodOpen` guard | Integration test: edit CP payment date for closed period → GL unchanged |
+| Flat `accounting_entries` model extended | Plano de Contas (Phase 1) — schema created fresh | Code review: no column additions to `accounting_entries` table |
+| Duplicate auto-entries from retries | Lançamentos Automáticos (Phase 3) — `PendingJournalPosting` queue | Load test: trigger payroll close 3×; assert exactly 5 journal entry types created |
+| SPED ECD PVA validation failures | SPED ECD (Phase N) — pre-generation validator + PVA test | Run PVA on generated file; assert zero errors |
+| Historical data gap | Saldo de Abertura (Phase early) — opening balance wizard | Trial balance after wizard shows non-zero balances matching existing module data |
+| Safra fiscal year mismatch | Períodos Contábeis (Phase 2) — `FiscalYear` model with `startDate/endDate` | Create safra year Jul–Jun; assert ECD 0000 registro dates are correct |
+| CPC 29 phantom income in DFC | DFC (Phase N-1) — `isFairValueAdjustment` flag + DFC reversal | Revalue biological asset; assert DFC operating activities shows reversal |
+| FUNRURAL wrong account group | Plano de Contas (Phase 1) — two distinct FUNRURAL codes | Settle CR with FUNRURAL; assert GL entry is in group 3 (contra-revenue) |
 
 ---
 
 ## Sources
 
-- [Brazil Social Security updated table 2025 — Vialto Partners](https://vialtopartners.com/regional-alerts/brazil-social-security-updated-social-security-tax-table-for-2025)
-- [Tabela INSS 2026 com dedução — Contabilizei](https://www.contabilizei.com.br/contabilidade-online/tabela-inss/)
-- [INSS 2026 — alíquotas e faixas — Serasa Experian](https://www.serasaexperian.com.br/conteudos/tabela-inss-2026/)
-- [IRRF partial exemption 2026 (R$ 5,000–R$ 7,350 band) — Remoly](https://remoly.net/blog-detail/590)
-- [eSocial event ordering (S-1010 before S-2200 before S-1200) — Contabilidade Cidadã](https://contabilidadecidada.com.br/erros-nos-eventos-s-1200-e-s-1299-como-identificar-e-corrigir/)
-- [eSocial S-1200 error: INSS values divergent — Alterdata KB](https://ajuda.alterdata.com.br/dpbase/esocial-erro-no-evento-s-1200-os-valores-do-campo-valor-calculado-pelo-sistema-e-valor-calculado-pelo-esocial-que-estao-localizados-nesse-registro-na-aba-inss-estao-divergentes-73673545.html)
-- [eSocial event prerequisite chain — TOTVS Central de Atendimento](https://centraldeatendimento.totvs.com/hc/pt-br/articles/360045237814-RH-Linha-Protheus-GPE-eSocial-S-1200-S-1210)
-- [Adicional noturno rural (25%, 21h–5h) vs urban — Tworh](https://tworh.com.br/leis/adicional-noturno-rural-e-urbano/)
-- [Adicional noturno rural vs urban — Costa & Macedo](https://costaemacedo.adv.br/adicional-noturno-regras-para-trabalhadores-urbanos-rurais-e-diferenciados/)
-- [Lei 5.889/73 — Lei do Trabalhador Rural — Planalto](https://www.planalto.gov.br/ccivil_03/leis/l5889.htm)
-- [Desconto moradia/alimentação trabalhador rural — Martins Romanni](https://www.martinsromanni.com.br/descontos-no-salario-do-empregado-rural-destinados-a-moradia-e-alimentacao/)
-- [Contrato de safra — TST Direito Garantido](https://www.tst.jus.br/en/-/direito-garantido-contrato-por-safra)
-- [Contrato de safra — Sebrae PR](https://sebraepr.com.br/comunidade/artigo/contrato-de-trabalho-por-safra-cuidados-essenciais-e-regras-da-clt)
-- [FUNRURAL 2026 — alíquotas e cálculo — FarmPlus](https://www.farmplus.com.br/aprenda/funrural-2026-o-que-e-quem-paga-aliquotas-como-calcular)
-- [FUNRURAL opção folha vs receita bruta — FAEMG](https://www.sistemafaemg.org.br/Content/uploads/informacoes-juridicas/IcWt1642507395687.pdf)
-- [Aviso prévio proporcional (Lei 12.506/2011) — VLV Advogados](https://vlvadvogados.com/recuperar-valores-de-rescisao-errada/)
-- [Rescisão: aviso prévio proporcional erro comum — Casimiro Ribeiro Garcia](https://casimiroribeirogarcia.com.br/erros-pagamento-rescisao-trabalhista/)
-- [Provisão de férias e 13º: método provisão/reversão — Vanin Contadores](https://www.vanin.com/noticias/provisao-de-ferias-e-13-salario)
-- [Contabilização provisão — Consisa Sistemas](https://consisanet.movidesk.com/kb/pt-br/article/278171/contabilizacao-com-provisao-mensal-de-ferias-e-decimo-terceiro-s)
-- [Idempotency in payroll/data pipelines — Airbyte](https://airbyte.com/data-engineering-resources/idempotency-in-data-pipelines)
-- [eSocial digital certificate new standard 2026 — RRT Contabilidade](https://rrtcontabilidade.com.br/certificado-digital-novo-padrao-esocial/)
-- Codebase analysis: `apps/backend/src/modules/payables/payables.types.ts` — existing `PayableCategory.PAYROLL` enum value and `originType/originId` pattern
-- Codebase analysis: `apps/backend/src/modules/team-operations/team-operations.types.ts` — existing `FieldTeamMember` structure
-- Codebase analysis: `apps/backend/prisma/schema.prisma` — `FieldTeam`, `laborCostPerHour` on work orders, `costCenterId` patterns
+- [Modern Treasury: How to Scale a Ledger, Part V — Immutability and Double-Entry](https://www.moderntreasury.com/journal/how-to-scale-a-ledger-part-v)
+- [Modern Treasury: Designing Ledgers API with Concurrency Control](https://www.moderntreasury.com/journal/designing-ledgers-with-optimistic-locking)
+- [Starsoft: Guia ECD e ECF 2025](https://www.starsoft.com.br/blog/ecd-e-ecf-2025-baixe-o-guia-completo-e-evite-erros-na-entrega/)
+- [Domínio Sistemas: Principais erros do SPED ECD](https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=6037)
+- [RFB SPED: Publicação versão 10.3.4 ECD](http://sped.rfb.gov.br/pagina/show/7996)
+- [PostgreSQL docs: Recursive CTEs](https://www.postgresql.org/docs/current/queries-with.html)
+- [CYBERTEC: Speeding up recursive queries and hierarchical data](https://www.cybertec-postgresql.com/en/postgresql-speeding-up-recursive-queries-and-hierarchic-data/)
+- [IFRS: IAS 41 Agriculture](https://www.ifrs.org/issued-standards/list-of-standards/ias-41-agriculture/)
+- [MDPI: Biological Assets IAS 41 — Systematic Review](https://www.mdpi.com/1911-8074/18/7/380)
+- [Agronota: Registros contábeis da atividade rural](https://agronota.com.br/contabil-e-fiscal/registros-contabeis-da-atividade-rural-o-que-o-contador-precisa-saber/)
+- [Planning: Contabilidade para o agronegócio](https://planning.com.br/contabilidade-agronegocio-particularidades-fiscais/)
+- [Contabeis.com.br: Balanço fiscal vs. ano agrícola](https://www.contabeis.com.br/forum/contabilidade/258403/balanco-fiscal-x-ano-agricola/)
+- [Oracle ERP: High Volume Data Migration for General Ledger](https://blogs.oracle.com/erp-ace/high-volume-data-migration-consideration-for-general-ledger)
+- Codebase analysis: `apps/backend/src/modules/accounting-entries/` (INTEGR-02 implementation)
+- Codebase analysis: `apps/backend/prisma/schema.prisma` — `AccountingEntry` model, `AccountingSourceType` enum
 
 ---
-*Pitfalls research for: RH e Folha de Pagamento Rural — v1.3 milestone*
-*Researched: 2026-03-23*
+*Pitfalls research for: rural farm management ERP — v1.4 Accounting and Financial Statements milestone*
+*Researched: 2026-03-26*
