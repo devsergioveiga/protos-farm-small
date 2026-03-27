@@ -427,6 +427,10 @@ model Organization {
   esocialEvents            EsocialEvent[]
   incomeStatements         IncomeStatement[]
   accountingEntries        AccountingEntry[]
+  chartOfAccounts          ChartOfAccount[]
+  fiscalYears              FiscalYear[]
+  accountingPeriods        AccountingPeriod[]
+  accountBalances          AccountBalance[]
 
   @@map("organizations")
 }
@@ -521,6 +525,8 @@ model User {
   assetLeasingsCreated           AssetLeasing[]      @relation("AssetLeasingCreator")
   biologicalAssetValuationsCreated BiologicalAssetValuation[] @relation("BiologicalAssetValuationCreator")
   employee                       Employee?
+  closedPeriods                  AccountingPeriod[] @relation("PeriodClose")
+  reopenedPeriods                AccountingPeriod[] @relation("PeriodReopen")
 
   @@map("users")
 }
@@ -1945,6 +1951,7 @@ model CostCenter {
   employeeContracts         EmployeeContract[]
   provisions                PayrollProvision[]
   accountingEntries         AccountingEntry[]
+  accountBalances           AccountBalance[]
 
   @@unique([farmId, code])
   @@index([farmId])
@@ -8754,6 +8761,27 @@ enum AccountingEntryType {
   SALARY_REVERSAL
 }
 
+// ── Phase 35 Plan 01: Chart of Accounts & Fiscal Periods ──
+
+enum AccountType {
+  ATIVO
+  PASSIVO
+  PL
+  RECEITA
+  DESPESA
+}
+
+enum AccountNature {
+  DEVEDORA
+  CREDORA
+}
+
+enum PeriodStatus {
+  OPEN
+  CLOSED
+  BLOCKED
+}
+
 model TaxGuide {
   id             String         @id @default(uuid())
   organizationId String
@@ -8829,6 +8857,104 @@ model IncomeStatement {
 }
 
 // ── Phase 32 Plan 02: Accounting Entries (INTEGR-02) ──
+
+// ── Phase 35 Plan 01: Chart of Accounts, Fiscal Years, Accounting Periods, Account Balances ──
+
+model ChartOfAccount {
+  id               String        @id @default(uuid())
+  organizationId   String
+  parentId         String?
+  code             String
+  name             String
+  accountType      AccountType
+  nature           AccountNature
+  isSynthetic      Boolean       @default(false)
+  allowManualEntry Boolean       @default(true)
+  isActive         Boolean       @default(true)
+  isFairValueAdj   Boolean       @default(false)
+  spedRefCode      String?
+  level            Int
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  organization  Organization     @relation(fields: [organizationId], references: [id])
+  parent        ChartOfAccount?  @relation("CoaTree", fields: [parentId], references: [id])
+  children      ChartOfAccount[] @relation("CoaTree")
+  accountBalances AccountBalance[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId, accountType])
+  @@index([parentId])
+  @@map("chart_of_accounts")
+}
+
+model FiscalYear {
+  id             String    @id @default(uuid())
+  organizationId String
+  name           String
+  startDate      DateTime  @db.Date
+  endDate        DateTime  @db.Date
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization      Organization       @relation(fields: [organizationId], references: [id])
+  accountingPeriods AccountingPeriod[]
+  accountBalances   AccountBalance[]
+
+  @@unique([organizationId, startDate])
+  @@index([organizationId])
+  @@map("fiscal_years")
+}
+
+model AccountingPeriod {
+  id             String       @id @default(uuid())
+  organizationId String
+  fiscalYearId   String
+  month          Int
+  year           Int
+  status         PeriodStatus @default(OPEN)
+  openedAt       DateTime     @default(now())
+  closedAt       DateTime?
+  closedBy       String?
+  reopenedAt     DateTime?
+  reopenedBy     String?
+  reopenReason   String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  fiscalYear        FiscalYear   @relation(fields: [fiscalYearId], references: [id])
+  closedByUser      User?        @relation("PeriodClose", fields: [closedBy], references: [id])
+  reopenedByUser    User?        @relation("PeriodReopen", fields: [reopenedBy], references: [id])
+
+  @@unique([organizationId, fiscalYearId, month, year])
+  @@index([organizationId, status])
+  @@map("accounting_periods")
+}
+
+model AccountBalance {
+  id              String   @id @default(uuid())
+  organizationId  String
+  accountId       String
+  fiscalYearId    String
+  month           Int
+  openingBalance  Decimal  @default(0) @db.Decimal(14, 2)
+  debitTotal      Decimal  @default(0) @db.Decimal(14, 2)
+  creditTotal     Decimal  @default(0) @db.Decimal(14, 2)
+  closingBalance  Decimal  @default(0) @db.Decimal(14, 2)
+  costCenterId    String?
+  updatedAt       DateTime @updatedAt
+
+  organization Organization    @relation(fields: [organizationId], references: [id])
+  account      ChartOfAccount  @relation(fields: [accountId], references: [id])
+  fiscalYear   FiscalYear      @relation(fields: [fiscalYearId], references: [id])
+  costCenter   CostCenter?     @relation(fields: [costCenterId], references: [id])
+
+  @@unique([organizationId, accountId, fiscalYearId, month])
+  @@index([organizationId, fiscalYearId])
+  @@map("account_balances")
+}
 
 model AccountingEntry {
   id                String               @id @default(uuid())
