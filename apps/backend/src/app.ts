@@ -156,6 +156,8 @@ import medicalExamsRouter from './modules/medical-exams/medical-exams.routes';
 import safetyComplianceRouter from './modules/safety-compliance/safety-compliance.routes';
 import { hrDashboardRouter } from './modules/hr-dashboard/hr-dashboard.routes';
 import { accountingEntriesRouter } from './modules/accounting-entries/accounting-entries.routes';
+import { fiscalPeriodsRouter } from './modules/fiscal-periods/fiscal-periods.routes';
+import { chartOfAccountsRouter } from './modules/chart-of-accounts/chart-of-accounts.routes';
 
 const app = express();
 
@@ -325,5 +327,7 @@ app.use('/api', employeeTerminationsRouter);
 app.use('/api', esocialEventsRouter);
 app.use('/api', hrDashboardRouter);
 app.use('/api', accountingEntriesRouter);
+app.use('/api/org/:orgId', fiscalPeriodsRouter);
+app.use('/api', chartOfAccountsRouter);
 
 export { app };
