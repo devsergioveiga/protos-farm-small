@@ -112,6 +112,7 @@ import { assetDocumentsRouter } from './modules/assets/asset-documents.routes';
 import { biologicalAssetsRouter } from './modules/biological-assets/biological-assets.routes';
 import { fuelRecordsRouter } from './modules/fuel-records/fuel-records.routes';
 import { meterReadingsRouter } from './modules/meter-readings/meter-readings.routes';
+<<<<<<< HEAD
 import { depreciationRouter } from './modules/depreciation/depreciation.routes';
 import { animalOwnershipsRouter } from './modules/animal-ownerships/animal-ownerships.routes';
 import { animalExitsRouter } from './modules/animal-exits/animal-exits.routes';
@@ -159,6 +160,7 @@ import { accountingEntriesRouter } from './modules/accounting-entries/accounting
 import { fiscalPeriodsRouter } from './modules/fiscal-periods/fiscal-periods.routes';
 import { chartOfAccountsRouter } from './modules/chart-of-accounts/chart-of-accounts.routes';
 import { journalEntriesRouter } from './modules/journal-entries/journal-entries.routes';
+import { openingBalanceRouter } from './modules/opening-balance/opening-balance.routes';
 
 const app = express();
 
@@ -280,6 +282,7 @@ app.use('/api', assetDocumentsRouter);
 app.use('/api', biologicalAssetsRouter);
 app.use('/api', fuelRecordsRouter);
 app.use('/api', meterReadingsRouter);
+<<<<<<< HEAD
 app.use('/api', depreciationRouter);
 app.use('/api', animalOwnershipsRouter);
 app.use('/api', animalExitsRouter);
@@ -331,5 +334,6 @@ app.use('/api', accountingEntriesRouter);
 app.use('/api/org/:orgId', fiscalPeriodsRouter);
 app.use('/api', chartOfAccountsRouter);
 app.use('/api', journalEntriesRouter);
+app.use('/api', openingBalanceRouter);
 
 export { app };
