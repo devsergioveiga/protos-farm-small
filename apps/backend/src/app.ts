@@ -161,6 +161,7 @@ import { chartOfAccountsRouter } from './modules/chart-of-accounts/chart-of-acco
 import { journalEntriesRouter } from './modules/journal-entries/journal-entries.routes';
 import { openingBalanceRouter } from './modules/opening-balance/opening-balance.routes';
 import { ledgerRouter } from './modules/ledger/ledger.routes';
+import { autoPostingRouter } from './modules/auto-posting/auto-posting.routes';
 
 const app = express();
 
@@ -335,5 +336,6 @@ app.use('/api', chartOfAccountsRouter);
 app.use('/api', journalEntriesRouter);
 app.use('/api', openingBalanceRouter);
 app.use('/api', ledgerRouter);
+app.use('/api', autoPostingRouter);
 
 export { app };
