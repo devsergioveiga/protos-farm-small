@@ -10,8 +10,8 @@ Requirements for Accounting and Financial Statements module. Each maps to roadma
 ### Plano de Contas e Configuração Contábil
 
 - [x] **COA-01**: Contador pode gerenciar plano de contas hierárquico (até 5 níveis) com código, nome, tipo (Ativo, Passivo, PL, Receita, Despesa), natureza (devedora/credora), flag sintético/analítico, flag permite lançamento manual, status ativo/inativo, com CRUD completo e visualização em árvore expansível
-- [ ] **COA-02**: Sistema carrega template de plano de contas rural pré-configurado (modelo CFC/Embrapa) incluindo contas específicas agropecuárias: ativo biológico (CPC 29), culturas em formação, terras rurais, máquinas agrícolas, crédito rural (PRONAF/Funcafé), FUNRURAL a recolher, obrigações trabalhistas rurais e resultado por cultura
-- [ ] **COA-03**: Contador pode mapear cada conta analítica para o código referencial SPED (plano L300R rural) com validação de compatibilidade tipo/natureza, possibilidade de N:1 (várias contas internas → 1 referencial), relatório de contas não mapeadas e alerta de obrigatoriedade antes do fechamento
+- [x] **COA-02**: Sistema carrega template de plano de contas rural pré-configurado (modelo CFC/Embrapa) incluindo contas específicas agropecuárias: ativo biológico (CPC 29), culturas em formação, terras rurais, máquinas agrícolas, crédito rural (PRONAF/Funcafé), FUNRURAL a recolher, obrigações trabalhistas rurais e resultado por cultura
+- [x] **COA-03**: Contador pode mapear cada conta analítica para o código referencial SPED (plano L300R rural) com validação de compatibilidade tipo/natureza, possibilidade de N:1 (várias contas internas → 1 referencial), relatório de contas não mapeadas e alerta de obrigatoriedade antes do fechamento
 - [x] **COA-04**: Contador pode configurar exercícios fiscais com data início/fim (calendário jan-dez ou safra jul-jun), e períodos contábeis mensais com status (ABERTO, FECHADO, BLOQUEADO), abertura automática do próximo período e impedimento de lançamento em período não aberto
 - [x] **COA-05**: Contador pode vincular centros de custo existentes (fazenda, talhão, atividade) a lançamentos contábeis para DRE gerencial por cultura/fazenda, com rateio proporcional quando lançamento envolve múltiplos centros
 
@@ -98,8 +98,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | COA-01 | Phase 35 | Complete |
-| COA-02 | Phase 35 | Pending |
-| COA-03 | Phase 35 | Pending |
+| COA-02 | Phase 35 | Complete |
+| COA-03 | Phase 35 | Complete |
 | COA-04 | Phase 35 | Complete |
 | COA-05 | Phase 35 | Complete |
 | LANC-01 | Phase 37 | Pending |

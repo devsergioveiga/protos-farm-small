@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
 status: Ready to execute
-stopped_at: Completed 35-03-PLAN.md
-last_updated: "2026-03-27T10:04:21.472Z"
+stopped_at: Completed 35-02-PLAN.md
+last_updated: "2026-03-27T10:11:25.151Z"
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
+  completed_plans: 3
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 ## Current Position
 
 Phase: 35 (plano-de-contas-e-periodos-fiscais) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 
 ## Accumulated Context
 
@@ -42,6 +42,8 @@ Key decisions carried from v1.3:
 - [Phase 35]: Used prisma migrate diff + deploy instead of migrate dev: shadow DB was missing tables from earlier migrations; diff generates correct SQL from live DB state
 - [Phase 35]: rateio remainder goes to largest-percentage share for predictability when equal percentages exist
 - [Phase 35]: fiscalPeriodsRouter mounted at /api/org/:orgId with mergeParams:true for param access in sub-routes
+- [Phase 35]: Template co-located in src/modules/ not prisma/fixtures/ — tsconfig rootDir ./src excludes prisma/
+- [Phase 35]: Legacy 6.x codes in COA template for ACCOUNT_CODES compatibility; Phase 37 will update GL rules
 
 ### Pending Todos
 
@@ -56,7 +58,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T10:04:21.469Z
-Stopped at: Completed 35-03-PLAN.md
+Last session: 2026-03-27T10:11:25.148Z
+Stopped at: Completed 35-02-PLAN.md
 Resume file: None
 Next action: Define requirements and create roadmap for v1.4
