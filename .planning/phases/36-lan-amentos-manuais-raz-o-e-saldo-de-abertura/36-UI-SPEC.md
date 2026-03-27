@@ -22,7 +22,7 @@ created: 2026-03-27
 | Preset | not applicable |
 | Component library | none (custom components, `var(--*)` tokens) |
 | Icon library | lucide-react |
-| Font | DM Sans (headlines 500/700) + Source Sans 3 (body 400/600) + JetBrains Mono (numeric data 400) |
+| Font | DM Sans (headlines 700) + Source Sans 3 (body 400) + JetBrains Mono (numeric data 400) |
 
 Source: CLAUDE.md + `apps/frontend/src/styles/tokens.css` (confirmed existing)
 
@@ -53,10 +53,12 @@ Exceptions:
 | Role | Size | CSS Var | Font | Weight | CSS Var | Line Height |
 |------|------|---------|------|--------|---------|-------------|
 | Body | 16px | `--text-base` | Source Sans 3 | 400 | `--font-regular` | 1.5 (`--leading-normal`) |
-| Label / UI text | 14px | `--text-sm` | Source Sans 3 | 600 | `--font-semibold` | 1.3 (`--leading-snug`) |
+| Label / UI text | 14px | `--text-sm` | Source Sans 3 | 700 | `--font-bold` | 1.3 (`--leading-snug`) |
 | Heading (page/modal) | 20px | `--text-lg` | DM Sans | 700 | `--font-bold` | 1.2 (`--leading-tight`) |
-| Display (section headers, totals row) | 18px | `--text-md` | DM Sans | 500 | `--font-medium` | 1.2 (`--leading-tight`) |
+| Display (section headers, totals row) | 18px | `--text-md` | DM Sans | 400 | `--font-regular` | 1.2 (`--leading-tight`) |
 | Numeric data (amounts, account codes, entry numbers) | 14px | `--text-sm` | JetBrains Mono | 400 | `--font-regular` | 1.5 |
+
+Declared weights: `--font-regular` (400) and `--font-bold` (700). No other weights used in this phase.
 
 Notes:
 - ALL CAPS only for STATUS badge labels ("RASCUNHO", "POSTADO", "ESTORNADO") — never in body copy
@@ -124,7 +126,7 @@ All copy in pt-BR coloquial per CLAUDE.md.
 | Balance indicator (balanced) | Lançamento balanceado |
 | Balance indicator (unbalanced, with diff) | Diferença de R$ {valor} — débitos e créditos devem ser iguais |
 | Confirmation before posting | Confirmar lançamento? Após lançado, não será possível editar. |
-| Post confirmation CTA | Confirmar |
+| Post confirmation CTA | Confirmar Lançamento |
 | Success toast (draft saved) | Rascunho salvo |
 | Success toast (posted) | Lançamento {número} postado com sucesso |
 | Error (period closed) | Não é possível lançar: o período {mês/ano} está fechado. |
@@ -266,15 +268,15 @@ Components to build for this phase. All forms in modal, never in dedicated page.
 - Period selector defaults to current open fiscal period
 - Running balance column: right-aligned, `JetBrains Mono`, positive in `--color-success-500` (or `--color-neutral-700` for neutral), negative in `--color-error-500`
 - Drill-down: clicking any entry number row opens a read-only `JournalEntryDetailModal` (inline view of all lines)
-- "Saldo Anterior" row at top of table, visually distinct (neutral-200 background, semibold)
+- "Saldo Anterior" row at top of table, visually distinct (neutral-200 background, bold weight `--font-bold`)
 - Export CSV and Export PDF are secondary buttons (no primary treatment)
 
 ### Trial Balance Page
 
 - Period selector with fiscal year context
 - Table: Account code | Account name | Saldo Anterior (D/C) | Movimento Débito | Movimento Crédito | Saldo Atual (D/C)
-- Group rows (synthetic accounts) have bold text and light neutral-100 background
-- Total rows use DM Sans 500 with top border `--color-neutral-300`
+- Group rows (synthetic accounts) have bold text (`--font-bold`) and light neutral-100 background
+- Total rows use DM Sans `--font-bold` with top border `--color-neutral-300`
 - "Comparativo com período anterior" toggle: adds a second set of columns; off by default
 - Balance validation bar: full-width strip above table, green if balanced, red if not — always visible
 
@@ -288,7 +290,7 @@ Components to build for this phase. All forms in modal, never in dedicated page.
 
 ### Status Badge
 
-- Non-interactive pill: 6px radius, font `--text-sm` 600, ALL CAPS, icon 16px left of text
+- Non-interactive pill: 6px radius, font `--text-sm` `--font-bold`, ALL CAPS, icon 16px left of text
 - Touch/click on badge does nothing (it is informational only)
 
 ---
