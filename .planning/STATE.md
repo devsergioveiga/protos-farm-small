@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
-status: Phase complete — ready for verification
-stopped_at: Phase 37 UI-SPEC approved
-last_updated: "2026-03-27T19:10:00.959Z"
+status: Ready to execute
+stopped_at: Completed 37-01-PLAN.md
+last_updated: "2026-03-27T20:11:52.206Z"
 progress:
   total_phases: 7
   completed_phases: 2
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 12
+  completed_plans: 10
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 36 — lan-amentos-manuais-raz-o-e-saldo-de-abertura
+**Current focus:** Phase 37 — regras-e-lan-amentos-autom-ticos
 
 ## Current Position
 
-Phase: 36 (lan-amentos-manuais-raz-o-e-saldo-de-abertura) — EXECUTING
-Plan: 5 of 5
+Phase: 37 (regras-e-lan-amentos-autom-ticos) — EXECUTING
+Plan: 2 of 3
 
 ## Accumulated Context
 
@@ -56,6 +56,9 @@ Key decisions carried from v1.3:
 - [Phase 36-lan-amentos-manuais-raz-o-e-saldo-de-abertura]: TrialBalancePage uses tab pattern (Balancete + Livro Diário) — single page, two panels per UI-SPEC
 - [Phase 36]: /accounting-entries route now points to JournalEntriesPage — full manual entry UI replaces payroll-only accounting entries page
 - [Phase 36]: CSV import uses preview-first flow: upload -> importCsv() -> CsvPreviewModal -> createDraft per entry (per LANC-03 spec)
+- [Phase 37]: D-17: Idempotency via UNIQUE(sourceType, sourceId) on both PendingJournalPosting and JournalEntry — process() returns silently on duplicate
+- [Phase 37]: EXTRACTORS map keyed on AutoPostingSourceType co-located in auto-posting service — no cross-module imports, each extractor fetches its own source data
+- [Phase 37]: seedAccountingRules(orgId) must be called after COA seeding — resolves accounts by code prefix startsWith, silently skips if COA not seeded yet
 
 ### Pending Todos
 
@@ -70,7 +73,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T19:10:00.956Z
-Stopped at: Phase 37 UI-SPEC approved
-Resume file: .planning/phases/37-regras-e-lan-amentos-autom-ticos/37-UI-SPEC.md
+Last session: 2026-03-27T20:11:52.202Z
+Stopped at: Completed 37-01-PLAN.md
+Resume file: None
 Next action: Define requirements and create roadmap for v1.4
