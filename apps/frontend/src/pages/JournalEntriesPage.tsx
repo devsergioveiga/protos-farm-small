@@ -12,13 +12,17 @@ import {
   Pencil,
   Undo2,
   Trash2,
+  Settings,
 } from 'lucide-react';
 import { useJournalEntries, useJournalEntryActions } from '@/hooks/useJournalEntries';
 import { useFiscalYears } from '@/hooks/useFiscalPeriods';
 import { useAuth } from '@/stores/AuthContext';
+import { usePendingCounts } from '@/hooks/usePendingPostings';
 import JournalEntryModal from '@/components/accounting/JournalEntryModal';
 import ReversalModal from '@/components/accounting/ReversalModal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import PendingPostingsTab from '@/components/accounting/PendingPostingsTab';
+import AccountingRulesTab from '@/components/accounting/AccountingRulesTab';
 import type { JournalEntry, JournalEntryStatus, JournalEntryType, CsvImportPreview } from '@/types/journal-entries';
 import './JournalEntriesPage.css';
 
@@ -252,6 +256,20 @@ export default function JournalEntriesPage() {
   const { user } = useAuth();
   const orgId = user?.organizationId ?? '';
 
+  // ─── Tab state ───────────────────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState<'lancamentos' | 'pendencias' | 'regras'>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return (params.get('tab') as 'lancamentos' | 'pendencias' | 'regras') || 'lancamentos';
+  });
+
+  const { counts: pendingCounts } = usePendingCounts();
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', activeTab);
+    window.history.replaceState({}, '', url.toString());
+  }, [activeTab]);
+
   const [filterPeriodId, setFilterPeriodId] = useState('');
   const [filterStatus, setFilterStatus] = useState<JournalEntryStatus | ''>('');
   const [filterType, setFilterType] = useState<JournalEntryType | ''>('');
@@ -398,6 +416,77 @@ export default function JournalEntriesPage() {
         </div>
       </header>
 
+      {/* Tab navigation */}
+      <nav role="tablist" className="journal-tabs" aria-label="Abas de lançamentos">
+        <button
+          role="tab"
+          id="tab-lancamentos"
+          aria-selected={activeTab === 'lancamentos'}
+          aria-controls="panel-lancamentos"
+          className={`journal-tab${activeTab === 'lancamentos' ? ' active' : ''}`}
+          onClick={() => setActiveTab('lancamentos')}
+        >
+          Lançamentos
+        </button>
+        <button
+          role="tab"
+          id="tab-pendencias"
+          aria-selected={activeTab === 'pendencias'}
+          aria-controls="panel-pendencias"
+          className={`journal-tab${activeTab === 'pendencias' ? ' active' : ''}`}
+          onClick={() => setActiveTab('pendencias')}
+        >
+          Pendências
+          {pendingCounts.error > 0 && (
+            <span className="tab-badge tab-badge--error" aria-label={`${pendingCounts.error} erros`}>
+              {pendingCounts.error}
+            </span>
+          )}
+          {pendingCounts.pending > 0 && (
+            <span className="tab-badge tab-badge--warning" aria-label={`${pendingCounts.pending} pendentes`}>
+              {pendingCounts.pending}
+            </span>
+          )}
+        </button>
+        <button
+          role="tab"
+          id="tab-regras"
+          aria-selected={activeTab === 'regras'}
+          aria-controls="panel-regras"
+          className={`journal-tab${activeTab === 'regras' ? ' active' : ''}`}
+          onClick={() => setActiveTab('regras')}
+        >
+          Regras
+        </button>
+      </nav>
+
+      {/* Pendências tab panel */}
+      {activeTab === 'pendencias' && (
+        <div role="tabpanel" id="panel-pendencias" aria-labelledby="tab-pendencias" tabIndex={0}>
+          <PendingPostingsTab
+            onNavigateToEntry={(_id) => {
+              setActiveTab('lancamentos');
+            }}
+          />
+        </div>
+      )}
+
+      {/* Regras tab panel */}
+      {activeTab === 'regras' && (
+        <div role="tabpanel" id="panel-regras" aria-labelledby="tab-regras" tabIndex={0}>
+          <AccountingRulesTab />
+        </div>
+      )}
+
+      {/* Lançamentos tab panel — kept mounted to preserve filter state */}
+      <div
+        role="tabpanel"
+        id="panel-lancamentos"
+        aria-labelledby="tab-lancamentos"
+        tabIndex={0}
+        hidden={activeTab !== 'lancamentos'}
+      >
+
       {/* Error banner */}
       {error && (
         <div className="je-page__error" role="alert">
@@ -454,6 +543,7 @@ export default function JournalEntriesPage() {
             <option value="OPENING_BALANCE">Saldo de Abertura</option>
             <option value="REVERSAL">Estorno</option>
             <option value="TEMPLATE_INSTANCE">Modelo</option>
+            <option value="AUTOMATIC">Automático</option>
           </select>
         </div>
       </div>
@@ -510,7 +600,14 @@ export default function JournalEntriesPage() {
                   <span className="je-page__description">{entry.description}</span>
                 </td>
                 <td className="je-page__td je-page__td--hidden-mobile">
-                  {ENTRY_TYPE_LABELS[entry.entryType] ?? entry.entryType}
+                  {entry.entryType === 'AUTOMATIC' ? (
+                    <span className="je-page__badge je-page__badge--automatic" aria-label="Tipo: Automático">
+                      <Settings size={14} aria-hidden="true" />
+                      AUTOMÁTICO
+                    </span>
+                  ) : (
+                    ENTRY_TYPE_LABELS[entry.entryType] ?? entry.entryType
+                  )}
                 </td>
                 <td className="je-page__td je-page__td--mono je-page__td--right je-page__td--hidden-mobile">
                   {formatAmount(entry.lines)}
@@ -656,6 +753,8 @@ export default function JournalEntriesPage() {
           {toast}
         </div>
       )}
+
+      </div>{/* end panel-lancamentos */}
     </main>
   );
 }
