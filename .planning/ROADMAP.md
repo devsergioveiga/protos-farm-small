@@ -78,44 +78,88 @@ Full details: `.planning/milestones/v1.3-ROADMAP.md`
 >
 > **Dependencies:** v1.0 Financeiro (CP/CR, conciliação bancária, fluxo de caixa), v1.2 Patrimônio (depreciação, ativos biológicos CPC 29), v1.3 RH/Folha (folha mensal, provisões, encargos), Estoque (entradas/saídas)
 
-- [ ] **Phase 35: Plano de Contas e Períodos Fiscais** — Fundação contábil: COA hierárquico 5 níveis com template rural CFC/Embrapa, mapeamento SPED L300R, exercícios fiscais (calendário e safra), períodos contábeis com status, AccountBalance cache table, assertPeriodOpen() e assertBalanced() utilities, rateio() utility, frontend árvore expansível
-  - **Reqs:** COA-01, COA-02, COA-03, COA-04, COA-05
-  - **Models:** ChartOfAccount, FiscalYear, AccountingPeriod, AccountBalance
-  - **Depends on:** nenhum (fundação)
-  - **Est. plans:** 5-6
+### Phase 35: Plano de Contas e Períodos Fiscais
+**Goal:** Fundação contábil: COA hierárquico 5 níveis com template rural CFC/Embrapa, mapeamento SPED L300R, exercícios fiscais (calendário e safra), períodos contábeis com status, AccountBalance cache table, assertPeriodOpen() e assertBalanced() utilities, rateio() utility, frontend árvore expansível
+**Requirements:** COA-01, COA-02, COA-03, COA-04, COA-05
+**Models:** ChartOfAccount, FiscalYear, AccountingPeriod, AccountBalance
+**Depends on:** nenhum (fundação)
+**Success criteria:**
+1. Contador pode criar/editar/desativar contas em árvore hierárquica até 5 níveis com validação de código único e tipo/natureza
+2. Template rural pré-carregado com contas específicas agro (ativo biológico, culturas em formação, FUNRURAL, crédito rural)
+3. Mapeamento SPED L300R por conta analítica com relatório de contas não mapeadas
+4. Exercício fiscal criado (jan-dez ou safra jul-jun) com períodos mensais abertos automaticamente
+5. Centro de custo vinculável a contas para DRE gerencial por cultura/fazenda
 
-- [ ] **Phase 36: Lançamentos Manuais, Razão e Saldo de Abertura** — Motor de lançamento manual com partidas dobradas, estorno auditável, wizard de saldo de abertura pré-populado, razão contábil com saldo progressivo, balancete de verificação 3 colunas, livro diário; frontend com formulário multi-linha débito/crédito e templates
-  - **Reqs:** LANC-03, LANC-04, LANC-05, RAZAO-01, RAZAO-02, RAZAO-03
-  - **Models:** JournalEntry, JournalEntryLine
-  - **Depends on:** Phase 35 (COA + períodos)
-  - **Est. plans:** 5-6
+**Plans:** 4 plans
+Plans:
+- [ ] 35-01-PLAN.md — Prisma schema models + shared accounting utilities (assertPeriodOpen, assertBalanced, rateio)
+- [ ] 35-02-PLAN.md — Chart of Accounts backend CRUD + rural CFC/Embrapa template seed + SPED L300R mapping
+- [ ] 35-03-PLAN.md — Fiscal periods backend: fiscal year CRUD + period state machine + audit trail
+- [ ] 35-04-PLAN.md — Frontend: COA expandable tree page + fiscal periods page + sidebar + routes
 
-- [ ] **Phase 37: Regras e Lançamentos Automáticos** — Regras de lançamento por tipo de operação (mapeamento conta débito/crédito), PendingJournalPosting queue com BullMQ, GL hooks para: liquidação CP, recebimento CR, fechamento folha, depreciação, entrada/saída estoque; idempotência via UNIQUE(sourceType, sourceId); fix do bug createPayrollEntries duplicado; frontend admin de regras com preview
-  - **Reqs:** LANC-01, LANC-02, LANC-06
-  - **Models:** AccountingRule, PendingJournalPosting
-  - **Depends on:** Phase 36 (JournalEntry tables)
-  - **Modifies:** payroll-runs, depreciation-runs, payables, receivables, stock-entries, stock-outputs
-  - **Est. plans:** 6-7
 
-- [ ] **Phase 38: Fechamento Mensal e Conciliação Contábil** — Checklist de fechamento com consultas automáticas aos módulos, conciliação bancária contábil (razão vs extrato v1.0), bloqueio de período, reabertura controlada com auditoria; frontend com checklist visual e painel de conciliação
-  - **Reqs:** FECH-01, FECH-02, FECH-03
-  - **Depends on:** Phase 37 (auto-entries must be live)
-  - **Est. plans:** 4-5
+### Phase 36: Lançamentos Manuais, Razão e Saldo de Abertura
+**Goal:** Motor de lançamento manual com partidas dobradas, estorno auditável, wizard de saldo de abertura pré-populado, razão contábil com saldo progressivo, balancete de verificação 3 colunas, livro diário; frontend com formulário multi-linha débito/crédito e templates
+**Requirements:** LANC-03, LANC-04, LANC-05, RAZAO-01, RAZAO-02, RAZAO-03
+**Models:** JournalEntry, JournalEntryLine
+**Depends on:** Phase 35 (COA + períodos)
+**Success criteria:**
+1. Contador pode criar lançamento manual com N linhas débito/crédito, sistema rejeita se total débitos != total créditos
+2. Estorno gera lançamento inverso vinculado ao original com motivo obrigatório e trail de auditoria
+3. Wizard de saldo de abertura pré-popula com saldo bancário, CP/CR em aberto, valor líquido dos ativos, provisões
+4. Razão por conta mostra saldo progressivo com drill-down para lançamento original
+5. Balancete 3 colunas (saldo anterior, movimento, saldo atual) com totais por grupo e validação de equilíbrio
 
-- [ ] **Phase 39: DRE, Balanço Patrimonial e Validação Cruzada** — Pure calculator services (DreCalculatorService, BpCalculatorService) sem imports Prisma, DRE layout rural com CPC 29, análise V/H, comparativos, filtro por centro de custo; BP com classificação rural e indicadores; painel de vinculação DRE↔BP com 4 invariantes; PDF profissional via pdfkit
-  - **Reqs:** DRE-01, DRE-02, DRE-03, BP-01, BP-02, VINC-01
-  - **Depends on:** Phase 38 (fechamento validates data)
-  - **Est. plans:** 5-6
+### Phase 37: Regras e Lançamentos Automáticos
+**Goal:** Regras de lançamento por tipo de operação (mapeamento conta débito/crédito), PendingJournalPosting queue com BullMQ, GL hooks para: liquidação CP, recebimento CR, fechamento folha, depreciação, entrada/saída estoque; idempotência via UNIQUE(sourceType, sourceId)
+**Requirements:** LANC-01, LANC-02, LANC-06
+**Models:** AccountingRule, PendingJournalPosting
+**Depends on:** Phase 36 (JournalEntry tables)
+**Modifies:** payroll-runs, depreciation-runs, payables, receivables, stock-entries, stock-outputs
+**Success criteria:**
+1. Tela administrativa permite mapear tipo de operação → conta débito + crédito + template de histórico
+2. Liquidação de CP, recebimento de CR, fechamento de folha, depreciação, entrada/saída de estoque geram lançamento GL automático
+3. Re-processamento da mesma operação NÃO gera duplicata (constraint sourceType+sourceId)
+4. Fila de pendências mostra lançamentos automáticos com status pendente/processado/erro
 
-- [ ] **Phase 40: DFC, Dashboard Executivo** — DfcCalculatorService direto (reusar classificação v1.0) e indireto (CPC 03 R2), validação cruzada DFC↔BP, dashboard contábil executivo (resultado acumulado, evolução receita/despesa 12m, composição custos, indicadores BP, alertas)
-  - **Reqs:** DFC-01, DFC-02, DFC-03, DASH-01
-  - **Depends on:** Phase 39 (BP necessário para DFC indireto)
-  - **Est. plans:** 4-5
+### Phase 38: Fechamento Mensal e Conciliação Contábil
+**Goal:** Checklist de fechamento com consultas automáticas aos módulos, conciliação bancária contábil (razão vs extrato v1.0), bloqueio de período, reabertura controlada com auditoria
+**Requirements:** FECH-01, FECH-02, FECH-03
+**Depends on:** Phase 37 (auto-entries must be live)
+**Success criteria:**
+1. Checklist de 6+ etapas consulta automaticamente módulos (ponto, folha, depreciação, lançamentos pendentes, conciliação, balancete)
+2. Conciliação bancária contábil compara razão GL vs extrato OFX/CSV importado
+3. Período fechado bloqueia qualquer novo lançamento; reabertura exige papel administrador + motivo
 
-- [ ] **Phase 41: SPED ECD e Relatório Integrado** — SpedEcdWriter custom (pipe-delimited), blocos 0/I/J/9, registros I050/I100/I150/I155/I200/I250/I350/I355/J150/J210, pré-validação PVA, geração async via BullMQ; relatório integrado PDF (DRE+BP+DFC+notas) para crédito rural
-  - **Reqs:** VINC-02, SPED-01, SPED-02
-  - **Depends on:** Phase 40 (all statements must be correct)
-  - **Est. plans:** 4-5
+### Phase 39: DRE, Balanço Patrimonial e Validação Cruzada
+**Goal:** Pure calculator services (DreCalculatorService, BpCalculatorService) sem imports Prisma, DRE layout rural com CPC 29, análise V/H, comparativos, filtro por centro de custo; BP com classificação rural e indicadores; painel de vinculação DRE↔BP com 4 invariantes
+**Requirements:** DRE-01, DRE-02, DRE-03, BP-01, BP-02, VINC-01
+**Depends on:** Phase 38 (fechamento validates data)
+**Success criteria:**
+1. DRE gerada com layout rural incluindo seção dedicada CPC 29 (variação valor justo ativo biológico)
+2. Análise vertical (% receita líquida) e horizontal (variação vs período anterior) calculadas
+3. DRE filtrável por centro de custo (fazenda, cultura) para visão gerencial
+4. BP com indicadores (liquidez corrente, endividamento, PL/ha) calculados automaticamente
+5. Painel de vinculação com 4 invariantes (DRE↔BP, DFC↔BP, equilíbrio AT=PT+PL, balancete)
+
+### Phase 40: DFC, Dashboard Executivo
+**Goal:** DfcCalculatorService direto (reusar classificação v1.0) e indireto (CPC 03 R2), validação cruzada DFC↔BP, dashboard contábil executivo
+**Requirements:** DFC-01, DFC-02, DFC-03, DASH-01
+**Depends on:** Phase 39 (BP necessário para DFC indireto)
+**Success criteria:**
+1. DFC direto com 3 seções (operacional, investimento, financiamento) reaproveitando classificação v1.0
+2. DFC indireto parte do lucro líquido DRE com ajustes não-caixa e variação capital de giro
+3. Validação DFC↔BP (variação caixa DFC = variação caixa/bancos BP) com alerta divergência
+4. Dashboard com resultado acumulado, evolução receita/despesa 12m, composição custos, indicadores BP
+
+### Phase 41: SPED ECD e Relatório Integrado
+**Goal:** SpedEcdWriter custom (pipe-delimited), blocos 0/I/J/9, pré-validação PVA, geração async via BullMQ; relatório integrado PDF (DRE+BP+DFC+notas) para crédito rural
+**Requirements:** VINC-02, SPED-01, SPED-02
+**Depends on:** Phase 40 (all statements must be correct)
+**Success criteria:**
+1. Arquivo SPED ECD gerado com blocos 0/I/J/9 usando plano referencial L300R rural
+2. Pré-validação verifica contas mapeadas, períodos fechados, balancete equilibrado, I050 sem duplicatas
+3. Relatório integrado PDF profissional com DRE+BP+DFC+notas explicativas para crédito rural
 
 ## Progress
 
