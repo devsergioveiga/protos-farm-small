@@ -26,9 +26,9 @@ Requirements for Accounting and Financial Statements module. Each maps to roadma
 
 ### Razão Contábil e Balancete
 
-- [ ] **RAZAO-01**: Contador pode consultar razão contábil (livro razão) por conta e período com saldo anterior, lançamentos em ordem cronológica e saldo progressivo, drill-down para detalhe do lançamento, filtros por centro de custo e exportação PDF/CSV
-- [ ] **RAZAO-02**: Contador pode gerar balancete de verificação em formato 3 colunas (saldo anterior, movimento, saldo atual) para qualquer período, com totais por grupo de contas, validação de balanceamento (total débitos = total créditos), comparativo com período anterior e exportação PDF/XLSX
-- [ ] **RAZAO-03**: Contador pode consultar livro diário com todos os lançamentos em ordem cronológica, termos de abertura e encerramento, numeração sequencial, filtros por período/tipo/valor e exportação PDF
+- [x] **RAZAO-01**: Contador pode consultar razão contábil (livro razão) por conta e período com saldo anterior, lançamentos em ordem cronológica e saldo progressivo, drill-down para detalhe do lançamento, filtros por centro de custo e exportação PDF/CSV
+- [x] **RAZAO-02**: Contador pode gerar balancete de verificação em formato 3 colunas (saldo anterior, movimento, saldo atual) para qualquer período, com totais por grupo de contas, validação de balanceamento (total débitos = total créditos), comparativo com período anterior e exportação PDF/XLSX
+- [x] **RAZAO-03**: Contador pode consultar livro diário com todos os lançamentos em ordem cronológica, termos de abertura e encerramento, numeração sequencial, filtros por período/tipo/valor e exportação PDF
 
 ### Fechamento Mensal
 
@@ -108,9 +108,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LANC-04 | Phase 36 | Complete |
 | LANC-05 | Phase 36 | Complete |
 | LANC-06 | Phase 37 | Pending |
-| RAZAO-01 | Phase 36 | Pending |
-| RAZAO-02 | Phase 36 | Pending |
-| RAZAO-03 | Phase 36 | Pending |
+| RAZAO-01 | Phase 36 | Complete |
+| RAZAO-02 | Phase 36 | Complete |
+| RAZAO-03 | Phase 36 | Complete |
 | FECH-01 | Phase 38 | Pending |
 | FECH-02 | Phase 38 | Pending |
 | FECH-03 | Phase 38 | Pending |

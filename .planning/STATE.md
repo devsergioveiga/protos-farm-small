@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
 status: Ready to execute
-stopped_at: Completed 36-01-PLAN.md
-last_updated: "2026-03-27T11:55:32.011Z"
+stopped_at: Completed 36-03-PLAN.md
+last_updated: "2026-03-27T12:12:24.986Z"
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 9
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 ## Current Position
 
 Phase: 36 (lan-amentos-manuais-raz-o-e-saldo-de-abertura) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 
 ## Accumulated Context
 
@@ -50,6 +50,8 @@ Key decisions carried from v1.3:
 - [Phase 36]: Opening balance wizard finds COA accounts by code prefix first, then name keyword fallback for resilience
 - [Phase 36]: postJournalEntry uses Serializable isolation to prevent duplicate entry numbers
 - [Phase 36]: CSV import returns preview only (no auto-create) per LANC-03 spec
+- [Phase 36]: Ledger running balance uses SQL window function SUM OVER (ORDER BY entryDate, entryNumber) starting from previousBalance — single query, avoids N+1
+- [Phase 36]: getTrialBalance aggregates synthetic accounts recursively, grandTotals from analytic-only to avoid double-counting
 
 ### Pending Todos
 
@@ -64,7 +66,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T11:55:32.009Z
-Stopped at: Completed 36-01-PLAN.md
+Last session: 2026-03-27T12:12:24.984Z
+Stopped at: Completed 36-03-PLAN.md
 Resume file: None
 Next action: Define requirements and create roadmap for v1.4
