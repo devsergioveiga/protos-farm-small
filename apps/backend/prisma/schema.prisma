@@ -431,6 +431,7 @@ model Organization {
   fiscalYears              FiscalYear[]
   accountingPeriods        AccountingPeriod[]
   accountBalances          AccountBalance[]
+  journalEntries           JournalEntry[]
 
   @@map("organizations")
 }
@@ -527,6 +528,7 @@ model User {
   employee                       Employee?
   closedPeriods                  AccountingPeriod[] @relation("PeriodClose")
   reopenedPeriods                AccountingPeriod[] @relation("PeriodReopen")
+  createdJournalEntries          JournalEntry[]     @relation("JournalEntryCreator")
 
   @@map("users")
 }
@@ -1952,6 +1954,8 @@ model CostCenter {
   provisions                PayrollProvision[]
   accountingEntries         AccountingEntry[]
   accountBalances           AccountBalance[]
+  journalEntries            JournalEntry[]      @relation("JournalEntryCostCenter")
+  journalEntryLines         JournalEntryLine[]  @relation("JournalEntryLineCostCenter")
 
   @@unique([farmId, code])
   @@index([farmId])
@@ -8877,10 +8881,11 @@ model ChartOfAccount {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
-  organization  Organization     @relation(fields: [organizationId], references: [id])
-  parent        ChartOfAccount?  @relation("CoaTree", fields: [parentId], references: [id])
-  children      ChartOfAccount[] @relation("CoaTree")
-  accountBalances AccountBalance[]
+  organization      Organization       @relation(fields: [organizationId], references: [id])
+  parent            ChartOfAccount?    @relation("CoaTree", fields: [parentId], references: [id])
+  children          ChartOfAccount[]   @relation("CoaTree")
+  accountBalances   AccountBalance[]
+  journalEntryLines JournalEntryLine[]
 
   @@unique([organizationId, code])
   @@index([organizationId, accountType])
@@ -8923,10 +8928,11 @@ model AccountingPeriod {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  organization      Organization @relation(fields: [organizationId], references: [id])
-  fiscalYear        FiscalYear   @relation(fields: [fiscalYearId], references: [id])
-  closedByUser      User?        @relation("PeriodClose", fields: [closedBy], references: [id])
-  reopenedByUser    User?        @relation("PeriodReopen", fields: [reopenedBy], references: [id])
+  organization    Organization   @relation(fields: [organizationId], references: [id])
+  fiscalYear      FiscalYear     @relation(fields: [fiscalYearId], references: [id])
+  closedByUser    User?          @relation("PeriodClose", fields: [closedBy], references: [id])
+  reopenedByUser  User?          @relation("PeriodReopen", fields: [reopenedBy], references: [id])
+  journalEntries  JournalEntry[]
 
   @@unique([organizationId, fiscalYearId, month, year])
   @@index([organizationId, status])
@@ -8954,6 +8960,79 @@ model AccountBalance {
   @@unique([organizationId, accountId, fiscalYearId, month])
   @@index([organizationId, fiscalYearId])
   @@map("account_balances")
+}
+
+// ─── Journal Entries (double-entry bookkeeping engine) ────────────────
+
+enum JournalEntryType {
+  MANUAL
+  OPENING_BALANCE
+  REVERSAL
+  TEMPLATE_INSTANCE
+}
+
+enum JournalEntryStatus {
+  DRAFT
+  POSTED
+  REVERSED
+}
+
+enum LedgerSide {
+  DEBIT
+  CREDIT
+}
+
+model JournalEntry {
+  id             String             @id @default(uuid())
+  organizationId String
+  entryNumber    Int                @default(0)
+  entryDate      DateTime           @db.Date
+  periodId       String
+  description    String             @db.VarChar(500)
+  entryType      JournalEntryType   @default(MANUAL)
+  status         JournalEntryStatus @default(DRAFT)
+  reversedById   String?            @unique
+  reversalOf     String?            @unique
+  reversalReason String?            @db.VarChar(500)
+  templateName   String?
+  costCenterId   String?
+  createdBy      String
+  postedAt       DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  organization    Organization       @relation(fields: [organizationId], references: [id])
+  period          AccountingPeriod   @relation(fields: [periodId], references: [id])
+  lines           JournalEntryLine[]
+  reversedByEntry JournalEntry?      @relation("JournalReversal", fields: [reversedById], references: [id])
+  reversalOfEntry JournalEntry?      @relation("JournalReversal")
+  costCenter      CostCenter?        @relation("JournalEntryCostCenter", fields: [costCenterId], references: [id])
+  createdByUser   User               @relation("JournalEntryCreator", fields: [createdBy], references: [id])
+
+  @@unique([organizationId, entryNumber])
+  @@index([organizationId, periodId])
+  @@index([organizationId, status])
+  @@index([organizationId, entryDate])
+  @@map("journal_entries")
+}
+
+model JournalEntryLine {
+  id             String       @id @default(uuid())
+  journalEntryId String
+  accountId      String
+  side           LedgerSide
+  amount         Decimal      @db.Decimal(14, 2)
+  description    String?      @db.VarChar(300)
+  costCenterId   String?
+  lineOrder      Int
+
+  journalEntry JournalEntry   @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  account      ChartOfAccount @relation(fields: [accountId], references: [id])
+  costCenter   CostCenter?    @relation("JournalEntryLineCostCenter", fields: [costCenterId], references: [id])
+
+  @@index([journalEntryId])
+  @@index([accountId])
+  @@map("journal_entry_lines")
 }
 
 model AccountingEntry {
