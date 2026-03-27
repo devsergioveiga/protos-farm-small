@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
-status: Ready to plan
-stopped_at: Completed 35-04-PLAN.md — awaiting Task 3 human-verify checkpoint
-last_updated: "2026-03-27T10:41:18.486Z"
+status: Ready to execute
+stopped_at: Completed 36-01-PLAN.md
+last_updated: "2026-03-27T11:55:32.011Z"
 progress:
   total_phases: 7
   completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 9
+  completed_plans: 6
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 35 — plano-de-contas-e-periodos-fiscais
+**Current focus:** Phase 36 — lan-amentos-manuais-raz-o-e-saldo-de-abertura
 
 ## Current Position
 
-Phase: 36
-Plan: Not started
+Phase: 36 (lan-amentos-manuais-raz-o-e-saldo-de-abertura) — EXECUTING
+Plan: 3 of 5
 
 ## Accumulated Context
 
@@ -46,6 +46,10 @@ Key decisions carried from v1.3:
 - [Phase 35]: Legacy 6.x codes in COA template for ACCOUNT_CODES compatibility; Phase 37 will update GL rules
 - [Phase 35]: Period close uses ConfirmModal (variant=warning) per CLAUDE.md — never window.confirm
 - [Phase 35]: COA tree built client-side from flat array via buildTree() helper — avoids extra API call
+- [Phase 36]: PayrollProvision uses provisionType VACATION/THIRTEENTH with totalAmount (EPIC-16 schema) — not vacationProvision/thirteenthProvision fields as described in plan
+- [Phase 36]: Opening balance wizard finds COA accounts by code prefix first, then name keyword fallback for resilience
+- [Phase 36]: postJournalEntry uses Serializable isolation to prevent duplicate entry numbers
+- [Phase 36]: CSV import returns preview only (no auto-create) per LANC-03 spec
 
 ### Pending Todos
 
@@ -60,7 +64,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T10:23:19.184Z
-Stopped at: Completed 35-04-PLAN.md — awaiting Task 3 human-verify checkpoint
+Last session: 2026-03-27T11:55:32.009Z
+Stopped at: Completed 36-01-PLAN.md
 Resume file: None
 Next action: Define requirements and create roadmap for v1.4

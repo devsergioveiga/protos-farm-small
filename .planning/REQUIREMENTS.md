@@ -19,9 +19,9 @@ Requirements for Accounting and Financial Statements module. Each maps to roadma
 
 - [ ] **LANC-01**: Sistema gera lançamentos contábeis automáticos (partidas dobradas) para: liquidação de CP (débito despesa, crédito banco/caixa), recebimento de CR (débito banco/caixa, crédito receita), fechamento de folha (débito despesas pessoal por rubrica, crédito obrigações), depreciação mensal (débito despesa, crédito depreciação acumulada), entrada de estoque (débito estoque, crédito fornecedor) e saída de estoque (débito despesa/custo, crédito estoque)
 - [ ] **LANC-02**: Contador pode configurar regras de lançamento automático por tipo de operação com conta débito, conta crédito, template de histórico e flag de centro de custo obrigatório, com tela administrativa para mapear operações existentes e preview dos lançamentos antes de ativar
-- [ ] **LANC-03**: Contador pode criar lançamentos manuais com data, histórico descritivo, múltiplas linhas débito/crédito (partidas dobradas), validação de balanceamento (total débitos = total créditos), vinculação opcional a centro de custo, templates salvos para lançamentos recorrentes e importação de lançamentos via CSV
-- [ ] **LANC-04**: Contador pode estornar lançamento existente gerando lançamento inverso vinculado ao original, com motivo obrigatório, trail de auditoria (quem, quando, por quê), e impedimento de estorno de lançamentos em períodos fechados
-- [ ] **LANC-05**: Contador pode registrar saldo de abertura inicial para todas as contas do balanço (wizard pré-populado com saldos existentes: saldo bancário, CP/CR em aberto, valor contábil líquido dos ativos, provisões trabalhistas), como lançamento especial contra conta de Lucros/Prejuízos Acumulados
+- [x] **LANC-03**: Contador pode criar lançamentos manuais com data, histórico descritivo, múltiplas linhas débito/crédito (partidas dobradas), validação de balanceamento (total débitos = total créditos), vinculação opcional a centro de custo, templates salvos para lançamentos recorrentes e importação de lançamentos via CSV
+- [x] **LANC-04**: Contador pode estornar lançamento existente gerando lançamento inverso vinculado ao original, com motivo obrigatório, trail de auditoria (quem, quando, por quê), e impedimento de estorno de lançamentos em períodos fechados
+- [x] **LANC-05**: Contador pode registrar saldo de abertura inicial para todas as contas do balanço (wizard pré-populado com saldos existentes: saldo bancário, CP/CR em aberto, valor contábil líquido dos ativos, provisões trabalhistas), como lançamento especial contra conta de Lucros/Prejuízos Acumulados
 - [ ] **LANC-06**: Sistema garante idempotência nos lançamentos automáticos — re-processamento de operação já contabilizada não gera duplicatas, com constraint único (sourceType + sourceId) e fila de pendências com retry automático
 
 ### Razão Contábil e Balancete
@@ -104,9 +104,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COA-05 | Phase 35 | Complete |
 | LANC-01 | Phase 37 | Pending |
 | LANC-02 | Phase 37 | Pending |
-| LANC-03 | Phase 36 | Pending |
-| LANC-04 | Phase 36 | Pending |
-| LANC-05 | Phase 36 | Pending |
+| LANC-03 | Phase 36 | Complete |
+| LANC-04 | Phase 36 | Complete |
+| LANC-05 | Phase 36 | Complete |
 | LANC-06 | Phase 37 | Pending |
 | RAZAO-01 | Phase 36 | Pending |
 | RAZAO-02 | Phase 36 | Pending |

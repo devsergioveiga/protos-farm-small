@@ -110,10 +110,10 @@ Plans:
 4. Razão por conta mostra saldo progressivo com drill-down para lançamento original
 5. Balancete 3 colunas (saldo anterior, movimento, saldo atual) com totais por grupo e validação de equilíbrio
 
-**Plans:** 5 plans
+**Plans:** 2/5 plans executed
 Plans:
-- [ ] 36-01-PLAN.md — Prisma migration (JournalEntry + JournalEntryLine) + journal-entries service (create/post/reverse/templates) + routes
-- [ ] 36-02-PLAN.md — Opening balance wizard backend: preview aggregation from 5 modules + post as OPENING_BALANCE entry
+- [x] 36-01-PLAN.md — Prisma migration (JournalEntry + JournalEntryLine) + journal-entries service (create/post/reverse/templates) + routes
+- [x] 36-02-PLAN.md — Opening balance wizard backend: preview aggregation from 5 modules + post as OPENING_BALANCE entry
 - [ ] 36-03-PLAN.md — Ledger, trial balance, daily book services + PDF/CSV/XLSX exports + routes
 - [ ] 36-04-PLAN.md — Frontend: JournalEntriesPage + JournalEntryModal + ReversalModal + OpeningBalanceWizard
 - [ ] 36-05-PLAN.md — Frontend: LedgerPage + TrialBalancePage (with daily book) + sidebar + routing
