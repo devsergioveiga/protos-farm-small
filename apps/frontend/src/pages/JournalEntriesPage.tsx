@@ -77,6 +77,7 @@ const ENTRY_TYPE_LABELS: Record<JournalEntryType, string> = {
   OPENING_BALANCE: 'Saldo de Abertura',
   REVERSAL: 'Estorno',
   TEMPLATE_INSTANCE: 'Modelo',
+  AUTOMATIC: 'Automático',
 };
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 // ─── Enums ──────────────────────────────────────────────────────────────────
 
-export type JournalEntryType = 'MANUAL' | 'OPENING_BALANCE' | 'REVERSAL' | 'TEMPLATE_INSTANCE';
+export type JournalEntryType = 'MANUAL' | 'OPENING_BALANCE' | 'REVERSAL' | 'TEMPLATE_INSTANCE' | 'AUTOMATIC';
 export type JournalEntryStatus = 'DRAFT' | 'POSTED' | 'REVERSED';
 export type LedgerSide = 'DEBIT' | 'CREDIT';
 
