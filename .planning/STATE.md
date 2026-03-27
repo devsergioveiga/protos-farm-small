@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
 status: Ready to execute
-stopped_at: Completed 37-03-PLAN.md
-last_updated: "2026-03-27T20:24:24.696Z"
+stopped_at: Completed 37-02-PLAN.md
+last_updated: "2026-03-27T23:49:34.512Z"
 progress:
   total_phases: 7
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 12
-  completed_plans: 11
+  completed_plans: 12
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 ## Current Position
 
 Phase: 37 (regras-e-lan-amentos-autom-ticos) — EXECUTING
-Plan: 3 of 3
+Plan: 2 of 3
 
 ## Accumulated Context
 
@@ -61,6 +61,10 @@ Key decisions carried from v1.3:
 - [Phase 37]: seedAccountingRules(orgId) must be called after COA seeding — resolves accounts by code prefix startsWith, silently skips if COA not seeded yet
 - [Phase 37]: Lancamentos panel uses hidden attribute (not conditional render) to preserve filter state on tab switch
 - [Phase 37]: AccountCombobox filters analytic accounts client-side from useChartOfAccounts data already in memory
+- [Phase 37]: autoPost hooks are always non-blocking (try/catch outside main transaction) per D-15
+- [Phase 37]: receivePayment exported as alias for settleReceivable — CR settlement hook point per D-33
+- [Phase 37]: AccountingEntry table was already absent from DB — migrate diff returned empty, prisma generate sufficient
+- [Phase 37]: seedAccountingRules called at end of seedRuralTemplate — idempotent, silently skips if COA not seeded
 
 ### Pending Todos
 
@@ -75,7 +79,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T20:24:24.693Z
-Stopped at: Completed 37-03-PLAN.md
+Last session: 2026-03-27T23:49:34.472Z
+Stopped at: Completed 37-02-PLAN.md
 Resume file: None
 Next action: Define requirements and create roadmap for v1.4
