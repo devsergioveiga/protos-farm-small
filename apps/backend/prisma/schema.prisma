@@ -432,6 +432,8 @@ model Organization {
   accountingPeriods        AccountingPeriod[]
   accountBalances          AccountBalance[]
   journalEntries           JournalEntry[]
+  accountingRules          AccountingRule[]
+  pendingJournalPostings   PendingJournalPosting[]
 
   @@map("organizations")
 }
@@ -8886,6 +8888,7 @@ model ChartOfAccount {
   children          ChartOfAccount[]   @relation("CoaTree")
   accountBalances   AccountBalance[]
   journalEntryLines JournalEntryLine[]
+  accountingRuleLines AccountingRuleLine[]
 
   @@unique([organizationId, code])
   @@index([organizationId, accountType])
@@ -8969,6 +8972,7 @@ enum JournalEntryType {
   OPENING_BALANCE
   REVERSAL
   TEMPLATE_INSTANCE
+  AUTOMATIC
 }
 
 enum JournalEntryStatus {
@@ -8998,18 +9002,22 @@ model JournalEntry {
   costCenterId   String?
   createdBy      String
   postedAt       DateTime?
+  sourceType     AutoPostingSourceType?
+  sourceId       String?
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
-  organization    Organization       @relation(fields: [organizationId], references: [id])
-  period          AccountingPeriod   @relation(fields: [periodId], references: [id])
+  organization    Organization          @relation(fields: [organizationId], references: [id])
+  period          AccountingPeriod      @relation(fields: [periodId], references: [id])
   lines           JournalEntryLine[]
-  reversedByEntry JournalEntry?      @relation("JournalReversal", fields: [reversedById], references: [id])
-  reversalOfEntry JournalEntry?      @relation("JournalReversal")
-  costCenter      CostCenter?        @relation("JournalEntryCostCenter", fields: [costCenterId], references: [id])
-  createdByUser   User               @relation("JournalEntryCreator", fields: [createdBy], references: [id])
+  reversedByEntry JournalEntry?         @relation("JournalReversal", fields: [reversedById], references: [id])
+  reversalOfEntry JournalEntry?         @relation("JournalReversal")
+  costCenter      CostCenter?           @relation("JournalEntryCostCenter", fields: [costCenterId], references: [id])
+  createdByUser   User                  @relation("JournalEntryCreator", fields: [createdBy], references: [id])
+  pendingPosting  PendingJournalPosting?
 
   @@unique([organizationId, entryNumber])
+  @@unique([sourceType, sourceId])
   @@index([organizationId, periodId])
   @@index([organizationId, status])
   @@index([organizationId, entryDate])
@@ -9059,4 +9067,85 @@ model AccountingEntry {
   @@index([organizationId, referenceMonth])
   @@index([sourceType, sourceId])
   @@map("accounting_entries")
+}
+
+// ── Phase 37 Plan 01: Auto-Posting Engine ──
+
+enum AutoPostingSourceType {
+  PAYROLL_RUN_CLOSE
+  PAYROLL_PROVISION_VACATION
+  PAYROLL_PROVISION_THIRTEENTH
+  PAYABLE_SETTLEMENT
+  RECEIVABLE_SETTLEMENT
+  DEPRECIATION_RUN
+  STOCK_ENTRY
+  STOCK_OUTPUT_CONSUMPTION
+  STOCK_OUTPUT_TRANSFER
+  STOCK_OUTPUT_DISPOSAL
+  PAYABLE_REVERSAL
+  RECEIVABLE_REVERSAL
+}
+
+enum PendingPostingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  ERROR
+}
+
+model AccountingRule {
+  id                String                @id @default(uuid())
+  organizationId    String
+  sourceType        AutoPostingSourceType
+  isActive          Boolean               @default(true)
+  historyTemplate   String                @db.VarChar(500)
+  requireCostCenter Boolean               @default(false)
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  organization    Organization            @relation(fields: [organizationId], references: [id])
+  lines           AccountingRuleLine[]
+  pendingPostings PendingJournalPosting[]
+
+  @@unique([organizationId, sourceType])
+  @@index([organizationId])
+  @@map("accounting_rules")
+}
+
+model AccountingRuleLine {
+  id          String         @id @default(uuid())
+  ruleId      String
+  lineOrder   Int
+  side        LedgerSide
+  accountId   String
+  description String?        @db.VarChar(300)
+
+  rule    AccountingRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  account ChartOfAccount @relation(fields: [accountId], references: [id])
+
+  @@index([ruleId])
+  @@map("accounting_rule_lines")
+}
+
+model PendingJournalPosting {
+  id               String                @id @default(uuid())
+  organizationId   String
+  sourceType       AutoPostingSourceType
+  sourceId         String
+  accountingRuleId String?
+  status           PendingPostingStatus  @default(PENDING)
+  journalEntryId   String?               @unique
+  errorMessage     String?               @db.VarChar(1000)
+  metadata         Json?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  processedAt      DateTime?
+
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  accountingRule AccountingRule? @relation(fields: [accountingRuleId], references: [id])
+  journalEntry   JournalEntry?   @relation(fields: [journalEntryId], references: [id])
+
+  @@unique([sourceType, sourceId])
+  @@index([organizationId, status])
+  @@map("pending_journal_postings")
 }
