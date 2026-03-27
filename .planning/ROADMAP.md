@@ -90,12 +90,12 @@ Full details: `.planning/milestones/v1.3-ROADMAP.md`
 4. Exercício fiscal criado (jan-dez ou safra jul-jun) com períodos mensais abertos automaticamente
 5. Centro de custo vinculável a contas para DRE gerencial por cultura/fazenda
 
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 Plans:
 - [x] 35-01-PLAN.md — Prisma schema models + shared accounting utilities (assertPeriodOpen, assertBalanced, rateio)
 - [x] 35-02-PLAN.md — Chart of Accounts backend CRUD + rural CFC/Embrapa template seed + SPED L300R mapping
 - [x] 35-03-PLAN.md — Fiscal periods backend: fiscal year CRUD + period state machine + audit trail
-- [ ] 35-04-PLAN.md — Frontend: COA expandable tree page + fiscal periods page + sidebar + routes
+- [x] 35-04-PLAN.md — Frontend: COA expandable tree page + fiscal periods page + sidebar + routes
 
 
 ### Phase 36: Lançamentos Manuais, Razão e Saldo de Abertura
