@@ -158,6 +158,7 @@ import { hrDashboardRouter } from './modules/hr-dashboard/hr-dashboard.routes';
 import { accountingEntriesRouter } from './modules/accounting-entries/accounting-entries.routes';
 import { fiscalPeriodsRouter } from './modules/fiscal-periods/fiscal-periods.routes';
 import { chartOfAccountsRouter } from './modules/chart-of-accounts/chart-of-accounts.routes';
+import { journalEntriesRouter } from './modules/journal-entries/journal-entries.routes';
 
 const app = express();
 
@@ -329,5 +330,6 @@ app.use('/api', hrDashboardRouter);
 app.use('/api', accountingEntriesRouter);
 app.use('/api/org/:orgId', fiscalPeriodsRouter);
 app.use('/api', chartOfAccountsRouter);
+app.use('/api', journalEntriesRouter);
 
 export { app };
