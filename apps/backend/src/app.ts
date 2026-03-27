@@ -160,6 +160,7 @@ import { fiscalPeriodsRouter } from './modules/fiscal-periods/fiscal-periods.rou
 import { chartOfAccountsRouter } from './modules/chart-of-accounts/chart-of-accounts.routes';
 import { journalEntriesRouter } from './modules/journal-entries/journal-entries.routes';
 import { openingBalanceRouter } from './modules/opening-balance/opening-balance.routes';
+import { ledgerRouter } from './modules/ledger/ledger.routes';
 
 const app = express();
 
@@ -333,5 +334,6 @@ app.use('/api/org/:orgId', fiscalPeriodsRouter);
 app.use('/api', chartOfAccountsRouter);
 app.use('/api', journalEntriesRouter);
 app.use('/api', openingBalanceRouter);
+app.use('/api', ledgerRouter);
 
 export { app };
