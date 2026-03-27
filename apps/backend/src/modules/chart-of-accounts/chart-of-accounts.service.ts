@@ -19,6 +19,7 @@ import {
   type SeedResult,
 } from './chart-of-accounts.types';
 import { RURAL_COA_TEMPLATE } from './coa-rural-template';
+import { seedAccountingRules } from '../auto-posting/auto-posting.service';
 import type { AccountType, AccountNature } from '@prisma/client';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -423,6 +424,10 @@ export async function seedRuralTemplate(
       updated++;
     }
   }
+
+  // Seed default AccountingRules alongside the COA template (per D-02/D-13 — LANC-02)
+  // seedAccountingRules resolves accounts by code prefix — silently skips missing accounts
+  await seedAccountingRules(organizationId);
 
   return { created, updated };
 }
