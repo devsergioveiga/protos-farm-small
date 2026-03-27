@@ -297,6 +297,8 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/chart-of-accounts', icon: GitBranch, label: 'Plano de Contas' },
       { to: '/fiscal-periods', icon: Calendar, label: 'Períodos Fiscais' },
       { to: '/accounting-entries', icon: BookOpen, label: 'Lançamentos Contábeis' },
+      { to: '/ledger', icon: BookOpen, label: 'Razão Contábil' },
+      { to: '/trial-balance', icon: BarChart3, label: 'Balancete' },
     ],
   },
   {

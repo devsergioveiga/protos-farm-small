@@ -1,0 +1,642 @@
+/* TrialBalancePage — Balancete de Verificação + Livro Diário */
+
+.trial-balance-page {
+  padding: var(--space-6, 24px);
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 16px);
+}
+
+/* ─── Breadcrumb ──────────────────────────────────────────────── */
+
+.trial-balance-page__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-neutral-500);
+}
+
+.trial-balance-page__breadcrumb-sep {
+  color: var(--color-neutral-300);
+}
+
+.trial-balance-page__breadcrumb-item--current {
+  color: var(--color-neutral-700);
+  font-weight: var(--font-bold, 700);
+}
+
+/* ─── Header ──────────────────────────────────────────────────── */
+
+.trial-balance-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3, 12px);
+}
+
+.trial-balance-page__header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+}
+
+.trial-balance-page__header-icon {
+  color: var(--color-primary-600);
+}
+
+.trial-balance-page__title {
+  font-family: var(--font-display, 'DM Sans', system-ui, sans-serif);
+  font-size: var(--text-lg, 1.25rem);
+  font-weight: var(--font-bold, 700);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+/* ─── Filters ─────────────────────────────────────────────────── */
+
+.trial-balance-page__filters {
+  display: flex;
+  gap: var(--space-4, 16px);
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding: var(--space-4, 16px);
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+}
+
+.trial-balance-page__filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1, 4px);
+  flex: 1;
+  min-width: 200px;
+}
+
+.trial-balance-page__filter-label {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--font-bold, 700);
+  color: var(--color-neutral-700);
+}
+
+.trial-balance-page__select {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-neutral-700);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  padding: 10px var(--space-4, 16px);
+  background: var(--color-neutral-0);
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.trial-balance-page__select:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Tabs ────────────────────────────────────────────────────── */
+
+.trial-balance-page__tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--color-neutral-200);
+}
+
+.trial-balance-page__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--font-semibold, 600);
+  color: var(--color-neutral-500);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 100ms ease-out, border-color 100ms ease-out;
+  min-height: 48px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trial-balance-page__tab {
+    transition: none;
+  }
+}
+
+.trial-balance-page__tab:hover {
+  color: var(--color-neutral-700);
+}
+
+.trial-balance-page__tab--active {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+
+.trial-balance-page__tab:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: 4px 4px 0 0;
+}
+
+/* ─── Panel ───────────────────────────────────────────────────── */
+
+.trial-balance-page__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 16px);
+}
+
+/* ─── Actions (export buttons) ────────────────────────────────── */
+
+.trial-balance-page__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  justify-content: flex-end;
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────── */
+
+.trial-balance-page__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1, 6px);
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--font-semibold, 600);
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  padding: 10px var(--space-4, 16px);
+  min-height: 40px;
+  min-width: 48px;
+  white-space: nowrap;
+  transition: background 100ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trial-balance-page__btn {
+    transition: none;
+  }
+}
+
+.trial-balance-page__btn--secondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  border: 1px solid var(--color-neutral-300);
+}
+
+.trial-balance-page__btn--secondary:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+}
+
+.trial-balance-page__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Spinner ─────────────────────────────────────────────────── */
+
+.trial-balance-page__spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-neutral-300);
+  border-top-color: var(--color-neutral-600);
+  border-radius: 50%;
+  animation: tb-spin 0.7s linear infinite;
+}
+
+@keyframes tb-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trial-balance-page__spinner {
+    animation: none;
+    border-top-color: var(--color-neutral-400);
+  }
+}
+
+/* ─── Balance Validation Bar ──────────────────────────────────── */
+
+.validation-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  border-radius: 8px;
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--font-semibold, 600);
+}
+
+.validation-bar--ok {
+  background: var(--color-success-100);
+  color: var(--color-success-500);
+}
+
+.validation-bar--error {
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+}
+
+/* ─── Empty / Error States ────────────────────────────────────── */
+
+.trial-balance-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4, 16px);
+  padding: var(--space-16, 64px) var(--space-4, 16px);
+  text-align: center;
+}
+
+.trial-balance-page__empty-icon {
+  color: var(--color-neutral-400);
+}
+
+.trial-balance-page__empty-text {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-base, 1rem);
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+/* ─── Trial Balance Table ─────────────────────────────────────── */
+
+.trial-balance-page__table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--color-neutral-200);
+}
+
+.trial-balance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.trial-balance-table__caption {
+  text-align: left;
+  padding: var(--space-4, 16px);
+  font-family: var(--font-display, 'DM Sans', system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--font-bold, 700);
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-50);
+}
+
+.trial-balance-table__caption-period {
+  font-weight: var(--font-regular, 400);
+  color: var(--color-neutral-500);
+}
+
+.trial-balance-table__th {
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  text-align: left;
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--font-bold, 700);
+  color: var(--color-neutral-600);
+  background: var(--color-neutral-100);
+  border-bottom: 2px solid var(--color-neutral-200);
+  white-space: nowrap;
+}
+
+.trial-balance-table__th--code {
+  width: 100px;
+}
+
+.trial-balance-table__th--name {
+  min-width: 200px;
+}
+
+.trial-balance-table__th--amount {
+  text-align: right;
+  width: 130px;
+}
+
+.trial-balance-table__td {
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-100);
+  vertical-align: middle;
+}
+
+.trial-balance-table__td--code {
+  color: var(--color-neutral-500);
+  white-space: nowrap;
+}
+
+.trial-balance-table__td--name {
+  min-width: 200px;
+}
+
+.trial-balance-table__td--amount {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Group rows — synthetic accounts */
+.group-row {
+  background: var(--color-neutral-100);
+}
+
+.group-row .trial-balance-table__td {
+  font-weight: var(--font-bold, 700);
+}
+
+/* Analytic rows — alternating stripe */
+.analytic-row:nth-child(even) {
+  background: var(--color-neutral-50);
+}
+
+/* Total row */
+.total-row {
+  border-top: 2px solid var(--color-neutral-300);
+  background: var(--color-neutral-100);
+}
+
+.total-row .trial-balance-table__td {
+  font-family: var(--font-display, 'DM Sans', system-ui, sans-serif);
+  font-weight: var(--font-bold, 700);
+  border-top: 2px solid var(--color-neutral-300);
+}
+
+.total-row__label {
+  font-family: var(--font-display, 'DM Sans', system-ui, sans-serif);
+  font-weight: var(--font-bold, 700);
+}
+
+/* ─── Semantic Amount Classes ─────────────────────────────────── */
+
+.amount-debit {
+  color: var(--color-error-500);
+}
+
+.amount-credit {
+  color: var(--color-success-500);
+}
+
+.amount-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: var(--text-sm, 0.875rem);
+}
+
+/* ─── Skeleton ────────────────────────────────────────────────── */
+
+.trial-balance-page__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+  padding: var(--space-4, 16px);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+}
+
+.trial-balance-page__skeleton-row {
+  display: flex;
+  gap: var(--space-3, 12px);
+  align-items: center;
+  padding: var(--space-3, 12px) 0;
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.trial-balance-page__skeleton-cell {
+  height: 16px;
+  border-radius: 4px;
+  background: var(--color-neutral-200);
+  animation: skeleton-pulse-tb 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse-tb {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trial-balance-page__skeleton-cell {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+.trial-balance-page__skeleton-cell--sm { width: 80px; flex-shrink: 0; }
+.trial-balance-page__skeleton-cell--md { width: 110px; flex-shrink: 0; }
+.trial-balance-page__skeleton-cell--lg { flex: 1; }
+
+/* ─── Daily Book ──────────────────────────────────────────────── */
+
+.trial-balance-page__diario-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3, 12px);
+  padding-bottom: var(--space-4, 16px);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.trial-balance-page__diario-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  font-family: var(--font-display, 'DM Sans', system-ui, sans-serif);
+  font-size: var(--text-md, 1.125rem);
+  font-weight: var(--font-bold, 700);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.trial-balance-page__diario-entries {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 16px);
+}
+
+/* ─── Diário Entry Card ───────────────────────────────────────── */
+
+.diario-entry {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.diario-entry__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  background: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-neutral-200);
+  flex-wrap: wrap;
+}
+
+.diario-entry__date {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--font-bold, 700);
+  color: var(--color-neutral-600);
+  flex-shrink: 0;
+}
+
+.diario-entry__number {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-primary-600);
+  flex-shrink: 0;
+}
+
+.diario-entry__description {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-neutral-700);
+  flex: 1;
+  min-width: 0;
+}
+
+.diario-entry__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.diario-entry__th {
+  padding: var(--space-2, 8px) var(--space-4, 16px);
+  text-align: left;
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: var(--font-bold, 700);
+  color: var(--color-neutral-600);
+  background: var(--color-neutral-100);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.diario-entry__th--amount {
+  text-align: right;
+  width: 120px;
+}
+
+.diario-entry__line {
+  transition: background 100ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .diario-entry__line {
+    transition: none;
+  }
+}
+
+.diario-entry__line:hover {
+  background: var(--color-neutral-50);
+}
+
+.diario-entry__td {
+  padding: var(--space-2, 8px) var(--space-4, 16px);
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-100);
+  vertical-align: middle;
+}
+
+.diario-entry__td--amount {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.diario-entry__account-code {
+  color: var(--color-neutral-500);
+  margin-right: var(--space-2, 8px);
+}
+
+.diario-entry__account-name {
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+}
+
+/* ─── Toast ───────────────────────────────────────────────────── */
+
+.trial-balance-page__toast {
+  position: fixed;
+  top: var(--space-6, 24px);
+  right: var(--space-6, 24px);
+  background: var(--color-neutral-800);
+  color: var(--color-neutral-0);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  border-radius: 8px;
+  font-family: var(--font-body, 'Source Sans 3', system-ui, sans-serif);
+  font-size: var(--text-sm, 0.875rem);
+  z-index: 500;
+  animation: toast-enter-tb 200ms ease-out;
+}
+
+@keyframes toast-enter-tb {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trial-balance-page__toast {
+    animation: none;
+  }
+}
+
+/* ─── Responsive ──────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .trial-balance-page {
+    padding: var(--space-4, 16px);
+  }
+
+  /* Horizontal scroll inside table; sticky first column */
+  .trial-balance-page__table-wrapper {
+    overflow-x: auto;
+  }
+
+  .trial-balance-table__td--code,
+  .trial-balance-table__th--code {
+    position: sticky;
+    left: 0;
+    background: inherit;
+    z-index: 1;
+  }
+
+  .group-row .trial-balance-table__td--code {
+    background: var(--color-neutral-100);
+  }
+
+  .trial-balance-page__filters {
+    flex-direction: column;
+  }
+
+  .trial-balance-page__filter-group {
+    min-width: 100%;
+  }
+
+  .trial-balance-page__actions {
+    flex-wrap: wrap;
+  }
+
+  .trial-balance-page__btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .diario-entry__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1, 4px);
+  }
+}

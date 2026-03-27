@@ -143,6 +143,8 @@ const IncomeStatementsPage = lazy(() => import('@/pages/IncomeStatementsPage'));
 const AccountingEntriesPage = lazy(() => import('@/pages/AccountingEntriesPage'));
 const ChartOfAccountsPage = lazy(() => import('@/pages/ChartOfAccountsPage'));
 const FiscalPeriodsPage = lazy(() => import('@/pages/FiscalPeriodsPage'));
+const LedgerPage = lazy(() => import('@/pages/LedgerPage'));
+const TrialBalancePage = lazy(() => import('@/pages/TrialBalancePage'));
 const HrDashboardPage = lazy(() => import('@/pages/HrDashboardPage'));
 
 export function App() {
@@ -278,6 +280,8 @@ export function App() {
                 <Route path="/accounting-entries" element={<AccountingEntriesPage />} />
                 <Route path="/chart-of-accounts" element={<ChartOfAccountsPage />} />
                 <Route path="/fiscal-periods" element={<FiscalPeriodsPage />} />
+                <Route path="/ledger" element={<LedgerPage />} />
+                <Route path="/trial-balance" element={<TrialBalancePage />} />
                 <Route path="/assets" element={<AssetsPage />} />
                 <Route path="/depreciation" element={<DepreciationPage />} />
                 <Route path="/maintenance-plans" element={<MaintenancePlansPage />} />
