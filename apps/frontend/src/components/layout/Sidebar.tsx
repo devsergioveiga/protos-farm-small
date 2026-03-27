@@ -93,6 +93,7 @@ import {
   FileBarChart2,
   FileCode,
   BookOpen,
+  GitBranch,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -293,6 +294,8 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'CONTABILIDADE',
     items: [
+      { to: '/chart-of-accounts', icon: GitBranch, label: 'Plano de Contas' },
+      { to: '/fiscal-periods', icon: Calendar, label: 'Períodos Fiscais' },
       { to: '/accounting-entries', icon: BookOpen, label: 'Lançamentos Contábeis' },
     ],
   },
