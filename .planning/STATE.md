@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
 status: Ready to execute
-stopped_at: Completed 37-01-PLAN.md
-last_updated: "2026-03-27T20:11:52.206Z"
+stopped_at: Completed 37-03-PLAN.md
+last_updated: "2026-03-27T20:24:24.696Z"
 progress:
   total_phases: 7
   completed_phases: 2
   total_plans: 12
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 ## Current Position
 
 Phase: 37 (regras-e-lan-amentos-autom-ticos) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Accumulated Context
 
@@ -59,6 +59,8 @@ Key decisions carried from v1.3:
 - [Phase 37]: D-17: Idempotency via UNIQUE(sourceType, sourceId) on both PendingJournalPosting and JournalEntry — process() returns silently on duplicate
 - [Phase 37]: EXTRACTORS map keyed on AutoPostingSourceType co-located in auto-posting service — no cross-module imports, each extractor fetches its own source data
 - [Phase 37]: seedAccountingRules(orgId) must be called after COA seeding — resolves accounts by code prefix startsWith, silently skips if COA not seeded yet
+- [Phase 37]: Lancamentos panel uses hidden attribute (not conditional render) to preserve filter state on tab switch
+- [Phase 37]: AccountCombobox filters analytic accounts client-side from useChartOfAccounts data already in memory
 
 ### Pending Todos
 
@@ -73,7 +75,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27T20:11:52.202Z
-Stopped at: Completed 37-01-PLAN.md
+Last session: 2026-03-27T20:24:24.693Z
+Stopped at: Completed 37-03-PLAN.md
 Resume file: None
 Next action: Define requirements and create roadmap for v1.4

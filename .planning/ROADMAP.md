@@ -130,11 +130,11 @@ Plans:
 3. Re-processamento da mesma operação NÃO gera duplicata (constraint sourceType+sourceId)
 4. Fila de pendências mostra lançamentos automáticos com status pendente/processado/erro
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 Plans:
 - [x] 37-01-PLAN.md — Prisma migration + auto-posting service + routes + tests
 - [ ] 37-02-PLAN.md — Hook wiring in 6 modules + legacy removal + seed rules
-- [ ] 37-03-PLAN.md — Frontend: types, hooks, PendingPostingsTab, AccountingRulesTab, AccountingRuleModal, JournalEntriesPage tabs
+- [x] 37-03-PLAN.md — Frontend: types, hooks, PendingPostingsTab, AccountingRulesTab, AccountingRuleModal, JournalEntriesPage tabs
 
 ### Phase 38: Fechamento Mensal e Conciliação Contábil
 **Goal:** Checklist de fechamento com consultas automáticas aos módulos, conciliação bancária contábil (razão vs extrato v1.0), bloqueio de período, reabertura controlada com auditoria
