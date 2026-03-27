@@ -1,0 +1,270 @@
+/* ReversalModal */
+
+/* ─── Overlay ────────────────────────────────────────────────────────────── */
+
+.reversal-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(42, 37, 32, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: rm-overlay-open var(--duration-normal) var(--ease-out);
+}
+
+@keyframes rm-overlay-open {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ─── Dialog ─────────────────────────────────────────────────────────────── */
+
+.reversal-modal {
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 640px;
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  animation: rm-modal-open var(--duration-normal) var(--ease-out);
+  overflow: hidden;
+}
+
+@keyframes rm-modal-open {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+
+.reversal-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-6) var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.reversal-modal__heading {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.reversal-modal__heading:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.reversal-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: background-color var(--duration-instant) var(--ease-out);
+}
+
+.reversal-modal__close:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.reversal-modal__close:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Body ───────────────────────────────────────────────────────────────── */
+
+.reversal-modal__body {
+  padding: var(--space-4) var(--space-6);
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ─── Summary ────────────────────────────────────────────────────────────── */
+
+.reversal-modal__summary {
+  background: var(--color-neutral-100);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.reversal-modal__summary-heading {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-600);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 var(--space-3);
+}
+
+.reversal-modal__summary-dl {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.reversal-modal__summary-row {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.reversal-modal__summary-row dt {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.reversal-modal__summary-row dd {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.reversal-modal__mono {
+  font-family: var(--font-mono);
+}
+
+/* ─── Field ──────────────────────────────────────────────────────────────── */
+
+.reversal-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.reversal-modal__label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-700);
+}
+
+.reversal-modal__textarea {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  resize: vertical;
+  min-height: 80px;
+}
+
+.reversal-modal__textarea:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.reversal-modal__textarea--error {
+  border-color: var(--color-error-500);
+}
+
+.reversal-modal__error {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-error-500);
+  padding: var(--space-1) 0;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────────────── */
+
+.reversal-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
+
+.reversal-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  border: none;
+  transition: background-color var(--duration-instant) var(--ease-out);
+  min-height: 48px;
+}
+
+.reversal-modal__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.reversal-modal__btn--secondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  border: 1px solid var(--color-neutral-300);
+}
+
+.reversal-modal__btn--secondary:hover {
+  background: var(--color-neutral-200);
+}
+
+.reversal-modal__btn--danger {
+  background: var(--color-error-500);
+  color: var(--color-neutral-0);
+}
+
+.reversal-modal__btn--danger:hover:not(:disabled) {
+  background: #a71919;
+}
+
+.reversal-modal__btn--danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .reversal-modal__overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .reversal-modal {
+    max-width: 100%;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reversal-modal__overlay,
+  .reversal-modal {
+    animation: none;
+  }
+}
