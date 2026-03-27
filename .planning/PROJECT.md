@@ -1,14 +1,26 @@
 # Protos Farm — Fase 3: Módulos Administrativos
 
-## Current State: v1.3 Complete — Planning Next Milestone
+## Current Milestone: v1.4 Contabilidade e Demonstrações Financeiras
+
+**Goal:** Implementar contabilidade completa com plano de contas rural, lançamentos automáticos/manuais, fechamento mensal e geração de DRE, BP e DFC com vinculação automática entre demonstrações.
+
+**Target features:**
+- Plano de contas hierárquico com modelo rural pré-carregado (CPC/CFC agro)
+- Regras de lançamento automático para todas operações existentes (CP/CR, depreciação, folha, estoque)
+- Lançamentos manuais, estornos e razão contábil com drill-down
+- Fechamento mensal com checklist estruturado e conciliação bancária contábil
+- DRE com comparativos, análise vertical/horizontal, por cultura/fazenda
+- Balanço Patrimonial com indicadores (liquidez, endividamento, PL/ha)
+- DFC método direto e indireto com validação cruzada
+- Painel de vinculação DRE↔BP↔DFC, relatório integrado PDF, SPED ECD
+- Dashboard contábil executivo
 
 **Shipped:** v1.0 Financeiro Base, v1.1 Compras, v1.2 Patrimonio, v1.3 RH e Folha
 **Total:** 34 phases, 153 plans shipped across 4 milestones (2026-03-16 to 2026-03-27)
-**Next:** v1.4 (to be defined via `/gsd:new-milestone`)
 
 ## What This Is
 
-Sistema de gestão agrícola completo com módulo financeiro base já operacional (contas bancárias, CP/CR, conciliação, fluxo de caixa, crédito rural). Próximos milestones cobrem compras, patrimônio, RH e contabilidade. Destinado a gerentes financeiros e proprietários de fazendas.
+Sistema de gestão agrícola completo com módulos financeiro, compras, patrimônio e RH já operacionais. Próximo milestone cobre contabilidade completa com plano de contas rural, lançamentos automáticos, fechamento mensal e demonstrações financeiras (DRE, BP, DFC) com vinculação cruzada. Destinado a contadores, gerentes financeiros e proprietários de fazendas.
 
 ## Core Value
 
@@ -68,7 +80,27 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 
 ### Active
 
-<!-- To be defined in next milestone -->
+<!-- v1.4 Contabilidade e Demonstrações Financeiras — 22 stories, 158 pts, 7 épicos -->
+
+- [ ] Plano de contas hierárquico rural configurável com modelo pré-carregado (CPC/CFC agro)
+- [ ] Regras de lançamento automático por tipo de operação com mapeamento conta débito/crédito
+- [ ] Períodos contábeis e exercícios fiscais com status aberto/fechado
+- [ ] Centros de custo contábeis vinculados a lançamentos e demonstrações gerenciais
+- [ ] Lançamentos contábeis automáticos para CP/CR, depreciação, folha, estoque, ativos
+- [ ] Lançamentos contábeis manuais com partidas dobradas, templates e importação CSV
+- [ ] Estorno e retificação auditável de lançamentos
+- [ ] Razão contábil por conta com saldo progressivo e livro diário
+- [ ] Balancete de verificação com comparativos
+- [ ] Checklist de fechamento mensal com etapas dependentes e integração entre módulos
+- [ ] Conciliação bancária contábil (razão vs extrato) com ajuste automático
+- [ ] Fechamento e bloqueio de período com reabertura controlada
+- [ ] DRE configurável com layout rural, comparativos e análise vertical/horizontal
+- [ ] Balanço Patrimonial com indicadores (liquidez, endividamento, PL/ha)
+- [ ] DFC método direto e indireto com três seções (operacional, investimento, financiamento)
+- [ ] Painel de vinculação e validação cruzada DRE↔BP↔DFC
+- [ ] Relatório integrado de demonstrações financeiras (PDF profissional com notas explicativas)
+- [ ] Exportação SPED Contábil (ECD) no formato da RFB
+- [ ] Dashboard contábil executivo com indicadores e alertas
 
 ### Out of Scope
 
@@ -159,4 +191,4 @@ All administrative modules complete with bidirectional financial/accounting inte
 
 ---
 
-_Last updated: 2026-03-27 after v1.3 milestone complete_
+_Last updated: 2026-03-26 after v1.4 milestone started_
