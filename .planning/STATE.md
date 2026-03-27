@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
-status: Phase complete — ready for verification
+status: Ready to plan
 stopped_at: Completed 35-04-PLAN.md — awaiting Task 3 human-verify checkpoint
-last_updated: "2026-03-27T10:23:19.186Z"
+last_updated: "2026-03-27T10:41:18.486Z"
 progress:
   total_phases: 7
   completed_phases: 1
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 
 ## Current Position
 
-Phase: 35 (plano-de-contas-e-periodos-fiscais) — EXECUTING
-Plan: 4 of 4
+Phase: 36
+Plan: Not started
 
 ## Accumulated Context
 
