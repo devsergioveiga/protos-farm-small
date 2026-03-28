@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
 status: Ready to execute
-stopped_at: Completed 38-01-PLAN.md — MonthlyClosing backend module + checkPeriodOpen middleware
-last_updated: "2026-03-28T10:48:54.276Z"
+stopped_at: Completed 38-02-PLAN.md — checkPeriodOpen middleware wired into journal-entries and auto-posting routes
+last_updated: "2026-03-28T10:56:39.746Z"
 progress:
   total_phases: 7
   completed_phases: 3
   total_plans: 15
-  completed_plans: 13
+  completed_plans: 14
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 ## Current Position
 
 Phase: 38 (fechamento-mensal-e-concilia-o-cont-bil) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Accumulated Context
 
@@ -66,6 +66,7 @@ Key decisions carried from v1.3:
 - [Phase 37]: AccountingEntry table was already absent from DB — migrate diff returned empty, prisma generate sufficient
 - [Phase 37]: seedAccountingRules called at end of seedRuralTemplate — idempotent, silently skips if COA not seeded
 - [Phase 38]: Routes spec uses service mock pattern (matches auto-posting.routes.spec.ts) for better isolation
+- [Phase 38-fechamento-mensal-e-concilia-o-cont-bil]: checkPeriodOpen() applied to actual HTTP write routes (pending/retry-batch, pending/:id/retry) not the internal process() function which is not an HTTP endpoint
 
 ### Pending Todos
 
@@ -80,7 +81,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T10:48:54.273Z
-Stopped at: Completed 38-01-PLAN.md — MonthlyClosing backend module + checkPeriodOpen middleware
+Last session: 2026-03-28T10:56:39.743Z
+Stopped at: Completed 38-02-PLAN.md — checkPeriodOpen middleware wired into journal-entries and auto-posting routes
 Resume file: None
 Next action: Define requirements and create roadmap for v1.4

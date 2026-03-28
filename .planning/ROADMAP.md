@@ -145,10 +145,10 @@ Plans:
 2. Conciliação bancária contábil compara razão GL vs extrato OFX/CSV importado
 3. Período fechado bloqueia qualquer novo lançamento; reabertura exige papel administrador + motivo
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 Plans:
 - [x] 38-01-PLAN.md — Prisma migration (MonthlyClosing) + monthly-closing service/routes/tests + checkPeriodOpen middleware
-- [ ] 38-02-PLAN.md — Wire checkPeriodOpen middleware into journal-entries and auto-posting routes
+- [x] 38-02-PLAN.md — Wire checkPeriodOpen middleware into journal-entries and auto-posting routes
 - [ ] 38-03-PLAN.md — Frontend: MonthlyClosingPage stepper + hooks + FiscalPeriodsPage button + sidebar + routing
 
 ### Phase 39: DRE, Balanço Patrimonial e Validação Cruzada
