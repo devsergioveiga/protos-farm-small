@@ -178,11 +178,12 @@ Plans:
 3. Validação DFC↔BP (variação caixa DFC = variação caixa/bancos BP) com alerta divergência
 4. Dashboard com resultado acumulado, evolução receita/despesa 12m, composição custos, indicadores BP
 
-**Plans:** 3 plans
+**Plans:** 4 plans
 Plans:
 - [ ] 40-01-PLAN.md — Backend DFC types, calculators (direto+indireto), cross-validation activation, service, route
 - [ ] 40-02-PLAN.md — Backend accounting dashboard service, route, tests
-- [ ] 40-03-PLAN.md — Frontend DFC page, Dashboard page, types, hooks, sidebar, routing
+- [ ] 40-03-PLAN.md — Frontend types, hooks, DfcTable component, DfcPage with tabs
+- [ ] 40-04-PLAN.md — Frontend AccountingDashboardPage, dashboard components, sidebar, routing
 
 ### Phase 41: SPED ECD e Relatório Integrado
 **Goal:** SpedEcdWriter custom (pipe-delimited), blocos 0/I/J/9, pré-validação PVA, geração async via BullMQ; relatório integrado PDF (DRE+BP+DFC+notas) para crédito rural
@@ -201,7 +202,7 @@ Plans:
 | 7-15 | v1.1 | 37/37 | Complete | 2026-03-19 |
 | 16-24 | v1.2 | 41/41 | Complete | 2026-03-23 |
 | 25-34 | v1.3 | 45/45 | Complete | 2026-03-27 |
-| 35-41 | v1.4 | 18/~21 | In Progress | — |
+| 35-41 | v1.4 | 18/~22 | In Progress | — |
 
 ---
-*Last updated: 2026-03-28 after Phase 40 planning*
+*Last updated: 2026-03-28 after Phase 40 plan revision*
