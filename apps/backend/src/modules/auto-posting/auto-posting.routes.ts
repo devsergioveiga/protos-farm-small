@@ -10,6 +10,7 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { authenticate } from '../../middleware/auth';
 import { checkPermission } from '../../middleware/check-permission';
+import { checkPeriodOpen } from '../../middleware/check-period-open';
 import * as service from './auto-posting.service';
 import { AutoPostingError } from './auto-posting.service';
 
@@ -142,6 +143,7 @@ autoPostingRouter.post(
   `${base}/pending/retry-batch`,
   authenticate,
   checkPermission('financial:manage'),
+  checkPeriodOpen(),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const orgId = req.params.orgId as string;
@@ -183,6 +185,7 @@ autoPostingRouter.post(
   `${base}/pending/:id/retry`,
   authenticate,
   checkPermission('financial:manage'),
+  checkPeriodOpen(),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const orgId = req.params.orgId as string;

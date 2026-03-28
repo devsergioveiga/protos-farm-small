@@ -11,6 +11,7 @@ import type { Request, Response } from 'express';
 import multer, { memoryStorage } from 'multer';
 import { authenticate } from '../../middleware/auth';
 import { checkPermission } from '../../middleware/check-permission';
+import { checkPeriodOpen } from '../../middleware/check-period-open';
 import * as service from './journal-entries.service';
 import { JournalEntryError } from './journal-entries.types';
 import { UnbalancedEntryError, PeriodNotOpenError } from '@protos-farm/shared';
@@ -130,6 +131,7 @@ journalEntriesRouter.post(
       next();
     });
   },
+  checkPeriodOpen(),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const orgId = req.params.orgId as string;
@@ -176,6 +178,7 @@ journalEntriesRouter.post(
   base,
   authenticate,
   checkPermission('financial:manage'),
+  checkPeriodOpen(),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const orgId = req.params.orgId as string;
@@ -215,6 +218,7 @@ journalEntriesRouter.post(
   `${base}/:id/post`,
   authenticate,
   checkPermission('financial:manage'),
+  checkPeriodOpen(),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const orgId = req.params.orgId as string;
