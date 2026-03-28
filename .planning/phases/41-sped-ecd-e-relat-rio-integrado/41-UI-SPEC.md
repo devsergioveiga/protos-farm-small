@@ -24,8 +24,8 @@ created: 2026-03-28
 | Preset | not applicable |
 | Component library | none — hand-rolled components with BEM-style CSS modules |
 | Icon library | lucide-react |
-| Font (Headlines) | DM Sans — weights 500, 700 |
-| Font (Body/UI) | Source Sans 3 — weights 400, 600 |
+| Font (Headlines) | DM Sans — weight 700 (phase-level; weight 500 is system-level only, not used in this phase) |
+| Font (Body/UI) | Source Sans 3 — weight 400 |
 | Font (Monospace/Data) | JetBrains Mono — weight 400 |
 
 Source: CLAUDE.md, `apps/frontend/src/styles/tokens.css`
@@ -59,10 +59,12 @@ Source: CLAUDE.md spacing rules, confirmed against DrePage.css patterns.
 | Role | Family | Size | Weight | Line Height |
 |------|--------|------|--------|-------------|
 | Body | Source Sans 3 | 16px | 400 | 1.5 |
-| Label | Source Sans 3 | 14px | 600 | 1.4 |
+| Label | Source Sans 3 | 14px | 700 | 1.4 |
 | Heading (page title) | DM Sans | 20px | 700 | 1.2 |
 | Display (section title) | DM Sans | 28px | 700 | 1.2 |
 | Monospace data (SPED codes, amounts) | JetBrains Mono | 14px | 400 | 1.5 |
+
+Weights used in this phase: **400** (Body, Monospace) and **700** (Label, Heading, Display). Exactly 2 weights.
 
 Minimum size in this phase: 14px (labels, table cells, validation list items). Nothing below 14px.
 
@@ -106,6 +108,8 @@ Source: CLAUDE.md color rules, tokens.css, FinancialDashboardPage alert pattern 
 ### Layout
 
 Single page at route `/sped-ecd`. Follows the same structural pattern as TrialBalancePage and DrePage.
+
+Primary focal point on Tab SPED ECD: the Validation panel, which drives whether the "Gerar SPED ECD" CTA is enabled. Primary focal point on Tab Relatório Integrado: the "Gerar Relatório PDF" CTA, which is the terminal action after reviewing the notes textarea.
 
 ```
 <main id="main-content" class="sped-ecd-page">
@@ -181,7 +185,7 @@ The `<select>` for fiscal year sits above the tab rail and applies to both tabs.
 
 ```
 ┌─ sped-ecd-page__validation-panel ─────────────────────────────────────┐
-│  [heading h2, 16px/600] Pré-validação SPED                             │
+│  [heading h2, 16px/700] Pré-validação SPED                             │
 │                                                                        │
 │  ── Loading state ──────────────────────────────────────────────────   │
 │  [skeleton row × 3]                                                    │
@@ -190,7 +194,7 @@ The `<select>` for fiscal year sits above the tab rail and applies to both tabs.
 │  [CheckCircle 20px green] Pronto para geração. Nenhum problema.        │
 │                                                                        │
 │  ── Issues state ───────────────────────────────────────────────────   │
-│  [N erros • M avisos]  ← summary line, 14px/600                        │
+│  [N erros • M avisos]  ← summary line, 14px/700                        │
 │                                                                        │
 │  [ERRO badge] [XCircle 16px] Contas sem mapeamento SPED: 3 contas      │
 │               → Corrigir no Plano de Contas                            │
