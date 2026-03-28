@@ -1,0 +1,61 @@
+/* IndicatorCard — Financial indicator with sparkline */
+
+.indicator-card {
+  background: var(--color-neutral-0);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-neutral-200);
+  transition: transform 100ms var(--ease-out), box-shadow 100ms var(--ease-out);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.indicator-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.indicator-card__label {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.indicator-card__value {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--color-neutral-800);
+  margin: var(--space-2) 0;
+  line-height: 1.2;
+}
+
+.indicator-card__value--na {
+  color: var(--color-neutral-400);
+}
+
+.indicator-card__sparkline {
+  margin-top: var(--space-1);
+}
+
+.indicator-card__sparkline-empty {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-400);
+  text-align: center;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicator-card:hover {
+    transform: none;
+  }
+}

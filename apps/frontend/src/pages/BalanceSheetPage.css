@@ -1,0 +1,225 @@
+/* BalanceSheetPage — Balanco Patrimonial */
+
+.balance-sheet-page {
+  padding: var(--space-6);
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ─── Breadcrumb ──────────────────────────────────────────────────────────── */
+
+.balance-sheet-page__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+}
+
+.balance-sheet-page__breadcrumb-sep {
+  color: var(--color-neutral-300);
+}
+
+.balance-sheet-page__breadcrumb-item--current {
+  color: var(--color-neutral-700);
+  font-weight: var(--font-bold);
+}
+
+/* ─── Header ──────────────────────────────────────────────────────────────── */
+
+.balance-sheet-page__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.balance-sheet-page__header-icon {
+  color: var(--color-primary-600);
+  flex-shrink: 0;
+}
+
+.balance-sheet-page__title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+/* ─── Filter Bar ──────────────────────────────────────────────────────────── */
+
+.balance-sheet-page__filter-bar {
+  background: var(--color-neutral-0);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-neutral-200);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: flex-end;
+}
+
+.balance-sheet-page__filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 160px;
+}
+
+.balance-sheet-page__filter-label {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.balance-sheet-page__select {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  min-height: 40px;
+  cursor: pointer;
+}
+
+.balance-sheet-page__select:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Section Heading ─────────────────────────────────────────────────────── */
+
+.balance-sheet-page__section-heading {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--color-neutral-700);
+  margin: 0 0 var(--space-4) 0;
+}
+
+/* ─── Indicators Grid ─────────────────────────────────────────────────────── */
+
+.balance-sheet-page__indicators-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-12);
+}
+
+.balance-sheet-page__indicator-skeleton {
+  height: 80px;
+  background: var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  animation: bs-indicator-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes bs-indicator-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .balance-sheet-page__indicator-skeleton {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+/* ─── Export Bar ──────────────────────────────────────────────────────────── */
+
+.balance-sheet-page__export-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.balance-sheet-page__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  min-height: 40px;
+  transition: background 200ms var(--ease-out);
+}
+
+.balance-sheet-page__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.balance-sheet-page__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.balance-sheet-page__btn--secondary {
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-300);
+}
+
+.balance-sheet-page__btn--secondary:hover:not(:disabled) {
+  background: var(--color-neutral-50);
+}
+
+/* ─── Empty State ─────────────────────────────────────────────────────────── */
+
+.balance-sheet-page__empty {
+  text-align: center;
+  padding: var(--space-16) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.balance-sheet-page__empty-icon {
+  color: var(--color-neutral-300);
+}
+
+.balance-sheet-page__empty-title {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.balance-sheet-page__empty-desc {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+/* ─── Toast ───────────────────────────────────────────────────────────────── */
+
+.balance-sheet-page__toast {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  background: var(--color-neutral-800);
+  color: var(--color-neutral-0);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  max-width: 400px;
+}
