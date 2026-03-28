@@ -305,6 +305,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/dfc', icon: ArrowLeftRight, label: 'DFC' },
       { to: '/cross-validation', icon: GitMerge, label: 'Validacao Cruzada' },
       { to: '/accounting-dashboard', icon: LayoutDashboard, label: 'Dashboard Contabil' },
+      { to: '/sped-ecd', icon: FileText, label: 'SPED / Relatorios' },
     ],
   },
   {

@@ -152,6 +152,7 @@ const BalanceSheetPage = lazy(() => import('@/pages/BalanceSheetPage'));
 const CrossValidationPage = lazy(() => import('@/pages/CrossValidationPage'));
 const DfcPage = lazy(() => import('@/pages/DfcPage'));
 const AccountingDashboardPage = lazy(() => import('@/pages/AccountingDashboardPage'));
+const SpedEcdPage = lazy(() => import('@/pages/SpedEcdPage'));
 
 export function App() {
   return (
@@ -294,6 +295,7 @@ export function App() {
                 <Route path="/cross-validation" element={<CrossValidationPage />} />
                 <Route path="/dfc" element={<DfcPage />} />
                 <Route path="/accounting-dashboard" element={<AccountingDashboardPage />} />
+                <Route path="/sped-ecd" element={<SpedEcdPage />} />
                 <Route path="/assets" element={<AssetsPage />} />
                 <Route path="/depreciation" element={<DepreciationPage />} />
                 <Route path="/maintenance-plans" element={<MaintenancePlansPage />} />
