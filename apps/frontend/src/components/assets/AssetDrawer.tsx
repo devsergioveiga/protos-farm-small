@@ -559,7 +559,7 @@ export default function AssetDrawer({
                 {activeTab === 'hierarquia' && (
                   <AssetHierarchyTab
                     asset={asset}
-                    onNavigate={(id) => {
+                    onNavigate={(_id) => {
                       // Navigate to a different asset by re-fetching it
                       // Parent component manages assetId; here we use the closest mechanism
                       void refetch();

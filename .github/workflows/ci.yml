@@ -46,6 +46,8 @@ jobs:
         run: pnpm --filter @protos-farm/backend prisma:generate
 
       - run: pnpm test
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
 
   build:
     name: Build

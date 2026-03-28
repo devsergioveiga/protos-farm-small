@@ -13,7 +13,7 @@ import { useAnimalExits } from '@/hooks/useAnimalExits';
 import { api } from '@/services/api';
 import PermissionGate from '@/components/auth/PermissionGate';
 import ConfirmModal from '@/components/ui/ConfirmModal';
-import type { AnimalExitType, AnimalExitItem } from '@/types/animal-exit';
+import type { AnimalExitItem } from '@/types/animal-exit';
 import { EXIT_TYPES, EXIT_TYPE_LABELS } from '@/types/animal-exit';
 import './AnimalExitsPage.css';
 

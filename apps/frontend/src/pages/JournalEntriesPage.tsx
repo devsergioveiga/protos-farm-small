@@ -217,7 +217,7 @@ function CsvPreviewModal({ preview, onConfirm, onCancel, isLoading }: CsvPreview
             <ul>
               {preview.errors.map((err, i) => (
                 <li key={i} className="je-page__csv-error-item">
-                  Linha {err.rowNumber}, campo "{err.field}": {err.reason}
+                  Linha {err.rowNumber}, campo &quot;{err.field}&quot;: {err.reason}
                 </li>
               ))}
             </ul>
@@ -295,7 +295,7 @@ export default function JournalEntriesPage() {
   // CSV import state
   const csvInputRef = useRef<HTMLInputElement>(null);
   const [csvPreview, setCsvPreview] = useState<CsvImportPreview | null>(null);
-  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [_csvFile, setCsvFile] = useState<File | null>(null);
   const [csvLoading, setCsvLoading] = useState(false);
 
   const showToast = (msg: string) => {

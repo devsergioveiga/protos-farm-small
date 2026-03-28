@@ -21,8 +21,6 @@ function formatDate(iso: string): string {
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
-type InventoryStatus = 'DRAFT' | 'COUNTING' | 'RECONCILED' | 'CANCELLED';
-
 const INVENTORY_STATUS_LABELS: Record<string, string> = {
   DRAFT: 'Rascunho',
   COUNTING: 'Em contagem',

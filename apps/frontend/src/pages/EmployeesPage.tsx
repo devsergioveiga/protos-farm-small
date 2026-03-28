@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserRound, Plus, Upload, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEmployees } from '@/hooks/useEmployees';
-import { useAuth } from '@/stores/AuthContext';
 import EmployeeStatusBadge from '@/components/employees/EmployeeStatusBadge';
 import CreateEmployeeModal from '@/components/employees/CreateEmployeeModal';
 import type { Employee, EmployeeStatus } from '@/types/employee';
@@ -31,7 +30,6 @@ const LIMIT = 20;
 
 function EmployeesPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');

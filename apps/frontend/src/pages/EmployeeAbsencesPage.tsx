@@ -69,6 +69,7 @@ function EmployeeAbsenceModal({ isOpen, onClose, onSubmit }: EmployeeAbsenceModa
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEmployeeId('');
       setAbsenceType('MEDICAL_CERTIFICATE');
       setStartDate('');
@@ -98,6 +99,7 @@ function EmployeeAbsenceModal({ isOpen, onClose, onSubmit }: EmployeeAbsenceModa
       const year = start.getFullYear();
       const month = String(start.getMonth() + 1).padStart(2, '0');
       const day = String(start.getDate()).padStart(2, '0');
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEndDate(`${year}-${month}-${day}`);
     }
   }, [absenceType, startDate]);
@@ -335,6 +337,7 @@ function RegisterReturnModal({ isOpen, absence, onClose, onSubmit }: RegisterRet
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setReturnDate('');
       setError('');
       setTimeout(() => inputRef.current?.focus(), 100);

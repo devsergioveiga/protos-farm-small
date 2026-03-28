@@ -5,14 +5,6 @@ interface CostCompositionChartProps {
   data: CostCompositionItem[];
 }
 
-const COLORS = [
-  'var(--color-primary-600)',    // #2E7D32
-  'var(--color-sun-500)',        // #F9A825
-  'var(--color-sky-500)',        // #0288D1
-  'var(--color-earth-500)',      // #8D6E63
-  'var(--color-neutral-400)',    // #A8A196
-];
-
 const COLORS_HEX = [
   '#2E7D32',
   '#F9A825',

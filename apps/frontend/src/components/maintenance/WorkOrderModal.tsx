@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { X, AlertCircle, Plus, Trash2, Upload, Image } from 'lucide-react';
+import { X, AlertCircle, Plus, Trash2, Upload } from 'lucide-react';
 import { useWorkOrders } from '@/hooks/useWorkOrders';
 import { useAssets } from '@/hooks/useAssets';
 import type {

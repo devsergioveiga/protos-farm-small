@@ -108,6 +108,7 @@ export default function EpiProductsPage() {
 
   useEffect(() => {
     if (activeTab === 'requirements') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPosReqLoading(true);
       void fetchPositionRequirements()
         .then(setPositionRequirements)
@@ -119,6 +120,7 @@ export default function EpiProductsPage() {
 
   useEffect(() => {
     if (successMessage) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setToast(successMessage);
       setSuccessMessage(null);
       const timer = setTimeout(() => setToast(null), 5000);

@@ -132,7 +132,7 @@ export default function BulkInseminationModal({ isOpen, onClose, farmId, onSucce
             observations: observations.trim() || null,
           });
           successCount++;
-        } catch (err) {
+        } catch (_err) {
           const animal = animals.find((a) => a.id === animalIds[i]);
           const tag = animal?.earTag || animalIds[i];
           errors.push(tag);

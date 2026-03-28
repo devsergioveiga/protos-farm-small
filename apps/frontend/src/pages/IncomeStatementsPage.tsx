@@ -236,6 +236,7 @@ export default function IncomeStatementsPage() {
 
   useEffect(() => {
     void fetchStatements(yearBase);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRaisLoaded(false);
   }, [yearBase, fetchStatements]);
 

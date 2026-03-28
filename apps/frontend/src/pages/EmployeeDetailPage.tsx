@@ -65,7 +65,7 @@ export default function EmployeeDetailPage() {
   const tablistId = useId();
 
   const { employee, isLoading, error, refetch } = useEmployee(employeeId ?? null);
-  const { contracts, isLoading: contractsLoading, refetch: refetchContracts } = useEmployeeContracts({
+  const { contracts, isLoading: contractsLoading } = useEmployeeContracts({
     employeeId: employeeId,
   });
   const { movements, isLoading: movementsLoading } = useEmployeeMovements({

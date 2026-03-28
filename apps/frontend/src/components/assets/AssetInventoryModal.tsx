@@ -29,6 +29,7 @@ export default function AssetInventoryModal({
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFarmId('');
       setNotes('');
       setFormError(null);

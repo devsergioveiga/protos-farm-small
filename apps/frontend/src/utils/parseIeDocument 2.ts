@@ -253,7 +253,7 @@ const KNOWN_LABELS = new Set([
   'EMITIDA EM :',
 ]);
 
-function isLabel(str: string): boolean {
+function _isLabel(str: string): boolean {
   return KNOWN_LABELS.has(str.toUpperCase().trim());
 }
 

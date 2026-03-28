@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAuth } from '@/stores/AuthContext';
-import type { Position, SalaryBand, SalaryBandLevel } from '@/types/position';
+import type { Position, SalaryBandLevel } from '@/types/position';
 import { SALARY_BAND_LABELS } from '@/types/position';
 
 interface SalaryBandModalProps {

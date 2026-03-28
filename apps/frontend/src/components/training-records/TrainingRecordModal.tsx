@@ -80,6 +80,7 @@ export default function TrainingRecordModal({
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStep(1);
       setForm(INITIAL_STEP1);
       setErrors({});
@@ -107,6 +108,7 @@ export default function TrainingRecordModal({
     if (selectedType && form.effectiveHours) {
       const hours = Number(form.effectiveHours);
       if (hours < selectedType.minHours) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setHoursWarning(
           `Carga horária abaixo do mínimo exigido (${selectedType.minHours}h) para este tipo de treinamento.`,
         );
@@ -179,7 +181,7 @@ export default function TrainingRecordModal({
       (e.positionName ?? '').toLowerCase().includes(employeeSearch.toLowerCase()),
   );
 
-  const expiryDate =
+  const _expiryDate =
     form.date && selectedType
       ? addMonths(form.date, selectedType.defaultValidityMonths)
       : null;

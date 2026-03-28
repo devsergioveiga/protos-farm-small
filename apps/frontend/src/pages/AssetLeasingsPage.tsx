@@ -164,7 +164,7 @@ export default function AssetLeasingsPage() {
         setSuccessMsg('Contrato cancelado com sucesso.');
       }
       setConfirmAction(null);
-    } catch (err) {
+    } catch (_err) {
       setConfirmAction(null);
       // Error is already set inside the hook
     } finally {

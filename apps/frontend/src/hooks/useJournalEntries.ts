@@ -41,7 +41,7 @@ export function useJournalEntries(filters?: JournalEntryFilters) {
     } finally {
       setIsLoading(false);
     }
-  }, [orgId, filters?.periodId, filters?.status, filters?.entryType, filters?.page, filters?.limit]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [orgId, filters?.periodId, filters?.status, filters?.entryType, filters?.page, filters?.limit]);
 
   useEffect(() => {
     void fetchEntries();

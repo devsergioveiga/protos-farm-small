@@ -48,11 +48,7 @@ function parseAmount(str: string): number {
   return isNaN(n) ? 0 : n;
 }
 
-function formatAmountDisplay(str: string): string {
-  const n = parseAmount(str);
-  if (n === 0 && str === '') return '';
-  return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+
 
 // ─── Balance Indicator ────────────────────────────────────────────────────────
 

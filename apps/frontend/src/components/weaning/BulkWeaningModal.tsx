@@ -71,7 +71,7 @@ export default function BulkWeaningModal({
     });
   };
 
-  const updateObs = (index: number, value: string) => {
+  const _updateObs = (index: number, value: string) => {
     setEntries((prev) => {
       const next = [...prev];
       next[index] = { ...next[index], observations: value };

@@ -9,7 +9,7 @@ import {
   Info,
   Download,
 } from 'lucide-react';
-import { useAuth } from '@/stores/AuthContext';
+
 import { useTimesheet } from '@/hooks/useTimesheet';
 import { useEmployees } from '@/hooks/useEmployees';
 import TimesheetApprovalModal from '@/components/attendance/TimesheetApprovalModal';
@@ -92,9 +92,8 @@ const SEVERITY_CLASSES: Record<string, string> = {
 };
 
 export default function TimesheetPage() {
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('espelho');
-  const [selectedFarmId, setSelectedFarmId] = useState('');
+  const [selectedFarmId, _setSelectedFarmId] = useState('');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [referenceMonth, setReferenceMonth] = useState(() => {
     const now = new Date();
@@ -123,8 +122,6 @@ export default function TimesheetPage() {
     farmId: selectedFarmId || undefined,
     limit: 200,
   });
-
-  const orgId = user?.organizationId;
 
   const doFetch = useCallback(() => {
     void fetchTimesheets({

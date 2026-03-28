@@ -502,7 +502,7 @@ export default function PayrollParametersPage() {
                                 </tr>
                               </thead>
                               <tbody>
-                                {[...currentTable.brackets].sort((a, b) => a.order - b.order).map((bracket, idx, arr) => (
+                                {[...currentTable.brackets].sort((a, b) => a.order - b.order).map((bracket, _idx, _arr) => (
                                   <tr key={bracket.id}>
                                     <td className="payroll-params__cell-mono">{formatMonetary(bracket.fromValue)}</td>
                                     <td className="payroll-params__cell-mono">

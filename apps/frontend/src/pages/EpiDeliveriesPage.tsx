@@ -137,7 +137,7 @@ export default function EpiDeliveriesPage() {
       setConfirmDeleteId(null);
       showToast('Entrega removida. Saldo de estoque restaurado.');
       loadDeliveries();
-    } catch (err) {
+    } catch (_err) {
       showToast('Não foi possível remover a entrega.');
     } finally {
       setDeletingId(null);

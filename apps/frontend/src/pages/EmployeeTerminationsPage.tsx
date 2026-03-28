@@ -94,6 +94,7 @@ function EmployeeTerminationModal({
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStep(1);
       setFormData({ employeeId: '', employeeName: '', terminationType: '', terminationDate: '', noticePeriodType: '' });
       setCalculatedTermination(null);
@@ -473,6 +474,7 @@ const EmployeeTerminationsPage = () => {
 
   useEffect(() => {
     if (successMessage) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setToast({ message: successMessage, type: 'success' });
       const t = setTimeout(() => setToast(null), 5000);
       return () => clearTimeout(t);
@@ -481,6 +483,7 @@ const EmployeeTerminationsPage = () => {
 
   useEffect(() => {
     if (error) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setToast({ message: error, type: 'error' });
     }
   }, [error]);

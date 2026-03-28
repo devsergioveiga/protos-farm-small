@@ -22,11 +22,6 @@ import './AttendancePage.css';
 
 type Tab = 'apontamentos' | 'banco-horas' | 'vincular';
 
-const SOURCE_LABELS: Record<string, string> = {
-  MOBILE: 'Mobile',
-  WEB: 'Web',
-  MANAGER: 'Gerente',
-};
 
 function formatTime(isoString: string | null): string {
   if (!isoString) return '—';
@@ -69,7 +64,7 @@ function SourceChip({ source, outOfRange }: { source: string; outOfRange: boolea
 export default function AttendancePage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('apontamentos');
-  const [selectedFarmId, setSelectedFarmId] = useState('');
+  const [selectedFarmId, _setSelectedFarmId] = useState('');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [dateFrom, setDateFrom] = useState(new Date().toISOString().split('T')[0]);
   const [dateTo, setDateTo] = useState(new Date().toISOString().split('T')[0]);

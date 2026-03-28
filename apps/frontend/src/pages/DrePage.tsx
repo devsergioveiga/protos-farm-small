@@ -78,6 +78,7 @@ export default function DrePage() {
   // Show error toast when error changes
   useEffect(() => {
     if (error) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       showToast('Nao foi possivel carregar a DRE. Verifique sua conexao e tente novamente.');
     }
   }, [error, showToast]);

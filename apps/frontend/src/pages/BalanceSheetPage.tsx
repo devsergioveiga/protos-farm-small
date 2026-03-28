@@ -104,6 +104,7 @@ export default function BalanceSheetPage() {
 
   useEffect(() => {
     if (error) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       showToast('Nao foi possivel carregar o Balanco Patrimonial. Tente novamente.');
     }
   }, [error, showToast]);

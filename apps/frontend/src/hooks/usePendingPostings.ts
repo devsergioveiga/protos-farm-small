@@ -38,7 +38,7 @@ export function usePendingPostings(filters?: {
     } finally {
       setIsLoading(false);
     }
-  }, [orgId, filters?.status, filters?.sourceType]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [orgId, filters?.status, filters?.sourceType]);
 
   useEffect(() => {
     void fetchPostings();
@@ -65,6 +65,7 @@ export function usePendingCounts() {
   }, [orgId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchCounts();
   }, [fetchCounts]);
 

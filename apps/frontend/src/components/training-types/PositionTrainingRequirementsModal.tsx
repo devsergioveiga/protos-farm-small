@@ -37,6 +37,7 @@ export default function PositionTrainingRequirementsModal({
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedTypeId('');
       setError(null);
       setTimeout(() => firstRef.current?.focus(), 100);

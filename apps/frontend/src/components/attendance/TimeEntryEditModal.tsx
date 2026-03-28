@@ -39,6 +39,7 @@ export default function TimeEntryEditModal({
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCorrectedValue('');
       setJustification('');
       setError(null);

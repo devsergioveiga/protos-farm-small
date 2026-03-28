@@ -9,7 +9,6 @@ import {
   useBlockPeriod,
 } from '@/hooks/useFiscalPeriods';
 import FiscalYearModal from '@/components/accounting/FiscalYearModal';
-import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useAuth } from '@/stores/AuthContext';
 import type { AccountingPeriod, FiscalYear, CreateFiscalYearInput } from '@/types/accounting';
 import './FiscalPeriodsPage.css';

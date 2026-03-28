@@ -56,7 +56,7 @@ interface StepIconProps {
   status: 'ok' | 'failed' | 'pending' | 'blocked';
 }
 
-function StepIcon({ stepNumber, status }: StepIconProps) {
+function StepIcon({ status }: StepIconProps) {
   if (status === 'ok') {
     return <CheckCircle2 size={20} aria-hidden="true" />;
   }
@@ -239,7 +239,7 @@ export default function MonthlyClosingPage() {
 
   const { closing, loading, error, refetch } = useMonthlyClosing(periodId);
   const { startClosing, loading: starting } = useStartClosing();
-  const { validateStep, loading: validating } = useValidateStep();
+  const { validateStep } = useValidateStep();
   const { completeClosing, loading: completing } = useCompleteClosing();
   const { reopenClosing, loading: reopening } = useReopenClosing();
 
@@ -349,7 +349,7 @@ export default function MonthlyClosingPage() {
             <Link to="/fiscal-periods" className="mc-page__empty-link">
               Períodos Fiscais
             </Link>{' '}
-            e clique em "Fechamento" para iniciar o processo de fechamento.
+            e clique em &quot;Fechamento&quot; para iniciar o processo de fechamento.
           </p>
         </div>
       </main>

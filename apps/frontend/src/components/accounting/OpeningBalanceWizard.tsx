@@ -331,6 +331,7 @@ export default function OpeningBalanceWizard({ isOpen, onClose, onSuccess }: Ope
   // Initialize with first active fiscal year
   useEffect(() => {
     if (activeFiscalYears.length > 0 && !selectedFiscalYearId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedFiscalYearId(activeFiscalYears[0].id);
     }
   }, [activeFiscalYears, selectedFiscalYearId]);
@@ -338,6 +339,7 @@ export default function OpeningBalanceWizard({ isOpen, onClose, onSuccess }: Ope
   // Load preview lines when fiscal year changes (only on step 1 to preserve edits)
   useEffect(() => {
     if (step === 1 && previewLines.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditableLines(previewToEditable(previewLines));
     }
   }, [previewLines, step]);
@@ -345,6 +347,7 @@ export default function OpeningBalanceWizard({ isOpen, onClose, onSuccess }: Ope
   // Focus heading on open
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStep(1);
       setPostError(null);
       setTimeout(() => headingRef.current?.focus(), 50);

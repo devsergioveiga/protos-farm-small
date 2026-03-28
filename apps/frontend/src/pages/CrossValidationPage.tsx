@@ -68,6 +68,7 @@ export default function CrossValidationPage() {
 
   useEffect(() => {
     if (error) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       showToast('Nao foi possivel carregar as validacoes. Tente novamente.');
     }
   }, [error, showToast]);

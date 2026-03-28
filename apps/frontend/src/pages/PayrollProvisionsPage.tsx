@@ -8,11 +8,6 @@ import './PayrollProvisionsPage.css';
 
 type Tab = 'mes' | 'relatorio';
 
-// Provision type display labels (Ferias, Decimo Terceiro)
-const PROVISION_DISPLAY = {
-  VACATION: 'Ferias',
-  THIRTEENTH: 'Decimo Terceiro',
-} as const;
 
 function formatCurrency(value: number | null | undefined): string {
   if (value === null || value === undefined) return '—';
@@ -106,12 +101,14 @@ const PayrollProvisionsPage = () => {
 
   useEffect(() => {
     if (successMessage) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       showToast(successMessage, 'success');
     }
   }, [successMessage, showToast]);
 
   useEffect(() => {
     if (error) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       showToast(error, 'error');
     }
   }, [error, showToast]);

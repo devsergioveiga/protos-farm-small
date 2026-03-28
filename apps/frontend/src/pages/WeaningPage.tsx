@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
 import { useWeanings, useWeaningConfig, useUnweanedAnimals } from '@/hooks/useWeaning';
-import type { WeaningConfig, UnweanedAnimal } from '@/types/weaning';
+import type { WeaningConfig } from '@/types/weaning';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import WeaningModal from '@/components/weaning/WeaningModal';
 import BulkWeaningModal from '@/components/weaning/BulkWeaningModal';

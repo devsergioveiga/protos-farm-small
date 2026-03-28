@@ -4,7 +4,6 @@ import {
   Download,
   CheckCircle,
   XCircle,
-  AlertCircle,
   BookOpen,
 } from 'lucide-react';
 import {
@@ -35,7 +34,7 @@ function formatDate(dateStr: string): string {
   return date.toLocaleDateString('pt-BR');
 }
 
-function formatCurrency(amount: string): string {
+function _formatCurrency(amount: string): string {
   const num = parseFloat(amount);
   if (isNaN(num)) return 'R$ 0,00';
   return new Intl.NumberFormat('pt-BR', {

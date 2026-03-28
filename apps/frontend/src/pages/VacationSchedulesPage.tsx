@@ -116,6 +116,7 @@ function VacationScheduleModal({ isOpen, periods, onClose, onSubmit }: VacationS
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStep(1);
       setStep1({ employeeSearch: '', selectedPeriodId: '' });
       setStep2({ startDate: '', totalDays: 30, abono: 0 });
@@ -512,7 +513,7 @@ function CalendarView({ schedules, year, month, onNavigate }: CalendarViewProps)
               aria-label={ariaLabel}
             >
               <span className="vac-page__calendar-day-num">{day}</span>
-              {vacEmployees.map((empId, idx) => (
+              {vacEmployees.map((empId, _idx) => (
                 <div
                   key={empId}
                   className="vac-page__calendar-band"

@@ -97,7 +97,6 @@ const mockFarmMapData = {
   locationBoundaries: [],
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockUseFarmMap = vi.fn((_farmId?: string) => ({
   data: mockFarmMapData as typeof mockFarmMapData | null,
   isLoading: false,
@@ -142,7 +141,6 @@ const mockProductivityData = {
   },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockUseProductivityMap = vi.fn((_params?: Record<string, unknown>) => ({
   data: mockProductivityData as typeof mockProductivityData | null,
   isLoading: false,

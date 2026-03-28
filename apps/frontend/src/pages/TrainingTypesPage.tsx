@@ -50,6 +50,7 @@ export default function TrainingTypesPage() {
 
   useEffect(() => {
     if (successMessage) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setToast(successMessage);
       const t = setTimeout(() => setToast(null), 5000);
       return () => clearTimeout(t);

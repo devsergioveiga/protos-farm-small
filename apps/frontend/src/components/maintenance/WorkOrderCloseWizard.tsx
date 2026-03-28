@@ -45,6 +45,7 @@ export default function WorkOrderCloseWizard({
   // Reset on open
   useEffect(() => {
     if (!isOpen) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStep(1);
     setAccountingTreatment(null);
     setDeferralMonths('');

@@ -44,6 +44,7 @@ export default function TrainingTypeModal({ isOpen, trainingType, onClose, onSav
   useEffect(() => {
     if (isOpen) {
       if (trainingType) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setForm({
           name: trainingType.name,
           description: trainingType.description ?? '',

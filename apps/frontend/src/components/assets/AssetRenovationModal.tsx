@@ -41,6 +41,7 @@ export default function AssetRenovationModal({
   // Reset on open
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDescription('');
       setRenovationDate(today());
       setTotalCost('');

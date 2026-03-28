@@ -70,6 +70,7 @@ export default function MedicalExamModal({ isOpen, employees, onClose, onSave }:
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm(INITIAL);
       setErrors({});
       setApiError(null);
@@ -93,6 +94,7 @@ export default function MedicalExamModal({ isOpen, employees, onClose, onSave }:
     if (form.employeeId && form.date) {
       const emp = employees.find((e) => e.id === form.employeeId);
       const months = emp?.asoPeriodicityMonths ?? 12;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm((f) => ({ ...f, nextExamDate: addMonths(form.date, months) }));
     }
   }, [form.employeeId, form.date, employees]);

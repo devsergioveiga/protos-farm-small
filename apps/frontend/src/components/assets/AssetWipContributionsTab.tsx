@@ -75,7 +75,7 @@ export default function AssetWipContributionsTab({
 
   if (!summary) return null;
 
-  const { budget, budgetAlertPct, totalContributed, budgetAlert, budgetExceeded, stages, contributions } = summary;
+  const { budget, totalContributed, budgetAlert, budgetExceeded, stages, contributions } = summary;
 
   // Progress bar fill percentage
   const progressPct =
