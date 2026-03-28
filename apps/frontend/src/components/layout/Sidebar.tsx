@@ -300,6 +300,9 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/ledger', icon: BookOpen, label: 'Razão Contábil' },
       { to: '/trial-balance', icon: BarChart3, label: 'Balancete' },
       { to: '/monthly-closing', icon: ClipboardCheck, label: 'Fechamento Mensal' },
+      { to: '/dre', icon: TrendingUp, label: 'DRE' },
+      { to: '/balance-sheet', icon: Scale, label: 'Balanco Patrimonial' },
+      { to: '/cross-validation', icon: GitMerge, label: 'Validacao Cruzada' },
     ],
   },
   {

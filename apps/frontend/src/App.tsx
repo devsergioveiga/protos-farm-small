@@ -147,6 +147,9 @@ const LedgerPage = lazy(() => import('@/pages/LedgerPage'));
 const TrialBalancePage = lazy(() => import('@/pages/TrialBalancePage'));
 const HrDashboardPage = lazy(() => import('@/pages/HrDashboardPage'));
 const MonthlyClosingPage = lazy(() => import('@/pages/MonthlyClosingPage'));
+const DrePage = lazy(() => import('@/pages/DrePage'));
+const BalanceSheetPage = lazy(() => import('@/pages/BalanceSheetPage'));
+const CrossValidationPage = lazy(() => import('@/pages/CrossValidationPage'));
 
 export function App() {
   return (
@@ -284,6 +287,9 @@ export function App() {
                 <Route path="/ledger" element={<LedgerPage />} />
                 <Route path="/trial-balance" element={<TrialBalancePage />} />
                 <Route path="/monthly-closing" element={<MonthlyClosingPage />} />
+                <Route path="/dre" element={<DrePage />} />
+                <Route path="/balance-sheet" element={<BalanceSheetPage />} />
+                <Route path="/cross-validation" element={<CrossValidationPage />} />
                 <Route path="/assets" element={<AssetsPage />} />
                 <Route path="/depreciation" element={<DepreciationPage />} />
                 <Route path="/maintenance-plans" element={<MaintenancePlansPage />} />
