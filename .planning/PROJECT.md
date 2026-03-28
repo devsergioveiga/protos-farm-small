@@ -117,10 +117,10 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 
 ## Context
 
-### Current State (v1.3 complete — 2026-03-27)
+### Current State (v1.4 in progress — 2026-03-28)
 
 Shipped 4 milestones across Fase 3: Financeiro (v1.0), Compras (v1.1), Patrimônio (v1.2), RH/Folha (v1.3).
-34 phases, 153 plans, ~325 files, ~87K LOC added.
+37 phases, 162 plans shipped. Phase 37 complete — auto-posting engine with GL hooks in all 6 source modules.
 Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
 All administrative modules complete with bidirectional financial/accounting integration.
 27 HR requirements delivered: employee management, payroll engine, time tracking, vacations/termination, NR-31 safety, eSocial compliance, and HR dashboard.
@@ -191,4 +191,4 @@ All administrative modules complete with bidirectional financial/accounting inte
 
 ---
 
-_Last updated: 2026-03-26 after v1.4 milestone started_
+_Last updated: 2026-03-28 after Phase 37 complete_
