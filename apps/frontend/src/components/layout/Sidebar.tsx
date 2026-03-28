@@ -302,6 +302,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/monthly-closing', icon: ClipboardCheck, label: 'Fechamento Mensal' },
       { to: '/dre', icon: TrendingUp, label: 'DRE' },
       { to: '/balance-sheet', icon: Scale, label: 'Balanco Patrimonial' },
+      { to: '/dfc', icon: ArrowLeftRight, label: 'DFC' },
       { to: '/cross-validation', icon: GitMerge, label: 'Validacao Cruzada' },
     ],
   },
