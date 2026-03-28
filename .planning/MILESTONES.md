@@ -1,5 +1,31 @@
 # Milestones
 
+## v1.4 Contabilidade e Demonstrações Financeiras (Shipped: 2026-03-28)
+
+**Phases completed:** 7 phases, 25 plans, 27 tasks
+
+**Key accomplishments:**
+
+- Plano de contas hierárquico rural (5 níveis, 115 contas CFC/Embrapa) com mapeamento SPED L300R e árvore expansível
+- Motor de lançamentos manuais com partidas dobradas, estorno auditável, wizard de saldo de abertura e importação CSV
+- Auto-posting engine com 12 source types (CP, CR, folha, depreciação, estoque) e idempotência via UNIQUE constraint
+- Fechamento mensal com checklist de 6 etapas, conciliação bancária contábil (razão vs extrato) e bloqueio de período
+- DRE rural com CPC 29 (variação valor justo ativo biológico), análise V/H, filtro por centro de custo
+- Balanço Patrimonial com indicadores (liquidez, endividamento, PL/ha) e validação cruzada 4 invariantes
+- DFC direto (reutilizando classificação v1.0) e indireto (CPC 03 R2) com reconciliação DFC↔BP
+- Dashboard contábil executivo com resultado acumulado, evolução 12m, composição custos e alertas
+- SPED ECD (blocos 0/I/J/9, plano L300R) com pré-validação PVA (5 erros + 2 avisos)
+- Relatório integrado PDF profissional (capa + DRE + BP + DFC + notas explicativas) para crédito rural
+
+**Stats:**
+
+- 170 files, ~40,600 lines added
+- Timeline: 2 days (2026-03-27 → 2026-03-28)
+- Git range: docs(35)..test(41)
+- Requirements: 30/30 complete
+
+---
+
 ## v1.3 RH e Folha de Pagamento Rural (Shipped: 2026-03-27)
 
 **Phases completed:** 28 phases, 123 plans, 143 tasks

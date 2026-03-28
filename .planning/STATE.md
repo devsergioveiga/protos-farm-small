@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
-status: Milestone complete
-stopped_at: Completed 41-03-PLAN.md (Tasks 1-2; Task 3 awaiting visual verification)
-last_updated: "2026-03-28T17:38:33.630Z"
+status: Milestone archived
+stopped_at: v1.4 milestone completed and archived
+last_updated: "2026-03-28T18:00:00.000Z"
 progress:
   total_phases: 7
   completed_phases: 7
@@ -16,73 +16,22 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-26)
+See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 41 — sped-ecd-e-relat-rio-integrado
+**Current focus:** Fase 3 complete — planning next milestone
 
 ## Current Position
 
-Phase: 41
-Plan: Not started
+Phase: All complete (41 phases shipped across 5 milestones)
+Plan: Not started (next milestone)
 
 ## Accumulated Context
 
 ### Decisions
 
 Full log: PROJECT.md Key Decisions table.
-
-Key decisions carried from v1.3:
-
-- **PayrollRun state machine mirrors DepreciationRun**: PENDING → PROCESSING → COMPLETED | ERROR — same atomicity pattern
-- **Payroll to Payables uses originType + originId upsert**: Prevents duplicate CPs on re-processing
-- **tx.payable.create used directly in transactions**: NOT payables.service.createPayable to avoid nested withRlsContext deadlocks
-- **eSocial events transmitted in strict order via BullMQ**: table events (S-1010) → cadastral events (S-2200) → periodic events (S-1200)
-- **Accounting entry JSON stubs stored in v1.3**: Phase 32 created stubs (debit 6.1.01/6.1.02, credit 2.2.01/2.2.02) — v1.4 will replace with real GL entries
-- [Phase 35]: Used prisma migrate diff + deploy instead of migrate dev: shadow DB was missing tables from earlier migrations; diff generates correct SQL from live DB state
-- [Phase 35]: rateio remainder goes to largest-percentage share for predictability when equal percentages exist
-- [Phase 35]: fiscalPeriodsRouter mounted at /api/org/:orgId with mergeParams:true for param access in sub-routes
-- [Phase 35]: Template co-located in src/modules/ not prisma/fixtures/ — tsconfig rootDir ./src excludes prisma/
-- [Phase 35]: Legacy 6.x codes in COA template for ACCOUNT_CODES compatibility; Phase 37 will update GL rules
-- [Phase 35]: Period close uses ConfirmModal (variant=warning) per CLAUDE.md — never window.confirm
-- [Phase 35]: COA tree built client-side from flat array via buildTree() helper — avoids extra API call
-- [Phase 36]: PayrollProvision uses provisionType VACATION/THIRTEENTH with totalAmount (EPIC-16 schema) — not vacationProvision/thirteenthProvision fields as described in plan
-- [Phase 36]: Opening balance wizard finds COA accounts by code prefix first, then name keyword fallback for resilience
-- [Phase 36]: postJournalEntry uses Serializable isolation to prevent duplicate entry numbers
-- [Phase 36]: CSV import returns preview only (no auto-create) per LANC-03 spec
-- [Phase 36]: Ledger running balance uses SQL window function SUM OVER (ORDER BY entryDate, entryNumber) starting from previousBalance — single query, avoids N+1
-- [Phase 36]: getTrialBalance aggregates synthetic accounts recursively, grandTotals from analytic-only to avoid double-counting
-- [Phase 36-lan-amentos-manuais-raz-o-e-saldo-de-abertura]: useLedger derives startDate/endDate from fiscalYearId+month client-side — avoids extra API call
-- [Phase 36-lan-amentos-manuais-raz-o-e-saldo-de-abertura]: TrialBalancePage uses tab pattern (Balancete + Livro Diário) — single page, two panels per UI-SPEC
-- [Phase 36]: /accounting-entries route now points to JournalEntriesPage — full manual entry UI replaces payroll-only accounting entries page
-- [Phase 36]: CSV import uses preview-first flow: upload -> importCsv() -> CsvPreviewModal -> createDraft per entry (per LANC-03 spec)
-- [Phase 37]: D-17: Idempotency via UNIQUE(sourceType, sourceId) on both PendingJournalPosting and JournalEntry — process() returns silently on duplicate
-- [Phase 37]: EXTRACTORS map keyed on AutoPostingSourceType co-located in auto-posting service — no cross-module imports, each extractor fetches its own source data
-- [Phase 37]: seedAccountingRules(orgId) must be called after COA seeding — resolves accounts by code prefix startsWith, silently skips if COA not seeded yet
-- [Phase 37]: Lancamentos panel uses hidden attribute (not conditional render) to preserve filter state on tab switch
-- [Phase 37]: AccountCombobox filters analytic accounts client-side from useChartOfAccounts data already in memory
-- [Phase 37]: autoPost hooks are always non-blocking (try/catch outside main transaction) per D-15
-- [Phase 37]: receivePayment exported as alias for settleReceivable — CR settlement hook point per D-33
-- [Phase 37]: AccountingEntry table was already absent from DB — migrate diff returned empty, prisma generate sufficient
-- [Phase 37]: seedAccountingRules called at end of seedRuralTemplate — idempotent, silently skips if COA not seeded
-- [Phase 38]: Routes spec uses service mock pattern (matches auto-posting.routes.spec.ts) for better isolation
-- [Phase 38-fechamento-mensal-e-concilia-o-cont-bil]: checkPeriodOpen() applied to actual HTTP write routes (pending/retry-batch, pending/:id/retry) not the internal process() function which is not an HTTP endpoint
-- [Phase 38]: FiscalYearCard refactored to show PeriodPanel for OPEN periods to accommodate Fechamento button alongside Fechar Periodo action
-- [Phase 38]: Reopen dialog implemented inline (not ConfirmModal) because reason textarea is needed but ConfirmModal props do not support it
-- [Phase 39-dre-balan-o-patrimonial-e-valida-o-cruzada]: Pure calculators (no Prisma) follow payroll-calculation pattern for testability; consolidated DRE uses AccountBalance, CC-filtered uses JournalEntryLine
-- [Phase 39-dre-balan-o-patrimonial-e-valida-o-cruzada]: Cross-validation invariant 2 (DFC) returns PENDING; allPassed=true when no FAILED invariants (PENDING does not fail)
-- [Phase 39]: DrePage uses inline cost center fetch (no org-level useCostCenters hook existed); export buttons show toast pending future endpoints
-- [Phase 39]: BalanceSheetTable uses SideTable helper called twice for two semantic table elements without code duplication
-- [Phase 40]: Cost composition groups expenses via SQL CASE on code prefix; duplicate labels merged in TypeScript after query
-- [Phase 40]: 12-month monthlyChart always returns all 12 months including zeros — frontend can render a full year chart without gaps
-- [Phase 40-dfc-dashboard-executivo]: getDfc derives year from fiscalYear.startDate.getFullYear() — FiscalYear schema has no year field
-- [Phase 40-dfc-dashboard-executivo]: Cross-validation invariant #2 uses try/catch around getDfc so invariant stays PENDING if DFC fails
-- [Phase 40]: Tabs use hidden attribute (not conditional render) per Phase 37 decision — preserves DFC panel state on method switch
-- [Phase 40-04]: AccountingDashboardPage reuses IndicatorCard from financial-statements for BP indicators
-- [Phase 41-sped-ecd-e-relat-rio-integrado]: SpedEcdWriter pure class (no Prisma) with Blocos 0/I/J/9; ChartOfAccount uses nature not accountNature; AccountBalance uses debitTotal/creditTotal; JournalEntryLine uses side+amount pattern
-- [Phase 41-sped-ecd-e-relat-rio-integrado]: generateIntegratedReport uses await new Promise<Buffer> then returns { buffer, filename } — avoids Promise generic type mismatch
-- [Phase 41-sped-ecd-e-relat-rio-integrado]: useSpedEcd exposes toast state to parent page consistent with DrePage pattern (local toast state)
-- [Phase 41-sped-ecd-e-relat-rio-integrado]: Notes textarea CSS co-located in SpedEcdPage.css — NotesTextarea only used in this page
+All v1.4 decisions archived in `.planning/milestones/v1.4-ROADMAP.md`.
 
 ### Pending Todos
 
@@ -97,7 +46,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T17:14:27.103Z
-Stopped at: Completed 41-03-PLAN.md (Tasks 1-2; Task 3 awaiting visual verification)
+Last session: 2026-03-28
+Stopped at: v1.4 milestone archived
 Resume file: None
-Next action: Define requirements and create roadmap for v1.4
+Next action: /gsd:new-milestone to define next scope

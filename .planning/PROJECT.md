@@ -1,22 +1,13 @@
 # Protos Farm — Fase 3: Módulos Administrativos
 
-## Current Milestone: v1.4 Contabilidade e Demonstrações Financeiras
+## Current State
 
-**Goal:** Implementar contabilidade completa com plano de contas rural, lançamentos automáticos/manuais, fechamento mensal e geração de DRE, BP e DFC com vinculação automática entre demonstrações.
+**All 5 milestones shipped.** Fase 3 complete.
 
-**Target features:**
-- Plano de contas hierárquico com modelo rural pré-carregado (CPC/CFC agro)
-- Regras de lançamento automático para todas operações existentes (CP/CR, depreciação, folha, estoque)
-- Lançamentos manuais, estornos e razão contábil com drill-down
-- Fechamento mensal com checklist estruturado e conciliação bancária contábil
-- DRE com comparativos, análise vertical/horizontal, por cultura/fazenda
-- Balanço Patrimonial com indicadores (liquidez, endividamento, PL/ha)
-- DFC método direto e indireto com validação cruzada
-- Painel de vinculação DRE↔BP↔DFC, relatório integrado PDF, SPED ECD
-- Dashboard contábil executivo
+**Shipped:** v1.0 Financeiro Base, v1.1 Compras, v1.2 Patrimônio, v1.3 RH e Folha, v1.4 Contabilidade
+**Total:** 41 phases, 178 plans shipped across 5 milestones (2026-03-16 to 2026-03-28)
 
-**Shipped:** v1.0 Financeiro Base, v1.1 Compras, v1.2 Patrimonio, v1.3 RH e Folha
-**Total:** 41 phases, 175 plans shipped across 4 milestones (2026-03-16 to 2026-03-28)
+**Next:** `/gsd:new-milestone` to define Fase 4 scope
 
 ## What This Is
 
@@ -77,30 +68,25 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 - ✓ Segurança do trabalho NR-31: EPIs, treinamentos, ASO/PCMSO com alertas e conformidade — v1.3
 - ✓ eSocial eventos XML (S-1.3), guias de recolhimento, RAIS, informe de rendimentos — v1.3
 - ✓ Integração financeira (folha→CP) e contábil (folha→DRE/BP por CC), dashboard RH — v1.3
+- ✓ Plano de contas hierárquico rural (5 níveis) com template CFC/Embrapa e mapeamento SPED L300R — v1.4
+- ✓ Regras de lançamento automático por tipo de operação (CP/CR, folha, depreciação, estoque) — v1.4
+- ✓ Períodos contábeis e exercícios fiscais com status aberto/fechado — v1.4
+- ✓ Lançamentos contábeis manuais com partidas dobradas, estorno, templates e importação CSV — v1.4
+- ✓ Razão contábil, balancete de verificação 3 colunas e livro diário — v1.4
+- ✓ Fechamento mensal com checklist de 6 etapas e conciliação bancária contábil — v1.4
+- ✓ DRE rural com CPC 29, análise V/H, comparativos e filtro por centro de custo — v1.4
+- ✓ Balanço Patrimonial com indicadores (liquidez, endividamento, PL/ha) — v1.4
+- ✓ DFC método direto e indireto com validação cruzada DFC↔BP — v1.4
+- ✓ Painel de vinculação DRE↔BP↔DFC com 4 invariantes — v1.4
+- ✓ SPED ECD (blocos 0/I/J/9, plano L300R) com pré-validação PVA — v1.4
+- ✓ Relatório integrado PDF profissional (DRE+BP+DFC+notas explicativas) para crédito rural — v1.4
+- ✓ Dashboard contábil executivo com resultado acumulado, evolução 12m e alertas — v1.4
 
 ### Active
 
-<!-- v1.4 Contabilidade e Demonstrações Financeiras — 22 stories, 158 pts, 7 épicos -->
+<!-- Next milestone requirements will be defined via /gsd:new-milestone -->
 
-- [ ] Plano de contas hierárquico rural configurável com modelo pré-carregado (CPC/CFC agro)
-- [ ] Regras de lançamento automático por tipo de operação com mapeamento conta débito/crédito
-- [ ] Períodos contábeis e exercícios fiscais com status aberto/fechado
-- [ ] Centros de custo contábeis vinculados a lançamentos e demonstrações gerenciais
-- [ ] Lançamentos contábeis automáticos para CP/CR, depreciação, folha, estoque, ativos
-- [ ] Lançamentos contábeis manuais com partidas dobradas, templates e importação CSV
-- [ ] Estorno e retificação auditável de lançamentos
-- [ ] Razão contábil por conta com saldo progressivo e livro diário
-- [ ] Balancete de verificação com comparativos
-- [x] Checklist de fechamento mensal com etapas dependentes e integração entre módulos — Phase 38
-- [x] Conciliação bancária contábil (razão vs extrato) com ajuste automático — Phase 38
-- [x] Fechamento e bloqueio de período com reabertura controlada — Phase 38
-- [x] DRE configurável com layout rural, comparativos e análise vertical/horizontal — Phase 39
-- [x] Balanço Patrimonial com indicadores (liquidez, endividamento, PL/ha) — Phase 39
-- [ ] DFC método direto e indireto com três seções (operacional, investimento, financiamento)
-- [x] Painel de vinculação e validação cruzada DRE↔BP↔DFC — Phase 39 (DFC placeholder pending Phase 40)
-- [ ] Relatório integrado de demonstrações financeiras (PDF profissional com notas explicativas)
-- [ ] Exportação SPED Contábil (ECD) no formato da RFB
-- [ ] Dashboard contábil executivo com indicadores e alertas
+(No active requirements — all Fase 3 requirements validated. Use `/gsd:new-milestone` to define next scope.)
 
 ### Out of Scope
 
@@ -117,14 +103,13 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 
 ## Context
 
-### Current State (v1.4 complete — 2026-03-28)
+### Current State (Fase 3 complete — 2026-03-28)
 
-Shipped 5 milestones across Fase 3: Financeiro (v1.0), Compras (v1.1), Patrimônio (v1.2), RH/Folha (v1.3), Contabilidade (v1.4).
-41 phases, 175 plans shipped. Phase 41 complete — SPED ECD file generation (pipe-delimited, Blocos 0/I/J/9, plano referencial L300R rural), pré-validação com 7 checks (5 ERRORs bloqueantes + 2 WARNINGs informativos), relatório integrado PDF profissional (capa+DRE+BP+DFC+notas explicativas) para crédito rural com formatação R$ brasileira.
+All 5 milestones of Fase 3 shipped: Financeiro (v1.0), Compras (v1.1), Patrimônio (v1.2), RH/Folha (v1.3), Contabilidade (v1.4).
+41 phases, 178 plans shipped across 13 days (2026-03-16 to 2026-03-28).
 Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
-All administrative modules complete with bidirectional financial/accounting integration.
-27 HR requirements delivered: employee management, payroll engine, time tracking, vacations/termination, NR-31 safety, eSocial compliance, and HR dashboard.
-Full accounting suite: COA rural, auto-posting rules, journal entries, monthly closing, DRE/BP/DFC with cross-validation, SPED ECD, integrated PDF report.
+All administrative modules complete with full bidirectional financial/accounting integration.
+Complete accounting suite: COA rural 115 contas, auto-posting 12 source types, journal entries, monthly closing, DRE/BP/DFC with 4-invariant cross-validation, SPED ECD, integrated PDF report for crédito rural.
 
 ### Particularidades do Financeiro Rural
 
@@ -189,7 +174,11 @@ Full accounting suite: COA rural, auto-posting rules, journal entries, monthly c
 | Rural night shift 21h-5h hardcoded           | Lei 5.889/73 não permite configuração — jurisprudência clara    | ✓ Good — compliance correto            |
 | eSocial XML geração local, transmissão async | Portal tem rate limits e janelas de manutenção                  | ✓ Good — resiliente                    |
 | Absence impact calculado dentro da tx payroll| Consistência: dados de ausência lidos no mesmo snapshot         | ✓ Good — sem race conditions           |
+| Pure calculator pattern (DRE/BP/DFC)         | Sem imports Prisma → testável sem DB, segue payroll-calculation | ✓ Good — testabilidade excelente       |
+| Auto-posting hooks non-blocking (try/catch)  | GL não deve bloquear operação principal                         | ✓ Good — resiliente                    |
+| SpedEcdWriter pure class sem Prisma          | Testável com dados mock, separação de concerns                  | ✓ Good — 7 blocos, validação incluída  |
+| SPED L300R plano referencial rural           | Compatível com SPED PVA da RFB para empresas rurais             | ✓ Good — compliance correto            |
 
 ---
 
-_Last updated: 2026-03-28 after Phase 41 complete (v1.4 milestone complete)_
+_Last updated: 2026-03-28 after v1.4 milestone — Fase 3 complete_
