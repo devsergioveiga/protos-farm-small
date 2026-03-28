@@ -5,7 +5,6 @@
 // GPS PDF for FUNRURAL.
 
 import Decimal from 'decimal.js';
-import { prisma } from '../../database/prisma';
 import { withRlsContext } from '../../database/rls';
 import {
   TaxGuideError,

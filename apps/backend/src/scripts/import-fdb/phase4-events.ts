@@ -202,7 +202,7 @@ export async function importReproduction(
         } else {
           others++;
         }
-      } catch (e) {
+      } catch (_e) {
         skipped++;
       }
     }

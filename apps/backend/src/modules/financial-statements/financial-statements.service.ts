@@ -81,7 +81,6 @@ export async function getDre(
     });
 
     // YTD: sum months 1..filters.month
-    type YtdRow = { accountId: string; debitTotal: Decimal; creditTotal: Decimal };
     const ytdRaw = await prisma.accountBalance.groupBy({
       by: ['accountId'],
       where: {

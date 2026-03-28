@@ -177,7 +177,6 @@ export async function createBatchAdvances(
   const referenceMonthDate = new Date(input.referenceMonth + '-01');
 
   // 1. Fetch all active employees for the org
-  const { prisma } = await import('../../database/prisma');
   const activeEmployees = await withRlsContext(rls, async (tx) => {
     return tx.employee.findMany({
       where: {
@@ -310,7 +309,9 @@ export async function listAdvances(
         advanceDate: advance.advanceDate.toISOString(),
         createdAt: advance.createdAt.toISOString(),
         amount: Number(advance.amount),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         employeeName: (advance as any).employee?.name ?? null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         employeeCpf: (advance as any).employee?.cpf ?? null,
       })),
       total,
@@ -366,9 +367,13 @@ export async function generateAdvanceReceiptPdf(
       doc.on('end', () => resolve(Buffer.concat(chunks)));
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const orgName = (advance as any).organization?.name ?? 'Organização';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const employeeName = (advance as any).employee?.name ?? '';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const employeeCpf = (advance as any).employee?.cpf ?? '';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const positionName = (advance as any).employee?.contracts?.[0]?.position?.name ?? '';
     const amount = Number(advance.amount);
     const monthLabel = formatMonthLabel(

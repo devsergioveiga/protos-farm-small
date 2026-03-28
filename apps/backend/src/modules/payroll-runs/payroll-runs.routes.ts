@@ -322,6 +322,7 @@ payrollRunsRouter.get(
             },
           },
         },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       }) as any;
 
       if (!item) {
@@ -330,6 +331,7 @@ payrollRunsRouter.get(
       }
 
       const lineItems = Array.isArray(item.lineItemsJson)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ? (item.lineItemsJson as any[]).map((li: any) => ({
             ...li,
             value: typeof li.value === 'string' ? parseFloat(li.value) : li.value,

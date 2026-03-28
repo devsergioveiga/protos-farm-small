@@ -6,7 +6,7 @@
 import Decimal from 'decimal.js';
 import JSZip from 'jszip';
 import { prisma } from '../../database/prisma';
-import { withRlsContext, type RlsContext } from '../../database/rls';
+import { type RlsContext } from '../../database/rls';
 import { payrollTablesService } from '../payroll-tables/payroll-tables.service';
 import {
   calculateEmployeePayroll,
@@ -24,7 +24,7 @@ import {
   type CpPreviewItem,
   type TaxGuidePreviewItem,
 } from './payroll-runs.types';
-import type { PayrollRunType, PayrollRunStatus } from '@prisma/client';
+import type { PayrollRunType } from '@prisma/client';
 import { PayableCategory } from '@prisma/client';
 import { generateBatch as esocialGenerateBatch } from '../esocial-events/esocial-events.service';
 import { nthBusinessDay } from './payroll-date-utils';

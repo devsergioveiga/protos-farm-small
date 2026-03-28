@@ -70,6 +70,7 @@ async function loadSourceData(
 
   switch (sourceType) {
     case 'EMPLOYEE': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const employee = await (prisma.employee as any).findFirst({
         where: { id: sourceId, organizationId: orgId },
         include: {
@@ -93,6 +94,7 @@ async function loadSourceData(
     }
 
     case 'PAYROLL_RUN_ITEM': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const item = await (prisma.payrollRunItem as any).findFirst({
         where: { id: sourceId },
         include: {
@@ -105,6 +107,7 @@ async function loadSourceData(
     }
 
     case 'PAYROLL_RUN': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const run = await (prisma.payrollRun as any).findFirst({
         where: { id: sourceId, organizationId: orgId },
         include: { organization: true },
@@ -114,6 +117,7 @@ async function loadSourceData(
     }
 
     case 'MEDICAL_EXAM': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const exam = await (prisma.medicalExam as any).findFirst({
         where: { id: sourceId, organizationId: orgId },
         include: { employee: true },
@@ -123,6 +127,7 @@ async function loadSourceData(
     }
 
     case 'EMPLOYEE_ABSENCE': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const absence = await (prisma.employeeAbsence as any).findFirst({
         where: { id: sourceId, organizationId: orgId },
         include: { employee: true },
@@ -132,6 +137,7 @@ async function loadSourceData(
     }
 
     case 'EMPLOYEE_TERMINATION': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const termination = await (prisma.employeeTermination as any).findFirst({
         where: { id: sourceId, organizationId: orgId },
         include: { employee: true },
@@ -145,6 +151,7 @@ async function loadSourceData(
     }
 
     case 'FARM': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const farm = await (prisma.farm as any).findFirst({
         where: { id: sourceId, organizationId: orgId },
       });
@@ -153,6 +160,7 @@ async function loadSourceData(
     }
 
     case 'PAYROLL_RUBRICA': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rubrica = await (prisma.payrollRubrica as any).findFirst({
         where: { id: sourceId, organizationId: orgId },
       });
@@ -161,6 +169,7 @@ async function loadSourceData(
     }
 
     case 'POSITION': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const position = await (prisma.position as any).findFirst({
         where: { id: sourceId, organizationId: orgId },
       });
@@ -169,6 +178,7 @@ async function loadSourceData(
     }
 
     case 'CONTRACT_AMENDMENT': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const amendment = await (prisma.contractAmendment as any).findFirst({
         where: { id: sourceId },
         include: {
@@ -191,6 +201,7 @@ async function loadSourceData(
     }
 
     case 'EPI_DELIVERY': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const delivery = await (prisma.epiDelivery as any).findFirst({
         where: { id: sourceId, organizationId: orgId },
         include: { employee: true },
@@ -248,6 +259,7 @@ export async function generateEvent(
     const refDate = new Date(Date.UTC(parseInt(yearStr ?? '2024'), parseInt(monthStr ?? '1') - 1, 1));
 
     // Check for any PENDENTE S-1200 or S-1210 for the same period + org
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pendingPeriodic = await (prisma.esocialEvent as any).findMany({
       where: {
         organizationId: orgId,
@@ -330,6 +342,7 @@ export async function generateEvent(
   }
 
   // ─── Create record ─────────────────────────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const created = await (prisma.esocialEvent as any).create({
     data: {
       organizationId: orgId,
@@ -366,6 +379,7 @@ export async function generateBatch(
     const [y, m] = referenceMonth.split('-');
     const refDate = new Date(Date.UTC(parseInt(y ?? '2024'), parseInt(m ?? '1') - 1, 1));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const items = await (prisma.payrollRunItem as any).findMany({
       where: {
         payrollRun: {
@@ -393,6 +407,7 @@ export async function generateBatch(
     const [y, m] = referenceMonth.split('-');
     const refDate = new Date(Date.UTC(parseInt(y ?? '2024'), parseInt(m ?? '1') - 1, 1));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const runs = await (prisma.payrollRun as any).findMany({
       where: { organizationId: orgId, referenceMonth: refDate, status: 'COMPLETED' },
       select: { id: true },
@@ -430,12 +445,14 @@ export async function listEvents(
   }
 
   const [rows, total] = await Promise.all([
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (prisma.esocialEvent as any).findMany({
       where,
       orderBy: { createdAt: 'desc' },
       skip: (page - 1) * limit,
       take: limit,
     }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (prisma.esocialEvent as any).count({ where }),
   ]);
 
@@ -453,6 +470,7 @@ export async function downloadEvent(
   orgId: string,
   eventId: string,
 ): Promise<EsocialEventOutput & { validationErrors?: EsocialValidationError[] }> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const event = await (prisma.esocialEvent as any).findFirst({
     where: { id: eventId, organizationId: orgId },
   });
@@ -487,6 +505,7 @@ export async function downloadEvent(
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updated = await (prisma.esocialEvent as any).update({
     where: { id: eventId },
     data: { status: 'EXPORTADO', exportedAt: new Date() },
@@ -512,6 +531,7 @@ export async function downloadBatch(
     where.referenceMonth = new Date(Date.UTC(parseInt(y ?? '2024'), parseInt(m ?? '1') - 1, 1));
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const events = await (prisma.esocialEvent as any).findMany({ where });
 
   const validEvents: EsocialEventOutput[] = [];
@@ -532,6 +552,7 @@ export async function downloadBatch(
       invalidEvents.push({ ...mapEvent(event), validationErrors: xsdErrors });
     } else {
       // Transition to EXPORTADO
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updated = await (prisma.esocialEvent as any).update({
         where: { id: event.id },
         data: { status: 'EXPORTADO', exportedAt: new Date() },
@@ -550,6 +571,7 @@ export async function updateStatus(
   eventId: string,
   input: UpdateEsocialStatusInput,
 ): Promise<EsocialEventOutput> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const event = await (prisma.esocialEvent as any).findFirst({
     where: { id: eventId, organizationId: orgId },
   });
@@ -581,6 +603,7 @@ export async function updateStatus(
     updateData.rejectionReason = rejectionReason;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updated = await (prisma.esocialEvent as any).update({
     where: { id: eventId },
     data: updateData,
@@ -596,6 +619,7 @@ export async function reprocessEvent(
   eventId: string,
   userId: string,
 ): Promise<EsocialEventOutput & { validationErrors?: EsocialValidationError[] }> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const event = await (prisma.esocialEvent as any).findFirst({
     where: { id: eventId, organizationId: orgId },
   });
@@ -631,6 +655,7 @@ export async function reprocessEvent(
   const xmlContent = builder(data);
 
   // Create NEW event record with version+1 (old record preserved for history per D-11)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const newEvent = await (prisma.esocialEvent as any).create({
     data: {
       organizationId: orgId,
@@ -660,6 +685,7 @@ export async function getDashboard(
   const refDate = new Date(Date.UTC(parseInt(y ?? '2024'), parseInt(m ?? '1') - 1, 1));
 
   // Fetch all events for this period
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const events = await (prisma.esocialEvent as any).findMany({
     where: {
       organizationId: orgId,

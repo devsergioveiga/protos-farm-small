@@ -174,7 +174,7 @@ describe('IncomeStatementsService.generateStatements', () => {
     mockTx.payrollRunItem.findMany.mockResolvedValue(items);
     mockTx.incomeStatement.upsert.mockImplementation(({ create }: any) => Promise.resolve({ ...makeIncomeStatement(), ...create, totalTaxable: { toString: () => create.totalTaxable } }));
 
-    const result = await service.generateStatements(ORG_ID, { yearBase: YEAR_BASE }, USER_ID);
+    const _result = await service.generateStatements(ORG_ID, { yearBase: YEAR_BASE }, USER_ID);
 
     // emp-001: totalTaxable=3000, emp-002: totalTaxable=2000
     expect(mockTx.incomeStatement.upsert).toHaveBeenCalledTimes(2);

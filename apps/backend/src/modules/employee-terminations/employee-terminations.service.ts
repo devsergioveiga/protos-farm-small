@@ -287,7 +287,7 @@ export async function processTermination(
       const isLastMonth = m === terminationDateObj.getUTCMonth();
       const isFirstMonth = m === effectiveStart.getUTCMonth();
 
-      let daysInMonth = new Date(Date.UTC(currentYear, m + 1, 0)).getUTCDate();
+      const daysInMonth = new Date(Date.UTC(currentYear, m + 1, 0)).getUTCDate();
       let daysWorked = daysInMonth;
 
       if (isFirstMonth && isLastMonth) {

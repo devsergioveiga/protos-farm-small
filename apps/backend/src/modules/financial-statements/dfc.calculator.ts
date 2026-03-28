@@ -22,9 +22,6 @@ type Period = 'currentMonth' | 'ytd' | 'priorYear';
 
 const PERIODS: Period[] = ['currentMonth', 'ytd', 'priorYear'];
 
-function zeroRow(id: string, label: string, isSubtotal = false): DfcSectionRow {
-  return { id, label, currentMonth: '0.00', ytd: '0.00', priorYear: '0.00', isSubtotal };
-}
 
 function sumRow(rows: DfcSectionRow[]): { currentMonth: Decimal; ytd: Decimal; priorYear: Decimal } {
   return {

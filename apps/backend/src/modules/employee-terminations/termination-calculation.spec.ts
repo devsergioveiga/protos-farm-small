@@ -141,7 +141,7 @@ describe('calculateTermination — WITHOUT_CAUSE', () => {
     expect(result.thirteenthProp.toFixed(2)).toBe('750.00');
 
     // paymentDeadline = terminationDate + 10 days
-    const deadline = new Date('2026-03-25');
+    const _deadline = new Date('2026-03-25');
     expect(result.paymentDeadline.toISOString().slice(0, 10)).toBe('2026-03-25');
   });
 });

@@ -56,7 +56,9 @@ taxGuidesRouter.get(
       const orgId = req.params.orgId as string;
       const result = await taxGuidesService.listGuides(orgId, {
         referenceMonth: req.query.referenceMonth as string | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         guideType: req.query.guideType as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         status: req.query.status as any,
         page: req.query.page ? parseInt(req.query.page as string, 10) : 1,
         limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 20,

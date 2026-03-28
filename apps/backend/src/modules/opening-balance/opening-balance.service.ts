@@ -2,7 +2,7 @@ import { prisma } from '../../database/prisma';
 import type { OpeningBalanceLinePreview, PostOpeningBalanceInput } from './opening-balance.types';
 import { OpeningBalanceError } from './opening-balance.types';
 // postJournalEntry is imported from journal-entries module (created by Plan 01 — parallel build)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { postJournalEntry } from '../journal-entries/journal-entries.service';
 import Decimal from 'decimal.js';
 
@@ -21,7 +21,7 @@ import Decimal from 'decimal.js';
  */
 export async function getOpeningBalancePreview(
   organizationId: string,
-  fiscalYearId: string,
+  _fiscalYearId: string,
 ): Promise<OpeningBalanceLinePreview[]> {
   const lines: OpeningBalanceLinePreview[] = [];
 

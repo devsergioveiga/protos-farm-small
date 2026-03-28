@@ -19,6 +19,7 @@ import type {
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function toAnimalExitItem(row: any): AnimalExitItem {
   const exitType = row.exitType as ExitTypeValue;
   const deathType = row.deathType as DeathTypeValue | null;
@@ -149,6 +150,7 @@ export async function listAnimalExits(
   const limit = Math.min(200, Math.max(1, query.limit ?? 20));
 
   return withRlsContext(ctx, async (tx) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { farmId };
 
     if (query.exitType && isValidExitType(query.exitType)) {

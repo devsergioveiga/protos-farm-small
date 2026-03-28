@@ -150,9 +150,11 @@ describe('PayrollRuns Service', () => {
     jest.clearAllMocks();
 
     // Default: withRlsContext passes through to fn with a tx-like object
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
 
     // Default: $transaction calls fn with prisma as tx
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (mockPrisma.$transaction as jest.Mock).mockImplementation((fn: any) =>
       typeof fn === 'function' ? fn(mockPrisma) : Promise.resolve(),
     );
@@ -185,9 +187,11 @@ describe('PayrollRuns Service', () => {
 
       const result = await createRun(rls, {
         referenceMonth: '2026-03',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         runType: 'MONTHLY' as any,
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((result as any).status).toBe('PENDING');
       expect(mockPrisma.payrollRun.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -203,10 +207,12 @@ describe('PayrollRuns Service', () => {
       (mockPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValue({ id: 'existing-run' });
 
       await expect(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         createRun(rls, { referenceMonth: '2026-03', runType: 'MONTHLY' as any }),
       ).rejects.toThrow(PayrollRunError);
 
       await expect(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         createRun(rls, { referenceMonth: '2026-03', runType: 'MONTHLY' as any }),
       ).rejects.toMatchObject({ code: 'DUPLICATE_RUN' });
     });
@@ -304,6 +310,7 @@ describe('PayrollRuns Service', () => {
 
       const calls = (mockPrisma.payrollRunItem.create as jest.Mock).mock.calls;
       const pendingCall = calls.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (c: any) => c[0]?.data?.status === 'PENDING_TIMESHEET',
       );
       expect(pendingCall).toBeDefined();
@@ -327,6 +334,7 @@ describe('PayrollRuns Service', () => {
       await processRun(rls, 'run-1');
 
       const updateCalls = (mockPrisma.payrollRun.update as jest.Mock).mock.calls;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const statusUpdates = updateCalls.map((c: any) => c[0]?.data?.status).filter(Boolean);
       expect(statusUpdates).toContain('PROCESSING');
       expect(statusUpdates).toContain('CALCULATED');
@@ -477,24 +485,29 @@ describe('PayrollRuns Service', () => {
 
       const payableCreates = (mockPrisma.payable.create as jest.Mock).mock.calls;
       const employeePayableCall = payableCreates.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (c: any) => c[0]?.data?.originType === 'PAYROLL_RUN_ITEM',
       );
       expect(employeePayableCall).toBeDefined();
 
       const inssPatronalCall = payableCreates.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (c: any) => c[0]?.data?.originType === 'PAYROLL_EMPLOYER_INSS',
       );
       const fgtsCall = payableCreates.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (c: any) => c[0]?.data?.originType === 'PAYROLL_EMPLOYER_FGTS',
       );
       expect(inssPatronalCall).toBeDefined();
       expect(fgtsCall).toBeDefined();
 
       const timeUpdateCalls = (mockPrisma.timesheet.update as jest.Mock).mock.calls;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const lockCall = timeUpdateCalls.find((c: any) => c[0]?.data?.status === 'LOCKED');
       expect(lockCall).toBeDefined();
 
       const updateCalls = (mockPrisma.payrollRun.update as jest.Mock).mock.calls;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const completedCall = updateCalls.find((c: any) => c[0]?.data?.status === 'COMPLETED');
       expect(completedCall).toBeDefined();
     });
@@ -583,6 +596,7 @@ describe('PayrollRuns Service', () => {
       const result = await getRun(rls, 'run-1');
 
       expect(result).toBeDefined();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((result as any).items[0].employee.name).toBe('João Silva');
     });
   });
@@ -762,6 +776,7 @@ describe('PayrollRuns Service', () => {
       await closeRun(rls, 'run-1');
 
       const payableCreates = (mockPrisma.payable.create as jest.Mock).mock.calls;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const irrfCall = payableCreates.find((c: any) => c[0]?.data?.originType === 'PAYROLL_EMPLOYEE_IRRF');
       expect(irrfCall).toBeDefined();
       expect(irrfCall![0].data.totalAmount.toNumber()).toBe(250);
@@ -810,6 +825,7 @@ describe('PayrollRuns Service', () => {
       await closeRun(rls, 'run-2');
 
       const payableCreates = (mockPrisma.payable.create as jest.Mock).mock.calls;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const vtCall = payableCreates.find((c: any) => c[0]?.data?.originType === 'PAYROLL_EMPLOYEE_VT');
       expect(vtCall).toBeDefined();
       expect(vtCall![0].data.totalAmount.toNumber()).toBe(80);

@@ -38,11 +38,13 @@ async function main() {
     }
 
     // Get VACA_LACTACAO from Protos not in CSV
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const lactating = await (prisma as any).animal.findMany({
       where: { category: 'VACA_LACTACAO', deletedAt: null },
       select: { id: true, earTag: true, name: true },
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const extras = lactating.filter((a: any) => a.name && !csvNames.has(a.name));
     console.log(`\n${extras.length} vacas VACA_LACTACAO no Protos que não estão no CSV\n`);
 
@@ -59,6 +61,7 @@ async function main() {
       }
 
       // Get full animal detail
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const detail = await (prisma as any).animal.findUnique({
         where: { id: animal.id },
         select: {
@@ -77,6 +80,7 @@ async function main() {
       console.log(`  Relações: lactações=${detail._count.lactations}, saúde=${detail._count.healthRecords}, repro=${detail._count.reproductiveRecords}, pesagens=${detail._count.weighings}`);
 
       // Check lactations status
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const lacs = await (prisma as any).lactation.findMany({
         where: { animalId: animal.id },
         select: { id: true, status: true, startDate: true, endDate: true, lactationNumber: true },
@@ -93,6 +97,7 @@ async function main() {
       }
 
       // Check recent reproductive records
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const repros = await (prisma as any).animalReproductiveRecord.findMany({
         where: { animalId: animal.id },
         select: { type: true, eventDate: true },

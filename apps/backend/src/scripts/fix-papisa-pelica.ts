@@ -28,6 +28,7 @@ async function main() {
     for (const { name, earTag } of targets) {
       console.log(`\n--- ${name} (brinco ${earTag}) ---`);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rows = await (prisma as any).animal.findMany({
         where: { name, earTag },
         select: {
@@ -54,6 +55,7 @@ async function main() {
         if (dryRun) {
           console.log(`  [DRY-RUN] Restaurar id=${row.id}, cat=${row.category}`);
         } else {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           await (prisma as any).animal.update({
             where: { id: row.id },
             data: { deletedAt: null, category: 'VACA_LACTACAO' },
@@ -67,10 +69,12 @@ async function main() {
       for (const r of rows) {
         const total = r._count.lactations + r._count.healthRecords + r._count.reproductiveRecords + r._count.weighings;
         console.log(`  id=${r.id} cat=${r.category} deletedAt=${r.deletedAt ? 'sim' : 'não'} created=${r.createdAt} relations=${total}`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (r as any)._totalRelations = total;
       }
 
       // Keep the one with more relations (or the older one if tied)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       rows.sort((a: any, b: any) => {
         const diff = b._totalRelations - a._totalRelations;
         if (diff !== 0) return diff;
@@ -80,22 +84,30 @@ async function main() {
       const keep = rows[0];
       const remove = rows.slice(1);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       console.log(`  Manter: id=${keep.id} (${(keep as any)._totalRelations} relações)`);
 
       for (const dup of remove) {
         if (dryRun) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           console.log(`  [DRY-RUN] Hard-delete duplicata id=${dup.id} (${(dup as any)._totalRelations} relações)`);
         } else {
           // Move any orphan relations to the kept record before deleting
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if ((dup as any)._totalRelations > 0) {
             await Promise.all([
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (prisma as any).lactation.updateMany({ where: { animalId: dup.id }, data: { animalId: keep.id } }),
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (prisma as any).animalHealthRecord.updateMany({ where: { animalId: dup.id }, data: { animalId: keep.id } }),
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (prisma as any).animalReproductiveRecord.updateMany({ where: { animalId: dup.id }, data: { animalId: keep.id } }),
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (prisma as any).animalWeighing.updateMany({ where: { animalId: dup.id }, data: { animalId: keep.id } }),
             ]);
             console.log(`  ✓ Relações da duplicata migradas para registro principal`);
           }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           await (prisma as any).animal.delete({ where: { id: dup.id } });
           console.log(`  ✓ Duplicata removida id=${dup.id}`);
         }
@@ -105,6 +117,7 @@ async function main() {
       if (dryRun) {
         console.log(`  [DRY-RUN] Restaurar id=${keep.id}, cat → VACA_LACTACAO`);
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (prisma as any).animal.update({
           where: { id: keep.id },
           data: { deletedAt: null, category: 'VACA_LACTACAO' },

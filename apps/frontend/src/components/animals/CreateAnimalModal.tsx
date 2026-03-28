@@ -241,7 +241,7 @@ function CreateAnimalModal({ isOpen, farmId, animal, onClose, onSuccess }: Creat
 
   const goToStep = useCallback((newStep: number) => {
     setStep(newStep);
-    bodyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    bodyRef.current?.scrollTo?.({ top: 0, behavior: 'smooth' });
   }, []);
 
   const handleSubmit = useCallback(async () => {

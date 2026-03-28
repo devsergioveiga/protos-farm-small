@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js';
-import { withRlsContext, type RlsContext, type TxClient } from '../../database/rls';
+import { withRlsContext, type RlsContext } from '../../database/rls';
 import { calculateINSS, calculateIRRF } from '../payroll-engine/payroll-engine.service';
 import { payrollTablesService } from '../payroll-tables/payroll-tables.service';
 import type { EngineParams } from '../payroll-runs/payroll-runs.types';
@@ -22,9 +22,13 @@ export async function loadVacationEngineParams(
   referenceDate: Date,
 ): Promise<EngineParams> {
   const [inssTable, irrfTable, salaryFamilyTable, miscTable] = await Promise.all([
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     payrollTablesService.getEffective(orgId, 'INSS_BRACKETS' as any, referenceDate),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     payrollTablesService.getEffective(orgId, 'IRRF_BRACKETS' as any, referenceDate),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     payrollTablesService.getEffective(orgId, 'SALARY_FAMILY' as any, referenceDate),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     payrollTablesService.getEffective(orgId, 'MISC_SCALARS' as any, referenceDate),
   ]);
 
@@ -37,11 +41,13 @@ export async function loadVacationEngineParams(
   }
 
   return {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     inssBrackets: (inssTable?.brackets ?? []).map((b: any) => ({
       from: new Decimal(b.fromValue.toString()),
       upTo: b.upTo !== null ? new Decimal(b.upTo.toString()) : null,
       rate: new Decimal(b.rate.toString()),
     })),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     irrfBrackets: (irrfTable?.brackets ?? []).map((b: any) => ({
       upTo: b.upTo !== null ? new Decimal(b.upTo.toString()) : null,
       rate: new Decimal(b.rate.toString()),
@@ -324,6 +330,7 @@ export async function scheduleVacation(
     }
 
     // Validate fractionation rules
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     validateFractionation(period.schedules as any[], input.totalDays, period.daysEarned);
 
     // Load employee to get salary, dependents
@@ -402,6 +409,7 @@ export async function scheduleVacation(
       id: schedule.id,
       organizationId: schedule.organizationId,
       employeeId: schedule.employeeId,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       employeeName: (schedule.employee as any).name,
       acquisitivePeriodId: schedule.acquisitivePeriodId,
       startDate: schedule.startDate,
@@ -490,9 +498,9 @@ export async function listAcquisitivePeriods(
     });
 
     // Filter by org
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const orgPeriods = periods.filter((p) => (p.employee as any).organizationId === orgId);
 
-    const today = new Date();
     return orgPeriods.map((p) => {
       const doublingDeadline = calcDoublingDeadline(p.endDate);
       return {
@@ -520,6 +528,7 @@ export async function listSchedules(
   ctx: RlsContext,
 ): Promise<VacationScheduleOutput[]> {
   return withRlsContext(ctx, async (tx) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { organizationId: orgId };
     if (filters.employeeId) where.employeeId = filters.employeeId;
     if (filters.status) where.status = filters.status;
@@ -539,6 +548,7 @@ export async function listSchedules(
       id: s.id,
       organizationId: s.organizationId,
       employeeId: s.employeeId,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       employeeName: (s.employee as any).name,
       acquisitivePeriodId: s.acquisitivePeriodId,
       startDate: s.startDate,
@@ -580,6 +590,7 @@ export async function getScheduleById(
       id: s.id,
       organizationId: s.organizationId,
       employeeId: s.employeeId,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       employeeName: (s.employee as any).name,
       acquisitivePeriodId: s.acquisitivePeriodId,
       startDate: s.startDate,

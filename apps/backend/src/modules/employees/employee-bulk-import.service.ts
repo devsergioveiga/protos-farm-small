@@ -426,6 +426,6 @@ export async function generateTemplate(): Promise<Buffer> {
     col.width = colWidths[idx] ?? 15;
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   return workbook.xlsx.writeBuffer() as unknown as Promise<Buffer>;
 }

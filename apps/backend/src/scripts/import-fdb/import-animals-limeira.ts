@@ -336,7 +336,7 @@ async function setBirthWeights(
 async function migrateSemenToBulls(
   prisma: PrismaClient,
   animalMap: Map<number, string>,
-  breedMap: Map<number, string>,
+  _breedMap: Map<number, string>,
 ): Promise<void> {
   console.log('\n── Migrar Sêmen/Touros IA → tabela Bulls ──');
 
@@ -658,7 +658,7 @@ async function updateAnimalCategories(
   let vacaSeca = 0;
   let touroReprod = 0;
   let novilha = 0;
-  let novilho = 0;
+  const novilho = 0;
   let skipped = 0;
 
   for (const row of catRows) {
@@ -670,7 +670,7 @@ async function updateAnimalCategories(
     }
 
     const cat = row.cdcategoria as number;
-    const sex = row.sexo as string | null;
+    const _sex = row.sexo as string | null;
     const matrizSeca = row.matrizseca as number;
     let newCategory: string | null = null;
 
@@ -1019,7 +1019,7 @@ async function importCalvings(
           });
           calvesCreated++;
         }
-      } catch (e) {
+      } catch (_e) {
         skipped++;
       }
     }
@@ -1352,7 +1352,7 @@ async function importMilkRecords(
       try {
         await prisma.milkingRecord.createMany({ data: inserts, skipDuplicates: true });
         created += inserts.length;
-      } catch (e) {
+      } catch (_e) {
         // Fallback: insert one by one if batch fails
         for (const record of inserts) {
           try {

@@ -51,7 +51,7 @@ const ADMIN_PAYLOAD = {
   organizationId: ORG_ID,
 };
 
-const OPERATOR_PAYLOAD = {
+const _OPERATOR_PAYLOAD = {
   userId: 'user-1',
   email: 'user@org.com',
   role: 'OPERATOR' as const,

@@ -42,7 +42,7 @@ const MANAGER_PAYLOAD = {
   organizationId: ORG_ID,
 };
 
-const VIEWER_PAYLOAD = {
+const _VIEWER_PAYLOAD = {
   userId: 'viewer-1',
   email: 'viewer@org.com',
   role: 'CONSULTANT' as const,

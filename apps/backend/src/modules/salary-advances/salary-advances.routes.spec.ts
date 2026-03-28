@@ -72,6 +72,7 @@ const mockAdvance = {
 describe('POST /org/:orgId/salary-advances', () => {
   it('creates an individual advance and returns 201', async () => {
     authAs(MANAGER_PAYLOAD);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockedService.createAdvance.mockResolvedValue(mockAdvance as any);
 
     const res = await request(app)
@@ -111,6 +112,7 @@ describe('POST /org/:orgId/salary-advances/batch', () => {
       count: 3,
       advances: [mockAdvance, mockAdvance, mockAdvance],
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockedService.createBatchAdvances.mockResolvedValue(batchResult as any);
 
     const res = await request(app)
@@ -137,6 +139,7 @@ describe('GET /org/:orgId/salary-advances', () => {
   it('lists advances with filters and returns paginated result', async () => {
     authAs(MANAGER_PAYLOAD);
     mockedService.listAdvances.mockResolvedValue({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: [mockAdvance] as any,
       total: 1,
     });

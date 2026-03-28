@@ -44,7 +44,7 @@ const USER_ID = 'user-001';
 const FARM_ID = 'farm-001';
 const REF_MONTH = '2026-03-01'; // March 2026
 
-function makeAggResult(field: string, value: string) {
+function _makeAggResult(field: string, value: string) {
   return { _sum: { [field]: value } };
 }
 
@@ -56,7 +56,7 @@ function setupAggregate(fgts: string, inss: string, irrf: string, gross: string)
     .mockResolvedValueOnce({ _sum: { grossSalary: gross } }); // FUNRURAL gross
 }
 
-function makeTaxGuide(type: TaxGuideType, amount: string, dueDate: Date) {
+function _makeTaxGuide(type: TaxGuideType, amount: string, dueDate: Date) {
   return {
     id: `guide-${type}`,
     organizationId: ORG_ID,

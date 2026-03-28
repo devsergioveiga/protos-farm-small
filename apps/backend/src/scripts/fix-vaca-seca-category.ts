@@ -29,6 +29,7 @@ async function main() {
     // 1. Have category VACA_LACTACAO
     // 2. Have at least one lactation with status DRIED
     // 3. Do NOT have any lactation with status IN_PROGRESS
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const candidates = await (prisma as any).animal.findMany({
       where: {
         category: 'VACA_LACTACAO',
@@ -59,6 +60,7 @@ async function main() {
       if (dryRun) {
         console.log(`[DRY-RUN] ${label} — VACA_LACTACAO → VACA_SECA`);
       } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (prisma as any).animal.update({
           where: { id: animal.id },
           data: { category: 'VACA_SECA' },

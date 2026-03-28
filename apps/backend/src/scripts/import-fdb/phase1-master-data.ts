@@ -10,7 +10,7 @@ import { IdMap } from './id-map';
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
-function toDate(val: string | number | null): Date | null {
+function _toDate(val: string | number | null): Date | null {
   if (!val) return null;
   const str = String(val);
   // Firebird dates come as "2024-01-15" or "15-JAN-2024"

@@ -23,6 +23,7 @@ async function main() {
       console.log(`${'='.repeat(50)}`);
 
       // Exact match (including soft-deleted)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const exact = await (prisma as any).animal.findMany({
         where: { name },
         select: {
@@ -43,6 +44,7 @@ async function main() {
 
       // Fuzzy search: similar names
       const prefix = name.substring(0, 3);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const fuzzy = await (prisma as any).animal.findMany({
         where: {
           OR: [
@@ -57,6 +59,7 @@ async function main() {
         },
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const fuzzyFiltered = fuzzy.filter((a: any) => a.name !== name);
       if (fuzzyFiltered.length > 0) {
         console.log(`\n  Nomes similares (prefixo "${prefix}"):`);

@@ -52,7 +52,7 @@ const ADMIN_PAYLOAD = {
   organizationId: 'org-1',
 };
 
-const FINANCIAL_PAYLOAD = {
+const _FINANCIAL_PAYLOAD = {
   userId: 'fin-1',
   email: 'fin@org.com',
   role: 'FINANCIAL' as const,
@@ -136,6 +136,7 @@ describe('GET /api/org/:orgId/chart-of-accounts', () => {
       makeAccount({ code: '1', name: 'ATIVO' }),
       makeAccount({ id: 'coa-2', code: '2', name: 'PASSIVO', accountType: 'PASSIVO' as const, nature: 'CREDORA' as const }),
     ];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockedService.getAccountTree.mockResolvedValue(accounts as any);
 
     const res = await request(app)
@@ -169,6 +170,7 @@ describe('POST /api/org/:orgId/chart-of-accounts', () => {
 
   it('creates account and returns 201 with id', async () => {
     const created = makeLeafAccount();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockedService.createAccount.mockResolvedValue(created as any);
 
     const res = await request(app)
@@ -230,6 +232,7 @@ describe('POST /api/org/:orgId/chart-of-accounts', () => {
     // Service enforces this rule — route just passes through body
     // The service returns account with allowManualEntry: false
     const created = makeAccount({ isSynthetic: true, allowManualEntry: false });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockedService.createAccount.mockResolvedValue(created as any);
 
     const res = await request(app)
@@ -279,6 +282,7 @@ describe('PUT /api/org/:orgId/chart-of-accounts/:id', () => {
 
   it('updates name and spedRefCode successfully', async () => {
     const updated = makeLeafAccount({ name: 'Caixa Geral', spedRefCode: '1.01.01.01.99' });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockedService.updateAccount.mockResolvedValue(updated as any);
 
     const res = await request(app)
@@ -328,6 +332,7 @@ describe('DELETE /api/org/:orgId/chart-of-accounts/:id', () => {
 
   it('returns 200 when deactivating a leaf account', async () => {
     const deactivated = makeLeafAccount({ isActive: false });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockedService.deactivateAccount.mockResolvedValue(deactivated as any);
 
     const res = await request(app)
@@ -352,6 +357,7 @@ describe('GET /api/org/:orgId/chart-of-accounts/unmapped-sped', () => {
       makeLeafAccount({ id: 'coa-u1', code: '1.1.01.001', spedRefCode: null }),
       makeLeafAccount({ id: 'coa-u2', code: '1.1.01.002', spedRefCode: null }),
     ];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockedService.getUnmappedSpedAccounts.mockResolvedValue(unmapped as any);
 
     const res = await request(app)
@@ -516,6 +522,7 @@ describe('service createAccount validation rules', () => {
     // The service should return allowManualEntry: false for synthetic accounts
     // even if the request body says true
     const created = makeAccount({ isSynthetic: true, allowManualEntry: false });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockedService.createAccount.mockResolvedValue(created as any);
 
     const res = await request(app)

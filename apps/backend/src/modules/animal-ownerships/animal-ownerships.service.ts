@@ -18,11 +18,6 @@ const PRODUCER_SELECT = {
   type: true,
 } as const;
 
-const ANIMAL_SELECT = {
-  id: true,
-  earTag: true,
-  name: true,
-} as const;
 
 function toItem(row: Record<string, unknown>): OwnershipItem {
   const r = row as Record<string, unknown> & {

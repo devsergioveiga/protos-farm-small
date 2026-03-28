@@ -25,7 +25,7 @@
 import { resolve } from 'path';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { ensureContainer, stopContainer } from './firebird-client';
+import { ensureContainer } from './firebird-client';
 import { IdMap } from './id-map';
 import {
   importFarms,

@@ -59,7 +59,7 @@ jest.mock('../auth/auth.service', () => {
 
 const mockedService = jest.mocked(medicalExamsService);
 const mockedAuth = jest.mocked(authService);
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const _mockedAudit = jest.mocked(auditService);
 
 const ADMIN_PAYLOAD = {

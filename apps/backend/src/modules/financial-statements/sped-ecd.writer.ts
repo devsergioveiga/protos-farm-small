@@ -136,7 +136,7 @@ export class SpedEcdWriter {
   // ─── Bloco I ──────────────────────────────────────────────────────────────
 
   private writeBlocoI(): void {
-    const { org, accounts, monthlyBalances, journalEntries, costCenters, fiscalYearStart } = this.input;
+    const { accounts, monthlyBalances, journalEntries, costCenters, fiscalYearStart } = this.input;
 
     // I001 — Bloco I open
     this.line('I001', ['1']);

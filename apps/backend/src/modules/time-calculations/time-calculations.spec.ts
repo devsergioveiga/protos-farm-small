@@ -188,7 +188,7 @@ describe('calcMonthlyTotals', () => {
     ot50: number,
     ot100: number,
     nightPremium: number,
-    isAbsence = false,
+    _isAbsence = false,
   ): DailyWorkResult {
     return {
       regularMinutes: new Decimal(regular),

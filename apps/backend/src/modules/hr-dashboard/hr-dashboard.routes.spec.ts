@@ -6,7 +6,6 @@ import request from 'supertest';
 import { app } from '../../app';
 import * as hrDashboardService from './hr-dashboard.service';
 import * as authService from '../auth/auth.service';
-import { HrDashboardError } from './hr-dashboard.types';
 import type { HrDashboardResponse } from './hr-dashboard.types';
 
 jest.mock('../../shared/audit/audit.service', () => ({

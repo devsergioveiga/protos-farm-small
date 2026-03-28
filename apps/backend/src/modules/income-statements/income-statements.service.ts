@@ -4,7 +4,6 @@
 // Sends by email in batch (per D-14). RAIS consistency report (per D-15).
 
 import Decimal from 'decimal.js';
-import { prisma } from '../../database/prisma';
 import { withRlsContext } from '../../database/rls';
 import { sendMail } from '../../shared/mail/mail.service';
 import {

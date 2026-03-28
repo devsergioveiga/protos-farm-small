@@ -129,6 +129,7 @@ function makeTermination(overrides: Record<string, unknown> = {}) {
 describe('processTermination', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
     (mockPrisma.employee.findFirst as jest.Mock).mockResolvedValue(makeEmployee());
     (mockPrisma.employeeSalaryHistory.findFirst as jest.Mock).mockResolvedValue(makeSalaryHistory());
@@ -221,6 +222,7 @@ describe('processTermination', () => {
 describe('confirmTermination', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
   });
 
@@ -263,6 +265,7 @@ describe('confirmTermination', () => {
 describe('markAsPaid', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
   });
 
@@ -299,6 +302,7 @@ describe('markAsPaid', () => {
 describe('getTrctPdf', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
     (mockPrisma.employeeTermination.findFirst as jest.Mock).mockResolvedValue(
       makeTermination({ status: 'PROCESSED', processedAt: new Date() }),
@@ -317,6 +321,7 @@ describe('getTrctPdf', () => {
 describe('getGrffPdf', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
     (mockPrisma.employeeTermination.findFirst as jest.Mock).mockResolvedValue(
       makeTermination({ status: 'PROCESSED', processedAt: new Date() }),
@@ -336,6 +341,7 @@ describe('getGrffPdf', () => {
 describe('getExpiringDeadlines', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
   });
 
@@ -356,6 +362,7 @@ describe('getExpiringDeadlines', () => {
 describe('listTerminations', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
   });
 
@@ -383,6 +390,7 @@ describe('listTerminations', () => {
 describe('getTerminationById', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
   });
 

@@ -45,6 +45,7 @@ const mockWithRlsContext = withRlsContext as jest.MockedFunction<typeof withRlsC
 
 const rls = { organizationId: 'org-1', userId: 'user-1' };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function makeAbsence(overrides: Record<string, any> = {}) {
   return {
     id: 'abs-1',
@@ -74,6 +75,7 @@ function makeAbsence(overrides: Record<string, any> = {}) {
 describe('createAbsence', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
     (mockPrisma.employeeAbsence.findFirst as jest.Mock).mockResolvedValue(null); // no overlap
     (mockPrisma.employee.findFirst as jest.Mock).mockResolvedValue({
@@ -119,7 +121,7 @@ describe('createAbsence', () => {
     });
     (mockPrisma.employeeAbsence.create as jest.Mock).mockResolvedValue(absence);
 
-    const result = await createAbsence(
+    const _result = await createAbsence(
       {
         organizationId: 'org-1',
         employeeId: 'emp-1',
@@ -315,6 +317,7 @@ describe('createAbsence', () => {
 describe('registerReturn', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
     (mockPrisma.employee.update as jest.Mock).mockResolvedValue({});
     (mockPrisma.employeeStatusHistory.create as jest.Mock).mockResolvedValue({});
@@ -388,6 +391,7 @@ describe('getAbsenceImpactForMonth', () => {
       },
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await getAbsenceImpactForMonth('emp-1', new Date('2026-01-01'), mockTx as any);
 
     // 31 days total: 15 company-paid, 16 INSS-paid
@@ -403,6 +407,7 @@ describe('getAbsenceImpactForMonth', () => {
       },
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await getAbsenceImpactForMonth('emp-1', new Date('2026-01-01'), mockTx as any);
 
     expect(result.companyPaidDays).toBe(0);
@@ -416,6 +421,7 @@ describe('getAbsenceImpactForMonth', () => {
 describe('listAbsences', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
   });
 
@@ -445,6 +451,7 @@ describe('listAbsences', () => {
 describe('getAbsenceById', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
   });
 

@@ -21,14 +21,6 @@ function nextPeriod(year: number, month: number): { year: number; month: number 
   return { year, month: month + 1 };
 }
 
-function toNum(val: unknown): number {
-  if (val == null) return 0;
-  if (val instanceof Decimal) return val.toNumber();
-  if (typeof val === 'object' && 'toNumber' in val) {
-    return (val as { toNumber(): number }).toNumber();
-  }
-  return Number(val);
-}
 
 // ─── getInventoryReport ────────────────────────────────────────────────
 
@@ -46,6 +38,7 @@ export async function getInventoryReport(
   if (assetType) assetWhere['assetType'] = assetType;
 
   // Query 1: gross value grouped by classification
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const classificationGroups = await (prisma.asset.groupBy as Function)({
     by: ['classification'],
     where: assetWhere,
@@ -61,6 +54,7 @@ export async function getInventoryReport(
 
   // Query 3: accumulated depreciation per asset
   const assetIds = allAssets.map((a) => a.id);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const deprGroups = await (prisma.depreciationEntry.groupBy as Function)({
     by: ['assetId'],
     where: { organizationId, reversedAt: null, assetId: { in: assetIds } },
@@ -207,8 +201,8 @@ export async function getDepreciationProjection(
 
   // We need to determine the starting period — use current month as base
   const now = new Date();
-  let startYear = now.getUTCFullYear();
-  let startMonth = now.getUTCMonth() + 1;
+  const startYear = now.getUTCFullYear();
+  const startMonth = now.getUTCMonth() + 1;
 
   for (const asset of assets) {
     const config = asset.depreciationConfig;
@@ -356,6 +350,7 @@ export async function getTCOFleet(query: TCOFleetQuery): Promise<TCOFleetResult>
   }
 
   // Aggregate depreciation per asset
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const deprGroups = await (prisma.depreciationEntry.groupBy as Function)({
     by: ['assetId'],
     where: { organizationId, reversedAt: null, assetId: { in: assetIds } },
@@ -363,6 +358,7 @@ export async function getTCOFleet(query: TCOFleetQuery): Promise<TCOFleetResult>
   });
 
   // Aggregate maintenance per asset (completed work orders)
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const maintenanceGroups = await (prisma.workOrder.groupBy as Function)({
     by: ['assetId'],
     where: { organizationId, status: 'CONCLUIDA', assetId: { in: assetIds } },
@@ -370,6 +366,7 @@ export async function getTCOFleet(query: TCOFleetQuery): Promise<TCOFleetResult>
   });
 
   // Aggregate fuel per asset
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const fuelGroups = await (prisma.fuelRecord.groupBy as Function)({
     by: ['assetId'],
     where: { organizationId, assetId: { in: assetIds } },

@@ -3,8 +3,7 @@
 // Accounting entry stubs are stored for Phase 32 GL integration.
 
 import Decimal from 'decimal.js';
-import { prisma } from '../../database/prisma';
-import { withRlsContext, type RlsContext, type TxClient } from '../../database/rls';
+import { withRlsContext, type RlsContext } from '../../database/rls';
 import { process as autoPost } from '../auto-posting/auto-posting.service';
 import { payrollTablesService } from '../payroll-tables/payroll-tables.service';
 import {
@@ -16,7 +15,6 @@ import {
   type ProvisionReportRow,
   type AccountingEntryStub,
 } from './payroll-provisions.types';
-import type { EngineParams } from '../payroll-runs/payroll-runs.types';
 
 // ─── Pure calculation (no DB) ─────────────────────────────────────────
 
@@ -65,8 +63,6 @@ export function calculateMonthlyProvision(
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-type AnyTx = TxClient | any;
 
 /**
  * Parse "YYYY-MM" into the first day of that month as a Date (UTC).
@@ -82,6 +78,7 @@ function parseReferenceMonth(referenceMonth: string): Date {
 async function loadRatPercent(orgId: string, referenceDate: Date): Promise<Decimal> {
   const miscTable = await payrollTablesService.getEffective(
     orgId,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     'MISC_SCALARS' as any,
     referenceDate,
   );
@@ -126,6 +123,7 @@ function buildAccountingEntry(
 /**
  * Format a provision DB record into ProvisionOutput.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatProvisionOutput(p: any): ProvisionOutput {
   return {
     id: p.id,

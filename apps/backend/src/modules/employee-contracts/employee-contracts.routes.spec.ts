@@ -2,7 +2,6 @@ import request from 'supertest';
 import { app } from '../../app';
 import * as contractsService from './employee-contracts.service';
 import * as authService from '../auth/auth.service';
-import * as auditService from '../../shared/audit/audit.service';
 
 jest.mock('../../shared/audit/audit.service', () => ({
   logAudit: jest.fn().mockResolvedValue(undefined),

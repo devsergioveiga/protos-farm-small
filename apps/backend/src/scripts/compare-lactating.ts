@@ -32,14 +32,17 @@ async function main() {
 
     // 2. Get animals from Protos by category
     const [lactating, dry, allFemales] = await Promise.all([
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (prisma as any).animal.findMany({
         where: { category: 'VACA_LACTACAO', deletedAt: null },
         select: { id: true, earTag: true, name: true },
       }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (prisma as any).animal.findMany({
         where: { category: 'VACA_SECA', deletedAt: null },
         select: { id: true, earTag: true, name: true },
       }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (prisma as any).animal.findMany({
         where: { sex: 'FEMALE', deletedAt: null },
         select: { id: true, earTag: true, name: true, category: true },
@@ -47,11 +50,14 @@ async function main() {
     ]);
 
     const protosLacNames = new Set<string>(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       lactating.map((a: any) => a.name).filter(Boolean),
     );
     const protosDryNames = new Set<string>(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       dry.map((a: any) => a.name).filter(Boolean),
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allFemalesByName = new Map<string, any>();
     for (const a of allFemales) {
       if (a.name) allFemalesByName.set(a.name, a);

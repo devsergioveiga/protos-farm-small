@@ -143,7 +143,7 @@ async function _getHeadcount(
   organizationId: string,
   employeeIdFilter: string[] | null,
 ): Promise<HrDashboardResponse['headcount']> {
-  const where = {
+  const _where = {
     organizationId,
     ...(employeeIdFilter ? { id: { in: employeeIdFilter } } : {}),
     status: { not: 'DESLIGADO' as const },

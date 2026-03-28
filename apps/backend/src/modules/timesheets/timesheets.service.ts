@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js';
-import { differenceInMinutes, parseISO } from 'date-fns';
+import { differenceInMinutes } from 'date-fns';
 import { withRlsContext, type RlsContext } from '../../database/rls';
 import {
   calcDailyWork,
@@ -15,7 +15,7 @@ import type {
   TimesheetCorrectionInput,
   TimesheetListQuery,
   TimesheetOutput,
-  TimesheetCorrectionOutput,
+
   TimesheetInconsistency,
 } from './timesheets.types';
 import type { DailyWorkInput, DailyWorkResult } from '../time-calculations/time-calculations.types';
@@ -61,7 +61,7 @@ function calcScheduledMinutesFromSchedule(schedule: {
   return Math.max(0, totalMinutes - schedule.breakMinutes);
 }
 
-function calcNightMinutesForPeriod(clockIn: Date, clockOut: Date): number {
+function _calcNightMinutesForPeriod(clockIn: Date, clockOut: Date): number {
   const NIGHT_START = 21;
   const NIGHT_END = 5;
   let nightMinutes = 0;

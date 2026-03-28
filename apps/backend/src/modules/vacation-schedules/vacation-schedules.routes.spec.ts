@@ -40,13 +40,11 @@ import {
   validateFractionation,
   initVacationPeriod,
   advancePeriod,
-  scheduleVacation,
   cancelVacation,
-  markAsPaid,
   listAcquisitivePeriods,
   listSchedules,
   getScheduleById,
-  getExpiringPeriods,
+
 } from './vacation-schedules.service';
 import { VacationError } from './vacation-schedules.types';
 import { withRlsContext } from '../../database/rls';
@@ -89,6 +87,7 @@ const mockEngineParams: EngineParams = {
 describe('calculateVacationPay', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
   });
 
@@ -239,6 +238,7 @@ describe('calcPaymentDueDate', () => {
 describe('initVacationPeriod', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
   });
 
@@ -256,7 +256,7 @@ describe('initVacationPeriod', () => {
     };
     (mockPrisma.vacationAcquisitivePeriod.create as jest.Mock).mockResolvedValue(mockPeriod);
 
-    const result = await initVacationPeriod('emp-1', new Date('2026-01-01'), rls);
+    const _result = await initVacationPeriod('emp-1', new Date('2026-01-01'), rls);
     expect(mockPrisma.vacationAcquisitivePeriod.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
@@ -273,6 +273,7 @@ describe('initVacationPeriod', () => {
 describe('advancePeriod', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
   });
 
@@ -327,6 +328,7 @@ describe('advancePeriod', () => {
 describe('cancelVacation', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
   });
 
@@ -372,6 +374,7 @@ describe('cancelVacation', () => {
 describe('listSchedules', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
   });
 
@@ -396,6 +399,7 @@ describe('listSchedules', () => {
 describe('listAcquisitivePeriods', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
   });
 
@@ -428,6 +432,7 @@ describe('listAcquisitivePeriods', () => {
 describe('getScheduleById', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
   });
 

@@ -306,7 +306,7 @@ export async function generateSpedEcd(
 
   // Build code lookup from id to code for parent resolution
   const accountIdToCode = new Map<string, string>();
-  for (const a of rawAccounts) {
+  for (const _a of rawAccounts) {
     // We need ids for this — re-fetch with id
   }
 
@@ -431,8 +431,8 @@ export async function generateSpedEcd(
 
   // 7. Get DRE and BP data for J-block
   const lastMonth = fiscalYear.endDate.getMonth() + 1;
-  let dreRows: SpedDreRow[] = [];
-  let bpRows: SpedBpRow[] = [];
+  const dreRows: SpedDreRow[] = [];
+  const bpRows: SpedBpRow[] = [];
 
   try {
     const dre = await getDre(organizationId, { fiscalYearId, month: lastMonth });

@@ -67,7 +67,7 @@ function diffDays(start: Date, end: Date): number {
 function computePayrollImpact(
   absenceType: string,
   totalDays: number | null,
-  fgtsFullMonth: boolean,
+  _fgtsFullMonth: boolean,
 ): AbsencePayrollImpact {
   switch (absenceType) {
     case 'MEDICAL_CERTIFICATE': {
@@ -132,6 +132,7 @@ function computePayrollImpact(
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapToOutput(absence: any): AbsenceOutput {
   return {
     id: absence.id,
@@ -254,6 +255,7 @@ export async function createAbsence(
         data: {
           organizationId: input.organizationId,
           employeeId: input.employeeId,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           absenceType: input.absenceType as any,
           startDate: startDateObj,
           endDate: endDateObj,
@@ -427,6 +429,7 @@ export async function listAbsences(
   ctx: RlsContext,
 ): Promise<AbsenceOutput[]> {
   return withRlsContext(ctx, async (tx) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { organizationId: orgId };
     if (filters.employeeId) where.employeeId = filters.employeeId;
     if (filters.absenceType) where.absenceType = filters.absenceType;
@@ -480,6 +483,7 @@ export async function updateAbsence(
       throw new AbsenceError('Afastamento não encontrado', 404);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data: any = {};
     if (updates.notes !== undefined) data.notes = updates.notes;
     if (updates.endDate !== undefined) {

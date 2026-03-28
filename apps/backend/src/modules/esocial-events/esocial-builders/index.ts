@@ -80,7 +80,7 @@ const VALIDATOR_MAP: Record<string, (data: any) => EsocialValidationError[]> = {
   'S-1200': (d: any) => validateS1200Input(d.item, d.employee),
   'S-1210': (d: any) => validateS1210Input(d.item, d.employee),
   'S-1299': (d: any) => validateS1299Input(d.payrollRun, d.organization),
-  'S-2210': (d: any) => [], // CAT — no specific validator needed
+  'S-2210': (_d: any) => [], // CAT — no specific validator needed
   'S-2220': (d: any) => validateS2220Input(d.exam, d.employee),
   'S-2240': (d: any) => validateS2240Input(d.epiDelivery, d.employee),
 };

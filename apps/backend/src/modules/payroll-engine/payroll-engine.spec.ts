@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js';
-import type { INSSBracket, IRRFBracket, SalaryFamilyInput, RuralNightInput, RuralUtilityInput, RubricaContext } from './payroll-engine.types';
+import type { INSSBracket, IRRFBracket, SalaryFamilyInput, RubricaContext } from './payroll-engine.types';
 import {
   calculateINSS,
   calculateIRRF,

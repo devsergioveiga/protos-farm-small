@@ -11,7 +11,7 @@ import type { ProvisionCalcResult } from './payroll-provisions.types';
 
 describe('calculateMonthlyProvision', () => {
   const RAT_1_PERCENT = new Decimal('0.01');
-  const CHARGE_RATE_29 = new Decimal('0.29'); // 0.20 INSS + 0.01 RAT + 0.08 FGTS
+  const _CHARGE_RATE_29 = new Decimal('0.29'); // 0.20 INSS + 0.01 RAT + 0.08 FGTS
 
   // Test 1: Vacation provision with R$3000, RAT 1%
   it('calculates vacation provision correctly for R$3000 salary, RAT 1%', () => {
