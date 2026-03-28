@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
 status: Ready to plan
-stopped_at: Completed 40-04-PLAN.md
-last_updated: "2026-03-28T14:35:20.977Z"
+stopped_at: Phase 41 context gathered
+last_updated: "2026-03-28T15:11:51.421Z"
 progress:
   total_phases: 7
   completed_phases: 6
@@ -93,7 +93,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T14:23:18.245Z
-Stopped at: Completed 40-04-PLAN.md
-Resume file: None
+Last session: 2026-03-28T15:11:51.412Z
+Stopped at: Phase 41 context gathered
+Resume file: .planning/phases/41-sped-ecd-e-relat-rio-integrado/41-CONTEXT.md
 Next action: Define requirements and create roadmap for v1.4
