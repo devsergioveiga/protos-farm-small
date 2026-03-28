@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
-status: Ready to plan
-stopped_at: Phase 38 context gathered
-last_updated: "2026-03-28T07:34:16.508Z"
+status: Ready to execute
+stopped_at: Completed 38-01-PLAN.md — MonthlyClosing backend module + checkPeriodOpen middleware
+last_updated: "2026-03-28T10:48:54.276Z"
 progress:
   total_phases: 7
   completed_phases: 3
-  total_plans: 12
-  completed_plans: 12
+  total_plans: 15
+  completed_plans: 13
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 37 — regras-e-lan-amentos-autom-ticos
+**Current focus:** Phase 38 — fechamento-mensal-e-concilia-o-cont-bil
 
 ## Current Position
 
-Phase: 38
-Plan: Not started
+Phase: 38 (fechamento-mensal-e-concilia-o-cont-bil) — EXECUTING
+Plan: 2 of 3
 
 ## Accumulated Context
 
@@ -65,6 +65,7 @@ Key decisions carried from v1.3:
 - [Phase 37]: receivePayment exported as alias for settleReceivable — CR settlement hook point per D-33
 - [Phase 37]: AccountingEntry table was already absent from DB — migrate diff returned empty, prisma generate sufficient
 - [Phase 37]: seedAccountingRules called at end of seedRuralTemplate — idempotent, silently skips if COA not seeded
+- [Phase 38]: Routes spec uses service mock pattern (matches auto-posting.routes.spec.ts) for better isolation
 
 ### Pending Todos
 
@@ -79,7 +80,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T07:34:16.500Z
-Stopped at: Phase 38 context gathered
-Resume file: .planning/phases/38-fechamento-mensal-e-concilia-o-cont-bil/38-CONTEXT.md
+Last session: 2026-03-28T10:48:54.273Z
+Stopped at: Completed 38-01-PLAN.md — MonthlyClosing backend module + checkPeriodOpen middleware
+Resume file: None
 Next action: Define requirements and create roadmap for v1.4

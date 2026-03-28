@@ -32,9 +32,9 @@ Requirements for Accounting and Financial Statements module. Each maps to roadma
 
 ### Fechamento Mensal
 
-- [ ] **FECH-01**: Contador pode executar fechamento mensal seguindo checklist estruturado com etapas dependentes: (1) verificar ponto aprovado, (2) verificar folha fechada, (3) verificar depreciação processada, (4) verificar lançamentos pendentes na fila, (5) executar conciliação bancária contábil, (6) verificar balancete equilibrado — cada etapa consulta automaticamente o módulo correspondente
-- [ ] **FECH-02**: Contador pode executar conciliação bancária contábil comparando razão das contas banco (GL) com extratos importados (módulo financeiro v1.0), identificando divergências, permitindo ajustes, com relatório de conciliação exportável
-- [ ] **FECH-03**: Contador pode fechar período após todas etapas do checklist aprovadas, bloqueando qualquer novo lançamento no período, com possibilidade de reabertura controlada (exige motivo, gera log de auditoria, requer papel de administrador)
+- [x] **FECH-01**: Contador pode executar fechamento mensal seguindo checklist estruturado com etapas dependentes: (1) verificar ponto aprovado, (2) verificar folha fechada, (3) verificar depreciação processada, (4) verificar lançamentos pendentes na fila, (5) executar conciliação bancária contábil, (6) verificar balancete equilibrado — cada etapa consulta automaticamente o módulo correspondente
+- [x] **FECH-02**: Contador pode executar conciliação bancária contábil comparando razão das contas banco (GL) com extratos importados (módulo financeiro v1.0), identificando divergências, permitindo ajustes, com relatório de conciliação exportável
+- [x] **FECH-03**: Contador pode fechar período após todas etapas do checklist aprovadas, bloqueando qualquer novo lançamento no período, com possibilidade de reabertura controlada (exige motivo, gera log de auditoria, requer papel de administrador)
 
 ### DRE — Demonstração do Resultado do Exercício
 
@@ -111,9 +111,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RAZAO-01 | Phase 36 | Complete |
 | RAZAO-02 | Phase 36 | Complete |
 | RAZAO-03 | Phase 36 | Complete |
-| FECH-01 | Phase 38 | Pending |
-| FECH-02 | Phase 38 | Pending |
-| FECH-03 | Phase 38 | Pending |
+| FECH-01 | Phase 38 | Complete |
+| FECH-02 | Phase 38 | Complete |
+| FECH-03 | Phase 38 | Complete |
 | DRE-01 | Phase 39 | Pending |
 | DRE-02 | Phase 39 | Pending |
 | DRE-03 | Phase 39 | Pending |
