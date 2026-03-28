@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
-status: Ready to execute
-stopped_at: Completed 40-03-PLAN.md
-last_updated: "2026-03-28T14:19:16.593Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 40-04-PLAN.md
+last_updated: "2026-03-28T14:23:18.248Z"
 progress:
   total_phases: 7
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 22
-  completed_plans: 21
+  completed_plans: 22
 ---
 
 # Project State
@@ -78,6 +78,7 @@ Key decisions carried from v1.3:
 - [Phase 40-dfc-dashboard-executivo]: getDfc derives year from fiscalYear.startDate.getFullYear() — FiscalYear schema has no year field
 - [Phase 40-dfc-dashboard-executivo]: Cross-validation invariant #2 uses try/catch around getDfc so invariant stays PENDING if DFC fails
 - [Phase 40]: Tabs use hidden attribute (not conditional render) per Phase 37 decision — preserves DFC panel state on method switch
+- [Phase 40-04]: AccountingDashboardPage reuses IndicatorCard from financial-statements for BP indicators
 
 ### Pending Todos
 
@@ -92,7 +93,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T14:19:10.521Z
-Stopped at: Completed 40-03-PLAN.md
+Last session: 2026-03-28T14:23:18.245Z
+Stopped at: Completed 40-04-PLAN.md
 Resume file: None
 Next action: Define requirements and create roadmap for v1.4
