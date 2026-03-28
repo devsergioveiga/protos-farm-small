@@ -49,9 +49,9 @@ Requirements for Accounting and Financial Statements module. Each maps to roadma
 
 ### DFC — Demonstração do Fluxo de Caixa
 
-- [ ] **DFC-01**: Contador pode gerar DFC pelo método direto com três seções (Atividades Operacionais, Investimento, Financiamento), reaproveitando a classificação de fluxo de caixa já existente no módulo financeiro v1.0, com reconciliação do saldo inicial/final de caixa
-- [ ] **DFC-02**: Contador pode gerar DFC pelo método indireto partindo do Lucro Líquido (DRE), com ajustes de itens não-caixa (depreciação, provisões, variação valor justo ativo biológico CPC 29), variação de capital de giro (delta CR, estoques, CP, obrigações), e atividades de investimento e financiamento
-- [ ] **DFC-03**: Sistema valida cruzamento entre DFC e BP (variação de caixa na DFC = variação da conta caixa/bancos no BP) com alerta automático de divergência
+- [x] **DFC-01**: Contador pode gerar DFC pelo método direto com três seções (Atividades Operacionais, Investimento, Financiamento), reaproveitando a classificação de fluxo de caixa já existente no módulo financeiro v1.0, com reconciliação do saldo inicial/final de caixa
+- [x] **DFC-02**: Contador pode gerar DFC pelo método indireto partindo do Lucro Líquido (DRE), com ajustes de itens não-caixa (depreciação, provisões, variação valor justo ativo biológico CPC 29), variação de capital de giro (delta CR, estoques, CP, obrigações), e atividades de investimento e financiamento
+- [x] **DFC-03**: Sistema valida cruzamento entre DFC e BP (variação de caixa na DFC = variação da conta caixa/bancos no BP) com alerta automático de divergência
 
 ### Vinculação, Relatórios Integrados e SPED
 
@@ -59,7 +59,7 @@ Requirements for Accounting and Financial Statements module. Each maps to roadma
 - [ ] **VINC-02**: Contador pode gerar relatório integrado de demonstrações financeiras em PDF profissional contendo DRE, BP, DFC e notas explicativas em documento único, com capa, índice, cabeçalho com dados da fazenda/empresa e formatação compatível com exigências de instituições financeiras para crédito rural (PRONAF, Funcafé)
 - [ ] **SPED-01**: Contador pode gerar arquivo SPED Contábil (ECD) no formato pipe-delimited da RFB com Blocos 0 (abertura), I (lançamentos e saldos — registros I050, I100, I150/I155, I200/I250, I350/I355), J (demonstrações — J005, J100, J150, J210), 9 (encerramento), usando plano referencial L300R rural
 - [ ] **SPED-02**: Sistema executa pré-validação do arquivo ECD antes do download verificando: contas mapeadas ao referencial, períodos fechados, balancete equilibrado, I050 sem duplicatas, totalização I155 consistente — com relatório de erros/avisos e impedimento de download se houver erros críticos
-- [ ] **DASH-01**: Gerente pode visualizar dashboard contábil executivo com: resultado acumulado no exercício (card), evolução mensal receita vs despesa (gráfico linha 12 meses), composição de custos por natureza (gráfico pizza), indicadores BP (liquidez, endividamento), alertas (períodos não fechados, lançamentos pendentes, contas sem mapeamento SPED)
+- [x] **DASH-01**: Gerente pode visualizar dashboard contábil executivo com: resultado acumulado no exercício (card), evolução mensal receita vs despesa (gráfico linha 12 meses), composição de custos por natureza (gráfico pizza), indicadores BP (liquidez, endividamento), alertas (períodos não fechados, lançamentos pendentes, contas sem mapeamento SPED)
 
 ## v1.5+ Requirements
 
@@ -119,14 +119,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DRE-03 | Phase 39 | Complete |
 | BP-01 | Phase 39 | Complete |
 | BP-02 | Phase 39 | Complete |
-| DFC-01 | Phase 40 | Pending |
-| DFC-02 | Phase 40 | Pending |
-| DFC-03 | Phase 40 | Pending |
+| DFC-01 | Phase 40 | Complete |
+| DFC-02 | Phase 40 | Complete |
+| DFC-03 | Phase 40 | Complete |
 | VINC-01 | Phase 39 | Complete |
 | VINC-02 | Phase 41 | Pending |
 | SPED-01 | Phase 41 | Pending |
 | SPED-02 | Phase 41 | Pending |
-| DASH-01 | Phase 40 | Pending |
+| DASH-01 | Phase 40 | Complete |
 
 **Coverage:**
 - v1.4 requirements: 30 total

@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
-status: Ready to plan
-stopped_at: Phase 40 context gathered
-last_updated: "2026-03-28T13:10:25.270Z"
+status: Ready to execute
+stopped_at: Completed 40-01-PLAN.md
+last_updated: "2026-03-28T14:12:18.167Z"
 progress:
   total_phases: 7
   completed_phases: 5
-  total_plans: 18
-  completed_plans: 18
+  total_plans: 22
+  completed_plans: 20
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 39 — DRE, Balanço Patrimonial e Validação Cruzada
+**Current focus:** Phase 40 — dfc-dashboard-executivo
 
 ## Current Position
 
-Phase: 40
-Plan: Not started
+Phase: 40 (dfc-dashboard-executivo) — EXECUTING
+Plan: 3 of 4
 
 ## Accumulated Context
 
@@ -73,6 +73,10 @@ Key decisions carried from v1.3:
 - [Phase 39-dre-balan-o-patrimonial-e-valida-o-cruzada]: Cross-validation invariant 2 (DFC) returns PENDING; allPassed=true when no FAILED invariants (PENDING does not fail)
 - [Phase 39]: DrePage uses inline cost center fetch (no org-level useCostCenters hook existed); export buttons show toast pending future endpoints
 - [Phase 39]: BalanceSheetTable uses SideTable helper called twice for two semantic table elements without code duplication
+- [Phase 40]: Cost composition groups expenses via SQL CASE on code prefix; duplicate labels merged in TypeScript after query
+- [Phase 40]: 12-month monthlyChart always returns all 12 months including zeros — frontend can render a full year chart without gaps
+- [Phase 40-dfc-dashboard-executivo]: getDfc derives year from fiscalYear.startDate.getFullYear() — FiscalYear schema has no year field
+- [Phase 40-dfc-dashboard-executivo]: Cross-validation invariant #2 uses try/catch around getDfc so invariant stays PENDING if DFC fails
 
 ### Pending Todos
 
@@ -87,7 +91,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T13:10:25.262Z
-Stopped at: Phase 40 context gathered
-Resume file: .planning/phases/40-dfc-dashboard-executivo/40-CONTEXT.md
+Last session: 2026-03-28T14:12:18.164Z
+Stopped at: Completed 40-01-PLAN.md
+Resume file: None
 Next action: Define requirements and create roadmap for v1.4
