@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
-status: Ready to plan
-stopped_at: Phase 39 context gathered
-last_updated: "2026-03-28T11:47:56.060Z"
+status: Ready to execute
+stopped_at: Completed 39-01-PLAN.md — financial-statements backend
+last_updated: "2026-03-28T12:40:55.744Z"
 progress:
   total_phases: 7
   completed_phases: 4
-  total_plans: 15
-  completed_plans: 15
+  total_plans: 18
+  completed_plans: 16
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 38 — fechamento-mensal-e-concilia-o-cont-bil
+**Current focus:** Phase 39 — DRE, Balanço Patrimonial e Validação Cruzada
 
 ## Current Position
 
-Phase: 39
-Plan: Not started
+Phase: 39 (DRE, Balanço Patrimonial e Validação Cruzada) — EXECUTING
+Plan: 2 of 3
 
 ## Accumulated Context
 
@@ -69,6 +69,8 @@ Key decisions carried from v1.3:
 - [Phase 38-fechamento-mensal-e-concilia-o-cont-bil]: checkPeriodOpen() applied to actual HTTP write routes (pending/retry-batch, pending/:id/retry) not the internal process() function which is not an HTTP endpoint
 - [Phase 38]: FiscalYearCard refactored to show PeriodPanel for OPEN periods to accommodate Fechamento button alongside Fechar Periodo action
 - [Phase 38]: Reopen dialog implemented inline (not ConfirmModal) because reason textarea is needed but ConfirmModal props do not support it
+- [Phase 39-dre-balan-o-patrimonial-e-valida-o-cruzada]: Pure calculators (no Prisma) follow payroll-calculation pattern for testability; consolidated DRE uses AccountBalance, CC-filtered uses JournalEntryLine
+- [Phase 39-dre-balan-o-patrimonial-e-valida-o-cruzada]: Cross-validation invariant 2 (DFC) returns PENDING; allPassed=true when no FAILED invariants (PENDING does not fail)
 
 ### Pending Todos
 
@@ -83,7 +85,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T11:47:56.045Z
-Stopped at: Phase 39 context gathered
-Resume file: .planning/phases/39-dre-balan-o-patrimonial-e-valida-o-cruzada/39-CONTEXT.md
+Last session: 2026-03-28T12:40:55.740Z
+Stopped at: Completed 39-01-PLAN.md — financial-statements backend
+Resume file: None
 Next action: Define requirements and create roadmap for v1.4

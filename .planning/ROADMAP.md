@@ -162,9 +162,9 @@ Plans:
 4. BP com indicadores (liquidez corrente, endividamento, PL/ha) calculados automaticamente
 5. Painel de vinculação com 4 invariantes (DRE↔BP, DFC↔BP, equilíbrio AT=PT+PL, balancete)
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 Plans:
-- [ ] 39-01-PLAN.md — Backend: types, pure calculators (DRE+BP+cross-validation), service, routes, tests
+- [x] 39-01-PLAN.md — Backend: types, pure calculators (DRE+BP+cross-validation), service, routes, tests
 - [ ] 39-02-PLAN.md — Frontend: DRE page with table, V/H toggle, CC filter, margin ranking chart
 - [ ] 39-03-PLAN.md — Frontend: Balance Sheet page, Cross-Validation page, sidebar + routing wiring
 
