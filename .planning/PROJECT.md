@@ -16,7 +16,7 @@
 - Dashboard contábil executivo
 
 **Shipped:** v1.0 Financeiro Base, v1.1 Compras, v1.2 Patrimonio, v1.3 RH e Folha
-**Total:** 34 phases, 153 plans shipped across 4 milestones (2026-03-16 to 2026-03-27)
+**Total:** 41 phases, 175 plans shipped across 4 milestones (2026-03-16 to 2026-03-28)
 
 ## What This Is
 
@@ -117,13 +117,14 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 
 ## Context
 
-### Current State (v1.4 in progress — 2026-03-28)
+### Current State (v1.4 complete — 2026-03-28)
 
-Shipped 4 milestones across Fase 3: Financeiro (v1.0), Compras (v1.1), Patrimônio (v1.2), RH/Folha (v1.3).
-40 phases, 172 plans shipped. Phase 40 complete — DFC direto (3 seções reaproveitando classificação v1.0) e indireto (CPC 03 R2 partindo do lucro líquido DRE), validação cruzada DFC↔BP ativada (invariante #2), dashboard contábil executivo com KPIs, gráfico receita/despesa 12m, composição custos e indicadores BP.
+Shipped 5 milestones across Fase 3: Financeiro (v1.0), Compras (v1.1), Patrimônio (v1.2), RH/Folha (v1.3), Contabilidade (v1.4).
+41 phases, 175 plans shipped. Phase 41 complete — SPED ECD file generation (pipe-delimited, Blocos 0/I/J/9, plano referencial L300R rural), pré-validação com 7 checks (5 ERRORs bloqueantes + 2 WARNINGs informativos), relatório integrado PDF profissional (capa+DRE+BP+DFC+notas explicativas) para crédito rural com formatação R$ brasileira.
 Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
 All administrative modules complete with bidirectional financial/accounting integration.
 27 HR requirements delivered: employee management, payroll engine, time tracking, vacations/termination, NR-31 safety, eSocial compliance, and HR dashboard.
+Full accounting suite: COA rural, auto-posting rules, journal entries, monthly closing, DRE/BP/DFC with cross-validation, SPED ECD, integrated PDF report.
 
 ### Particularidades do Financeiro Rural
 
@@ -191,4 +192,4 @@ All administrative modules complete with bidirectional financial/accounting inte
 
 ---
 
-_Last updated: 2026-03-28 after Phase 40 complete_
+_Last updated: 2026-03-28 after Phase 41 complete (v1.4 milestone complete)_
