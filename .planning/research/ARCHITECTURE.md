@@ -1,878 +1,686 @@
-# Architecture Patterns
+# Architecture Research
 
-**Domain:** Asset lifecycle management integration into Protos Farm monolith
-**Researched:** 2026-03-19
-**Confidence:** HIGH — derived from direct analysis of existing codebase (schema 6500+ lines, services, module patterns, cron infrastructure)
+**Domain:** Rural accounting and financial statements module (v1.4 Contabilidade e Demonstrações Financeiras)
+**Researched:** 2026-03-26
+**Confidence:** HIGH — based on direct codebase inspection + SPED ECD official spec review
 
 ---
 
-## Context: Existing Architecture This Milestone Extends
+## Context: What Already Exists vs. What Is New
 
-This is the v1.2 milestone. The base architecture and integration contracts are established:
-
-| Existing Component                                  | Relevance to Asset Management                                                          |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `modules/payables/` `createPayable()`               | Asset purchase → CP; maintenance OS cost → CP (expense) or capitalization              |
-| `modules/receivables/`                              | Asset sale → CR with gain/loss calculation                                             |
-| `modules/cost-centers/`                             | Depreciation and maintenance costs allocated per CC; rateio validator reused           |
-| `withRlsContext` / `RlsContext`                     | All new modules use same multitenancy pattern — no exceptions                          |
-| `Money` factory (decimal.js)                        | All monetary fields: acquisition cost, residual value, depreciation amounts            |
-| `generateInstallments` (shared)                     | Financed asset purchase → CP installments; leasing periodic payments                   |
-| `Payable.originType` / `Payable.originId`           | Polymorphic link: `originType='ASSET_PURCHASE'`, `'MAINTENANCE_OS'`, `'LEASING'`       |
-| `Receivable.originType` / `Receivable.originId`     | Asset sale: `originType='ASSET_SALE'`                                                  |
-| `FarmLocation` with PostGIS geometry                | Benfeitorias and imóveis get location Point, assets at structures reference this       |
-| `Farm` with PostGIS boundary                        | Farm-level asset inventory filtering; transfer between farms                           |
-| `StockBalance` / `StockEntry` / `StockOutput`       | Maintenance spare parts consume existing stock modules as-is                           |
-| `RuralCreditContract` (SAC/Price amortization)      | Financing model for asset acquisition loans; leasing follows same installment logic    |
-| `node-cron` + Redis lock pattern                    | Monthly depreciation batch reuses `digest.cron.ts` infrastructure exactly              |
-| `OC_VALID_TRANSITIONS` pattern (purchase-orders)    | Maintenance OS state machine follows same exported const + guard function pattern      |
-| `pdfkit` (pesticide-prescriptions)                  | Asset ficha completa PDF and OS PDF reuse same synchronous stream-to-response approach |
-| `LayerControlPanel` + `FarmMap.tsx` (react-leaflet) | Asset map layer added via existing `LayerConfig[]` extensibility point — no rewrite    |
-| Sidebar group structure                             | New `PATRIMÔNIO` group added between `COMPRAS` and `FINANCEIRO`                        |
+This milestone adds a full double-entry general ledger on top of four complete milestones. The
+existing `accounting-entries` module is a stub: it writes payroll-origin journal entries using
+**hardcoded account codes** stored directly in `ACCOUNT_CODES` constants (no Chart of Accounts
+table). Account codes like `6.1.01`, `2.1.01` are strings — they have no parent/child structure
+and no linking to a `ChartOfAccount` row. The entire v1.4 milestone exists to replace this
+hardcoded pattern with a proper hierarchical COA, period management, and statement engine.
 
 ---
 
 ## System Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        FRONTEND (React 19)                          │
-│                                                                      │
-│  New sidebar group "PATRIMÔNIO":                                     │
-│  AssetsPage (inventory), AssetDetailPage (ficha), DepreciationPage   │
-│  MaintenancePage (OS list), MaintenanceDashboardPage                 │
-│  FuelPage, DocumentsPage, AssetMapPage, PatrimonialDashboardPage     │
-│                                                                      │
-│  Modified: FarmMapPage (+ assets layer via LayerControlPanel)        │
-└─────────────────────────────────────────────────────────────────────┘
-                          │ HTTP REST JSON
-┌─────────────────────────────────────────────────────────────────────┐
-│                      BACKEND (Express 5)                             │
-│                                                                      │
-│  NEW MODULES (asset domain):                                         │
-│  assets → asset-depreciation → maintenance-plans → work-orders       │
-│  → fuel-records → asset-documents → asset-acquisition                │
-│  → asset-disposal → asset-dashboard                                  │
-│                                                                      │
-│  NEW CRON:                                                           │
-│  shared/cron/depreciation.cron.ts  (monthly, 1st day, per org)      │
-│                                                                      │
-│  MODIFIED MODULES (integration points):                              │
-│  payables (+ originType='ASSET_PURCHASE','MAINTENANCE_OS','LEASING') │
-│  receivables (+ originType='ASSET_SALE')                             │
-│  farms (+ assets relation in Farm model)                             │
-│  FarmMap (+ asset marker layer, frontend only)                       │
-│                                                                      │
-│  UNCHANGED MODULES (consumed read-only):                             │
-│  cost-centers, stock-entries, stock-outputs, stock-balances,         │
-│  products, measurement-units, suppliers, rural-credit                │
-│                                                                      │
-│                    withRlsContext (Prisma 7)                          │
-│                                                                      │
-│  NEW TABLES (migration sequence):                                    │
-│  assets, asset_components (hierarchy), asset_cost_center_items       │
-│  depreciation_configs, depreciation_runs, depreciation_entries       │
-│  maintenance_plans, maintenance_plan_items                           │
-│  work_orders, work_order_items, work_order_cost_center_items         │
-│  fuel_records, asset_documents, asset_acquisitions                   │
-│  asset_disposals, asset_transfers, asset_biological_valuations       │
-│  asset_wip_contributions (obras em andamento)                        │
-│                                                                      │
-│  MODIFIED TABLES:                                                    │
-│  payables (+assetId FK nullable, +workOrderId FK nullable)           │
-│  receivables (+assetId FK nullable)                                  │
-└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          Frontend (React 19 + Vite)                     │
+│                                                                          │
+│  CONTABILIDADE sidebar group (currently 1 item → grows to ~9 items)     │
+│  ┌───────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐ ┌────────────┐  │
+│  │  Plano de │ │Lançamen- │ │Fechamento│ │    DRE    │ │ Dashboard  │  │
+│  │  Contas   │ │  tos GL  │ │ Mensal   │ │  BP  DFC  │ │ Contábil  │  │
+│  └─────┬─────┘ └────┬─────┘ └────┬─────┘ └─────┬─────┘ └─────┬──────┘  │
+└────────┼────────────┼────────────┼──────────────┼─────────────┼─────────┘
+         │            │            │              │             │
+         │        REST API /api/org/:orgId/...    │             │
+         │            │            │              │             │
+┌────────┼────────────┼────────────┼──────────────┼─────────────┼─────────┐
+│        │         Backend (Express 5 + TypeScript)              │         │
+│  ┌─────▼──────┐ ┌───▼───────┐ ┌──▼──────────┐ ┌──▼──────────┐│         │
+│  │chart-of-   │ │journal-   │ │fiscal-      │ │financial-   ││         │
+│  │accounts    │ │entries    │ │periods      │ │statements   ││         │
+│  │(COA CRUD + │ │(GL engine │ │(open/close/ │ │(DRE/BP/DFC  ││         │
+│  │ seed rural)│ │ + rules)  │ │ reopen)     │ │ calculator) ││         │
+│  └─────┬──────┘ └───┬───────┘ └──┬──────────┘ └──┬──────────┘│         │
+│        │            │            │                │           │         │
+│  ┌─────▼────────────▼────────────▼────────────────▼───────────┘         │
+│  │                    PostgreSQL 16 / Prisma 7                           │
+│  │   ChartOfAccount   JournalEntry   FiscalPeriod   (new tables)        │
+│  │   AccountingEntry  (existing — kept read-only, not migrated)         │
+│  └──────────────────────────────────────────────────────────────────────┘
+│                                                                          │
+│  EXISTING MODULES THAT GET GL HOOKS ADDED                               │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐  │
+│  │payroll-runs │  │  depreciation│  │  payables /  │  │stock-entries│  │
+│  │(already has │  │  (no GL hook │  │  receivables │  │stock-outputs│  │
+│  │ old stub)   │  │  yet)        │  │  (no GL hook)│  │(no GL hook) │  │
+│  └─────────────┘  └──────────────┘  └──────────────┘  └─────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## New Module Inventory
+## Component Responsibilities
 
-### New Backend Modules
-
-| Module                | Key Responsibility                                                                                              | New Prisma Models                                            |
-| --------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `assets/`             | CRUD ativos com hierarquia pai-filho (3 níveis), ficha completa, inventory, bulk import, transfer between farms | `Asset`, `AssetComponent`, `AssetCostCenterItem`             |
-| `asset-depreciation/` | Config de métodos, cálculo mensal batch, pro rata die, lançamento CC, relatórios                                | `DepreciationConfig`, `DepreciationRun`, `DepreciationEntry` |
-| `maintenance-plans/`  | Planos preventivos com gatilhos (tempo, horímetro, odômetro), geração automática de OS                          | `MaintenancePlan`, `MaintenancePlanItem`                     |
-| `work-orders/`        | CRUD OS (corretiva + preventiva), state machine, peças (stock deduction), classificação contábil, PDF           | `WorkOrder`, `WorkOrderItem`, `WorkOrderCostCenterItem`      |
-| `fuel-records/`       | Registro de abastecimentos, custo/litro, cálculo custo/hora                                                     | `FuelRecord`                                                 |
-| `asset-documents/`    | Documentos e vencimentos (CRLV, seguro, revisão), alertas de vencimento                                         | `AssetDocument`                                              |
-| `asset-acquisition/`  | Compra à vista/financiada, NF-e (XML parse), leasing CPC 06, troca, multi-ativo por NF                          | `AssetAcquisition`, `AssetAcquisitionItem`, `AssetLease`     |
-| `asset-disposal/`     | Baixa (sinistro/descarte/obsolescência), venda com ganho/perda, venda parcelada                                 | `AssetDisposal`                                              |
-| `asset-dashboard/`    | TCO, disponibilidade, MTBF, relatórios patrimoniais (read-only aggregation)                                     | no new models                                                |
-
-### Modified Existing Modules
-
-| Module                    | Change                                                            | Reason                                                              |
-| ------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `payables/`               | Add `assetId` FK nullable, `workOrderId` FK nullable to `Payable` | Link CP to asset purchase or OS costs for traceability              |
-| `receivables/`            | Add `assetId` FK nullable to `Receivable`                         | Link CR to asset sale for financial reconciliation                  |
-| Schema `Farm`             | Add `assets Asset[]` relation                                     | Farm owns assets (FK already implicit, relation declaration needed) |
-| `PayableCategory` enum    | Add `ASSET_PURCHASE`, `ASSET_MAINTENANCE`, `LEASING` values       | Categorization for CP auto-generated from asset flows               |
-| `ReceivableCategory` enum | Add `ASSET_SALE` value                                            | Categorization for CR generated from asset sale                     |
+| Component                       | Responsibility                                                                         | Status                                                          |
+| ------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `modules/chart-of-accounts/`    | CRUD for hierarchical COA; seed rural model; COA code validation                       | NEW                                                             |
+| `modules/fiscal-periods/`       | Fiscal year and monthly period management; open/close/reopen with checklist            | NEW                                                             |
+| `modules/journal-entries/`      | Manual and automatic GL entries; reversal; period-lock guard; razão/livro diário       | NEW (supersedes stub in `accounting-entries`)                   |
+| `modules/accounting-rules/`     | Mapping table: sourceType → debit/credit account codes; replaces `ACCOUNT_CODES` const | NEW                                                             |
+| `modules/ledger/`               | Read-side: razão por conta, balancete de verificação, saldo progressivo                | NEW                                                             |
+| `modules/financial-statements/` | DRE / BP / DFC calculators; vinculação cruzada validation; PDF export                  | NEW                                                             |
+| `modules/sped-ecd/`             | SPED ECD Leiaute 9 file generator (pipe-delimited text, Blocos 0/I/J/K/9)              | NEW                                                             |
+| `modules/accounting-dashboard/` | Executive KPI aggregation endpoint                                                     | NEW                                                             |
+| `modules/accounting-entries/`   | Existing payroll stub — kept read-only, not deleted                                    | UNCHANGED (frozen)                                              |
+| `modules/payroll-runs/`         | Calls `createPayrollEntries()` after close                                             | MODIFIED — add new journal-entries hook alongside existing stub |
+| `modules/depreciation/`         | No GL hook yet                                                                         | MODIFIED — add post-run GL hook                                 |
+| `modules/payables/`             | Calls `createReversalEntry()` on settlement                                            | MODIFIED — add new journal-entries hook                         |
+| `modules/receivables/`          | No GL hook                                                                             | MODIFIED — add GL hook on receipt                               |
+| `modules/stock-entries/`        | No GL hook                                                                             | MODIFIED — add GL hook for inventory increase                   |
+| `modules/stock-outputs/`        | No GL hook                                                                             | MODIFIED — add GL hook for consumption                          |
 
 ---
 
-## Key Data Models
+## Recommended Project Structure
 
-### Asset (core entity)
-
-```
-Asset
-├── id (uuid)
-├── organizationId → Organization (RLS)
-├── farmId → Farm
-├── parentId → Asset? (self-reference, max 3 levels enforced at service layer)
-├── type: AssetType (MACHINE | VEHICLE | IMPLEMENT | BENFEITORIA | LAND | BIOLOGICAL | WIP | EQUIPMENT)
-├── name: String
-├── description: String?
-├── serialNumber: String?
-├── plate: String?               -- vehicles
-├── manufacturerYear: Int?
-├── manufacturer: String?
-├── model: String?
-│
-│  -- Acquisition data
-├── acquisitionDate: DateTime?
-├── acquisitionCost: Decimal      @db.Decimal(15,2)
-├── acquisitionType: AcquisitionType (CASH | FINANCED | LEASING | EXCHANGE | DONATION)
-├── supplierId → Supplier?        -- FK to existing suppliers module
-├── invoiceNumber: String?
-│
-│  -- Depreciation
-├── depreciationMethod: DepreciationMethod (LINEAR | USAGE_HOURS | PRODUCTION | ACCELERATED | NONE)
-├── usefulLifeYears: Decimal?     @db.Decimal(5,2)
-├── residualValue: Decimal        @db.Decimal(15,2) @default(0)
-├── accumulatedDepreciation: Decimal @db.Decimal(15,2) @default(0)
-├── currentNetValue: Decimal      @db.Decimal(15,2)  -- computed, maintained by depreciation run
-│
-│  -- Operational tracking
-├── currentHours: Decimal?        @db.Decimal(10,1)  -- horímetro
-├── currentOdometer: Int?         -- km
-├── status: AssetStatus (ACTIVE | INACTIVE | MAINTENANCE | DISPOSED | TRANSFERRED | WIP)
-│
-│  -- Geolocation (benfeitorias/imóveis only)
-├── location: geometry(Point,4326)?  -- Unsupported, PostGIS
-├── linkedFarmLocationId → FarmLocation?  -- optional link to existing farm_locations
-│
-├── notes: String?
-├── deletedAt: DateTime?
-├── createdAt: DateTime
-└── updatedAt: DateTime
-
-AssetComponent
-├── id (uuid)
-├── assetId → Asset (parent)
-├── componentAssetId → Asset (child)
-├── addedAt: DateTime
-└── notes: String?
--- Enforces: parent.depth + 1 <= 3 (checked at service layer)
-
-AssetCostCenterItem
-├── id
-├── assetId → Asset
-├── costCenterId → CostCenter
-├── farmId → Farm
-├── allocMode: CostCenterAllocMode  -- reuses existing enum (PERCENTAGE | FIXED_VALUE)
-├── percentage: Decimal?
-└── fixedAmount: Decimal?
--- Used for depreciation AND maintenance cost allocation
-```
-
-### DepreciationConfig + Run + Entry
+New backend modules follow the established colocation pattern exactly:
 
 ```
-DepreciationConfig
-├── id, assetId → Asset @unique
-├── method: DepreciationMethod
-├── usefulLifeYears: Decimal
-├── residualValue: Decimal
-├── monthlyRate: Decimal?           -- stored for LINEAR (= (cost - residual) / (life * 12))
-├── totalProductionCapacity: Decimal? -- for PRODUCTION method
-├── isActive: Boolean
-└── configuredAt: DateTime
+apps/backend/src/modules/
+├── chart-of-accounts/
+│   ├── chart-of-accounts.service.ts       # CRUD + seed rural COA (CPC 29 agro model)
+│   ├── chart-of-accounts.routes.ts        # Express Router + auth middleware
+│   ├── chart-of-accounts.types.ts         # Input/output interfaces + error class
+│   └── chart-of-accounts.routes.spec.ts
+│
+├── fiscal-periods/
+│   ├── fiscal-periods.service.ts          # Open/close/reopen period with checklist validation
+│   ├── fiscal-periods.routes.ts
+│   ├── fiscal-periods.types.ts
+│   └── fiscal-periods.routes.spec.ts
+│
+├── journal-entries/
+│   ├── journal-entries.service.ts         # GL write engine + period-lock guard
+│   ├── journal-entries-calculator.service.ts  # Pure calc, no DB (mirrors payroll-calculation.service.ts)
+│   ├── journal-entries.routes.ts
+│   ├── journal-entries.types.ts
+│   └── journal-entries.routes.spec.ts
+│
+├── accounting-rules/
+│   ├── accounting-rules.service.ts        # Mapping: sourceType → COA account IDs
+│   ├── accounting-rules.routes.ts
+│   ├── accounting-rules.types.ts
+│   └── accounting-rules.routes.spec.ts
+│
+├── ledger/
+│   ├── ledger.service.ts                  # Razão, balancete, livro diário
+│   ├── ledger.routes.ts
+│   ├── ledger.types.ts
+│   └── ledger.routes.spec.ts
+│
+├── financial-statements/
+│   ├── financial-statements.service.ts    # DRE + BP + DFC orchestrator
+│   ├── dre-calculator.service.ts          # Pure DRE calc (testable without DB)
+│   ├── bp-calculator.service.ts           # Pure BP calc
+│   ├── dfc-calculator.service.ts          # Pure DFC calc (direct + indirect)
+│   ├── financial-statements-pdf.service.ts  # pdfkit multi-statement PDF
+│   ├── financial-statements.routes.ts
+│   ├── financial-statements.types.ts
+│   └── financial-statements.routes.spec.ts
+│
+├── sped-ecd/
+│   ├── sped-ecd.service.ts               # Orchestrator: loads data + calls builders
+│   ├── sped-ecd-builder.ts               # Record builders (I010, I050, I150/I155, I200/I250, I350/I355)
+│   ├── sped-ecd.routes.ts
+│   ├── sped-ecd.types.ts
+│   └── sped-ecd.routes.spec.ts
+│
+└── accounting-dashboard/
+    ├── accounting-dashboard.service.ts
+    ├── accounting-dashboard.routes.ts
+    ├── accounting-dashboard.types.ts
+    └── accounting-dashboard.routes.spec.ts
+```
 
-DepreciationRun
-├── id, organizationId → Organization
-├── runDate: DateTime               -- 1st of month
-├── periodYear: Int
-├── periodMonth: Int
-├── status: RunStatus (PENDING | RUNNING | COMPLETED | FAILED)
-├── totalAssetsProcessed: Int
-├── totalDepreciationAmount: Decimal
-├── errorLog: String?
-└── createdAt: DateTime
+New frontend pages follow `pages/XxxPage.tsx + XxxPage.css` colocation. Modals go in
+`components/accounting/`:
 
+```
+apps/frontend/src/
+├── pages/
+│   ├── AccountingDashboardPage.tsx + .css
+│   ├── ChartOfAccountsPage.tsx + .css
+│   ├── FiscalPeriodsPage.tsx + .css
+│   ├── JournalEntriesPage.tsx + .css      # extends/replaces AccountingEntriesPage
+│   ├── LedgerPage.tsx + .css
+│   ├── BalancetePage.tsx + .css
+│   ├── FinancialStatementsPage.tsx + .css # tabs: DRE / Balanço / DFC
+│   ├── StatementLinkagePage.tsx + .css    # DRE↔BP↔DFC cross-validation panel
+│   └── SpedEcdPage.tsx + .css
+│
+├── components/
+│   └── accounting/
+│       ├── AccountModal.tsx + .css        # COA account create/edit
+│       ├── JournalEntryModal.tsx + .css   # Manual entry form (partidas dobradas)
+│       ├── PeriodCloseModal.tsx + .css    # Closing checklist steps
+│       ├── SpedEcdExportModal.tsx + .css  # Export parameters + download
+│       └── StatementDrilldownModal.tsx + .css
+│
+├── hooks/
+│   ├── useChartOfAccounts.ts
+│   ├── useJournalEntries.ts              # extends useAccountingEntries pattern
+│   ├── useFiscalPeriods.ts
+│   ├── useLedger.ts
+│   └── useFinancialStatements.ts
+│
+└── types/
+    ├── chart-of-accounts.ts
+    ├── journal-entries.ts
+    ├── fiscal-periods.ts
+    └── financial-statements.ts
+```
+
+---
+
+## Data Model
+
+### New Prisma Models
+
+```
+ChartOfAccount
+  id             String       @id @default(uuid())
+  organizationId String
+  code           String       -- "1.1.01.001" (dot-separated, hierarchical, sortable)
+  parentCode     String?      -- null for level-1 root nodes
+  name           String
+  accountType    AccountType  -- ATIVO | PASSIVO | PL | RECEITA | DESPESA | CUSTO
+  nature         AccountNature -- DEVEDORA | CREDORA
+  level          Int          -- 1=grupo, 2=subgrupo, 3=conta, 4=subconta
+  isAnalytic     Boolean      @default(false)  -- only analytics accept journal entries
+  isActive       Boolean      @default(true)
+  isSystem       Boolean      @default(false)  -- seeded rural accounts, cannot delete
+  dreLineCode    String?      -- optional mapping to DRE/BP statement line position
+  createdAt      DateTime     @default(now())
+  @@unique([organizationId, code])
+  @@index([organizationId, accountType])
+  @@map("chart_of_accounts")
+
+FiscalPeriod
+  id             String        @id @default(uuid())
+  organizationId String
+  year           Int
+  month          Int           -- 1–12, or 0 for the annual period
+  status         PeriodStatus  -- OPEN | CLOSING | CLOSED | REOPENED
+  closedAt       DateTime?
+  closedBy       String?
+  reopenedAt     DateTime?
+  reopenedBy     String?
+  notes          String?
+  @@unique([organizationId, year, month])
+  @@map("fiscal_periods")
+
+JournalEntry                           -- supersedes AccountingEntry for new GL data
+  id             String       @id @default(uuid())
+  organizationId String
+  entryNumber    Int          -- sequential per org per year (for livro diário)
+  entryDate      DateTime     @db.Date
+  referenceMonth DateTime     @db.Date
+  description    String
+  entryOrigin    EntryOrigin  -- MANUAL | AUTO_PAYROLL | AUTO_DEPRECIATION | AUTO_CP | AUTO_CR | AUTO_STOCK_IN | AUTO_STOCK_OUT
+  sourceType     String?      -- mirrors AccountingSourceType for back-compat
+  sourceId       String?
+  periodId       String       -- FK to FiscalPeriod
+  isReversed     Boolean      @default(false)
+  reversalOfId   String?      -- FK to original entry being reversed
+  createdBy      String
+  createdAt      DateTime     @default(now())
+  lines          JournalEntryLine[]
+  period         FiscalPeriod @relation(...)
+  @@index([organizationId, referenceMonth])
+  @@index([sourceType, sourceId])
+  @@map("journal_entries")
+
+JournalEntryLine
+  id             String     @id @default(uuid())
+  journalEntryId String
+  accountCode    String     -- denormalized from ChartOfAccount.code (display performance)
+  accountId      String     -- FK to ChartOfAccount.id (referential integrity)
+  nature         LineSide   -- DEBIT | CREDIT
+  amount         Decimal    @db.Decimal(14,2)
+  costCenterId   String?
+  farmId         String?
+  memo           String?
+  @@map("journal_entry_lines")
+
+AccountingRule
+  id              String   @id @default(uuid())
+  organizationId  String
+  ruleCode        String   -- "PAYROLL_SALARY", "DEPRECIATION_BOOK", "STOCK_CONSUMPTION", etc.
+  description     String
+  debitAccountId  String   -- FK to ChartOfAccount
+  creditAccountId String   -- FK to ChartOfAccount
+  isActive        Boolean  @default(true)
+  @@unique([organizationId, ruleCode])
+  @@map("accounting_rules")
+```
+
+### Additions to Existing Models
+
+```
 DepreciationEntry
-├── id
-├── runId → DepreciationRun
-├── assetId → Asset
-├── periodYear: Int
-├── periodMonth: Int
-├── depreciationAmount: Decimal     -- amount for this period
-├── proRataDays: Int?               -- for first/last partial month
-├── accumulatedBefore: Decimal      -- snapshot
-├── accumulatedAfter: Decimal       -- snapshot
-├── costCenterId → CostCenter?      -- primary CC allocation
-├── payableId → Payable?            -- if depreciation generates a CP (reclassification)
-└── createdAt: DateTime
+  + journalEntryId String?   -- FK to JournalEntry (added via migration, nullable backfill)
+
+Payable
+  + journalEntryId String?   -- FK to JournalEntry for settlement GL entry
+
+Receivable
+  + journalEntryId String?   -- FK to JournalEntry for receipt GL entry
 ```
 
-### WorkOrder (Maintenance OS state machine)
-
-```
-WorkOrder
-├── id, organizationId, farmId
-├── assetId → Asset
-├── maintenancePlanId → MaintenancePlan?  -- null for corrective
-├── type: WorkOrderType (PREVENTIVE | CORRECTIVE | REFORM | IMPROVEMENT)
-├── status: WorkOrderStatus (OPEN | IN_PROGRESS | WAITING_PARTS | COMPLETED | CANCELLED)
-├── priority: Priority (LOW | MEDIUM | HIGH | CRITICAL)
-├── requestedBy → User
-├── assignedTo → User?
-├── openedAt: DateTime
-├── scheduledFor: DateTime?
-├── startedAt: DateTime?
-├── completedAt: DateTime?
-│
-│  -- Parts consumed (deducted from stock)
-├── items → WorkOrderItem[]
-│
-│  -- Cost allocation
-├── costCenterItems → WorkOrderCostCenterItem[]
-│
-│  -- Accounting classification
-├── accountingType: AccountingType (EXPENSE | CAPITALIZATION | DEFERRAL)
-├── deferralMonths: Int?            -- for DEFERRAL: spread over N months
-├── capitalizedToAssetId → Asset?  -- for CAPITALIZATION: add to asset book value
-│
-│  -- Financial integration
-├── totalLaborCost: Decimal?        @db.Decimal(15,2)
-├── totalPartsCost: Decimal?        @db.Decimal(15,2)
-├── payableId → Payable?            -- generated on completion for external services
-├── notes: String?
-└── createdAt, updatedAt
-
-WorkOrderItem
-├── id, workOrderId → WorkOrder
-├── productId → Product?            -- from existing products module
-├── description: String             -- fallback if no productId
-├── quantity: Decimal
-├── unitId → MeasurementUnit?
-├── unitCost: Decimal?
-├── stockOutputId → StockOutput?    -- created on COMPLETE to deduct from stock
-└── notes: String?
-
--- State machine (stored in work-orders.types.ts):
-VALID_WO_TRANSITIONS = {
-  OPEN: ['IN_PROGRESS', 'CANCELLED'],
-  IN_PROGRESS: ['WAITING_PARTS', 'COMPLETED', 'CANCELLED'],
-  WAITING_PARTS: ['IN_PROGRESS', 'CANCELLED'],
-  COMPLETED: [],
-  CANCELLED: []
-}
-```
-
-### AssetAcquisition (financial integration hub)
-
-```
-AssetAcquisition
-├── id, organizationId, farmId
-├── acquisitionType: AcquisitionType (CASH | FINANCED | LEASING | EXCHANGE)
-├── invoiceNumber: String?
-├── invoiceDate: DateTime?
-├── invoiceKey: String?             -- NF-e chave de acesso
-├── supplierId → Supplier
-├── totalAmount: Decimal            @db.Decimal(15,2)
-├── items → AssetAcquisitionItem[]  -- one NF can have multiple assets
-│
-│  -- Generated on confirm:
-├── payableId → Payable?            -- CASH: single CP; FINANCED: installment CP
-├── leasingId → AssetLease?         -- if LEASING
-└── createdAt, updatedAt
-
-AssetAcquisitionItem
-├── id, acquisitionId → AssetAcquisition
-├── assetId → Asset
-├── amount: Decimal                 -- portion of invoice for this asset
-└── notes: String?
-
-AssetLease
-├── id, organizationId
-├── assetId → Asset
-├── lessorName: String
-├── lessorDocument: String
-├── contractNumber: String
-├── startDate: DateTime
-├── endDate: DateTime
-├── monthlyPayment: Decimal         @db.Decimal(15,2)
-├── depositAmount: Decimal?
-├── purchaseOptionAmount: Decimal?  -- CPC 06 residual
-├── status: LeaseStatus (ACTIVE | EXPIRED | EXERCISED | CANCELLED)
-└── payables Payable[]              -- monthly lease payments as CP
-
-AssetDisposal
-├── id, organizationId, farmId
-├── assetId → Asset
-├── disposalType: DisposalType (SALE | WRITE_OFF | SCRAP | SINISTER)
-├── disposalDate: DateTime
-├── saleAmount: Decimal?            @db.Decimal(15,2)
-├── bookValueAtDisposal: Decimal    -- snapshot of netValue on disposal date
-├── gainLoss: Decimal               -- computed: saleAmount - bookValueAtDisposal
-├── buyerName: String?
-├── buyerDocument: String?
-├── installmentCount: Int @default(1)
-├── receivableId → Receivable?      -- generated on confirm for sale
-└── notes: String?
-```
+The existing `AccountingEntry` model is **not changed**. It stays read-only and serves the
+existing `AccountingEntriesPage` frontend unmodified. New code does not write to it.
 
 ---
 
-## Critical Data Flows
+## Architectural Patterns
 
-### Flow 1: Monthly Depreciation Batch
+### Pattern 1: GL Hook — Non-blocking Fire-and-Forget
 
-This is the most architecturally novel feature — no equivalent exists in the current system.
+The existing pattern established in `payroll-runs.service.ts` line 1059 is the canonical model
+for all automatic GL entry creation. It must be followed for every new source module hook.
 
-```
-depreciation.cron.ts (node-cron, 0 0 1 * *)
-    ↓
-For each active organization:
-    Lock: redis.set('cron:depreciation:{orgId}:{year}-{month}', EX=300, NX)
-    ↓
-asset-depreciation.service.runMonthlyDepreciation(ctx, year, month)
-    ↓
-withRlsContext → single transaction per org:
-    │
-    ├── 1. Create DepreciationRun (status=RUNNING)
-    │
-    ├── 2. Query active assets with depreciationMethod != NONE
-    │       (exclude WIP, DISPOSED, type=LAND)
-    │
-    ├── 3. For each asset (chunk of 100 to limit tx size):
-    │       a. Compute depreciationAmount:
-    │           LINEAR:       (acquisitionCost - residualValue) / (usefulLifeYears * 12)
-    │           USAGE_HOURS:  (hours this period / totalHours) * depreciableAmount
-    │           PRODUCTION:   (production this period / totalCapacity) * depreciableAmount
-    │           ACCELERATED:  LINEAR * accelerationFactor
-    │       b. Apply pro-rata for first/last partial month
-    │       c. Cap at remaining depreciable value (never depreciate below residualValue)
-    │       d. Create DepreciationEntry
-    │       e. Update asset.accumulatedDepreciation and asset.currentNetValue
-    │       f. If asset has costCenterItems: split entry across CCs per allocation %
-    │
-    └── 4. Update DepreciationRun (status=COMPLETED, totalAmount=SUM)
+**What:** After the primary transaction commits, call the GL hook outside the transaction. Wrap
+in `try/catch` with structured logging — GL failure must never abort the source operation.
 
-IMPORTANT: Depreciation batch does NOT create Payable records automatically.
-It creates DepreciationEntry records. Accountant reviews and posts to CP manually
-(or future automation in accounting milestone). This matches CPC 27 workflow.
-```
+**When to use:** Every module that generates automatic `JournalEntry` records (payroll, depreciation,
+payables settlement, receivables receipt, stock in/out).
 
-### Flow 2: WorkOrder Completion (3-domain atomic write)
-
-Mirrors the GoodsReceipt confirmation pattern from v1.1.
-
-```
-POST /api/work-orders/:id/complete
-    ↓
-work-orders.service.complete(ctx, id, completionData)
-    ↓
-withRlsContext → single transaction:
-    │
-    ├── 1. Validate WO state (VALID_WO_TRANSITIONS check)
-    │
-    ├── 2. Update WorkOrder: status=COMPLETED, completedAt=now()
-    │
-    ├── 3. For each WorkOrderItem with productId:
-    │       Create StockOutput via stock-outputs logic (existing)
-    │       → CONSUMPTION type, links back to workOrderId
-    │       Update item.stockOutputId = created output id
-    │
-    ├── 4. Compute totalPartsCost from items, totalLaborCost from input
-    │
-    ├── 5. If accountingType=EXPENSE and externalService cost > 0:
-    │       Create Payable (originType='MAINTENANCE_OS', originId=workOrder.id)
-    │       category='ASSET_MAINTENANCE', CC from workOrder.costCenterItems
-    │
-    ├── 6. If accountingType=CAPITALIZATION:
-    │       Add cost to Asset.acquisitionCost (capitalização)
-    │       Recalculate DepreciationConfig.monthlyRate
-    │
-    └── 7. If maintenancePlan linked: generate next MaintenancePlan trigger / next WO
-```
-
-### Flow 3: Asset Purchase (financial integration)
-
-```
-POST /api/asset-acquisitions/:id/confirm
-    ↓
-asset-acquisition.service.confirm(ctx, id)
-    ↓
-withRlsContext → single transaction:
-    │
-    ├── 1. For each AssetAcquisitionItem: set Asset.status=ACTIVE
-    │
-    ├── 2. If acquisitionType=CASH:
-    │       createPayable(ctx, {
-    │         originType: 'ASSET_PURCHASE',
-    │         originId: acquisition.id,
-    │         category: 'ASSET_PURCHASE',
-    │         totalAmount: acquisition.totalAmount,
-    │         installmentCount: 1
-    │       })
-    │
-    ├── 3. If acquisitionType=FINANCED:
-    │       createPayable(ctx, {
-    │         ...
-    │         installmentCount: financingMonths,
-    │         firstDueDate: ...
-    │       })
-    │       -- reuses generateInstallments() from packages/shared
-    │
-    └── 4. If acquisitionType=LEASING:
-            createAssetLease(tx, ...)
-            -- create periodic Payable for each monthly payment
-            -- or create recurring Payable with recurrenceFrequency='MONTHLY'
-```
-
-### Flow 4: Asset Sale (gain/loss + CR)
-
-```
-POST /api/asset-disposals/:id/confirm
-    ↓
-asset-disposal.service.confirm(ctx, id)
-    ↓
-withRlsContext → single transaction:
-    │
-    ├── 1. Run final depreciation for partial month (pro-rata)
-    │
-    ├── 2. Compute bookValueAtDisposal = acquisitionCost - accumulatedDepreciation
-    │       gainLoss = saleAmount - bookValueAtDisposal
-    │
-    ├── 3. Create Receivable (originType='ASSET_SALE', originId=disposal.id)
-    │       category='ASSET_SALE'
-    │       If installmentCount > 1: reuses generateInstallments()
-    │
-    └── 4. Set Asset.status=DISPOSED, Asset.deletedAt=now()
-```
-
----
-
-## Asset Hierarchy: Parent-Child (3 Levels)
-
-The spec requires "ativo composto com hierarquia pai-filho, até 3 níveis." Implementation:
-
-```
-Asset (level 0: master) — e.g. "Colheitadeira John Deere S680"
-  └── AssetComponent → Asset (level 1: component) — e.g. "Motor Plataforma"
-        └── AssetComponent → Asset (level 2: sub-component) — e.g. "Correia Esteira"
-```
-
-Rules enforced at service layer (not database constraint):
-
-- Before creating an AssetComponent link, traverse up from proposed parent to root
-- If depth >= 3: throw AssetError('Hierarquia máxima de 3 níveis atingida', 400)
-- Depreciation runs on each asset independently (components have their own schedule)
-- `Asset.parentId` is NOT stored directly — hierarchy is via `AssetComponent` join table
-- This allows one asset to appear as component in multiple parents (e.g., a shared implement)
-
----
-
-## Map Layer Integration
-
-The existing `FarmMap.tsx` accepts `LayerControlPanel` with `LayerConfig[]`. Adding an asset layer requires:
-
-**Backend:** New endpoint `GET /api/assets?farmId=X&includeLocation=true` returns assets with PostGIS Point as GeoJSON Feature coordinates.
-
-**Frontend changes (additive only, no FarmMap rewrite):**
+**Trade-offs:** GL can drift if the hook throws and is not retried. Mitigation: log `sourceType` +
+`sourceId` on every failure so a manual reconciliation query can detect and replay missing entries.
 
 ```typescript
-// hooks/useFarmMap.ts — extend return type
-interface FarmMapData {
-  // ... existing fields ...
-  assetMarkers: AssetMapItem[];  // NEW
+// Pattern: depreciation GL hook (mirrors existing payroll pattern)
+export async function processDepreciationRun(rls: RlsContext, runId: string): Promise<void> {
+  // Primary operation — inside transaction
+  await prisma.$transaction(async (tx) => {
+    /* ... */
+  });
+
+  // GL hook — OUTSIDE transaction, non-blocking
+  try {
+    await createDepreciationGlEntries(rls.organizationId, runId);
+  } catch (err) {
+    logger.error({ err, runId }, 'depreciation GL hook failed — manual reconciliation needed');
+  }
 }
-
-// AssetMapItem
-interface AssetMapItem {
-  id: string;
-  name: string;
-  type: AssetType;
-  status: AssetStatus;
-  lat: number;
-  lng: number;
-}
-
-// FarmMap.tsx — add asset layer (CircleMarker, same pattern as farm_locations)
-{layers.assets.enabled && assetMarkers.map(asset => (
-  <CircleMarker
-    key={asset.id}
-    center={[asset.lat, asset.lng]}
-    radius={8}
-    pathOptions={{ color: ASSET_TYPE_COLORS[asset.type], fillOpacity: 0.7 }}
-  >
-    <Popup>{asset.name} — {asset.status}</Popup>
-  </CircleMarker>
-))}
-
-// LayerControlPanel receives one new LayerConfig entry:
-{ id: 'assets', label: 'Patrimônio', enabled: false }
 ```
 
-Only benfeitorias and imóveis rurais will have meaningful locations. Machines/vehicles get no marker unless operator logs a GPS location explicitly. The asset layer is off by default.
+### Pattern 2: COA Code as Hierarchical String Key
 
----
+**What:** Account codes are dot-separated strings (`1.1.01.001`) that encode hierarchy. The `level`
+field (1–4) and `parentCode` are explicit for fast tree queries. Only accounts with `isAnalytic: true`
+accept `JournalEntryLine` records — the service enforces this before any write.
 
-## Depreciation Method Architecture
+**When to use:** Every GL write path, every statement aggregation query, every AccountingRule validation.
 
-Four methods, one interface:
+**Trade-offs:** Account code renames cascade to display strings (the `accountCode` denormalized in
+`JournalEntryLine`). The `isSystem: true` flag blocks deletion of seeded rural accounts. The rural
+seed must include CPC 29 biological asset accounts and FUNRURAL-specific groupings.
 
 ```typescript
-// asset-depreciation/depreciation-calculator.ts
-export interface DepreciationInput {
-  method: DepreciationMethod;
-  acquisitionCost: Decimal;
-  residualValue: Decimal;
-  usefulLifeMonths: number;
-  accumulatedDepreciation: Decimal;
-  // For USAGE_HOURS:
-  hoursThisPeriod?: Decimal;
-  totalEstimatedHours?: Decimal;
-  // For PRODUCTION:
-  productionThisPeriod?: Decimal;
-  totalEstimatedProduction?: Decimal;
-  // For pro-rata:
-  daysInPeriod?: number;
-  totalDaysInMonth?: number;
-}
-
-export interface DepreciationResult {
-  amount: Decimal; // depreciation this period
-  isFullyDepreciated: boolean;
-  remainingPeriods?: number;
-}
-
-export function calculateDepreciation(input: DepreciationInput): DepreciationResult {
-  // pure function — no DB calls, fully testable
+// Enforce analytic-only before writing a JournalEntryLine
+function assertAnalytic(account: ChartOfAccount): void {
+  if (!account.isAnalytic) {
+    throw new JournalEntryError(
+      `Conta ${account.code} é sintética e não aceita lançamentos diretos`,
+      'SYNTHETIC_ACCOUNT',
+      400,
+    );
+  }
 }
 ```
 
-This pure function lives in `modules/asset-depreciation/depreciation-calculator.ts` and is called by both the cron batch and the preview endpoint (`GET /api/assets/:id/depreciation-preview`).
+### Pattern 3: Period Lock Guard
 
----
+**What:** Every `JournalEntry` write first checks that the target `FiscalPeriod` has `status: OPEN`
+or `REOPENED`. Closed periods reject writes at the service layer with HTTP 409.
 
-## Frontend Architecture
+**When to use:** `createJournalEntry()` service function, always — for both manual and automatic entries.
 
-### New Pages (sidebar group PATRIMÔNIO)
-
-```
-apps/frontend/src/pages/
-├── AssetsPage.tsx               # Inventory list + filters + bulk import + export
-├── AssetDetailPage.tsx          # Ficha completa: TCO, timeline, OS history, docs
-├── DepreciationPage.tsx         # Depreciation runs list, manual trigger, CC entries
-├── MaintenancePlansPage.tsx     # Preventive plans CRUD
-├── WorkOrdersPage.tsx           # OS Kanban (OPEN/IN_PROGRESS/WAITING/COMPLETED)
-├── MaintenanceDashboardPage.tsx # MTBF, availability, cost/asset, upcoming OS
-├── FuelRecordsPage.tsx          # Abastecimentos per asset
-├── AssetDocumentsPage.tsx       # Documents + expiry calendar
-├── AssetAcquisitionsPage.tsx    # Purchase flows (at-sight, financed, leasing, trade)
-└── PatrimonialDashboardPage.tsx # Total asset value, depreciation YTD, gain/loss
-```
-
-### Component Structure
-
-```
-apps/frontend/src/components/
-├── assets/
-│   ├── AssetModal.tsx           # Create/edit ativo (multi-step: Tipo → Dados → Aquisição → CC)
-│   ├── AssetHierarchyTree.tsx   # Parent-child 3 levels (collapsible tree)
-│   ├── AssetStatusBadge.tsx
-│   ├── AssetImportModal.tsx     # CSV/Excel bulk import (reuse BulkImportModal pattern)
-│   └── AssetInventoryTable.tsx  # Sortable/filterable table with export
-├── depreciation/
-│   ├── DepreciationConfigModal.tsx  # Configure method + useful life + residual
-│   ├── DepreciationPreviewCard.tsx  # Shows projected schedule before confirming config
-│   └── DepreciationRunDetails.tsx  # Entries per asset for a run
-├── work-orders/
-│   ├── WorkOrderModal.tsx       # Create/edit OS: asset, type, items (parts), CC
-│   ├── WorkOrderKanban.tsx      # Status columns (reuse PurchasingKanbanPage pattern)
-│   ├── WorkOrderCompletionModal.tsx  # Complete: labor cost, accounting classification
-│   └── WorkOrderPdfButton.tsx   # pdfkit PDF download (same pattern as pesticide-prescriptions)
-├── maintenance-plans/
-│   ├── MaintenancePlanModal.tsx # Plan with trigger conditions (time/hours/km)
-│   └── MaintenancePlanCalendar.tsx  # Next scheduled maintenance calendar view
-├── asset-acquisition/
-│   ├── AssetAcquisitionModal.tsx  # Purchase type selector → conditional fields
-│   ├── NfeImportModal.tsx          # XML upload → parsed asset list preview → confirm
-│   └── LeasingModal.tsx            # CPC 06 leasing contract form
-└── asset-disposal/
-    └── AssetDisposalModal.tsx   # Baixa: type selector, sale amount, gain/loss preview
-```
-
-### AssetDetailPage Tab Structure
-
-```
-AssetDetailPage
-├── Tab: Dados Gerais   — identity, acquisition, location, current values
-├── Tab: Depreciação    — config, accumulated, projection chart (recharts, already used)
-├── Tab: Manutenções    — OS history timeline + open OS list + plan link
-├── Tab: Documentos     — CRLV, seguro, revisão — sorted by expiry date with alert badges
-├── Tab: Combustível    — abastecimento history, cost/hour chart
-├── Tab: Histórico      — audit log of all changes, transfers, status changes
-└── Tab: TCO            — Total Cost of Ownership: acquisition + depreciation + maintenance + fuel
-```
-
----
-
-## Prisma Migration Strategy
-
-New migrations follow the established `20260{timestamp}_{name}` convention. The last shipped migration is `20260411100000`. Asset management starts at `20260412`:
-
-| Migration                                 | Content                                                                                                                          | Depends on                                  |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| `20260412100000_add_assets_core`          | `Asset`, `AssetComponent`, `AssetCostCenterItem`, enums                                                                          | Farm, CostCenter, Supplier, FarmLocation    |
-| `20260412200000_add_depreciation`         | `DepreciationConfig`, `DepreciationRun`, `DepreciationEntry`                                                                     | Asset, CostCenter                           |
-| `20260412300000_add_maintenance_plans`    | `MaintenancePlan`, `MaintenancePlanItem`                                                                                         | Asset                                       |
-| `20260412400000_add_work_orders`          | `WorkOrder`, `WorkOrderItem`, `WorkOrderCostCenterItem`                                                                          | Asset, MaintenancePlan, CostCenter, Product |
-| `20260412500000_add_fuel_records`         | `FuelRecord`                                                                                                                     | Asset                                       |
-| `20260412600000_add_asset_documents`      | `AssetDocument`                                                                                                                  | Asset                                       |
-| `20260412700000_add_asset_acquisition`    | `AssetAcquisition`, `AssetAcquisitionItem`, `AssetLease`                                                                         | Asset, Supplier                             |
-| `20260412800000_add_asset_disposal`       | `AssetDisposal`                                                                                                                  | Asset                                       |
-| `20260412900000_add_asset_biological`     | `AssetBiologicalValuation` (CPC 29/IAS 41)                                                                                       | Asset                                       |
-| `20260413000000_add_asset_wip`            | `AssetWipContribution` (obras em andamento aporte parcial)                                                                       | Asset                                       |
-| `20260413100000_modify_payables_asset`    | ADD `assetId`, `workOrderId` FK columns to `payables`; ADD `ASSET_PURCHASE`, `ASSET_MAINTENANCE`, `LEASING` to `PayableCategory` | Asset, WorkOrder                            |
-| `20260413200000_modify_receivables_asset` | ADD `assetId` FK column to `receivables`; ADD `ASSET_SALE` to `ReceivableCategory`                                               | Asset                                       |
-
----
-
-## Build Order (Dependency-Driven)
-
-```
-Phase 1 — Core Asset Entity (no financial deps)
-  assets module
-  → Asset, AssetComponent, AssetCostCenterItem
-  → CRUD: list, create, edit, delete (soft), transfer between farms
-  → Bulk import CSV/Excel (reuse existing import pattern)
-  → Asset map layer in FarmMap (additive, no FarmMap rewrite)
-  → AssetDetailPage skeleton with tabs
-  UNBLOCKS: everything else
-
-Phase 2 — Depreciation (depends on assets only)
-  asset-depreciation module
-  → DepreciationConfig, DepreciationRun, DepreciationEntry
-  → depreciation-calculator.ts (pure function, testable in isolation)
-  → Manual trigger endpoint + preview endpoint
-  → depreciation.cron.ts (monthly, follows digest.cron.ts exactly)
-  → DepreciationPage + AssetDetailPage depreciation tab
-  NOTE: cron does NOT auto-generate Payables — this is intentional (CPC 27)
-
-Phase 3 — Maintenance OS (depends on assets, stock-outputs existing)
-  maintenance-plans module
-  work-orders module
-  → WorkOrder state machine (VALID_WO_TRANSITIONS)
-  → OS completion: atomic StockOutput creation + Payable creation
-  → Accounting classification (expense/capitalization/deferral)
-  → WorkOrdersPage Kanban + MaintenanceDashboardPage
-  CRITICAL DEPENDENCY: stock-outputs module must be imported (already exists)
-
-Phase 4 — Operational Records (depends on assets only)
-  fuel-records module
-  asset-documents module
-  → Simple CRUD, low complexity
-  → Document expiry alerts (cron or daily check in existing digest cron)
-
-Phase 5 — Financial Integration: Acquisition (depends on assets + payables + shared)
-  asset-acquisition module
-  → CASH/FINANCED: createPayable() with originType='ASSET_PURCHASE'
-  → FINANCED: generateInstallments() from packages/shared
-  → LEASING: AssetLease + recurring Payable (recurrenceFrequency='MONTHLY')
-  → NF-e XML parse (reuse existing xml2js pattern from goods-receipts)
-  → Modify payables table (migration 20260413100000)
-
-Phase 6 — Financial Integration: Disposal (depends on assets + receivables + depreciation)
-  asset-disposal module
-  → Run final pro-rata depreciation first
-  → Compute gain/loss
-  → createReceivable() with originType='ASSET_SALE'
-  → Modify receivables table (migration 20260413200000)
-  DEPENDENCY: Phase 2 (depreciation) and Phase 5 (financial patterns) must be done first
-
-Phase 7 — Reporting + Dashboard (read-only, depends on all above)
-  asset-dashboard module
-  → TCO calculation (acquisition + depreciation + maintenance + fuel)
-  → PatrimonialDashboardPage: total patrimônio, depreciação acumulada, ROI por ativo
-  → Relatórios patrimoniais PDF (pdfkit, same pattern as pesticide-prescriptions)
-
-Phase 8 — Specialized Asset Types (depends on assets core)
-  → AssetBiologicalValuation (CPC 29/IAS 41): fair value model for cattle/perennial crops
-  → AssetWipContribution: aportes parciais até ativação de imobilizado em andamento
-  → These are lower priority; can be deferred if milestone scope needs trimming
-```
-
----
-
-## Integration Points with Existing Modules
-
-### Reads (asset modules read existing data)
-
-| Existing Module      | What Asset Management Reads                                      |
-| -------------------- | ---------------------------------------------------------------- |
-| `farms/`             | Farm boundary for filtering; farm transfer target                |
-| `cost-centers/`      | CC allocation on depreciation entries and OS costs               |
-| `suppliers/`         | Supplier on asset acquisition (supplierId FK)                    |
-| `products/`          | Spare parts catalog on WorkOrderItem                             |
-| `measurement-units/` | Units for spare parts quantities                                 |
-| `stock-balances/`    | Pre-check parts availability before OS completion                |
-| `rural-credit/`      | Reference only — financing linked to Payable not duplicated here |
-| `farm-locations/`    | Optional link: benfeitoria asset ↔ existing farm_locations entry |
-
-### Writes to Existing Modules
-
-| Existing Module  | Modification                                                                                          | Trigger                        |
-| ---------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------ |
-| `stock-outputs/` | WorkOrder.complete() creates StockOutput per spare part item consumed                                 | OS completion                  |
-| `payables/`      | Asset acquisition confirm → CP; OS completion with external cost → CP; leasing monthly → recurring CP | Acquisition/OS/Leasing confirm |
-| `receivables/`   | Asset disposal confirm (sale) → CR with gain/loss                                                     | Asset sale confirm             |
-
-### New Permissions for RBAC
-
-```
-module: 'assets',           action: 'read' | 'create' | 'update' | 'delete' | 'transfer'
-module: 'depreciation',     action: 'read' | 'run' | 'configure'
-module: 'work-orders',      action: 'read' | 'create' | 'complete' | 'cancel'
-module: 'maintenance-plans', action: 'read' | 'create' | 'update' | 'delete'
-module: 'asset-acquisition', action: 'read' | 'create' | 'confirm'
-module: 'asset-disposal',   action: 'read' | 'create' | 'confirm'
-```
-
----
-
-## Patterns to Follow
-
-### Pattern 1: Atomic Multi-Domain Write (OS Completion)
-
-Mirrors v1.1 GoodsReceipt confirmation. WorkOrder.complete() atomically writes to WorkOrder, StockOutput (for each part), and Payable (for external services) in one `withRlsContext` transaction. If StockOutput creation fails due to insufficient stock: entire operation rolls back. Frontend shows specific error: "Peça X com saldo insuficiente."
-
-### Pattern 2: State Machine via VALID_TRANSITIONS + Guard
-
-WorkOrder uses the same `VALID_WO_TRANSITIONS: Record<string, string[]>` pattern established in checks.types.ts and purchase-orders.types.ts. Stored in `work-orders.types.ts`, exported, tested independently.
-
-### Pattern 3: Batch Cron with Redis Lock
-
-Monthly depreciation cron follows `digest.cron.ts` exactly: `node-cron`, Redis `SET NX EX`, per-org lock key (`cron:depreciation:{orgId}:{YYYY-MM}`). Processing per org in separate `withRlsContext` calls, not one giant transaction.
+**Trade-offs:** A late correction (e.g., payroll adjustment after period close) requires an explicit
+reopen. This is intentional — accounting period integrity requires human acknowledgment.
 
 ```typescript
-// shared/cron/depreciation.cron.ts
-export function startDepreciationCron(): void {
-  cron.schedule(
-    '0 0 1 * *',
-    async () => {
-      const orgs = await getActiveOrganizations();
-      for (const org of orgs) {
-        const lockKey = `cron:depreciation:${org.id}:${year}-${month}`;
-        const locked = await redis.set(lockKey, '1', 'EX', 300, 'NX');
-        if (!locked) continue;
-        try {
-          await runMonthlyDepreciation({ organizationId: org.id }, year, month);
-        } catch (err) {
-          logger.error({ err, orgId: org.id }, 'Depreciation cron failed for org');
-          // Do NOT rethrow — process other orgs
-        } finally {
-          await redis.del(lockKey);
-        }
-      }
+async function assertPeriodOpen(
+  organizationId: string,
+  referenceMonth: Date,
+): Promise<FiscalPeriod> {
+  const period = await prisma.fiscalPeriod.findFirst({
+    where: {
+      organizationId,
+      year: referenceMonth.getUTCFullYear(),
+      month: referenceMonth.getUTCMonth() + 1,
     },
-    { timezone: 'America/Sao_Paulo' },
-  );
+  });
+  if (!period || period.status === 'CLOSED') {
+    throw new JournalEntryError('Período contábil fechado', 'PERIOD_CLOSED', 409);
+  }
+  return period;
 }
 ```
 
-### Pattern 4: Pure Calculation Functions
+### Pattern 4: Pure Calculation Engine for Financial Statements
 
-`calculateDepreciation()` and `computeGainLoss()` are pure functions in their respective module's `*-calculator.ts` file. No DB calls, no side effects. Enables testing all depreciation math without database setup. Preview endpoints call the pure function directly; the cron calls the same function with real data.
+**What:** DRE, BP, and DFC calculation logic lives in separate files (`dre-calculator.service.ts`,
+`bp-calculator.service.ts`, `dfc-calculator.service.ts`) with no Prisma imports. Each receives
+account balance maps as input and returns structured statement output. This mirrors the
+`payroll-calculation.service.ts` pattern used in v1.3 (43 tests without DB).
 
-### Pattern 5: Polymorphic Origin on Payable/Receivable
+**When to use:** All statement calculation tests. The orchestrator in `financial-statements.service.ts`
+loads balance data from DB and passes it to the calculators.
 
-Asset management reuses the existing `Payable.originType` / `Payable.originId` pattern. New originType values: `'ASSET_PURCHASE'`, `'MAINTENANCE_OS'`, `'LEASING'`. No schema change to Payable's core structure — just new enum values in `PayableCategory` and FK columns. This follows the precedent established by `'GOODS_RECEIPT'` in v1.1.
+**Trade-offs:** Requires a thin loader-orchestrator split. More files, but calculators are fast,
+deterministic, and independently testable.
+
+### Pattern 5: SPED ECD Builder — Record-by-Record String Concatenation
+
+**What:** SPED ECD Leiaute 9 (RFB 2023-12-21) is a pipe-delimited (`|`) plain-text file. Each
+line is a "registro" prefixed with its type code (e.g., `|I050|1.1.01|2|S|Bancos|...|`). The
+`sped-ecd-builder.ts` exports one function per registro type. The orchestrator concatenates all
+lines, adds `|0000|` header (Bloco 0) and terminates with `|9999|`. Encoding: UTF-8, no BOM.
+
+File blocks in order: `0` (identification) → `I` (COA + balances + entries) → `J` (statements) →
+`K` (demonstração mutação PL, optional) → `9` (totals/closing).
+
+**Key registers:**
+
+- `I010` — escrituração identifier (LALUR indicator, audit flag)
+- `I050` — plano de contas (one row per ChartOfAccount)
+- `I100` — centros de custo (optional)
+- `I150/I155` — monthly balance per account (saldo inicial, movimentos, saldo final)
+- `I200/I250` — each journal entry header / each entry line
+- `I350/I355` — resultado antes do fechamento (result accounts per date)
+- `J150/J210` — demonstrações contábeis (DRE, BP)
+
+**Trade-offs:** The RFB PVA validator is strict about field ordering, record counts, and line
+counter accuracy (`|9001|`, `|9900|`). Tests must assert line counts match register totals.
+
+```typescript
+// Example registro builder
+function buildI050(account: ChartOfAccount): string {
+  // |I050|COD_CTA|NIVEL|IND_CTA|DESC_CTA|COD_CTA_REF|
+  const ind = account.isAnalytic ? 'A' : 'S'; // A=analítica, S=sintética
+  return `|I050|${account.code}|${account.level}|${ind}|${account.name}||`;
+}
+```
+
+### Pattern 6: AccountingRule Table Replaces ACCOUNT_CODES Constant
+
+**What:** The hardcoded `ACCOUNT_CODES` object in `accounting-entries.types.ts` is replaced by
+rows in the `accounting_rules` table, seeded per organization on first COA setup. Each rule maps a
+`ruleCode` string to real `ChartOfAccount` IDs. The GL engine reads the rule at runtime rather than
+at compile time, making account remapping possible without a code deploy.
+
+**When to use:** Every automatic journal entry source (payroll, depreciation, stock, CP/CR).
+
+**Trade-offs:** Rules must be seeded for every new organization. A missing rule causes a logged
+error (not a crash) following the non-blocking GL hook pattern.
 
 ---
 
-## Anti-Patterns to Avoid
+## Data Flow
 
-### Anti-Pattern 1: Auto-Generate Payable from Depreciation Run
+### Automatic Journal Entry Flow (Example: Payroll Close)
 
-**What goes wrong:** Depreciation cron automatically creates a CP for each depreciation entry every month.
+```
+PayrollRun.closeRun() [primary tx commits]
+    │
+    ▼  non-blocking try/catch
+createPayrollGlEntries(orgId, runId)
+    │
+    ├─ load AccountingRule WHERE ruleCode IN ['PAYROLL_SALARY', 'PAYROLL_CHARGES', ...]
+    │   (these rows point to real ChartOfAccount IDs, replacing ACCOUNT_CODES const)
+    │
+    ├─ assertPeriodOpen(orgId, referenceMonth)  → FiscalPeriod with status OPEN
+    │
+    ├─ compute totals from PayrollRunItem rows (same logic as existing createPayrollEntries)
+    │
+    └─ prisma.journalEntry.create({
+         entryOrigin: 'AUTO_PAYROLL',
+         sourceType: 'PAYROLL_RUN', sourceId: runId,
+         lines: [
+           { accountId: rule.debitAccountId,  nature: 'DEBIT',  amount: total },
+           { accountId: rule.creditAccountId, nature: 'CREDIT', amount: total },
+         ]
+       })
+```
 
-**Why it's wrong:** Depreciation in Brazilian accounting (CPC 27) is an accounting entry (débito Depreciação / crédito Depreciação Acumulada), not a cash payment. Generating a CP would misrepresent it as a financial obligation. The system currently has no full accounting module — this integration waits for the future contabilidade milestone.
+### Financial Statement Calculation Flow
 
-**Instead:** Depreciation entries are records for reporting and cost allocation. The accountant reviews the DepreciationRun report. Accounting module (future milestone) will consume DepreciationEntry to generate journal entries.
+```
+GET /org/:orgId/financial-statements/dre?year=2026&month=3
+    │
+    ├─ Load JournalEntryLine aggregates by accountCode for period
+    │   (SUM debits - credits per account, or credits - debits per account nature)
+    │
+    ├─ Load ChartOfAccount tree (for hierarchy grouping)
+    │
+    └─ dreCalculator.calculate(balanceMap, coaTree)
+            │
+            └─ returns DreOutput: { receitas, custos, despesas, resultado, ... }
+               (pure function, no DB, testable in isolation)
+```
 
-### Anti-Pattern 2: One Giant Transaction for Batch Depreciation
+### SPED ECD Generation Flow
 
-**What goes wrong:** Running all organizations' depreciation in a single `withRlsContext` transaction.
+```
+POST /org/:orgId/sped-ecd/generate  { year: 2025 }
+    │
+    ├─ Assert all FiscalPeriods for year have status CLOSED
+    ├─ Load ChartOfAccounts for org (for I050 records)
+    ├─ Load CostCenters for org (for I100 records, optional)
+    ├─ Load monthly JournalEntryLine aggregates per account (for I150/I155)
+    ├─ Load all JournalEntry + lines for year (for I200/I250)
+    ├─ Load year-end result account balances (for I350/I355)
+    ├─ Load DRE + BP for J150/J210 (reuses financial-statements calculator)
+    │
+    ├─ spedEcdBuilder.build(allData) → UTF-8 string, pipe-delimited, ~10MB typical
+    │
+    └─ res.setHeader('Content-Disposition', 'attachment; filename="ECD_2025.txt"')
+       res.send(fileContent)
+       -- Note: for large orgs (>50K entries), consider streaming via res.write()
+```
 
-**Why it's wrong:** With 100+ assets across multiple orgs, transaction timeout risk is high. One org failure rolls back all orgs.
+### Frontend State Flow (Journal Entries Page)
 
-**Instead:** One `withRlsContext` per org (as shown in Pattern 3). Each org is independent. Failure is logged per org, processing continues.
-
-### Anti-Pattern 3: Storing Asset Hierarchy as Adjacency List on Asset Itself
-
-**What goes wrong:** Adding `parentId: String?` directly to the Asset model and computing depth via recursive queries.
-
-**Why it's wrong:** PostgreSQL recursive CTEs for adjacency lists are complex to write correctly and hard to understand. Depth validation requires a CTE.
-
-**Instead:** Use the `AssetComponent` join table as shown above. Depth check at service layer traverses up from proposed parent (max 3 hops = cheap). Clean separation between hierarchy relationship and asset data.
-
-### Anti-Pattern 4: Hard-Coding Depreciation into FarmMap Component
-
-**What goes wrong:** Adding asset markers directly into `FarmMap.tsx` with special-cased conditional rendering.
-
-**Why it's wrong:** FarmMap already has 9 layer types. Asset markers are just another optional layer. Hard-coding creates tight coupling and makes the map component hard to test.
-
-**Instead:** Use the existing `LayerControlPanel` / `LayerConfig[]` extensibility point. Pass `assetMarkers` as a new prop to `FarmMap`. Add `CircleMarker` rendering inside the existing layers section — additive, not invasive.
-
-### Anti-Pattern 5: Replicating Installment Logic for Leasing
-
-**What goes wrong:** Writing custom installment generation for leasing monthly payments.
-
-**Why it's wrong:** `generateInstallments()` in `packages/shared` already handles this correctly with Decimal arithmetic and cent residual allocation.
-
-**Instead:** Use `generateInstallments(monthlyPayment, termMonths, startDate, 1)` to generate leasing CP rows. The same function already used by payables and rural-credit modules.
+```
+JournalEntriesPage mounts
+    │
+    ├─ useJournalEntries({ referenceMonth, farmId, entryOrigin }) → fetch
+    │   (same shape as useAccountingEntries, extended with new filter options)
+    │
+    ├─ User opens "Novo Lançamento" → JournalEntryModal
+    │   ├─ COA account picker (searches ChartOfAccount, analytic only)
+    │   ├─ Partidas dobradas: debit line(s) + credit line(s), amounts must balance
+    │   └─ POST /journal-entries → refetch list
+    │
+    └─ User clicks entry row → StatementDrilldownModal (source document link)
+```
 
 ---
 
-## Scalability Considerations
+## Integration Points
 
-| Concern                   | At ~50 farms             | At ~500 farms                                                | At ~5k farms                                            |
-| ------------------------- | ------------------------ | ------------------------------------------------------------ | ------------------------------------------------------- |
-| Depreciation batch        | 500 assets: runs in < 1s | 5k assets: 10-15s per org, stagger by org                    | 50k assets: parallelize per farm, batch size tuning     |
-| Asset inventory query     | No issue                 | Add composite index `(organizationId, farmId, status, type)` | Consider partial index on `status != 'DISPOSED'`        |
-| OS history per asset      | No issue                 | No issue                                                     | Paginate WorkOrder query by default (already standard)  |
-| Map layer (asset markers) | No issue                 | 100+ markers: cluster with leaflet.markercluster             | 1k+ markers: server-side spatial query with bbox filter |
+### Existing Modules That Get Modified
 
-**First bottleneck:** Monthly depreciation cron when org has hundreds of active assets. Mitigation: batch assets in chunks of 100 per transaction (already in design), per-org Redis lock prevents duplicate runs.
+| Module          | Current State                                                 | v1.4 Change                                                                                                                     | Hook Location                                   |
+| --------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `payroll-runs`  | Calls `createPayrollEntries()` from `accounting-entries` stub | ADD new `createPayrollGlEntries()` call from `journal-entries` module. Keep existing call to not break `AccountingEntriesPage`. | After `closeRun()` — same non-blocking position |
+| `payables`      | Calls `createReversalEntry()` on settlement                   | ADD new GL hook for CP settlement                                                                                               | After `settlePayable()`                         |
+| `depreciation`  | No GL hook                                                    | ADD `createDepreciationGlEntries()` post-run                                                                                    | After `processRun()` batch commits              |
+| `receivables`   | No GL hook                                                    | ADD GL hook on receipt status change                                                                                            | After receipt confirmation                      |
+| `stock-entries` | No GL hook                                                    | ADD GL hook for inventory increase + cost                                                                                       | After `create()`                                |
+| `stock-outputs` | No GL hook                                                    | ADD GL hook for inventory decrease + COGS                                                                                       | After `create()`                                |
 
-**Second bottleneck:** PatrimonialDashboardPage TCO aggregation joining assets + depreciation_entries + work_orders + fuel_records. Mitigation: add `(assetId, periodYear, periodMonth)` composite index on `depreciation_entries`; add `(assetId, completedAt)` index on `work_orders`.
+### Existing Data — No Migration Required for v1.4
+
+The existing `accounting_entries` table (6 entry types, payroll-only) stays unchanged and
+continues to serve `AccountingEntriesPage`. New GL data writes to `journal_entries` only.
+
+- `AccountingEntriesPage` keeps working with no changes.
+- For a future SPED ECD covering a year that predates v1.4, a one-off migration script could
+  backfill payroll-only `AccountingEntry` rows into `JournalEntry`. That is out of scope for v1.4.
+
+### Frontend Sidebar Extension
+
+The existing `CONTABILIDADE` group in `Sidebar.tsx` (lines 294–298, currently 1 item) expands to:
+
+```
+CONTABILIDADE
+  Dashboard Contábil       /accounting-dashboard
+  Plano de Contas          /chart-of-accounts
+  Períodos Fiscais         /fiscal-periods
+  Lançamentos              /journal-entries
+  Razão Contábil           /ledger
+  Balancete                /balancete
+  Demonstrações            /financial-statements    (tabs: DRE / Balanço / DFC)
+  Vinculação DRE↔BP↔DFC    /statement-linkage
+  SPED ECD                 /sped-ecd
+```
+
+The existing `/accounting-entries` route is kept as-is (backward compatibility). It can be linked
+from the `JournalEntriesPage` as "ver lançamentos legados (folha)".
+
+---
+
+## Build Order
+
+Modules have strict data dependencies. Build in this order:
+
+**Phase 1 — Foundation (no deps on other v1.4 work)**
+
+1. `chart-of-accounts` — COA CRUD + rural model seed (CPC 29 agro accounts) + frontend page
+2. `fiscal-periods` — period management: open/close/reopen + frontend page
+3. `accounting-rules` — rule mapping table that replaces `ACCOUNT_CODES` const
+
+**Phase 2 — GL Engine (depends on Phase 1)** 4. `journal-entries` — write engine: period-lock guard + manual entry + debit=credit validation + reversal 5. `journal-entries` frontend page (replaces AccountingEntriesPage visually but coexists)
+
+**Phase 3 — Expand Auto-Entry Hooks (depends on Phase 2 engine being live)** 6. Wire payroll-runs to journal-entries (GL hook alongside existing accounting-entries hook) 7. Wire payables settlement to journal-entries 8. Wire depreciation run to journal-entries 9. Wire receivables receipt to journal-entries 10. Wire stock-entries / stock-outputs to journal-entries
+
+**Phase 4 — Read Side / Ledger (depends on Phase 3 data existing)** 11. `ledger` — razão contábil endpoint: saldo progressivo per account + livro diário 12. `ledger` frontend — LedgerPage with account picker and date range drill-down 13. `balancete` — balancete de verificação endpoint + BalancetePage
+
+**Phase 5 — Period Closing (depends on ledger for checklist validation)** 14. `fiscal-periods` — closing checklist endpoint (validates: balancete balanced, all hooks fired) 15. Frontend: PeriodCloseModal with checklist steps and reopen confirmation
+
+**Phase 6 — Financial Statements (depends on COA + journal data + periods)** 16. `dre-calculator.service.ts` + DRE endpoint (pure engine first, verified by tests) 17. `bp-calculator.service.ts` + BP endpoint 18. `dfc-calculator.service.ts` + DFC endpoint (most complex — requires DFC classification per account) 19. Cross-validation endpoint: DRE net income == BP equity change (DRE↔BP↔DFC linkage) 20. `financial-statements-pdf.service.ts` — pdfkit multi-statement PDF (reuses pdfkit pattern)
+
+**Phase 7 — SPED ECD (depends on all journal data + COA + closed periods)** 21. `sped-ecd-builder.ts` — record builders with unit tests against known-good samples 22. `sped-ecd.service.ts` + route + SpedEcdPage frontend
+
+**Phase 8 — Dashboard and Executive UI** 23. `accounting-dashboard` — executive KPIs (indicadores: liquidez, endividamento, PL/ha) 24. Frontend: AccountingDashboardPage, StatementLinkagePage (DRE↔BP↔DFC panel)
+
+---
+
+## Anti-Patterns
+
+### Anti-Pattern 1: Writing GL Entries Inside the Source Transaction
+
+**What people do:** Wrap both the source operation (payroll close) and the GL entry creation in a
+single `prisma.$transaction()`.
+
+**Why it's wrong:** A GL failure (period closed, COA account not found, rule missing) rolls back
+the entire payroll close. The payroll is the source of truth — its state must not depend on GL
+module health.
+
+**Do this instead:** Follow the existing `payroll-runs.service.ts` line 1059 pattern: commit the
+primary transaction first, then call the GL hook in `try/catch` outside the transaction.
+
+### Anti-Pattern 2: Allowing Synthetic (Non-Analytic) Accounts to Receive Entries
+
+**What people do:** Accept any account code in a `JournalEntryLine` without checking `isAnalytic`.
+
+**Why it's wrong:** Synthetic accounts aggregate children. Posting to them bypasses the COA
+hierarchy and corrupts balancete calculations silently.
+
+**Do this instead:** `assertAnalytic(account)` check before any `JournalEntryLine` write. Return
+HTTP 400: "Conta X é sintética e não aceita lançamentos diretos."
+
+### Anti-Pattern 3: Carrying the Hardcoded ACCOUNT_CODES Pattern Forward
+
+**What people do:** Add new entries to the `ACCOUNT_CODES` constant in `accounting-entries.types.ts`
+for depreciation, stock, or CP hooks.
+
+**Why it's wrong:** That constant was an explicit stub pending v1.4. Extending it adds more
+hardcoded strings disconnected from any COA table, making them impossible to remap without a
+code deploy and invisible to period statements.
+
+**Do this instead:** New hooks use `AccountingRule` rows loaded at runtime from the DB. Seed the
+rules on COA setup.
+
+### Anti-Pattern 4: Building Financial Statements from the Old accounting_entries Table
+
+**What people do:** Query `accounting_entries` to build DRE totals.
+
+**Why it's wrong:** `accounting_entries` only contains 6 payroll entry types. A DRE needs all
+revenue/expense/cost entries — depreciation, COGS, CP interest, bank charges, rural credit interest.
+
+**Do this instead:** All statement calculations read from `journal_entry_lines` joined to
+`chart_of_accounts.accountType`. `accounting_entries` is a pre-v1.4 artifact.
+
+### Anti-Pattern 5: Using xmlbuilder2 for SPED ECD Generation
+
+**What people do:** Use `xmlbuilder2` (already in use for eSocial) to generate the ECD file.
+
+**Why it's wrong:** SPED ECD Leiaute 9 is NOT XML. It is pipe-delimited plain text
+(`|I050|1.1.01|2|S|Bancos||`). Using an XML builder would require stripping all XML markup.
+
+**Do this instead:** Plain string concatenation, one function per registro type, UTF-8 output
+(no BOM). The pattern mirrors the CNAB builder (`CnabAdapter`) already in the codebase.
+
+### Anti-Pattern 6: DFC Using Only Cash Account Movements
+
+**What people do:** Build the DFC by filtering journal entries on the bank account GL code only.
+
+**Why it's wrong:** DFC (both direct and indirect methods) requires classifying entries into
+operating / investing / financing sections — a classification that depends on the originating
+account type and the source operation type, not just whether money moved through a bank account.
+
+**Do this instead:** Add a `dfcCategory` field to `ChartOfAccount` (`OPERACIONAL | INVESTIMENTO |
+FINANCIAMENTO | null`). The DFC calculator aggregates by this category, not by account group alone.
+
+---
+
+## Scaling Considerations
+
+| Scale                                  | Architecture Adjustments                                                                                                                                                                           |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Single farm, < 500 entries/month       | Current architecture sufficient. No special indexing needed beyond `@@index([organizationId, referenceMonth])`.                                                                                    |
+| Multi-farm org, 5K–50K entries/month   | Statement queries aggregate all `journal_entry_lines` per period. Add a `account_monthly_balances` materialized snapshot table updated on each JournalEntry commit. Statements read from snapshot. |
+| Large agribusiness, 500K+ entries/year | SPED ECD generation becomes a background job with polling endpoint (mirrors eSocial async pattern). Monthly balance snapshots mandatory.                                                           |
+
+### First Bottleneck
+
+Statement calculation reads all `journal_entry_lines` for a period grouped by `accountCode`. With a
+full year of multi-module data (payroll + depreciation + stock + CP/CR), this can be 50K–500K rows
+per query. The mitigation is a `account_monthly_balances` table (opening balance, total debits,
+total credits, closing balance per account per month) updated on every JournalEntry commit. Defer
+until first production slowness is observed — premature caching is the primary source of statement
+reconciliation bugs.
 
 ---
 
 ## Sources
 
-- Direct codebase analysis: `apps/backend/prisma/schema.prisma` (6500+ lines)
-- `apps/backend/src/shared/cron/digest.cron.ts` — cron infrastructure pattern
-- `apps/backend/src/modules/checks/checks.types.ts` — VALID_TRANSITIONS state machine pattern
-- `apps/backend/src/modules/purchase-orders/purchase-orders.types.ts` — OC_VALID_TRANSITIONS pattern
-- `apps/backend/src/database/rls.ts` — withRlsContext + RlsContext types
-- `apps/frontend/src/components/map/LayerControlPanel.tsx` — LayerConfig extensibility point
-- `apps/frontend/src/components/map/FarmMap.tsx` — CircleMarker pattern for locations
-- `apps/backend/src/modules/goods-receipts/goods-receipts.service.ts` — atomic multi-domain write pattern
-- `apps/backend/src/modules/payables/payables.service.ts` — createPayable() function signature
-- `apps/backend/src/modules/rural-credit/` — installment generation for financed acquisitions
-- `packages/shared/src/utils/installments.ts` — generateInstallments() reuse
-- PROJECT.md: v1.2 milestone requirements and constraints
+- SPED ECD Leiaute 9 (official): [Manual de Orientação da ECD Leiaute 9 — RFB 2023-12-21](http://sped.rfb.gov.br/estatico/2D/9C01A0E619B48BAB27486D63FF9E4E750025D0/Manual_de_Orienta%C3%A7%C3%A3o_da_ECD_Leiaute9_2023_12_21.pdf)
+- SPED ECD Bloco I structure: [Bloco I da ECD: um guia completo (e-auditoria.com.br)](https://www.e-auditoria.com.br/blog/bloco-i-ecd-um-guia-completo/)
+- SPED ECD Registro I200/I250: [Registro I200 da ECD — Lançamento contábil (vriconsulting.com.br)](https://www.vriconsulting.com.br/guias/guiasIndex.php?idGuia=678)
+- Plano de contas rural / CPC 29: [Contabilidade Rural e Obrigações Acessórias — CRCMS 2024-08](https://crcms.org.br/wp-content/uploads/2024/08/Contabilidade-Rural-e-Obrigac%CC%A7o%CC%83es-Acesso%CC%81rias-21_08_2024-Finalizada.pdf)
+- CPC 29 Ativos Biológicos: [O que são Ativos Biológicos? CPC 29 (grupocpcon.com)](https://www.grupocpcon.com/o-que-sao-ativos-biologicos-cpc-29-contabilidade/)
+- Existing stub: `apps/backend/src/modules/accounting-entries/accounting-entries.types.ts` (ACCOUNT_CODES constant, lines 26–63)
+- Existing stub: `apps/backend/src/modules/accounting-entries/accounting-entries.service.ts` (createPayrollEntries pattern, line 52)
+- GL hook call site: `apps/backend/src/modules/payroll-runs/payroll-runs.service.ts` (line 1059)
+- Reversal hook call site: `apps/backend/src/modules/payables/payables.service.ts` (line 4)
+- Prisma schema: `apps/backend/prisma/schema.prisma` lines 8742–8857 (AccountingEntry model + enums)
+- Sidebar structure: `apps/frontend/src/components/layout/Sidebar.tsx` lines 294–298 (CONTABILIDADE group)
 
 ---
 
-_Architecture research for: Asset management integration into Protos Farm monolith (v1.2)_
-_Researched: 2026-03-19_
+_Architecture research for: v1.4 Contabilidade e Demonstrações Financeiras — Protos Farm_
+_Researched: 2026-03-26_

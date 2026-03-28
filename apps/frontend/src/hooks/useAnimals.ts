@@ -14,6 +14,7 @@ interface UseAnimalsParams {
   origin?: string;
   lotId?: string;
   locationId?: string;
+  ownerId?: string;
   specialFilter?: string;
   minWeightKg?: number;
   maxWeightKg?: number;
@@ -50,6 +51,7 @@ export function useAnimals(params: UseAnimalsParams): UseAnimalsResult {
     origin,
     lotId,
     locationId,
+    ownerId,
     specialFilter,
     minWeightKg,
     maxWeightKg,
@@ -80,6 +82,7 @@ export function useAnimals(params: UseAnimalsParams): UseAnimalsResult {
       if (origin) query.set('origin', origin);
       if (lotId) query.set('lotId', lotId);
       if (locationId) query.set('locationId', locationId);
+      if (ownerId) query.set('ownerId', ownerId);
       if (specialFilter) query.set('specialFilter', specialFilter);
       if (minWeightKg != null) query.set('minWeightKg', String(minWeightKg));
       if (maxWeightKg != null) query.set('maxWeightKg', String(maxWeightKg));
@@ -114,6 +117,7 @@ export function useAnimals(params: UseAnimalsParams): UseAnimalsResult {
     origin,
     lotId,
     locationId,
+    ownerId,
     specialFilter,
     minWeightKg,
     maxWeightKg,

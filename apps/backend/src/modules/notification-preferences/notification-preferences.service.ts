@@ -25,7 +25,7 @@ export async function getPreferences(
       savedMap.set(`${pref.eventType}:${pref.channel}`, pref.enabled);
     }
 
-    // Return all 15 event types, defaulting to true (opt-out model)
+    // Return all event types, defaulting to true (opt-out model)
     return NOTIFICATION_TYPES.map((eventType) => ({
       eventType,
       badge: savedMap.get(`${eventType}:BADGE`) ?? true,

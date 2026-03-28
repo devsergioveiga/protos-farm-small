@@ -198,6 +198,8 @@ export async function createAnimal(
         earTag: input.earTag,
         rfidTag: input.rfidTag ?? null,
         name: input.name ?? null,
+        registeredName: input.registeredName ?? null,
+        registrationNumber: input.registrationNumber ?? null,
         sex: input.sex as AnimalSexType,
         birthDate: input.birthDate ? new Date(input.birthDate) : null,
         birthDateEstimated: input.birthDateEstimated ?? false,
@@ -280,6 +282,10 @@ function buildAnimalsWhere(farmId: string, query: ListAnimalsQuery): Record<stri
 
   if (query.breedId) {
     where.compositions = { some: { breedId: query.breedId } };
+  }
+
+  if (query.ownerId) {
+    where.ownerships = { some: { producerId: query.ownerId, endDate: null } };
   }
 
   // Weight range
@@ -447,6 +453,15 @@ export async function listAnimals(ctx: RlsContext, farmId: string, query: ListAn
           sire: { select: { id: true, earTag: true, name: true } },
           dam: { select: { id: true, earTag: true, name: true } },
           lot: { select: { id: true, name: true } },
+          ownerships: {
+            where: { endDate: null },
+            select: {
+              id: true,
+              ownershipType: true,
+              producer: { select: { id: true, name: true } },
+            },
+            orderBy: { startDate: 'desc' },
+          },
         },
       }),
       tx.animal.count({ where }),
@@ -463,6 +478,13 @@ export async function listAnimals(ctx: RlsContext, farmId: string, query: ListAn
         a.compositions.length > 0
           ? a.compositions.map((c) => `${c.breed.name} ${Number(c.percentage)}%`).join(' + ')
           : null,
+      currentOwners: a.ownerships.map((o) => ({
+        producerId: o.producer.id,
+        producerName: o.producer.name,
+        ownershipType: o.ownershipType,
+      })),
+      ownerSummary:
+        a.ownerships.length > 0 ? a.ownerships.map((o) => o.producer.name).join(', ') : null,
     }));
 
     const avgWeight = aggregate._avg.entryWeightKg;
@@ -632,6 +654,9 @@ export async function updateAnimal(
     if (input.earTag !== undefined) updateData.earTag = input.earTag;
     if (input.rfidTag !== undefined) updateData.rfidTag = input.rfidTag;
     if (input.name !== undefined) updateData.name = input.name;
+    if (input.registeredName !== undefined) updateData.registeredName = input.registeredName;
+    if (input.registrationNumber !== undefined)
+      updateData.registrationNumber = input.registrationNumber;
     if (input.sex !== undefined) updateData.sex = input.sex;
     if (input.birthDate !== undefined)
       updateData.birthDate = input.birthDate ? new Date(input.birthDate) : null;
@@ -1137,11 +1162,25 @@ export async function previewBulkImportAnimals(
 
       for (const entry of breedEntries) {
         if (!entry.name) continue;
-        const breed = breeds.find(
-          (b) =>
-            b.name.toLowerCase() === entry.name!.toLowerCase() ||
-            b.code?.toLowerCase() === entry.name!.toLowerCase(),
-        );
+        const nameNorm = entry.name
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '');
+        const breed = breeds.find((b) => {
+          const bNameNorm = b.name
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+          const bCodeNorm = b.code
+            ?.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+          // Exact match
+          if (bNameNorm === nameNorm || bCodeNorm === nameNorm) return true;
+          // Prefix match (e.g. "holandes" matches "holandesa")
+          if (bNameNorm.startsWith(nameNorm) || nameNorm.startsWith(bNameNorm)) return true;
+          return false;
+        });
         const pct = entry.pct ?? (breedEntries.filter((e) => e.name).length === 1 ? 100 : 0);
         parsedBreeds.push({ name: entry.name, pct });
         if (breed) {

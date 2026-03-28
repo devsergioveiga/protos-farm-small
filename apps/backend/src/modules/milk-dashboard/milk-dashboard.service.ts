@@ -107,26 +107,69 @@ export async function getMilkDashboard(
 
     // ═══ CA1: KPIs ═══════════════════════════════════════════════
 
-    // Today's production
+    // Today's production (individual milking records)
     const todayRecords = await tx.milkingRecord.findMany({
       where: { ...milkingWhere, milkingDate: today },
       select: { liters: true },
     });
-    const todayLiters = todayRecords.reduce((sum, r) => sum + r.liters, 0);
+    let todayLiters = todayRecords.reduce((sum, r) => sum + r.liters, 0);
 
-    // This month's production
+    // This month's production (individual)
     const monthRecords = await tx.milkingRecord.findMany({
       where: { ...milkingWhere, milkingDate: { gte: monthStart } },
       select: { liters: true },
     });
-    const monthLiters = monthRecords.reduce((sum, r) => sum + r.liters, 0);
+    let monthLiters = monthRecords.reduce((sum, r) => sum + r.liters, 0);
 
-    // Accumulated (full period)
+    // Accumulated (full period) — individual records
     const periodRecords = await tx.milkingRecord.findMany({
       where: { ...milkingWhere, milkingDate: { gte: periodStart } },
       select: { liters: true, milkingDate: true, animalId: true },
     });
-    const accumulatedLiters = periodRecords.reduce((sum, r) => sum + r.liters, 0);
+    let accumulatedLiters = periodRecords.reduce((sum, r) => sum + r.liters, 0);
+
+    // ── Historical fallback: DailyMilkProduction ─────────────────
+    // Dates that have individual milking records
+    const milkingDateKeys = new Set<string>();
+    for (const r of periodRecords) {
+      milkingDateKeys.add(dateKey(r.milkingDate as Date));
+    }
+
+    const historicalRecords = await tx.dailyMilkProduction.findMany({
+      where: {
+        farmId: query.farmId,
+        organizationId: ctx.organizationId,
+        productionDate: { gte: periodStart },
+      },
+      select: { productionDate: true, totalLiters: true, cowCount: true },
+    });
+
+    // Build map of historical data for dates WITHOUT individual records
+    const historicalMap = new Map<string, { totalLiters: number; cowCount: number | null }>();
+    for (const h of historicalRecords) {
+      const key = dateKey(h.productionDate as Date);
+      if (!milkingDateKeys.has(key)) {
+        historicalMap.set(key, { totalLiters: h.totalLiters, cowCount: h.cowCount });
+      }
+    }
+
+    // Supplement KPIs with historical data
+    const todayKey = dateKey(today);
+    if (todayLiters === 0 && historicalMap.has(todayKey)) {
+      todayLiters = historicalMap.get(todayKey)!.totalLiters;
+    }
+
+    // Month: add historical days that have no individual records
+    for (const [key, data] of historicalMap) {
+      if (key >= dateKey(monthStart)) {
+        monthLiters += data.totalLiters;
+      }
+    }
+
+    // Accumulated: add all historical days within period
+    for (const [, data] of historicalMap) {
+      accumulatedLiters += data.totalLiters;
+    }
 
     // Cows in lactation vs dry
     const cowsInLactation = await tx.lactation.count({
@@ -150,10 +193,19 @@ export async function getMilkDashboard(
     });
 
     // Avg liters per cow per day (period total / cows in lactation / days in period)
-    const avgLitersPerCow =
-      cowsInLactation > 0
-        ? Math.round((accumulatedLiters / cowsInLactation / days) * 100) / 100
-        : 0;
+    // Fall back to historical avg if no active lactations
+    let avgLitersPerCow = 0;
+    if (cowsInLactation > 0) {
+      avgLitersPerCow = Math.round((accumulatedLiters / cowsInLactation / days) * 100) / 100;
+    } else if (historicalMap.size > 0) {
+      // Use avg from historical records that have cowCount
+      const withCows = [...historicalMap.values()].filter((h) => h.cowCount && h.cowCount > 0);
+      if (withCows.length > 0) {
+        const totalLiters = withCows.reduce((sum, h) => sum + h.totalLiters, 0);
+        const totalCows = withCows.reduce((sum, h) => sum + h.cowCount!, 0);
+        avgLitersPerCow = Math.round((totalLiters / totalCows) * 100) / 100;
+      }
+    }
 
     const kpis: MilkDashboardKpis = {
       todayLiters: Math.round(todayLiters * 100) / 100,
@@ -170,6 +222,12 @@ export async function getMilkDashboard(
     for (const r of periodRecords) {
       const key = dateKey(r.milkingDate as Date);
       dailyMap.set(key, (dailyMap.get(key) ?? 0) + r.liters);
+    }
+    // Fill gaps with historical data
+    for (const [key, data] of historicalMap) {
+      if (!dailyMap.has(key)) {
+        dailyMap.set(key, data.totalLiters);
+      }
     }
 
     const evolution: ProductionEvolutionPoint[] = [];

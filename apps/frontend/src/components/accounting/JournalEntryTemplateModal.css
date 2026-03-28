@@ -1,0 +1,375 @@
+/* JournalEntryTemplateModal */
+
+/* ─── Overlay ────────────────────────────────────────────────────────────── */
+
+.template-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: rgba(42, 37, 32, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: tm-overlay-open var(--duration-normal) var(--ease-out);
+}
+
+@keyframes tm-overlay-open {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ─── Dialog ─────────────────────────────────────────────────────────────── */
+
+.template-modal {
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 640px;
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
+  animation: tm-modal-open var(--duration-normal) var(--ease-out);
+  overflow: hidden;
+}
+
+@keyframes tm-modal-open {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+
+.template-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-6) var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.template-modal__heading {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.template-modal__heading:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.template-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: background-color var(--duration-instant) var(--ease-out);
+}
+
+.template-modal__close:hover {
+  background: var(--color-neutral-100);
+}
+
+.template-modal__close:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Body ───────────────────────────────────────────────────────────────── */
+
+.template-modal__body {
+  padding: var(--space-4) var(--space-6) var(--space-6);
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ─── Sections ───────────────────────────────────────────────────────────── */
+
+.template-modal__section-heading {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-700);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 var(--space-3);
+}
+
+.template-modal__save-desc {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-600);
+  margin: 0 0 var(--space-3);
+}
+
+.template-modal__save-row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-end;
+}
+
+.template-modal__field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.template-modal__label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-700);
+}
+
+.template-modal__input {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  min-height: 48px;
+}
+
+.template-modal__input:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.template-modal__input--error {
+  border-color: var(--color-error-500);
+}
+
+.template-modal__error {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-error-500);
+}
+
+.template-modal__current-desc {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+  margin-top: var(--space-2);
+}
+
+/* ─── Divider ────────────────────────────────────────────────────────────── */
+
+.template-modal__divider {
+  border: none;
+  border-top: 1px solid var(--color-neutral-200);
+  margin: 0;
+}
+
+/* ─── Template List ──────────────────────────────────────────────────────── */
+
+.template-modal__loading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.template-modal__skeleton {
+  height: 56px;
+  border-radius: var(--radius-md);
+  background: var(--color-neutral-200);
+  animation: tm-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes tm-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.template-modal__empty {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-neutral-500);
+  text-align: center;
+  padding: var(--space-6) 0;
+  margin: 0;
+}
+
+.template-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.template-modal__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-instant) var(--ease-out);
+}
+
+.template-modal__item:hover {
+  background: var(--color-neutral-100);
+}
+
+.template-modal__item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.template-modal__item-name {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.template-modal__item-desc {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.template-modal__item-meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-400);
+}
+
+.template-modal__item-actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
+
+.template-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  border: none;
+  transition: background-color var(--duration-instant) var(--ease-out);
+  min-height: 40px;
+}
+
+.template-modal__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.template-modal__btn--primary {
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+}
+
+.template-modal__btn--primary:hover {
+  background: var(--color-primary-700);
+}
+
+.template-modal__btn--secondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  border: 1px solid var(--color-neutral-300);
+  white-space: nowrap;
+}
+
+.template-modal__btn--secondary:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+}
+
+.template-modal__btn--secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.template-modal__btn--icon-danger {
+  background: transparent;
+  color: var(--color-neutral-400);
+  padding: var(--space-2);
+  min-height: 40px;
+  min-width: 40px;
+  justify-content: center;
+}
+
+.template-modal__btn--icon-danger:hover {
+  color: var(--color-error-500);
+  background: var(--color-error-100);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .template-modal__overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .template-modal {
+    max-width: 100%;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .template-modal__save-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .template-modal__overlay,
+  .template-modal,
+  .template-modal__skeleton {
+    animation: none;
+  }
+}

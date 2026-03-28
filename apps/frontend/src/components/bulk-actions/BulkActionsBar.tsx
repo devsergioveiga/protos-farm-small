@@ -1,4 +1,4 @@
-import { X, ArrowRightLeft, Syringe } from 'lucide-react';
+import { X, ArrowRightLeft, Syringe, UserCheck, LogOut } from 'lucide-react';
 import './BulkActionsBar.css';
 
 interface BulkActionsBarProps {
@@ -6,6 +6,8 @@ interface BulkActionsBarProps {
   onClearSelection: () => void;
   onMoveToLot: () => void;
   onRegisterHealthEvent: () => void;
+  onAssignOwner?: () => void;
+  onRegisterExit?: () => void;
 }
 
 function BulkActionsBar({
@@ -13,6 +15,8 @@ function BulkActionsBar({
   onClearSelection,
   onMoveToLot,
   onRegisterHealthEvent,
+  onAssignOwner,
+  onRegisterExit,
 }: BulkActionsBarProps) {
   if (selectedCount === 0) return null;
 
@@ -39,6 +43,22 @@ function BulkActionsBar({
           <Syringe aria-hidden="true" size={18} />
           Registrar evento sanitário
         </button>
+        {onAssignOwner && (
+          <button type="button" className="bulk-bar__btn" onClick={onAssignOwner}>
+            <UserCheck aria-hidden="true" size={18} />
+            Vincular proprietário
+          </button>
+        )}
+        {onRegisterExit && (
+          <button
+            type="button"
+            className="bulk-bar__btn bulk-bar__btn--danger"
+            onClick={onRegisterExit}
+          >
+            <LogOut aria-hidden="true" size={18} />
+            Registrar saída
+          </button>
+        )}
       </div>
     </div>
   );

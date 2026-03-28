@@ -1,4 +1,10 @@
-import { isValidCPF, isValidCNPJ, validateDocument, cleanDocument } from './document-validator';
+import {
+  isValidCPF,
+  isValidCNPJ,
+  validateDocument,
+  cleanDocument,
+  isValidPIS,
+} from './document-validator';
 
 describe('document-validator', () => {
   // ─── cleanDocument ──────────────────────────────────────────────
@@ -59,6 +65,33 @@ describe('document-validator', () => {
     it('should reject CNPJ with wrong length', () => {
       expect(isValidCNPJ('1122233300018')).toBe(false);
       expect(isValidCNPJ('112223330001811')).toBe(false);
+    });
+  });
+
+  // ─── isValidPIS ─────────────────────────────────────────────────
+
+  describe('isValidPIS', () => {
+    it('should validate a correct PIS', () => {
+      // PIS: 12345678919 — check digit 9 computed via weights [3,2,9,8,7,6,5,4,3,2]
+      expect(isValidPIS('12345678919')).toBe(true);
+    });
+
+    it('should validate a correct PIS with formatting', () => {
+      expect(isValidPIS('123.45678.91-9')).toBe(true);
+    });
+
+    it('should reject PIS with wrong check digit', () => {
+      expect(isValidPIS('12345678910')).toBe(false);
+    });
+
+    it('should reject PIS with all same digits', () => {
+      expect(isValidPIS('11111111111')).toBe(false);
+      expect(isValidPIS('00000000000')).toBe(false);
+    });
+
+    it('should reject PIS with wrong length', () => {
+      expect(isValidPIS('1234567890')).toBe(false); // too short
+      expect(isValidPIS('123456789190')).toBe(false); // too long
     });
   });
 

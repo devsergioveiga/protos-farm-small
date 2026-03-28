@@ -1,0 +1,186 @@
+/* ─── AssetCostTab ─────────────────────────────────────────────────── */
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.cost-tab {
+  padding: 16px 0;
+}
+
+/* Section title */
+.cost-tab__section-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--color-neutral-800);
+  margin-bottom: 16px;
+  margin-top: 24px;
+}
+
+.cost-tab__section-title:first-of-type,
+section:first-of-type .cost-tab__section-title {
+  margin-top: 0;
+}
+
+/* Cost breakdown list */
+.cost-tab__dl {
+  margin: 0;
+  padding: 0;
+}
+
+.cost-tab__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.cost-tab__row-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--color-neutral-700);
+  flex-wrap: wrap;
+}
+
+.cost-tab__row-annotation {
+  font-size: 12px;
+  color: var(--color-neutral-500);
+  margin-left: 4px;
+}
+
+.cost-tab__row-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--color-neutral-800);
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.cost-tab__row-value--negative {
+  color: var(--color-error-500);
+}
+
+.cost-tab__row-value--bold {
+  font-weight: 600;
+}
+
+.cost-tab__row-note {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--color-neutral-500);
+  font-weight: 400;
+}
+
+/* Indicator cards */
+.cost-tab__cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.cost-tab__card {
+  padding: 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.cost-tab__card-value {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--color-neutral-800);
+}
+
+.cost-tab__card-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--color-neutral-500);
+  margin-top: 4px;
+}
+
+.cost-tab__card-subtitle {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 11px;
+  color: var(--color-neutral-400);
+  margin-top: 2px;
+}
+
+/* Notes */
+.cost-tab__note {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--color-neutral-50);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--color-neutral-600);
+}
+
+.cost-tab__note p {
+  margin: 0;
+}
+
+.cost-tab__note p + p {
+  margin-top: 4px;
+}
+
+/* Skeleton */
+.cost-tab__skeleton {
+  height: 20px;
+  border-radius: 4px;
+  background: var(--color-neutral-100);
+  animation: skeleton-pulse 1.5s infinite;
+  margin-bottom: 16px;
+}
+
+/* Error */
+.cost-tab__error {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--color-error-500);
+  padding: 16px 0;
+}
+
+/* Empty state */
+.cost-tab__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 16px;
+  text-align: center;
+  gap: 12px;
+}
+
+.cost-tab__empty-icon {
+  color: var(--color-neutral-400);
+}
+
+.cost-tab__empty-text {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cost-tab__cards {
+    grid-template-columns: 1fr;
+  }
+}

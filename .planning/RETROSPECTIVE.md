@@ -59,14 +59,68 @@ _A living document updated after each milestone. Lessons feed forward into futur
 
 ---
 
+## Milestone: v1.4 — Contabilidade e Demonstrações Financeiras
+
+**Shipped:** 2026-03-28
+**Phases:** 7 | **Plans:** 25
+
+### What Was Built
+
+- Plano de contas hierárquico rural (5 níveis, 115 contas CFC/Embrapa) com mapeamento SPED L300R
+- Motor de lançamentos manuais com partidas dobradas, estorno auditável e wizard de saldo de abertura
+- Auto-posting engine com 12 source types e idempotência via UNIQUE constraint
+- Fechamento mensal com checklist de 6 etapas e conciliação bancária contábil
+- DRE rural com CPC 29, análise V/H, filtro por centro de custo
+- Balanço Patrimonial com indicadores e validação cruzada 4 invariantes
+- DFC direto e indireto com reconciliação DFC↔BP
+- Dashboard contábil executivo com resultado acumulado e alertas
+- SPED ECD (blocos 0/I/J/9, L300R) com pré-validação PVA
+- Relatório integrado PDF profissional para crédito rural
+
+### What Worked
+
+- Pure calculator pattern (no Prisma imports) for DRE/BP/DFC — testable without DB, follows payroll-calculation precedent
+- Auto-posting hooks non-blocking (try/catch outside main tx) — GL failures never block business operations
+- Reusing v1.0 cashflow classification for DFC direto — zero new data modeling
+- AccountBalance cache table avoids recalculating from journal entries every time
+- Phase dependency chain (35→36→37→38→39→40→41) kept each phase focused and self-contained
+
+### What Was Inefficient
+
+- SUMMARY.md one-liner extraction from gsd-tools was unreliable — many returned "One-liner:" or file paths instead of actual summaries
+- Some phases had to discover schema field names at runtime (nature vs accountNature, debitTotal vs debitBalance)
+- v1.3 accounting stubs (Phase 32) needed replacement rather than extension — partial work creates ambiguity
+
+### Patterns Established
+
+- Pure calculator + service wrapper pattern: calculator is a pure function, service fetches data and calls calculator
+- Cross-validation invariants return PASSED/FAILED/PENDING — PENDING does not fail the overall check
+- Hidden attribute (not conditional render) for tab switching — preserves panel state
+- SpedEcdWriter as pure class with typed Block records — extensible for future SPED layouts
+
+### Key Lessons
+
+1. Pure calculators without DB dependencies are worth the extra indirection — testing is 10x faster
+2. Cross-validation between financial statements catches real bugs in data aggregation
+3. SPED ECD format is highly specific (pipe-delimited, CRLF, UTF-8) — a dedicated writer class is justified
+4. Monthly closing checklist that queries real modules (not just checkboxes) catches actual missing data
+
+### Cost Observations
+
+- 25 plans completed in ~2 days
+- 158 commits, 170 files changed
+- 30/30 requirements delivered
+- Balanced model profile used throughout
+
+---
+
 ## Cross-Milestone Trends
 
-| Metric               | v1.0    |
-| -------------------- | ------- |
-| Phases               | 6       |
-| Plans                | 30      |
-| Avg plan duration    | 10.7min |
-| Files changed        | 236     |
-| Lines added          | ~71,600 |
-| Tech debt items      | 6       |
-| Requirements covered | 15/15   |
+| Metric               | v1.0    | v1.4    |
+| -------------------- | ------- | ------- |
+| Phases               | 6       | 7       |
+| Plans                | 30      | 25      |
+| Files changed        | 236     | 170     |
+| Lines added          | ~71,600 | ~40,600 |
+| Tech debt items      | 6       | 0       |
+| Requirements covered | 15/15   | 30/30   |

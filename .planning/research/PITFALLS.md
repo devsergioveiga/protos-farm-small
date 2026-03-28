@@ -1,582 +1,410 @@
 # Pitfalls Research
 
-**Domain:** Asset management, depreciation, maintenance OS, and financial integration added to existing agricultural ERP (financial + purchasing + stock already live)
-**Researched:** 2026-03-19
-**Confidence:** HIGH for integration pitfalls (derived from codebase analysis); HIGH for Brazilian accounting standards (CPC 27, CPC 29, CPC 06); MEDIUM for OS state machine and batch performance patterns (established ERP practice + training data); LOW where only training data without verification supports a claim.
+**Domain:** Adding accounting/GL, chart of accounts, journal entries, and financial statements (DRE/BP/DFC/SPED ECD) to an existing rural farm management ERP (v1.0–v1.3 already live: financials, procurement, assets, HR/payroll)
+**Researched:** 2026-03-26
+**Confidence:** HIGH for double-entry consistency and Brazilian SPED ECD validation rules (verified with official RFB sources and direct schema analysis); HIGH for integration pitfalls (derived from codebase analysis of existing accounting-entries module, payroll, depreciation, and stock modules); MEDIUM for CPC 29 / biological asset GL treatment (verified with IFRS/IAS 41 sources, Brazilian application is sparsely documented); MEDIUM for DFC cross-validation mechanics (multiple sources agree on principle, implementation detail LOW); LOW for safra-year fiscal calendar edge cases (community forum only).
 
 ---
 
 ## Critical Pitfalls
 
-### Pitfall 1: Asset Purchase Creates Both a CP and a Stock Entry — Double-Counting Liabilities
+### Pitfall 1: Double-Entry Broken by Aggregate-Amount Journal Entries
 
 **What goes wrong:**
-When an asset is purchased, the system needs to generate a `Payable` (CP) so the financial team can track the obligation. If the asset purchase also routes through the existing `stock-entries` module (because the asset arrived on a NF and the receiving flow is reused), the system records both a stock entry for the item AND a CP for the purchase. The result is a phantom "inventory asset" that inflates the stock balance and a duplicate liability if the CP was also created by the goods-receipt flow.
+The existing `accounting-entries` module (INTEGR-02) creates one journal entry per payroll run aggregated to a single amount — e.g., one `PAYROLL_SALARY` entry for the total gross of all employees, not one per employee. When the new chart-of-accounts module adds support for cost-center rateio (split by farm/setor), the per-run aggregate model silently breaks double-entry because each split line has a debit but only the aggregate has a credit. The resulting ledger fails the invariant: `SUM(debits) = SUM(credits)` per period when queried by cost center.
 
-This is the single most dangerous integration pitfall for this milestone. The existing procurement flow (`GoodsReceipt → StockEntry + Payable`) is designed for consumable inputs. Assets are not consumed — they are capitalized. Routing asset acquisitions through the same flow creates irreversible data corruption in both the stock and financial modules.
+Separately: any place where a journal entry is created without an atomic check that `debit_amount = credit_amount` will pass unit tests that only inspect the created record but will corrupt the GL the moment a rounding or logic bug in the calling code produces an imbalanced entry.
 
 **Why it happens:**
-The asset purchase NF arrives through the same physical receiving dock as stock inputs. A developer extends the existing goods-receipt or stock-entry flow to "also handle assets" by adding a flag: `isAsset: boolean`. The goods-receipt service then conditionally skips stock entry creation but still creates the CP — or vice versa. Under time pressure, the "just add a flag" shortcut avoids designing a separate asset acquisition flow.
+The existing module was built as a "shadow ledger" for payroll only — it does not need cost-center splits to show on payslips. When full double-entry GL is added, the aggregate pattern is carried forward because it already works for its original purpose.
 
 **How to avoid:**
 
-- Asset acquisitions must use a separate code path: `AssetAcquisition` module, not `GoodsReceipt` or `StockEntry`. These modules must never share logic other than calling `createPayable()` via the same shared service.
-- The `Payable` created for an asset must use `originType = 'ASSET_ACQUISITION'` and `originId = assetId` — using the existing `originType`/`originId` pattern already on the `Payable` model in `schema.prisma`.
-- Add `ASSET_ACQUISITION` to the `PayableCategory` enum in `schema.prisma` — do not reuse `OTHER` or `MAINTENANCE`. The distinction is critical for financial reporting (CAPEX vs OPEX).
-- The `AssetAcquisition` record links to the `Asset` record (created simultaneously), to the CP, and to the `Supplier`. No `StockEntry` is created.
-- For financed purchases: the `AssetAcquisition` service calls `generateInstallments()` from `@protos-farm/shared` (already used in procurement) to create the installment schedule.
-- Receiving flow guard: add a check in the `GoodsReceipt` service — if the purchase order line item is of category `ASSET`, reject routing through the standard receiving flow and redirect to `AssetAcquisition`.
+- Implement a DB-level CHECK constraint on the `journal_entries` table: the sum of all lines with `side = 'DEBIT'` must equal the sum of all lines with `side = 'CREDIT'` for each journal entry. Use a PostgreSQL trigger or a deferred constraint on `journal_entry_lines`.
+- Never store `debitAccount`/`creditAccount`/`amount` as flat columns on a single row. Use the canonical two-table design: `JournalEntry` (header: period, source, description) + `JournalEntryLine` (account_code, side, amount, cost_center_id). The existing `AccountingEntry` flat-column model must be replaced or adapted — do NOT extend it.
+- For the migration of existing `AccountingEntry` records into the new schema: each old record maps to one `JournalEntry` with exactly two `JournalEntryLine` rows (one DEBIT, one CREDIT). Write a migration script that validates `count(AccountingEntry) * 2 = count(JournalEntryLine)` before marking migration complete.
+- Add a service-level guard: `assertBalanced(lines: JournalEntryLine[]): void` that throws before any `prisma.create` if `sumDebits !== sumCredits`. Call it in every auto-generation path (payroll, depreciation, stock, payables).
 
 **Warning signs:**
 
-- `StockEntry` records with a product category of `ASSET` or `EQUIPAMENTO`.
-- `Payable.category` is `OTHER` for an asset purchase.
-- `AssetAcquisition` calls `stockEntryService.create()` anywhere in its service.
-- The `GoodsReceipt` CONFIRMADO handler does not check whether the PO line is an asset before creating a `StockEntry`.
+- Balancete de verificação (trial balance) shows non-zero `SUM(debits) - SUM(credits)`.
+- A cost center DRE shows expenses without matching liability credits.
+- Tests pass by asserting only on the created record, not on the aggregate balance of the period.
 
-**Phase to address:** Cadastro e Aquisição de Ativos (Phase 1) — the `AssetAcquisition` data model and its relationship to `Payable` must be defined before any phase that touches the receiving or financial flow.
+**Phase to address:** Plano de Contas e Estrutura do Livro Diário (first accounting phase) — the `JournalEntry` + `JournalEntryLine` schema must be the foundation before any auto-generation wiring.
 
 ---
 
-### Pitfall 2: Depreciation Accumulated Value Exceeds Net Book Value Due to Decimal Rounding
+### Pitfall 2: Rounding on Journal Entry Lines Breaks the Period Trial Balance
 
 **What goes wrong:**
-Monthly depreciation is computed as: `(acquisitionValue - residualValue) / usefulLifeMonths`. On a tractor with `acquisitionValue = R$ 450,000.00`, `residualValue = R$ 45,000.00`, and `usefulLifeMonths = 120` (10 years), the monthly depreciation is `R$ 3,375.00` — clean. But on `acquisitionValue = R$ 120,000.00`, `residualValue = R$ 12,000.00`, `usefulLifeMonths = 84` (7 years), the result is `R$ 1,285.7142857...`, which rounds to `R$ 1,285.71`. Over 84 months, the sum is `R$ 107,999.64`, not `R$ 108,000.00`. The asset never fully depreciates.
+The system already uses `Decimal.js` and stores `Decimal(14,2)` in PostgreSQL — this is correct for individual amounts. The problem emerges when a single source amount must be split across multiple cost centers (rateio). For example, a payroll of R$ 10,000.00 split 33.33% / 33.33% / 33.34% across three farms gives R$ 3,333.33 + R$ 3,333.33 + R$ 3,333.34 = R$ 10,000.00. However, if the percentages are stored as floats (not Decimal) and applied naively, the common result is R$ 3,333.33 + R$ 3,333.33 + R$ 3,333.33 = R$ 9,999.99 — one cent off. Multiplied across all entries in a fiscal year, the trial balance shows a mysterious imbalance of a few reais that requires hours to trace.
 
-The reverse problem also occurs: for pro rata die calculations in the first and last months (month of acquisition and month of disposal), the daily rate is `monthlyDepreciation / daysInMonth`. If this is computed with JavaScript `number` (IEEE 754 float), precision loss can accumulate across thousands of assets over years, making the depreciation ledger irreconcilable.
-
-The project already uses `decimal.js` for all financial arithmetic (confirmed in `payables.service.ts` and bank account balance calculations). Using `number` for depreciation instead of `Decimal` is a regression that will not be caught in unit tests with clean numbers.
+In SPED ECD, the I150/I155 registros require that debit totals equal credit totals exactly to the centavo. A trial balance that is off by R$ 0.01 causes the PVA validator to reject the entire file.
 
 **Why it happens:**
-Depreciation formulas look like simple arithmetic. Developers unfamiliar with the project's `Money`/`Decimal` convention write `acquisitionValue - residualValue / usefulLifeMonths` using plain JavaScript division. Tests pass because test values are chosen to divide evenly.
+Rateio percentages come from the UI as user-entered floats, are stored as `DECIMAL(5,4)`, and when applied to a Decimal amount the last line is calculated as `total - sum(otherLines)` in some implementations but as `total * rate` in others. The "apply rate to each line" approach accumulates rounding error; the "last line takes the remainder" approach is correct but rarely implemented from the start.
 
 **How to avoid:**
 
-- All depreciation arithmetic must use `Decimal` from `decimal.js` — same as `Money(value)` factory already in use.
-- Depreciation period amount: `Decimal(acquisitionValue).minus(residualValue).dividedBy(usefulLifeMonths).toDecimalPlaces(2, Decimal.ROUND_HALF_EVEN)`.
-- Last period correction: the final depreciation entry must be `netBookValue - residualValue` (not the computed period amount) to ensure the net book value reaches exactly the residual value. This final-period balancing entry is standard in CPC 27.
-- Pro rata die for first/last month: `periodAmount.times(daysUsed).dividedBy(daysInMonth).toDecimalPlaces(2, Decimal.ROUND_HALF_EVEN)`.
-- Store accumulated depreciation as `Decimal(15, 2)` in the database (same precision as `totalAmount` on `Payable`).
-- Add a database constraint or service-layer check: `accumulatedDepreciation <= acquisitionValue - residualValue` — never allow overshoot.
-- Unit test specifically: an asset that runs the full depreciation schedule must end with `netBookValue === residualValue` to the cent.
+- Implement a `rateio(total: Decimal, portions: {rate: Decimal, costCenterId: string}[]): {costCenterId: string, amount: Decimal}[]` utility in `packages/shared/src/utils/rateio.ts`. The algorithm: calculate each line as `total.mul(rate).toDecimalPlaces(2, Decimal.ROUND_HALF_UP)`. Then compute `remainder = total - sum(calculatedLines)`. Add the remainder to the line with the largest share (not the last line — the largest share absorbs rounding most naturally). The existing `installment-generator.ts` uses a similar pattern for CP installments — adapt it.
+- Store rateio percentages as `DECIMAL(7,6)` (6 decimal places) in the DB, never as JavaScript `number`.
+- Write a unit test: `rateio(10000.00, [{rate: 0.3333, ...}, {rate: 0.3333, ...}, {rate: 0.3334, ...}])` must sum to exactly `10000.00`.
+- In the SPED ECD generator, before writing I150/I155, add an assertion: `abs(sumDebits - sumCredits) < 0.005`. If it fires, log the offending period and throw — never generate a file with an unbalanced period.
 
 **Warning signs:**
 
-- Depreciation service imports `Money` but computes period amounts with `asset.acquisitionValue / asset.usefulLifeMonths` (JS division).
-- No "last period balancing" logic — the final month uses the same computed amount as all other months.
-- `DepreciationEntry.amount` stored as `Float` instead of `Decimal(15, 2)`.
-- Test fixtures use clean numbers like `R$ 12,000.00` over 12 months — these pass even with float arithmetic.
+- Trial balance shows `SUM(DEBIT) - SUM(CREDIT)` = R$ 0.01 or R$ 0.02 for any period.
+- SPED ECD validator returns error code on I155 "totais não conferem".
+- Rateio utility uses `parseFloat()` or `Number()` anywhere in the calculation chain.
 
-**Phase to address:** Configuração e Cálculo de Depreciação (Phase 3) — the Decimal arithmetic discipline must be enforced from the first depreciation function written, because retrofitting it requires recalculating all historical entries.
+**Phase to address:** Rateio and cost-center split logic should be in the chart-of-accounts foundation phase. SPED ECD generator must re-validate before writing.
 
 ---
 
-### Pitfall 3: CPC 27 vs CPC 29 Classification Error for Biological Assets
+### Pitfall 3: Period Closing Without Immutability Enforcement — Retroactive Edits Corrupt Statements
 
 **What goes wrong:**
-The system must handle multiple asset categories: machines and vehicles (CPC 27 — depreciable), land/rural properties (CPC 27 — not depreciable), and biological assets (CPC 29 — measured at fair value less selling costs, NOT depreciated in the traditional sense). Bearer plants (coffee trees, orange trees, sugarcane — used to produce agricultural products over multiple periods) are a special case: they fall under CPC 27 (treated as fixed assets, depreciated over useful life), not CPC 29.
-
-The confusion: a developer classifies cattle as `AssetType.MACHINERY_EQUIPMENT` (wrong), or classifies productive coffee trees as `AssetType.BIOLOGICAL_ASSET` subject to fair-value measurement (wrong — bearer plants use CPC 27 straight-line depreciation). The depreciation engine then either skips depreciation for cattle (no fair-value mechanism implemented) or applies straight-line depreciation to cattle (non-compliant with CPC 29).
+A period (e.g., December 2025) is closed and the DRE/BP/DFC for that period are generated and presented to the accountant. A user then edits a CP (contas a pagar) payment date or a depreciation amount for November 2025, which triggers auto-generation of a corrected accounting entry. The new entry lands in the closed period because the auto-generation code uses `referenceMonth = source.referenceDate` without checking period status. The November BP changes silently. The accountant does not notice because the financial statements are cached views, not snapshots.
 
 **Why it happens:**
-The distinction between bearer plants (CPC 27) and other biological assets (CPC 29) is counterintuitive. CPC 29 says "biological assets at fair value" — developers read this and apply it to all living things. But CPC 29 itself was amended (amendment to IAS 41 Agriculture in 2014, transposed to CPC 29) to move bearer plants to CPC 27. This amendment is not well-known among developers without accounting background.
+The existing `AccountingEntry` model has no `periodId` foreign key — it uses `referenceMonth: DateTime @db.Date`. No `AccountingPeriod` table exists yet. Until the period-status check is wired into every entry-creation path, retroactive entries slip through.
 
 **How to avoid:**
 
-- Define a clear `AssetClassification` enum that explicitly separates the accounting treatment at the schema level:
-  - `MACHINERY_VEHICLE` — CPC 27, depreciable
-  - `BUILDING_IMPROVEMENT` — CPC 27, depreciable
-  - `LAND_RURAL_PROPERTY` — CPC 27, NOT depreciable (land does not depreciate under CPC 27)
-  - `BEARER_PLANT` — CPC 27, depreciable (coffee trees, orange trees, sugarcane — multi-period productive plants)
-  - `BIOLOGICAL_ASSET_ANIMAL` — CPC 29, fair-value measurement (cattle herd, breeding stock)
-  - `BIOLOGICAL_ASSET_OTHER` — CPC 29, fair-value measurement (non-plant, non-animal cases)
-  - `IN_PROGRESS` — Imobilizado em andamento, not yet depreciable
-- The depreciation engine must check `classification` before computing: `BIOLOGICAL_ASSET_*` skips the depreciation run entirely and logs a `FairValueRevaluation` event instead.
-- `LAND_RURAL_PROPERTY` must never enter the depreciation run — add a guard, not just a documentation comment.
-- The UI for asset creation must show a tooltip explaining bearer plants: "Plantas produtivas (café, laranja, cana) são classificadas como CPC 27 — Planta Portadora, não como ativo biológico CPC 29."
+- Create an `AccountingPeriod` model: `{ id, organizationId, year, month, status: OPEN|CLOSED|LOCKED, closedAt, closedBy }`. CLOSED = no new auto-entries; LOCKED = no manual entries either (post-SPED submission).
+- Add a `periodId` FK on `JournalEntry`. Every service that creates a journal entry must call `assertPeriodOpen(organizationId, year, month)` before `prisma.create`. Make this a shared utility so it cannot be bypassed.
+- Closing a period requires a checklist: all pending payables reconciled, all depreciation runs posted, all payroll runs closed. The checklist is modeled as checkboxes on the period record, not a free-form comment.
+- Re-opening a period requires an explicit admin action with an audit log entry (`openedBy`, `reason`). The default is that re-opening creates a "prior period adjustment" entry rather than modifying existing entries.
+- Financial statement snapshots (DRE/BP/DFC) store a `snapshotHash` of the underlying GL data. If the GL changes for that period, the snapshot is marked STALE and requires re-generation — the UI shows a warning.
 
 **Warning signs:**
 
-- `AssetType` enum has `BOVINO`, `OVINO` as values inside the same enum that also has `TRATOR`, `COLHEITADEIRA` — no classification distinction for accounting treatment.
-- Depreciation service applies straight-line to all assets regardless of type.
-- `LAND` type asset is included in the monthly depreciation batch run.
-- Coffee trees classified as `BIOLOGICAL_ASSET` subject to fair-value adjustment (should be `BEARER_PLANT` under CPC 27).
+- `AccountingEntry` records with `referenceMonth` earlier than the latest closed month.
+- No `AccountingPeriod` table in the schema at the time auto-generation is wired to CP/CR/depreciation.
+- Financial statements show different numbers on consecutive days without any approved changes.
 
-**Phase to address:** Cadastro de Ativos (Phase 1) — the classification enum must be defined at schema creation. Retrofitting this distinction after depreciation records exist requires data migration and recalculation of all historical depreciation.
+**Phase to address:** Períodos Contábeis e Fechamento (must be second phase after chart-of-accounts) — all other phases depend on period status.
 
 ---
 
-### Pitfall 4: Maintenance OS State Machine Without Explicit Transitions — and Wrong Accounting Classification
+### Pitfall 4: Existing `AccountingEntry` Flat-Row Model Cannot Support Full Double-Entry GL
 
 **What goes wrong:**
-Two separate problems combine in the OS (Ordem de Serviço / Work Order) module:
-
-**Problem A — Invalid state transitions:** The OS lifecycle is `SOLICITADA → APROVADA → EM_EXECUCAO → CONCLUIDA → CANCELADA`. Without an explicit `VALID_OS_TRANSITIONS` map (same pattern as `VALID_TRANSITIONS` in `checks.types.ts` and `GR_VALID_TRANSITIONS` in `goods-receipts.types.ts`), it becomes possible to approve an already-cancelled OS, or to transition directly from `SOLICITADA` to `CONCLUIDA`, skipping execution. Maintenance history becomes unreliable.
-
-**Problem B — Wrong accounting treatment at close:** When an OS is closed (`CONCLUIDA`), the total cost must be classified as one of three accounting treatments: (a) expense (`DESPESA` — the most common, e.g., routine repair), (b) capitalization (`CAPITALIZACAO` — improvement that extends useful life or adds functionality, per CPC 27 para 10), or (c) deferral (`DIFERIMENTO` — prepaid maintenance, e.g., scheduled overhaul amortized over future periods). If this classification is not an explicit mandatory field on OS closure, all maintenance costs default to "expense" in financial reports, and large capitalizeable overhauls are missed. This distorts both the P&L (over-expensed) and the balance sheet (understated asset book value).
+The current `AccountingEntry` model stores `debitAccount`, `creditAccount`, and `amount` as three columns on one row — a two-leg, single-amount design adequate for simple payroll entries. Full double-entry requires entries with 3+ lines (e.g., cost-center split: debit Expense Farm A / debit Expense Farm B / credit Salaries Payable). The existing model cannot represent this. If the new GL module extends the existing table by adding a nullable `lineIndex` or similar, the schema becomes ambiguous: some records are flat two-leg entries, others are multi-line. Queries for trial balance must handle both shapes.
 
 **Why it happens:**
-The state machine is missing because OS looks simple in the happy path. The accounting classification is missed because it requires accounting knowledge that most developers do not have — it feels like a label field, not a financially consequential decision.
+The existing module was explicitly scoped to payroll integration only (comment in `accounting-entries.service.ts`: "5 entry types created at payroll close"). The schema was intentionally minimal. The mistake is extending it instead of replacing it.
 
 **How to avoid:**
 
-- Define `OS_VALID_TRANSITIONS` map mirroring the `VALID_TRANSITIONS` pattern from `checks.types.ts`:
-  ```
-  SOLICITADA:   ['APROVADA', 'CANCELADA']
-  APROVADA:     ['EM_EXECUCAO', 'CANCELADA']
-  EM_EXECUCAO:  ['CONCLUIDA', 'CANCELADA']
-  CONCLUIDA:    []  // terminal
-  CANCELADA:    []  // terminal
-  ```
-- At `CONCLUIDA` transition, require `accountingTreatment: 'DESPESA' | 'CAPITALIZACAO' | 'DIFERIMENTO'` as a mandatory field — the transition endpoint must return 400 if this field is missing.
-- For `CAPITALIZACAO`: the OS closure must trigger an `AssetCapitalizationEvent` that increments the asset's `bookValue` and recalculates remaining depreciation from the new value. Do not allow the book value to increase silently.
-- For `DIFERIMENTO`: OS cost becomes a `PrepaidExpense` record; the `DeferredMaintenanceAmortization` job amortizes it over the defined period.
-- For `DESPESA`: OS cost creates a `Payable` with `category = MAINTENANCE` and `originType = 'WORK_ORDER'`, `originId = osId`. Uses the existing CP infrastructure.
+- Create new tables: `journal_entries` (header) and `journal_entry_lines` (lines). Migrate existing `accounting_entries` records to the new structure as part of the chart-of-accounts phase migration.
+- Keep `accounting_entries` table and its existing code intact as a read-only historical table until the full migration is verified. Add a `migratedToJournalEntryId` column to `accounting_entries` so the migration is auditable and reversible.
+- The new `JournalEntryLine` table: `{ id, journalEntryId, accountId (FK → ChartOfAccount), side: DEBIT|CREDIT, amount: Decimal(14,2), costCenterId?, farmId?, description? }`.
+- Update the `createPayrollEntries` and `createReversalEntry` functions to write to the new tables, not the old ones. Do this in the "Lançamentos Automáticos" phase, after the new schema is stable.
 
 **Warning signs:**
 
-- OS service has `if (os.status === 'SOLICITADA') os.status = 'APROVADA'` instead of a transition map.
-- `WorkOrder.accountingTreatment` is nullable — can be closed without it.
-- A closed OS with `accountingTreatment = 'CAPITALIZACAO'` does not update `asset.bookValue`.
-- No `OS_VALID_TRANSITIONS` constant in `work-orders.types.ts`.
+- A migration adds columns to `accounting_entries` instead of creating new tables.
+- Trial balance query JOINs both `accounting_entries` and `journal_entries`.
+- `AccountingEntryType` enum is extended with non-payroll types (stock, depreciation, etc.) before the schema refactor.
 
-**Phase to address:** Planos de Manutenção e Ordens de Serviço (Phase 5) — state machine and accounting treatment must be designed together, before the first OS endpoint is written.
+**Phase to address:** Plano de Contas (foundation phase) — new schema must be in place before any other module writes accounting data.
 
 ---
 
-### Pitfall 5: Asset Hierarchy Depth Causes Recursive Query Performance Collapse
+### Pitfall 5: Auto-Generated Journal Entries Duplicate or Are Skipped Due to Non-Idempotent Triggers
 
 **What goes wrong:**
-The specification supports hierarchical assets (parent-child, up to 3 levels): a combine harvester (root) has a header (child) which has cutting blades (grandchildren). Features like "total book value of asset and all children," "depreciation report for asset group," and "transfer asset with all subcomponents to another farm" all require tree traversal.
+Every existing module (payroll close, depreciation run, stock output, payables settlement) will gain a hook that generates journal entries. If those hooks are not idempotent, retries and re-runs create duplicate entries. The existing `createPayrollEntries` is already called "outside and after the closeRun transaction (non-blocking)" — if it crashes and is retried, it creates a second set of 5 payroll entries. The current code has no duplicate guard.
 
-If implemented as a naive recursive query (`SELECT * FROM assets WHERE parentId = X`, then repeat for each child), a 3-level hierarchy with 10 children per level requires 111 database round trips per single asset lookup. At month-end batch depreciation, this explodes to O(n log n) queries.
-
-The alternative mistake is to limit depth via application logic but allow database foreign keys to self-reference without a depth guard, so a circular reference (Asset A → B → A) can be inserted and causes infinite recursion in tree traversal.
+Conversely, if the hook fires but the period is closed or the GL module is not yet configured (no chart of accounts seeded), the entry is silently skipped with no alert. The accountant discovers missing entries at month-end close.
 
 **Why it happens:**
-Parent-child with depth = 3 looks trivial ("just a parentId FK"). The performance collapse only manifests with real data. The circular reference issue is never tested because test data is always a clean tree.
+Non-blocking fire-and-forget patterns (`try { createPayrollEntries(...) } catch {}`) are used to prevent accounting failures from rolling back business transactions. This is correct for user experience but wrong for data completeness. The two concerns — "don't block the business event" and "guarantee the accounting entry" — are conflated.
 
 **How to avoid:**
 
-- Use PostgreSQL recursive CTEs (`WITH RECURSIVE`) for all tree traversals — a single query returns the full subtree regardless of depth. Index on `(organizationId, parentId)`.
-- Add a database check constraint enforcing maximum depth:
-  ```sql
-  -- enforced via application layer + trigger, or computed path
-  ```
-  Alternatively, use a `path` materialized column (ltree extension or simple string `'root.child.grandchild'`) that makes depth queries O(1) and prevents circular references by path validation on insert.
-- Store `depth` as a computed column (0 = root, 1 = child, 2 = grandchild) and reject inserts/updates that would set `depth > 2`.
-- Circular reference guard: before saving `parentId`, validate that the new parent's ancestor chain does not already contain the current asset's ID.
-- Depreciation batch: fetch assets grouped by root via a single CTE, not by repeated parent traversal.
+- Use a `pending_journal_postings` queue table: when a business event fires (payroll close, depreciation, stock output, CP payment), insert a `PendingJournalPosting` record with `sourceType`, `sourceId`, `status: PENDING`. A background job (BullMQ, already in the stack) processes the queue and creates the actual journal entry.
+- The `PendingJournalPosting` has a `UNIQUE(sourceType, sourceId)` constraint — duplicate triggers hit the unique constraint and are ignored.
+- Failed postings set `status: FAILED` with `failureReason` — visible in the accounting dashboard. Accountant can manually retry or create a manual entry.
+- For the existing `createPayrollEntries`: before `createMany`, check `count(AccountingEntry WHERE sourceType = PAYROLL_RUN AND sourceId = runId)`. If > 0, skip. Add this guard immediately (it is a bug in the current code).
 
 **Warning signs:**
 
-- `asset.service.ts` has a `getAssetTree(assetId)` method that calls `findChildren()` recursively.
-- No `depth` or `path` field on the `Asset` model.
-- `AssetTransfer` service does not fetch child assets before moving — only the root asset changes `farmId`.
-- Test fixtures have exactly 1 parent and 1 child — no 3-level test case.
+- `AccountingEntry.count WHERE sourceType = PAYROLL_RUN AND sourceId = X` returns > 5 (more than the expected 5 entry types).
+- No `pending_journal_postings` table or equivalent deduplication mechanism exists when wiring depreciation/stock hooks.
+- Accounting dashboard has no "missing postings" alert section.
 
-**Phase to address:** Imobilizado em Andamento e Hierarquia (Phase 2) — define the `path` or `depth` column at schema creation. Retrofitting tree traversal after data exists is a migration plus service rewrite.
+**Phase to address:** Regras de Lançamento Automático (the auto-generation wiring phase) — the queue table and idempotency guard must be designed before any new auto-generation hooks are wired.
 
 ---
 
-### Pitfall 6: Batch Depreciation Run Without Idempotency Guard — Creates Duplicate Entries on Retry
+### Pitfall 6: SPED ECD File Fails PVA Validation Due to Chart of Accounts Structural Mismatches
 
 **What goes wrong:**
-The monthly depreciation batch job runs on a cron (or manually triggered) for all active assets in the organization. If the job crashes midway (network error, server restart, PostgreSQL timeout), a partial run exists: some assets have `DepreciationEntry` records for the current month, others do not. On retry, the job either:
-(a) Creates duplicate entries for assets already processed in the partial run, or
-(b) Skips assets it processed before, producing an incomplete run with no error surfaced.
+The RFB's PVA (Programa Validador e Assinador) for ECD enforces strict structural rules that go beyond data formatting. Common rejection causes:
 
-In production, this is discovered months later when the depreciation balance report diverges from the asset book value report by the amount of duplicated entries.
+1. **I050 — Duplicate `COD_CTA`**: if the chart of accounts allows the same account code at two different nodes (e.g., code `1.1.01` exists both in the user-created tree and in a seeded "model" tree after a chart merge), the I050 registro rejects with "conta duplicada".
+2. **I050 — Missing `COD_CTA_SUP`**: every non-root account must reference its parent code. A chart-of-accounts UI that allows orphan accounts (no parent) produces invalid I050 records.
+3. **I155 — Cost-center inconsistency**: if an account has entries with cost center in I155 records but the I050 registro for that account does not set `IND_CTA = A` (analytic) and `COD_CTA_NATU` properly, validation fails.
+4. **J100/J150 — Aggregation hierarchy imbalance**: DRE/BP blocks in the ECD require that every totaling line equals the sum of its children exactly. If the financial statement module computes subtotals independently from the chart of accounts hierarchy, rounding differences cause J100/J150 rejection.
+5. **0000 — Incorrect `IND_SIT_ESP`**: special situation codes (merger, split, closing) require specific J block structures. Setting `IND_SIT_ESP = 0` (normal) when the company had a name change causes schema validation failure.
 
 **Why it happens:**
-Batch jobs are typically written as `SELECT all active assets → for each → INSERT DepreciationEntry`. There is no idempotency check: "has this asset already been depreciated for this period?" The check is obvious in hindsight but is skipped during development because tests run the job once against a clean database.
+The ECD format specification (Manual de Orientação da ECD, latest version for AC 2025) is a 300+ page PDF. Most implementations copy existing ECD files from accounting software as templates without reading the full spec. The PVA validator messages are cryptic (error codes without plain-text descriptions in the default view) and require cross-referencing the manual.
 
 **How to avoid:**
 
-- Add a unique constraint on `DepreciationEntry(assetId, period)` where `period` is a `YYYY-MM` string. This makes the INSERT idempotent at the database level — duplicate entries for the same asset+period throw a unique constraint violation, not a silent success.
-- The batch job must use `INSERT ... ON CONFLICT (assetId, period) DO NOTHING` — PostgreSQL upsert semantics.
-- Alternatively, before processing each asset, check: `SELECT COUNT(*) FROM depreciation_entries WHERE assetId = ? AND period = ?` — skip if already exists.
-- Add a `DepreciationRun` record per month per organization (`status: PENDING | IN_PROGRESS | COMPLETED | FAILED`) with an `assetCount` and `processedCount` counter. A run that starts but does not reach COMPLETED is automatically retried from the first unprocessed asset.
-- Never run two depreciation batches for the same period simultaneously — use PostgreSQL advisory locks (`pg_try_advisory_xact_lock`) keyed on `(organizationId, period)`.
+- Download and read the current Manual de Orientação da ECD (available at `sped.rfb.gov.br`). At minimum read Blocos 0, I, and J completely — these are the ones that fail most often.
+- Implement a pre-generation validator that checks all I050 constraints (no duplicate COD_CTA, all COD_CTA_SUP resolve to existing parents, no orphans) before writing the file.
+- The J100/J150 subtotals must be computed from the same GL query that produces the trial balance — never computed independently in the financial-statement layer.
+- Add a `UNIQUE(organizationId, code)` DB constraint on `ChartOfAccount` to prevent duplicate codes at the DB level, not just UI validation.
+- Before generating ECD for a period, run the full PVA locally in a CI/test step. The PVA is a free download and can be invoked headlessly (though not officially documented — community workarounds exist via WINE on Linux).
 
 **Warning signs:**
 
-- No unique constraint on `(assetId, period)` in the depreciation entries table.
-- Depreciation batch job has no `DepreciationRun` tracking table.
-- Job implementation is `for await (const asset of assets) { await createDepreciationEntry(asset, period); }` with no idempotency check.
-- Tests do not simulate a mid-batch failure and verify that retry produces exactly the same final state as a clean run.
+- Chart-of-accounts UI allows creating an account without selecting a parent.
+- Financial statement subtotals are computed with `SUM(childLines)` queries that differ from the trial balance query path.
+- No local PVA validation step in the SPED ECD generation service.
+- ECD file hardcodes `IND_SIT_ESP = 0` for all organizations.
 
-**Phase to address:** Depreciação Automática (Phase 3) — idempotency must be designed into the schema and batch logic from the start. Retrofitting requires auditing all historical depreciation entries for duplicates.
+**Phase to address:** SPED ECD (last phase of the milestone) — but the COD_CTA uniqueness constraint and the J100/J150 derivation-from-GL rule must be decided in the chart-of-accounts foundation phase.
 
 ---
 
-### Pitfall 7: Asset Sold or Written Off Creates CR Without Voiding Remaining Depreciation
+### Pitfall 7: Historical Data Gap — Existing Operations Have No GL Entries
 
 **What goes wrong:**
-When an asset is sold, the following must happen atomically:
-
-1. Asset status → `BAIXADO` (written off) or `VENDIDO`.
-2. All future `DepreciationEntry` records (status `PENDING`) are cancelled.
-3. A gain/loss on disposal is calculated: `salePrice - netBookValue` (where `netBookValue = acquisitionValue - accumulatedDepreciation`).
-4. If sold: a `Receivable` (CR) is created for the sale price.
-5. If written off at loss: a `Payable` record (the loss) or a direct P&L entry is recorded.
-
-The common mistake is implementing step 4 (CR creation) without step 2 (cancelling pending depreciation entries). The asset is marked `VENDIDO`, the CR is created, but future monthly depreciation runs still process the asset because the query is `SELECT * FROM assets WHERE status = 'ACTIVE'` and the status was not correctly updated, or pending entries were not cleaned up. The asset depreciates for months after it was sold, accumulating phantom losses.
+The system has 4 milestones of operational data (v1.0–v1.3): payables, receivables, stock movements, depreciation runs, payroll runs, and asset acquisitions — none with corresponding GL entries (except 6 INTEGR-02 payroll entry types). When accounting goes live, the opening balance of every account must be correct. If the migration approach is "go live from today with a clean slate," the BP for the first period will show zero assets, zero liabilities, and zero equity — which is obviously wrong. If the migration approach is "retroactively generate GL entries from all historical data," the volume is potentially tens of thousands of entries per year and the logic to re-derive them is complex.
 
 **Why it happens:**
-Asset disposal is coded as: update `asset.status = 'VENDIDO'`, create `Receivable`. The pending depreciation entries are a separate table that nobody remembers to clean up. The status guard in the depreciation batch is often `status != 'BAIXADO'` but the status set was `'VENDIDO'` — a string mismatch.
+This is a classic ERP accounting bolt-on problem. The business ran without a ledger and built up operational history. Adding the ledger creates a continuity problem. Teams often defer the decision until go-live and then find neither approach is fast.
 
 **How to avoid:**
 
-- Define a single terminal status for all asset disposal cases: `INATIVO` (covering VENDIDO, BAIXADO, SINISTRADO, DESCARTADO). The depreciation batch checks `status = 'ATIVO'`. Terminal status is mutually exclusive with active depreciation.
-- Asset disposal must be a single `prisma.$transaction()` that atomically:
-  - Updates `asset.status` to the appropriate terminal value.
-  - Cancels all `DepreciationEntry` records with `status = 'PENDING'` for that asset.
-  - Creates the `Receivable` or `Payable` for the disposal event.
-  - Calculates and records gain/loss: `salePrice - (acquisitionValue - accumulatedDepreciation)`.
-- Add a test: create asset → depreciate 3 months → sell → verify no pending depreciation entries exist → verify monthly batch does not create new entries for that asset.
-- The `AssetDisposal` record must reference the `assetId`, `disposalDate`, `salePrice`, `netBookValueAtDisposal`, `gainOrLoss`, and linked `receivableId` or `payableId`.
+- Adopt the "opening balance entry" approach: create one manual `JournalEntry` per account with a single line establishing the opening balance as of the date accounting goes live (e.g., 2026-04-01). The values come from the existing financial module data (bank balances, outstanding CP/CR, asset book values, payroll provisions).
+- Provide a "Saldo de Abertura" wizard in the UI that pre-populates opening balances from existing module data: bank account balances from `BankAccount.currentBalance`, outstanding CP from `Payable.remainingAmount`, asset book values from `Asset.currentBookValue`, payroll provisions from `PayrollProvision.totalAmount`. The accountant reviews and confirms before posting.
+- Do NOT retroactively generate GL entries for historical periods unless required for SPED ECD (which only applies from the fiscal year of go-live forward). The SPED ECD for 2026 starts from the opening balance — prior years are not required.
+- Document in the "Saldo de Abertura" wizard that the opening balance entry is a manual adjustment — tag it with `sourceType = OPENING_BALANCE` so it is excluded from the automatic-entry deduplication checks.
 
 **Warning signs:**
 
-- `asset-disposal.service.ts` does not include `prisma.$transaction()`.
-- No step cancels `DepreciationEntry` records with `status = 'PENDING'` on disposal.
-- Asset disposal sets `status = 'VENDIDO'`, but the depreciation batch query filters for `status != 'BAIXADO'` — VENDIDO passes the filter.
-- `AssetDisposal` table has no `gainOrLoss` column — financial impact is not tracked.
+- Migration plan says "generate GL entries for all historical transactions retroactively" without a time estimate.
+- No `OPENING_BALANCE` source type on the `JournalEntry` model.
+- Opening balance wizard is missing and accountant must create opening entries manually — high risk of errors.
 
-**Phase to address:** Baixa e Transferência de Ativos (Phase 4) — must be reviewed against the depreciation batch logic before implementation. The depreciation batch must be written before disposal, so disposal can correctly cancel its pending entries.
+**Phase to address:** Lançamentos Manuais e Saldo de Abertura (an early phase, before DRE/BP generation) — the opening balance feature is a pre-requisite for any meaningful financial statement output.
 
 ---
 
-### Pitfall 8: CPC 06 Leasing — Right-of-Use Asset Not Depreciated Separately from Lease Liability Amortization
+### Pitfall 8: Safra Fiscal Year vs. Calendar Year Mismatch Breaks SPED ECD Period Structure
 
 **What goes wrong:**
-Under CPC 06 (R2) / IFRS 16, a finance lease (arrendamento financeiro or leasing) creates two obligations:
-
-1. A right-of-use (ROU) asset that must be depreciated over the asset's useful life or the lease term (whichever is shorter).
-2. A lease liability that must be amortized using the effective interest method (principal + interest components per installment).
-
-The common mistake is treating the lease installment as a single expense entry (`Payable` per installment) and never creating the ROU asset or its depreciation. The result is that lease payments are expensed entirely as `FINANCING` in the P&L instead of being split into depreciation (balance sheet) and interest expense (P&L). This is non-compliant with CPC 06 (R2) and will be flagged in any audit.
-
-The reverse mistake is creating the ROU asset and its depreciation but also treating the full installment as a `Payable` expense — double-counting the cost.
+Fazendas planning their exercise fiscal around the safra cycle (July–June, aligning with Plano Safra) rather than the calendar year (January–December) require SPED ECD to reflect a non-standard period. The 0000 registro has `DT_INI` and `DT_FIN` fields. If the system hardcodes `DT_INI = YYYY-01-01` and `DT_FIN = YYYY-12-31`, it will generate an invalid ECD for any client using a safra-aligned fiscal year. Additionally, for legal entity producers (PJ), the ECD deadline is the last business day of May following the year-end — for a July–June year, that means the ECD for year ending June 2026 is due May 2027. If the system uses calendar year for all deadline calculations, it will show wrong due dates.
 
 **Why it happens:**
-Leasing "feels like" a recurring payment (similar to rent). The developer creates a `Payable` record per installment with `category = FINANCING`. This matches v1.0's rural credit installment pattern (which itself creates installments per `RuralCreditInstallment`). The two concepts look similar enough to blur.
+The `AccountingPeriod` model is often designed with `year` and `month` integer columns, implicitly assuming January–December. A safra fiscal year spans two calendar years (e.g., Jul-2025 to Jun-2026) and cannot be represented as a single integer year.
 
 **How to avoid:**
 
-- Model leasing as a first-class entity: `LeasingContract` with `type: FINANCEIRO | OPERACIONAL`, total value, lease term, interest rate, residual value, and linked `Asset` (ROU).
-- On `LeasingContract` creation:
-  - Create the `Asset` record with `acquisitionValue = presentValueOfLease`, `assetType = RIGHT_OF_USE`, linked `leasingContractId`.
-  - Generate installment schedule with principal/interest split (effective interest method — same `generateInstallments` helper with a `rateType: 'COMPOUND_MONTHLY'` option, or a new leasing-specific calculator).
-  - Each installment creates a `Payable` for the total installment amount, but the `Payable` stores `principalAmount` and `interestAmount` as separate fields for P&L classification.
-- The ROU asset enters the standard depreciation run — same batch as all other assets.
-- The lease installment `Payable` is NOT a full expense — only `interestAmount` is P&L expense; `principalAmount` reduces the `LeasingContract.remainingLiability`.
-- Operational lease (`OPERACIONAL`): much simpler — installment is fully expensed, no ROU asset, no depreciation. The type distinction must be mandatory at contract creation.
-- Do not reuse the `RuralCredit` installment model for leasing — they look similar but have different accounting treatment.
+- The `AccountingPeriod` model must have `startDate: Date` and `endDate: Date`, not just `year: Int`. The `FiscalYear` model (one level above) has `startDate`, `endDate`, and `type: CALENDAR | SAFRA | CUSTOM`.
+- The SPED ECD generator reads `FiscalYear.startDate` and `FiscalYear.endDate` for the 0000 registro — never derives them from the period list.
+- ECD deadline calculation: `lastBusinessDayOfMay(fiscalYear.endDate.year + 1)`. Use `date-fns` (already in stack) for business day calculation.
+- For calendar-year clients (the majority), `FiscalYear.type = CALENDAR` and `startDate = YYYY-01-01`. The safra option is configurable at org setup, not hardcoded.
 
 **Warning signs:**
 
-- `LeasingContract` creates a `Payable` per installment with `category = FINANCING` and no `principalAmount`/`interestAmount` split.
-- No `Asset` record is created when a leasing contract is registered.
-- The depreciation batch does not process any `assetType = RIGHT_OF_USE` assets.
-- `LeasingContract.type` defaults to `FINANCEIRO` without the user selecting it — making all leases finance leases by default.
+- `AccountingPeriod` schema has `year: Int` and `month: Int` but no `date` fields.
+- SPED ECD generator has `new Date(year, 0, 1)` hardcoded for `DT_INI`.
+- ECD deadline is calculated as `new Date(year + 1, 4, 31)` without business-day adjustment.
 
-**Phase to address:** Integração Financeira — Leasing e Arrendamento (Phase 7) — this phase must define the data model for ROU asset + liability amortization before any UI is built.
+**Phase to address:** Períodos Contábeis (second phase) — fiscal year configuration must be done before any period is created.
 
 ---
 
-### Pitfall 9: Cost Center Rateio for Shared Assets Computed at Registration Time, Not at Usage Time
+### Pitfall 9: CPC 29 Biological Assets — Fair Value Change Creates Phantom Income in DRE
 
 **What goes wrong:**
-A tractor is shared across three plots (`talhoes`) with different cost centers. The asset's cost center allocation is registered as fixed: 40% CC-Soja, 30% CC-Café, 30% CC-Milho. When the depreciation batch runs, it creates three `PayableCostCenterItem` records per asset per period, splitting the depreciation amount by these percentages.
+The system already models biological assets (ativos biológicos) in v1.2 — cattle herds, perennial crops (coffee, orange), standing timber. Under CPC 29 / IAS 41, biological assets are measured at fair value less costs to sell at each reporting date. The change in fair value (gain or loss) goes directly to profit or loss (DRE), not to equity. A 20% appreciation of a cattle herd with book value R$ 500,000 generates R$ 100,000 of revenue on the DRE — without any cash inflow. This "phantom income" is non-cash and must be presented separately in the DRE and in the DFC indirect method (where it is reversed out under operating activities).
 
-The problem: by month 6, the soja talhão has been sold and its cost center deactivated. The 40% allocation tries to write to `costCenterId = CC-Soja` — which no longer exists or is inactive. The depreciation entry fails silently (service catches the FK constraint error and logs a warning) or creates an orphaned entry against a deleted cost center. Six months of depreciation is missing from the financial reports.
-
-The secondary problem: the fixed allocation percentages were set at asset registration and never reviewed. In reality, usage shifts seasonally (the tractor works on café in April-June, exclusively on milho in July-September). Fixed allocation misrepresents actual cost.
+If the auto-generation rule for biological asset revaluation creates a `REVENUE` entry in the standard revenue group of the DRE, the DFC indirect method reconciliation will fail: `Net Income - (increase in biological assets) = Operating Cash Flow` — but if the DRE does not segregate the fair value gain, the DFC cannot subtract it back automatically.
 
 **Why it happens:**
-Cost center allocation is copied from the existing `PayableCostCenterItem` pattern — which works for invoices (single point-in-time allocation) but not for recurring depreciation (monthly allocation over years). The pattern is technically correct for the first month but becomes stale.
+Developers implementing the fair value revaluation entry copy the pattern from depreciation (Debit: Asset / Credit: Depreciation Expense) and invert it to (Debit: Biological Asset / Credit: Revenue). The credit account is mapped to a standard revenue code. The DFC module then cannot identify this as a non-cash item to reverse.
 
 **How to avoid:**
 
-- Model asset cost center allocation as `AssetCostCenterAllocation` with a validity period (`validFrom`, `validTo`): when the allocation changes, close the current record and open a new one. The depreciation batch uses the allocation valid at the period being depreciated.
-- The depreciation batch must validate each cost center before creating `DepreciationEntry`: if a cost center is inactive, look for the most recent valid allocation and use it; if none exists, defer the entry and create an alert for the financial team.
-- Provide a "Revisar alocação de centros de custo" prompt in the UI when an asset's cost center allocation has not been reviewed in 90+ days.
-- For shared assets (multiple farms), depreciation rateio follows the same `CostCenterAllocMode: PERCENTAGE | FIXED_VALUE` pattern used in `PayableCostCenterItem` — do not invent a new allocation model.
-- The `validateCostCenterItems` helper from `@protos-farm/shared` (used in procurement) must be reused here to validate that percentages sum to 100%.
+- Create dedicated account codes in the rural chart-of-accounts model for biological asset fair value: `3.5.01 — Variação Valor Justo Ativo Biológico` (revenue) and `4.5.01 — Perda Valor Justo Ativo Biológico` (expense). These must be flagged with `isFairValueAdjustment: Boolean` in the `ChartOfAccount` model.
+- The DFC indirect method generator identifies all accounts with `isFairValueAdjustment = true` and lists them as "non-cash adjustments" in the operating activities section, reversing their DRE impact.
+- The DRE layout must have a distinct section for "Resultado de Variação de Valor Justo" separate from "Receita Bruta de Vendas". This allows the user to see operating revenue separately from valuation adjustments.
+- CPC 29 also requires disclosure of changes in quantity (births, deaths, acquisitions, sales) separately from fair value changes. Model the `BiologicalAssetMovement` table with `movementType: BIRTH | DEATH | ACQUISITION | SALE | FAIR_VALUE_ADJUSTMENT` — the GL entry differs by type.
 
 **Warning signs:**
 
-- `Asset.costCenterAllocation` is a JSON column with a static array — no validity period.
-- Depreciation batch does not check if cost centers are active before creating entries.
-- The `validateCostCenterItems` helper from `@protos-farm/shared` is not imported in the depreciation service.
-- No `AssetCostCenterAllocation` history — only the current allocation is stored.
+- The rural chart-of-accounts preload has no `isFairValueAdjustment` flag.
+- DFC indirect method uses `Net Income` as starting point but does not subtract biological asset fair value gains.
+- DRE shows a single "Receitas" subtotal that mixes cash sales with fair value gains.
 
-**Phase to address:** Depreciação e Centro de Custo (Phase 3) — the time-bounded allocation model must be designed at the same time as the depreciation schema.
+**Phase to address:** Plano de Contas (flag `isFairValueAdjustment` in model) + DFC (reversal logic). The DRE layout must have the CPC 29 section before biological asset revaluation entries are connected.
 
 ---
 
-### Pitfall 10: Imobilizado em Andamento (WIP Asset) Depreciates Before Activation
+### Pitfall 10: FUNRURAL Accounting Entry Posted as Expense Without Tax Liability Credit
 
 **What goes wrong:**
-A construction project (obra em andamento) accumulates costs over months before the building/infrastructure is ready for use. Under CPC 27, depreciation begins only when the asset is "available for use in the location and condition intended by management" — i.e., after the WIP is transferred to a finalized asset record.
+FUNRURAL is a social contribution withheld by the buyer from the producer's invoice and remitted directly to the RFB. For the producer (seller), FUNRURAL is a deduction from gross revenue — not a payroll expense. The incorrect implementation debits `Despesa FUNRURAL` and credits `FUNRURAL a Recolher`, mirroring the INSS patronal structure. The correct entry for the producer is: Debit `FUNRURAL s/ Receita Bruta` (contra-revenue account, group 3) / Credit `FUNRURAL a Recolher` (current liability). The DRE impact differs: the expense account inflates operating costs; the contra-revenue account correctly reduces net operating revenue. Both produce the same net income but the DRE layout (required for SPED ECF) will be rejected if FUNRURAL is in the expense group instead of the revenue deduction group.
 
-If the depreciation batch query is `SELECT * FROM assets WHERE status = 'ATIVO'` and the WIP asset's status is incorrectly set to `ATIVO` at creation (rather than `EM_ANDAMENTO`), it enters the depreciation run with partial cost accumulated. The result is premature depreciation against an asset that is not yet in service — non-compliant with CPC 27 and distorts early-period financial statements.
+The v1.3 payroll module already handles FUNRURAL for the employer contribution (1.5% on gross revenue or 20% on payroll). The accounting entry for the employer FUNRURAL is a payroll expense — this is correct. The confusion arises because the same word covers two different things: the producer's FUNRURAL (withheld from sales) and the employer's FUNRURAL (added to payroll cost).
 
 **Why it happens:**
-WIP assets look like assets. The developer creates an `Asset` record immediately when the first expense is logged for the construction. The status is set to `ATIVO` because `EM_ANDAMENTO` was not defined in the status enum, or the developer did not realize the distinction matters.
+The payroll module code path uses `ACCOUNT_CODES.PAYROLL_CHARGES` for employer social charges including FUNRURAL. When the accounting team maps "FUNRURAL" to an account, they find the existing payroll FUNRURAL code and reuse it for the revenue-deduction FUNRURAL. The accounts are different legal instruments.
 
 **How to avoid:**
 
-- Define `AssetStatus` enum explicitly including `EM_ANDAMENTO` for WIP. The `EM_ANDAMENTO` status must be excluded from all depreciation batch queries at the database level (add `WHERE classification != 'IN_PROGRESS'` or `WHERE status = 'ATIVO'`).
-- WIP activation is a separate action: `POST /assets/:id/activate` that transitions status `EM_ANDAMENTO → ATIVO`, sets `activationDate`, and triggers the first depreciation period calculation.
-- The `acquisitionValue` of the finalized asset is the sum of all partial investments recorded during the WIP phase.
-- Partial WIP investments are `Payable` records with `originType = 'WIP_ASSET'`. They are NOT depreciation — they are cost accumulation.
-- Add a UI step: when creating a WIP asset, require the user to explicitly schedule the "activation date" (planned) or leave it blank; the system alerts when activation date is passed without activation.
+- The rural chart-of-accounts model must have two separate FUNRURAL accounts:
+  - `3.1.03 — Deduções da Receita — FUNRURAL s/ Vendas` (account type: CONTRA_REVENUE, nature: DEBIT)
+  - `2.1.04 — FUNRURAL a Recolher` (liability, nature: CREDIT)
+- The CR (contas a receber) module, when a receivable with `funruralRate > 0` is settled, generates a GL entry to `3.1.03` (debit) / `2.1.04` (credit) for the FUNRURAL amount, not to the payroll expense group.
+- Label the chart-of-accounts entries clearly: `FUNRURAL (Receita Bruta — art. 25 Lei 8.212)` vs. `FUNRURAL Patronal (Folha — art. 22a)`.
 
 **Warning signs:**
 
-- `AssetStatus` enum does not include `EM_ANDAMENTO` — only `ATIVO`, `INATIVO`.
-- Newly created WIP asset has `status = 'ATIVO'` in the database.
-- Depreciation batch query uses `status = 'ATIVO'` and processes WIP assets.
-- No `activationDate` field on the `Asset` model — no way to know when WIP ended.
+- A single `FUNRURAL` account code is used by both the payroll module and the receivables settlement module.
+- DRE shows FUNRURAL in `Despesas Operacionais` (expense group) instead of `Deduções da Receita Bruta`.
+- `AccountingSourceType` enum has `PAYABLE_SETTLEMENT` but no `RECEIVABLE_SETTLEMENT` type — the missing type is a sign the CR→GL integration has not been designed yet.
 
-**Phase to address:** Imobilizado em Andamento (Phase 2) — the WIP lifecycle must be defined before the depreciation batch is written. The batch implementation must explicitly exclude `IN_PROGRESS` assets.
-
----
-
-## Moderate Pitfalls
-
-### Pitfall 11: Hours-Based Depreciation Without Horímetro Reading Enforcement
-
-**What goes wrong:**
-Agricultural machinery (tractors, combines) is often depreciated using the hours-of-use method: `depreciationPerHour = (acquisitionValue - residualValue) / totalUsefulHours`. Monthly depreciation = `hoursUsedThisMonth * depreciationPerHour`.
-
-If the horímetro (hour meter) readings are not recorded every month, the depreciation run for that month has no data and produces R$ 0.00 depreciation. The system appears to work but the asset is under-depreciated by the missed months. Recovery requires reconstructing usage hours retroactively — often impossible.
-
-**Prevention:**
-
-- The depreciation batch for hours-based assets must check whether an horímetro reading exists for the period before processing. If missing, flag as `PENDING_HOURS_DATA` and skip — not silently R$ 0.00.
-- Create an alert for assets with `depreciationMethod = HOURS` that lack a horímetro reading as month-end approaches (e.g., alert on day 25 of each month).
-- The `HorimetroReading` entity must have a `period` field (YYYY-MM) and a unique constraint on `(assetId, period)` to prevent duplicate readings.
-
----
-
-### Pitfall 12: Asset Transfer Between Farms Does Not Update Cost Center Allocation
-
-**What goes wrong:**
-When an asset is transferred from Fazenda A to Fazenda B, the cost center allocation (which references `farmId` in `PayableCostCenterItem`) still points to Fazenda A's cost centers. Depreciation after the transfer is posted to the wrong farm's P&L.
-
-**Prevention:**
-
-- `AssetTransfer` must trigger a mandatory review of cost center allocation — the transfer endpoint returns a 400 if the new farm's cost centers are not confirmed.
-- Close the current `AssetCostCenterAllocation` on the transfer date and require creating a new allocation for the destination farm.
-- Test the scenario: transfer asset on day 15 of a month → depreciation for the first 15 days goes to Farm A's cost center, remaining 15 days to Farm B's cost center (pro rata transfer treatment).
-
----
-
-### Pitfall 13: Biological Asset Fair Value Update Creates Unrealized Gains That Inflate P&L
-
-**What goes wrong:**
-CPC 29 requires biological assets (cattle, breeding stock) to be remeasured at fair value at each balance sheet date. The gain/loss on remeasurement flows through the P&L. If the system auto-calculates fair value using market prices (e.g., arroba price × animal weight), a market spike creates a large unrealized gain that inflates profit — with no cash received. Farm managers may misinterpret the P&L as cash profit available for distribution.
-
-**Prevention:**
-
-- Fair value updates must be manual (user-confirmed) with a mandatory note field explaining the basis of valuation.
-- The `FairValueRevaluation` event must be clearly labeled as "ajuste a valor justo — não representa entrada de caixa" in all P&L reports that include biological assets.
-- The cash flow statement (DFC) must exclude fair value movements from operating activities and show them as non-cash items.
-- MEDIUM confidence: the specific reporting treatment depends on the farm's accounting policy. Flag for validation with the customer's accountant.
-
----
-
-### Pitfall 14: Parts Inventory for Maintenance Not Segregated from Main Consumable Stock
-
-**What goes wrong:**
-Maintenance parts (rolamentos, filtros, correias) are stored in the same stock database as agricultural inputs (seeds, fertilizers, pesticides). When a maintenance OS is completed and parts are consumed, the stock output uses `StockOutput.type = CONSUMPTION` — the same type used for seed planting. Cost reports cannot distinguish "input consumed in field operation" from "part consumed in maintenance." The maintenance cost KPI is inaccurate.
-
-**Prevention:**
-
-- Add `MAINTENANCE_PARTS` as a separate `StockOutputType` or use `Product.category = MAINTENANCE_PART` as a filter. At minimum, an OS closure that consumes parts must create `StockOutput` records with `originType = 'WORK_ORDER'` and `originId = workOrderId`.
-- Alternatively, model maintenance parts as a separate inventory context: `parts_stock` vs `inputs_stock` — but this increases schema complexity. The simpler approach is to preserve the existing stock model and use `originType` tagging for reporting separation.
-- Add a check at OS closure: the parts consumed must have `Product.category = MAINTENANCE_PART` — do not allow field inputs (seeds, pesticides) to be consumed via an OS.
-
----
-
-### Pitfall 15: NF-e XML Import Maps Multiple Asset Lines to a Single Asset Record
-
-**What goes wrong:**
-A single NF may contain multiple items — e.g., "3 x Trator Massey Ferguson 7180" on line 1 and "1 x Grade Aradora" on line 2. If the NF-e import creates a single `Asset` record per NF (not per line item, not per asset unit), three tractors become one asset record with value 3×. Depreciation is then calculated on a single record worth 3× the individual tractor — producing the correct total depreciation but making individual asset tracking impossible.
-
-**Prevention:**
-
-- NF-e import must create one `Asset` record per unit per NF line item. If `quantity = 3`, it creates 3 separate `Asset` records, each with `acquisitionValue = unitPrice`.
-- The import UI must show the expansion: "NF linha 1: 3 × Trator — serão criados 3 ativos individuais. Confirmar?"
-- Allow the user to optionally group (e.g., create 1 asset representing the "tractor group") — but default to individual asset creation.
-- The `AssetAcquisition` record links to the NF and shows all assets created from it.
-
----
-
-## Minor Pitfalls
-
-### Pitfall 16: Document Expiry Alerts Fire for Inactive Assets
-
-**What goes wrong:**
-CRLV, insurance, and revision documents tracked per asset generate alerts when they are about to expire. If the alert query does not filter by `asset.status = 'ATIVO'`, sold or written-off assets continue generating expiry alerts, cluttering the dashboard.
-
-**Prevention:** Document expiry alert query must join `WHERE asset.status = 'ATIVO'`.
-
----
-
-### Pitfall 17: Fuel Consumption Records Without Horímetro Context Prevent Cost/Hour Calculation
-
-**What goes wrong:**
-Fuel refueling records track `liters` and `cost`. Cost per hour requires dividing total fuel cost by hours operated. Without a `horómetroAtRefueling` reading on the fuel record, the cost/hour calculation falls back to estimated hours — making the metric unreliable.
-
-**Prevention:** `FuelRecord.horímetroAtRefueling` should be required (not optional) for hour-metered machinery. For odometer-based vehicles, `odometerAtRefueling` serves the same purpose.
-
----
-
-### Pitfall 18: Accumulated Depreciation Not Shown Separately in Asset Report (Net vs Gross Book Value)
-
-**What goes wrong:**
-The asset report shows only `currentBookValue = acquisitionValue - accumulatedDepreciation`. Auditors and accountants require separate disclosure of gross value and accumulated depreciation for the balance sheet (CPC 27 para 73a). If only net book value is stored, the report cannot be generated without recalculating from all depreciation entries — slow and prone to rounding drift.
-
-**Prevention:** Store `accumulatedDepreciation` as a running total on the `Asset` record, updated atomically whenever a `DepreciationEntry` is created or cancelled. Never compute it on-the-fly in reports by summing all entries.
+**Phase to address:** Plano de Contas (model must distinguish the two FUNRURAL accounts) + Lançamentos Automáticos — CR settlement hook.
 
 ---
 
 ## Technical Debt Patterns
 
-| Shortcut                                                              | Immediate Benefit              | Long-term Cost                                                                   | When Acceptable                                                      |
-| --------------------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Asset purchase routed through GoodsReceipt → StockEntry flow          | Reuses existing receiving code | Stock balance inflated with capitalized assets; CP double-counted                | Never                                                                |
-| Depreciation arithmetic with JavaScript `number` instead of `Decimal` | Simpler code                   | Rounding drift makes depreciation ledger irreconcilable over years               | Never — project already uses decimal.js                              |
-| All biological assets treated as CPC 27 depreciable                   | Simpler code                   | Bearer plants: correct; cattle: non-compliant, will fail audit                   | Never for entities subject to CPC 29                                 |
-| OS `accountingTreatment` field nullable                               | Simpler OS creation            | All maintenance expenses treated as OPEX; capitalizeable overhauls missed        | Never — mandatory at closure                                         |
-| WIP asset created with `status = 'ATIVO'`                             | No separate activation step    | WIP depreciates from cost accumulation, not from ready-for-use date              | Never                                                                |
-| Asset hierarchy traversal with N+1 recursive queries                  | Simple code                    | Depreciation batch and asset report collapse at scale (>50 child assets)         | Acceptable for MVP if depth guard is enforced and tree size is small |
-| Static cost center allocation (no validity period)                    | Simpler model                  | After cost center deactivation, monthly depreciation fails silently              | Acceptable for MVP if cost center lifecycle is stable and monitored  |
-| Single PayableCategory for all asset-related expenses                 | No enum migration              | Cannot separate CAPEX (acquisition) from OPEX (maintenance) in financial reports | Never — ASSET_ACQUISITION category must be distinct                  |
+| Shortcut                                                                                                             | Immediate Benefit                    | Long-term Cost                                                                                                                                  | When Acceptable                                                                                                   |
+| -------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Extend existing `accounting_entries` flat-column table instead of creating `journal_entries` + `journal_entry_lines` | Saves one phase of schema work       | Trial balance queries require UNION hacks; cost-center splits impossible; SPED I155 lines cannot be generated correctly                         | Never — schema must be two-table from the start                                                                   |
+| Cache DRE/BP/DFC as materialized views without invalidation on GL change                                             | Reporting queries are fast           | Stale statements show to users; accountant closes period based on wrong data                                                                    | Only acceptable if view has a `last_updated` timestamp shown in the UI and auto-refresh on GL write               |
+| Store chart-of-accounts as flat list with `parentCode: String?` instead of `parentId: UUID?`                         | Avoids FK lookup for codes           | Code changes break the tree; code uniqueness cannot be enforced at DB level with a simple string                                                | Never — use `parentId UUID FK` and enforce `UNIQUE(orgId, code)`                                                  |
+| Hardcode the rural chart-of-accounts as a TypeScript constant                                                        | Faster to seed                       | Cannot be customized per client; account codes are spread across codebase; adding a new account requires a code deploy                          | Acceptable for the seed/template, but the working tree must live in the DB                                        |
+| Skip `PendingJournalPosting` queue table — call auto-generation synchronously inside business transaction            | Simpler code                         | A GL failure rolls back the business event (CP payment rollback because accounting failed); or GL failure is silently swallowed                 | Never in production — the queue pattern is required for correctness                                               |
+| Derive DFC from DRE + BP delta instead of from GL entries                                                            | Avoids building a DFC mapping system | Indirect method reconciliation is approximate; direct method is impossible; non-cash items (CPC 29 fair value, depreciation) are not identified | Acceptable only for v1 DFC indirect method if labeled "approximation" — direct method requires proper DFC mapping |
 
 ---
 
 ## Integration Gotchas
 
-| Integration                               | Common Mistake                                                         | Correct Approach                                                                                                            |
-| ----------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Payables service (asset acquisition CP)   | Using `category = OTHER` or `MAINTENANCE` for asset purchase           | Add and use `ASSET_ACQUISITION` enum value; set `originType = 'ASSET_ACQUISITION'`, `originId = assetId`                    |
-| Payables service (OS maintenance expense) | Creating CP directly from OS without `originType`                      | OS creates CP with `originType = 'WORK_ORDER'`, `originId = workOrderId`; `category = MAINTENANCE`                          |
-| Receivables service (asset sale CR)       | Creating CR without gain/loss calculation                              | Asset sale creates `Receivable` with `originType = 'ASSET_DISPOSAL'`; a separate `AssetDisposal` record stores `gainOrLoss` |
-| Stock entries (maintenance parts)         | Parts consumption uses `CONSUMPTION` type identically to field inputs  | Tag with `originType = 'WORK_ORDER'` or add `MAINTENANCE_PARTS` output type for reporting separation                        |
-| Depreciation batch (cost centers)         | Using `PayableCostCenterItem` pattern directly without validity period | Create `AssetCostCenterAllocation` with `validFrom`/`validTo`; reuse `validateCostCenterItems` from `@protos-farm/shared`   |
-| GoodsReceipt service (asset on PO)        | Routing asset-type PO lines through standard stock-entry creation      | Guard in GoodsReceipt service: if PO line is ASSET category, redirect to AssetAcquisition flow, do not create StockEntry    |
-| Leasing installments (LeasingContract)    | Reusing RuralCredit installment pattern with `category = FINANCING`    | Leasing installments split into principal (reduces liability) and interest (P&L expense); ROU asset depreciated separately  |
+| Integration        | Common Mistake                                                                                                 | Correct Approach                                                                                                                                                           |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Payroll → GL       | Use aggregate run total in one entry; no cost-center split                                                     | One `JournalEntry` per payroll run with N×2 `JournalEntryLine` rows (one debit per cost center, one aggregate credit to liability)                                         |
+| Depreciation → GL  | Generate one entry per asset per month without checking if an entry for that `assetId + period` already exists | `UNIQUE(sourceType, sourceId, periodId)` on `journal_entries` prevents duplicates; depreciation service uses upsert                                                        |
+| Stock Output → GL  | Use stock output `totalCost` directly as GL amount; ignores weighted-average unit cost recalculation           | Stock output GL entry must use `StockBalance.averageCost * quantity` at the time of output, not the original purchase price                                                |
+| CP Settlement → GL | Create GL entry using `Payable.totalAmount` instead of `payment.amount`                                        | Partial payments must generate partial GL entries; `sourceId` should be `paymentId`, not `payableId`                                                                       |
+| CR Settlement → GL | Omit FUNRURAL deduction from the GL entry                                                                      | CR settlement generates two GL entries: one for cash receipt (Debit Bank / Credit CR), one for FUNRURAL withheld (Debit FUNRURAL Contra-Revenue / Credit FUNRURAL Payable) |
+| Asset Sale → GL    | Debit Cash / Credit Asset at book value, ignoring accumulated depreciation                                     | Correct: Debit Cash (sale price) + Debit Accumulated Depreciation + Credit Asset (cost) + Credit/Debit Gain or Loss on Disposal                                            |
+| SPED ECD → PVA     | Generate file from computed financial statement values (which may differ from GL by rounding)                  | I150/I155 (balancete) must be derived from raw GL trial balance queries, not from financial statement layer                                                                |
 
 ---
 
 ## Performance Traps
 
-| Trap                                                                                       | Symptoms                                                 | Prevention                                                                                              | When It Breaks                      |
-| ------------------------------------------------------------------------------------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| Depreciation batch with N+1 asset hierarchy traversal                                      | Month-end batch runs 30+ minutes with large asset tree   | Use PostgreSQL recursive CTE; fetch all subtrees in one query                                           | >50 child assets per organization   |
-| No idempotency guard on depreciation batch                                                 | Partial run on crash produces duplicate entries on retry | Unique constraint on `(assetId, period)`; advisory lock on `(organizationId, period)`                   | Every server restart mid-batch      |
-| Accumulated depreciation computed from SUM of all entries on every report load             | Asset report page times out                              | Maintain running `accumulatedDepreciation` column on `Asset`; update atomically per `DepreciationEntry` | >200 depreciation entries per asset |
-| Cost center allocation validation (sum = 100%) computed by fetching all allocation records | Slow validation on asset save with many allocations      | In-memory validation at service layer before transaction; do not re-query after INSERT                  | >20 cost center items per asset     |
-| Fair value batch update for all biological assets without batching                         | OOM or timeout if org has large cattle herd              | Process biological asset revaluation in batches of 100; use `cursor`-based pagination                   | >500 biological assets              |
-| Document expiry alert query joining all assets without index                               | Slow dashboard load                                      | Index on `(organizationId, expiryDate)` on asset documents table; exclude `status != 'ATIVO'` assets    | >1,000 asset documents              |
+| Trap                                                                       | Symptoms                                                                    | Prevention                                                                                                                                                                       | When It Breaks                                                        |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Recursive CTE for full chart-of-accounts subtotals on every DRE request    | DRE page takes 5–10 seconds to load in December (year-end)                  | Materialize account hierarchy as `lpath` (ltree extension) in PostgreSQL; cache hierarchy in Redis with 5-minute TTL; use `@>` operator for subtree queries                      | At ~500 accounts with 4+ levels and 50K+ journal entry lines per year |
+| N+1 on `journal_entry_lines` when building trial balance                   | Trial balance endpoint times out; DB shows thousands of queries per request | Single query: `SELECT account_code, SUM(CASE side WHEN DEBIT THEN amount ELSE 0) - SUM(CASE side WHEN CREDIT THEN amount ELSE 0) FROM journal_entry_lines GROUP BY account_code` | At >10K lines per period, N+1 makes it unusable                       |
+| Full `accounting_entries` + `journal_entry_lines` table scan for balancete | Progressively slower each month as data accumulates                         | Composite index `(organizationId, periodId, accountId)` on `journal_entry_lines`; partial index for open periods (frequently queried); archive closed periods                    | At >500K lines (approx. 3 years of a mid-size fazenda)                |
+| SPED ECD generation loads all journal entries into Node memory             | OOM crash when generating ECD for a full year                               | Stream journal entries in batches of 5,000, write to file incrementally using Node.js `fs.createWriteStream`; existing CNAB adapter uses this pattern                            | At >100K entries per fiscal year                                      |
+| DFC indirect method recalculates all period balances on each request       | DFC takes >10 seconds                                                       | Pre-compute period balance snapshots at period close; store as `PeriodSnapshot { accountId, openingBalance, closingBalance, debitMovement, creditMovement }`                     | At >12 periods × 500 accounts = 6,000 rows to recalculate per request |
 
 ---
 
 ## Security Mistakes
 
-| Mistake                                                        | Risk                                                                          | Prevention                                                                                                                                                                             |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Asset acquisition endpoint accessible to `OPERATOR` role       | Field operator registers unauthorized capital expenditures                    | `assets:create` permission limited to `MANAGER`, `FINANCIAL`, `ADMIN` roles; mobile flow for maintenance requests, not asset creation                                                  |
-| Depreciation run triggerable via API by any authenticated user | Malicious or accidental double-run produces duplicate entries                 | Depreciation run endpoint requires `assets:depreciate` permission (`FINANCIAL` or `ADMIN` only); idempotency constraint at database level as last resort                               |
-| Asset book value visible in list API to all roles              | Confidential asset valuation exposed to field workers                         | Book value, acquisition value, and depreciation details returned only for `FINANCIAL`, `MANAGER`, `ADMIN` roles; `OPERATOR` sees only operational fields (status, location, documents) |
-| OS accounting treatment selectable by maintenance technician   | Technician classifies routine repair as capitalization to inflate asset value | `accountingTreatment` selection on OS closure requires `FINANCIAL` or `MANAGER` role; technician can close OS but accounting classification is locked to authorized users              |
+| Mistake                                                                     | Risk                                                                               | Prevention                                                                                                                                                                      |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Journal entry creation endpoint accessible to any `financial:*` permission  | Unauthorized manual entries; fabricated expenses                                   | Separate permission `accounting:journal:create` for manual entries; auto-generated entries bypass permission check but are system-only (no user-facing endpoint)                |
+| SPED ECD file stored in local filesystem                                    | File accessible to all server processes; no versioning; lost on redeploy           | Store in S3-compatible storage (existing pattern from pdfkit outputs); signed URL for download; access logged                                                                   |
+| Period re-open available to `financial:manager` role                        | Manager can re-open closed period and insert backdated entries without audit trail | Period re-open requires `accounting:period:reopen` permission (separate from financial manager); creates immutable audit log entry; triggers alert to org owner                 |
+| Chart-of-accounts API returns all accounts for `organizationId` without RLS | Cross-tenant account code leak                                                     | All accounting models must include `organizationId` in every query `where` clause; RLS policy on `chart_of_accounts` table as with all existing models                          |
+| Opening balance wizard allows arbitrary amounts without source reference    | Fraudulent equity inflation                                                        | Each opening balance line must reference a source (`bankAccountId`, `payableId`, etc.) or be flagged as `manualAdjustment: true` with mandatory `justification` text; auditable |
 
 ---
 
 ## UX Pitfalls
 
-| Pitfall                                                                                         | User Impact                                                                      | Better Approach                                                                                                                                                                    |
-| ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Depreciation run triggered manually with no progress feedback                                   | User clicks "Executar Depreciação" and sees nothing for 30 seconds, clicks again | Show progress: "Processando X de Y ativos..." with a cancel option; disable button during run                                                                                      |
-| OS closure form shows `accountingTreatment` as a dropdown with three options and no explanation | Maintenance team selects wrong treatment (CAPITALIZACAO for a simple oil change) | Show contextual help: "Capitalização: melhora ou estende vida útil. Despesa: manutenção de rotina. Diferimento: reforma planejada com amortização futura." Link to CPC 27 summary. |
-| Asset transfer form does not show current cost center allocation                                | User transfers asset without realizing cost center must be updated for new farm  | Show current allocation in read-only panel on transfer form; require confirmation that allocation will be updated                                                                  |
-| Biological asset fair value update with no cash flow warning                                    | Manager sees large P&L gain, assumes profit available for distribution           | Show inline: "Ajuste a valor justo de R$ X,XXX — não representa entrada de caixa. Não afeta o saldo bancário."                                                                     |
-| Imobilizado em andamento shows depreciation amount of R$ 0.00 in asset list                     | Manager thinks the WIP asset is depreciating at zero                             | Show "Em andamento — depreciação inicia na ativação" instead of R$ 0.00                                                                                                            |
-| Document expiry dashboard shows expired documents for deactivated assets                        | Cluttered dashboard with irrelevant alerts                                       | Filter document alerts to `asset.status = 'ATIVO'` assets only; show count of inactive assets with expired documents as a collapsed section                                        |
+| Pitfall                                                                                  | User Impact                                                                                    | Better Approach                                                                                                     |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------- | -------- |
+| Show all chart-of-accounts in a flat select (400+ accounts) when creating a manual entry | Accountant cannot find the right account; wrong account selected                               | Hierarchical account picker with search; show account code + name + nature; most-recently-used accounts shown first |
+| Period close button available before checklist is 100% complete                          | Accountant closes period with unreconciled items; discovers error after SPED submission        | Disable close button until all checklist items are checked; show count of blocking items ("3 itens pendentes")      |
+| DRE shows YTD figures with no way to view single month                                   | Cannot compare months; seasonal agricultural business makes YTD misleading in mid-year         | DRE filter: single month / quarter / YTD / custom range; comparative column for prior year same period              |
+| SPED ECD generation triggered immediately with no progress feedback                      | Large files take 30–60 seconds; user thinks it crashed and clicks again (duplicate generation) | Background job for ECD generation; progress indicator in UI; prevent second generation while first is running       |
+| Manual journal entry form without a "verify balance" step                                | Accountant submits an imbalanced entry; discovers at next trial balance                        | Real-time debit/credit running totals in the form; submit button disabled until `                                   | sumDebits - sumCredits | < 0.005` |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Asset Purchase CP:** Often uses `category = OTHER` — verify `Payable.category = ASSET_ACQUISITION` and `originType = 'ASSET_ACQUISITION'` for all asset acquisition CP records.
-- [ ] **No StockEntry for Assets:** Often routes through GoodsReceipt — verify no `StockEntry` record exists with `originType = 'ASSET_ACQUISITION'`.
-- [ ] **Depreciation Arithmetic:** Often uses float — verify that a tractor depreciated over 84 months reaches exactly `residualValue` at month 84 (not ±R$ 0.36).
-- [ ] **CPC 29 Biological Assets:** Often depreciated — verify that cattle records have no `DepreciationEntry` records; verify that coffee trees have `classification = BEARER_PLANT` and DO have depreciation entries.
-- [ ] **WIP Not Depreciated:** Often `status = 'ATIVO'` prematurely — verify that a newly created WIP asset with `status = 'EM_ANDAMENTO'` produces R$ 0.00 depreciation in the batch run.
-- [ ] **Batch Idempotency:** Often no guard — verify that running the depreciation batch twice for the same period produces the same number of entries as running it once (second run is a no-op due to unique constraint).
-- [ ] **Asset Disposal Cleans Pending Entries:** Often missed — verify that after asset sale, no `DepreciationEntry` with `status = 'PENDING'` exists for that asset; verify next batch run does not process the sold asset.
-- [ ] **OS Accounting Treatment Mandatory:** Often nullable — verify that closing an OS via `PATCH /work-orders/:id/close` without `accountingTreatment` returns 400.
-- [ ] **Cost Center Validation:** Often unchecked — verify that an asset with allocation 50% CC-A + 40% CC-B (sum = 90%) returns 400 on save.
-- [ ] **Leasing ROU Asset:** Often missing — verify that creating a `LeasingContract` with `type = FINANCEIRO` creates an `Asset` record with `assetType = RIGHT_OF_USE` in the database.
-- [ ] **Hierarchy Depth Guard:** Often unbounded — verify that attempting to set an asset's `parentId` to its own grandchild (circular reference) returns 400.
-- [ ] **Land Not Depreciated:** Often included in batch — verify that an asset with `classification = LAND_RURAL_PROPERTY` has R$ 0.00 depreciation after batch run.
+- [ ] **Double-entry constraint:** Journal entry can be saved — verify that an imbalanced entry (debits ≠ credits) is REJECTED at the DB level, not just the service level.
+- [ ] **Period locking:** A CP payment date was edited for a closed period — verify the GL entry was NOT updated retroactively.
+- [ ] **Rateio rounding:** Create a payroll run totaling R$ 10,000.00 split 3 ways — verify all three journal entry line amounts sum to exactly R$ 10,000.00.
+- [ ] **Duplicate auto-entries:** Trigger `createPayrollEntries` twice for the same run — verify only one set of entries exists (idempotency).
+- [ ] **FUNRURAL entry type:** A receivable with FUNRURAL withheld is settled — verify the FUNRURAL GL entry lands in the contra-revenue group (3.x.xx), NOT in the expense group (6.x.xx).
+- [ ] **CPC 29 DFC reversal:** A biological asset fair value gain appears in DRE — verify the DFC indirect method shows it as a non-cash adjustment (subtracted from net income in operating activities).
+- [ ] **SPED ECD balance:** Run PVA validator on the generated ECD file — verify zero errors on I150/I155 (balancete) and J100/J150 (demonstrations).
+- [ ] **Opening balance wizard:** Create opening balances from wizard — verify `SUM(openingBalanceLines where side=DEBIT) = SUM(openingBalanceLines where side=CREDIT)`.
+- [ ] **Fiscal year type:** Configure a safra fiscal year (Jul–Jun) — verify ECD `DT_INI = 2025-07-01` and `DT_FIN = 2026-06-30` in the generated 0000 registro.
+- [ ] **Account code uniqueness:** Attempt to create two accounts with the same code — verify the DB constraint rejects it (not just application validation).
 
 ---
 
 ## Recovery Strategies
 
-| Pitfall                                                                                 | Recovery Cost | Recovery Steps                                                                                                                                                                                          |
-| --------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Asset purchases already creating StockEntry records discovered in production            | HIGH          | Audit all `StockEntry` records with `product.category = ASSET`; reverse stock balance for affected items; reprocess as `AssetAcquisition`; financial reporting for affected periods must be regenerated |
-| Depreciation computed with float arithmetic — accumulated rounding drift                | HIGH          | Recalculate all `DepreciationEntry` records using Decimal arithmetic; compare with stored values; create adjustment entries for the difference; audit trail required for accounting sign-off            |
-| Biological assets (cattle) have depreciation entries instead of fair value revaluations | MEDIUM        | Identify all `DepreciationEntry` records for `classification = BIOLOGICAL_ASSET_*` assets; void them; create compensating entries; requires accountant review                                           |
-| WIP assets with premature depreciation entries                                          | MEDIUM        | Identify `DepreciationEntry` records for assets with `activationDate > entryDate`; void premature entries; recalculate from correct activation date                                                     |
-| Batch run created duplicate entries for same period                                     | LOW           | Delete duplicates using unique constraint violation analysis; unique constraint prevents future occurrences after it is added                                                                           |
-| Asset disposed without cancelling pending depreciation entries                          | MEDIUM        | Write script: for each disposed asset with `status != 'ATIVO'`, void all `DepreciationEntry` records with `status = 'PENDING'`; verify net book values                                                  |
+| Pitfall                                                                      | Recovery Cost | Recovery Steps                                                                                                                                                                                                                         |
+| ---------------------------------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Flat-column `accounting_entries` extended instead of replaced                | HIGH          | Create new `journal_entries` + `journal_entry_lines` tables; write migration script to convert old records; update all consumers; keep old table as archive with `deprecated_` prefix                                                  |
+| Period closed with unreconciled entries — wrong statement sent to accountant | MEDIUM        | Re-open period (requires `accounting:period:reopen` permission); create correcting journal entry with `adjustmentType = PRIOR_PERIOD_CORRECTION`; regenerate financial statements; note correction in notes explicativas               |
+| Duplicate auto-generated journal entries discovered                          | MEDIUM        | Write a cleanup script: `DELETE FROM journal_entries WHERE id NOT IN (SELECT MIN(id) FROM journal_entries GROUP BY sourceType, sourceId, periodId)`; add `UNIQUE(sourceType, sourceId, periodId)` constraint; re-run idempotency check |
+| SPED ECD rejected by PVA with I050 duplicate accounts                        | LOW           | Identify duplicate `COD_CTA` in chart of accounts; merge the duplicate accounts (reassign all lines); regenerate ECD; re-submit                                                                                                        |
+| Trial balance out by R$ 0.01–R$ 0.10 (rounding)                              | MEDIUM        | Audit rateio functions for float arithmetic; identify affected periods; create correcting entries; implement `rateio.ts` with remainder-to-largest-share logic; verify all future periods                                              |
+| Opening balance not entered — first month BP shows zero assets               | MEDIUM        | Wizard creates `JournalEntry sourceType = OPENING_BALANCE` for each account with the correct balance as of go-live date; this is normal first-month-of-accounting procedure                                                            |
 
 ---
 
 ## Pitfall-to-Phase Mapping
 
-| Pitfall                                         | Prevention Phase                        | Verification                                                                                                                                   |
-| ----------------------------------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Asset purchase double-counting via GoodsReceipt | Cadastro e Aquisição (Phase 1)          | No StockEntry created for asset-category products; CP has `originType = ASSET_ACQUISITION`; `GoodsReceipt` service rejects asset-type PO lines |
-| CPC 27 vs CPC 29 classification confusion       | Cadastro de Ativos (Phase 1)            | `AssetClassification` enum has explicit CPC mapping; bearer plants classified as `BEARER_PLANT`; cattle as `BIOLOGICAL_ASSET_ANIMAL`           |
-| WIP asset premature depreciation                | Imobilizado em Andamento (Phase 2)      | WIP asset with `status = EM_ANDAMENTO` produces R$0 in depreciation batch; batch query excludes `IN_PROGRESS` classification                   |
-| Asset hierarchy N+1 query performance           | Imobilizado em Andamento (Phase 2)      | Tree traversal uses recursive CTE; `depth` or `path` column enforces max depth; circular reference returns 400                                 |
-| Depreciation decimal precision                  | Depreciação Automática (Phase 3)        | 84-month depreciation ends at exactly residual value; all arithmetic via Decimal                                                               |
-| Depreciation batch idempotency                  | Depreciação Automática (Phase 3)        | Double batch run produces identical result as single run; unique constraint on (assetId, period)                                               |
-| Cost center allocation staleness                | Depreciação e Centro de Custo (Phase 3) | After cost center deactivation, batch skips and alerts; allocation has validity period                                                         |
-| Asset disposal missing pending entry cleanup    | Baixa e Transferência (Phase 4)         | Sold asset has zero PENDING depreciation entries; next batch ignores sold assets                                                               |
-| OS state machine invalid transitions            | Manutenção e OS (Phase 5)               | Direct API call with invalid transition returns 409; OS_VALID_TRANSITIONS is source of truth                                                   |
-| OS accounting treatment missing                 | Manutenção e OS (Phase 5)               | Close OS without accountingTreatment returns 400; CAPITALIZACAO updates asset.bookValue                                                        |
-| Leasing ROU asset not created                   | Leasing e Arrendamento (Phase 7)        | LeasingContract FINANCEIRO creates Asset(RIGHT_OF_USE) + amortization schedule; depreciation batch processes ROU asset                         |
-| Hours-based depreciation with missing horímetro | Operacional (Phase 6)                   | Assets with HOURS method and no horímetro reading flagged as PENDING_HOURS_DATA, not R$0                                                       |
+| Pitfall                                  | Prevention Phase                                                           | Verification                                                                      |
+| ---------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Double-entry broken by aggregate entries | Plano de Contas (Phase 1) — `JournalEntry + JournalEntryLine` schema       | Deploy and assert: imbalanced entry rejected by DB trigger                        |
+| Rounding breaks trial balance            | Plano de Contas (Phase 1) — `rateio.ts` utility                            | Unit test: `rateio(10000.00, [0.3333, 0.3333, 0.3334])` sums to exactly 10000.00  |
+| Retroactive edits corrupt closed period  | Períodos Contábeis (Phase 2) — `assertPeriodOpen` guard                    | Integration test: edit CP payment date for closed period → GL unchanged           |
+| Flat `accounting_entries` model extended | Plano de Contas (Phase 1) — schema created fresh                           | Code review: no column additions to `accounting_entries` table                    |
+| Duplicate auto-entries from retries      | Lançamentos Automáticos (Phase 3) — `PendingJournalPosting` queue          | Load test: trigger payroll close 3×; assert exactly 5 journal entry types created |
+| SPED ECD PVA validation failures         | SPED ECD (Phase N) — pre-generation validator + PVA test                   | Run PVA on generated file; assert zero errors                                     |
+| Historical data gap                      | Saldo de Abertura (Phase early) — opening balance wizard                   | Trial balance after wizard shows non-zero balances matching existing module data  |
+| Safra fiscal year mismatch               | Períodos Contábeis (Phase 2) — `FiscalYear` model with `startDate/endDate` | Create safra year Jul–Jun; assert ECD 0000 registro dates are correct             |
+| CPC 29 phantom income in DFC             | DFC (Phase N-1) — `isFairValueAdjustment` flag + DFC reversal              | Revalue biological asset; assert DFC operating activities shows reversal          |
+| FUNRURAL wrong account group             | Plano de Contas (Phase 1) — two distinct FUNRURAL codes                    | Settle CR with FUNRURAL; assert GL entry is in group 3 (contra-revenue)           |
 
 ---
 
 ## Sources
 
-- Codebase analysis: `apps/backend/prisma/schema.prisma` — `PayableCategory` enum (no `ASSET_ACQUISITION` value; must be added); `Payable.originType`/`originId` pattern confirmed; `Decimal(15, 2)` precision standard (HIGH confidence)
-- Codebase analysis: `apps/backend/src/modules/checks/checks.types.ts` — `VALID_TRANSITIONS` pattern for state machine; adopted by `goods-receipts.types.ts` as `GR_VALID_TRANSITIONS` (HIGH confidence)
-- Codebase analysis: `apps/backend/src/modules/payables/payables.types.ts` — `Money` factory confirmed; `generateInstallments` imported; `CostCenterItemInput` pattern for allocation (HIGH confidence)
-- Codebase analysis: `apps/backend/src/modules/goods-receipts/goods-receipts.types.ts` — 6-scenario receiving state machine confirmed; `GR_VALID_TRANSITIONS` pattern (HIGH confidence)
-- CPC 27 (IAS 16) — Ativo Imobilizado: depreciation start on "available for use," bearer plants under CPC 27 after 2014 amendment, no depreciation for land, componentization rules (HIGH confidence — official Brazilian accounting standard)
-- CPC 29 (IAS 41) — Ativos Biológicos: fair value measurement for non-bearer biological assets, cattle and breeding stock treatment (HIGH confidence — official Brazilian accounting standard)
-- CPC 06 R2 (IFRS 16) — Arrendamentos: ROU asset creation, liability amortization, financial vs operational lease distinction (HIGH confidence — official Brazilian accounting standard, verified via KPMG Brasil guide and CVM publication)
-- Domain knowledge: depreciation pro rata die calculation, last-period balancing entry (HIGH confidence — standard ERP accounting, corroborated by SAP support note 2748419 and Odoo community discussion on Decimal rounding)
-- Domain knowledge: PostgreSQL recursive CTE for hierarchy traversal, advisory locks for batch idempotency (HIGH confidence — official PostgreSQL documentation patterns)
-- Web search: agricultural machinery depreciation methods in Brazil (hours-of-use, linear, accelerated) — Aegro blog on custo operacional, Afixcode on cálculo de depreciação (MEDIUM confidence — industry sources, not CPC)
-- Web search: batch depreciation performance, concurrent PostgreSQL lock contention (MEDIUM confidence — multiple AWS and PostgreSQL community sources, no specific benchmark for this codebase's scale)
-- Domain knowledge: CPC 29 fair value subjectivity for unlisted biological assets (MEDIUM confidence — academic literature confirmed; specific P&L treatment in farm management context not verified against a specific auditor's guidance)
+- [Modern Treasury: How to Scale a Ledger, Part V — Immutability and Double-Entry](https://www.moderntreasury.com/journal/how-to-scale-a-ledger-part-v)
+- [Modern Treasury: Designing Ledgers API with Concurrency Control](https://www.moderntreasury.com/journal/designing-ledgers-with-optimistic-locking)
+- [Starsoft: Guia ECD e ECF 2025](https://www.starsoft.com.br/blog/ecd-e-ecf-2025-baixe-o-guia-completo-e-evite-erros-na-entrega/)
+- [Domínio Sistemas: Principais erros do SPED ECD](https://suporte.dominioatendimento.com/central/faces/solucao.html?codigo=6037)
+- [RFB SPED: Publicação versão 10.3.4 ECD](http://sped.rfb.gov.br/pagina/show/7996)
+- [PostgreSQL docs: Recursive CTEs](https://www.postgresql.org/docs/current/queries-with.html)
+- [CYBERTEC: Speeding up recursive queries and hierarchical data](https://www.cybertec-postgresql.com/en/postgresql-speeding-up-recursive-queries-and-hierarchic-data/)
+- [IFRS: IAS 41 Agriculture](https://www.ifrs.org/issued-standards/list-of-standards/ias-41-agriculture/)
+- [MDPI: Biological Assets IAS 41 — Systematic Review](https://www.mdpi.com/1911-8074/18/7/380)
+- [Agronota: Registros contábeis da atividade rural](https://agronota.com.br/contabil-e-fiscal/registros-contabeis-da-atividade-rural-o-que-o-contador-precisa-saber/)
+- [Planning: Contabilidade para o agronegócio](https://planning.com.br/contabilidade-agronegocio-particularidades-fiscais/)
+- [Contabeis.com.br: Balanço fiscal vs. ano agrícola](https://www.contabeis.com.br/forum/contabilidade/258403/balanco-fiscal-x-ano-agricola/)
+- [Oracle ERP: High Volume Data Migration for General Ledger](https://blogs.oracle.com/erp-ace/high-volume-data-migration-consideration-for-general-ledger)
+- Codebase analysis: `apps/backend/src/modules/accounting-entries/` (INTEGR-02 implementation)
+- Codebase analysis: `apps/backend/prisma/schema.prisma` — `AccountingEntry` model, `AccountingSourceType` enum
 
 ---
 
-_Pitfalls research for: Asset Management, Depreciation, Maintenance OS, and Financial Integration (v1.2 Gestão de Patrimônio) added to existing financial + purchasing + stock ERP_
-_Researched: 2026-03-19_
+_Pitfalls research for: rural farm management ERP — v1.4 Accounting and Financial Statements milestone_
+_Researched: 2026-03-26_

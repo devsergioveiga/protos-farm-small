@@ -54,6 +54,7 @@ const CATEGORY_LABELS: Record<PayableCategory, string> = {
   SEED: 'Semente',
   EQUIPMENT: 'Equipamento',
   FINANCE: 'Financeiro',
+  ASSET_ACQUISITION: 'Aquisicao de Ativo',
   OTHER: 'Outros',
 };
 

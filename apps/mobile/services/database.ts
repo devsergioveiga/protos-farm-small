@@ -4,7 +4,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
  * Database version — increment when adding new migrations.
  * Each version maps to a migration function in the migrations array.
  */
-const DATABASE_VERSION = 11;
+const DATABASE_VERSION = 12;
 
 /**
  * Run migrations on database init (called by SQLiteProvider onInit).
@@ -73,6 +73,11 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase): Promise<void> {
   if (currentVersion === 10) {
     await migrationV11(db);
     currentVersion = 11;
+  }
+
+  if (currentVersion === 11) {
+    await migrationV12(db);
+    currentVersion = 12;
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
@@ -597,6 +602,30 @@ async function migrationV11(db: SQLiteDatabase): Promise<void> {
     );
 
     CREATE INDEX IF NOT EXISTS idx_sync_metrics_started ON sync_metrics(started_at DESC);
+  `);
+}
+
+/**
+ * V12 — Time punches (clock-in/out) for mobile offline-first time tracking (Phase 27).
+ */
+async function migrationV12(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS time_punches (
+      id TEXT PRIMARY KEY NOT NULL,
+      employee_id TEXT NOT NULL,
+      organization_id TEXT NOT NULL,
+      farm_id TEXT NOT NULL,
+      punch_type TEXT NOT NULL CHECK(punch_type IN ('CLOCK_IN', 'BREAK_START', 'BREAK_END', 'CLOCK_OUT')),
+      punched_at TEXT NOT NULL,
+      latitude REAL,
+      longitude REAL,
+      out_of_range INTEGER DEFAULT 0,
+      synced INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_time_punches_employee ON time_punches(employee_id);
+    CREATE INDEX IF NOT EXISTS idx_time_punches_synced ON time_punches(synced);
   `);
 }
 

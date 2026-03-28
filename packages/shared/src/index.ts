@@ -43,3 +43,6 @@ export type { FebrabanBank } from './constants/febraban-banks';
 // AP/AR utilities
 export { generateInstallments, validateCostCenterItems } from './utils/installments';
 export type { CostCenterItemInput, Installment } from './utils/installments';
+
+// Accounting utilities
+export * from './utils/accounting';

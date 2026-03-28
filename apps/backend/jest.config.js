@@ -4,8 +4,10 @@ module.exports = {
   testMatch: ['**/*.spec.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^(\\.{1,2}/.*)\\.js$': '$1',
   },
-  maxWorkers: '50%',
+  maxWorkers: process.env.CI ? 1 : '50%',
+  workerIdleMemoryLimit: process.env.CI ? '512MB' : undefined,
   transform: {
     '^.+\\.ts$': [
       '@swc/jest',

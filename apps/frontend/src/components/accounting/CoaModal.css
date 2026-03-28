@@ -1,0 +1,217 @@
+/* CoaModal — create/edit Chart of Account */
+
+.coa-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(42, 37, 32, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.coa-modal {
+  background: var(--color-neutral-0, #fafaf8);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(42, 37, 32, 0.25);
+}
+
+/* Header */
+.coa-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--color-neutral-100, #f0ede8);
+}
+
+.coa-modal__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-neutral-900, #2a2520);
+  margin: 0;
+}
+
+.coa-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  color: var(--color-neutral-500, #857f78);
+}
+
+.coa-modal__close:hover {
+  background: var(--color-neutral-100, #f0ede8);
+  color: var(--color-neutral-800, #2a2520);
+}
+
+.coa-modal__close:focus-visible {
+  outline: 2px solid var(--color-primary-500, #2e7d32);
+  outline-offset: 2px;
+}
+
+/* Body / form */
+.coa-modal__body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.coa-modal__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.coa-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.coa-modal__label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700, #3e3833);
+}
+
+.coa-modal__input {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-800, #2a2520);
+  background: var(--color-neutral-0, #fafaf8);
+  border: 1.5px solid var(--color-neutral-200, #e0dcd6);
+  border-radius: 8px;
+  padding: 10px 14px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition:
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+
+.coa-modal__input:focus {
+  border-color: var(--color-primary-500, #2e7d32);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
+}
+
+.coa-modal__input--error {
+  border-color: var(--color-error-500, #c62828);
+}
+
+.coa-modal__input--error:focus {
+  border-color: var(--color-error-500, #c62828);
+  box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.12);
+}
+
+.coa-modal__error {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-error-600, #c62828);
+}
+
+/* Checkboxes */
+.coa-modal__checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.coa-modal__checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-800, #2a2520);
+  cursor: pointer;
+  min-height: 24px;
+}
+
+.coa-modal__checkbox-label--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.coa-modal__checkbox {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--color-primary-600, #2e7d32);
+  cursor: pointer;
+}
+
+/* Footer */
+.coa-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-neutral-100, #f0ede8);
+  margin-top: 4px;
+}
+
+.coa-modal__btn {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  padding: 10px 20px;
+  min-height: 40px;
+  transition: background 150ms ease-out;
+}
+
+.coa-modal__btn--primary {
+  background: var(--color-primary-600, #2e7d32);
+  color: #fff;
+}
+
+.coa-modal__btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-700, #1b5e20);
+}
+
+.coa-modal__btn--secondary {
+  background: var(--color-neutral-100, #f0ede8);
+  color: var(--color-neutral-800, #2a2520);
+}
+
+.coa-modal__btn--secondary:hover:not(:disabled) {
+  background: var(--color-neutral-200, #e0dcd6);
+}
+
+.coa-modal__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.coa-modal__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500, #2e7d32);
+  outline-offset: 2px;
+}
+
+/* Responsive */
+@media (max-width: 639px) {
+  .coa-modal__row {
+    grid-template-columns: 1fr;
+  }
+}

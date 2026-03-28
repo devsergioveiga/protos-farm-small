@@ -35,8 +35,24 @@ function isRowEmpty(row: Record<string, string | number | null>): boolean {
   return Object.values(row).every((v) => v === null || v === undefined || String(v).trim() === '');
 }
 
+function decodeBuffer(buffer: Buffer): string {
+  // Check for UTF-8 BOM
+  if (buffer[0] === 0xef && buffer[1] === 0xbb && buffer[2] === 0xbf) {
+    return buffer.toString('utf-8');
+  }
+
+  // Try UTF-8 first; if it produces replacement characters, fall back to latin1
+  const utf8 = buffer.toString('utf-8');
+  if (!utf8.includes('\uFFFD')) {
+    return utf8;
+  }
+
+  // ISO-8859-1 (Latin-1) — very common in Brazilian Excel exports
+  return buffer.toString('latin1');
+}
+
 async function parseCsv(buffer: Buffer): Promise<ParsedAnimalFile> {
-  let text = stripBom(buffer.toString('utf-8'));
+  let text = stripBom(decodeBuffer(buffer));
   // Normalize line endings
   text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 

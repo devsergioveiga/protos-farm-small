@@ -20,6 +20,7 @@ export type ReceivableCategory =
   | 'MILK_SALE'
   | 'LEASE'
   | 'SERVICES'
+  | 'ASSET_SALE'
   | 'OTHER';
 
 export type ReceivableStatus =

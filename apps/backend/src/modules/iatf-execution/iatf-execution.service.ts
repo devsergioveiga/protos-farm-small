@@ -617,6 +617,25 @@ export async function recordInsemination(
       include: INSEMINATION_INCLUDE,
     });
 
+    // Also create entry in animal_reproductive_records timeline
+    const bull = input.bullId
+      ? await tx.bull.findUnique({ where: { id: input.bullId }, select: { name: true } })
+      : null;
+
+    await tx.animalReproductiveRecord.create({
+      data: {
+        animalId: input.animalId,
+        farmId,
+        type: 'AI',
+        eventDate: new Date(input.inseminationDate),
+        sireName: bull?.name || null,
+        technicianName: input.inseminatorName.trim(),
+        semenBatch: input.semenBatchId || null,
+        notes: input.observations?.trim() || null,
+        recordedBy: userId,
+      },
+    });
+
     return toInseminationItem(row as unknown as Record<string, unknown>);
   });
 }

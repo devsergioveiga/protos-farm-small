@@ -5,6 +5,7 @@ import { prisma } from './prisma';
 
 export interface RlsContext {
   organizationId: string;
+  userId?: string;
 }
 
 // Prisma transaction client type

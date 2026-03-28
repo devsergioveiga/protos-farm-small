@@ -1,0 +1,303 @@
+.medical-exam-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.medical-exam-modal {
+  background: var(--color-neutral-0, #fff);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  animation: me-modal-enter 300ms ease-out;
+}
+
+@keyframes me-modal-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .medical-exam-modal {
+    animation: none;
+  }
+}
+
+.medical-exam-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+.medical-exam-modal__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.medical-exam-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  border-radius: 6px;
+  transition: background 100ms ease-out;
+}
+
+.medical-exam-modal__close:hover {
+  background: var(--color-neutral-100);
+}
+
+.medical-exam-modal__body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.medical-exam-modal__api-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+}
+
+.medical-exam-modal__inapto-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--color-info-100, #e3f2fd);
+  color: var(--color-info-700, #1565c0);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.medical-exam-modal__inapto-banner svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.medical-exam-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.medical-exam-modal__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 480px) {
+  .medical-exam-modal__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.medical-exam-modal__label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.medical-exam-modal__hint {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+
+.medical-exam-modal__input,
+.medical-exam-modal__select,
+.medical-exam-modal__textarea {
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0, #fff);
+  min-height: 48px;
+  transition: border-color 100ms ease-out;
+}
+
+.medical-exam-modal__input:focus,
+.medical-exam-modal__select:focus,
+.medical-exam-modal__textarea:focus {
+  outline: 2px solid var(--color-primary-500, #388e3c);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500, #388e3c);
+}
+
+.medical-exam-modal__input--error {
+  border-color: var(--color-error-500);
+}
+
+.medical-exam-modal__input--mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.medical-exam-modal__textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.medical-exam-modal__error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-error-500);
+}
+
+/* Employee dropdown */
+.medical-exam-modal__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--color-neutral-0, #fff);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 4px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.medical-exam-modal__dropdown-item {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 100ms ease-out;
+}
+
+.medical-exam-modal__dropdown-item:hover {
+  background: var(--color-neutral-50);
+}
+
+.medical-exam-modal__dropdown-name {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.medical-exam-modal__dropdown-pos {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+}
+
+/* Fieldset / radio */
+.medical-exam-modal__fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.medical-exam-modal__radio-group {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.medical-exam-modal__radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+}
+
+/* Footer */
+.medical-exam-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+.medical-exam-modal__btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  transition: background 100ms ease-out;
+}
+
+.medical-exam-modal__btn--cancel {
+  background: none;
+  border: 1px solid var(--color-neutral-300);
+  color: var(--color-neutral-700);
+}
+
+.medical-exam-modal__btn--cancel:hover {
+  background: var(--color-neutral-100);
+}
+
+.medical-exam-modal__btn--primary {
+  background: var(--color-primary-600);
+  border: none;
+  color: #fff;
+}
+
+.medical-exam-modal__btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-700, #1b5e20);
+}
+
+.medical-exam-modal__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

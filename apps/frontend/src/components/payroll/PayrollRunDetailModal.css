@@ -1,0 +1,282 @@
+.payroll-detail-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(42, 37, 32, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 16px;
+  z-index: 200;
+  overflow-y: auto;
+}
+
+.payroll-detail-modal {
+  background: var(--color-neutral-0);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 900px;
+  box-shadow: 0 8px 32px rgba(42, 37, 32, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+.payroll-detail-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+  gap: 12px;
+}
+
+.payroll-detail-modal__header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.payroll-detail-modal__title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.payroll-detail-modal__close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
+  border: none;
+  background: transparent;
+  color: var(--color-neutral-500);
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background-color 200ms ease-out,
+    color 200ms ease-out;
+  flex-shrink: 0;
+}
+
+.payroll-detail-modal__close-btn:hover {
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-800);
+}
+
+.payroll-detail-modal__close-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.payroll-detail-modal__summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 20px 24px;
+  background: var(--color-neutral-50);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+@media (max-width: 768px) {
+  .payroll-detail-modal__summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.payroll-detail-modal__summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.payroll-detail-modal__summary-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.payroll-detail-modal__summary-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--color-neutral-800);
+}
+
+.payroll-detail-modal__summary-value--highlight {
+  color: var(--color-success-500);
+}
+
+.payroll-detail-modal__body {
+  padding: 8px 0;
+  overflow-x: auto;
+  flex: 1;
+}
+
+.payroll-detail-modal__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.payroll-detail-modal__th {
+  padding: 10px 16px;
+  text-align: left;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--color-neutral-200);
+  white-space: nowrap;
+}
+
+.payroll-detail-modal__empty {
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--color-neutral-500);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+
+.payroll-detail-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.payroll-detail-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  min-height: 48px;
+  transition:
+    background-color 200ms ease-out,
+    opacity 200ms ease-out;
+}
+
+.payroll-detail-modal__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.payroll-detail-modal__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.payroll-detail-modal__btn--primary {
+  background-color: var(--color-primary-600);
+  color: var(--color-neutral-0);
+}
+
+.payroll-detail-modal__btn--primary:hover:not(:disabled) {
+  background-color: var(--color-primary-700);
+}
+
+.payroll-detail-modal__btn--danger {
+  background-color: var(--color-error-100);
+  color: var(--color-error-500);
+  border: 1px solid var(--color-error-500);
+}
+
+.payroll-detail-modal__btn--danger:hover:not(:disabled) {
+  background-color: var(--color-error-500);
+  color: var(--color-neutral-0);
+}
+
+/* PayrollRunItemRow styles (in this file for simplicity) */
+.payroll-run-item-row {
+  transition: background-color 150ms ease-out;
+}
+
+.payroll-run-item-row:hover {
+  background-color: var(--color-neutral-50);
+}
+
+.payroll-run-item-row--dimmed {
+  opacity: 0.5;
+}
+
+.payroll-run-item-row__cell {
+  padding: 12px 16px;
+  font-size: var(--text-sm);
+  font-family: var(--font-body);
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-100);
+  vertical-align: middle;
+  min-height: 48px;
+}
+
+.payroll-run-item-row__cell--name {
+  font-weight: 600;
+  color: var(--color-neutral-800);
+}
+
+.payroll-run-item-row__cell--mono {
+  font-family: var(--font-mono);
+}
+
+.payroll-run-item-row__cell--actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.payroll-run-item-row__action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--color-neutral-500);
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.payroll-run-item-row__action-btn:hover:not(:disabled) {
+  background-color: var(--color-neutral-100);
+  color: var(--color-primary-600);
+}
+
+.payroll-run-item-row__action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.payroll-run-item-row__action-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

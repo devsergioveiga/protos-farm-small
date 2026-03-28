@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/services/api';
 import type { FarmDetail, BoundaryInfo, FieldPlot } from '@/types/farm';
 import type { FarmLocationMapItem } from '@/types/farm-location';
+import type { AssetMapItem } from '@/types/asset';
 
 interface RegistrationBoundary {
   registrationId: string;
@@ -20,6 +21,7 @@ export interface FarmMapData {
   registrationBoundaries: RegistrationBoundary[];
   plotBoundaries: PlotBoundary[];
   locationBoundaries: FarmLocationMapItem[];
+  assetMarkers: AssetMapItem[];
 }
 
 interface UseFarmMapResult {
@@ -40,12 +42,15 @@ export function useFarmMap(farmId: string | undefined): UseFarmMapResult {
     setIsLoading(true);
     setError(null);
     try {
-      const [farm, plots, locationBoundaries] = await Promise.all([
+      const [farm, plots, locationBoundaries, assetMarkers] = await Promise.all([
         api.get<FarmDetail>(`/org/farms/${farmId}`),
         api.get<FieldPlot[]>(`/org/farms/${farmId}/plots`).catch(() => [] as FieldPlot[]),
         api
           .get<FarmLocationMapItem[]>(`/org/farms/${farmId}/locations/map`)
           .catch(() => [] as FarmLocationMapItem[]),
+        api
+          .get<AssetMapItem[]>(`/org/assets/map?farmId=${farmId}`)
+          .catch(() => [] as AssetMapItem[]),
       ]);
 
       const [farmBoundary, ...rest] = await Promise.all([
@@ -81,6 +86,7 @@ export function useFarmMap(farmId: string | undefined): UseFarmMapResult {
         registrationBoundaries: regBoundaries,
         plotBoundaries,
         locationBoundaries,
+        assetMarkers,
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao carregar dados do mapa';

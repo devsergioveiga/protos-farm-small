@@ -1,0 +1,182 @@
+/* DfcTable — Demonstracao do Fluxo de Caixa */
+
+.dfc-table__wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-0);
+}
+
+.dfc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+
+/* ─── Caption ─────────────────────────────────────────────────────────────── */
+
+.dfc-table__caption {
+  text-align: left;
+  padding: var(--space-4) var(--space-4) var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-600);
+}
+
+/* ─── Header ──────────────────────────────────────────────────────────────── */
+
+.dfc-table__th {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-neutral-50);
+  border-bottom: 2px solid var(--color-neutral-200);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.dfc-table__th--name {
+  text-align: left;
+  min-width: 240px;
+}
+
+.dfc-table__th--amount {
+  text-align: right;
+  min-width: 140px;
+}
+
+/* ─── Cells ───────────────────────────────────────────────────────────────── */
+
+.dfc-table__td {
+  padding: var(--space-2) var(--space-4);
+  min-height: 40px;
+  vertical-align: middle;
+  color: var(--color-neutral-700);
+}
+
+.dfc-table__td--name {
+  text-align: left;
+  font-weight: normal;
+}
+
+.dfc-table__td--amount {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.dfc-table__td--section {
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-700);
+  text-align: left;
+  padding-left: var(--space-4);
+}
+
+/* ─── Section header ──────────────────────────────────────────────────────── */
+
+.dfc-table__section-header {
+  background: var(--color-neutral-100);
+}
+
+.dfc-table__section-header .dfc-table__td--section {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-neutral-600);
+}
+
+/* ─── Row variants ────────────────────────────────────────────────────────── */
+
+.dfc-table__row:hover {
+  background: var(--color-neutral-50);
+}
+
+.dfc-table__row-subtotal {
+  border-top: 1px solid var(--color-neutral-200);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-800);
+}
+
+.dfc-table__row-subtotal .dfc-table__td {
+  background: var(--color-neutral-50);
+}
+
+.dfc-table__row-cash {
+  color: var(--color-neutral-700);
+}
+
+.dfc-table__row-final {
+  border-top: 2px solid var(--color-neutral-700);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-800);
+}
+
+.dfc-table__row-final .dfc-table__td {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+}
+
+.dfc-table__row-separator td {
+  height: var(--space-2);
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+/* ─── Value colors ────────────────────────────────────────────────────────── */
+
+.dfc-table__cell--positive {
+  color: var(--color-success-500);
+}
+
+.dfc-table__cell--negative {
+  color: var(--color-error-500);
+}
+
+/* ─── Skeleton ────────────────────────────────────────────────────────────── */
+
+.dfc-table__skeleton-row {
+  animation: skeleton-pulse 1.5s infinite;
+}
+
+.dfc-table__skeleton-cell {
+  border-radius: var(--radius-xs, 2px);
+  background: var(--color-neutral-200);
+  height: 14px;
+}
+
+.dfc-table__skeleton-cell--name {
+  width: 60%;
+  min-width: 120px;
+}
+
+.dfc-table__skeleton-cell--amount {
+  width: 80px;
+  margin-left: auto;
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dfc-table__skeleton-row {
+    animation: none;
+  }
+}
+
+/* ─── Mono font for amounts ───────────────────────────────────────────────── */
+
+.dfc-table .amount-mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}

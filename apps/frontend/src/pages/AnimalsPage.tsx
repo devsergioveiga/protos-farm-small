@@ -26,6 +26,9 @@ import AnimalBulkImportModal from '@/components/animal-bulk-import/AnimalBulkImp
 import BulkActionsBar from '@/components/bulk-actions/BulkActionsBar';
 import BulkMoveToLotModal from '@/components/bulk-actions/BulkMoveToLotModal';
 import BulkHealthEventModal from '@/components/bulk-actions/BulkHealthEventModal';
+import BulkAssignOwnerModal from '@/components/bulk-actions/BulkAssignOwnerModal';
+import AnimalExitModal from '@/components/animal-exits/AnimalExitModal';
+import { useAnimalOwners } from '@/hooks/useAnimalOwners';
 import type { AnimalListItem, AnimalSex, AnimalCategory } from '@/types/animal';
 import { SEX_LABELS, CATEGORY_LABELS, ORIGIN_LABELS } from '@/types/animal';
 import './AnimalsPage.css';
@@ -60,6 +63,7 @@ function AnimalsPage() {
   const [originFilter, setOriginFilter] = useState('');
   const [lotFilter, setLotFilter] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
+  const [ownerFilter, setOwnerFilter] = useState('');
   const [specialFilter, setSpecialFilter] = useState('');
   const [minWeightInput, setMinWeightInput] = useState('');
   const [maxWeightInput, setMaxWeightInput] = useState('');
@@ -84,6 +88,8 @@ function AnimalsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkMoveModal, setShowBulkMoveModal] = useState(false);
   const [showBulkHealthModal, setShowBulkHealthModal] = useState(false);
+  const [showBulkOwnerModal, setShowBulkOwnerModal] = useState(false);
+  const [showBulkExitModal, setShowBulkExitModal] = useState(false);
 
   // Reset filters when farm changes (during render, not in effect)
   if (prevFarmIdRef.current !== selectedFarm?.id) {
@@ -97,6 +103,7 @@ function AnimalsPage() {
     setOriginFilter('');
     setLotFilter('');
     setLocationFilter('');
+    setOwnerFilter('');
     setSpecialFilter('');
     setMinWeightInput('');
     setMaxWeightInput('');
@@ -122,6 +129,7 @@ function AnimalsPage() {
     origin: originFilter || undefined,
     lotId: lotFilter || undefined,
     locationId: locationFilter || undefined,
+    ownerId: ownerFilter || undefined,
     specialFilter: specialFilter || undefined,
     minWeightKg,
     maxWeightKg,
@@ -134,6 +142,7 @@ function AnimalsPage() {
   const { breeds } = useBreeds();
   const { lots } = useLots({ farmId: selectedFarm?.id ?? null, limit: 100 });
   const { locations } = useFarmLocations(selectedFarm?.id);
+  const { owners: animalOwners, refetch: refetchOwners } = useAnimalOwners(selectedFarm?.id);
 
   // Search debounce
   useEffect(() => {
@@ -177,6 +186,7 @@ function AnimalsPage() {
     !!originFilter ||
     !!lotFilter ||
     !!locationFilter ||
+    !!ownerFilter ||
     !!specialFilter ||
     minWeightKg != null ||
     maxWeightKg != null ||
@@ -195,6 +205,7 @@ function AnimalsPage() {
     originFilter,
     lotFilter,
     locationFilter,
+    ownerFilter,
     specialFilter,
     minWeightKg != null ? 'w' : '',
     maxWeightKg != null ? 'w' : '',
@@ -212,6 +223,7 @@ function AnimalsPage() {
     setOriginFilter('');
     setLotFilter('');
     setLocationFilter('');
+    setOwnerFilter('');
     setSpecialFilter('');
     setMinWeightInput('');
     setMaxWeightInput('');
@@ -266,8 +278,10 @@ function AnimalsPage() {
     setSelectedIds(new Set());
     setShowBulkMoveModal(false);
     setShowBulkHealthModal(false);
+    setShowBulkOwnerModal(false);
     void refetch();
-  }, [refetch]);
+    void refetchOwners();
+  }, [refetch, refetchOwners]);
 
   const handleExport = async (format: 'csv' | 'xlsx') => {
     if (!selectedFarm) return;
@@ -565,6 +579,27 @@ function AnimalsPage() {
               </select>
             </div>
             <div className="animals__filter-group">
+              <label htmlFor="animal-owner-filter" className="animals__filter-label">
+                Proprietário
+              </label>
+              <select
+                id="animal-owner-filter"
+                className="animals__filter-select"
+                value={ownerFilter}
+                onChange={(e) => {
+                  setOwnerFilter(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="">Todos os proprietários</option>
+                {animalOwners.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="animals__filter-group">
               <label htmlFor="animal-special-filter" className="animals__filter-label">
                 Filtro especial
               </label>
@@ -757,6 +792,7 @@ function AnimalsPage() {
                   <th scope="col">Sexo</th>
                   <th scope="col">Categoria</th>
                   <th scope="col">Raça</th>
+                  <th scope="col">Proprietário</th>
                   <th scope="col">Nascimento</th>
                 </tr>
               </thead>
@@ -799,6 +835,9 @@ function AnimalsPage() {
                     </td>
                     <td>
                       <span className="animals__breed-summary">{animal.breedSummary ?? '—'}</span>
+                    </td>
+                    <td>
+                      <span className="animals__owner-summary">{animal.ownerSummary ?? '—'}</span>
                     </td>
                     <td>{formatDate(animal.birthDate)}</td>
                   </tr>
@@ -848,6 +887,10 @@ function AnimalsPage() {
                 <div className="animals__card-row">
                   <span className="animals__card-label">Raça</span>
                   <span className="animals__card-value">{animal.breedSummary ?? '—'}</span>
+                </div>
+                <div className="animals__card-row">
+                  <span className="animals__card-label">Proprietário</span>
+                  <span className="animals__card-value">{animal.ownerSummary ?? '—'}</span>
                 </div>
                 <div className="animals__card-row">
                   <span className="animals__card-label">Nascimento</span>
@@ -914,6 +957,8 @@ function AnimalsPage() {
           onClearSelection={() => setSelectedIds(new Set())}
           onMoveToLot={() => setShowBulkMoveModal(true)}
           onRegisterHealthEvent={() => setShowBulkHealthModal(true)}
+          onAssignOwner={() => setShowBulkOwnerModal(true)}
+          onRegisterExit={() => setShowBulkExitModal(true)}
         />
 
         <BulkMoveToLotModal
@@ -929,6 +974,22 @@ function AnimalsPage() {
           farmId={selectedFarm.id}
           selectedAnimalIds={selectedAnimalIds}
           onClose={() => setShowBulkHealthModal(false)}
+          onSuccess={handleBulkSuccess}
+        />
+
+        <BulkAssignOwnerModal
+          isOpen={showBulkOwnerModal}
+          farmId={selectedFarm.id}
+          selectedAnimalIds={selectedAnimalIds}
+          onClose={() => setShowBulkOwnerModal(false)}
+          onSuccess={handleBulkSuccess}
+        />
+
+        <AnimalExitModal
+          isOpen={showBulkExitModal}
+          farmId={selectedFarm.id}
+          animalIds={selectedAnimalIds}
+          onClose={() => setShowBulkExitModal(false)}
           onSuccess={handleBulkSuccess}
         />
       </PermissionGate>

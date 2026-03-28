@@ -1,6 +1,19 @@
-import { useEffect, useRef } from 'react';
-import { X, Pencil, CheckCircle, MinusCircle, XCircle, Clock, Wrench } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import {
+  X,
+  Pencil,
+  CheckCircle,
+  MinusCircle,
+  XCircle,
+  Clock,
+  Wrench,
+  Settings,
+  PackageMinus,
+  ArrowRightLeft,
+  ArrowLeftRight,
+} from 'lucide-react';
 import { useAssetDetail } from '@/hooks/useAssetDetail';
+import { useFarms } from '@/hooks/useFarms';
 import type { Asset, AssetStatus } from '@/types/asset';
 import AssetGeneralTab from './AssetGeneralTab';
 import AssetDocumentsTab from './AssetDocumentsTab';
@@ -8,20 +21,56 @@ import AssetFuelTab from './AssetFuelTab';
 import AssetReadingsTab from './AssetReadingsTab';
 import AssetMaintenanceTab from './AssetMaintenanceTab';
 import AssetTimelineTab from './AssetTimelineTab';
+import AssetCostTab from './AssetCostTab';
+import AssetHierarchyTab from './AssetHierarchyTab';
+import AssetWipContributionsTab from './AssetWipContributionsTab';
+import DepreciationConfigModal from '../depreciation/DepreciationConfigModal';
+import AssetDisposalModal from './AssetDisposalModal';
+import AssetTransferModal from './AssetTransferModal';
+import AssetTradeInModal from './AssetTradeInModal';
+import { useDepreciationConfig } from '@/hooks/useDepreciationConfig';
+import { useDepreciationReport } from '@/hooks/useDepreciationReport';
+import { METHOD_LABELS, TRACK_LABELS } from '@/types/depreciation';
+import type { DepreciationEntry } from '@/types/depreciation';
 import './AssetDrawer.css';
 
 // ─── Tab definitions ──────────────────────────────────────────────────
 
-type TabId = 'geral' | 'documentos' | 'combustivel' | 'leituras' | 'manutencao' | 'timeline';
+export type TabId =
+  | 'geral'
+  | 'documentos'
+  | 'combustivel'
+  | 'leituras'
+  | 'manutencao'
+  | 'depreciacao'
+  | 'custo'
+  | 'timeline'
+  | 'hierarquia'
+  | 'andamento';
 
-const TABS: { id: TabId; label: string }[] = [
+const BASE_TABS: { id: TabId; label: string }[] = [
   { id: 'geral', label: 'Geral' },
   { id: 'documentos', label: 'Documentos' },
   { id: 'combustivel', label: 'Combustivel' },
   { id: 'leituras', label: 'Leituras' },
   { id: 'manutencao', label: 'Manutencao' },
+  { id: 'depreciacao', label: 'Depreciacao' },
+  { id: 'custo', label: 'Custo' },
   { id: 'timeline', label: 'Timeline' },
 ];
+
+function getVisibleTabs(asset: Asset | null): { id: TabId; label: string }[] {
+  const tabs = [...BASE_TABS];
+  // Add WIP tab when asset is EM_ANDAMENTO (insert at position 1, after Geral)
+  if (asset?.status === 'EM_ANDAMENTO') {
+    tabs.splice(1, 0, { id: 'andamento', label: 'Andamento' });
+  }
+  // Add hierarchy tab when asset has parent or children (insert after Geral)
+  if (asset?.parentAsset || (asset?.childAssets && asset.childAssets.length > 0)) {
+    tabs.splice(1, 0, { id: 'hierarquia', label: 'Hierarquia' });
+  }
+  return tabs;
+}
 
 // ─── Status badge ─────────────────────────────────────────────────────
 
@@ -63,6 +112,178 @@ function DrawerSkeleton() {
   );
 }
 
+// ─── AssetDepreciationTab ──────────────────────────────────────────────
+
+function formatBRL(value: number): string {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+}
+
+interface AssetDepreciationTabProps {
+  asset: Asset;
+}
+
+function AssetDepreciationTab({ asset }: AssetDepreciationTabProps) {
+  const {
+    config,
+    loading: configLoading,
+    fetchConfig,
+    refetch: refetchConfig,
+  } = useDepreciationConfig(asset.id);
+  const { data: reportData, fetchReport } = useDepreciationReport();
+
+  const [showConfigModal, setShowConfigModal] = useState(false);
+
+  useEffect(() => {
+    void fetchConfig();
+  }, [fetchConfig]);
+
+  useEffect(() => {
+    if (config) {
+      void fetchReport(
+        new Date().getFullYear(),
+        new Date().getMonth() + 1,
+        config.activeTrack,
+        asset.id,
+        1,
+        12,
+      );
+    }
+  }, [config, asset.id, fetchReport]);
+
+  if (configLoading) {
+    return (
+      <div className="asset-drawer__skeleton" role="status" aria-label="Carregando depreciacao">
+        <div className="asset-drawer__skeleton-block" />
+        <div className="asset-drawer__skeleton-block" />
+      </div>
+    );
+  }
+
+  if (!config) {
+    return (
+      <div className="asset-depreciation-tab__empty">
+        <Settings size={48} aria-hidden="true" style={{ color: 'var(--color-neutral-400)' }} />
+        <h3 className="asset-depreciation-tab__empty-title">
+          Ativo sem configuracao de depreciacao
+        </h3>
+        <p className="asset-depreciation-tab__empty-desc">
+          Configure o metodo e as taxas para calcular o valor contabil deste ativo.
+        </p>
+        <button
+          type="button"
+          className="asset-depreciation-tab__cta"
+          onClick={() => setShowConfigModal(true)}
+        >
+          Configurar depreciacao
+        </button>
+        {showConfigModal && (
+          <DepreciationConfigModal
+            isOpen={showConfigModal}
+            onClose={() => setShowConfigModal(false)}
+            onSuccess={() => {
+              setShowConfigModal(false);
+              refetchConfig();
+            }}
+            asset={{ id: asset.id, assetType: asset.assetType, name: asset.name }}
+            config={null}
+          />
+        )}
+      </div>
+    );
+  }
+
+  const entries: DepreciationEntry[] = reportData?.entries ?? [];
+
+  return (
+    <div className="asset-depreciation-tab">
+      {/* Config summary */}
+      <div className="asset-depreciation-tab__card">
+        <div className="asset-depreciation-tab__card-header">
+          <h3 className="asset-depreciation-tab__card-title">Configuracao de depreciacao</h3>
+          <button
+            type="button"
+            className="asset-depreciation-tab__edit-btn"
+            onClick={() => setShowConfigModal(true)}
+          >
+            Editar configuracao
+          </button>
+        </div>
+        <dl className="asset-depreciation-tab__dl">
+          <div className="asset-depreciation-tab__dl-row">
+            <dt>Metodo</dt>
+            <dd>{METHOD_LABELS[config.method]}</dd>
+          </div>
+          <div className="asset-depreciation-tab__dl-row">
+            <dt>Taxa fiscal</dt>
+            <dd>{config.fiscalAnnualRate != null ? `${config.fiscalAnnualRate}%` : '—'}</dd>
+          </div>
+          <div className="asset-depreciation-tab__dl-row">
+            <dt>Taxa gerencial</dt>
+            <dd>{config.managerialAnnualRate != null ? `${config.managerialAnnualRate}%` : '—'}</dd>
+          </div>
+          <div className="asset-depreciation-tab__dl-row">
+            <dt>Valor residual</dt>
+            <dd>{formatBRL(config.residualValue)}</dd>
+          </div>
+          <div className="asset-depreciation-tab__dl-row">
+            <dt>Track ativo</dt>
+            <dd>{TRACK_LABELS[config.activeTrack]}</dd>
+          </div>
+        </dl>
+      </div>
+
+      {/* Mini entries table */}
+      {entries.length > 0 && (
+        <div className="asset-depreciation-tab__entries">
+          <h4 className="asset-depreciation-tab__entries-title">Ultimos lancamentos</h4>
+          <table className="asset-depreciation-tab__table">
+            <caption className="sr-only">Lancamentos de depreciacao deste ativo</caption>
+            <thead>
+              <tr>
+                <th scope="col">Periodo</th>
+                <th scope="col" style={{ textAlign: 'right' }}>
+                  Depreciacao
+                </th>
+                <th scope="col" style={{ textAlign: 'right' }}>
+                  Valor Contabil
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map((entry) => (
+                <tr key={entry.id}>
+                  <td>
+                    {String(entry.periodMonth).padStart(2, '0')}/{entry.periodYear}
+                  </td>
+                  <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                    {formatBRL(entry.depreciationAmount)}
+                  </td>
+                  <td style={{ textAlign: 'right', fontFamily: 'var(--font-mono)' }}>
+                    {formatBRL(entry.closingBookValue)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {showConfigModal && (
+        <DepreciationConfigModal
+          isOpen={showConfigModal}
+          onClose={() => setShowConfigModal(false)}
+          onSuccess={() => {
+            setShowConfigModal(false);
+            refetchConfig();
+          }}
+          asset={{ id: asset.id, assetType: asset.assetType, name: asset.name }}
+          config={config}
+        />
+      )}
+    </div>
+  );
+}
+
 // ─── AssetDrawer ──────────────────────────────────────────────────────
 
 interface AssetDrawerProps {
@@ -70,6 +291,7 @@ interface AssetDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onEdit: (asset: Asset) => void;
+  onRefresh?: () => void;
   activeTab?: TabId;
   onTabChange?: (tab: TabId) => void;
 }
@@ -79,12 +301,18 @@ export default function AssetDrawer({
   isOpen,
   onClose,
   onEdit,
+  onRefresh,
   activeTab = 'geral',
   onTabChange,
 }: AssetDrawerProps) {
-  const { asset, loading, error } = useAssetDetail(isOpen ? assetId : null);
+  const { asset, loading, error, refetch } = useAssetDetail(isOpen ? assetId : null);
+  const { farms } = useFarms();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  const [showDisposalModal, setShowDisposalModal] = useState(false);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [showTradeInModal, setShowTradeInModal] = useState(false);
 
   // Focus close button when drawer opens
   useEffect(() => {
@@ -155,14 +383,47 @@ export default function AssetDrawer({
           <header className="asset-drawer__header">
             <div className="asset-drawer__header-top">
               <h2 className="asset-drawer__title">{asset.name}</h2>
-              <button
-                type="button"
-                className="asset-drawer__edit-btn"
-                onClick={() => onEdit(asset)}
-                aria-label={`Editar ativo ${asset.name}`}
-              >
-                <Pencil size={20} aria-hidden="true" />
-              </button>
+              <div className="asset-drawer__header-actions">
+                <button
+                  type="button"
+                  className="asset-drawer__action-btn"
+                  onClick={() => setShowDisposalModal(true)}
+                  aria-label={`Alienar ativo ${asset.name}`}
+                  disabled={asset.status === 'ALIENADO'}
+                  title="Alienar"
+                >
+                  <PackageMinus size={18} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className="asset-drawer__action-btn"
+                  onClick={() => setShowTransferModal(true)}
+                  aria-label={`Transferir ativo ${asset.name}`}
+                  disabled={asset.status === 'ALIENADO'}
+                  title="Transferir"
+                >
+                  <ArrowRightLeft size={18} aria-hidden="true" />
+                </button>
+                {asset.status === 'ATIVO' && (
+                  <button
+                    type="button"
+                    className="asset-drawer__action-btn"
+                    onClick={() => setShowTradeInModal(true)}
+                    aria-label={`Trocar ativo ${asset.name}`}
+                    title="Trocar ativo"
+                  >
+                    <ArrowLeftRight size={18} aria-hidden="true" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="asset-drawer__edit-btn"
+                  onClick={() => onEdit(asset)}
+                  aria-label={`Editar ativo ${asset.name}`}
+                >
+                  <Pencil size={20} aria-hidden="true" />
+                </button>
+              </div>
             </div>
             <div className="asset-drawer__header-meta">
               <span className="asset-drawer__tag" aria-label={`Tag: ${asset.assetTag}`}>
@@ -185,7 +446,7 @@ export default function AssetDrawer({
         {asset && !loading && (
           <>
             <div className="asset-drawer__tabs" role="tablist" aria-label="Abas da ficha do ativo">
-              {TABS.map((tab) => (
+              {getVisibleTabs(asset).map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
@@ -210,7 +471,7 @@ export default function AssetDrawer({
                 hidden={activeTab !== 'geral'}
                 className="asset-drawer__tabpanel"
               >
-                {activeTab === 'geral' && <AssetGeneralTab asset={asset} />}
+                {activeTab === 'geral' && <AssetGeneralTab asset={asset} onRefresh={refetch} />}
               </div>
 
               <div
@@ -258,6 +519,26 @@ export default function AssetDrawer({
               </div>
 
               <div
+                id="tabpanel-depreciacao"
+                role="tabpanel"
+                aria-labelledby="tab-depreciacao"
+                hidden={activeTab !== 'depreciacao'}
+                className="asset-drawer__tabpanel"
+              >
+                {activeTab === 'depreciacao' && <AssetDepreciationTab asset={asset} />}
+              </div>
+
+              <div
+                id="tabpanel-custo"
+                role="tabpanel"
+                aria-labelledby="tab-custo"
+                hidden={activeTab !== 'custo'}
+                className="asset-drawer__tabpanel"
+              >
+                {activeTab === 'custo' && <AssetCostTab assetId={asset.id} />}
+              </div>
+
+              <div
                 id="tabpanel-timeline"
                 role="tabpanel"
                 aria-labelledby="tab-timeline"
@@ -266,10 +547,99 @@ export default function AssetDrawer({
               >
                 {activeTab === 'timeline' && <AssetTimelineTab asset={asset} />}
               </div>
+
+              {/* Hierarquia tab — conditional */}
+              <div
+                id="tabpanel-hierarquia"
+                role="tabpanel"
+                aria-labelledby="tab-hierarquia"
+                hidden={activeTab !== 'hierarquia'}
+                className="asset-drawer__tabpanel"
+              >
+                {activeTab === 'hierarquia' && (
+                  <AssetHierarchyTab
+                    asset={asset}
+                    onNavigate={(_id) => {
+                      // Navigate to a different asset by re-fetching it
+                      // Parent component manages assetId; here we use the closest mechanism
+                      void refetch();
+                      // Note: full navigation handled via parent's assetId prop change
+                      // For drawer-internal navigation, we emit via onRefresh which can be used
+                      // by parent to open a new drawer for the target asset
+                      onRefresh?.();
+                    }}
+                  />
+                )}
+              </div>
+
+              {/* Andamento tab — conditional, only for EM_ANDAMENTO */}
+              <div
+                id="tabpanel-andamento"
+                role="tabpanel"
+                aria-labelledby="tab-andamento"
+                hidden={activeTab !== 'andamento'}
+                className="asset-drawer__tabpanel"
+              >
+                {activeTab === 'andamento' && (
+                  <AssetWipContributionsTab
+                    assetId={asset.id}
+                    onRefresh={() => {
+                      refetch();
+                      onRefresh?.();
+                    }}
+                    onSwitchToDepreciation={() => {
+                      if (onTabChange) onTabChange('depreciacao');
+                    }}
+                  />
+                )}
+              </div>
             </div>
           </>
         )}
       </div>
+
+      {/* Disposal modal */}
+      {asset && showDisposalModal && (
+        <AssetDisposalModal
+          isOpen={showDisposalModal}
+          onClose={() => setShowDisposalModal(false)}
+          onSuccess={() => {
+            setShowDisposalModal(false);
+            refetch();
+            onRefresh?.();
+          }}
+          asset={asset}
+        />
+      )}
+
+      {/* Transfer modal */}
+      {asset && showTransferModal && (
+        <AssetTransferModal
+          isOpen={showTransferModal}
+          onClose={() => setShowTransferModal(false)}
+          onSuccess={() => {
+            setShowTransferModal(false);
+            refetch();
+            onRefresh?.();
+          }}
+          asset={asset}
+          farms={farms}
+        />
+      )}
+
+      {/* Trade-in modal */}
+      {asset && showTradeInModal && (
+        <AssetTradeInModal
+          isOpen={showTradeInModal}
+          onClose={() => setShowTradeInModal(false)}
+          onSuccess={() => {
+            setShowTradeInModal(false);
+            refetch();
+            onRefresh?.();
+          }}
+          tradedAsset={asset}
+        />
+      )}
     </div>
   );
 }

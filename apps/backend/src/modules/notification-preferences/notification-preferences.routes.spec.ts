@@ -82,7 +82,7 @@ describe('NotificationPreferences endpoints', () => {
   });
 
   describe('GET /api/org/:orgId/notification-preferences', () => {
-    it('should return preferences matrix with all 15 event types', async () => {
+    it('should return preferences matrix with all event types', async () => {
       authAs(MANAGER_PAYLOAD);
       mockedService.getPreferences.mockResolvedValue(ALL_PREFERENCES);
 
@@ -91,7 +91,7 @@ describe('NotificationPreferences endpoints', () => {
         .set('Authorization', 'Bearer valid-token');
 
       expect(response.status).toBe(200);
-      expect(response.body).toHaveLength(15);
+      expect(response.body).toHaveLength(NOTIFICATION_TYPES.length);
       const types = response.body.map((p: { eventType: string }) => p.eventType);
       expect(types).toContain('RC_APPROVED');
       expect(types).toContain('DAILY_DIGEST');

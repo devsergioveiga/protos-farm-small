@@ -1,0 +1,519 @@
+/* ─── AssetWipContributionsTab ───────────────────────────────────────────── */
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.wip-tab {
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ─── Section title ──────────────────────────────────────────────────────── */
+
+.wip-tab__section-title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ─── Budget section ─────────────────────────────────────────────────────── */
+
+.wip-tab__budget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wip-tab__budget-dl {
+  margin: 0;
+  padding: 0;
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.wip-tab__budget-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.wip-tab__budget-row:last-child {
+  border-bottom: none;
+}
+
+.wip-tab__budget-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--color-neutral-600);
+}
+
+.wip-tab__budget-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+}
+
+.wip-tab__budget-value--negative {
+  color: var(--color-error-500);
+}
+
+/* ─── Progress bar ───────────────────────────────────────────────────────── */
+
+.wip-tab__progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wip-tab__progress-track {
+  height: 8px;
+  background: var(--color-neutral-100);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.wip-tab__progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 300ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wip-tab__progress-fill {
+    transition: none;
+  }
+}
+
+.wip-tab__progress-fill--healthy {
+  background: var(--color-primary-600);
+}
+
+.wip-tab__progress-fill--alert {
+  background: var(--color-warning-500, #f57f17);
+}
+
+.wip-tab__progress-fill--exceeded {
+  background: var(--color-error-500);
+}
+
+.wip-tab__progress-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--color-neutral-500);
+  text-align: right;
+}
+
+.wip-tab__no-budget {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--color-neutral-400);
+  margin: 0;
+}
+
+/* ─── Alert banners ──────────────────────────────────────────────────────── */
+
+.wip-tab__alert-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.wip-tab__alert-banner--warning {
+  background: var(--color-warning-100, #fff8e1);
+  border-left: 3px solid var(--color-warning-500, #f57f17);
+  color: var(--color-neutral-700);
+}
+
+.wip-tab__alert-banner--warning svg {
+  color: var(--color-warning-500, #f57f17);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.wip-tab__alert-banner--exceeded {
+  background: var(--color-error-50, #ffebee);
+  border-left: 3px solid var(--color-error-500);
+  color: var(--color-neutral-700);
+}
+
+.wip-tab__alert-banner--exceeded svg {
+  color: var(--color-error-500);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.wip-tab__alert-banner--info {
+  background: var(--color-info-100, #e1f5fe);
+  border-left: 3px solid var(--color-info-500, #0277bd);
+  color: var(--color-neutral-700);
+}
+
+.wip-tab__alert-banner--info svg {
+  color: var(--color-info-500, #0277bd);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ─── Stages section ─────────────────────────────────────────────────────── */
+
+.wip-tab__stages {
+  display: flex;
+  flex-direction: column;
+}
+
+.wip-tab__stages-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wip-tab__stage-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 6px;
+  flex-wrap: wrap;
+}
+
+.wip-tab__stage-name {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  flex: 1;
+}
+
+.wip-tab__stage-date {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--color-neutral-500);
+}
+
+.wip-tab__stage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.wip-tab__stage-chip--done {
+  background: #e8f5e9;
+  color: var(--color-primary-600);
+}
+
+.wip-tab__stage-chip--pending {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+}
+
+/* ─── Contributions section ──────────────────────────────────────────────── */
+
+.wip-tab__contributions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wip-tab__contributions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.wip-tab__contributions-header .wip-tab__section-title {
+  margin-bottom: 0;
+}
+
+.wip-tab__count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-700);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+/* ─── Primary and secondary buttons ─────────────────────────────────────── */
+
+.wip-tab__primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+  border: none;
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 40px;
+  transition: background 200ms ease-out;
+  white-space: nowrap;
+}
+
+.wip-tab__primary-btn:hover {
+  background: var(--color-primary-700, #1b5e20);
+}
+
+.wip-tab__primary-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.wip-tab__secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 40px;
+  transition: background 200ms ease-out;
+}
+
+.wip-tab__secondary-btn:hover {
+  background: var(--color-neutral-200);
+}
+
+.wip-tab__secondary-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Empty state ────────────────────────────────────────────────────────── */
+
+.wip-tab__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px;
+  text-align: center;
+  gap: 12px;
+}
+
+.wip-tab__empty-icon {
+  color: var(--color-neutral-400);
+}
+
+.wip-tab__empty-text {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--color-neutral-500);
+  margin: 0;
+}
+
+/* ─── Table (desktop) ────────────────────────────────────────────────────── */
+
+.wip-tab__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+}
+
+.wip-tab__table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+  border-bottom: 2px solid var(--color-neutral-200);
+  font-size: 13px;
+}
+
+.wip-tab__table td {
+  padding: 10px 12px;
+  color: var(--color-neutral-700);
+  border-bottom: 1px solid var(--color-neutral-100);
+  vertical-align: top;
+}
+
+.wip-tab__table-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  text-align: right;
+}
+
+/* ─── Cards (mobile) ─────────────────────────────────────────────────────── */
+
+.wip-tab__cards {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@media (max-width: 767px) {
+  .wip-tab__table {
+    display: none;
+  }
+  .wip-tab__cards {
+    display: flex;
+  }
+}
+
+.wip-tab__card {
+  padding: 12px 16px;
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wip-tab__card-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.wip-tab__card-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.wip-tab__card-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--color-neutral-800);
+}
+
+/* ─── Activation section ─────────────────────────────────────────────────── */
+
+.wip-tab__activation {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.wip-tab__activation-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  transition:
+    background 200ms ease-out,
+    border-color 200ms ease-out;
+  align-self: flex-start;
+}
+
+.wip-tab__activation-btn:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+  border-color: var(--color-neutral-400);
+}
+
+.wip-tab__activation-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.wip-tab__activation-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── Inline link ────────────────────────────────────────────────────────── */
+
+.wip-tab__inline-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-info-500, #0277bd);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.wip-tab__inline-link:hover {
+  color: var(--color-info-700, #01579b);
+}
+
+.wip-tab__inline-link:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Skeleton ───────────────────────────────────────────────────────────── */
+
+.wip-tab__skeleton {
+  height: 20px;
+  border-radius: 4px;
+  background: var(--color-neutral-100);
+  animation: skeleton-pulse 1.5s infinite;
+  margin-bottom: 16px;
+}
+
+/* ─── Error ──────────────────────────────────────────────────────────────── */
+
+.wip-tab__error {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--color-error-500);
+  padding: 16px 0;
+}

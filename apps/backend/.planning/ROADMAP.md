@@ -22,7 +22,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 ## Phase Details
 
+<!-- ARCHIVED: Phases 1-4 completed in milestone v1.0 (2026-03-17). Preserved for traceability. -->
+
 ### Phase 1: Fundação Financeira
+
+> **STATUS: ARCHIVED — completed 2026-03-16 (milestone v1.0)**
 
 **Goal**: Gerente pode cadastrar contas bancárias vinculadas a fazenda e produtor rural, consultar saldo real-time e extrato — com a fundação técnica (tipo Money, producerId) que garante conformidade fiscal e aritmética correta para todo o módulo
 **Depends on**: Nothing (first phase)
@@ -39,11 +43,13 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 
-- [ ] 01-01-PLAN.md — Money type, FEBRABAN bank list, Prisma schema e migration
-- [ ] 01-02-PLAN.md — Backend module: CRUD, statement, export, dashboard endpoints
-- [ ] 01-03-PLAN.md — Frontend: page com cards, modal, sidebar, statement view
+- [x] 01-01-PLAN.md — Money type, FEBRABAN bank list, Prisma schema e migration
+- [x] 01-02-PLAN.md — Backend module: CRUD, statement, export, dashboard endpoints
+- [x] 01-03-PLAN.md — Frontend: page com cards, modal, sidebar, statement view
 
 ### Phase 2: Núcleo AP/AR
+
+> **STATUS: ARCHIVED — completed 2026-03-16 (milestone v1.0)**
 
 **Goal**: Gerente pode registrar contas a pagar e a receber com parcelamento, rateio por centro de custo e FUNRURAL, dar baixa de pagamentos e recebimentos, e visualizar aging por faixas de vencimento com alertas configuráveis
 **Depends on**: Phase 1
@@ -60,15 +66,17 @@ Plans:
 
 Plans:
 
-- [ ] 02-01-PLAN.md — Schema migration (AP/AR models + CNAB fields) e utilitarios compartilhados (installments, rateio)
-- [ ] 02-02-PLAN.md — Payables backend: CRUD, parcelamento, rateio, settlement, batch, estorno, recorrencia
-- [ ] 02-03-PLAN.md — Receivables backend: CRUD, FUNRURAL, settlement, renegociacao, aging
-- [ ] 02-04-PLAN.md — CNAB module (BB + Sicoob adapters) e payables aging/calendario/alertas
-- [ ] 02-05-PLAN.md — PayablesPage frontend: lista, aging, calendario, modais (CP, baixa, bordero, CNAB retorno)
-- [ ] 02-06-PLAN.md — ReceivablesPage frontend: lista, aging, modais (CR, recebimento, renegociacao)
-- [ ] 02-07-PLAN.md — Sidebar integration, rotas lazy, badge overdue e human-verify
+- [x] 02-01-PLAN.md — Schema migration (AP/AR models + CNAB fields) e utilitarios compartilhados (installments, rateio)
+- [x] 02-02-PLAN.md — Payables backend: CRUD, parcelamento, rateio, settlement, batch, estorno, recorrencia
+- [x] 02-03-PLAN.md — Receivables backend: CRUD, FUNRURAL, settlement, renegociacao, aging
+- [x] 02-04-PLAN.md — CNAB module (BB + Sicoob adapters) e payables aging/calendario/alertas
+- [x] 02-05-PLAN.md — PayablesPage frontend: lista, aging, calendario, modais (CP, baixa, bordero, CNAB retorno)
+- [x] 02-06-PLAN.md — ReceivablesPage frontend: lista, aging, modais (CR, recebimento, renegociacao)
+- [x] 02-07-PLAN.md — Sidebar integration, rotas lazy, badge overdue e human-verify
 
 ### Phase 3: Dashboard Financeiro
+
+> **STATUS: ARCHIVED — completed 2026-03-16 (milestone v1.0)**
 
 **Goal**: Proprietário e gerente têm uma tela consolidada que mostra posição financeira completa da fazenda — saldo total, CP e CR próximos, resultado do mês e endividamento — assim que Phases 1 e 2 têm dados reais
 **Depends on**: Phase 2
@@ -85,10 +93,12 @@ Plans:
 
 Plans:
 
-- [ ] 03-01-PLAN.md — Backend: endpoint agregador GET /api/org/financial-dashboard (types, service, routes, spec)
-- [ ] 03-02-PLAN.md — Frontend: FinancialDashboardPage com KPIs, graficos, top 5, alertas, sidebar e human-verify
+- [x] 03-01-PLAN.md — Backend: endpoint agregador GET /api/org/financial-dashboard (types, service, routes, spec)
+- [x] 03-02-PLAN.md — Frontend: FinancialDashboardPage com KPIs, graficos, top 5, alertas, sidebar e human-verify
 
 ### Phase 4: Instrumentos de Pagamento
+
+> **STATUS: ARCHIVED — completed 2026-03-17 (milestone v1.0)**
 
 **Goal**: Gerente pode registrar transferências entre contas (incluindo aplicações e resgates), controlar cartões corporativos com fatura que vira CP automaticamente, e rastrear cheques pré-datados com entidade própria e máquina de estados
 **Depends on**: Phase 2
@@ -105,13 +115,17 @@ Plans:
 
 Plans:
 
-- [ ] 04-01-PLAN.md — Prisma migration (all models + enums) e transfers backend (CRUD, ledger espelhado, tarifa)
-- [ ] 04-02-PLAN.md — Transfers frontend: page, modal, hook, sidebar entry
-- [ ] 04-03-PLAN.md — Credit cards backend: CRUD, despesas parceladas, fechamento fatura gerando CP
-- [ ] 04-04-PLAN.md — Credit cards frontend: page two-panel, 3 modais, hook, sidebar entry
-- [ ] 04-05-PLAN.md — Checks backend: CRUD, maquina de estados, compensacao com saldo, alert count
-- [ ] 04-06-PLAN.md — Checks frontend: page com badges status, modais, hook alert count, sidebar badge
-- [ ] 04-07-PLAN.md — Dashboard saldo contabil + alertas cartao/cheque + human-verify
+- [x] 04-01-PLAN.md — Prisma migration (all models + enums) e transfers backend (CRUD, ledger espelhado, tarifa)
+- [x] 04-02-PLAN.md — Transfers frontend: page, modal, hook, sidebar entry
+- [x] 04-03-PLAN.md — Credit cards backend: CRUD, despesas parceladas, fechamento fatura gerando CP
+- [x] 04-04-PLAN.md — Credit cards frontend: page two-panel, 3 modais, hook, sidebar entry
+- [x] 04-05-PLAN.md — Checks backend: CRUD, maquina de estados, compensacao com saldo, alert count
+- [x] 04-06-PLAN.md — Checks frontend: page com badges status, modais, hook alert count, sidebar badge
+- [x] 04-07-PLAN.md — Dashboard saldo contabil + alertas cartao/cheque + human-verify
+
+---
+
+<!-- ACTIVE: Phases 5-6 are the active milestone v1.1 work -->
 
 ### Phase 5: Conciliação e Fluxo de Caixa
 
@@ -125,7 +139,14 @@ Plans:
 3. Gerente visualiza fluxo de caixa projetado para os próximos 12 meses (não apenas 90 dias) com cenários otimista, realista e pessimista
 4. Alerta de saldo negativo dispara nas datas futuras projetadas onde o saldo cairia abaixo de zero — não apenas na data atual
 5. Projeção inclui cheques A_COMPENSAR na data prevista de compensação e parcelas de CP/CR em aberto nas suas datas de vencimento
-   **Plans**: TBD
+
+**Plans**: TBD
+**UI hint**: yes
+
+**Blockers (resolve before planning):**
+
+- Verificar status de manutenção do ofx-js no npm; fallback: @xmldom/xmldom (já instalado) + parser SGML customizado
+- Coletar amostras reais de OFX de BB, Bradesco e Sicoob antes de projetar motor de matching
 
 ### Phase 6: Crédito Rural
 
@@ -139,7 +160,14 @@ Plans:
 3. Saldo devedor atualizado é visível após cada amortização, com discriminação de principal e juros pagos
 4. Projeção de fluxo de caixa da Phase 5 inclui as parcelas futuras do crédito rural nas datas corretas
 5. Gerente recebe alertas de vencimento de parcelas de crédito rural com antecedência configurável
-   **Plans**: TBD
+
+**Plans**: TBD
+**UI hint**: yes
+
+**Blockers (resolve before planning):**
+
+- Verificar rates atuais do Plano Safra 2025/2026 no BCB MCR antes de implementar — dados de treino podem estar desatualizados
+- Obter manuais de layout CNAB Sicoob/Sicredi para adapters de crédito rural
 
 ## Progress
 

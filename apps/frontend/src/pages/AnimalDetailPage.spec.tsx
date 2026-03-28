@@ -11,6 +11,8 @@ const MOCK_ANIMAL: AnimalDetail = {
   earTag: 'BR-001',
   rfidTag: 'RFID-001',
   name: 'Mimosa',
+  registeredName: null,
+  registrationNumber: null,
   sex: 'FEMALE',
   birthDate: '2022-03-15',
   birthDateEstimated: false,
@@ -42,6 +44,8 @@ const MOCK_ANIMAL: AnimalDetail = {
   breedSummary: 'Holandesa 50% + Gir Leiteiro 50%',
   sire: { id: 'a-sire', earTag: 'BR-100', name: 'Trovão' },
   dam: { id: 'a-dam', earTag: 'BR-200', name: 'Estrela' },
+  currentOwners: [],
+  ownerSummary: null,
   photoUrl: null,
   notes: 'Animal dócil, boa produtora.',
   genealogicalRecords: [

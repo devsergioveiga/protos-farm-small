@@ -1,4 +1,5 @@
 import { withRlsContext, type RlsContext, type TxClient } from '../../database/rls';
+import { process as autoPost } from '../auto-posting/auto-posting.service';
 import {
   StockEntryError,
   EXPENSE_TYPES,
@@ -502,7 +503,7 @@ export async function createStockEntry(
     }
   }
 
-  return withRlsContext(ctx, async (tx) => {
+  const result = await withRlsContext(ctx, async (tx) => {
     // Validate products exist and are PRODUCT nature (not SERVICE)
     for (const item of input.items) {
       const product = await (tx as any).product.findFirst({
@@ -652,6 +653,15 @@ export async function createStockEntry(
 
     return { entry: formatEntry(entry), costAlerts };
   });
+
+  // Auto-posting GL entry after stock entry creation (non-blocking — per D-15)
+  try {
+    await autoPost('STOCK_ENTRY', result.entry.id, ctx.organizationId);
+  } catch (err) {
+    console.error('[stock-entries] Auto-posting failed:', err);
+  }
+
+  return result;
 }
 
 // ─── ADD RETROACTIVE EXPENSE (CA6) ─────────────────────────────────

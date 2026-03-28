@@ -1,0 +1,217 @@
+/* ─── AssetHierarchyTab ──────────────────────────────────────────────────── */
+
+.asset-hierarchy-tab {
+  padding: 16px 0;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+
+.asset-hierarchy-tab__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.asset-hierarchy-tab__header-icon {
+  color: var(--color-neutral-500);
+  flex-shrink: 0;
+}
+
+.asset-hierarchy-tab__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+/* ─── Tree ───────────────────────────────────────────────────────────────── */
+
+.asset-hierarchy-tab__tree {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ─── Node ───────────────────────────────────────────────────────────────── */
+
+.asset-hierarchy-tab__node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  min-height: 48px;
+  width: 100%;
+  border: none;
+  background: var(--color-neutral-0);
+  border-bottom: 1px solid var(--color-neutral-200);
+  cursor: pointer;
+  text-align: left;
+  gap: 8px;
+  transition: background 200ms ease-out;
+}
+
+.asset-hierarchy-tab__node:last-child {
+  border-bottom: none;
+}
+
+.asset-hierarchy-tab__node:hover {
+  background: var(--color-neutral-50);
+}
+
+.asset-hierarchy-tab__node:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+
+/* Level indentation */
+.asset-hierarchy-tab__node--level-1 {
+  padding-left: 40px;
+}
+
+.asset-hierarchy-tab__node--level-2 {
+  padding-left: 64px;
+}
+
+/* Current asset highlight */
+.asset-hierarchy-tab__node--current {
+  background: var(--color-primary-50, #f1f8e9);
+  font-weight: 600;
+}
+
+.asset-hierarchy-tab__node--current:hover {
+  background: var(--color-primary-50, #f1f8e9);
+  opacity: 0.9;
+}
+
+/* Parent node */
+.asset-hierarchy-tab__node--parent {
+  background: var(--color-neutral-50);
+}
+
+/* ─── Node contents ──────────────────────────────────────────────────────── */
+
+.asset-hierarchy-tab__node-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.asset-hierarchy-tab__node-name {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.asset-hierarchy-tab__node-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--color-neutral-500);
+}
+
+.asset-hierarchy-tab__node-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.asset-hierarchy-tab__node-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--color-neutral-700);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.asset-hierarchy-tab__node-parent-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--color-neutral-500);
+  font-style: italic;
+}
+
+/* ─── Status chips ───────────────────────────────────────────────────────── */
+
+.asset-hierarchy-tab__status {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.asset-hierarchy-tab__status--ativo {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.asset-hierarchy-tab__status--inativo {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+}
+
+.asset-hierarchy-tab__status--manutencao {
+  background: #fff8e1;
+  color: #f57f17;
+}
+
+.asset-hierarchy-tab__status--alienado {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.asset-hierarchy-tab__status--andamento {
+  background: #e3f2fd;
+  color: #0277bd;
+}
+
+/* ─── Total footer ───────────────────────────────────────────────────────── */
+
+.asset-hierarchy-tab__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  margin-top: 12px;
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+}
+
+.asset-hierarchy-tab__total-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.asset-hierarchy-tab__total-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+}
+
+/* ─── Error ──────────────────────────────────────────────────────────────── */
+
+.asset-hierarchy-tab__error {
+  padding: 16px;
+  color: var(--color-error-500);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 14px;
+}

@@ -1,14 +1,15 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { api } from '@/services/api';
-import type { CreateWeaningInput, WeaningCandidateItem } from '@/types/weaning';
+import { useAnimals } from '@/hooks/useAnimals';
+import { useLots } from '@/hooks/useLots';
+import type { CreateWeaningInput } from '@/types/weaning';
 import './WeaningModal.css';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   farmId: string;
-  candidate: WeaningCandidateItem | null;
   onSuccess: () => void;
 }
 
@@ -16,56 +17,53 @@ const EMPTY_FORM: CreateWeaningInput = {
   calfId: '',
   weaningDate: new Date().toISOString().split('T')[0],
   weightKg: null,
-  ageMonths: null,
-  concentrateConsumptionGrams: null,
+  targetLotId: null,
   observations: '',
 };
 
-export default function WeaningModal({ isOpen, onClose, farmId, candidate, onSuccess }: Props) {
+export default function WeaningModal({ isOpen, onClose, farmId, onSuccess }: Props) {
   const [formData, setFormData] = useState<CreateWeaningInput>({ ...EMPTY_FORM });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [animalSearch, setAnimalSearch] = useState('');
 
-  // Auto-calculate age in months from candidate birthDate
-  const autoAgeMonths = useMemo(() => {
-    if (!candidate?.birthDate || !formData.weaningDate) return null;
-    const birth = new Date(candidate.birthDate);
-    const weaning = new Date(formData.weaningDate);
-    const diffMs = weaning.getTime() - birth.getTime();
-    const months = diffMs / (1000 * 60 * 60 * 24 * 30.44);
-    return Math.round(months * 10) / 10;
-  }, [candidate?.birthDate, formData.weaningDate]);
+  const { animals } = useAnimals({
+    farmId,
+    limit: 500,
+    category: 'BEZERRO',
+  });
+  const { animals: femaleCalves } = useAnimals({
+    farmId,
+    limit: 500,
+    category: 'BEZERRA',
+  });
+  const allCalves = [...animals, ...femaleCalves];
+
+  const { lots } = useLots({ farmId, limit: 200 });
 
   useEffect(() => {
     if (!isOpen) return;
-    if (candidate) {
-      setFormData({
-        calfId: candidate.calfId,
-        weaningDate: new Date().toISOString().split('T')[0],
-        weightKg: candidate.lastWeightKg,
-        ageMonths: null,
-        concentrateConsumptionGrams: null,
-        observations: '',
-      });
-    } else {
-      setFormData({ ...EMPTY_FORM });
-    }
+    setFormData({ ...EMPTY_FORM });
     setError(null);
-  }, [candidate, isOpen]);
+    setAnimalSearch('');
+  }, [isOpen]);
 
-  // Update ageMonths when autoAgeMonths changes
-  useEffect(() => {
-    if (autoAgeMonths !== null) {
-      setFormData((prev) => ({ ...prev, ageMonths: autoAgeMonths }));
-    }
-  }, [autoAgeMonths]);
+  const filteredCalves = animalSearch
+    ? allCalves.filter(
+        (a) =>
+          a.earTag.toLowerCase().includes(animalSearch.toLowerCase()) ||
+          (a.name && a.name.toLowerCase().includes(animalSearch.toLowerCase())),
+      )
+    : allCalves;
+
+  const selectedAnimal = allCalves.find((a) => a.id === formData.calfId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!formData.calfId) {
-      setError('Selecione o bezerro.');
+      setError('Selecione o bezerro(a).');
       return;
     }
     if (!formData.weaningDate) {
@@ -78,8 +76,7 @@ export default function WeaningModal({ isOpen, onClose, farmId, candidate, onSuc
     const payload = {
       ...formData,
       weightKg: formData.weightKg ?? null,
-      ageMonths: formData.ageMonths ?? null,
-      concentrateConsumptionGrams: formData.concentrateConsumptionGrams ?? null,
+      targetLotId: formData.targetLotId || null,
       observations: formData.observations || null,
     };
 
@@ -124,38 +121,91 @@ export default function WeaningModal({ isOpen, onClose, farmId, candidate, onSuc
             </div>
           )}
 
-          {candidate && (
-            <div className="weaning-modal__candidate-info">
-              <span className="weaning-modal__candidate-tag">{candidate.earTag}</span>
-              {candidate.calfName && (
-                <span className="weaning-modal__candidate-name">{candidate.calfName}</span>
-              )}
-              {candidate.ageDays !== null && (
-                <span className="weaning-modal__candidate-detail">
-                  Idade: <strong>{candidate.ageDays}</strong> dias
-                </span>
-              )}
-              {candidate.lastWeightKg !== null && (
-                <span className="weaning-modal__candidate-detail">
-                  Peso: <strong>{candidate.lastWeightKg}</strong> kg
-                </span>
-              )}
-            </div>
-          )}
-
           <div className="weaning-modal__field">
-            <label htmlFor="wean-date">Data da desmama *</label>
-            <input
-              id="wean-date"
-              type="date"
-              value={formData.weaningDate}
-              onChange={(e) => setFormData({ ...formData, weaningDate: e.target.value })}
-              required
-              aria-required="true"
-            />
+            <label htmlFor="wean-animal">Bezerro(a) *</label>
+            {selectedAnimal ? (
+              <div className="weaning-modal__selected-animal">
+                <span>
+                  <strong>{selectedAnimal.earTag}</strong>
+                  {selectedAnimal.name ? ` — ${selectedAnimal.name}` : ''}
+                </span>
+                <button
+                  type="button"
+                  className="weaning-modal__clear-btn"
+                  onClick={() => setFormData({ ...formData, calfId: '' })}
+                  aria-label="Alterar bezerro"
+                >
+                  <X size={14} aria-hidden="true" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <input
+                  id="wean-animal"
+                  type="text"
+                  value={animalSearch}
+                  onChange={(e) => setAnimalSearch(e.target.value)}
+                  placeholder="Buscar por brinco ou nome..."
+                  aria-required="true"
+                  autoComplete="off"
+                />
+                {animalSearch && filteredCalves.length > 0 && (
+                  <ul className="weaning-modal__animal-list" role="listbox">
+                    {filteredCalves.slice(0, 10).map((a) => (
+                      <li key={a.id} role="option" aria-selected={false}>
+                        <button
+                          type="button"
+                          className="weaning-modal__animal-option"
+                          onClick={() => {
+                            setFormData({ ...formData, calfId: a.id });
+                            setAnimalSearch('');
+                          }}
+                        >
+                          <strong>{a.earTag}</strong>
+                          {a.name ? ` — ${a.name}` : ''}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {animalSearch && filteredCalves.length === 0 && (
+                  <p className="weaning-modal__no-results">Nenhum bezerro(a) encontrado.</p>
+                )}
+                {!animalSearch && allCalves.length > 0 && (
+                  <ul className="weaning-modal__animal-list" role="listbox">
+                    {allCalves.slice(0, 10).map((a) => (
+                      <li key={a.id} role="option" aria-selected={false}>
+                        <button
+                          type="button"
+                          className="weaning-modal__animal-option"
+                          onClick={() => {
+                            setFormData({ ...formData, calfId: a.id });
+                            setAnimalSearch('');
+                          }}
+                        >
+                          <strong>{a.earTag}</strong>
+                          {a.name ? ` — ${a.name}` : ''}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            )}
           </div>
 
           <div className="weaning-modal__row">
+            <div className="weaning-modal__field">
+              <label htmlFor="wean-date">Data da desmama *</label>
+              <input
+                id="wean-date"
+                type="date"
+                value={formData.weaningDate}
+                onChange={(e) => setFormData({ ...formData, weaningDate: e.target.value })}
+                required
+                aria-required="true"
+              />
+            </div>
             <div className="weaning-modal__field">
               <label htmlFor="wean-weight">Peso (kg)</label>
               <input
@@ -173,41 +223,22 @@ export default function WeaningModal({ isOpen, onClose, farmId, candidate, onSuc
                 placeholder="Peso na desmama"
               />
             </div>
-            <div className="weaning-modal__field">
-              <label htmlFor="wean-age">Idade (meses)</label>
-              <input
-                id="wean-age"
-                type="number"
-                min="0"
-                step="0.1"
-                value={formData.ageMonths ?? ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    ageMonths: e.target.value ? Number(e.target.value) : null,
-                  })
-                }
-                placeholder="Calculado automaticamente"
-              />
-            </div>
           </div>
 
           <div className="weaning-modal__field">
-            <label htmlFor="wean-concentrate">Consumo de concentrado (g/dia)</label>
-            <input
-              id="wean-concentrate"
-              type="number"
-              min="0"
-              step="10"
-              value={formData.concentrateConsumptionGrams ?? ''}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  concentrateConsumptionGrams: e.target.value ? Number(e.target.value) : null,
-                })
-              }
-              placeholder="Gramas por dia de concentrado"
-            />
+            <label htmlFor="wean-lot">Lote de destino</label>
+            <select
+              id="wean-lot"
+              value={formData.targetLotId ?? ''}
+              onChange={(e) => setFormData({ ...formData, targetLotId: e.target.value || null })}
+            >
+              <option value="">Nenhum (manter no lote atual)</option>
+              {lots.map((lot) => (
+                <option key={lot.id} value={lot.id}>
+                  {lot.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="weaning-modal__field">

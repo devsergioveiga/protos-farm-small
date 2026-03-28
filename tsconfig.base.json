@@ -13,5 +13,14 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "**/node_modules",
+    "**/dist",
+    "**/.prisma",
+    "**/generated",
+    ".claude",
+    "apps/backend/uploads"
+  ]
 }

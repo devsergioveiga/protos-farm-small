@@ -1,81 +1,44 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Gestão de Patrimônio
-status: roadmap_ready
-stopped_at: Roadmap created — ready to plan Phase 16
-last_updated: '2026-03-19T17:30:00.000Z'
-last_activity: 2026-03-19 — Roadmap v1.2 created (9 phases, 43 requirements mapped)
+milestone: v1.4
+milestone_name: Contabilidade e Demonstrações Financeiras
+status: Milestone archived
+stopped_at: v1.4 milestone completed and archived
+last_updated: '2026-03-28T18:00:00.000Z'
 progress:
-  total_phases: 9
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_phases: 7
+  completed_phases: 7
+  total_plans: 25
+  completed_plans: 25
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-19)
+See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** v1.2 Gestão de Patrimônio — Phase 16: Cadastro de Ativos
+**Current focus:** Fase 3 complete — planning next milestone
 
 ## Current Position
 
-Phase: 16 — Cadastro de Ativos (not started)
-Plan: —
-Status: Roadmap ready — awaiting plan-phase 16
-Last activity: 2026-03-19 — Roadmap created
-
-Progress: [░░░░░░░░░░] 0% (0/9 phases)
-
-## Performance Metrics
-
-**Velocity (v1.0 baseline):**
-
-| Phase                          | Plans | Total Time | Avg/Plan |
-| ------------------------------ | ----- | ---------- | -------- |
-| 01-funda-o-financeira          | 3     | 42min      | 14min    |
-| 02-n-cleo-ap-ar                | 7     | 83min      | 12min    |
-| 03-dashboard-financeiro        | 2     | 11min      | 6min     |
-| 04-instrumentos-de-pagamento   | 7     | 58min      | 8min     |
-| 05-concilia-o-e-fluxo-de-caixa | 6     | 64min      | 11min    |
-| 06-cr-dito-rural               | 5     | 62min      | 12min    |
-
-**Total v1.0:** 30 plans in ~320min (~5.3h), avg 10.7min/plan
+Phase: All complete (41 phases shipped across 5 milestones)
+Plan: Not started (next milestone)
 
 ## Accumulated Context
 
 ### Decisions
 
 Full log: PROJECT.md Key Decisions table.
-
-Key decisions carried from v1.1:
-
-- **GoodsReceipt is integration hub**: CP creation fires only from ReceivingConfirmed event
-- **Price snapshot on PO**: PurchaseOrder snapshots unitPrice/quantity/total at issuance
-- **BullMQ for async email**: Never await emailService.send() inside Prisma transaction
-- **VALID_TRANSITIONS map**: State machines follow checks.types.ts pattern
-
-Key decisions for v1.2:
-
-- **AssetAcquisition never routes through GoodsReceipt**: Asset NF must never create StockEntry. Separate AssetAcquisition module with originType = ASSET_ACQUISITION on CP. Guard in GoodsReceipt service to reject asset-category lines.
-- **Decimal-only depreciation**: All depreciation arithmetic uses Decimal from decimal.js. Unique constraint on (assetId, periodYear, periodMonth) in depreciation_entries. DepreciationRun tracking table for safe retry.
-- **CPC 27 vs CPC 29 at schema creation**: AssetClassification enum must encode BEARER_PLANT (CPC 27, depreciable), BIOLOGICAL_ASSET_ANIMAL (CPC 29, fair value), LAND_RURAL_PROPERTY (CPC 27, non-depreciable) from the start.
-- **OS accounting treatment is mandatory**: PATCH /work-orders/:id/close returns 400 if accountingTreatment absent.
-- **WIP exclusion from depreciation batch**: AssetStatus.EM_ANDAMENTO excluded from batch query. Depreciation starts only after activation.
-- **Asset disposal cancels pending depreciation atomically**: Disposal transaction atomically cancels all pending DepreciationEntry records for the asset.
+All v1.4 decisions archived in `.planning/milestones/v1.4-ROADMAP.md`.
 
 ### Pending Todos
 
-- Test react-spreadsheet-import React 19 compatibility before committing to Phase 16 bulk import story
-- Confirm with customer whether farm legal entities are Simples Nacional or Lucro Real/Presumido before Phase 22 (accelerated depreciation dual-track)
-- Confirm biological asset fair value input method (manual vs automatic) before Phase 24 planning
-- Validate NF-e v4.0 XML tag paths against real sample before Phase 19 story writing
-- Confirm whether any customer fleet has active finance leases before committing to Phase 24 leasing scope
+- Confirm with customer whether farm legal entities are Simples Nacional or Lucro Real/Presumido (affects FUNRURAL calculation mode)
+- Cross-check 2026 INSS and IRRF exact table values against official RFB Instrução Normativa
+- Confirm eSocial sandbox credentials and endpoint URLs with client
+- Decide where PFX certificate is stored in production (AWS Secrets Manager vs KMS)
 
 ### Blockers/Concerns
 
@@ -83,7 +46,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T17:30:00.000Z
-Stopped at: Roadmap created — ready to plan Phase 16
+Last session: 2026-03-28
+Stopped at: v1.4 milestone archived
 Resume file: None
-Next action: `/gsd:plan-phase 16`
+Next action: /gsd:new-milestone to define next scope

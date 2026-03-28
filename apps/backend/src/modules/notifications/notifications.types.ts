@@ -16,6 +16,10 @@ export const NOTIFICATION_TYPES = [
   'RETURN_REGISTERED',
   'RETURN_RESOLVED',
   'DAILY_DIGEST',
+  'MAINTENANCE_OVERDUE',
+  'MAINTENANCE_REQUEST',
+  'CONTRACT_EXPIRY',
+  'TAX_GUIDE_DUE',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

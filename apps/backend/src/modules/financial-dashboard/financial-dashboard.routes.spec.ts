@@ -22,6 +22,7 @@ const mockGetUserPermissions = getUserPermissions as jest.MockedFunction<typeof 
 
 jest.mock('./financial-dashboard.service', () => ({
   getFinancialDashboard: jest.fn(),
+  getPatrimonyDashboard: jest.fn(),
 }));
 
 jest.mock('../auth/auth.service', () => {
@@ -322,5 +323,162 @@ describe('GET /api/org/financial-dashboard', () => {
 
     expect(res.status).toBe(500);
     expect(res.body.error).toBe('Erro interno do servidor');
+  });
+});
+
+// ─── GET /api/org/financial-dashboard/patrimony ───────────────────────
+
+const PATRIMONY_OUTPUT = {
+  totalActiveValue: 150000,
+  accumulatedDepreciation: 30000,
+  netBookValue: 120000,
+  acquisitionsInPeriod: {
+    count: 2,
+    totalValue: 50000,
+  },
+  disposalsInPeriod: {
+    count: 1,
+    totalSaleValue: 25000,
+    totalGainLoss: 5000,
+  },
+  assetCountByType: [
+    { assetType: 'MAQUINARIO', count: 3 },
+    { assetType: 'VEICULO', count: 2 },
+  ],
+  assetCountByStatus: [
+    { status: 'ATIVO', count: 4 },
+    { status: 'EM_MANUTENCAO', count: 1 },
+  ],
+};
+
+describe('GET /api/org/financial-dashboard/patrimony', () => {
+  it('Test 1: returns totalActiveValue as sum of acquisitionValue for non-ALIENADO assets', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.getPatrimonyDashboard.mockResolvedValue(PATRIMONY_OUTPUT);
+
+    const res = await request(app)
+      .get('/api/org/financial-dashboard/patrimony')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.body.totalActiveValue).toBe(150000);
+  });
+
+  it('Test 2: returns accumulatedDepreciation from non-reversed depreciation entries', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.getPatrimonyDashboard.mockResolvedValue(PATRIMONY_OUTPUT);
+
+    const res = await request(app)
+      .get('/api/org/financial-dashboard/patrimony')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.body.accumulatedDepreciation).toBe(30000);
+  });
+
+  it('Test 3: returns netBookValue = totalActiveValue - accumulatedDepreciation', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.getPatrimonyDashboard.mockResolvedValue(PATRIMONY_OUTPUT);
+
+    const res = await request(app)
+      .get('/api/org/financial-dashboard/patrimony')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.body.netBookValue).toBe(120000);
+  });
+
+  it('Test 4: returns acquisitionsInPeriod with count and totalValue', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.getPatrimonyDashboard.mockResolvedValue(PATRIMONY_OUTPUT);
+
+    const res = await request(app)
+      .get('/api/org/financial-dashboard/patrimony')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.body.acquisitionsInPeriod).toEqual({ count: 2, totalValue: 50000 });
+  });
+
+  it('Test 5: returns disposalsInPeriod with count, totalSaleValue and totalGainLoss', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.getPatrimonyDashboard.mockResolvedValue(PATRIMONY_OUTPUT);
+
+    const res = await request(app)
+      .get('/api/org/financial-dashboard/patrimony')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.body.disposalsInPeriod).toEqual({
+      count: 1,
+      totalSaleValue: 25000,
+      totalGainLoss: 5000,
+    });
+  });
+
+  it('Test 6: passes farmId filter to service when provided', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.getPatrimonyDashboard.mockResolvedValue(PATRIMONY_OUTPUT);
+
+    const res = await request(app)
+      .get('/api/org/financial-dashboard/patrimony?farmId=farm-A')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(mockedService.getPatrimonyDashboard).toHaveBeenCalledWith(
+      { organizationId: 'org-1' },
+      expect.objectContaining({ farmId: 'farm-A' }),
+    );
+  });
+
+  it('Test 7: returns assetCountByType breakdown', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.getPatrimonyDashboard.mockResolvedValue(PATRIMONY_OUTPUT);
+
+    const res = await request(app)
+      .get('/api/org/financial-dashboard/patrimony')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.body.assetCountByType).toEqual([
+      { assetType: 'MAQUINARIO', count: 3 },
+      { assetType: 'VEICULO', count: 2 },
+    ]);
+  });
+
+  it('Test 8: returns assetCountByStatus breakdown', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.getPatrimonyDashboard.mockResolvedValue(PATRIMONY_OUTPUT);
+
+    const res = await request(app)
+      .get('/api/org/financial-dashboard/patrimony')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(200);
+    expect(res.body.assetCountByStatus).toEqual([
+      { status: 'ATIVO', count: 4 },
+      { status: 'EM_MANUTENCAO', count: 1 },
+    ]);
+  });
+
+  it('returns 401 when unauthenticated', async () => {
+    const res = await request(app).get('/api/org/financial-dashboard/patrimony');
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 403 when user lacks assets:read permission', async () => {
+    mockedAuth.verifyAccessToken.mockReturnValue({
+      userId: 'user-2',
+      email: 'user@org.com',
+      role: 'CONSULTANT' as const,
+      organizationId: 'org-1',
+    });
+    mockGetUserPermissions.mockResolvedValue([]);
+
+    const res = await request(app)
+      .get('/api/org/financial-dashboard/patrimony')
+      .set('Authorization', 'Bearer token');
+
+    expect(res.status).toBe(403);
   });
 });

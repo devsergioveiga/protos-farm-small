@@ -1,5 +1,6 @@
 import { Money, generateInstallments, validateCostCenterItems } from '@protos-farm/shared';
 import { withRlsContext, type RlsContext } from '../../database/rls';
+import { process as autoPost } from '../auto-posting/auto-posting.service';
 import {
   ReceivableError,
   type ReceivableStatus,
@@ -467,8 +468,18 @@ export async function settleReceivable(
     });
   });
 
+  // Auto-posting GL entry after CR settlement (non-blocking — per D-15, D-33)
+  try {
+    await autoPost('RECEIVABLE_SETTLEMENT', receivableId, ctx.organizationId);
+  } catch (err) {
+    console.error('[receivables] Auto-posting failed:', err);
+  }
+
   return toReceivableOutput(row);
 }
+
+// ─── receivePayment — alias for settleReceivable (CR settlement hook point per D-33) ───
+export const receivePayment = settleReceivable;
 
 // ─── reverseReceivable ───────────────────────────────────────────────
 
@@ -532,6 +543,13 @@ export async function reverseReceivable(
       include: RECEIVABLE_INCLUDE,
     });
   });
+
+  // Auto-posting GL entry after CR reversal (non-blocking — per D-15)
+  try {
+    await autoPost('RECEIVABLE_REVERSAL', receivableId, ctx.organizationId);
+  } catch (err) {
+    console.error('[receivables] Auto-posting reversal failed:', err);
+  }
 
   return toReceivableOutput(row);
 }

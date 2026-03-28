@@ -1,6 +1,7 @@
 import { Money } from '@protos-farm/shared';
 import { generateInstallments, validateCostCenterItems } from '@protos-farm/shared';
 import { withRlsContext, type RlsContext } from '../../database/rls';
+import { process as autoPost } from '../auto-posting/auto-posting.service';
 import {
   PayableError,
   PAYABLE_CATEGORY_LABELS,
@@ -461,6 +462,13 @@ export async function settlePayment(
     });
   });
 
+  // Auto-posting GL entry after settlement (non-blocking — per D-15)
+  try {
+    await autoPost('PAYABLE_SETTLEMENT', payableId, ctx.organizationId);
+  } catch (err) {
+    console.error('[payables] Auto-posting failed:', err);
+  }
+
   return toPayableOutput(payable);
 }
 
@@ -661,6 +669,13 @@ export async function reversePayment(ctx: RlsContext, payableId: string): Promis
       include: PAYABLE_INCLUDE,
     });
   });
+
+  // Auto-posting GL entry after reversal (non-blocking — per D-15)
+  try {
+    await autoPost('PAYABLE_REVERSAL', payableId, ctx.organizationId);
+  } catch (err) {
+    console.error('[payables] Auto-posting reversal failed:', err);
+  }
 
   return toPayableOutput(payable);
 }

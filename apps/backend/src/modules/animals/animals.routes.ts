@@ -387,6 +387,7 @@ animalsRouter.get(
       const origin = req.query.origin as string | undefined;
       const lotId = req.query.lotId as string | undefined;
       const locationId = req.query.locationId as string | undefined;
+      const ownerId = req.query.ownerId as string | undefined;
       const birthDateFrom = req.query.birthDateFrom as string | undefined;
       const birthDateTo = req.query.birthDateTo as string | undefined;
       const sortBy = req.query.sortBy as string | undefined;
@@ -416,6 +417,7 @@ animalsRouter.get(
         origin,
         lotId,
         locationId,
+        ownerId,
         birthDateFrom,
         birthDateTo,
         minWeightKg,

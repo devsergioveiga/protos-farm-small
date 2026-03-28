@@ -1,0 +1,751 @@
+/* JournalEntryModal */
+
+/* ─── Overlay ────────────────────────────────────────────────────────────── */
+
+.je-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(42, 37, 32, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: je-overlay-open var(--duration-normal) var(--ease-out);
+}
+
+@keyframes je-overlay-open {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ─── Dialog ─────────────────────────────────────────────────────────────── */
+
+.je-modal {
+  background: var(--color-neutral-0);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 800px;
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  animation: je-modal-open var(--duration-normal) var(--ease-out);
+  overflow: hidden;
+}
+
+@keyframes je-modal-open {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+
+.je-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-6) var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--color-neutral-200);
+  flex-shrink: 0;
+}
+
+.je-modal__heading {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-800);
+  margin: 0;
+}
+
+.je-modal__heading:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.je-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: background-color var(--duration-instant) var(--ease-out);
+  flex-shrink: 0;
+}
+
+.je-modal__close:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.je-modal__close:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Body ───────────────────────────────────────────────────────────────── */
+
+.je-modal__body {
+  padding: var(--space-4) var(--space-6);
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ─── Form Fields ────────────────────────────────────────────────────────── */
+
+.je-modal__fields-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.je-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  position: relative;
+}
+
+.je-modal__label {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-700);
+}
+
+.je-modal__input,
+.je-modal__select,
+.je-modal__textarea {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  min-height: 48px;
+}
+
+.je-modal__input:focus-visible,
+.je-modal__select:focus-visible,
+.je-modal__textarea:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.je-modal__input:disabled,
+.je-modal__select:disabled,
+.je-modal__textarea:disabled {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-500);
+  cursor: default;
+}
+
+.je-modal__textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.je-modal__char-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-400);
+  text-align: right;
+}
+
+/* ─── Lines Section ──────────────────────────────────────────────────────── */
+
+.je-modal__lines-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.je-modal__lines-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.je-modal__lines-title {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-700);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.je-modal__template-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--color-neutral-600);
+  cursor: pointer;
+  transition: background-color var(--duration-instant) var(--ease-out);
+}
+
+.je-modal__template-btn:hover {
+  background: var(--color-neutral-100);
+}
+
+.je-modal__template-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.je-modal__table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+}
+
+.je-modal__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.je-modal__th {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-neutral-600);
+  background: var(--color-neutral-100);
+  border-bottom: 1px solid var(--color-neutral-200);
+  white-space: nowrap;
+}
+
+.je-modal__th--side {
+  width: 80px;
+  text-align: center;
+}
+
+.je-modal__th--amount {
+  width: 120px;
+}
+
+.je-modal__th--desc {
+  min-width: 140px;
+}
+
+.je-modal__th--remove {
+  width: 48px;
+}
+
+/* ─── Line Row ───────────────────────────────────────────────────────────── */
+
+.je-modal__line-row {
+  border-bottom: 1px solid var(--color-neutral-100);
+  animation: je-line-add var(--duration-fast) var(--ease-out);
+}
+
+@keyframes je-line-add {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.je-modal__line-row:last-child {
+  border-bottom: none;
+}
+
+.je-modal__line-td {
+  padding: var(--space-3);
+  vertical-align: middle;
+}
+
+.je-modal__line-td--side {
+  text-align: center;
+}
+
+.je-modal__line-td--amount {
+  text-align: right;
+}
+
+.je-modal__line-td--remove {
+  text-align: center;
+  width: 48px;
+}
+
+/* ─── Side Toggle ────────────────────────────────────────────────────────── */
+
+.je-modal__side-toggle {
+  display: flex;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.je-modal__side-btn {
+  flex: 1;
+  min-width: 36px;
+  min-height: 48px;
+  border: none;
+  background: var(--color-neutral-0);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-instant) var(--ease-out),
+    color var(--duration-instant) var(--ease-out);
+  color: var(--color-neutral-500);
+}
+
+.je-modal__side-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+
+.je-modal__side-btn--active-debit {
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+}
+
+.je-modal__side-btn--active-credit {
+  background: var(--color-success-100);
+  color: var(--color-success-500);
+}
+
+.je-modal__side-btn:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* ─── Amount Input ───────────────────────────────────────────────────────── */
+
+.je-modal__amount-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-2);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  text-align: right;
+  background: var(--color-neutral-0);
+  min-height: 48px;
+}
+
+.je-modal__amount-input--debit {
+  color: var(--color-error-500);
+}
+
+.je-modal__amount-input--credit {
+  color: var(--color-success-500);
+}
+
+.je-modal__amount-input:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.je-modal__amount-input:disabled {
+  background: var(--color-neutral-100);
+  cursor: default;
+}
+
+/* ─── Description Input ──────────────────────────────────────────────────── */
+
+.je-modal__desc-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-3);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  min-height: 48px;
+}
+
+.je-modal__desc-input:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.je-modal__desc-input:disabled {
+  background: var(--color-neutral-100);
+  cursor: default;
+}
+
+/* ─── Remove Button ──────────────────────────────────────────────────────── */
+
+.je-modal__remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  color: var(--color-neutral-400);
+  cursor: pointer;
+  transition:
+    color var(--duration-instant) var(--ease-out),
+    background-color var(--duration-instant) var(--ease-out);
+}
+
+.je-modal__remove-btn:hover:not(:disabled) {
+  color: var(--color-error-500);
+  background: var(--color-error-100);
+}
+
+.je-modal__remove-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.je-modal__remove-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ─── Add Line Button ────────────────────────────────────────────────────── */
+
+.je-modal__add-line-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px dashed var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-600);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-instant) var(--ease-out),
+    color var(--duration-instant) var(--ease-out);
+  align-self: flex-start;
+}
+
+.je-modal__add-line-btn:hover {
+  border-color: var(--color-primary-500);
+  color: var(--color-primary-600);
+}
+
+.je-modal__add-line-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Combobox ───────────────────────────────────────────────────────────── */
+
+.je-modal__combobox {
+  position: relative;
+  width: 100%;
+}
+
+.je-modal__combobox-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-3);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  min-height: 48px;
+}
+
+.je-modal__combobox-input:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.je-modal__combobox-input:disabled {
+  background: var(--color-neutral-100);
+  cursor: default;
+}
+
+.je-modal__combobox-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  list-style: none;
+  margin: var(--space-1) 0 0;
+  padding: var(--space-1) 0;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.je-modal__combobox-option {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  transition: background-color var(--duration-instant) var(--ease-out);
+}
+
+.je-modal__combobox-option:hover,
+.je-modal__combobox-option--selected {
+  background: var(--color-neutral-100);
+}
+
+.je-modal__combobox-code {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+  white-space: nowrap;
+}
+
+.je-modal__combobox-name {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Balance Indicator ──────────────────────────────────────────────────── */
+
+.je-modal__balance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.je-modal__balance--pending {
+  background: var(--color-neutral-100);
+  border: 1px solid var(--color-neutral-300);
+}
+
+.je-modal__balance--ok {
+  background: var(--color-success-100);
+  border: 1px solid var(--color-success-500);
+}
+
+.je-modal__balance--error {
+  background: var(--color-error-100);
+  border: 1px solid var(--color-error-500);
+}
+
+.je-modal__balance-totals {
+  display: flex;
+  gap: var(--space-6);
+}
+
+.je-modal__balance-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+
+.je-modal__balance-label {
+  color: var(--color-neutral-600);
+}
+
+.je-modal__balance-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+}
+
+.je-modal__balance-debit {
+  color: var(--color-error-500);
+}
+
+.je-modal__balance-credit {
+  color: var(--color-success-500);
+}
+
+.je-modal__balance-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+.je-modal__balance--pending .je-modal__balance-status {
+  color: var(--color-neutral-600);
+}
+
+.je-modal__balance--ok .je-modal__balance-status {
+  color: var(--color-success-500);
+}
+
+.je-modal__balance--error .je-modal__balance-status {
+  color: var(--color-error-500);
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────────────── */
+
+.je-modal__footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-0);
+  flex-shrink: 0;
+}
+
+.je-modal__footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* ─── Modal Buttons ──────────────────────────────────────────────────────── */
+
+.je-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  border: none;
+  transition: background-color var(--duration-instant) var(--ease-out);
+  min-height: 48px;
+}
+
+.je-modal__btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.je-modal__btn--primary {
+  background: var(--color-primary-600);
+  color: var(--color-neutral-0);
+}
+
+.je-modal__btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+}
+
+.je-modal__btn--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.je-modal__btn--secondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  border: 1px solid var(--color-neutral-300);
+}
+
+.je-modal__btn--secondary:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+}
+
+.je-modal__btn--secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── Error ──────────────────────────────────────────────────────────────── */
+
+.je-modal__error {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+}
+
+/* ─── sr-only ────────────────────────────────────────────────────────────── */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .je-modal__overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .je-modal {
+    max-width: 100%;
+    max-height: 100dvh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .je-modal__fields-row {
+    grid-template-columns: 1fr;
+  }
+
+  .je-modal__th--desc,
+  .je-modal__line-td--desc {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .je-modal__overlay,
+  .je-modal,
+  .je-modal__line-row {
+    animation: none;
+  }
+
+  .je-modal__balance {
+    transition: none;
+  }
+}
