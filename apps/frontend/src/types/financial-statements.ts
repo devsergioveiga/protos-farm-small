@@ -95,3 +95,81 @@ export interface CrossValidationOutput {
   invariants: InvariantResult[];
   allPassed: boolean;
 }
+
+// --- DFC Types ----------------------------------------------------------------
+
+export interface DfcSectionRow {
+  id: string;
+  label: string;
+  currentMonth: string;
+  ytd: string;
+  priorYear: string;
+  isSubtotal: boolean;
+}
+
+export interface DfcSection {
+  id: 'operacional' | 'investimento' | 'financiamento';
+  label: string;
+  rows: DfcSectionRow[];
+  subtotal: DfcSectionRow;
+}
+
+export interface DfcCashSummary {
+  saldoInicial: { currentMonth: string; ytd: string; priorYear: string };
+  variacaoLiquida: { currentMonth: string; ytd: string; priorYear: string };
+  saldoFinal: { currentMonth: string; ytd: string; priorYear: string };
+}
+
+export interface DfcMethodOutput {
+  sections: DfcSection[];
+  cash: DfcCashSummary;
+}
+
+export interface DfcOutput {
+  direto: DfcMethodOutput;
+  indireto: DfcMethodOutput;
+}
+
+// --- Accounting Dashboard Types -----------------------------------------------
+
+export interface DashboardKpiCard {
+  label: string;
+  value: string;
+  deltaPercent: string | null;
+  deltaDirection: 'up' | 'down' | 'neutral';
+}
+
+export interface MonthlyRevenueExpense {
+  month: number;
+  receita: string;
+  despesa: string;
+}
+
+export interface CostCompositionItem {
+  label: string;
+  value: string;
+  percent: string;
+}
+
+export interface BpIndicatorCard {
+  id: string;
+  label: string;
+  value: string | null;
+  sparkline: { month: number; value: number }[];
+}
+
+export interface AccountingAlert {
+  id: string;
+  label: string;
+  count: number;
+  navigateTo: string;
+  severity: 'warning' | 'info';
+}
+
+export interface AccountingDashboardOutput {
+  kpiCards: DashboardKpiCard[];
+  monthlyChart: MonthlyRevenueExpense[];
+  costComposition: CostCompositionItem[];
+  bpIndicators: BpIndicatorCard[];
+  alerts: AccountingAlert[];
+}
