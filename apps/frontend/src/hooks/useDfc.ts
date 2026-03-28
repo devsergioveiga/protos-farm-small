@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/services/api';
+import { useAuth } from '@/stores/AuthContext';
 import type { DfcOutput } from '@/types/financial-statements';
 
 export function useDfc(
@@ -37,4 +38,11 @@ export function useDfc(
   }, [fetchDfc]);
 
   return { data, loading, error, refetch: fetchDfc };
+}
+
+// ─── useOrgId (re-export convenience) ────────────────────────────────────────
+
+export function useOrgId(): string | undefined {
+  const { user } = useAuth();
+  return user?.organizationId ?? undefined;
 }

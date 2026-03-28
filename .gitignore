@@ -39,6 +39,9 @@ pnpm-debug.log*
 tmp/
 temp/
 
+# User uploads
+apps/backend/uploads/
+
 # FDB import data (ID mappings)
 .import-data/
 *.FDB
