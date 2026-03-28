@@ -4,6 +4,14 @@
 
 // ─── Setup mocks before imports ──────────────────────────────────────
 
+jest.mock('../../database/prisma', () => ({
+  prisma: {
+    accountingPeriod: {
+      findFirst: jest.fn(),
+    },
+  },
+}));
+
 jest.mock('../../shared/rbac/rbac.service', () => ({
   getUserPermissions: jest.fn(),
   hasPermission: jest.fn(),
@@ -41,6 +49,10 @@ import { UnbalancedEntryError } from '@protos-farm/shared';
 import { PeriodNotOpenError } from '@protos-farm/shared';
 import { getUserPermissions } from '../../shared/rbac/rbac.service';
 import { DEFAULT_ROLE_PERMISSIONS } from '../../shared/rbac/permissions';
+import { prisma } from '../../database/prisma';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const mockPrisma = prisma as any;
 
 const mockedService = jest.mocked(service);
 const mockedAuth = jest.mocked(authService);
@@ -123,6 +135,12 @@ describe('Journal Entries Routes', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     authAs(ADMIN_PAYLOAD);
+    // checkPeriodOpen middleware needs an OPEN period by default
+    mockPrisma.accountingPeriod.findFirst.mockResolvedValue({
+      month: 1,
+      year: 2026,
+      status: 'OPEN',
+    });
   });
 
   // ─── GET /journal-entries ─────────────────────────────────────────

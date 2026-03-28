@@ -176,9 +176,9 @@ describe('CreateAnimalModal', () => {
   it('should render stepper with 3 steps', async () => {
     await renderModal();
 
-    expect(screen.getByText('1. Dados básicos')).toBeTruthy();
-    expect(screen.getByText('2. Composição racial')).toBeTruthy();
-    expect(screen.getByText('3. Genealogia')).toBeTruthy();
+    expect(screen.getByText('Dados básicos')).toBeTruthy();
+    expect(screen.getByText('Composição racial')).toBeTruthy();
+    expect(screen.getByText('Genealogia')).toBeTruthy();
   });
 
   it('should show Girolando badge for 50/50 Holandesa/Gir', async () => {

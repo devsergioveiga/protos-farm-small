@@ -25,6 +25,12 @@ jest.mock('../../database/prisma', () => ({
       createMany: jest.fn(),
       deleteMany: jest.fn(),
     },
+    pendingJournalPosting: {
+      findFirst: jest.fn().mockResolvedValue(null),
+    },
+    accountingRule: {
+      findFirst: jest.fn().mockResolvedValue(null),
+    },
     $transaction: jest.fn(),
   },
 }));
@@ -157,7 +163,7 @@ describe('Depreciation Batch Service', () => {
       expect(mockedPrisma.asset.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            status: expect.objectContaining({ not: 'EM_ANDAMENTO' }),
+            status: expect.objectContaining({ notIn: expect.arrayContaining(['EM_ANDAMENTO']) }),
           }),
         }),
       );
