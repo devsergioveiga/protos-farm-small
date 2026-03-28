@@ -38,14 +38,14 @@ Requirements for Accounting and Financial Statements module. Each maps to roadma
 
 ### DRE — Demonstração do Resultado do Exercício
 
-- [ ] **DRE-01**: Contador pode gerar DRE com layout rural configurável: Receita Bruta (vendas agrícolas + pecuárias + industrialização), Deduções (FUNRURAL, devoluções), Receita Líquida, CPV (custo dos produtos vendidos por cultura), Lucro Bruto, Despesas Operacionais (administrativas + comerciais + financeiras + depreciação), Resultado Operacional, Variação Valor Justo Ativo Biológico (CPC 29 — seção dedicada), Resultado Antes IR/CSLL, Resultado Líquido
-- [ ] **DRE-02**: Contador pode visualizar DRE com análise vertical (% sobre receita líquida), análise horizontal (variação vs período anterior ou mesmo período ano anterior), e colunas comparativas (mês atual, acumulado exercício, mesmo período ano anterior)
-- [ ] **DRE-03**: Gerente pode filtrar DRE por centro de custo (fazenda, cultura, talhão) para visão gerencial de rentabilidade por atividade, com ranking de culturas por margem e gráficos comparativos
+- [x] **DRE-01**: Contador pode gerar DRE com layout rural configurável: Receita Bruta (vendas agrícolas + pecuárias + industrialização), Deduções (FUNRURAL, devoluções), Receita Líquida, CPV (custo dos produtos vendidos por cultura), Lucro Bruto, Despesas Operacionais (administrativas + comerciais + financeiras + depreciação), Resultado Operacional, Variação Valor Justo Ativo Biológico (CPC 29 — seção dedicada), Resultado Antes IR/CSLL, Resultado Líquido
+- [x] **DRE-02**: Contador pode visualizar DRE com análise vertical (% sobre receita líquida), análise horizontal (variação vs período anterior ou mesmo período ano anterior), e colunas comparativas (mês atual, acumulado exercício, mesmo período ano anterior)
+- [x] **DRE-03**: Gerente pode filtrar DRE por centro de custo (fazenda, cultura, talhão) para visão gerencial de rentabilidade por atividade, com ranking de culturas por margem e gráficos comparativos
 
 ### Balanço Patrimonial
 
-- [ ] **BP-01**: Contador pode gerar Balanço Patrimonial com classificação rural: Ativo Circulante (caixa/bancos, estoques, créditos rurais de curto prazo), Ativo Não Circulante (imobilizado rural/terras/máquinas, ativo biológico CPC 29, culturas em formação, intangível), Passivo Circulante (fornecedores, obrigações trabalhistas/tributárias, financiamentos CP), Passivo Não Circulante (crédito rural LP, financiamentos LP), PL (capital, reservas, lucros/prejuízos acumulados)
-- [ ] **BP-02**: Contador pode visualizar indicadores financeiros calculados automaticamente: Liquidez Corrente (AC/PC), Liquidez Seca ((AC−Estoques)/PC), Endividamento Geral (PE/AT), Composição do Endividamento (PC/PE), ROE (RL/PL), PL por hectare, e evolução dos indicadores ao longo dos períodos com gráficos de tendência
+- [x] **BP-01**: Contador pode gerar Balanço Patrimonial com classificação rural: Ativo Circulante (caixa/bancos, estoques, créditos rurais de curto prazo), Ativo Não Circulante (imobilizado rural/terras/máquinas, ativo biológico CPC 29, culturas em formação, intangível), Passivo Circulante (fornecedores, obrigações trabalhistas/tributárias, financiamentos CP), Passivo Não Circulante (crédito rural LP, financiamentos LP), PL (capital, reservas, lucros/prejuízos acumulados)
+- [x] **BP-02**: Contador pode visualizar indicadores financeiros calculados automaticamente: Liquidez Corrente (AC/PC), Liquidez Seca ((AC−Estoques)/PC), Endividamento Geral (PE/AT), Composição do Endividamento (PC/PE), ROE (RL/PL), PL por hectare, e evolução dos indicadores ao longo dos períodos com gráficos de tendência
 
 ### DFC — Demonstração do Fluxo de Caixa
 
@@ -55,7 +55,7 @@ Requirements for Accounting and Financial Statements module. Each maps to roadma
 
 ### Vinculação, Relatórios Integrados e SPED
 
-- [ ] **VINC-01**: Contador pode visualizar painel de vinculação e validação cruzada DRE↔BP↔DFC com 4 invariantes: (1) resultado líquido DRE = variação lucros acumulados BP, (2) variação caixa DFC = variação caixa/bancos BP, (3) ativo total BP = passivo total + PL BP, (4) total débitos = total créditos no balancete — com indicador visual verde/vermelho por invariante
+- [x] **VINC-01**: Contador pode visualizar painel de vinculação e validação cruzada DRE↔BP↔DFC com 4 invariantes: (1) resultado líquido DRE = variação lucros acumulados BP, (2) variação caixa DFC = variação caixa/bancos BP, (3) ativo total BP = passivo total + PL BP, (4) total débitos = total créditos no balancete — com indicador visual verde/vermelho por invariante
 - [ ] **VINC-02**: Contador pode gerar relatório integrado de demonstrações financeiras em PDF profissional contendo DRE, BP, DFC e notas explicativas em documento único, com capa, índice, cabeçalho com dados da fazenda/empresa e formatação compatível com exigências de instituições financeiras para crédito rural (PRONAF, Funcafé)
 - [ ] **SPED-01**: Contador pode gerar arquivo SPED Contábil (ECD) no formato pipe-delimited da RFB com Blocos 0 (abertura), I (lançamentos e saldos — registros I050, I100, I150/I155, I200/I250, I350/I355), J (demonstrações — J005, J100, J150, J210), 9 (encerramento), usando plano referencial L300R rural
 - [ ] **SPED-02**: Sistema executa pré-validação do arquivo ECD antes do download verificando: contas mapeadas ao referencial, períodos fechados, balancete equilibrado, I050 sem duplicatas, totalização I155 consistente — com relatório de erros/avisos e impedimento de download se houver erros críticos
@@ -114,15 +114,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FECH-01 | Phase 38 | Complete |
 | FECH-02 | Phase 38 | Complete |
 | FECH-03 | Phase 38 | Complete |
-| DRE-01 | Phase 39 | Pending |
-| DRE-02 | Phase 39 | Pending |
-| DRE-03 | Phase 39 | Pending |
-| BP-01 | Phase 39 | Pending |
-| BP-02 | Phase 39 | Pending |
+| DRE-01 | Phase 39 | Complete |
+| DRE-02 | Phase 39 | Complete |
+| DRE-03 | Phase 39 | Complete |
+| BP-01 | Phase 39 | Complete |
+| BP-02 | Phase 39 | Complete |
 | DFC-01 | Phase 40 | Pending |
 | DFC-02 | Phase 40 | Pending |
 | DFC-03 | Phase 40 | Pending |
-| VINC-01 | Phase 39 | Pending |
+| VINC-01 | Phase 39 | Complete |
 | VINC-02 | Phase 41 | Pending |
 | SPED-01 | Phase 41 | Pending |
 | SPED-02 | Phase 41 | Pending |
