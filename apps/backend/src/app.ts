@@ -163,6 +163,7 @@ import { ledgerRouter } from './modules/ledger/ledger.routes';
 import { autoPostingRouter } from './modules/auto-posting/auto-posting.routes';
 import { monthlyClosingRouter } from './modules/monthly-closing/monthly-closing.routes';
 import { financialStatementsRouter } from './modules/financial-statements/financial-statements.routes';
+import { accountingDashboardRouter } from './modules/financial-statements/accounting-dashboard.routes';
 
 const app = express();
 
@@ -339,5 +340,6 @@ app.use('/api', ledgerRouter);
 app.use('/api', autoPostingRouter);
 app.use('/api', monthlyClosingRouter);
 app.use('/api', financialStatementsRouter);
+app.use('/api', accountingDashboardRouter);
 
 export { app };
