@@ -178,11 +178,11 @@ Plans:
 3. Validação DFC↔BP (variação caixa DFC = variação caixa/bancos BP) com alerta divergência
 4. Dashboard com resultado acumulado, evolução receita/despesa 12m, composição custos, indicadores BP
 
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 Plans:
 - [x] 40-01-PLAN.md — Backend DFC types, calculators (direto+indireto), cross-validation activation, service, route
 - [x] 40-02-PLAN.md — Backend accounting dashboard service, route, tests
-- [ ] 40-03-PLAN.md — Frontend types, hooks, DfcTable component, DfcPage with tabs
+- [x] 40-03-PLAN.md — Frontend types, hooks, DfcTable component, DfcPage with tabs
 - [ ] 40-04-PLAN.md — Frontend AccountingDashboardPage, dashboard components, sidebar, routing
 
 ### Phase 41: SPED ECD e Relatório Integrado
