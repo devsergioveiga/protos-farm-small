@@ -65,11 +65,7 @@ function IndicatorsSkeleton() {
   return (
     <div className="balance-sheet-page__indicators-grid">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className="balance-sheet-page__indicator-skeleton"
-          aria-hidden="true"
-        />
+        <div key={i} className="balance-sheet-page__indicator-skeleton" aria-hidden="true" />
       ))}
     </div>
   );
@@ -93,10 +89,7 @@ export default function BalanceSheetPage() {
   const hasFilters = !!selectedFiscalYearId && !!selectedMonth;
 
   const bsFilters = useMemo(
-    () =>
-      hasFilters
-        ? { fiscalYearId: selectedFiscalYearId, month: selectedMonth }
-        : null,
+    () => (hasFilters ? { fiscalYearId: selectedFiscalYearId, month: selectedMonth } : null),
     [hasFilters, selectedFiscalYearId, selectedMonth],
   );
 
@@ -134,9 +127,13 @@ export default function BalanceSheetPage() {
       {/* Breadcrumb */}
       <nav className="balance-sheet-page__breadcrumb" aria-label="Caminho da pagina">
         <span className="balance-sheet-page__breadcrumb-item">Inicio</span>
-        <span className="balance-sheet-page__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="balance-sheet-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="balance-sheet-page__breadcrumb-item">Contabilidade</span>
-        <span className="balance-sheet-page__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="balance-sheet-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="balance-sheet-page__breadcrumb-item balance-sheet-page__breadcrumb-item--current">
           Balanco Patrimonial
         </span>

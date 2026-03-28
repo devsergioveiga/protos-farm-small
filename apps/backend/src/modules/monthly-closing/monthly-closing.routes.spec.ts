@@ -65,7 +65,7 @@ function authAs(payload: authService.TokenPayload) {
   mockGetUserPermissions.mockResolvedValue([
     'financial:read',
     'financial:manage',
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ] as any);
 }
 
@@ -104,7 +104,7 @@ describe('POST /org/:orgId/monthly-closing/start', () => {
     mockedService.startClosing.mockResolvedValue({
       closing: makeClosingOutput({ status: 'IN_PROGRESS' }),
       created: true,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     const res = await request(app)
@@ -121,7 +121,7 @@ describe('POST /org/:orgId/monthly-closing/start', () => {
     mockedService.startClosing.mockResolvedValue({
       closing: makeClosingOutput({ status: 'IN_PROGRESS' }),
       created: false,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     const res = await request(app)
@@ -204,7 +204,7 @@ describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/2', () => {
       status: 'OK',
       summary: '1 folha(s) fechada(s)',
       validatedAt: new Date().toISOString(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     const res = await request(app)
@@ -227,7 +227,7 @@ describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/3', () => {
       status: 'OK',
       summary: 'Depreciacao processada — 5 ativo(s)',
       validatedAt: new Date().toISOString(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     const res = await request(app)
@@ -243,7 +243,11 @@ describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/3', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { MonthlyClosingError } = jest.requireActual('./monthly-closing.types') as any;
     mockedService.validateStep.mockRejectedValue(
-      new MonthlyClosingError('Etapa 2 deve ser OK antes de validar etapa 3', 'STEP_DEPENDENCY', 422),
+      new MonthlyClosingError(
+        'Etapa 2 deve ser OK antes de validar etapa 3',
+        'STEP_DEPENDENCY',
+        422,
+      ),
     );
 
     const res = await request(app)
@@ -266,7 +270,7 @@ describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/4', () => {
       status: 'OK',
       summary: 'Lancamentos processados, 0 pendente(s)',
       validatedAt: new Date().toISOString(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     const res = await request(app)
@@ -289,7 +293,7 @@ describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/5', () => {
       status: 'OK',
       summary: '5 linha(s) conciliada(s)',
       validatedAt: new Date().toISOString(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     const res = await request(app)
@@ -306,7 +310,7 @@ describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/5', () => {
       status: 'OK',
       summary: 'Nenhum extrato importado — etapa nao aplicavel',
       validatedAt: new Date().toISOString(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     const res = await request(app)
@@ -330,7 +334,7 @@ describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/6', () => {
       status: 'OK',
       summary: 'Balancete equilibrado',
       validatedAt: new Date().toISOString(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     const res = await request(app)
@@ -350,8 +354,12 @@ describe('POST /org/:orgId/monthly-closing/:closingId/complete', () => {
   it('returns 200 and closes period when all 6 steps OK', async () => {
     authAs(FINANCIAL_PAYLOAD);
     mockedService.completeClosing.mockResolvedValue(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      makeClosingOutput({ status: 'COMPLETED', completedAt: '2026-03-28T12:00:00.000Z', completedBy: 'user-1' }) as any,
+      makeClosingOutput({
+        status: 'COMPLETED',
+        completedAt: '2026-03-28T12:00:00.000Z',
+        completedBy: 'user-1',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      }) as any,
     );
 
     const res = await request(app)
@@ -403,7 +411,7 @@ describe('POST /org/:orgId/monthly-closing/:closingId/reopen', () => {
         reopenedBy: 'admin-1',
         reopenReason: 'Correction needed',
         reopenedAt: '2026-03-28T14:00:00.000Z',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       }) as any,
     );
 

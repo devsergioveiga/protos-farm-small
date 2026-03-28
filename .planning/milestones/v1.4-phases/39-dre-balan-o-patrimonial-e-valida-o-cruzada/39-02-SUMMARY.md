@@ -1,6 +1,6 @@
 ---
 phase: 39-dre-balan-o-patrimonial-e-valida-o-cruzada
-plan: "02"
+plan: '02'
 subsystem: frontend-financial-statements
 tags: [dre, frontend, recharts, hooks, accessibility]
 dependency_graph:
@@ -38,12 +38,12 @@ key_files:
     - apps/frontend/src/pages/DrePage.css
   modified: []
 decisions:
-  - "useCostCenters hook does not exist — inline fetch from /org/:orgId/cost-centers inside DrePage useEffect (non-blocking)"
-  - "DreTable skeleton renders as <tbody> with 12 <tr> rows inside the <table> element (not as a separate div) — maintains table structure"
+  - 'useCostCenters hook does not exist — inline fetch from /org/:orgId/cost-centers inside DrePage useEffect (non-blocking)'
+  - 'DreTable skeleton renders as <tbody> with 12 <tr> rows inside the <table> element (not as a separate div) — maintains table structure'
   - "Export buttons show toast 'Exportação disponível em breve' — wired to future endpoints per plan spec"
 metrics:
   duration: 5 minutes
-  completed_date: "2026-03-28"
+  completed_date: '2026-03-28'
   tasks: 2
   files_created: 8
   files_modified: 0
@@ -55,10 +55,10 @@ Frontend DRE page with semantic table, V/H analysis toggle, cost center filter, 
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-| ---- | ---- | ------ | ----- |
-| 1 | Frontend types and hooks (useDre, useBalanceSheet stub) | 6df55885 | financial-statements.ts, useDre.ts, useBalanceSheet.ts |
-| 2 | DRE page with table, V/H toggle, CC filter, margin ranking | 2116fb47 | DreTable.tsx, DreTable.css, MarginRankingChart.tsx, DrePage.tsx, DrePage.css |
+| Task | Name                                                       | Commit   | Files                                                                        |
+| ---- | ---------------------------------------------------------- | -------- | ---------------------------------------------------------------------------- |
+| 1    | Frontend types and hooks (useDre, useBalanceSheet stub)    | 6df55885 | financial-statements.ts, useDre.ts, useBalanceSheet.ts                       |
+| 2    | DRE page with table, V/H toggle, CC filter, margin ranking | 2116fb47 | DreTable.tsx, DreTable.css, MarginRankingChart.tsx, DrePage.tsx, DrePage.css |
 
 ## What Was Built
 
@@ -85,6 +85,7 @@ None.
 ### Adaptation Notes
 
 **1. [Inline] No useCostCenters hook existed at org level**
+
 - **Found during:** Task 2
 - **Issue:** Plan spec said "check if hook exists. If not, create inline fetch" — hook did not exist for org-level listing (only farm-level in FieldTeamModal)
 - **Fix:** Inline `useEffect` in DrePage fetching `/org/${orgId}/cost-centers`, non-blocking (failure = empty CC dropdown, not an error)
@@ -92,13 +93,14 @@ None.
 
 ## Known Stubs
 
-| File | Description | Future plan |
-| ---- | ----------- | ----------- |
+| File                         | Description                                 | Future plan                                                 |
+| ---------------------------- | ------------------------------------------- | ----------------------------------------------------------- |
 | DrePage.tsx — export buttons | Show toast "Exportação disponível em breve" | Per plan spec: future endpoints. Plan 39-03 or later phase. |
 
 ## Self-Check: PASSED
 
 Files exist:
+
 - apps/frontend/src/types/financial-statements.ts — FOUND
 - apps/frontend/src/hooks/useDre.ts — FOUND
 - apps/frontend/src/hooks/useBalanceSheet.ts — FOUND
@@ -107,6 +109,7 @@ Files exist:
 - apps/frontend/src/pages/DrePage.tsx — FOUND
 
 Commits exist:
+
 - 6df55885 — feat(39-02): frontend types and hooks — FOUND
 - 2116fb47 — feat(39-02): DRE page with table, V/H toggle, CC filter — FOUND
 

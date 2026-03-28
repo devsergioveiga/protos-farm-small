@@ -146,14 +146,19 @@ export default function TimeEntryEditModal({
             </div>
             <div className="te-edit-modal__original-header">
               <span className="te-edit-modal__original-label">Data</span>
-              <span className="te-edit-modal__original-value te-edit-modal__original-value--mono">{dateLabel}</span>
+              <span className="te-edit-modal__original-value te-edit-modal__original-value--mono">
+                {dateLabel}
+              </span>
             </div>
             <div className="te-edit-modal__original-header">
               <span className="te-edit-modal__original-label">Descricao da inconsistencia</span>
               <span className="te-edit-modal__original-value">{inconsistency.description}</span>
             </div>
             <p className="te-edit-modal__original-hint">
-              Valor original: <span className="te-edit-modal__original-value--mono">{inconsistency.description}</span>
+              Valor original:{' '}
+              <span className="te-edit-modal__original-value--mono">
+                {inconsistency.description}
+              </span>
             </p>
           </div>
 
@@ -180,7 +185,10 @@ export default function TimeEntryEditModal({
           {/* Justification */}
           <div className="te-edit-modal__field">
             <label htmlFor="te-justification" className="te-edit-modal__label">
-              Justificativa * <span className="te-edit-modal__label-hint">(obrigatoria — ficara no historico de auditoria)</span>
+              Justificativa *{' '}
+              <span className="te-edit-modal__label-hint">
+                (obrigatoria — ficara no historico de auditoria)
+              </span>
             </label>
             <textarea
               id="te-justification"

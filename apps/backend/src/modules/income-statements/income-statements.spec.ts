@@ -124,9 +124,7 @@ describe('IncomeStatementsService.generateStatements', () => {
   it('creates an IncomeStatement per employee aggregating 12 months of PayrollRunItems', async () => {
     const service = new IncomeStatementsService();
 
-    const months = Array.from({ length: 12 }, (_, i) =>
-      String(i + 1).padStart(2, '0'),
-    );
+    const months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
 
     const runs = months.map((m) => makePayrollRun(`2025-${m}`));
     mockTx.payrollRun.findMany.mockResolvedValue(runs);
@@ -168,11 +166,32 @@ describe('IncomeStatementsService.generateStatements', () => {
     mockTx.payrollRun.findMany.mockResolvedValue([makePayrollRun('2025-01')]);
 
     const items = [
-      makePayrollRunItem({ grossSalary: { toNumber: () => 3000 }, inssAmount: { toNumber: () => 270 }, irrfAmount: { toNumber: () => 150 }, salaryFamily: { toNumber: () => 0 }, lineItemsJson: null }),
-      makePayrollRunItem({ id: 'item-002', employeeId: 'emp-002', grossSalary: { toNumber: () => 2000 }, inssAmount: { toNumber: () => 180 }, irrfAmount: { toNumber: () => 0 }, salaryFamily: { toNumber: () => 0 }, lineItemsJson: null, employee: makeEmployee({ id: 'emp-002', name: 'Maria', cpf: '98765432100', email: null }) }),
+      makePayrollRunItem({
+        grossSalary: { toNumber: () => 3000 },
+        inssAmount: { toNumber: () => 270 },
+        irrfAmount: { toNumber: () => 150 },
+        salaryFamily: { toNumber: () => 0 },
+        lineItemsJson: null,
+      }),
+      makePayrollRunItem({
+        id: 'item-002',
+        employeeId: 'emp-002',
+        grossSalary: { toNumber: () => 2000 },
+        inssAmount: { toNumber: () => 180 },
+        irrfAmount: { toNumber: () => 0 },
+        salaryFamily: { toNumber: () => 0 },
+        lineItemsJson: null,
+        employee: makeEmployee({ id: 'emp-002', name: 'Maria', cpf: '98765432100', email: null }),
+      }),
     ];
     mockTx.payrollRunItem.findMany.mockResolvedValue(items);
-    mockTx.incomeStatement.upsert.mockImplementation(({ create }: any) => Promise.resolve({ ...makeIncomeStatement(), ...create, totalTaxable: { toString: () => create.totalTaxable } }));
+    mockTx.incomeStatement.upsert.mockImplementation(({ create }: any) =>
+      Promise.resolve({
+        ...makeIncomeStatement(),
+        ...create,
+        totalTaxable: { toString: () => create.totalTaxable },
+      }),
+    );
 
     const _result = await service.generateStatements(ORG_ID, { yearBase: YEAR_BASE }, USER_ID);
 
@@ -193,11 +212,28 @@ describe('IncomeStatementsService.generateStatements', () => {
       makePayrollRun('2025-02'),
     ]);
     mockTx.payrollRunItem.findMany.mockResolvedValue([
-      makePayrollRunItem({ grossSalary: { toNumber: () => 3000 }, inssAmount: { toNumber: () => 270 }, irrfAmount: { toNumber: () => 150 }, salaryFamily: { toNumber: () => 0 }, lineItemsJson: null }),
-      makePayrollRunItem({ id: 'item-m2', payrollRunId: 'run-2025-02', grossSalary: { toNumber: () => 3000 }, inssAmount: { toNumber: () => 270 }, irrfAmount: { toNumber: () => 150 }, salaryFamily: { toNumber: () => 0 }, lineItemsJson: null }),
+      makePayrollRunItem({
+        grossSalary: { toNumber: () => 3000 },
+        inssAmount: { toNumber: () => 270 },
+        irrfAmount: { toNumber: () => 150 },
+        salaryFamily: { toNumber: () => 0 },
+        lineItemsJson: null,
+      }),
+      makePayrollRunItem({
+        id: 'item-m2',
+        payrollRunId: 'run-2025-02',
+        grossSalary: { toNumber: () => 3000 },
+        inssAmount: { toNumber: () => 270 },
+        irrfAmount: { toNumber: () => 150 },
+        salaryFamily: { toNumber: () => 0 },
+        lineItemsJson: null,
+      }),
     ]);
     mockTx.incomeStatement.upsert.mockImplementation(({ create }: any) =>
-      Promise.resolve({ ...makeIncomeStatement(), totalInss: { toString: () => String(create.totalInss) } }),
+      Promise.resolve({
+        ...makeIncomeStatement(),
+        totalInss: { toString: () => String(create.totalInss) },
+      }),
     );
 
     await service.generateStatements(ORG_ID, { yearBase: YEAR_BASE }, USER_ID);
@@ -211,10 +247,19 @@ describe('IncomeStatementsService.generateStatements', () => {
 
     mockTx.payrollRun.findMany.mockResolvedValue([makePayrollRun('2025-03')]);
     mockTx.payrollRunItem.findMany.mockResolvedValue([
-      makePayrollRunItem({ grossSalary: { toNumber: () => 3000 }, inssAmount: { toNumber: () => 270 }, irrfAmount: { toNumber: () => 150 }, salaryFamily: { toNumber: () => 0 }, lineItemsJson: null }),
+      makePayrollRunItem({
+        grossSalary: { toNumber: () => 3000 },
+        inssAmount: { toNumber: () => 270 },
+        irrfAmount: { toNumber: () => 150 },
+        salaryFamily: { toNumber: () => 0 },
+        lineItemsJson: null,
+      }),
     ]);
     mockTx.incomeStatement.upsert.mockImplementation(({ create }: any) =>
-      Promise.resolve({ ...makeIncomeStatement(), totalIrrf: { toString: () => String(create.totalIrrf) } }),
+      Promise.resolve({
+        ...makeIncomeStatement(),
+        totalIrrf: { toString: () => String(create.totalIrrf) },
+      }),
     );
 
     await service.generateStatements(ORG_ID, { yearBase: YEAR_BASE }, USER_ID);
@@ -237,7 +282,10 @@ describe('IncomeStatementsService.generateStatements', () => {
       }),
     ]);
     mockTx.incomeStatement.upsert.mockImplementation(({ create }: any) =>
-      Promise.resolve({ ...makeIncomeStatement(), totalExempt: { toString: () => String(create.totalExempt) } }),
+      Promise.resolve({
+        ...makeIncomeStatement(),
+        totalExempt: { toString: () => String(create.totalExempt) },
+      }),
     );
 
     await service.generateStatements(ORG_ID, { yearBase: YEAR_BASE }, USER_ID);
@@ -264,7 +312,10 @@ describe('IncomeStatementsService.generateStatements', () => {
       }),
     ]);
     mockTx.incomeStatement.upsert.mockImplementation(({ create }: any) =>
-      Promise.resolve({ ...makeIncomeStatement(), dependentDeduction: { toString: () => String(create.dependentDeduction) } }),
+      Promise.resolve({
+        ...makeIncomeStatement(),
+        dependentDeduction: { toString: () => String(create.dependentDeduction) },
+      }),
     );
 
     await service.generateStatements(ORG_ID, { yearBase: YEAR_BASE }, USER_ID);
@@ -278,7 +329,13 @@ describe('IncomeStatementsService.generateStatements', () => {
 
     mockTx.payrollRun.findMany.mockResolvedValue([makePayrollRun('2025-01')]);
     mockTx.payrollRunItem.findMany.mockResolvedValue([
-      makePayrollRunItem({ grossSalary: { toNumber: () => 3000 }, inssAmount: { toNumber: () => 270 }, irrfAmount: { toNumber: () => 150 }, salaryFamily: { toNumber: () => 0 }, lineItemsJson: null }),
+      makePayrollRunItem({
+        grossSalary: { toNumber: () => 3000 },
+        inssAmount: { toNumber: () => 270 },
+        irrfAmount: { toNumber: () => 150 },
+        salaryFamily: { toNumber: () => 0 },
+        lineItemsJson: null,
+      }),
     ]);
     mockTx.incomeStatement.upsert.mockResolvedValue(makeIncomeStatement());
 
@@ -286,7 +343,13 @@ describe('IncomeStatementsService.generateStatements', () => {
     await service.generateStatements(ORG_ID, { yearBase: YEAR_BASE }, USER_ID);
     mockTx.payrollRun.findMany.mockResolvedValue([makePayrollRun('2025-01')]);
     mockTx.payrollRunItem.findMany.mockResolvedValue([
-      makePayrollRunItem({ grossSalary: { toNumber: () => 3000 }, inssAmount: { toNumber: () => 270 }, irrfAmount: { toNumber: () => 150 }, salaryFamily: { toNumber: () => 0 }, lineItemsJson: null }),
+      makePayrollRunItem({
+        grossSalary: { toNumber: () => 3000 },
+        inssAmount: { toNumber: () => 270 },
+        irrfAmount: { toNumber: () => 150 },
+        salaryFamily: { toNumber: () => 0 },
+        lineItemsJson: null,
+      }),
     ]);
     await service.generateStatements(ORG_ID, { yearBase: YEAR_BASE }, USER_ID);
 

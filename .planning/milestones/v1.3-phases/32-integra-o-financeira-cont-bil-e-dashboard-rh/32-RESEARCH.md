@@ -7,13 +7,15 @@
 ---
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|------------------|
-| INTEGR-01 | Ao fechar folha, sistema gera CPs para salários líquidos, INSS, FGTS, IRRF, contribuição sindical, pensão, VT e FUNRURAL com vencimentos corretos, rateio por centro de custo, tela de revisão pré-confirmação, estorno/rollback e reconciliação total folha vs total CPs | `closeRun` already creates PAYROLL_RUN_ITEM (net salary), PAYROLL_EMPLOYER_INSS, PAYROLL_EMPLOYER_FGTS. Phase 32 adds: IRRF employee (dia 20), VT employee (dia 5 útil), pension employee (dia 5 útil), FUNRURAL (dia 20 via tax-guides). Cost-center rateio added via PayableCostCenterItem. Review screen queries CPs by originType. Rollback extends existing revertRun. |
-| INTEGR-02 | Ao fechar folha, sistema lança automaticamente os créditos contábeis por regime de competência — salários/encargos como despesa, provisões como despesa+passivo, guias como passivo a recolher — com rateio por centro de custo e baixa do passivo ao pagar | New model: AccountingEntry with debitAccount/creditAccount/amount/costCenterId. Populates from PayrollProvision.accountingEntryJson stub (Phase 29) and from closeRun totals. Payment-triggered reversal via Payable settle hook. No full chart-of-accounts needed (v1.4 scope). |
-| INTEGR-03 | Dashboard RH: total colaboradores por status/tipo contrato, custo total folha bruto/líquido/encargos, custo médio por colaborador, custo MO/hectare, evolução 12 meses, pizza composição folha, custo por atividade/cultura, turnover, previsão encerramentos safra 30/60/90 dias, alertas consolidados, filtros por fazenda/departamento | New endpoint `/org/hr-dashboard`. Sources: PayrollRun.totalGross/Net/Charges, Employee.status/contractType, EmployeeContract.endDate (SEASONAL/TRIAL/DETERMINATE → safra forecast), TimeEntryActivity.costCenterId (cost-by-activity), Farm.totalAreaHa (cost/hectare). Recharts BarChart + PieChart patterns already established. |
+| ID        | Description                                                                                                                                                                                                                                                                                                                               | Research Support                                                                                                                                                                                                                                                                                                                                                            |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| INTEGR-01 | Ao fechar folha, sistema gera CPs para salários líquidos, INSS, FGTS, IRRF, contribuição sindical, pensão, VT e FUNRURAL com vencimentos corretos, rateio por centro de custo, tela de revisão pré-confirmação, estorno/rollback e reconciliação total folha vs total CPs                                                                 | `closeRun` already creates PAYROLL_RUN_ITEM (net salary), PAYROLL_EMPLOYER_INSS, PAYROLL_EMPLOYER_FGTS. Phase 32 adds: IRRF employee (dia 20), VT employee (dia 5 útil), pension employee (dia 5 útil), FUNRURAL (dia 20 via tax-guides). Cost-center rateio added via PayableCostCenterItem. Review screen queries CPs by originType. Rollback extends existing revertRun. |
+| INTEGR-02 | Ao fechar folha, sistema lança automaticamente os créditos contábeis por regime de competência — salários/encargos como despesa, provisões como despesa+passivo, guias como passivo a recolher — com rateio por centro de custo e baixa do passivo ao pagar                                                                               | New model: AccountingEntry with debitAccount/creditAccount/amount/costCenterId. Populates from PayrollProvision.accountingEntryJson stub (Phase 29) and from closeRun totals. Payment-triggered reversal via Payable settle hook. No full chart-of-accounts needed (v1.4 scope).                                                                                            |
+| INTEGR-03 | Dashboard RH: total colaboradores por status/tipo contrato, custo total folha bruto/líquido/encargos, custo médio por colaborador, custo MO/hectare, evolução 12 meses, pizza composição folha, custo por atividade/cultura, turnover, previsão encerramentos safra 30/60/90 dias, alertas consolidados, filtros por fazenda/departamento | New endpoint `/org/hr-dashboard`. Sources: PayrollRun.totalGross/Net/Charges, Employee.status/contractType, EmployeeContract.endDate (SEASONAL/TRIAL/DETERMINATE → safra forecast), TimeEntryActivity.costCenterId (cost-by-activity), Farm.totalAreaHa (cost/hectare). Recharts BarChart + PieChart patterns already established.                                          |
+
 </phase_requirements>
 
 ---
@@ -36,13 +38,13 @@ Phase 32 is the final phase of the v1.3 RH milestone. It has three distinct conc
 
 ### Core (all already installed)
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| decimal.js | ^10.6.0 | All monetary arithmetic | Mandatory — all payroll uses Decimal per project decisions |
-| @prisma/client | ^7.4.1 | ORM — new AccountingEntry model | Standard ORM for this project |
-| pdfkit | ^0.17.2 | Not needed for Phase 32 | PDFs done in Phases 28–31 |
-| recharts | ^3.7.0 | HR Dashboard charts | Already used in FinancialDashboardPage |
-| lucide-react | (current) | Dashboard icons | Standard icon library per CLAUDE.md |
+| Library        | Version   | Purpose                         | Why Standard                                               |
+| -------------- | --------- | ------------------------------- | ---------------------------------------------------------- |
+| decimal.js     | ^10.6.0   | All monetary arithmetic         | Mandatory — all payroll uses Decimal per project decisions |
+| @prisma/client | ^7.4.1    | ORM — new AccountingEntry model | Standard ORM for this project                              |
+| pdfkit         | ^0.17.2   | Not needed for Phase 32         | PDFs done in Phases 28–31                                  |
+| recharts       | ^3.7.0    | HR Dashboard charts             | Already used in FinancialDashboardPage                     |
+| lucide-react   | (current) | Dashboard icons                 | Standard icon library per CLAUDE.md                        |
 
 ### No New Dependencies Required
 
@@ -116,7 +118,9 @@ async function buildCostCenterItems(
         employeeId,
         date: {
           gte: new Date(Date.UTC(referenceMonth.getUTCFullYear(), referenceMonth.getUTCMonth(), 1)),
-          lt: new Date(Date.UTC(referenceMonth.getUTCFullYear(), referenceMonth.getUTCMonth() + 1, 1)),
+          lt: new Date(
+            Date.UTC(referenceMonth.getUTCFullYear(), referenceMonth.getUTCMonth() + 1, 1),
+          ),
         },
       },
       costCenterId: { not: null },
@@ -132,16 +136,20 @@ async function buildCostCenterItems(
       select: { costCenterId: true },
     });
     if (!contract?.costCenterId) return [];
-    return [{ costCenterId: contract.costCenterId, farmId, allocMode: 'PERCENTAGE', percentage: 100 }];
+    return [
+      { costCenterId: contract.costCenterId, farmId, allocMode: 'PERCENTAGE', percentage: 100 },
+    ];
   }
 
   return activities
-    .filter(a => a.costCenterId !== null)
-    .map(a => ({
+    .filter((a) => a.costCenterId !== null)
+    .map((a) => ({
       costCenterId: a.costCenterId!,
       farmId,
       allocMode: 'PERCENTAGE' as const,
-      percentage: Number(new Decimal(a._sum.minutes ?? 0).div(totalMinutes).times(100).toDecimalPlaces(2)),
+      percentage: Number(
+        new Decimal(a._sum.minutes ?? 0).div(totalMinutes).times(100).toDecimalPlaces(2),
+      ),
     }));
 }
 ```
@@ -173,14 +181,14 @@ AccountingEntry
 
 **Six canonical entry types at payroll close:**
 
-| entryType | Debit | Credit | Trigger |
-|-----------|-------|--------|---------|
-| PAYROLL_SALARY | 6.1.01 Despesa Salários | 2.1.01 Salários a Pagar | closeRun — sum(grossSalary) |
-| PAYROLL_CHARGES | 6.1.02 Despesa Encargos Soc. | 2.1.02 Encargos a Recolher | closeRun — sum(inssPatronal + fgtsAmount) |
-| VACATION_PROVISION | 6.1.03 Desp. Prov. Férias | 2.2.01 Provisão Férias a Pagar | from PayrollProvision.accountingEntryJson (VACATION type) |
-| THIRTEENTH_PROVISION | 6.1.04 Desp. Prov. 13o | 2.2.02 Provisão 13o a Pagar | from PayrollProvision.accountingEntryJson (THIRTEENTH type) |
-| TAX_LIABILITY | 6.1.05 Despesa INSS/IRRF | 2.1.03 INSS/IRRF a Recolher | closeRun — sum(inssAmount + irrfAmount) |
-| SALARY_REVERSAL | 2.1.01 Salários a Pagar | 1.1.01 Caixa/Bancos | when Payable PAYROLL_RUN_ITEM is settled |
+| entryType            | Debit                        | Credit                         | Trigger                                                     |
+| -------------------- | ---------------------------- | ------------------------------ | ----------------------------------------------------------- |
+| PAYROLL_SALARY       | 6.1.01 Despesa Salários      | 2.1.01 Salários a Pagar        | closeRun — sum(grossSalary)                                 |
+| PAYROLL_CHARGES      | 6.1.02 Despesa Encargos Soc. | 2.1.02 Encargos a Recolher     | closeRun — sum(inssPatronal + fgtsAmount)                   |
+| VACATION_PROVISION   | 6.1.03 Desp. Prov. Férias    | 2.2.01 Provisão Férias a Pagar | from PayrollProvision.accountingEntryJson (VACATION type)   |
+| THIRTEENTH_PROVISION | 6.1.04 Desp. Prov. 13o       | 2.2.02 Provisão 13o a Pagar    | from PayrollProvision.accountingEntryJson (THIRTEENTH type) |
+| TAX_LIABILITY        | 6.1.05 Despesa INSS/IRRF     | 2.1.03 INSS/IRRF a Recolher    | closeRun — sum(inssAmount + irrfAmount)                     |
+| SALARY_REVERSAL      | 2.1.01 Salários a Pagar      | 1.1.01 Caixa/Bancos            | when Payable PAYROLL_RUN_ITEM is settled                    |
 
 **Reversal on payment:** When a Payable with originType PAYROLL_RUN_ITEM, PAYROLL_EMPLOYER_INSS, etc. transitions to PAID status, the accounting-entries service creates a reversal entry (SALARY_REVERSAL) that debits the liability account and credits the bank account. This is triggered by a new hook in `payables.service.ts` `settlePayable()` function, following the try/catch non-propagating pattern established in Phase 31 for eSocial.
 
@@ -239,10 +247,12 @@ Response shape:
 ```
 
 **Cost per hectare calculation:**
+
 - If farmId filter: `sum(PayrollRun.totalGross) / Farm.totalAreaHa`
 - If no filter (org level): `sum(PayrollRun.totalGross) / sum(Farm.totalAreaHa)` for all farms in org
 
 **Upcoming contract expirations query:**
+
 ```typescript
 // Contracts where endDate is in [today, today + 90 days] and contractType IN ['SEASONAL', 'CLT_DETERMINATE', 'TRIAL']
 const expirations = await prisma.employeeContract.findMany({
@@ -272,8 +282,8 @@ A new endpoint `GET /org/:orgId/payroll-runs/:id/cp-preview` returns the list of
 ```typescript
 // cp-preview returns a dry-run list (no DB writes)
 interface CpPreviewItem {
-  type: string;           // "Salário Líquido", "INSS Patronal", "FGTS", "IRRF", etc.
-  employeeName?: string;  // for per-employee CPs
+  type: string; // "Salário Líquido", "INSS Patronal", "FGTS", "IRRF", etc.
+  employeeName?: string; // for per-employee CPs
   amount: number;
   dueDate: string;
   costCenterName?: string;
@@ -282,7 +292,7 @@ interface CpPreviewItem {
 interface CpPreviewResponse {
   items: CpPreviewItem[];
   totalAmount: number;
-  runTotalNet: number;    // reconciliation: totalAmount should equal runTotalNet (approx)
+  runTotalNet: number; // reconciliation: totalAmount should equal runTotalNet (approx)
 }
 ```
 
@@ -299,12 +309,12 @@ interface CpPreviewResponse {
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Recharts charts | Custom SVG bar/pie | recharts BarChart + PieChart (already installed v3.7.0) | Responsive, accessible, already used in FinancialDashboardPage |
-| Business day calculation | Custom loop | `nthBusinessDay()` already in `payroll-runs.service.ts` (private helper) | Extract to shared `payroll-date-utils.ts` |
-| Decimal summation | float accumulation | `decimal.js` reduce pattern already throughout codebase | Avoids cent-level rounding drift |
-| Cost-center percentage allocation | Manual math | `groupBy` in Prisma + Decimal percentage calc | Consistent with PayableCostCenterItem existing pattern |
+| Problem                           | Don't Build        | Use Instead                                                              | Why                                                            |
+| --------------------------------- | ------------------ | ------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| Recharts charts                   | Custom SVG bar/pie | recharts BarChart + PieChart (already installed v3.7.0)                  | Responsive, accessible, already used in FinancialDashboardPage |
+| Business day calculation          | Custom loop        | `nthBusinessDay()` already in `payroll-runs.service.ts` (private helper) | Extract to shared `payroll-date-utils.ts`                      |
+| Decimal summation                 | float accumulation | `decimal.js` reduce pattern already throughout codebase                  | Avoids cent-level rounding drift                               |
+| Cost-center percentage allocation | Manual math        | `groupBy` in Prisma + Decimal percentage calc                            | Consistent with PayableCostCenterItem existing pattern         |
 
 **Key insight:** The accounting chart-of-account codes (6.1.01 etc.) are hardcoded string constants in v1.3, not managed configuration. This avoids building a full double-entry accounting engine that is explicitly deferred to v1.4.
 
@@ -385,7 +395,7 @@ await tx.payable.create({
 const costCenterItems = await buildCostCenterItems(tx, item.employeeId, run.referenceMonth, farmId);
 if (costCenterItems.length > 0) {
   await tx.payableCostCenterItem.createMany({
-    data: costCenterItems.map(cc => ({
+    data: costCenterItems.map((cc) => ({
       payableId: payable.id,
       costCenterId: cc.costCenterId,
       farmId: cc.farmId,
@@ -459,7 +469,9 @@ export function useHrDashboard(params: { farmId: string | null; year: number; mo
     }
   }, [params.farmId, params.year, params.month]);
 
-  useEffect(() => { void fetchDashboard(); }, [fetchDashboard]);
+  useEffect(() => {
+    void fetchDashboard();
+  }, [fetchDashboard]);
   return { data, isLoading, error, refetch: fetchDashboard };
 }
 ```
@@ -468,13 +480,14 @@ export function useHrDashboard(params: { farmId: string | null; year: number; mo
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| closeRun creates 3 CP types (net salary, INSS patron, FGTS) | Phase 32 adds IRRF, VT, pension CPs + cost-center rateio | Phase 32 | INTEGR-01 now fully covers all payroll obligations |
-| PayrollProvision.accountingEntryJson stores accounting stub | Phase 32 materializes into AccountingEntry table | Phase 32 | INTEGR-02 enables drill-down DRE by rubrica/CC |
-| No HR KPI aggregation endpoint | Phase 32 adds `/org/hr-dashboard` | Phase 32 | INTEGR-03 closes the milestone with management visibility |
+| Old Approach                                                | Current Approach                                         | When Changed | Impact                                                    |
+| ----------------------------------------------------------- | -------------------------------------------------------- | ------------ | --------------------------------------------------------- |
+| closeRun creates 3 CP types (net salary, INSS patron, FGTS) | Phase 32 adds IRRF, VT, pension CPs + cost-center rateio | Phase 32     | INTEGR-01 now fully covers all payroll obligations        |
+| PayrollProvision.accountingEntryJson stores accounting stub | Phase 32 materializes into AccountingEntry table         | Phase 32     | INTEGR-02 enables drill-down DRE by rubrica/CC            |
+| No HR KPI aggregation endpoint                              | Phase 32 adds `/org/hr-dashboard`                        | Phase 32     | INTEGR-03 closes the milestone with management visibility |
 
 **Existing but confirmed still valid:**
+
 - `nthBusinessDay()` in payroll-runs.service.ts handles salary due date correctly (5th business day) — extract for reuse
 - `PayableCostCenterItem` model and `CostCenterAllocMode` enum already exist — no schema changes needed for cost center allocation on payables
 - eSocial non-blocking try/catch pattern (lines 837–846 in closeRun) is the correct template for accounting entry hooks
@@ -510,27 +523,27 @@ Step 2.6: SKIPPED — Phase 32 is purely code changes extending existing backend
 
 ### Test Framework
 
-| Property | Value |
-|----------|-------|
-| Framework | Jest (backend), Vitest (frontend) |
-| Config file | `apps/backend/jest.config.js`, `apps/frontend/vitest.config.ts` |
-| Quick run command | `cd apps/backend && pnpm test -- --testPathPattern="accounting-entries\|hr-dashboard\|payroll-runs" --passWithNoTests` |
-| Full suite command | `cd apps/backend && pnpm test` |
+| Property           | Value                                                                                                                  |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| Framework          | Jest (backend), Vitest (frontend)                                                                                      |
+| Config file        | `apps/backend/jest.config.js`, `apps/frontend/vitest.config.ts`                                                        |
+| Quick run command  | `cd apps/backend && pnpm test -- --testPathPattern="accounting-entries\|hr-dashboard\|payroll-runs" --passWithNoTests` |
+| Full suite command | `cd apps/backend && pnpm test`                                                                                         |
 
 ### Phase Requirements → Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| INTEGR-01 | closeRun generates IRRF, VT, pension CPs with correct due dates | unit | `pnpm test -- --testPathPattern="payroll-runs.routes.spec"` | ✅ extends existing |
-| INTEGR-01 | revertRun cancels all new originTypes | unit | `pnpm test -- --testPathPattern="payroll-runs.routes.spec"` | ✅ extends existing |
-| INTEGR-01 | Cost-center rateio percentages sum to 100 | unit | `pnpm test -- --testPathPattern="payroll-runs.routes.spec"` | ✅ extends existing |
-| INTEGR-01 | cp-preview returns correct CP list without DB writes | unit | `pnpm test -- --testPathPattern="payroll-runs.routes.spec"` | ✅ extends existing |
-| INTEGR-02 | createPayrollEntries creates 6 canonical entry types | unit | `pnpm test -- --testPathPattern="accounting-entries.routes.spec"` | ❌ Wave 0 |
-| INTEGR-02 | Reversal entry created when payable is settled | unit | `pnpm test -- --testPathPattern="accounting-entries.routes.spec"` | ❌ Wave 0 |
-| INTEGR-02 | Accounting failure does not abort closeRun | unit | `pnpm test -- --testPathPattern="payroll-runs.routes.spec"` | ✅ extends existing |
-| INTEGR-03 | Dashboard returns correct headcount by status | unit | `pnpm test -- --testPathPattern="hr-dashboard.routes.spec"` | ❌ Wave 0 |
-| INTEGR-03 | Cost per hectare uses Farm.totalAreaHa | unit | `pnpm test -- --testPathPattern="hr-dashboard.routes.spec"` | ❌ Wave 0 |
-| INTEGR-03 | Contract expiry forecast buckets (30/60/90 days) | unit | `pnpm test -- --testPathPattern="hr-dashboard.routes.spec"` | ❌ Wave 0 |
+| Req ID    | Behavior                                                        | Test Type | Automated Command                                                 | File Exists?        |
+| --------- | --------------------------------------------------------------- | --------- | ----------------------------------------------------------------- | ------------------- |
+| INTEGR-01 | closeRun generates IRRF, VT, pension CPs with correct due dates | unit      | `pnpm test -- --testPathPattern="payroll-runs.routes.spec"`       | ✅ extends existing |
+| INTEGR-01 | revertRun cancels all new originTypes                           | unit      | `pnpm test -- --testPathPattern="payroll-runs.routes.spec"`       | ✅ extends existing |
+| INTEGR-01 | Cost-center rateio percentages sum to 100                       | unit      | `pnpm test -- --testPathPattern="payroll-runs.routes.spec"`       | ✅ extends existing |
+| INTEGR-01 | cp-preview returns correct CP list without DB writes            | unit      | `pnpm test -- --testPathPattern="payroll-runs.routes.spec"`       | ✅ extends existing |
+| INTEGR-02 | createPayrollEntries creates 6 canonical entry types            | unit      | `pnpm test -- --testPathPattern="accounting-entries.routes.spec"` | ❌ Wave 0           |
+| INTEGR-02 | Reversal entry created when payable is settled                  | unit      | `pnpm test -- --testPathPattern="accounting-entries.routes.spec"` | ❌ Wave 0           |
+| INTEGR-02 | Accounting failure does not abort closeRun                      | unit      | `pnpm test -- --testPathPattern="payroll-runs.routes.spec"`       | ✅ extends existing |
+| INTEGR-03 | Dashboard returns correct headcount by status                   | unit      | `pnpm test -- --testPathPattern="hr-dashboard.routes.spec"`       | ❌ Wave 0           |
+| INTEGR-03 | Cost per hectare uses Farm.totalAreaHa                          | unit      | `pnpm test -- --testPathPattern="hr-dashboard.routes.spec"`       | ❌ Wave 0           |
+| INTEGR-03 | Contract expiry forecast buckets (30/60/90 days)                | unit      | `pnpm test -- --testPathPattern="hr-dashboard.routes.spec"`       | ❌ Wave 0           |
 
 ### Sampling Rate
 
@@ -543,7 +556,7 @@ Step 2.6: SKIPPED — Phase 32 is purely code changes extending existing backend
 - [ ] `apps/backend/src/modules/accounting-entries/accounting-entries.routes.spec.ts` — covers INTEGR-02
 - [ ] `apps/backend/src/modules/hr-dashboard/hr-dashboard.routes.spec.ts` — covers INTEGR-03
 
-*(payroll-runs.routes.spec.ts already exists — extend with new test cases)*
+_(payroll-runs.routes.spec.ts already exists — extend with new test cases)_
 
 ---
 
@@ -572,6 +585,7 @@ Step 2.6: SKIPPED — Phase 32 is purely code changes extending existing backend
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH — all libraries verified against package.json
 - Architecture: HIGH — based on direct codebase analysis of closeRun, PayrollRunItem fields, existing Payable and PayableCostCenterItem models
 - Pitfalls: HIGH — all based on reading existing code patterns and the explicit STATE.md decisions

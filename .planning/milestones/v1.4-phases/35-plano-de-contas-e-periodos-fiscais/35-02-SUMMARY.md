@@ -2,7 +2,8 @@
 phase: 35-plano-de-contas-e-periodos-fiscais
 plan: 02
 subsystem: api
-tags: [chart-of-accounts, coa, sped, prisma, postgresql, express5, rural, cfc-embrapa, recursive-cte]
+tags:
+  [chart-of-accounts, coa, sped, prisma, postgresql, express5, rural, cfc-embrapa, recursive-cte]
 
 # Dependency graph
 requires:
@@ -25,10 +26,10 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "WITH RECURSIVE coa_tree CTE for hierarchical tree query in Prisma $queryRaw"
-    - "Upsert by organizationId_code composite unique key for idempotent seed"
+    - 'WITH RECURSIVE coa_tree CTE for hierarchical tree query in Prisma $queryRaw'
+    - 'Upsert by organizationId_code composite unique key for idempotent seed'
     - "Level computed from code.split('.').length — max 5 levels enforced"
-    - "isSynthetic=true forces allowManualEntry=false at service layer"
+    - 'isSynthetic=true forces allowManualEntry=false at service layer'
 
 key-files:
   created:
@@ -41,10 +42,10 @@ key-files:
     - apps/backend/src/app.ts
 
 key-decisions:
-  - "Template co-located with module (src/modules/chart-of-accounts/coa-rural-template.ts) instead of prisma/fixtures/ — tsconfig rootDir is ./src, prisma/fixtures/ is outside compilation scope"
-  - "Legacy 6.x expense codes included in template alongside CFC standard 5.x codes — ACCOUNT_CODES in accounting-entries.types.ts uses 6.x; Phase 37 will update when wiring real GL rules"
-  - "115 accounts created (>80 minimum) — includes all 5 AccountType groups, Ativo Biologico (CPC 29), FUNRURAL, fair value adjustment accounts"
-  - "financial:read and financial:manage permissions used — both exist in RBAC ALL_ACTIONS x modules matrix"
+  - 'Template co-located with module (src/modules/chart-of-accounts/coa-rural-template.ts) instead of prisma/fixtures/ — tsconfig rootDir is ./src, prisma/fixtures/ is outside compilation scope'
+  - 'Legacy 6.x expense codes included in template alongside CFC standard 5.x codes — ACCOUNT_CODES in accounting-entries.types.ts uses 6.x; Phase 37 will update when wiring real GL rules'
+  - '115 accounts created (>80 minimum) — includes all 5 AccountType groups, Ativo Biologico (CPC 29), FUNRURAL, fair value adjustment accounts'
+  - 'financial:read and financial:manage permissions used — both exist in RBAC ALL_ACTIONS x modules matrix'
 
 requirements-completed: [COA-01, COA-02, COA-03]
 
@@ -99,6 +100,7 @@ completed: 2026-03-27
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Template placed in src/ instead of prisma/fixtures/**
+
 - **Found during:** Task 1 (compilation check)
 - **Issue:** `prisma/fixtures/` is outside `rootDir: ./src` — TypeScript compilation would fail with "Cannot find module"
 - **Fix:** Created `coa-rural-template.ts` co-located in `src/modules/chart-of-accounts/` instead
@@ -126,8 +128,9 @@ None — all service functions fully implemented. Seed template has actual CFC/E
 - SPED L300R codes on analytic accounts ready for Phase 35-04 (SPED ECD export)
 
 ---
-*Phase: 35-plano-de-contas-e-periodos-fiscais*
-*Completed: 2026-03-27*
+
+_Phase: 35-plano-de-contas-e-periodos-fiscais_
+_Completed: 2026-03-27_
 
 ## Self-Check: PASSED
 

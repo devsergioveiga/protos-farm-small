@@ -178,7 +178,12 @@ describe('WorkOrders Routes', () => {
       const res = await request(app)
         .post(`/api/org/${ORG_ID}/work-orders`)
         .set('Authorization', 'Bearer valid-token')
-        .send({ assetId: ASSET_ID, type: 'PREVENTIVA', title: 'Revisao preventiva', maintenancePlanId: PLAN_ID });
+        .send({
+          assetId: ASSET_ID,
+          type: 'PREVENTIVA',
+          title: 'Revisao preventiva',
+          maintenancePlanId: PLAN_ID,
+        });
 
       expect(res.status).toBe(201);
       expect(mockedService.createWorkOrder).toHaveBeenCalledWith(
@@ -225,9 +230,7 @@ describe('WorkOrders Routes', () => {
 
     it('returns 400 when required fields missing', async () => {
       const { WorkOrderError } = jest.requireActual('./work-orders.types');
-      mockedService.createWorkOrder.mockRejectedValue(
-        new WorkOrderError('Campo obrigatorio', 400),
-      );
+      mockedService.createWorkOrder.mockRejectedValue(new WorkOrderError('Campo obrigatorio', 400));
 
       const res = await request(app)
         .post(`/api/org/${ORG_ID}/work-orders`)
@@ -363,8 +366,19 @@ describe('WorkOrders Routes', () => {
     it('returns work order with parts, ccItems, and asset', async () => {
       const fullWo = {
         ...VALID_WO,
-        parts: [{ id: PART_ID, productId: 'prod-1', quantity: 2, unitCost: 50, totalCost: 100, notes: null }],
-        ccItems: [{ id: 'cc-item-1', costCenterId: CC_ID, farmId: 'farm-1', amount: 100, percentage: 100 }],
+        parts: [
+          {
+            id: PART_ID,
+            productId: 'prod-1',
+            quantity: 2,
+            unitCost: 50,
+            totalCost: 100,
+            notes: null,
+          },
+        ],
+        ccItems: [
+          { id: 'cc-item-1', costCenterId: CC_ID, farmId: 'farm-1', amount: 100, percentage: 100 },
+        ],
       };
       mockedService.getWorkOrder.mockResolvedValue(fullWo as never);
 
@@ -381,9 +395,7 @@ describe('WorkOrders Routes', () => {
 
     it('returns 404 when work order not found', async () => {
       const { WorkOrderError } = jest.requireActual('./work-orders.types');
-      mockedService.getWorkOrder.mockRejectedValue(
-        new WorkOrderError('OS nao encontrada', 404),
-      );
+      mockedService.getWorkOrder.mockRejectedValue(new WorkOrderError('OS nao encontrada', 404));
 
       const res = await request(app)
         .get(`/api/org/${ORG_ID}/work-orders/non-existent`)
@@ -400,7 +412,11 @@ describe('WorkOrders Routes', () => {
     beforeEach(() => authAs(ADMIN_PAYLOAD));
 
     it('updates status to EM_ANDAMENTO', async () => {
-      const updatedWo = { ...VALID_WO, status: 'EM_ANDAMENTO', startedAt: '2026-01-05T08:00:00.000Z' };
+      const updatedWo = {
+        ...VALID_WO,
+        status: 'EM_ANDAMENTO',
+        startedAt: '2026-01-05T08:00:00.000Z',
+      };
       mockedService.updateWorkOrder.mockResolvedValue(updatedWo as never);
 
       const res = await request(app)
@@ -636,7 +652,13 @@ describe('WorkOrders Routes', () => {
         ...CLOSED_WO_DESPESA,
         costCenterId: 'cc-override',
         ccItems: [
-          { id: 'cc-item-1', costCenterId: 'cc-override', farmId: 'farm-1', amount: 350, percentage: 100 },
+          {
+            id: 'cc-item-1',
+            costCenterId: 'cc-override',
+            farmId: 'farm-1',
+            amount: 350,
+            percentage: 100,
+          },
         ],
       };
       mockedService.closeWorkOrder.mockResolvedValue(woWithOverrideCC as never);
@@ -700,10 +722,7 @@ describe('WorkOrders Routes', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('CANCELADA');
-      expect(mockedService.cancelWorkOrder).toHaveBeenCalledWith(
-        expect.any(Object),
-        WO_ID,
-      );
+      expect(mockedService.cancelWorkOrder).toHaveBeenCalledWith(expect.any(Object), WO_ID);
     });
 
     it('returns 400 when OS is already closed', async () => {

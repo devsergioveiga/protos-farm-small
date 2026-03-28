@@ -55,7 +55,9 @@
   color: var(--color-neutral-500);
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 200ms ease-out, color 200ms ease-out;
+  transition:
+    background-color 200ms ease-out,
+    color 200ms ease-out;
   flex-shrink: 0;
 }
 
@@ -163,7 +165,9 @@
   font-family: var(--font-body);
   cursor: pointer;
   min-height: 48px;
-  transition: background-color 200ms ease-out, opacity 200ms ease-out;
+  transition:
+    background-color 200ms ease-out,
+    opacity 200ms ease-out;
 }
 
 .payroll-detail-modal__btn:disabled {
@@ -245,7 +249,9 @@
   color: var(--color-neutral-500);
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 150ms ease-out, color 150ms ease-out;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
 }
 
 .payroll-run-item-row__action-btn:hover:not(:disabled) {

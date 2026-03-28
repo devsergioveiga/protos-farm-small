@@ -28,11 +28,7 @@ function formatBRL(value: number): string {
 
 function KpiSkeleton() {
   return (
-    <div
-      className="asset-reports__kpi-grid"
-      role="status"
-      aria-label="Carregando indicadores"
-    >
+    <div className="asset-reports__kpi-grid" role="status" aria-label="Carregando indicadores">
       {[1, 2, 3, 4].map((i) => (
         <div key={i} className="asset-reports__skeleton-card" />
       ))}
@@ -52,11 +48,7 @@ function TableSkeleton() {
 
 function ChartSkeleton() {
   return (
-    <div
-      className="asset-reports__skeleton-chart"
-      role="status"
-      aria-label="Carregando grafico"
-    />
+    <div className="asset-reports__skeleton-chart" role="status" aria-label="Carregando grafico" />
   );
 }
 
@@ -70,9 +62,8 @@ function InventarioTab() {
   if (error) {
     return (
       <div className="asset-reports__error" role="alert">
-        <AlertCircle size={16} aria-hidden="true" />
-        {' '}
-        Nao foi possivel carregar o relatorio. Verifique sua conexao e tente novamente.
+        <AlertCircle size={16} aria-hidden="true" /> Nao foi possivel carregar o relatorio.
+        Verifique sua conexao e tente novamente.
       </div>
     );
   }
@@ -109,9 +100,7 @@ function InventarioTab() {
       <div className="asset-reports__kpi-grid" aria-label="Indicadores de inventario">
         <div className="asset-reports__kpi-card">
           <span className="asset-reports__kpi-label">Valor Bruto Total</span>
-          <span className="asset-reports__kpi-value">
-            {formatBRL(totals.grossValue)}
-          </span>
+          <span className="asset-reports__kpi-value">{formatBRL(totals.grossValue)}</span>
         </div>
         <div className="asset-reports__kpi-card">
           <span className="asset-reports__kpi-label">Depreciacao Acumulada</span>
@@ -194,9 +183,19 @@ function InventarioTab() {
             <div key={`m-${row.classification}`} className="asset-reports__mobile-card">
               <strong>{row.classification}</strong>
               <div>Qtd: {row.count}</div>
-              <div>Valor Bruto: <span className="asset-reports__mono">{formatBRL(row.grossValue)}</span></div>
-              <div>Depr: <span className="asset-reports__mono">{formatBRL(row.accumulatedDepreciation)}</span></div>
-              <div>Liquido: <span className="asset-reports__mono">{formatBRL(row.netBookValue)}</span></div>
+              <div>
+                Valor Bruto:{' '}
+                <span className="asset-reports__mono">{formatBRL(row.grossValue)}</span>
+              </div>
+              <div>
+                Depr:{' '}
+                <span className="asset-reports__mono">
+                  {formatBRL(row.accumulatedDepreciation)}
+                </span>
+              </div>
+              <div>
+                Liquido: <span className="asset-reports__mono">{formatBRL(row.netBookValue)}</span>
+              </div>
             </div>
           ))}
         </div>
@@ -214,9 +213,8 @@ function DepreciacaoTab() {
   if (error) {
     return (
       <div className="asset-reports__error" role="alert">
-        <AlertCircle size={16} aria-hidden="true" />
-        {' '}
-        Nao foi possivel carregar o relatorio. Verifique sua conexao e tente novamente.
+        <AlertCircle size={16} aria-hidden="true" /> Nao foi possivel carregar o relatorio.
+        Verifique sua conexao e tente novamente.
       </div>
     );
   }
@@ -226,7 +224,11 @@ function DepreciacaoTab() {
   return (
     <>
       {/* Horizon selector */}
-      <div className="asset-reports__horizon-selector" role="group" aria-label="Horizonte de projecao">
+      <div
+        className="asset-reports__horizon-selector"
+        role="group"
+        aria-label="Horizonte de projecao"
+      >
         {horizonOptions.map((h) => (
           <button
             key={h}
@@ -280,9 +282,8 @@ function TCOFleetTab() {
   if (error) {
     return (
       <div className="asset-reports__error" role="alert">
-        <AlertCircle size={16} aria-hidden="true" />
-        {' '}
-        Nao foi possivel carregar o relatorio. Verifique sua conexao e tente novamente.
+        <AlertCircle size={16} aria-hidden="true" /> Nao foi possivel carregar o relatorio.
+        Verifique sua conexao e tente novamente.
       </div>
     );
   }
@@ -340,9 +341,7 @@ function TCOFleetTab() {
         </div>
         <div className="asset-reports__kpi-card">
           <span className="asset-reports__kpi-label">Custo Total de Combustivel</span>
-          <span className="asset-reports__kpi-value">
-            {formatBRL(summary.totalFuelCost)}
-          </span>
+          <span className="asset-reports__kpi-value">{formatBRL(summary.totalFuelCost)}</span>
         </div>
       </div>
 

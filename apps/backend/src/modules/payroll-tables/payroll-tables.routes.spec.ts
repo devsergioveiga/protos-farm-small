@@ -140,11 +140,7 @@ describe('GET /org/:orgId/payroll-tables/effective', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.tableType).toBe('INSS');
-    expect(mockedService.getEffective).toHaveBeenCalledWith(
-      ORG_ID,
-      'INSS',
-      expect.any(Date),
-    );
+    expect(mockedService.getEffective).toHaveBeenCalledWith(ORG_ID, 'INSS', expect.any(Date));
   });
 
   it('should return most recent applicable table for future date', async () => {
@@ -235,7 +231,7 @@ describe('POST /org/:orgId/payroll-tables', () => {
       .send({
         tableType: 'INSS',
         effectiveFrom: '2026-01-01',
-        brackets: [{ fromValue: 0, upTo: 2259.20, rate: 0.075, order: 1 }],
+        brackets: [{ fromValue: 0, upTo: 2259.2, rate: 0.075, order: 1 }],
         scalarValues: [{ key: 'CEILING', value: 8475.55 }],
       });
 

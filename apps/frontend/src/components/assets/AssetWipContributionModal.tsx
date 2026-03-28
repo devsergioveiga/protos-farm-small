@@ -146,10 +146,7 @@ export default function AssetWipContributionModal({
           <div className="wip-contribution-modal__body">
             {/* Contribution date */}
             <div className="wip-contribution-modal__field">
-              <label
-                htmlFor="contribution-date"
-                className="wip-contribution-modal__label"
-              >
+              <label htmlFor="contribution-date" className="wip-contribution-modal__label">
                 Data do aporte *
               </label>
               <input

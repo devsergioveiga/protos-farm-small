@@ -32,10 +32,7 @@ export default function NotesTextarea({
 
   return (
     <div className="notes-textarea">
-      <label
-        htmlFor="notes-textarea"
-        className="notes-textarea__label"
-      >
+      <label htmlFor="notes-textarea" className="notes-textarea__label">
         Notas explicativas adicionais
       </label>
       <p id="notes-helper" className="notes-textarea__helper">

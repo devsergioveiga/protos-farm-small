@@ -64,9 +64,7 @@ export function useMedicalExams() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<MedicalExam[]>(
-        `/org/medical-exams/employees/${employeeId}`,
-      );
+      const data = await api.get<MedicalExam[]>(`/org/medical-exams/employees/${employeeId}`);
       setEmployeeExams(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar ASOs do colaborador');

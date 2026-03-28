@@ -1,15 +1,28 @@
 import Decimal from 'decimal.js';
 import { withRlsContext, type RlsContext } from '../../database/rls';
-import { SalaryAdvanceError, type CreateAdvanceInput, type BatchAdvanceInput } from './salary-advances.types';
+import {
+  SalaryAdvanceError,
+  type CreateAdvanceInput,
+  type BatchAdvanceInput,
+} from './salary-advances.types';
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
 function formatMonthLabel(referenceMonth: string): string {
   const [year, month] = referenceMonth.split('-');
   const months: Record<string, string> = {
-    '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
-    '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
-    '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro',
+    '01': 'Janeiro',
+    '02': 'Fevereiro',
+    '03': 'Março',
+    '04': 'Abril',
+    '05': 'Maio',
+    '06': 'Junho',
+    '07': 'Julho',
+    '08': 'Agosto',
+    '09': 'Setembro',
+    '10': 'Outubro',
+    '11': 'Novembro',
+    '12': 'Dezembro',
   };
   return `${months[month] ?? month}/${year}`;
 }
@@ -75,9 +88,7 @@ export async function createAdvance(
     }
 
     // 3. Get current salary from history or contract
-    const currentSalary =
-      employee.salaryHistory[0]?.salary ??
-      employee.contracts[0]?.salary;
+    const currentSalary = employee.salaryHistory[0]?.salary ?? employee.contracts[0]?.salary;
 
     if (!currentSalary) {
       throw new SalaryAdvanceError(
@@ -217,9 +228,7 @@ export async function createBatchAdvances(
     }
 
     // 3. Get current salary
-    const currentSalary =
-      employee.salaryHistory[0]?.salary ??
-      employee.contracts[0]?.salary;
+    const currentSalary = employee.salaryHistory[0]?.salary ?? employee.contracts[0]?.salary;
 
     if (!currentSalary) {
       continue; // skip employees without salary
@@ -384,14 +393,14 @@ export async function generateAdvanceReceiptPdf(
     // ─── Header ────────────────────────────────────────────────────
     doc.fontSize(14).font('Helvetica-Bold').text(orgName, { align: 'center' });
     doc.moveDown(0.5);
-    doc.fontSize(12).font('Helvetica-Bold').text('RECIBO DE ADIANTAMENTO SALARIAL', { align: 'center' });
+    doc
+      .fontSize(12)
+      .font('Helvetica-Bold')
+      .text('RECIBO DE ADIANTAMENTO SALARIAL', { align: 'center' });
     doc.moveDown(1);
 
     // ─── Separator ────────────────────────────────────────────────
-    doc
-      .moveTo(50, doc.y)
-      .lineTo(545, doc.y)
-      .stroke();
+    doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
     doc.moveDown(0.5);
 
     // ─── Employee Info ────────────────────────────────────────────
@@ -430,10 +439,10 @@ export async function generateAdvanceReceiptPdf(
     doc.fontSize(9).text(`CPF: ${formatCpf(employeeCpf)}`, { align: 'center' });
     doc.moveDown(1);
 
-    doc.fontSize(9).font('Helvetica').text(
-      `Data de emissão: ${new Date().toLocaleDateString('pt-BR')}`,
-      { align: 'right' },
-    );
+    doc
+      .fontSize(9)
+      .font('Helvetica')
+      .text(`Data de emissão: ${new Date().toLocaleDateString('pt-BR')}`, { align: 'right' });
 
     doc.end();
     return pdfPromise;

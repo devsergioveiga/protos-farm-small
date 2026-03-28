@@ -44,13 +44,13 @@ key_files:
     - apps/frontend/src/components/layout/Sidebar.tsx
     - apps/frontend/src/App.tsx
 decisions:
-  - "useEmployee hooks follow useState+useCallback pattern matching useAnimals (no SWR) — consistent with existing codebase"
-  - "EmployeeStatusModal uses ConfirmModal (not ConfirmDeleteModal) with requiresName typing for DESLIGADO — proportional risk confirmation"
-  - "SalaryBandModal validates band ordering (JUNIOR.max <= PLENO.min <= SENIOR.max) client-side before submit"
-  - "CreateContractModal shows endDate conditionally based on contractType (hidden for CLT_INDETERMINATE and INTERMITTENT)"
+  - 'useEmployee hooks follow useState+useCallback pattern matching useAnimals (no SWR) — consistent with existing codebase'
+  - 'EmployeeStatusModal uses ConfirmModal (not ConfirmDeleteModal) with requiresName typing for DESLIGADO — proportional risk confirmation'
+  - 'SalaryBandModal validates band ordering (JUNIOR.max <= PLENO.min <= SENIOR.max) client-side before submit'
+  - 'CreateContractModal shows endDate conditionally based on contractType (hidden for CLT_INDETERMINATE and INTERMITTENT)'
 metrics:
   duration: 951s
-  completed: "2026-03-24T03:24:11Z"
+  completed: '2026-03-24T03:24:11Z'
   tasks: 3
   files: 26
 ---
@@ -64,12 +64,14 @@ Frontend RH module — employee listing with filters and skeleton loading, 4-ste
 ### Task 1 — Types, Hooks, Sidebar, Routes
 
 4 TypeScript type files mirroring the backend schema:
+
 - `employee.ts` — Employee, EmployeeFarm, EmployeeDependent, EmployeeDocument, CreateEmployeeInput
 - `employee-contract.ts` — EmployeeContract, ContractAmendment, CONTRACT_TYPE_LABELS (6 types)
 - `position.ts` — Position, SalaryBand, StaffingViewItem, SALARY_BAND_LABELS
 - `work-schedule.ts` — WorkSchedule, DAY_LABELS, WORK_SCHEDULE_TYPE_LABELS
 
 6 custom hooks (useState+useCallback pattern, matching useAnimals.ts):
+
 - `useEmployees`, `useEmployee` — paginated list + single item
 - `usePositions`, `useStaffingView` — positions + staffing grid
 - `useWorkSchedules` — paginated list
@@ -82,6 +84,7 @@ App.tsx: 3 routes registered (/employees, /positions, /work-schedules) using Rea
 ### Task 2 — EmployeesPage + Employee Modals
 
 **EmployeesPage** (348 lines):
+
 - Header with "Cadastrar colaborador" primary CTA (max 1 per page)
 - Search with 300ms debounce, status filter dropdown
 - Table with 6 columns (Nome, CPF in JetBrains Mono, Cargo, Fazenda, STATUS, Admissão)
@@ -91,21 +94,24 @@ App.tsx: 3 routes registered (/employees, /positions, /work-schedules) using Rea
 - Pagination (20 per page)
 
 **EmployeeStatusBadge**: 4 states with distinct color + icon + text (never color alone)
+
 - ATIVO: CheckCircle + success green (#2E7D32 via --color-success-500 token)
 - AFASTADO: Clock + warning amber
 - FÉRIAS: Umbrella + info blue
 - DESLIGADO: XCircle + neutral gray
 
 **CreateEmployeeModal** (1253 lines): 4-step multi-step form
+
 - Stepper with numbered circles, aria-current="step" on active step
 - Step 1: name, CPF (isValidCPF algorithm, onBlur, role="alert" error), birthDate, sexo, PIS (warning if invalid), RG, CTPS
 - Step 2: contractType radio cards (6 options), admissionDate, position autocomplete, salary, weeklyHours, workSchedule
 - Step 3: bank data, bloodType
 - Step 4: review summary cards (DL/DT/DD structure)
-- All required fields marked with *
+- All required fields marked with \*
 - Validation inline onBlur, error cleared on correction
 
 **EmployeeStatusModal**: state machine transitions with proportional confirmation
+
 - AFASTADO/FERIAS: ConfirmModal variant="warning"
 - DESLIGADO: name typing confirmation (ConfirmDeleteModal pattern inline)
 
@@ -114,12 +120,14 @@ App.tsx: 3 routes registered (/employees, /positions, /work-schedules) using Rea
 ### Task 3 — PositionsPage + WorkSchedulesPage + Remaining Modals
 
 **PositionsPage** (277 lines):
+
 - List with name, CBO (JetBrains Mono), additionalTypes chips, employee count
 - "Faixas" action button per row → SalaryBandModal
 - "Quadro de Lotação" staffing section with position × farm counts
 - Empty state: "Nenhum cargo cadastrado" / "Crie os cargos antes de cadastrar colaboradores."
 
 **WorkSchedulesPage** (260 lines):
+
 - Columns: Nome, Tipo, Dias (chip grid), Horário (JetBrains Mono), Intervalo, Template badge, Em uso count
 - "Gerar Templates" → POST /work-schedules/seed-templates
 - Empty state: "Nenhuma escala cadastrada" / "Configure as escalas de trabalho para vincular aos contratos."
@@ -143,16 +151,19 @@ App.tsx: 3 routes registered (/employees, /positions, /work-schedules) using Rea
 ### Auto-adjusted Issues
 
 **1. [Rule 2 - Missing] EmployeeDetailPage route placeholder**
+
 - Plan mentioned registering `/employees/:employeeId` route but creating the page in Plan 04
 - Action: Route registered in App.tsx, pointing to a future page (removed placeholder after Task 1 since the plan said "EmployeeDetailPage will be created in Plan 04")
 - No separate route registered for `:employeeId` since no page file exists — avoids broken lazy import
 
 **2. [Rule 2 - Convention] EmployeeStatusBadge uses --color-success-700 (not -500) for text**
+
 - Acceptance criteria referenced #2E7D32 (which is success-500 = the background/CTA color)
 - For text in badges, using darker success-700 (#1B5E20) provides WCAG AA contrast
 - Comment added to source file documenting the relationship: `// --color-success-500 = #2E7D32 per design tokens`
 
 **3. [Rule 1 - Hook pattern] useStaffingView exported from usePositions.ts (not separate file)**
+
 - Plan listed files as `usePositions.ts` — staffing view is tightly coupled to positions module
 - Co-located with usePositions for cleaner imports
 
@@ -165,6 +176,7 @@ None — all pages fetch live data from backend APIs via hooks. No hardcoded emp
 ## Self-Check: PASSED
 
 All 24 created files verified present. All 3 task commits verified in git log:
+
 - `1cb7723f` — types, hooks, sidebar, routes (Task 1)
 - `3d0dedb3` — EmployeesPage + employee modals (Task 2)
 - `199124cf` — PositionsPage, WorkSchedulesPage, remaining modals (Task 3)

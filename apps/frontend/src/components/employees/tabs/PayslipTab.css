@@ -199,7 +199,9 @@
   cursor: pointer;
   border-radius: 6px;
   color: var(--color-neutral-600, #6b6560);
-  transition: background 150ms ease-out, color 150ms ease-out;
+  transition:
+    background 150ms ease-out,
+    color 150ms ease-out;
 }
 
 .payslip-tab__action-btn:hover:not(:disabled) {
@@ -224,8 +226,12 @@
 }
 
 @keyframes payslip-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -243,13 +249,24 @@
   height: 16px;
 }
 
-.payslip-tab__skeleton--xs { width: 60px; }
-.payslip-tab__skeleton--sm { width: 100px; }
-.payslip-tab__skeleton--actions { width: 80px; }
+.payslip-tab__skeleton--xs {
+  width: 60px;
+}
+.payslip-tab__skeleton--sm {
+  width: 100px;
+}
+.payslip-tab__skeleton--actions {
+  width: 80px;
+}
 
 @keyframes payslip-skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

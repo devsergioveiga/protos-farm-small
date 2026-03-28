@@ -2,9 +2,7 @@
 // Tests for pure calculation functions and service orchestration logic.
 
 import Decimal from 'decimal.js';
-import {
-  calculateMonthlyProvision,
-} from './payroll-provisions.service';
+import { calculateMonthlyProvision } from './payroll-provisions.service';
 import type { ProvisionCalcResult } from './payroll-provisions.types';
 
 // ─── Pure calculation tests ───────────────────────────────────────────

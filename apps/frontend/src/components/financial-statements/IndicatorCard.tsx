@@ -14,7 +14,12 @@ interface IndicatorCardProps {
   sparklineData: SparklinePoint[];
 }
 
-export default function IndicatorCard({ label, value, tooltip, sparklineData }: IndicatorCardProps) {
+export default function IndicatorCard({
+  label,
+  value,
+  tooltip,
+  sparklineData,
+}: IndicatorCardProps) {
   const hasSparkline = sparklineData.length >= 2;
 
   return (

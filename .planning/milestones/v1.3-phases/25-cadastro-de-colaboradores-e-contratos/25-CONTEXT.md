@@ -50,42 +50,51 @@ Fundação do módulo RH: criar a entidade Employee com todos os dados trabalhis
 </decisions>
 
 <canonical_refs>
+
 ## Canonical References
 
 **Downstream agents MUST read these before planning or implementing.**
 
 ### Requisitos e Roadmap
+
 - `.planning/REQUIREMENTS.md` — COLAB-01 a COLAB-05 (critérios de aceite detalhados)
 - `.planning/ROADMAP.md` §Phase 25 — Goal, success criteria, dependencies
 
 ### Documentação de Domínio
+
 - `protos-farm-documentation-small/ProtosFarm_Fase3_RH_Folha_UserStories.docx` — User stories originais de RH e Folha de Pagamento
 
 ### Decisões Anteriores (STATE.md)
+
 - `.planning/STATE.md` — PayrollRun state machine (PENDING→PROCESSING→COMPLETED|ERROR), EmployeeSalaryHistory mandatório, Payroll→Payables upsert pattern
 
 ### Padrões de Código Existentes
+
 - `apps/backend/src/modules/animals/animal-file-parser.ts` — Padrão de importação CSV/Excel a reutilizar
 - `apps/frontend/src/pages/AnimalDetailPage.tsx` — Padrão de página de detalhe com tabs a seguir
 - `apps/backend/src/modules/field-teams/` — FieldTeam/FieldTeamMember (integração com employeeId)
 - `apps/backend/src/modules/cost-centers/` — CostCenter existente (vinculação com cargos e operações)
 
 ### Design System
+
 - `docs/design-system/04-componentes.md` — Specs de componentes (modals para formulários, tabs, empty states)
 - `docs/design-system/05-padroes-ux.md` — Padrões UX (voz pt-BR, validação inline, formulários)
 
 </canonical_refs>
 
 <code_context>
+
 ## Existing Code Insights
 
 ### Reusable Assets
+
 - **animal-file-parser.ts**: Parser CSV/Excel com validação e preview — reutilizável como base para employee-file-parser
 - **AnimalDetailPage.tsx**: Página de detalhe com tabs — padrão a seguir para EmployeeDetailPage
 - **FieldTeam/FieldTeamMember**: Modelo de equipes de campo — precisa de migration para adicionar employeeId
 - **CostCenter module**: CRUD completo — vinculável a posições e operações de colaboradores
 
 ### Established Patterns
+
 - **Module colocation**: controller + service + routes + types em `modules/{domínio}/`
 - **State machines**: DepreciationRun (PENDING→PROCESSING→COMPLETED|ERROR) — padrão para EmployeeStatus
 - **Prisma enums**: Usar `as const` nos retornos literais, importar tipos do @prisma/client
@@ -93,6 +102,7 @@ Fundação do módulo RH: criar a entidade Employee com todos os dados trabalhis
 - **Frontend pages**: PascalCase com "Page" suffix, tabs pattern com CSS modules
 
 ### Integration Points
+
 - **FieldTeamMember.employeeId**: Migration adicionando campo opcional, sem quebrar equipes existentes
 - **EmployeeSalaryHistory**: Alimentado automaticamente por EmployeeMovement — base para folha (Phase 26+)
 - **WorkSchedule**: Referenciado pelo contrato, consumido por controle de ponto (Phase 27)
@@ -119,5 +129,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 25-cadastro-de-colaboradores-e-contratos*
-*Context gathered: 2026-03-23*
+_Phase: 25-cadastro-de-colaboradores-e-contratos_
+_Context gathered: 2026-03-23_

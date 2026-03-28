@@ -148,7 +148,10 @@ payrollRunsRouter.get(
     try {
       const orgId = req.params.orgId as string;
       const id = req.params.id as string;
-      const result = await service.cpPreview({ organizationId: orgId, userId: req.user?.userId }, id);
+      const result = await service.cpPreview(
+        { organizationId: orgId, userId: req.user?.userId },
+        id,
+      );
       res.json(result);
     } catch (err) {
       handleError(err, res);
@@ -299,7 +302,7 @@ payrollRunsRouter.get(
       const itemId = req.params.itemId as string;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const item = await (prisma.payrollRunItem.findFirst as any)({
+      const item = (await (prisma.payrollRunItem.findFirst as any)({
         where: { id: itemId, payrollRunId: id },
         include: {
           payrollRun: {
@@ -322,8 +325,8 @@ payrollRunsRouter.get(
             },
           },
         },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      }) as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      })) as any;
 
       if (!item) {
         res.status(404).json({ error: 'Item não encontrado' });
@@ -331,8 +334,8 @@ payrollRunsRouter.get(
       }
 
       const lineItems = Array.isArray(item.lineItemsJson)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ? (item.lineItemsJson as any[]).map((li: any) => ({
+        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (item.lineItemsJson as any[]).map((li: any) => ({
             ...li,
             value: typeof li.value === 'string' ? parseFloat(li.value) : li.value,
           }))
@@ -349,15 +352,17 @@ payrollRunsRouter.get(
         runType: item.payrollRun.runType,
         lineItems,
         grossSalary: parseFloat(item.grossSalary.toString()),
-        totalDeductions: parseFloat(item.grossSalary.toString()) - parseFloat(item.netSalary.toString()),
+        totalDeductions:
+          parseFloat(item.grossSalary.toString()) - parseFloat(item.netSalary.toString()),
         netSalary: parseFloat(item.netSalary.toString()),
         inssBase: parseFloat(item.grossSalary.toString()),
         irrfBase: parseFloat(item.grossSalary.toString()),
         fgtsMonth: parseFloat(item.fgtsAmount.toString()),
         // NOTE: Derives fgtsBase from fgtsAmount assuming standard 8% FGTS rate (Lei 8.036/90).
-        fgtsBase: parseFloat(item.fgtsAmount.toString()) === 0
-          ? 0
-          : parseFloat((parseFloat(item.fgtsAmount.toString()) / 0.08).toFixed(2)),
+        fgtsBase:
+          parseFloat(item.fgtsAmount.toString()) === 0
+            ? 0
+            : parseFloat((parseFloat(item.fgtsAmount.toString()) / 0.08).toFixed(2)),
       });
 
       const filename = `holerite_${item.payrollRun.referenceMonth.getUTCFullYear()}-${String(item.payrollRun.referenceMonth.getUTCMonth() + 1).padStart(2, '0')}_${item.employee.name.toUpperCase().replace(/\s+/g, '-')}.pdf`;

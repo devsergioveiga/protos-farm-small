@@ -15,13 +15,13 @@ created: 2026-03-24
 
 ## Test Infrastructure
 
-| Property | Value |
-|----------|-------|
-| **Framework** | Jest 29.7 + @swc/jest |
-| **Config file** | apps/backend/jest.config.js |
-| **Quick run command** | `cd apps/backend && pnpm jest --testPathPattern="payroll-runs\|salary-advances\|payroll-calculation\|payroll-pdf" --no-coverage` |
-| **Full suite command** | `cd apps/backend && pnpm test` |
-| **Estimated runtime** | ~45 seconds |
+| Property               | Value                                                                                                                            |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Framework**          | Jest 29.7 + @swc/jest                                                                                                            |
+| **Config file**        | apps/backend/jest.config.js                                                                                                      |
+| **Quick run command**  | `cd apps/backend && pnpm jest --testPathPattern="payroll-runs\|salary-advances\|payroll-calculation\|payroll-pdf" --no-coverage` |
+| **Full suite command** | `cd apps/backend && pnpm test`                                                                                                   |
+| **Estimated runtime**  | ~45 seconds                                                                                                                      |
 
 ---
 
@@ -36,17 +36,17 @@ created: 2026-03-24
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 28-01-01 | 01 | 1 | FOLHA-02 | unit | `pnpm jest payroll-runs.routes.spec` | ❌ W0 | ⬜ pending |
-| 28-01-02 | 01 | 1 | FOLHA-02 | unit | `pnpm jest payroll-calculation.spec` | ❌ W0 | ⬜ pending |
-| 28-02-01 | 02 | 1 | FOLHA-02 | unit | `pnpm jest payroll-runs.routes.spec` | ❌ W0 | ⬜ pending |
-| 28-02-02 | 02 | 1 | FOLHA-03 | unit | `pnpm jest salary-advances.routes.spec` | ❌ W0 | ⬜ pending |
-| 28-03-01 | 03 | 2 | FOLHA-04 | unit (buffer) | `pnpm jest payroll-pdf.spec` | ❌ W0 | ⬜ pending |
-| 28-03-02 | 03 | 2 | FOLHA-05 | unit | `pnpm jest payroll-calculation.spec` | ❌ W0 | ⬜ pending |
-| 28-04-01 | 04 | 3 | FOLHA-04 | visual | manual | N/A | ⬜ pending |
+| Task ID  | Plan | Wave | Requirement | Test Type     | Automated Command                       | File Exists | Status     |
+| -------- | ---- | ---- | ----------- | ------------- | --------------------------------------- | ----------- | ---------- |
+| 28-01-01 | 01   | 1    | FOLHA-02    | unit          | `pnpm jest payroll-runs.routes.spec`    | ❌ W0       | ⬜ pending |
+| 28-01-02 | 01   | 1    | FOLHA-02    | unit          | `pnpm jest payroll-calculation.spec`    | ❌ W0       | ⬜ pending |
+| 28-02-01 | 02   | 1    | FOLHA-02    | unit          | `pnpm jest payroll-runs.routes.spec`    | ❌ W0       | ⬜ pending |
+| 28-02-02 | 02   | 1    | FOLHA-03    | unit          | `pnpm jest salary-advances.routes.spec` | ❌ W0       | ⬜ pending |
+| 28-03-01 | 03   | 2    | FOLHA-04    | unit (buffer) | `pnpm jest payroll-pdf.spec`            | ❌ W0       | ⬜ pending |
+| 28-03-02 | 03   | 2    | FOLHA-05    | unit          | `pnpm jest payroll-calculation.spec`    | ❌ W0       | ⬜ pending |
+| 28-04-01 | 04   | 3    | FOLHA-04    | visual        | manual                                  | N/A         | ⬜ pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+_Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
 
 ---
 
@@ -57,17 +57,17 @@ created: 2026-03-24
 - [ ] `apps/backend/src/modules/payroll-runs/payroll-pdf.service.spec.ts` — PDF buffer tests
 - [ ] `apps/backend/src/modules/salary-advances/salary-advances.routes.spec.ts` — stubs for FOLHA-03 routes
 
-*Existing infrastructure (Jest + @swc/jest) covers framework needs.*
+_Existing infrastructure (Jest + @swc/jest) covers framework needs._
 
 ---
 
 ## Manual-Only Verifications
 
-| Behavior | Requirement | Why Manual | Test Instructions |
-|----------|-------------|------------|-------------------|
-| Holerite PDF layout matches classic tabular format | FOLHA-04 | Visual inspection of PDF rendering | Generate payslip PDF, open in viewer, verify proventos/descontos/bases/totais layout |
-| Email delivery with PDF attachment | FOLHA-04 | Requires email infrastructure | Process folha, verify email sent with correct attachment via mail log |
-| Wizard multi-step UX flow | FOLHA-02 | Frontend interaction flow | Walk through 4-step wizard, verify step transitions and validation |
+| Behavior                                           | Requirement | Why Manual                         | Test Instructions                                                                    |
+| -------------------------------------------------- | ----------- | ---------------------------------- | ------------------------------------------------------------------------------------ |
+| Holerite PDF layout matches classic tabular format | FOLHA-04    | Visual inspection of PDF rendering | Generate payslip PDF, open in viewer, verify proventos/descontos/bases/totais layout |
+| Email delivery with PDF attachment                 | FOLHA-04    | Requires email infrastructure      | Process folha, verify email sent with correct attachment via mail log                |
+| Wizard multi-step UX flow                          | FOLHA-02    | Frontend interaction flow          | Walk through 4-step wizard, verify step transitions and validation                   |
 
 ---
 

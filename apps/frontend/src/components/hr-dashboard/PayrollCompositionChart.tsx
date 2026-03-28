@@ -39,10 +39,7 @@ function legendFormatter(value: string, entry: LegendPayload) {
 
 export default function PayrollCompositionChart({ data }: PayrollCompositionChartProps) {
   return (
-    <div
-      aria-label="Gráfico de pizza: composição da folha de pagamento"
-      role="img"
-    >
+    <div aria-label="Gráfico de pizza: composição da folha de pagamento" role="img">
       <ResponsiveContainer width="100%" height={280}>
         <PieChart>
           <Pie
@@ -62,10 +59,7 @@ export default function PayrollCompositionChart({ data }: PayrollCompositionChar
             formatter={(
               value: number | string | (string | number)[] | undefined,
               name: string | undefined,
-            ) => [
-              typeof value === 'number' ? formatBRL(value) : String(value ?? ''),
-              name ?? '',
-            ]}
+            ) => [typeof value === 'number' ? formatBRL(value) : String(value ?? ''), name ?? '']}
             contentStyle={{
               fontFamily: "'Source Sans 3', system-ui, sans-serif",
               fontSize: 13,

@@ -1,6 +1,6 @@
 ---
 phase: 20-alienacao-baixa-ativos
-plan: "03"
+plan: '03'
 subsystem: api
 tags: [express, prisma, financial-dashboard, assets, receivables]
 
@@ -22,10 +22,10 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "Separate /patrimony route registered BEFORE base /financial-dashboard to avoid route capture"
+    - 'Separate /patrimony route registered BEFORE base /financial-dashboard to avoid route capture'
     - "Asset aggregate queries use status: { not: 'ALIENADO' } filter for active-only metrics"
-    - "DepreciationEntry aggregate filters reversedAt: null to exclude reversed entries"
-    - "farmId filter on DepreciationEntry passed through asset relation: { asset: { farmId } }"
+    - 'DepreciationEntry aggregate filters reversedAt: null to exclude reversed entries'
+    - 'farmId filter on DepreciationEntry passed through asset relation: { asset: { farmId } }'
 
 key-files:
   created:
@@ -38,12 +38,12 @@ key-files:
     - apps/backend/src/modules/receivables/receivables.types.ts
 
 key-decisions:
-  - "Patrimony route registered before main dashboard route to avoid /financial-dashboard matching /financial-dashboard/patrimony as :id"
-  - "assets:read permission used for patrimony endpoint (consistent with asset module RBAC)"
-  - "netBookValue computed in service as totalActiveValue - accumulatedDepreciation (not in DB)"
+  - 'Patrimony route registered before main dashboard route to avoid /financial-dashboard matching /financial-dashboard/patrimony as :id'
+  - 'assets:read permission used for patrimony endpoint (consistent with asset module RBAC)'
+  - 'netBookValue computed in service as totalActiveValue - accumulatedDepreciation (not in DB)'
 
 patterns-established:
-  - "Pattern 1: groupBy returns _count field directly, mapped as row._count (not row._count._all)"
+  - 'Pattern 1: groupBy returns _count field directly, mapped as row._count (not row._count._all)'
 
 requirements-completed:
   - DISP-06
@@ -96,6 +96,7 @@ completed: 2026-03-22
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Created missing asset-inventory.service.ts stub**
+
 - **Found during:** Task 1 (test run)
 - **Issue:** `app.ts` imports `assetInventoryRouter` from `asset-inventory.routes.ts`, which imports `asset-inventory.service.ts` that did not exist. This caused all financial-dashboard tests to fail at module load time.
 - **Fix:** Created minimal stub service with `throw new AssetInventoryError('Not implemented', 501)` for all functions — allows app to load without implementing full inventory service
@@ -123,5 +124,6 @@ None - no external service configuration required.
 - asset-inventory.service.ts stub needs full implementation in the asset-inventory plan
 
 ---
-*Phase: 20-alienacao-baixa-ativos*
-*Completed: 2026-03-22*
+
+_Phase: 20-alienacao-baixa-ativos_
+_Completed: 2026-03-22_

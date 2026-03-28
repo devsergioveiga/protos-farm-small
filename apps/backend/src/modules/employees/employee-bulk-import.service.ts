@@ -292,7 +292,12 @@ export async function confirmBulkImport(
     for (const row of rows) {
       const { rowNumber, ...importData } = row;
 
-      if (!importData.name || !importData.cpf || !importData.birthDate || !importData.admissionDate) {
+      if (
+        !importData.name ||
+        !importData.cpf ||
+        !importData.birthDate ||
+        !importData.admissionDate
+      ) {
         errors.push({ row: rowNumber, message: 'Dados obrigatórios ausentes' });
         continue;
       }
@@ -426,6 +431,5 @@ export async function generateTemplate(): Promise<Buffer> {
     col.width = colWidths[idx] ?? 15;
   });
 
-   
   return workbook.xlsx.writeBuffer() as unknown as Promise<Buffer>;
 }

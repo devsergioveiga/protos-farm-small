@@ -1,6 +1,6 @@
 ---
 phase: 32-integra-o-financeira-cont-bil-e-dashboard-rh
-plan: "05"
+plan: '05'
 subsystem: frontend
 tags: [hr-dashboard, payroll, kpi, recharts, rh, integr-03]
 dependency_graph:
@@ -35,13 +35,13 @@ key_files:
     - apps/frontend/src/App.tsx
     - apps/frontend/src/components/layout/Sidebar.tsx
 decisions:
-  - "Used inline year/month selects (not period picker) to match hr-dashboard backend API requirement for explicit year+month params"
-  - "TrendBadge compares against null previous (no prev month data in response) — shows neutral dash until backend adds previous period to response"
-  - "Turnover threshold 10% for green/red color: standard HR benchmark for rural operations"
-  - "RH sidebar group added before CONFIGURACAO — only hr-dashboard for now, other HR pages to be wired in future plans"
+  - 'Used inline year/month selects (not period picker) to match hr-dashboard backend API requirement for explicit year+month params'
+  - 'TrendBadge compares against null previous (no prev month data in response) — shows neutral dash until backend adds previous period to response'
+  - 'Turnover threshold 10% for green/red color: standard HR benchmark for rural operations'
+  - 'RH sidebar group added before CONFIGURACAO — only hr-dashboard for now, other HR pages to be wired in future plans'
 metrics:
-  duration: "~20min"
-  completed: "2026-03-26"
+  duration: '~20min'
+  completed: '2026-03-26'
   tasks: 2
   files_created: 6
   files_modified: 2
@@ -67,6 +67,7 @@ metrics:
 ### Task 2: HrDashboardPage + Route + Sidebar
 
 **`HrDashboardPage.tsx`** — Full INTEGR-03 dashboard page:
+
 - Breadcrumb: Início > RH > Dashboard RH
 - Filter bar: fazenda select + year number input + month select (auto-apply on change)
 - 4 KPI cards (2x2 mobile → 4x1 desktop): Total Colaboradores, Custo Bruto da Folha, Custo por Hectare (or "—" if null), Turnover 12 meses (green ≤10%, red >10%)
@@ -87,10 +88,10 @@ metrics:
 
 ## Commits
 
-| Task | Commit | Description |
-|------|--------|-------------|
-| 1 | 82e0de84 | feat(32-05): add HR dashboard types, hook, and chart components |
-| 2 | c927c603 | feat(32-05): add HrDashboardPage with KPIs, charts, table, expirations, alerts |
+| Task | Commit   | Description                                                                    |
+| ---- | -------- | ------------------------------------------------------------------------------ |
+| 1    | 82e0de84 | feat(32-05): add HR dashboard types, hook, and chart components                |
+| 2    | c927c603 | feat(32-05): add HrDashboardPage with KPIs, charts, table, expirations, alerts |
 
 ## Test Results
 
@@ -100,6 +101,7 @@ metrics:
 ## Deviations from Plan
 
 **[Rule 1 - Bug] Fixed Recharts Tooltip/Legend TypeScript signatures**
+
 - **Found during:** Task 1 TypeScript verification
 - **Issue:** Recharts Tooltip `formatter` typed `value` as `number | string | (string | number)[] | undefined`, and Legend `formatter` entry typed as `LegendPayload` — both differed from narrower types used in initial implementation
 - **Fix:** Used same cast pattern as existing `TopCategoriesChart.tsx` for Tooltip; imported `LegendPayload` type and cast `entry.payload` for percentage access in Legend formatter

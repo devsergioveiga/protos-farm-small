@@ -206,7 +206,13 @@ export async function importMeasurementUnits(
 function guessUnitCategory(name: string, symbol: string) {
   const n = name.toLowerCase();
   const s = symbol.toLowerCase();
-  if (['kg', 'g', 'mg', 'ton', 't', '@'].includes(s) || n.includes('quilo') || n.includes('grama') || n.includes('arroba') || n.includes('tonelada'))
+  if (
+    ['kg', 'g', 'mg', 'ton', 't', '@'].includes(s) ||
+    n.includes('quilo') ||
+    n.includes('grama') ||
+    n.includes('arroba') ||
+    n.includes('tonelada')
+  )
     return 'WEIGHT' as const;
   if (['l', 'ml', 'lt'].includes(s) || n.includes('litro')) return 'VOLUME' as const;
   if (['ha', 'm²', 'm2'].includes(s) || n.includes('hectare') || n.includes('alqueire'))
@@ -363,11 +369,7 @@ function mapExitReason(desc: string): string {
 
 // ─── Run All Phase 1 ──────────────────────────────────────────────────
 
-export async function runPhase1(
-  prisma: PrismaClient,
-  orgId: string,
-  idMap: IdMap,
-): Promise<void> {
+export async function runPhase1(prisma: PrismaClient, orgId: string, idMap: IdMap): Promise<void> {
   console.log('\n═══════════════════════════════════════');
   console.log(' PHASE 1: Master Data');
   console.log('═══════════════════════════════════════');

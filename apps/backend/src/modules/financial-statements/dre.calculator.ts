@@ -121,7 +121,11 @@ function buildAccountRow(account: DreAccountData): DreSectionRow {
 
 // ─── Compute totals for a set of rows ────────────────────────────────────────
 
-function sumRows(rows: DreSectionRow[]): { currentMonth: Decimal; ytd: Decimal; priorYear: Decimal } {
+function sumRows(rows: DreSectionRow[]): {
+  currentMonth: Decimal;
+  ytd: Decimal;
+  priorYear: Decimal;
+} {
   return rows.reduce(
     (acc, row) => ({
       currentMonth: acc.currentMonth.plus(new Decimal(row.currentMonth)),
@@ -159,10 +163,7 @@ function buildSubtotalRow(
 
 // ─── Apply AV% and AH% to a row ──────────────────────────────────────────────
 
-function applyAnalysis(
-  row: DreSectionRow,
-  receitaLiquida: Decimal,
-): DreSectionRow {
+function applyAnalysis(row: DreSectionRow, receitaLiquida: Decimal): DreSectionRow {
   const current = new Decimal(row.currentMonth);
   const prior = new Decimal(row.priorYear);
 
@@ -188,7 +189,7 @@ const SECTION_LABELS: Record<DreSectionId, string> = {
   'receita-bruta-industrializacao': 'Receita Bruta Industrializacao',
   'receita-financeira': 'Receita Financeira',
   'outras-receitas': 'Outras Receitas',
-  'deducoes': 'Deducoes da Receita',
+  deducoes: 'Deducoes da Receita',
   'receita-liquida': 'Receita Liquida',
   'cpv-agricola': 'CPV Agricola',
   'cpv-pecuario': 'CPV Pecuario',
@@ -198,7 +199,7 @@ const SECTION_LABELS: Record<DreSectionId, string> = {
   'despesas-financeiras': 'Despesas Financeiras',
   'despesas-depreciacao': 'Depreciacao e Amortizacao',
   'despesas-pessoal': 'Despesas com Pessoal',
-  'cpc29': 'Variacao Valor Justo (CPC 29)',
+  cpc29: 'Variacao Valor Justo (CPC 29)',
   'resultado-antes-ir': 'Resultado Antes do IR/CSLL',
   'ir-csll': 'IR e CSLL',
   'resultado-liquido': 'Resultado Liquido do Exercicio',
@@ -230,7 +231,11 @@ export function calculateDre(input: DreInput): DreOutput {
   }
 
   // Helper to get total for a section (zero if empty)
-  function getSectionTotals(id: DreSectionId): { currentMonth: Decimal; ytd: Decimal; priorYear: Decimal } {
+  function getSectionTotals(id: DreSectionId): {
+    currentMonth: Decimal;
+    ytd: Decimal;
+    priorYear: Decimal;
+  } {
     const rows = sectionRows.get(id) ?? [];
     return sumRows(rows);
   }
@@ -239,18 +244,18 @@ export function calculateDre(input: DreInput): DreOutput {
 
   // Receita Bruta = agricultural + livestock + industrialization + financial + other
   const receitaBruta = {
-    currentMonth: getSectionTotals('receita-bruta-agricola').currentMonth
-      .plus(getSectionTotals('receita-bruta-pecuaria').currentMonth)
+    currentMonth: getSectionTotals('receita-bruta-agricola')
+      .currentMonth.plus(getSectionTotals('receita-bruta-pecuaria').currentMonth)
       .plus(getSectionTotals('receita-bruta-industrializacao').currentMonth)
       .plus(getSectionTotals('receita-financeira').currentMonth)
       .plus(getSectionTotals('outras-receitas').currentMonth),
-    ytd: getSectionTotals('receita-bruta-agricola').ytd
-      .plus(getSectionTotals('receita-bruta-pecuaria').ytd)
+    ytd: getSectionTotals('receita-bruta-agricola')
+      .ytd.plus(getSectionTotals('receita-bruta-pecuaria').ytd)
       .plus(getSectionTotals('receita-bruta-industrializacao').ytd)
       .plus(getSectionTotals('receita-financeira').ytd)
       .plus(getSectionTotals('outras-receitas').ytd),
-    priorYear: getSectionTotals('receita-bruta-agricola').priorYear
-      .plus(getSectionTotals('receita-bruta-pecuaria').priorYear)
+    priorYear: getSectionTotals('receita-bruta-agricola')
+      .priorYear.plus(getSectionTotals('receita-bruta-pecuaria').priorYear)
       .plus(getSectionTotals('receita-bruta-industrializacao').priorYear)
       .plus(getSectionTotals('receita-financeira').priorYear)
       .plus(getSectionTotals('outras-receitas').priorYear),
@@ -268,12 +273,13 @@ export function calculateDre(input: DreInput): DreOutput {
 
   // CPV total
   const cpvTotal = {
-    currentMonth: getSectionTotals('cpv-agricola').currentMonth
-      .plus(getSectionTotals('cpv-pecuario').currentMonth),
-    ytd: getSectionTotals('cpv-agricola').ytd
-      .plus(getSectionTotals('cpv-pecuario').ytd),
-    priorYear: getSectionTotals('cpv-agricola').priorYear
-      .plus(getSectionTotals('cpv-pecuario').priorYear),
+    currentMonth: getSectionTotals('cpv-agricola').currentMonth.plus(
+      getSectionTotals('cpv-pecuario').currentMonth,
+    ),
+    ytd: getSectionTotals('cpv-agricola').ytd.plus(getSectionTotals('cpv-pecuario').ytd),
+    priorYear: getSectionTotals('cpv-agricola').priorYear.plus(
+      getSectionTotals('cpv-pecuario').priorYear,
+    ),
   };
 
   // Lucro Bruto = Receita Liquida - CPV
@@ -285,18 +291,18 @@ export function calculateDre(input: DreInput): DreOutput {
 
   // Total Despesas Operacionais
   const totalDespesas = {
-    currentMonth: getSectionTotals('despesas-admin').currentMonth
-      .plus(getSectionTotals('despesas-comerciais').currentMonth)
+    currentMonth: getSectionTotals('despesas-admin')
+      .currentMonth.plus(getSectionTotals('despesas-comerciais').currentMonth)
       .plus(getSectionTotals('despesas-financeiras').currentMonth)
       .plus(getSectionTotals('despesas-depreciacao').currentMonth)
       .plus(getSectionTotals('despesas-pessoal').currentMonth),
-    ytd: getSectionTotals('despesas-admin').ytd
-      .plus(getSectionTotals('despesas-comerciais').ytd)
+    ytd: getSectionTotals('despesas-admin')
+      .ytd.plus(getSectionTotals('despesas-comerciais').ytd)
       .plus(getSectionTotals('despesas-financeiras').ytd)
       .plus(getSectionTotals('despesas-depreciacao').ytd)
       .plus(getSectionTotals('despesas-pessoal').ytd),
-    priorYear: getSectionTotals('despesas-admin').priorYear
-      .plus(getSectionTotals('despesas-comerciais').priorYear)
+    priorYear: getSectionTotals('despesas-admin')
+      .priorYear.plus(getSectionTotals('despesas-comerciais').priorYear)
       .plus(getSectionTotals('despesas-financeiras').priorYear)
       .plus(getSectionTotals('despesas-depreciacao').priorYear)
       .plus(getSectionTotals('despesas-pessoal').priorYear),
@@ -307,7 +313,9 @@ export function calculateDre(input: DreInput): DreOutput {
 
   // Resultado Antes IR = Lucro Bruto - Despesas +/- CPC29
   const resultadoAntesIr = {
-    currentMonth: lucroBruto.currentMonth.minus(totalDespesas.currentMonth).plus(cpc29.currentMonth),
+    currentMonth: lucroBruto.currentMonth
+      .minus(totalDespesas.currentMonth)
+      .plus(cpc29.currentMonth),
     ytd: lucroBruto.ytd.minus(totalDespesas.ytd).plus(cpc29.ytd),
     priorYear: lucroBruto.priorYear.minus(totalDespesas.priorYear).plus(cpc29.priorYear),
   };
@@ -356,7 +364,13 @@ export function calculateDre(input: DreInput): DreOutput {
       label: SECTION_LABELS['receita-liquida'],
       rows: [],
       total: applyAnalysis(
-        buildSubtotalRow('Receita Liquida', 'receita-liquida', receitaLiquida.currentMonth, receitaLiquida.ytd, receitaLiquida.priorYear),
+        buildSubtotalRow(
+          'Receita Liquida',
+          'receita-liquida',
+          receitaLiquida.currentMonth,
+          receitaLiquida.ytd,
+          receitaLiquida.priorYear,
+        ),
         receitaLiquidaDecimal,
       ),
     },
@@ -368,7 +382,13 @@ export function calculateDre(input: DreInput): DreOutput {
       label: SECTION_LABELS['lucro-bruto'],
       rows: [],
       total: applyAnalysis(
-        buildSubtotalRow('Lucro Bruto', 'lucro-bruto', lucroBruto.currentMonth, lucroBruto.ytd, lucroBruto.priorYear),
+        buildSubtotalRow(
+          'Lucro Bruto',
+          'lucro-bruto',
+          lucroBruto.currentMonth,
+          lucroBruto.ytd,
+          lucroBruto.priorYear,
+        ),
         receitaLiquidaDecimal,
       ),
     },
@@ -384,7 +404,13 @@ export function calculateDre(input: DreInput): DreOutput {
       label: SECTION_LABELS['resultado-antes-ir'],
       rows: [],
       total: applyAnalysis(
-        buildSubtotalRow('Resultado Antes do IR/CSLL', 'resultado-antes-ir', resultadoAntesIr.currentMonth, resultadoAntesIr.ytd, resultadoAntesIr.priorYear),
+        buildSubtotalRow(
+          'Resultado Antes do IR/CSLL',
+          'resultado-antes-ir',
+          resultadoAntesIr.currentMonth,
+          resultadoAntesIr.ytd,
+          resultadoAntesIr.priorYear,
+        ),
         receitaLiquidaDecimal,
       ),
     },

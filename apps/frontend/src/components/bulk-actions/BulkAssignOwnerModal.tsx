@@ -253,7 +253,11 @@ function BulkAssignOwnerModal({
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 size={16} style={{ animation: 'create-animal-spin 1s linear infinite' }} aria-hidden="true" />
+                  <Loader2
+                    size={16}
+                    style={{ animation: 'create-animal-spin 1s linear infinite' }}
+                    aria-hidden="true"
+                  />
                   Vinculando...
                 </>
               ) : (

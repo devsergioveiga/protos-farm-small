@@ -84,7 +84,7 @@
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--color-neutral-900, #2A2520);
+  color: var(--color-neutral-900, #2a2520);
   margin: 0;
   line-height: 1.25;
 }
@@ -107,7 +107,7 @@
 
 /* ─── Tabs ───────────────────────────────────────────────────── */
 
-[role="tablist"].employee-detail__tabs {
+[role='tablist'].employee-detail__tabs {
   display: flex;
   gap: 0;
   border-bottom: 1px solid var(--color-neutral-200);
@@ -116,7 +116,7 @@
   scrollbar-width: none;
 }
 
-[role="tablist"].employee-detail__tabs::-webkit-scrollbar {
+[role='tablist'].employee-detail__tabs::-webkit-scrollbar {
   display: none;
 }
 
@@ -132,7 +132,9 @@
   cursor: pointer;
   white-space: nowrap;
   min-height: 48px;
-  transition: color 200ms ease-out, border-color 200ms ease-out;
+  transition:
+    color 200ms ease-out,
+    border-color 200ms ease-out;
   margin-bottom: -1px;
 }
 
@@ -147,8 +149,8 @@
 }
 
 .employee-detail__tab--active {
-  color: var(--color-primary-700, #1B5E20);
-  border-bottom-color: var(--color-primary-600, #2E7D32);
+  color: var(--color-primary-700, #1b5e20);
+  border-bottom-color: var(--color-primary-600, #2e7d32);
 }
 
 .employee-detail__panel {
@@ -183,7 +185,7 @@
   font-family: 'DM Sans', system-ui, sans-serif;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--color-neutral-800, #2A2520);
+  color: var(--color-neutral-800, #2a2520);
   margin: 0;
 }
 
@@ -200,7 +202,7 @@
   gap: 16px 24px;
   margin: 0;
   padding: 16px;
-  background: var(--color-neutral-50, #FAFAF8);
+  background: var(--color-neutral-50, #fafaf8);
   border-radius: 8px;
   border: 1px solid var(--color-neutral-200);
 }
@@ -237,7 +239,7 @@
   align-items: center;
   gap: 6px;
   padding: 10px 20px;
-  background: var(--color-primary-600, #2E7D32);
+  background: var(--color-primary-600, #2e7d32);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -251,7 +253,7 @@
 }
 
 .employee-detail__btn-primary:hover {
-  background: var(--color-primary-700, #1B5E20);
+  background: var(--color-primary-700, #1b5e20);
 }
 
 .employee-detail__btn-primary:focus-visible {
@@ -273,7 +275,9 @@
   font-weight: 600;
   cursor: pointer;
   min-height: 48px;
-  transition: background 200ms ease-out, border-color 200ms ease-out;
+  transition:
+    background 200ms ease-out,
+    border-color 200ms ease-out;
 }
 
 .employee-detail__btn-secondary:hover {
@@ -331,12 +335,12 @@
 }
 
 .employee-detail__btn-icon--danger {
-  color: var(--color-error-500, #C62828);
-  border-color: var(--color-error-200, #EF9A9A);
+  color: var(--color-error-500, #c62828);
+  border-color: var(--color-error-200, #ef9a9a);
 }
 
 .employee-detail__btn-icon--danger:hover {
-  background: var(--color-error-50, #FFEBEE);
+  background: var(--color-error-50, #ffebee);
 }
 
 .employee-detail__btn-icon:focus-visible {
@@ -378,8 +382,8 @@
 }
 
 .employee-detail__badge--green {
-  background: var(--color-success-50, #E8F5E9);
-  color: var(--color-success-700, #1B5E20);
+  background: var(--color-success-50, #e8f5e9);
+  color: var(--color-success-700, #1b5e20);
 }
 
 /* ─── Mono ───────────────────────────────────────────────────── */
@@ -433,8 +437,8 @@
 }
 
 .employee-detail__contract-card--active {
-  border-color: var(--color-primary-200, #A5D6A7);
-  background: var(--color-primary-50, #E8F5E9);
+  border-color: var(--color-primary-200, #a5d6a7);
+  background: var(--color-primary-50, #e8f5e9);
 }
 
 .employee-detail__contract-header {
@@ -491,8 +495,8 @@
 
 .employee-detail__amendment-item {
   padding: 10px 12px;
-  border-left: 3px solid var(--color-primary-300, #81C784);
-  background: var(--color-neutral-50, #FAFAF8);
+  border-left: 3px solid var(--color-primary-300, #81c784);
+  background: var(--color-neutral-50, #fafaf8);
   border-radius: 0 6px 6px 0;
 }
 
@@ -687,10 +691,10 @@
   align-items: center;
   gap: 8px;
   padding: 16px;
-  background: var(--color-error-50, #FFEBEE);
-  border: 1px solid var(--color-error-200, #EF9A9A);
+  background: var(--color-error-50, #ffebee);
+  border: 1px solid var(--color-error-200, #ef9a9a);
   border-radius: 8px;
-  color: var(--color-error-700, #B71C1C);
+  color: var(--color-error-700, #b71c1c);
   font-size: 0.9375rem;
   flex-wrap: wrap;
 }
@@ -698,8 +702,13 @@
 /* ─── Skeleton ───────────────────────────────────────────────── */
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .employee-detail__skeleton {
@@ -779,8 +788,8 @@
 }
 
 .bulk-modal__step-indicator--active {
-  background: var(--color-primary-100, #C8E6C9);
-  color: var(--color-primary-800, #1B5E20);
+  background: var(--color-primary-100, #c8e6c9);
+  color: var(--color-primary-800, #1b5e20);
   font-weight: 700;
 }
 
@@ -817,8 +826,8 @@
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: var(--color-error-50, #FFEBEE);
-  color: var(--color-error-700, #B71C1C);
+  background: var(--color-error-50, #ffebee);
+  color: var(--color-error-700, #b71c1c);
   font-size: 0.875rem;
   flex-shrink: 0;
 }
@@ -906,12 +915,14 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  transition: border-color 200ms ease-out, background 200ms ease-out;
+  transition:
+    border-color 200ms ease-out,
+    background 200ms ease-out;
 }
 
 .bulk-modal__dropzone--over {
   border-color: var(--color-primary-500);
-  background: var(--color-primary-50, #E8F5E9);
+  background: var(--color-primary-50, #e8f5e9);
 }
 
 /* ─── Mapping table ──────────────────────────────────────────── */
@@ -972,18 +983,18 @@
 }
 
 .bulk-modal__preview-stat--valid {
-  background: var(--color-success-50, #E8F5E9);
-  color: var(--color-success-700, #1B5E20);
+  background: var(--color-success-50, #e8f5e9);
+  color: var(--color-success-700, #1b5e20);
 }
 
 .bulk-modal__preview-stat--warning {
-  background: var(--color-warning-50, #FFF3E0);
-  color: var(--color-warning-700, #E65100);
+  background: var(--color-warning-50, #fff3e0);
+  color: var(--color-warning-700, #e65100);
 }
 
 .bulk-modal__preview-stat--error {
-  background: var(--color-error-50, #FFEBEE);
-  color: var(--color-error-700, #B71C1C);
+  background: var(--color-error-50, #ffebee);
+  color: var(--color-error-700, #b71c1c);
 }
 
 .bulk-modal__preview-table {
@@ -1008,11 +1019,11 @@
 }
 
 .bulk-modal__row--error {
-  background: var(--color-error-50, #FFEBEE);
+  background: var(--color-error-50, #ffebee);
 }
 
 .bulk-modal__row--warning {
-  background: var(--color-warning-50, #FFF3E0);
+  background: var(--color-warning-50, #fff3e0);
 }
 
 .bulk-modal__step--center {

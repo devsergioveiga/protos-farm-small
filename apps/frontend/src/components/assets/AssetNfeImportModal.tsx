@@ -289,7 +289,9 @@ export default function AssetNfeImportModal({
   function updateItemMode(idx: number, mode: 'none' | 'new' | 'existing') {
     setItemAssignments((prev) =>
       prev.map((a, i) =>
-        i === idx ? { ...a, mode, existingAssetId: mode === 'existing' ? a.existingAssetId : '' } : a,
+        i === idx
+          ? { ...a, mode, existingAssetId: mode === 'existing' ? a.existingAssetId : '' }
+          : a,
       ),
     );
   }
@@ -303,24 +305,20 @@ export default function AssetNfeImportModal({
   }
 
   function updateItemExistingAsset(idx: number, existingAssetId: string) {
-    setItemAssignments((prev) =>
-      prev.map((a, i) => (i === idx ? { ...a, existingAssetId } : a)),
-    );
+    setItemAssignments((prev) => prev.map((a, i) => (i === idx ? { ...a, existingAssetId } : a)));
   }
 
   // ── Validation
-  const allItemsMapped = itemAssignments.every(
-    (a) =>
-      a.mode === 'existing'
-        ? a.existingAssetId !== ''
-        : a.mode === 'new'
-          ? a.assetName.trim() !== '' && a.assetType !== ''
-          : false,
+  const allItemsMapped = itemAssignments.every((a) =>
+    a.mode === 'existing'
+      ? a.existingAssetId !== ''
+      : a.mode === 'new'
+        ? a.assetName.trim() !== '' && a.assetType !== ''
+        : false,
   );
 
   const canProceedStep1 = Boolean(parsedData) && !isParsing;
-  const canProceedStep2 =
-    allItemsMapped && selectedFarmId !== '' && itemAssignments.length > 0;
+  const canProceedStep2 = allItemsMapped && selectedFarmId !== '' && itemAssignments.length > 0;
   const canSubmit =
     classification !== '' &&
     paymentType !== '' &&
@@ -346,8 +344,7 @@ export default function AssetNfeImportModal({
       classification: classification as string,
       paymentType: paymentType as PaymentType,
       dueDate: paymentType === 'AVISTA' ? dueDate : undefined,
-      installmentCount:
-        paymentType === 'FINANCIADO' ? Number(installmentCount) : undefined,
+      installmentCount: paymentType === 'FINANCIADO' ? Number(installmentCount) : undefined,
       firstDueDate: paymentType === 'FINANCIADO' ? firstDueDate : undefined,
       interestRate: interestRate ? parseFloat(interestRate.replace(',', '.')) : undefined,
       items,
@@ -408,18 +405,12 @@ export default function AssetNfeImportModal({
           {/* ── Success state ── */}
           {successData && (
             <div className="nfe-modal__success">
-              <CheckCircle2
-                size={64}
-                aria-hidden="true"
-                className="nfe-modal__success-icon"
-              />
+              <CheckCircle2 size={64} aria-hidden="true" className="nfe-modal__success-icon" />
               <h3 className="nfe-modal__success-title">
                 {successData.assets.length}{' '}
                 {successData.assets.length === 1 ? 'ativo criado' : 'ativos criados'} com sucesso.
               </h3>
-              <p className="nfe-modal__success-body">
-                Conta a pagar registrada automaticamente.
-              </p>
+              <p className="nfe-modal__success-body">Conta a pagar registrada automaticamente.</p>
               <button
                 type="button"
                 className="nfe-modal__btn nfe-modal__btn--primary"
@@ -535,7 +526,9 @@ export default function AssetNfeImportModal({
                   </div>
                   <div className="nfe-modal__summary-row nfe-modal__summary-row--total">
                     <span className="nfe-modal__summary-label">Total NF:</span>
-                    <span className="nfe-modal__summary-total">{formatBRL(parsedData.totalNf)}</span>
+                    <span className="nfe-modal__summary-total">
+                      {formatBRL(parsedData.totalNf)}
+                    </span>
                   </div>
                 </div>
 
@@ -596,10 +589,7 @@ export default function AssetNfeImportModal({
 
                           <div className="nfe-modal__item-assignment">
                             <div className="nfe-modal__field">
-                              <label
-                                htmlFor={`item-mode-${idx}`}
-                                className="nfe-modal__label"
-                              >
+                              <label htmlFor={`item-mode-${idx}`} className="nfe-modal__label">
                                 Vincular a *
                               </label>
                               <select
@@ -607,10 +597,7 @@ export default function AssetNfeImportModal({
                                 className="nfe-modal__select"
                                 value={assignment.mode}
                                 onChange={(e) =>
-                                  updateItemMode(
-                                    idx,
-                                    e.target.value as 'none' | 'new' | 'existing',
-                                  )
+                                  updateItemMode(idx, e.target.value as 'none' | 'new' | 'existing')
                                 }
                                 aria-required="true"
                               >
@@ -623,10 +610,7 @@ export default function AssetNfeImportModal({
                             {assignment.mode === 'new' && (
                               <div className="nfe-modal__item-new-fields">
                                 <div className="nfe-modal__field">
-                                  <label
-                                    htmlFor={`item-name-${idx}`}
-                                    className="nfe-modal__label"
-                                  >
+                                  <label htmlFor={`item-name-${idx}`} className="nfe-modal__label">
                                     Nome do ativo *
                                   </label>
                                   <input
@@ -640,10 +624,7 @@ export default function AssetNfeImportModal({
                                   />
                                 </div>
                                 <div className="nfe-modal__field">
-                                  <label
-                                    htmlFor={`item-type-${idx}`}
-                                    className="nfe-modal__label"
-                                  >
+                                  <label htmlFor={`item-type-${idx}`} className="nfe-modal__label">
                                     Tipo de ativo *
                                   </label>
                                   <select
@@ -722,13 +703,17 @@ export default function AssetNfeImportModal({
                         {parseFloat(parsedData.insurance ?? '0') > 0 && (
                           <div className="nfe-modal__expense-row">
                             <span>Seguro:</span>
-                            <span className="nfe-modal__mono">{formatBRL(parsedData.insurance)}</span>
+                            <span className="nfe-modal__mono">
+                              {formatBRL(parsedData.insurance)}
+                            </span>
                           </div>
                         )}
                         {parseFloat(parsedData.otherCosts ?? '0') > 0 && (
                           <div className="nfe-modal__expense-row">
                             <span>Outros:</span>
-                            <span className="nfe-modal__mono">{formatBRL(parsedData.otherCosts)}</span>
+                            <span className="nfe-modal__mono">
+                              {formatBRL(parsedData.otherCosts)}
+                            </span>
                           </div>
                         )}
                         <p className="nfe-modal__expenses-note">
@@ -785,7 +770,10 @@ export default function AssetNfeImportModal({
                     })}
                   {itemAssignments.filter((a) => a.mode === 'existing').length > 0 && (
                     <>
-                      <h3 className="nfe-modal__confirm-title" style={{ marginTop: 'var(--space-4)' }}>
+                      <h3
+                        className="nfe-modal__confirm-title"
+                        style={{ marginTop: 'var(--space-4)' }}
+                      >
                         Ativos a serem atualizados
                       </h3>
                       {itemAssignments
@@ -835,7 +823,9 @@ export default function AssetNfeImportModal({
                             {pt === 'AVISTA' ? 'A Vista' : 'Financiado'}
                           </span>
                           <span className="nfe-modal__payment-card-desc">
-                            {pt === 'AVISTA' ? 'Pagamento em parcela unica' : 'Pagamento parcelado com financiamento'}
+                            {pt === 'AVISTA'
+                              ? 'Pagamento em parcela unica'
+                              : 'Pagamento parcelado com financiamento'}
                           </span>
                         </label>
                       ))}
@@ -921,9 +911,7 @@ export default function AssetNfeImportModal({
                     id="nfe-classification"
                     className="nfe-modal__select"
                     value={classification}
-                    onChange={(e) =>
-                      setClassification(e.target.value as AssetClassification | '')
-                    }
+                    onChange={(e) => setClassification(e.target.value as AssetClassification | '')}
                     aria-required="true"
                   >
                     <option value="">Selecione a classificacao</option>

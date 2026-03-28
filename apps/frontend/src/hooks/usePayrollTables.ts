@@ -1,11 +1,7 @@
 import { useState, useCallback } from 'react';
 import { api } from '@/services/api';
 import { useAuth } from '@/stores/AuthContext';
-import type {
-  PayrollLegalTable,
-  CreateLegalTableInput,
-  LegalTableType,
-} from '@/types/payroll';
+import type { PayrollLegalTable, CreateLegalTableInput, LegalTableType } from '@/types/payroll';
 
 interface UsePayrollTablesResult {
   tables: PayrollLegalTable[];
@@ -37,9 +33,7 @@ export function usePayrollTables(): UsePayrollTablesResult {
       setError(null);
       try {
         const query = tableType ? `?tableType=${tableType}` : '';
-        const result = await api.get<PayrollLegalTable[]>(
-          `/org/${orgId}/payroll-tables${query}`,
-        );
+        const result = await api.get<PayrollLegalTable[]>(`/org/${orgId}/payroll-tables${query}`);
         setTables(result);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Erro ao carregar tabelas';

@@ -10,20 +10,20 @@ requires:
     provides: Employee, WorkSchedule models used as foreign keys in TimeEntry and Timesheet
 
 provides:
-  - "5 Prisma models: TimeEntry, TimeEntryActivity, OvertimeBankEntry, Timesheet, TimesheetCorrection"
-  - "3 Prisma enums: TimeEntrySource, OvertimeBankType, TimesheetStatus"
-  - "Migration 20260504100000_add_time_tracking_models applied"
-  - "TypeScript types for time-entries, time-calculations, overtime-bank, timesheets modules"
-  - "date-holidays@^3.26.11 installed in backend"
+  - '5 Prisma models: TimeEntry, TimeEntryActivity, OvertimeBankEntry, Timesheet, TimesheetCorrection'
+  - '3 Prisma enums: TimeEntrySource, OvertimeBankType, TimesheetStatus'
+  - 'Migration 20260504100000_add_time_tracking_models applied'
+  - 'TypeScript types for time-entries, time-calculations, overtime-bank, timesheets modules'
+  - 'date-holidays@^3.26.11 installed in backend'
 affects: [27-02, 27-03, 27-04, 27-05, 27-06]
 
 # Tech tracking
 tech-stack:
-  added: ["date-holidays@^3.26.11"]
+  added: ['date-holidays@^3.26.11']
   patterns:
-    - "Time tracking schema linked to Employee via employeeId FK, to Farm and Organization for multitenancy"
-    - "Timesheet unique constraint on (employeeId, referenceMonth) prevents duplicates"
-    - "payrollRunId as immutable lock field on TimeEntry and Timesheet"
+    - 'Time tracking schema linked to Employee via employeeId FK, to Farm and Organization for multitenancy'
+    - 'Timesheet unique constraint on (employeeId, referenceMonth) prevents duplicates'
+    - 'payrollRunId as immutable lock field on TimeEntry and Timesheet'
 
 key-files:
   created:
@@ -37,14 +37,14 @@ key-files:
     - apps/backend/package.json
 
 key-decisions:
-  - "TimeEntry.payrollRunId as immutable lock — set once when payroll run processes the entry, prevents further modification"
-  - "Timesheet unique constraint on (employeeId, referenceMonth) — one timesheet per employee per month"
-  - "OvertimeBankEntry.expiresAt as Date field — 6 months from credit date per CLT rural rules"
-  - "TimeEntrySource enum includes MANAGER for manual/justified entries with managerNote required"
+  - 'TimeEntry.payrollRunId as immutable lock — set once when payroll run processes the entry, prevents further modification'
+  - 'Timesheet unique constraint on (employeeId, referenceMonth) — one timesheet per employee per month'
+  - 'OvertimeBankEntry.expiresAt as Date field — 6 months from credit date per CLT rural rules'
+  - 'TimeEntrySource enum includes MANAGER for manual/justified entries with managerNote required'
 
 patterns-established:
-  - "Time tracking module pattern: types.ts first, then service.ts and routes.ts in subsequent plans"
-  - "Decimal fields for lat/lon (10,7) and monetary values (10,4 rate, 10,2 amount)"
+  - 'Time tracking module pattern: types.ts first, then service.ts and routes.ts in subsequent plans'
+  - 'Decimal fields for lat/lon (10,7) and monetary values (10,4 rate, 10,2 amount)'
 
 requirements-completed: [PONTO-01, PONTO-02, PONTO-03, PONTO-04]
 
@@ -120,5 +120,6 @@ None - no external service configuration required.
 - date-holidays available for Plan 27-02 (time calculation service)
 
 ---
-*Phase: 27-controle-de-ponto-e-jornada*
-*Completed: 2026-03-24*
+
+_Phase: 27-controle-de-ponto-e-jornada_
+_Completed: 2026-03-24_

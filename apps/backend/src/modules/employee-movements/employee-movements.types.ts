@@ -1,4 +1,8 @@
-export type MovementTypeLiteral = 'PROMOTION' | 'SALARY_ADJUSTMENT' | 'TRANSFER' | 'POSITION_CHANGE';
+export type MovementTypeLiteral =
+  | 'PROMOTION'
+  | 'SALARY_ADJUSTMENT'
+  | 'TRANSFER'
+  | 'POSITION_CHANGE';
 
 export interface CreateMovementInput {
   employeeId: string;

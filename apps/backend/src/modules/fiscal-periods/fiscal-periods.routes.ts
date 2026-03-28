@@ -26,34 +26,28 @@ function handleError(err: unknown, res: Response): void {
 // ─── GET /fiscal-years ────────────────────────────────────────────────────────
 // List all fiscal years with their accounting periods.
 
-fiscalPeriodsRouter.get(
-  '/fiscal-years',
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const orgId = req.params.orgId as string;
-      const years = await service.getFiscalYears(prisma, orgId);
-      res.json(years);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
+fiscalPeriodsRouter.get('/fiscal-years', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const orgId = req.params.orgId as string;
+    const years = await service.getFiscalYears(prisma, orgId);
+    res.json(years);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
 
 // ─── POST /fiscal-years ───────────────────────────────────────────────────────
 // Create a new fiscal year with auto-generated monthly periods.
 
-fiscalPeriodsRouter.post(
-  '/fiscal-years',
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const orgId = req.params.orgId as string;
-      const result = await service.createFiscalYear(prisma, orgId, req.body);
-      res.status(201).json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
+fiscalPeriodsRouter.post('/fiscal-years', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const orgId = req.params.orgId as string;
+    const result = await service.createFiscalYear(prisma, orgId, req.body);
+    res.status(201).json(result);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
 
 // ─── GET /fiscal-years/:yearId/periods ───────────────────────────────────────
 // List periods for a specific fiscal year.

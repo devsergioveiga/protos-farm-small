@@ -85,10 +85,7 @@ export async function createEmployee(
         bankCode: input.bankCode,
         bankAgency: input.bankAgency,
         bankAccount: input.bankAccount,
-        bankAccountType: input.bankAccountType as
-          | 'CORRENTE'
-          | 'POUPANCA'
-          | undefined,
+        bankAccountType: input.bankAccountType as 'CORRENTE' | 'POUPANCA' | undefined,
         bankAccountDigit: input.bankAccountDigit,
         initialVacationBalance: input.initialVacationBalance,
         initialHourBankBalance: input.initialHourBankBalance,
@@ -233,10 +230,7 @@ export async function listEmployees(
 
 // ─── Get Employee ────────────────────────────────────────────────────
 
-export async function getEmployee(
-  ctx: RlsContext,
-  id: string,
-): Promise<unknown> {
+export async function getEmployee(ctx: RlsContext, id: string): Promise<unknown> {
   return withRlsContext(ctx, async (tx) => {
     const employee = await tx.employee.findFirst({
       where: { id, organizationId: ctx.organizationId },
@@ -439,10 +433,7 @@ export async function addDependent(
   });
 }
 
-export async function removeDependent(
-  ctx: RlsContext,
-  dependentId: string,
-): Promise<void> {
+export async function removeDependent(ctx: RlsContext, dependentId: string): Promise<void> {
   await withRlsContext(ctx, async (tx) => {
     // Verify the dependent belongs to an employee in this org
     const dependent = await tx.employeeDependent.findFirst({
@@ -539,10 +530,7 @@ export async function uploadDocument(
   });
 }
 
-export async function deleteDocument(
-  ctx: RlsContext,
-  documentId: string,
-): Promise<void> {
+export async function deleteDocument(ctx: RlsContext, documentId: string): Promise<void> {
   await withRlsContext(ctx, async (tx) => {
     const doc = await tx.employeeDocument.findFirst({
       where: {
@@ -570,10 +558,7 @@ export async function deleteDocument(
 
 // ─── Salary History ──────────────────────────────────────────────────
 
-export async function getSalaryHistory(
-  ctx: RlsContext,
-  employeeId: string,
-): Promise<unknown[]> {
+export async function getSalaryHistory(ctx: RlsContext, employeeId: string): Promise<unknown[]> {
   return withRlsContext(ctx, async (tx) => {
     const employee = await tx.employee.findFirst({
       where: { id: employeeId, organizationId: ctx.organizationId },

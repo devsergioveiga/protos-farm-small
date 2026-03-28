@@ -292,9 +292,7 @@ export default function CreateWorkScheduleModal({
               </div>
             </fieldset>
 
-            <div
-              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}
-            >
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
               <div>
                 <label htmlFor="schedule-start" style={labelStyle}>
                   Início *

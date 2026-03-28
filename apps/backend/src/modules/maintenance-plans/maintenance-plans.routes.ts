@@ -103,8 +103,7 @@ maintenancePlansRouter.get(
       const query = {
         assetId: req.query.assetId as string | undefined,
         triggerType: req.query.triggerType as 'HOURMETER' | 'ODOMETER' | 'CALENDAR' | undefined,
-        isActive:
-          req.query.isActive !== undefined ? req.query.isActive === 'true' : undefined,
+        isActive: req.query.isActive !== undefined ? req.query.isActive === 'true' : undefined,
         farmId: req.query.farmId as string | undefined,
         page: req.query.page ? Number(req.query.page) : undefined,
         limit: req.query.limit ? Number(req.query.limit) : undefined,

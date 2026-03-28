@@ -13,6 +13,7 @@ All locked decisions from CONTEXT.md are unambiguous: salary base stays integral
 **Primary recommendation:** Add `absenceData?: AbsencePayrollImpact` to `EmployeePayrollInput`, wire call in orchestrator, insert absence/suspension deduction logic before Step 9 (INSS) in the calculation function, and expose `fgtsBase` in the result for PDF rodapé.
 
 <user_constraints>
+
 ## User Constraints (from CONTEXT.md)
 
 ### Locked Decisions
@@ -51,27 +52,31 @@ None — discussion stayed within phase scope
 </user_constraints>
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|------------------|
+| ID        | Description                                                                                                                                                                                                                                                      | Research Support                                                                                                                     |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | FERIAS-02 | Gerente pode registrar afastamentos (atestado até 15 dias empresa / após INSS, acidente CAT, maternidade 120 dias, paternidade, casamento, falecimento), com **impacto automático na folha**, estabilidade provisória pós-acidente e controle de retorno com ASO | `getAbsenceImpactForMonth` exists and returns correct `AbsencePayrollImpact`; payroll engine needs to consume it at calculation time |
+
 </phase_requirements>
 
 ## Standard Stack
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| decimal.js | existing in project | All monetary arithmetic | Already used for every payroll calculation — no alternative |
-| date-holidays | existing in project | DSR Sunday/holiday counting | Already in `countRestDays()` helper |
-| pdfkit | existing in project | PDF generation | Already powering `payroll-pdf.service.ts` |
+
+| Library       | Version             | Purpose                     | Why Standard                                                |
+| ------------- | ------------------- | --------------------------- | ----------------------------------------------------------- |
+| decimal.js    | existing in project | All monetary arithmetic     | Already used for every payroll calculation — no alternative |
+| date-holidays | existing in project | DSR Sunday/holiday counting | Already in `countRestDays()` helper                         |
+| pdfkit        | existing in project | PDF generation              | Already powering `payroll-pdf.service.ts`                   |
 
 No new npm dependencies required. This phase is purely a code integration.
 
 ## Architecture Patterns
 
 ### Recommended File Touch List
+
 ```
 apps/backend/src/modules/payroll-runs/
 ├── payroll-runs.types.ts          # Add absenceData?: AbsencePayrollImpact to EmployeePayrollInput
@@ -91,6 +96,7 @@ apps/backend/src/modules/payroll-runs/
 **When to use:** Pure calculation functions should not call services. Absence data is fetched by the orchestrator and passed in.
 
 **Example:**
+
 ```typescript
 // In payroll-runs.types.ts
 import type { AbsencePayrollImpact } from '../employee-absences/employee-absences.types';
@@ -110,6 +116,7 @@ export interface EmployeePayrollInput {
 **When to use:** The function signature is `getAbsenceImpactForMonth(employeeId, referenceMonth, tx)` — the orchestrator already has all three arguments at this point.
 
 **Example (orchestrator addition):**
+
 ```typescript
 // Import at top of payroll-runs.service.ts
 import { getAbsenceImpactForMonth } from '../employee-absences/employee-absences.service';
@@ -128,6 +135,7 @@ const payrollInput: EmployeePayrollInput = {
 **What:** Insert absence deduction calculation after Step 1 (pro-rata) and before Step 9 (INSS). The INSS/IRRF base must use the reduced salary per D-04.
 
 **Step sequence (revised):**
+
 ```
 Step 1:  Pro-rata by admission (existing)
 Step 1b: ABSENCE INSS deduction — inssPaidDays / totalDays × adjustedSalary
@@ -144,10 +152,11 @@ Step 16: lineItems — push DESCONTO rubricas for absence INSS and suspension
 ```
 
 **Key arithmetic (D-01, D-09):**
+
 ```typescript
 // After Step 1 (adjustedSalary may be pro-rated or full)
 let absenceInssDeduction = new Decimal(0);
-let suspensionDeduction  = new Decimal(0);
+let suspensionDeduction = new Decimal(0);
 
 if (absenceData) {
   if (absenceData.inssPaidDays > 0) {
@@ -164,12 +173,11 @@ if (absenceData) {
   }
 }
 
-const salaryForInssBase = adjustedSalary
-  .minus(absenceInssDeduction)
-  .minus(suspensionDeduction);
+const salaryForInssBase = adjustedSalary.minus(absenceInssDeduction).minus(suspensionDeduction);
 ```
 
 **FGTS on full base (D-07):**
+
 ```typescript
 // Step 14 — override FGTS base
 const fgtsBase = absenceData?.fgtsFullMonth ? baseSalary : adjustedSalary;
@@ -178,6 +186,7 @@ const fgtsResult = calculateFGTS(fgtsBase.plus(overtime50).plus(overtime100)...)
 ```
 
 **DSR impact from suspension (D-10):**
+
 ```typescript
 // For suspension, treat suspendedDays as missed work days (CLT art. 474).
 // Each Sunday/holiday in the week a suspension occurs loses DSR entitlement.
@@ -188,6 +197,7 @@ const fgtsResult = calculateFGTS(fgtsBase.plus(overtime50).plus(overtime100)...)
 ### Pattern 4: lineItem Codes (Claude's Discretion)
 
 Recommended codes (follow existing series):
+
 - `'0900'` — "Afastamento INSS", reference: `"${inssPaidDays}/${totalDays}d"`, type: `DESCONTO`
 - `'0910'` — "Suspensão Disciplinar", reference: `"${suspendedDays}/${totalDays}d"`, type: `DESCONTO`
 
@@ -196,11 +206,13 @@ These codes are above the current highest used code (`0101`), leaving space for 
 ### Pattern 5: PDF Rodapé — fgtsBase
 
 `payslip-pdf.service.ts` currently renders:
+
 ```
 Base INSS: R$X    Base IRRF: R$Y    FGTS do Mês: R$Z
 ```
 
 Per D-08, when `fgtsFullMonth=true`, `fgtsBase` in the rodapé must reflect full salary (not prorated). This requires:
+
 1. Adding `fgtsBase: number` to `PayslipData` interface
 2. Updating the rodapé text to use `fgtsBase` instead of computing from `grossSalary`
 3. The orchestrator already serializes `result.fgtsAmount` — also serialize new `result.fgtsBase`
@@ -214,44 +226,50 @@ Per D-08, when `fgtsFullMonth=true`, `fgtsBase` in the rodapé must reflect full
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Absence overlap with month | Custom date range intersection | `getAbsenceImpactForMonth` (already implemented) | Handles multi-absence months, open-ended INSS, month boundary clipping |
-| DSR counting | Custom Sunday/holiday loop | `countRestDays()` helper in `payroll-calculation.service.ts` | Already correct per `date-holidays` |
-| Progressive INSS | Custom bracket math | `calculateINSS()` from payroll-engine.service | Unit-tested against 2026 official tables |
-| Decimal arithmetic | Native JS number | `Decimal.js` | Rounding errors in monetary calculations |
+| Problem                    | Don't Build                    | Use Instead                                                  | Why                                                                    |
+| -------------------------- | ------------------------------ | ------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| Absence overlap with month | Custom date range intersection | `getAbsenceImpactForMonth` (already implemented)             | Handles multi-absence months, open-ended INSS, month boundary clipping |
+| DSR counting               | Custom Sunday/holiday loop     | `countRestDays()` helper in `payroll-calculation.service.ts` | Already correct per `date-holidays`                                    |
+| Progressive INSS           | Custom bracket math            | `calculateINSS()` from payroll-engine.service                | Unit-tested against 2026 official tables                               |
+| Decimal arithmetic         | Native JS number               | `Decimal.js`                                                 | Rounding errors in monetary calculations                               |
 
 ## Common Pitfalls
 
 ### Pitfall 1: INSS/IRRF Base vs. Gross Salary for FGTS
+
 **What goes wrong:** Using `grossSalary` (which includes OT) as FGTS base for the `fgtsFullMonth` case.
 **Why it happens:** `grossSalary` is the obvious aggregation point; D-07 says "salário integral" which means contracted base salary, not gross.
 **How to avoid:** Use `baseSalary` (the unprorated field from input) for FGTS-full-month base. For normal months, use `adjustedSalary` + variable components as today.
 **Warning signs:** Test with `baseSalary=3000`, `admissionDate` mid-month (prorated to 1500), `fgtsFullMonth=true` — FGTS should be on 3000, not 1500.
 
 ### Pitfall 2: Cumulative Pro-Rata Order (D-02)
+
 **What goes wrong:** Applying INSS deduction to `baseSalary` instead of `adjustedSalary` when employee was admitted mid-month.
 **Why it happens:** Two prorateios in one month is a rare edge case.
 **How to avoid:** Always compute `adjustedSalary` first (admission pro-rata, Step 1), then apply absence deduction to `adjustedSalary` (not `baseSalary`). Deduction = `inssPaidDays / totalDays × adjustedSalary`.
 **Warning signs:** Unit test with both admission mid-month AND inssPaidDays > 0 — verify double reduction.
 
 ### Pitfall 3: `grossSalary` Still Reflects Proventos, Not Reduced Base
+
 **What goes wrong:** Accidentally subtracting absence deduction from `grossSalary` computation (Step 8), making it look like INSS/IRRF base is correct but the Proventos total on the payslip is wrong.
 **Why it happens:** `adjustedSalary` feeds into `grossSalary` at Step 8. If you subtract from `adjustedSalary` early, the salary base lineItem will show the wrong value.
 **How to avoid:** Keep `adjustedSalary` untouched for the lineItems provento value. Compute a separate `salaryForInssBase` variable that is `adjustedSalary − absenceInssDeduction − suspensionDeduction`. Use `salaryForInssBase` only for Step 9/10. Display `adjustedSalary` in the provento lineItem (Salário Base stays integral per D-01).
 
 ### Pitfall 4: DSR Suspension Calculation (CLT art. 474)
+
 **What goes wrong:** Ignoring DSR impact of suspension entirely, or over-deducting.
 **Why it happens:** CLT art. 474 says suspension is treated as unjustified absence for DSR purposes. The interaction with OT-earned DSR is non-trivial.
 **How to avoid:** The simplest legally defensible approach is proportional DSR reduction: earned `dsrValue × (suspendedDays / workDays)`. This covers the common case without requiring per-week mapping. For Phase 34, this is sufficient (Claude's Discretion).
 **Warning signs:** Employee with 2 suspension days and overtime — dsrValue should be partially reduced.
 
 ### Pitfall 5: Net Salary Becomes Negative
+
 **What goes wrong:** Large absence + suspension + standard deductions push netSalary below zero.
 **Why it happens:** No floor guard in current implementation.
 **How to avoid:** After computing netSalary, apply `Decimal.max(netSalary, new Decimal(0))`. Document this guard in a comment. Do not throw; just floor at zero (common Brazilian payroll behavior).
 
 ### Pitfall 6: `getAbsenceImpactForMonth` Called Outside Transaction
+
 **What goes wrong:** Calling `getAbsenceImpactForMonth` with `prisma` (not `tx`) breaks RLS isolation during payroll processing.
 **Why it happens:** The function signature requires a `TxClient` — passing the global `prisma` instance would use the wrong RLS context.
 **How to avoid:** The orchestrator already uses `tx` inside `withRlsContext`. Pass `tx` directly, exactly as in Phase 29 decision: "getAbsenceImpactForMonth accepts TxClient directly — called from payroll engine inside transactions."
@@ -259,6 +277,7 @@ Per D-08, when `fgtsFullMonth=true`, `fgtsBase` in the rodapé must reflect full
 ## Code Examples
 
 ### Existing: How timesheetData is handled (source: payroll-runs.service.ts ~352-376)
+
 ```typescript
 // orchestrator builds input inside withRlsContext tx
 const payrollInput: EmployeePayrollInput = {
@@ -276,6 +295,7 @@ result = calculateEmployeePayroll(payrollInput, referenceMonth, engineParams);
 ```
 
 ### New: Absence data follows same pattern
+
 ```typescript
 // Fetch absence impact BEFORE building input (inside same tx)
 const absenceData = await getAbsenceImpactForMonth(employee.id, referenceMonth, tx);
@@ -290,6 +310,7 @@ const payrollInput: EmployeePayrollInput = {
 ```
 
 ### Existing: lineItem push pattern (source: payroll-calculation.service.ts ~284-393)
+
 ```typescript
 // All deduction lineItems follow this shape:
 lineItems.push({
@@ -302,6 +323,7 @@ lineItems.push({
 ```
 
 ### New: Absence INSS lineItem (follows existing pattern)
+
 ```typescript
 if (absenceInssDeduction.greaterThan(0)) {
   lineItems.push({
@@ -324,20 +346,23 @@ if (suspensionDeduction.greaterThan(0)) {
 ```
 
 ### Existing: PDF rodapé (source: payroll-pdf.service.ts ~254-260)
+
 ```typescript
 doc.text(
   `Base INSS: ${formatCurrency(data.inssBase)}    Base IRRF: ${formatCurrency(data.irrfBase)}    FGTS do Mês: ${formatCurrency(data.fgtsMonth)}`,
-  margin, y,
+  margin,
+  y,
 );
 ```
+
 After Phase 34, `data.fgtsMonth` stays (it is the FGTS contribution amount), but the base used to compute it when `fgtsFullMonth=true` must be `baseSalary`, not `adjustedSalary`. The rodapé format does NOT change (D-08 — no extra note).
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| No absence wiring | `getAbsenceImpactForMonth` exists but uncalled | Phase 29 built it | Phase 34 is the bridge |
-| FGTS on adjustedSalary only | FGTS on full baseSalary when fgtsFullMonth=true | Phase 34 | Correct per Lei 8.036/90 art. 15 §5 |
+| Old Approach                | Current Approach                                | When Changed      | Impact                              |
+| --------------------------- | ----------------------------------------------- | ----------------- | ----------------------------------- |
+| No absence wiring           | `getAbsenceImpactForMonth` exists but uncalled  | Phase 29 built it | Phase 34 is the bridge              |
+| FGTS on adjustedSalary only | FGTS on full baseSalary when fgtsFullMonth=true | Phase 34          | Correct per Lei 8.036/90 art. 15 §5 |
 
 ## Open Questions
 
@@ -358,34 +383,37 @@ Step 2.6: SKIPPED — this phase has no external dependencies. All changes are c
 ## Validation Architecture
 
 ### Test Framework
-| Property | Value |
-|----------|-------|
-| Framework | Jest (via @swc/jest transformer) |
-| Config file | `apps/backend/jest.config.js` |
-| Quick run command | `cd apps/backend && npx jest payroll-calculation.service.spec --no-coverage` |
-| Full suite command | `cd apps/backend && npx jest --no-coverage` |
+
+| Property           | Value                                                                        |
+| ------------------ | ---------------------------------------------------------------------------- |
+| Framework          | Jest (via @swc/jest transformer)                                             |
+| Config file        | `apps/backend/jest.config.js`                                                |
+| Quick run command  | `cd apps/backend && npx jest payroll-calculation.service.spec --no-coverage` |
+| Full suite command | `cd apps/backend && npx jest --no-coverage`                                  |
 
 ### Phase Requirements → Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| FERIAS-02 | INSS-paid days generate deduction rubrica, INSS/IRRF on reduced base | unit | `cd apps/backend && npx jest payroll-calculation.service.spec --no-coverage` | ✅ (new scenarios in existing spec) |
-| FERIAS-02 | Admission mid-month + INSS absence = cumulative pro-rata (D-02) | unit | same | ✅ (new scenario) |
-| FERIAS-02 | `fgtsFullMonth=true` uses full baseSalary for FGTS | unit | same | ✅ (new scenario) |
-| FERIAS-02 | Suspension generates deduction rubrica + DSR reduction | unit | same | ✅ (new scenario) |
-| FERIAS-02 | No absence → zero deduction, behavior unchanged | unit | same | ✅ (regression) |
-| FERIAS-02 | Orchestrator calls `getAbsenceImpactForMonth` and passes result | unit (mock) | `cd apps/backend && npx jest payroll-runs.service.spec --no-coverage` | ❌ Wave 0 (no service spec yet — or add mock in existing spec) |
+| Req ID    | Behavior                                                             | Test Type   | Automated Command                                                            | File Exists?                                                   |
+| --------- | -------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| FERIAS-02 | INSS-paid days generate deduction rubrica, INSS/IRRF on reduced base | unit        | `cd apps/backend && npx jest payroll-calculation.service.spec --no-coverage` | ✅ (new scenarios in existing spec)                            |
+| FERIAS-02 | Admission mid-month + INSS absence = cumulative pro-rata (D-02)      | unit        | same                                                                         | ✅ (new scenario)                                              |
+| FERIAS-02 | `fgtsFullMonth=true` uses full baseSalary for FGTS                   | unit        | same                                                                         | ✅ (new scenario)                                              |
+| FERIAS-02 | Suspension generates deduction rubrica + DSR reduction               | unit        | same                                                                         | ✅ (new scenario)                                              |
+| FERIAS-02 | No absence → zero deduction, behavior unchanged                      | unit        | same                                                                         | ✅ (regression)                                                |
+| FERIAS-02 | Orchestrator calls `getAbsenceImpactForMonth` and passes result      | unit (mock) | `cd apps/backend && npx jest payroll-runs.service.spec --no-coverage`        | ❌ Wave 0 (no service spec yet — or add mock in existing spec) |
 
 ### Sampling Rate
+
 - **Per task commit:** `cd apps/backend && npx jest payroll-calculation.service.spec --no-coverage`
 - **Per wave merge:** `cd apps/backend && npx jest --no-coverage`
 - **Phase gate:** Full suite green before `/gsd:verify-work`
 
 ### Wave 0 Gaps
+
 - [ ] New test scenarios in `apps/backend/src/modules/payroll-runs/payroll-calculation.service.spec.ts` — covers FERIAS-02 absence deduction, FGTS full-month, suspension+DSR, cumulative pro-rata
 - [ ] `makeBaseInput` in spec needs `absenceData` in its return signature after types change (backward-compatible with `absenceData: null`)
 
-*(No new test files needed — all new scenarios extend the existing spec file)*
+_(No new test files needed — all new scenarios extend the existing spec file)_
 
 ## Project Constraints (from CLAUDE.md)
 
@@ -399,6 +427,7 @@ Step 2.6: SKIPPED — this phase has no external dependencies. All changes are c
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Direct code read: `apps/backend/src/modules/payroll-runs/payroll-calculation.service.ts` — full Step 1-16 flow understood
 - Direct code read: `apps/backend/src/modules/payroll-runs/payroll-runs.types.ts` — `EmployeePayrollInput`, `EmployeePayrollResult` interfaces confirmed
 - Direct code read: `apps/backend/src/modules/employee-absences/employee-absences.service.ts` — `getAbsenceImpactForMonth` signature and return type verified
@@ -411,11 +440,13 @@ Step 2.6: SKIPPED — this phase has no external dependencies. All changes are c
 - Legal: CLT art. 474 (suspension = unjustified absence for DSR) — well-established, HIGH confidence
 
 ### Secondary (MEDIUM confidence)
+
 - None needed — all findings sourced directly from codebase
 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH — no new dependencies, all libraries already in use
 - Architecture: HIGH — integration points precisely identified from code, decisions locked in CONTEXT.md
 - Pitfalls: HIGH — derived from reading actual calculation logic and test patterns

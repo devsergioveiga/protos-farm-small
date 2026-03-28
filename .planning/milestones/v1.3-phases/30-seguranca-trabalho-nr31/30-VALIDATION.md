@@ -15,13 +15,13 @@ created: 2026-03-26
 
 ## Test Infrastructure
 
-| Property | Value |
-|----------|-------|
-| **Framework** | jest 29.x (backend), vitest (frontend) |
-| **Config file** | `apps/backend/jest.config.ts`, `apps/frontend/vitest.config.ts` |
-| **Quick run command** | `cd apps/backend && npx jest --testPathPattern="epi\|training\|medical\|safety" --no-coverage` |
-| **Full suite command** | `cd apps/backend && npx jest --no-coverage` |
-| **Estimated runtime** | ~30 seconds (phase tests only) |
+| Property               | Value                                                                                          |
+| ---------------------- | ---------------------------------------------------------------------------------------------- |
+| **Framework**          | jest 29.x (backend), vitest (frontend)                                                         |
+| **Config file**        | `apps/backend/jest.config.ts`, `apps/frontend/vitest.config.ts`                                |
+| **Quick run command**  | `cd apps/backend && npx jest --testPathPattern="epi\|training\|medical\|safety" --no-coverage` |
+| **Full suite command** | `cd apps/backend && npx jest --no-coverage`                                                    |
+| **Estimated runtime**  | ~30 seconds (phase tests only)                                                                 |
 
 ---
 

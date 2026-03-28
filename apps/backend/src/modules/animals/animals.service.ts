@@ -484,9 +484,7 @@ export async function listAnimals(ctx: RlsContext, farmId: string, query: ListAn
         ownershipType: o.ownershipType,
       })),
       ownerSummary:
-        a.ownerships.length > 0
-          ? a.ownerships.map((o) => o.producer.name).join(', ')
-          : null,
+        a.ownerships.length > 0 ? a.ownerships.map((o) => o.producer.name).join(', ') : null,
     }));
 
     const avgWeight = aggregate._avg.entryWeightKg;
@@ -657,7 +655,8 @@ export async function updateAnimal(
     if (input.rfidTag !== undefined) updateData.rfidTag = input.rfidTag;
     if (input.name !== undefined) updateData.name = input.name;
     if (input.registeredName !== undefined) updateData.registeredName = input.registeredName;
-    if (input.registrationNumber !== undefined) updateData.registrationNumber = input.registrationNumber;
+    if (input.registrationNumber !== undefined)
+      updateData.registrationNumber = input.registrationNumber;
     if (input.sex !== undefined) updateData.sex = input.sex;
     if (input.birthDate !== undefined)
       updateData.birthDate = input.birthDate ? new Date(input.birthDate) : null;
@@ -1163,10 +1162,19 @@ export async function previewBulkImportAnimals(
 
       for (const entry of breedEntries) {
         if (!entry.name) continue;
-        const nameNorm = entry.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const nameNorm = entry.name
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '');
         const breed = breeds.find((b) => {
-          const bNameNorm = b.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-          const bCodeNorm = b.code?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          const bNameNorm = b.name
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+          const bCodeNorm = b.code
+            ?.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
           // Exact match
           if (bNameNorm === nameNorm || bCodeNorm === nameNorm) return true;
           // Prefix match (e.g. "holandes" matches "holandesa")

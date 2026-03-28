@@ -30,8 +30,8 @@ export default function AccountingKpiCard({
             deltaDirection === 'up'
               ? `Aumento de ${deltaPercent} em relacao ao periodo anterior`
               : deltaDirection === 'down'
-              ? `Reducao de ${deltaPercent} em relacao ao periodo anterior`
-              : `Sem variacao significativa`
+                ? `Reducao de ${deltaPercent} em relacao ao periodo anterior`
+                : `Sem variacao significativa`
           }
         >
           {deltaDirection === 'up' && <ArrowUp size={12} aria-hidden="true" />}

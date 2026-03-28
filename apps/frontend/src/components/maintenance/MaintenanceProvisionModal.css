@@ -24,12 +24,20 @@
 }
 
 @keyframes provision-modal-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.98); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .provision-modal { animation: none; }
+  .provision-modal {
+    animation: none;
+  }
 }
 
 /* ─── Header ─────────────────────────────────────────────────────────── */
@@ -65,8 +73,13 @@
   transition: background 100ms;
 }
 
-.provision-modal__close:hover { background: var(--color-neutral-100); }
-.provision-modal__close:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
+.provision-modal__close:hover {
+  background: var(--color-neutral-100);
+}
+.provision-modal__close:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
 
 /* ─── Body ──────────────────────────────────────────────────────────── */
 
@@ -94,7 +107,9 @@
   color: var(--color-neutral-700);
 }
 
-.provision-modal__required { color: var(--color-error-500); }
+.provision-modal__required {
+  color: var(--color-error-500);
+}
 
 .provision-modal__input,
 .provision-modal__select,
@@ -118,9 +133,14 @@
   outline-offset: 2px;
 }
 
-.provision-modal__input--error { border-color: var(--color-error-500); }
+.provision-modal__input--error {
+  border-color: var(--color-error-500);
+}
 
-.provision-modal__textarea { min-height: 80px; resize: vertical; }
+.provision-modal__textarea {
+  min-height: 80px;
+  resize: vertical;
+}
 
 /* ─── Toggle ────────────────────────────────────────────────────────── */
 
@@ -228,8 +248,13 @@
   transition: background 100ms;
 }
 
-.provision-modal__btn-cancel:hover { background: var(--color-neutral-100); }
-.provision-modal__btn-cancel:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
+.provision-modal__btn-cancel:hover {
+  background: var(--color-neutral-100);
+}
+.provision-modal__btn-cancel:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
 
 .provision-modal__btn-submit {
   padding: var(--space-3) var(--space-5);
@@ -245,6 +270,14 @@
   transition: background 100ms;
 }
 
-.provision-modal__btn-submit:hover { background: var(--color-primary-700, #1b5e20); }
-.provision-modal__btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-.provision-modal__btn-submit:focus-visible { outline: 2px solid var(--color-primary-500); outline-offset: 2px; }
+.provision-modal__btn-submit:hover {
+  background: var(--color-primary-700, #1b5e20);
+}
+.provision-modal__btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.provision-modal__btn-submit:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}

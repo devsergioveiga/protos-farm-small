@@ -15,13 +15,13 @@ created: 2026-03-23
 
 ## Test Infrastructure
 
-| Property | Value |
-|----------|-------|
-| **Framework** | jest 29.x (backend), vitest (frontend) |
-| **Config file** | `apps/backend/jest.config.ts`, `apps/frontend/vitest.config.ts` |
-| **Quick run command** | `pnpm --filter @protos-farm/backend test -- --testPathPattern=asset-reports` |
+| Property               | Value                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------- |
+| **Framework**          | jest 29.x (backend), vitest (frontend)                                                |
+| **Config file**        | `apps/backend/jest.config.ts`, `apps/frontend/vitest.config.ts`                       |
+| **Quick run command**  | `pnpm --filter @protos-farm/backend test -- --testPathPattern=asset-reports`          |
 | **Full suite command** | `pnpm --filter @protos-farm/backend test && pnpm --filter @protos-farm/frontend test` |
-| **Estimated runtime** | ~45 seconds |
+| **Estimated runtime**  | ~45 seconds                                                                           |
 
 ---
 
@@ -36,13 +36,13 @@ created: 2026-03-23
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 23-01-01 | 01 | 1 | DEPR-04 | unit | `pnpm --filter @protos-farm/backend test -- --testPathPattern=asset-reports` | ❌ W0 | ⬜ pending |
-| 23-01-02 | 01 | 1 | DEPR-04 | unit | `pnpm --filter @protos-farm/backend test -- --testPathPattern=asset-reports` | ❌ W0 | ⬜ pending |
-| 23-02-01 | 02 | 2 | DEPR-04, CCPA-04 | integration | `pnpm --filter @protos-farm/frontend test -- --testPathPattern=asset-reports` | ❌ W0 | ⬜ pending |
+| Task ID  | Plan | Wave | Requirement      | Test Type   | Automated Command                                                             | File Exists | Status     |
+| -------- | ---- | ---- | ---------------- | ----------- | ----------------------------------------------------------------------------- | ----------- | ---------- |
+| 23-01-01 | 01   | 1    | DEPR-04          | unit        | `pnpm --filter @protos-farm/backend test -- --testPathPattern=asset-reports`  | ❌ W0       | ⬜ pending |
+| 23-01-02 | 01   | 1    | DEPR-04          | unit        | `pnpm --filter @protos-farm/backend test -- --testPathPattern=asset-reports`  | ❌ W0       | ⬜ pending |
+| 23-02-01 | 02   | 2    | DEPR-04, CCPA-04 | integration | `pnpm --filter @protos-farm/frontend test -- --testPathPattern=asset-reports` | ❌ W0       | ⬜ pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+_Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
 
 ---
 
@@ -52,17 +52,17 @@ created: 2026-03-23
 - [ ] `apps/backend/src/modules/asset-reports/asset-reports.routes.spec.ts` — route tests for DEPR-04
 - [ ] Existing test infrastructure covers framework needs
 
-*Existing infrastructure covers all phase requirements.*
+_Existing infrastructure covers all phase requirements._
 
 ---
 
 ## Manual-Only Verifications
 
-| Behavior | Requirement | Why Manual | Test Instructions |
-|----------|-------------|------------|-------------------|
-| PDF export renders correctly | DEPR-04 | Visual layout verification | Generate PDF, check headers/columns/totals |
-| Dashboard charts display properly | DEPR-04 | Visual chart rendering | Load dashboard, verify Recharts renders TCO data |
-| Cost center wizard UX flow | CCPA-04 | Multi-step wizard interaction | Complete wizard, verify center created |
+| Behavior                          | Requirement | Why Manual                    | Test Instructions                                |
+| --------------------------------- | ----------- | ----------------------------- | ------------------------------------------------ |
+| PDF export renders correctly      | DEPR-04     | Visual layout verification    | Generate PDF, check headers/columns/totals       |
+| Dashboard charts display properly | DEPR-04     | Visual chart rendering        | Load dashboard, verify Recharts renders TCO data |
+| Cost center wizard UX flow        | CCPA-04     | Multi-step wizard interaction | Complete wizard, verify center created           |
 
 ---
 

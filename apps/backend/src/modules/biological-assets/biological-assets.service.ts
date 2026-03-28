@@ -95,9 +95,7 @@ export async function createValuation(
 
   const totalFairValueDec = new Decimal(input.totalFairValue);
   const previousValueDec = previous ? new Decimal(previous.totalFairValue.toString()) : null;
-  const fairValueChangeDec = previousValueDec
-    ? totalFairValueDec.minus(previousValueDec)
-    : null;
+  const fairValueChangeDec = previousValueDec ? totalFairValueDec.minus(previousValueDec) : null;
 
   const created = await prisma.biologicalAssetValuation.create({
     data: {

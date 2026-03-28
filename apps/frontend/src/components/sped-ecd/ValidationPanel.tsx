@@ -17,7 +17,7 @@ function getLinkText(code: string): string {
 export default function ValidationPanel({ result, loading }: ValidationPanelProps) {
   const errorCount = result?.items.filter((i) => i.severity === 'ERROR').length ?? 0;
   const warningCount = result?.items.filter((i) => i.severity === 'WARNING').length ?? 0;
-  const hasIssues = (errorCount + warningCount) > 0;
+  const hasIssues = errorCount + warningCount > 0;
 
   return (
     <section className="validation-panel" role="alert" aria-live="polite">
@@ -45,7 +45,8 @@ export default function ValidationPanel({ result, loading }: ValidationPanelProp
       {!loading && result && hasIssues && (
         <>
           <p className="validation-panel__summary">
-            {errorCount} erro(s) &bull; {warningCount} aviso(s) &mdash; corrija os erros para habilitar a geracao
+            {errorCount} erro(s) &bull; {warningCount} aviso(s) &mdash; corrija os erros para
+            habilitar a geracao
           </p>
           <ul className="validation-panel__list">
             {result.items.map((item, idx) => (
@@ -81,10 +82,7 @@ export default function ValidationPanel({ result, loading }: ValidationPanelProp
                 </span>
                 <span className="validation-panel__message">{item.message}</span>
                 {item.navigateTo && (
-                  <Link
-                    to={item.navigateTo}
-                    className="validation-panel__link"
-                  >
+                  <Link to={item.navigateTo} className="validation-panel__link">
                     {getLinkText(item.code)}
                   </Link>
                 )}

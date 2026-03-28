@@ -35,12 +35,12 @@ key_files:
     - apps/frontend/src/App.tsx (added SpedEcdPage lazy import + route)
     - apps/frontend/src/components/layout/Sidebar.tsx (added SPED / Relatorios item)
 decisions:
-  - "useSpedEcd exposes toast state to parent page instead of using a global toast library — consistent with DrePage pattern (local toast state)"
-  - "orgId obtained via useAuth().user?.organizationId ?? undefined to satisfy string | undefined type in useSpedEcd"
-  - "Notes textarea CSS co-located in SpedEcdPage.css (not a separate file) — NotesTextarea is only used in this page"
+  - 'useSpedEcd exposes toast state to parent page instead of using a global toast library — consistent with DrePage pattern (local toast state)'
+  - 'orgId obtained via useAuth().user?.organizationId ?? undefined to satisfy string | undefined type in useSpedEcd'
+  - 'Notes textarea CSS co-located in SpedEcdPage.css (not a separate file) — NotesTextarea is only used in this page'
 metrics:
   duration_seconds: 321
-  completed_date: "2026-03-28"
+  completed_date: '2026-03-28'
   tasks_completed: 2
   tasks_total: 3
   files_created: 7
@@ -57,6 +57,7 @@ SpedEcdPage with two tabs (SPED ECD validation/download and Relatorio Integrado 
 **types/sped-ecd.ts** — SpedValidationItem (severity/code/message/navigateTo) and SpedValidationResult (items/hasErrors).
 
 **hooks/useSpedEcd.ts** — Custom hook managing all SPED/report state:
+
 - `validate(fiscalYearId)` — calls GET /sped-ecd/validate, sets validationResult
 - `downloadSped(fiscalYearId)` — blob download of SPED .txt file
 - `downloadPdf(fiscalYearId, costCenterId?)` — blob download of integrated report PDF
@@ -65,6 +66,7 @@ SpedEcdPage with two tabs (SPED ECD validation/download and Relatorio Integrado 
 - Local toast state exposed to parent page
 
 **ValidationPanel.tsx** — Section with `role="alert"` and `aria-live="polite"`:
+
 - Loading: 3 skeleton rows with CSS pulse animation
 - All-clear: CheckCircle (green) + success message
 - Issues: summary line with counts + per-item rows with ERRO/AVISO badges, icons, message, correction Link
@@ -72,6 +74,7 @@ SpedEcdPage with two tabs (SPED ECD validation/download and Relatorio Integrado 
 **NotesTextarea.tsx** — Textarea with label/aria-describedby/helper text, 2s debounced autosave, "Notas salvas" indicator with CSS opacity transition.
 
 **SpedEcdPage.tsx** — Main page:
+
 - Breadcrumb nav with Links
 - Page header with FileText icon and h1
 - Fiscal year selector (shared, triggers auto-validate on change)
@@ -89,6 +92,7 @@ SpedEcdPage with two tabs (SPED ECD validation/download and Relatorio Integrado 
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] orgId type mismatch: `string | null | undefined` not assignable to `string | undefined`**
+
 - **Found during:** Task 2 TypeScript check
 - **Issue:** `user?.organizationId` returns `string | null | undefined` but useSpedEcd expects `string | undefined`
 - **Fix:** Added `?? undefined` coercion: `user?.organizationId ?? undefined`
@@ -100,6 +104,7 @@ SpedEcdPage with two tabs (SPED ECD validation/download and Relatorio Integrado 
 **Task 3: Visual verification of SPED ECD page** — Pending human review.
 
 The page is wired and TypeScript-clean. To verify:
+
 1. Start dev servers: `cd apps/backend && pnpm dev` and `cd apps/frontend && pnpm dev`
 2. Navigate to `/sped-ecd` (or via "SPED / Relatorios" in sidebar under CONTABILIDADE)
 3. Verify page shows "SPED ECD e Relatorios" heading with FileText icon

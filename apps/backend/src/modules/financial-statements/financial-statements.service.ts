@@ -21,12 +21,7 @@ import {
   type CrossValidationOutput,
   type MarginRankingItem,
 } from './financial-statements.types';
-import type {
-  DfcFilters,
-  DfcOutput,
-  DfcPaidItem,
-  DfcSection,
-} from './dfc.types';
+import type { DfcFilters, DfcOutput, DfcPaidItem, DfcSection } from './dfc.types';
 
 // ─── getDre ──────────────────────────────────────────────────────────────────
 
@@ -41,7 +36,11 @@ export async function getDre(
   });
 
   if (!fiscalYear) {
-    throw new FinancialStatementsError('Exercício fiscal não encontrado', 'FISCAL_YEAR_NOT_FOUND', 404);
+    throw new FinancialStatementsError(
+      'Exercício fiscal não encontrado',
+      'FISCAL_YEAR_NOT_FOUND',
+      404,
+    );
   }
 
   // Find prior fiscal year (previous year, same org)
@@ -108,7 +107,10 @@ export async function getDre(
     const ytdMap = new Map(
       ytdRaw.map((r) => [
         r.accountId,
-        { debitTotal: r._sum.debitTotal ?? new Decimal(0), creditTotal: r._sum.creditTotal ?? new Decimal(0) },
+        {
+          debitTotal: r._sum.debitTotal ?? new Decimal(0),
+          creditTotal: r._sum.creditTotal ?? new Decimal(0),
+        },
       ]),
     );
     const priorMap = new Map(priorBalances.map((b) => [b.accountId, b]));
@@ -151,7 +153,9 @@ export async function getDre(
     type JelAggRow = { accountId: string; side: string; total: Decimal };
 
     async function queryJelAgg(startDate: Date, endDate: Date): Promise<JelAggRow[]> {
-      const rows = await prisma.$queryRaw<Array<{ accountId: string; side: string; total: unknown }>>`
+      const rows = await prisma.$queryRaw<
+        Array<{ accountId: string; side: string; total: unknown }>
+      >`
         SELECT jel."accountId", jel.side, SUM(jel.amount) as total
         FROM journal_entry_lines jel
         JOIN journal_entries je ON je.id = jel."journalEntryId"
@@ -237,13 +241,15 @@ async function computeMarginRanking(
   const endDate = new Date(year, month, 0, 23, 59, 59, 999);
 
   // Revenue (4.x) and CPV (5.1.x) by cost center
-  const rows = await prisma.$queryRaw<Array<{
-    costCenterId: string;
-    costCenterName: string;
-    accountCode: string;
-    side: string;
-    total: unknown;
-  }>>`
+  const rows = await prisma.$queryRaw<
+    Array<{
+      costCenterId: string;
+      costCenterName: string;
+      accountCode: string;
+      side: string;
+      total: unknown;
+    }>
+  >`
     SELECT
       cc.id as "costCenterId",
       cc.name as "costCenterName",
@@ -266,7 +272,11 @@ async function computeMarginRanking(
   const ccMap = new Map<string, { name: string; revenue: Decimal; cpv: Decimal }>();
   for (const row of rows) {
     if (!ccMap.has(row.costCenterId)) {
-      ccMap.set(row.costCenterId, { name: row.costCenterName, revenue: new Decimal(0), cpv: new Decimal(0) });
+      ccMap.set(row.costCenterId, {
+        name: row.costCenterName,
+        revenue: new Decimal(0),
+        cpv: new Decimal(0),
+      });
     }
     const entry = ccMap.get(row.costCenterId)!;
     const amount = new Decimal(String(row.total));
@@ -296,7 +306,9 @@ async function computeMarginRanking(
     };
   });
 
-  return items.sort((a, b) => new Decimal(b.grossMargin).minus(new Decimal(a.grossMargin)).toNumber());
+  return items.sort((a, b) =>
+    new Decimal(b.grossMargin).minus(new Decimal(a.grossMargin)).toNumber(),
+  );
 }
 
 // ─── getBalanceSheet ──────────────────────────────────────────────────────────
@@ -311,7 +323,11 @@ export async function getBalanceSheet(
   });
 
   if (!fiscalYear) {
-    throw new FinancialStatementsError('Exercício fiscal não encontrado', 'FISCAL_YEAR_NOT_FOUND', 404);
+    throw new FinancialStatementsError(
+      'Exercício fiscal não encontrado',
+      'FISCAL_YEAR_NOT_FOUND',
+      404,
+    );
   }
 
   // Load all ATIVO + PASSIVO + PL accounts
@@ -384,7 +400,10 @@ export async function getBalanceSheet(
   // Get resultado liquido from DRE for ROE
   let resultadoLiquido = '0';
   try {
-    const dre = await getDre(organizationId, { fiscalYearId: filters.fiscalYearId, month: filters.month });
+    const dre = await getDre(organizationId, {
+      fiscalYearId: filters.fiscalYearId,
+      month: filters.month,
+    });
     resultadoLiquido = dre.resultadoLiquido.currentMonth;
   } catch {
     // If DRE fails (e.g., no RECEITA/DESPESA accounts), default to 0
@@ -438,14 +457,18 @@ async function computeSparklineMonths(
   }
 
   const analyticIds = allAccounts.filter((a) => !a.isSynthetic).map((a) => a.id);
-  const analyticCodes = allAccounts.filter((a) => !a.isSynthetic).reduce(
-    (map, a) => { map.set(a.id, a.code); return map; },
-    new Map<string, string>(),
-  );
-  const analyticTypes = allAccounts.filter((a) => !a.isSynthetic).reduce(
-    (map, a) => { map.set(a.id, a.accountType); return map; },
-    new Map<string, string>(),
-  );
+  const analyticCodes = allAccounts
+    .filter((a) => !a.isSynthetic)
+    .reduce((map, a) => {
+      map.set(a.id, a.code);
+      return map;
+    }, new Map<string, string>());
+  const analyticTypes = allAccounts
+    .filter((a) => !a.isSynthetic)
+    .reduce((map, a) => {
+      map.set(a.id, a.accountType);
+      return map;
+    }, new Map<string, string>());
 
   const result: BpSparklineMonth[] = [];
 
@@ -494,10 +517,7 @@ async function computeSparklineMonths(
 
 // ─── getDfc ───────────────────────────────────────────────────────────────────
 
-export async function getDfc(
-  organizationId: string,
-  filters: DfcFilters,
-): Promise<DfcOutput> {
+export async function getDfc(organizationId: string, filters: DfcFilters): Promise<DfcOutput> {
   // Verify fiscal year exists
   const fiscalYear = await prisma.fiscalYear.findFirst({
     where: { id: filters.fiscalYearId, organizationId },
@@ -505,7 +525,11 @@ export async function getDfc(
   });
 
   if (!fiscalYear) {
-    throw new FinancialStatementsError('Exercício fiscal não encontrado', 'FISCAL_YEAR_NOT_FOUND', 404);
+    throw new FinancialStatementsError(
+      'Exercício fiscal não encontrado',
+      'FISCAL_YEAR_NOT_FOUND',
+      404,
+    );
   }
 
   // Derive year from startDate
@@ -525,10 +549,15 @@ export async function getDfc(
   const ytdStart = fiscalYear.startDate;
   const ytdEnd = currentMonthEnd;
   const priorYearMonthStart = priorFiscalYear ? new Date(year - 1, filters.month - 1, 1) : null;
-  const priorYearMonthEnd = priorFiscalYear ? new Date(year - 1, filters.month, 0, 23, 59, 59, 999) : null;
+  const priorYearMonthEnd = priorFiscalYear
+    ? new Date(year - 1, filters.month, 0, 23, 59, 59, 999)
+    : null;
 
   // Load paid payables
-  async function loadPayables(startDate: Date, endDate: Date): Promise<Array<{ category: string; amountPaid: Decimal | null }>> {
+  async function loadPayables(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Array<{ category: string; amountPaid: Decimal | null }>> {
     return prisma.payable.findMany({
       where: { organizationId, paidAt: { gte: startDate, lte: endDate } },
       select: { category: true, amountPaid: true },
@@ -536,7 +565,10 @@ export async function getDfc(
   }
 
   // Load settled receivables
-  async function loadReceivables(startDate: Date, endDate: Date): Promise<Array<{ category: string; amountReceived: Decimal | null }>> {
+  async function loadReceivables(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Array<{ category: string; amountReceived: Decimal | null }>> {
     return prisma.receivable.findMany({
       where: { organizationId, receivedAt: { gte: startDate, lte: endDate } },
       select: { category: true, amountReceived: true },
@@ -551,12 +583,20 @@ export async function getDfc(
     const items: DfcPaidItem[] = [];
     for (const p of payables) {
       if (p.amountPaid && new Decimal(p.amountPaid.toString()).gt(0)) {
-        items.push({ category: p.category, amount: p.amountPaid.toString(), type: 'outflow' as const });
+        items.push({
+          category: p.category,
+          amount: p.amountPaid.toString(),
+          type: 'outflow' as const,
+        });
       }
     }
     for (const r of receivables) {
       if (r.amountReceived && new Decimal(r.amountReceived.toString()).gt(0)) {
-        items.push({ category: r.category, amount: r.amountReceived.toString(), type: 'inflow' as const });
+        items.push({
+          category: r.category,
+          amount: r.amountReceived.toString(),
+          type: 'inflow' as const,
+        });
       }
     }
     return items;
@@ -564,16 +604,23 @@ export async function getDfc(
 
   // Load all periods in parallel
   const [
-    currentPayables, currentReceivables,
-    ytdPayables, ytdReceivables,
-    priorPayables, priorReceivables,
+    currentPayables,
+    currentReceivables,
+    ytdPayables,
+    ytdReceivables,
+    priorPayables,
+    priorReceivables,
   ] = await Promise.all([
     loadPayables(currentMonthStart, currentMonthEnd),
     loadReceivables(currentMonthStart, currentMonthEnd),
     loadPayables(ytdStart, ytdEnd),
     loadReceivables(ytdStart, ytdEnd),
-    priorYearMonthStart && priorYearMonthEnd ? loadPayables(priorYearMonthStart, priorYearMonthEnd) : Promise.resolve([]),
-    priorYearMonthStart && priorYearMonthEnd ? loadReceivables(priorYearMonthStart, priorYearMonthEnd) : Promise.resolve([]),
+    priorYearMonthStart && priorYearMonthEnd
+      ? loadPayables(priorYearMonthStart, priorYearMonthEnd)
+      : Promise.resolve([]),
+    priorYearMonthStart && priorYearMonthEnd
+      ? loadReceivables(priorYearMonthStart, priorYearMonthEnd)
+      : Promise.resolve([]),
   ]);
 
   const currentMonthItems = buildItems(currentPayables, currentReceivables);
@@ -598,7 +645,10 @@ export async function getDfc(
       select: { [field]: true },
     });
     return balances
-      .reduce((sum, b) => sum.plus(new Decimal((b as Record<string, unknown>)[field]?.toString() ?? '0')), new Decimal(0))
+      .reduce(
+        (sum, b) => sum.plus(new Decimal((b as Record<string, unknown>)[field]?.toString() ?? '0')),
+        new Decimal(0),
+      )
       .toFixed(2);
   }
 
@@ -615,8 +665,12 @@ export async function getDfc(
     sumCashBalance(filters.fiscalYearId, filters.month, 'closingBalance'),
     sumCashBalance(filters.fiscalYearId, 1, 'openingBalance'),
     sumCashBalance(filters.fiscalYearId, filters.month, 'closingBalance'),
-    priorFiscalYear ? sumCashBalance(priorFiscalYear.id, filters.month, 'openingBalance') : Promise.resolve('0.00'),
-    priorFiscalYear ? sumCashBalance(priorFiscalYear.id, filters.month, 'closingBalance') : Promise.resolve('0.00'),
+    priorFiscalYear
+      ? sumCashBalance(priorFiscalYear.id, filters.month, 'openingBalance')
+      : Promise.resolve('0.00'),
+    priorFiscalYear
+      ? sumCashBalance(priorFiscalYear.id, filters.month, 'closingBalance')
+      : Promise.resolve('0.00'),
   ]);
 
   // Calculate direto
@@ -659,22 +713,33 @@ export async function getDfc(
     if (isYtd) {
       const rows = await prisma.accountBalance.groupBy({
         by: ['accountId'],
-        where: { organizationId, fiscalYearId: fyId, month: { lte: monthNum }, accountId: { in: ids } },
+        where: {
+          organizationId,
+          fiscalYearId: fyId,
+          month: { lte: monthNum },
+          accountId: { in: ids },
+        },
         _sum: { debitTotal: true, creditTotal: true },
       });
-      return rows.reduce((sum, r) => {
-        const d = new Decimal(r._sum.debitTotal?.toString() ?? '0');
-        const c = new Decimal(r._sum.creditTotal?.toString() ?? '0');
-        return sum.plus(d.minus(c));
-      }, new Decimal(0)).toFixed(2);
+      return rows
+        .reduce((sum, r) => {
+          const d = new Decimal(r._sum.debitTotal?.toString() ?? '0');
+          const c = new Decimal(r._sum.creditTotal?.toString() ?? '0');
+          return sum.plus(d.minus(c));
+        }, new Decimal(0))
+        .toFixed(2);
     } else {
       const balances = await prisma.accountBalance.findMany({
         where: { organizationId, fiscalYearId: fyId, month: monthNum, accountId: { in: ids } },
         select: { debitTotal: true, creditTotal: true },
       });
-      return balances.reduce((sum, b) => {
-        return sum.plus(new Decimal(b.debitTotal.toString()).minus(new Decimal(b.creditTotal.toString())));
-      }, new Decimal(0)).toFixed(2);
+      return balances
+        .reduce((sum, b) => {
+          return sum.plus(
+            new Decimal(b.debitTotal.toString()).minus(new Decimal(b.creditTotal.toString())),
+          );
+        }, new Decimal(0))
+        .toFixed(2);
     }
   }
 
@@ -682,7 +747,9 @@ export async function getDfc(
   async function getProvisoesClosing(fyId: string, monthNum: number): Promise<Decimal> {
     const provAccounts = await prisma.chartOfAccount.findMany({
       where: {
-        organizationId, isActive: true, isSynthetic: false,
+        organizationId,
+        isActive: true,
+        isSynthetic: false,
         OR: [{ code: { startsWith: '2.1.03' } }, { code: { startsWith: '2.1.04' } }],
       },
       select: { id: true },
@@ -693,7 +760,10 @@ export async function getDfc(
       where: { organizationId, fiscalYearId: fyId, month: monthNum, accountId: { in: ids } },
       select: { closingBalance: true },
     });
-    return balances.reduce((sum, b) => sum.plus(new Decimal(b.closingBalance.toString())), new Decimal(0));
+    return balances.reduce(
+      (sum, b) => sum.plus(new Decimal(b.closingBalance.toString())),
+      new Decimal(0),
+    );
   }
 
   // CPC 29 fair value adjustments: accounts with isFairValueAdj = true
@@ -708,13 +778,21 @@ export async function getDfc(
       where: { organizationId, fiscalYearId: fyId, month: monthNum, accountId: { in: ids } },
       select: { debitTotal: true, creditTotal: true },
     });
-    return balances.reduce((sum, b) => {
-      return sum.plus(new Decimal(b.creditTotal.toString()).minus(new Decimal(b.debitTotal.toString())));
-    }, new Decimal(0)).toFixed(2);
+    return balances
+      .reduce((sum, b) => {
+        return sum.plus(
+          new Decimal(b.creditTotal.toString()).minus(new Decimal(b.debitTotal.toString())),
+        );
+      }, new Decimal(0))
+      .toFixed(2);
   }
 
   // Working capital: closingBalance delta (current - prior month/opening)
-  async function getAccountGroupClosing(fyId: string, monthNum: number, prefixes: string[]): Promise<Decimal> {
+  async function getAccountGroupClosing(
+    fyId: string,
+    monthNum: number,
+    prefixes: string[],
+  ): Promise<Decimal> {
     const orClauses = prefixes.map((p) => ({ code: { startsWith: p } }));
     const accounts = await prisma.chartOfAccount.findMany({
       where: { organizationId, isActive: true, isSynthetic: false, OR: orClauses },
@@ -726,7 +804,10 @@ export async function getDfc(
       where: { organizationId, fiscalYearId: fyId, month: monthNum, accountId: { in: ids } },
       select: { closingBalance: true },
     });
-    return balances.reduce((sum, b) => sum.plus(new Decimal(b.closingBalance.toString())), new Decimal(0));
+    return balances.reduce(
+      (sum, b) => sum.plus(new Decimal(b.closingBalance.toString())),
+      new Decimal(0),
+    );
   }
 
   // We need prior-month closing for deltas
@@ -745,14 +826,24 @@ export async function getDfc(
     provisoesPriorClosing,
     provisoesYtdOpening,
     cpc29CurrentMonth,
-    crCurrentClosing, crPriorClosing, crYtdOpening,
-    estCurrentClosing, estPriorClosing, estYtdOpening,
-    cpCurrentClosing, cpPriorClosing, cpYtdOpening,
-    obCurrentClosing, obPriorClosing, obYtdOpening,
+    crCurrentClosing,
+    crPriorClosing,
+    crYtdOpening,
+    estCurrentClosing,
+    estPriorClosing,
+    estYtdOpening,
+    cpCurrentClosing,
+    cpPriorClosing,
+    cpYtdOpening,
+    obCurrentClosing,
+    obPriorClosing,
+    obYtdOpening,
   ] = await Promise.all([
     getDepreciacao(filters.fiscalYearId, filters.month, false),
     getDepreciacao(filters.fiscalYearId, filters.month, true),
-    priorFiscalYear ? getDepreciacao(priorFiscalYear.id, filters.month, false) : Promise.resolve('0.00'),
+    priorFiscalYear
+      ? getDepreciacao(priorFiscalYear.id, filters.month, false)
+      : Promise.resolve('0.00'),
     getProvisoesClosing(filters.fiscalYearId, filters.month),
     getProvisoesClosing(priorMonthFyId, priorMonthNum),
     getProvisoesClosing(filters.fiscalYearId, 1),
@@ -806,8 +897,12 @@ export async function getDfc(
   const deltaObrigacoesPriorYear = '0.00';
 
   // Extract investimento and financiamento sections from direto
-  const investimentoSection = direto.sections.find((s): s is DfcSection => s.id === 'investimento')!;
-  const financiamentoSection = direto.sections.find((s): s is DfcSection => s.id === 'financiamento')!;
+  const investimentoSection = direto.sections.find(
+    (s): s is DfcSection => s.id === 'investimento',
+  )!;
+  const financiamentoSection = direto.sections.find(
+    (s): s is DfcSection => s.id === 'financiamento',
+  )!;
 
   const indireto = calculateDfcIndireto({
     lucroLiquido: {
@@ -827,14 +922,30 @@ export async function getDfc(
     },
     cpc29FairValue: {
       currentMonth: cpc29CurrentMonth,
-      ytd: cpc29CurrentMonth,  // simplified: same as current month for YTD
+      ytd: cpc29CurrentMonth, // simplified: same as current month for YTD
       priorYear: cpc29PriorYear,
     },
     workingCapitalDeltas: {
-      deltaContasReceber: { currentMonth: deltaContasReceberCurrentMonth, ytd: deltaContasReceberYtd, priorYear: deltaContasReceberPriorYear },
-      deltaEstoques: { currentMonth: deltaEstoquesCurrentMonth, ytd: deltaEstoquesYtd, priorYear: deltaEstoquesPriorYear },
-      deltaContasPagar: { currentMonth: deltaContasPagarCurrentMonth, ytd: deltaContasPagarYtd, priorYear: deltaContasPagarPriorYear },
-      deltaObrigacoes: { currentMonth: deltaObrigacoesCurrentMonth, ytd: deltaObrigacoesYtd, priorYear: deltaObrigacoesPriorYear },
+      deltaContasReceber: {
+        currentMonth: deltaContasReceberCurrentMonth,
+        ytd: deltaContasReceberYtd,
+        priorYear: deltaContasReceberPriorYear,
+      },
+      deltaEstoques: {
+        currentMonth: deltaEstoquesCurrentMonth,
+        ytd: deltaEstoquesYtd,
+        priorYear: deltaEstoquesPriorYear,
+      },
+      deltaContasPagar: {
+        currentMonth: deltaContasPagarCurrentMonth,
+        ytd: deltaContasPagarYtd,
+        priorYear: deltaContasPagarPriorYear,
+      },
+      deltaObrigacoes: {
+        currentMonth: deltaObrigacoesCurrentMonth,
+        ytd: deltaObrigacoesYtd,
+        priorYear: deltaObrigacoesPriorYear,
+      },
     },
     investimentoSection,
     financiamentoSection,
@@ -871,7 +982,12 @@ export async function getCrossValidation(
   let deltaLucrosAcumulados = '0';
   if (lucrosIds.length > 0) {
     const currentBalances = await prisma.accountBalance.findMany({
-      where: { organizationId, fiscalYearId: filters.fiscalYearId, month: filters.month, accountId: { in: lucrosIds } },
+      where: {
+        organizationId,
+        fiscalYearId: filters.fiscalYearId,
+        month: filters.month,
+        accountId: { in: lucrosIds },
+      },
       select: { closingBalance: true },
     });
     let priorBalancesData: Array<{ closingBalance: Decimal }> = [];
@@ -889,13 +1005,23 @@ export async function getCrossValidation(
         });
         if (priorFY) {
           priorBalancesData = await prisma.accountBalance.findMany({
-            where: { organizationId, fiscalYearId: priorFY.id, month: 12, accountId: { in: lucrosIds } },
+            where: {
+              organizationId,
+              fiscalYearId: priorFY.id,
+              month: 12,
+              accountId: { in: lucrosIds },
+            },
             select: { closingBalance: true },
           });
         }
       } else {
         priorBalancesData = await prisma.accountBalance.findMany({
-          where: { organizationId, fiscalYearId: filters.fiscalYearId, month: filters.month - 1, accountId: { in: lucrosIds } },
+          where: {
+            organizationId,
+            fiscalYearId: filters.fiscalYearId,
+            month: filters.month - 1,
+            accountId: { in: lucrosIds },
+          },
           select: { closingBalance: true },
         });
       }
@@ -946,7 +1072,12 @@ export async function getCrossValidation(
       });
 
       const currentCash = await prisma.accountBalance.findMany({
-        where: { organizationId, fiscalYearId: filters.fiscalYearId, month: filters.month, accountId: { in: cashIds } },
+        where: {
+          organizationId,
+          fiscalYearId: filters.fiscalYearId,
+          month: filters.month,
+          accountId: { in: cashIds },
+        },
         select: { closingBalance: true },
       });
 
@@ -957,18 +1088,31 @@ export async function getCrossValidation(
           const priorYearStartForCash = new Date(cashFyYear - 1, 0, 1);
           const priorYearEndForCash = new Date(cashFyYear - 1, 11, 31, 23, 59, 59, 999);
           const priorFYForCash = await prisma.fiscalYear.findFirst({
-            where: { organizationId, startDate: { gte: priorYearStartForCash, lte: priorYearEndForCash } },
+            where: {
+              organizationId,
+              startDate: { gte: priorYearStartForCash, lte: priorYearEndForCash },
+            },
             select: { id: true },
           });
           if (priorFYForCash) {
             priorCash = await prisma.accountBalance.findMany({
-              where: { organizationId, fiscalYearId: priorFYForCash.id, month: 12, accountId: { in: cashIds } },
+              where: {
+                organizationId,
+                fiscalYearId: priorFYForCash.id,
+                month: 12,
+                accountId: { in: cashIds },
+              },
               select: { closingBalance: true },
             });
           }
         } else {
           priorCash = await prisma.accountBalance.findMany({
-            where: { organizationId, fiscalYearId: filters.fiscalYearId, month: filters.month - 1, accountId: { in: cashIds } },
+            where: {
+              organizationId,
+              fiscalYearId: filters.fiscalYearId,
+              month: filters.month - 1,
+              accountId: { in: cashIds },
+            },
             select: { closingBalance: true },
           });
         }

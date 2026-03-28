@@ -30,17 +30,8 @@ export function useEmployees(params: UseEmployeesParams = {}): UseEmployeesResul
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const {
-    search,
-    status,
-    contractType,
-    farmId,
-    positionId,
-    page,
-    limit,
-    sortBy,
-    sortOrder,
-  } = params;
+  const { search, status, contractType, farmId, positionId, page, limit, sortBy, sortOrder } =
+    params;
 
   const fetchEmployees = useCallback(async () => {
     const orgId = user?.organizationId;
@@ -78,7 +69,18 @@ export function useEmployees(params: UseEmployeesParams = {}): UseEmployeesResul
     } finally {
       setIsLoading(false);
     }
-  }, [user?.organizationId, search, status, contractType, farmId, positionId, page, limit, sortBy, sortOrder]);
+  }, [
+    user?.organizationId,
+    search,
+    status,
+    contractType,
+    farmId,
+    positionId,
+    page,
+    limit,
+    sortBy,
+    sortOrder,
+  ]);
 
   useEffect(() => {
     void fetchEmployees();

@@ -71,7 +71,10 @@ esocialEventsRouter.post(
     try {
       const orgId = req.params.orgId as string;
       const userId = (req.user as { userId?: string } | undefined)?.userId ?? 'system';
-      const { eventType, referenceMonth } = req.body as { eventType: string; referenceMonth?: string };
+      const { eventType, referenceMonth } = req.body as {
+        eventType: string;
+        referenceMonth?: string;
+      };
       const results = await generateBatch(orgId, eventType, referenceMonth, userId);
       res.json(results);
     } catch (err) {
@@ -90,7 +93,8 @@ esocialEventsRouter.get(
   async (req: Request, res: Response): Promise<void> => {
     try {
       const orgId = req.params.orgId as string;
-      const referenceMonth = (req.query.referenceMonth as string) ?? new Date().toISOString().slice(0, 7);
+      const referenceMonth =
+        (req.query.referenceMonth as string) ?? new Date().toISOString().slice(0, 7);
       const result = await getDashboard(orgId, referenceMonth);
       res.json(result);
     } catch (err) {

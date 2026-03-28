@@ -11,7 +11,13 @@
 // - D-02/D-13: seedAccountingRules() creates default rules from COA codes
 
 import { prisma } from '../../database/prisma';
-import type { AutoPostingSourceType, AccountingRule, AccountingRuleLine, ChartOfAccount, PendingJournalPosting } from '@prisma/client';
+import type {
+  AutoPostingSourceType,
+  AccountingRule,
+  AccountingRuleLine,
+  ChartOfAccount,
+  PendingJournalPosting,
+} from '@prisma/client';
 import type {
   UpdateRuleInput,
   AccountingRuleOutput,
@@ -131,7 +137,10 @@ function formatPending(p: {
 // Each extractor fetches source data and returns normalized ExtractedData.
 // amounts[i].lineOrder maps to rule.lines[i].lineOrder.
 
-async function extractPayrollRunClose(sourceId: string, _organizationId: string): Promise<ExtractedData> {
+async function extractPayrollRunClose(
+  sourceId: string,
+  _organizationId: string,
+): Promise<ExtractedData> {
   const run = await prisma.payrollRun.findFirst({
     where: { id: sourceId },
     select: {
@@ -162,7 +171,10 @@ async function extractPayrollRunClose(sourceId: string, _organizationId: string)
   };
 }
 
-async function extractPayableSettlement(sourceId: string, _organizationId: string): Promise<ExtractedData> {
+async function extractPayableSettlement(
+  sourceId: string,
+  _organizationId: string,
+): Promise<ExtractedData> {
   const payable = await prisma.payable.findFirst({
     where: { id: sourceId },
     select: {
@@ -192,7 +204,10 @@ async function extractPayableSettlement(sourceId: string, _organizationId: strin
   };
 }
 
-async function extractReceivableSettlement(sourceId: string, _organizationId: string): Promise<ExtractedData> {
+async function extractReceivableSettlement(
+  sourceId: string,
+  _organizationId: string,
+): Promise<ExtractedData> {
   const receivable = await prisma.receivable.findFirst({
     where: { id: sourceId },
     select: {
@@ -204,7 +219,8 @@ async function extractReceivableSettlement(sourceId: string, _organizationId: st
       dueDate: true,
     },
   });
-  if (!receivable) throw new AutoPostingError(`Receivable ${sourceId} nao encontrado`, 'NOT_FOUND', 404);
+  if (!receivable)
+    throw new AutoPostingError(`Receivable ${sourceId} nao encontrado`, 'NOT_FOUND', 404);
 
   const amount = (receivable.amountReceived ?? receivable.originalAmount).toString();
   const entryDate = receivable.receivedAt ?? receivable.dueDate;
@@ -220,7 +236,10 @@ async function extractReceivableSettlement(sourceId: string, _organizationId: st
   };
 }
 
-async function extractDepreciationRun(sourceId: string, _organizationId: string): Promise<ExtractedData> {
+async function extractDepreciationRun(
+  sourceId: string,
+  _organizationId: string,
+): Promise<ExtractedData> {
   const run = await prisma.depreciationRun.findFirst({
     where: { id: sourceId },
     select: {
@@ -229,7 +248,8 @@ async function extractDepreciationRun(sourceId: string, _organizationId: string)
       totalAmount: true,
     },
   });
-  if (!run) throw new AutoPostingError(`DepreciationRun ${sourceId} nao encontrado`, 'NOT_FOUND', 404);
+  if (!run)
+    throw new AutoPostingError(`DepreciationRun ${sourceId} nao encontrado`, 'NOT_FOUND', 404);
 
   const periodYear = String(run.periodYear);
   const periodMonth = String(run.periodMonth).padStart(2, '0');
@@ -243,7 +263,10 @@ async function extractDepreciationRun(sourceId: string, _organizationId: string)
   };
 }
 
-async function extractStockEntry(sourceId: string, _organizationId: string): Promise<ExtractedData> {
+async function extractStockEntry(
+  sourceId: string,
+  _organizationId: string,
+): Promise<ExtractedData> {
   const entry = await prisma.stockEntry.findFirst({
     where: { id: sourceId },
     select: {
@@ -267,7 +290,11 @@ async function extractStockEntry(sourceId: string, _organizationId: string): Pro
   };
 }
 
-async function extractStockOutput(sourceId: string, _organizationId: string, label: string): Promise<ExtractedData> {
+async function extractStockOutput(
+  sourceId: string,
+  _organizationId: string,
+  label: string,
+): Promise<ExtractedData> {
   const output = await prisma.stockOutput.findFirst({
     where: { id: sourceId },
     select: {
@@ -277,7 +304,8 @@ async function extractStockOutput(sourceId: string, _organizationId: string, lab
       items: { select: { id: true } },
     },
   });
-  if (!output) throw new AutoPostingError(`StockOutput ${sourceId} nao encontrado`, 'NOT_FOUND', 404);
+  if (!output)
+    throw new AutoPostingError(`StockOutput ${sourceId} nao encontrado`, 'NOT_FOUND', 404);
 
   return {
     entryDate: output.outputDate,
@@ -291,7 +319,11 @@ async function extractStockOutput(sourceId: string, _organizationId: string, lab
   };
 }
 
-async function extractPayrollProvision(sourceId: string, _organizationId: string, label: string): Promise<ExtractedData> {
+async function extractPayrollProvision(
+  sourceId: string,
+  _organizationId: string,
+  label: string,
+): Promise<ExtractedData> {
   const provision = await prisma.payrollProvision.findFirst({
     where: { id: sourceId },
     select: {
@@ -300,7 +332,8 @@ async function extractPayrollProvision(sourceId: string, _organizationId: string
       provisionType: true,
     },
   });
-  if (!provision) throw new AutoPostingError(`PayrollProvision ${sourceId} nao encontrado`, 'NOT_FOUND', 404);
+  if (!provision)
+    throw new AutoPostingError(`PayrollProvision ${sourceId} nao encontrado`, 'NOT_FOUND', 404);
 
   const referenceMonth = provision.referenceMonth.toISOString().slice(0, 7);
 
@@ -423,7 +456,9 @@ async function _executePosting(
                   accountId: rl.accountId,
                   side: rl.side,
                   amount,
-                  description: rl.description ? interpolate(rl.description, data.templateVars) : null,
+                  description: rl.description
+                    ? interpolate(rl.description, data.templateVars)
+                    : null,
                   lineOrder: rl.lineOrder,
                   costCenterId,
                 };
@@ -748,7 +783,9 @@ export async function updateRule(
       data: {
         ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
         ...(input.historyTemplate !== undefined ? { historyTemplate: input.historyTemplate } : {}),
-        ...(input.requireCostCenter !== undefined ? { requireCostCenter: input.requireCostCenter } : {}),
+        ...(input.requireCostCenter !== undefined
+          ? { requireCostCenter: input.requireCostCenter }
+          : {}),
         updatedAt: new Date(),
       },
     });
@@ -849,7 +886,12 @@ const DEFAULT_RULES: Array<{
   sourceType: AutoPostingSourceType;
   historyTemplate: string;
   requireCostCenter: boolean;
-  lines: Array<{ lineOrder: number; side: 'DEBIT' | 'CREDIT'; codePrefix: string; description?: string }>;
+  lines: Array<{
+    lineOrder: number;
+    side: 'DEBIT' | 'CREDIT';
+    codePrefix: string;
+    description?: string;
+  }>;
 }> = [
   {
     sourceType: 'PAYROLL_RUN_CLOSE',
@@ -866,7 +908,12 @@ const DEFAULT_RULES: Array<{
     requireCostCenter: false,
     lines: [
       { lineOrder: 1, side: 'DEBIT', codePrefix: '6.1.03', description: 'Provisao ferias' },
-      { lineOrder: 2, side: 'CREDIT', codePrefix: '2.2.01', description: 'Provisao ferias a pagar' },
+      {
+        lineOrder: 2,
+        side: 'CREDIT',
+        codePrefix: '2.2.01',
+        description: 'Provisao ferias a pagar',
+      },
     ],
   },
   {

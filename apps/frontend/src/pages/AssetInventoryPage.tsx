@@ -58,9 +58,9 @@ export default function AssetInventoryPage() {
   const [toast, setToast] = useState<string | null>(null);
 
   // Editable item state for count
-  const [editedItems, setEditedItems] = useState<Map<string, { physicalStatus: string; notes: string }>>(
-    new Map(),
-  );
+  const [editedItems, setEditedItems] = useState<
+    Map<string, { physicalStatus: string; notes: string }>
+  >(new Map());
 
   const loadList = useCallback(() => {
     void listInventories();
@@ -168,9 +168,13 @@ export default function AssetInventoryPage() {
       {/* Breadcrumb */}
       <nav className="inv-page__breadcrumb" aria-label="Caminho de navegacao">
         <span className="inv-page__breadcrumb-item">Inicio</span>
-        <span className="inv-page__breadcrumb-sep" aria-hidden="true">&gt;</span>
+        <span className="inv-page__breadcrumb-sep" aria-hidden="true">
+          &gt;
+        </span>
         <span className="inv-page__breadcrumb-item">Patrimonio</span>
-        <span className="inv-page__breadcrumb-sep" aria-hidden="true">&gt;</span>
+        <span className="inv-page__breadcrumb-sep" aria-hidden="true">
+          &gt;
+        </span>
         <span
           className="inv-page__breadcrumb-item inv-page__breadcrumb-item--current"
           aria-current="page"
@@ -238,9 +242,15 @@ export default function AssetInventoryPage() {
                   <th scope="col">Data</th>
                   <th scope="col">Fazenda</th>
                   <th scope="col">Status</th>
-                  <th scope="col" className="inv-page__th--right">Total Ativos</th>
-                  <th scope="col" className="inv-page__th--right">Contados</th>
-                  <th scope="col" className="inv-page__th--right">Divergencias</th>
+                  <th scope="col" className="inv-page__th--right">
+                    Total Ativos
+                  </th>
+                  <th scope="col" className="inv-page__th--right">
+                    Contados
+                  </th>
+                  <th scope="col" className="inv-page__th--right">
+                    Divergencias
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -380,7 +390,7 @@ export default function AssetInventoryPage() {
                                 ))}
                               </select>
                             ) : (
-                              item.physicalStatusLabel ?? '—'
+                              (item.physicalStatusLabel ?? '—')
                             )}
                           </td>
                           <td className="inv-page__td">
@@ -389,14 +399,12 @@ export default function AssetInventoryPage() {
                                 type="text"
                                 className="inv-page__notes-input"
                                 value={edited?.notes ?? item.notes ?? ''}
-                                onChange={(e) =>
-                                  handleItemNotes(item.assetId, e.target.value)
-                                }
+                                onChange={(e) => handleItemNotes(item.assetId, e.target.value)}
                                 placeholder="Observacao..."
                                 aria-label={`Observacao para ${item.assetName}`}
                               />
                             ) : (
-                              item.notes ?? '—'
+                              (item.notes ?? '—')
                             )}
                           </td>
                         </tr>

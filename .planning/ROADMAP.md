@@ -93,15 +93,16 @@ Full details: `.planning/milestones/v1.4-ROADMAP.md`
 
 ## Progress
 
-| Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|----------------|--------|-----------|
-| 1-6 | v1.0 | 30/30 | Complete | 2026-03-17 |
-| 7-15 | v1.1 | 37/37 | Complete | 2026-03-19 |
-| 16-24 | v1.2 | 41/41 | Complete | 2026-03-23 |
-| 25-34 | v1.3 | 45/45 | Complete | 2026-03-27 |
-| 35-41 | v1.4 | 25/25 | Complete | 2026-03-28 |
+| Phase | Milestone | Plans Complete | Status   | Completed  |
+| ----- | --------- | -------------- | -------- | ---------- |
+| 1-6   | v1.0      | 30/30          | Complete | 2026-03-17 |
+| 7-15  | v1.1      | 37/37          | Complete | 2026-03-19 |
+| 16-24 | v1.2      | 41/41          | Complete | 2026-03-23 |
+| 25-34 | v1.3      | 45/45          | Complete | 2026-03-27 |
+| 35-41 | v1.4      | 25/25          | Complete | 2026-03-28 |
 
 **Total: 41 phases, 178 plans shipped across 5 milestones**
 
 ---
-*Last updated: 2026-03-28 after v1.4 milestone completion*
+
+_Last updated: 2026-03-28 after v1.4 milestone completion_

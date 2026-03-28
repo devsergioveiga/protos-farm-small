@@ -1,6 +1,6 @@
 ---
 phase: 30-seguranca-trabalho-nr31
-plan: "01"
+plan: '01'
 subsystem: backend
 tags: [prisma, schema, types, nr31, epi, training, medical-exams, safety]
 dependency_graph:
@@ -37,13 +37,13 @@ key_files:
     - apps/backend/prisma/schema.prisma
     - apps/backend/src/app.ts
 decisions:
-  - "Used prisma db push + migrate resolve pattern (same as prior phases) — avoids shadow DB sync issues"
-  - "TrainingType.organizationId is nullable to support system-global types (isSystem=true) without org binding"
-  - "classifyExpiryAlert() placed in safety-compliance.types.ts as shared pure function, no service dependencies"
-  - "Pre-existing TypeScript errors in employees/payroll modules are out-of-scope — not introduced by this plan"
+  - 'Used prisma db push + migrate resolve pattern (same as prior phases) — avoids shadow DB sync issues'
+  - 'TrainingType.organizationId is nullable to support system-global types (isSystem=true) without org binding'
+  - 'classifyExpiryAlert() placed in safety-compliance.types.ts as shared pure function, no service dependencies'
+  - 'Pre-existing TypeScript errors in employees/payroll modules are out-of-scope — not introduced by this plan'
 metrics:
-  duration: "8 minutes"
-  completed: "2026-03-26"
+  duration: '8 minutes'
+  completed: '2026-03-26'
   tasks_completed: 2
   files_changed: 15
 ---
@@ -54,10 +54,10 @@ Schema migration and TypeScript types foundation for all Phase 30 NR-31 safety c
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Prisma schema migration | ee8858d9 | schema.prisma, migration.sql |
-| 2 | Types files + stub routes + app.ts wiring | e4ee1c55 | 12 new files, app.ts |
+| Task | Name                                      | Commit   | Files                        |
+| ---- | ----------------------------------------- | -------- | ---------------------------- |
+| 1    | Prisma schema migration                   | ee8858d9 | schema.prisma, migration.sql |
+| 2    | Types files + stub routes + app.ts wiring | e4ee1c55 | 12 new files, app.ts         |
 
 ## What Was Built
 
@@ -87,6 +87,7 @@ Schema migration and TypeScript types foundation for all Phase 30 NR-31 safety c
 ### TypeScript Types (6 files)
 
 Each module has Input/Output interfaces, error class, and constants. Notable additions:
+
 - `NR31_TRAINING_TYPES` seed constant in training-types.types.ts (7 mandatory NR-31 trainings)
 - `classifyExpiryAlert()` pure helper function in safety-compliance.types.ts
 - `ComplianceSummary` and `EmployeeComplianceOutput` dashboard types
@@ -102,6 +103,7 @@ All 6 route files are stubs (`const router = Router(); export default router;`).
 ## Self-Check: PASSED
 
 Files created:
+
 - apps/backend/prisma/migrations/20260507100000_add_safety_nr31_models/migration.sql — FOUND
 - apps/backend/src/modules/epi-products/epi-products.types.ts — FOUND
 - apps/backend/src/modules/safety-compliance/safety-compliance.types.ts — FOUND
@@ -109,5 +111,6 @@ Files created:
 - apps/backend/src/app.ts contains safetyComplianceRouter — FOUND
 
 Commits:
+
 - ee8858d9 — Task 1 schema migration
 - e4ee1c55 — Task 2 types + routes + app.ts

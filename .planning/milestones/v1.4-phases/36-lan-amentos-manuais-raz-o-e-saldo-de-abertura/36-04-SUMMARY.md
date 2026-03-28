@@ -1,6 +1,6 @@
 ---
 phase: 36-lan-amentos-manuais-raz-o-e-saldo-de-abertura
-plan: "04"
+plan: '04'
 subsystem: frontend-accounting
 tags: [frontend, journal-entries, opening-balance, accounting, modal, wizard]
 dependency_graph:
@@ -33,14 +33,14 @@ key_files:
   modified:
     - apps/frontend/src/App.tsx
 decisions:
-  - "/accounting-entries route now points to JournalEntriesPage (full manual entry UI replacing the payroll-only accounting entries page)"
-  - "CSV import uses preview-first flow: upload -> importCsv() -> CsvPreviewModal -> createDraft per entry (per LANC-03 spec)"
-  - "JournalEntriesPage lazy-imports OpeningBalanceWizard via React.lazy + Suspense to keep bundle split"
-  - "BalanceIndicator uses role=status for live updates without interrupting screen reader focus"
-  - "AccountCombobox filters to isSynthetic=false + allowManualEntry=true accounts only"
+  - '/accounting-entries route now points to JournalEntriesPage (full manual entry UI replacing the payroll-only accounting entries page)'
+  - 'CSV import uses preview-first flow: upload -> importCsv() -> CsvPreviewModal -> createDraft per entry (per LANC-03 spec)'
+  - 'JournalEntriesPage lazy-imports OpeningBalanceWizard via React.lazy + Suspense to keep bundle split'
+  - 'BalanceIndicator uses role=status for live updates without interrupting screen reader focus'
+  - 'AccountCombobox filters to isSynthetic=false + allowManualEntry=true accounts only'
 metrics:
   duration_seconds: 806
-  completed_date: "2026-03-27"
+  completed_date: '2026-03-27'
   tasks_completed: 3
   tasks_total: 3
   files_created: 13
@@ -56,22 +56,26 @@ Frontend for journal entries module: listing page, multi-line entry modal with C
 ### Task 1: Frontend Types + Hooks (commit 4f74b6a1)
 
 **`types/journal-entries.ts`** — Complete type definitions mirroring backend output:
+
 - `JournalEntry`, `JournalEntryLine`, `JournalEntryStatus`, `JournalEntryType`, `LedgerSide`
 - `CreateJournalEntryInput`, `OpeningBalanceLinePreview`, `CsvImportPreview`
 - `LedgerOutput`, `TrialBalanceOutput` (for Plan 05 use)
 
 **`hooks/useJournalEntries.ts`** — Full hook suite:
+
 - `useJournalEntries(filters?)` — paginated list with status/period/type filters
 - `useJournalEntry(entryId)` — single entry fetch
 - `useJournalEntryActions()` — all mutations: `createDraft`, `updateDraft`, `postEntry`, `reverseEntry`, `deleteDraft`, `saveTemplate`, `listTemplates`, `deleteTemplate`, `importCsv`
 
 **`hooks/useOpeningBalance.ts`** — Opening balance hooks:
+
 - `useOpeningBalancePreview(fiscalYearId)` — GET preview lines
 - `usePostOpeningBalance()` — POST to create opening balance entry
 
 ### Task 2: JournalEntriesPage + JournalEntryModal + ReversalModal (commit 4c5e76ab)
 
 **`JournalEntriesPage.tsx`**:
+
 - Table with 7 columns: Número, Data, Histórico, Tipo, Valor Total, Status, Ações
 - Status badges with icons: RASCUNHO (FileText, neutral-200), POSTADO (CheckCircle, success-100), ESTORNADO (RotateCcw, error-100)
 - Action dropdown menu per row: Visualizar (all), Editar (DRAFT only), Estornar (POSTED only), Excluir (DRAFT only)
@@ -82,6 +86,7 @@ Frontend for journal entries module: listing page, multi-line entry modal with C
 - 5-row skeleton loading
 
 **`JournalEntryModal.tsx`**:
+
 - 800px max-width, full-screen on mobile
 - Header fields: Data (auto-selects period), Período (disabled for POSTED), Histórico (textarea 500 max)
 - Line table with `<table>/<th scope="col">`: AccountCombobox (searches analytic accounts by code/name), DEBIT/CREDIT segmented toggle (`role="group"`, `aria-pressed`), amount input (JetBrains Mono, `inputMode="decimal"`), description, remove button
@@ -92,6 +97,7 @@ Frontend for journal entries module: listing page, multi-line entry modal with C
 - "Modelos" button opens JournalEntryTemplateModal
 
 **`ReversalModal.tsx`**:
+
 - 640px max-width
 - Read-only summary of original entry (date, description, amount, line count)
 - Reason textarea: required, min 10 chars, validation on blur, `role="alert"` on error
@@ -101,6 +107,7 @@ Frontend for journal entries module: listing page, multi-line entry modal with C
 ### Task 3: OpeningBalanceWizard + JournalEntryTemplateModal + Routing (commit 5fdceaa6)
 
 **`OpeningBalanceWizard.tsx`** (2-step, 800px):
+
 - Step indicator: "Etapa 1 de 2 — Revisão" / "Etapa 2 de 2 — Contrapartida"
 - Step 1: editable table pre-populated from `useOpeningBalancePreview`, fiscal year + date controls, add/remove lines, side toggle, 4-row skeleton loading, empty state
 - Step 2: read-only net diff summary + "Lucros e Prejuízos Acumulados" contra-entry explanation
@@ -109,6 +116,7 @@ Frontend for journal entries module: listing page, multi-line entry modal with C
 - Error handling for "already exists" case
 
 **`JournalEntryTemplateModal.tsx`**:
+
 - Save current lines as named template (name input + save button)
 - List of saved templates with name, description, line count
 - "Usar" button loads template lines back into JournalEntryModal
@@ -116,6 +124,7 @@ Frontend for journal entries module: listing page, multi-line entry modal with C
 - Skeleton loading + empty state
 
 **Routing** (`App.tsx`):
+
 - Added lazy import: `const JournalEntriesPage = lazy(() => import('@/pages/JournalEntriesPage'))`
 - Route `/accounting-entries` now points to `JournalEntriesPage` (the full manual entry UI)
 - Previous `AccountingEntriesPage` (payroll-auto entries) still available as import for potential future use

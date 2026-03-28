@@ -216,10 +216,7 @@ export async function reconcileInventory(
 
 // ─── getInventory ─────────────────────────────────────────────────────
 
-export async function getInventory(
-  ctx: RlsContext,
-  inventoryId: string,
-): Promise<InventoryOutput> {
+export async function getInventory(ctx: RlsContext, inventoryId: string): Promise<InventoryOutput> {
   const inventory = await prisma.assetInventory.findFirst({
     where: { id: inventoryId, organizationId: ctx.organizationId },
     include: INVENTORY_INCLUDE,

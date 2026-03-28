@@ -110,7 +110,11 @@ describe('Operational Cost API', () => {
     });
 
     it('returns costPerHour as null when currentHourmeter is null', async () => {
-      const resultWithoutHourmeter = { ...FULL_COST_RESULT, costPerHour: null, currentHourmeter: null };
+      const resultWithoutHourmeter = {
+        ...FULL_COST_RESULT,
+        costPerHour: null,
+        currentHourmeter: null,
+      };
       mockedService.getOperationalCost.mockResolvedValue(resultWithoutHourmeter as never);
 
       const res = await request(app)
@@ -177,15 +181,11 @@ describe('Operational Cost API', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.insuranceCost).toBeNull();
-      expect(res.body.notes).toEqual(
-        expect.arrayContaining([expect.stringMatching(/seguro/i)]),
-      );
+      expect(res.body.notes).toEqual(expect.arrayContaining([expect.stringMatching(/seguro/i)]));
     });
 
     it('returns 401 when no authorization header is provided', async () => {
-      const res = await request(app).get(
-        `/api/org/${ORG_ID}/assets/${ASSET_ID}/operational-cost`,
-      );
+      const res = await request(app).get(`/api/org/${ORG_ID}/assets/${ASSET_ID}/operational-cost`);
 
       expect(res.status).toBe(401);
     });

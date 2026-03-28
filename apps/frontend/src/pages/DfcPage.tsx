@@ -52,9 +52,13 @@ export default function DfcPage() {
       {/* Breadcrumb */}
       <nav className="dfc-page__breadcrumb" aria-label="Caminho da pagina">
         <span className="dfc-page__breadcrumb-item">Inicio</span>
-        <span className="dfc-page__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="dfc-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="dfc-page__breadcrumb-item">Contabilidade</span>
-        <span className="dfc-page__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="dfc-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="dfc-page__breadcrumb-item dfc-page__breadcrumb-item--current">DFC</span>
       </nav>
 
@@ -122,11 +126,7 @@ export default function DfcPage() {
 
       {/* Tabs */}
       {hasFilters && (
-        <nav
-          className="dfc-page__tabs"
-          role="tablist"
-          aria-label="Metodo de calculo"
-        >
+        <nav className="dfc-page__tabs" role="tablist" aria-label="Metodo de calculo">
           <button
             type="button"
             role="tab"
@@ -183,14 +183,16 @@ export default function DfcPage() {
             hidden={activeTab !== 'direto'}
           >
             <DfcTable
-              data={data?.direto ?? {
-                sections: [],
-                cash: {
-                  saldoInicial: { currentMonth: '0', ytd: '0', priorYear: '0' },
-                  variacaoLiquida: { currentMonth: '0', ytd: '0', priorYear: '0' },
-                  saldoFinal: { currentMonth: '0', ytd: '0', priorYear: '0' },
-                },
-              }}
+              data={
+                data?.direto ?? {
+                  sections: [],
+                  cash: {
+                    saldoInicial: { currentMonth: '0', ytd: '0', priorYear: '0' },
+                    variacaoLiquida: { currentMonth: '0', ytd: '0', priorYear: '0' },
+                    saldoFinal: { currentMonth: '0', ytd: '0', priorYear: '0' },
+                  },
+                }
+              }
               caption={`DFC Metodo Direto${periodLabel ? ` — ${periodLabel}` : ''}`}
               loading={loading}
             />
@@ -203,14 +205,16 @@ export default function DfcPage() {
             hidden={activeTab !== 'indireto'}
           >
             <DfcTable
-              data={data?.indireto ?? {
-                sections: [],
-                cash: {
-                  saldoInicial: { currentMonth: '0', ytd: '0', priorYear: '0' },
-                  variacaoLiquida: { currentMonth: '0', ytd: '0', priorYear: '0' },
-                  saldoFinal: { currentMonth: '0', ytd: '0', priorYear: '0' },
-                },
-              }}
+              data={
+                data?.indireto ?? {
+                  sections: [],
+                  cash: {
+                    saldoInicial: { currentMonth: '0', ytd: '0', priorYear: '0' },
+                    variacaoLiquida: { currentMonth: '0', ytd: '0', priorYear: '0' },
+                    saldoFinal: { currentMonth: '0', ytd: '0', priorYear: '0' },
+                  },
+                }
+              }
               caption={`DFC Metodo Indireto${periodLabel ? ` — ${periodLabel}` : ''}`}
               loading={loading}
             />

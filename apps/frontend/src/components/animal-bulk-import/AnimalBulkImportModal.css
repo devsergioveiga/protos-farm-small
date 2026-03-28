@@ -19,7 +19,9 @@
   border-radius: var(--radius-md);
   cursor: pointer;
   min-height: 48px;
-  transition: background 200ms ease-out, color 200ms ease-out;
+  transition:
+    background 200ms ease-out,
+    color 200ms ease-out;
 }
 
 .bulk-upload-zone__template-btn:hover {
@@ -167,7 +169,9 @@
   margin-bottom: -2px;
   cursor: pointer;
   min-height: 40px;
-  transition: color 200ms ease-out, border-color 200ms ease-out;
+  transition:
+    color 200ms ease-out,
+    border-color 200ms ease-out;
 }
 
 .bulk-report__tab:hover {

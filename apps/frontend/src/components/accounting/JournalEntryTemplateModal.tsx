@@ -54,7 +54,9 @@ export default function JournalEntryTemplateModal({
 
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [isOpen, onClose]);
@@ -106,7 +108,9 @@ export default function JournalEntryTemplateModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={headingId}
-        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
       >
         <div className="template-modal">
           {/* Header */}
@@ -127,7 +131,10 @@ export default function JournalEntryTemplateModal({
           {/* Body */}
           <div className="template-modal__body">
             {/* Save current as template */}
-            <section className="template-modal__save-section" aria-labelledby="template-save-heading">
+            <section
+              className="template-modal__save-section"
+              aria-labelledby="template-save-heading"
+            >
               <h3 id="template-save-heading" className="template-modal__section-heading">
                 Salvar como modelo
               </h3>
@@ -146,7 +153,11 @@ export default function JournalEntryTemplateModal({
                     value={templateName}
                     onChange={(e) => setTemplateName(e.target.value)}
                     placeholder="Nome do modelo (ex: Depreciação mensal)"
-                    onKeyDown={(e) => { if (e.key === 'Enter') { void handleSave(); } }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        void handleSave();
+                      }
+                    }}
                     aria-describedby={saveError ? 'template-name-error' : undefined}
                   />
                   {saveError && (
@@ -158,13 +169,19 @@ export default function JournalEntryTemplateModal({
                 <button
                   type="button"
                   className="template-modal__btn template-modal__btn--secondary"
-                  onClick={() => { void handleSave(); }}
+                  onClick={() => {
+                    void handleSave();
+                  }}
                   disabled={isSaving}
                 >
                   {savedMessage ? (
-                    <><Check size={16} aria-hidden="true" /> Salvo!</>
+                    <>
+                      <Check size={16} aria-hidden="true" /> Salvo!
+                    </>
                   ) : (
-                    <><Save size={16} aria-hidden="true" /> {isSaving ? 'Salvando...' : 'Salvar'}</>
+                    <>
+                      <Save size={16} aria-hidden="true" /> {isSaving ? 'Salvando...' : 'Salvar'}
+                    </>
                   )}
                 </button>
               </div>
@@ -182,7 +199,11 @@ export default function JournalEntryTemplateModal({
               </h3>
 
               {isLoading && (
-                <div className="template-modal__loading" aria-label="Carregando modelos..." aria-busy="true">
+                <div
+                  className="template-modal__loading"
+                  aria-label="Carregando modelos..."
+                  aria-busy="true"
+                >
                   {Array.from({ length: 3 }).map((_, i) => (
                     <div key={i} className="template-modal__skeleton" />
                   ))}
@@ -241,7 +262,9 @@ export default function JournalEntryTemplateModal({
         message={`Excluir o modelo "${deletingTemplate?.name}"? Essa ação não pode ser desfeita.`}
         confirmLabel="Excluir"
         variant="danger"
-        onConfirm={() => { void handleDeleteConfirm(); }}
+        onConfirm={() => {
+          void handleDeleteConfirm();
+        }}
         onCancel={() => setDeletingTemplate(null)}
       />
     </>

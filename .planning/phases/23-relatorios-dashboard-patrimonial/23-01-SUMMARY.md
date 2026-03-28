@@ -1,6 +1,6 @@
 ---
 phase: 23-relatorios-dashboard-patrimonial
-plan: "01"
+plan: '01'
 subsystem: asset-reports
 tags: [backend, reports, depreciation, tco, inventory, export]
 dependency_graph:
@@ -34,14 +34,14 @@ key_files:
   modified:
     - apps/backend/src/app.ts
 decisions:
-  - "Used groupBy + in-memory join (not raw SQL) for inventory roll-up — consistent with existing pattern in depreciation.service.ts"
-  - "HOURS_OF_USE and UNITS_OF_PRODUCTION methods fall back to STRAIGHT_LINE for forward projection — these methods require live meter/unit readings not available for future periods; assetsEstimated counter tracks this"
-  - "Decimal.max() is a static method (not instance) — netBookValue clamped with conditional check instead"
+  - 'Used groupBy + in-memory join (not raw SQL) for inventory roll-up — consistent with existing pattern in depreciation.service.ts'
+  - 'HOURS_OF_USE and UNITS_OF_PRODUCTION methods fall back to STRAIGHT_LINE for forward projection — these methods require live meter/unit readings not available for future periods; assetsEstimated counter tracks this'
+  - 'Decimal.max() is a static method (not instance) — netBookValue clamped with conditional check instead'
   - "authenticate + checkPermission('assets:read') pattern used — consistent with STATE.md decision for asset module RBAC boundary"
-  - "Routes registered under /orgs/:orgId (plural) not /org/:orgId (singular) — plan spec used plural form"
+  - 'Routes registered under /orgs/:orgId (plural) not /org/:orgId (singular) — plan spec used plural form'
 metrics:
   duration: 803s
-  completed: "2026-03-23"
+  completed: '2026-03-23'
   tasks_completed: 2
   files_created: 5
   files_modified: 1
@@ -59,6 +59,7 @@ Backend asset-reports module delivering patrimonial inventory report, depreciati
 New module under `apps/backend/src/modules/asset-reports/` with 5 files:
 
 **Types (`asset-reports.types.ts`):**
+
 - `InventoryReportQuery/Row/Result` — inventory report with classification-level aggregates
 - `DepreciationProjectionQuery/Row/Result` — forward projection series for 12/36/60 month horizons
 - `TCOFleetQuery/Row/Result` — per-asset TCO with `RepairAlert` enum
@@ -75,6 +76,7 @@ New module under `apps/backend/src/modules/asset-reports/` with 5 files:
 4. `exportInventoryReport` — Delegates to `getInventoryReport` then: PDF via pdfkit (landscape A4, table with totals row), XLSX via exceljs (bold header, currency format), CSV via exceljs `csv.writeBuffer()`.
 
 **Routes (`asset-reports.routes.ts`) — 4 endpoints:**
+
 - `GET /orgs/:orgId/asset-reports/inventory` — inventory report with optional filters
 - `GET /orgs/:orgId/asset-reports/inventory/export?format=pdf|xlsx|csv` — file download
 - `GET /orgs/:orgId/asset-reports/depreciation-projection?horizonMonths=12|36|60` — forward series
@@ -86,10 +88,10 @@ All endpoints require `authenticate` + `checkPermission('assets:read')`.
 
 ## Tests
 
-| File | Tests | Coverage |
-|------|-------|----------|
-| asset-reports.service.spec.ts | 14 | inventory roll-up, empty dataset, period filters, projection 12-row series, monotonic cumulative, residual value edge case, HOURS_OF_USE fallback, TCO NO_DATA/REPLACE/MONITOR/OK thresholds, PDF/XLSX/CSV export |
-| asset-reports.routes.spec.ts | 12 | all 4 endpoints, farmId forwarding, format validation, horizonMonths validation, 401/403 auth guards |
+| File                          | Tests | Coverage                                                                                                                                                                                                          |
+| ----------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| asset-reports.service.spec.ts | 14    | inventory roll-up, empty dataset, period filters, projection 12-row series, monotonic cumulative, residual value edge case, HOURS_OF_USE fallback, TCO NO_DATA/REPLACE/MONITOR/OK thresholds, PDF/XLSX/CSV export |
+| asset-reports.routes.spec.ts  | 12    | all 4 endpoints, farmId forwarding, format validation, horizonMonths validation, 401/403 auth guards                                                                                                              |
 
 **Total: 26 tests, all passing.**
 
@@ -108,6 +110,7 @@ TypeScript: `npx tsc --noEmit` — no errors.
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Decimal.max() is not an instance method**
+
 - **Found during:** Task 1 GREEN phase
 - **Issue:** Plan spec used `grossValue.minus(accumulatedDepreciation).max(new Decimal(0))` — but `max()` is a static method on Decimal, not an instance method
 - **Fix:** Replaced with conditional `const diff = grossValue.minus(...); const netBookValue = diff.isNegative() ? new Decimal(0) : diff`
@@ -115,6 +118,7 @@ TypeScript: `npx tsc --noEmit` — no errors.
 - **Commit:** 097564e5 (within same task commit)
 
 **2. Plan spec used `requireAuth`/`requirePermission` but codebase uses `authenticate`/`checkPermission`**
+
 - **Found during:** Task 2 implementation
 - **Issue:** Plan's route template used non-existent middleware names
 - **Fix:** Used correct `authenticate` + `checkPermission` from actual middleware files

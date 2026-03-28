@@ -137,9 +137,7 @@ describe('Asset Reports Routes', () => {
   describe('GET /api/orgs/:orgId/asset-reports/inventory/export', () => {
     it('format=pdf returns 200 with content-type application/pdf', async () => {
       authAs(ADMIN_PAYLOAD);
-      mockedService.exportInventoryReport.mockResolvedValue(
-        Buffer.from('%PDF-1.4 fake content'),
-      );
+      mockedService.exportInventoryReport.mockResolvedValue(Buffer.from('%PDF-1.4 fake content'));
 
       const res = await request(app)
         .get(`/api/orgs/${ORG_ID}/asset-reports/inventory/export`)

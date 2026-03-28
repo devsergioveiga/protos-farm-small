@@ -606,13 +606,11 @@ describe('Depreciation Batch Service', () => {
         if (typeof fn === 'function') {
           return fn({
             depreciationEntry: {
-              create: jest
-                .fn()
-                .mockResolvedValue({
-                  ...MOCK_ENTRY,
-                  id: 'reversal-1',
-                  depreciationAmount: new Decimal('-1875.00'),
-                }),
+              create: jest.fn().mockResolvedValue({
+                ...MOCK_ENTRY,
+                id: 'reversal-1',
+                depreciationAmount: new Decimal('-1875.00'),
+              }),
               update: mockUpdate,
             },
             depreciationEntryCCItem: {
@@ -655,13 +653,11 @@ describe('Depreciation Batch Service', () => {
         if (typeof fn === 'function') {
           return fn({
             depreciationEntry: {
-              create: jest
-                .fn()
-                .mockResolvedValue({
-                  ...MOCK_ENTRY,
-                  id: 'reversal-1',
-                  depreciationAmount: new Decimal('-1875.00'),
-                }),
+              create: jest.fn().mockResolvedValue({
+                ...MOCK_ENTRY,
+                id: 'reversal-1',
+                depreciationAmount: new Decimal('-1875.00'),
+              }),
               update: jest.fn().mockResolvedValue({ ...MOCK_ENTRY, reversedAt: new Date() }),
             },
             depreciationEntryCCItem: {

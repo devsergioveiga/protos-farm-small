@@ -26,10 +26,10 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "Tab page pattern with display:none/block (no animation) for tab switching"
-    - "Fetch hook with exportReport function using blob download pattern"
-    - "Fleet grouping using <details>/<summary> for mobile accordion"
-    - "Alert badge with combined color + icon + text for accessibility (never color alone)"
+    - 'Tab page pattern with display:none/block (no animation) for tab switching'
+    - 'Fetch hook with exportReport function using blob download pattern'
+    - 'Fleet grouping using <details>/<summary> for mobile accordion'
+    - 'Alert badge with combined color + icon + text for accessibility (never color alone)'
 
 key-files:
   created:
@@ -47,15 +47,15 @@ key-files:
     - apps/frontend/src/App.tsx
 
 key-decisions:
-  - "Tab panels use display:none/block inline style (no CSS animation) per UI-SPEC"
-  - "Alert badges use color + icon + aria-label (never color alone) to meet WCAG contrast requirements"
-  - "Export uses blob download pattern with temporary <a> element"
-  - "DepreciationProjectionChart uses ComposedChart (Area + Line) from recharts for visual hierarchy"
-  - "TCOFleetView groups by assetType with <details open> for mobile accordion"
+  - 'Tab panels use display:none/block inline style (no CSS animation) per UI-SPEC'
+  - 'Alert badges use color + icon + aria-label (never color alone) to meet WCAG contrast requirements'
+  - 'Export uses blob download pattern with temporary <a> element'
+  - 'DepreciationProjectionChart uses ComposedChart (Area + Line) from recharts for visual hierarchy'
+  - 'TCOFleetView groups by assetType with <details open> for mobile accordion'
 
 patterns-established:
-  - "exportReport: blob download via fetch + URL.createObjectURL + temporary <a> element"
-  - "Horizon selector: segmented control with border-radius, active state primary-600"
+  - 'exportReport: blob download via fetch + URL.createObjectURL + temporary <a> element'
+  - 'Horizon selector: segmented control with border-radius, active state primary-600'
 
 requirements-completed: [DEPR-04, CCPA-04]
 
@@ -130,5 +130,6 @@ None — all components are fully implemented with data wired to API hooks.
 - Task 4 checkpoint requires human visual verification before plan is marked complete
 
 ---
-*Phase: 23-relatorios-dashboard-patrimonial*
-*Completed: 2026-03-23*
+
+_Phase: 23-relatorios-dashboard-patrimonial_
+_Completed: 2026-03-23_

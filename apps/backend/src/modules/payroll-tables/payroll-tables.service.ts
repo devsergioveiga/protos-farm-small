@@ -106,7 +106,11 @@ export const payrollTablesService = {
     return (globalTable as LegalTableOutput | null) ?? null;
   },
 
-  async create(orgId: string, data: CreateLegalTableInput, userId: string): Promise<LegalTableOutput> {
+  async create(
+    orgId: string,
+    data: CreateLegalTableInput,
+    userId: string,
+  ): Promise<LegalTableOutput> {
     // Validate: effectiveFrom must be first day of month
     const effectiveDate = new Date(data.effectiveFrom);
     if (effectiveDate.getUTCDate() !== 1) {

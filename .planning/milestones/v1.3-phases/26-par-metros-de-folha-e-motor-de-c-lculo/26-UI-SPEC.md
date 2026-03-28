@@ -15,13 +15,13 @@ created: 2026-03-24
 
 ## Design System
 
-| Property | Value |
-|----------|-------|
-| Tool | none — CSS custom properties via `src/styles/tokens.css` |
-| Preset | not applicable |
-| Component library | none (project uses custom components with CSS custom properties) |
-| Icon library | lucide-react |
-| Font | Headlines: DM Sans — Body/UI: Source Sans 3 — Data: JetBrains Mono |
+| Property          | Value                                                              |
+| ----------------- | ------------------------------------------------------------------ |
+| Tool              | none — CSS custom properties via `src/styles/tokens.css`           |
+| Preset            | not applicable                                                     |
+| Component library | none (project uses custom components with CSS custom properties)   |
+| Icon library      | lucide-react                                                       |
+| Font              | Headlines: DM Sans — Body/UI: Source Sans 3 — Data: JetBrains Mono |
 
 > Source: CLAUDE.md design system rules + `apps/frontend/src/styles/tokens.css` confirmed existing.
 
@@ -31,17 +31,18 @@ created: 2026-03-24
 
 Declared values (must be multiples of 4):
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| xs | 4px (`--space-1`) | Icon gaps, inline padding between badge and text |
-| sm | 8px (`--space-2`) | Compact element spacing, form field gaps within a group |
-| md | 16px (`--space-4`) | Default element spacing, label-to-input gap, card inner padding |
-| lg | 24px (`--space-6`) | Section padding, modal padding, between card rows |
-| xl | 32px (`--space-8`) | Layout gaps between form sections |
-| 2xl | 48px (`--space-12`) | Major section breaks, page-level vertical rhythm |
-| 3xl | 64px (`--space-16`) | Empty state illustration area |
+| Token | Value               | Usage                                                           |
+| ----- | ------------------- | --------------------------------------------------------------- |
+| xs    | 4px (`--space-1`)   | Icon gaps, inline padding between badge and text                |
+| sm    | 8px (`--space-2`)   | Compact element spacing, form field gaps within a group         |
+| md    | 16px (`--space-4`)  | Default element spacing, label-to-input gap, card inner padding |
+| lg    | 24px (`--space-6`)  | Section padding, modal padding, between card rows               |
+| xl    | 32px (`--space-8`)  | Layout gaps between form sections                               |
+| 2xl   | 48px (`--space-12`) | Major section breaks, page-level vertical rhythm                |
+| 3xl   | 64px (`--space-16`) | Empty state illustration area                                   |
 
 Exceptions:
+
 - Touch targets: 48x48px minimum for all interactive buttons (CLAUDE.md rule — applies to formula editor toolbar buttons)
 - Input padding: 12px vertical, 16px horizontal (CLAUDE.md rule)
 - Table row height: minimum 48px for touch accessibility
@@ -54,22 +55,23 @@ Exceptions:
 
 **Weight contract (exactly 2 tokens):**
 
-| Token | Value | Mapped families |
-|-------|-------|----------------|
-| `--font-regular` | 400 | Source Sans 3 body, JetBrains Mono data |
-| `--font-bold` | 700 | DM Sans headings, Source Sans 3 labels/UI |
+| Token            | Value | Mapped families                           |
+| ---------------- | ----- | ----------------------------------------- |
+| `--font-regular` | 400   | Source Sans 3 body, JetBrains Mono data   |
+| `--font-bold`    | 700   | DM Sans headings, Source Sans 3 labels/UI |
 
 > DM Sans (500) and Source Sans 3 (600) from CLAUDE.md are internal font-family defaults loaded from Google Fonts. The executor must load the correct font files. However, the design contract exposes only 2 weight tokens: 400 for all regular/body/data contexts and 700 for all heading/label/bold contexts. Intermediate weights (500, 600) are not used as distinct design tokens in this phase.
 
-| Role | Font | Size | Weight Token | Line Height |
-|------|------|------|--------------|-------------|
-| Body | Source Sans 3 | 16px (`--text-base`) | `--font-regular` (400) | 1.5 (`--leading-normal`) |
-| Label / UI | Source Sans 3 | 14px (`--text-sm`) | `--font-bold` (700) | 1.3 (`--leading-snug`) |
-| Heading | DM Sans | 20px (`--text-md`) | `--font-bold` (700) | 1.2 (`--leading-tight`) |
-| Display / Page title | DM Sans | 24px (`--text-xl`) | `--font-bold` (700) | 1.2 (`--leading-tight`) |
-| Monetary data | JetBrains Mono | 14px (`--text-sm`) | `--font-regular` (400) | 1.5 (`--leading-normal`) |
+| Role                 | Font           | Size                 | Weight Token           | Line Height              |
+| -------------------- | -------------- | -------------------- | ---------------------- | ------------------------ |
+| Body                 | Source Sans 3  | 16px (`--text-base`) | `--font-regular` (400) | 1.5 (`--leading-normal`) |
+| Label / UI           | Source Sans 3  | 14px (`--text-sm`)   | `--font-bold` (700)    | 1.3 (`--leading-snug`)   |
+| Heading              | DM Sans        | 20px (`--text-md`)   | `--font-bold` (700)    | 1.2 (`--leading-tight`)  |
+| Display / Page title | DM Sans        | 24px (`--text-xl`)   | `--font-bold` (700)    | 1.2 (`--leading-tight`)  |
+| Monetary data        | JetBrains Mono | 14px (`--text-sm`)   | `--font-regular` (400) | 1.5 (`--leading-normal`) |
 
 Notes:
+
 - Monetary values (R$ amounts in tax tables, salary brackets, contribution ceilings) must use JetBrains Mono to distinguish numerical precision.
 - ALL CAPS is permitted only for short column headers in tables ("RUBRICA", "TIPO", "VIGÊNCIA", "ALÍQUOTA") — never in body text or descriptions.
 - Minimum rendered size: 14px (no element falls below `--text-sm`).
@@ -80,16 +82,17 @@ Notes:
 
 ## Color
 
-| Role | Token | Hex | Usage |
-|------|-------|-----|-------|
-| Dominant (60%) | `--color-neutral-50` | `#FAFAF8` | Page background, form backgrounds |
-| Secondary (30%) | `--color-neutral-100` | `#F5F3EF` | Cards, sidebar, modal body, table header rows |
-| Accent (10%) | `--color-primary-600` | `#2E7D32` | Primary CTAs and active state indicators only |
-| Destructive | `--color-error-500` | `#C62828` | Delete rubrica action, disable legal table action |
-| Warning | `--color-warning-500` | `#F57F17` | System rubricas "non-editable" badge, FUNRURAL mode pending-config alert |
-| Info | `--color-info-500` | `#0277BD` | Effective-date badge on legal tables, "vigente" indicator |
+| Role            | Token                 | Hex       | Usage                                                                    |
+| --------------- | --------------------- | --------- | ------------------------------------------------------------------------ |
+| Dominant (60%)  | `--color-neutral-50`  | `#FAFAF8` | Page background, form backgrounds                                        |
+| Secondary (30%) | `--color-neutral-100` | `#F5F3EF` | Cards, sidebar, modal body, table header rows                            |
+| Accent (10%)    | `--color-primary-600` | `#2E7D32` | Primary CTAs and active state indicators only                            |
+| Destructive     | `--color-error-500`   | `#C62828` | Delete rubrica action, disable legal table action                        |
+| Warning         | `--color-warning-500` | `#F57F17` | System rubricas "non-editable" badge, FUNRURAL mode pending-config alert |
+| Info            | `--color-info-500`    | `#0277BD` | Effective-date badge on legal tables, "vigente" indicator                |
 
 Accent (`--color-primary-600`) reserved for:
+
 - Primary CTA button ("Salvar Rubrica", "Confirmar Tabela") — one per screen
 - Active tab underline in the tabbed layout (Rubricas / Tabelas Legais)
 - Checkbox/radio checked state
@@ -120,34 +123,39 @@ Displays a list of legal tables grouped by type (INSS, IRRF, SALÁRIO_FAMÍLIA, 
 
 ### Modals
 
-| Modal | Trigger | Interaction |
-|-------|---------|-------------|
-| `PayrollRubricaModal` | "Nova Rubrica" button or row "Editar" button | Create/edit — form with name, type, formula type, rate field (conditional on formula type) |
-| `PayrollLegalTableModal` | "Atualizar Tabela" per table type | Adds a new table version with effectiveFrom date; bracketed rate rows are editable inline |
-| `ConfirmModal (danger)` | Row "Desativar" button | Confirms disabling a rubrica that may be in use by active contracts |
+| Modal                    | Trigger                                      | Interaction                                                                                |
+| ------------------------ | -------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `PayrollRubricaModal`    | "Nova Rubrica" button or row "Editar" button | Create/edit — form with name, type, formula type, rate field (conditional on formula type) |
+| `PayrollLegalTableModal` | "Atualizar Tabela" per table type            | Adds a new table version with effectiveFrom date; bracketed rate rows are editable inline  |
+| `ConfirmModal (danger)`  | Row "Desativar" button                       | Confirms disabling a rubrica that may be in use by active contracts                        |
 
 ---
 
 ## Component Patterns
 
 ### Rubrica Type Badge
+
 - PROVENTO: `--color-success-100` background, `--color-success-500` text, "Provento" label + `TrendingUp` icon 16px
 - DESCONTO: `--color-error-100` background, `--color-error-500` text, "Desconto" label + `TrendingDown` icon 16px
 
 ### Formula Type Badge
+
 - SISTEMA: `--color-warning-100` background, `--color-warning-500` text, "Sistema" label + `Lock` icon 16px
 - PERCENTUAL: `--color-neutral-100` background, `--color-neutral-700` text, "Percentual" label
 - FÓRMULA: `--color-info-100` background, `--color-info-500` text, "Fórmula" label + `Code` icon 16px
 
 ### Legal Table Effective Date Badge
+
 - Active (effectiveFrom ≤ today): `--color-success-100` background, `--color-success-500` text, "Vigente" + `CheckCircle` icon 16px
 - Future (effectiveFrom > today): `--color-info-100` background, `--color-info-500` text, "Agendada" + `Calendar` icon 16px
 - Historical: `--color-neutral-100` background, `--color-neutral-500` text, "Histórico"
 
 ### Formula Input (custom rubrica)
+
 Text input with `font-family: var(--font-mono)`, `--text-sm`. Placeholder shows an example expression: `SALARIO_BASE * 0.05`. Below the field, a read-only variable reference panel lists available context variables (SALARIO_BASE, HORA_NORMAL, etc.) as small `code` tags. Validation error appears inline with `role="alert"` if the expression is syntactically invalid.
 
 ### Bracket Table (INSS/IRRF rows)
+
 - `<table>` with `<th scope="col">` headers: "De (R$)", "Até (R$)", "Alíquota (%)", "Deduzir (R$)"
 - Monetary cells: `font-family: var(--font-mono)`, right-aligned
 - Last bracket's "Até" column shows "Sem limite" in regular font
@@ -157,31 +165,33 @@ Text input with `font-family: var(--font-mono)`, `--text-sm`. Placeholder shows 
 
 ## Copywriting Contract
 
-| Element | Copy |
-|---------|------|
-| Primary CTA — create rubrica | "Nova Rubrica" |
-| Primary CTA — save rubrica | "Salvar Rubrica" |
-| Primary CTA — update legal table | "Atualizar Tabela" |
-| Primary CTA — save legal table | "Confirmar Tabela" |
-| Empty state — no rubricas yet | heading: "Nenhuma rubrica configurada" / body: "As rubricas definem como proventos e descontos são calculados na folha. Comece adicionando uma rubrica." / CTA: "Nova Rubrica" |
-| Empty state — no legal tables | heading: "Tabelas legais não configuradas" / body: "Cadastre as tabelas de INSS, IRRF e salário-família para que o motor de cálculo funcione corretamente." / CTA: "Cadastrar Tabela INSS" |
-| Error — formula invalid | "Fórmula inválida. Verifique as variáveis e operadores disponíveis." |
-| Error — save failed | "Não foi possível salvar. Verifique sua conexão e tente novamente." |
-| Error — effective date conflict | "Já existe uma tabela com vigência neste mês. Escolha uma data diferente." |
-| System rubrica edit tooltip | "Esta rubrica é obrigatória por lei e não pode ser editada." |
+| Element                           | Copy                                                                                                                                                                                                                      |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Primary CTA — create rubrica      | "Nova Rubrica"                                                                                                                                                                                                            |
+| Primary CTA — save rubrica        | "Salvar Rubrica"                                                                                                                                                                                                          |
+| Primary CTA — update legal table  | "Atualizar Tabela"                                                                                                                                                                                                        |
+| Primary CTA — save legal table    | "Confirmar Tabela"                                                                                                                                                                                                        |
+| Empty state — no rubricas yet     | heading: "Nenhuma rubrica configurada" / body: "As rubricas definem como proventos e descontos são calculados na folha. Comece adicionando uma rubrica." / CTA: "Nova Rubrica"                                            |
+| Empty state — no legal tables     | heading: "Tabelas legais não configuradas" / body: "Cadastre as tabelas de INSS, IRRF e salário-família para que o motor de cálculo funcione corretamente." / CTA: "Cadastrar Tabela INSS"                                |
+| Error — formula invalid           | "Fórmula inválida. Verifique as variáveis e operadores disponíveis."                                                                                                                                                      |
+| Error — save failed               | "Não foi possível salvar. Verifique sua conexão e tente novamente."                                                                                                                                                       |
+| Error — effective date conflict   | "Já existe uma tabela com vigência neste mês. Escolha uma data diferente."                                                                                                                                                |
+| System rubrica edit tooltip       | "Esta rubrica é obrigatória por lei e não pode ser editada."                                                                                                                                                              |
 | Deactivate rubrica — confirmation | title: "Desativar rubrica?" / body: "A rubrica '{nome}' deixará de aparecer no processamento de novas folhas. Folhas já fechadas não são afetadas." / confirm: "Desativar Rubrica" (variant: danger) / cancel: "Cancelar" |
-| FUNRURAL mode alert | "Modo FUNRURAL não configurado para esta organização. O cálculo de encargos patronais pode estar incorreto." |
-| Table history toggle | "Ver histórico" / "Ocultar histórico" |
+| FUNRURAL mode alert               | "Modo FUNRURAL não configurado para esta organização. O cálculo de encargos patronais pode estar incorreto."                                                                                                              |
+| Table history toggle              | "Ver histórico" / "Ocultar histórico"                                                                                                                                                                                     |
 
 ---
 
 ## Interaction States
 
 ### PayrollParametersPage load
+
 1. Page enters with skeleton rows (3 skeleton rows per table section)
 2. Data loads, skeleton replaced with actual rows — 200ms fade-in
 
 ### Rubrica form
+
 - Type field (PROVENTO / DESCONTO): radio group, both visible, required
 - Formula type field: radio group — SISTEMA (disabled, not selectable by user), PERCENTUAL, FÓRMULA
 - Rate field: visible only when formula type = PERCENTUAL; hidden when FÓRMULA
@@ -190,6 +200,7 @@ Text input with `font-family: var(--font-mono)`, `--text-sm`. Placeholder shows 
 - OnBlur validation: name (required, max 100 chars), rate (0.01–100%), formula (syntax check via expr-eval mock on client)
 
 ### Legal table form
+
 - Table type selector: locked once set (cannot change existing table's type)
 - effectiveFrom: date picker limited to first day of any month (competency dates are always month/year)
 - Bracket rows: add/remove rows with "Adicionar faixa" button; last row "Até" field disabled (unbounded)
@@ -197,6 +208,7 @@ Text input with `font-family: var(--font-mono)`, `--text-sm`. Placeholder shows 
 - Deduction fields: monetary, 2 decimal places, min 0
 
 ### System rubrica row
+
 - Edit button: replaced by lock icon + disabled state
 - Delete/deactivate button: hidden entirely
 - Row has subtle `--color-neutral-100` background to visually distinguish from custom rubricas
@@ -218,14 +230,14 @@ Text input with `font-family: var(--font-mono)`, `--text-sm`. Placeholder shows 
 
 ## Animation
 
-| Interaction | Duration | Easing | Token |
-|-------------|----------|--------|-------|
-| Modal open | 300ms | ease-out | `--duration-normal`, `--ease-out` |
-| Modal close | 200ms | ease-in | `--duration-fast`, `--ease-in` |
-| Tab switch | 200ms | ease-out | `--duration-fast`, `--ease-out` |
-| Row skeleton → content | 200ms | ease-out | `--duration-fast`, `--ease-out` |
-| Dropdown / collapsible history | 200ms | ease-out | `--duration-fast`, `--ease-out` |
-| Button hover | 100ms | ease-out | `--duration-instant`, `--ease-out` |
+| Interaction                    | Duration | Easing   | Token                              |
+| ------------------------------ | -------- | -------- | ---------------------------------- |
+| Modal open                     | 300ms    | ease-out | `--duration-normal`, `--ease-out`  |
+| Modal close                    | 200ms    | ease-in  | `--duration-fast`, `--ease-in`     |
+| Tab switch                     | 200ms    | ease-out | `--duration-fast`, `--ease-out`    |
+| Row skeleton → content         | 200ms    | ease-out | `--duration-fast`, `--ease-out`    |
+| Dropdown / collapsible history | 200ms    | ease-out | `--duration-fast`, `--ease-out`    |
+| Button hover                   | 100ms    | ease-out | `--duration-instant`, `--ease-out` |
 
 All animations respect `prefers-reduced-motion: reduce` via the global CSS rule in `tokens.css`.
 
@@ -233,10 +245,10 @@ All animations respect `prefers-reduced-motion: reduce` via the global CSS rule 
 
 ## Registry Safety
 
-| Registry | Blocks Used | Safety Gate |
-|----------|-------------|-------------|
+| Registry        | Blocks Used                        | Safety Gate    |
+| --------------- | ---------------------------------- | -------------- |
 | shadcn official | none — project does not use shadcn | not applicable |
-| third-party | none declared | not required |
+| third-party     | none declared                      | not required   |
 
 > No third-party component registries are used. All UI built from project's own component set (`@/components/ui/`) and new domain components.
 
@@ -244,14 +256,14 @@ All animations respect `prefers-reduced-motion: reduce` via the global CSS rule 
 
 ## Pre-Population Sources
 
-| Source | Decisions Applied |
-|--------|------------------|
-| CLAUDE.md | Color tokens (#2E7D32 primary, #FAFAF8 bg, #C62828 destructive), typography (DM Sans + Source Sans 3 + JetBrains Mono), spacing (4px base scale), touch target 48px, mobile-first, lucide-react icons, modal pattern for forms, ConfirmModal for destructive actions, empty state pattern, toast pattern |
-| `tokens.css` | All CSS custom property names confirmed (`--color-*`, `--text-*`, `--space-*`, `--font-*`, `--leading-*`, `--duration-*`, `--ease-*`) |
-| RESEARCH.md | JetBrains Mono for monetary/numeric data confirmed by "financial precision" requirement; system vs custom rubrica distinction drives badge pattern and lock state; bracket table structure driven by INSS/IRRF schema |
-| REQUIREMENTS.md / FOLHA-01 | Identified 2 primary screens (rubricas config + legal tables), confirmed modal-not-page pattern for create/edit, confirmed no mobile-specific UI (REQUIREMENTS.md Out of Scope: "Mobile: funcionalidades completas de folha no app") |
-| Existing code (`EmployeesPage`, `PositionsPage`) | Confirmed page + tab + modal + skeleton loading pattern used in Phase 25 HR screens — Phase 26 follows same structure |
-| Checker revision (2026-03-24) | Typography weights collapsed to 2 tokens (400 + 700); ConfirmModal confirm label updated to "Desativar Rubrica"; PayrollParametersPage focal point and row action button visibility explicitly declared |
+| Source                                           | Decisions Applied                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CLAUDE.md                                        | Color tokens (#2E7D32 primary, #FAFAF8 bg, #C62828 destructive), typography (DM Sans + Source Sans 3 + JetBrains Mono), spacing (4px base scale), touch target 48px, mobile-first, lucide-react icons, modal pattern for forms, ConfirmModal for destructive actions, empty state pattern, toast pattern |
+| `tokens.css`                                     | All CSS custom property names confirmed (`--color-*`, `--text-*`, `--space-*`, `--font-*`, `--leading-*`, `--duration-*`, `--ease-*`)                                                                                                                                                                    |
+| RESEARCH.md                                      | JetBrains Mono for monetary/numeric data confirmed by "financial precision" requirement; system vs custom rubrica distinction drives badge pattern and lock state; bracket table structure driven by INSS/IRRF schema                                                                                    |
+| REQUIREMENTS.md / FOLHA-01                       | Identified 2 primary screens (rubricas config + legal tables), confirmed modal-not-page pattern for create/edit, confirmed no mobile-specific UI (REQUIREMENTS.md Out of Scope: "Mobile: funcionalidades completas de folha no app")                                                                     |
+| Existing code (`EmployeesPage`, `PositionsPage`) | Confirmed page + tab + modal + skeleton loading pattern used in Phase 25 HR screens — Phase 26 follows same structure                                                                                                                                                                                    |
+| Checker revision (2026-03-24)                    | Typography weights collapsed to 2 tokens (400 + 700); ConfirmModal confirm label updated to "Desativar Rubrica"; PayrollParametersPage focal point and row action button visibility explicitly declared                                                                                                  |
 
 ---
 

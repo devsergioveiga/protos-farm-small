@@ -269,15 +269,11 @@ animalOwnershipsRouter.delete(
 
 // ─── Ownership types ────────────────────────────────────────────────
 
-animalOwnershipsRouter.get(
-  '/org/animal-ownership-types',
-  authenticate,
-  async (_req, res) => {
-    res.json([
-      { value: 'PROPRIETARIO', label: 'Proprietário' },
-      { value: 'PARCEIRO', label: 'Parceiro' },
-      { value: 'COMODATARIO', label: 'Comodatário' },
-      { value: 'DEPOSITARIO', label: 'Depositário' },
-    ]);
-  },
-);
+animalOwnershipsRouter.get('/org/animal-ownership-types', authenticate, async (_req, res) => {
+  res.json([
+    { value: 'PROPRIETARIO', label: 'Proprietário' },
+    { value: 'PARCEIRO', label: 'Parceiro' },
+    { value: 'COMODATARIO', label: 'Comodatário' },
+    { value: 'DEPOSITARIO', label: 'Depositário' },
+  ]);
+});

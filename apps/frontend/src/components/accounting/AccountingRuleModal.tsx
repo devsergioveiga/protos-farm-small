@@ -3,7 +3,12 @@ import { X, Plus, Trash2, Eye, Loader2 } from 'lucide-react';
 import { useAccountingRuleActions } from '@/hooks/useAccountingRules';
 import { useChartOfAccounts } from '@/hooks/useChartOfAccounts';
 import { SOURCE_TYPE_LABELS } from '@/types/auto-posting';
-import type { AccountingRule, UpdateRuleInput, RulePreview, AutoPostingSourceType } from '@/types/auto-posting';
+import type {
+  AccountingRule,
+  UpdateRuleInput,
+  RulePreview,
+  AutoPostingSourceType,
+} from '@/types/auto-posting';
 import type { ChartOfAccount } from '@/types/accounting';
 import './AccountingRuleModal.css';
 
@@ -113,7 +118,11 @@ function AccountCombobox({
   }, [dropdownOpen, onBlur]);
 
   const selected = accounts.find((a) => a.id === value);
-  const displayValue = dropdownOpen ? search : (selected ? `${selected.code} — ${selected.name}` : search);
+  const displayValue = dropdownOpen
+    ? search
+    : selected
+      ? `${selected.code} — ${selected.name}`
+      : search;
 
   return (
     <div className="arm__combobox-wrapper" ref={wrapperRef}>
@@ -155,7 +164,10 @@ function AccountCombobox({
               role="option"
               aria-selected={account.id === value}
               className={`arm__combobox-option${account.id === value ? ' arm__combobox-option--selected' : ''}`}
-              onMouseDown={(e) => { e.preventDefault(); onSelect(account); }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onSelect(account);
+              }}
             >
               <span className="arm__combobox-code">{account.code}</span>
               <span className="arm__combobox-name">{account.name}</span>
@@ -220,10 +232,15 @@ function PreviewPanel({ preview, isLoading, noData }: PreviewPanelProps) {
         <tbody>
           {preview.lines.map((line, i) => (
             <tr key={i}>
-              <td className="arm__preview-td arm__mono">{line.accountCode} — {line.accountName}</td>
+              <td className="arm__preview-td arm__mono">
+                {line.accountCode} — {line.accountName}
+              </td>
               <td className="arm__preview-td">{line.side === 'DEBIT' ? 'D' : 'C'}</td>
               <td className="arm__preview-td arm__preview-td--right arm__mono">
-                {parseFloat(line.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                {parseFloat(line.amount).toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                })}
               </td>
             </tr>
           ))}
@@ -401,7 +418,16 @@ export default function AccountingRuleModal({ rule, onClose, onSaved }: Accounti
     } finally {
       setSaving(false);
     }
-  }, [validateLines, isActive, historyTemplate, requireCostCenter, lines, updateRule, rule.id, onSaved]);
+  }, [
+    validateLines,
+    isActive,
+    historyTemplate,
+    requireCostCenter,
+    lines,
+    updateRule,
+    rule.id,
+    onSaved,
+  ]);
 
   const templateVars = TEMPLATE_VARS[rule.sourceType] ?? [];
 
@@ -412,10 +438,11 @@ export default function AccountingRuleModal({ rule, onClose, onSaved }: Accounti
       aria-modal="true"
       aria-labelledby="rule-modal-title"
       ref={overlayRef}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="arm__modal">
-
         {/* Header */}
         <header className="arm__header">
           <div className="arm__header-left">
@@ -425,9 +452,7 @@ export default function AccountingRuleModal({ rule, onClose, onSaved }: Accounti
           </div>
           <div className="arm__header-right">
             <div className="arm__header-toggle">
-              <span className="arm__toggle-label">
-                {isActive ? 'Ativa' : 'Inativa'}
-              </span>
+              <span className="arm__toggle-label">{isActive ? 'Ativa' : 'Inativa'}</span>
               <button
                 type="button"
                 role="switch"
@@ -453,21 +478,32 @@ export default function AccountingRuleModal({ rule, onClose, onSaved }: Accounti
 
         {/* Body */}
         <div className="arm__body">
-
           {/* Lines section */}
           <section aria-labelledby="arm-lines-heading" className="arm__section">
-            <h3 id="arm-lines-heading" className="arm__section-title">Linhas de Lançamento</h3>
+            <h3 id="arm-lines-heading" className="arm__section-title">
+              Linhas de Lançamento
+            </h3>
 
             <div className="arm__lines-table-wrapper">
               <table className="arm__lines-table">
                 <caption className="sr-only">Linhas de lançamento da regra</caption>
                 <thead>
                   <tr>
-                    <th scope="col" className="arm__lines-th arm__lines-th--order">Ordem</th>
-                    <th scope="col" className="arm__lines-th">Tipo</th>
-                    <th scope="col" className="arm__lines-th">Conta</th>
-                    <th scope="col" className="arm__lines-th">Histórico da Linha</th>
-                    {lines.length > 1 && <th scope="col" className="arm__lines-th arm__lines-th--remove" />}
+                    <th scope="col" className="arm__lines-th arm__lines-th--order">
+                      Ordem
+                    </th>
+                    <th scope="col" className="arm__lines-th">
+                      Tipo
+                    </th>
+                    <th scope="col" className="arm__lines-th">
+                      Conta
+                    </th>
+                    <th scope="col" className="arm__lines-th">
+                      Histórico da Linha
+                    </th>
+                    {lines.length > 1 && (
+                      <th scope="col" className="arm__lines-th arm__lines-th--remove" />
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -480,7 +516,9 @@ export default function AccountingRuleModal({ rule, onClose, onSaved }: Accounti
                         <select
                           className="arm__select"
                           value={line.side}
-                          onChange={(e) => updateLineSide(line.id, e.target.value as 'DEBIT' | 'CREDIT')}
+                          onChange={(e) =>
+                            updateLineSide(line.id, e.target.value as 'DEBIT' | 'CREDIT')
+                          }
                           aria-label="Tipo de linha"
                         >
                           <option value="DEBIT">Débito</option>
@@ -541,11 +579,7 @@ export default function AccountingRuleModal({ rule, onClose, onSaved }: Accounti
               </p>
             )}
 
-            <button
-              type="button"
-              className="arm__add-line-btn"
-              onClick={addLine}
-            >
+            <button type="button" className="arm__add-line-btn" onClick={addLine}>
               <Plus size={14} aria-hidden="true" />
               Adicionar linha
             </button>
@@ -553,7 +587,9 @@ export default function AccountingRuleModal({ rule, onClose, onSaved }: Accounti
 
           {/* History template section */}
           <section aria-labelledby="arm-history-heading" className="arm__section">
-            <h3 id="arm-history-heading" className="arm__section-title">Histórico</h3>
+            <h3 id="arm-history-heading" className="arm__section-title">
+              Histórico
+            </h3>
             <label htmlFor="arm-history-template" className="arm__label">
               Modelo de histórico
             </label>
@@ -580,7 +616,9 @@ export default function AccountingRuleModal({ rule, onClose, onSaved }: Accounti
 
           {/* Configuration section */}
           <section aria-labelledby="arm-config-heading" className="arm__section">
-            <h3 id="arm-config-heading" className="arm__section-title">Configuração</h3>
+            <h3 id="arm-config-heading" className="arm__section-title">
+              Configuração
+            </h3>
             <label className="arm__checkbox-label">
               <input
                 type="checkbox"
@@ -596,7 +634,9 @@ export default function AccountingRuleModal({ rule, onClose, onSaved }: Accounti
           {/* Preview panel */}
           {previewShown && (
             <section aria-labelledby="arm-preview-heading" className="arm__section">
-              <h3 id="arm-preview-heading" className="arm__section-title">Pré-visualização</h3>
+              <h3 id="arm-preview-heading" className="arm__section-title">
+                Pré-visualização
+              </h3>
               <PreviewPanel
                 preview={previewData}
                 isLoading={previewLoading}
@@ -626,7 +666,9 @@ export default function AccountingRuleModal({ rule, onClose, onSaved }: Accounti
           <button
             type="button"
             className="arm__btn arm__btn--secondary"
-            onClick={() => { void handlePreview(); }}
+            onClick={() => {
+              void handlePreview();
+            }}
             disabled={previewLoading || saving}
             aria-busy={previewLoading}
           >
@@ -640,7 +682,9 @@ export default function AccountingRuleModal({ rule, onClose, onSaved }: Accounti
           <button
             type="button"
             className="arm__btn arm__btn--primary"
-            onClick={() => { void handleSave(); }}
+            onClick={() => {
+              void handleSave();
+            }}
             disabled={isSaveDisabled}
             aria-busy={saving}
           >

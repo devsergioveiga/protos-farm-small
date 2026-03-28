@@ -6,27 +6,27 @@ tags: [react, recharts, accounting, dashboard, dfc, frontend]
 
 requires:
   - phase: 40-03
-    provides: "DFC frontend types, hooks (useDfc, useAccountingDashboard), DfcPage"
+    provides: 'DFC frontend types, hooks (useDfc, useAccountingDashboard), DfcPage'
   - phase: 40-02
-    provides: "Accounting dashboard backend endpoint"
+    provides: 'Accounting dashboard backend endpoint'
   - phase: 40-01
-    provides: "DFC backend endpoint"
+    provides: 'DFC backend endpoint'
 provides:
-  - "AccountingDashboardPage at /accounting-dashboard with 4 zones"
-  - "AccountingKpiCard, CostCompositionChart, AccountingAlertRow, RevenueExpenseLineChart components"
-  - "Sidebar CONTABILIDADE group with DFC and Dashboard Contabil entries"
-  - "App.tsx routes for /dfc and /accounting-dashboard"
+  - 'AccountingDashboardPage at /accounting-dashboard with 4 zones'
+  - 'AccountingKpiCard, CostCompositionChart, AccountingAlertRow, RevenueExpenseLineChart components'
+  - 'Sidebar CONTABILIDADE group with DFC and Dashboard Contabil entries'
+  - 'App.tsx routes for /dfc and /accounting-dashboard'
 affects:
-  - "cross-validation page (invariant #2 now active)"
-  - "sidebar navigation for all accounting pages"
+  - 'cross-validation page (invariant #2 now active)'
+  - 'sidebar navigation for all accounting pages'
 
 tech-stack:
   added: []
   patterns:
-    - "Lazy Suspense for chart components in dashboard pages"
-    - "4-zone dashboard layout: KPI cards, charts, indicators, alerts"
-    - "AccountingKpiCard delta badge pattern: up/down/neutral with aria-labels"
-    - "AccountingAlertRow as full-row clickable Link with severity icon"
+    - 'Lazy Suspense for chart components in dashboard pages'
+    - '4-zone dashboard layout: KPI cards, charts, indicators, alerts'
+    - 'AccountingKpiCard delta badge pattern: up/down/neutral with aria-labels'
+    - 'AccountingAlertRow as full-row clickable Link with severity icon'
 
 key-files:
   created:
@@ -42,9 +42,9 @@ key-files:
     - apps/frontend/src/hooks/useDfc.ts
 
 key-decisions:
-  - "AccountingDashboardPage uses IndicatorCard from financial-statements for BP indicators — reuse existing component"
-  - "RevenueExpenseLineChart created in accounting-dashboard/ (not financial-dashboard/) — uses MonthlyRevenueExpense type (month:number) vs financial dashboard (yearMonth:string)"
-  - "DFC and Dashboard Contabil items added to Sidebar in correct order per D-10"
+  - 'AccountingDashboardPage uses IndicatorCard from financial-statements for BP indicators — reuse existing component'
+  - 'RevenueExpenseLineChart created in accounting-dashboard/ (not financial-dashboard/) — uses MonthlyRevenueExpense type (month:number) vs financial dashboard (yearMonth:string)'
+  - 'DFC and Dashboard Contabil items added to Sidebar in correct order per D-10'
 
 requirements-completed: [DASH-01, DFC-01]
 
@@ -100,6 +100,7 @@ completed: 2026-03-28
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] useDfc.ts missing useOrgId export**
+
 - **Found during:** Task 1 (AccountingDashboardPage.tsx implementation)
 - **Issue:** AccountingDashboardPage needed `useOrgId` from useDfc.ts (same pattern as DrePage), but the committed useDfc.ts didn't export it
 - **Fix:** Added `useAuth` import and `useOrgId` function to useDfc.ts
@@ -138,5 +139,6 @@ None. All 4 zones fetch real data via useAccountingDashboard hook pointing to th
 - Commit d0c32654: FOUND
 
 ---
-*Phase: 40-dfc-dashboard-executivo*
-*Completed: 2026-03-28*
+
+_Phase: 40-dfc-dashboard-executivo_
+_Completed: 2026-03-28_

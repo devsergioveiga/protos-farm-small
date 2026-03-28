@@ -44,7 +44,10 @@ function previewToEditable(lines: OpeningBalanceLinePreview[]): EditableLine[] {
     accountCode: l.accountCode,
     accountName: l.accountName,
     side: l.side,
-    amount: parseFloat(l.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    amount: parseFloat(l.amount).toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }),
     source: l.source,
   }));
 }
@@ -95,11 +98,21 @@ function Step1({ lines, isLoading, onLinesChange, onNext }: Step1Props) {
           <caption className="sr-only">Saldos pré-populados para revisão</caption>
           <thead>
             <tr>
-              <th scope="col" className="ob-wizard__th">CONTA</th>
-              <th scope="col" className="ob-wizard__th ob-wizard__th--side">TIPO</th>
-              <th scope="col" className="ob-wizard__th ob-wizard__th--amount">VALOR</th>
-              <th scope="col" className="ob-wizard__th ob-wizard__th--source">ORIGEM</th>
-              <th scope="col" className="ob-wizard__th ob-wizard__th--remove"><span className="sr-only">Remover</span></th>
+              <th scope="col" className="ob-wizard__th">
+                CONTA
+              </th>
+              <th scope="col" className="ob-wizard__th ob-wizard__th--side">
+                TIPO
+              </th>
+              <th scope="col" className="ob-wizard__th ob-wizard__th--amount">
+                VALOR
+              </th>
+              <th scope="col" className="ob-wizard__th ob-wizard__th--source">
+                ORIGEM
+              </th>
+              <th scope="col" className="ob-wizard__th ob-wizard__th--remove">
+                <span className="sr-only">Remover</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -125,7 +138,11 @@ function Step1({ lines, isLoading, onLinesChange, onNext }: Step1Props) {
         <p className="ob-wizard__empty-text">
           Nenhum saldo encontrado nos módulos integrados. Adicione linhas manualmente.
         </p>
-        <button type="button" className="ob-wizard__btn ob-wizard__btn--secondary" onClick={addLine}>
+        <button
+          type="button"
+          className="ob-wizard__btn ob-wizard__btn--secondary"
+          onClick={addLine}
+        >
           <Plus size={16} aria-hidden="true" /> Adicionar linha
         </button>
       </div>
@@ -139,11 +156,21 @@ function Step1({ lines, isLoading, onLinesChange, onNext }: Step1Props) {
           <caption className="sr-only">Saldos pré-populados para revisão</caption>
           <thead>
             <tr>
-              <th scope="col" className="ob-wizard__th">CONTA</th>
-              <th scope="col" className="ob-wizard__th ob-wizard__th--side">TIPO</th>
-              <th scope="col" className="ob-wizard__th ob-wizard__th--amount">VALOR</th>
-              <th scope="col" className="ob-wizard__th ob-wizard__th--source">ORIGEM</th>
-              <th scope="col" className="ob-wizard__th ob-wizard__th--remove"><span className="sr-only">Remover</span></th>
+              <th scope="col" className="ob-wizard__th">
+                CONTA
+              </th>
+              <th scope="col" className="ob-wizard__th ob-wizard__th--side">
+                TIPO
+              </th>
+              <th scope="col" className="ob-wizard__th ob-wizard__th--amount">
+                VALOR
+              </th>
+              <th scope="col" className="ob-wizard__th ob-wizard__th--source">
+                ORIGEM
+              </th>
+              <th scope="col" className="ob-wizard__th ob-wizard__th--remove">
+                <span className="sr-only">Remover</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -162,32 +189,46 @@ function Step1({ lines, isLoading, onLinesChange, onNext }: Step1Props) {
                       onChange={(e) => {
                         const acc = analyticalAccounts.find((a) => a.id === e.target.value);
                         if (acc) {
-                          updateLine(line.id, { accountId: acc.id, accountCode: acc.code, accountName: acc.name });
+                          updateLine(line.id, {
+                            accountId: acc.id,
+                            accountCode: acc.code,
+                            accountName: acc.name,
+                          });
                         }
                       }}
                       aria-label={`Conta linha ${index + 1}`}
                     >
                       <option value="">Selecionar conta...</option>
                       {analyticalAccounts.map((a) => (
-                        <option key={a.id} value={a.id}>{a.code} — {a.name}</option>
+                        <option key={a.id} value={a.id}>
+                          {a.code} — {a.name}
+                        </option>
                       ))}
                     </select>
                   )}
                 </td>
                 <td className="ob-wizard__td ob-wizard__td--side">
-                  <div className="ob-wizard__side-toggle" role="group" aria-label={`Tipo linha ${index + 1}`}>
+                  <div
+                    className="ob-wizard__side-toggle"
+                    role="group"
+                    aria-label={`Tipo linha ${index + 1}`}
+                  >
                     <button
                       type="button"
                       className={`ob-wizard__side-btn ${line.side === 'DEBIT' ? 'ob-wizard__side-btn--active-debit' : ''}`}
                       aria-pressed={line.side === 'DEBIT'}
                       onClick={() => updateLine(line.id, { side: 'DEBIT' })}
-                    >D</button>
+                    >
+                      D
+                    </button>
                     <button
                       type="button"
                       className={`ob-wizard__side-btn ${line.side === 'CREDIT' ? 'ob-wizard__side-btn--active-credit' : ''}`}
                       aria-pressed={line.side === 'CREDIT'}
                       onClick={() => updateLine(line.id, { side: 'CREDIT' })}
-                    >C</button>
+                    >
+                      C
+                    </button>
                   </div>
                 </td>
                 <td className="ob-wizard__td ob-wizard__td--amount">
@@ -249,8 +290,14 @@ interface Step2Props {
 }
 
 function Step2({ lines, isPosting, error, onBack, onPost }: Step2Props) {
-  const debitTotal = lines.reduce((s, l) => l.side === 'DEBIT' ? s + parseAmount(l.amount) : s, 0);
-  const creditTotal = lines.reduce((s, l) => l.side === 'CREDIT' ? s + parseAmount(l.amount) : s, 0);
+  const debitTotal = lines.reduce(
+    (s, l) => (l.side === 'DEBIT' ? s + parseAmount(l.amount) : s),
+    0,
+  );
+  const creditTotal = lines.reduce(
+    (s, l) => (l.side === 'CREDIT' ? s + parseAmount(l.amount) : s),
+    0,
+  );
   const netDiff = debitTotal - creditTotal;
   const netAbs = Math.abs(netDiff);
   const netSide: LedgerSide = netDiff >= 0 ? 'CREDIT' : 'DEBIT';
@@ -262,11 +309,15 @@ function Step2({ lines, isPosting, error, onBack, onPost }: Step2Props) {
         <div className="ob-wizard__step2-totals">
           <div className="ob-wizard__step2-total-row">
             <span className="ob-wizard__step2-total-label">Total débitos</span>
-            <span className="ob-wizard__mono ob-wizard__debit-color">{formatCurrency(debitTotal)}</span>
+            <span className="ob-wizard__mono ob-wizard__debit-color">
+              {formatCurrency(debitTotal)}
+            </span>
           </div>
           <div className="ob-wizard__step2-total-row">
             <span className="ob-wizard__step2-total-label">Total créditos</span>
-            <span className="ob-wizard__mono ob-wizard__credit-color">{formatCurrency(creditTotal)}</span>
+            <span className="ob-wizard__mono ob-wizard__credit-color">
+              {formatCurrency(creditTotal)}
+            </span>
           </div>
         </div>
       </div>
@@ -274,9 +325,9 @@ function Step2({ lines, isPosting, error, onBack, onPost }: Step2Props) {
       <div className="ob-wizard__contra-entry">
         <h3 className="ob-wizard__step2-heading">Conta de contrapartida</h3>
         <p className="ob-wizard__contra-desc">
-          O saldo líquido de <strong className="ob-wizard__mono">{formatCurrency(netAbs)}</strong> será lançado
-          como <strong>{netSide === 'DEBIT' ? 'débito' : 'crédito'}</strong> contra a conta{' '}
-          <strong>Lucros e Prejuízos Acumulados</strong>.
+          O saldo líquido de <strong className="ob-wizard__mono">{formatCurrency(netAbs)}</strong>{' '}
+          será lançado como <strong>{netSide === 'DEBIT' ? 'débito' : 'crédito'}</strong> contra a
+          conta <strong>Lucros e Prejuízos Acumulados</strong>.
         </p>
         {netAbs < 0.005 && (
           <p className="ob-wizard__balanced-note">
@@ -292,7 +343,12 @@ function Step2({ lines, isPosting, error, onBack, onPost }: Step2Props) {
       )}
 
       <div className="ob-wizard__step2-actions">
-        <button type="button" className="ob-wizard__btn ob-wizard__btn--secondary" onClick={onBack} disabled={isPosting}>
+        <button
+          type="button"
+          className="ob-wizard__btn ob-wizard__btn--secondary"
+          onClick={onBack}
+          disabled={isPosting}
+        >
           Voltar
         </button>
         <button
@@ -310,7 +366,11 @@ function Step2({ lines, isPosting, error, onBack, onPost }: Step2Props) {
 
 // ─── Wizard ───────────────────────────────────────────────────────────────────
 
-export default function OpeningBalanceWizard({ isOpen, onClose, onSuccess }: OpeningBalanceWizardProps) {
+export default function OpeningBalanceWizard({
+  isOpen,
+  onClose,
+  onSuccess,
+}: OpeningBalanceWizardProps) {
   const { data: fiscalYears } = useFiscalYears();
   const [selectedFiscalYearId, setSelectedFiscalYearId] = useState('');
   const [entryDate, setEntryDate] = useState(new Date().toISOString().slice(0, 10));
@@ -357,7 +417,9 @@ export default function OpeningBalanceWizard({ isOpen, onClose, onSuccess }: Ope
   // Escape closes
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [isOpen, onClose]);
@@ -380,7 +442,9 @@ export default function OpeningBalanceWizard({ isOpen, onClose, onSuccess }: Ope
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Não foi possível postar o saldo de abertura.';
       if (msg.toLowerCase().includes('já existe') || msg.toLowerCase().includes('already exists')) {
-        setPostError('Já existe um saldo de abertura para este exercício fiscal. Apenas um saldo de abertura é permitido por exercício.');
+        setPostError(
+          'Já existe um saldo de abertura para este exercício fiscal. Apenas um saldo de abertura é permitido por exercício.',
+        );
       } else {
         setPostError(msg);
       }
@@ -390,9 +454,8 @@ export default function OpeningBalanceWizard({ isOpen, onClose, onSuccess }: Ope
   if (!isOpen) return null;
 
   const stepLabel = step === 1 ? 'Etapa 1 de 2 — Revisão' : 'Etapa 2 de 2 — Contrapartida';
-  const stepDescription = step === 1
-    ? 'Revisão dos saldos pré-populados'
-    : 'Conta de contrapartida';
+  const stepDescription =
+    step === 1 ? 'Revisão dos saldos pré-populados' : 'Conta de contrapartida';
 
   return (
     <div
@@ -400,7 +463,9 @@ export default function OpeningBalanceWizard({ isOpen, onClose, onSuccess }: Ope
       role="dialog"
       aria-modal="true"
       aria-labelledby={headingId}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="ob-wizard">
         {/* Header */}
@@ -427,7 +492,9 @@ export default function OpeningBalanceWizard({ isOpen, onClose, onSuccess }: Ope
           {step === 1 && (
             <div className="ob-wizard__header-controls">
               <div className="ob-wizard__control-group">
-                <label htmlFor="ob-fiscal-year" className="ob-wizard__control-label">Exercício Fiscal</label>
+                <label htmlFor="ob-fiscal-year" className="ob-wizard__control-label">
+                  Exercício Fiscal
+                </label>
                 <select
                   id="ob-fiscal-year"
                   className="ob-wizard__control-select"
@@ -442,7 +509,9 @@ export default function OpeningBalanceWizard({ isOpen, onClose, onSuccess }: Ope
                 </select>
               </div>
               <div className="ob-wizard__control-group">
-                <label htmlFor="ob-entry-date" className="ob-wizard__control-label">Data do Lançamento</label>
+                <label htmlFor="ob-entry-date" className="ob-wizard__control-label">
+                  Data do Lançamento
+                </label>
                 <input
                   id="ob-entry-date"
                   type="date"
@@ -458,13 +527,17 @@ export default function OpeningBalanceWizard({ isOpen, onClose, onSuccess }: Ope
         {/* Step description */}
         {step === 1 && (
           <p className="ob-wizard__step-desc">
-            Os valores abaixo foram obtidos automaticamente dos módulos financeiro, contas a pagar/receber, ativos e provisões trabalhistas. Revise e ajuste se necessário.
+            Os valores abaixo foram obtidos automaticamente dos módulos financeiro, contas a
+            pagar/receber, ativos e provisões trabalhistas. Revise e ajuste se necessário.
           </p>
         )}
 
         {/* Body */}
         <div className="ob-wizard__body">
-          <div className={`ob-wizard__step-panel ${step === 1 ? 'ob-wizard__step-panel--active' : ''}`} aria-hidden={step !== 1}>
+          <div
+            className={`ob-wizard__step-panel ${step === 1 ? 'ob-wizard__step-panel--active' : ''}`}
+            aria-hidden={step !== 1}
+          >
             {step === 1 && (
               <Step1
                 lines={editableLines}
@@ -474,7 +547,10 @@ export default function OpeningBalanceWizard({ isOpen, onClose, onSuccess }: Ope
               />
             )}
           </div>
-          <div className={`ob-wizard__step-panel ${step === 2 ? 'ob-wizard__step-panel--active' : ''}`} aria-hidden={step !== 2}>
+          <div
+            className={`ob-wizard__step-panel ${step === 2 ? 'ob-wizard__step-panel--active' : ''}`}
+            aria-hidden={step !== 2}
+          >
             {step === 2 && (
               <Step2
                 lines={editableLines}
@@ -483,7 +559,9 @@ export default function OpeningBalanceWizard({ isOpen, onClose, onSuccess }: Ope
                 isPosting={isPosting}
                 error={postError}
                 onBack={() => setStep(1)}
-                onPost={() => { void handlePost(); }}
+                onPost={() => {
+                  void handlePost();
+                }}
               />
             )}
           </div>

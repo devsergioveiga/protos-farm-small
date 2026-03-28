@@ -1,12 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  Package,
-  Plus,
-  Search,
-  FileText,
-  UserRound,
-  Trash2,
-} from 'lucide-react';
+import { Package, Plus, Search, FileText, UserRound, Trash2 } from 'lucide-react';
 import { useEpiDeliveries } from '@/hooks/useEpiDeliveries';
 import { useEmployees } from '@/hooks/useEmployees';
 import ConfirmModal from '@/components/ui/ConfirmModal';
@@ -208,11 +201,16 @@ export default function EpiDeliveriesPage() {
           className="epi-deliveries-page__filter"
           aria-label="Filtrar por tipo de EPI"
           value={epiTypeFilter}
-          onChange={(e) => { setEpiTypeFilter(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setEpiTypeFilter(e.target.value);
+            setPage(1);
+          }}
         >
           <option value="">Todos os tipos</option>
           {EPI_TYPES.map((t) => (
-            <option key={t} value={t}>{EPI_TYPE_LABELS[t]}</option>
+            <option key={t} value={t}>
+              {EPI_TYPE_LABELS[t]}
+            </option>
           ))}
         </select>
         <input
@@ -220,14 +218,20 @@ export default function EpiDeliveriesPage() {
           className="epi-deliveries-page__filter"
           aria-label="Data de início"
           value={dateFrom}
-          onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setDateFrom(e.target.value);
+            setPage(1);
+          }}
         />
         <input
           type="date"
           className="epi-deliveries-page__filter"
           aria-label="Data de fim"
           value={dateTo}
-          onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setDateTo(e.target.value);
+            setPage(1);
+          }}
         />
       </div>
 
@@ -290,8 +294,14 @@ export default function EpiDeliveriesPage() {
                   <tr>
                     <td colSpan={9}>
                       <div className="epi-deliveries-page__empty">
-                        <Package size={48} aria-hidden="true" className="epi-deliveries-page__empty-icon" />
-                        <p className="epi-deliveries-page__empty-title">Nenhuma entrega registrada</p>
+                        <Package
+                          size={48}
+                          aria-hidden="true"
+                          className="epi-deliveries-page__empty-icon"
+                        />
+                        <p className="epi-deliveries-page__empty-title">
+                          Nenhuma entrega registrada
+                        </p>
                         <p className="epi-deliveries-page__empty-body">
                           Registre a primeira entrega de EPI para um colaborador.
                         </p>
@@ -399,7 +409,9 @@ export default function EpiDeliveriesPage() {
             >
               <option value="">Selecione um colaborador...</option>
               {employees.map((emp) => (
-                <option key={emp.id} value={emp.id}>{emp.name}</option>
+                <option key={emp.id} value={emp.id}>
+                  {emp.name}
+                </option>
               ))}
             </select>
           </div>
@@ -467,7 +479,11 @@ export default function EpiDeliveriesPage() {
                           <td>{d.quantity}</td>
                           <td>
                             {d.signatureUrl ? (
-                              <FileText size={16} aria-label="Assinatura disponível" className="epi-deliveries-page__sig-icon" />
+                              <FileText
+                                size={16}
+                                aria-label="Assinatura disponível"
+                                className="epi-deliveries-page__sig-icon"
+                              />
                             ) : (
                               '—'
                             )}

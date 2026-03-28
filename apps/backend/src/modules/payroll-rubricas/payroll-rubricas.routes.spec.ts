@@ -142,7 +142,10 @@ describe('GET /org/:orgId/payroll-rubricas', () => {
       .set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(200);
-    expect(mockedService.list).toHaveBeenCalledWith(ORG_ID, expect.objectContaining({ rubricaType: 'PROVENTO' }));
+    expect(mockedService.list).toHaveBeenCalledWith(
+      ORG_ID,
+      expect.objectContaining({ rubricaType: 'PROVENTO' }),
+    );
   });
 
   it('should return 403 when FINANCIAL user tries to write (read is allowed)', async () => {
@@ -221,7 +224,12 @@ describe('POST /org/:orgId/payroll-rubricas', () => {
     const res = await request(app)
       .post(`/api/org/${ORG_ID}/payroll-rubricas`)
       .set('Authorization', 'Bearer token')
-      .send({ code: 'BONUS', name: 'Bônus', rubricaType: 'PROVENTO', calculationType: 'FIXED_VALUE' });
+      .send({
+        code: 'BONUS',
+        name: 'Bônus',
+        rubricaType: 'PROVENTO',
+        calculationType: 'FIXED_VALUE',
+      });
 
     expect(res.status).toBe(409);
   });
@@ -247,7 +255,12 @@ describe('POST /org/:orgId/payroll-rubricas', () => {
     const res = await request(app)
       .post(`/api/org/${ORG_ID}/payroll-rubricas`)
       .set('Authorization', 'Bearer token')
-      .send({ code: 'BONUS', name: 'Bônus', rubricaType: 'PROVENTO', calculationType: 'FIXED_VALUE' });
+      .send({
+        code: 'BONUS',
+        name: 'Bônus',
+        rubricaType: 'PROVENTO',
+        calculationType: 'FIXED_VALUE',
+      });
 
     expect(res.status).toBe(403);
   });

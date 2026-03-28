@@ -1,5 +1,11 @@
 export type PayrollRunType = 'MONTHLY' | 'ADVANCE' | 'THIRTEENTH_FIRST' | 'THIRTEENTH_SECOND';
-export type PayrollRunStatus = 'PENDING' | 'PROCESSING' | 'CALCULATED' | 'COMPLETED' | 'ERROR' | 'REVERTED';
+export type PayrollRunStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'CALCULATED'
+  | 'COMPLETED'
+  | 'ERROR'
+  | 'REVERTED';
 
 export interface PayrollRun {
   id: string;

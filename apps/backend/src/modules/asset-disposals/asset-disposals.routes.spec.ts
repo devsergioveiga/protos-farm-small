@@ -130,16 +130,13 @@ describe('Asset Disposals API', () => {
       authAs(ADMIN_PAYLOAD);
       mockedService.createDisposal.mockResolvedValue(SALE_OUTPUT);
 
-      const res = await request(app)
-        .post(BASE_DISPOSE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          disposalType: 'VENDA',
-          disposalDate: '2026-04-25',
-          saleValue: 80000,
-          buyerName: 'Fazenda Boa Vista',
-          dueDate: '2026-05-10',
-        });
+      const res = await request(app).post(BASE_DISPOSE).set('Authorization', 'Bearer token').send({
+        disposalType: 'VENDA',
+        disposalDate: '2026-04-25',
+        saleValue: 80000,
+        buyerName: 'Fazenda Boa Vista',
+        dueDate: '2026-05-10',
+      });
 
       expect(res.status).toBe(201);
       expect(res.body.gainLoss).toBe(10000);
@@ -154,16 +151,13 @@ describe('Asset Disposals API', () => {
       authAs(MANAGER_PAYLOAD);
       mockedService.createDisposal.mockResolvedValue(SALE_OUTPUT);
 
-      const res = await request(app)
-        .post(BASE_DISPOSE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          disposalType: 'VENDA',
-          disposalDate: '2026-04-25',
-          saleValue: 80000,
-          buyerName: 'Comprador',
-          dueDate: '2026-05-10',
-        });
+      const res = await request(app).post(BASE_DISPOSE).set('Authorization', 'Bearer token').send({
+        disposalType: 'VENDA',
+        disposalDate: '2026-04-25',
+        saleValue: 80000,
+        buyerName: 'Comprador',
+        dueDate: '2026-05-10',
+      });
 
       expect(res.status).toBe(201);
       expect(res.body.gainLoss).toBe(res.body.saleValue - res.body.netBookValue);
@@ -181,16 +175,13 @@ describe('Asset Disposals API', () => {
       };
       mockedService.createDisposal.mockResolvedValue(outputNoDepr);
 
-      const res = await request(app)
-        .post(BASE_DISPOSE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          disposalType: 'VENDA',
-          disposalDate: '2026-04-25',
-          saleValue: 80000,
-          buyerName: 'Comprador',
-          dueDate: '2026-05-10',
-        });
+      const res = await request(app).post(BASE_DISPOSE).set('Authorization', 'Bearer token').send({
+        disposalType: 'VENDA',
+        disposalDate: '2026-04-25',
+        saleValue: 80000,
+        buyerName: 'Comprador',
+        dueDate: '2026-05-10',
+      });
 
       expect(res.status).toBe(201);
       expect(res.body.cancelledDepreciationCount).toBe(0);
@@ -203,14 +194,11 @@ describe('Asset Disposals API', () => {
       authAs(ADMIN_PAYLOAD);
       mockedService.createDisposal.mockResolvedValue(WRITEOFF_OUTPUT);
 
-      const res = await request(app)
-        .post(BASE_DISPOSE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          disposalType: 'DESCARTE',
-          disposalDate: '2026-04-25',
-          motivation: 'Equipamento obsoleto e inutilizavel',
-        });
+      const res = await request(app).post(BASE_DISPOSE).set('Authorization', 'Bearer token').send({
+        disposalType: 'DESCARTE',
+        disposalDate: '2026-04-25',
+        motivation: 'Equipamento obsoleto e inutilizavel',
+      });
 
       expect(res.status).toBe(201);
       expect(res.body.receivableId).toBeNull();
@@ -222,17 +210,19 @@ describe('Asset Disposals API', () => {
 
     it('Test 5: SINISTRO creates disposal with motivation required', async () => {
       authAs(ADMIN_PAYLOAD);
-      const sinistroOutput = { ...WRITEOFF_OUTPUT, disposalType: 'SINISTRO' as const, disposalTypeLabel: 'Sinistro', motivation: 'Incendio' };
+      const sinistroOutput = {
+        ...WRITEOFF_OUTPUT,
+        disposalType: 'SINISTRO' as const,
+        disposalTypeLabel: 'Sinistro',
+        motivation: 'Incendio',
+      };
       mockedService.createDisposal.mockResolvedValue(sinistroOutput);
 
-      const res = await request(app)
-        .post(BASE_DISPOSE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          disposalType: 'SINISTRO',
-          disposalDate: '2026-04-25',
-          motivation: 'Incendio',
-        });
+      const res = await request(app).post(BASE_DISPOSE).set('Authorization', 'Bearer token').send({
+        disposalType: 'SINISTRO',
+        disposalDate: '2026-04-25',
+        motivation: 'Incendio',
+      });
 
       expect(res.status).toBe(201);
       expect(res.body.motivation).toBe('Incendio');
@@ -242,17 +232,18 @@ describe('Asset Disposals API', () => {
 
     it('Test 6: OBSOLESCENCIA creates disposal without receivable', async () => {
       authAs(ADMIN_PAYLOAD);
-      const obsOutput = { ...WRITEOFF_OUTPUT, disposalType: 'OBSOLESCENCIA' as const, disposalTypeLabel: 'Obsolescencia' };
+      const obsOutput = {
+        ...WRITEOFF_OUTPUT,
+        disposalType: 'OBSOLESCENCIA' as const,
+        disposalTypeLabel: 'Obsolescencia',
+      };
       mockedService.createDisposal.mockResolvedValue(obsOutput);
 
-      const res = await request(app)
-        .post(BASE_DISPOSE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          disposalType: 'OBSOLESCENCIA',
-          disposalDate: '2026-04-25',
-          motivation: 'Tecnologia superada',
-        });
+      const res = await request(app).post(BASE_DISPOSE).set('Authorization', 'Bearer token').send({
+        disposalType: 'OBSOLESCENCIA',
+        disposalDate: '2026-04-25',
+        motivation: 'Tecnologia superada',
+      });
 
       expect(res.status).toBe(201);
       expect(res.body.receivableId).toBeNull();
@@ -262,18 +253,18 @@ describe('Asset Disposals API', () => {
 
     it('Test 7: disposal returns cancelledDepreciationCount reflecting cancelled entries', async () => {
       authAs(ADMIN_PAYLOAD);
-      mockedService.createDisposal.mockResolvedValue({ ...SALE_OUTPUT, cancelledDepreciationCount: 5 });
+      mockedService.createDisposal.mockResolvedValue({
+        ...SALE_OUTPUT,
+        cancelledDepreciationCount: 5,
+      });
 
-      const res = await request(app)
-        .post(BASE_DISPOSE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          disposalType: 'VENDA',
-          disposalDate: '2026-04-25',
-          saleValue: 80000,
-          buyerName: 'Comprador',
-          dueDate: '2026-05-10',
-        });
+      const res = await request(app).post(BASE_DISPOSE).set('Authorization', 'Bearer token').send({
+        disposalType: 'VENDA',
+        disposalDate: '2026-04-25',
+        saleValue: 80000,
+        buyerName: 'Comprador',
+        dueDate: '2026-05-10',
+      });
 
       expect(res.status).toBe(201);
       expect(res.body.cancelledDepreciationCount).toBe(5);
@@ -285,18 +276,15 @@ describe('Asset Disposals API', () => {
       authAs(ADMIN_PAYLOAD);
       mockedService.createDisposal.mockResolvedValue(INSTALLMENT_SALE_OUTPUT);
 
-      const res = await request(app)
-        .post(BASE_DISPOSE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          disposalType: 'VENDA',
-          disposalDate: '2026-04-25',
-          saleValue: 80000,
-          buyerName: 'Comprador',
-          installmentCount: 3,
-          firstDueDate: '2026-05-10',
-          dueDate: '2026-05-10',
-        });
+      const res = await request(app).post(BASE_DISPOSE).set('Authorization', 'Bearer token').send({
+        disposalType: 'VENDA',
+        disposalDate: '2026-04-25',
+        saleValue: 80000,
+        buyerName: 'Comprador',
+        installmentCount: 3,
+        firstDueDate: '2026-05-10',
+        dueDate: '2026-05-10',
+      });
 
       expect(res.status).toBe(201);
       expect(res.body.installmentCount).toBe(3);
@@ -310,16 +298,13 @@ describe('Asset Disposals API', () => {
         new AssetDisposalError('Ativo ja foi alienado', 409),
       );
 
-      const res = await request(app)
-        .post(BASE_DISPOSE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          disposalType: 'VENDA',
-          disposalDate: '2026-04-25',
-          saleValue: 80000,
-          buyerName: 'Comprador',
-          dueDate: '2026-05-10',
-        });
+      const res = await request(app).post(BASE_DISPOSE).set('Authorization', 'Bearer token').send({
+        disposalType: 'VENDA',
+        disposalDate: '2026-04-25',
+        saleValue: 80000,
+        buyerName: 'Comprador',
+        dueDate: '2026-05-10',
+      });
 
       expect(res.status).toBe(409);
     });
@@ -332,16 +317,13 @@ describe('Asset Disposals API', () => {
         new AssetDisposalError('Ativo nao encontrado', 404),
       );
 
-      const res = await request(app)
-        .post(BASE_DISPOSE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          disposalType: 'VENDA',
-          disposalDate: '2026-04-25',
-          saleValue: 80000,
-          buyerName: 'Comprador',
-          dueDate: '2026-05-10',
-        });
+      const res = await request(app).post(BASE_DISPOSE).set('Authorization', 'Bearer token').send({
+        disposalType: 'VENDA',
+        disposalDate: '2026-04-25',
+        saleValue: 80000,
+        buyerName: 'Comprador',
+        dueDate: '2026-05-10',
+      });
 
       expect(res.status).toBe(404);
     });
@@ -354,15 +336,12 @@ describe('Asset Disposals API', () => {
         new AssetDisposalError('Valor de venda obrigatorio para alienacao por venda', 400),
       );
 
-      const res = await request(app)
-        .post(BASE_DISPOSE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          disposalType: 'VENDA',
-          disposalDate: '2026-04-25',
-          buyerName: 'Comprador',
-          dueDate: '2026-05-10',
-        });
+      const res = await request(app).post(BASE_DISPOSE).set('Authorization', 'Bearer token').send({
+        disposalType: 'VENDA',
+        disposalDate: '2026-04-25',
+        buyerName: 'Comprador',
+        dueDate: '2026-05-10',
+      });
 
       expect(res.status).toBe(400);
     });
@@ -375,15 +354,12 @@ describe('Asset Disposals API', () => {
         new AssetDisposalError('Data de vencimento obrigatoria para venda', 400),
       );
 
-      const res = await request(app)
-        .post(BASE_DISPOSE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          disposalType: 'VENDA',
-          disposalDate: '2026-04-25',
-          saleValue: 80000,
-          buyerName: 'Comprador',
-        });
+      const res = await request(app).post(BASE_DISPOSE).set('Authorization', 'Bearer token').send({
+        disposalType: 'VENDA',
+        disposalDate: '2026-04-25',
+        saleValue: 80000,
+        buyerName: 'Comprador',
+      });
 
       expect(res.status).toBe(400);
     });
@@ -398,9 +374,7 @@ describe('Asset Disposals API', () => {
       authAs(MANAGER_PAYLOAD);
       mockedService.getDisposal.mockResolvedValue(SALE_OUTPUT);
 
-      const res = await request(app)
-        .get(BASE_DISPOSAL)
-        .set('Authorization', 'Bearer token');
+      const res = await request(app).get(BASE_DISPOSAL).set('Authorization', 'Bearer token');
 
       expect(res.status).toBe(200);
       expect(res.body.assetTag).toBe('PAT-00001');
@@ -416,9 +390,7 @@ describe('Asset Disposals API', () => {
         new AssetDisposalError('Alienacao nao encontrada para este ativo', 404),
       );
 
-      const res = await request(app)
-        .get(BASE_DISPOSAL)
-        .set('Authorization', 'Bearer token');
+      const res = await request(app).get(BASE_DISPOSAL).set('Authorization', 'Bearer token');
 
       expect(res.status).toBe(404);
     });

@@ -107,11 +107,7 @@ export function useEsocialEvents() {
    * Returns null on success (file downloaded), or EsocialXsdError if XSD validation failed.
    */
   const downloadEvent = useCallback(
-    async (
-      id: string,
-      eventType: string,
-      version: number,
-    ): Promise<EsocialXsdError | null> => {
+    async (id: string, eventType: string, version: number): Promise<EsocialXsdError | null> => {
       if (!orgId) return null;
       try {
         // Use raw fetch to check Content-Type before treating as blob

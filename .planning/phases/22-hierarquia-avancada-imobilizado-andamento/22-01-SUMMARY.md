@@ -1,6 +1,6 @@
 ---
 phase: 22-hierarquia-avancada-imobilizado-andamento
-plan: "01"
+plan: '01'
 subsystem: database
 tags: [prisma, postgresql, assets, hierarchy, wip, renovation]
 
@@ -43,11 +43,11 @@ key-files:
     - apps/backend/src/modules/assets/assets.routes.spec.ts
 
 key-decisions:
-  - "Hierarchy depth traverses upward from proposedParent, not downward from root — O(depth) not O(tree)"
-  - "Circular reference detection uses getDescendantIds only on PATCH (not POST) — currentAssetId guard"
-  - "sumChildValues is recursive for 3 levels matching ASSET_INCLUDE_FULL nesting depth"
-  - "Migration applied manually via psql (shadow database broken due to pre-existing migration failure on cultivars)"
-  - "asset-wip.routes.ts stub created to unblock test suite — full implementation is Plan 22-03"
+  - 'Hierarchy depth traverses upward from proposedParent, not downward from root — O(depth) not O(tree)'
+  - 'Circular reference detection uses getDescendantIds only on PATCH (not POST) — currentAssetId guard'
+  - 'sumChildValues is recursive for 3 levels matching ASSET_INCLUDE_FULL nesting depth'
+  - 'Migration applied manually via psql (shadow database broken due to pre-existing migration failure on cultivars)'
+  - 'asset-wip.routes.ts stub created to unblock test suite — full implementation is Plan 22-03'
 
 requirements-completed: [HIER-01]
 
@@ -101,6 +101,7 @@ completed: 2026-03-22
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Created stub asset-wip.routes.ts to unblock test suite**
+
 - **Found during:** Task 2 (TDD RED phase)
 - **Issue:** app.ts imports `assetWipRouter` from `./modules/asset-wip/asset-wip.routes` which did not exist, causing the assets.routes.spec.ts test suite to fail with "Cannot find module"
 - **Fix:** Created a minimal stub router with `export const assetWipRouter = Router()` — full WIP routes implementation is Plan 22-03
@@ -115,7 +116,7 @@ completed: 2026-03-22
 
 ## Issues Encountered
 
-- `prisma migrate dev` fails due to broken shadow database (migration 20260311080000_add_grain_harvests can't apply because cultivars table missing). Workaround: created migration SQL manually and applied via psql, then inserted migration record into _prisma_migrations. This is a pre-existing project issue not introduced by this plan.
+- `prisma migrate dev` fails due to broken shadow database (migration 20260311080000_add_grain_harvests can't apply because cultivars table missing). Workaround: created migration SQL manually and applied via psql, then inserted migration record into \_prisma_migrations. This is a pre-existing project issue not introduced by this plan.
 
 ## Next Phase Readiness
 
@@ -124,12 +125,14 @@ completed: 2026-03-22
 - Stub asset-wip.routes.ts must be replaced by Plan 22-03
 
 ---
-*Phase: 22-hierarquia-avancada-imobilizado-andamento*
-*Completed: 2026-03-22*
+
+_Phase: 22-hierarquia-avancada-imobilizado-andamento_
+_Completed: 2026-03-22_
 
 ## Self-Check: PASSED
 
 All files and commits verified:
+
 - migration.sql: FOUND
 - assets.service.ts: FOUND
 - asset-wip.routes.ts: FOUND

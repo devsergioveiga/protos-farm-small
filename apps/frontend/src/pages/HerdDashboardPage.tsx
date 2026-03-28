@@ -128,9 +128,7 @@ export default function HerdDashboardPage() {
                 if (count === 0) return null;
                 return (
                   <div key={cat} className="herd-dashboard__category-card">
-                    <p className="herd-dashboard__category-label">
-                      {CATEGORY_LABELS[cat]}
-                    </p>
+                    <p className="herd-dashboard__category-label">{CATEGORY_LABELS[cat]}</p>
                     <p className="herd-dashboard__category-value">{formatNumber(count)}</p>
                     <p className="herd-dashboard__category-pct">
                       {formatPct(count, data.total)} do rebanho
@@ -151,9 +149,7 @@ export default function HerdDashboardPage() {
                 const pct = data.total > 0 ? (count / data.total) * 100 : 0;
                 return (
                   <div key={cat} className="herd-dashboard__bar-row">
-                    <span className="herd-dashboard__bar-name">
-                      {CATEGORY_LABELS[cat]}
-                    </span>
+                    <span className="herd-dashboard__bar-name">{CATEGORY_LABELS[cat]}</span>
                     <div
                       className="herd-dashboard__bar-track"
                       role="img"

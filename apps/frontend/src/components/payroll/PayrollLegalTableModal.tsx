@@ -109,9 +109,7 @@ export default function PayrollLegalTableModal({
   };
 
   const updateBracket = (index: number, field: keyof BracketRow, value: string) => {
-    setBrackets((prev) =>
-      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)),
-    );
+    setBrackets((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
   };
 
   const updateScalar = (index: number, value: string) => {
@@ -221,12 +219,19 @@ export default function PayrollLegalTableModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={(e) => { void handleSubmit(e); }} noValidate>
+        <form
+          onSubmit={(e) => {
+            void handleSubmit(e);
+          }}
+          noValidate
+        >
           <div className="legal-table-modal__body">
             {/* Table type (display only) */}
             <div className="legal-table-modal__field">
               <span className="legal-table-modal__label">Tipo de Tabela</span>
-              <div className="legal-table-modal__readonly">{LEGAL_TABLE_TYPE_LABELS[tableType]}</div>
+              <div className="legal-table-modal__readonly">
+                {LEGAL_TABLE_TYPE_LABELS[tableType]}
+              </div>
             </div>
 
             {/* Effective from (month picker) */}
@@ -246,11 +251,16 @@ export default function PayrollLegalTableModal({
                 aria-describedby={errors.effectiveFrom ? 'legal-table-effective-error' : undefined}
               />
               {errors.effectiveFrom && (
-                <span id="legal-table-effective-error" className="legal-table-modal__error" role="alert">
+                <span
+                  id="legal-table-effective-error"
+                  className="legal-table-modal__error"
+                  role="alert"
+                >
                   {errors.effectiveFrom}
                 </span>
               )}
-              {errors.effectiveFrom === 'Já existe uma tabela com vigência neste mês. Escolha uma data diferente.' && (
+              {errors.effectiveFrom ===
+                'Já existe uma tabela com vigência neste mês. Escolha uma data diferente.' && (
                 <span className="legal-table-modal__error" role="alert">
                   Já existe uma tabela com vigência neste mês. Escolha uma data diferente.
                 </span>
@@ -296,10 +306,18 @@ export default function PayrollLegalTableModal({
                                 value={bracket.fromValue}
                                 onChange={(e) => updateBracket(idx, 'fromValue', e.target.value)}
                                 aria-label={`De (R$) - Faixa ${idx + 1}`}
-                                aria-describedby={errors[`bracket-from-${idx}`] ? `bracket-from-${idx}-error` : undefined}
+                                aria-describedby={
+                                  errors[`bracket-from-${idx}`]
+                                    ? `bracket-from-${idx}-error`
+                                    : undefined
+                                }
                               />
                               {errors[`bracket-from-${idx}`] && (
-                                <span id={`bracket-from-${idx}-error`} className="legal-table-modal__error" role="alert">
+                                <span
+                                  id={`bracket-from-${idx}-error`}
+                                  className="legal-table-modal__error"
+                                  role="alert"
+                                >
                                   {errors[`bracket-from-${idx}`]}
                                 </span>
                               )}
@@ -329,10 +347,18 @@ export default function PayrollLegalTableModal({
                                 value={bracket.rate}
                                 onChange={(e) => updateBracket(idx, 'rate', e.target.value)}
                                 aria-label={`Alíquota (%) - Faixa ${idx + 1}`}
-                                aria-describedby={errors[`bracket-rate-${idx}`] ? `bracket-rate-${idx}-error` : undefined}
+                                aria-describedby={
+                                  errors[`bracket-rate-${idx}`]
+                                    ? `bracket-rate-${idx}-error`
+                                    : undefined
+                                }
                               />
                               {errors[`bracket-rate-${idx}`] && (
-                                <span id={`bracket-rate-${idx}-error`} className="legal-table-modal__error" role="alert">
+                                <span
+                                  id={`bracket-rate-${idx}-error`}
+                                  className="legal-table-modal__error"
+                                  role="alert"
+                                >
                                   {errors[`bracket-rate-${idx}`]}
                                 </span>
                               )}
@@ -386,7 +412,10 @@ export default function PayrollLegalTableModal({
               <div className="legal-table-modal__scalars-section">
                 <span className="legal-table-modal__label">Valores</span>
                 {scalars.map((scalar, idx) => (
-                  <div key={scalar.key} className="legal-table-modal__field legal-table-modal__field--scalar">
+                  <div
+                    key={scalar.key}
+                    className="legal-table-modal__field legal-table-modal__field--scalar"
+                  >
                     <label
                       htmlFor={`scalar-${scalar.key}`}
                       className="legal-table-modal__label legal-table-modal__label--small"
@@ -404,7 +433,11 @@ export default function PayrollLegalTableModal({
                       aria-describedby={errors[`scalar-${idx}`] ? `scalar-${idx}-error` : undefined}
                     />
                     {errors[`scalar-${idx}`] && (
-                      <span id={`scalar-${idx}-error`} className="legal-table-modal__error" role="alert">
+                      <span
+                        id={`scalar-${idx}-error`}
+                        className="legal-table-modal__error"
+                        role="alert"
+                      >
                         {errors[`scalar-${idx}`]}
                       </span>
                     )}

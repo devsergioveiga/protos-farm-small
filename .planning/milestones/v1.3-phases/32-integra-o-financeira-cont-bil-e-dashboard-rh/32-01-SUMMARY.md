@@ -1,6 +1,6 @@
 ---
 phase: 32-integra-o-financeira-cont-bil-e-dashboard-rh
-plan: "01"
+plan: '01'
 subsystem: payroll-runs
 tags: [payroll, contas-a-pagar, cost-center, irrf, vt, pension, sindical, preview]
 dependency_graph:
@@ -24,12 +24,12 @@ key_files:
     - apps/backend/src/modules/payroll-runs/payroll-runs.types.ts
     - apps/backend/src/modules/payroll-runs/payroll-runs.routes.spec.ts
 decisions:
-  - "IRRF is aggregated per run (one CP), not per employee — simplifies reconciliation"
-  - "Sindical detected from lineItemsJson by code prefix 9xx or description keyword"
-  - "revertRun uses originId IN [...itemIds, runId] to cover both item-level and run-level CPs"
+  - 'IRRF is aggregated per run (one CP), not per employee — simplifies reconciliation'
+  - 'Sindical detected from lineItemsJson by code prefix 9xx or description keyword'
+  - 'revertRun uses originId IN [...itemIds, runId] to cover both item-level and run-level CPs'
 metrics:
-  duration: "~16 minutes"
-  completed: "2026-03-26T19:25:00Z"
+  duration: '~16 minutes'
+  completed: '2026-03-26T19:25:00Z'
   tasks_completed: 2
   files_modified: 6
 ---
@@ -40,10 +40,10 @@ Extended the payroll-runs module to generate all 7 CP types at closeRun (net sal
 
 ## Tasks Completed
 
-| # | Task | Commit | Files |
-|---|------|--------|-------|
-| 1 | Migration + nthBusinessDay extraction + buildCostCenterItems + closeRun 4 new CP types | e1eaeebf | schema.prisma, payroll-date-utils.ts, payroll-runs.service.ts, spec |
-| 2 | cp-preview endpoint + revertRun extension + 10 new tests | e7a7aa20 | payroll-runs.types.ts, service, routes, spec |
+| #   | Task                                                                                   | Commit   | Files                                                               |
+| --- | -------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------- |
+| 1   | Migration + nthBusinessDay extraction + buildCostCenterItems + closeRun 4 new CP types | e1eaeebf | schema.prisma, payroll-date-utils.ts, payroll-runs.service.ts, spec |
+| 2   | cp-preview endpoint + revertRun extension + 10 new tests                               | e7a7aa20 | payroll-runs.types.ts, service, routes, spec                        |
 
 ## What Was Built
 
@@ -83,6 +83,7 @@ None — plan executed exactly as written, with one minor adaptation:
 ## Self-Check
 
 Verified files created/modified:
+
 - FOUND: apps/backend/src/modules/payroll-runs/payroll-date-utils.ts
 - FOUND: apps/backend/src/modules/payroll-runs/payroll-runs.types.ts
 - FOUND commit e1eaeebf (Task 1)

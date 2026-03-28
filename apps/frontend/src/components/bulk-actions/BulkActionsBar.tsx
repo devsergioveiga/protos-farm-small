@@ -50,7 +50,11 @@ function BulkActionsBar({
           </button>
         )}
         {onRegisterExit && (
-          <button type="button" className="bulk-bar__btn bulk-bar__btn--danger" onClick={onRegisterExit}>
+          <button
+            type="button"
+            className="bulk-bar__btn bulk-bar__btn--danger"
+            onClick={onRegisterExit}
+          >
             <LogOut aria-hidden="true" size={18} />
             Registrar saída
           </button>

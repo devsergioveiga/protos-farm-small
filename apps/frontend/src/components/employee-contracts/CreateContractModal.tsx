@@ -24,12 +24,7 @@ const CONTRACT_TYPES: ContractType[] = [
 ];
 
 // Types that require an end date
-const REQUIRES_END_DATE: ContractType[] = [
-  'CLT_DETERMINATE',
-  'SEASONAL',
-  'TRIAL',
-  'APPRENTICE',
-];
+const REQUIRES_END_DATE: ContractType[] = ['CLT_DETERMINATE', 'SEASONAL', 'TRIAL', 'APPRENTICE'];
 
 export default function CreateContractModal({
   isOpen,

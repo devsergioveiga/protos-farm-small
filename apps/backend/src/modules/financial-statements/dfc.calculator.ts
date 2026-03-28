@@ -22,8 +22,11 @@ type Period = 'currentMonth' | 'ytd' | 'priorYear';
 
 const PERIODS: Period[] = ['currentMonth', 'ytd', 'priorYear'];
 
-
-function sumRow(rows: DfcSectionRow[]): { currentMonth: Decimal; ytd: Decimal; priorYear: Decimal } {
+function sumRow(rows: DfcSectionRow[]): {
+  currentMonth: Decimal;
+  ytd: Decimal;
+  priorYear: Decimal;
+} {
   return {
     currentMonth: rows.reduce((s, r) => s.plus(new Decimal(r.currentMonth)), new Decimal(0)),
     ytd: rows.reduce((s, r) => s.plus(new Decimal(r.ytd)), new Decimal(0)),
@@ -41,20 +44,48 @@ interface OperacionalLineConfig {
 }
 
 const OPERACIONAL_LINES: OperacionalLineConfig[] = [
-  { id: 'recebimentos-clientes', label: 'Recebimentos de clientes', categories: ['GRAIN_SALE', 'CATTLE_SALE', 'MILK_SALE', 'LEASE', 'SERVICES'], type: 'inflow' },
-  { id: 'outros-recebimentos-operacionais', label: 'Outros recebimentos operacionais', categories: ['OTHER'], type: 'inflow' },
-  { id: 'pagamento-fornecedores', label: 'Pagamentos a fornecedores', categories: ['INPUTS', 'MAINTENANCE'], type: 'outflow' },
-  { id: 'salarios-encargos', label: 'Salarios e encargos sociais', categories: ['PAYROLL'], type: 'outflow' },
+  {
+    id: 'recebimentos-clientes',
+    label: 'Recebimentos de clientes',
+    categories: ['GRAIN_SALE', 'CATTLE_SALE', 'MILK_SALE', 'LEASE', 'SERVICES'],
+    type: 'inflow',
+  },
+  {
+    id: 'outros-recebimentos-operacionais',
+    label: 'Outros recebimentos operacionais',
+    categories: ['OTHER'],
+    type: 'inflow',
+  },
+  {
+    id: 'pagamento-fornecedores',
+    label: 'Pagamentos a fornecedores',
+    categories: ['INPUTS', 'MAINTENANCE'],
+    type: 'outflow',
+  },
+  {
+    id: 'salarios-encargos',
+    label: 'Salarios e encargos sociais',
+    categories: ['PAYROLL'],
+    type: 'outflow',
+  },
   { id: 'impostos-pagos', label: 'Impostos pagos', categories: ['TAXES'], type: 'outflow' },
-  { id: 'alugueis-servicos', label: 'Alugueis e servicos', categories: ['RENT', 'SERVICES'], type: 'outflow' },
-  { id: 'outros-pagamentos-operacionais', label: 'Outros pagamentos operacionais', categories: ['OTHER', 'CARTAO_CREDITO'], type: 'outflow' },
+  {
+    id: 'alugueis-servicos',
+    label: 'Alugueis e servicos',
+    categories: ['RENT', 'SERVICES'],
+    type: 'outflow',
+  },
+  {
+    id: 'outros-pagamentos-operacionais',
+    label: 'Outros pagamentos operacionais',
+    categories: ['OTHER', 'CARTAO_CREDITO'],
+    type: 'outflow',
+  },
 ];
 
 // ─── buildSection ─────────────────────────────────────────────────────────────
 
-function buildOperacionalSection(
-  itemsByPeriod: Record<Period, DfcPaidItem[]>,
-): DfcSection {
+function buildOperacionalSection(itemsByPeriod: Record<Period, DfcPaidItem[]>): DfcSection {
   const rows: DfcSectionRow[] = [];
 
   for (const lineConfig of OPERACIONAL_LINES) {
@@ -67,9 +98,10 @@ function buildOperacionalSection(
 
     for (const period of PERIODS) {
       for (const item of itemsByPeriod[period]) {
-        const dfcClass = item.type === 'outflow'
-          ? PAYABLE_DFC_MAP[item.category]
-          : RECEIVABLE_DFC_MAP[item.category];
+        const dfcClass =
+          item.type === 'outflow'
+            ? PAYABLE_DFC_MAP[item.category]
+            : RECEIVABLE_DFC_MAP[item.category];
 
         if (dfcClass !== 'OPERACIONAL') continue;
         if (!lineConfig.categories.includes(item.category)) continue;
@@ -112,17 +144,24 @@ function buildOperacionalSection(
   };
 }
 
-function buildInvestimentoSection(
-  itemsByPeriod: Record<Period, DfcPaidItem[]>,
-): DfcSection {
-  const aquisicaoAmounts: Record<Period, Decimal> = { currentMonth: new Decimal(0), ytd: new Decimal(0), priorYear: new Decimal(0) };
-  const vendaAmounts: Record<Period, Decimal> = { currentMonth: new Decimal(0), ytd: new Decimal(0), priorYear: new Decimal(0) };
+function buildInvestimentoSection(itemsByPeriod: Record<Period, DfcPaidItem[]>): DfcSection {
+  const aquisicaoAmounts: Record<Period, Decimal> = {
+    currentMonth: new Decimal(0),
+    ytd: new Decimal(0),
+    priorYear: new Decimal(0),
+  };
+  const vendaAmounts: Record<Period, Decimal> = {
+    currentMonth: new Decimal(0),
+    ytd: new Decimal(0),
+    priorYear: new Decimal(0),
+  };
 
   for (const period of PERIODS) {
     for (const item of itemsByPeriod[period]) {
-      const dfcClass = item.type === 'outflow'
-        ? PAYABLE_DFC_MAP[item.category]
-        : RECEIVABLE_DFC_MAP[item.category];
+      const dfcClass =
+        item.type === 'outflow'
+          ? PAYABLE_DFC_MAP[item.category]
+          : RECEIVABLE_DFC_MAP[item.category];
 
       if (dfcClass !== 'INVESTIMENTO') continue;
 
@@ -172,16 +211,19 @@ function buildInvestimentoSection(
   };
 }
 
-function buildFinanciamentoSection(
-  itemsByPeriod: Record<Period, DfcPaidItem[]>,
-): DfcSection {
-  const pagamentoAmounts: Record<Period, Decimal> = { currentMonth: new Decimal(0), ytd: new Decimal(0), priorYear: new Decimal(0) };
+function buildFinanciamentoSection(itemsByPeriod: Record<Period, DfcPaidItem[]>): DfcSection {
+  const pagamentoAmounts: Record<Period, Decimal> = {
+    currentMonth: new Decimal(0),
+    ytd: new Decimal(0),
+    priorYear: new Decimal(0),
+  };
 
   for (const period of PERIODS) {
     for (const item of itemsByPeriod[period]) {
-      const dfcClass = item.type === 'outflow'
-        ? PAYABLE_DFC_MAP[item.category]
-        : RECEIVABLE_DFC_MAP[item.category];
+      const dfcClass =
+        item.type === 'outflow'
+          ? PAYABLE_DFC_MAP[item.category]
+          : RECEIVABLE_DFC_MAP[item.category];
 
       if (dfcClass !== 'FINANCIAMENTO') continue;
 

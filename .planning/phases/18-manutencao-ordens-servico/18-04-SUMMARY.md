@@ -52,15 +52,15 @@ key-files:
     - apps/frontend/src/App.tsx
 
 key-decisions:
-  - "Wrench icon for Planos de Manutencao, ClipboardList (already imported) for Ordens de Servico in Sidebar"
-  - "WorkOrdersPage Kanban tab shows placeholder text referencing Plan 05 — no stub component added"
-  - "Parts inline table in WorkOrderModal uses local PartRow state (not API calls) so unsaved OS can have parts previewed before save"
-  - "Photo upload in WorkOrderModal stores File[] locally; actual upload to storage is deferred (no storage service in scope for Plan 04)"
+  - 'Wrench icon for Planos de Manutencao, ClipboardList (already imported) for Ordens de Servico in Sidebar'
+  - 'WorkOrdersPage Kanban tab shows placeholder text referencing Plan 05 — no stub component added'
+  - 'Parts inline table in WorkOrderModal uses local PartRow state (not API calls) so unsaved OS can have parts previewed before save'
+  - 'Photo upload in WorkOrderModal stores File[] locally; actual upload to storage is deferred (no storage service in scope for Plan 04)'
 
 patterns-established:
-  - "useMaintenancePlans / useWorkOrders: onSuccess callback param for create/update operations"
-  - "Status badges: STATUS_CONFIG record keyed on status enum with icon+className, renders role=status span"
-  - "Overdue detection: isOverdue(dateStr) helper used in both table and mobile card"
+  - 'useMaintenancePlans / useWorkOrders: onSuccess callback param for create/update operations'
+  - 'Status badges: STATUS_CONFIG record keyed on status enum with icon+className, renders role=status span'
+  - 'Overdue detection: isOverdue(dateStr) helper used in both table and mobile card'
 
 requirements-completed:
   - MANU-01
@@ -141,5 +141,6 @@ None - no external service configuration required.
 - MaintenanceDashboardPage (Plan 06) can consume useWorkOrders.fetchDashboard which returns MaintenanceDashboard type
 
 ---
-*Phase: 18-manutencao-ordens-servico*
-*Completed: 2026-03-21*
+
+_Phase: 18-manutencao-ordens-servico_
+_Completed: 2026-03-21_

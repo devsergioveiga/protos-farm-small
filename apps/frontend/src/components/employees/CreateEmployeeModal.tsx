@@ -37,8 +37,7 @@ function formatCPF(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 11);
   if (digits.length <= 3) return digits;
   if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
-  if (digits.length <= 9)
-    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
   return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
 }
 
@@ -432,13 +431,13 @@ export default function CreateEmployeeModal({
                         background: isActive
                           ? 'var(--color-primary-600)'
                           : isCompleted
-                          ? 'var(--color-primary-100, #C8E6C9)'
-                          : 'var(--color-neutral-100)',
+                            ? 'var(--color-primary-100, #C8E6C9)'
+                            : 'var(--color-neutral-100)',
                         color: isActive
                           ? '#fff'
                           : isCompleted
-                          ? 'var(--color-primary-700)'
-                          : 'var(--color-neutral-500)',
+                            ? 'var(--color-primary-700)'
+                            : 'var(--color-neutral-500)',
                         position: 'relative',
                         zIndex: 1,
                       }}
@@ -450,9 +449,7 @@ export default function CreateEmployeeModal({
                         fontFamily: "'Source Sans 3', system-ui, sans-serif",
                         fontSize: '0.75rem',
                         fontWeight: isActive ? 700 : 400,
-                        color: isActive
-                          ? 'var(--color-primary-700)'
-                          : 'var(--color-neutral-500)',
+                        color: isActive ? 'var(--color-primary-700)' : 'var(--color-neutral-500)',
                         textAlign: 'center',
                         whiteSpace: 'nowrap',
                       }}
@@ -913,7 +910,9 @@ export default function CreateEmployeeModal({
                 >
                   Dados Pessoais
                 </h3>
-                <dl style={{ margin: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <dl
+                  style={{ margin: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}
+                >
                   <div>
                     <dt
                       style={{
@@ -1004,7 +1003,9 @@ export default function CreateEmployeeModal({
                 >
                   Contrato
                 </h3>
-                <dl style={{ margin: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <dl
+                  style={{ margin: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}
+                >
                   <div>
                     <dt
                       style={{

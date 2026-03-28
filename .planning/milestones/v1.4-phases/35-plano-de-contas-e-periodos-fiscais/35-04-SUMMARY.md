@@ -29,14 +29,14 @@ key_files:
     - apps/frontend/src/components/layout/Sidebar.tsx
     - apps/frontend/src/App.tsx
 decisions:
-  - "Period close uses ConfirmModal (variant=warning) per CLAUDE.md — never window.confirm"
-  - "Reopen period requires inline textarea for reason before confirming"
-  - "FiscalYearCard renders PeriodPanel inline (not a separate modal) to show audit info"
-  - "COA tree built client-side from flat array via buildTree() helper — avoids extra API call"
-  - "isSynthetic checkbox programmatically disables allowManualEntry to enforce data integrity"
+  - 'Period close uses ConfirmModal (variant=warning) per CLAUDE.md — never window.confirm'
+  - 'Reopen period requires inline textarea for reason before confirming'
+  - 'FiscalYearCard renders PeriodPanel inline (not a separate modal) to show audit info'
+  - 'COA tree built client-side from flat array via buildTree() helper — avoids extra API call'
+  - 'isSynthetic checkbox programmatically disables allowManualEntry to enforce data integrity'
 metrics:
   duration_minutes: 22
-  completed_date: "2026-03-27"
+  completed_date: '2026-03-27'
   tasks_completed: 2
   tasks_total: 3
   files_created: 13
@@ -52,6 +52,7 @@ metrics:
 Two new pages under the CONTABILIDADE sidebar group, backed by typed hooks and components:
 
 ### Chart of Accounts Page (`/chart-of-accounts`)
+
 - Breadcrumb, header with "Carregar Template Rural" and "Nova Conta" buttons
 - SPED unmapped accounts alert bar (yellow warning if count > 0)
 - Client-side search/filter on code or name
@@ -67,6 +68,7 @@ Two new pages under the CONTABILIDADE sidebar group, backed by typed hooks and c
 - Skeleton loading (8 rows with pulse animation)
 
 ### Chart of Accounts Modal (`CoaModal`)
+
 - Create and edit modes (edit mode pre-fills form)
 - Fields: code, name, parentId (select synthetic accounts), accountType, nature, isSynthetic, allowManualEntry, isFairValueAdj, spedRefCode
 - `isSynthetic` checkbox disables `allowManualEntry` checkbox automatically
@@ -74,6 +76,7 @@ Two new pages under the CONTABILIDADE sidebar group, backed by typed hooks and c
 - Visible labels on all fields, `aria-required`, errors with `role="alert"`
 
 ### Fiscal Periods Page (`/fiscal-periods`)
+
 - Breadcrumb, header with "Novo Exercício Fiscal" button
 - Fiscal year cards: name, date range, active badge, 12-column period grid
 - Period cells: month abbreviation + year + status badge
@@ -86,15 +89,18 @@ Two new pages under the CONTABILIDADE sidebar group, backed by typed hooks and c
 - Skeleton: 2 year cards with pulse grid
 
 ### FiscalYearModal
+
 - Fields: name, startDate, endDate
 - Preset buttons: "Calendário (Jan–Dez)" fills Jan 1 – Dec 31 current year; "Safra (Jul–Jun)" fills Jul 1 – Jun 30 next year
 - Cross-field validation: endDate must be after startDate
 
 ### Sidebar + Routes
+
 - Added `Plano de Contas` (GitBranch icon) and `Períodos Fiscais` (Calendar icon) before Lançamentos Contábeis in CONTABILIDADE group
 - Lazy routes `/chart-of-accounts` and `/fiscal-periods` in `App.tsx`
 
 ### Hooks
+
 - `useChartOfAccounts`: 6 exports (useChartOfAccounts, useCreateAccount, useUpdateAccount, useDeactivateAccount, useSeedTemplate, useUnmappedSped)
 - `useFiscalPeriods`: 5 exports (useFiscalYears, useCreateFiscalYear, useClosePeriod, useReopenPeriod, useBlockPeriod)
 - All hooks read `orgId` from `useAuth()` and use `/org/${orgId}/...` API paths
@@ -108,6 +114,7 @@ None — plan executed exactly as written.
 Task 3 is a `checkpoint:human-verify` gate. The automated check (`tsc --noEmit`) passes with zero errors.
 
 **Verification steps for human:**
+
 1. Start frontend dev server: `cd apps/frontend && pnpm dev`
 2. Navigate to sidebar → CONTABILIDADE → "Plano de Contas"
 3. Verify empty state with "Carregar Template Rural" CTA
@@ -127,6 +134,7 @@ None — all data flows through real API hooks. The pages will show their empty 
 ## Self-Check: PASSED
 
 All files confirmed present:
+
 - apps/frontend/src/types/accounting.ts ✓
 - apps/frontend/src/hooks/useChartOfAccounts.ts ✓
 - apps/frontend/src/hooks/useFiscalPeriods.ts ✓
@@ -137,6 +145,7 @@ All files confirmed present:
 - apps/frontend/src/pages/FiscalPeriodsPage.tsx ✓
 
 Commits:
+
 - 3ca1b309: feat(35-04): add COA types, hooks, tree node, modal and page
 - 50a13012: feat(35-04): add fiscal periods page, modal, hooks, sidebar links and routes
 

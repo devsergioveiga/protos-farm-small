@@ -317,7 +317,8 @@ export default function MedicalExamModal({ isOpen, employees, onClose, onSave }:
                 />
                 <span id="me-next-date-hint" className="medical-exam-modal__hint">
                   Calculado automaticamente com base na periodicidade do cargo
-                  {form.employeeId && ` (${employees.find((e) => e.id === form.employeeId)?.asoPeriodicityMonths ?? 12} meses)`}
+                  {form.employeeId &&
+                    ` (${employees.find((e) => e.id === form.employeeId)?.asoPeriodicityMonths ?? 12} meses)`}
                 </span>
                 {errors.nextExamDate && (
                   <span className="medical-exam-modal__error" role="alert">

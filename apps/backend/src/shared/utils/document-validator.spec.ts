@@ -1,4 +1,10 @@
-import { isValidCPF, isValidCNPJ, validateDocument, cleanDocument, isValidPIS } from './document-validator';
+import {
+  isValidCPF,
+  isValidCNPJ,
+  validateDocument,
+  cleanDocument,
+  isValidPIS,
+} from './document-validator';
 
 describe('document-validator', () => {
   // ─── cleanDocument ──────────────────────────────────────────────
@@ -84,7 +90,7 @@ describe('document-validator', () => {
     });
 
     it('should reject PIS with wrong length', () => {
-      expect(isValidPIS('1234567890')).toBe(false);   // too short
+      expect(isValidPIS('1234567890')).toBe(false); // too short
       expect(isValidPIS('123456789190')).toBe(false); // too long
     });
   });

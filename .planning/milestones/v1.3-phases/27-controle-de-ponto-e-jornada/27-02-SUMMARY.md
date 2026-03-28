@@ -1,6 +1,6 @@
 ---
 phase: 27-controle-de-ponto-e-jornada
-plan: "02"
+plan: '02'
 subsystem: time-calculations
 tags: [tdd, pure-functions, decimal, labor-law, rural]
 dependency_graph:
@@ -22,11 +22,11 @@ key_files:
   modified: []
 decisions:
   - "calcDailyWork accepts optional previousClockOut + clockIn pair for interjornada — avoids coupling to caller's clock-in data model"
-  - "Holiday cache keyed by BR-state-city — ensures single Holidays instance per locale across test runs"
-  - "Absence defined as zero total worked minutes (regular + overtime50 + overtime100 = 0)"
+  - 'Holiday cache keyed by BR-state-city — ensures single Holidays instance per locale across test runs'
+  - 'Absence defined as zero total worked minutes (regular + overtime50 + overtime100 = 0)'
 metrics:
   duration_minutes: 12
-  completed_date: "2026-03-24"
+  completed_date: '2026-03-24'
   tasks_completed: 2
   files_created: 3
   tests_passing: 23
@@ -46,13 +46,13 @@ Three files implementing the computation core for the controle-de-ponto-e-jornad
 
 ## Functions Exported
 
-| Function | Purpose |
-|---|---|
-| `calcDailyWork` | Breaks worked minutes into regular/overtime50/overtime100; captures interjornada |
+| Function                | Purpose                                                                          |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| `calcDailyWork`         | Breaks worked minutes into regular/overtime50/overtime100; captures interjornada |
 | `calcRuralNightPremium` | Converts real night minutes to contractual hours via 60/52.5 factor, 25% premium |
-| `isHolidayOrSunday` | date-holidays BR + Sunday detection with lazy per-locale cache |
-| `calcInterjornada` | Gap between shifts; alert when < 660 minutes (11 hours) |
-| `calcMonthlyTotals` | Aggregates DailyWorkResult array; counts zero-minute days as absences |
+| `isHolidayOrSunday`     | date-holidays BR + Sunday detection with lazy per-locale cache                   |
+| `calcInterjornada`      | Gap between shifts; alert when < 660 minutes (11 hours)                          |
+| `calcMonthlyTotals`     | Aggregates DailyWorkResult array; counts zero-minute days as absences            |
 
 ## Key Brazilian Labor Rules Implemented
 
@@ -75,6 +75,7 @@ Three files implementing the computation core for the controle-de-ponto-e-jornad
 ## Deviations from Plan
 
 **1. [Rule 2 - Missing functionality] calcDailyWork signature extended with clockIn parameter**
+
 - **Found during:** RED phase test writing
 - **Issue:** Plan spec showed `previousClockOut` as only parameter but tests require `currentClockIn` to compute the gap
 - **Fix:** Added optional `clockIn?: Date` as third parameter; interjornada only computed when both params present
@@ -85,11 +86,13 @@ None other — plan executed as written.
 ## Self-Check: PASSED
 
 Files exist:
+
 - FOUND: apps/backend/src/modules/time-calculations/time-calculations.types.ts
 - FOUND: apps/backend/src/modules/time-calculations/time-calculations.service.ts
 - FOUND: apps/backend/src/modules/time-calculations/time-calculations.spec.ts
 
 Commits:
+
 - FOUND: 89cad2a2 (test(27-02): failing tests RED)
 - FOUND: 7fb6e9cd (feat(27-02): implementation GREEN)
 

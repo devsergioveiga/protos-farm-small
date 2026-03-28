@@ -1,6 +1,6 @@
 ---
 phase: 32-integra-o-financeira-cont-bil-e-dashboard-rh
-plan: "03"
+plan: '03'
 subsystem: backend
 tags: [hr-dashboard, payroll, aggregation, kpi, rh]
 dependency_graph:
@@ -34,13 +34,13 @@ key_files:
   modified:
     - apps/backend/src/app.ts
 decisions:
-  - "Used farms:read permission (consistent with Phase 25 HR permission pattern)"
-  - "PayrollRun.totalGross/Net/Charges used for 12-month trend (Pitfall 4: no drill into items)"
-  - "composition built from PayrollRunItem fields available in schema (overtime50/100, inssPatronal, fgtsAmount, vtDeduction, foodDeduction, housingDeduction)"
-  - "Turnover rate: standard HR formula allows rehire double-counting — documented in code"
+  - 'Used farms:read permission (consistent with Phase 25 HR permission pattern)'
+  - 'PayrollRun.totalGross/Net/Charges used for 12-month trend (Pitfall 4: no drill into items)'
+  - 'composition built from PayrollRunItem fields available in schema (overtime50/100, inssPatronal, fgtsAmount, vtDeduction, foodDeduction, housingDeduction)'
+  - 'Turnover rate: standard HR formula allows rehire double-counting — documented in code'
 metrics:
-  duration: "~15min"
-  completed: "2026-03-26"
+  duration: '~15min'
+  completed: '2026-03-26'
   tasks: 2
   files_created: 4
   files_modified: 1
@@ -64,27 +64,28 @@ New `hr-dashboard` module with a single `GET /org/hr-dashboard` endpoint that ag
 
 ### Response Sections
 
-| Section | Source | Notes |
-|---------|--------|-------|
-| headcount | Employee.groupBy(status) + EmployeeContract.groupBy(contractType) | Non-DESLIGADO employees only for status count |
-| currentMonthCost | PayrollRun (COMPLETED, referenceMonth) | avgPerEmployee = gross/headcount, costPerHectare requires Farm.totalAreaHa |
-| trend12Months | PayrollRun.totalGross/Net/Charges last 12 COMPLETED runs | Pre-computed totals — no PayrollRunItem scan (Pitfall 4) |
-| composition | PayrollRunItem aggregation for current run | Salários / HE (overtime50+100) / Encargos (INSS+FGTS) / Benefícios (VT+food+housing) |
-| costByActivity | TimeEntryActivity.groupBy(operationType).sum(costAmount) | Filtered by farmId and referenceMonth |
-| turnover | EmployeeStatusHistory.count (toStatus=ATIVO vs DESLIGADO last 12m) | Standard HR formula: (adm+term)/2/avgHeadcount*100 |
-| upcomingContractExpirations | EmployeeContract where endDate in [today, +90] for SEASONAL/CLT_DETERMINATE/TRIAL | Bucketed into 30/60/90 day windows |
-| alerts | Payable(PAYROLL,OVERDUE) + Timesheet(PENDING_RH) + EmployeeContract(expired) | Counts only |
+| Section                     | Source                                                                            | Notes                                                                                |
+| --------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| headcount                   | Employee.groupBy(status) + EmployeeContract.groupBy(contractType)                 | Non-DESLIGADO employees only for status count                                        |
+| currentMonthCost            | PayrollRun (COMPLETED, referenceMonth)                                            | avgPerEmployee = gross/headcount, costPerHectare requires Farm.totalAreaHa           |
+| trend12Months               | PayrollRun.totalGross/Net/Charges last 12 COMPLETED runs                          | Pre-computed totals — no PayrollRunItem scan (Pitfall 4)                             |
+| composition                 | PayrollRunItem aggregation for current run                                        | Salários / HE (overtime50+100) / Encargos (INSS+FGTS) / Benefícios (VT+food+housing) |
+| costByActivity              | TimeEntryActivity.groupBy(operationType).sum(costAmount)                          | Filtered by farmId and referenceMonth                                                |
+| turnover                    | EmployeeStatusHistory.count (toStatus=ATIVO vs DESLIGADO last 12m)                | Standard HR formula: (adm+term)/2/avgHeadcount\*100                                  |
+| upcomingContractExpirations | EmployeeContract where endDate in [today, +90] for SEASONAL/CLT_DETERMINATE/TRIAL | Bucketed into 30/60/90 day windows                                                   |
+| alerts                      | Payable(PAYROLL,OVERDUE) + Timesheet(PENDING_RH) + EmployeeContract(expired)      | Counts only                                                                          |
 
 ## Commits
 
-| Task | Commit | Description |
-|------|--------|-------------|
-| 1 | 403bbea8 | feat(32-03): add HR dashboard types and service |
-| 2 | f26b3a10 | feat(32-03): add HR dashboard routes and tests |
+| Task | Commit   | Description                                     |
+| ---- | -------- | ----------------------------------------------- |
+| 1    | 403bbea8 | feat(32-03): add HR dashboard types and service |
+| 2    | f26b3a10 | feat(32-03): add HR dashboard routes and tests  |
 
 ## Test Coverage
 
 15 tests in `hr-dashboard.routes.spec.ts`:
+
 - Headcount structure validation
 - currentMonthCost with COMPLETED run
 - Null costPerHectare when no farm area

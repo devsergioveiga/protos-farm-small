@@ -55,7 +55,9 @@ monthlyClosingRouter.get(
       const closing = await service.getClosing(orgId, periodId);
 
       if (!closing) {
-        res.status(404).json({ error: 'Nenhum fechamento encontrado para o periodo', code: 'NOT_FOUND' });
+        res
+          .status(404)
+          .json({ error: 'Nenhum fechamento encontrado para o periodo', code: 'NOT_FOUND' });
         return;
       }
 

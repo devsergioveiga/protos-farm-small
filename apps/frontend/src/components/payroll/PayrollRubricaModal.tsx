@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
-import type { PayrollRubrica, CreateRubricaInput, UpdateRubricaInput, RubricaType, CalculationType } from '@/types/payroll';
+import type {
+  PayrollRubrica,
+  CreateRubricaInput,
+  UpdateRubricaInput,
+  RubricaType,
+  CalculationType,
+} from '@/types/payroll';
 import './PayrollRubricaModal.css';
 
 interface PayrollRubricaModalProps {
@@ -155,7 +161,8 @@ export default function PayrollRubricaModal({
     newErrors.name = validateField('name', name);
     if (!isEditing) newErrors.code = validateField('code', code);
     if (calculationType === 'PERCENTAGE') newErrors.rate = validateField('rate', rate);
-    if (calculationType === 'FORMULA') newErrors.baseFormula = validateField('baseFormula', baseFormula);
+    if (calculationType === 'FORMULA')
+      newErrors.baseFormula = validateField('baseFormula', baseFormula);
 
     if (Object.values(newErrors).some(Boolean)) {
       setErrors(newErrors);
@@ -230,7 +237,12 @@ export default function PayrollRubricaModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={(e) => { void handleSubmit(e); }} noValidate>
+        <form
+          onSubmit={(e) => {
+            void handleSubmit(e);
+          }}
+          noValidate
+        >
           <div className="rubrica-modal__body">
             {/* Name */}
             <div className="rubrica-modal__field">
@@ -381,7 +393,9 @@ export default function PayrollRubricaModal({
                   placeholder="SALARIO_BASE * 0.05"
                   required
                   aria-required="true"
-                  aria-describedby={errors.baseFormula ? 'rubrica-formula-error' : 'rubrica-formula-hint'}
+                  aria-describedby={
+                    errors.baseFormula ? 'rubrica-formula-error' : 'rubrica-formula-hint'
+                  }
                 />
                 {errors.baseFormula && (
                   <span id="rubrica-formula-error" className="rubrica-modal__error" role="alert">

@@ -88,9 +88,7 @@ export function useAssetInventory() {
         return result;
       } catch (err) {
         const message =
-          err instanceof Error
-            ? err.message
-            : 'Nao foi possivel carregar o inventario.';
+          err instanceof Error ? err.message : 'Nao foi possivel carregar o inventario.';
         setError(message);
         return null;
       } finally {

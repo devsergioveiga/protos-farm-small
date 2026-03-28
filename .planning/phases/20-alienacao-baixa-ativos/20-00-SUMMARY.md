@@ -1,6 +1,6 @@
 ---
 phase: 20-alienacao-baixa-ativos
-plan: "00"
+plan: '00'
 subsystem: database
 tags: [prisma, postgresql, asset-management, depreciation]
 
@@ -41,14 +41,14 @@ key-files:
     - apps/backend/src/modules/depreciation/depreciation-batch.service.ts
 
 key-decisions:
-  - "ASSET_SALE added to ReceivableCategory enum to enable receivables on asset sales (VENDA disposals)"
-  - "AssetDisposal.assetId has @unique constraint — one disposal record per asset, enforces finality"
-  - "AssetInventoryItem uses onDelete: Cascade from inventory — items deleted when inventory cancelled"
+  - 'ASSET_SALE added to ReceivableCategory enum to enable receivables on asset sales (VENDA disposals)'
+  - 'AssetDisposal.assetId has @unique constraint — one disposal record per asset, enforces finality'
+  - 'AssetInventoryItem uses onDelete: Cascade from inventory — items deleted when inventory cancelled'
   - "Depreciation batch uses notIn: ['EM_ANDAMENTO', 'ALIENADO'] to atomically exclude disposed assets"
 
 patterns-established:
   - "Named Prisma relations: use @relation('AssetTransferFrom'/'AssetTransferTo') for same-table bidirectional"
-  - "Type files: always export error class + label maps + input/output interfaces from single module file"
+  - 'Type files: always export error class + label maps + input/output interfaces from single module file'
 
 requirements-completed: [DISP-01, DISP-02, DISP-03, DISP-04, DISP-05]
 
@@ -70,6 +70,7 @@ completed: 2026-03-22
 - **Files modified:** 6
 
 ## Accomplishments
+
 - Extended Prisma schema with all 4 new models and 2 new enums required for Phase 20
 - Created type contract files for 3 new modules following existing module conventions
 - Fixed depreciation batch to atomically exclude ALIENADO (disposed) assets from processing
@@ -84,6 +85,7 @@ Each task was committed atomically:
 **Plan metadata:** (docs commit — see below)
 
 ## Files Created/Modified
+
 - `apps/backend/prisma/schema.prisma` - Added 4 models, 2 enums, ASSET_SALE enum value, disposalDate field, relation arrays
 - `apps/backend/prisma/migrations/20260427100000_add_asset_disposal_models/migration.sql` - Migration with all DDL
 - `apps/backend/src/modules/asset-disposals/asset-disposals.types.ts` - Error class, DisposalType, CreateDisposalInput, DisposalOutput, DISPOSAL_TYPE_LABELS
@@ -92,6 +94,7 @@ Each task was committed atomically:
 - `apps/backend/src/modules/depreciation/depreciation-batch.service.ts` - Changed `not: 'EM_ANDAMENTO'` to `notIn: ['EM_ANDAMENTO', 'ALIENADO']`
 
 ## Decisions Made
+
 - Used `@unique` on `AssetDisposal.assetId` to enforce one-disposal-per-asset at DB level
 - Named Prisma relations `AssetTransferFrom` / `AssetTransferTo` on Farm model for bidirectional farm transfer FK
 - `AssetInventoryItem` uses `onDelete: Cascade` so items are cleaned up when inventory is deleted/cancelled
@@ -102,12 +105,15 @@ Each task was committed atomically:
 None - plan executed exactly as written.
 
 ## Issues Encountered
+
 None.
 
 ## User Setup Required
+
 None - no external service configuration required. Migration must be applied to DB when deploying.
 
 ## Next Phase Readiness
+
 - Schema foundation complete for all 3 Phase 20 service modules
 - Type contracts exported and ready for service and route implementations
 - Depreciation batch safe to run on organizations with disposed assets
@@ -115,5 +121,6 @@ None - no external service configuration required. Migration must be applied to 
 ## Self-Check: PASSED
 
 ---
-*Phase: 20-alienacao-baixa-ativos*
-*Completed: 2026-03-22*
+
+_Phase: 20-alienacao-baixa-ativos_
+_Completed: 2026-03-22_

@@ -13,15 +13,7 @@ import { useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
-import {
-  ArrowLeft,
-  MapPin,
-  WifiOff,
-  Clock,
-  Coffee,
-  LogIn,
-  LogOut,
-} from 'lucide-react-native';
+import { ArrowLeft, MapPin, WifiOff, Clock, Coffee, LogIn, LogOut } from 'lucide-react-native';
 import { spacing, fontSize, colors } from '@protos-farm/shared';
 import { useAuth } from '@/stores/AuthContext';
 import { useFarmContext } from '@/stores/FarmContext';
@@ -82,18 +74,13 @@ function punchTypeLabel(type: PunchType): string {
  * Returns true if the point is inside the polygon.
  * Polygon is an array of [longitude, latitude] coordinate pairs (GeoJSON format).
  */
-function isPointInPolygon(
-  lat: number,
-  lng: number,
-  polygon: [number, number][],
-): boolean {
+function isPointInPolygon(lat: number, lng: number, polygon: [number, number][]): boolean {
   let inside = false;
   const n = polygon.length;
   for (let i = 0, j = n - 1; i < n; j = i++) {
     const [xi, yi] = polygon[i];
     const [xj, yj] = polygon[j];
-    const intersect =
-      yi > lat !== yj > lat && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi;
+    const intersect = yi > lat !== yj > lat && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi;
     if (intersect) inside = !inside;
   }
   return inside;
@@ -103,9 +90,7 @@ function isPointInPolygon(
  * Extract polygon ring from farm boundary GeoJSON.
  * Supports Polygon and MultiPolygon (uses first ring of first polygon).
  */
-function extractPolygonRing(
-  geojson: unknown,
-): [number, number][] | null {
+function extractPolygonRing(geojson: unknown): [number, number][] | null {
   try {
     const g = geojson as {
       type: string;
@@ -115,7 +100,7 @@ function extractPolygonRing(
       return (g.coordinates as [number, number][][])[0] ?? null;
     }
     if (g.type === 'MultiPolygon') {
-      return ((g.coordinates as [number, number][][][])[0]?.[0]) ?? null;
+      return (g.coordinates as [number, number][][][])[0]?.[0] ?? null;
     }
     if (g.type === 'Feature') {
       return extractPolygonRing((geojson as unknown as { geometry: unknown }).geometry);
@@ -133,12 +118,7 @@ interface SyncDotProps {
 }
 
 function SyncDot({ status }: SyncDotProps) {
-  const bgColor =
-    status === 'synced'
-      ? '#43A047'
-      : status === 'syncing'
-        ? '#FFB300'
-        : '#78909C';
+  const bgColor = status === 'synced' ? '#43A047' : status === 'syncing' ? '#FFB300' : '#78909C';
   return (
     <View
       style={[styles.syncDot, { backgroundColor: bgColor }]}
@@ -169,7 +149,9 @@ export default function TimePunchScreen() {
   const [todayPunches, setTodayPunches] = useState<LocalTimePunch[]>([]);
   const [punchState, setPunchState] = useState<PunchState>('IDLE');
   const [isRegistering, setIsRegistering] = useState(false);
-  const [gpsStatus, setGpsStatus] = useState<'inside' | 'outside' | 'unknown' | 'denied'>('unknown');
+  const [gpsStatus, setGpsStatus] = useState<'inside' | 'outside' | 'unknown' | 'denied'>(
+    'unknown',
+  );
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -259,9 +241,7 @@ export default function TimePunchScreen() {
     try {
       const loc = await Promise.race([
         Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High }),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('GPS timeout')), 3000),
-        ),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('GPS timeout')), 3000)),
       ]);
       coords = loc.coords;
     } catch {
@@ -410,11 +390,7 @@ export default function TimePunchScreen() {
   // ─── Derived UI state ─────────────────────────────────────────────────────
 
   const primaryButtonLabel =
-    punchState === 'IDLE'
-      ? 'Entrar'
-      : punchState === 'CLOCKED_IN'
-        ? 'Sair'
-        : 'Retornar';
+    punchState === 'IDLE' ? 'Entrar' : punchState === 'CLOCKED_IN' ? 'Sair' : 'Retornar';
 
   const primaryButtonSubLabel =
     punchState === 'IDLE'
@@ -518,12 +494,7 @@ export default function TimePunchScreen() {
         {/* Primary clock-in/out button */}
         <View style={styles.primaryButtonWrapper}>
           {punchState === 'CLOCKED_IN' && (
-            <View
-              style={[
-                styles.pulseRing,
-                { opacity: reduceMotion ? 0 : pulseOpacity },
-              ]}
-            />
+            <View style={[styles.pulseRing, { opacity: reduceMotion ? 0 : pulseOpacity }]} />
           )}
           <Pressable
             onPress={handlePrimaryPress}

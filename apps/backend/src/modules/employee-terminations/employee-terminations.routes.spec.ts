@@ -119,7 +119,11 @@ function makeTermination(overrides: Record<string, unknown> = {}) {
     processedAt: null,
     createdBy: 'user-1',
     createdAt: new Date(),
-    employee: { name: 'João da Silva', cpf: '123.456.789-00', position: { title: 'Operador Rural' } },
+    employee: {
+      name: 'João da Silva',
+      cpf: '123.456.789-00',
+      position: { title: 'Operador Rural' },
+    },
     ...overrides,
   };
 }
@@ -132,7 +136,9 @@ describe('processTermination', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockWithRlsContext.mockImplementation((_ctx, fn) => fn(mockPrisma as any));
     (mockPrisma.employee.findFirst as jest.Mock).mockResolvedValue(makeEmployee());
-    (mockPrisma.employeeSalaryHistory.findFirst as jest.Mock).mockResolvedValue(makeSalaryHistory());
+    (mockPrisma.employeeSalaryHistory.findFirst as jest.Mock).mockResolvedValue(
+      makeSalaryHistory(),
+    );
     (mockPrisma.vacationAcquisitivePeriod.findMany as jest.Mock).mockResolvedValue([]);
     (mockPrisma.payrollRunItem.findMany as jest.Mock).mockResolvedValue([]);
     (mockPrisma.employeeTermination.create as jest.Mock).mockResolvedValue(makeTermination());

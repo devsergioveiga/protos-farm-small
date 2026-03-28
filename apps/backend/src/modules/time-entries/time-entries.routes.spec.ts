@@ -125,7 +125,10 @@ describe('POST /org/:orgId/employees/:empId/time-entries - MANAGER source valida
   it('returns 400 when source is MANAGER but managerNote is missing', async () => {
     authAs(MANAGER_PAYLOAD);
     mockedService.createTimeEntry.mockRejectedValue(
-      new TimeEntryError('managerNote obrigatório para lançamentos manuais (mínimo 10 caracteres)', 400),
+      new TimeEntryError(
+        'managerNote obrigatório para lançamentos manuais (mínimo 10 caracteres)',
+        400,
+      ),
     );
 
     const res = await request(app)

@@ -20,10 +20,10 @@ The HIER-02 reforma/ampliacao scenario is related to but distinct from the `Work
 
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|-----------------|
-| HIER-01 | Gerente pode cadastrar ativo composto (hierarquia pai-filho ate 3 niveis) onde o pai totaliza valores dos filhos e cada filho tem depreciacao independente | `parentAssetId` FK already in Asset model; need depth-limit guard in createAsset/updateAsset; `childAssets` relation already in ASSET_INCLUDE_FULL; aggregation query for parent totals |
-| HIER-02 | Gerente pode registrar reforma ou ampliacao de ativo existente com decisao de capitalizar (soma ao valor contabil + reavalia vida util) ou despesa (vai para DRE) | New `AssetRenovation` model; same increment pattern as MANU-06 CAPITALIZACAO; optionally patches `DepreciationConfig.usefulLifeMonths`; DESPESA path records event without touching acquisitionValue |
+| ID      | Description                                                                                                                                                           | Research Support                                                                                                                                                                                            |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HIER-01 | Gerente pode cadastrar ativo composto (hierarquia pai-filho ate 3 niveis) onde o pai totaliza valores dos filhos e cada filho tem depreciacao independente            | `parentAssetId` FK already in Asset model; need depth-limit guard in createAsset/updateAsset; `childAssets` relation already in ASSET_INCLUDE_FULL; aggregation query for parent totals                     |
+| HIER-02 | Gerente pode registrar reforma ou ampliacao de ativo existente com decisao de capitalizar (soma ao valor contabil + reavalia vida util) ou despesa (vai para DRE)     | New `AssetRenovation` model; same increment pattern as MANU-06 CAPITALIZACAO; optionally patches `DepreciationConfig.usefulLifeMonths`; DESPESA path records event without touching acquisitionValue        |
 | HIER-03 | Gerente pode registrar imobilizado em andamento acumulando aportes parciais com cronograma de etapas, alerta de orcamento e ativacao ao concluir (inicia depreciacao) | Asset already has `EM_ANDAMENTO` status; new `AssetWipContribution` + `AssetWipStage` models; activate endpoint sets `status=ATIVO` + `acquisitionDate`; depreciation batch already excludes `EM_ANDAMENTO` |
 
 </phase_requirements>
@@ -34,27 +34,27 @@ The HIER-02 reforma/ampliacao scenario is related to but distinct from the `Work
 
 ### Core
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| Prisma | 7.x | ORM + new migrations (AssetRenovation, AssetWipContribution, AssetWipStage) | Already in use; consistent with all prior phases |
-| decimal.js | ^10.6.0 | Monetary arithmetic for renovation value, WIP budget tracking | STATE.md locked decision; used in every service touching money |
-| Express 5 | 5.x | HTTP routes for renovation + WIP endpoints | All modules follow routes.ts + service.ts + types.ts pattern |
+| Library    | Version | Purpose                                                                     | Why Standard                                                   |
+| ---------- | ------- | --------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Prisma     | 7.x     | ORM + new migrations (AssetRenovation, AssetWipContribution, AssetWipStage) | Already in use; consistent with all prior phases               |
+| decimal.js | ^10.6.0 | Monetary arithmetic for renovation value, WIP budget tracking               | STATE.md locked decision; used in every service touching money |
+| Express 5  | 5.x     | HTTP routes for renovation + WIP endpoints                                  | All modules follow routes.ts + service.ts + types.ts pattern   |
 
 ### Supporting
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| lucide-react | current | UI icons (Layers, Construction, PlusCircle, CheckCircle) | AssetHierarchyTab, WipContributionsTab |
-| Vitest + @testing-library/react | current | Frontend spec | Any new component spec |
-| Jest + @swc/jest | current | Backend spec | All routes.spec.ts files |
+| Library                         | Version | Purpose                                                  | When to Use                            |
+| ------------------------------- | ------- | -------------------------------------------------------- | -------------------------------------- |
+| lucide-react                    | current | UI icons (Layers, Construction, PlusCircle, CheckCircle) | AssetHierarchyTab, WipContributionsTab |
+| Vitest + @testing-library/react | current | Frontend spec                                            | Any new component spec                 |
+| Jest + @swc/jest                | current | Backend spec                                             | All routes.spec.ts files               |
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
+| Instead of                      | Could Use                          | Tradeoff                                                                                                                 |
+| ------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Dedicated AssetRenovation model | Reuse WorkOrder with CAPITALIZACAO | WorkOrder requires parts/labor tracking — overkill for a direct reforma event; dedicated model gives cleaner audit trail |
-| AssetWipContribution rows | Single aggregate field on Asset | Per-contribution rows enable timeline, per-stage alerts, and reversal — required by HIER-03 |
-| Depth guard in service | DB constraint (recursive CTE) | Recursive CTEs in Prisma are verbose; service-layer depth traversal (3 levels max) is simpler and testable |
+| AssetWipContribution rows       | Single aggregate field on Asset    | Per-contribution rows enable timeline, per-stage alerts, and reversal — required by HIER-03                              |
+| Depth guard in service          | DB constraint (recursive CTE)      | Recursive CTEs in Prisma are verbose; service-layer depth traversal (3 levels max) is simpler and testable               |
 
 **Installation:** No new packages needed. All required libraries are already installed.
 
@@ -165,13 +165,18 @@ function sumChildValues(asset: AssetWithChildren): Decimal {
 
 ```typescript
 // Source: derived from work-orders.service.ts line 461 — CAPITALIZACAO path
-export async function createRenovation(ctx: RlsContext, assetId: string, input: CreateRenovationInput) {
+export async function createRenovation(
+  ctx: RlsContext,
+  assetId: string,
+  input: CreateRenovationInput,
+) {
   return prisma.$transaction(async (tx) => {
     const asset = await tx.asset.findFirst({
       where: { id: assetId, organizationId: ctx.organizationId, deletedAt: null },
     });
     if (!asset) throw new RenovationError('Ativo nao encontrado', 404);
-    if (asset.status === 'ALIENADO') throw new RenovationError('Ativo alienado nao pode ser reformado', 400);
+    if (asset.status === 'ALIENADO')
+      throw new RenovationError('Ativo alienado nao pode ser reformado', 400);
 
     const renovation = await tx.assetRenovation.create({
       data: {
@@ -215,7 +220,12 @@ export async function createRenovation(ctx: RlsContext, assetId: string, input: 
 export async function activateWipAsset(ctx: RlsContext, assetId: string, input: ActivateWipInput) {
   return prisma.$transaction(async (tx) => {
     const asset = await tx.asset.findFirst({
-      where: { id: assetId, organizationId: ctx.organizationId, status: 'EM_ANDAMENTO', deletedAt: null },
+      where: {
+        id: assetId,
+        organizationId: ctx.organizationId,
+        status: 'EM_ANDAMENTO',
+        deletedAt: null,
+      },
     });
     if (!asset) throw new WipError('Ativo em andamento nao encontrado', 404);
 
@@ -302,6 +312,7 @@ model AssetRenovation {
 ```
 
 Add to Asset model:
+
 ```prisma
 renovations AssetRenovation[]
 ```
@@ -355,6 +366,7 @@ model AssetWipContribution {
 ```
 
 Add to Asset model:
+
 ```prisma
 wipContributions AssetWipContribution[]
 wipStages        AssetWipStage[]
@@ -373,39 +385,44 @@ These are nullable — only populated for `EM_ANDAMENTO` assets.
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Circular reference prevention in hierarchy | Custom graph traversal | Simple upward depth counter (3 max) | Problem is bounded at 3 levels — a recursive CTE is unnecessary complexity |
-| Budget alert notification | Push/email system | Response flag `budgetAlert: boolean` | In-scope is the alert flag on the API response + frontend warning banner — push notifications are EPIC-13 territory |
-| Accounting journal entries for DESPESA | DRE module integration | `accountingDecision` field only | DRE module does not exist yet — record the decision, leave integration for future phase |
-| Depreciation restart logic on activation | New batch job | Set `acquisitionDate` + `status=ATIVO` + let existing batch pick up | The existing batch already queries `status NOT IN ['EM_ANDAMENTO', 'ALIENADO']` — activation just moves the asset into scope |
+| Problem                                    | Don't Build            | Use Instead                                                         | Why                                                                                                                          |
+| ------------------------------------------ | ---------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Circular reference prevention in hierarchy | Custom graph traversal | Simple upward depth counter (3 max)                                 | Problem is bounded at 3 levels — a recursive CTE is unnecessary complexity                                                   |
+| Budget alert notification                  | Push/email system      | Response flag `budgetAlert: boolean`                                | In-scope is the alert flag on the API response + frontend warning banner — push notifications are EPIC-13 territory          |
+| Accounting journal entries for DESPESA     | DRE module integration | `accountingDecision` field only                                     | DRE module does not exist yet — record the decision, leave integration for future phase                                      |
+| Depreciation restart logic on activation   | New batch job          | Set `acquisitionDate` + `status=ATIVO` + let existing batch pick up | The existing batch already queries `status NOT IN ['EM_ANDAMENTO', 'ALIENADO']` — activation just moves the asset into scope |
 
 ---
 
 ## Common Pitfalls
 
 ### Pitfall 1: Circular Hierarchy Reference
+
 **What goes wrong:** Setting `parentAssetId` to a descendant creates a cycle. DB does not prevent this by default.
 **Why it happens:** Self-referential FK allows any valid UUID as parent.
 **How to avoid:** In `createAsset` / `updateAsset`, verify the proposed parent is not a descendant of the current asset. Since depth is limited to 3, a simple 3-step upward traversal is sufficient and can double as the cycle detector.
 **Warning signs:** Infinite loop in `sumChildValues` helper; test for this explicitly.
 
 ### Pitfall 2: WIP Activation Without DepreciationConfig
+
 **What goes wrong:** Asset is activated (status → ATIVO) but has no `DepreciationConfig`. Next batch run skips it silently (no config = no entry). Accountant never gets depreciation.
 **Why it happens:** Config creation was optional in Phase 17 — only explicitly configured assets get depreciated.
 **How to avoid:** On `activateWip`, check if `DepreciationConfig` exists. If not, return a `depreciationConfigMissing: true` flag in the response and display a warning banner in the frontend prompting the accountant to configure depreciation.
 
 ### Pitfall 3: Parent Value Totalizing Stale Data
+
 **What goes wrong:** Parent shows total value including disposed/alienated children.
 **Why it happens:** `sumChildValues` traverses all `childAssets` without status filter.
 **How to avoid:** In the aggregation helper, skip children with `status === 'ALIENADO'` or `deletedAt != null`.
 
 ### Pitfall 4: Renovation on EM_ANDAMENTO Asset
+
 **What goes wrong:** Reforma registered against an asset that is still under construction — semantically incorrect.
 **Why it happens:** No guard in renovation service.
 **How to avoid:** `createRenovation` must reject assets with `status === 'EM_ANDAMENTO'` or `status === 'ALIENADO'`. Return 400 with clear message.
 
 ### Pitfall 5: Budget Alert Threshold Off-By-One
+
 **What goes wrong:** Alert fires even when contribution exactly equals budget (100%), conflating "alert" with "exceeded".
 **How to avoid:** Use two distinct flags: `budgetAlert` (>= `wipBudgetAlertPct`%, default 90%) and `budgetExceeded` (total > budget). Frontend shows different UI for each.
 
@@ -452,7 +469,7 @@ interface WipSummaryResponse {
   assetTag: string;
   status: 'EM_ANDAMENTO';
   budget: number | null;
-  budgetAlertPct: number;       // default 90
+  budgetAlertPct: number; // default 90
   totalContributed: number;
   contributionCount: number;
   budgetAlert: boolean;
@@ -478,11 +495,11 @@ interface AssetHierarchyTabProps {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| parentAssetId exists but only used for IMPLEMENTO → MAQUINA link | Phase 22 generalizes to any asset type with depth limit | Phase 22 | All types can be composite |
-| EM_ANDAMENTO status exists but no WIP contribution tracking | Phase 22 adds AssetWipContribution + AssetWipStage models | Phase 22 | Full obra lifecycle management |
-| CAPITALIZACAO only via OS close wizard (MANU-06) | Phase 22 adds standalone AssetRenovation for explicit reforma events | Phase 22 | Reforma without OS is now supported |
+| Old Approach                                                     | Current Approach                                                     | When Changed | Impact                              |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------- | ------------ | ----------------------------------- |
+| parentAssetId exists but only used for IMPLEMENTO → MAQUINA link | Phase 22 generalizes to any asset type with depth limit              | Phase 22     | All types can be composite          |
+| EM_ANDAMENTO status exists but no WIP contribution tracking      | Phase 22 adds AssetWipContribution + AssetWipStage models            | Phase 22     | Full obra lifecycle management      |
+| CAPITALIZACAO only via OS close wizard (MANU-06)                 | Phase 22 adds standalone AssetRenovation for explicit reforma events | Phase 22     | Reforma without OS is now supported |
 
 **Existing decisions that constrain this phase (from STATE.md):**
 
@@ -516,28 +533,28 @@ interface AssetHierarchyTabProps {
 
 ### Test Framework
 
-| Property | Value |
-|----------|-------|
-| Framework | Jest 29 + @swc/jest (backend), Vitest (frontend) |
-| Config file | `apps/backend/jest.config.ts` |
-| Quick run command | `cd apps/backend && pnpm test -- --testPathPattern="asset-renovations\|asset-wip\|assets.routes" --no-coverage` |
-| Full suite command | `cd apps/backend && pnpm test` |
+| Property           | Value                                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------------- |
+| Framework          | Jest 29 + @swc/jest (backend), Vitest (frontend)                                                                |
+| Config file        | `apps/backend/jest.config.ts`                                                                                   |
+| Quick run command  | `cd apps/backend && pnpm test -- --testPathPattern="asset-renovations\|asset-wip\|assets.routes" --no-coverage` |
+| Full suite command | `cd apps/backend && pnpm test`                                                                                  |
 
 ### Phase Requirements to Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| HIER-01 | Create child asset with valid parent | unit | `pnpm test -- --testPathPattern="assets.routes.spec" -t "hierarchy"` | Wave 0 |
-| HIER-01 | Reject parent assignment exceeding 3 levels | unit | `pnpm test -- --testPathPattern="assets.routes.spec" -t "depth"` | Wave 0 |
-| HIER-01 | GET asset includes totalized child values | unit | `pnpm test -- --testPathPattern="assets.routes.spec" -t "totalValue"` | Wave 0 |
-| HIER-02 | POST renovation with CAPITALIZAR increments acquisitionValue | unit | `pnpm test -- --testPathPattern="asset-renovations.routes.spec" -t "capitalizar"` | Wave 0 |
-| HIER-02 | POST renovation with DESPESA does not change acquisitionValue | unit | `pnpm test -- --testPathPattern="asset-renovations.routes.spec" -t "despesa"` | Wave 0 |
-| HIER-02 | POST renovation with newUsefulLifeMonths updates DepreciationConfig | unit | `pnpm test -- --testPathPattern="asset-renovations.routes.spec" -t "usefulLife"` | Wave 0 |
-| HIER-02 | Reject renovation on ALIENADO or EM_ANDAMENTO asset | unit | `pnpm test -- --testPathPattern="asset-renovations.routes.spec" -t "status guard"` | Wave 0 |
-| HIER-03 | POST contribution accumulates on WIP asset | unit | `pnpm test -- --testPathPattern="asset-wip.routes.spec" -t "contribution"` | Wave 0 |
-| HIER-03 | Budget alert fires at configured threshold | unit | `pnpm test -- --testPathPattern="asset-wip.routes.spec" -t "budget alert"` | Wave 0 |
-| HIER-03 | Activate sets status=ATIVO and acquisitionValue=totalContributed | unit | `pnpm test -- --testPathPattern="asset-wip.routes.spec" -t "activate"` | Wave 0 |
-| HIER-03 | Depreciation batch excludes EM_ANDAMENTO (regression) | unit | `pnpm test -- --testPathPattern="depreciation-batch.spec" -t "EM_ANDAMENTO"` | Exists |
+| Req ID  | Behavior                                                            | Test Type | Automated Command                                                                  | File Exists? |
+| ------- | ------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------- | ------------ |
+| HIER-01 | Create child asset with valid parent                                | unit      | `pnpm test -- --testPathPattern="assets.routes.spec" -t "hierarchy"`               | Wave 0       |
+| HIER-01 | Reject parent assignment exceeding 3 levels                         | unit      | `pnpm test -- --testPathPattern="assets.routes.spec" -t "depth"`                   | Wave 0       |
+| HIER-01 | GET asset includes totalized child values                           | unit      | `pnpm test -- --testPathPattern="assets.routes.spec" -t "totalValue"`              | Wave 0       |
+| HIER-02 | POST renovation with CAPITALIZAR increments acquisitionValue        | unit      | `pnpm test -- --testPathPattern="asset-renovations.routes.spec" -t "capitalizar"`  | Wave 0       |
+| HIER-02 | POST renovation with DESPESA does not change acquisitionValue       | unit      | `pnpm test -- --testPathPattern="asset-renovations.routes.spec" -t "despesa"`      | Wave 0       |
+| HIER-02 | POST renovation with newUsefulLifeMonths updates DepreciationConfig | unit      | `pnpm test -- --testPathPattern="asset-renovations.routes.spec" -t "usefulLife"`   | Wave 0       |
+| HIER-02 | Reject renovation on ALIENADO or EM_ANDAMENTO asset                 | unit      | `pnpm test -- --testPathPattern="asset-renovations.routes.spec" -t "status guard"` | Wave 0       |
+| HIER-03 | POST contribution accumulates on WIP asset                          | unit      | `pnpm test -- --testPathPattern="asset-wip.routes.spec" -t "contribution"`         | Wave 0       |
+| HIER-03 | Budget alert fires at configured threshold                          | unit      | `pnpm test -- --testPathPattern="asset-wip.routes.spec" -t "budget alert"`         | Wave 0       |
+| HIER-03 | Activate sets status=ATIVO and acquisitionValue=totalContributed    | unit      | `pnpm test -- --testPathPattern="asset-wip.routes.spec" -t "activate"`             | Wave 0       |
+| HIER-03 | Depreciation batch excludes EM_ANDAMENTO (regression)               | unit      | `pnpm test -- --testPathPattern="depreciation-batch.spec" -t "EM_ANDAMENTO"`       | Exists       |
 
 ### Sampling Rate
 

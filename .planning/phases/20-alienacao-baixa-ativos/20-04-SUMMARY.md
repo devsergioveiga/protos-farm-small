@@ -1,11 +1,11 @@
 ---
 phase: 20-alienacao-baixa-ativos
-plan: "04"
+plan: '04'
 subsystem: frontend-assets
 tags: [frontend, patrimony, disposal, transfer, inventory, dashboard, recharts]
 dependency_graph:
-  requires: ["20-01", "20-02", "20-03"]
-  provides: ["DISP-01", "DISP-02", "DISP-03", "DISP-04", "DISP-05", "DISP-06"]
+  requires: ['20-01', '20-02', '20-03']
+  provides: ['DISP-01', 'DISP-02', 'DISP-03', 'DISP-04', 'DISP-05', 'DISP-06']
   affects: [AssetsPage, AssetDrawer, Sidebar, App]
 tech_stack:
   added: []
@@ -45,7 +45,7 @@ decisions:
   - usePatrimonyDashboard auto-fetches on mount — consistent with useFinancialDashboard pattern
 metrics:
   duration: 670s
-  completed: "2026-03-22T15:04:22Z"
+  completed: '2026-03-22T15:04:22Z'
   tasks: 2
   files: 20
 ---
@@ -59,6 +59,7 @@ Frontend disposal modal, transfer modal, inventory page, patrimony dashboard, ho
 ### Task 1: Types, hooks, disposal + transfer modals, drawer wiring
 
 **New types in `types/asset.ts`:**
+
 - `DisposalType` enum + `DISPOSAL_TYPE_LABELS`
 - `CreateDisposalInput`, `DisposalOutput`
 - `CreateTransferInput`, `TransferOutput`
@@ -67,10 +68,12 @@ Frontend disposal modal, transfer modal, inventory page, patrimony dashboard, ho
 - `PatrimonyDashboardOutput`
 
 **New hooks:**
+
 - `useAssetDisposal.ts`: `createDisposal` (POST `/asset-disposals/:assetId/dispose`) + `getDisposal`
 - `useAssetTransfer.ts`: `createTransfer` (POST `/asset-farm-transfers/:assetId/transfer`) + `listTransfers`
 
 **AssetDisposalModal:**
+
 - 4 disposal types via radio buttons (VENDA, DESCARTE, SINISTRO, OBSOLESCENCIA)
 - Venda section: saleValue, buyerName, dueDate, installmentCount (1-120), firstDueDate
 - Baixa section: motivation (required), documentUrl (optional)
@@ -80,28 +83,33 @@ Frontend disposal modal, transfer modal, inventory page, patrimony dashboard, ho
 - Full accessibility (aria-required, role=alert, focus management)
 
 **AssetTransferModal:**
+
 - Farm selector filtered to exclude current farm
 - transferDate (default today), notes textarea
 - Error state with role=alert
 
 **AssetDrawer wiring:**
+
 - Alienar (PackageMinus icon) + Transferir (ArrowRightLeft icon) buttons in header
 - Buttons disabled when asset.status === 'ALIENADO'
 - `onRefresh` prop added to notify parent
 
 **AssetsPage wiring:**
+
 - Alienar + Transferir in table row actions (only for non-ALIENADO assets)
 - Disposal + Transfer modals with toast notifications
 
 ### Task 2: Inventory page, patrimony dashboard, hooks, sidebar + routing
 
 **New hooks:**
+
 - `useAssetInventory.ts`: create/list/get/countItems/reconcile via `/asset-inventories` endpoints
 - `usePatrimonyDashboard.ts`: auto-fetches `GET /financial-dashboard/patrimony` with year/month/farmId state
 
 **AssetInventoryModal:** farm select + notes, creates inventory
 
 **AssetInventoryPage:**
+
 - List view: table (desktop) + cards (mobile) with status badge, counts, divergence highlight
 - DRAFT -> COUNTING -> RECONCILED state flow
 - Inline detail section: editable physicalStatus select + notes per item
@@ -110,12 +118,14 @@ Frontend disposal modal, transfer modal, inventory page, patrimony dashboard, ho
 - Empty state with Calendar icon + CTA
 
 **PatrimonyDashboardPage:**
+
 - 4 KPI cards: Valor Total Ativos, Depreciacao Acumulada, Valor Contabil Liquido, Ganho/Perda
 - Period summary: acquisitions + disposals count + values
 - PieChart (type distribution) + BarChart horizontal (status distribution) via Recharts
 - Year/month/farmId filter controls
 
 **Sidebar + routing:**
+
 - PATRIMONIO group: Inventario Patrimonial (`/asset-inventories`) + Dashboard Patrimonial (`/patrimony-dashboard`)
 - App.tsx: lazy imports + routes registered
 
@@ -124,6 +134,7 @@ Frontend disposal modal, transfer modal, inventory page, patrimony dashboard, ho
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Recharts PieChart label typing incompatibility**
+
 - **Found during:** Task 2 TypeScript check
 - **Issue:** Recharts 3.x label prop type doesn't accept typed function with `{ name, percent }` destructuring in strict TypeScript
 - **Fix:** Removed label prop from Pie (uses default Recharts labeling)
@@ -131,6 +142,7 @@ Frontend disposal modal, transfer modal, inventory page, patrimony dashboard, ho
 - **Commit:** f7d32e32
 
 **2. [Rule 1 - Bug] Recharts Tooltip formatter type mismatch**
+
 - **Found during:** Task 2 TypeScript check
 - **Issue:** `formatter={(value: number) => [value, 'Ativos']}` is not assignable to Recharts Formatter type
 - **Fix:** Removed formatter prop, uses default Recharts tooltip
@@ -144,6 +156,7 @@ Task 3 (human visual verification) approved by user. All 13 verification steps c
 ## Self-Check: PASSED
 
 Files created:
+
 - apps/frontend/src/hooks/useAssetDisposal.ts ✓
 - apps/frontend/src/hooks/useAssetTransfer.ts ✓
 - apps/frontend/src/hooks/useAssetInventory.ts ✓

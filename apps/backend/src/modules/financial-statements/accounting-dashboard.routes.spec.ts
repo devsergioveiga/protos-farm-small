@@ -85,7 +85,10 @@ function makeBpIndicator(id: string, label: string) {
     id,
     label,
     value: '2.50',
-    sparkline: [{ month: 1, value: 2.5 }, { month: 2, value: 2.6 }],
+    sparkline: [
+      { month: 1, value: 2.5 },
+      { month: 2, value: 2.6 },
+    ],
   };
 }
 
@@ -108,19 +111,14 @@ function makeDashboardOutput() {
       makeKpiCard('Margem Operacional'),
     ],
     monthlyChart: Array.from({ length: 12 }, (_, i) => makeMonthlyEntry(i + 1)),
-    costComposition: [
-      makeCostItem('CPV'),
-      makeCostItem('Despesas Administrativas'),
-    ],
+    costComposition: [makeCostItem('CPV'), makeCostItem('Despesas Administrativas')],
     bpIndicators: [
       makeBpIndicator('liquidez-corrente', 'Liquidez Corrente'),
       makeBpIndicator('endividamento-geral', 'Endividamento Geral'),
       makeBpIndicator('roe', 'ROE'),
       makeBpIndicator('pl-ha', 'PL/ha'),
     ],
-    alerts: [
-      makeAlert('periodos-abertos', 'warning'),
-    ],
+    alerts: [makeAlert('periodos-abertos', 'warning')],
   };
 }
 
@@ -298,9 +296,7 @@ describe('Accounting Dashboard Routes', () => {
       throw new Error('Unauthorized');
     });
 
-    const res = await request(app)
-      .get(BASE)
-      .query({ fiscalYearId: 'fy-1', month: '3' });
+    const res = await request(app).get(BASE).query({ fiscalYearId: 'fy-1', month: '3' });
 
     expect(res.status).toBe(401);
   });

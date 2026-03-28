@@ -27,7 +27,12 @@ const PUNCH_TYPES = [
   { value: 'INTERVALO_FIM', label: 'Fim de Intervalo' },
 ];
 
-export default function ManualPunchModal({ isOpen, employees, onSave, onClose }: ManualPunchModalProps) {
+export default function ManualPunchModal({
+  isOpen,
+  employees,
+  onSave,
+  onClose,
+}: ManualPunchModalProps) {
   const firstInputRef = useRef<HTMLSelectElement>(null);
 
   const [employeeId, setEmployeeId] = useState('');
@@ -131,7 +136,13 @@ export default function ManualPunchModal({ isOpen, employees, onSave, onClose }:
           </button>
         </header>
 
-        <form className="manual-punch-modal__form" onSubmit={(e) => { void handleSubmit(e); }} noValidate>
+        <form
+          className="manual-punch-modal__form"
+          onSubmit={(e) => {
+            void handleSubmit(e);
+          }}
+          noValidate
+        >
           <div className="manual-punch-modal__body">
             {/* Colaborador */}
             <div className="manual-punch-modal__field">
@@ -146,7 +157,9 @@ export default function ManualPunchModal({ isOpen, employees, onSave, onClose }:
                 onChange={(e) => setEmployeeId(e.target.value)}
                 onBlur={() => handleBlur('employeeId')}
                 aria-required="true"
-                aria-describedby={touched.employeeId && errors.employeeId ? 'punch-employee-error' : undefined}
+                aria-describedby={
+                  touched.employeeId && errors.employeeId ? 'punch-employee-error' : undefined
+                }
               >
                 <option value="">Selecione o colaborador...</option>
                 {employees.map((emp) => (
@@ -219,7 +232,9 @@ export default function ManualPunchModal({ isOpen, employees, onSave, onClose }:
                 onChange={(e) => setTime(e.target.value)}
                 onBlur={() => handleBlur('clockIn')}
                 aria-required="true"
-                aria-describedby={touched.clockIn && errors.clockIn ? 'punch-time-error' : undefined}
+                aria-describedby={
+                  touched.clockIn && errors.clockIn ? 'punch-time-error' : undefined
+                }
               />
               {touched.clockIn && errors.clockIn && (
                 <span id="punch-time-error" className="manual-punch-modal__error" role="alert">
@@ -243,13 +258,21 @@ export default function ManualPunchModal({ isOpen, employees, onSave, onClose }:
                 rows={3}
                 placeholder="Descreva o motivo do registro manual (mínimo 10 caracteres)"
                 aria-required="true"
-                aria-describedby={touched.justification && errors.justification ? 'punch-justification-error' : undefined}
+                aria-describedby={
+                  touched.justification && errors.justification
+                    ? 'punch-justification-error'
+                    : undefined
+                }
               />
               <div className="manual-punch-modal__char-count">
                 {justification.length} caracteres
               </div>
               {touched.justification && errors.justification && (
-                <span id="punch-justification-error" className="manual-punch-modal__error" role="alert">
+                <span
+                  id="punch-justification-error"
+                  className="manual-punch-modal__error"
+                  role="alert"
+                >
                   <AlertCircle size={14} aria-hidden="true" />
                   {errors.justification}
                 </span>

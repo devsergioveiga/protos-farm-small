@@ -73,7 +73,13 @@ export async function importWeighings(
         await prisma.$executeRawUnsafe(
           `INSERT INTO animal_weighings (id, "animalId", "farmId", "weightKg", "measuredAt", notes, "recordedBy", "createdAt", "updatedAt")
            VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())`,
-          randomUUID(), animalId, farmId, weight, weighDate, str(row.observacao, 500), userId,
+          randomUUID(),
+          animalId,
+          farmId,
+          weight,
+          weighDate,
+          str(row.observacao, 500),
+          userId,
         );
         created++;
       } catch {
@@ -102,7 +108,9 @@ export async function importReproduction(
   for (const r of tipoRows) {
     tipoMap.set(r.cdtiporeproducao as number, String(r.descricao || '').toLowerCase());
   }
-  console.log(`  Reproduction types: ${[...tipoMap.entries()].map(([k, v]) => `${k}=${v}`).join(', ')}`);
+  console.log(
+    `  Reproduction types: ${[...tipoMap.entries()].map(([k, v]) => `${k}=${v}`).join(', ')}`,
+  );
 
   const farmId = idMap.first('FAZENDA')!;
 
@@ -153,7 +161,11 @@ export async function importReproduction(
             `INSERT INTO inseminations (id, "organizationId", "farmId", "animalId", "inseminationDate",
              "inseminationType", "inseminatorName", "bullId", observations, "dosesUsed", "recordedBy", "createdAt", "updatedAt")
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 1, $10, NOW(), NOW())`,
-            randomUUID(), orgId, farmId, animalId, eventDate,
+            randomUUID(),
+            orgId,
+            farmId,
+            animalId,
+            eventDate,
             tipo.includes('iatf') ? 'IATF' : 'NATURAL_HEAT',
             str(row.observacao, 100) || 'Importado FDB',
             bullId,
@@ -167,12 +179,18 @@ export async function importReproduction(
              "eventDate", "birthType", "attendantName", notes, "recordedBy",
              "placentaRetention", "retentionIntervention", "createdAt", "updatedAt")
              VALUES ($1, $2, $3, $4, 'BIRTH', $5, 'NORMAL', 'Importado FDB', $6, $7, false, false, NOW(), NOW())`,
-            randomUUID(), orgId, farmId, animalId, eventDate,
-            str(row.observacao, 500), userId,
+            randomUUID(),
+            orgId,
+            farmId,
+            animalId,
+            eventDate,
+            str(row.observacao, 500),
+            userId,
           );
           calvings++;
         } else if (tipo.includes('diagnos') || tipo.includes('toque')) {
-          const result = row.diagnostico === 1 ? 'PREGNANT' : row.diagnostico === 0 ? 'EMPTY' : 'CYCLING';
+          const result =
+            row.diagnostico === 1 ? 'PREGNANT' : row.diagnostico === 0 ? 'EMPTY' : 'CYCLING';
           await prisma.$executeRawUnsafe(
             `INSERT INTO pregnancy_diagnoses (id, "organizationId", "farmId", "animalId",
              "diagnosisDate", result, method, "veterinaryName", notes, "recordedBy",
@@ -180,9 +198,15 @@ export async function importReproduction(
              "createdAt", "updatedAt")
              VALUES ($1, $2, $3, $4, $5, $6::"DgResult", $7::"DgMethod", 'Importado FDB', $8, $9,
              'NONE'::"UterineCondition", false, false, false, NOW(), NOW())`,
-            randomUUID(), orgId, farmId, animalId, eventDate,
-            result, 'PALPATION',
-            str(row.observacao, 500), userId,
+            randomUUID(),
+            orgId,
+            farmId,
+            animalId,
+            eventDate,
+            result,
+            'PALPATION',
+            str(row.observacao, 500),
+            userId,
           );
           diagnoses++;
         } else if (tipo.includes('cio') || tipo.includes('estro')) {
@@ -194,9 +218,15 @@ export async function importReproduction(
              VALUES ($1, $2, $3, $4, $5, $6::"HeatIntensity", '["import_fdb"]'::jsonb,
              $7::"HeatDetectionMethod", $8, $9,
              'AWAITING_AI'::"HeatStatus", false, NOW(), NOW())`,
-            randomUUID(), orgId, farmId, animalId, eventDate,
-            intensity, 'VISUAL',
-            str(row.observacao, 500), userId,
+            randomUUID(),
+            orgId,
+            farmId,
+            animalId,
+            eventDate,
+            intensity,
+            'VISUAL',
+            str(row.observacao, 500),
+            userId,
           );
           heats++;
         } else {
@@ -272,10 +302,17 @@ export async function importLactations(
            "lactationNumber", "startDate", "endDate", origin, status, notes, "recordedBy",
            "createdAt", "updatedAt")
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8::"LactationOrigin", $9::"LactationStatus", $10, $11, NOW(), NOW())`,
-          id, orgId, farmId, animalId,
-          count, startDate, toDate(row.dtfim),
-          'BIRTH', row.dtfim ? 'DRIED' : 'IN_PROGRESS',
-          str(row.obsinicio, 500), userId,
+          id,
+          orgId,
+          farmId,
+          animalId,
+          count,
+          startDate,
+          toDate(row.dtfim),
+          'BIRTH',
+          row.dtfim ? 'DRIED' : 'IN_PROGRESS',
+          str(row.obsinicio, 500),
+          userId,
         );
         idMap.set('LACTACAO', fbId, id);
         created++;
@@ -342,8 +379,14 @@ export async function importMilkRecords(
               `INSERT INTO milking_records (id, "organizationId", "farmId", "animalId",
                "milkingDate", shift, liters, "variationAlert", "recordedBy", "createdAt", "updatedAt")
                VALUES ($1, $2, $3, $4, $5, $6::"MilkingShift", $7, false, $8, NOW(), NOW())`,
-              randomUUID(), orgId, farmId, animalId,
-              recordDate, s.shift, s.liters, userId,
+              randomUUID(),
+              orgId,
+              farmId,
+              animalId,
+              recordDate,
+              s.shift,
+              s.liters,
+              userId,
             );
             created++;
             inserted = true;
@@ -359,8 +402,13 @@ export async function importMilkRecords(
             `INSERT INTO milking_records (id, "organizationId", "farmId", "animalId",
              "milkingDate", shift, liters, "variationAlert", "recordedBy", "createdAt", "updatedAt")
              VALUES ($1, $2, $3, $4, $5, 'MORNING'::"MilkingShift", $6, false, $7, NOW(), NOW())`,
-            randomUUID(), orgId, farmId, animalId,
-            recordDate, totalKg, userId,
+            randomUUID(),
+            orgId,
+            farmId,
+            animalId,
+            recordDate,
+            totalKg,
+            userId,
           );
           created++;
         } catch {
@@ -418,8 +466,14 @@ export async function importMastitis(
            "temperatureAlert", "cultureSampleCollected", status, "createdAt", "updatedAt")
            VALUES ($1, $2, $3, $4, $5, $6, 'CLINICAL'::"MastitisClassification", $7, $8,
            false, false, 'OPEN'::"MastitisCaseStatus", NOW(), NOW())`,
-          randomUUID(), orgId, farmId, animalId,
-          diagDate, userId, str(row.observacao, 500), userId,
+          randomUUID(),
+          orgId,
+          farmId,
+          animalId,
+          diagDate,
+          userId,
+          str(row.observacao, 500),
+          userId,
         );
         created++;
       } catch {
@@ -476,9 +530,14 @@ export async function importExams(
            status, "recordedBy", "createdAt", "updatedAt")
            VALUES ($1, $2, $3, $4, 'imported', $5, $6, 'Importado FDB', $7,
            'COMPLETED'::"ExamStatus", $8, NOW(), NOW())`,
-          randomUUID(), orgId, farmId, animalId,
+          randomUUID(),
+          orgId,
+          farmId,
+          animalId,
           `Exame ${row.cdexame || 'geral'}`,
-          examDate, str(row.observacao, 500), userId,
+          examDate,
+          str(row.observacao, 500),
+          userId,
         );
         created++;
       } catch {

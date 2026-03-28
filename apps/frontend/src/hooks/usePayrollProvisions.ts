@@ -37,10 +37,15 @@ export function usePayrollProvisions() {
         const qs = params.toString();
         const path = `/org/${orgId}/payroll-provisions${qs ? `?${qs}` : ''}`;
         const result = await api.get<PayrollProvision[] | { data: PayrollProvision[] }>(path);
-        const items = Array.isArray(result) ? result : (result as { data: PayrollProvision[] }).data;
+        const items = Array.isArray(result)
+          ? result
+          : (result as { data: PayrollProvision[] }).data;
         setProvisions(items);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Nao foi possivel carregar os dados. Verifique sua conexao e tente novamente.';
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Nao foi possivel carregar os dados. Verifique sua conexao e tente novamente.';
         setError(message);
         setProvisions([]);
       } finally {
@@ -61,7 +66,9 @@ export function usePayrollProvisions() {
           `/org/${orgId}/payroll-provisions/calculate`,
           data,
         );
-        setSuccessMessage(`Provisoes de ${data.referenceMonth} calculadas para ${result.processedCount} colaboradores.`);
+        setSuccessMessage(
+          `Provisoes de ${data.referenceMonth} calculadas para ${result.processedCount} colaboradores.`,
+        );
         return result;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Erro ao calcular provisoes';
@@ -104,10 +111,13 @@ export function usePayrollProvisions() {
         const result = await api.get<ProvisionReportRow[] | { data: ProvisionReportRow[] }>(
           `/org/${orgId}/payroll-provisions/report?month=${referenceMonth}`,
         );
-        const items = Array.isArray(result) ? result : (result as { data: ProvisionReportRow[] }).data;
+        const items = Array.isArray(result)
+          ? result
+          : (result as { data: ProvisionReportRow[] }).data;
         setReport(items);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Erro ao carregar relatorio de provisoes';
+        const message =
+          err instanceof Error ? err.message : 'Erro ao carregar relatorio de provisoes';
         setError(message);
         setReport([]);
       } finally {

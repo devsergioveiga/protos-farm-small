@@ -89,6 +89,8 @@ export function getBuilder(eventType: string): ((data: any) => string) | undefin
   return BUILDER_MAP[eventType];
 }
 
-export function getValidator(eventType: string): ((data: any) => EsocialValidationError[]) | undefined {
+export function getValidator(
+  eventType: string,
+): ((data: any) => EsocialValidationError[]) | undefined {
   return VALIDATOR_MAP[eventType];
 }

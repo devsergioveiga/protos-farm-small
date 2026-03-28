@@ -26,7 +26,11 @@ function formatDate(dateStr: string): string {
 
 function LedgerSkeleton() {
   return (
-    <div className="ledger-page__skeleton" aria-label="Carregando razão contábil..." aria-busy="true">
+    <div
+      className="ledger-page__skeleton"
+      aria-label="Carregando razão contábil..."
+      aria-busy="true"
+    >
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} className="ledger-page__skeleton-row">
           <div className="ledger-page__skeleton-cell ledger-page__skeleton-cell--sm" />
@@ -51,11 +55,7 @@ interface EntryDetailModalProps {
 function EntryDetailModal({ entry, onClose }: EntryDetailModalProps) {
   if (!entry) return null;
   return (
-    <div
-      className="ledger-page__modal-overlay"
-      onClick={onClose}
-      role="presentation"
-    >
+    <div className="ledger-page__modal-overlay" onClick={onClose} role="presentation">
       <div
         className="ledger-page__modal"
         role="dialog"
@@ -98,13 +98,17 @@ function EntryDetailModal({ entry, onClose }: EntryDetailModalProps) {
             </div>
             <div className="ledger-page__detail-row">
               <dt>Valor</dt>
-              <dd className={`amount-mono ${entry.side === 'DEBIT' ? 'amount-debit' : 'amount-credit'}`}>
+              <dd
+                className={`amount-mono ${entry.side === 'DEBIT' ? 'amount-debit' : 'amount-credit'}`}
+              >
                 R$ {formatAmount(entry.amount)}
               </dd>
             </div>
             <div className="ledger-page__detail-row">
               <dt>Saldo Progressivo</dt>
-              <dd className={`amount-mono ${parseFloat(entry.runningBalance) < 0 ? 'amount-debit' : ''}`}>
+              <dd
+                className={`amount-mono ${parseFloat(entry.runningBalance) < 0 ? 'amount-debit' : ''}`}
+              >
                 R$ {formatAmount(entry.runningBalance)}
               </dd>
             </div>
@@ -158,7 +162,8 @@ export default function LedgerPage() {
 
   // Determine date range from fiscal year + month
   const { startDate, endDate } = useMemo(() => {
-    if (!selectedFiscalYearId || !selectedMonth) return { startDate: undefined, endDate: undefined };
+    if (!selectedFiscalYearId || !selectedMonth)
+      return { startDate: undefined, endDate: undefined };
     const fy = fiscalYears.find((y) => y.id === selectedFiscalYearId);
     if (!fy) return { startDate: undefined, endDate: undefined };
     const year = new Date(fy.startDate).getFullYear();
@@ -237,9 +242,13 @@ export default function LedgerPage() {
       {/* Breadcrumb */}
       <nav className="ledger-page__breadcrumb" aria-label="Caminho da página">
         <span className="ledger-page__breadcrumb-item">Início</span>
-        <span className="ledger-page__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="ledger-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="ledger-page__breadcrumb-item">Contabilidade</span>
-        <span className="ledger-page__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="ledger-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="ledger-page__breadcrumb-item ledger-page__breadcrumb-item--current">
           Razão Contábil
         </span>
@@ -255,7 +264,9 @@ export default function LedgerPage() {
           <button
             type="button"
             className="ledger-page__btn ledger-page__btn--secondary"
-            onClick={() => { void handleExportCsv(); }}
+            onClick={() => {
+              void handleExportCsv();
+            }}
             disabled={!hasFilters || exportingCsv}
             aria-label="Exportar CSV do razão"
           >
@@ -269,7 +280,9 @@ export default function LedgerPage() {
           <button
             type="button"
             className="ledger-page__btn ledger-page__btn--secondary"
-            onClick={() => { void handleExportPdf(); }}
+            onClick={() => {
+              void handleExportPdf();
+            }}
             disabled={!hasFilters || exportingPdf}
             aria-label="Exportar PDF do razão"
           >
@@ -290,7 +303,12 @@ export default function LedgerPage() {
           <label htmlFor="account-search" className="ledger-page__filter-label">
             Conta analítica
           </label>
-          <div className="ledger-page__account-selector" role="combobox" aria-expanded={showAccountDropdown} aria-haspopup="listbox">
+          <div
+            className="ledger-page__account-selector"
+            role="combobox"
+            aria-expanded={showAccountDropdown}
+            aria-haspopup="listbox"
+          >
             <div className="ledger-page__account-input-wrapper">
               <Search size={16} aria-hidden="true" className="ledger-page__search-icon" />
               <input
@@ -383,9 +401,7 @@ export default function LedgerPage() {
         {!selectedAccountId && (
           <div className="ledger-page__empty">
             <Search size={48} aria-hidden="true" className="ledger-page__empty-icon" />
-            <p className="ledger-page__empty-text">
-              Selecione uma conta para visualizar o razão.
-            </p>
+            <p className="ledger-page__empty-text">Selecione uma conta para visualizar o razão.</p>
           </div>
         )}
 
@@ -409,23 +425,48 @@ export default function LedgerPage() {
 
         {selectedAccountId && !loading && !error && ledger && ledger.lines.length > 0 && (
           <div className="ledger-page__table-wrapper">
-            <table className="ledger-table" aria-label={`Razão da conta ${selectedAccount?.code ?? ''} — ${selectedAccount?.name ?? ''}`}>
+            <table
+              className="ledger-table"
+              aria-label={`Razão da conta ${selectedAccount?.code ?? ''} — ${selectedAccount?.name ?? ''}`}
+            >
               <caption className="ledger-table__caption">
                 {selectedAccount?.code} — {selectedAccount?.name}
                 {startDate && endDate && (
                   <span className="ledger-table__caption-period">
-                    {' '}| {formatDate(startDate)} a {formatDate(endDate)}
+                    {' '}
+                    | {formatDate(startDate)} a {formatDate(endDate)}
                   </span>
                 )}
               </caption>
               <thead>
                 <tr>
-                  <th scope="col" className="ledger-table__th">Data</th>
-                  <th scope="col" className="ledger-table__th">Número</th>
-                  <th scope="col" className="ledger-table__th ledger-table__th--wide">Histórico</th>
-                  <th scope="col" className="ledger-table__th ledger-table__th--amount amount-debit">Débito</th>
-                  <th scope="col" className="ledger-table__th ledger-table__th--amount amount-credit">Crédito</th>
-                  <th scope="col" className="ledger-table__th ledger-table__th--amount ledger-table__th--balance running-balance-col">Saldo Progressivo</th>
+                  <th scope="col" className="ledger-table__th">
+                    Data
+                  </th>
+                  <th scope="col" className="ledger-table__th">
+                    Número
+                  </th>
+                  <th scope="col" className="ledger-table__th ledger-table__th--wide">
+                    Histórico
+                  </th>
+                  <th
+                    scope="col"
+                    className="ledger-table__th ledger-table__th--amount amount-debit"
+                  >
+                    Débito
+                  </th>
+                  <th
+                    scope="col"
+                    className="ledger-table__th ledger-table__th--amount amount-credit"
+                  >
+                    Crédito
+                  </th>
+                  <th
+                    scope="col"
+                    className="ledger-table__th ledger-table__th--amount ledger-table__th--balance running-balance-col"
+                  >
+                    Saldo Progressivo
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -452,7 +493,10 @@ export default function LedgerPage() {
                       <button
                         type="button"
                         className="ledger-table__entry-link"
-                        onClick={(e) => { e.stopPropagation(); setSelectedEntry(line); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedEntry(line);
+                        }}
                         aria-label={`Ver detalhe do lançamento ${line.entryNumber}`}
                       >
                         #{line.entryNumber}
@@ -465,7 +509,9 @@ export default function LedgerPage() {
                     <td className="ledger-table__td ledger-table__td--amount amount-mono amount-credit">
                       {line.side === 'CREDIT' ? `R$ ${formatAmount(line.amount)}` : ''}
                     </td>
-                    <td className={`ledger-table__td ledger-table__td--amount amount-mono running-balance-col ${parseFloat(line.runningBalance) < 0 ? 'amount-debit' : ''}`}>
+                    <td
+                      className={`ledger-table__td ledger-table__td--amount amount-mono running-balance-col ${parseFloat(line.runningBalance) < 0 ? 'amount-debit' : ''}`}
+                    >
                       R$ {formatAmount(line.runningBalance)}
                     </td>
                   </tr>
@@ -489,10 +535,7 @@ export default function LedgerPage() {
 
       {/* Entry detail modal */}
       {selectedEntry && (
-        <EntryDetailModal
-          entry={selectedEntry}
-          onClose={() => setSelectedEntry(null)}
-        />
+        <EntryDetailModal entry={selectedEntry} onClose={() => setSelectedEntry(null)} />
       )}
 
       {/* Toast */}

@@ -1,21 +1,21 @@
 ---
 phase: 31-obriga-es-acess-rias-e-esocial
-plan: "02"
+plan: '02'
 subsystem: tax-guides
 tags: [payroll, tax-guides, fgts, inss, irrf, funrural, sefip, darf, gps, backend, frontend]
 dependency_graph:
-  requires: ["31-01"]
-  provides: ["tax-guides-module", "TaxGuidesService", "TaxGuidesPage", "useTaxGuides"]
-  affects: ["payables-module"]
+  requires: ['31-01']
+  provides: ['tax-guides-module', 'TaxGuidesService', 'TaxGuidesPage', 'useTaxGuides']
+  affects: ['payables-module']
 tech_stack:
   added: []
   patterns:
-    - "PayrollRunItem aggregate for tax totals"
-    - "PayrollLegalTable effective-date lookup for FUNRURAL rate"
-    - "upsert with unique constraint (orgId+guideType+referenceMonth) for idempotency"
-    - "pdfkit for DARF/GPS PDF generation"
-    - "Fixed-width ASCII SEFIP .RE file generation"
-    - "originType TAX_GUIDE on Payable for financial integration"
+    - 'PayrollRunItem aggregate for tax totals'
+    - 'PayrollLegalTable effective-date lookup for FUNRURAL rate'
+    - 'upsert with unique constraint (orgId+guideType+referenceMonth) for idempotency'
+    - 'pdfkit for DARF/GPS PDF generation'
+    - 'Fixed-width ASCII SEFIP .RE file generation'
+    - 'originType TAX_GUIDE on Payable for financial integration'
 key_files:
   created:
     - apps/backend/src/modules/tax-guides/tax-guides.service.ts
@@ -26,15 +26,15 @@ key_files:
   modified:
     - apps/backend/src/app.ts
 decisions:
-  - "Used payroll-params:read/write permissions (not payroll:read/manage) to match existing permission enum"
-  - "FUNRURAL uses PayrollLegalTable FUNRURAL type with scalarValues[key=rate] — falls back to 2.7% if no table found"
-  - "Due date weekend adjustment: Saturday+2 (Monday), Sunday+1 (Monday)"
-  - "SEFIP .RE uses FPAS 604 (rural employer with employed workers)"
-  - "Download button disabled when status=PENDING since file not yet generated"
-  - "taxGuidesRouter registered before employeesRouter in app.ts to avoid Express 5 route shadowing"
+  - 'Used payroll-params:read/write permissions (not payroll:read/manage) to match existing permission enum'
+  - 'FUNRURAL uses PayrollLegalTable FUNRURAL type with scalarValues[key=rate] — falls back to 2.7% if no table found'
+  - 'Due date weekend adjustment: Saturday+2 (Monday), Sunday+1 (Monday)'
+  - 'SEFIP .RE uses FPAS 604 (rural employer with employed workers)'
+  - 'Download button disabled when status=PENDING since file not yet generated'
+  - 'taxGuidesRouter registered before employeesRouter in app.ts to avoid Express 5 route shadowing'
 metrics:
   duration: ~20min
-  completed: "2026-03-26T13:49:18Z"
+  completed: '2026-03-26T13:49:18Z'
   tasks_completed: 2
   tasks_total: 2
   files_created: 5
@@ -48,10 +48,10 @@ Tax guides module (ESOCIAL-01): backend service aggregating PayrollRunItem total
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Tax guides backend service + routes + tests (TDD) | d8c84eab | tax-guides.service.ts, tax-guides.routes.ts, tax-guides.spec.ts, app.ts |
-| 2 | Tax guides frontend page + hook | 519295bc | useTaxGuides.ts, TaxGuidesPage.tsx |
+| Task | Name                                              | Commit   | Files                                                                   |
+| ---- | ------------------------------------------------- | -------- | ----------------------------------------------------------------------- |
+| 1    | Tax guides backend service + routes + tests (TDD) | d8c84eab | tax-guides.service.ts, tax-guides.routes.ts, tax-guides.spec.ts, app.ts |
+| 2    | Tax guides frontend page + hook                   | 519295bc | useTaxGuides.ts, TaxGuidesPage.tsx                                      |
 
 ## What Was Built
 
@@ -92,11 +92,13 @@ Registered before `employeesRouter` in `app.ts` to avoid Express 5 route shadowi
 ### Frontend
 
 **`useTaxGuides.ts`** — Hook following `usePayrollRuns` pattern:
+
 - `fetchGuides(params)` — paginated list with optional filters
 - `generateGuides(input)` — POST to /generate, sets successMessage
 - `downloadGuide(id, type, month)` — `api.getBlob` + programmatic anchor click, correct extension (.RE for FGTS, .pdf for others)
 
 **`TaxGuidesPage.tsx`** — Full listing page:
+
 - Header with breadcrumb and "Gerar Guias" primary CTA
 - Filters: month picker (competência), guide type dropdown, status dropdown
 - Table columns: TIPO (badge), COMPETÊNCIA (MM/YYYY), VENCIMENTO (DD/MM/YYYY), VALOR (BRL), STATUS (chip), ALERTA (icon), AÇÕES (download button)
@@ -112,6 +114,7 @@ Registered before `employeesRouter` in `app.ts` to avoid Express 5 route shadowi
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Permission string mismatch**
+
 - **Found during:** Task 1 TypeScript check
 - **Issue:** Plan specified `payroll:manage` and `payroll:read` permissions, but the permission type enum uses `payroll-params:write` and `payroll-params:read` (matching payroll-runs.routes.ts pattern)
 - **Fix:** Updated routes to use `payroll-params:write` and `payroll-params:read`
@@ -119,6 +122,7 @@ Registered before `employeesRouter` in `app.ts` to avoid Express 5 route shadowi
 - **Commit:** d8c84eab (part of same task commit)
 
 **2. [Rule 1 - Bug] Decimal formatting — FUNRURAL amount "270" vs "270.00"**
+
 - **Found during:** Task 1 test run
 - **Issue:** `Decimal.toDecimalPlaces(2).toString()` returns "270" for whole numbers, not "270.00"
 - **Fix:** Changed to `new Decimal(basis.mul(rate).div(100).toFixed(2))` for consistent 2-decimal string

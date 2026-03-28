@@ -67,9 +67,7 @@ function toNode(row: any): ChartOfAccountNode {
 // Returns flat array ordered by code — frontend builds tree from parentId.
 // Uses WITH RECURSIVE CTE to fetch the entire hierarchy in one query.
 
-export async function getAccountTree(
-  organizationId: string,
-): Promise<ChartOfAccountNode[]> {
+export async function getAccountTree(organizationId: string): Promise<ChartOfAccountNode[]> {
   const rows = await (prisma as any).$queryRaw`
     WITH RECURSIVE coa_tree AS (
       -- Base case: root accounts (no parent)
@@ -128,11 +126,7 @@ export async function createAccount(
   const level = input.code.split('.').length;
 
   if (level > 5) {
-    throw new ChartOfAccountError(
-      'Nível máximo de profundidade é 5',
-      'MAX_DEPTH_EXCEEDED',
-      422,
-    );
+    throw new ChartOfAccountError('Nível máximo de profundidade é 5', 'MAX_DEPTH_EXCEEDED', 422);
   }
 
   // Enforce: synthetic accounts cannot allow manual entry
@@ -153,11 +147,7 @@ export async function createAccount(
     });
 
     if (!parent) {
-      throw new ChartOfAccountError(
-        'Conta pai não encontrada',
-        'PARENT_NOT_FOUND',
-        404,
-      );
+      throw new ChartOfAccountError('Conta pai não encontrada', 'PARENT_NOT_FOUND', 404);
     }
     parentLevel = Number(parent.level);
 
@@ -233,15 +223,14 @@ export async function updateAccount(
   }
 
   // Enforce synthetic blocks manual entry
-  const isSynthetic = input.isSynthetic !== undefined
-    ? input.isSynthetic
-    : Boolean(account.isSynthetic);
+  const isSynthetic =
+    input.isSynthetic !== undefined ? input.isSynthetic : Boolean(account.isSynthetic);
 
   const allowManualEntry = isSynthetic
     ? false
-    : (input.allowManualEntry !== undefined
-        ? input.allowManualEntry
-        : Boolean(account.allowManualEntry));
+    : input.allowManualEntry !== undefined
+      ? input.allowManualEntry
+      : Boolean(account.allowManualEntry);
 
   try {
     const updated = await (prisma as any).chartOfAccount.update({
@@ -347,9 +336,7 @@ export async function getUnmappedSpedAccounts(
 // Loads the rural CFC/Embrapa template into the organization's chart of accounts.
 // Idempotent: safe to run multiple times (upsert by org+code).
 
-export async function seedRuralTemplate(
-  organizationId: string,
-): Promise<SeedResult> {
+export async function seedRuralTemplate(organizationId: string): Promise<SeedResult> {
   // Process in level order to ensure parents exist before children
   const byLevel = [...RURAL_COA_TEMPLATE].sort((a, b) => a.level - b.level);
 
@@ -414,9 +401,7 @@ export async function seedRuralTemplate(
 
     // Heuristic: if createdAt ≈ updatedAt (within 1 second), it was just created
     const wasCreated =
-      Math.abs(
-        (result.createdAt as Date).getTime() - (result.updatedAt as Date).getTime(),
-      ) < 1000;
+      Math.abs((result.createdAt as Date).getTime() - (result.updatedAt as Date).getTime()) < 1000;
 
     if (wasCreated) {
       created++;

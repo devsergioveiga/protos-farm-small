@@ -15,13 +15,13 @@ created: 2026-03-27
 
 ## Test Infrastructure
 
-| Property | Value |
-|----------|-------|
-| **Framework** | jest 29.x |
-| **Config file** | `apps/backend/jest.config.ts` |
-| **Quick run command** | `cd apps/backend && npx jest --testPathPattern="journal-entries\|opening-balance\|ledger" --no-coverage` |
-| **Full suite command** | `cd apps/backend && npx jest --no-coverage` |
-| **Estimated runtime** | ~30 seconds |
+| Property               | Value                                                                                                    |
+| ---------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Framework**          | jest 29.x                                                                                                |
+| **Config file**        | `apps/backend/jest.config.ts`                                                                            |
+| **Quick run command**  | `cd apps/backend && npx jest --testPathPattern="journal-entries\|opening-balance\|ledger" --no-coverage` |
+| **Full suite command** | `cd apps/backend && npx jest --no-coverage`                                                              |
+| **Estimated runtime**  | ~30 seconds                                                                                              |
 
 ---
 
@@ -36,16 +36,16 @@ created: 2026-03-27
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 36-01-01 | 01 | 1 | LANC-03 | unit | `npx jest journal-entries` | ❌ W0 | ⬜ pending |
-| 36-01-02 | 01 | 1 | LANC-04 | unit | `npx jest journal-entries` | ❌ W0 | ⬜ pending |
-| 36-02-01 | 02 | 1 | LANC-05 | unit | `npx jest opening-balance` | ❌ W0 | ⬜ pending |
-| 36-03-01 | 03 | 2 | RAZAO-01 | unit | `npx jest ledger` | ❌ W0 | ⬜ pending |
-| 36-03-02 | 03 | 2 | RAZAO-02 | unit | `npx jest ledger` | ❌ W0 | ⬜ pending |
-| 36-03-03 | 03 | 2 | RAZAO-03 | unit | `npx jest ledger` | ❌ W0 | ⬜ pending |
+| Task ID  | Plan | Wave | Requirement | Test Type | Automated Command          | File Exists | Status     |
+| -------- | ---- | ---- | ----------- | --------- | -------------------------- | ----------- | ---------- |
+| 36-01-01 | 01   | 1    | LANC-03     | unit      | `npx jest journal-entries` | ❌ W0       | ⬜ pending |
+| 36-01-02 | 01   | 1    | LANC-04     | unit      | `npx jest journal-entries` | ❌ W0       | ⬜ pending |
+| 36-02-01 | 02   | 1    | LANC-05     | unit      | `npx jest opening-balance` | ❌ W0       | ⬜ pending |
+| 36-03-01 | 03   | 2    | RAZAO-01    | unit      | `npx jest ledger`          | ❌ W0       | ⬜ pending |
+| 36-03-02 | 03   | 2    | RAZAO-02    | unit      | `npx jest ledger`          | ❌ W0       | ⬜ pending |
+| 36-03-03 | 03   | 2    | RAZAO-03    | unit      | `npx jest ledger`          | ❌ W0       | ⬜ pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+_Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
 
 ---
 
@@ -55,17 +55,17 @@ created: 2026-03-27
 - [ ] `src/modules/opening-balance/__tests__/opening-balance.service.spec.ts` — stubs for LANC-05
 - [ ] `src/modules/ledger/__tests__/ledger.service.spec.ts` — stubs for RAZAO-01, RAZAO-02, RAZAO-03
 
-*Existing infrastructure covers test framework — only test file stubs needed.*
+_Existing infrastructure covers test framework — only test file stubs needed._
 
 ---
 
 ## Manual-Only Verifications
 
-| Behavior | Requirement | Why Manual | Test Instructions |
-|----------|-------------|------------|-------------------|
-| Frontend multi-line debit/credit form | LANC-03 | UI interaction | Open modal, add 3+ lines, verify balance validation |
-| Opening balance wizard UI | LANC-05 | UI wizard flow | Open wizard, verify pre-populated values, submit |
-| Razão drill-down to journal entry | RAZAO-01 | UI navigation | Click on ledger row, verify original entry opens |
+| Behavior                              | Requirement | Why Manual     | Test Instructions                                   |
+| ------------------------------------- | ----------- | -------------- | --------------------------------------------------- |
+| Frontend multi-line debit/credit form | LANC-03     | UI interaction | Open modal, add 3+ lines, verify balance validation |
+| Opening balance wizard UI             | LANC-05     | UI wizard flow | Open wizard, verify pre-populated values, submit    |
+| Razão drill-down to journal entry     | RAZAO-01    | UI navigation  | Click on ledger row, verify original entry opens    |
 
 ---
 

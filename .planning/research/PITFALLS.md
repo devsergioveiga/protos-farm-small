@@ -19,12 +19,14 @@ Separately: any place where a journal entry is created without an atomic check t
 The existing module was built as a "shadow ledger" for payroll only — it does not need cost-center splits to show on payslips. When full double-entry GL is added, the aggregate pattern is carried forward because it already works for its original purpose.
 
 **How to avoid:**
+
 - Implement a DB-level CHECK constraint on the `journal_entries` table: the sum of all lines with `side = 'DEBIT'` must equal the sum of all lines with `side = 'CREDIT'` for each journal entry. Use a PostgreSQL trigger or a deferred constraint on `journal_entry_lines`.
 - Never store `debitAccount`/`creditAccount`/`amount` as flat columns on a single row. Use the canonical two-table design: `JournalEntry` (header: period, source, description) + `JournalEntryLine` (account_code, side, amount, cost_center_id). The existing `AccountingEntry` flat-column model must be replaced or adapted — do NOT extend it.
 - For the migration of existing `AccountingEntry` records into the new schema: each old record maps to one `JournalEntry` with exactly two `JournalEntryLine` rows (one DEBIT, one CREDIT). Write a migration script that validates `count(AccountingEntry) * 2 = count(JournalEntryLine)` before marking migration complete.
 - Add a service-level guard: `assertBalanced(lines: JournalEntryLine[]): void` that throws before any `prisma.create` if `sumDebits !== sumCredits`. Call it in every auto-generation path (payroll, depreciation, stock, payables).
 
 **Warning signs:**
+
 - Balancete de verificação (trial balance) shows non-zero `SUM(debits) - SUM(credits)`.
 - A cost center DRE shows expenses without matching liability credits.
 - Tests pass by asserting only on the created record, not on the aggregate balance of the period.
@@ -44,12 +46,14 @@ In SPED ECD, the I150/I155 registros require that debit totals equal credit tota
 Rateio percentages come from the UI as user-entered floats, are stored as `DECIMAL(5,4)`, and when applied to a Decimal amount the last line is calculated as `total - sum(otherLines)` in some implementations but as `total * rate` in others. The "apply rate to each line" approach accumulates rounding error; the "last line takes the remainder" approach is correct but rarely implemented from the start.
 
 **How to avoid:**
+
 - Implement a `rateio(total: Decimal, portions: {rate: Decimal, costCenterId: string}[]): {costCenterId: string, amount: Decimal}[]` utility in `packages/shared/src/utils/rateio.ts`. The algorithm: calculate each line as `total.mul(rate).toDecimalPlaces(2, Decimal.ROUND_HALF_UP)`. Then compute `remainder = total - sum(calculatedLines)`. Add the remainder to the line with the largest share (not the last line — the largest share absorbs rounding most naturally). The existing `installment-generator.ts` uses a similar pattern for CP installments — adapt it.
 - Store rateio percentages as `DECIMAL(7,6)` (6 decimal places) in the DB, never as JavaScript `number`.
 - Write a unit test: `rateio(10000.00, [{rate: 0.3333, ...}, {rate: 0.3333, ...}, {rate: 0.3334, ...}])` must sum to exactly `10000.00`.
 - In the SPED ECD generator, before writing I150/I155, add an assertion: `abs(sumDebits - sumCredits) < 0.005`. If it fires, log the offending period and throw — never generate a file with an unbalanced period.
 
 **Warning signs:**
+
 - Trial balance shows `SUM(DEBIT) - SUM(CREDIT)` = R$ 0.01 or R$ 0.02 for any period.
 - SPED ECD validator returns error code on I155 "totais não conferem".
 - Rateio utility uses `parseFloat()` or `Number()` anywhere in the calculation chain.
@@ -67,6 +71,7 @@ A period (e.g., December 2025) is closed and the DRE/BP/DFC for that period are 
 The existing `AccountingEntry` model has no `periodId` foreign key — it uses `referenceMonth: DateTime @db.Date`. No `AccountingPeriod` table exists yet. Until the period-status check is wired into every entry-creation path, retroactive entries slip through.
 
 **How to avoid:**
+
 - Create an `AccountingPeriod` model: `{ id, organizationId, year, month, status: OPEN|CLOSED|LOCKED, closedAt, closedBy }`. CLOSED = no new auto-entries; LOCKED = no manual entries either (post-SPED submission).
 - Add a `periodId` FK on `JournalEntry`. Every service that creates a journal entry must call `assertPeriodOpen(organizationId, year, month)` before `prisma.create`. Make this a shared utility so it cannot be bypassed.
 - Closing a period requires a checklist: all pending payables reconciled, all depreciation runs posted, all payroll runs closed. The checklist is modeled as checkboxes on the period record, not a free-form comment.
@@ -74,6 +79,7 @@ The existing `AccountingEntry` model has no `periodId` foreign key — it uses `
 - Financial statement snapshots (DRE/BP/DFC) store a `snapshotHash` of the underlying GL data. If the GL changes for that period, the snapshot is marked STALE and requires re-generation — the UI shows a warning.
 
 **Warning signs:**
+
 - `AccountingEntry` records with `referenceMonth` earlier than the latest closed month.
 - No `AccountingPeriod` table in the schema at the time auto-generation is wired to CP/CR/depreciation.
 - Financial statements show different numbers on consecutive days without any approved changes.
@@ -91,12 +97,14 @@ The current `AccountingEntry` model stores `debitAccount`, `creditAccount`, and 
 The existing module was explicitly scoped to payroll integration only (comment in `accounting-entries.service.ts`: "5 entry types created at payroll close"). The schema was intentionally minimal. The mistake is extending it instead of replacing it.
 
 **How to avoid:**
+
 - Create new tables: `journal_entries` (header) and `journal_entry_lines` (lines). Migrate existing `accounting_entries` records to the new structure as part of the chart-of-accounts phase migration.
 - Keep `accounting_entries` table and its existing code intact as a read-only historical table until the full migration is verified. Add a `migratedToJournalEntryId` column to `accounting_entries` so the migration is auditable and reversible.
 - The new `JournalEntryLine` table: `{ id, journalEntryId, accountId (FK → ChartOfAccount), side: DEBIT|CREDIT, amount: Decimal(14,2), costCenterId?, farmId?, description? }`.
 - Update the `createPayrollEntries` and `createReversalEntry` functions to write to the new tables, not the old ones. Do this in the "Lançamentos Automáticos" phase, after the new schema is stable.
 
 **Warning signs:**
+
 - A migration adds columns to `accounting_entries` instead of creating new tables.
 - Trial balance query JOINs both `accounting_entries` and `journal_entries`.
 - `AccountingEntryType` enum is extended with non-payroll types (stock, depreciation, etc.) before the schema refactor.
@@ -116,12 +124,14 @@ Conversely, if the hook fires but the period is closed or the GL module is not y
 Non-blocking fire-and-forget patterns (`try { createPayrollEntries(...) } catch {}`) are used to prevent accounting failures from rolling back business transactions. This is correct for user experience but wrong for data completeness. The two concerns — "don't block the business event" and "guarantee the accounting entry" — are conflated.
 
 **How to avoid:**
+
 - Use a `pending_journal_postings` queue table: when a business event fires (payroll close, depreciation, stock output, CP payment), insert a `PendingJournalPosting` record with `sourceType`, `sourceId`, `status: PENDING`. A background job (BullMQ, already in the stack) processes the queue and creates the actual journal entry.
 - The `PendingJournalPosting` has a `UNIQUE(sourceType, sourceId)` constraint — duplicate triggers hit the unique constraint and are ignored.
 - Failed postings set `status: FAILED` with `failureReason` — visible in the accounting dashboard. Accountant can manually retry or create a manual entry.
 - For the existing `createPayrollEntries`: before `createMany`, check `count(AccountingEntry WHERE sourceType = PAYROLL_RUN AND sourceId = runId)`. If > 0, skip. Add this guard immediately (it is a bug in the current code).
 
 **Warning signs:**
+
 - `AccountingEntry.count WHERE sourceType = PAYROLL_RUN AND sourceId = X` returns > 5 (more than the expected 5 entry types).
 - No `pending_journal_postings` table or equivalent deduplication mechanism exists when wiring depreciation/stock hooks.
 - Accounting dashboard has no "missing postings" alert section.
@@ -145,6 +155,7 @@ The RFB's PVA (Programa Validador e Assinador) for ECD enforces strict structura
 The ECD format specification (Manual de Orientação da ECD, latest version for AC 2025) is a 300+ page PDF. Most implementations copy existing ECD files from accounting software as templates without reading the full spec. The PVA validator messages are cryptic (error codes without plain-text descriptions in the default view) and require cross-referencing the manual.
 
 **How to avoid:**
+
 - Download and read the current Manual de Orientação da ECD (available at `sped.rfb.gov.br`). At minimum read Blocos 0, I, and J completely — these are the ones that fail most often.
 - Implement a pre-generation validator that checks all I050 constraints (no duplicate COD_CTA, all COD_CTA_SUP resolve to existing parents, no orphans) before writing the file.
 - The J100/J150 subtotals must be computed from the same GL query that produces the trial balance — never computed independently in the financial-statement layer.
@@ -152,6 +163,7 @@ The ECD format specification (Manual de Orientação da ECD, latest version for 
 - Before generating ECD for a period, run the full PVA locally in a CI/test step. The PVA is a free download and can be invoked headlessly (though not officially documented — community workarounds exist via WINE on Linux).
 
 **Warning signs:**
+
 - Chart-of-accounts UI allows creating an account without selecting a parent.
 - Financial statement subtotals are computed with `SUM(childLines)` queries that differ from the trial balance query path.
 - No local PVA validation step in the SPED ECD generation service.
@@ -170,12 +182,14 @@ The system has 4 milestones of operational data (v1.0–v1.3): payables, receiva
 This is a classic ERP accounting bolt-on problem. The business ran without a ledger and built up operational history. Adding the ledger creates a continuity problem. Teams often defer the decision until go-live and then find neither approach is fast.
 
 **How to avoid:**
+
 - Adopt the "opening balance entry" approach: create one manual `JournalEntry` per account with a single line establishing the opening balance as of the date accounting goes live (e.g., 2026-04-01). The values come from the existing financial module data (bank balances, outstanding CP/CR, asset book values, payroll provisions).
 - Provide a "Saldo de Abertura" wizard in the UI that pre-populates opening balances from existing module data: bank account balances from `BankAccount.currentBalance`, outstanding CP from `Payable.remainingAmount`, asset book values from `Asset.currentBookValue`, payroll provisions from `PayrollProvision.totalAmount`. The accountant reviews and confirms before posting.
 - Do NOT retroactively generate GL entries for historical periods unless required for SPED ECD (which only applies from the fiscal year of go-live forward). The SPED ECD for 2026 starts from the opening balance — prior years are not required.
 - Document in the "Saldo de Abertura" wizard that the opening balance entry is a manual adjustment — tag it with `sourceType = OPENING_BALANCE` so it is excluded from the automatic-entry deduplication checks.
 
 **Warning signs:**
+
 - Migration plan says "generate GL entries for all historical transactions retroactively" without a time estimate.
 - No `OPENING_BALANCE` source type on the `JournalEntry` model.
 - Opening balance wizard is missing and accountant must create opening entries manually — high risk of errors.
@@ -193,12 +207,14 @@ Fazendas planning their exercise fiscal around the safra cycle (July–June, ali
 The `AccountingPeriod` model is often designed with `year` and `month` integer columns, implicitly assuming January–December. A safra fiscal year spans two calendar years (e.g., Jul-2025 to Jun-2026) and cannot be represented as a single integer year.
 
 **How to avoid:**
+
 - The `AccountingPeriod` model must have `startDate: Date` and `endDate: Date`, not just `year: Int`. The `FiscalYear` model (one level above) has `startDate`, `endDate`, and `type: CALENDAR | SAFRA | CUSTOM`.
 - The SPED ECD generator reads `FiscalYear.startDate` and `FiscalYear.endDate` for the 0000 registro — never derives them from the period list.
 - ECD deadline calculation: `lastBusinessDayOfMay(fiscalYear.endDate.year + 1)`. Use `date-fns` (already in stack) for business day calculation.
 - For calendar-year clients (the majority), `FiscalYear.type = CALENDAR` and `startDate = YYYY-01-01`. The safra option is configurable at org setup, not hardcoded.
 
 **Warning signs:**
+
 - `AccountingPeriod` schema has `year: Int` and `month: Int` but no `date` fields.
 - SPED ECD generator has `new Date(year, 0, 1)` hardcoded for `DT_INI`.
 - ECD deadline is calculated as `new Date(year + 1, 4, 31)` without business-day adjustment.
@@ -218,12 +234,14 @@ If the auto-generation rule for biological asset revaluation creates a `REVENUE`
 Developers implementing the fair value revaluation entry copy the pattern from depreciation (Debit: Asset / Credit: Depreciation Expense) and invert it to (Debit: Biological Asset / Credit: Revenue). The credit account is mapped to a standard revenue code. The DFC module then cannot identify this as a non-cash item to reverse.
 
 **How to avoid:**
+
 - Create dedicated account codes in the rural chart-of-accounts model for biological asset fair value: `3.5.01 — Variação Valor Justo Ativo Biológico` (revenue) and `4.5.01 — Perda Valor Justo Ativo Biológico` (expense). These must be flagged with `isFairValueAdjustment: Boolean` in the `ChartOfAccount` model.
 - The DFC indirect method generator identifies all accounts with `isFairValueAdjustment = true` and lists them as "non-cash adjustments" in the operating activities section, reversing their DRE impact.
 - The DRE layout must have a distinct section for "Resultado de Variação de Valor Justo" separate from "Receita Bruta de Vendas". This allows the user to see operating revenue separately from valuation adjustments.
 - CPC 29 also requires disclosure of changes in quantity (births, deaths, acquisitions, sales) separately from fair value changes. Model the `BiologicalAssetMovement` table with `movementType: BIRTH | DEATH | ACQUISITION | SALE | FAIR_VALUE_ADJUSTMENT` — the GL entry differs by type.
 
 **Warning signs:**
+
 - The rural chart-of-accounts preload has no `isFairValueAdjustment` flag.
 - DFC indirect method uses `Net Income` as starting point but does not subtract biological asset fair value gains.
 - DRE shows a single "Receitas" subtotal that mixes cash sales with fair value gains.
@@ -243,6 +261,7 @@ The v1.3 payroll module already handles FUNRURAL for the employer contribution (
 The payroll module code path uses `ACCOUNT_CODES.PAYROLL_CHARGES` for employer social charges including FUNRURAL. When the accounting team maps "FUNRURAL" to an account, they find the existing payroll FUNRURAL code and reuse it for the revenue-deduction FUNRURAL. The accounts are different legal instruments.
 
 **How to avoid:**
+
 - The rural chart-of-accounts model must have two separate FUNRURAL accounts:
   - `3.1.03 — Deduções da Receita — FUNRURAL s/ Vendas` (account type: CONTRA_REVENUE, nature: DEBIT)
   - `2.1.04 — FUNRURAL a Recolher` (liability, nature: CREDIT)
@@ -250,6 +269,7 @@ The payroll module code path uses `ACCOUNT_CODES.PAYROLL_CHARGES` for employer s
 - Label the chart-of-accounts entries clearly: `FUNRURAL (Receita Bruta — art. 25 Lei 8.212)` vs. `FUNRURAL Patronal (Folha — art. 22a)`.
 
 **Warning signs:**
+
 - A single `FUNRURAL` account code is used by both the payroll module and the receivables settlement module.
 - DRE shows FUNRURAL in `Despesas Operacionais` (expense group) instead of `Deduções da Receita Bruta`.
 - `AccountingSourceType` enum has `PAYABLE_SETTLEMENT` but no `RECEIVABLE_SETTLEMENT` type — the missing type is a sign the CR→GL integration has not been designed yet.
@@ -260,64 +280,64 @@ The payroll module code path uses `ACCOUNT_CODES.PAYROLL_CHARGES` for employer s
 
 ## Technical Debt Patterns
 
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| Extend existing `accounting_entries` flat-column table instead of creating `journal_entries` + `journal_entry_lines` | Saves one phase of schema work | Trial balance queries require UNION hacks; cost-center splits impossible; SPED I155 lines cannot be generated correctly | Never — schema must be two-table from the start |
-| Cache DRE/BP/DFC as materialized views without invalidation on GL change | Reporting queries are fast | Stale statements show to users; accountant closes period based on wrong data | Only acceptable if view has a `last_updated` timestamp shown in the UI and auto-refresh on GL write |
-| Store chart-of-accounts as flat list with `parentCode: String?` instead of `parentId: UUID?` | Avoids FK lookup for codes | Code changes break the tree; code uniqueness cannot be enforced at DB level with a simple string | Never — use `parentId UUID FK` and enforce `UNIQUE(orgId, code)` |
-| Hardcode the rural chart-of-accounts as a TypeScript constant | Faster to seed | Cannot be customized per client; account codes are spread across codebase; adding a new account requires a code deploy | Acceptable for the seed/template, but the working tree must live in the DB |
-| Skip `PendingJournalPosting` queue table — call auto-generation synchronously inside business transaction | Simpler code | A GL failure rolls back the business event (CP payment rollback because accounting failed); or GL failure is silently swallowed | Never in production — the queue pattern is required for correctness |
-| Derive DFC from DRE + BP delta instead of from GL entries | Avoids building a DFC mapping system | Indirect method reconciliation is approximate; direct method is impossible; non-cash items (CPC 29 fair value, depreciation) are not identified | Acceptable only for v1 DFC indirect method if labeled "approximation" — direct method requires proper DFC mapping |
+| Shortcut                                                                                                             | Immediate Benefit                    | Long-term Cost                                                                                                                                  | When Acceptable                                                                                                   |
+| -------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Extend existing `accounting_entries` flat-column table instead of creating `journal_entries` + `journal_entry_lines` | Saves one phase of schema work       | Trial balance queries require UNION hacks; cost-center splits impossible; SPED I155 lines cannot be generated correctly                         | Never — schema must be two-table from the start                                                                   |
+| Cache DRE/BP/DFC as materialized views without invalidation on GL change                                             | Reporting queries are fast           | Stale statements show to users; accountant closes period based on wrong data                                                                    | Only acceptable if view has a `last_updated` timestamp shown in the UI and auto-refresh on GL write               |
+| Store chart-of-accounts as flat list with `parentCode: String?` instead of `parentId: UUID?`                         | Avoids FK lookup for codes           | Code changes break the tree; code uniqueness cannot be enforced at DB level with a simple string                                                | Never — use `parentId UUID FK` and enforce `UNIQUE(orgId, code)`                                                  |
+| Hardcode the rural chart-of-accounts as a TypeScript constant                                                        | Faster to seed                       | Cannot be customized per client; account codes are spread across codebase; adding a new account requires a code deploy                          | Acceptable for the seed/template, but the working tree must live in the DB                                        |
+| Skip `PendingJournalPosting` queue table — call auto-generation synchronously inside business transaction            | Simpler code                         | A GL failure rolls back the business event (CP payment rollback because accounting failed); or GL failure is silently swallowed                 | Never in production — the queue pattern is required for correctness                                               |
+| Derive DFC from DRE + BP delta instead of from GL entries                                                            | Avoids building a DFC mapping system | Indirect method reconciliation is approximate; direct method is impossible; non-cash items (CPC 29 fair value, depreciation) are not identified | Acceptable only for v1 DFC indirect method if labeled "approximation" — direct method requires proper DFC mapping |
 
 ---
 
 ## Integration Gotchas
 
-| Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
-| Payroll → GL | Use aggregate run total in one entry; no cost-center split | One `JournalEntry` per payroll run with N×2 `JournalEntryLine` rows (one debit per cost center, one aggregate credit to liability) |
-| Depreciation → GL | Generate one entry per asset per month without checking if an entry for that `assetId + period` already exists | `UNIQUE(sourceType, sourceId, periodId)` on `journal_entries` prevents duplicates; depreciation service uses upsert |
-| Stock Output → GL | Use stock output `totalCost` directly as GL amount; ignores weighted-average unit cost recalculation | Stock output GL entry must use `StockBalance.averageCost * quantity` at the time of output, not the original purchase price |
-| CP Settlement → GL | Create GL entry using `Payable.totalAmount` instead of `payment.amount` | Partial payments must generate partial GL entries; `sourceId` should be `paymentId`, not `payableId` |
-| CR Settlement → GL | Omit FUNRURAL deduction from the GL entry | CR settlement generates two GL entries: one for cash receipt (Debit Bank / Credit CR), one for FUNRURAL withheld (Debit FUNRURAL Contra-Revenue / Credit FUNRURAL Payable) |
-| Asset Sale → GL | Debit Cash / Credit Asset at book value, ignoring accumulated depreciation | Correct: Debit Cash (sale price) + Debit Accumulated Depreciation + Credit Asset (cost) + Credit/Debit Gain or Loss on Disposal |
-| SPED ECD → PVA | Generate file from computed financial statement values (which may differ from GL by rounding) | I150/I155 (balancete) must be derived from raw GL trial balance queries, not from financial statement layer |
+| Integration        | Common Mistake                                                                                                 | Correct Approach                                                                                                                                                           |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Payroll → GL       | Use aggregate run total in one entry; no cost-center split                                                     | One `JournalEntry` per payroll run with N×2 `JournalEntryLine` rows (one debit per cost center, one aggregate credit to liability)                                         |
+| Depreciation → GL  | Generate one entry per asset per month without checking if an entry for that `assetId + period` already exists | `UNIQUE(sourceType, sourceId, periodId)` on `journal_entries` prevents duplicates; depreciation service uses upsert                                                        |
+| Stock Output → GL  | Use stock output `totalCost` directly as GL amount; ignores weighted-average unit cost recalculation           | Stock output GL entry must use `StockBalance.averageCost * quantity` at the time of output, not the original purchase price                                                |
+| CP Settlement → GL | Create GL entry using `Payable.totalAmount` instead of `payment.amount`                                        | Partial payments must generate partial GL entries; `sourceId` should be `paymentId`, not `payableId`                                                                       |
+| CR Settlement → GL | Omit FUNRURAL deduction from the GL entry                                                                      | CR settlement generates two GL entries: one for cash receipt (Debit Bank / Credit CR), one for FUNRURAL withheld (Debit FUNRURAL Contra-Revenue / Credit FUNRURAL Payable) |
+| Asset Sale → GL    | Debit Cash / Credit Asset at book value, ignoring accumulated depreciation                                     | Correct: Debit Cash (sale price) + Debit Accumulated Depreciation + Credit Asset (cost) + Credit/Debit Gain or Loss on Disposal                                            |
+| SPED ECD → PVA     | Generate file from computed financial statement values (which may differ from GL by rounding)                  | I150/I155 (balancete) must be derived from raw GL trial balance queries, not from financial statement layer                                                                |
 
 ---
 
 ## Performance Traps
 
-| Trap | Symptoms | Prevention | When It Breaks |
-|------|----------|------------|----------------|
-| Recursive CTE for full chart-of-accounts subtotals on every DRE request | DRE page takes 5–10 seconds to load in December (year-end) | Materialize account hierarchy as `lpath` (ltree extension) in PostgreSQL; cache hierarchy in Redis with 5-minute TTL; use `@>` operator for subtree queries | At ~500 accounts with 4+ levels and 50K+ journal entry lines per year |
-| N+1 on `journal_entry_lines` when building trial balance | Trial balance endpoint times out; DB shows thousands of queries per request | Single query: `SELECT account_code, SUM(CASE side WHEN DEBIT THEN amount ELSE 0) - SUM(CASE side WHEN CREDIT THEN amount ELSE 0) FROM journal_entry_lines GROUP BY account_code` | At >10K lines per period, N+1 makes it unusable |
-| Full `accounting_entries` + `journal_entry_lines` table scan for balancete | Progressively slower each month as data accumulates | Composite index `(organizationId, periodId, accountId)` on `journal_entry_lines`; partial index for open periods (frequently queried); archive closed periods | At >500K lines (approx. 3 years of a mid-size fazenda) |
-| SPED ECD generation loads all journal entries into Node memory | OOM crash when generating ECD for a full year | Stream journal entries in batches of 5,000, write to file incrementally using Node.js `fs.createWriteStream`; existing CNAB adapter uses this pattern | At >100K entries per fiscal year |
-| DFC indirect method recalculates all period balances on each request | DFC takes >10 seconds | Pre-compute period balance snapshots at period close; store as `PeriodSnapshot { accountId, openingBalance, closingBalance, debitMovement, creditMovement }` | At >12 periods × 500 accounts = 6,000 rows to recalculate per request |
+| Trap                                                                       | Symptoms                                                                    | Prevention                                                                                                                                                                       | When It Breaks                                                        |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Recursive CTE for full chart-of-accounts subtotals on every DRE request    | DRE page takes 5–10 seconds to load in December (year-end)                  | Materialize account hierarchy as `lpath` (ltree extension) in PostgreSQL; cache hierarchy in Redis with 5-minute TTL; use `@>` operator for subtree queries                      | At ~500 accounts with 4+ levels and 50K+ journal entry lines per year |
+| N+1 on `journal_entry_lines` when building trial balance                   | Trial balance endpoint times out; DB shows thousands of queries per request | Single query: `SELECT account_code, SUM(CASE side WHEN DEBIT THEN amount ELSE 0) - SUM(CASE side WHEN CREDIT THEN amount ELSE 0) FROM journal_entry_lines GROUP BY account_code` | At >10K lines per period, N+1 makes it unusable                       |
+| Full `accounting_entries` + `journal_entry_lines` table scan for balancete | Progressively slower each month as data accumulates                         | Composite index `(organizationId, periodId, accountId)` on `journal_entry_lines`; partial index for open periods (frequently queried); archive closed periods                    | At >500K lines (approx. 3 years of a mid-size fazenda)                |
+| SPED ECD generation loads all journal entries into Node memory             | OOM crash when generating ECD for a full year                               | Stream journal entries in batches of 5,000, write to file incrementally using Node.js `fs.createWriteStream`; existing CNAB adapter uses this pattern                            | At >100K entries per fiscal year                                      |
+| DFC indirect method recalculates all period balances on each request       | DFC takes >10 seconds                                                       | Pre-compute period balance snapshots at period close; store as `PeriodSnapshot { accountId, openingBalance, closingBalance, debitMovement, creditMovement }`                     | At >12 periods × 500 accounts = 6,000 rows to recalculate per request |
 
 ---
 
 ## Security Mistakes
 
-| Mistake | Risk | Prevention |
-|---------|------|------------|
-| Journal entry creation endpoint accessible to any `financial:*` permission | Unauthorized manual entries; fabricated expenses | Separate permission `accounting:journal:create` for manual entries; auto-generated entries bypass permission check but are system-only (no user-facing endpoint) |
-| SPED ECD file stored in local filesystem | File accessible to all server processes; no versioning; lost on redeploy | Store in S3-compatible storage (existing pattern from pdfkit outputs); signed URL for download; access logged |
-| Period re-open available to `financial:manager` role | Manager can re-open closed period and insert backdated entries without audit trail | Period re-open requires `accounting:period:reopen` permission (separate from financial manager); creates immutable audit log entry; triggers alert to org owner |
-| Chart-of-accounts API returns all accounts for `organizationId` without RLS | Cross-tenant account code leak | All accounting models must include `organizationId` in every query `where` clause; RLS policy on `chart_of_accounts` table as with all existing models |
-| Opening balance wizard allows arbitrary amounts without source reference | Fraudulent equity inflation | Each opening balance line must reference a source (`bankAccountId`, `payableId`, etc.) or be flagged as `manualAdjustment: true` with mandatory `justification` text; auditable |
+| Mistake                                                                     | Risk                                                                               | Prevention                                                                                                                                                                      |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Journal entry creation endpoint accessible to any `financial:*` permission  | Unauthorized manual entries; fabricated expenses                                   | Separate permission `accounting:journal:create` for manual entries; auto-generated entries bypass permission check but are system-only (no user-facing endpoint)                |
+| SPED ECD file stored in local filesystem                                    | File accessible to all server processes; no versioning; lost on redeploy           | Store in S3-compatible storage (existing pattern from pdfkit outputs); signed URL for download; access logged                                                                   |
+| Period re-open available to `financial:manager` role                        | Manager can re-open closed period and insert backdated entries without audit trail | Period re-open requires `accounting:period:reopen` permission (separate from financial manager); creates immutable audit log entry; triggers alert to org owner                 |
+| Chart-of-accounts API returns all accounts for `organizationId` without RLS | Cross-tenant account code leak                                                     | All accounting models must include `organizationId` in every query `where` clause; RLS policy on `chart_of_accounts` table as with all existing models                          |
+| Opening balance wizard allows arbitrary amounts without source reference    | Fraudulent equity inflation                                                        | Each opening balance line must reference a source (`bankAccountId`, `payableId`, etc.) or be flagged as `manualAdjustment: true` with mandatory `justification` text; auditable |
 
 ---
 
 ## UX Pitfalls
 
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| Show all chart-of-accounts in a flat select (400+ accounts) when creating a manual entry | Accountant cannot find the right account; wrong account selected | Hierarchical account picker with search; show account code + name + nature; most-recently-used accounts shown first |
-| Period close button available before checklist is 100% complete | Accountant closes period with unreconciled items; discovers error after SPED submission | Disable close button until all checklist items are checked; show count of blocking items ("3 itens pendentes") |
-| DRE shows YTD figures with no way to view single month | Cannot compare months; seasonal agricultural business makes YTD misleading in mid-year | DRE filter: single month / quarter / YTD / custom range; comparative column for prior year same period |
-| SPED ECD generation triggered immediately with no progress feedback | Large files take 30–60 seconds; user thinks it crashed and clicks again (duplicate generation) | Background job for ECD generation; progress indicator in UI; prevent second generation while first is running |
-| Manual journal entry form without a "verify balance" step | Accountant submits an imbalanced entry; discovers at next trial balance | Real-time debit/credit running totals in the form; submit button disabled until `|sumDebits - sumCredits| < 0.005` |
+| Pitfall                                                                                  | User Impact                                                                                    | Better Approach                                                                                                     |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------- | -------- |
+| Show all chart-of-accounts in a flat select (400+ accounts) when creating a manual entry | Accountant cannot find the right account; wrong account selected                               | Hierarchical account picker with search; show account code + name + nature; most-recently-used accounts shown first |
+| Period close button available before checklist is 100% complete                          | Accountant closes period with unreconciled items; discovers error after SPED submission        | Disable close button until all checklist items are checked; show count of blocking items ("3 itens pendentes")      |
+| DRE shows YTD figures with no way to view single month                                   | Cannot compare months; seasonal agricultural business makes YTD misleading in mid-year         | DRE filter: single month / quarter / YTD / custom range; comparative column for prior year same period              |
+| SPED ECD generation triggered immediately with no progress feedback                      | Large files take 30–60 seconds; user thinks it crashed and clicks again (duplicate generation) | Background job for ECD generation; progress indicator in UI; prevent second generation while first is running       |
+| Manual journal entry form without a "verify balance" step                                | Accountant submits an imbalanced entry; discovers at next trial balance                        | Real-time debit/credit running totals in the form; submit button disabled until `                                   | sumDebits - sumCredits | < 0.005` |
 
 ---
 
@@ -338,31 +358,31 @@ The payroll module code path uses `ACCOUNT_CODES.PAYROLL_CHARGES` for employer s
 
 ## Recovery Strategies
 
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|----------------|
-| Flat-column `accounting_entries` extended instead of replaced | HIGH | Create new `journal_entries` + `journal_entry_lines` tables; write migration script to convert old records; update all consumers; keep old table as archive with `deprecated_` prefix |
-| Period closed with unreconciled entries — wrong statement sent to accountant | MEDIUM | Re-open period (requires `accounting:period:reopen` permission); create correcting journal entry with `adjustmentType = PRIOR_PERIOD_CORRECTION`; regenerate financial statements; note correction in notes explicativas |
-| Duplicate auto-generated journal entries discovered | MEDIUM | Write a cleanup script: `DELETE FROM journal_entries WHERE id NOT IN (SELECT MIN(id) FROM journal_entries GROUP BY sourceType, sourceId, periodId)`; add `UNIQUE(sourceType, sourceId, periodId)` constraint; re-run idempotency check |
-| SPED ECD rejected by PVA with I050 duplicate accounts | LOW | Identify duplicate `COD_CTA` in chart of accounts; merge the duplicate accounts (reassign all lines); regenerate ECD; re-submit |
-| Trial balance out by R$ 0.01–R$ 0.10 (rounding) | MEDIUM | Audit rateio functions for float arithmetic; identify affected periods; create correcting entries; implement `rateio.ts` with remainder-to-largest-share logic; verify all future periods |
-| Opening balance not entered — first month BP shows zero assets | MEDIUM | Wizard creates `JournalEntry sourceType = OPENING_BALANCE` for each account with the correct balance as of go-live date; this is normal first-month-of-accounting procedure |
+| Pitfall                                                                      | Recovery Cost | Recovery Steps                                                                                                                                                                                                                         |
+| ---------------------------------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Flat-column `accounting_entries` extended instead of replaced                | HIGH          | Create new `journal_entries` + `journal_entry_lines` tables; write migration script to convert old records; update all consumers; keep old table as archive with `deprecated_` prefix                                                  |
+| Period closed with unreconciled entries — wrong statement sent to accountant | MEDIUM        | Re-open period (requires `accounting:period:reopen` permission); create correcting journal entry with `adjustmentType = PRIOR_PERIOD_CORRECTION`; regenerate financial statements; note correction in notes explicativas               |
+| Duplicate auto-generated journal entries discovered                          | MEDIUM        | Write a cleanup script: `DELETE FROM journal_entries WHERE id NOT IN (SELECT MIN(id) FROM journal_entries GROUP BY sourceType, sourceId, periodId)`; add `UNIQUE(sourceType, sourceId, periodId)` constraint; re-run idempotency check |
+| SPED ECD rejected by PVA with I050 duplicate accounts                        | LOW           | Identify duplicate `COD_CTA` in chart of accounts; merge the duplicate accounts (reassign all lines); regenerate ECD; re-submit                                                                                                        |
+| Trial balance out by R$ 0.01–R$ 0.10 (rounding)                              | MEDIUM        | Audit rateio functions for float arithmetic; identify affected periods; create correcting entries; implement `rateio.ts` with remainder-to-largest-share logic; verify all future periods                                              |
+| Opening balance not entered — first month BP shows zero assets               | MEDIUM        | Wizard creates `JournalEntry sourceType = OPENING_BALANCE` for each account with the correct balance as of go-live date; this is normal first-month-of-accounting procedure                                                            |
 
 ---
 
 ## Pitfall-to-Phase Mapping
 
-| Pitfall | Prevention Phase | Verification |
-|---------|------------------|--------------|
-| Double-entry broken by aggregate entries | Plano de Contas (Phase 1) — `JournalEntry + JournalEntryLine` schema | Deploy and assert: imbalanced entry rejected by DB trigger |
-| Rounding breaks trial balance | Plano de Contas (Phase 1) — `rateio.ts` utility | Unit test: `rateio(10000.00, [0.3333, 0.3333, 0.3334])` sums to exactly 10000.00 |
-| Retroactive edits corrupt closed period | Períodos Contábeis (Phase 2) — `assertPeriodOpen` guard | Integration test: edit CP payment date for closed period → GL unchanged |
-| Flat `accounting_entries` model extended | Plano de Contas (Phase 1) — schema created fresh | Code review: no column additions to `accounting_entries` table |
-| Duplicate auto-entries from retries | Lançamentos Automáticos (Phase 3) — `PendingJournalPosting` queue | Load test: trigger payroll close 3×; assert exactly 5 journal entry types created |
-| SPED ECD PVA validation failures | SPED ECD (Phase N) — pre-generation validator + PVA test | Run PVA on generated file; assert zero errors |
-| Historical data gap | Saldo de Abertura (Phase early) — opening balance wizard | Trial balance after wizard shows non-zero balances matching existing module data |
-| Safra fiscal year mismatch | Períodos Contábeis (Phase 2) — `FiscalYear` model with `startDate/endDate` | Create safra year Jul–Jun; assert ECD 0000 registro dates are correct |
-| CPC 29 phantom income in DFC | DFC (Phase N-1) — `isFairValueAdjustment` flag + DFC reversal | Revalue biological asset; assert DFC operating activities shows reversal |
-| FUNRURAL wrong account group | Plano de Contas (Phase 1) — two distinct FUNRURAL codes | Settle CR with FUNRURAL; assert GL entry is in group 3 (contra-revenue) |
+| Pitfall                                  | Prevention Phase                                                           | Verification                                                                      |
+| ---------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Double-entry broken by aggregate entries | Plano de Contas (Phase 1) — `JournalEntry + JournalEntryLine` schema       | Deploy and assert: imbalanced entry rejected by DB trigger                        |
+| Rounding breaks trial balance            | Plano de Contas (Phase 1) — `rateio.ts` utility                            | Unit test: `rateio(10000.00, [0.3333, 0.3333, 0.3334])` sums to exactly 10000.00  |
+| Retroactive edits corrupt closed period  | Períodos Contábeis (Phase 2) — `assertPeriodOpen` guard                    | Integration test: edit CP payment date for closed period → GL unchanged           |
+| Flat `accounting_entries` model extended | Plano de Contas (Phase 1) — schema created fresh                           | Code review: no column additions to `accounting_entries` table                    |
+| Duplicate auto-entries from retries      | Lançamentos Automáticos (Phase 3) — `PendingJournalPosting` queue          | Load test: trigger payroll close 3×; assert exactly 5 journal entry types created |
+| SPED ECD PVA validation failures         | SPED ECD (Phase N) — pre-generation validator + PVA test                   | Run PVA on generated file; assert zero errors                                     |
+| Historical data gap                      | Saldo de Abertura (Phase early) — opening balance wizard                   | Trial balance after wizard shows non-zero balances matching existing module data  |
+| Safra fiscal year mismatch               | Períodos Contábeis (Phase 2) — `FiscalYear` model with `startDate/endDate` | Create safra year Jul–Jun; assert ECD 0000 registro dates are correct             |
+| CPC 29 phantom income in DFC             | DFC (Phase N-1) — `isFairValueAdjustment` flag + DFC reversal              | Revalue biological asset; assert DFC operating activities shows reversal          |
+| FUNRURAL wrong account group             | Plano de Contas (Phase 1) — two distinct FUNRURAL codes                    | Settle CR with FUNRURAL; assert GL entry is in group 3 (contra-revenue)           |
 
 ---
 
@@ -385,5 +405,6 @@ The payroll module code path uses `ACCOUNT_CODES.PAYROLL_CHARGES` for employer s
 - Codebase analysis: `apps/backend/prisma/schema.prisma` — `AccountingEntry` model, `AccountingSourceType` enum
 
 ---
-*Pitfalls research for: rural farm management ERP — v1.4 Accounting and Financial Statements milestone*
-*Researched: 2026-03-26*
+
+_Pitfalls research for: rural farm management ERP — v1.4 Accounting and Financial Statements milestone_
+_Researched: 2026-03-26_

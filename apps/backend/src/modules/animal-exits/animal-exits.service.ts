@@ -326,7 +326,8 @@ export async function exportAnimalExitsCsv(
 ): Promise<string> {
   const { data } = await listAnimalExits(ctx, farmId, { ...query, page: 1, limit: 10000 });
 
-  const header = 'Brinco;Nome;Tipo;Data;Tipo Morte;Causa Morte;Comprador;Valor Total;Peso (kg);Preço/kg;GTA;Destino;Observações';
+  const header =
+    'Brinco;Nome;Tipo;Data;Tipo Morte;Causa Morte;Comprador;Valor Total;Peso (kg);Preço/kg;GTA;Destino;Observações';
   const rows = data.map((item) =>
     [
       item.animalEarTag,

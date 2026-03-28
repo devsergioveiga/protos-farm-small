@@ -22,7 +22,7 @@ key-files:
   modified: []
 
 key-decisions:
-  - "Human approved full payroll flow — wizard, detail, close/revert, advances, payslip PDF, 13th salary"
+  - 'Human approved full payroll flow — wizard, detail, close/revert, advances, payslip PDF, 13th salary'
 
 patterns-established: []
 
@@ -45,6 +45,7 @@ completed: 2026-03-24
 - **Files modified:** 0
 
 ## Accomplishments
+
 - Human verified complete payroll wizard 4-step flow (FOLHA-02)
 - Human verified salary advance individual and batch registration (FOLHA-03)
 - Human verified payslip PDF download and tabular layout (FOLHA-04)
@@ -56,24 +57,31 @@ completed: 2026-03-24
 No code commits — checkpoint verification only.
 
 ## Files Created/Modified
+
 None — verification checkpoint.
 
 ## Decisions Made
+
 None — human verification only.
 
 ## Deviations from Plan
+
 None — plan executed exactly as written.
 
 ## Issues Encountered
+
 None.
 
 ## User Setup Required
+
 None — no external service configuration required.
 
 ## Next Phase Readiness
+
 - Phase 28 fully verified, ready for phase completion
 - All FOLHA requirements (02-05) confirmed working
 
 ---
-*Phase: 28-processamento-da-folha-mensal*
-*Completed: 2026-03-24*
+
+_Phase: 28-processamento-da-folha-mensal_
+_Completed: 2026-03-24_

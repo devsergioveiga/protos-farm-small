@@ -19,15 +19,17 @@ The `CostCenter` model already exists at `prisma/schema.prisma:1927` and has `fa
 ---
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|------------------|
-| COA-01 | Hierarchical COA CRUD (5 levels), code/name/type/nature/flags, tree visualization | Self-referential Prisma model + `$queryRaw` recursive CTE; existing AssetHierarchyTab.tsx tree pattern for frontend |
-| COA-02 | Rural template pre-loaded (CFC/Embrapa): ativo biológico CPC 29, culturas em formação, FUNRURAL, crédito rural PRONAF/Funcafé | Seed file in `prisma/fixtures/`; ~80-120 accounts across 5 levels; codes verified against CFC NBT manual |
-| COA-03 | SPED L300R mapping per analytic account (N:1 internal → referential), compatibility validation, unmapped account report | `spedReferentialCode` field on `ChartOfAccount`; validation query before period close |
-| COA-04 | FiscalYear (jan-dez or safra jul-jun) + AccountingPeriod (monthly, OPEN/CLOSED/BLOCKED), auto-open next period, period-lock enforcement | `FiscalYear` model with `startDate`/`endDate` (not just `year: Int`); `assertPeriodOpen()` utility |
-| COA-05 | Cost center linkable to journal entries for DRE gerencial; proportional rateio for multi-center entries | `rateio()` utility in `packages/shared`; `CostCenter` already exists — add FK on `AccountBalance`; `assertBalanced()` utility |
+| ID     | Description                                                                                                                             | Research Support                                                                                                              |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| COA-01 | Hierarchical COA CRUD (5 levels), code/name/type/nature/flags, tree visualization                                                       | Self-referential Prisma model + `$queryRaw` recursive CTE; existing AssetHierarchyTab.tsx tree pattern for frontend           |
+| COA-02 | Rural template pre-loaded (CFC/Embrapa): ativo biológico CPC 29, culturas em formação, FUNRURAL, crédito rural PRONAF/Funcafé           | Seed file in `prisma/fixtures/`; ~80-120 accounts across 5 levels; codes verified against CFC NBT manual                      |
+| COA-03 | SPED L300R mapping per analytic account (N:1 internal → referential), compatibility validation, unmapped account report                 | `spedReferentialCode` field on `ChartOfAccount`; validation query before period close                                         |
+| COA-04 | FiscalYear (jan-dez or safra jul-jun) + AccountingPeriod (monthly, OPEN/CLOSED/BLOCKED), auto-open next period, period-lock enforcement | `FiscalYear` model with `startDate`/`endDate` (not just `year: Int`); `assertPeriodOpen()` utility                            |
+| COA-05 | Cost center linkable to journal entries for DRE gerencial; proportional rateio for multi-center entries                                 | `rateio()` utility in `packages/shared`; `CostCenter` already exists — add FK on `AccountBalance`; `assertBalanced()` utility |
+
 </phase_requirements>
 
 ---
@@ -54,17 +56,19 @@ The `CostCenter` model already exists at `prisma/schema.prisma:1927` and has `fa
 
 ### Core (no new packages needed — confirmed against project)
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| `prisma` | ^7.4.1 | ORM + migrations; self-referential model for COA tree | Already installed; `$queryRaw` covers recursive CTEs Prisma can't express natively |
-| `decimal.js` via `Money()` | ^10.6.0 | All monetary arithmetic in `rateio()`, `AccountBalance` | Project-wide standard; `ROUND_HALF_UP` for BRL; `packages/shared/src/types/money.ts` |
-| `date-fns` | ^4.1.0 | FiscalYear/AccountingPeriod date arithmetic, period boundary checks | Already installed; used by payroll module |
-| `pino` | ^10.3.1 | Audit logging for period open/close/reopen | Already installed |
+| Library                    | Version | Purpose                                                             | Why Standard                                                                         |
+| -------------------------- | ------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `prisma`                   | ^7.4.1  | ORM + migrations; self-referential model for COA tree               | Already installed; `$queryRaw` covers recursive CTEs Prisma can't express natively   |
+| `decimal.js` via `Money()` | ^10.6.0 | All monetary arithmetic in `rateio()`, `AccountBalance`             | Project-wide standard; `ROUND_HALF_UP` for BRL; `packages/shared/src/types/money.ts` |
+| `date-fns`                 | ^4.1.0  | FiscalYear/AccountingPeriod date arithmetic, period boundary checks | Already installed; used by payroll module                                            |
+| `pino`                     | ^10.3.1 | Audit logging for period open/close/reopen                          | Already installed                                                                    |
 
 ### No new npm packages
+
 The entire phase is implementable with the existing dependency set. Confirmed March 2026.
 
 **Installation:**
+
 ```bash
 # No install needed — all packages already present
 ```
@@ -126,6 +130,7 @@ apps/frontend/src/
 **When to use:** Always for getting a subtree or full tree. Never use Prisma nested `include` for arbitrary depth — it requires N+1 queries for each level.
 
 **Prisma schema:**
+
 ```prisma
 model ChartOfAccount {
   id               String          @id @default(uuid())
@@ -157,6 +162,7 @@ model ChartOfAccount {
 ```
 
 **Recursive CTE for full tree (use `prisma.$queryRaw`):**
+
 ```typescript
 // Source: .planning/research/STACK.md — confirmed PostgreSQL 16 pattern
 export async function getAccountTree(
@@ -190,6 +196,7 @@ export async function getAccountTree(
 **Existing reference:** `StockBalance` at `schema.prisma:3157` — same principle: `currentQuantity`, `averageCost`, `totalValue` updated transactionally with each stock movement.
 
 **Prisma schema:**
+
 ```prisma
 model AccountBalance {
   id             String   @id @default(uuid())
@@ -214,17 +221,25 @@ model AccountBalance {
 ```
 
 **Update pattern (in transaction alongside journal entry posting — Phase 36 concern, but schema created here):**
+
 ```typescript
 // Mirror of stock-entries.service.ts StockBalance upsert pattern
 await tx.accountBalance.upsert({
-  where: { organizationId_accountId_fiscalYearId_month: { organizationId, accountId, fiscalYearId, month } },
+  where: {
+    organizationId_accountId_fiscalYearId_month: { organizationId, accountId, fiscalYearId, month },
+  },
   update: {
     debitTotal: { increment: debitAmount },
-    closingBalance: { increment: debitAmount },  // for DEVEDORA accounts
+    closingBalance: { increment: debitAmount }, // for DEVEDORA accounts
   },
   create: {
-    organizationId, accountId, fiscalYearId, month,
-    openingBalance: 0, debitTotal: debitAmount, creditTotal: 0,
+    organizationId,
+    accountId,
+    fiscalYearId,
+    month,
+    openingBalance: 0,
+    debitTotal: debitAmount,
+    creditTotal: 0,
     closingBalance: debitAmount,
   },
 });
@@ -294,7 +309,11 @@ model AccountingPeriod {
 ```typescript
 // packages/shared/src/utils/accounting/assert-period-open.ts
 export class PeriodNotOpenError extends Error {
-  constructor(public month: number, public year: number, public status: string) {
+  constructor(
+    public month: number,
+    public year: number,
+    public status: string,
+  ) {
     super(`Período ${month}/${year} está ${status} — lançamentos não permitidos`);
     this.name = 'PeriodNotOpenError';
   }
@@ -372,7 +391,10 @@ export function rateio(total: IMoney, items: RateioInput[]): RateioOutput[] {
   // Calculate each share, truncating to 2dp
   const shares = items.map((item) => ({
     costCenterId: item.costCenterId,
-    share: totalDecimal.times(item.percentage).dividedBy(100).toDecimalPlaces(2, Decimal.ROUND_DOWN),
+    share: totalDecimal
+      .times(item.percentage)
+      .dividedBy(100)
+      .toDecimalPlaces(2, Decimal.ROUND_DOWN),
     percentage: item.percentage,
   }));
 
@@ -388,9 +410,7 @@ export function rateio(total: IMoney, items: RateioInput[]): RateioOutput[] {
 
   return shares.map((s, i) => ({
     costCenterId: s.costCenterId,
-    amount: i === largestIdx
-      ? Money(s.share.plus(remainder))
-      : Money(s.share),
+    amount: i === largestIdx ? Money(s.share.plus(remainder)) : Money(s.share),
   }));
 }
 ```
@@ -404,6 +424,7 @@ export function rateio(total: IMoney, items: RateioInput[]): RateioOutput[] {
 **The COA tree needs expand/collapse** (the asset hierarchy doesn't need it because it renders a full linear subtree). Add `expandedIds: Set<string>` state at page level, passed down.
 
 **Key implementation notes:**
+
 - COA page is a LIST page with tree view — use page layout, not modal
 - CREATE/EDIT account form opens in `CoaModal` (form-in-modal rule from CLAUDE.md)
 - Deactivation uses `ConfirmModal` with `variant="warning"` (medium criticality)
@@ -425,13 +446,13 @@ export function rateio(total: IMoney, items: RateioInput[]): RateioOutput[] {
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Monetary arithmetic in rateio splits | Custom `Math.round()` | `Money()` factory (decimal.js) | IEEE 754 rounding errors compound; `ROUND_DOWN` + residual is the established pattern in `installments.ts` |
-| Recursive tree traversal at arbitrary depth | Prisma nested `include` | `prisma.$queryRaw` + `WITH RECURSIVE` | Prisma `include` requires N+1 queries per depth level; CTE is O(log n) |
-| Account balance aggregation on-demand | `SUM(amount)` on JournalEntryLine per request | `AccountBalance` incremental cache table | SUM on large entry sets causes slow statement generation; StockBalance pattern proven in 6 modules |
-| Period validation in each module | Each module checks period status independently | `assertPeriodOpen()` from `packages/shared` | Ensures consistency — if period check logic changes, it changes in one place |
-| Balance validation per form | Custom form-level check | `assertBalanced()` from `packages/shared` | Used identically in manual entries (Phase 36) and auto-generation (Phase 37) |
+| Problem                                     | Don't Build                                    | Use Instead                                 | Why                                                                                                        |
+| ------------------------------------------- | ---------------------------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Monetary arithmetic in rateio splits        | Custom `Math.round()`                          | `Money()` factory (decimal.js)              | IEEE 754 rounding errors compound; `ROUND_DOWN` + residual is the established pattern in `installments.ts` |
+| Recursive tree traversal at arbitrary depth | Prisma nested `include`                        | `prisma.$queryRaw` + `WITH RECURSIVE`       | Prisma `include` requires N+1 queries per depth level; CTE is O(log n)                                     |
+| Account balance aggregation on-demand       | `SUM(amount)` on JournalEntryLine per request  | `AccountBalance` incremental cache table    | SUM on large entry sets causes slow statement generation; StockBalance pattern proven in 6 modules         |
+| Period validation in each module            | Each module checks period status independently | `assertPeriodOpen()` from `packages/shared` | Ensures consistency — if period check logic changes, it changes in one place                               |
+| Balance validation per form                 | Custom form-level check                        | `assertBalanced()` from `packages/shared`   | Used identically in manual entries (Phase 36) and auto-generation (Phase 37)                               |
 
 **Key insight:** The `packages/shared/src/utils/` directory already contains `installments.ts` and `validateCostCenterItems()` — the rateio and balance utilities belong in the same directory alongside a new `accounting/` subfolder.
 
@@ -445,64 +466,64 @@ The standard Brazilian rural chart of accounts follows CFC Resolution 1.103/2007
 
 **Level 1 — Account Classes (5 groups):**
 
-| Code | Name | Type | Nature |
-|------|------|------|--------|
-| 1 | ATIVO | ATIVO | DEVEDORA |
-| 2 | PASSIVO | PASSIVO | CREDORA |
-| 3 | PATRIMÔNIO LÍQUIDO | PL | CREDORA |
-| 4 | RECEITAS | RECEITA | CREDORA |
-| 5 | DESPESAS E CUSTOS | DESPESA | DEVEDORA |
+| Code | Name               | Type    | Nature   |
+| ---- | ------------------ | ------- | -------- |
+| 1    | ATIVO              | ATIVO   | DEVEDORA |
+| 2    | PASSIVO            | PASSIVO | CREDORA  |
+| 3    | PATRIMÔNIO LÍQUIDO | PL      | CREDORA  |
+| 4    | RECEITAS           | RECEITA | CREDORA  |
+| 5    | DESPESAS E CUSTOS  | DESPESA | DEVEDORA |
 
 **Level 2 — Key Rural Subgroups:**
 
-| Code | Name | Type | Rural Specific |
-|------|------|------|----------------|
-| 1.1 | Ativo Circulante | ATIVO | — |
-| 1.2 | Ativo Não Circulante | ATIVO | — |
-| 1.2.1 | Ativo Biológico (CPC 29) | ATIVO | YES — CPC 29 fair value; `isFairValueAdj: true` on adj account |
-| 1.2.2 | Culturas em Formação | ATIVO | YES — pre-harvest capitalization |
-| 1.2.3 | Imobilizado Rural | ATIVO | Terras, máquinas agrícolas, benfeitorias |
-| 2.1 | Passivo Circulante | PASSIVO | — |
-| 2.2 | Passivo Não Circulante | PASSIVO | Crédito rural LP (PRONAF, Funcafé) |
-| 4.1 | Receitas Agropecuárias | RECEITA | Vendas agrícolas + pecuárias |
-| 5.1 | Custo dos Produtos Vendidos | DESPESA | CPV por cultura |
-| 5.2 | Despesas Operacionais | DESPESA | — |
-| 5.3 | FUNRURAL s/ Vendas | DESPESA | YES — 1.5% Lucro Real or 2.5% Presumido |
+| Code  | Name                        | Type    | Rural Specific                                                 |
+| ----- | --------------------------- | ------- | -------------------------------------------------------------- |
+| 1.1   | Ativo Circulante            | ATIVO   | —                                                              |
+| 1.2   | Ativo Não Circulante        | ATIVO   | —                                                              |
+| 1.2.1 | Ativo Biológico (CPC 29)    | ATIVO   | YES — CPC 29 fair value; `isFairValueAdj: true` on adj account |
+| 1.2.2 | Culturas em Formação        | ATIVO   | YES — pre-harvest capitalization                               |
+| 1.2.3 | Imobilizado Rural           | ATIVO   | Terras, máquinas agrícolas, benfeitorias                       |
+| 2.1   | Passivo Circulante          | PASSIVO | —                                                              |
+| 2.2   | Passivo Não Circulante      | PASSIVO | Crédito rural LP (PRONAF, Funcafé)                             |
+| 4.1   | Receitas Agropecuárias      | RECEITA | Vendas agrícolas + pecuárias                                   |
+| 5.1   | Custo dos Produtos Vendidos | DESPESA | CPV por cultura                                                |
+| 5.2   | Despesas Operacionais       | DESPESA | —                                                              |
+| 5.3   | FUNRURAL s/ Vendas          | DESPESA | YES — 1.5% Lucro Real or 2.5% Presumido                        |
 
 **Key analytic accounts required by COA-02:**
 
-| Code | Name | Notes |
-|------|------|-------|
-| 1.1.01.001 | Caixa | Disponibilidades |
-| 1.1.01.002 | Bancos c/ Movimento | Disponibilidades |
-| 1.1.02.001 | Estoques — Insumos Agrícolas | Links to US-090/091 stock |
-| 1.2.01.001 | Ativo Biológico — Rebanho Bovino | CPC 29; `isFairValueAdj: false` (base) |
-| 1.2.01.002 | Ajuste VJL Ativo Biológico | CPC 29; `isFairValueAdj: true` |
-| 1.2.02.001 | Culturas em Formação — Café | Agro-specific capitalization |
-| 1.2.02.002 | Culturas em Formação — Citrus | — |
-| 1.2.03.001 | Terras Rurais | Never depreciates per ITG 10 |
-| 1.2.03.002 | Máquinas e Implementos Agrícolas | Depreciated — links to assets module |
-| 1.2.03.003 | (-) Depreciação Acumulada Máquinas | Contra-account |
-| 2.1.01.001 | Salários a Pagar | Maps ACCOUNT_CODES.PAYROLL_SALARY.credit |
-| 2.1.02.001 | Encargos Sociais a Recolher | Maps ACCOUNT_CODES.PAYROLL_CHARGES.credit |
-| 2.1.03.001 | FUNRURAL a Recolher | Rural-specific |
-| 2.1.04.001 | INSS/IRRF a Recolher | Maps ACCOUNT_CODES.TAX_LIABILITY.credit |
-| 2.2.01.001 | Crédito Rural — PRONAF CP | <12 months |
-| 2.2.02.001 | Crédito Rural — Funcafé LP | >12 months |
-| 3.1.01.001 | Capital Social | PL |
-| 3.1.02.001 | Lucros/Prejuízos Acumulados | Opening balance wizard target |
-| 4.1.01.001 | Receita Vendas Agrícolas | Grãos, café, citrus |
-| 4.1.02.001 | Receita Vendas Pecuárias | Gado, leite |
-| 4.1.03.001 | Variação VJL Ativo Biológico | CPC 29 fair value gain; `isFairValueAdj: true` |
-| 5.1.01.001 | CPV — Culturas Anuais | DRE gerencial por cultura via cost center |
-| 5.1.02.001 | CPV — Café | — |
-| 5.1.03.001 | CPV — Pecuária | — |
-| 5.2.01.001 | Despesas com Pessoal | Maps ACCOUNT_CODES.PAYROLL_SALARY.debit |
-| 5.2.01.002 | Encargos Sociais | Maps ACCOUNT_CODES.PAYROLL_CHARGES.debit |
-| 5.2.02.001 | FUNRURAL s/ Vendas | 1.5% or 2.5% on rural revenue |
-| 5.2.03.001 | Depreciação | Maps depreciation module |
-| 5.2.04.001 | Provisão Férias | Maps ACCOUNT_CODES.VACATION_PROVISION.debit |
-| 5.2.04.002 | Provisão 13º Salário | Maps ACCOUNT_CODES.THIRTEENTH_PROVISION.debit |
+| Code       | Name                               | Notes                                          |
+| ---------- | ---------------------------------- | ---------------------------------------------- |
+| 1.1.01.001 | Caixa                              | Disponibilidades                               |
+| 1.1.01.002 | Bancos c/ Movimento                | Disponibilidades                               |
+| 1.1.02.001 | Estoques — Insumos Agrícolas       | Links to US-090/091 stock                      |
+| 1.2.01.001 | Ativo Biológico — Rebanho Bovino   | CPC 29; `isFairValueAdj: false` (base)         |
+| 1.2.01.002 | Ajuste VJL Ativo Biológico         | CPC 29; `isFairValueAdj: true`                 |
+| 1.2.02.001 | Culturas em Formação — Café        | Agro-specific capitalization                   |
+| 1.2.02.002 | Culturas em Formação — Citrus      | —                                              |
+| 1.2.03.001 | Terras Rurais                      | Never depreciates per ITG 10                   |
+| 1.2.03.002 | Máquinas e Implementos Agrícolas   | Depreciated — links to assets module           |
+| 1.2.03.003 | (-) Depreciação Acumulada Máquinas | Contra-account                                 |
+| 2.1.01.001 | Salários a Pagar                   | Maps ACCOUNT_CODES.PAYROLL_SALARY.credit       |
+| 2.1.02.001 | Encargos Sociais a Recolher        | Maps ACCOUNT_CODES.PAYROLL_CHARGES.credit      |
+| 2.1.03.001 | FUNRURAL a Recolher                | Rural-specific                                 |
+| 2.1.04.001 | INSS/IRRF a Recolher               | Maps ACCOUNT_CODES.TAX_LIABILITY.credit        |
+| 2.2.01.001 | Crédito Rural — PRONAF CP          | <12 months                                     |
+| 2.2.02.001 | Crédito Rural — Funcafé LP         | >12 months                                     |
+| 3.1.01.001 | Capital Social                     | PL                                             |
+| 3.1.02.001 | Lucros/Prejuízos Acumulados        | Opening balance wizard target                  |
+| 4.1.01.001 | Receita Vendas Agrícolas           | Grãos, café, citrus                            |
+| 4.1.02.001 | Receita Vendas Pecuárias           | Gado, leite                                    |
+| 4.1.03.001 | Variação VJL Ativo Biológico       | CPC 29 fair value gain; `isFairValueAdj: true` |
+| 5.1.01.001 | CPV — Culturas Anuais              | DRE gerencial por cultura via cost center      |
+| 5.1.02.001 | CPV — Café                         | —                                              |
+| 5.1.03.001 | CPV — Pecuária                     | —                                              |
+| 5.2.01.001 | Despesas com Pessoal               | Maps ACCOUNT_CODES.PAYROLL_SALARY.debit        |
+| 5.2.01.002 | Encargos Sociais                   | Maps ACCOUNT_CODES.PAYROLL_CHARGES.debit       |
+| 5.2.02.001 | FUNRURAL s/ Vendas                 | 1.5% or 2.5% on rural revenue                  |
+| 5.2.03.001 | Depreciação                        | Maps depreciation module                       |
+| 5.2.04.001 | Provisão Férias                    | Maps ACCOUNT_CODES.VACATION_PROVISION.debit    |
+| 5.2.04.002 | Provisão 13º Salário               | Maps ACCOUNT_CODES.THIRTEENTH_PROVISION.debit  |
 
 **Confidence: MEDIUM** — CFC resolution and Embrapa documentation are official sources, but exact code numbering at levels 3-5 varies by organization. The seed should define a sensible default that matches the existing `ACCOUNT_CODES` hardcoded values. Organizations can extend via the CRUD after load.
 
@@ -514,14 +535,14 @@ The SPED ECD Bloco I requires each analytic account in `I050` to carry a `COD_CT
 
 **L300R key codes:**
 
-| L300R Code | Description | Maps to internal |
-|-----------|-------------|-----------------|
-| 1.01.01.01.01 | Caixa | 1.1.01.001 |
-| 1.01.01.01.02 | Bancos | 1.1.01.002 |
-| 1.02.02.01 | Ativo Biológico | 1.2.01.001 |
-| 2.01.01.01.01 | Fornecedores | 2.1.x.x |
-| 2.01.01.02.01 | Obrigações Trabalhistas | 2.1.01.001 |
-| 3.01.01.01.01 | Capital Social | 3.1.01.001 |
+| L300R Code    | Description             | Maps to internal |
+| ------------- | ----------------------- | ---------------- |
+| 1.01.01.01.01 | Caixa                   | 1.1.01.001       |
+| 1.01.01.01.02 | Bancos                  | 1.1.01.002       |
+| 1.02.02.01    | Ativo Biológico         | 1.2.01.001       |
+| 2.01.01.01.01 | Fornecedores            | 2.1.x.x          |
+| 2.01.01.02.01 | Obrigações Trabalhistas | 2.1.01.001       |
+| 3.01.01.01.01 | Capital Social          | 3.1.01.001       |
 
 **N:1 rule:** Multiple internal accounts can map to the same L300R code. Example: `1.1.01.002 Banco Bradesco` and `1.1.01.003 Banco Itaú` both map to `1.01.01.01.02`. This is stored as `spedRefCode: String?` on `ChartOfAccount`.
 
@@ -558,6 +579,7 @@ The SPED ECD Bloco I requires each analytic account in `I050` to carry a `COD_CT
 **What goes wrong:** Service allows `CLOSED → OPEN → CLOSED → OPEN` infinite reopen cycles, or blocks `BLOCKED` periods from being unblocked even by admins.
 
 **How to avoid:** Define explicit allowed transitions:
+
 - `OPEN → CLOSED` (normal month close)
 - `CLOSED → OPEN` (reopen with audit trail — requires `reopenReason`)
 - `OPEN → BLOCKED` (admin block)
@@ -588,6 +610,7 @@ Block any other transition with a domain error.
 The `AccountBalance` cache follows the same pattern: one row per (account, period), maintained transactionally. The difference is `AccountBalance` needs `openingBalance` (carried forward at period open) in addition to `debitTotal`/`creditTotal`.
 
 **generateInstallments() remainder handling (packages/shared/src/utils/installments.ts:46-53):**
+
 ```typescript
 // ROUND_DOWN then residual on first → the model for rateio()
 const baseDecimal = totalDecimal.dividedBy(count).toDecimalPlaces(2, Decimal.ROUND_DOWN);
@@ -600,23 +623,35 @@ const residual = totalAmount.subtract(sumOfBase);
 Already validates PERCENTAGE mode sums to 100 — `rateio()` can reuse this exact validation or inline it. Both live in `packages/shared` so no circular dependency.
 
 **AssetHierarchyTab recursive render (apps/frontend/src/components/assets/AssetHierarchyTab.tsx:62-100):**
+
 ```tsx
 // The COA tree mirrors this — add expand/collapse state:
 function CoaTreeNode({ node, level, expandedIds, onToggle, onEdit }) {
   const isExpanded = expandedIds.has(node.id);
   return (
     <>
-      <button type="button" className={`coa-tree__node coa-tree__node--level-${level}`}
-              aria-expanded={node.isSynthetic ? isExpanded : undefined}
-              onClick={() => node.isSynthetic && onToggle(node.id)}>
+      <button
+        type="button"
+        className={`coa-tree__node coa-tree__node--level-${level}`}
+        aria-expanded={node.isSynthetic ? isExpanded : undefined}
+        onClick={() => node.isSynthetic && onToggle(node.id)}
+      >
         {/* ChevronRight/ChevronDown icon for synthetics */}
         <span>{node.code}</span>
         <span>{node.name}</span>
       </button>
-      {node.isSynthetic && isExpanded && node.children?.map(child => (
-        <CoaTreeNode key={child.id} node={child} level={level + 1}
-                     expandedIds={expandedIds} onToggle={onToggle} onEdit={onEdit} />
-      ))}
+      {node.isSynthetic &&
+        isExpanded &&
+        node.children?.map((child) => (
+          <CoaTreeNode
+            key={child.id}
+            node={child}
+            level={level + 1}
+            expandedIds={expandedIds}
+            onToggle={onToggle}
+            onEdit={onEdit}
+          />
+        ))}
     </>
   );
 }
@@ -626,13 +661,14 @@ function CoaTreeNode({ node, level, expandedIds, onToggle, onEdit }) {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Flat `AccountingEntry` with string `debitAccount`/`creditAccount` | `ChartOfAccount` model + FK in `JournalEntryLine` | Phase 35 (this phase introduces COA) | Trial balance, cost-center DRE, SPED ECD all become possible |
-| `ACCOUNT_CODES` hardcoded string constants | Dynamic lookup via `ChartOfAccount.code` | Phase 35 → Phase 36 transition | Payroll entries in Phase 36 will resolve COA IDs at post time |
-| `year: Int` for fiscal year | `startDate`/`endDate` on `FiscalYear` | Phase 35 (new model) | Safra fiscal year (Jul–Jun) supported without hacks |
+| Old Approach                                                      | Current Approach                                  | When Changed                         | Impact                                                        |
+| ----------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------- |
+| Flat `AccountingEntry` with string `debitAccount`/`creditAccount` | `ChartOfAccount` model + FK in `JournalEntryLine` | Phase 35 (this phase introduces COA) | Trial balance, cost-center DRE, SPED ECD all become possible  |
+| `ACCOUNT_CODES` hardcoded string constants                        | Dynamic lookup via `ChartOfAccount.code`          | Phase 35 → Phase 36 transition       | Payroll entries in Phase 36 will resolve COA IDs at post time |
+| `year: Int` for fiscal year                                       | `startDate`/`endDate` on `FiscalYear`             | Phase 35 (new model)                 | Safra fiscal year (Jul–Jun) supported without hacks           |
 
 **Deprecated (do not extend):**
+
 - `AccountingEntry` flat model: frozen read-only after Phase 36 creates `journal_entries` + `journal_entry_lines`
 - `ACCOUNT_CODES` hardcoded object: becomes migration-documented then removed in Phase 36
 
@@ -642,11 +678,11 @@ function CoaTreeNode({ node, level, expandedIds, onToggle, onEdit }) {
 
 Step 2.6: Phase is purely code/config changes (new Prisma models, utilities, routes, frontend pages). The only external dependency is PostgreSQL (already running in dev).
 
-| Dependency | Required By | Available | Version | Fallback |
-|------------|------------|-----------|---------|----------|
-| PostgreSQL 16 | Recursive CTE, migrations | ✓ | 16 (from MEMORY.md) | — |
-| Node v24.12 | Backend dev server (tsx) | ✓ | v24.12 (from MEMORY.md) | — |
-| pnpm 10.27 | Monorepo package management | ✓ | 10.27 (from MEMORY.md) | — |
+| Dependency    | Required By                 | Available | Version                 | Fallback |
+| ------------- | --------------------------- | --------- | ----------------------- | -------- |
+| PostgreSQL 16 | Recursive CTE, migrations   | ✓         | 16 (from MEMORY.md)     | —        |
+| Node v24.12   | Backend dev server (tsx)    | ✓         | v24.12 (from MEMORY.md) | —        |
+| pnpm 10.27    | Monorepo package management | ✓         | 10.27 (from MEMORY.md)  | —        |
 
 No missing dependencies.
 
@@ -656,28 +692,29 @@ No missing dependencies.
 
 ### Test Framework
 
-| Property | Value |
-|----------|-------|
-| Framework | Jest (backend) + Vitest (frontend) |
-| Config file | `apps/backend/jest.config.js` / `apps/frontend/vitest.config.ts` |
-| Quick run command | `pnpm --filter @protos-farm/backend test -- --testPathPattern chart-of-accounts` |
-| Full suite command | `pnpm --filter @protos-farm/backend test` |
-| Shared utils tests | `pnpm --filter @protos-farm/shared test` |
+| Property           | Value                                                                            |
+| ------------------ | -------------------------------------------------------------------------------- |
+| Framework          | Jest (backend) + Vitest (frontend)                                               |
+| Config file        | `apps/backend/jest.config.js` / `apps/frontend/vitest.config.ts`                 |
+| Quick run command  | `pnpm --filter @protos-farm/backend test -- --testPathPattern chart-of-accounts` |
+| Full suite command | `pnpm --filter @protos-farm/backend test`                                        |
+| Shared utils tests | `pnpm --filter @protos-farm/shared test`                                         |
 
 ### Phase Requirements → Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| COA-01 | CRUD accounts, code uniqueness, 5-level depth validation, synthetic/analytic flags | unit (service) | `pnpm --filter @protos-farm/backend test -- --testPathPattern chart-of-accounts.routes.spec` | ❌ Wave 0 |
-| COA-01 | Tree endpoint returns hierarchical structure via recursive CTE | unit (service) | same | ❌ Wave 0 |
-| COA-02 | Rural template seed loads ~100 accounts with correct type/nature/codes | unit (seed) | `pnpm --filter @protos-farm/backend test -- --testPathPattern coa-rural-template.spec` | ❌ Wave 0 |
-| COA-03 | SPED ref code N:1 mapping, compatibility validation, unmapped accounts query | unit (service) | `pnpm --filter @protos-farm/backend test -- --testPathPattern chart-of-accounts.routes.spec` | ❌ Wave 0 |
-| COA-04 | FiscalYear CRUD, AccountingPeriod auto-open, period status transitions | unit (service) | `pnpm --filter @protos-farm/backend test -- --testPathPattern fiscal-periods.routes.spec` | ❌ Wave 0 |
-| COA-04 | `assertPeriodOpen()` throws on CLOSED/BLOCKED, passes on OPEN | unit (shared util) | `pnpm --filter @protos-farm/shared test -- --testPathPattern assert-period-open.spec` | ❌ Wave 0 |
-| COA-05 | `rateio()` correct splits, remainder on largest, sums to total exactly | unit (shared util) | `pnpm --filter @protos-farm/shared test -- --testPathPattern rateio.spec` | ❌ Wave 0 |
-| COA-05 | `assertBalanced()` throws on unbalanced lines, passes on equal debits/credits | unit (shared util) | `pnpm --filter @protos-farm/shared test -- --testPathPattern assert-balanced.spec` | ❌ Wave 0 |
+| Req ID | Behavior                                                                           | Test Type          | Automated Command                                                                            | File Exists? |
+| ------ | ---------------------------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------- | ------------ |
+| COA-01 | CRUD accounts, code uniqueness, 5-level depth validation, synthetic/analytic flags | unit (service)     | `pnpm --filter @protos-farm/backend test -- --testPathPattern chart-of-accounts.routes.spec` | ❌ Wave 0    |
+| COA-01 | Tree endpoint returns hierarchical structure via recursive CTE                     | unit (service)     | same                                                                                         | ❌ Wave 0    |
+| COA-02 | Rural template seed loads ~100 accounts with correct type/nature/codes             | unit (seed)        | `pnpm --filter @protos-farm/backend test -- --testPathPattern coa-rural-template.spec`       | ❌ Wave 0    |
+| COA-03 | SPED ref code N:1 mapping, compatibility validation, unmapped accounts query       | unit (service)     | `pnpm --filter @protos-farm/backend test -- --testPathPattern chart-of-accounts.routes.spec` | ❌ Wave 0    |
+| COA-04 | FiscalYear CRUD, AccountingPeriod auto-open, period status transitions             | unit (service)     | `pnpm --filter @protos-farm/backend test -- --testPathPattern fiscal-periods.routes.spec`    | ❌ Wave 0    |
+| COA-04 | `assertPeriodOpen()` throws on CLOSED/BLOCKED, passes on OPEN                      | unit (shared util) | `pnpm --filter @protos-farm/shared test -- --testPathPattern assert-period-open.spec`        | ❌ Wave 0    |
+| COA-05 | `rateio()` correct splits, remainder on largest, sums to total exactly             | unit (shared util) | `pnpm --filter @protos-farm/shared test -- --testPathPattern rateio.spec`                    | ❌ Wave 0    |
+| COA-05 | `assertBalanced()` throws on unbalanced lines, passes on equal debits/credits      | unit (shared util) | `pnpm --filter @protos-farm/shared test -- --testPathPattern assert-balanced.spec`           | ❌ Wave 0    |
 
 ### Sampling Rate
+
 - **Per task commit:** `pnpm --filter @protos-farm/backend test -- --testPathPattern "chart-of-accounts|fiscal-periods"`
 - **Per wave merge:** `pnpm --filter @protos-farm/backend test && pnpm --filter @protos-farm/shared test`
 - **Phase gate:** Full backend + shared suites green before `/gsd:verify-work`
@@ -715,6 +752,7 @@ No missing dependencies.
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Direct codebase inspection:
   - `apps/backend/prisma/schema.prisma` — CostCenter model (line 1927), StockBalance model (line 3157), AccountingEntry model (line 8833), AccountingSourceType/AccountingEntryType enums
   - `apps/backend/src/modules/accounting-entries/accounting-entries.service.ts` — existing ACCOUNT_CODES pattern and payroll entry creation
@@ -725,10 +763,12 @@ No missing dependencies.
 - `.planning/research/SUMMARY.md` — architecture decisions: `FiscalYear.startDate/endDate`, `isFairValueAdjustment` flag, AccountBalance vs. materialized view
 
 ### Secondary (MEDIUM confidence)
+
 - CFC Resolution 1.103/2007 + Embrapa "Plano de Contas para Empresas Rurais" — rural COA structure and account group codes (MEDIUM: exact level 3-5 codes vary by organization)
 - RFB SPED ECD official documentation (sped.rfb.gov.br) — L300R referential plan structure (MEDIUM: Level-3+ codes for rural-specific accounts need Phase 41 verification)
 
 ### Tertiary (LOW confidence)
+
 - ACCOUNT_CODES code numbering convention: the existing `6.1.01` pattern may be a placeholder that doesn't follow any particular standard — treat as requiring alignment with the seed file.
 
 ---
@@ -736,6 +776,7 @@ No missing dependencies.
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH — zero new packages, all existing libraries verified
 - Architecture (models, utilities): HIGH — direct codebase pattern matches, well-documented PostgreSQL recursive CTE
 - Brazilian rural template (COA-02): MEDIUM — CFC/Embrapa structure confirmed; level 3-5 exact codes require alignment with existing ACCOUNT_CODES

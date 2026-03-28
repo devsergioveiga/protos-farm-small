@@ -1,6 +1,6 @@
 ---
 phase: 38-fechamento-mensal-e-concilia-o-cont-bil
-plan: "03"
+plan: '03'
 subsystem: frontend-accounting
 tags: [monthly-closing, stepper, frontend, react, contabilidade]
 dependency_graph:
@@ -25,7 +25,7 @@ decisions:
   - Reopen dialog implemented inline (not using ConfirmModal) because it requires a textarea for reason input which ConfirmModal does not support
 metrics:
   duration: ~10 min
-  completed: "2026-03-28T10:58:00Z"
+  completed: '2026-03-28T10:58:00Z'
   tasks_completed: 2
   files_created: 4
   files_modified: 3
@@ -37,19 +37,21 @@ Monthly closing frontend with 6-step vertical stepper, validate/revalidate/close
 
 ## Tasks Completed
 
-| # | Task | Commit | Status |
-|---|------|--------|--------|
-| 1 | Types + hooks for monthly closing API | 995719c8 | Done |
-| 2 | MonthlyClosingPage + FiscalPeriodsPage + Sidebar + App route | 1ff6041f | Done |
+| #   | Task                                                         | Commit   | Status |
+| --- | ------------------------------------------------------------ | -------- | ------ |
+| 1   | Types + hooks for monthly closing API                        | 995719c8 | Done   |
+| 2   | MonthlyClosingPage + FiscalPeriodsPage + Sidebar + App route | 1ff6041f | Done   |
 
 ## What Was Built
 
 ### types/monthly-closing.ts
+
 - `StepStatus`, `StepResult`, `StepResults`, `MonthlyClosingOutput` — mirrors backend output exactly
 - `STEP_LABELS` — human-readable labels for 6 closing steps
 - `STEP_MODULE_LINKS` — path + label for navigation links on failed steps
 
 ### hooks/useMonthlyClosing.ts
+
 - `useMonthlyClosing(periodId)` — GET /api/org/:orgId/monthly-closing?periodId=xxx, fetches on mount and periodId change
 - `useStartClosing()` — POST start
 - `useValidateStep()` — POST validate-step/:stepNumber
@@ -57,6 +59,7 @@ Monthly closing frontend with 6-step vertical stepper, validate/revalidate/close
 - `useReopenClosing()` — POST reopen with reason
 
 ### MonthlyClosingPage.tsx (593 lines)
+
 - Reads `periodId` from URL search params (`useSearchParams`)
 - Shows "Selecione um período" empty state when no periodId
 - Shows "Iniciar Fechamento" button when no closing record exists
@@ -74,14 +77,17 @@ Monthly closing frontend with 6-step vertical stepper, validate/revalidate/close
 - Mobile-first CSS with 4px grid, CSS custom properties, prefers-reduced-motion
 
 ### FiscalPeriodsPage.tsx
+
 - Added `useNavigate` and `ClipboardCheck` imports
 - Added "Fechamento" button in PeriodPanel for OPEN periods: navigates to `/monthly-closing?periodId=xxx`
 - Refactored `FiscalYearCard` to show PeriodPanel for OPEN periods (previously bypassed to ConfirmModal directly)
 
 ### Sidebar.tsx
+
 - Added `{ to: '/monthly-closing', icon: ClipboardCheck, label: 'Fechamento Mensal' }` to CONTABILIDADE group after Balancete
 
 ### App.tsx
+
 - Added lazy import: `const MonthlyClosingPage = lazy(() => import('@/pages/MonthlyClosingPage'))`
 - Added route: `<Route path="/monthly-closing" element={<MonthlyClosingPage />} />`
 

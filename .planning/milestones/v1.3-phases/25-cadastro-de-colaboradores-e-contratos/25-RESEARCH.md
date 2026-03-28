@@ -7,27 +7,32 @@
 ---
 
 <user_constraints>
+
 ## User Constraints (from CONTEXT.md)
 
 ### Locked Decisions
 
 **Entidade Colaborador**
+
 - **D-01:** Employee é entidade separada de User. Colaborador tem dados trabalhistas (CPF, PIS/PASEP, CTPS, dependentes, dados bancários) como entidade própria. Campo `userId` opcional para os poucos que acessam o sistema.
 - **D-02:** FieldTeamMember ganha campo `employeeId` opcional (migration retroativa). Equipes existentes mantêm `userId`, novos membros podem ter `employeeId`. Ponto/folha puxam do Employee.
 - **D-03:** State machine explícita para status do colaborador: ATIVO → AFASTADO → ATIVO, ATIVO → FÉRIAS → ATIVO, ATIVO → DESLIGADO (terminal). Transições validadas no service. Histórico em tabela EmployeeStatusHistory.
 - **D-04:** Associação multi-fazenda via tabela EmployeeFarm com período (startDate/endDate), status e cargo por fazenda. Contrato vinculado à organização, lotação à fazenda.
 
 **Contratos e Cargos**
+
 - **D-05:** Modelo único EmployeeContract com `contractType` enum (CLT_INDETERMINATE, CLT_DETERMINATE, SEASONAL, INTERMITTENT, TRIAL, APPRENTICE). Campos opcionais conforme tipo (endDate só para determinado/safra/experiência). Aditivos em tabela ContractAmendment.
 - **D-06:** Position (cargo, CBO, descrição, adicionais) separado de SalaryBand (níveis: Júnior/Pleno/Sênior com piso/teto). Posição reutilizável entre fazendas, faixa salarial pode variar. Quadro de lotação = agregação de EmployeeFarm por Position.
 - **D-07:** WorkSchedule como tabela configurável com nome, tipo (FIXED, SHIFT, CUSTOM), dias da semana, horários entrada/saída, intervalo. Templates pré-configurados (5x2, 6x1, 12x36, ordenha 2x). Vinculada ao contrato. Essencial para Phase 27 (ponto).
 - **D-08:** EmployeeMovement com tipo (PROMOTION, SALARY_ADJUSTMENT, TRANSFER, POSITION_CHANGE), data efetiva, valores antes/depois, motivo, aprovador. EmployeeSalaryHistory alimentado automaticamente em cada movimento salarial. Timeline visual na ficha.
 
 **Ficha Completa**
+
 - **D-09:** EmployeeDetailPage com tabs (padrão AnimalDetailPage): Dados Pessoais | Contrato | Evolução | Documentos | Histórico. Cabeçalho fixo com nome, foto, status, cargo atual. Só seções com dados reais nesta phase — tabs de holerites/férias/EPIs adicionadas quando módulos respectivos forem implementados.
 - **D-10:** Recharts para gráfico de evolução salarial. Line chart com tooltip mostrando valor, data e motivo do reajuste.
 
 **Import e Documentos**
+
 - **D-11:** Importação segue padrão animal-file-parser: upload → parse → validação (CPF, PIS, duplicatas) → preview com erros → confirmação → criação em batch. Template Excel downloadável. Campos adicionais: saldo inicial férias, banco de horas.
 - **D-12:** EmployeeDocument + file system local (uploads/employees/{employeeId}/). Tabela com tipo (RG, CPF, CTPS, ASO, CONTRATO), fileName, filePath, uploadedAt, uploadedBy. Sem cloud storage.
 - **D-13:** CPF: validação de dígitos obrigatória (bloqueia cadastro). PIS/PASEP: validação com warning (permite salvar e completar depois).
@@ -49,15 +54,17 @@ None — discussion stayed within phase scope.
 ---
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|------------------|
-| COLAB-01 | Cadastrar colaborador com dados pessoais completos (CPF, RG, PIS/PASEP, CTPS), dados bancários, dependentes com CPF, dados de saúde, upload de documentos, associação a fazendas e status | D-01, D-03, D-04, D-12, D-13 — Employee entity, state machine, EmployeeDocument, CPF/PIS validation |
-| COLAB-02 | Registrar contrato de trabalho com tipo (CLT indeterminado/determinado/safra/intermitente/experiência/aprendiz), dados contratuais, aditivos com histórico, alertas de vencimento, PDF | D-05, D-07 — EmployeeContract enum types, ContractAmendment, node-cron alert pattern, pdfkit |
-| COLAB-03 | Cadastrar cargos com CBO, faixas salariais, escalas de trabalho configuráveis, adicionais por cargo, quadro de lotação, histórico de movimentações, reajuste coletivo em lote | D-06, D-07, D-08 — Position/SalaryBand/WorkSchedule models, EmployeeMovement, bulk operations |
-| COLAB-04 | Importar colaboradores via CSV/Excel com template, validação CPF/PIS, preview, relatório pós-importação, saldos iniciais de férias/banco de horas | D-11, D-13 — employee-file-parser based on animal-file-parser, ExcelJS, validation |
-| COLAB-05 | Ficha completa em tela única com dados pessoais, contrato atual e histórico, evolução salarial (gráfico), holerites 12 meses (stub), saldo de férias, histórico afastamentos, EPIs, treinamentos, operações de campo | D-09, D-10 — EmployeeDetailPage pattern from AnimalDetailPage, Recharts LineChart |
+| ID       | Description                                                                                                                                                                                                          | Research Support                                                                                    |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| COLAB-01 | Cadastrar colaborador com dados pessoais completos (CPF, RG, PIS/PASEP, CTPS), dados bancários, dependentes com CPF, dados de saúde, upload de documentos, associação a fazendas e status                            | D-01, D-03, D-04, D-12, D-13 — Employee entity, state machine, EmployeeDocument, CPF/PIS validation |
+| COLAB-02 | Registrar contrato de trabalho com tipo (CLT indeterminado/determinado/safra/intermitente/experiência/aprendiz), dados contratuais, aditivos com histórico, alertas de vencimento, PDF                               | D-05, D-07 — EmployeeContract enum types, ContractAmendment, node-cron alert pattern, pdfkit        |
+| COLAB-03 | Cadastrar cargos com CBO, faixas salariais, escalas de trabalho configuráveis, adicionais por cargo, quadro de lotação, histórico de movimentações, reajuste coletivo em lote                                        | D-06, D-07, D-08 — Position/SalaryBand/WorkSchedule models, EmployeeMovement, bulk operations       |
+| COLAB-04 | Importar colaboradores via CSV/Excel com template, validação CPF/PIS, preview, relatório pós-importação, saldos iniciais de férias/banco de horas                                                                    | D-11, D-13 — employee-file-parser based on animal-file-parser, ExcelJS, validation                  |
+| COLAB-05 | Ficha completa em tela única com dados pessoais, contrato atual e histórico, evolução salarial (gráfico), holerites 12 meses (stub), saldo de férias, histórico afastamentos, EPIs, treinamentos, operações de campo | D-09, D-10 — EmployeeDetailPage pattern from AnimalDetailPage, Recharts LineChart                   |
+
 </phase_requirements>
 
 ---
@@ -77,28 +84,31 @@ O único ponto de atenção é a migration retroativa na tabela `field_team_memb
 ## Standard Stack
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| Prisma 7 | ^7.4.1 | ORM + migrations | Já em uso |
-| Express 5 | ^5.1.0 | Backend routing | Já em uso |
-| ExcelJS | ^4.4.0 | Parse Excel nos imports | Já em uso no animal-file-parser |
-| pdfkit | ^0.17.2 | Geração PDF contratos | Já em uso para receituários e outros |
-| node-cron | ^4.2.1 | Alertas automáticos de vencimento | Já em uso em maintenance-alerts.cron |
-| Recharts | ^3.7.0 | Gráfico evolução salarial | Já instalado no frontend |
+
+| Library   | Version | Purpose                           | Why Standard                         |
+| --------- | ------- | --------------------------------- | ------------------------------------ |
+| Prisma 7  | ^7.4.1  | ORM + migrations                  | Já em uso                            |
+| Express 5 | ^5.1.0  | Backend routing                   | Já em uso                            |
+| ExcelJS   | ^4.4.0  | Parse Excel nos imports           | Já em uso no animal-file-parser      |
+| pdfkit    | ^0.17.2 | Geração PDF contratos             | Já em uso para receituários e outros |
+| node-cron | ^4.2.1  | Alertas automáticos de vencimento | Já em uso em maintenance-alerts.cron |
+| Recharts  | ^3.7.0  | Gráfico evolução salarial         | Já instalado no frontend             |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| date-fns | ^4.1.0 | Cálculos de datas (período aquisitivo, vencimentos) | Datas de vencimento contratos, cálculo período experiência |
-| multer | ^2.1.0 | Upload de documentos (diskStorage) | Upload de RG, CTPS, ASO digitalizado |
-| lucide-react | (existente) | Ícones na UI | UserRound, FileText, Calendar, TrendingUp |
+
+| Library      | Version     | Purpose                                             | When to Use                                                |
+| ------------ | ----------- | --------------------------------------------------- | ---------------------------------------------------------- |
+| date-fns     | ^4.1.0      | Cálculos de datas (período aquisitivo, vencimentos) | Datas de vencimento contratos, cálculo período experiência |
+| multer       | ^2.1.0      | Upload de documentos (diskStorage)                  | Upload de RG, CTPS, ASO digitalizado                       |
+| lucide-react | (existente) | Ícones na UI                                        | UserRound, FileText, Calendar, TrendingUp                  |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| pdfkit (já em uso) | Puppeteer PDF | Puppeteer tem overhead de browser; pdfkit é suficiente para contratos |
+
+| Instead of            | Could Use             | Tradeoff                                                              |
+| --------------------- | --------------------- | --------------------------------------------------------------------- |
+| pdfkit (já em uso)    | Puppeteer PDF         | Puppeteer tem overhead de browser; pdfkit é suficiente para contratos |
 | node-cron (já em uso) | BullMQ scheduled jobs | BullMQ é para Phase 31 (eSocial queues); cron simples é adequado aqui |
-| Recharts LineChart | Chart.js | Recharts já instalado e em uso; sem razão para trocar |
+| Recharts LineChart    | Chart.js              | Recharts já instalado e em uso; sem razão para trocar                 |
 
 **Installation:** Nenhuma nova dependência — tudo já está no projeto.
 
@@ -107,6 +117,7 @@ O único ponto de atenção é a migration retroativa na tabela `field_team_memb
 ## Architecture Patterns
 
 ### Recommended Module Structure
+
 ```
 apps/backend/src/modules/
 ├── employees/                    # CRUD principal + status machine + importação
@@ -194,7 +205,7 @@ const VALID_TRANSITIONS: Record<EmployeeStatus, EmployeeStatus[]> = {
   ATIVO: ['AFASTADO', 'FERIAS', 'DESLIGADO'],
   AFASTADO: ['ATIVO'],
   FERIAS: ['ATIVO'],
-  DESLIGADO: [],  // terminal
+  DESLIGADO: [], // terminal
 };
 
 async function transitionEmployeeStatus(
@@ -207,10 +218,7 @@ async function transitionEmployeeStatus(
   const employee = await tx.employee.findUniqueOrThrow({ where: { id: employeeId } });
   const allowed = VALID_TRANSITIONS[employee.status as EmployeeStatus];
   if (!allowed.includes(newStatus)) {
-    throw new EmployeeError(
-      `Transição inválida: ${employee.status} → ${newStatus}`,
-      400,
-    );
+    throw new EmployeeError(`Transição inválida: ${employee.status} → ${newStatus}`, 400);
   }
   await tx.employee.update({ where: { id: employeeId }, data: { status: newStatus } });
   await tx.employeeStatusHistory.create({
@@ -225,6 +233,7 @@ async function transitionEmployeeStatus(
 **When to use:** Reutilizar estrutura exata de `AssetPreviewRow`, `PreviewResult`, `ConfirmResult`.
 
 Endpoints:
+
 ```
 POST /org/:orgId/employees/bulk/upload   → parse + return columnHeaders + rows
 POST /org/:orgId/employees/bulk/preview  → validate + CPF/PIS check + return PreviewResult
@@ -273,7 +282,15 @@ const docStorage = multer.diskStorage({
 
 ```tsx
 // baseado em CashflowChart.tsx (ComposedChart) e MonthlyEvolutionChart.tsx
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 // Dados: GET /org/:orgId/employees/:id/salary-history
 // shape: { effectiveDate: string, salary: number, movementType: string, reason: string }
@@ -324,6 +341,7 @@ export function isValidPIS(pis: string): boolean {
 ```
 
 **Comportamento D-13:**
+
 - CPF inválido → 400 (bloqueia)
 - PIS inválido → 200 com `{ warnings: ['PIS/PASEP com formato inválido'] }` (permite salvar)
 
@@ -339,16 +357,16 @@ export function isValidPIS(pis: string): boolean {
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Parse CSV/XLSX | Custom parser | `animal-file-parser.ts` como base para `employee-file-parser.ts` | Trata BOM, latin1, separador auto-detectado |
-| Validação CPF | Biblioteca npm | `shared/utils/document-validator.ts` (já existe `isValidCPF`) | Já testado, sem deps externas |
-| Alertas de vencimento | Polling por request | `node-cron` + Redis lock (padrão `maintenance-alerts.cron.ts`) | Evita múltiplas instâncias, timezone correto |
-| Geração PDF de contrato | Template HTML | `pdfkit` (já em uso para receituários) | Controle preciso do layout, sem deps de browser |
-| Gráfico de salário | SVG manual | `recharts` (já instalado v3.7.0) | `ResponsiveContainer` + tooltip pronto |
-| Upload e serve de documentos | Cloud storage | `multer.diskStorage` + `express.static` (padrão assets.routes.ts) | Consistente com demais uploads do projeto |
-| Importação em massa com preview | Ciclo único | 3 endpoints separados: upload/preview/confirm (padrão asset-bulk-import) | Permite o usuário corrigir erros antes de confirmar |
-| Tabs na ficha do colaborador | Component library | CSS com `role="tablist"` (padrão AnimalDetailPage.tsx) | Já tem CSS acessível, ARIA correto, disabled state |
+| Problem                         | Don't Build         | Use Instead                                                              | Why                                                 |
+| ------------------------------- | ------------------- | ------------------------------------------------------------------------ | --------------------------------------------------- |
+| Parse CSV/XLSX                  | Custom parser       | `animal-file-parser.ts` como base para `employee-file-parser.ts`         | Trata BOM, latin1, separador auto-detectado         |
+| Validação CPF                   | Biblioteca npm      | `shared/utils/document-validator.ts` (já existe `isValidCPF`)            | Já testado, sem deps externas                       |
+| Alertas de vencimento           | Polling por request | `node-cron` + Redis lock (padrão `maintenance-alerts.cron.ts`)           | Evita múltiplas instâncias, timezone correto        |
+| Geração PDF de contrato         | Template HTML       | `pdfkit` (já em uso para receituários)                                   | Controle preciso do layout, sem deps de browser     |
+| Gráfico de salário              | SVG manual          | `recharts` (já instalado v3.7.0)                                         | `ResponsiveContainer` + tooltip pronto              |
+| Upload e serve de documentos    | Cloud storage       | `multer.diskStorage` + `express.static` (padrão assets.routes.ts)        | Consistente com demais uploads do projeto           |
+| Importação em massa com preview | Ciclo único         | 3 endpoints separados: upload/preview/confirm (padrão asset-bulk-import) | Permite o usuário corrigir erros antes de confirmar |
+| Tabs na ficha do colaborador    | Component library   | CSS com `role="tablist"` (padrão AnimalDetailPage.tsx)                   | Já tem CSS acessível, ARIA correto, disabled state  |
 
 **Key insight:** Este módulo reutiliza ~80% dos padrões já estabelecidos no projeto. O principal trabalho é modelagem do schema Prisma e composição dos módulos — não invenção de novos padrões.
 
@@ -382,6 +400,7 @@ export function isValidPIS(pis: string): boolean {
 **What goes wrong:** Validar `endDate` como obrigatório para todos os contratos.
 **Why it happens:** Falta de condicional por `contractType`.
 **How to avoid:**
+
 ```
 CLT_INDETERMINATE → endDate proibido (deve ser null)
 CLT_DETERMINATE   → endDate obrigatório
@@ -783,8 +802,15 @@ async function listEmployees(ctx: RlsContext, params: ListEmployeeParams) {
     prisma.employee.findMany({
       where,
       select: {
-        id: true, name: true, cpf: true, status: true, photoUrl: true,
-        farms: { where: { endDate: null }, select: { position: { select: { name: true } }, farm: { select: { name: true } } } },
+        id: true,
+        name: true,
+        cpf: true,
+        status: true,
+        photoUrl: true,
+        farms: {
+          where: { endDate: null },
+          select: { position: { select: { name: true } }, farm: { select: { name: true } } },
+        },
       },
       skip: (page - 1) * limit,
       take: limit,
@@ -802,29 +828,33 @@ async function listEmployees(ctx: RlsContext, params: ListEmployeeParams) {
 ```typescript
 // apps/backend/src/shared/cron/contract-expiry-alerts.cron.ts
 export function startContractExpiryAlertsCron(): void {
-  cron.schedule('0 7 * * *', async () => {
-    const today = new Date().toISOString().slice(0, 10);
-    const lockKey = `cron:contract-expiry:${today}`;
-    const locked = await redis.set(lockKey, '1', 'EX', 3600, 'NX');
-    if (!locked) return;
-    try {
-      const thirtyDaysLater = addDays(new Date(), 30);
-      const expiring = await prisma.employeeContract.findMany({
-        where: {
-          isActive: true,
-          endDate: { gte: new Date(), lte: thirtyDaysLater },
-          contractType: { in: ['TRIAL', 'SEASONAL'] },
-        },
-        include: { employee: { select: { name: true, organizationId: true } } },
-      });
-      // Para cada contrato: criar notificação via sistema existente
-      for (const contract of expiring) {
-        await createContractExpiryNotification(contract);
+  cron.schedule(
+    '0 7 * * *',
+    async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const lockKey = `cron:contract-expiry:${today}`;
+      const locked = await redis.set(lockKey, '1', 'EX', 3600, 'NX');
+      if (!locked) return;
+      try {
+        const thirtyDaysLater = addDays(new Date(), 30);
+        const expiring = await prisma.employeeContract.findMany({
+          where: {
+            isActive: true,
+            endDate: { gte: new Date(), lte: thirtyDaysLater },
+            contractType: { in: ['TRIAL', 'SEASONAL'] },
+          },
+          include: { employee: { select: { name: true, organizationId: true } } },
+        });
+        // Para cada contrato: criar notificação via sistema existente
+        for (const contract of expiring) {
+          await createContractExpiryNotification(contract);
+        }
+      } finally {
+        await redis.del(lockKey);
       }
-    } finally {
-      await redis.del(lockKey);
-    }
-  }, { timezone: 'America/Sao_Paulo' });
+    },
+    { timezone: 'America/Sao_Paulo' },
+  );
 }
 ```
 
@@ -832,10 +862,18 @@ export function startContractExpiryAlertsCron(): void {
 
 ```tsx
 // apps/frontend/src/components/employees/SalaryEvolutionChart.tsx
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 interface SalaryPoint {
-  effectiveAt: string;  // ISO date
+  effectiveAt: string; // ISO date
   salary: number;
   movementType: string;
   reason?: string;
@@ -850,9 +888,7 @@ function CustomTooltip({ active, payload }: TooltipProps<number, string>) {
       <p className="salary-tooltip__value">
         {p.salary.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
       </p>
-      <p className="salary-tooltip__date">
-        {new Date(p.effectiveAt).toLocaleDateString('pt-BR')}
-      </p>
+      <p className="salary-tooltip__date">{new Date(p.effectiveAt).toLocaleDateString('pt-BR')}</p>
       {p.reason && <p className="salary-tooltip__reason">{p.reason}</p>}
     </div>
   );
@@ -924,32 +960,32 @@ async function bulkSalaryAdjustment(
 
 ### Test Framework
 
-| Property | Value |
-|----------|-------|
-| Framework | Jest 29 + Supertest 7 |
-| Config file | `apps/backend/jest.config.js` |
-| Quick run command | `cd apps/backend && pnpm test -- --testPathPattern=employees` |
-| Full suite command | `cd apps/backend && pnpm test` |
+| Property           | Value                                                         |
+| ------------------ | ------------------------------------------------------------- |
+| Framework          | Jest 29 + Supertest 7                                         |
+| Config file        | `apps/backend/jest.config.js`                                 |
+| Quick run command  | `cd apps/backend && pnpm test -- --testPathPattern=employees` |
+| Full suite command | `cd apps/backend && pnpm test`                                |
 
 ### Phase Requirements → Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| COLAB-01 | CRUD employee + status transitions + CPF unique | unit + integration | `pnpm test -- employees.routes.spec` | ❌ Wave 0 |
-| COLAB-01 | PIS validation warning (não bloqueia) | unit | `pnpm test -- employees.routes.spec` | ❌ Wave 0 |
-| COLAB-01 | FieldTeamMember.employeeId migration não quebra existentes | integration | `pnpm test -- field-teams.routes.spec` | ✅ existente |
-| COLAB-01 | Upload documento (RG, CTPS, ASO) | integration | `pnpm test -- employee-documents.routes.spec` | ❌ Wave 0 |
-| COLAB-02 | CRUD contrato com endDate condicional por tipo | unit + integration | `pnpm test -- employee-contracts.routes.spec` | ❌ Wave 0 |
-| COLAB-02 | ContractAmendment criação e histórico | unit | `pnpm test -- employee-contracts.routes.spec` | ❌ Wave 0 |
-| COLAB-02 | Alerta vencimento contrato (30 dias antes) | unit | `pnpm test -- contract-expiry-alerts.cron.spec` | ❌ Wave 0 |
-| COLAB-03 | CRUD Position + SalaryBand | unit + integration | `pnpm test -- positions.routes.spec` | ❌ Wave 0 |
-| COLAB-03 | CRUD WorkSchedule com templates | unit + integration | `pnpm test -- work-schedules.routes.spec` | ❌ Wave 0 |
-| COLAB-03 | EmployeeMovement cria EmployeeSalaryHistory | unit | `pnpm test -- employee-movements.routes.spec` | ❌ Wave 0 |
-| COLAB-03 | Bulk salary adjustment transação atômica | unit | `pnpm test -- employees.routes.spec` | ❌ Wave 0 |
-| COLAB-04 | employee-file-parser CSV/XLSX | unit | `pnpm test -- employee-file-parser.spec` | ❌ Wave 0 |
-| COLAB-04 | Preview upload valida CPF + detecta duplicatas | integration | `pnpm test -- employees.routes.spec` | ❌ Wave 0 |
-| COLAB-04 | Confirm import cria employees em batch | integration | `pnpm test -- employees.routes.spec` | ❌ Wave 0 |
-| COLAB-05 | GET employee detail inclui salary history | integration | `pnpm test -- employees.routes.spec` | ❌ Wave 0 |
+| Req ID   | Behavior                                                   | Test Type          | Automated Command                               | File Exists? |
+| -------- | ---------------------------------------------------------- | ------------------ | ----------------------------------------------- | ------------ |
+| COLAB-01 | CRUD employee + status transitions + CPF unique            | unit + integration | `pnpm test -- employees.routes.spec`            | ❌ Wave 0    |
+| COLAB-01 | PIS validation warning (não bloqueia)                      | unit               | `pnpm test -- employees.routes.spec`            | ❌ Wave 0    |
+| COLAB-01 | FieldTeamMember.employeeId migration não quebra existentes | integration        | `pnpm test -- field-teams.routes.spec`          | ✅ existente |
+| COLAB-01 | Upload documento (RG, CTPS, ASO)                           | integration        | `pnpm test -- employee-documents.routes.spec`   | ❌ Wave 0    |
+| COLAB-02 | CRUD contrato com endDate condicional por tipo             | unit + integration | `pnpm test -- employee-contracts.routes.spec`   | ❌ Wave 0    |
+| COLAB-02 | ContractAmendment criação e histórico                      | unit               | `pnpm test -- employee-contracts.routes.spec`   | ❌ Wave 0    |
+| COLAB-02 | Alerta vencimento contrato (30 dias antes)                 | unit               | `pnpm test -- contract-expiry-alerts.cron.spec` | ❌ Wave 0    |
+| COLAB-03 | CRUD Position + SalaryBand                                 | unit + integration | `pnpm test -- positions.routes.spec`            | ❌ Wave 0    |
+| COLAB-03 | CRUD WorkSchedule com templates                            | unit + integration | `pnpm test -- work-schedules.routes.spec`       | ❌ Wave 0    |
+| COLAB-03 | EmployeeMovement cria EmployeeSalaryHistory                | unit               | `pnpm test -- employee-movements.routes.spec`   | ❌ Wave 0    |
+| COLAB-03 | Bulk salary adjustment transação atômica                   | unit               | `pnpm test -- employees.routes.spec`            | ❌ Wave 0    |
+| COLAB-04 | employee-file-parser CSV/XLSX                              | unit               | `pnpm test -- employee-file-parser.spec`        | ❌ Wave 0    |
+| COLAB-04 | Preview upload valida CPF + detecta duplicatas             | integration        | `pnpm test -- employees.routes.spec`            | ❌ Wave 0    |
+| COLAB-04 | Confirm import cria employees em batch                     | integration        | `pnpm test -- employees.routes.spec`            | ❌ Wave 0    |
+| COLAB-05 | GET employee detail inclui salary history                  | integration        | `pnpm test -- employees.routes.spec`            | ❌ Wave 0    |
 
 ### Sampling Rate
 
@@ -972,19 +1008,19 @@ async function bulkSalaryAdjustment(
 
 ## Project Constraints (from CLAUDE.md)
 
-| Directive | Impact on This Phase |
-|-----------|---------------------|
-| `req.params.id as string` (Express 5) | Todo acesso a `req.params.employeeId`, `req.params.id`, etc. deve usar `as string` |
-| Prisma enums com `as const` | EmployeeStatus, ContractType, MovementType — usar `as const` em retornos literais |
-| Campos do schema Prisma — verificar nome exato | Antes de `select: { field: true }`, confirmar nome no schema |
-| `Decimal.max(a,b)` é estático | Não usar `a.max(b)` em cálculos salariais |
-| Frontend tipos espelham backend | Criar `src/types/employee.ts`, `src/types/employee-contract.ts`, etc. |
-| `null` vs `undefined` em interfaces | Prisma usa `null`; interfaces de input do frontend usam `?:` (undefined) |
-| Formulários de criação/edição sempre em modal | CreateEmployeeModal, CreateContractModal, etc. — nunca página dedicada |
-| `ConfirmModal` para ações destrutivas | Desligar colaborador = `ConfirmModal` com `variant="danger"` |
-| `window.confirm()` proibido | Usar `ConfirmModal` de `@/components/ui/ConfirmModal` |
-| `app.ts` separado de `main.ts` | Registrar rotas em `app.ts`, iniciar crons em `main.ts` |
-| Módulos colocalizados | `modules/{domínio}/controller+service+routes+types` |
+| Directive                                      | Impact on This Phase                                                               |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `req.params.id as string` (Express 5)          | Todo acesso a `req.params.employeeId`, `req.params.id`, etc. deve usar `as string` |
+| Prisma enums com `as const`                    | EmployeeStatus, ContractType, MovementType — usar `as const` em retornos literais  |
+| Campos do schema Prisma — verificar nome exato | Antes de `select: { field: true }`, confirmar nome no schema                       |
+| `Decimal.max(a,b)` é estático                  | Não usar `a.max(b)` em cálculos salariais                                          |
+| Frontend tipos espelham backend                | Criar `src/types/employee.ts`, `src/types/employee-contract.ts`, etc.              |
+| `null` vs `undefined` em interfaces            | Prisma usa `null`; interfaces de input do frontend usam `?:` (undefined)           |
+| Formulários de criação/edição sempre em modal  | CreateEmployeeModal, CreateContractModal, etc. — nunca página dedicada             |
+| `ConfirmModal` para ações destrutivas          | Desligar colaborador = `ConfirmModal` com `variant="danger"`                       |
+| `window.confirm()` proibido                    | Usar `ConfirmModal` de `@/components/ui/ConfirmModal`                              |
+| `app.ts` separado de `main.ts`                 | Registrar rotas em `app.ts`, iniciar crons em `main.ts`                            |
+| Módulos colocalizados                          | `modules/{domínio}/controller+service+routes+types`                                |
 
 ---
 
@@ -1020,12 +1056,12 @@ Step 2.6: SKIPPED — fase é puramente código/config. Todas as dependências (
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| CTPS física obrigatória | CTPS digital (igual ao CPF) desde 2019 | Portaria SEPRT nº 1.065/2019 | Campo CTPS é `String?` — não forçar formato |
-| Homologação sindical rescisão | Dispensada desde Reforma Trabalhista 2017 | Lei 13.467/2017 | Out of scope confirmado em REQUIREMENTS.md |
-| DIRF (declaração IR retido) | Abolida — dados vão via eSocial/EFD-Reinf | 2025 | Não modelar DIRF — out of scope confirmado |
-| Folha baseada em hora trabalhada bruta | Hora reduzida 52m30s para noturno rural (21h-5h) | CLT art. 73 + NR-31 | Relevante para Phase 27 (ponto) — não para esta fase, mas WorkSchedule.startTime/endTime precisa suportar períodos noturnos |
+| Old Approach                           | Current Approach                                 | When Changed                 | Impact                                                                                                                      |
+| -------------------------------------- | ------------------------------------------------ | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| CTPS física obrigatória                | CTPS digital (igual ao CPF) desde 2019           | Portaria SEPRT nº 1.065/2019 | Campo CTPS é `String?` — não forçar formato                                                                                 |
+| Homologação sindical rescisão          | Dispensada desde Reforma Trabalhista 2017        | Lei 13.467/2017              | Out of scope confirmado em REQUIREMENTS.md                                                                                  |
+| DIRF (declaração IR retido)            | Abolida — dados vão via eSocial/EFD-Reinf        | 2025                         | Não modelar DIRF — out of scope confirmado                                                                                  |
+| Folha baseada em hora trabalhada bruta | Hora reduzida 52m30s para noturno rural (21h-5h) | CLT art. 73 + NR-31          | Relevante para Phase 27 (ponto) — não para esta fase, mas WorkSchedule.startTime/endTime precisa suportar períodos noturnos |
 
 ---
 
@@ -1055,6 +1091,7 @@ Step 2.6: SKIPPED — fase é puramente código/config. Todas as dependências (
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH — tudo já está instalado e em uso no projeto
 - Architecture: HIGH — padrões extraídos diretamente do codebase existente
 - Schema Prisma: HIGH — modelagem baseada nas decisões D-01 a D-13 do CONTEXT.md

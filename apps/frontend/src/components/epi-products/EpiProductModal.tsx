@@ -209,15 +209,13 @@ export default function EpiProductModal({ isOpen, product, onClose, onSuccess }:
             >
               <option value="">Selecione o tipo...</option>
               {EPI_TYPES.map((t) => (
-                <option key={t} value={t}>{EPI_TYPE_LABELS[t]}</option>
+                <option key={t} value={t}>
+                  {EPI_TYPE_LABELS[t]}
+                </option>
               ))}
             </select>
             {errors.epiType && (
-              <span
-                id="epi-type-error"
-                className="epi-product-modal__field-error"
-                role="alert"
-              >
+              <span id="epi-type-error" className="epi-product-modal__field-error" role="alert">
                 <AlertCircle size={14} aria-hidden="true" />
                 {errors.epiType}
               </span>

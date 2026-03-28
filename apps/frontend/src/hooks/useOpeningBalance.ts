@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/services/api';
 import { useAuth } from '@/stores/AuthContext';
-import type { OpeningBalanceLinePreview, PostOpeningBalanceInput, JournalEntry } from '@/types/journal-entries';
+import type {
+  OpeningBalanceLinePreview,
+  PostOpeningBalanceInput,
+  JournalEntry,
+} from '@/types/journal-entries';
 
 // ─── useOpeningBalancePreview ─────────────────────────────────────────────────
 

@@ -83,10 +83,7 @@ export async function listTrainingTypes(ctx: RlsContext): Promise<TrainingTypeOu
 
 // ─── Get single training type ─────────────────────────────────────────
 
-export async function getTrainingType(
-  ctx: RlsContext,
-  id: string,
-): Promise<TrainingTypeOutput> {
+export async function getTrainingType(ctx: RlsContext, id: string): Promise<TrainingTypeOutput> {
   const row = await prisma.trainingType.findFirst({
     where: {
       id,

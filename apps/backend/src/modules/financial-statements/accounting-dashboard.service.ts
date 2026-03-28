@@ -45,7 +45,10 @@ function computeDelta(
 
 // ─── Extract YTD sums from DRE sections ──────────────────────────────────────
 
-function sumSectionsYtd(sections: Array<{ id: string; total: { ytd: string } }>, ids: string[]): Decimal {
+function sumSectionsYtd(
+  sections: Array<{ id: string; total: { ytd: string } }>,
+  ids: string[],
+): Decimal {
   return ids.reduce((sum, id) => {
     const section = sections.find((s) => s.id === id);
     return section ? sum.plus(new Decimal(section.total.ytd)) : sum;
@@ -107,15 +110,11 @@ export async function getAccountingDashboard(
   if (resultadoAntesIr) {
     const recTotal = new Decimal(receitaTotal);
     const raiYtd = new Decimal(resultadoAntesIr.total.ytd);
-    margemOperacional = recTotal.isZero()
-      ? '0.00'
-      : raiYtd.div(recTotal).times(100).toFixed(2);
+    margemOperacional = recTotal.isZero() ? '0.00' : raiYtd.div(recTotal).times(100).toFixed(2);
   } else {
     const rec = new Decimal(receitaTotal);
     const des = new Decimal(despesaTotal);
-    margemOperacional = rec.isZero()
-      ? '0.00'
-      : rec.minus(des).div(rec).times(100).toFixed(2);
+    margemOperacional = rec.isZero() ? '0.00' : rec.minus(des).div(rec).times(100).toFixed(2);
   }
 
   // Prior values for deltas
@@ -247,11 +246,13 @@ export async function getAccountingDashboard(
     costMap.set(row.label, (costMap.get(row.label) ?? new Decimal(0)).plus(val));
   }
 
-  const costComposition: CostCompositionItem[] = Array.from(costMap.entries()).map(([label, value]) => ({
-    label,
-    value: value.toFixed(2),
-    percent: totalCost.isZero() ? '0.00' : value.div(totalCost).times(100).toFixed(2),
-  }));
+  const costComposition: CostCompositionItem[] = Array.from(costMap.entries()).map(
+    ([label, value]) => ({
+      label,
+      value: value.toFixed(2),
+      percent: totalCost.isZero() ? '0.00' : value.div(totalCost).times(100).toFixed(2),
+    }),
+  );
 
   // ─── 4. BP Indicators ────────────────────────────────────────────────────
 

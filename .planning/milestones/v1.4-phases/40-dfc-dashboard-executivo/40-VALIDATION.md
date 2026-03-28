@@ -15,13 +15,13 @@ created: 2026-03-28
 
 ## Test Infrastructure
 
-| Property | Value |
-|----------|-------|
-| **Framework** | jest 29.x (backend), vitest (frontend) |
-| **Config file** | `apps/backend/jest.config.ts`, `apps/frontend/vitest.config.ts` |
-| **Quick run command** | `cd apps/backend && npx jest --testPathPattern="dfc\|financial-statements" --no-coverage` |
-| **Full suite command** | `cd apps/backend && npx jest --no-coverage && cd ../../apps/frontend && npx vitest run` |
-| **Estimated runtime** | ~45 seconds |
+| Property               | Value                                                                                     |
+| ---------------------- | ----------------------------------------------------------------------------------------- |
+| **Framework**          | jest 29.x (backend), vitest (frontend)                                                    |
+| **Config file**        | `apps/backend/jest.config.ts`, `apps/frontend/vitest.config.ts`                           |
+| **Quick run command**  | `cd apps/backend && npx jest --testPathPattern="dfc\|financial-statements" --no-coverage` |
+| **Full suite command** | `cd apps/backend && npx jest --no-coverage && cd ../../apps/frontend && npx vitest run`   |
+| **Estimated runtime**  | ~45 seconds                                                                               |
 
 ---
 
@@ -36,15 +36,15 @@ created: 2026-03-28
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 40-01-01 | 01 | 1 | DFC-01 | unit | `npx jest --testPathPattern="dfc.calculator"` | ❌ W0 | ⬜ pending |
-| 40-01-02 | 01 | 1 | DFC-02 | unit | `npx jest --testPathPattern="dfc.calculator"` | ❌ W0 | ⬜ pending |
-| 40-01-03 | 01 | 1 | DFC-03 | unit | `npx jest --testPathPattern="cross-validation"` | ✅ | ⬜ pending |
-| 40-02-01 | 02 | 2 | DFC-01 | integration | `npx jest --testPathPattern="financial-statements.routes"` | ✅ | ⬜ pending |
-| 40-03-01 | 03 | 2 | DASH-01 | unit+visual | `npx vitest run --reporter=verbose` | ❌ W0 | ⬜ pending |
+| Task ID  | Plan | Wave | Requirement | Test Type   | Automated Command                                          | File Exists | Status     |
+| -------- | ---- | ---- | ----------- | ----------- | ---------------------------------------------------------- | ----------- | ---------- |
+| 40-01-01 | 01   | 1    | DFC-01      | unit        | `npx jest --testPathPattern="dfc.calculator"`              | ❌ W0       | ⬜ pending |
+| 40-01-02 | 01   | 1    | DFC-02      | unit        | `npx jest --testPathPattern="dfc.calculator"`              | ❌ W0       | ⬜ pending |
+| 40-01-03 | 01   | 1    | DFC-03      | unit        | `npx jest --testPathPattern="cross-validation"`            | ✅          | ⬜ pending |
+| 40-02-01 | 02   | 2    | DFC-01      | integration | `npx jest --testPathPattern="financial-statements.routes"` | ✅          | ⬜ pending |
+| 40-03-01 | 03   | 2    | DASH-01     | unit+visual | `npx vitest run --reporter=verbose`                        | ❌ W0       | ⬜ pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+_Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
 
 ---
 
@@ -54,17 +54,17 @@ created: 2026-03-28
 - [ ] `apps/frontend/src/pages/__tests__/DfcPage.test.tsx` — stubs for DFC frontend
 - [ ] `apps/frontend/src/pages/__tests__/AccountingDashboardPage.test.tsx` — stubs for DASH-01
 
-*Existing infrastructure covers test framework and fixtures — only new test files needed.*
+_Existing infrastructure covers test framework and fixtures — only new test files needed._
 
 ---
 
 ## Manual-Only Verifications
 
-| Behavior | Requirement | Why Manual | Test Instructions |
-|----------|-------------|------------|-------------------|
-| Dashboard chart rendering | DASH-01 | recharts visual output | Open /accounting-dashboard, verify 12m line chart and donut render correctly |
-| Alert navigation | DASH-01 | Browser routing | Click each alert card, verify navigation to correct page |
-| DFC tab switching | DFC-01/DFC-02 | UI interaction | Toggle Direto/Indireto tabs, verify correct data display |
+| Behavior                  | Requirement   | Why Manual             | Test Instructions                                                            |
+| ------------------------- | ------------- | ---------------------- | ---------------------------------------------------------------------------- |
+| Dashboard chart rendering | DASH-01       | recharts visual output | Open /accounting-dashboard, verify 12m line chart and donut render correctly |
+| Alert navigation          | DASH-01       | Browser routing        | Click each alert card, verify navigation to correct page                     |
+| DFC tab switching         | DFC-01/DFC-02 | UI interaction         | Toggle Direto/Indireto tabs, verify correct data display                     |
 
 ---
 

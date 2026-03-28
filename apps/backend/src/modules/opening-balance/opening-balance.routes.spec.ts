@@ -160,7 +160,12 @@ describe('POST /api/org/:orgId/opening-balance', () => {
     periodId: 'period-1',
     lines: [
       { accountId: 'acc-bank-1', side: 'DEBIT', amount: '5000.00', description: 'Caixa' },
-      { accountId: 'acc-payable-1', side: 'CREDIT', amount: '2000.00', description: 'Fornecedores' },
+      {
+        accountId: 'acc-payable-1',
+        side: 'CREDIT',
+        amount: '2000.00',
+        description: 'Fornecedores',
+      },
       {
         accountId: 'acc-pl-1',
         side: 'CREDIT',
@@ -185,11 +190,7 @@ describe('POST /api/org/:orgId/opening-balance', () => {
       entryType: 'OPENING_BALANCE',
       status: 'POSTED',
     });
-    expect(mockedService.postOpeningBalance).toHaveBeenCalledWith(
-      'org-1',
-      POST_BODY,
-      'user-1',
-    );
+    expect(mockedService.postOpeningBalance).toHaveBeenCalledWith('org-1', POST_BODY, 'user-1');
   });
 
   it('returns 409 when opening balance already exists for this fiscal year', async () => {
@@ -217,7 +218,10 @@ describe('POST /api/org/:orgId/opening-balance', () => {
     const err = new Error('Lançamento desbalanceado');
     (err as unknown as Record<string, unknown>).code = 'UNBALANCED';
     (err as unknown as Record<string, unknown>).statusCode = 422;
-    Object.setPrototypeOf(err, Object.assign(Object.create(Error.prototype), { name: 'UnbalancedEntryError' }));
+    Object.setPrototypeOf(
+      err,
+      Object.assign(Object.create(Error.prototype), { name: 'UnbalancedEntryError' }),
+    );
     mockedService.postOpeningBalance.mockRejectedValue(err);
 
     const res = await request(app)
@@ -248,9 +252,7 @@ describe('POST /api/org/:orgId/opening-balance', () => {
       throw new Error('Unauthorized');
     });
 
-    const res = await request(app)
-      .post('/api/org/org-1/opening-balance')
-      .send(POST_BODY);
+    const res = await request(app).post('/api/org/org-1/opening-balance').send(POST_BODY);
 
     expect(res.status).toBe(401);
   });

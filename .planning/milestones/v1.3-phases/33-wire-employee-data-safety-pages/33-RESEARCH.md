@@ -19,12 +19,14 @@ The scope is narrow: one backend select-field addition, one frontend hook call p
 ---
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|------------------|
-| SEGUR-02 | Técnico pode gerenciar treinamentos obrigatórios NR-31 com registro de data, CH, instrutor e lista de presença — requires employee multi-select to work with real data | The `TrainingRecordModal` Step 2 participant list reads from `employees` prop; replacing `MOCK_EMPLOYEES` with real data enables E2E training record creation |
-| SEGUR-03 | Gerente pode controlar ASOs com registro de médico, resultado, exames — requires real employee combobox for ASO creation | The `MedicalExamModal` employee combobox reads from `employees` prop and uses `asoPeriodicityMonths` for auto-calculating next exam date; real data makes this functional |
+| ID       | Description                                                                                                                                                            | Research Support                                                                                                                                                          |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SEGUR-02 | Técnico pode gerenciar treinamentos obrigatórios NR-31 com registro de data, CH, instrutor e lista de presença — requires employee multi-select to work with real data | The `TrainingRecordModal` Step 2 participant list reads from `employees` prop; replacing `MOCK_EMPLOYEES` with real data enables E2E training record creation             |
+| SEGUR-03 | Gerente pode controlar ASOs com registro de médico, resultado, exames — requires real employee combobox for ASO creation                                               | The `MedicalExamModal` employee combobox reads from `employees` prop and uses `asoPeriodicityMonths` for auto-calculating next exam date; real data makes this functional |
+
 </phase_requirements>
 
 ---
@@ -51,20 +53,22 @@ The scope is narrow: one backend select-field addition, one frontend hook call p
 ## Standard Stack
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| React 19 | 19.x | UI components | Project standard |
-| TypeScript | 5.x | Type safety | Project standard |
-| Vitest | current | Unit tests | Project standard (frontend) |
-| @testing-library/react | current | Component tests | Project standard |
+
+| Library                | Version | Purpose         | Why Standard                |
+| ---------------------- | ------- | --------------- | --------------------------- |
+| React 19               | 19.x    | UI components   | Project standard            |
+| TypeScript             | 5.x     | Type safety     | Project standard            |
+| Vitest                 | current | Unit tests      | Project standard (frontend) |
+| @testing-library/react | current | Component tests | Project standard            |
 
 ### Already Available (No New Installs)
-| Hook/Module | Location | Purpose |
-|-------------|----------|---------|
-| `useEmployees` | `src/hooks/useEmployees.ts` | Fetches `/org/:orgId/employees` with status/search/limit params |
-| `useAuth` | `src/stores/AuthContext` | Provides `user.organizationId` (used internally by `useEmployees`) |
-| `TrainingRecordModal` | `src/components/training-records/TrainingRecordModal.tsx` | Accepts `employees: { id, name, positionName }[]` prop |
-| `MedicalExamModal` | `src/components/medical-exams/MedicalExamModal.tsx` | Accepts `employees: { id, name, positionName, asoPeriodicityMonths? }[]` prop |
+
+| Hook/Module           | Location                                                  | Purpose                                                                       |
+| --------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `useEmployees`        | `src/hooks/useEmployees.ts`                               | Fetches `/org/:orgId/employees` with status/search/limit params               |
+| `useAuth`             | `src/stores/AuthContext`                                  | Provides `user.organizationId` (used internally by `useEmployees`)            |
+| `TrainingRecordModal` | `src/components/training-records/TrainingRecordModal.tsx` | Accepts `employees: { id, name, positionName }[]` prop                        |
+| `MedicalExamModal`    | `src/components/medical-exams/MedicalExamModal.tsx`       | Accepts `employees: { id, name, positionName, asoPeriodicityMonths? }[]` prop |
 
 **No new npm packages required.**
 
@@ -171,6 +175,7 @@ const { employees, isLoading: employeesLoading } = useEmployees({ status: 'ATIVO
 ```
 
 ### Recommended Project Structure (no changes needed)
+
 ```
 apps/frontend/src/
 ├── pages/
@@ -193,35 +198,39 @@ apps/backend/src/modules/employees/
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Employee fetching | Custom fetch logic | `useEmployees` hook (already exists) | Already handles auth, org scoping, error state, pagination |
-| Employee search/filter | Client-side search over all employees | `useEmployees({ search })` param | Server handles search; already built |
-| Position name resolution | Extra API call to `/positions/:id` | Already in `farms[0].position.name` in list response | Included in the join, no extra round trip |
+| Problem                  | Don't Build                           | Use Instead                                          | Why                                                        |
+| ------------------------ | ------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------- |
+| Employee fetching        | Custom fetch logic                    | `useEmployees` hook (already exists)                 | Already handles auth, org scoping, error state, pagination |
+| Employee search/filter   | Client-side search over all employees | `useEmployees({ search })` param                     | Server handles search; already built                       |
+| Position name resolution | Extra API call to `/positions/:id`    | Already in `farms[0].position.name` in list response | Included in the join, no extra round trip                  |
 
 ---
 
 ## Common Pitfalls
 
 ### Pitfall 1: `asoPeriodicityMonths` Missing from List Response
+
 **What goes wrong:** `MedicalExamModal` calls `emp?.asoPeriodicityMonths ?? 12` to auto-calculate next exam date. If the field is not in the response, it always falls back to 12 months for every employee, making the auto-calculation silently wrong for employees in positions with non-12-month periodicities.
 **Why it happens:** `listEmployees` position select only has `{ id, name }` — `asoPeriodicityMonths` is not included.
 **How to avoid:** Add `asoPeriodicityMonths: true` to the position select in `listEmployees` before the frontend change. One-line backend fix.
 **Warning signs:** Next exam date always shows exactly 12 months after exam date regardless of position.
 
 ### Pitfall 2: Shape Mismatch TypeScript Error
+
 **What goes wrong:** TypeScript will reject `employees` from `useEmployees` directly as the modal's `employees` prop because `Employee` type has no flat `positionName` field — it has `farms?: EmployeeFarm[]` with nested `position`.
 **Why it happens:** The `Employee` type in `src/types/employee.ts` is shaped for the detail response. The list endpoint returns a subset. The modals define their own `interface Employee` inline.
 **How to avoid:** Use `useMemo` to map `employees` → `employeeOptions` with the flat shape before passing to the modal prop.
 **Warning signs:** TypeScript error on the `employees={employees}` prop line.
 
 ### Pitfall 3: DESLIGADO Employees in Selector
+
 **What goes wrong:** Terminated employees appear in the training/ASO participant selectors, confusing users and creating records for people no longer at the farm.
 **Why it happens:** `useEmployees()` with no `status` param returns all statuses.
 **How to avoid:** Always pass `status: 'ATIVO'` to `useEmployees`. Note: if a workflow requires registering training for employees on leave (AFASTADO), this can be relaxed later — ATIVO is the conservative default.
 **Warning signs:** Terminated employees appear in the dropdown.
 
 ### Pitfall 4: Express 5 Param Cast
+
 **What goes wrong:** TypeScript error when reading `req.params.orgId` in the backend if added.
 **Why it happens:** Express 5 `req.params` returns `string | string[]`.
 **How to avoid:** Always cast: `req.params.orgId as string`. (No new routes are being added in this phase, so this pitfall is only relevant if a new endpoint is created.)
@@ -231,6 +240,7 @@ apps/backend/src/modules/employees/
 ## Code Examples
 
 ### TrainingRecordsPage: Replacing MOCK_EMPLOYEES
+
 ```typescript
 // Source: verified pattern from useEmployees.ts + TrainingRecordModal.tsx
 import { useMemo } from 'react';
@@ -255,6 +265,7 @@ const employeeOptions = useMemo(
 ```
 
 ### MedicalExamsPage: Replacing MOCK_EMPLOYEES
+
 ```typescript
 // Source: verified pattern from useEmployees.ts + MedicalExamModal.tsx
 import { useMemo } from 'react';
@@ -280,6 +291,7 @@ const employeeOptions = useMemo(
 ```
 
 ### Backend: Add asoPeriodicityMonths to listEmployees Select
+
 ```typescript
 // Source: apps/backend/src/modules/employees/employees.service.ts lines 213-223 (verified)
 // Change position select from:
@@ -289,6 +301,7 @@ position: { select: { id: true, name: true, asoPeriodicityMonths: true } },
 ```
 
 ### Employee Type Extension for asoPeriodicityMonths
+
 ```typescript
 // Source: apps/frontend/src/types/employee.ts (verified — EmployeeFarm interface)
 // Current EmployeeFarm:
@@ -311,10 +324,10 @@ position?: { name: string; asoPeriodicityMonths?: number };
 
 ## State of the Art
 
-| Old Approach | Current Approach | Notes |
-|--------------|------------------|-------|
-| MOCK_EMPLOYEES = [] | useEmployees({ status: 'ATIVO', limit: 200 }) | This phase makes the switch |
-| asoPeriodicityMonths hardcoded at 12 | fetched from position.asoPeriodicityMonths | Requires backend select extension |
+| Old Approach                         | Current Approach                              | Notes                             |
+| ------------------------------------ | --------------------------------------------- | --------------------------------- |
+| MOCK_EMPLOYEES = []                  | useEmployees({ status: 'ATIVO', limit: 200 }) | This phase makes the switch       |
+| asoPeriodicityMonths hardcoded at 12 | fetched from position.asoPeriodicityMonths    | Requires backend select extension |
 
 **No deprecated APIs involved.** This phase touches only existing, current code.
 
@@ -343,37 +356,42 @@ Step 2.6: SKIPPED — this phase is code/config-only changes with no new externa
 ## Validation Architecture
 
 ### Test Framework
-| Property | Value |
-|----------|-------|
-| Framework | Vitest + @testing-library/react |
-| Config file | `apps/frontend/vitest.config.ts` |
-| Quick run command | `pnpm --filter @protos-farm/frontend test` |
+
+| Property           | Value                                      |
+| ------------------ | ------------------------------------------ |
+| Framework          | Vitest + @testing-library/react            |
+| Config file        | `apps/frontend/vitest.config.ts`           |
+| Quick run command  | `pnpm --filter @protos-farm/frontend test` |
 | Full suite command | `pnpm --filter @protos-farm/frontend test` |
 
 ### Phase Requirements → Test Map
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| SEGUR-02 | TrainingRecordModal renders real employees in participant list | unit | `pnpm --filter @protos-farm/frontend test -- --reporter=verbose` | ❌ Wave 0 |
-| SEGUR-02 | TrainingRecordModal step 2 shows employee name and position | unit | same | ❌ Wave 0 |
-| SEGUR-03 | MedicalExamModal renders real employees in combobox dropdown | unit | same | ❌ Wave 0 |
-| SEGUR-03 | MedicalExamModal auto-calculates nextExamDate from asoPeriodicityMonths | unit | same | ❌ Wave 0 |
+
+| Req ID   | Behavior                                                                | Test Type | Automated Command                                                | File Exists? |
+| -------- | ----------------------------------------------------------------------- | --------- | ---------------------------------------------------------------- | ------------ |
+| SEGUR-02 | TrainingRecordModal renders real employees in participant list          | unit      | `pnpm --filter @protos-farm/frontend test -- --reporter=verbose` | ❌ Wave 0    |
+| SEGUR-02 | TrainingRecordModal step 2 shows employee name and position             | unit      | same                                                             | ❌ Wave 0    |
+| SEGUR-03 | MedicalExamModal renders real employees in combobox dropdown            | unit      | same                                                             | ❌ Wave 0    |
+| SEGUR-03 | MedicalExamModal auto-calculates nextExamDate from asoPeriodicityMonths | unit      | same                                                             | ❌ Wave 0    |
 
 ### Sampling Rate
+
 - **Per task commit:** `pnpm --filter @protos-farm/frontend test`
 - **Per wave merge:** `pnpm --filter @protos-farm/frontend test`
 - **Phase gate:** Full suite green before `/gsd:verify-work`
 
 ### Wave 0 Gaps
+
 - [ ] `apps/frontend/src/pages/TrainingRecordsPage.spec.tsx` — covers SEGUR-02 (renders real employees in modal)
 - [ ] `apps/frontend/src/pages/MedicalExamsPage.spec.tsx` — covers SEGUR-03 (renders real employees in modal, asoPeriodicityMonths auto-calc)
 
-*(Existing test infrastructure — vitest.config.ts, jsdom, @testing-library/react — covers all phase requirements. Only test files are missing.)*
+_(Existing test infrastructure — vitest.config.ts, jsdom, @testing-library/react — covers all phase requirements. Only test files are missing.)_
 
 ---
 
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Verified directly from source: `apps/frontend/src/pages/TrainingRecordsPage.tsx` — MOCK_EMPLOYEES stub location confirmed at line 34
 - Verified directly from source: `apps/frontend/src/pages/MedicalExamsPage.tsx` — MOCK_EMPLOYEES stub location confirmed at line 67-72
 - Verified directly from source: `apps/frontend/src/hooks/useEmployees.ts` — full hook signature confirmed
@@ -382,6 +400,7 @@ Step 2.6: SKIPPED — this phase is code/config-only changes with no new externa
 - Verified directly from source: `apps/backend/prisma/schema.prisma` line 7793 — `asoPeriodicityMonths Int @default(12)` on Position model confirmed
 
 ### Secondary (MEDIUM confidence)
+
 - Pattern inference: `useMemo` for shape mapping is consistent with the React 19 hooks pattern already used throughout this codebase (e.g., EmployeesPage.tsx line 242 for position name access)
 
 ---
@@ -389,6 +408,7 @@ Step 2.6: SKIPPED — this phase is code/config-only changes with no new externa
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH — all code verified from source files
 - Architecture: HIGH — all patterns verified from existing code; no new libraries
 - Pitfalls: HIGH — shape mismatch and missing field verified directly from source

@@ -13,9 +13,7 @@ import { useFarmContext } from '@/stores/FarmContext';
 import { useHrDashboard } from '@/hooks/useHrDashboard';
 import './HrDashboardPage.css';
 
-const PayrollCostTrendChart = lazy(
-  () => import('@/components/hr-dashboard/PayrollCostTrendChart'),
-);
+const PayrollCostTrendChart = lazy(() => import('@/components/hr-dashboard/PayrollCostTrendChart'));
 const PayrollCompositionChart = lazy(
   () => import('@/components/hr-dashboard/PayrollCompositionChart'),
 );
@@ -46,7 +44,10 @@ interface TrendBadgeProps {
 function TrendBadge({ current, previous, invertLogic = false }: TrendBadgeProps) {
   if (previous === null || previous === 0) {
     return (
-      <span className="hr-dashboard__kpi-trend hr-dashboard__kpi-trend--neutral" aria-label="Sem dados do período anterior">
+      <span
+        className="hr-dashboard__kpi-trend hr-dashboard__kpi-trend--neutral"
+        aria-label="Sem dados do período anterior"
+      >
         —
       </span>
     );
@@ -60,10 +61,7 @@ function TrendBadge({ current, previous, invertLogic = false }: TrendBadgeProps)
       ? 'hr-dashboard__kpi-trend hr-dashboard__kpi-trend--up-bad'
       : 'hr-dashboard__kpi-trend hr-dashboard__kpi-trend--up-good';
     return (
-      <span
-        className={className}
-        aria-label={`Aumento de ${pct}% em relação ao período anterior`}
-      >
+      <span className={className} aria-label={`Aumento de ${pct}% em relação ao período anterior`}>
         <ArrowUp size={12} aria-hidden="true" />
         {`+${pct}%`}
       </span>
@@ -86,7 +84,10 @@ function TrendBadge({ current, previous, invertLogic = false }: TrendBadgeProps)
   }
 
   return (
-    <span className="hr-dashboard__kpi-trend hr-dashboard__kpi-trend--neutral" aria-label="Sem variação">
+    <span
+      className="hr-dashboard__kpi-trend hr-dashboard__kpi-trend--neutral"
+      aria-label="Sem variação"
+    >
       0%
     </span>
   );
@@ -119,7 +120,11 @@ function DashboardSkeleton() {
 function ExpirationCard({
   bucket,
 }: {
-  bucket: { days: number; count: number; employees: Array<{ id: string; name: string; endDate: string; contractType: string }> };
+  bucket: {
+    days: number;
+    count: number;
+    employees: Array<{ id: string; name: string; endDate: string; contractType: string }>;
+  };
 }) {
   const bucketClass =
     bucket.days <= 30
@@ -211,7 +216,14 @@ export default function HrDashboardPage() {
             color: 'var(--color-neutral-500)',
           }}
         >
-          <li><Link to="/dashboard" style={{ color: 'var(--color-neutral-500)', textDecoration: 'none' }}>Início</Link></li>
+          <li>
+            <Link
+              to="/dashboard"
+              style={{ color: 'var(--color-neutral-500)', textDecoration: 'none' }}
+            >
+              Início
+            </Link>
+          </li>
           <li aria-hidden="true">/</li>
           <li>RH</li>
           <li aria-hidden="true">/</li>
@@ -272,8 +284,18 @@ export default function HrDashboardPage() {
             aria-label="Selecionar mês"
           >
             {[
-              'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-              'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+              'Janeiro',
+              'Fevereiro',
+              'Março',
+              'Abril',
+              'Maio',
+              'Junho',
+              'Julho',
+              'Agosto',
+              'Setembro',
+              'Outubro',
+              'Novembro',
+              'Dezembro',
             ].map((label, i) => (
               <option key={i + 1} value={i + 1}>
                 {label}
@@ -317,7 +339,6 @@ export default function HrDashboardPage() {
           {/* KPI card row */}
           <section aria-label="Indicadores principais de RH">
             <div className="hr-dashboard__kpis">
-
               {/* KPI 1: Total de Colaboradores */}
               <article className="hr-dashboard__kpi-card">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -390,7 +411,8 @@ export default function HrDashboardPage() {
                     color: 'var(--color-neutral-500)',
                   }}
                 >
-                  {data.turnover.admissionsLast12} admissões · {data.turnover.terminationsLast12} desligamentos
+                  {data.turnover.admissionsLast12} admissões · {data.turnover.terminationsLast12}{' '}
+                  desligamentos
                 </span>
               </article>
             </div>

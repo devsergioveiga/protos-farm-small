@@ -87,7 +87,9 @@ autoPostingRouter.get(
       const ruleId = req.params.ruleId as string;
       const preview = await service.previewRule(orgId, ruleId);
       if (!preview) {
-        res.status(404).json({ error: 'Nenhuma operacao encontrada para preview', code: 'NO_DATA' });
+        res
+          .status(404)
+          .json({ error: 'Nenhuma operacao encontrada para preview', code: 'NO_DATA' });
         return;
       }
       res.json(preview);
@@ -168,8 +170,12 @@ autoPostingRouter.get(
       const status = req.query.status as string | undefined;
       const sourceType = req.query.sourceType as string | undefined;
       const pending = await service.listPending(orgId, {
-        ...(status ? { status: status as Parameters<typeof service.listPending>[1]['status'] } : {}),
-        ...(sourceType ? { sourceType: sourceType as Parameters<typeof service.listPending>[1]['sourceType'] } : {}),
+        ...(status
+          ? { status: status as Parameters<typeof service.listPending>[1]['status'] }
+          : {}),
+        ...(sourceType
+          ? { sourceType: sourceType as Parameters<typeof service.listPending>[1]['sourceType'] }
+          : {}),
       });
       res.json(pending);
     } catch (err) {

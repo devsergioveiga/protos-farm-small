@@ -78,9 +78,7 @@ export function* queryBatched(
   let hasMore = true;
 
   while (hasMore) {
-    const batchSql = sql
-      .replace(/^SELECT /i, `SELECT FIRST ${batchSize} SKIP ${offset} `)
-      .trim();
+    const batchSql = sql.replace(/^SELECT /i, `SELECT FIRST ${batchSize} SKIP ${offset} `).trim();
 
     const rows = query(batchSql);
 

@@ -83,7 +83,10 @@ export async function generateTRCTPdf(
     doc.text('(TRCT — CLT Art. 477)', margin, y, { width: usableWidth, align: 'center' });
     y += 16;
 
-    doc.moveTo(margin, y).lineTo(margin + usableWidth, y).stroke();
+    doc
+      .moveTo(margin, y)
+      .lineTo(margin + usableWidth, y)
+      .stroke();
     y += 10;
 
     // ─── Employee section ────────────────────────────────────────────
@@ -102,7 +105,10 @@ export async function generateTRCTPdf(
     doc.text(`Admissão: ${formatDate(employee.admissionDate)}`, margin + 260, y);
     y += 13;
 
-    doc.moveTo(margin, y).lineTo(margin + usableWidth, y).stroke('#CCCCCC');
+    doc
+      .moveTo(margin, y)
+      .lineTo(margin + usableWidth, y)
+      .stroke('#CCCCCC');
     y += 10;
 
     // ─── Termination details ─────────────────────────────────────────
@@ -122,7 +128,10 @@ export async function generateTRCTPdf(
     doc.text(`Prazo para Pagamento: ${formatDate(termination.paymentDeadline)}`, margin, y);
     y += 16;
 
-    doc.moveTo(margin, y).lineTo(margin + usableWidth, y).stroke('#CCCCCC');
+    doc
+      .moveTo(margin, y)
+      .lineTo(margin + usableWidth, y)
+      .stroke('#CCCCCC');
     y += 10;
 
     // ─── Calculation table ───────────────────────────────────────────
@@ -246,11 +255,17 @@ export async function generateTRCTPdf(
 
     const sigLineY = sigY + 40;
 
-    doc.moveTo(margin, sigLineY).lineTo(margin + 180, sigLineY).stroke();
+    doc
+      .moveTo(margin, sigLineY)
+      .lineTo(margin + 180, sigLineY)
+      .stroke();
     doc.text('Empregado', margin, sigLineY + 4, { width: 180, align: 'center' });
     doc.text(employee.name, margin, sigLineY + 14, { width: 180, align: 'center' });
 
-    doc.moveTo(margin + 300, sigLineY).lineTo(margin + 480, sigLineY).stroke();
+    doc
+      .moveTo(margin + 300, sigLineY)
+      .lineTo(margin + 480, sigLineY)
+      .stroke();
     doc.text('Empregador', margin + 300, sigLineY + 4, { width: 180, align: 'center' });
 
     doc.end();
@@ -295,7 +310,10 @@ export async function generateGRRFPdf(
     doc.text('(GRRF — Lei 8.036/1990)', margin, y, { width: usableWidth, align: 'center' });
     y += 18;
 
-    doc.moveTo(margin, y).lineTo(margin + usableWidth, y).stroke();
+    doc
+      .moveTo(margin, y)
+      .lineTo(margin + usableWidth, y)
+      .stroke();
     y += 14;
 
     // ─── Employee info ────────────────────────────────────────────────
@@ -310,14 +328,13 @@ export async function generateGRRFPdf(
     doc.text(`Admissão: ${formatDate(employee.admissionDate)}`, margin + 260, y);
     y += 13;
     doc.text(`Data da Rescisão: ${formatDate(termination.terminationDate)}`, margin, y);
-    doc.text(
-      `Tipo: ${terminationTypeLabel(termination.terminationType)}`,
-      margin + 260,
-      y,
-    );
+    doc.text(`Tipo: ${terminationTypeLabel(termination.terminationType)}`, margin + 260, y);
     y += 18;
 
-    doc.moveTo(margin, y).lineTo(margin + usableWidth, y).stroke('#CCCCCC');
+    doc
+      .moveTo(margin, y)
+      .lineTo(margin + usableWidth, y)
+      .stroke('#CCCCCC');
     y += 14;
 
     // ─── FGTS data ────────────────────────────────────────────────────

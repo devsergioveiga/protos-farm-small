@@ -4,7 +4,7 @@ milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
 status: Milestone archived
 stopped_at: v1.4 milestone completed and archived
-last_updated: "2026-03-28T18:00:00.000Z"
+last_updated: '2026-03-28T18:00:00.000Z'
 progress:
   total_phases: 7
   completed_phases: 7

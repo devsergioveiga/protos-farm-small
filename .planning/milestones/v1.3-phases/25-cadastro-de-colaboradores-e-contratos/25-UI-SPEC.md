@@ -15,13 +15,13 @@ created: 2026-03-23
 
 ## Design System
 
-| Property | Value |
-|----------|-------|
-| Tool | none — CSS custom properties via `src/styles/tokens.css` |
-| Preset | not applicable |
-| Component library | none (hand-crafted components using `var(--token)`) |
-| Icon library | lucide-react (existente) |
-| Font | DM Sans (headlines) + Source Sans 3 (body/UI) + JetBrains Mono (dados) |
+| Property          | Value                                                                  |
+| ----------------- | ---------------------------------------------------------------------- |
+| Tool              | none — CSS custom properties via `src/styles/tokens.css`               |
+| Preset            | not applicable                                                         |
+| Component library | none (hand-crafted components using `var(--token)`)                    |
+| Icon library      | lucide-react (existente)                                               |
+| Font              | DM Sans (headlines) + Source Sans 3 (body/UI) + JetBrains Mono (dados) |
 
 > Source: `apps/frontend/src/styles/tokens.css` + CLAUDE.md
 
@@ -31,17 +31,18 @@ created: 2026-03-23
 
 Declared values (multiples of 4px — `--space-*` tokens from `tokens.css`):
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| xs | 4px (`--space-1`) | Icon gaps, badge padding, inline separators |
-| sm | 8px (`--space-2`) | Compact row spacing, gap entre chips de status |
-| md | 16px (`--space-4`) | Default element spacing, input internal padding |
-| lg | 24px (`--space-6`) | Section padding, gap entre cards |
-| xl | 32px (`--space-8`) | Layout gaps, tab panel padding |
-| 2xl | 48px (`--space-12`) | Major section breaks no EmployeeDetailPage |
-| 3xl | 64px (`--space-16`) | Empty state icon margin |
+| Token | Value               | Usage                                           |
+| ----- | ------------------- | ----------------------------------------------- |
+| xs    | 4px (`--space-1`)   | Icon gaps, badge padding, inline separators     |
+| sm    | 8px (`--space-2`)   | Compact row spacing, gap entre chips de status  |
+| md    | 16px (`--space-4`)  | Default element spacing, input internal padding |
+| lg    | 24px (`--space-6`)  | Section padding, gap entre cards                |
+| xl    | 32px (`--space-8`)  | Layout gaps, tab panel padding                  |
+| 2xl   | 48px (`--space-12`) | Major section breaks no EmployeeDetailPage      |
+| 3xl   | 64px (`--space-16`) | Empty state icon margin                         |
 
 Exceptions:
+
 - Touch targets mínimos: 48x48px — botões de ação da ficha (editar, mudar status)
 - Input padding: 12px vertical (`--space-3`) × 16px horizontal (`--space-4`) — obrigatório por CLAUDE.md
 - Avatar do colaborador no cabeçalho da ficha: 80x80px (não escala de 4px, herda padrão AnimalDetailPage)
@@ -50,17 +51,18 @@ Exceptions:
 
 ## Typography
 
-| Role | Family | Size | Weight | Line Height |
-|------|--------|------|--------|-------------|
-| Body | Source Sans 3 (`--font-body`) | 16px (`--text-base`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) |
-| Label / UI | Source Sans 3 (`--font-body`) | 14px (`--text-sm`) | 700 (`--font-bold`) | 1.3 (`--leading-snug`) |
-| Heading (página/seção) | DM Sans (`--font-display`) | 20px (`--text-lg`) | 700 (`--font-bold`) | 1.2 (`--leading-tight`) |
-| Display (nome na ficha) | DM Sans (`--font-display`) | 24px (`--text-xl`) | 700 (`--font-bold`) | 1.2 (`--leading-tight`) |
-| Dados monetários / CPF / PIS | JetBrains Mono (`--font-mono`) | 14px (`--text-sm`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) |
+| Role                         | Family                         | Size                 | Weight                 | Line Height              |
+| ---------------------------- | ------------------------------ | -------------------- | ---------------------- | ------------------------ |
+| Body                         | Source Sans 3 (`--font-body`)  | 16px (`--text-base`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) |
+| Label / UI                   | Source Sans 3 (`--font-body`)  | 14px (`--text-sm`)   | 700 (`--font-bold`)    | 1.3 (`--leading-snug`)   |
+| Heading (página/seção)       | DM Sans (`--font-display`)     | 20px (`--text-lg`)   | 700 (`--font-bold`)    | 1.2 (`--leading-tight`)  |
+| Display (nome na ficha)      | DM Sans (`--font-display`)     | 24px (`--text-xl`)   | 700 (`--font-bold`)    | 1.2 (`--leading-tight`)  |
+| Dados monetários / CPF / PIS | JetBrains Mono (`--font-mono`) | 14px (`--text-sm`)   | 400 (`--font-regular`) | 1.5 (`--leading-normal`) |
 
 Weights in use: **400** (`--font-regular`) and **700** (`--font-bold`) only. Weights 500 (`--font-medium`) and 600 (`--font-semibold`) are not used in this phase.
 
 Rules:
+
 - Mínimo absoluto: 14px — nunca abaixo (legibilidade ao ar livre)
 - ALL CAPS apenas em labels curtas: "STATUS", "CPF", "CBO", "CLT" — nunca em frases
 - Nunca centralizar blocos de texto com mais de 2 linhas
@@ -72,16 +74,17 @@ Rules:
 
 ## Color
 
-| Role | Token | Hex | Usage |
-|------|-------|-----|-------|
-| Dominant (60%) | `--color-neutral-50` | `#FAFAF8` | Fundo de página, fundo de modal |
-| Secondary (30%) | `--color-neutral-100` | `#F5F3EF` | Cards de colaborador, sidebar, fundo de tabs, linhas alternadas de tabela |
-| Accent (10%) | `--color-primary-600` | `#2E7D32` | Ver lista abaixo |
-| Destructive | `--color-error-500` | `#C62828` | Ação "Desligar colaborador", remoção de documento, cancelamento de contrato |
-| Warning | `--color-warning-500` | `#F57F17` | Alerta de vencimento de contrato (experiência, safra), badge AFASTADO |
-| Info | `--color-info-500` | `#0277BD` | Badge de tipo de contrato (informativo), tooltip do gráfico |
+| Role            | Token                 | Hex       | Usage                                                                       |
+| --------------- | --------------------- | --------- | --------------------------------------------------------------------------- |
+| Dominant (60%)  | `--color-neutral-50`  | `#FAFAF8` | Fundo de página, fundo de modal                                             |
+| Secondary (30%) | `--color-neutral-100` | `#F5F3EF` | Cards de colaborador, sidebar, fundo de tabs, linhas alternadas de tabela   |
+| Accent (10%)    | `--color-primary-600` | `#2E7D32` | Ver lista abaixo                                                            |
+| Destructive     | `--color-error-500`   | `#C62828` | Ação "Desligar colaborador", remoção de documento, cancelamento de contrato |
+| Warning         | `--color-warning-500` | `#F57F17` | Alerta de vencimento de contrato (experiência, safra), badge AFASTADO       |
+| Info            | `--color-info-500`    | `#0277BD` | Badge de tipo de contrato (informativo), tooltip do gráfico                 |
 
 Accent (`#2E7D32`) reserved for:
+
 1. Botão primário "Cadastrar colaborador" (máximo 1 por tela)
 2. Botão primário "Salvar" dentro de modals de criação/edição
 3. Tab ativa no EmployeeDetailPage (underline indicator)
@@ -89,6 +92,7 @@ Accent (`#2E7D32`) reserved for:
 5. Status badge ATIVO (`--color-success-500` = `#2E7D32` — mesmo valor)
 
 Color rules:
+
 - Nunca usar cor como único indicador de estado — sempre acompanhar com ícone Lucide + texto
 - Status badges: ATIVO = verde + ícone `CheckCircle`, AFASTADO = amarelo + ícone `Clock`, FÉRIAS = azul + ícone `Umbrella`, DESLIGADO = cinza + ícone `XCircle`
 - Erros de validação de CPF: `--color-error-500` + ícone `AlertCircle` + mensagem textual
@@ -102,10 +106,10 @@ Color rules:
 
 Declares the primary visual anchor on each primary screen. The executor must ensure this element is the most visually prominent on the page.
 
-| Screen | Focal Point |
-|--------|-------------|
-| `EmployeesPage` | Tabela de colaboradores (ou cards empilhados em mobile) — a lista ocupa a área de conteúdo central; o botão primário "Cadastrar colaborador" (accent verde, canto superior direito) é o único elemento de ação de alto peso visual na tela |
-| `EmployeeDetailPage` | Nome do colaborador em Display 24px/700 no cabeçalho fixo, acompanhado do status badge — ancora a identidade da ficha; o conteúdo da tab ativa é o segundo nível de atenção imediatamente abaixo |
+| Screen               | Focal Point                                                                                                                                                                                                                                |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `EmployeesPage`      | Tabela de colaboradores (ou cards empilhados em mobile) — a lista ocupa a área de conteúdo central; o botão primário "Cadastrar colaborador" (accent verde, canto superior direito) é o único elemento de ação de alto peso visual na tela |
+| `EmployeeDetailPage` | Nome do colaborador em Display 24px/700 no cabeçalho fixo, acompanhado do status badge — ancora a identidade da ficha; o conteúdo da tab ativa é o segundo nível de atenção imediatamente abaixo                                           |
 
 ---
 
@@ -115,38 +119,38 @@ Componentes a implementar nesta fase, com padrão de referência:
 
 ### Páginas
 
-| Componente | Rota | Padrão de Referência |
-|-----------|------|----------------------|
-| `EmployeesPage` | `/employees` | `AnimalsPage.tsx` — lista com filtros, badge de status, botão bulk import |
-| `EmployeeDetailPage` | `/employees/:employeeId` | `AnimalDetailPage.tsx` — cabeçalho fixo + tabs |
-| `PositionsPage` | `/positions` | `AnimalsPage.tsx` — lista de cargos com quadro de lotação |
-| `WorkSchedulesPage` | `/work-schedules` | `AnimalsPage.tsx` — lista de escalas com templates |
+| Componente           | Rota                     | Padrão de Referência                                                      |
+| -------------------- | ------------------------ | ------------------------------------------------------------------------- |
+| `EmployeesPage`      | `/employees`             | `AnimalsPage.tsx` — lista com filtros, badge de status, botão bulk import |
+| `EmployeeDetailPage` | `/employees/:employeeId` | `AnimalDetailPage.tsx` — cabeçalho fixo + tabs                            |
+| `PositionsPage`      | `/positions`             | `AnimalsPage.tsx` — lista de cargos com quadro de lotação                 |
+| `WorkSchedulesPage`  | `/work-schedules`        | `AnimalsPage.tsx` — lista de escalas com templates                        |
 
 ### Modais (formulários — sempre em modal, nunca página dedicada)
 
-| Componente | Trigger | Padrão de Referência |
-|-----------|---------|----------------------|
-| `CreateEmployeeModal` | Botão primário em `EmployeesPage` | `CreateAnimalModal.tsx` — multi-step com stepper no header |
-| `EmployeeStatusModal` | Botão "Mudar Status" na ficha | `ConfirmModal` com variant conforme transição |
-| `EmployeeFarmAssocModal` | Aba Dados Pessoais da ficha | Modal simples com seletor de fazenda + cargo |
-| `CreateContractModal` | Aba Contrato da ficha | Modal com campos condicionais por contractType |
-| `ContractAmendmentModal` | Botão "Aditivo" na aba Contrato | Modal simples |
-| `CreatePositionModal` | Botão primário em `PositionsPage` | Modal padrão |
-| `SalaryBandModal` | Botão "Faixas" na listagem de cargos | Modal com tabela editável inline |
-| `CreateWorkScheduleModal` | Botão primário em `WorkSchedulesPage` | Modal com grade de dias/horários |
-| `EmployeeBulkImportModal` | Botão "Importar" em `EmployeesPage` | `AnimalBulkImportModal.tsx` — upload → preview → confirmar |
+| Componente                | Trigger                               | Padrão de Referência                                       |
+| ------------------------- | ------------------------------------- | ---------------------------------------------------------- |
+| `CreateEmployeeModal`     | Botão primário em `EmployeesPage`     | `CreateAnimalModal.tsx` — multi-step com stepper no header |
+| `EmployeeStatusModal`     | Botão "Mudar Status" na ficha         | `ConfirmModal` com variant conforme transição              |
+| `EmployeeFarmAssocModal`  | Aba Dados Pessoais da ficha           | Modal simples com seletor de fazenda + cargo               |
+| `CreateContractModal`     | Aba Contrato da ficha                 | Modal com campos condicionais por contractType             |
+| `ContractAmendmentModal`  | Botão "Aditivo" na aba Contrato       | Modal simples                                              |
+| `CreatePositionModal`     | Botão primário em `PositionsPage`     | Modal padrão                                               |
+| `SalaryBandModal`         | Botão "Faixas" na listagem de cargos  | Modal com tabela editável inline                           |
+| `CreateWorkScheduleModal` | Botão primário em `WorkSchedulesPage` | Modal com grade de dias/horários                           |
+| `EmployeeBulkImportModal` | Botão "Importar" em `EmployeesPage`   | `AnimalBulkImportModal.tsx` — upload → preview → confirmar |
 
 ### Componentes de exibição
 
-| Componente | Localização | Descrição |
-|-----------|-------------|-----------|
-| `EmployeeStatusBadge` | `components/employees/` | Badge colorido com ícone por status |
-| `SalaryEvolutionChart` | `components/employees/` | Recharts LineChart, tooltip com valor + data + motivo |
-| `PersonalDataTab` | `components/employees/tabs/` | CPF/RG/PIS/PASEP em mono, dependentes em accordion |
-| `ContractTab` | `components/employees/tabs/` | Contrato atual + histórico de aditivos |
-| `EvolutionTab` | `components/employees/tabs/` | `SalaryEvolutionChart` + timeline de movimentações |
-| `DocumentsTab` | `components/employees/tabs/` | Lista de documentos com upload/download |
-| `HistoryTab` | `components/employees/tabs/` | Timeline de status e movimentações |
+| Componente             | Localização                  | Descrição                                             |
+| ---------------------- | ---------------------------- | ----------------------------------------------------- |
+| `EmployeeStatusBadge`  | `components/employees/`      | Badge colorido com ícone por status                   |
+| `SalaryEvolutionChart` | `components/employees/`      | Recharts LineChart, tooltip com valor + data + motivo |
+| `PersonalDataTab`      | `components/employees/tabs/` | CPF/RG/PIS/PASEP em mono, dependentes em accordion    |
+| `ContractTab`          | `components/employees/tabs/` | Contrato atual + histórico de aditivos                |
+| `EvolutionTab`         | `components/employees/tabs/` | `SalaryEvolutionChart` + timeline de movimentações    |
+| `DocumentsTab`         | `components/employees/tabs/` | Lista de documentos com upload/download               |
+| `HistoryTab`           | `components/employees/tabs/` | Timeline de status e movimentações                    |
 
 ---
 
@@ -190,41 +194,41 @@ Componentes a implementar nesta fase, com padrão de referência:
 
 ## Copywriting Contract
 
-| Element | Copy |
-|---------|------|
-| Primary CTA (EmployeesPage) | "Cadastrar colaborador" |
-| Primary CTA (PositionsPage) | "Cadastrar cargo" |
-| Primary CTA (WorkSchedulesPage) | "Cadastrar escala" |
-| Modal save (criar) | "Cadastrar colaborador" |
-| Modal save (editar) | "Salvar alterações" |
-| Empty state — EmployeesPage heading | "Nenhum colaborador cadastrado" |
-| Empty state — EmployeesPage body | "Cadastre o primeiro colaborador da fazenda ou importe uma lista em massa." |
-| Empty state — EmployeesPage CTA | "Cadastrar colaborador" |
-| Empty state — PositionsPage heading | "Nenhum cargo cadastrado" |
-| Empty state — PositionsPage body | "Crie os cargos antes de cadastrar colaboradores." |
-| Empty state — PositionsPage CTA | "Cadastrar cargo" |
-| Empty state — WorkSchedulesPage heading | "Nenhuma escala cadastrada" |
-| Empty state — WorkSchedulesPage body | "Configure as escalas de trabalho para vincular aos contratos." |
-| Empty state — WorkSchedulesPage CTA | "Cadastrar escala" |
-| Empty state — DocumentsTab | "Nenhum documento anexado. Faça upload do RG, CTPS ou ASO." |
-| Empty state — HistoryTab | "Nenhuma movimentação registrada ainda." |
-| Empty state — EvolutionTab (sem movimentos salariais) | "Nenhum reajuste registrado. O histórico aparecerá aqui." |
-| Error — CPF inválido | "CPF inválido. Verifique os dígitos e tente novamente." |
-| Error — CPF duplicado | "Este CPF já está cadastrado. Verifique se o colaborador já existe." |
-| Error — PIS/PASEP inválido (warning, não bloqueia) | "PIS/PASEP parece inválido. Você pode salvar e corrigir depois." |
-| Error — falha ao salvar | "Não foi possível salvar. Verifique sua conexão e tente novamente." |
-| Error — import: linhas com erro | "X colaboradores não puderam ser importados. Baixe o relatório de erros." |
-| Error — contrato sem jornada | "Selecione uma escala de trabalho para continuar." |
-| Alerta vencimento contrato de experiência | "Contrato de experiência vence em X dias. Providencie a efetivação ou encerramento." |
-| Alerta vencimento contrato safra | "Contrato safra encerra em X dias." |
-| Destructive — Desligar colaborador | "Desligar colaborador": "Esta ação é irreversível. O colaborador será marcado como DESLIGADO e não poderá ser reativado. Confirme digitando o nome completo." |
-| Destructive — Remover documento | "Remover documento": "O arquivo será excluído permanentemente. Tem certeza?" |
-| Destructive — Cancelar contrato | "Cancelar contrato": "Isso encerrará o contrato vigente. O histórico será preservado. Confirma?" |
-| Status change — Afastar | "Afastar colaborador": "Informe o motivo e a data prevista de retorno." |
-| Status change — Férias | "Colocar em férias": "Informe o período de gozo de férias." |
-| Status change — Retornar | "Registrar retorno": "Confirma que [Nome] retornou na data de hoje?" |
-| Reajuste coletivo | "Aplicar reajuste em lote": "O reajuste será aplicado a X colaboradores selecionados. Confirma X% de aumento a partir de [data]?" |
-| Quadro de lotação vazio | "Nenhum colaborador neste cargo no momento." |
+| Element                                               | Copy                                                                                                                                                          |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Primary CTA (EmployeesPage)                           | "Cadastrar colaborador"                                                                                                                                       |
+| Primary CTA (PositionsPage)                           | "Cadastrar cargo"                                                                                                                                             |
+| Primary CTA (WorkSchedulesPage)                       | "Cadastrar escala"                                                                                                                                            |
+| Modal save (criar)                                    | "Cadastrar colaborador"                                                                                                                                       |
+| Modal save (editar)                                   | "Salvar alterações"                                                                                                                                           |
+| Empty state — EmployeesPage heading                   | "Nenhum colaborador cadastrado"                                                                                                                               |
+| Empty state — EmployeesPage body                      | "Cadastre o primeiro colaborador da fazenda ou importe uma lista em massa."                                                                                   |
+| Empty state — EmployeesPage CTA                       | "Cadastrar colaborador"                                                                                                                                       |
+| Empty state — PositionsPage heading                   | "Nenhum cargo cadastrado"                                                                                                                                     |
+| Empty state — PositionsPage body                      | "Crie os cargos antes de cadastrar colaboradores."                                                                                                            |
+| Empty state — PositionsPage CTA                       | "Cadastrar cargo"                                                                                                                                             |
+| Empty state — WorkSchedulesPage heading               | "Nenhuma escala cadastrada"                                                                                                                                   |
+| Empty state — WorkSchedulesPage body                  | "Configure as escalas de trabalho para vincular aos contratos."                                                                                               |
+| Empty state — WorkSchedulesPage CTA                   | "Cadastrar escala"                                                                                                                                            |
+| Empty state — DocumentsTab                            | "Nenhum documento anexado. Faça upload do RG, CTPS ou ASO."                                                                                                   |
+| Empty state — HistoryTab                              | "Nenhuma movimentação registrada ainda."                                                                                                                      |
+| Empty state — EvolutionTab (sem movimentos salariais) | "Nenhum reajuste registrado. O histórico aparecerá aqui."                                                                                                     |
+| Error — CPF inválido                                  | "CPF inválido. Verifique os dígitos e tente novamente."                                                                                                       |
+| Error — CPF duplicado                                 | "Este CPF já está cadastrado. Verifique se o colaborador já existe."                                                                                          |
+| Error — PIS/PASEP inválido (warning, não bloqueia)    | "PIS/PASEP parece inválido. Você pode salvar e corrigir depois."                                                                                              |
+| Error — falha ao salvar                               | "Não foi possível salvar. Verifique sua conexão e tente novamente."                                                                                           |
+| Error — import: linhas com erro                       | "X colaboradores não puderam ser importados. Baixe o relatório de erros."                                                                                     |
+| Error — contrato sem jornada                          | "Selecione uma escala de trabalho para continuar."                                                                                                            |
+| Alerta vencimento contrato de experiência             | "Contrato de experiência vence em X dias. Providencie a efetivação ou encerramento."                                                                          |
+| Alerta vencimento contrato safra                      | "Contrato safra encerra em X dias."                                                                                                                           |
+| Destructive — Desligar colaborador                    | "Desligar colaborador": "Esta ação é irreversível. O colaborador será marcado como DESLIGADO e não poderá ser reativado. Confirme digitando o nome completo." |
+| Destructive — Remover documento                       | "Remover documento": "O arquivo será excluído permanentemente. Tem certeza?"                                                                                  |
+| Destructive — Cancelar contrato                       | "Cancelar contrato": "Isso encerrará o contrato vigente. O histórico será preservado. Confirma?"                                                              |
+| Status change — Afastar                               | "Afastar colaborador": "Informe o motivo e a data prevista de retorno."                                                                                       |
+| Status change — Férias                                | "Colocar em férias": "Informe o período de gozo de férias."                                                                                                   |
+| Status change — Retornar                              | "Registrar retorno": "Confirma que [Nome] retornou na data de hoje?"                                                                                          |
+| Reajuste coletivo                                     | "Aplicar reajuste em lote": "O reajuste será aplicado a X colaboradores selecionados. Confirma X% de aumento a partir de [data]?"                             |
+| Quadro de lotação vazio                               | "Nenhum colaborador neste cargo no momento."                                                                                                                  |
 
 ---
 
@@ -232,33 +236,33 @@ Componentes a implementar nesta fase, com padrão de referência:
 
 ### Status Badge — EmployeeStatusBadge
 
-| Status | Cor | Ícone | Texto |
-|--------|-----|-------|-------|
-| ATIVO | `--color-success-500` (#2E7D32) | `CheckCircle` 16px | "Ativo" |
-| AFASTADO | `--color-warning-500` (#F57F17) | `Clock` 16px | "Afastado" |
-| FÉRIAS | `--color-info-500` (#0277BD) | `Umbrella` 16px | "Férias" |
-| DESLIGADO | `--color-neutral-500` (#7A7267) | `XCircle` 16px | "Desligado" |
+| Status    | Cor                             | Ícone              | Texto       |
+| --------- | ------------------------------- | ------------------ | ----------- |
+| ATIVO     | `--color-success-500` (#2E7D32) | `CheckCircle` 16px | "Ativo"     |
+| AFASTADO  | `--color-warning-500` (#F57F17) | `Clock` 16px       | "Afastado"  |
+| FÉRIAS    | `--color-info-500` (#0277BD)    | `Umbrella` 16px    | "Férias"    |
+| DESLIGADO | `--color-neutral-500` (#7A7267) | `XCircle` 16px     | "Desligado" |
 
 ### Contract Type — label display
 
-| Enum | Label exibida |
-|------|--------------|
+| Enum              | Label exibida               |
+| ----------------- | --------------------------- |
 | CLT_INDETERMINATE | "CLT — Prazo indeterminado" |
-| CLT_DETERMINATE | "CLT — Prazo determinado" |
-| SEASONAL | "Safra" |
-| INTERMITTENT | "Intermitente" |
-| TRIAL | "Experiência" |
-| APPRENTICE | "Aprendiz" |
+| CLT_DETERMINATE   | "CLT — Prazo determinado"   |
+| SEASONAL          | "Safra"                     |
+| INTERMITTENT      | "Intermitente"              |
+| TRIAL             | "Experiência"               |
+| APPRENTICE        | "Aprendiz"                  |
 
 ### Destructive Actions — regra de confirmação
 
-| Ação | Componente | Criticidade |
-|------|-----------|-------------|
-| Desligar colaborador | `ConfirmDeleteModal` — digitar nome completo | Alta (irreversível, terminal) |
-| Cancelar contrato vigente | `ConfirmModal` variant="danger" | Média |
-| Remover documento | `ConfirmModal` variant="warning" | Baixa/média |
-| Remover vínculo fazenda | `ConfirmModal` variant="warning" | Média |
-| Reajuste coletivo em lote | `ConfirmModal` variant="warning" — mostra contagem de afetados | Média |
+| Ação                      | Componente                                                     | Criticidade                   |
+| ------------------------- | -------------------------------------------------------------- | ----------------------------- |
+| Desligar colaborador      | `ConfirmDeleteModal` — digitar nome completo                   | Alta (irreversível, terminal) |
+| Cancelar contrato vigente | `ConfirmModal` variant="danger"                                | Média                         |
+| Remover documento         | `ConfirmModal` variant="warning"                               | Baixa/média                   |
+| Remover vínculo fazenda   | `ConfirmModal` variant="warning"                               | Média                         |
+| Reajuste coletivo em lote | `ConfirmModal` variant="warning" — mostra contagem de afetados | Média                         |
 
 > Nunca usar `window.confirm()`. Regra absoluta de CLAUDE.md.
 
@@ -283,14 +287,14 @@ Componentes a implementar nesta fase, com padrão de referência:
 
 ## Animations
 
-| Interaction | Duration | Easing | Token |
-|------------|----------|--------|-------|
-| Hover em card de colaborador | 100ms | ease-out | `--duration-instant` + `--ease-out` |
-| Abertura de modal | 200ms | ease-out | `--duration-fast` + `--ease-out` |
-| Fechamento de modal | 150ms | ease-in | `--ease-in` |
-| Troca de tab | 200ms | ease-out | `--duration-fast` |
-| Skeleton pulse | 1.5s infinite | ease-in-out | opacity 0.4→0.7 |
-| Toast entrada | 300ms | ease-out (slide from right) | `--duration-normal` |
+| Interaction                  | Duration      | Easing                      | Token                               |
+| ---------------------------- | ------------- | --------------------------- | ----------------------------------- |
+| Hover em card de colaborador | 100ms         | ease-out                    | `--duration-instant` + `--ease-out` |
+| Abertura de modal            | 200ms         | ease-out                    | `--duration-fast` + `--ease-out`    |
+| Fechamento de modal          | 150ms         | ease-in                     | `--ease-in`                         |
+| Troca de tab                 | 200ms         | ease-out                    | `--duration-fast`                   |
+| Skeleton pulse               | 1.5s infinite | ease-in-out                 | opacity 0.4→0.7                     |
+| Toast entrada                | 300ms         | ease-out (slide from right) | `--duration-normal`                 |
 
 Proibido animar: scroll, mudança de texto, layout shifts, conteúdo que muda de dado.
 `prefers-reduced-motion: reduce`: todos os keyframes e transitions passam para 0.01ms (já configurado em `tokens.css`).
@@ -334,14 +338,15 @@ RH
 
 ## Responsive Rules
 
-| Breakpoint | Layout |
-|-----------|--------|
-| < 640px (mobile) | Cards empilhados na listagem; tabs scrolláveis horizontalmente; modal full-screen |
-| 640–1023px (tablet) | Tabela com colunas reduzidas; modal largura 90% |
-| ≥ 1024px (desktop) | Tabela completa; sidebar visível colapsada; modal largura 640px |
-| ≥ 1280px (desktop largo) | Sidebar expandida; modal largura 720px |
+| Breakpoint               | Layout                                                                            |
+| ------------------------ | --------------------------------------------------------------------------------- |
+| < 640px (mobile)         | Cards empilhados na listagem; tabs scrolláveis horizontalmente; modal full-screen |
+| 640–1023px (tablet)      | Tabela com colunas reduzidas; modal largura 90%                                   |
+| ≥ 1024px (desktop)       | Tabela completa; sidebar visível colapsada; modal largura 640px                   |
+| ≥ 1280px (desktop largo) | Sidebar expandida; modal largura 720px                                            |
 
 EmployeeDetailPage em mobile:
+
 - Cabeçalho reduzido: avatar 56px, nome truncado após 2 linhas
 - Tabs: scroll horizontal sem wrapping, indicador de overflow (fade no lado direito)
 - SalaryEvolutionChart: altura reduzida para 180px em mobile
@@ -350,10 +355,10 @@ EmployeeDetailPage em mobile:
 
 ## Registry Safety
 
-| Registry | Blocks Used | Safety Gate |
-|----------|-------------|-------------|
+| Registry        | Blocks Used                   | Safety Gate    |
+| --------------- | ----------------------------- | -------------- |
 | shadcn official | none — projeto não usa shadcn | not applicable |
-| third-party | none declared | not applicable |
+| third-party     | none declared                 | not applicable |
 
 > Projeto usa CSS custom properties + componentes próprios. Nenhum registry de terceiros.
 
@@ -361,22 +366,22 @@ EmployeeDetailPage em mobile:
 
 ## Pre-Population Sources
 
-| Decision | Source | Field in this spec |
-|---------|--------|-------------------|
-| Fonts DM Sans + Source Sans 3 + JetBrains Mono | CLAUDE.md tipografia | Typography table |
-| Cor primária #2E7D32 | CLAUDE.md + tokens.css | Color — Accent |
-| Cor erro #C62828 | CLAUDE.md + tokens.css | Color — Destructive |
-| Escala de 4px | CLAUDE.md + tokens.css | Spacing Scale |
-| Touch targets 48px | CLAUDE.md | Spacing exceptions |
-| Tabs pattern: Dados Pessoais, Contrato, Evolução, Documentos, Histórico | CONTEXT.md D-09 | Component Inventory |
-| Recharts LineChart para evolução salarial | CONTEXT.md D-10 + RESEARCH.md | SalaryEvolutionChart |
-| Status machine ATIVO/AFASTADO/FÉRIAS/DESLIGADO | CONTEXT.md D-03 | Status Badge + Copywriting |
-| contractType enums (6 tipos) | CONTEXT.md D-05 | Contract Type labels |
-| ConfirmDeleteModal para ação irreversível | CLAUDE.md | Destructive Actions |
-| Import: upload → parse → preview → confirmar | CONTEXT.md D-11 | EmployeeBulkImportModal |
-| CPF bloqueia, PIS warning | CONTEXT.md D-13 | Copywriting + Interaction States |
-| Formulários sempre em modal | CLAUDE.md | Component Inventory |
-| Sidebar grupo RH | CONTEXT.md D-09 + RESEARCH.md | Sidebar Navigation |
+| Decision                                                                | Source                        | Field in this spec               |
+| ----------------------------------------------------------------------- | ----------------------------- | -------------------------------- |
+| Fonts DM Sans + Source Sans 3 + JetBrains Mono                          | CLAUDE.md tipografia          | Typography table                 |
+| Cor primária #2E7D32                                                    | CLAUDE.md + tokens.css        | Color — Accent                   |
+| Cor erro #C62828                                                        | CLAUDE.md + tokens.css        | Color — Destructive              |
+| Escala de 4px                                                           | CLAUDE.md + tokens.css        | Spacing Scale                    |
+| Touch targets 48px                                                      | CLAUDE.md                     | Spacing exceptions               |
+| Tabs pattern: Dados Pessoais, Contrato, Evolução, Documentos, Histórico | CONTEXT.md D-09               | Component Inventory              |
+| Recharts LineChart para evolução salarial                               | CONTEXT.md D-10 + RESEARCH.md | SalaryEvolutionChart             |
+| Status machine ATIVO/AFASTADO/FÉRIAS/DESLIGADO                          | CONTEXT.md D-03               | Status Badge + Copywriting       |
+| contractType enums (6 tipos)                                            | CONTEXT.md D-05               | Contract Type labels             |
+| ConfirmDeleteModal para ação irreversível                               | CLAUDE.md                     | Destructive Actions              |
+| Import: upload → parse → preview → confirmar                            | CONTEXT.md D-11               | EmployeeBulkImportModal          |
+| CPF bloqueia, PIS warning                                               | CONTEXT.md D-13               | Copywriting + Interaction States |
+| Formulários sempre em modal                                             | CLAUDE.md                     | Component Inventory              |
+| Sidebar grupo RH                                                        | CONTEXT.md D-09 + RESEARCH.md | Sidebar Navigation               |
 
 ---
 

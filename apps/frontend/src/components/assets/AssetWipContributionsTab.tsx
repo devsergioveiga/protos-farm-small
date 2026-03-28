@@ -1,12 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  AlertTriangle,
-  AlertCircle,
-  Info,
-  CheckCircle,
-  Clock,
-  PlusCircle,
-} from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, CheckCircle, Clock, PlusCircle } from 'lucide-react';
 import { useAssetWip } from '@/hooks/useAssetWip';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import AssetWipContributionModal from './AssetWipContributionModal';
@@ -79,9 +72,7 @@ export default function AssetWipContributionsTab({
 
   // Progress bar fill percentage
   const progressPct =
-    budget != null && budget > 0
-      ? Math.min((totalContributed / budget) * 100, 100)
-      : 0;
+    budget != null && budget > 0 ? Math.min((totalContributed / budget) * 100, 100) : 0;
 
   // Progress bar color class
   let progressFillClass = 'wip-tab__progress-fill--healthy';
@@ -158,9 +149,7 @@ export default function AssetWipContributionsTab({
                 style={{ width: `${progressPct}%` }}
               />
             </div>
-            <span className="wip-tab__progress-label">
-              {progressPct.toFixed(0)}% utilizado
-            </span>
+            <span className="wip-tab__progress-label">{progressPct.toFixed(0)}% utilizado</span>
           </div>
         ) : (
           <p className="wip-tab__no-budget">Sem orcamento definido.</p>
@@ -252,7 +241,9 @@ export default function AssetWipContributionsTab({
                 <tr>
                   <th scope="col">Data</th>
                   <th scope="col">Descricao</th>
-                  <th scope="col" style={{ textAlign: 'right' }}>Valor</th>
+                  <th scope="col" style={{ textAlign: 'right' }}>
+                    Valor
+                  </th>
                   <th scope="col">Fornecedor</th>
                 </tr>
               </thead>

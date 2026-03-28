@@ -1,11 +1,4 @@
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import type { MarginRankingItem } from '@/types/financial-statements';
 
 interface MarginRankingChartProps {
@@ -54,7 +47,13 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: Toolti
         </div>
         <div>
           Margem:{' '}
-          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-primary-600)', fontWeight: 600 }}>
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--color-primary-600)',
+              fontWeight: 600,
+            }}
+          >
             {item.marginPercentNum.toFixed(1)}%
           </span>
         </div>
@@ -123,11 +122,19 @@ export default function MarginRankingChart({ data }: MarginRankingChartProps) {
 
       <div aria-hidden="true">
         <ResponsiveContainer width="100%" height={chartHeight}>
-          <BarChart layout="vertical" data={sortedData} margin={{ top: 0, right: 16, bottom: 0, left: 8 }}>
+          <BarChart
+            layout="vertical"
+            data={sortedData}
+            margin={{ top: 0, right: 16, bottom: 0, left: 8 }}
+          >
             <XAxis
               type="number"
               tickFormatter={(v: number) => `${v.toFixed(1)}%`}
-              tick={{ fontFamily: 'var(--font-mono)', fontSize: 11, fill: 'var(--color-neutral-500)' }}
+              tick={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 11,
+                fill: 'var(--color-neutral-500)',
+              }}
               axisLine={{ stroke: 'var(--color-neutral-200)' }}
               tickLine={false}
             />
@@ -135,16 +142,16 @@ export default function MarginRankingChart({ data }: MarginRankingChartProps) {
               type="category"
               dataKey="costCenterName"
               width={140}
-              tick={{ fontFamily: 'var(--font-body)', fontSize: 12, fill: 'var(--color-neutral-700)' }}
+              tick={{
+                fontFamily: 'var(--font-body)',
+                fontSize: 12,
+                fill: 'var(--color-neutral-700)',
+              }}
               axisLine={false}
               tickLine={false}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Bar
-              dataKey="marginPercentNum"
-              fill="var(--color-primary-400)"
-              radius={[0, 4, 4, 0]}
-            />
+            <Bar dataKey="marginPercentNum" fill="var(--color-primary-400)" radius={[0, 4, 4, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

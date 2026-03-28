@@ -1,23 +1,23 @@
 ---
 phase: 34-wire-absence-impact-payroll-engine
-plan: "02"
+plan: '02'
 subsystem: payroll
 tags: [payroll, fgts, absence, pdf, pdfkit, decimal.js, prisma]
 
 # Dependency graph
 requires:
   - phase: 34-wire-absence-impact-payroll-engine
-    plan: "01"
-    provides: "AbsencePayrollImpact types, absence deduction logic in calculateEmployeePayroll, getAbsenceImpactForMonth function"
+    plan: '01'
+    provides: 'AbsencePayrollImpact types, absence deduction logic in calculateEmployeePayroll, getAbsenceImpactForMonth function'
   - phase: 29-ferias-afastamentos-rescisao-e-provisoes
-    provides: "employee-absences module with getAbsenceImpactForMonth"
+    provides: 'employee-absences module with getAbsenceImpactForMonth'
   - phase: 28-processamento-da-folha-mensal
-    provides: "payroll-runs orchestrator, payroll-pdf.service, PayslipData interface"
+    provides: 'payroll-runs orchestrator, payroll-pdf.service, PayslipData interface'
 provides:
-  - "getAbsenceImpactForMonth wired into processRun orchestrator inside transaction"
-  - "absenceData passed to calculateEmployeePayroll via EmployeePayrollInput"
-  - "PayslipData includes fgtsBase field"
-  - "Payslip PDF rodape shows Base FGTS derived correctly"
+  - 'getAbsenceImpactForMonth wired into processRun orchestrator inside transaction'
+  - 'absenceData passed to calculateEmployeePayroll via EmployeePayrollInput'
+  - 'PayslipData includes fgtsBase field'
+  - 'Payslip PDF rodape shows Base FGTS derived correctly'
 affects:
   - payroll-runs
   - payroll-pdf
@@ -27,8 +27,8 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "Absence data fetched inside payroll tx and passed via EmployeePayrollInput.absenceData"
-    - "fgtsBase derived from fgtsAmount / 0.08 at PDF re-generation call sites (DB item has no fgtsBase column)"
+    - 'Absence data fetched inside payroll tx and passed via EmployeePayrollInput.absenceData'
+    - 'fgtsBase derived from fgtsAmount / 0.08 at PDF re-generation call sites (DB item has no fgtsBase column)'
 
 key-files:
   created: []
@@ -37,12 +37,12 @@ key-files:
     - apps/backend/src/modules/payroll-runs/payroll-pdf.service.ts
 
 key-decisions:
-  - "Both PDF call sites use fgtsAmount/0.08 derivation (not result.fgtsBase) because the first call site also reads from stored DB item, not live result — consistent approach at both call sites"
-  - "fgtsBase derivation documents the 8% FGTS rate assumption (Lei 8.036/90) with note about apprentice support needing DB column if ever added"
+  - 'Both PDF call sites use fgtsAmount/0.08 derivation (not result.fgtsBase) because the first call site also reads from stored DB item, not live result — consistent approach at both call sites'
+  - 'fgtsBase derivation documents the 8% FGTS rate assumption (Lei 8.036/90) with note about apprentice support needing DB column if ever added'
 
 patterns-established:
-  - "Absence data fetch inside payroll transaction: const absenceData = await getAbsenceImpactForMonth(employee.id, referenceMonth, tx)"
-  - "fgtsBase in PayslipData derived from fgtsAmount for stored item paths"
+  - 'Absence data fetch inside payroll transaction: const absenceData = await getAbsenceImpactForMonth(employee.id, referenceMonth, tx)'
+  - 'fgtsBase in PayslipData derived from fgtsAmount for stored item paths'
 
 requirements-completed: [FERIAS-02]
 
@@ -107,5 +107,6 @@ None — all data fields are wired to real computation values.
 - No blockers for subsequent phases
 
 ---
-*Phase: 34-wire-absence-impact-payroll-engine*
-*Completed: 2026-03-27*
+
+_Phase: 34-wire-absence-impact-payroll-engine_
+_Completed: 2026-03-27_

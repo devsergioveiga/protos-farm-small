@@ -16,13 +16,13 @@ created: 2026-03-27
 
 ## Design System
 
-| Property | Value |
-|----------|-------|
-| Tool | none — CSS custom properties via `src/styles/tokens.css` |
-| Preset | not applicable |
-| Component library | none (custom components, `var(--*)` tokens) |
-| Icon library | lucide-react |
-| Font | DM Sans (headlines 700) + Source Sans 3 (body 400) + JetBrains Mono (numeric data 400) |
+| Property          | Value                                                                                  |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| Tool              | none — CSS custom properties via `src/styles/tokens.css`                               |
+| Preset            | not applicable                                                                         |
+| Component library | none (custom components, `var(--*)` tokens)                                            |
+| Icon library      | lucide-react                                                                           |
+| Font              | DM Sans (headlines 700) + Source Sans 3 (body 400) + JetBrains Mono (numeric data 400) |
 
 Source: CLAUDE.md + `apps/frontend/src/styles/tokens.css` (confirmed existing)
 
@@ -32,17 +32,18 @@ Source: CLAUDE.md + `apps/frontend/src/styles/tokens.css` (confirmed existing)
 
 Declared values (multiples of 4px — base 4px scale per CLAUDE.md):
 
-| Token | CSS Var | Value | Usage |
-|-------|---------|-------|-------|
-| xs | `--space-1` | 4px | Icon gaps, inline badge padding |
-| sm | `--space-2` | 8px | Between form label and input, table cell padding-y |
-| md | `--space-4` | 16px | Default element spacing, card padding-x, modal body padding |
-| lg | `--space-6` | 24px | Section padding, modal header padding |
-| xl | `--space-8` | 32px | Layout gaps between page sections |
-| 2xl | `--space-12` | 48px | Major section breaks, page top padding |
-| 3xl | `--space-16` | 64px | Empty state vertical centering buffer |
+| Token | CSS Var      | Value | Usage                                                       |
+| ----- | ------------ | ----- | ----------------------------------------------------------- |
+| xs    | `--space-1`  | 4px   | Icon gaps, inline badge padding                             |
+| sm    | `--space-2`  | 8px   | Between form label and input, table cell padding-y          |
+| md    | `--space-4`  | 16px  | Default element spacing, card padding-x, modal body padding |
+| lg    | `--space-6`  | 24px  | Section padding, modal header padding                       |
+| xl    | `--space-8`  | 32px  | Layout gaps between page sections                           |
+| 2xl   | `--space-12` | 48px  | Major section breaks, page top padding                      |
+| 3xl   | `--space-16` | 64px  | Empty state vertical centering buffer                       |
 
 Exceptions:
+
 - Journal entry line rows: 12px vertical padding (`--space-3`) to keep multi-line table compact without sacrificing readability
 - Touch targets (all interactive cells, buttons): minimum 48x48px per CLAUDE.md
 
@@ -50,17 +51,18 @@ Exceptions:
 
 ## Typography
 
-| Role | Size | CSS Var | Font | Weight | CSS Var | Line Height |
-|------|------|---------|------|--------|---------|-------------|
-| Body | 16px | `--text-base` | Source Sans 3 | 400 | `--font-regular` | 1.5 (`--leading-normal`) |
-| Label / UI text | 14px | `--text-sm` | Source Sans 3 | 700 | `--font-bold` | 1.3 (`--leading-snug`) |
-| Heading (page/modal) | 20px | `--text-lg` | DM Sans | 700 | `--font-bold` | 1.2 (`--leading-tight`) |
-| Display (section headers, totals row) | 18px | `--text-md` | DM Sans | 400 | `--font-regular` | 1.2 (`--leading-tight`) |
-| Numeric data (amounts, account codes, entry numbers) | 14px | `--text-sm` | JetBrains Mono | 400 | `--font-regular` | 1.5 |
+| Role                                                 | Size | CSS Var       | Font           | Weight | CSS Var          | Line Height              |
+| ---------------------------------------------------- | ---- | ------------- | -------------- | ------ | ---------------- | ------------------------ |
+| Body                                                 | 16px | `--text-base` | Source Sans 3  | 400    | `--font-regular` | 1.5 (`--leading-normal`) |
+| Label / UI text                                      | 14px | `--text-sm`   | Source Sans 3  | 700    | `--font-bold`    | 1.3 (`--leading-snug`)   |
+| Heading (page/modal)                                 | 20px | `--text-lg`   | DM Sans        | 700    | `--font-bold`    | 1.2 (`--leading-tight`)  |
+| Display (section headers, totals row)                | 18px | `--text-md`   | DM Sans        | 400    | `--font-regular` | 1.2 (`--leading-tight`)  |
+| Numeric data (amounts, account codes, entry numbers) | 14px | `--text-sm`   | JetBrains Mono | 400    | `--font-regular` | 1.5                      |
 
 Declared weights: `--font-regular` (400) and `--font-bold` (700). No other weights used in this phase.
 
 Notes:
+
 - ALL CAPS only for STATUS badge labels ("RASCUNHO", "POSTADO", "ESTORNADO") — never in body copy
 - Never center-align text blocks longer than 2 lines
 - Minimum 12px on any visible text (outdoor legibility requirement)
@@ -69,27 +71,29 @@ Notes:
 
 ## Color
 
-| Role | CSS Var | Hex | Usage |
-|------|---------|-----|-------|
-| Dominant (60%) | `--color-neutral-0` / `--color-neutral-50` | #ffffff / #fafaf8 | Page background, table row background |
-| Secondary (30%) | `--color-neutral-100` | #f5f3ef | Cards, sidebar, modal overlay background, table header row, alternate row stripe |
-| Accent (10%) | `--color-primary-600` | #2e7d32 | Primary CTA only (one per screen) |
-| Destructive | `--color-error-500` | #c62828 | Estorno (reversal) action button, reversal badge, error messages |
+| Role            | CSS Var                                    | Hex               | Usage                                                                            |
+| --------------- | ------------------------------------------ | ----------------- | -------------------------------------------------------------------------------- |
+| Dominant (60%)  | `--color-neutral-0` / `--color-neutral-50` | #ffffff / #fafaf8 | Page background, table row background                                            |
+| Secondary (30%) | `--color-neutral-100`                      | #f5f3ef           | Cards, sidebar, modal overlay background, table header row, alternate row stripe |
+| Accent (10%)    | `--color-primary-600`                      | #2e7d32           | Primary CTA only (one per screen)                                                |
+| Destructive     | `--color-error-500`                        | #c62828           | Estorno (reversal) action button, reversal badge, error messages                 |
 
 Accent `--color-primary-600` reserved for:
+
 - "Lançar" (post/submit) button — the single primary CTA per modal or wizard step
 - Active sidebar navigation item
 - Wizard step indicator (current step)
 
 Semantic colors for status badges (icon + text, never color alone):
 
-| Status | Background token | Text token | Icon |
-|--------|-----------------|------------|------|
-| RASCUNHO | `--color-neutral-200` | `--color-neutral-700` | `FileText` 16px |
-| POSTADO | `--color-success-100` | `--color-success-500` | `CheckCircle` 16px |
-| ESTORNADO | `--color-error-100` | `--color-error-500` | `RotateCcw` 16px |
+| Status    | Background token      | Text token            | Icon               |
+| --------- | --------------------- | --------------------- | ------------------ |
+| RASCUNHO  | `--color-neutral-200` | `--color-neutral-700` | `FileText` 16px    |
+| POSTADO   | `--color-success-100` | `--color-success-500` | `CheckCircle` 16px |
+| ESTORNADO | `--color-error-100`   | `--color-error-500`   | `RotateCcw` 16px   |
 
 Debit/Credit visual coding (supplementary to label, never sole indicator):
+
 - DÉBITO column header and amount cells: `--color-error-500` text
 - CRÉDITO column header and amount cells: `--color-success-500` text
 - Balanceamento OK indicator: `--color-success-500` + `CheckCircle` icon
@@ -104,103 +108,103 @@ All copy in pt-BR coloquial per CLAUDE.md.
 
 ### Journal Entries Page (JournalEntriesPage)
 
-| Element | Copy |
-|---------|------|
-| Page heading | Lançamentos Contábeis |
-| Primary CTA | Novo Lançamento |
-| Empty state heading | Nenhum lançamento ainda |
-| Empty state body | Crie o primeiro lançamento manual ou configure o saldo de abertura para iniciar a contabilidade. |
-| Empty state CTA | Novo Lançamento |
-| Error state (load fail) | Não foi possível carregar os lançamentos. Verifique sua conexão e tente novamente. |
+| Element                 | Copy                                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------------------ |
+| Page heading            | Lançamentos Contábeis                                                                            |
+| Primary CTA             | Novo Lançamento                                                                                  |
+| Empty state heading     | Nenhum lançamento ainda                                                                          |
+| Empty state body        | Crie o primeiro lançamento manual ou configure o saldo de abertura para iniciar a contabilidade. |
+| Empty state CTA         | Novo Lançamento                                                                                  |
+| Error state (load fail) | Não foi possível carregar os lançamentos. Verifique sua conexão e tente novamente.               |
 
 ### JournalEntryModal (create/draft/post)
 
-| Element | Copy |
-|---------|------|
-| Modal heading (create) | Novo Lançamento |
-| Modal heading (edit draft) | Editar Rascunho |
-| Save draft CTA | Salvar Rascunho |
-| Post CTA (primary) | Lançar |
-| Add line button | Adicionar linha |
-| Remove line (icon-only, aria-label) | Remover linha |
-| Balance indicator (balanced) | Lançamento balanceado |
+| Element                                   | Copy                                                          |
+| ----------------------------------------- | ------------------------------------------------------------- |
+| Modal heading (create)                    | Novo Lançamento                                               |
+| Modal heading (edit draft)                | Editar Rascunho                                               |
+| Save draft CTA                            | Salvar Rascunho                                               |
+| Post CTA (primary)                        | Lançar                                                        |
+| Add line button                           | Adicionar linha                                               |
+| Remove line (icon-only, aria-label)       | Remover linha                                                 |
+| Balance indicator (balanced)              | Lançamento balanceado                                         |
 | Balance indicator (unbalanced, with diff) | Diferença de R$ {valor} — débitos e créditos devem ser iguais |
-| Confirmation before posting | Confirmar lançamento? Após lançado, não será possível editar. |
-| Post confirmation CTA | Confirmar Lançamento |
-| Success toast (draft saved) | Rascunho salvo |
-| Success toast (posted) | Lançamento {número} postado com sucesso |
-| Error (period closed) | Não é possível lançar: o período {mês/ano} está fechado. |
-| Template save label | Salvar como modelo |
-| Template name placeholder | Nome do modelo (ex: Depreciação mensal) |
+| Confirmation before posting               | Confirmar lançamento? Após lançado, não será possível editar. |
+| Post confirmation CTA                     | Confirmar Lançamento                                          |
+| Success toast (draft saved)               | Rascunho salvo                                                |
+| Success toast (posted)                    | Lançamento {número} postado com sucesso                       |
+| Error (period closed)                     | Não é possível lançar: o período {mês/ano} está fechado.      |
+| Template save label                       | Salvar como modelo                                            |
+| Template name placeholder                 | Nome do modelo (ex: Depreciação mensal)                       |
 
 ### Reversal (LANC-04)
 
-| Element | Copy |
-|---------|------|
-| Estornar button (icon + text) | Estornar |
-| Reversal modal heading | Estornar Lançamento #{número} |
-| Reason field label | Motivo do estorno * |
-| Reason field placeholder | Descreva o motivo do estorno |
+| Element                                             | Copy                                                                                     |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Estornar button (icon + text)                       | Estornar                                                                                 |
+| Reversal modal heading                              | Estornar Lançamento #{número}                                                            |
+| Reason field label                                  | Motivo do estorno \*                                                                     |
+| Reason field placeholder                            | Descreva o motivo do estorno                                                             |
 | Reversal confirmation (ConfirmModal variant=danger) | Tem certeza que deseja estornar o Lançamento #{número}? Essa ação não pode ser desfeita. |
-| Confirm reversal CTA | Confirmar Estorno |
-| Success toast | Lançamento #{número} estornado. Estorno #{novo_número} criado. |
-| Error (period closed) | Não é possível estornar: o período está fechado. Solicite a reabertura ao administrador. |
-| Error (already reversed) | Este lançamento já foi estornado. |
+| Confirm reversal CTA                                | Confirmar Estorno                                                                        |
+| Success toast                                       | Lançamento #{número} estornado. Estorno #{novo_número} criado.                           |
+| Error (period closed)                               | Não é possível estornar: o período está fechado. Solicite a reabertura ao administrador. |
+| Error (already reversed)                            | Este lançamento já foi estornado.                                                        |
 
 ### Opening Balance Wizard (LANC-05)
 
-| Element | Copy |
-|---------|------|
-| Wizard heading | Saldo de Abertura |
-| Step 1 heading | Revisão dos saldos pré-populados |
-| Step 1 description | Os valores abaixo foram obtidos automaticamente dos módulos financeiro, contas a pagar/receber, ativos e provisões trabalhistas. Revise e ajuste se necessário. |
-| Step 2 heading | Conta de contrapartida |
-| Step 2 description | O saldo líquido de R$ {valor} será lançado contra a conta Lucros e Prejuízos Acumulados. |
-| Confirm CTA (primary) | Postar Saldo de Abertura |
-| Success toast | Saldo de abertura postado com sucesso |
-| Error (already exists) | Já existe um saldo de abertura para este exercício fiscal. Apenas um saldo de abertura é permitido por exercício. |
-| Empty preview (no data) | Nenhum saldo encontrado nos módulos integrados. Adicione linhas manualmente. |
+| Element                 | Copy                                                                                                                                                            |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wizard heading          | Saldo de Abertura                                                                                                                                               |
+| Step 1 heading          | Revisão dos saldos pré-populados                                                                                                                                |
+| Step 1 description      | Os valores abaixo foram obtidos automaticamente dos módulos financeiro, contas a pagar/receber, ativos e provisões trabalhistas. Revise e ajuste se necessário. |
+| Step 2 heading          | Conta de contrapartida                                                                                                                                          |
+| Step 2 description      | O saldo líquido de R$ {valor} será lançado contra a conta Lucros e Prejuízos Acumulados.                                                                        |
+| Confirm CTA (primary)   | Postar Saldo de Abertura                                                                                                                                        |
+| Success toast           | Saldo de abertura postado com sucesso                                                                                                                           |
+| Error (already exists)  | Já existe um saldo de abertura para este exercício fiscal. Apenas um saldo de abertura é permitido por exercício.                                               |
+| Empty preview (no data) | Nenhum saldo encontrado nos módulos integrados. Adicione linhas manualmente.                                                                                    |
 
 ### Ledger Page (LedgerPage — RAZAO-01)
 
-| Element | Copy |
-|---------|------|
-| Page heading | Razão Contábil |
-| Account selector placeholder | Selecione uma conta analítica |
-| Period selector label | Período |
-| Empty state (no account selected) | Selecione uma conta para visualizar o razão. |
+| Element                                      | Copy                                                      |
+| -------------------------------------------- | --------------------------------------------------------- |
+| Page heading                                 | Razão Contábil                                            |
+| Account selector placeholder                 | Selecione uma conta analítica                             |
+| Period selector label                        | Período                                                   |
+| Empty state (no account selected)            | Selecione uma conta para visualizar o razão.              |
 | Empty state (account selected, no movements) | Nenhum lançamento nesta conta para o período selecionado. |
-| Error state | Não foi possível carregar o razão. Tente novamente. |
-| Export CSV button | Exportar CSV |
-| Export PDF button | Exportar PDF |
-| Running balance column header | Saldo Progressivo |
-| Previous balance row label | Saldo Anterior |
+| Error state                                  | Não foi possível carregar o razão. Tente novamente.       |
+| Export CSV button                            | Exportar CSV                                              |
+| Export PDF button                            | Exportar PDF                                              |
+| Running balance column header                | Saldo Progressivo                                         |
+| Previous balance row label                   | Saldo Anterior                                            |
 
 ### Trial Balance Page (TrialBalancePage — RAZAO-02)
 
-| Element | Copy |
-|---------|------|
-| Page heading | Balancete de Verificação |
-| Balance check (balanced) | Balancete equilibrado |
+| Element                    | Copy                                               |
+| -------------------------- | -------------------------------------------------- |
+| Page heading               | Balancete de Verificação                           |
+| Balance check (balanced)   | Balancete equilibrado                              |
 | Balance check (unbalanced) | Atenção: débitos e créditos divergem em R$ {valor} |
-| Export XLSX button | Exportar XLSX |
-| Export PDF button | Exportar PDF |
-| Empty state | Nenhum movimento no período selecionado. |
+| Export XLSX button         | Exportar XLSX                                      |
+| Export PDF button          | Exportar PDF                                       |
+| Empty state                | Nenhum movimento no período selecionado.           |
 
 ### Daily Book (Livro Diário page — RAZAO-03, tab or embedded)
 
-| Element | Copy |
-|---------|------|
-| Section heading | Livro Diário |
-| Export PDF button | Exportar PDF |
-| Empty state | Nenhum lançamento no período selecionado. |
+| Element           | Copy                                      |
+| ----------------- | ----------------------------------------- |
+| Section heading   | Livro Diário                              |
+| Export PDF button | Exportar PDF                              |
+| Empty state       | Nenhum lançamento no período selecionado. |
 
 ### Destructive Actions Summary
 
-| Action | Risk Level | Component | Confirmation Copy |
-|--------|------------|-----------|-------------------|
-| Estornar lançamento | Médio | `ConfirmModal` variant=`danger` | "Tem certeza que deseja estornar o Lançamento #{número}? Essa ação não pode ser desfeita." |
-| Excluir rascunho | Baixo | `ConfirmModal` variant=`warning` | "Excluir este rascunho? Os dados serão perdidos." |
+| Action              | Risk Level | Component                        | Confirmation Copy                                                                          |
+| ------------------- | ---------- | -------------------------------- | ------------------------------------------------------------------------------------------ |
+| Estornar lançamento | Médio      | `ConfirmModal` variant=`danger`  | "Tem certeza que deseja estornar o Lançamento #{número}? Essa ação não pode ser desfeita." |
+| Excluir rascunho    | Baixo      | `ConfirmModal` variant=`warning` | "Excluir este rascunho? Os dados serão perdidos."                                          |
 
 Note: Never use `window.confirm()` — always use `ConfirmModal` from `@/components/ui/ConfirmModal`.
 
@@ -212,29 +216,29 @@ Components to build for this phase. All forms in modal, never in dedicated page.
 
 ### New Components
 
-| Component | Path | Type | Notes |
-|-----------|------|------|-------|
-| `JournalEntryModal` | `src/components/accounting/JournalEntryModal.tsx` | Modal form | Multi-line debit/credit, balance guard, draft/post flow |
-| `JournalEntryModal.css` | `src/components/accounting/JournalEntryModal.css` | Styles | |
-| `JournalEntryLineRow` | inside `JournalEntryModal.tsx` | Sub-component | Single debit/credit row: account picker + side toggle + amount + delete |
-| `JournalEntryTemplateModal` | `src/components/accounting/JournalEntryTemplateModal.tsx` | Modal | Save/load named templates |
-| `OpeningBalanceWizard` | `src/components/accounting/OpeningBalanceWizard.tsx` | Multi-step modal | 2 steps: review pre-populated lines → confirm contra-entry |
-| `OpeningBalanceWizard.css` | `src/components/accounting/OpeningBalanceWizard.css` | Styles | |
-| `ReversalModal` | `src/components/accounting/ReversalModal.tsx` | Modal | Reason textarea + ConfirmModal trigger |
-| `BalanceIndicator` | inline in `JournalEntryModal` | Status widget | Shows balanced/unbalanced state with diff amount |
-| `JournalEntriesPage` | `src/pages/JournalEntriesPage.tsx` | Page | Table of entries, status badges, action menu |
-| `JournalEntriesPage.css` | `src/pages/JournalEntriesPage.css` | Styles | |
-| `LedgerPage` | `src/pages/LedgerPage.tsx` | Page | Account selector + period filter + ledger table with running balance |
-| `LedgerPage.css` | `src/pages/LedgerPage.css` | Styles | |
-| `TrialBalancePage` | `src/pages/TrialBalancePage.tsx` | Page | 3-column table, group totals, balance validation bar |
-| `TrialBalancePage.css` | `src/pages/TrialBalancePage.css` | Styles | |
+| Component                   | Path                                                      | Type             | Notes                                                                   |
+| --------------------------- | --------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------- |
+| `JournalEntryModal`         | `src/components/accounting/JournalEntryModal.tsx`         | Modal form       | Multi-line debit/credit, balance guard, draft/post flow                 |
+| `JournalEntryModal.css`     | `src/components/accounting/JournalEntryModal.css`         | Styles           |                                                                         |
+| `JournalEntryLineRow`       | inside `JournalEntryModal.tsx`                            | Sub-component    | Single debit/credit row: account picker + side toggle + amount + delete |
+| `JournalEntryTemplateModal` | `src/components/accounting/JournalEntryTemplateModal.tsx` | Modal            | Save/load named templates                                               |
+| `OpeningBalanceWizard`      | `src/components/accounting/OpeningBalanceWizard.tsx`      | Multi-step modal | 2 steps: review pre-populated lines → confirm contra-entry              |
+| `OpeningBalanceWizard.css`  | `src/components/accounting/OpeningBalanceWizard.css`      | Styles           |                                                                         |
+| `ReversalModal`             | `src/components/accounting/ReversalModal.tsx`             | Modal            | Reason textarea + ConfirmModal trigger                                  |
+| `BalanceIndicator`          | inline in `JournalEntryModal`                             | Status widget    | Shows balanced/unbalanced state with diff amount                        |
+| `JournalEntriesPage`        | `src/pages/JournalEntriesPage.tsx`                        | Page             | Table of entries, status badges, action menu                            |
+| `JournalEntriesPage.css`    | `src/pages/JournalEntriesPage.css`                        | Styles           |                                                                         |
+| `LedgerPage`                | `src/pages/LedgerPage.tsx`                                | Page             | Account selector + period filter + ledger table with running balance    |
+| `LedgerPage.css`            | `src/pages/LedgerPage.css`                                | Styles           |                                                                         |
+| `TrialBalancePage`          | `src/pages/TrialBalancePage.tsx`                          | Page             | 3-column table, group totals, balance validation bar                    |
+| `TrialBalancePage.css`      | `src/pages/TrialBalancePage.css`                          | Styles           |                                                                         |
 
 ### Reused Existing Components
 
-| Component | Source | Usage |
-|-----------|--------|-------|
-| `ConfirmModal` | `@/components/ui/ConfirmModal` | Reversal and draft delete confirmations |
-| `Skeleton` | project pattern | Loading states on all tables and wizard steps |
+| Component      | Source                         | Usage                                         |
+| -------------- | ------------------------------ | --------------------------------------------- |
+| `ConfirmModal` | `@/components/ui/ConfirmModal` | Reversal and draft delete confirmations       |
+| `Skeleton`     | project pattern                | Loading states on all tables and wizard steps |
 
 ---
 
@@ -297,13 +301,13 @@ Components to build for this phase. All forms in modal, never in dedicated page.
 
 ## Loading States
 
-| Component | Loading Pattern |
-|-----------|----------------|
-| JournalEntriesPage table | 5-row skeleton with 4 columns |
-| LedgerPage table | 8-row skeleton with 5 columns |
-| TrialBalancePage table | Full skeleton matching 3-column layout, 10 rows |
-| OpeningBalanceWizard step 1 (pre-populating) | Skeleton over line rows (4 rows) |
-| Export buttons (PDF/CSV/XLSX) | Spinner icon replaces icon (18px), button disabled during generation |
+| Component                                    | Loading Pattern                                                      |
+| -------------------------------------------- | -------------------------------------------------------------------- |
+| JournalEntriesPage table                     | 5-row skeleton with 4 columns                                        |
+| LedgerPage table                             | 8-row skeleton with 5 columns                                        |
+| TrialBalancePage table                       | Full skeleton matching 3-column layout, 10 rows                      |
+| OpeningBalanceWizard step 1 (pre-populating) | Skeleton over line rows (4 rows)                                     |
+| Export buttons (PDF/CSV/XLSX)                | Spinner icon replaces icon (18px), button disabled during generation |
 
 No full-page spinners. Skeleton screens only.
 
@@ -311,13 +315,14 @@ No full-page spinners. Skeleton screens only.
 
 ## Responsive Behavior
 
-| Viewport | JournalEntriesPage | LedgerPage | TrialBalancePage |
-|----------|--------------------|------------|------------------|
-| <768px | Table → stacked cards (entry number + date + description + status + amount badge) | Hide running balance col; show in expanded card | Horizontal scroll within table; sticky account code column |
-| 768px–1024px | Full table, no action column (action menu in row) | Full table | Full 3-column table |
-| ≥1024px | Full table with inline action buttons | Full table with drill-down | Full table with comparativo toggle |
+| Viewport     | JournalEntriesPage                                                                | LedgerPage                                      | TrialBalancePage                                           |
+| ------------ | --------------------------------------------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------- |
+| <768px       | Table → stacked cards (entry number + date + description + status + amount badge) | Hide running balance col; show in expanded card | Horizontal scroll within table; sticky account code column |
+| 768px–1024px | Full table, no action column (action menu in row)                                 | Full table                                      | Full 3-column table                                        |
+| ≥1024px      | Full table with inline action buttons                                             | Full table with drill-down                      | Full table with comparativo toggle                         |
 
 Modals:
+
 - <768px: full-screen modal (100vw × 100dvh), bottom-sheet entry for wizard
 - ≥768px: centered dialog, 800px max-width for JournalEntryModal, 640px for Reversal/Template modals
 
@@ -325,15 +330,15 @@ Modals:
 
 ## Animations
 
-| Element | Duration | Easing | CSS Var |
-|---------|----------|--------|---------|
-| Modal open/close | 300ms | ease-out / ease-in | `--duration-normal`, `--ease-out` / `--ease-in` |
-| Add journal entry line | 200ms | ease-out | `--duration-fast`, `--ease-out` |
-| Remove journal entry line | 150ms | ease-in | `--duration-fast`, `--ease-in` |
-| Wizard step transition | 300ms | ease-in-out | `--duration-normal`, `--ease-in-out` |
-| BalanceIndicator state change | 200ms | ease-out | `--duration-fast`, `--ease-out` |
-| Toast entry | 200ms | ease-out | `--duration-fast`, `--ease-out` |
-| Hover on table row | 100ms | ease-out | `--duration-instant`, `--ease-out` |
+| Element                       | Duration | Easing             | CSS Var                                         |
+| ----------------------------- | -------- | ------------------ | ----------------------------------------------- |
+| Modal open/close              | 300ms    | ease-out / ease-in | `--duration-normal`, `--ease-out` / `--ease-in` |
+| Add journal entry line        | 200ms    | ease-out           | `--duration-fast`, `--ease-out`                 |
+| Remove journal entry line     | 150ms    | ease-in            | `--duration-fast`, `--ease-in`                  |
+| Wizard step transition        | 300ms    | ease-in-out        | `--duration-normal`, `--ease-in-out`            |
+| BalanceIndicator state change | 200ms    | ease-out           | `--duration-fast`, `--ease-out`                 |
+| Toast entry                   | 200ms    | ease-out           | `--duration-fast`, `--ease-out`                 |
+| Hover on table row            | 100ms    | ease-out           | `--duration-instant`, `--ease-out`              |
 
 Always respect `prefers-reduced-motion: reduce` — disable all transitions when set.
 
@@ -357,10 +362,10 @@ Always respect `prefers-reduced-motion: reduce` — disable all transitions when
 
 ## Registry Safety
 
-| Registry | Blocks Used | Safety Gate |
-|----------|-------------|-------------|
+| Registry        | Blocks Used                  | Safety Gate    |
+| --------------- | ---------------------------- | -------------- |
 | shadcn official | none — no shadcn initialized | not applicable |
-| Third-party | none | not applicable |
+| Third-party     | none                         | not applicable |
 
 No third-party component registries declared for this phase. All components built from scratch using existing `var(--*)` token system.
 
@@ -379,5 +384,5 @@ No third-party component registries declared for this phase. All components buil
 
 ---
 
-*UI-SPEC generated: 2026-03-27*
-*Sources: CLAUDE.md (design system rules), apps/frontend/CLAUDE.md (component rules), apps/frontend/src/styles/tokens.css (token values), 36-RESEARCH.md (architecture patterns and component structure), REQUIREMENTS.md (LANC-03/04/05, RAZAO-01/02/03)*
+_UI-SPEC generated: 2026-03-27_
+_Sources: CLAUDE.md (design system rules), apps/frontend/CLAUDE.md (component rules), apps/frontend/src/styles/tokens.css (token values), 36-RESEARCH.md (architecture patterns and component structure), REQUIREMENTS.md (LANC-03/04/05, RAZAO-01/02/03)_

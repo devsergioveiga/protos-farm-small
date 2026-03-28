@@ -53,8 +53,13 @@
 }
 
 @keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 /* ─── Urgency variants ─────────────────────────────────────────────── */
@@ -172,16 +177,18 @@
 .alerts-view__item-btn {
   flex-shrink: 0;
   padding: 8px 16px;
-  border: 1px solid var(--color-primary-600, #2E7D32);
+  border: 1px solid var(--color-primary-600, #2e7d32);
   border-radius: 6px;
   background: transparent;
-  color: var(--color-primary-600, #2E7D32);
+  color: var(--color-primary-600, #2e7d32);
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   min-height: 36px;
-  transition: background 100ms ease-out, color 100ms ease-out;
+  transition:
+    background 100ms ease-out,
+    color 100ms ease-out;
 }
 
 .alerts-view__item-btn:hover {

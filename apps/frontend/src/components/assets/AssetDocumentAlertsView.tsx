@@ -137,9 +137,7 @@ export default function AssetDocumentAlertsView({
     setExpandedBucket((prev) => (prev === key ? null : key));
   }
 
-  const expandedBucketData = expandedBucket
-    ? buckets.find((b) => b.key === expandedBucket)
-    : null;
+  const expandedBucketData = expandedBucket ? buckets.find((b) => b.key === expandedBucket) : null;
 
   return (
     <section aria-label="Alertas de documentos" className="alerts-view__section">

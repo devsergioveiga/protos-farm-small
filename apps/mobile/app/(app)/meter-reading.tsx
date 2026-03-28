@@ -13,15 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import {
-  ArrowLeft,
-
-  Search,
-  WifiOff,
-  X,
-  AlertCircle,
-  Clock,
-} from 'lucide-react-native';
+import { ArrowLeft, Search, WifiOff, X, AlertCircle, Clock } from 'lucide-react-native';
 import { spacing, fontSize } from '@protos-farm/shared';
 import { useTheme } from '@/stores/ThemeContext';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
@@ -335,7 +327,10 @@ export default function MeterReadingScreen() {
     }
     const lower = assetQuery.toLowerCase();
     const filtered = allAssets
-      .filter((a) => a.name.toLowerCase().includes(lower) || (a.assetTag ?? '').toLowerCase().includes(lower))
+      .filter(
+        (a) =>
+          a.name.toLowerCase().includes(lower) || (a.assetTag ?? '').toLowerCase().includes(lower),
+      )
       .slice(0, 8);
     setAssetSuggestions(filtered);
     setShowAssetDropdown(filtered.length > 0);
@@ -355,12 +350,11 @@ export default function MeterReadingScreen() {
     setErrors((prev) => ({ ...prev, readingValue: '' }));
   }, []);
 
-  const currentValue =
-    selectedAsset
-      ? readingType === 'HOURMETER'
-        ? selectedAsset.currentHourmeter
-        : selectedAsset.currentOdometer
-      : undefined;
+  const currentValue = selectedAsset
+    ? readingType === 'HOURMETER'
+      ? selectedAsset.currentHourmeter
+      : selectedAsset.currentOdometer
+    : undefined;
 
   const unit = readingType === 'HOURMETER' ? 'horas' : 'km';
 
@@ -478,19 +472,14 @@ export default function MeterReadingScreen() {
         accessibilityLabel={`Selecionar ativo ${item.name}`}
       >
         <Text style={styles.dropdownItemName}>{item.name}</Text>
-        {item.assetTag ? (
-          <Text style={styles.dropdownItemTag}>{item.assetTag}</Text>
-        ) : null}
+        {item.assetTag ? <Text style={styles.dropdownItemTag}>{item.assetTag}</Text> : null}
       </Pressable>
     ),
     [styles, handleSelectAsset],
   );
 
   const isSubmitDisabled =
-    isSaving ||
-    !selectedAsset ||
-    !readingValue.trim() ||
-    hasAntiRegressionError;
+    isSaving || !selectedAsset || !readingValue.trim() || hasAntiRegressionError;
 
   return (
     <SafeAreaView style={styles.safeArea} accessibilityLabel="Tela de atualizar leitura">
@@ -519,9 +508,7 @@ export default function MeterReadingScreen() {
           {!isConnected && (
             <View style={styles.offlineBanner} accessibilityLiveRegion="polite">
               <WifiOff size={16} color={colors.warning[500]} aria-hidden />
-              <Text style={styles.offlineText}>
-                Sem conexao. A leitura sera enfileirada.
-              </Text>
+              <Text style={styles.offlineText}>Sem conexao. A leitura sera enfileirada.</Text>
             </View>
           )}
 
@@ -651,14 +638,21 @@ export default function MeterReadingScreen() {
               <Text style={styles.suffixText}>{unit}</Text>
             </View>
             {currentValue !== undefined && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing[1], marginTop: spacing[1] }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: spacing[1],
+                  marginTop: spacing[1],
+                }}
+              >
                 <Clock size={12} color={colors.neutral[400]} aria-hidden />
                 <Text style={styles.hintText}>
                   Ultima leitura: {currentValue} {unit}
                 </Text>
               </View>
             )}
-            {(errors.readingValue || hasAntiRegressionError) ? (
+            {errors.readingValue || hasAntiRegressionError ? (
               <View style={styles.errorRow} accessibilityLiveRegion="polite" role="alert">
                 <AlertCircle size={14} color={colors.error[500]} aria-hidden />
                 <Text style={styles.errorText}>

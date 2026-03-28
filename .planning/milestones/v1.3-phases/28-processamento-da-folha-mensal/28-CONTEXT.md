@@ -48,46 +48,56 @@ Ciclo mensal completo de processamento de folha de pagamento: processamento em l
 </decisions>
 
 <canonical_refs>
+
 ## Canonical References
 
 **Downstream agents MUST read these before planning or implementing.**
 
 ### Requisitos e Roadmap
+
 - `.planning/REQUIREMENTS.md` — FOLHA-02 a FOLHA-05 (critérios de aceite detalhados)
 - `.planning/ROADMAP.md` §Phase 28 — Goal, success criteria, dependencies
 
 ### Documentação de Domínio
+
 - `protos-farm-documentation-small/ProtosFarm_Fase3_RH_Folha_UserStories.docx` — User stories originais de RH e Folha de Pagamento
 
 ### Decisões Anteriores
+
 - `.planning/STATE.md` — PayrollRun state machine, Payroll→Payables upsert, INSS progressive, rural night rules, time entries locked by payrollRunId
 - `.planning/phases/25-cadastro-de-colaboradores-e-contratos/25-CONTEXT.md` — Employee entity, contracts, salary history, state machine
 
 ### Motor de Cálculo (Phase 26 — já implementado)
+
 - `apps/backend/src/modules/payroll-engine/payroll-engine.service.ts` — calculateINSS, calculateIRRF, calculateFGTS, calculateSalaryFamily, calculateRuralNightPremium, calculateRuralUtilityDeductions, evaluateFormula
 - `apps/backend/src/modules/payroll-engine/payroll-engine.types.ts` — INSSBracket, IRRFInput, FGTSResult, etc.
 - `apps/backend/src/modules/payroll-rubricas/` — Rubrica CRUD, system formulas, eSocial codes
 - `apps/backend/src/modules/payroll-tables/` — INSS/IRRF/FUNRURAL effective-date tables
 
 ### Ponto (Phase 27 — já implementado)
+
 - `apps/backend/src/modules/timesheets/timesheets.service.ts` — Timesheet with approval state, HE/noturno aggregation
 - `apps/backend/src/modules/time-calculations/time-calculations.service.ts` — calcDailyWork, calcMonthlyTotals
 
 ### Padrões de Código Existentes
+
 - `apps/backend/src/modules/depreciation/` — DepreciationRun pattern (state machine, batch processing) — modelo para PayrollRun
 - `apps/backend/src/modules/payables/` — Contas a Pagar (originType + originId upsert)
 - `apps/frontend/src/pages/TimesheetPage.tsx` — Padrão de página com tabs, filtros, status chips
 
 ### Design System
+
 - `docs/design-system/04-componentes.md` — Specs de componentes (modals, wizard, tables)
 - `docs/design-system/05-padroes-ux.md` — Padrões UX (voz pt-BR, validação, formulários)
 
 </canonical_refs>
 
 <code_context>
+
 ## Existing Code Insights
 
 ### Reusable Assets
+
 - `payroll-engine` — 7 pure calculation functions (INSS, IRRF, FGTS, salário-família, noturno rural, moradia/alimentação, evaluateFormula)
 - `payroll-rubricas` — Configurable rubrics with system formulas and eSocial codes
 - `payroll-tables` — Effective-date rate tables for INSS/IRRF/FUNRURAL
@@ -97,6 +107,7 @@ Ciclo mensal completo de processamento de folha de pagamento: processamento em l
 - Contas a Pagar module with originType/originId upsert pattern
 
 ### Established Patterns
+
 - DepreciationRun state machine (PENDING→PROCESSING→COMPLETED|ERROR) — direct model for PayrollRun
 - Payables upsert prevents duplicate CPs on re-processing
 - Express 5 module pattern: service + routes + types + spec colocalizados
@@ -104,6 +115,7 @@ Ciclo mensal completo de processamento de folha de pagamento: processamento em l
 - ZIP generation: archiver package (check if installed, or use JSZip)
 
 ### Integration Points
+
 - PayrollRun.runType enum: MONTHLY, ADVANCE, THIRTEENTH_FIRST, THIRTEENTH_SECOND
 - Timesheet approval state gates PayrollRun inclusion per employee
 - PayrollRunItem → Payable (originType='PAYROLL_RUN_ITEM' or 'SALARY_ADVANCE')
@@ -132,5 +144,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 28-processamento-da-folha-mensal*
-*Context gathered: 2026-03-24*
+_Phase: 28-processamento-da-folha-mensal_
+_Context gathered: 2026-03-24_

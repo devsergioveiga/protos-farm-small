@@ -138,7 +138,9 @@ export default function PositionTrainingRequirementsModal({
             <div className="pos-train-modal__section">
               <p className="pos-train-modal__section-label">Requisitos específicos do cargo</p>
               {positionReqs.length === 0 ? (
-                <p className="pos-train-modal__empty">Nenhum treinamento definido para este cargo.</p>
+                <p className="pos-train-modal__empty">
+                  Nenhum treinamento definido para este cargo.
+                </p>
               ) : (
                 <ul className="pos-train-modal__list">
                   {positionReqs.map((req) => (
@@ -195,11 +197,7 @@ export default function PositionTrainingRequirementsModal({
           </div>
 
           <div className="pos-train-modal__footer">
-            <button
-              type="button"
-              className="pos-train-modal__close-btn"
-              onClick={onClose}
-            >
+            <button type="button" className="pos-train-modal__close-btn" onClick={onClose}>
               Fechar
             </button>
           </div>

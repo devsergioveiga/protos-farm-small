@@ -27,7 +27,9 @@ accountingDashboardRouter.get(
       const monthStr = req.query.month as string | undefined;
 
       if (!fiscalYearId) {
-        res.status(400).json({ error: 'fiscalYearId e obrigatorio', code: 'MISSING_FISCAL_YEAR_ID' });
+        res
+          .status(400)
+          .json({ error: 'fiscalYearId e obrigatorio', code: 'MISSING_FISCAL_YEAR_ID' });
         return;
       }
       if (!monthStr) {

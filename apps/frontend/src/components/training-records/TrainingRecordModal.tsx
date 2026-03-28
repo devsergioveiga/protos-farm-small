@@ -182,9 +182,7 @@ export default function TrainingRecordModal({
   );
 
   const _expiryDate =
-    form.date && selectedType
-      ? addMonths(form.date, selectedType.defaultValidityMonths)
-      : null;
+    form.date && selectedType ? addMonths(form.date, selectedType.defaultValidityMonths) : null;
 
   return (
     <div
@@ -209,7 +207,9 @@ export default function TrainingRecordModal({
               >
                 1. Dados do Treinamento
               </span>
-              <span className="training-record-modal__step-sep" aria-hidden="true">›</span>
+              <span className="training-record-modal__step-sep" aria-hidden="true">
+                ›
+              </span>
               <span
                 className={`training-record-modal__step ${step === 2 ? 'training-record-modal__step--active' : ''}`}
               >
@@ -434,7 +434,11 @@ export default function TrainingRecordModal({
                 {selectedEmployeeIds.size} participante(s) selecionado(s)
               </p>
 
-              <ul className="training-record-modal__employee-list" role="group" aria-label="Participantes">
+              <ul
+                className="training-record-modal__employee-list"
+                role="group"
+                aria-label="Participantes"
+              >
                 {filteredEmployees.length === 0 ? (
                   <li className="training-record-modal__no-employees">
                     Nenhum colaborador encontrado.

@@ -17,7 +17,9 @@
   color: var(--color-neutral-500);
 }
 
-.inv-page__breadcrumb-sep { color: var(--color-neutral-400); }
+.inv-page__breadcrumb-sep {
+  color: var(--color-neutral-400);
+}
 
 .inv-page__breadcrumb-item--current {
   color: var(--color-neutral-700);
@@ -55,10 +57,15 @@
   align-items: center;
   gap: 8px;
   min-height: 48px;
-  transition: background 200ms ease-out, opacity 200ms ease-out;
+  transition:
+    background 200ms ease-out,
+    opacity 200ms ease-out;
 }
 
-.inv-page__btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.inv-page__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 .inv-page__btn:focus-visible {
   outline: 2px solid var(--color-primary-500);
@@ -70,7 +77,9 @@
   color: var(--color-neutral-0);
 }
 
-.inv-page__btn--primary:hover:not(:disabled) { background: var(--color-primary-700); }
+.inv-page__btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+}
 
 .inv-page__btn--secondary {
   background: var(--color-neutral-100);
@@ -78,7 +87,9 @@
   border: 1px solid var(--color-neutral-300);
 }
 
-.inv-page__btn--secondary:hover:not(:disabled) { background: var(--color-neutral-200); }
+.inv-page__btn--secondary:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+}
 
 /* Error */
 .inv-page__error {
@@ -110,12 +121,19 @@
 }
 
 @keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .inv-page__skeleton-row { animation: none; }
+  .inv-page__skeleton-row {
+    animation: none;
+  }
 }
 
 /* Empty state */
@@ -149,7 +167,11 @@
 }
 
 /* Content */
-.inv-page__content { display: flex; flex-direction: column; gap: 24px; }
+.inv-page__content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
 
 /* Table */
 .inv-page__table-wrapper {
@@ -160,7 +182,9 @@
 }
 
 @media (min-width: 768px) {
-  .inv-page__table-wrapper { display: block; }
+  .inv-page__table-wrapper {
+    display: block;
+  }
 }
 
 .inv-page__table {
@@ -185,18 +209,26 @@
   border-bottom: 1px solid var(--color-neutral-200);
 }
 
-.inv-page__th--right { text-align: right !important; }
+.inv-page__th--right {
+  text-align: right !important;
+}
 
 .inv-page__tr {
   border-bottom: 1px solid var(--color-neutral-100);
   transition: background 100ms ease-out;
 }
 
-.inv-page__tr--clickable { cursor: pointer; }
+.inv-page__tr--clickable {
+  cursor: pointer;
+}
 
-.inv-page__tr--clickable:hover { background: var(--color-neutral-50); }
+.inv-page__tr--clickable:hover {
+  background: var(--color-neutral-50);
+}
 
-.inv-page__tr--selected { background: var(--color-primary-50, #f1f8e9); }
+.inv-page__tr--selected {
+  background: var(--color-primary-50, #f1f8e9);
+}
 
 .inv-page__td {
   padding: 12px 16px;
@@ -204,7 +236,10 @@
   vertical-align: middle;
 }
 
-.inv-page__td--right { text-align: right; font-family: 'JetBrains Mono', monospace; }
+.inv-page__td--right {
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+}
 
 /* Status badge */
 .inv-page__status-badge {
@@ -252,7 +287,9 @@
 }
 
 @media (min-width: 768px) {
-  .inv-page__cards { display: none; }
+  .inv-page__cards {
+    display: none;
+  }
 }
 
 .inv-page__card {
@@ -263,8 +300,13 @@
   transition: background 100ms ease-out;
 }
 
-.inv-page__card:hover { background: var(--color-neutral-50); }
-.inv-page__card--selected { background: var(--color-primary-50, #f1f8e9); border-color: var(--color-primary-300, #a5d6a7); }
+.inv-page__card:hover {
+  background: var(--color-neutral-50);
+}
+.inv-page__card--selected {
+  background: var(--color-primary-50, #f1f8e9);
+  border-color: var(--color-primary-300, #a5d6a7);
+}
 
 .inv-page__card-header {
   display: flex;
@@ -414,10 +456,18 @@
 }
 
 @keyframes toast-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .inv-page__toast { animation: none; }
+  .inv-page__toast {
+    animation: none;
+  }
 }

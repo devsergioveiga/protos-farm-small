@@ -61,10 +61,7 @@ function validateEndDate(input: CreateContractInput): void {
   }
 
   if (rule.required && !input.endDate) {
-    throw new EmployeeContractError(
-      `Contrato ${input.contractType} requer data de término`,
-      400,
-    );
+    throw new EmployeeContractError(`Contrato ${input.contractType} requer data de término`, 400);
   }
 
   if (rule.maxDays && input.endDate && input.startDate) {
@@ -299,10 +296,7 @@ export async function createAmendment(
   });
 }
 
-export async function generateContractPdf(
-  ctx: RlsContext,
-  contractId: string,
-): Promise<Buffer> {
+export async function generateContractPdf(ctx: RlsContext, contractId: string): Promise<Buffer> {
   const contract = await getContract(ctx, contractId);
 
   const PDFDocument = (await import('pdfkit')).default;

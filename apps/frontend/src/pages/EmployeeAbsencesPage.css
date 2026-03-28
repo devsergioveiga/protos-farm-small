@@ -123,15 +123,15 @@
 }
 
 .abs-page__info-banner--info {
-  background-color: var(--color-info-100, #E3F2FD);
-  border: 1px solid var(--color-info-200, #90CAF9);
-  color: var(--color-info-700, #01579B);
+  background-color: var(--color-info-100, #e3f2fd);
+  border: 1px solid var(--color-info-200, #90caf9);
+  color: var(--color-info-700, #01579b);
 }
 
 .abs-page__info-banner--warning {
-  background-color: var(--color-warning-100, #FFF8E1);
-  border: 1px solid var(--color-warning-300, #FFD54F);
-  color: var(--color-warning-700, #F57F17);
+  background-color: var(--color-warning-100, #fff8e1);
+  border: 1px solid var(--color-warning-300, #ffd54f);
+  color: var(--color-warning-700, #f57f17);
 }
 
 /* Filter bar */
@@ -270,8 +270,8 @@
 }
 
 .abs-page__impact-badge--info {
-  background-color: var(--color-info-100, #E3F2FD);
-  color: var(--color-info-500, #0277BD);
+  background-color: var(--color-info-100, #e3f2fd);
+  color: var(--color-info-500, #0277bd);
 }
 
 /* Status badges */
@@ -286,8 +286,8 @@
 }
 
 .abs-page__status-badge--warning {
-  background-color: var(--color-warning-100, #FFF8E1);
-  color: var(--color-warning-500, #F57F17);
+  background-color: var(--color-warning-100, #fff8e1);
+  color: var(--color-warning-500, #f57f17);
 }
 
 /* ASO badge */
@@ -298,9 +298,9 @@
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
-  background-color: var(--color-warning-100, #FFF8E1);
-  color: var(--color-warning-700, #F57F17);
-  border: 1px solid var(--color-warning-300, #FFD54F);
+  background-color: var(--color-warning-100, #fff8e1);
+  color: var(--color-warning-700, #f57f17);
+  border: 1px solid var(--color-warning-300, #ffd54f);
   white-space: nowrap;
 }
 
@@ -319,7 +319,9 @@
   font-weight: 600;
   font-family: var(--font-body);
   cursor: pointer;
-  transition: background-color 150ms ease-out, color 150ms ease-out;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
   white-space: nowrap;
 }
 
@@ -405,8 +407,13 @@
 }
 
 @keyframes abs-skeleton-pulse {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -452,8 +459,14 @@
 }
 
 @keyframes abs-modal-enter {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .abs-page__modal-header {

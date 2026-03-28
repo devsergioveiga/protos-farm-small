@@ -10,7 +10,11 @@
 import Decimal from 'decimal.js';
 import { calculateINSS, calculateIRRF } from '../payroll-engine/payroll-engine.service';
 import type { EngineParams } from '../payroll-runs/payroll-runs.types';
-import type { TerminationInput, TerminationResult, TerminationType } from './employee-terminations.types';
+import type {
+  TerminationInput,
+  TerminationResult,
+  TerminationType,
+} from './employee-terminations.types';
 
 // ─── FGTS Penalty Rates ───────────────────────────────────────────────
 
@@ -87,7 +91,10 @@ function getDaysInMonth(date: Date): number {
  * 12. Net total = gross - INSS - IRRF + fgtsPenalty
  * 13. Payment deadline = terminationDate + 10 calendar days
  */
-export function calculateTermination(input: TerminationInput, params: EngineParams): TerminationResult {
+export function calculateTermination(
+  input: TerminationInput,
+  params: EngineParams,
+): TerminationResult {
   const {
     admissionDate,
     terminationDate,

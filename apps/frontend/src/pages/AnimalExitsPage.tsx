@@ -229,11 +229,7 @@ function AnimalExitsPage() {
         <div className="animal-exits__error" role="alert">
           <AlertCircle aria-hidden="true" size={20} />
           {error}
-          <button
-            type="button"
-            className="animal-exits__retry-btn"
-            onClick={() => void refetch()}
-          >
+          <button type="button" className="animal-exits__retry-btn" onClick={() => void refetch()}>
             Tentar novamente
           </button>
         </div>
@@ -245,8 +241,8 @@ function AnimalExitsPage() {
           <LogOut size={64} color="var(--color-neutral-400)" aria-hidden="true" />
           <h2 className="animal-exits__empty-title">Nenhuma saída registrada</h2>
           <p className="animal-exits__empty-desc">
-            As saídas de animais aparecem aqui quando registradas na ficha do animal ou em lote
-            na listagem de animais.
+            As saídas de animais aparecem aqui quando registradas na ficha do animal ou em lote na
+            listagem de animais.
           </p>
         </div>
       )}
@@ -283,7 +279,7 @@ function AnimalExitsPage() {
                     <td>
                       {item.exitType === 'MORTE'
                         ? `${item.deathTypeLabel ?? ''} — ${item.deathCause ?? ''}`
-                        : item.buyerName ?? '—'}
+                        : (item.buyerName ?? '—')}
                     </td>
                     <td>{formatCurrency(item.salePriceTotal)}</td>
                     <td>

@@ -13,6 +13,7 @@ Lista de melhorias e correções a serem feitas após a implementação inicial,
 **Mudança:** A categoria de cadastro deve ter apenas "Vaca". A sub-classificação (em lactação / seca) deve ser calculada automaticamente a partir dos lançamentos de lactação.
 
 **Implementação:**
+
 - Adicionar dois campos no banco: `initialCategory` (imutável, informado pelo usuário no cadastro) e `currentCategory` (atualizada automaticamente por eventos)
 - `currentCategory` não aparece no formulário de cadastro — é gerenciado pelo sistema
 - Eventos que atualizam `currentCategory`: parto (novilha → vaca), secagem (vaca em lactação → vaca seca), início lactação (vaca seca → vaca em lactação), idade (bezerro → garrote), etc.
@@ -28,6 +29,7 @@ Lista de melhorias e correções a serem feitas após a implementação inicial,
 **Mudança:** Usar abordagem de status + evento de baixa.
 
 **Implementação:**
+
 - Animal passa a ter `status: ACTIVE | INACTIVE` em vez de `deletedAt`
 - Criar registro de evento de baixa com: data, motivo (morte, venda, abate, doação), observações
 - Animal inativo sai das listagens padrão mas continua visível em:
@@ -48,6 +50,7 @@ Lista de melhorias e correções a serem feitas após a implementação inicial,
 **Mudança:** O diagnóstico deve registrar apenas resultado **positivo** ou **negativo**.
 
 **Implementação:**
+
 - Alterar o campo de resultado para `result: POSITIVE | NEGATIVE`
 - Permitir múltiplos diagnósticos por inseminação (acompanhamento ao longo do tempo)
 - Manter vínculo com a inseminação de origem

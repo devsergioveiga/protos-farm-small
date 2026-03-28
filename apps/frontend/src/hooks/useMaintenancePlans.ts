@@ -65,7 +65,8 @@ export function useMaintenancePlans() {
         setState((prev) => ({
           ...prev,
           loading: false,
-          error: 'Nao foi possivel carregar os planos de manutencao. Verifique sua conexao e tente novamente.',
+          error:
+            'Nao foi possivel carregar os planos de manutencao. Verifique sua conexao e tente novamente.',
           plans: [],
         }));
       }

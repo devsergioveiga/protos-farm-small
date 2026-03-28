@@ -18,19 +18,35 @@ export function validateS2200Input(
   }
 
   if (!employee.pisPassep) {
-    errors.push({ field: 'nisTrab', employeeName: employee.name, message: 'NIS/PIS nao informado' });
+    errors.push({
+      field: 'nisTrab',
+      employeeName: employee.name,
+      message: 'NIS/PIS nao informado',
+    });
   }
 
   if (!position.cbo) {
-    errors.push({ field: 'codCBO', employeeName: employee.name, message: 'CBO do cargo nao informado' });
+    errors.push({
+      field: 'codCBO',
+      employeeName: employee.name,
+      message: 'CBO do cargo nao informado',
+    });
   }
 
   if (!contract.salary || Number(contract.salary) <= 0) {
-    errors.push({ field: 'vrSalFx', employeeName: employee.name, message: 'Salario invalido ou zero' });
+    errors.push({
+      field: 'vrSalFx',
+      employeeName: employee.name,
+      message: 'Salario invalido ou zero',
+    });
   }
 
   if (!employee.birthDate) {
-    errors.push({ field: 'dtNascimento', employeeName: employee.name, message: 'Data de nascimento nao informada' });
+    errors.push({
+      field: 'dtNascimento',
+      employeeName: employee.name,
+      message: 'Data de nascimento nao informada',
+    });
   }
 
   return errors;
@@ -49,7 +65,11 @@ export function validateS2206Input(
   }
 
   if (!amendment.effectiveAt) {
-    errors.push({ field: 'dtAlt', employeeName: employee.name, message: 'Data da alteracao nao informada' });
+    errors.push({
+      field: 'dtAlt',
+      employeeName: employee.name,
+      message: 'Data da alteracao nao informada',
+    });
   }
 
   return errors;
@@ -68,7 +88,11 @@ export function validateS2230Input(
   }
 
   if (!absence.startDate) {
-    errors.push({ field: 'dtIniAfast', employeeName: employee.name, message: 'Data de inicio do afastamento nao informada' });
+    errors.push({
+      field: 'dtIniAfast',
+      employeeName: employee.name,
+      message: 'Data de inicio do afastamento nao informada',
+    });
   }
 
   return errors;
@@ -87,7 +111,11 @@ export function validateS2299Input(
   }
 
   if (!termination.terminationDate) {
-    errors.push({ field: 'dtDeslig', employeeName: employee.name, message: 'Data do desligamento nao informada' });
+    errors.push({
+      field: 'dtDeslig',
+      employeeName: employee.name,
+      message: 'Data do desligamento nao informada',
+    });
   }
 
   return errors;
@@ -102,7 +130,11 @@ export function validateS1200Input(
   const errors: EsocialValidationError[] = [];
 
   if (!item.lineItemsJson) {
-    errors.push({ field: 'lineItemsJson', employeeName: employee.name, message: 'Itens de remuneracao ausentes' });
+    errors.push({
+      field: 'lineItemsJson',
+      employeeName: employee.name,
+      message: 'Itens de remuneracao ausentes',
+    });
     return errors;
   }
 
@@ -117,7 +149,11 @@ export function validateS1200Input(
       });
     }
   } catch {
-    errors.push({ field: 'lineItemsJson', employeeName: employee.name, message: 'lineItemsJson com formato invalido' });
+    errors.push({
+      field: 'lineItemsJson',
+      employeeName: employee.name,
+      message: 'lineItemsJson com formato invalido',
+    });
   }
 
   return errors;
@@ -165,11 +201,19 @@ export function validateS2220Input(
   }
 
   if (!exam.doctorCrm) {
-    errors.push({ field: 'nrCRM', employeeName: employee.name, message: 'CRM do medico nao informado' });
+    errors.push({
+      field: 'nrCRM',
+      employeeName: employee.name,
+      message: 'CRM do medico nao informado',
+    });
   }
 
   if (!exam.date) {
-    errors.push({ field: 'dtAso', employeeName: employee.name, message: 'Data do ASO nao informada' });
+    errors.push({
+      field: 'dtAso',
+      employeeName: employee.name,
+      message: 'Data do ASO nao informada',
+    });
   }
 
   return errors;
@@ -188,7 +232,11 @@ export function validateS2240Input(
   }
 
   if (!epiDelivery.deliveryDate) {
-    errors.push({ field: 'dtIniCondicao', employeeName: employee.name, message: 'Data de entrega do EPI nao informada' });
+    errors.push({
+      field: 'dtIniCondicao',
+      employeeName: employee.name,
+      message: 'Data de entrega do EPI nao informada',
+    });
   }
 
   return errors;
@@ -196,9 +244,10 @@ export function validateS2240Input(
 
 // ─── Table events (S-1000, S-1005, S-1010, S-1020) ───────────────────────────
 
-export function validateS1000Input(
-  organization: { cnpj?: string | null; name?: string | null },
-): EsocialValidationError[] {
+export function validateS1000Input(organization: {
+  cnpj?: string | null;
+  name?: string | null;
+}): EsocialValidationError[] {
   const errors: EsocialValidationError[] = [];
   if (!organization.cnpj) {
     errors.push({ field: 'nrInsc', message: 'CNPJ da organizacao nao informado' });
@@ -220,9 +269,10 @@ export function validateS1005Input(
   return errors;
 }
 
-export function validateS1010Input(
-  rubrica: { code?: string | null; name?: string | null },
-): EsocialValidationError[] {
+export function validateS1010Input(rubrica: {
+  code?: string | null;
+  name?: string | null;
+}): EsocialValidationError[] {
   const errors: EsocialValidationError[] = [];
   if (!rubrica.code) {
     errors.push({ field: 'codRubr', message: 'Codigo da rubrica nao informado' });
@@ -230,9 +280,7 @@ export function validateS1010Input(
   return errors;
 }
 
-export function validateS1020Input(
-  position: { id?: string | null },
-): EsocialValidationError[] {
+export function validateS1020Input(position: { id?: string | null }): EsocialValidationError[] {
   const errors: EsocialValidationError[] = [];
   if (!position.id) {
     errors.push({ field: 'codLotacao', message: 'Identificador da lotacao nao informado' });

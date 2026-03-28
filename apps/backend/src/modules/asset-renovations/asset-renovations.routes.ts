@@ -52,18 +52,13 @@ assetRenovationsRouter.post(
 
 // ─── GET /org/:orgId/assets/:assetId/renovations ─────────────────────
 
-assetRenovationsRouter.get(
-  base,
-  authenticate,
-  checkPermission('assets:read'),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const assetId = req.params.assetId as string;
-      const result = await listRenovations(ctx, assetId);
-      res.json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
+assetRenovationsRouter.get(base, authenticate, checkPermission('assets:read'), async (req, res) => {
+  try {
+    const ctx = buildRlsContext(req);
+    const assetId = req.params.assetId as string;
+    const result = await listRenovations(ctx, assetId);
+    res.json(result);
+  } catch (err) {
+    handleError(err, res);
+  }
+});

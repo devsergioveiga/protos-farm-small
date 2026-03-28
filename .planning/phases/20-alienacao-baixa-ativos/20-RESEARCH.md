@@ -20,14 +20,14 @@ The gain/loss calculation is: `saleValue - netBookValue`, where `netBookValue` =
 
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|-----------------|
-| DISP-01 | Gerente pode registrar venda de ativo com cálculo automático de ganho/perda contábil e geração de CR | `asset.status` ALIENADO already in enum; netBookValue from latest `DepreciationEntry.closingBookValue`; CR via `tx.receivable.create` pattern; `ReceivableCategory` needs `ASSET_SALE` value added via migration |
-| DISP-02 | Gerente pode registrar baixa por sinistro, descarte ou obsolescência com motivo, laudo, valor residual e lançamento de perda | New `asset_disposals` model; `DisposalType` enum (SINISTRO, DESCARTE, OBSOLESCENCIA); `reversedAt` bulk-set on `DepreciationEntry` rows in single transaction; no CR needed — loss amount recorded on disposal record |
-| DISP-03 | Gerente pode registrar venda parcelada de ativo com parcelas no CR | `generateInstallments` from `@protos-farm/shared` used verbatim; same `installmentCount` + `firstDueDate` pattern as `asset-acquisitions.service.ts`; CR `installmentCount` > 1 |
-| DISP-04 | Gerente pode transferir ativo entre fazendas da mesma organização com histórico e reavaliação opcional | New `asset_farm_transfers` model; `asset.farmId` update + optional `costCenterId` change; both farms must belong to same `organizationId` (guard in service); transfer history queryable via relation |
-| DISP-05 | Contador pode conciliar patrimônio físico vs contábil com inventário e gerar ajustes | New `asset_inventories` + `asset_inventory_items` models; flow mirrors `StockInventory` → count → reconcile pattern; adjustment records set `asset.status` or notes; no Decimal arithmetic needed here |
-| DISP-06 | Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciação acumulada, aquisições/baixas do período e indicadores | New `GET /financial-dashboard/patrimony` endpoint added to existing `financial-dashboard` module; aggregates from `assets`, `depreciation_entries`, `asset_disposals`; follows `getFinancialDashboard` pattern |
+| ID      | Description                                                                                                                                    | Research Support                                                                                                                                                                                                      |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DISP-01 | Gerente pode registrar venda de ativo com cálculo automático de ganho/perda contábil e geração de CR                                           | `asset.status` ALIENADO already in enum; netBookValue from latest `DepreciationEntry.closingBookValue`; CR via `tx.receivable.create` pattern; `ReceivableCategory` needs `ASSET_SALE` value added via migration      |
+| DISP-02 | Gerente pode registrar baixa por sinistro, descarte ou obsolescência com motivo, laudo, valor residual e lançamento de perda                   | New `asset_disposals` model; `DisposalType` enum (SINISTRO, DESCARTE, OBSOLESCENCIA); `reversedAt` bulk-set on `DepreciationEntry` rows in single transaction; no CR needed — loss amount recorded on disposal record |
+| DISP-03 | Gerente pode registrar venda parcelada de ativo com parcelas no CR                                                                             | `generateInstallments` from `@protos-farm/shared` used verbatim; same `installmentCount` + `firstDueDate` pattern as `asset-acquisitions.service.ts`; CR `installmentCount` > 1                                       |
+| DISP-04 | Gerente pode transferir ativo entre fazendas da mesma organização com histórico e reavaliação opcional                                         | New `asset_farm_transfers` model; `asset.farmId` update + optional `costCenterId` change; both farms must belong to same `organizationId` (guard in service); transfer history queryable via relation                 |
+| DISP-05 | Contador pode conciliar patrimônio físico vs contábil com inventário e gerar ajustes                                                           | New `asset_inventories` + `asset_inventory_items` models; flow mirrors `StockInventory` → count → reconcile pattern; adjustment records set `asset.status` or notes; no Decimal arithmetic needed here                |
+| DISP-06 | Gerente pode ver dashboard financeiro patrimonial com valor total de ativos, depreciação acumulada, aquisições/baixas do período e indicadores | New `GET /financial-dashboard/patrimony` endpoint added to existing `financial-dashboard` module; aggregates from `assets`, `depreciation_entries`, `asset_disposals`; follows `getFinancialDashboard` pattern        |
 
 </phase_requirements>
 
@@ -37,29 +37,29 @@ The gain/loss calculation is: `saleValue - netBookValue`, where `netBookValue` =
 
 ### Core
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| Prisma | 7.x | ORM + migrations for 3 new models + schema extension | Already in use; `prisma.$transaction` pattern for atomic disposal |
-| decimal.js | ^10.6.0 | Gain/loss arithmetic (saleValue - netBookValue) | STATE.md locked decision for all monetary math |
+| Library             | Version | Purpose                                                 | Why Standard                                                                    |
+| ------------------- | ------- | ------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Prisma              | 7.x     | ORM + migrations for 3 new models + schema extension    | Already in use; `prisma.$transaction` pattern for atomic disposal               |
+| decimal.js          | ^10.6.0 | Gain/loss arithmetic (saleValue - netBookValue)         | STATE.md locked decision for all monetary math                                  |
 | @protos-farm/shared | current | `generateInstallments`, `Money`, `generateInstallments` | Already used in `asset-acquisitions.service.ts` for identical installment logic |
-| Express 5 | 5.x | HTTP routes for 3 new modules | Standard module pattern |
+| Express 5           | 5.x     | HTTP routes for 3 new modules                           | Standard module pattern                                                         |
 
 ### Supporting
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| ExcelJS | ^4.4.0 | Inventory report XLSX export (DISP-05) | Already installed; used in `depreciation.service.ts` |
-| Jest + @swc/jest | current | Backend integration tests | All `routes.spec.ts` files |
-| Vitest + @testing-library/react | current | Frontend component specs | New modal specs |
+| Library                         | Version | Purpose                                | When to Use                                          |
+| ------------------------------- | ------- | -------------------------------------- | ---------------------------------------------------- |
+| ExcelJS                         | ^4.4.0  | Inventory report XLSX export (DISP-05) | Already installed; used in `depreciation.service.ts` |
+| Jest + @swc/jest                | current | Backend integration tests              | All `routes.spec.ts` files                           |
+| Vitest + @testing-library/react | current | Frontend component specs               | New modal specs                                      |
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Atomic transaction for disposal + depreciation cancellation | Event-driven async cancellation | Sync transaction is mandatory per STATE.md decision: "Asset disposal cancels pending depreciation atomically" |
-| `ReceivableCategory.ASSET_SALE` (new enum value) | `OTHER` category | New value provides correct financial categorization and traceability; `ALTER TYPE` migration is trivial |
-| New `asset-disposals` module | Extending `assets.service.ts` | Isolation keeps disposal logic self-contained — same rationale as `asset-acquisitions` module |
-| `prisma.$transaction` directly (no `withRlsContext`) | `withRlsContext` wrapper | CRITICAL: asset-acquisitions uses `prisma.$transaction` directly (not `withRlsContext`) to avoid nested RLS context deadlocks — disposal module MUST follow the same pattern |
+| Instead of                                                  | Could Use                       | Tradeoff                                                                                                                                                                     |
+| ----------------------------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Atomic transaction for disposal + depreciation cancellation | Event-driven async cancellation | Sync transaction is mandatory per STATE.md decision: "Asset disposal cancels pending depreciation atomically"                                                                |
+| `ReceivableCategory.ASSET_SALE` (new enum value)            | `OTHER` category                | New value provides correct financial categorization and traceability; `ALTER TYPE` migration is trivial                                                                      |
+| New `asset-disposals` module                                | Extending `assets.service.ts`   | Isolation keeps disposal logic self-contained — same rationale as `asset-acquisitions` module                                                                                |
+| `prisma.$transaction` directly (no `withRlsContext`)        | `withRlsContext` wrapper        | CRITICAL: asset-acquisitions uses `prisma.$transaction` directly (not `withRlsContext`) to avoid nested RLS context deadlocks — disposal module MUST follow the same pattern |
 
 **Installation:** No new packages needed. All required libraries are already installed.
 
@@ -307,19 +307,25 @@ export async function createDisposal(
 
 ```typescript
 // Source: assets.service.ts update pattern
-export async function createFarmTransfer(ctx: RlsContext, assetId: string, input: CreateTransferInput) {
+export async function createFarmTransfer(
+  ctx: RlsContext,
+  assetId: string,
+  input: CreateTransferInput,
+) {
   return prisma.$transaction(async (tx: TxClient) => {
     const asset = await tx.asset.findFirst({
       where: { id: assetId, organizationId: ctx.organizationId, deletedAt: null },
     });
     if (!asset) throw new AssetTransferError('Ativo não encontrado', 404);
-    if (asset.status === 'ALIENADO') throw new AssetTransferError('Ativo alienado não pode ser transferido', 400);
+    if (asset.status === 'ALIENADO')
+      throw new AssetTransferError('Ativo alienado não pode ser transferido', 400);
 
     // Guard: destination farm must belong to same org
     const destFarm = await tx.farm.findFirst({
       where: { id: input.toFarmId, organizationId: ctx.organizationId },
     });
-    if (!destFarm) throw new AssetTransferError('Fazenda destino não encontrada na organização', 404);
+    if (!destFarm)
+      throw new AssetTransferError('Fazenda destino não encontrada na organização', 404);
 
     // Record history before update
     await tx.assetFarmTransfer.create({
@@ -396,12 +402,12 @@ const disposalsInPeriod = await tx.assetDisposal.aggregate({
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Installment generation for parcelated sale | Custom loop generating monthly dates | `generateInstallments` from `@protos-farm/shared` | Handles cent residuals, leap years, month-end edge cases |
-| Gain/loss arithmetic | Raw JS subtraction on numbers | `new Decimal(saleValue).minus(netBookValue)` with decimal.js | Avoids floating-point errors on monetary values |
-| Atomic transaction for multi-step disposal | Sequential awaits without transaction | `prisma.$transaction` wrapping all 5-7 steps | Prevents partial state if any step fails |
-| CR generation for sale | New receivables creation code | `tx.receivable.create` + `tx.receivableInstallment.createMany` reusing the established receivables pattern | Ensures same structure as all other receivables in system |
+| Problem                                    | Don't Build                           | Use Instead                                                                                                | Why                                                       |
+| ------------------------------------------ | ------------------------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Installment generation for parcelated sale | Custom loop generating monthly dates  | `generateInstallments` from `@protos-farm/shared`                                                          | Handles cent residuals, leap years, month-end edge cases  |
+| Gain/loss arithmetic                       | Raw JS subtraction on numbers         | `new Decimal(saleValue).minus(netBookValue)` with decimal.js                                               | Avoids floating-point errors on monetary values           |
+| Atomic transaction for multi-step disposal | Sequential awaits without transaction | `prisma.$transaction` wrapping all 5-7 steps                                                               | Prevents partial state if any step fails                  |
+| CR generation for sale                     | New receivables creation code         | `tx.receivable.create` + `tx.receivableInstallment.createMany` reusing the established receivables pattern | Ensures same structure as all other receivables in system |
 
 ---
 
@@ -511,13 +517,14 @@ await tx.receivableInstallment.createMany({
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Manual asset status update via PATCH | Atomic disposal transaction (status + depr cancel + CR) | Phase 20 decision | Prevents partial state; STATUS.md decision locked |
-| Hard delete depreciation entries | `reversedAt` timestamp (soft cancel) | Phase 17 | Preserves audit trail; batch and disposal queries filter on `reversedAt: null` |
-| Asset category in CP/CR as `OTHER` | `ASSET_ACQUISITION` (Phase 19), `ASSET_SALE` (Phase 20) | Phase 19/20 | Correct financial categorization for DFC (DISINVESTMENT classification for asset sales) |
+| Old Approach                         | Current Approach                                        | When Changed      | Impact                                                                                  |
+| ------------------------------------ | ------------------------------------------------------- | ----------------- | --------------------------------------------------------------------------------------- |
+| Manual asset status update via PATCH | Atomic disposal transaction (status + depr cancel + CR) | Phase 20 decision | Prevents partial state; STATUS.md decision locked                                       |
+| Hard delete depreciation entries     | `reversedAt` timestamp (soft cancel)                    | Phase 17          | Preserves audit trail; batch and disposal queries filter on `reversedAt: null`          |
+| Asset category in CP/CR as `OTHER`   | `ASSET_ACQUISITION` (Phase 19), `ASSET_SALE` (Phase 20) | Phase 19/20       | Correct financial categorization for DFC (DISINVESTMENT classification for asset sales) |
 
 **Deprecated/outdated:**
+
 - `AssetStatus.INATIVO` for disposed assets: Phase 20 introduces `ALIENADO` as the correct terminal state. Do not set `INATIVO` for disposed assets.
 
 ---
@@ -545,26 +552,26 @@ await tx.receivableInstallment.createMany({
 
 ### Test Framework
 
-| Property | Value |
-|----------|-------|
-| Framework | Jest + @swc/jest |
-| Config file | `apps/backend/jest.config.ts` |
-| Quick run command | `pnpm --filter backend test -- --testPathPattern="asset-disposal" --no-coverage` |
-| Full suite command | `pnpm --filter backend test -- --no-coverage` |
+| Property           | Value                                                                            |
+| ------------------ | -------------------------------------------------------------------------------- |
+| Framework          | Jest + @swc/jest                                                                 |
+| Config file        | `apps/backend/jest.config.ts`                                                    |
+| Quick run command  | `pnpm --filter backend test -- --testPathPattern="asset-disposal" --no-coverage` |
+| Full suite command | `pnpm --filter backend test -- --no-coverage`                                    |
 
 ### Phase Requirements → Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| DISP-01 | Sale creates AssetDisposal + marks ALIENADO + creates Receivable | unit | `pnpm --filter backend test -- --testPathPattern="asset-disposals.routes" --no-coverage` | ❌ Wave 0 |
-| DISP-01 | Gain/loss = saleValue - netBookValue | unit | same | ❌ Wave 0 |
-| DISP-02 | Write-off creates AssetDisposal with full-loss amount | unit | `pnpm --filter backend test -- --testPathPattern="asset-disposals.routes" --no-coverage` | ❌ Wave 0 |
-| DISP-02 | Disposal atomically cancels N pending depreciation entries | unit | same | ❌ Wave 0 |
-| DISP-03 | Installment sale creates N ReceivableInstallments | unit | same | ❌ Wave 0 |
-| DISP-04 | Transfer updates farmId + records history | unit | `pnpm --filter backend test -- --testPathPattern="asset-farm-transfers.routes" --no-coverage` | ❌ Wave 0 |
-| DISP-04 | Transfer rejects cross-org destination farm | unit | same | ❌ Wave 0 |
-| DISP-05 | Reconcile sets physicalStatus on inventory items | unit | `pnpm --filter backend test -- --testPathPattern="asset-inventory.routes" --no-coverage` | ❌ Wave 0 |
-| DISP-06 | Patrimony dashboard returns totalActiveValue, accumulatedDepreciation | unit | `pnpm --filter backend test -- --testPathPattern="financial-dashboard.routes" --no-coverage` | ❌ Wave 0 (extends existing spec) |
+| Req ID  | Behavior                                                              | Test Type | Automated Command                                                                             | File Exists?                      |
+| ------- | --------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------- | --------------------------------- |
+| DISP-01 | Sale creates AssetDisposal + marks ALIENADO + creates Receivable      | unit      | `pnpm --filter backend test -- --testPathPattern="asset-disposals.routes" --no-coverage`      | ❌ Wave 0                         |
+| DISP-01 | Gain/loss = saleValue - netBookValue                                  | unit      | same                                                                                          | ❌ Wave 0                         |
+| DISP-02 | Write-off creates AssetDisposal with full-loss amount                 | unit      | `pnpm --filter backend test -- --testPathPattern="asset-disposals.routes" --no-coverage`      | ❌ Wave 0                         |
+| DISP-02 | Disposal atomically cancels N pending depreciation entries            | unit      | same                                                                                          | ❌ Wave 0                         |
+| DISP-03 | Installment sale creates N ReceivableInstallments                     | unit      | same                                                                                          | ❌ Wave 0                         |
+| DISP-04 | Transfer updates farmId + records history                             | unit      | `pnpm --filter backend test -- --testPathPattern="asset-farm-transfers.routes" --no-coverage` | ❌ Wave 0                         |
+| DISP-04 | Transfer rejects cross-org destination farm                           | unit      | same                                                                                          | ❌ Wave 0                         |
+| DISP-05 | Reconcile sets physicalStatus on inventory items                      | unit      | `pnpm --filter backend test -- --testPathPattern="asset-inventory.routes" --no-coverage`      | ❌ Wave 0                         |
+| DISP-06 | Patrimony dashboard returns totalActiveValue, accumulatedDepreciation | unit      | `pnpm --filter backend test -- --testPathPattern="financial-dashboard.routes" --no-coverage`  | ❌ Wave 0 (extends existing spec) |
 
 ### Sampling Rate
 
@@ -607,6 +614,7 @@ await tx.receivableInstallment.createMany({
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH — verified against project source; no new libraries required
 - Architecture: HIGH — all patterns directly derived from Phase 19 (`asset-acquisitions`), Phase 17 (depreciation), and existing receivables module
 - Pitfalls: HIGH — `withRlsContext` deadlock is documented in STATE.md as a resolved decision (Phase 19); `reversedAt` pattern directly from code; batch exclusion gap is directly observable in source

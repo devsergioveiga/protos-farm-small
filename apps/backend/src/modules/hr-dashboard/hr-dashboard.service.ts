@@ -47,15 +47,15 @@ export async function getHrDashboard(
 
   // Reference month as UTC date (first day of month)
   const referenceMonth = new Date(Date.UTC(year, month - 1, 1));
-  const today = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()));
+  const today = new Date(
+    Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()),
+  );
   const twelveMonthsAgo = addMonths(today, -12);
 
   // ─── Headcount ──────────────────────────────────────────────────────
 
   // Determine employee filter: if farmId, restrict to employees linked to that farm
-  const employeeIdFilter = farmId
-    ? await _getEmployeeIdsForFarm(organizationId, farmId)
-    : null;
+  const employeeIdFilter = farmId ? await _getEmployeeIdsForFarm(organizationId, farmId) : null;
 
   const headcount = await _getHeadcount(organizationId, employeeIdFilter);
 
@@ -91,9 +91,7 @@ export async function getHrDashboard(
   // ─── Composition ────────────────────────────────────────────────────
   // For the current run, break down by rubrica categories from PayrollRunItems
 
-  const composition = currentRun
-    ? await _getComposition(currentRun.id)
-    : _emptyComposition();
+  const composition = currentRun ? await _getComposition(currentRun.id) : _emptyComposition();
 
   // ─── Cost By Activity ───────────────────────────────────────────────
 
@@ -125,10 +123,7 @@ export async function getHrDashboard(
 
 // ─── Private Helpers ─────────────────────────────────────────────────
 
-async function _getEmployeeIdsForFarm(
-  organizationId: string,
-  farmId: string,
-): Promise<string[]> {
+async function _getEmployeeIdsForFarm(organizationId: string, farmId: string): Promise<string[]> {
   const links = await prisma.employeeFarm.findMany({
     where: {
       farmId,
@@ -188,7 +183,12 @@ async function _getHeadcount(
 
 async function _buildCurrentMonthCost(
   organizationId: string,
-  run: { totalGross: Decimal | null; totalNet: Decimal | null; totalCharges: Decimal | null; employeeCount: number } | null,
+  run: {
+    totalGross: Decimal | null;
+    totalNet: Decimal | null;
+    totalCharges: Decimal | null;
+    employeeCount: number;
+  } | null,
   headcountTotal: number,
   farmId: string | undefined,
 ): Promise<HrDashboardResponse['currentMonthCost']> {
@@ -200,7 +200,8 @@ async function _buildCurrentMonthCost(
   const net = new Decimal(run.totalNet?.toString() ?? 0);
   const charges = new Decimal(run.totalCharges?.toString() ?? 0);
 
-  const employeeCount = headcountTotal > 0 ? headcountTotal : (run.employeeCount > 0 ? run.employeeCount : 1);
+  const employeeCount =
+    headcountTotal > 0 ? headcountTotal : run.employeeCount > 0 ? run.employeeCount : 1;
   const avgPerEmployee = gross.div(employeeCount);
 
   let costPerHectare: number | null = null;
@@ -258,19 +259,15 @@ async function _getTrend12Months(
   });
 
   // Return in ascending order for chart display
-  return runs
-    .reverse()
-    .map((r) => ({
-      yearMonth: formatYearMonth(r.referenceMonth),
-      gross: toNumber(r.totalGross),
-      net: toNumber(r.totalNet),
-      charges: toNumber(r.totalCharges),
-    }));
+  return runs.reverse().map((r) => ({
+    yearMonth: formatYearMonth(r.referenceMonth),
+    gross: toNumber(r.totalGross),
+    net: toNumber(r.totalNet),
+    charges: toNumber(r.totalCharges),
+  }));
 }
 
-async function _getComposition(
-  runId: string,
-): Promise<HrDashboardResponse['composition']> {
+async function _getComposition(runId: string): Promise<HrDashboardResponse['composition']> {
   const items = await prisma.payrollRunItem.findMany({
     where: { payrollRunId: runId },
     select: {

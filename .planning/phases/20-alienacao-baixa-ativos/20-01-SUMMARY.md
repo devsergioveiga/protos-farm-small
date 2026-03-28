@@ -1,6 +1,6 @@
 ---
 phase: 20-alienacao-baixa-ativos
-plan: "01"
+plan: '01'
 subsystem: api
 tags: [prisma, transactions, receivables, depreciation, asset-disposal, express]
 
@@ -24,7 +24,12 @@ affects:
 # Tech tracking
 tech-stack:
   added: []
-  patterns: [prisma.$transaction for atomic disposal (no withRlsContext), tx.receivable.create direct in transaction, generateInstallments from @protos-farm/shared for installment CR]
+  patterns:
+    [
+      prisma.$transaction for atomic disposal (no withRlsContext),
+      tx.receivable.create direct in transaction,
+      generateInstallments from @protos-farm/shared for installment CR,
+    ]
 
 key-files:
   created:
@@ -35,15 +40,15 @@ key-files:
     - apps/backend/src/app.ts
 
 key-decisions:
-  - "prisma.$transaction used directly (NOT withRlsContext) in createDisposal to avoid nested RLS deadlocks — same pattern as asset-acquisitions"
-  - "gainLoss computed from latest DepreciationEntry.closingBookValue with reversedAt null; falls back to asset.acquisitionValue when no entries exist"
-  - "Receivable created with category ASSET_SALE + originType ASSET_DISPOSAL only for VENDA type when saleValue > 0"
-  - "Depreciation entries bulk-cancelled via depreciationEntry.updateMany (sets reversedAt = now) before creating AssetDisposal record"
-  - "installmentCount stored on DisposalOutput reflects actual installments created in Receivable"
+  - 'prisma.$transaction used directly (NOT withRlsContext) in createDisposal to avoid nested RLS deadlocks — same pattern as asset-acquisitions'
+  - 'gainLoss computed from latest DepreciationEntry.closingBookValue with reversedAt null; falls back to asset.acquisitionValue when no entries exist'
+  - 'Receivable created with category ASSET_SALE + originType ASSET_DISPOSAL only for VENDA type when saleValue > 0'
+  - 'Depreciation entries bulk-cancelled via depreciationEntry.updateMany (sets reversedAt = now) before creating AssetDisposal record'
+  - 'installmentCount stored on DisposalOutput reflects actual installments created in Receivable'
 
 patterns-established:
-  - "Asset disposal pattern: guard (find + status check) -> compute netBookValue -> cancel depreciation -> update asset status -> create disposal -> create CR"
-  - "TDD with RED commit (failing spec) before GREEN commit (implementation)"
+  - 'Asset disposal pattern: guard (find + status check) -> compute netBookValue -> cancel depreciation -> update asset status -> create disposal -> create CR'
+  - 'TDD with RED commit (failing spec) before GREEN commit (implementation)'
 
 requirements-completed:
   - DISP-01
@@ -99,6 +104,7 @@ Each task was committed atomically:
 ## Deviations from Plan
 
 **1. [Rule 3 - Blocking] Pre-existing missing asset-inventory.service.ts**
+
 - **Found during:** Task 1 execution — test suite could not load app.ts because asset-inventory.routes.ts imports from ./asset-inventory.service which didn't exist
 - **Issue:** `asset-inventory.service.ts` referenced in `asset-inventory.routes.ts` but file was missing from the module directory
 - **Fix:** File was already present (parallel work) — no action needed; tests ran successfully after discovery
@@ -122,5 +128,6 @@ None beyond the pre-existing missing module (self-resolved).
 - Ready for: patrimony dashboard to include ALIENADO assets in totals
 
 ---
-*Phase: 20-alienacao-baixa-ativos*
-*Completed: 2026-03-22*
+
+_Phase: 20-alienacao-baixa-ativos_
+_Completed: 2026-03-22_

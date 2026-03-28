@@ -37,9 +37,10 @@ interface BpRowProps {
 }
 
 function BpRow({ row, isGroupTotal }: BpRowProps) {
-  const rowClass = isGroupTotal || row.isSubtotal
-    ? 'bs-table__row bs-table__row--subtotal'
-    : 'bs-table__row bs-table__row--account';
+  const rowClass =
+    isGroupTotal || row.isSubtotal
+      ? 'bs-table__row bs-table__row--subtotal'
+      : 'bs-table__row bs-table__row--account';
 
   const indent = isGroupTotal || row.isSubtotal ? 16 : Math.max(16, row.level * 16 + 16);
 
@@ -155,7 +156,11 @@ export default function BalanceSheetTable({
     <div className="bs-table__grid">
       <SideTable caption="Ativo" groups={ativo} grandTotal={totalAtivo} />
       <hr className="bs-table__divider" aria-hidden="true" />
-      <SideTable caption="Passivo e Patrimonio Liquido" groups={passivo} grandTotal={totalPassivo} />
+      <SideTable
+        caption="Passivo e Patrimonio Liquido"
+        groups={passivo}
+        grandTotal={totalPassivo}
+      />
     </div>
   );
 }

@@ -69,9 +69,7 @@ export function useLedger(
     try {
       const params = new URLSearchParams({ accountId, startDate, endDate });
       if (costCenterId) params.set('costCenterId', costCenterId);
-      const result = await api.get<LedgerOutput>(
-        `/org/${orgId}/ledger/razao?${params.toString()}`,
-      );
+      const result = await api.get<LedgerOutput>(`/org/${orgId}/ledger/razao?${params.toString()}`);
       setLedger(result);
     } catch {
       setError('Não foi possível carregar o razão. Tente novamente.');
@@ -174,10 +172,7 @@ function buildDownloadUrl(base: string, path: string, params: Record<string, str
   return `${base}${path}?${query}`;
 }
 
-async function triggerBlobDownload(
-  url: string,
-  filename: string,
-): Promise<void> {
+async function triggerBlobDownload(url: string, filename: string): Promise<void> {
   const blob = await api.getBlob(url);
   const objectUrl = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
@@ -189,10 +184,7 @@ async function triggerBlobDownload(
   URL.revokeObjectURL(objectUrl);
 }
 
-export async function exportLedgerCsv(
-  orgId: string,
-  filters: LedgerFilters,
-): Promise<void> {
+export async function exportLedgerCsv(orgId: string, filters: LedgerFilters): Promise<void> {
   const params: Record<string, string> = {
     accountId: filters.accountId,
     startDate: filters.startDate,
@@ -203,10 +195,7 @@ export async function exportLedgerCsv(
   await triggerBlobDownload(url, `razao-${filters.accountId}-${filters.startDate}.csv`);
 }
 
-export async function exportLedgerPdf(
-  orgId: string,
-  filters: LedgerFilters,
-): Promise<void> {
+export async function exportLedgerPdf(orgId: string, filters: LedgerFilters): Promise<void> {
   const params: Record<string, string> = {
     accountId: filters.accountId,
     startDate: filters.startDate,
@@ -241,10 +230,7 @@ export async function exportTrialBalanceXlsx(
   await triggerBlobDownload(url, `balancete-${filters.fiscalYearId}-${filters.month}.xlsx`);
 }
 
-export async function exportDailyBookPdf(
-  orgId: string,
-  filters: DailyBookFilters,
-): Promise<void> {
+export async function exportDailyBookPdf(orgId: string, filters: DailyBookFilters): Promise<void> {
   const params: Record<string, string> = {
     startDate: filters.startDate,
     endDate: filters.endDate,

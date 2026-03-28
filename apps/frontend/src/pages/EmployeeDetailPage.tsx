@@ -41,11 +41,17 @@ function PageSkeleton() {
           style={{ width: 80, height: 80 }}
         />
         <div style={{ flex: 1 }}>
-          <div className="employee-detail__skeleton" style={{ width: 240, height: 28, marginBottom: 8 }} />
+          <div
+            className="employee-detail__skeleton"
+            style={{ width: 240, height: 28, marginBottom: 8 }}
+          />
           <div className="employee-detail__skeleton" style={{ width: 160, height: 20 }} />
         </div>
       </div>
-      <div className="employee-detail__skeleton" style={{ width: '100%', height: 48, marginBottom: 24 }} />
+      <div
+        className="employee-detail__skeleton"
+        style={{ width: '100%', height: 48, marginBottom: 24 }}
+      />
       <div className="employee-detail__skeleton" style={{ height: 200 }} />
     </main>
   );
@@ -144,7 +150,9 @@ export default function EmployeeDetailPage() {
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="employee-detail__breadcrumb">
         <Link to="/employees">Colaboradores</Link>
-        <span className="employee-detail__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="employee-detail__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span aria-current="page">{employee.name}</span>
       </nav>
 
@@ -168,9 +176,7 @@ export default function EmployeeDetailPage() {
 
         <div className="employee-detail__header-info">
           <h1 className="employee-detail__name">{employee.name}</h1>
-          {currentPosition && (
-            <p className="employee-detail__position">{currentPosition}</p>
-          )}
+          {currentPosition && <p className="employee-detail__position">{currentPosition}</p>}
           <EmployeeStatusBadge status={employee.status} />
         </div>
 
@@ -194,7 +200,12 @@ export default function EmployeeDetailPage() {
       </header>
 
       {/* WAI-ARIA Tabs */}
-      <div role="tablist" aria-label="Abas do colaborador" id={tablistId} className="employee-detail__tabs">
+      <div
+        role="tablist"
+        aria-label="Abas do colaborador"
+        id={tablistId}
+        className="employee-detail__tabs"
+      >
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -234,11 +245,7 @@ export default function EmployeeDetailPage() {
         >
           {activeTab === tab.id && (
             <>
-              {tab.id === 'personal' && (
-                <PersonalDataTab
-                  employee={employee}
-                />
-              )}
+              {tab.id === 'personal' && <PersonalDataTab employee={employee} />}
               {tab.id === 'contract' && (
                 <ContractTab
                   employeeId={employee.id}
@@ -272,10 +279,7 @@ export default function EmployeeDetailPage() {
                 />
               )}
               {tab.id === 'history' && (
-                <HistoryTab
-                  timeline={timeline}
-                  isLoading={timelineLoading}
-                />
+                <HistoryTab timeline={timeline} isLoading={timelineLoading} />
               )}
               {tab.id === 'payslips' && (
                 <PayslipTab

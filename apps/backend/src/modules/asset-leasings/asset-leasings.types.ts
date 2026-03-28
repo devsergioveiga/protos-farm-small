@@ -25,17 +25,17 @@ export const LEASING_STATUS_LABELS: Record<LeasingStatus, string> = {
 
 export interface CreateLeasingInput {
   farmId: string;
-  assetType: string;           // user chooses: MAQUINA, VEICULO, BENFEITORIA, IMPLEMENTO
-  assetName: string;           // name for the ROU asset
+  assetType: string; // user chooses: MAQUINA, VEICULO, BENFEITORIA, IMPLEMENTO
+  assetName: string; // name for the ROU asset
   lessorName: string;
   lessorDocument?: string;
   contractNumber?: string;
-  contractDate: string;        // ISO 8601
-  startDate: string;           // ISO 8601
-  endDate: string;             // ISO 8601
+  contractDate: string; // ISO 8601
+  startDate: string; // ISO 8601
+  endDate: string; // ISO 8601
   totalContractValue: number;
   installmentCount: number;
-  firstDueDate: string;        // ISO 8601
+  firstDueDate: string; // ISO 8601
   purchaseOptionValue?: number;
   purchaseOptionDate?: string;
   hasPurchaseOption?: boolean;

@@ -1,6 +1,6 @@
 ---
 phase: 35-plano-de-contas-e-periodos-fiscais
-plan: "01"
+plan: '01'
 subsystem: accounting-foundation
 tags: [prisma, shared-utils, tdd, accounting, chart-of-accounts, fiscal-periods]
 dependency_graph:
@@ -39,12 +39,12 @@ key_files:
     - apps/backend/prisma/schema.prisma
     - packages/shared/src/index.ts
 decisions:
-  - "Used prisma migrate diff + deploy instead of migrate dev: shadow DB was missing tables from earlier migrations not tracked in its history; diff generates correct SQL from live DB state, deploy applies it safely"
-  - "Remainder in rateio goes to largest-percentage share (not first): ensures predictability when multiple cost centers have equal percentages"
-  - "Object.setPrototypeOf in Error subclasses: required for TypeScript instanceof to work correctly after transpilation"
+  - 'Used prisma migrate diff + deploy instead of migrate dev: shadow DB was missing tables from earlier migrations not tracked in its history; diff generates correct SQL from live DB state, deploy applies it safely'
+  - 'Remainder in rateio goes to largest-percentage share (not first): ensures predictability when multiple cost centers have equal percentages'
+  - 'Object.setPrototypeOf in Error subclasses: required for TypeScript instanceof to work correctly after transpilation'
 metrics:
   duration_seconds: 383
-  completed_date: "2026-03-27"
+  completed_date: '2026-03-27'
   tasks_completed: 2
   files_created: 8
   files_modified: 2
@@ -84,10 +84,10 @@ Migration `20260601000000` applied via `migrate deploy` to PostgreSQL 16.
 
 ## Commits
 
-| Hash | Type | Description |
-|------|------|-------------|
-| f0dc65a2 | test | Add failing tests for accounting utilities (RED) — 3 spec files, 23 test cases |
-| d8d93b8e | feat | Implement accounting utility functions (GREEN) — 4 implementation files |
+| Hash     | Type | Description                                                                           |
+| -------- | ---- | ------------------------------------------------------------------------------------- |
+| f0dc65a2 | test | Add failing tests for accounting utilities (RED) — 3 spec files, 23 test cases        |
+| d8d93b8e | feat | Implement accounting utility functions (GREEN) — 4 implementation files               |
 | 8258ac4b | feat | Add Prisma schema models for chart of accounts and fiscal periods — migration applied |
 
 ## Deviations from Plan
@@ -95,6 +95,7 @@ Migration `20260601000000` applied via `migrate deploy` to PostgreSQL 16.
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Shadow database out of sync prevented `prisma migrate dev`**
+
 - **Found during:** Task 2
 - **Issue:** `prisma migrate dev` uses a shadow database to verify all migrations apply cleanly from scratch. The shadow DB was missing tables from earlier migrations (`cultivars`, etc.) that were applied directly to the main DB without being tracked in the shadow DB history.
 - **Fix:** Used `prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script` to generate correct SQL from live DB state, created migration file manually, then applied with `prisma migrate deploy`.

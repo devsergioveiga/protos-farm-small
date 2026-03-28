@@ -172,11 +172,14 @@ async function fetchComplianceData(
     select: { id: true, name: true, nrReference: true, defaultValidityMonths: true },
   });
 
-  const allTrainingRequirements = [...positionTrainingReqs, ...globalTrainingTypes.map((t: TxClient) => ({
-    positionId: null, // global — applies to all
-    trainingTypeId: t.id,
-    trainingType: t,
-  }))];
+  const allTrainingRequirements = [
+    ...positionTrainingReqs,
+    ...globalTrainingTypes.map((t: TxClient) => ({
+      positionId: null, // global — applies to all
+      trainingTypeId: t.id,
+      trainingType: t,
+    })),
+  ];
 
   // Query 5: Training records for those employees
   const trainingRecords = await tx.employeeTrainingRecord.findMany({
@@ -228,17 +231,13 @@ function computeEmployeeCompliance(
   const myEpiReqs = data.epiRequirements.filter(
     (r: TxClient) => r.positionId === employee.positionId,
   );
-  const myEpiDeliveries = data.epiDeliveries.filter(
-    (d: TxClient) => d.employeeId === employee.id,
-  );
+  const myEpiDeliveries = data.epiDeliveries.filter((d: TxClient) => d.employeeId === employee.id);
 
   const epiPending: EpiPendingItem[] = [];
   let epiCompliantCount = 0;
 
   for (const req of myEpiReqs) {
-    const deliveries = myEpiDeliveries.filter(
-      (d: TxClient) => d.epiProductId === req.epiProductId,
-    );
+    const deliveries = myEpiDeliveries.filter((d: TxClient) => d.epiProductId === req.epiProductId);
     const delivered = deliveries.reduce((sum: number, d: TxClient) => sum + d.quantity, 0);
     const caExpiry = req.epiProduct?.caExpiry ? new Date(req.epiProduct.caExpiry) : null;
     const caValid = !caExpiry || caExpiry >= today;
@@ -255,8 +254,7 @@ function computeEmployeeCompliance(
     }
   }
 
-  const epiStatus: ComplianceAlertLevel =
-    epiPending.length === 0 ? 'OK' : 'RED';
+  const epiStatus: ComplianceAlertLevel = epiPending.length === 0 ? 'OK' : 'RED';
 
   // ── Training Compliance ──
   const myTrainingReqs = data.trainingRequirements.filter(
@@ -432,8 +430,7 @@ export async function listNonCompliantEmployees(
 
     // Sort by severity (EXPIRED > RED > YELLOW)
     results.sort(
-      (a, b) =>
-        expiryLevelToNumber(b.overallStatus) - expiryLevelToNumber(a.overallStatus),
+      (a, b) => expiryLevelToNumber(b.overallStatus) - expiryLevelToNumber(a.overallStatus),
     );
 
     const total = results.length;
@@ -532,10 +529,9 @@ export async function generateComplianceReportCsv(
 
       // ASO pending
       if (compliance.asoCompliance.expiryStatus !== 'OK') {
-        const asoDetail =
-          compliance.asoCompliance.latestResult
-            ? `Último resultado: ${compliance.asoCompliance.latestResult}`
-            : 'Sem ASO registrado';
+        const asoDetail = compliance.asoCompliance.latestResult
+          ? `Último resultado: ${compliance.asoCompliance.latestResult}`
+          : 'Sem ASO registrado';
         rows.push(
           [
             `"${emp.name}"`,
@@ -574,9 +570,7 @@ export async function generateComplianceReportPdf(
     }
 
     // Compute compliance for all employees
-    const complianceList = data.employees.map((emp) =>
-      computeEmployeeCompliance(emp, data, today),
-    );
+    const complianceList = data.employees.map((emp) => computeEmployeeCompliance(emp, data, today));
 
     const totalEmployees = complianceList.length;
     const compliantCount = complianceList.filter((c) => c.overallStatus === 'OK').length;
@@ -607,7 +601,10 @@ export async function generateComplianceReportPdf(
       doc.text(`Emitido em: ${dateStr}`, { align: 'center' });
       doc.moveDown(0.5);
 
-      doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).stroke();
+      doc
+        .moveTo(50, doc.y)
+        .lineTo(50 + pageWidth, doc.y)
+        .stroke();
       doc.moveDown(0.5);
 
       // ── Summary ──
@@ -623,17 +620,24 @@ export async function generateComplianceReportPdf(
 
       // ── EPI Pendentes ──
       if (epiPending.length > 0) {
-        doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).stroke();
+        doc
+          .moveTo(50, doc.y)
+          .lineTo(50 + pageWidth, doc.y)
+          .stroke();
         doc.moveDown(0.3);
         doc.fontSize(12).font('Helvetica-Bold').text('EPIs PENDENTES');
         doc.moveDown(0.3);
         doc.fontSize(9).font('Helvetica');
 
         for (const emp of epiPending) {
-          doc.font('Helvetica-Bold').text(`${emp.employeeName} (${emp.positionName ?? 'sem cargo'})`);
+          doc
+            .font('Helvetica-Bold')
+            .text(`${emp.employeeName} (${emp.positionName ?? 'sem cargo'})`);
           doc.font('Helvetica');
           for (const epi of emp.epiCompliance.pending) {
-            doc.text(`  • ${epi.epiProductName}: ${epi.delivered}/${epi.required} unidades entregues`);
+            doc.text(
+              `  • ${epi.epiProductName}: ${epi.delivered}/${epi.required} unidades entregues`,
+            );
           }
           doc.moveDown(0.3);
         }
@@ -641,14 +645,19 @@ export async function generateComplianceReportPdf(
 
       // ── Treinamentos Vencidos ──
       if (trainingPending.length > 0) {
-        doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).stroke();
+        doc
+          .moveTo(50, doc.y)
+          .lineTo(50 + pageWidth, doc.y)
+          .stroke();
         doc.moveDown(0.3);
         doc.fontSize(12).font('Helvetica-Bold').text('TREINAMENTOS VENCIDOS / PENDENTES');
         doc.moveDown(0.3);
         doc.fontSize(9).font('Helvetica');
 
         for (const emp of trainingPending) {
-          doc.font('Helvetica-Bold').text(`${emp.employeeName} (${emp.positionName ?? 'sem cargo'})`);
+          doc
+            .font('Helvetica-Bold')
+            .text(`${emp.employeeName} (${emp.positionName ?? 'sem cargo'})`);
           doc.font('Helvetica');
           for (const training of emp.trainingCompliance.expired) {
             const status = training.status === 'EXPIRED' ? 'VENCIDO' : 'VENCENDO';
@@ -662,16 +671,20 @@ export async function generateComplianceReportPdf(
 
       // ── ASOs Pendentes ──
       if (asoPending.length > 0) {
-        doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).stroke();
+        doc
+          .moveTo(50, doc.y)
+          .lineTo(50 + pageWidth, doc.y)
+          .stroke();
         doc.moveDown(0.3);
         doc.fontSize(12).font('Helvetica-Bold').text('ASOs PENDENTES / VENCIDOS');
         doc.moveDown(0.3);
         doc.fontSize(9).font('Helvetica');
 
         for (const emp of asoPending) {
-          const asoStatus =
-            emp.asoCompliance.expiryStatus === 'EXPIRED' ? 'VENCIDO' : 'VENCENDO';
-          doc.font('Helvetica-Bold').text(`${emp.employeeName} (${emp.positionName ?? 'sem cargo'})`);
+          const asoStatus = emp.asoCompliance.expiryStatus === 'EXPIRED' ? 'VENCIDO' : 'VENCENDO';
+          doc
+            .font('Helvetica-Bold')
+            .text(`${emp.employeeName} (${emp.positionName ?? 'sem cargo'})`);
           doc.font('Helvetica');
           doc.text(
             `  • ASO ${asoStatus}${emp.asoCompliance.nextExamDate ? ' em ' + new Date(emp.asoCompliance.nextExamDate).toLocaleDateString('pt-BR') : ''}`,
@@ -682,7 +695,10 @@ export async function generateComplianceReportPdf(
 
       // ── Footer ──
       doc.moveDown(1);
-      doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).stroke();
+      doc
+        .moveTo(50, doc.y)
+        .lineTo(50 + pageWidth, doc.y)
+        .stroke();
       doc.moveDown(0.3);
       doc.fontSize(8).font('Helvetica').text('Gerado automaticamente pelo sistema Protos Farm', {
         align: 'center',

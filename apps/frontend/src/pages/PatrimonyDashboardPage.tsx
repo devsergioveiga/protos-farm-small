@@ -37,8 +37,18 @@ const CHART_COLORS = [
 ];
 
 const MONTH_LABELS: Record<number, string> = {
-  1: 'Janeiro', 2: 'Fevereiro', 3: 'Marco', 4: 'Abril', 5: 'Maio', 6: 'Junho',
-  7: 'Julho', 8: 'Agosto', 9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro',
+  1: 'Janeiro',
+  2: 'Fevereiro',
+  3: 'Marco',
+  4: 'Abril',
+  5: 'Maio',
+  6: 'Junho',
+  7: 'Julho',
+  8: 'Agosto',
+  9: 'Setembro',
+  10: 'Outubro',
+  11: 'Novembro',
+  12: 'Dezembro',
 };
 
 const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
@@ -56,9 +66,7 @@ function KpiCard({ label, value, sub, variant = 'neutral' }: KpiCardProps) {
   return (
     <div className="patrimony-dashboard__kpi-card">
       <span className="patrimony-dashboard__kpi-label">{label}</span>
-      <span
-        className={`patrimony-dashboard__kpi-value patrimony-dashboard__kpi-value--${variant}`}
-      >
+      <span className={`patrimony-dashboard__kpi-value patrimony-dashboard__kpi-value--${variant}`}>
         {variant === 'gain' && <TrendingUp size={18} aria-hidden="true" />}
         {variant === 'loss' && <TrendingDown size={18} aria-hidden="true" />}
         {value}
@@ -201,19 +209,13 @@ export default function PatrimonyDashboardPage() {
           {/* KPI Cards */}
           <section className="patrimony-dashboard__kpi-section" aria-label="Indicadores chave">
             <div className="patrimony-dashboard__kpi-grid">
-              <KpiCard
-                label="Valor Total Ativos"
-                value={formatBRL(data.totalActiveValue)}
-              />
+              <KpiCard label="Valor Total Ativos" value={formatBRL(data.totalActiveValue)} />
               <KpiCard
                 label="Depreciacao Acumulada"
                 value={formatBRL(data.accumulatedDepreciation)}
                 variant="loss"
               />
-              <KpiCard
-                label="Valor Contabil Liquido"
-                value={formatBRL(data.netBookValue)}
-              />
+              <KpiCard label="Valor Contabil Liquido" value={formatBRL(data.netBookValue)} />
               <KpiCard
                 label="Ganho/Perda no Periodo"
                 value={formatBRL(Math.abs(gainLoss))}
@@ -259,9 +261,7 @@ export default function PatrimonyDashboardPage() {
               <div className="patrimony-dashboard__chart-card">
                 <h3 className="patrimony-dashboard__chart-title">Distribuicao por Tipo</h3>
                 {typeChartData.length === 0 ? (
-                  <p className="patrimony-dashboard__chart-empty">
-                    Sem dados para exibir.
-                  </p>
+                  <p className="patrimony-dashboard__chart-empty">Sem dados para exibir.</p>
                 ) : (
                   <ResponsiveContainer width="100%" height={280}>
                     <PieChart>
@@ -292,9 +292,7 @@ export default function PatrimonyDashboardPage() {
               <div className="patrimony-dashboard__chart-card">
                 <h3 className="patrimony-dashboard__chart-title">Distribuicao por Status</h3>
                 {statusChartData.length === 0 ? (
-                  <p className="patrimony-dashboard__chart-empty">
-                    Sem dados para exibir.
-                  </p>
+                  <p className="patrimony-dashboard__chart-empty">Sem dados para exibir.</p>
                 ) : (
                   <ResponsiveContainer width="100%" height={280}>
                     <BarChart data={statusChartData} layout="vertical">

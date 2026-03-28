@@ -132,5 +132,6 @@ None - no external service configuration required.
 All 7 key files found. All 3 task commits verified in git log.
 
 ---
-*Phase: 37-regras-e-lan-amentos-autom-ticos*
-*Completed: 2026-03-27*
+
+_Phase: 37-regras-e-lan-amentos-autom-ticos_
+_Completed: 2026-03-27_

@@ -105,11 +105,21 @@ function PositionsPage() {
             <tbody>
               {Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i} className="positions__skeleton-row">
-                  <td><div className="positions__skeleton positions__skeleton--name" /></td>
-                  <td><div className="positions__skeleton positions__skeleton--cbo" /></td>
-                  <td><div className="positions__skeleton positions__skeleton--text" /></td>
-                  <td><div className="positions__skeleton positions__skeleton--text" /></td>
-                  <td><div className="positions__skeleton positions__skeleton--text" /></td>
+                  <td>
+                    <div className="positions__skeleton positions__skeleton--name" />
+                  </td>
+                  <td>
+                    <div className="positions__skeleton positions__skeleton--cbo" />
+                  </td>
+                  <td>
+                    <div className="positions__skeleton positions__skeleton--text" />
+                  </td>
+                  <td>
+                    <div className="positions__skeleton positions__skeleton--text" />
+                  </td>
+                  <td>
+                    <div className="positions__skeleton positions__skeleton--text" />
+                  </td>
                 </tr>
               ))}
             </tbody>

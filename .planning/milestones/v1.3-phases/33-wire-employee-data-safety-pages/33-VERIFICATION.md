@@ -18,12 +18,12 @@ score: 4/4 must-haves verified
 
 ### Observable Truths
 
-| # | Truth | Status | Evidence |
-|---|-------|--------|----------|
-| 1 | TrainingRecordsPage shows real employees from the API in the participant multi-select | ✓ VERIFIED | `useEmployees({ status: 'ATIVO', limit: 200 })` called at line 61; `employeeOptions` passed to `TrainingRecordModal` at line 366 |
-| 2 | MedicalExamsPage shows real employees from the API in the employee combobox | ✓ VERIFIED | `useEmployees({ status: 'ATIVO', limit: 200 })` called at line 90; `employeeOptions` passed to `MedicalExamModal` at line 349 |
-| 3 | MedicalExamModal receives asoPeriodicityMonths per employee for auto-calculating next exam date | ✓ VERIFIED | `asoPeriodicityMonths: emp.farms?.[0]?.position?.asoPeriodicityMonths ?? null` mapped at MedicalExamsPage.tsx:98 |
-| 4 | Only active (ATIVO) employees appear in both safety page selectors | ✓ VERIFIED | Both pages call `useEmployees({ status: 'ATIVO', limit: 200 })`; hook passes `status` query param to API at useEmployees.ts:59 |
+| #   | Truth                                                                                           | Status     | Evidence                                                                                                                         |
+| --- | ----------------------------------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | TrainingRecordsPage shows real employees from the API in the participant multi-select           | ✓ VERIFIED | `useEmployees({ status: 'ATIVO', limit: 200 })` called at line 61; `employeeOptions` passed to `TrainingRecordModal` at line 366 |
+| 2   | MedicalExamsPage shows real employees from the API in the employee combobox                     | ✓ VERIFIED | `useEmployees({ status: 'ATIVO', limit: 200 })` called at line 90; `employeeOptions` passed to `MedicalExamModal` at line 349    |
+| 3   | MedicalExamModal receives asoPeriodicityMonths per employee for auto-calculating next exam date | ✓ VERIFIED | `asoPeriodicityMonths: emp.farms?.[0]?.position?.asoPeriodicityMonths ?? null` mapped at MedicalExamsPage.tsx:98                 |
+| 4   | Only active (ATIVO) employees appear in both safety page selectors                              | ✓ VERIFIED | Both pages call `useEmployees({ status: 'ATIVO', limit: 200 })`; hook passes `status` query param to API at useEmployees.ts:59   |
 
 **Score:** 4/4 truths verified
 
@@ -31,33 +31,33 @@ score: 4/4 must-haves verified
 
 ### Required Artifacts
 
-| Artifact | Expected | Status | Details |
-|----------|----------|--------|---------|
-| `apps/backend/src/modules/employees/employees.service.ts` | listEmployees returns asoPeriodicityMonths in position select | ✓ VERIFIED | Line 219: `position: { select: { id: true, name: true, asoPeriodicityMonths: true } }` |
-| `apps/frontend/src/types/employee.ts` | EmployeeFarm.position includes asoPeriodicityMonths | ✓ VERIFIED | Line 77: `position?: { name: string; asoPeriodicityMonths?: number }` |
-| `apps/frontend/src/pages/TrainingRecordsPage.tsx` | Real employee data via useEmployees hook | ✓ VERIFIED | Imports `useEmployees` at line 10; no MOCK_EMPLOYEES constant present |
-| `apps/frontend/src/pages/TrainingRecordsPage.spec.tsx` | Tests verifying real employees are wired into TrainingRecordsPage | ✓ VERIFIED | Contains `useEmployees` mock with 2 describe/it blocks targeting SEGUR-02 |
-| `apps/frontend/src/pages/MedicalExamsPage.tsx` | Real employee data via useEmployees hook with asoPeriodicityMonths mapping | ✓ VERIFIED | Imports `useEmployees` at line 11; maps asoPeriodicityMonths at line 98; no MOCK_EMPLOYEES present |
-| `apps/frontend/src/pages/MedicalExamsPage.spec.tsx` | Tests verifying real employees and asoPeriodicityMonths are wired into MedicalExamsPage | ✓ VERIFIED | Contains `useEmployees` mock; mock employees include `asoPeriodicityMonths: 6` and `asoPeriodicityMonths: 12` in position |
+| Artifact                                                  | Expected                                                                                | Status     | Details                                                                                                                   |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `apps/backend/src/modules/employees/employees.service.ts` | listEmployees returns asoPeriodicityMonths in position select                           | ✓ VERIFIED | Line 219: `position: { select: { id: true, name: true, asoPeriodicityMonths: true } }`                                    |
+| `apps/frontend/src/types/employee.ts`                     | EmployeeFarm.position includes asoPeriodicityMonths                                     | ✓ VERIFIED | Line 77: `position?: { name: string; asoPeriodicityMonths?: number }`                                                     |
+| `apps/frontend/src/pages/TrainingRecordsPage.tsx`         | Real employee data via useEmployees hook                                                | ✓ VERIFIED | Imports `useEmployees` at line 10; no MOCK_EMPLOYEES constant present                                                     |
+| `apps/frontend/src/pages/TrainingRecordsPage.spec.tsx`    | Tests verifying real employees are wired into TrainingRecordsPage                       | ✓ VERIFIED | Contains `useEmployees` mock with 2 describe/it blocks targeting SEGUR-02                                                 |
+| `apps/frontend/src/pages/MedicalExamsPage.tsx`            | Real employee data via useEmployees hook with asoPeriodicityMonths mapping              | ✓ VERIFIED | Imports `useEmployees` at line 11; maps asoPeriodicityMonths at line 98; no MOCK_EMPLOYEES present                        |
+| `apps/frontend/src/pages/MedicalExamsPage.spec.tsx`       | Tests verifying real employees and asoPeriodicityMonths are wired into MedicalExamsPage | ✓ VERIFIED | Contains `useEmployees` mock; mock employees include `asoPeriodicityMonths: 6` and `asoPeriodicityMonths: 12` in position |
 
 ---
 
 ### Key Link Verification
 
-| From | To | Via | Status | Details |
-|------|----|-----|--------|---------|
-| `TrainingRecordsPage.tsx` | `useEmployees.ts` | `useEmployees({ status: 'ATIVO', limit: 200 })` | ✓ WIRED | Line 61 matches pattern `useEmployees.*ATIVO` |
-| `MedicalExamsPage.tsx` | `useEmployees.ts` | `useEmployees({ status: 'ATIVO', limit: 200 })` | ✓ WIRED | Line 90 matches pattern `useEmployees.*ATIVO` |
-| `MedicalExamsPage.tsx` | `employees.service.ts` | `asoPeriodicityMonths` flows from backend position select through API response to modal prop | ✓ WIRED | Backend returns field (service.ts:219) → type exposes it (employee.ts:77) → page maps it (MedicalExamsPage.tsx:98) → passed to modal (MedicalExamsPage.tsx:349) |
+| From                      | To                     | Via                                                                                          | Status  | Details                                                                                                                                                         |
+| ------------------------- | ---------------------- | -------------------------------------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TrainingRecordsPage.tsx` | `useEmployees.ts`      | `useEmployees({ status: 'ATIVO', limit: 200 })`                                              | ✓ WIRED | Line 61 matches pattern `useEmployees.*ATIVO`                                                                                                                   |
+| `MedicalExamsPage.tsx`    | `useEmployees.ts`      | `useEmployees({ status: 'ATIVO', limit: 200 })`                                              | ✓ WIRED | Line 90 matches pattern `useEmployees.*ATIVO`                                                                                                                   |
+| `MedicalExamsPage.tsx`    | `employees.service.ts` | `asoPeriodicityMonths` flows from backend position select through API response to modal prop | ✓ WIRED | Backend returns field (service.ts:219) → type exposes it (employee.ts:77) → page maps it (MedicalExamsPage.tsx:98) → passed to modal (MedicalExamsPage.tsx:349) |
 
 ---
 
 ### Data-Flow Trace (Level 4)
 
-| Artifact | Data Variable | Source | Produces Real Data | Status |
-|----------|---------------|--------|--------------------|--------|
-| `TrainingRecordsPage.tsx` | `employees` | `useEmployees` hook → `api.get('/org/:orgId/employees?status=ATIVO&limit=200')` | Yes — hook fetches from live API with RLS context | ✓ FLOWING |
-| `MedicalExamsPage.tsx` | `employees` + `asoPeriodicityMonths` | `useEmployees` hook → backend `listEmployees` with position select | Yes — backend queries DB and returns `asoPeriodicityMonths` field | ✓ FLOWING |
+| Artifact                  | Data Variable                        | Source                                                                          | Produces Real Data                                                | Status    |
+| ------------------------- | ------------------------------------ | ------------------------------------------------------------------------------- | ----------------------------------------------------------------- | --------- |
+| `TrainingRecordsPage.tsx` | `employees`                          | `useEmployees` hook → `api.get('/org/:orgId/employees?status=ATIVO&limit=200')` | Yes — hook fetches from live API with RLS context                 | ✓ FLOWING |
+| `MedicalExamsPage.tsx`    | `employees` + `asoPeriodicityMonths` | `useEmployees` hook → backend `listEmployees` with position select              | Yes — backend queries DB and returns `asoPeriodicityMonths` field | ✓ FLOWING |
 
 ---
 
@@ -69,10 +69,10 @@ Step 7b: SKIPPED — pages require a running frontend + backend server to observ
 
 ### Requirements Coverage
 
-| Requirement | Source Plan | Description | Status | Evidence |
-|-------------|-------------|-------------|--------|----------|
-| SEGUR-02 | 33-01-PLAN.md | Técnico pode gerenciar treinamentos NR-31 com registro (data, carga horária, instrutor, lista presença)... | ✓ SATISFIED | TrainingRecordsPage now fetches real ATIVO employees; TrainingRecordModal receives `employeeOptions` with real name and positionName; spec verifies hook called with `status: 'ATIVO'` |
-| SEGUR-03 | 33-01-PLAN.md | Gerente pode controlar ASOs com registro (médico CRM, resultado apto/inapto, exames), periodicidade configurável... | ✓ SATISFIED | MedicalExamsPage now fetches real ATIVO employees with asoPeriodicityMonths; MedicalExamModal receives `employeeOptions` including position-specific periodicity; spec verifies asoPeriodicityMonths flows through |
+| Requirement | Source Plan   | Description                                                                                                         | Status      | Evidence                                                                                                                                                                                                           |
+| ----------- | ------------- | ------------------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| SEGUR-02    | 33-01-PLAN.md | Técnico pode gerenciar treinamentos NR-31 com registro (data, carga horária, instrutor, lista presença)...          | ✓ SATISFIED | TrainingRecordsPage now fetches real ATIVO employees; TrainingRecordModal receives `employeeOptions` with real name and positionName; spec verifies hook called with `status: 'ATIVO'`                             |
+| SEGUR-03    | 33-01-PLAN.md | Gerente pode controlar ASOs com registro (médico CRM, resultado apto/inapto, exames), periodicidade configurável... | ✓ SATISFIED | MedicalExamsPage now fetches real ATIVO employees with asoPeriodicityMonths; MedicalExamModal receives `employeeOptions` including position-specific periodicity; spec verifies asoPeriodicityMonths flows through |
 
 **Orphaned requirements check:** REQUIREMENTS.md traceability table maps SEGUR-02 and SEGUR-03 to Phase 33 only. Both are accounted for by this plan. No orphaned requirements.
 
@@ -82,9 +82,9 @@ Step 7b: SKIPPED — pages require a running frontend + backend server to observ
 
 Scan of the 6 modified files:
 
-| File | Line | Pattern | Severity | Impact |
-|------|------|---------|----------|--------|
-| — | — | No MOCK_EMPLOYEES, no TODOs, no placeholder returns | — | None found |
+| File | Line | Pattern                                             | Severity | Impact     |
+| ---- | ---- | --------------------------------------------------- | -------- | ---------- |
+| —    | —    | No MOCK_EMPLOYEES, no TODOs, no placeholder returns | —        | None found |
 
 No empty-array stubs, no `return null`, no hardcoded empty props, no TODO/FIXME comments found in production files. Both spec files correctly use `vi.fn()` and `vi.mock()` without blocking the component rendering.
 

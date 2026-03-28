@@ -5,13 +5,7 @@ interface CostCompositionChartProps {
   data: CostCompositionItem[];
 }
 
-const COLORS_HEX = [
-  '#2E7D32',
-  '#F9A825',
-  '#0288D1',
-  '#8D6E63',
-  '#A8A196',
-];
+const COLORS_HEX = ['#2E7D32', '#F9A825', '#0288D1', '#8D6E63', '#A8A196'];
 
 function formatBRL(value: string): string {
   const num = parseFloat(value);
@@ -85,19 +79,9 @@ export default function CostCompositionChart({ data }: CostCompositionChartProps
     >
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            innerRadius={60}
-            outerRadius={90}
-            dataKey="value"
-          >
+          <Pie data={chartData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} dataKey="value">
             {chartData.map((_, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={COLORS_HEX[index % COLORS_HEX.length]}
-              />
+              <Cell key={`cell-${index}`} fill={COLORS_HEX[index % COLORS_HEX.length]} />
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />

@@ -134,7 +134,9 @@
   color: var(--color-neutral-600, #6b6560);
   cursor: pointer;
   min-height: 48px;
-  transition: color 200ms ease-out, border-color 200ms ease-out;
+  transition:
+    color 200ms ease-out,
+    border-color 200ms ease-out;
   margin-bottom: -1px;
 }
 

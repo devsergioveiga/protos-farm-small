@@ -152,9 +152,7 @@ export function calcRuralNightPremium(
 export function calcMonthlyTotals(dailyResults: DailyWorkResult[]): MonthlyTotals {
   return dailyResults.reduce<MonthlyTotals>(
     (acc, day) => {
-      const dayTotal = day.regularMinutes
-        .plus(day.overtime50Minutes)
-        .plus(day.overtime100Minutes);
+      const dayTotal = day.regularMinutes.plus(day.overtime50Minutes).plus(day.overtime100Minutes);
 
       const isAbsence = dayTotal.isZero();
 

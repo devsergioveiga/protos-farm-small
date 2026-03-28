@@ -1,11 +1,7 @@
 import { useState, useCallback } from 'react';
 import { api } from '@/services/api';
 import { useAuth } from '@/stores/AuthContext';
-import type {
-  PayrollRun,
-  PayrollRunType,
-  WizardEmployeePreview,
-} from '@/types/payroll-runs';
+import type { PayrollRun, PayrollRunType, WizardEmployeePreview } from '@/types/payroll-runs';
 
 interface FetchRunsFilters {
   month?: string;
@@ -82,10 +78,9 @@ export function usePayrollRuns() {
       setError(null);
       setSuccessMessage(null);
       try {
-        const result = await api.post<PayrollRun>(
-          `/org/${orgId}/payroll-runs/${runId}/process`,
-          { employeeIds },
-        );
+        const result = await api.post<PayrollRun>(`/org/${orgId}/payroll-runs/${runId}/process`, {
+          employeeIds,
+        });
         setSuccessMessage('Folha processada com sucesso');
         return result;
       } catch (err) {

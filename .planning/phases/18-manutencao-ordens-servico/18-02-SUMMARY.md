@@ -13,14 +13,17 @@ Work orders backend: full OS lifecycle service (open → EM_ANDAMENTO → AGUARD
 ## Key Files
 
 ### Created
+
 - `apps/backend/src/modules/work-orders/work-orders.service.ts`
 - `apps/backend/src/modules/work-orders/work-orders.routes.ts`
 
 ### Modified
+
 - `apps/backend/src/modules/work-orders/work-orders.routes.spec.ts`
 - `apps/backend/src/app.ts`
 
 ## Commits
+
 - `b5f7d38f` feat(18-02): work orders service — CRUD + close + dashboard
 
 ## Self-Check: PASSED

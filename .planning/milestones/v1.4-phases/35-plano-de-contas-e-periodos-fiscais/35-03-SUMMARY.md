@@ -1,15 +1,15 @@
 ---
 phase: 35-plano-de-contas-e-periodos-fiscais
-plan: "03"
+plan: '03'
 subsystem: fiscal-periods
 tags: [accounting, fiscal-periods, state-machine, audit-trail, coa]
 dependency_graph:
-  requires: ["35-01"]
-  provides: ["fiscal-periods-api", "getPeriodForDate", "period-state-machine"]
-  affects: ["accounting-entries", "journal-entries", "chart-of-accounts"]
+  requires: ['35-01']
+  provides: ['fiscal-periods-api', 'getPeriodForDate', 'period-state-machine']
+  affects: ['accounting-entries', 'journal-entries', 'chart-of-accounts']
 tech_stack:
   added: []
-  patterns: ["collocated-module", "state-machine", "audit-trail", "eachMonthOfInterval-date-fns"]
+  patterns: ['collocated-module', 'state-machine', 'audit-trail', 'eachMonthOfInterval-date-fns']
 key_files:
   created:
     - apps/backend/src/modules/fiscal-periods/fiscal-periods.types.ts
@@ -19,13 +19,13 @@ key_files:
   modified:
     - apps/backend/src/app.ts
 decisions:
-  - "fiscalPeriodsRouter mounted at /api/org/:orgId with mergeParams:true to avoid param conflicts with top-level route prefix"
-  - "blockPeriod accepts both OPEN and CLOSED as valid source states — matches valid transitions table"
-  - "getPeriodForDate filters by fiscalYear.isActive:true to avoid returning periods from inactive years"
-  - "eachMonthOfInterval from date-fns used for safra year support (spans two calendar years)"
+  - 'fiscalPeriodsRouter mounted at /api/org/:orgId with mergeParams:true to avoid param conflicts with top-level route prefix'
+  - 'blockPeriod accepts both OPEN and CLOSED as valid source states — matches valid transitions table'
+  - 'getPeriodForDate filters by fiscalYear.isActive:true to avoid returning periods from inactive years'
+  - 'eachMonthOfInterval from date-fns used for safra year support (spans two calendar years)'
 metrics:
-  duration: "5m 13s"
-  completed_date: "2026-03-27"
+  duration: '5m 13s'
+  completed_date: '2026-03-27'
   tasks_completed: 2
   files_created: 4
   files_modified: 1
@@ -37,22 +37,25 @@ Fiscal year CRUD with auto-generated monthly periods using date-fns `eachMonthOf
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Create fiscal periods service, types, and routes | cb1844bc | fiscal-periods.types.ts, fiscal-periods.service.ts, fiscal-periods.routes.ts, app.ts |
-| 2 | Write fiscal periods integration tests | e2dd25cb | fiscal-periods.routes.spec.ts |
+| Task | Name                                             | Commit   | Files                                                                                |
+| ---- | ------------------------------------------------ | -------- | ------------------------------------------------------------------------------------ |
+| 1    | Create fiscal periods service, types, and routes | cb1844bc | fiscal-periods.types.ts, fiscal-periods.service.ts, fiscal-periods.routes.ts, app.ts |
+| 2    | Write fiscal periods integration tests           | e2dd25cb | fiscal-periods.routes.spec.ts                                                        |
 
 ## What Was Built
 
 ### fiscal-periods.types.ts
+
 - `CreateFiscalYearInput`, `ClosePeriodInput`, `ReopenPeriodInput` — input interfaces
 - `FiscalYearOutput`, `AccountingPeriodOutput` — output interfaces with proper Prisma PeriodStatus typing
 - `FiscalPeriodError` — error class with `code` field (OVERLAPPING_YEAR, INVALID_TRANSITION, REASON_REQUIRED, PERIOD_NOT_FOUND, YEAR_NOT_FOUND) and HTTP `statusCode`
 
 ### fiscal-periods.service.ts
+
 Exports: `createFiscalYear`, `getFiscalYears`, `closePeriod`, `reopenPeriod`, `blockPeriod`, `getPeriodForDate`
 
 **State machine transitions:**
+
 - `OPEN -> CLOSED` (closePeriod) — sets closedAt/closedBy
 - `CLOSED -> OPEN` (reopenPeriod) — requires non-empty reopenReason, sets reopenedAt/reopenedBy/reopenReason
 - `OPEN -> BLOCKED` (blockPeriod)
@@ -62,7 +65,9 @@ Exports: `createFiscalYear`, `getFiscalYears`, `closePeriod`, `reopenPeriod`, `b
 **Auto period generation:** `createFiscalYear` uses `eachMonthOfInterval({ start, end })` from date-fns to generate all monthly periods — supports both calendar years (Jan-Dec) and safra years (Jul-Jun spanning two calendar years).
 
 ### fiscal-periods.routes.ts
+
 7 endpoints mounted at `/api/org/:orgId`:
+
 - `GET /fiscal-years` — list all fiscal years with periods
 - `POST /fiscal-years` — create fiscal year (returns 201)
 - `GET /fiscal-years/:yearId/periods` — periods for a specific year
@@ -72,6 +77,7 @@ Exports: `createFiscalYear`, `getFiscalYears`, `closePeriod`, `reopenPeriod`, `b
 - `POST /accounting-periods/:periodId/block` — block period
 
 ### integration tests (16 cases)
+
 All pass. Coverage: createFiscalYear (4), getFiscalYears (1), closePeriod (3), reopenPeriod (3), blockPeriod (3), getPeriodForDate (2).
 
 ## Decisions Made

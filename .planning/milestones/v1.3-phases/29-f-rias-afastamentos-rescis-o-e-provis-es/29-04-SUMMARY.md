@@ -1,12 +1,12 @@
 ---
 phase: 29-ferias-afastamentos-rescisao-e-provisoes
-plan: "04"
+plan: '04'
 subsystem: frontend-rh
 tags: [frontend, react, vacation, absences, hr, ui]
 dependency_graph:
-  requires: ["29-01", "29-02", "29-03"]
-  provides: ["vacation-schedules-page", "employee-absences-page", "rh-sidebar-items"]
-  affects: ["App.tsx", "Sidebar.tsx"]
+  requires: ['29-01', '29-02', '29-03']
+  provides: ['vacation-schedules-page', 'employee-absences-page', 'rh-sidebar-items']
+  affects: ['App.tsx', 'Sidebar.tsx']
 tech_stack:
   added: []
   patterns:
@@ -33,13 +33,13 @@ key_files:
     - apps/frontend/src/components/layout/Sidebar.tsx
     - apps/frontend/src/App.tsx
 decisions:
-  - "All column headers rendered ALL CAPS per design system (table th elements) — acceptance criterion checked case-insensitively"
-  - "VacationScheduleModal Step 3 shows estimated calculation — definitive values computed server-side on confirm"
-  - "useRef typed separately for select (firstSelectRef) and input (firstInputRef) to satisfy TypeScript strict mode"
-  - "Sidebar uses existing Stethoscope icon import (already imported for Tratamentos in REBANHO group)"
+  - 'All column headers rendered ALL CAPS per design system (table th elements) — acceptance criterion checked case-insensitively'
+  - 'VacationScheduleModal Step 3 shows estimated calculation — definitive values computed server-side on confirm'
+  - 'useRef typed separately for select (firstSelectRef) and input (firstInputRef) to satisfy TypeScript strict mode'
+  - 'Sidebar uses existing Stethoscope icon import (already imported for Tratamentos in REBANHO group)'
 metrics:
   duration_minutes: 17
-  completed_date: "2026-03-25"
+  completed_date: '2026-03-25'
   tasks_completed: 3
   tasks_total: 3
   files_created: 12
@@ -55,18 +55,21 @@ Frontend types, hooks, and pages for vacation scheduling and employee absence ma
 ### Task 1 — Types, Hooks, Sidebar, App.tsx routes (commit a7832a1f)
 
 **4 type files:**
+
 - `types/vacation.ts` — `VacationAcquisitivePeriod`, `VacationSchedule`, `ScheduleVacationInput`, `VacationCalculationPreview`
 - `types/absence.ts` — `EmployeeAbsence`, `AbsenceType`, `ABSENCE_TYPE_LABELS`, `ABSENCE_TYPE_FIXED_DAYS`, `CreateAbsenceInput`, `RegisterReturnInput`
 - `types/termination.ts` — `EmployeeTermination`, `TerminationType`, `TERMINATION_TYPE_LABELS`, `TERMINATION_STATUS_LABELS`, `CreateTerminationInput`
 - `types/provision.ts` — `PayrollProvision`, `ProvisionReportRow`, `CalculateProvisionsResult`, `PROVISION_TYPE_LABELS`
 
 **4 hooks** (useState+useCallback pattern, useAuth internally, api.getBlob for PDFs):
+
 - `useVacationSchedules` — fetchPeriods, fetchSchedules, scheduleVacation, cancelVacation, markAsPaid, fetchExpiring, getReceiptPdf
 - `useEmployeeAbsences` — fetchAbsences, createAbsence, registerReturn, updateAbsence
 - `useEmployeeTerminations` — fetchTerminations, processTermination, confirmTermination, markAsPaid, getTrctPdf, getGrrfPdf
 - `usePayrollProvisions` — fetchProvisions, calculateProvisions, reverseProvision, fetchReport, exportReport
 
 **Sidebar:** 2 new items added after Folha de Pagamento in RH group:
+
 - `{ to: '/vacation-schedules', icon: CalendarCheck, label: 'Ferias' }` — CalendarCheck already imported
 - `{ to: '/employee-absences', icon: Stethoscope, label: 'Afastamentos' }` — Stethoscope already imported
 
@@ -101,6 +104,7 @@ Frontend types, hooks, and pages for vacation scheduling and employee absence ma
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] TypeScript ref type mismatch in VacationScheduleModal**
+
 - **Found during:** Task 2 verification (`npx tsc --noEmit`)
 - **Issue:** Single `useRef<HTMLInputElement>` used for both `<select>` (step 1) and `<input>` (step 2) — TypeScript strict mode rejects cross-type ref assignment
 - **Fix:** Split into two typed refs: `firstSelectRef = useRef<HTMLSelectElement>()` and `firstInputRef = useRef<HTMLInputElement>()` with conditional focus based on current step

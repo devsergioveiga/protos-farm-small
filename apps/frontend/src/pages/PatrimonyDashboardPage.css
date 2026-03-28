@@ -134,13 +134,20 @@
 }
 
 @keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .patrimony-dashboard__skeleton-card,
-  .patrimony-dashboard__skeleton-chart { animation: none; }
+  .patrimony-dashboard__skeleton-chart {
+    animation: none;
+  }
 }
 
 /* Content */
@@ -151,7 +158,8 @@
 }
 
 /* KPI Section */
-.patrimony-dashboard__kpi-section { }
+.patrimony-dashboard__kpi-section {
+}
 
 .patrimony-dashboard__kpi-card {
   background: var(--color-neutral-0);

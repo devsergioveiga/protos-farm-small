@@ -74,9 +74,7 @@ export default function PositionEpiRequirementsModal({
       setQuantity('1');
       onSuccess();
     } catch (err: unknown) {
-      setAddError(
-        err instanceof Error ? err.message : 'Não foi possível adicionar o requisito.',
-      );
+      setAddError(err instanceof Error ? err.message : 'Não foi possível adicionar o requisito.');
     } finally {
       setAdding(false);
     }

@@ -445,7 +445,9 @@
   font-weight: 600;
   cursor: pointer;
   min-height: 40px;
-  transition: background 200ms ease-out, border-color 200ms ease-out;
+  transition:
+    background 200ms ease-out,
+    border-color 200ms ease-out;
 }
 
 .asset-general-tab__action-btn:hover {

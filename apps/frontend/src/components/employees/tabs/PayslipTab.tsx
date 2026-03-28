@@ -25,8 +25,18 @@ function formatMonth(yyyyMm: string): string {
   const [year, month] = yyyyMm.split('-');
   if (!year || !month) return yyyyMm;
   const months = [
-    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
+    'Jan',
+    'Fev',
+    'Mar',
+    'Abr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Set',
+    'Out',
+    'Nov',
+    'Dez',
   ];
   const m = parseInt(month, 10);
   return `${months[m - 1] ?? month}/${year}`;
@@ -36,12 +46,24 @@ function formatMonth(yyyyMm: string): string {
 function SkeletonRow() {
   return (
     <tr className="payslip-tab__skeleton-row" aria-hidden="true">
-      <td><div className="payslip-tab__skeleton payslip-tab__skeleton--sm" /></td>
-      <td><div className="payslip-tab__skeleton payslip-tab__skeleton--xs" /></td>
-      <td><div className="payslip-tab__skeleton payslip-tab__skeleton--sm" /></td>
-      <td><div className="payslip-tab__skeleton payslip-tab__skeleton--sm" /></td>
-      <td><div className="payslip-tab__skeleton payslip-tab__skeleton--xs" /></td>
-      <td><div className="payslip-tab__skeleton payslip-tab__skeleton--actions" /></td>
+      <td>
+        <div className="payslip-tab__skeleton payslip-tab__skeleton--sm" />
+      </td>
+      <td>
+        <div className="payslip-tab__skeleton payslip-tab__skeleton--xs" />
+      </td>
+      <td>
+        <div className="payslip-tab__skeleton payslip-tab__skeleton--sm" />
+      </td>
+      <td>
+        <div className="payslip-tab__skeleton payslip-tab__skeleton--sm" />
+      </td>
+      <td>
+        <div className="payslip-tab__skeleton payslip-tab__skeleton--xs" />
+      </td>
+      <td>
+        <div className="payslip-tab__skeleton payslip-tab__skeleton--actions" />
+      </td>
     </tr>
   );
 }
@@ -63,7 +85,7 @@ export default function PayslipTab({ orgId, employeeId, employeeEmail }: Payslip
         `/org/${orgId}/employees/${employeeId}/payslips`,
       );
       // Handle both array and paginated response shapes
-      const items = Array.isArray(result) ? result : (result as { data: Payslip[] }).data ?? [];
+      const items = Array.isArray(result) ? result : ((result as { data: Payslip[] }).data ?? []);
       // Only show payslips from COMPLETED runs — filter out REVERTED
       const completed = items.filter((p) => p.status === 'COMPLETED');
       setPayslips(completed);
@@ -96,9 +118,7 @@ export default function PayslipTab({ orgId, employeeId, employeeEmail }: Payslip
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } catch (_err) {
-        setActionError(
-          'Nao foi possivel baixar o holerite. Tente novamente ou contate o suporte.',
-        );
+        setActionError('Nao foi possivel baixar o holerite. Tente novamente ou contate o suporte.');
       } finally {
         setDownloadingId(null);
       }
@@ -146,8 +166,12 @@ export default function PayslipTab({ orgId, employeeId, employeeEmail }: Payslip
             <tr>
               <th scope="col">COMPETENCIA</th>
               <th scope="col">TIPO</th>
-              <th scope="col" className="payslip-tab__col--right">BRUTO</th>
-              <th scope="col" className="payslip-tab__col--right">LIQUIDO</th>
+              <th scope="col" className="payslip-tab__col--right">
+                BRUTO
+              </th>
+              <th scope="col" className="payslip-tab__col--right">
+                LIQUIDO
+              </th>
               <th scope="col">STATUS</th>
               <th scope="col">ACOES</th>
             </tr>
@@ -181,15 +205,17 @@ export default function PayslipTab({ orgId, employeeId, employeeEmail }: Payslip
       ) : (
         <div className="payslip-tab__table-wrapper">
           <table className="payslip-tab__table">
-            <caption className="sr-only">
-              Holerites dos ultimos 12 meses do colaborador
-            </caption>
+            <caption className="sr-only">Holerites dos ultimos 12 meses do colaborador</caption>
             <thead>
               <tr>
                 <th scope="col">COMPETENCIA</th>
                 <th scope="col">TIPO</th>
-                <th scope="col" className="payslip-tab__col--right">BRUTO</th>
-                <th scope="col" className="payslip-tab__col--right">LIQUIDO</th>
+                <th scope="col" className="payslip-tab__col--right">
+                  BRUTO
+                </th>
+                <th scope="col" className="payslip-tab__col--right">
+                  LIQUIDO
+                </th>
                 <th scope="col">STATUS</th>
                 <th scope="col">ACOES</th>
               </tr>
@@ -230,7 +256,11 @@ export default function PayslipTab({ orgId, employeeId, employeeEmail }: Payslip
                       <FileDown
                         size={20}
                         aria-hidden="true"
-                        className={downloadingId === payslip.referenceMonth ? 'payslip-tab__icon--spinning' : ''}
+                        className={
+                          downloadingId === payslip.referenceMonth
+                            ? 'payslip-tab__icon--spinning'
+                            : ''
+                        }
                       />
                     </button>
                     {/* Resend email (only if employee has email) */}
@@ -245,7 +275,9 @@ export default function PayslipTab({ orgId, employeeId, employeeEmail }: Payslip
                         <Mail
                           size={20}
                           aria-hidden="true"
-                          className={resendingId === payslip.id ? 'payslip-tab__icon--spinning' : ''}
+                          className={
+                            resendingId === payslip.id ? 'payslip-tab__icon--spinning' : ''
+                          }
                         />
                       </button>
                     )}

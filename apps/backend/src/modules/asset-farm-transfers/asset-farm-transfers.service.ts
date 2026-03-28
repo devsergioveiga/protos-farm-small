@@ -45,84 +45,86 @@ export async function createTransfer(
   input: CreateTransferInput,
   userId: string,
 ): Promise<TransferOutput> {
-  return prisma.$transaction(async (tx: TxClient) => {
-    // Guard: find asset
-    const asset = await tx.asset.findFirst({
-      where: { id: assetId, organizationId: ctx.organizationId, deletedAt: null },
-      select: { id: true, farmId: true, costCenterId: true, status: true },
-    });
-    if (!asset) {
-      throw new AssetTransferError('Ativo nao encontrado', 404);
-    }
+  return prisma
+    .$transaction(async (tx: TxClient) => {
+      // Guard: find asset
+      const asset = await tx.asset.findFirst({
+        where: { id: assetId, organizationId: ctx.organizationId, deletedAt: null },
+        select: { id: true, farmId: true, costCenterId: true, status: true },
+      });
+      if (!asset) {
+        throw new AssetTransferError('Ativo nao encontrado', 404);
+      }
 
-    // Guard: ALIENADO
-    if (asset.status === 'ALIENADO') {
-      throw new AssetTransferError('Ativo alienado nao pode ser transferido', 400);
-    }
+      // Guard: ALIENADO
+      if (asset.status === 'ALIENADO') {
+        throw new AssetTransferError('Ativo alienado nao pode ser transferido', 400);
+      }
 
-    // Guard: destination farm must belong to same org
-    const toFarm = await tx.farm.findFirst({
-      where: { id: input.toFarmId, organizationId: ctx.organizationId },
-      select: { id: true, name: true },
-    });
-    if (!toFarm) {
-      throw new AssetTransferError('Fazenda destino nao encontrada na organizacao', 400);
-    }
+      // Guard: destination farm must belong to same org
+      const toFarm = await tx.farm.findFirst({
+        where: { id: input.toFarmId, organizationId: ctx.organizationId },
+        select: { id: true, name: true },
+      });
+      if (!toFarm) {
+        throw new AssetTransferError('Fazenda destino nao encontrada na organizacao', 400);
+      }
 
-    // Guard: cannot transfer to same farm
-    if (asset.farmId === input.toFarmId) {
-      throw new AssetTransferError('Ativo ja esta na fazenda de destino', 400);
-    }
+      // Guard: cannot transfer to same farm
+      if (asset.farmId === input.toFarmId) {
+        throw new AssetTransferError('Ativo ja esta na fazenda de destino', 400);
+      }
 
-    // Resolve from farm name
-    const fromFarm = await tx.farm.findFirst({
-      where: { id: asset.farmId },
-      select: { name: true },
-    });
+      // Resolve from farm name
+      const fromFarm = await tx.farm.findFirst({
+        where: { id: asset.farmId },
+        select: { name: true },
+      });
 
-    // Create transfer record
-    const transfer = await tx.assetFarmTransfer.create({
-      data: {
-        organizationId: ctx.organizationId,
-        assetId: asset.id,
-        fromFarmId: asset.farmId,
-        toFarmId: input.toFarmId,
-        transferDate: new Date(input.transferDate),
-        fromCostCenterId: asset.costCenterId ?? null,
-        toCostCenterId: input.toCostCenterId ?? null,
-        notes: input.notes ?? null,
-        createdBy: userId,
-      },
-    });
+      // Create transfer record
+      const transfer = await tx.assetFarmTransfer.create({
+        data: {
+          organizationId: ctx.organizationId,
+          assetId: asset.id,
+          fromFarmId: asset.farmId,
+          toFarmId: input.toFarmId,
+          transferDate: new Date(input.transferDate),
+          fromCostCenterId: asset.costCenterId ?? null,
+          toCostCenterId: input.toCostCenterId ?? null,
+          notes: input.notes ?? null,
+          createdBy: userId,
+        },
+      });
 
-    // Update asset: move to destination farm, optionally update cost center
-    await tx.asset.update({
-      where: { id: asset.id },
-      data: {
-        farmId: input.toFarmId,
-        costCenterId:
-          input.toCostCenterId !== undefined ? input.toCostCenterId : asset.costCenterId,
-      },
-    });
+      // Update asset: move to destination farm, optionally update cost center
+      await tx.asset.update({
+        where: { id: asset.id },
+        data: {
+          farmId: input.toFarmId,
+          costCenterId:
+            input.toCostCenterId !== undefined ? input.toCostCenterId : asset.costCenterId,
+        },
+      });
 
-    return mapTransfer({
-      ...transfer,
-      asset: { assetTag: '', name: '' }, // will be fetched below
-      fromFarm: { name: fromFarm?.name ?? '' },
-      toFarm: { name: toFarm.name },
+      return mapTransfer({
+        ...transfer,
+        asset: { assetTag: '', name: '' }, // will be fetched below
+        fromFarm: { name: fromFarm?.name ?? '' },
+        toFarm: { name: toFarm.name },
+      });
+    })
+    .then(async (result) => {
+      // Enrich with asset tag and name
+      const assetData = await prisma.asset.findFirst({
+        where: { id: assetId },
+        select: { assetTag: true, name: true },
+      });
+      return {
+        ...result,
+        assetTag: assetData?.assetTag ?? '',
+        assetName: assetData?.name ?? '',
+      };
     });
-  }).then(async (result) => {
-    // Enrich with asset tag and name
-    const assetData = await prisma.asset.findFirst({
-      where: { id: assetId },
-      select: { assetTag: true, name: true },
-    });
-    return {
-      ...result,
-      assetTag: assetData?.assetTag ?? '',
-      assetName: assetData?.name ?? '',
-    };
-  });
 }
 
 // ─── listTransfers ────────────────────────────────────────────────────

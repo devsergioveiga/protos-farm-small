@@ -102,9 +102,7 @@ describe('Integrated Report Routes', () => {
     });
 
     it('returns 400 when fiscalYearId is missing', async () => {
-      const res = await request(app)
-        .get(`${BASE}/download`)
-        .set('Authorization', 'Bearer token');
+      const res = await request(app).get(`${BASE}/download`).set('Authorization', 'Bearer token');
 
       expect(res.status).toBe(400);
       expect(res.body.code).toBe('MISSING_FISCAL_YEAR_ID');
@@ -196,9 +194,7 @@ describe('Integrated Report Routes', () => {
     it('returns { notesText: null } for org without notes', async () => {
       (mockedService.getNotes as jest.Mock).mockResolvedValue(null);
 
-      const res = await request(app)
-        .get(`${BASE}/notes`)
-        .set('Authorization', 'Bearer token');
+      const res = await request(app).get(`${BASE}/notes`).set('Authorization', 'Bearer token');
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ notesText: null });
@@ -207,9 +203,7 @@ describe('Integrated Report Routes', () => {
     it('returns { notesText: string } when org has notes', async () => {
       (mockedService.getNotes as jest.Mock).mockResolvedValue('Notas sobre o exercicio 2025.');
 
-      const res = await request(app)
-        .get(`${BASE}/notes`)
-        .set('Authorization', 'Bearer token');
+      const res = await request(app).get(`${BASE}/notes`).set('Authorization', 'Bearer token');
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ notesText: 'Notas sobre o exercicio 2025.' });
@@ -218,9 +212,7 @@ describe('Integrated Report Routes', () => {
     it('calls getNotes with correct orgId', async () => {
       (mockedService.getNotes as jest.Mock).mockResolvedValue(null);
 
-      await request(app)
-        .get(`${BASE}/notes`)
-        .set('Authorization', 'Bearer token');
+      await request(app).get(`${BASE}/notes`).set('Authorization', 'Bearer token');
 
       expect(mockedService.getNotes).toHaveBeenCalledWith(ORG_ID);
     });

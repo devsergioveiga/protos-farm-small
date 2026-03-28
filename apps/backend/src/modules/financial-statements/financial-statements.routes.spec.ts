@@ -270,9 +270,7 @@ describe('Financial Statements Routes', () => {
       throw new Error('Unauthorized');
     });
 
-    const res = await request(app)
-      .get(`${BASE}/dre`)
-      .query({ fiscalYearId: 'fy-1', month: '3' });
+    const res = await request(app).get(`${BASE}/dre`).query({ fiscalYearId: 'fy-1', month: '3' });
 
     expect(res.status).toBe(401);
   });
@@ -294,7 +292,7 @@ describe('Financial Statements Routes', () => {
     expect(res.body).toHaveProperty('totalAtivo');
     expect(res.body).toHaveProperty('indicators');
     expect(res.body.indicators.liquidezCorrente).toBe('2.50');
-    expect(res.body.ativo).toHaveLength(2);  // AC and ANC
+    expect(res.body.ativo).toHaveLength(2); // AC and ANC
     expect(res.body.passivo).toHaveLength(3); // PC, PNC, PL
   });
 

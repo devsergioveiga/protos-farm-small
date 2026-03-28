@@ -43,8 +43,18 @@ function formatDate(dateStr: string): string {
 function getMonthLabel(referenceMonth: string): string {
   const [year, month] = referenceMonth.split('-');
   const monthNames = [
-    'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-    'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
+    'Jan',
+    'Fev',
+    'Mar',
+    'Abr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Set',
+    'Out',
+    'Nov',
+    'Dez',
   ];
   const m = parseInt(month, 10) - 1;
   return `${monthNames[m] ?? month}/${year}`;
@@ -192,8 +202,13 @@ export default function PayrollRunsPage() {
       {/* Breadcrumb */}
       <nav className="payroll-runs-page__breadcrumb" aria-label="Navegação">
         <span className="payroll-runs-page__breadcrumb-item">RH</span>
-        <span className="payroll-runs-page__breadcrumb-sep" aria-hidden="true">/</span>
-        <span className="payroll-runs-page__breadcrumb-item payroll-runs-page__breadcrumb-item--current" aria-current="page">
+        <span className="payroll-runs-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
+        <span
+          className="payroll-runs-page__breadcrumb-item payroll-runs-page__breadcrumb-item--current"
+          aria-current="page"
+        >
           Folha de Pagamento
         </span>
       </nav>
@@ -223,12 +238,20 @@ export default function PayrollRunsPage() {
 
       {/* Toast messages */}
       {runsSuccess && (
-        <div className="payroll-runs-page__toast payroll-runs-page__toast--success" role="status" aria-live="polite">
+        <div
+          className="payroll-runs-page__toast payroll-runs-page__toast--success"
+          role="status"
+          aria-live="polite"
+        >
           {runsSuccess}
         </div>
       )}
       {(runsError || advancesError) && (
-        <div className="payroll-runs-page__toast payroll-runs-page__toast--error" role="alert" aria-live="assertive">
+        <div
+          className="payroll-runs-page__toast payroll-runs-page__toast--error"
+          role="alert"
+          aria-live="assertive"
+        >
           {runsError ?? advancesError}
         </div>
       )}
@@ -312,7 +335,11 @@ export default function PayrollRunsPage() {
       </div>
 
       {/* Tab bar */}
-      <div className="payroll-runs-page__tabs" role="tablist" aria-label="Seções da folha de pagamento">
+      <div
+        className="payroll-runs-page__tabs"
+        role="tablist"
+        aria-label="Seções da folha de pagamento"
+      >
         <button
           role="tab"
           type="button"
@@ -351,14 +378,30 @@ export default function PayrollRunsPage() {
               <caption className="sr-only">Rodadas de folha de pagamento</caption>
               <thead>
                 <tr>
-                  <th scope="col" className="payroll-runs-page__th">COMPETENCIA</th>
-                  <th scope="col" className="payroll-runs-page__th">TIPO</th>
-                  <th scope="col" className="payroll-runs-page__th">COLABORADORES</th>
-                  <th scope="col" className="payroll-runs-page__th">BRUTO</th>
-                  <th scope="col" className="payroll-runs-page__th">ENCARGOS</th>
-                  <th scope="col" className="payroll-runs-page__th">LIQUIDO</th>
-                  <th scope="col" className="payroll-runs-page__th">STATUS</th>
-                  <th scope="col" className="payroll-runs-page__th">ACOES</th>
+                  <th scope="col" className="payroll-runs-page__th">
+                    COMPETENCIA
+                  </th>
+                  <th scope="col" className="payroll-runs-page__th">
+                    TIPO
+                  </th>
+                  <th scope="col" className="payroll-runs-page__th">
+                    COLABORADORES
+                  </th>
+                  <th scope="col" className="payroll-runs-page__th">
+                    BRUTO
+                  </th>
+                  <th scope="col" className="payroll-runs-page__th">
+                    ENCARGOS
+                  </th>
+                  <th scope="col" className="payroll-runs-page__th">
+                    LIQUIDO
+                  </th>
+                  <th scope="col" className="payroll-runs-page__th">
+                    STATUS
+                  </th>
+                  <th scope="col" className="payroll-runs-page__th">
+                    ACOES
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -368,7 +411,11 @@ export default function PayrollRunsPage() {
                   <tr>
                     <td colSpan={8}>
                       <div className="payroll-runs-page__empty">
-                        <FileText size={48} aria-hidden="true" className="payroll-runs-page__empty-icon" />
+                        <FileText
+                          size={48}
+                          aria-hidden="true"
+                          className="payroll-runs-page__empty-icon"
+                        />
                         <p className="payroll-runs-page__empty-title">Nenhuma folha processada</p>
                         <p className="payroll-runs-page__empty-desc">
                           Inicie o processamento mensal para gerar os holerites e as Contas a Pagar.
@@ -464,7 +511,11 @@ export default function PayrollRunsPage() {
           <ul className="payroll-runs-page__mobile-list" role="list">
             {runsLoading &&
               Array.from({ length: 3 }).map((_, i) => (
-                <li key={i} className="payroll-runs-page__mobile-card payroll-runs-page__skeleton-card" aria-hidden="true">
+                <li
+                  key={i}
+                  className="payroll-runs-page__mobile-card payroll-runs-page__skeleton-card"
+                  aria-hidden="true"
+                >
                   <div className="payroll-runs-page__skeleton-pulse payroll-runs-page__skeleton-pulse--wide" />
                   <div className="payroll-runs-page__skeleton-pulse" />
                 </li>
@@ -514,11 +565,15 @@ export default function PayrollRunsPage() {
                     <div className="payroll-runs-page__mobile-card-expanded">
                       <div className="payroll-runs-page__mobile-card-row">
                         <span>Bruto:</span>
-                        <span className="payroll-runs-page__mobile-mono">{formatCurrency(run.totalGross)}</span>
+                        <span className="payroll-runs-page__mobile-mono">
+                          {formatCurrency(run.totalGross)}
+                        </span>
                       </div>
                       <div className="payroll-runs-page__mobile-card-row">
                         <span>Encargos:</span>
-                        <span className="payroll-runs-page__mobile-mono">{formatCurrency(run.totalCharges)}</span>
+                        <span className="payroll-runs-page__mobile-mono">
+                          {formatCurrency(run.totalCharges)}
+                        </span>
                       </div>
                       <div className="payroll-runs-page__mobile-card-row">
                         <span>Colaboradores:</span>
@@ -553,12 +608,24 @@ export default function PayrollRunsPage() {
               <caption className="sr-only">Adiantamentos salariais</caption>
               <thead>
                 <tr>
-                  <th scope="col" className="payroll-runs-page__th">DATA</th>
-                  <th scope="col" className="payroll-runs-page__th">COLABORADOR</th>
-                  <th scope="col" className="payroll-runs-page__th">COMPETENCIA</th>
-                  <th scope="col" className="payroll-runs-page__th">VALOR</th>
-                  <th scope="col" className="payroll-runs-page__th">STATUS CP</th>
-                  <th scope="col" className="payroll-runs-page__th">ACOES</th>
+                  <th scope="col" className="payroll-runs-page__th">
+                    DATA
+                  </th>
+                  <th scope="col" className="payroll-runs-page__th">
+                    COLABORADOR
+                  </th>
+                  <th scope="col" className="payroll-runs-page__th">
+                    COMPETENCIA
+                  </th>
+                  <th scope="col" className="payroll-runs-page__th">
+                    VALOR
+                  </th>
+                  <th scope="col" className="payroll-runs-page__th">
+                    STATUS CP
+                  </th>
+                  <th scope="col" className="payroll-runs-page__th">
+                    ACOES
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -568,8 +635,14 @@ export default function PayrollRunsPage() {
                   <tr>
                     <td colSpan={6}>
                       <div className="payroll-runs-page__empty">
-                        <Wallet size={48} aria-hidden="true" className="payroll-runs-page__empty-icon" />
-                        <p className="payroll-runs-page__empty-title">Nenhum adiantamento registrado</p>
+                        <Wallet
+                          size={48}
+                          aria-hidden="true"
+                          className="payroll-runs-page__empty-icon"
+                        />
+                        <p className="payroll-runs-page__empty-title">
+                          Nenhum adiantamento registrado
+                        </p>
                         <p className="payroll-runs-page__empty-desc">
                           Registre um adiantamento individual ou processe o lote do dia 15.
                         </p>
@@ -581,14 +654,14 @@ export default function PayrollRunsPage() {
                   advances.map((adv: SalaryAdvance) => (
                     <tr key={adv.id} className="payroll-runs-page__row">
                       <td className="payroll-runs-page__td">{formatDate(adv.advanceDate)}</td>
-                      <td className="payroll-runs-page__td">{adv.employeeName ?? adv.employeeId}</td>
+                      <td className="payroll-runs-page__td">
+                        {adv.employeeName ?? adv.employeeId}
+                      </td>
                       <td className="payroll-runs-page__td">{getMonthLabel(adv.referenceMonth)}</td>
                       <td className="payroll-runs-page__td payroll-runs-page__td--mono">
                         {formatCurrency(adv.amount)}
                       </td>
-                      <td className="payroll-runs-page__td">
-                        {adv.payableStatus ?? '—'}
-                      </td>
+                      <td className="payroll-runs-page__td">{adv.payableStatus ?? '—'}</td>
                       <td className="payroll-runs-page__td payroll-runs-page__td--actions">
                         <button
                           type="button"

@@ -131,13 +131,27 @@ function WorkSchedulesPage() {
             <tbody>
               {Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i} className="work-schedules__skeleton-row">
-                  <td><div className="work-schedules__skeleton work-schedules__skeleton--name" /></td>
-                  <td><div className="work-schedules__skeleton work-schedules__skeleton--text" /></td>
-                  <td><div className="work-schedules__skeleton work-schedules__skeleton--text" /></td>
-                  <td><div className="work-schedules__skeleton work-schedules__skeleton--text" /></td>
-                  <td><div className="work-schedules__skeleton work-schedules__skeleton--text" /></td>
-                  <td><div className="work-schedules__skeleton work-schedules__skeleton--badge" /></td>
-                  <td><div className="work-schedules__skeleton work-schedules__skeleton--text" /></td>
+                  <td>
+                    <div className="work-schedules__skeleton work-schedules__skeleton--name" />
+                  </td>
+                  <td>
+                    <div className="work-schedules__skeleton work-schedules__skeleton--text" />
+                  </td>
+                  <td>
+                    <div className="work-schedules__skeleton work-schedules__skeleton--text" />
+                  </td>
+                  <td>
+                    <div className="work-schedules__skeleton work-schedules__skeleton--text" />
+                  </td>
+                  <td>
+                    <div className="work-schedules__skeleton work-schedules__skeleton--text" />
+                  </td>
+                  <td>
+                    <div className="work-schedules__skeleton work-schedules__skeleton--badge" />
+                  </td>
+                  <td>
+                    <div className="work-schedules__skeleton work-schedules__skeleton--text" />
+                  </td>
                 </tr>
               ))}
             </tbody>

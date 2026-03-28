@@ -7,10 +7,7 @@ export interface BalanceSheetFilters {
   month: number;
 }
 
-export function useBalanceSheet(
-  orgId: string | undefined,
-  filters: BalanceSheetFilters | null,
-) {
+export function useBalanceSheet(orgId: string | undefined, filters: BalanceSheetFilters | null) {
   const [data, setData] = useState<BpOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +26,9 @@ export function useBalanceSheet(
       );
       setData(result);
     } catch {
-      setError('Não foi possível carregar o Balanço Patrimonial. Verifique sua conexão e tente novamente.');
+      setError(
+        'Não foi possível carregar o Balanço Patrimonial. Verifique sua conexão e tente novamente.',
+      );
       setData(null);
     } finally {
       setLoading(false);

@@ -81,7 +81,9 @@ export default function SafetyDashboardPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('geral');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
-  const [pendingTypeFilter, setPendingTypeFilter] = useState<'EPI' | 'TREINAMENTO' | 'ASO' | ''>('');
+  const [pendingTypeFilter, setPendingTypeFilter] = useState<'EPI' | 'TREINAMENTO' | 'ASO' | ''>(
+    '',
+  );
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
   const [toast, setToast] = useState<string | null>(null);
@@ -147,9 +149,7 @@ export default function SafetyDashboardPage() {
 
   const epiPending = employeeList.filter((e) => e.epiCompliance.pending.length > 0);
   const trainingPending = employeeList.filter((e) => e.trainingCompliance.expired.length > 0);
-  const asoPending = employeeList.filter(
-    (e) => e.asoCompliance.expiryStatus !== 'OK',
-  );
+  const asoPending = employeeList.filter((e) => e.asoCompliance.expiryStatus !== 'OK');
 
   // Apply status filter client-side for sub-tabs
   const applyStatusFilter = (list: EmployeeCompliance[]) => {
@@ -177,11 +177,7 @@ export default function SafetyDashboardPage() {
       {error && !loading && (
         <div className="safety-dashboard__error" role="alert">
           <p>{error}</p>
-          <button
-            type="button"
-            className="safety-dashboard__retry-btn"
-            onClick={loadData}
-          >
+          <button type="button" className="safety-dashboard__retry-btn" onClick={loadData}>
             Tentar novamente
           </button>
         </div>
@@ -200,11 +196,7 @@ export default function SafetyDashboardPage() {
             suffix={` (${summary.compliantPercent}%)`}
             borderColor="var(--color-primary-600)"
           />
-          <SafetyKpiCard
-            label="Com pendências"
-            value={summary.pendingCount}
-            icon={ShieldAlert}
-          />
+          <SafetyKpiCard label="Com pendências" value={summary.pendingCount} icon={ShieldAlert} />
           <SafetyKpiCard
             label="Vencimentos em 30 dias"
             value={summary.expiringIn30Days}
@@ -337,11 +329,7 @@ export default function SafetyDashboardPage() {
           {/* Empty — all compliant */}
           {!loading && allCompliant && (
             <div className="safety-dashboard__empty-state">
-              <ShieldCheck
-                size={64}
-                aria-hidden="true"
-                className="safety-dashboard__empty-icon"
-              />
+              <ShieldCheck size={64} aria-hidden="true" className="safety-dashboard__empty-icon" />
               <h2 className="safety-dashboard__empty-title">
                 Todos os colaboradores em conformidade
               </h2>
@@ -371,10 +359,7 @@ export default function SafetyDashboardPage() {
                         <td>{emp.employeeName}</td>
                         <td>{emp.positionName ?? '—'}</td>
                         <td>
-                          <CountBadge
-                            count={emp.epiCompliance.pending.length}
-                            variant="warning"
-                          />
+                          <CountBadge count={emp.epiCompliance.pending.length} variant="warning" />
                         </td>
                         <td>
                           <CountBadge
@@ -465,9 +450,7 @@ export default function SafetyDashboardPage() {
                         <tr key={`${emp.employeeId}-${idx}`}>
                           {idx === 0 && (
                             <>
-                              <td rowSpan={emp.epiCompliance.pending.length}>
-                                {emp.employeeName}
-                              </td>
+                              <td rowSpan={emp.epiCompliance.pending.length}>{emp.employeeName}</td>
                               <td rowSpan={emp.epiCompliance.pending.length}>
                                 {emp.positionName ?? '—'}
                               </td>

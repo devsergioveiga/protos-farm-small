@@ -1,15 +1,21 @@
 ---
 phase: 40-dfc-dashboard-executivo
-plan: "03"
+plan: '03'
 subsystem: frontend
 tags: [dfc, financial-statements, react, typescript, hooks, components]
 dependency_graph:
-  requires: ["40-01"]
-  provides: ["DfcPage at /dfc", "useDfc hook", "useAccountingDashboard hook", "DfcTable component"]
-  affects: ["40-04"]
+  requires: ['40-01']
+  provides: ['DfcPage at /dfc', 'useDfc hook', 'useAccountingDashboard hook', 'DfcTable component']
+  affects: ['40-04']
 tech_stack:
   added: []
-  patterns: ["lazy-loaded page route", "hidden-attribute tabs", "useFiscalYears pattern", "semantic HTML table"]
+  patterns:
+    [
+      'lazy-loaded page route',
+      'hidden-attribute tabs',
+      'useFiscalYears pattern',
+      'semantic HTML table',
+    ]
 key_files:
   created:
     - apps/frontend/src/hooks/useDfc.ts
@@ -23,13 +29,13 @@ key_files:
     - apps/frontend/src/App.tsx
     - apps/frontend/src/components/layout/Sidebar.tsx
 decisions:
-  - "Tabs use hidden attribute (not conditional render) per Phase 37 decision — preserves panel state on switch"
-  - "useDfc and useAccountingDashboard follow useDre pattern exactly for consistency"
-  - "DfcTable uses semantic <table> with <caption>, <th scope>, tfoot for cash summary rows"
-  - "DFC route /dfc registered with lazy loading in App.tsx and ArrowLeftRight icon in Sidebar CONTABILIDADE group"
+  - 'Tabs use hidden attribute (not conditional render) per Phase 37 decision — preserves panel state on switch'
+  - 'useDfc and useAccountingDashboard follow useDre pattern exactly for consistency'
+  - 'DfcTable uses semantic <table> with <caption>, <th scope>, tfoot for cash summary rows'
+  - 'DFC route /dfc registered with lazy loading in App.tsx and ArrowLeftRight icon in Sidebar CONTABILIDADE group'
 metrics:
   duration_minutes: 4
-  completed_date: "2026-03-28"
+  completed_date: '2026-03-28'
   tasks_completed: 2
   tasks_total: 2
   files_created: 6
@@ -52,10 +58,10 @@ metrics:
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Frontend types and data hooks | 63175426 | financial-statements.ts, useDfc.ts, useAccountingDashboard.ts |
-| 2 | DfcTable component and DfcPage with tabs | 40892675 | DfcTable.tsx, DfcTable.css, DfcPage.tsx, DfcPage.css, App.tsx, Sidebar.tsx |
+| Task | Name                                     | Commit   | Files                                                                      |
+| ---- | ---------------------------------------- | -------- | -------------------------------------------------------------------------- |
+| 1    | Frontend types and data hooks            | 63175426 | financial-statements.ts, useDfc.ts, useAccountingDashboard.ts              |
+| 2    | DfcTable component and DfcPage with tabs | 40892675 | DfcTable.tsx, DfcTable.css, DfcPage.tsx, DfcPage.css, App.tsx, Sidebar.tsx |
 
 ## Deviations from Plan
 

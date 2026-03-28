@@ -13,7 +13,11 @@ import { useMaintenancePlans } from '@/hooks/useMaintenancePlans';
 import { useFarms } from '@/hooks/useFarms';
 import MaintenancePlanModal from '@/components/maintenance/MaintenancePlanModal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
-import type { MaintenancePlan, ListMaintenancePlansQuery, MaintenanceTriggerType } from '@/types/maintenance';
+import type {
+  MaintenancePlan,
+  ListMaintenancePlansQuery,
+  MaintenanceTriggerType,
+} from '@/types/maintenance';
 import { TRIGGER_TYPE_LABELS } from '@/types/maintenance';
 import './MaintenancePlansPage.css';
 
@@ -76,7 +80,9 @@ function PlanCard({ plan, onEdit, onToggle }: PlanCardProps) {
     <article className="maint-plans__card">
       <div className="maint-plans__card-header">
         <span className="maint-plans__card-name">{plan.name}</span>
-        <span className={`maint-plans__active-badge ${plan.isActive ? 'maint-plans__active-badge--active' : 'maint-plans__active-badge--inactive'}`}>
+        <span
+          className={`maint-plans__active-badge ${plan.isActive ? 'maint-plans__active-badge--active' : 'maint-plans__active-badge--inactive'}`}
+        >
           {plan.isActive ? 'Ativo' : 'Inativo'}
         </span>
       </div>
@@ -122,15 +128,8 @@ function PlanCard({ plan, onEdit, onToggle }: PlanCardProps) {
 // ─── Main Page ───────────────────────────────────────────────────────────
 
 export default function MaintenancePlansPage() {
-  const {
-    plans,
-    loading,
-    error,
-    total,
-    totalPages,
-    fetchPlans,
-    toggleActive,
-  } = useMaintenancePlans();
+  const { plans, loading, error, total, totalPages, fetchPlans, toggleActive } =
+    useMaintenancePlans();
   const { farms } = useFarms();
 
   // Filters
@@ -201,7 +200,9 @@ export default function MaintenancePlansPage() {
       );
       void fetchPlans(currentQuery);
     } catch {
-      setToast('Nao foi possivel alterar o status do plano. Verifique sua conexao e tente novamente.');
+      setToast(
+        'Nao foi possivel alterar o status do plano. Verifique sua conexao e tente novamente.',
+      );
     } finally {
       setIsToggling(false);
       setShowToggleConfirm(false);
@@ -224,7 +225,9 @@ export default function MaintenancePlansPage() {
       {/* Breadcrumb */}
       <nav className="maint-plans__breadcrumb" aria-label="Caminho de navegacao">
         <span className="maint-plans__breadcrumb-item">Patrimonio</span>
-        <span className="maint-plans__breadcrumb-sep" aria-hidden="true">&gt;</span>
+        <span className="maint-plans__breadcrumb-sep" aria-hidden="true">
+          &gt;
+        </span>
         <span
           className="maint-plans__breadcrumb-item maint-plans__breadcrumb-item--current"
           aria-current="page"
@@ -335,9 +338,7 @@ export default function MaintenancePlansPage() {
         {isEmpty && hasFilters && !error && (
           <div className="maint-plans__empty">
             <Wrench size={48} aria-hidden="true" className="maint-plans__empty-icon" />
-            <p className="maint-plans__empty-text">
-              Nenhum plano encontrado com esses filtros.
-            </p>
+            <p className="maint-plans__empty-text">Nenhum plano encontrado com esses filtros.</p>
           </div>
         )}
 
@@ -379,13 +380,27 @@ export default function MaintenancePlansPage() {
                 <caption className="sr-only">Planos de manutencao preventiva</caption>
                 <thead>
                   <tr>
-                    <th scope="col" className="maint-plans__th">Nome do plano</th>
-                    <th scope="col" className="maint-plans__th">Ativo</th>
-                    <th scope="col" className="maint-plans__th">Gatilho</th>
-                    <th scope="col" className="maint-plans__th">Intervalo</th>
-                    <th scope="col" className="maint-plans__th">Proxima execucao</th>
-                    <th scope="col" className="maint-plans__th">Ultimo executado</th>
-                    <th scope="col" className="maint-plans__th maint-plans__th--right">Acoes</th>
+                    <th scope="col" className="maint-plans__th">
+                      Nome do plano
+                    </th>
+                    <th scope="col" className="maint-plans__th">
+                      Ativo
+                    </th>
+                    <th scope="col" className="maint-plans__th">
+                      Gatilho
+                    </th>
+                    <th scope="col" className="maint-plans__th">
+                      Intervalo
+                    </th>
+                    <th scope="col" className="maint-plans__th">
+                      Proxima execucao
+                    </th>
+                    <th scope="col" className="maint-plans__th">
+                      Ultimo executado
+                    </th>
+                    <th scope="col" className="maint-plans__th maint-plans__th--right">
+                      Acoes
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -422,7 +437,11 @@ export default function MaintenancePlansPage() {
                               type="button"
                               className="maint-plans__action-btn"
                               onClick={() => handleToggleRequest(plan)}
-                              aria-label={plan.isActive ? `Desativar plano ${plan.name}` : `Ativar plano ${plan.name}`}
+                              aria-label={
+                                plan.isActive
+                                  ? `Desativar plano ${plan.name}`
+                                  : `Ativar plano ${plan.name}`
+                              }
                             >
                               {plan.isActive ? (
                                 <ToggleRight size={20} aria-hidden="true" />

@@ -45,8 +45,7 @@ payrollRubricasRouter.get(
 
       const query: RubricaListQuery = {
         rubricaType: req.query.rubricaType as RubricaType | undefined,
-        isActive:
-          req.query.isActive !== undefined ? req.query.isActive === 'true' : undefined,
+        isActive: req.query.isActive !== undefined ? req.query.isActive === 'true' : undefined,
         search: req.query.search as string | undefined,
         page: req.query.page ? parseInt(req.query.page as string, 10) : undefined,
         limit: req.query.limit ? parseInt(req.query.limit as string, 10) : undefined,

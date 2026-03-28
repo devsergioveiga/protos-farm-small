@@ -6,7 +6,9 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-neutral-200);
-  transition: transform 100ms var(--ease-out), box-shadow 100ms var(--ease-out);
+  transition:
+    transform 100ms var(--ease-out),
+    box-shadow 100ms var(--ease-out);
   display: flex;
   flex-direction: column;
   gap: var(--space-1);

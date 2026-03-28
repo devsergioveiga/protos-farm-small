@@ -1,20 +1,20 @@
 ---
 phase: 34-wire-absence-impact-payroll-engine
-plan: "02"
+plan: '02'
 subsystem: payroll
 tags: [payroll, fgts, absence, pdf, pdfkit, decimal.js, prisma]
 
 requires:
   - phase: 34-wire-absence-impact-payroll-engine
-    plan: "01"
-    provides: "AbsencePayrollImpact types, absence deduction logic in calculateEmployeePayroll"
+    plan: '01'
+    provides: 'AbsencePayrollImpact types, absence deduction logic in calculateEmployeePayroll'
   - phase: 28-processamento-da-folha-mensal
-    provides: "payroll-runs orchestrator, payroll-pdf.service, PayslipData interface"
+    provides: 'payroll-runs orchestrator, payroll-pdf.service, PayslipData interface'
 provides:
-  - "getAbsenceImpactForMonth wired into processRun orchestrator inside transaction"
-  - "absenceData passed to calculateEmployeePayroll via EmployeePayrollInput"
-  - "PayslipData includes fgtsBase field"
-  - "Payslip PDF rodape shows Base FGTS derived correctly"
+  - 'getAbsenceImpactForMonth wired into processRun orchestrator inside transaction'
+  - 'absenceData passed to calculateEmployeePayroll via EmployeePayrollInput'
+  - 'PayslipData includes fgtsBase field'
+  - 'Payslip PDF rodape shows Base FGTS derived correctly'
 affects:
   - payroll-runs
   - payroll-pdf
@@ -23,8 +23,8 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "Absence data fetched inside payroll tx and passed via EmployeePayrollInput.absenceData"
-    - "fgtsBase computed as grossSalary * (workedDays/30) and rendered in PDF rodape"
+    - 'Absence data fetched inside payroll tx and passed via EmployeePayrollInput.absenceData'
+    - 'fgtsBase computed as grossSalary * (workedDays/30) and rendered in PDF rodape'
 ---
 
 ## One-liner
@@ -60,12 +60,15 @@ Updated the payslip PDF generation to display FGTS base correctly:
 ## Key files
 
 ### Modified
+
 - `apps/backend/src/modules/payroll-runs/payroll-runs.service.ts` — orchestrator wiring
 - `apps/backend/src/modules/payroll-runs/payroll-pdf.service.ts` — PayslipData + PDF rodape
 - `apps/backend/src/modules/payroll-runs/payroll-calculation.service.spec.ts` — test updates
 
 ## Commits
+
 - `a39ad37a` feat(34-02): wire getAbsenceImpactForMonth and add fgtsBase to payslip PDF
 
 ## Issues
+
 None

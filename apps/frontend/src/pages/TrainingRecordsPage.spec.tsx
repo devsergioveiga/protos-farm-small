@@ -100,9 +100,7 @@ describe('TrainingRecordsPage — SEGUR-02 employee wiring', () => {
 
   it('calls useEmployees with status ATIVO', () => {
     renderPage();
-    expect(mockUseEmployees).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'ATIVO' }),
-    );
+    expect(mockUseEmployees).toHaveBeenCalledWith(expect.objectContaining({ status: 'ATIVO' }));
   });
 
   it('does not contain MOCK_EMPLOYEES stub', () => {

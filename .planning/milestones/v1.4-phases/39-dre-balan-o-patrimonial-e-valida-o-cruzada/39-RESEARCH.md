@@ -7,34 +7,40 @@
 ---
 
 <user_constraints>
+
 ## User Constraints (from CONTEXT.md)
 
 ### Locked Decisions
 
 **Layout DRE**
+
 - D-01: Layout fixo rural hardcoded no service. 10 secoes: Receita Operacional Bruta (agricola/pecuaria/industrializacao), Deducoes (FUNRURAL, devolucoes), Receita Liquida, CPV (por grupo agricola/pecuario — nao por cultura), Lucro Bruto, Despesas Operacionais (admin/comerciais/financeiras/depreciacao), Variacao Valor Justo CPC 29, Resultado Antes IR/CSLL, IR/CSLL, Resultado Liquido.
 - D-02: Mapeamento de contas as secoes por codigo hierarquico: 3.1.xx = Receita Agricola, 3.2.xx = Pecuaria, 3.3.xx = Industrializacao, 4.1.xx = Deducoes, 5.1.xx = CPV Agricola, 5.2.xx = CPV Pecuario, 6.1.xx = Desp. Admin, 6.2.xx = Desp. Comerciais, 6.3.xx = Desp. Financeiras. Contas com isFairValueAdj=true vao para secao CPC 29.
 - D-03: CPV detalhado por grupo (agricola/pecuario) nao por cultura individual.
 - D-04: Secao CPC 29 mostra total consolidado (uma linha unica). Soma todas contas com isFairValueAdj=true.
 
 **Comparativos e Filtros**
+
 - D-05: 3 colunas comparativas: Mes atual | Acumulado exercicio | Mesmo periodo ano anterior.
 - D-06: Analise V/H via toggle button. OFF por padrao. ON adiciona colunas % vertical (sobre receita liquida) e Delta% horizontal.
 - D-07: Filtro por centro de custo: dropdown unico "Consolidado" (default) + lista CCs.
 - D-08: Ranking de culturas por margem bruta abaixo da tabela DRE. So aparece quando filtro = Consolidado.
 
 **Balanco Patrimonial e Indicadores**
+
 - D-09: 6 cards indicadores no topo: Liquidez Corrente, Liquidez Seca, Endividamento Geral, Composicao Endividamento, ROE, PL/ha. Cada card com mini-sparkline.
 - D-10: PL/ha calculado usando soma de Farm.totalAreaHa de todas as fazendas da organizacao.
 - D-11: BP com 2 colunas: Saldo atual | Saldo periodo anterior.
 
 **Painel de Vinculacao**
+
 - D-12: 4 cards grid 2x2 com semaforo verde/vermelho.
 - D-13: 4 invariantes: (1) RL DRE = Delta Lucros Acumulados BP, (2) Variacao caixa DFC = variacao caixa/bancos BP (placeholder), (3) AT = PT + PL, (4) Total debitos = total creditos balancete.
 - D-14: Invariante DFC↔BP: card placeholder cinza "Aguardando DFC (Phase 40)". Backend retorna null.
 - D-15: Invariante falho: card vermelho com diferenca. Botao "Investigar" abre razao/balancete filtrado.
 
 **Navegacao Frontend**
+
 - D-16: 3 paginas separadas: /dre, /balance-sheet, /cross-validation. Sidebar grupo CONTABILIDADE.
 
 ### Claude's Discretion
@@ -54,16 +60,18 @@ None — discussion stayed within phase scope.
 ---
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|------------------|
-| DRE-01 | DRE com layout rural: Receita Bruta, Deducoes, Receita Liquida, CPV, Lucro Bruto, Desp. Operacionais, Resultado, CPC 29, IR/CSLL, Resultado Liquido | COA template codes verified; AccountBalance query pattern from getTrialBalance; isFairValueAdj flag exists on ChartOfAccount |
-| DRE-02 | Analise vertical (% sobre receita liquida), horizontal (variacao vs periodo anterior), 3 colunas comparativas | Pure calculator arithmetic; multiple AccountBalance reads for different months/years |
-| DRE-03 | Filtro por centro de custo; ranking culturas por margem | Critical: costCenterId NOT in AccountBalance unique key — must query JournalEntryLine directly for CC-filtered DRE |
-| BP-01 | BP com classificacao rural: AC, ANC, PC, PNC, PL | COA template maps: 1.1 = AC, 1.2 = ANC, 2.1 = PC, 2.2 = PNC, 3 = PL; AccountBalance closingBalance is the BP figure |
-| BP-02 | 6 indicadores financeiros calculados automaticamente com sparklines de tendencia | Farm.totalAreaHa exists; need 6-12 months of AccountBalance data; recharts 3.7.0 already installed |
-| VINC-01 | Painel 4 invariantes com semaforo verde/vermelho | Pure arithmetic comparisons: DRE result vs BP delta; AT=PT+PL; trial balance; DFC placeholder |
+| ID      | Description                                                                                                                                         | Research Support                                                                                                             |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| DRE-01  | DRE com layout rural: Receita Bruta, Deducoes, Receita Liquida, CPV, Lucro Bruto, Desp. Operacionais, Resultado, CPC 29, IR/CSLL, Resultado Liquido | COA template codes verified; AccountBalance query pattern from getTrialBalance; isFairValueAdj flag exists on ChartOfAccount |
+| DRE-02  | Analise vertical (% sobre receita liquida), horizontal (variacao vs periodo anterior), 3 colunas comparativas                                       | Pure calculator arithmetic; multiple AccountBalance reads for different months/years                                         |
+| DRE-03  | Filtro por centro de custo; ranking culturas por margem                                                                                             | Critical: costCenterId NOT in AccountBalance unique key — must query JournalEntryLine directly for CC-filtered DRE           |
+| BP-01   | BP com classificacao rural: AC, ANC, PC, PNC, PL                                                                                                    | COA template maps: 1.1 = AC, 1.2 = ANC, 2.1 = PC, 2.2 = PNC, 3 = PL; AccountBalance closingBalance is the BP figure          |
+| BP-02   | 6 indicadores financeiros calculados automaticamente com sparklines de tendencia                                                                    | Farm.totalAreaHa exists; need 6-12 months of AccountBalance data; recharts 3.7.0 already installed                           |
+| VINC-01 | Painel 4 invariantes com semaforo verde/vermelho                                                                                                    | Pure arithmetic comparisons: DRE result vs BP delta; AT=PT+PL; trial balance; DFC placeholder                                |
+
 </phase_requirements>
 
 ---
@@ -83,12 +91,13 @@ The second important finding is a **discrepancy between D-02 and the actual COA 
 ## Standard Stack
 
 ### Core (Already Installed)
-| Library | Version | Purpose | Status |
-|---------|---------|---------|--------|
-| decimal.js | ^10.6.0 | Financial precision arithmetic | Installed in backend |
-| pdfkit | ^0.17.2 | PDF export (future VINC-02, not Phase 39) | Installed in backend |
-| exceljs | ^4.4.0 | XLSX export (not Phase 39) | Installed in backend |
-| recharts | ^3.7.0 | Bar charts (ranking), sparklines (indicator cards) | Installed in frontend |
+
+| Library    | Version | Purpose                                            | Status                |
+| ---------- | ------- | -------------------------------------------------- | --------------------- |
+| decimal.js | ^10.6.0 | Financial precision arithmetic                     | Installed in backend  |
+| pdfkit     | ^0.17.2 | PDF export (future VINC-02, not Phase 39)          | Installed in backend  |
+| exceljs    | ^4.4.0  | XLSX export (not Phase 39)                         | Installed in backend  |
+| recharts   | ^3.7.0  | Bar charts (ranking), sparklines (indicator cards) | Installed in frontend |
 
 ### No New Dependencies Required
 
@@ -99,6 +108,7 @@ This phase requires zero new npm packages. All necessary libraries are already p
 ```
 
 **Version verification (confirmed from package.json):**
+
 - `decimal.js@^10.6.0` — backend package.json, confirmed
 - `recharts@^3.7.0` — frontend package.json, confirmed
 
@@ -153,7 +163,7 @@ import type { DreInput, DreOutput, DreSection } from './financial-statements.typ
 // All inputs are plain data; no async, no Prisma
 export function calculateDre(input: DreInput): DreOutput {
   const sections = buildSections(input.accounts, input.balances);
-  const verticalBase = sections.find(s => s.id === 'receita-liquida')?.total ?? new Decimal(0);
+  const verticalBase = sections.find((s) => s.id === 'receita-liquida')?.total ?? new Decimal(0);
   // ... arithmetic only
   return { sections, verticalBase: verticalBase.toFixed(2) };
 }
@@ -220,18 +230,18 @@ export async function getDre(organizationId: string, filters: DreFilters) {
 // DRE section mapping (verified from coa-rural-template.ts):
 const DRE_SECTION_MAP: Record<string, string> = {
   // Receita Bruta
-  '4.1': 'receita-agropecuaria',       // 4.1.xx = Receitas Agropecuarias
-  '4.1.03': 'cpc29',                    // isFairValueAdj=true overrides
+  '4.1': 'receita-agropecuaria', // 4.1.xx = Receitas Agropecuarias
+  '4.1.03': 'cpc29', // isFairValueAdj=true overrides
   '4.2': 'outras-receitas',
   // Deducoes: no explicit code in template (manual mapping needed)
   // CPV
-  '5.1': 'cpv-agricola',               // 5.1.01 = Custo Producao Vegetal
+  '5.1': 'cpv-agricola', // 5.1.01 = Custo Producao Vegetal
   '5.1.01': 'cpv-agricola',
   '5.1.02': 'cpv-pecuario',
   // Despesas Operacionais
-  '5.2': 'despesas-operacionais',      // 5.2.01 = Admin, 5.2.02 = Pessoal, 5.2.03 = Deprec
+  '5.2': 'despesas-operacionais', // 5.2.01 = Admin, 5.2.02 = Pessoal, 5.2.03 = Deprec
   '5.3': 'despesas-financeiras',
-  '6.1': 'despesas-pessoal-legado',    // Legacy group still in use
+  '6.1': 'despesas-pessoal-legado', // Legacy group still in use
 };
 // isFairValueAdj=true always maps to CPC 29 section regardless of code prefix
 ```
@@ -310,13 +320,13 @@ GET /api/org/:orgId/financial-statements/cross-validation
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Financial arithmetic | Custom number operations | `Decimal.js` (already installed) | Floating-point precision errors in currency |
-| Bar charts | Custom SVG charts | `recharts@3.7.0` (already installed) | Proven, accessible, already used in purchasing-dashboard |
-| Sparklines | `<canvas>` or custom SVG | `recharts LineChart` with no axes | Same library, minimal config needed |
-| Trial balance totals | Re-aggregating from scratch | Reuse `getTrialBalance()` from ledger.service | Already aggregates synthetic accounts correctly |
-| Auth middleware | New auth check | `withRlsContext` + existing JWT middleware | Same pattern as every other org route |
+| Problem              | Don't Build                 | Use Instead                                   | Why                                                      |
+| -------------------- | --------------------------- | --------------------------------------------- | -------------------------------------------------------- |
+| Financial arithmetic | Custom number operations    | `Decimal.js` (already installed)              | Floating-point precision errors in currency              |
+| Bar charts           | Custom SVG charts           | `recharts@3.7.0` (already installed)          | Proven, accessible, already used in purchasing-dashboard |
+| Sparklines           | `<canvas>` or custom SVG    | `recharts LineChart` with no axes             | Same library, minimal config needed                      |
+| Trial balance totals | Re-aggregating from scratch | Reuse `getTrialBalance()` from ledger.service | Already aggregates synthetic accounts correctly          |
+| Auth middleware      | New auth check              | `withRlsContext` + existing JWT middleware    | Same pattern as every other org route                    |
 
 **Key insight:** This phase is 100% calculation and presentation on top of data already written by Phases 36-38. Zero new data writes, zero migrations.
 
@@ -341,6 +351,7 @@ GET /api/org/:orgId/financial-statements/cross-validation
 **Why it happens:** D-02 describes codes in abstract; the actual template uses a different numbering scheme.
 
 **Actual mapping (verified from coa-rural-template.ts):**
+
 - Group 1 = Ativo (BP)
 - Group 2 = Passivo (BP)
 - Group 3 = Patrimonio Liquido (BP)
@@ -366,6 +377,7 @@ GET /api/org/:orgId/financial-statements/cross-validation
 **Why it happens:** `closingBalance` = cumulative balance since opening (affected by opening balance). `debitTotal`/`creditTotal` = movements in that specific month only. Summing monthly movements gives the period-to-date movement.
 
 **How to avoid:**
+
 - Current month balance: use AccountBalance.closingBalance
 - Acumulado exercicio: SUM(debitTotal) and SUM(creditTotal) across months 1..N of the fiscal year
 - Same period previous year: find the corresponding fiscal year and same month
@@ -401,6 +413,7 @@ GET /api/org/:orgId/financial-statements/cross-validation
 Verified patterns from existing codebase:
 
 ### Aggregating AccountBalance for a Month (Consolidated DRE/BP)
+
 ```typescript
 // Source: apps/backend/src/modules/ledger/ledger.service.ts, getTrialBalance()
 const balances = await prisma.accountBalance.findMany({
@@ -420,6 +433,7 @@ const balances = await prisma.accountBalance.findMany({
 ```
 
 ### CC-Filtered Aggregation from JournalEntryLine
+
 ```typescript
 // No existing example — new pattern for this phase
 // Aggregate movements per account for a specific cost center
@@ -441,6 +455,7 @@ const lines = await prisma.$queryRaw<LineAgg[]>`
 ```
 
 ### Decimal.js Financial Arithmetic
+
 ```typescript
 // Source: apps/backend/src/modules/ledger/ledger.service.ts (existing pattern)
 import Decimal from 'decimal.js';
@@ -461,6 +476,7 @@ const delta = priorValue.isZero()
 ```
 
 ### Recharts Sparkline (minimal, no axes)
+
 ```typescript
 // Source: apps/frontend/src/components/purchasing-dashboard/MonthlyEvolutionChart.tsx (adapted)
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
@@ -475,6 +491,7 @@ import { LineChart, Line, ResponsiveContainer } from 'recharts';
 ```
 
 ### Route Spec Pattern (mock service)
+
 ```typescript
 // Source: apps/backend/src/modules/ledger/ledger.routes.spec.ts
 jest.mock('./financial-statements.service', () => ({
@@ -487,9 +504,15 @@ const mockedService = jest.mocked(service);
 ```
 
 ### Frontend Hook Pattern
+
 ```typescript
 // Source: apps/frontend/src/hooks/useLedger.ts (pattern to follow)
-export function useDre(orgId: string | undefined, fiscalYearId: string | undefined, month: number | undefined, costCenterId?: string) {
+export function useDre(
+  orgId: string | undefined,
+  fiscalYearId: string | undefined,
+  month: number | undefined,
+  costCenterId?: string,
+) {
   const [data, setData] = useState<DreOutput | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -516,12 +539,13 @@ export function useDre(orgId: string | undefined, fiscalYearId: string | undefin
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| AccountingEntry model (stub) | JournalEntry + AccountBalance | Phase 37 | AccountingEntry table was absent from DB — Phase 37 confirmed |
-| No cross-module isolation | Pure calculator pattern (no Prisma in calculators) | Phase 39 decision | Testable without DB |
+| Old Approach                 | Current Approach                                   | When Changed      | Impact                                                        |
+| ---------------------------- | -------------------------------------------------- | ----------------- | ------------------------------------------------------------- |
+| AccountingEntry model (stub) | JournalEntry + AccountBalance                      | Phase 37          | AccountingEntry table was absent from DB — Phase 37 confirmed |
+| No cross-module isolation    | Pure calculator pattern (no Prisma in calculators) | Phase 39 decision | Testable without DB                                           |
 
 **Relevant existing data confirmed present:**
+
 - `AccountBalance` rows: written by auto-posting engine (Phases 36-37) for every posted JournalEntry
 - `JournalEntryLine.costCenterId`: written by auto-posting for payroll, depreciation, stock ops
 - `ChartOfAccount.isFairValueAdj`: seeded as `true` for account `4.1.03` (Variacao Valor Justo) in rural template
@@ -557,34 +581,37 @@ Step 2.6: SKIPPED — Phase 39 is code-only changes. No external dependencies be
 ## Validation Architecture
 
 ### Test Framework
-| Property | Value |
-|----------|-------|
-| Framework | Jest (backend) |
-| Config file | `apps/backend/jest.config.ts` |
-| Quick run command | `cd apps/backend && npx jest financial-statements --testPathPattern financial-statements` |
-| Full suite command | `cd apps/backend && npx jest` |
+
+| Property           | Value                                                                                     |
+| ------------------ | ----------------------------------------------------------------------------------------- |
+| Framework          | Jest (backend)                                                                            |
+| Config file        | `apps/backend/jest.config.ts`                                                             |
+| Quick run command  | `cd apps/backend && npx jest financial-statements --testPathPattern financial-statements` |
+| Full suite command | `cd apps/backend && npx jest`                                                             |
 
 ### Phase Requirements → Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| DRE-01 | DRE returns 10-section layout with correct totals | unit (calculator) | `npx jest financial-statements/dre.calculator` | ❌ Wave 0 |
-| DRE-01 | DRE route returns 200 with DreOutput shape | integration (route) | `npx jest financial-statements/financial-statements.routes.spec` | ❌ Wave 0 |
-| DRE-02 | Vertical analysis: section as % of receita liquida | unit (calculator) | `npx jest financial-statements/dre.calculator` | ❌ Wave 0 |
-| DRE-02 | Horizontal analysis: delta vs prior period | unit (calculator) | `npx jest financial-statements/dre.calculator` | ❌ Wave 0 |
-| DRE-03 | CC-filtered DRE uses JournalEntryLine aggregation | unit (service mock) | `npx jest financial-statements/financial-statements.routes.spec` | ❌ Wave 0 |
-| BP-01 | BP returns AC/ANC/PC/PNC/PL sections | unit (calculator) | `npx jest financial-statements/bp.calculator` | ❌ Wave 0 |
-| BP-02 | Liquidez Corrente = AC/PC | unit (calculator) | `npx jest financial-statements/bp.calculator` | ❌ Wave 0 |
-| BP-02 | PL/ha = PL / sum(Farm.totalAreaHa) | unit (calculator) | `npx jest financial-statements/bp.calculator` | ❌ Wave 0 |
-| VINC-01 | AT = PT + PL invariant check returns green/red | unit (calculator) | `npx jest financial-statements/cross-validation.calculator` | ❌ Wave 0 |
-| VINC-01 | DFC placeholder returns null in invariant 2 | unit (calculator) | `npx jest financial-statements/cross-validation.calculator` | ❌ Wave 0 |
+| Req ID  | Behavior                                           | Test Type           | Automated Command                                                | File Exists? |
+| ------- | -------------------------------------------------- | ------------------- | ---------------------------------------------------------------- | ------------ |
+| DRE-01  | DRE returns 10-section layout with correct totals  | unit (calculator)   | `npx jest financial-statements/dre.calculator`                   | ❌ Wave 0    |
+| DRE-01  | DRE route returns 200 with DreOutput shape         | integration (route) | `npx jest financial-statements/financial-statements.routes.spec` | ❌ Wave 0    |
+| DRE-02  | Vertical analysis: section as % of receita liquida | unit (calculator)   | `npx jest financial-statements/dre.calculator`                   | ❌ Wave 0    |
+| DRE-02  | Horizontal analysis: delta vs prior period         | unit (calculator)   | `npx jest financial-statements/dre.calculator`                   | ❌ Wave 0    |
+| DRE-03  | CC-filtered DRE uses JournalEntryLine aggregation  | unit (service mock) | `npx jest financial-statements/financial-statements.routes.spec` | ❌ Wave 0    |
+| BP-01   | BP returns AC/ANC/PC/PNC/PL sections               | unit (calculator)   | `npx jest financial-statements/bp.calculator`                    | ❌ Wave 0    |
+| BP-02   | Liquidez Corrente = AC/PC                          | unit (calculator)   | `npx jest financial-statements/bp.calculator`                    | ❌ Wave 0    |
+| BP-02   | PL/ha = PL / sum(Farm.totalAreaHa)                 | unit (calculator)   | `npx jest financial-statements/bp.calculator`                    | ❌ Wave 0    |
+| VINC-01 | AT = PT + PL invariant check returns green/red     | unit (calculator)   | `npx jest financial-statements/cross-validation.calculator`      | ❌ Wave 0    |
+| VINC-01 | DFC placeholder returns null in invariant 2        | unit (calculator)   | `npx jest financial-statements/cross-validation.calculator`      | ❌ Wave 0    |
 
 ### Sampling Rate
+
 - **Per task commit:** `cd apps/backend && npx jest --testPathPattern financial-statements --passWithNoTests`
 - **Per wave merge:** `cd apps/backend && npx jest`
 - **Phase gate:** Full suite green before `/gsd:verify-work`
 
 ### Wave 0 Gaps
+
 - [ ] `apps/backend/src/modules/financial-statements/dre.calculator.spec.ts` — covers DRE-01, DRE-02
 - [ ] `apps/backend/src/modules/financial-statements/bp.calculator.spec.ts` — covers BP-01, BP-02
 - [ ] `apps/backend/src/modules/financial-statements/cross-validation.calculator.spec.ts` — covers VINC-01
@@ -595,6 +622,7 @@ Step 2.6: SKIPPED — Phase 39 is code-only changes. No external dependencies be
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - `apps/backend/src/modules/ledger/ledger.service.ts` — getTrialBalance() pattern verified; AccountBalance query structure
 - `apps/backend/prisma/schema.prisma` — AccountBalance unique constraint confirmed; ChartOfAccount.isFairValueAdj; Farm.totalAreaHa; JournalEntryLine.costCenterId
 - `apps/backend/src/modules/chart-of-accounts/coa-rural-template.ts` — Actual account code groups (1=Ativo, 2=Passivo, 3=PL, 4=Receitas, 5=Despesas, 6=Legado)
@@ -605,6 +633,7 @@ Step 2.6: SKIPPED — Phase 39 is code-only changes. No external dependencies be
 - `apps/frontend/src/hooks/useLedger.ts` — frontend hook pattern for financial data
 
 ### Secondary (MEDIUM confidence)
+
 - `.planning/phases/39-dre-balan-o-patrimonial-e-valida-o-cruzada/39-CONTEXT.md` — decisions D-01 through D-16
 
 ---
@@ -612,6 +641,7 @@ Step 2.6: SKIPPED — Phase 39 is code-only changes. No external dependencies be
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH — all packages verified from package.json files
 - Architecture: HIGH — patterns directly verified from existing ledger.service.ts and auto-posting.service.ts
 - Pitfalls: HIGH — AccountBalance unique constraint pitfall verified from schema.prisma; COA code mismatch verified from coa-rural-template.ts vs CONTEXT.md D-02

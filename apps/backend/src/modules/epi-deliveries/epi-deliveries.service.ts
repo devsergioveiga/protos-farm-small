@@ -256,10 +256,7 @@ export async function listEpiDeliveries(
 
 // ─── Get EPI Delivery ────────────────────────────────────────────────
 
-export async function getEpiDelivery(
-  ctx: RlsContext,
-  id: string,
-): Promise<EpiDeliveryOutput> {
+export async function getEpiDelivery(ctx: RlsContext, id: string): Promise<EpiDeliveryOutput> {
   return withRlsContext(ctx, async (tx) => {
     const row = await (tx as any).epiDelivery.findFirst({
       where: { id, organizationId: ctx.organizationId },
@@ -300,10 +297,7 @@ export async function listEmployeeDeliveries(
 
 // ─── Generate EPI Ficha PDF (NR-6 compliant) ────────────────────────
 
-export async function generateEpiFichaPdf(
-  ctx: RlsContext,
-  employeeId: string,
-): Promise<Buffer> {
+export async function generateEpiFichaPdf(ctx: RlsContext, employeeId: string): Promise<Buffer> {
   // Fetch employee data
   const employeeData = await withRlsContext(ctx, async (tx) => {
     const emp = await (tx as any).employee.findFirst({
@@ -339,16 +333,16 @@ export async function generateEpiFichaPdf(
     const pageWidth = doc.page.width - 100;
 
     // ── Header ──
-    doc
-      .fontSize(14)
-      .font('Helvetica-Bold')
-      .text('FICHA DE CONTROLE DE EPI', { align: 'center' });
+    doc.fontSize(14).font('Helvetica-Bold').text('FICHA DE CONTROLE DE EPI', { align: 'center' });
     doc.moveDown(0.2);
     doc.fontSize(9).font('Helvetica').text('Conforme NR-6 e NR-31', { align: 'center' });
     doc.moveDown(0.5);
 
     // Divider
-    doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).stroke();
+    doc
+      .moveTo(50, doc.y)
+      .lineTo(50 + pageWidth, doc.y)
+      .stroke();
     doc.moveDown(0.5);
 
     // ── Employee Data ──
@@ -364,7 +358,10 @@ export async function generateEpiFichaPdf(
     doc.moveDown(0.5);
 
     // Divider
-    doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).stroke();
+    doc
+      .moveTo(50, doc.y)
+      .lineTo(50 + pageWidth, doc.y)
+      .stroke();
     doc.moveDown(0.5);
 
     // ── Table Header ──
@@ -379,7 +376,10 @@ export async function generateEpiFichaPdf(
     doc.moveDown(0.5);
 
     // Divider
-    doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).stroke();
+    doc
+      .moveTo(50, doc.y)
+      .lineTo(50 + pageWidth, doc.y)
+      .stroke();
     doc.moveDown(0.2);
 
     // ── Table Rows ──
@@ -413,7 +413,10 @@ export async function generateEpiFichaPdf(
     doc.moveDown(1);
 
     // Divider
-    doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).stroke();
+    doc
+      .moveTo(50, doc.y)
+      .lineTo(50 + pageWidth, doc.y)
+      .stroke();
     doc.moveDown(0.5);
 
     // ── Footer / Declaration ──

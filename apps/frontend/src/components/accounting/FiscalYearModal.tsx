@@ -100,7 +100,9 @@ export default function FiscalYearModal({ isOpen, onClose, onSubmit }: FiscalYea
   return (
     <div
       className="fy-modal__overlay"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="fy-modal-title"
@@ -110,7 +112,9 @@ export default function FiscalYearModal({ isOpen, onClose, onSubmit }: FiscalYea
         <div className="fy-modal__header">
           <div className="fy-modal__header-left">
             <Calendar size={20} aria-hidden="true" className="fy-modal__header-icon" />
-            <h2 id="fy-modal-title" className="fy-modal__title">Novo Exercício Fiscal</h2>
+            <h2 id="fy-modal-title" className="fy-modal__title">
+              Novo Exercício Fiscal
+            </h2>
           </div>
           <button
             type="button"
@@ -122,22 +126,20 @@ export default function FiscalYearModal({ isOpen, onClose, onSubmit }: FiscalYea
           </button>
         </div>
 
-        <form className="fy-modal__body" onSubmit={(e) => { void handleSubmit(e); }} noValidate>
+        <form
+          className="fy-modal__body"
+          onSubmit={(e) => {
+            void handleSubmit(e);
+          }}
+          noValidate
+        >
           {/* Presets */}
           <div className="fy-modal__presets">
             <span className="fy-modal__presets-label">Preencher automaticamente:</span>
-            <button
-              type="button"
-              className="fy-modal__preset-btn"
-              onClick={applyCalendarPreset}
-            >
+            <button type="button" className="fy-modal__preset-btn" onClick={applyCalendarPreset}>
               Calendário (Jan–Dez)
             </button>
-            <button
-              type="button"
-              className="fy-modal__preset-btn"
-              onClick={applySafraPreset}
-            >
+            <button type="button" className="fy-modal__preset-btn" onClick={applySafraPreset}>
               Safra (Jul–Jun)
             </button>
           </div>
@@ -154,7 +156,9 @@ export default function FiscalYearModal({ isOpen, onClose, onSubmit }: FiscalYea
               className={`fy-modal__input ${errors.name ? 'fy-modal__input--error' : ''}`}
               value={form.name}
               onChange={(e) => set('name', e.target.value)}
-              onBlur={() => { if (!form.name.trim()) setErrors((p) => ({ ...p, name: 'Nome é obrigatório' })); }}
+              onBlur={() => {
+                if (!form.name.trim()) setErrors((p) => ({ ...p, name: 'Nome é obrigatório' }));
+              }}
               aria-required="true"
               aria-describedby={errors.name ? 'fy-name-error' : undefined}
               placeholder="ex: 2026 ou Safra 2025/2026"

@@ -1,20 +1,20 @@
 ---
 phase: 30
-plan: "07"
+plan: '07'
 subsystem: frontend
 tags: [safety, nr31, dashboard, compliance, kpi, epi, training, aso]
 dependency_graph:
-  requires: ["30-05", "30-06"]
-  provides: ["safety-compliance-dashboard", "safety-kpi-card"]
-  affects: ["safety-dashboard-route"]
+  requires: ['30-05', '30-06']
+  provides: ['safety-compliance-dashboard', 'safety-kpi-card']
+  affects: ['safety-dashboard-route']
 tech_stack:
   added: []
   patterns:
-    - "useSafetyCompliance hook with fetchSummary + fetchNonCompliantEmployees + exportCsv + exportPdf"
-    - "SafetyKpiCard reusable KPI display component"
-    - "FarmContext integration for dashboard filtering"
-    - "Skeleton loaders for KPI row and table"
-    - "ComplianceDashboardQuery type for parameterized employee fetch"
+    - 'useSafetyCompliance hook with fetchSummary + fetchNonCompliantEmployees + exportCsv + exportPdf'
+    - 'SafetyKpiCard reusable KPI display component'
+    - 'FarmContext integration for dashboard filtering'
+    - 'Skeleton loaders for KPI row and table'
+    - 'ComplianceDashboardQuery type for parameterized employee fetch'
 key_files:
   created:
     - apps/frontend/src/hooks/useSafetyCompliance.ts
@@ -25,13 +25,13 @@ key_files:
     - apps/frontend/src/types/medical-exam.ts
     - apps/frontend/src/types/training.ts
 decisions:
-  - "SafetyKpiCard kept in components/shared/ (not components/payroll/) for reuse across Phase 30 modules"
-  - "exportPdf uses window.open(blobUrl) then revokes after 10s — matches pesticide-prescriptions pattern"
-  - "Tab badge counts derived from current page of employees (client-side) — sufficient for dashboard overview"
-  - "EPI tab uses rowspan for grouped employee rows — aligns with complex data display pattern"
+  - 'SafetyKpiCard kept in components/shared/ (not components/payroll/) for reuse across Phase 30 modules'
+  - 'exportPdf uses window.open(blobUrl) then revokes after 10s — matches pesticide-prescriptions pattern'
+  - 'Tab badge counts derived from current page of employees (client-side) — sufficient for dashboard overview'
+  - 'EPI tab uses rowspan for grouped employee rows — aligns with complex data display pattern'
 metrics:
   duration_minutes: 35
-  completed_date: "2026-03-26"
+  completed_date: '2026-03-26'
   tasks_completed: 2
   tasks_total: 3
   files_created: 2
@@ -48,11 +48,11 @@ requirements:
 
 ## Tasks Completed
 
-| Task | Name | Commit | Status |
-|------|------|--------|--------|
-| 1 | useSafetyCompliance hook + SafetyKpiCard component | 9de73dc6 | Done |
-| 2 | SafetyDashboardPage with 4 tabs, KPIs, and export | 4eff36fc | Done |
-| 3 | Visual verification of complete Phase 30 | — | Awaiting human verify |
+| Task | Name                                               | Commit   | Status                |
+| ---- | -------------------------------------------------- | -------- | --------------------- |
+| 1    | useSafetyCompliance hook + SafetyKpiCard component | 9de73dc6 | Done                  |
+| 2    | SafetyDashboardPage with 4 tabs, KPIs, and export  | 4eff36fc | Done                  |
+| 3    | Visual verification of complete Phase 30           | —        | Awaiting human verify |
 
 ## What Was Built
 
@@ -76,16 +76,19 @@ requirements:
 ### SafetyDashboardPage (`apps/frontend/src/pages/SafetyDashboardPage.tsx`)
 
 **KPI Row (4 cards):**
+
 - Total colaboradores (Users icon)
 - Conformes with `(%)` suffix, green border (ShieldCheck icon)
 - Com pendências (ShieldAlert icon)
 - Vencimentos em 30 dias, warning border (Clock icon)
 
 **Tab Strip:**
+
 - 4 tabs: Visao Geral, EPIs, Treinamentos, ASOs
 - Tab badges (warning-100/warning-500) showing pending counts
 
 **Tab 1 — Visao Geral:**
+
 - Search debounced 300ms + pending type filter
 - Employee table: Nome, Cargo, EPIs pendentes (count badge), Treinamentos vencidos (count badge), Status ASO (ComplianceStatusBadge)
 - "Exportar CSV" + "Relatorio PDF" buttons — neutral border, no primary green
@@ -112,6 +115,7 @@ requirements:
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Missing type exports from plan 05/06 type files**
+
 - **Found during:** Task 1 — TypeScript check before writing code
 - **Issue:** `useMedicalExams.ts` imported `UpdateMedicalExamInput` from `@/types/medical-exam` (didn't exist). `useTrainingTypes.ts` imported `UpdateTrainingTypeInput` and `CreatePositionTrainingRequirementInput` from `@/types/training` (didn't exist).
 - **Fix:** Added `UpdateMedicalExamInput = Partial<CreateMedicalExamInput>`, `UpdateTrainingTypeInput = Partial<CreateTrainingTypeInput>`, and `CreatePositionTrainingRequirementInput` interface to the respective type files.
@@ -125,14 +129,17 @@ None — all dashboard data fetches from live endpoints. Tab counts (EPI, traini
 ## Self-Check
 
 Created files:
+
 - [x] `apps/frontend/src/hooks/useSafetyCompliance.ts` — exists (commit 9de73dc6)
 - [x] `apps/frontend/src/components/shared/SafetyKpiCard.tsx` — exists (commit 9de73dc6)
 
 Modified files:
+
 - [x] `apps/frontend/src/pages/SafetyDashboardPage.tsx` — 340+ lines (commit 4eff36fc)
 - [x] `apps/frontend/src/pages/SafetyDashboardPage.css` — 380+ lines (commit 4eff36fc)
 
 Commits:
+
 - [x] 9de73dc6 — feat(30-07): useSafetyCompliance hook + SafetyKpiCard component
 - [x] 4eff36fc — feat(30-07): SafetyDashboardPage — 4 KPI cards, 4 tabs, export, empty state
 

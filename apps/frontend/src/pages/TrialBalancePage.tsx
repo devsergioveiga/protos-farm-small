@@ -1,11 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import {
-  BarChart3,
-  Download,
-  CheckCircle,
-  XCircle,
-  BookOpen,
-} from 'lucide-react';
+import { BarChart3, Download, CheckCircle, XCircle, BookOpen } from 'lucide-react';
 import {
   useTrialBalance,
   useDailyBook,
@@ -161,11 +155,7 @@ export default function TrialBalancePage() {
     selectedMonth,
   );
 
-  const { dailyBook, loading: dbLoading } = useDailyBook(
-    orgId,
-    startDate,
-    endDate,
-  );
+  const { dailyBook, loading: dbLoading } = useDailyBook(orgId, startDate, endDate);
 
   const hasFilters = !!selectedFiscalYearId && !!selectedMonth;
 
@@ -231,9 +221,13 @@ export default function TrialBalancePage() {
       {/* Breadcrumb */}
       <nav className="trial-balance-page__breadcrumb" aria-label="Caminho da página">
         <span className="trial-balance-page__breadcrumb-item">Início</span>
-        <span className="trial-balance-page__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="trial-balance-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="trial-balance-page__breadcrumb-item">Contabilidade</span>
-        <span className="trial-balance-page__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="trial-balance-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="trial-balance-page__breadcrumb-item trial-balance-page__breadcrumb-item--current">
           Balancete de Verificação
         </span>
@@ -359,7 +353,9 @@ export default function TrialBalancePage() {
           <button
             type="button"
             className="trial-balance-page__btn trial-balance-page__btn--secondary"
-            onClick={() => { void handleExportXlsx(); }}
+            onClick={() => {
+              void handleExportXlsx();
+            }}
             disabled={!hasFilters || exportingXlsx}
             aria-label="Exportar XLSX do balancete"
           >
@@ -373,7 +369,9 @@ export default function TrialBalancePage() {
           <button
             type="button"
             className="trial-balance-page__btn trial-balance-page__btn--secondary"
-            onClick={() => { void handleExportPdf(); }}
+            onClick={() => {
+              void handleExportPdf();
+            }}
             disabled={!hasFilters || exportingPdf}
             aria-label="Exportar PDF do balancete"
           >
@@ -417,7 +415,8 @@ export default function TrialBalancePage() {
                 Balancete de Verificação
                 {selectedFiscalYearId && (
                   <span className="trial-balance-table__caption-period">
-                    {' '}| {months.find((m) => m.value === selectedMonth)?.label}
+                    {' '}
+                    | {months.find((m) => m.value === selectedMonth)?.label}
                   </span>
                 )}
               </caption>
@@ -429,16 +428,28 @@ export default function TrialBalancePage() {
                   <th scope="col" className="trial-balance-table__th trial-balance-table__th--name">
                     Conta
                   </th>
-                  <th scope="col" className="trial-balance-table__th trial-balance-table__th--amount">
+                  <th
+                    scope="col"
+                    className="trial-balance-table__th trial-balance-table__th--amount"
+                  >
                     Saldo Anterior (D/C)
                   </th>
-                  <th scope="col" className="trial-balance-table__th trial-balance-table__th--amount amount-debit">
+                  <th
+                    scope="col"
+                    className="trial-balance-table__th trial-balance-table__th--amount amount-debit"
+                  >
                     Movimento Débito
                   </th>
-                  <th scope="col" className="trial-balance-table__th trial-balance-table__th--amount amount-credit">
+                  <th
+                    scope="col"
+                    className="trial-balance-table__th trial-balance-table__th--amount amount-credit"
+                  >
                     Movimento Crédito
                   </th>
-                  <th scope="col" className="trial-balance-table__th trial-balance-table__th--amount">
+                  <th
+                    scope="col"
+                    className="trial-balance-table__th trial-balance-table__th--amount"
+                  >
                     Saldo Atual (D/C)
                   </th>
                 </tr>
@@ -489,7 +500,9 @@ export default function TrialBalancePage() {
           <button
             type="button"
             className="trial-balance-page__btn trial-balance-page__btn--secondary"
-            onClick={() => { void handleExportDiarioPdf(); }}
+            onClick={() => {
+              void handleExportDiarioPdf();
+            }}
             disabled={!startDate || !endDate || exportingDiarioPdf}
             aria-label="Exportar PDF do livro diário"
           >
@@ -545,9 +558,21 @@ export default function TrialBalancePage() {
                 >
                   <thead>
                     <tr>
-                      <th scope="col" className="diario-entry__th">Conta</th>
-                      <th scope="col" className="diario-entry__th diario-entry__th--amount amount-debit">Débito</th>
-                      <th scope="col" className="diario-entry__th diario-entry__th--amount amount-credit">Crédito</th>
+                      <th scope="col" className="diario-entry__th">
+                        Conta
+                      </th>
+                      <th
+                        scope="col"
+                        className="diario-entry__th diario-entry__th--amount amount-debit"
+                      >
+                        Débito
+                      </th>
+                      <th
+                        scope="col"
+                        className="diario-entry__th diario-entry__th--amount amount-credit"
+                      >
+                        Crédito
+                      </th>
                     </tr>
                   </thead>
                   <tbody>

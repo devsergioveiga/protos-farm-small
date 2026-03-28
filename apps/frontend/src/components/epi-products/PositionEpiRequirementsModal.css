@@ -86,12 +86,19 @@
 }
 
 @keyframes pos-epi-pulse {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pos-epi-modal__skeleton { animation: none; }
+  .pos-epi-modal__skeleton {
+    animation: none;
+  }
 }
 
 .pos-epi-modal__empty {

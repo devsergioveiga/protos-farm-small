@@ -78,14 +78,21 @@ export default function WorkOrderCloseWizard({
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      await closeWorkOrder(workOrder.id, {
-        accountingTreatment,
-        deferralMonths: accountingTreatment === 'DIFERIMENTO' && deferralMonths
-          ? Number(deferralMonths)
-          : undefined,
-      }, onSuccess);
+      await closeWorkOrder(
+        workOrder.id,
+        {
+          accountingTreatment,
+          deferralMonths:
+            accountingTreatment === 'DIFERIMENTO' && deferralMonths
+              ? Number(deferralMonths)
+              : undefined,
+        },
+        onSuccess,
+      );
     } catch {
-      setSubmitError('Nao foi possivel encerrar a OS. Verifique se todos os campos estao preenchidos.');
+      setSubmitError(
+        'Nao foi possivel encerrar a OS. Verifique se todos os campos estao preenchidos.',
+      );
       setIsSubmitting(false);
     }
   }
@@ -98,13 +105,20 @@ export default function WorkOrderCloseWizard({
 
   function getRadioCardClass(treatment: AccountingTreatment): string {
     if (accountingTreatment !== treatment) return 'wo-wizard__radio-card';
-    if (treatment === 'DESPESA') return 'wo-wizard__radio-card wo-wizard__radio-card--selected-despesa';
-    if (treatment === 'CAPITALIZACAO') return 'wo-wizard__radio-card wo-wizard__radio-card--selected-capitalizacao';
+    if (treatment === 'DESPESA')
+      return 'wo-wizard__radio-card wo-wizard__radio-card--selected-despesa';
+    if (treatment === 'CAPITALIZACAO')
+      return 'wo-wizard__radio-card wo-wizard__radio-card--selected-capitalizacao';
     return 'wo-wizard__radio-card wo-wizard__radio-card--selected-diferimento';
   }
 
   return (
-    <div className="wo-wizard__overlay" role="dialog" aria-modal="true" aria-labelledby="wo-wizard-title">
+    <div
+      className="wo-wizard__overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="wo-wizard-title"
+    >
       <div className="wo-wizard">
         {/* Header */}
         <header className="wo-wizard__header">
@@ -112,12 +126,24 @@ export default function WorkOrderCloseWizard({
             <h2 className="wo-wizard__title" id="wo-wizard-title">
               Encerrar OS #{String(workOrder.sequentialNumber).padStart(4, '0')}
             </h2>
-            <button type="button" className="wo-wizard__close" onClick={onClose} aria-label="Fechar">
+            <button
+              type="button"
+              className="wo-wizard__close"
+              onClick={onClose}
+              aria-label="Fechar"
+            >
               <X size={20} aria-hidden="true" />
             </button>
           </div>
           {/* Stepper */}
-          <div className="wo-wizard__stepper" role="progressbar" aria-valuemin={1} aria-valuemax={3} aria-valuenow={step} aria-label={`Passo ${step} de 3`}>
+          <div
+            className="wo-wizard__stepper"
+            role="progressbar"
+            aria-valuemin={1}
+            aria-valuemax={3}
+            aria-valuenow={step}
+            aria-label={`Passo ${step} de 3`}
+          >
             <span className={getStepDotClass(1)} aria-hidden="true" />
             <span className={getStepDotClass(2)} aria-hidden="true" />
             <span className={getStepDotClass(3)} aria-hidden="true" />
@@ -126,7 +152,6 @@ export default function WorkOrderCloseWizard({
 
         {/* Body */}
         <div className="wo-wizard__body">
-
           {/* ─── Step 1: Resumo de Custos ─────────────────── */}
           <div style={{ display: step === 1 ? 'block' : 'none' }}>
             <p className="wo-wizard__step-label">Passo 1 de 3 — Resumo de Custos</p>
@@ -188,7 +213,8 @@ export default function WorkOrderCloseWizard({
                 />
                 <p className="wo-wizard__radio-card-title">Despesa imediata</p>
                 <p className="wo-wizard__radio-card-desc">
-                  Custo vai direto para o resultado do periodo. Use quando a manutencao nao estende a vida util do ativo.
+                  Custo vai direto para o resultado do periodo. Use quando a manutencao nao estende
+                  a vida util do ativo.
                 </p>
               </label>
 
@@ -203,7 +229,8 @@ export default function WorkOrderCloseWizard({
                 />
                 <p className="wo-wizard__radio-card-title">Capitalizacao</p>
                 <p className="wo-wizard__radio-card-desc">
-                  Custo e somado ao valor do ativo e comeca a depreciar. Use quando a manutencao restaura ou aumenta a capacidade produtiva.
+                  Custo e somado ao valor do ativo e comeca a depreciar. Use quando a manutencao
+                  restaura ou aumenta a capacidade produtiva.
                 </p>
               </label>
 
@@ -218,7 +245,8 @@ export default function WorkOrderCloseWizard({
                 />
                 <p className="wo-wizard__radio-card-title">Diferimento</p>
                 <p className="wo-wizard__radio-card-desc">
-                  Custo e distribuido nos proximos meses. Use para manutencoes programadas de grande porte.
+                  Custo e distribuido nos proximos meses. Use para manutencoes programadas de grande
+                  porte.
                 </p>
                 {/* Deferral months — display:none, no animation per CLAUDE.md */}
                 <div
@@ -251,7 +279,9 @@ export default function WorkOrderCloseWizard({
               <tbody>
                 <tr>
                   <td>OS</td>
-                  <td className="confirm-mono">#{String(workOrder.sequentialNumber).padStart(4, '0')}</td>
+                  <td className="confirm-mono">
+                    #{String(workOrder.sequentialNumber).padStart(4, '0')}
+                  </td>
                 </tr>
                 <tr>
                   <td>Ativo</td>
@@ -273,7 +303,8 @@ export default function WorkOrderCloseWizard({
               <div className="wo-wizard__warning-banner" role="alert">
                 <AlertTriangle size={20} aria-hidden="true" style={{ flexShrink: 0 }} />
                 <span>
-                  O valor contabil do ativo sera atualizado para {formatBRL(newBookValue)}. Revise a configuracao de depreciacao apos o encerramento.
+                  O valor contabil do ativo sera atualizado para {formatBRL(newBookValue)}. Revise a
+                  configuracao de depreciacao apos o encerramento.
                 </span>
               </div>
             )}
@@ -294,7 +325,7 @@ export default function WorkOrderCloseWizard({
               <button
                 type="button"
                 className="wo-wizard__btn-back"
-                onClick={() => setStep((s) => (s > 1 ? (s - 1) as 1 | 2 | 3 : s))}
+                onClick={() => setStep((s) => (s > 1 ? ((s - 1) as 1 | 2 | 3) : s))}
                 disabled={isSubmitting}
               >
                 Voltar

@@ -31,10 +31,15 @@ export function useEmployeeTerminations() {
         const qs = params.toString();
         const path = `/org/${orgId}/employee-terminations${qs ? `?${qs}` : ''}`;
         const result = await api.get<EmployeeTermination[] | { data: EmployeeTermination[] }>(path);
-        const items = Array.isArray(result) ? result : (result as { data: EmployeeTermination[] }).data;
+        const items = Array.isArray(result)
+          ? result
+          : (result as { data: EmployeeTermination[] }).data;
         setTerminations(items);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Nao foi possivel carregar os dados. Verifique sua conexao e tente novamente.';
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Nao foi possivel carregar os dados. Verifique sua conexao e tente novamente.';
         setError(message);
         setTerminations([]);
       } finally {
@@ -114,9 +119,7 @@ export function useEmployeeTerminations() {
     async (terminationId: string, employeeName: string): Promise<void> => {
       if (!orgId) return;
       try {
-        const blob = await api.getBlob(
-          `/org/${orgId}/employee-terminations/${terminationId}/trct`,
-        );
+        const blob = await api.getBlob(`/org/${orgId}/employee-terminations/${terminationId}/trct`);
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -124,7 +127,10 @@ export function useEmployeeTerminations() {
         link.click();
         window.URL.revokeObjectURL(url);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Nao foi possivel gerar o PDF. Tente novamente ou entre em contato com o suporte.';
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Nao foi possivel gerar o PDF. Tente novamente ou entre em contato com o suporte.';
         setError(message);
       }
     },
@@ -135,9 +141,7 @@ export function useEmployeeTerminations() {
     async (terminationId: string, employeeName: string): Promise<void> => {
       if (!orgId) return;
       try {
-        const blob = await api.getBlob(
-          `/org/${orgId}/employee-terminations/${terminationId}/grrf`,
-        );
+        const blob = await api.getBlob(`/org/${orgId}/employee-terminations/${terminationId}/grrf`);
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -145,7 +149,10 @@ export function useEmployeeTerminations() {
         link.click();
         window.URL.revokeObjectURL(url);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Nao foi possivel gerar o PDF. Tente novamente ou entre em contato com o suporte.';
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Nao foi possivel gerar o PDF. Tente novamente ou entre em contato com o suporte.';
         setError(message);
       }
     },

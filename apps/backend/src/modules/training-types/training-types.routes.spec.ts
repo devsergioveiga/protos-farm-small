@@ -116,9 +116,7 @@ describe('GET /api/training-types', () => {
     authAs(MANAGER_PAYLOAD);
     mockedService.listTrainingTypes.mockResolvedValue([SAMPLE_TRAINING_TYPE, CUSTOM_TRAINING_TYPE]);
 
-    const res = await request(app)
-      .get('/api/training-types')
-      .set('Authorization', 'Bearer token');
+    const res = await request(app).get('/api/training-types').set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(2);

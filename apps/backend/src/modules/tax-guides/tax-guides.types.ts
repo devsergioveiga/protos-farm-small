@@ -1,7 +1,10 @@
 import type { TaxGuideType, TaxGuideStatus } from '@prisma/client';
 
 export class TaxGuideError extends Error {
-  constructor(message: string, public statusCode: number = 400) {
+  constructor(
+    message: string,
+    public statusCode: number = 400,
+  ) {
     super(message);
     this.name = 'TaxGuideError';
   }
@@ -41,15 +44,15 @@ export interface ListTaxGuidesQuery {
 }
 
 export const TAX_GUIDE_DUE_DAYS: Record<TaxGuideType, number> = {
-  FGTS: 7,      // dia 7 do mês seguinte
-  INSS: 20,     // dia 20 do mês seguinte
-  IRRF: 20,     // dia 20 do mês seguinte
+  FGTS: 7, // dia 7 do mês seguinte
+  INSS: 20, // dia 20 do mês seguinte
+  IRRF: 20, // dia 20 do mês seguinte
   FUNRURAL: 20, // dia 20 do mês seguinte
 };
 
 export const TAX_GUIDE_RECEITA_CODES: Record<TaxGuideType, string> = {
-  FGTS: '8050',     // SEFIP code (not a Receita code)
-  INSS: '1120',     // DARF Receita code for INSS empregador
-  IRRF: '0561',     // DARF Receita code for IRRF trabalho
+  FGTS: '8050', // SEFIP code (not a Receita code)
+  INSS: '1120', // DARF Receita code for INSS empregador
+  IRRF: '0561', // DARF Receita code for IRRF trabalho
   FUNRURAL: '2607', // GPS/DARF code FUNRURAL
 };

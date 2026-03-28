@@ -38,11 +38,14 @@ export function useIncomeStatements() {
         if (yearBase) qs.set('yearBase', String(yearBase));
         const query = qs.toString();
         const path = `/org/${orgId}/income-statements${query ? `?${query}` : ''}`;
-        const result = await api.get<{ data: IncomeStatement[]; total: number } | IncomeStatement[]>(path);
+        const result = await api.get<
+          { data: IncomeStatement[]; total: number } | IncomeStatement[]
+        >(path);
         const items = Array.isArray(result) ? result : (result as { data: IncomeStatement[] }).data;
         setStatements(items);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Erro ao carregar informes de rendimentos';
+        const message =
+          err instanceof Error ? err.message : 'Erro ao carregar informes de rendimentos';
         setError(message);
         setStatements([]);
       } finally {
@@ -81,7 +84,10 @@ export function useIncomeStatements() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const safeName = employeeName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        const safeName = employeeName
+          .toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9-]/g, '');
         a.download = `informe-rendimentos-${safeName}-${yearBase}.pdf`;
         document.body.appendChild(a);
         a.click();
@@ -103,7 +109,9 @@ export function useIncomeStatements() {
       setSuccessMessage(null);
       try {
         const result = await api.post<SendResult>(`/org/${orgId}/income-statements/send`, input);
-        setSuccessMessage(`Informes enviados: ${result.sent} enviados, ${result.skipped} sem email`);
+        setSuccessMessage(
+          `Informes enviados: ${result.sent} enviados, ${result.skipped} sem email`,
+        );
         return result;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Erro ao enviar informes';

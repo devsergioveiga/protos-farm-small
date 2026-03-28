@@ -32,19 +32,27 @@ function formatBRL(value: number): string {
 
 function getAlertLabel(alert: TCOFleetRow['alert']): string {
   switch (alert) {
-    case 'OK': return 'OK';
-    case 'MONITOR': return 'Monitorar';
-    case 'REPLACE': return 'Substituir';
-    case 'NO_DATA': return 'Sem dados';
+    case 'OK':
+      return 'OK';
+    case 'MONITOR':
+      return 'Monitorar';
+    case 'REPLACE':
+      return 'Substituir';
+    case 'NO_DATA':
+      return 'Sem dados';
   }
 }
 
 function getAlertAriaLabel(alert: TCOFleetRow['alert'], assetName: string): string {
   switch (alert) {
-    case 'OK': return `${assetName}: status OK`;
-    case 'MONITOR': return `${assetName}: Alerta — Monitorar, custo de manutencao acima de 60% do valor de aquisicao`;
-    case 'REPLACE': return `${assetName}: Alerta — Substituir, custo de manutencao critico`;
-    case 'NO_DATA': return `${assetName}: Sem dados suficientes para calcular alerta`;
+    case 'OK':
+      return `${assetName}: status OK`;
+    case 'MONITOR':
+      return `${assetName}: Alerta — Monitorar, custo de manutencao acima de 60% do valor de aquisicao`;
+    case 'REPLACE':
+      return `${assetName}: Alerta — Substituir, custo de manutencao critico`;
+    case 'NO_DATA':
+      return `${assetName}: Sem dados suficientes para calcular alerta`;
   }
 }
 
@@ -93,14 +101,30 @@ export default function TCOFleetView({ data }: TCOFleetViewProps) {
         <caption className="sr-only">Custo total de propriedade da frota por ativo</caption>
         <thead>
           <tr>
-            <th scope="col" className="tco-fleet__th">Ativo</th>
-            <th scope="col" className="tco-fleet__th">Tipo</th>
-            <th scope="col" className="tco-fleet__th">Aquisicao</th>
-            <th scope="col" className="tco-fleet__th">Depr</th>
-            <th scope="col" className="tco-fleet__th">Manutencao</th>
-            <th scope="col" className="tco-fleet__th">Combustivel</th>
-            <th scope="col" className="tco-fleet__th">TCO Total</th>
-            <th scope="col" className="tco-fleet__th">Alerta</th>
+            <th scope="col" className="tco-fleet__th">
+              Ativo
+            </th>
+            <th scope="col" className="tco-fleet__th">
+              Tipo
+            </th>
+            <th scope="col" className="tco-fleet__th">
+              Aquisicao
+            </th>
+            <th scope="col" className="tco-fleet__th">
+              Depr
+            </th>
+            <th scope="col" className="tco-fleet__th">
+              Manutencao
+            </th>
+            <th scope="col" className="tco-fleet__th">
+              Combustivel
+            </th>
+            <th scope="col" className="tco-fleet__th">
+              TCO Total
+            </th>
+            <th scope="col" className="tco-fleet__th">
+              Alerta
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -108,12 +132,20 @@ export default function TCOFleetView({ data }: TCOFleetViewProps) {
             <tr key={row.assetId}>
               <td className="tco-fleet__td">
                 <div>{row.assetName}</div>
-                <div style={{ fontSize: 12, color: 'var(--color-neutral-400)' }}>{row.assetTag}</div>
+                <div style={{ fontSize: 12, color: 'var(--color-neutral-400)' }}>
+                  {row.assetTag}
+                </div>
               </td>
               <td className="tco-fleet__td">{row.assetType}</td>
-              <td className="tco-fleet__td tco-fleet__td--mono">{formatBRL(row.acquisitionValue)}</td>
-              <td className="tco-fleet__td tco-fleet__td--mono">{formatBRL(row.accumulatedDepreciation)}</td>
-              <td className="tco-fleet__td tco-fleet__td--mono">{formatBRL(row.maintenanceCost)}</td>
+              <td className="tco-fleet__td tco-fleet__td--mono">
+                {formatBRL(row.acquisitionValue)}
+              </td>
+              <td className="tco-fleet__td tco-fleet__td--mono">
+                {formatBRL(row.accumulatedDepreciation)}
+              </td>
+              <td className="tco-fleet__td tco-fleet__td--mono">
+                {formatBRL(row.maintenanceCost)}
+              </td>
               <td className="tco-fleet__td tco-fleet__td--mono">{formatBRL(row.fuelCost)}</td>
               <td className="tco-fleet__td tco-fleet__td--mono">
                 <strong>{formatBRL(row.totalCost)}</strong>
@@ -135,25 +167,52 @@ export default function TCOFleetView({ data }: TCOFleetViewProps) {
             </summary>
             {rows.map((row) => (
               <div key={row.assetId} className="tco-fleet__card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    gap: 8,
+                  }}
+                >
                   <div>
-                    <div style={{ fontWeight: 600, color: 'var(--color-neutral-800)' }}>{row.assetName}</div>
-                    <div style={{ fontSize: 12, color: 'var(--color-neutral-400)' }}>{row.assetTag}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--color-neutral-800)' }}>
+                      {row.assetName}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--color-neutral-400)' }}>
+                      {row.assetTag}
+                    </div>
                   </div>
                   <AlertBadge row={row} />
                 </div>
-                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 20, fontWeight: 700 }}>
+                <div
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 20,
+                    fontWeight: 700,
+                  }}
+                >
                   {formatBRL(row.totalCost)}
                 </div>
                 <div style={{ fontSize: 14, color: 'var(--color-neutral-500)' }}>TCO Total</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
+                <div
+                  style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}
+                >
                   <div>
-                    <div style={{ fontSize: 12, color: 'var(--color-neutral-400)' }}>Manutencao</div>
-                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 14 }}>{formatBRL(row.maintenanceCost)}</div>
+                    <div style={{ fontSize: 12, color: 'var(--color-neutral-400)' }}>
+                      Manutencao
+                    </div>
+                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 14 }}>
+                      {formatBRL(row.maintenanceCost)}
+                    </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: 12, color: 'var(--color-neutral-400)' }}>Combustivel</div>
-                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 14 }}>{formatBRL(row.fuelCost)}</div>
+                    <div style={{ fontSize: 12, color: 'var(--color-neutral-400)' }}>
+                      Combustivel
+                    </div>
+                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 14 }}>
+                      {formatBRL(row.fuelCost)}
+                    </div>
                   </div>
                 </div>
               </div>

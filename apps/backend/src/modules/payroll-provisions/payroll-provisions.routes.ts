@@ -167,14 +167,10 @@ payrollProvisionsRouter.patch(
       const orgId = req.params.orgId as string;
       const id = req.params.id as string;
 
-      const updated = await service.reverseProvision(
-        id,
-        req.user?.userId ?? '',
-        {
-          organizationId: orgId,
-          userId: req.user?.userId,
-        },
-      );
+      const updated = await service.reverseProvision(id, req.user?.userId ?? '', {
+        organizationId: orgId,
+        userId: req.user?.userId,
+      });
 
       res.json(updated);
     } catch (err) {

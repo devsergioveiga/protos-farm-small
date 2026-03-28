@@ -87,7 +87,9 @@ export default function EvolutionTab({
                     <Icon size={16} color="var(--color-primary-700, #1B5E20)" />
                   </div>
                   <div className="employee-detail__timeline-body">
-                    <div className="employee-detail__timeline-date">{formatDate(mv.effectiveAt)}</div>
+                    <div className="employee-detail__timeline-date">
+                      {formatDate(mv.effectiveAt)}
+                    </div>
                     <div className="employee-detail__timeline-label">{label}</div>
                     {mv.reason && (
                       <div className="employee-detail__timeline-reason">{mv.reason}</div>

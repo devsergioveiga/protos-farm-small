@@ -15,13 +15,13 @@ created: 2026-03-22
 
 ## Test Infrastructure
 
-| Property | Value |
-|----------|-------|
-| **Framework** | Jest + @swc/jest (backend), Vitest + @testing-library/react (frontend) |
-| **Config file** | `apps/backend/jest.config.ts`, `apps/frontend/vite.config.ts` |
-| **Quick run command** | `pnpm --filter @protos-farm/backend test -- --testPathPattern asset-acquisitions` |
-| **Full suite command** | `pnpm --filter @protos-farm/backend test` |
-| **Estimated runtime** | ~30 seconds |
+| Property               | Value                                                                             |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| **Framework**          | Jest + @swc/jest (backend), Vitest + @testing-library/react (frontend)            |
+| **Config file**        | `apps/backend/jest.config.ts`, `apps/frontend/vite.config.ts`                     |
+| **Quick run command**  | `pnpm --filter @protos-farm/backend test -- --testPathPattern asset-acquisitions` |
+| **Full suite command** | `pnpm --filter @protos-farm/backend test`                                         |
+| **Estimated runtime**  | ~30 seconds                                                                       |
 
 ---
 
@@ -36,20 +36,20 @@ created: 2026-03-22
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 19-01-01 | 01 | 1 | AQUI-01 | integration | `pnpm --filter @protos-farm/backend test -- --testPathPattern asset-acquisitions.routes` | ❌ W0 | ⬜ pending |
-| 19-01-02 | 01 | 1 | AQUI-01 | integration | same | ❌ W0 | ⬜ pending |
-| 19-01-03 | 01 | 1 | AQUI-01 | integration | same | ❌ W0 | ⬜ pending |
-| 19-02-01 | 02 | 1 | AQUI-02 | integration | same | ❌ W0 | ⬜ pending |
-| 19-02-02 | 02 | 1 | AQUI-02 | unit | `pnpm --filter @protos-farm/shared test -- --testPathPattern installments` | ✅ exists | ⬜ pending |
-| 19-03-01 | 03 | 2 | AQUI-03 | unit | `pnpm --filter @protos-farm/backend test -- --testPathPattern nfe-parser` | ❌ W0 | ⬜ pending |
-| 19-03-02 | 03 | 2 | AQUI-03 | integration | `pnpm --filter @protos-farm/backend test -- --testPathPattern asset-acquisitions.routes` | ❌ W0 | ⬜ pending |
-| 19-04-01 | 04 | 2 | AQUI-04 | integration | same | ❌ W0 | ⬜ pending |
-| 19-04-02 | 04 | 2 | AQUI-04 | unit | `pnpm --filter @protos-farm/backend test -- --testPathPattern nfe-parser` | ❌ W0 | ⬜ pending |
-| 19-07-01 | 01 | 1 | AQUI-07 | integration | `pnpm --filter @protos-farm/backend test -- --testPathPattern asset-acquisitions.routes` | ❌ W0 | ⬜ pending |
+| Task ID  | Plan | Wave | Requirement | Test Type   | Automated Command                                                                        | File Exists | Status     |
+| -------- | ---- | ---- | ----------- | ----------- | ---------------------------------------------------------------------------------------- | ----------- | ---------- |
+| 19-01-01 | 01   | 1    | AQUI-01     | integration | `pnpm --filter @protos-farm/backend test -- --testPathPattern asset-acquisitions.routes` | ❌ W0       | ⬜ pending |
+| 19-01-02 | 01   | 1    | AQUI-01     | integration | same                                                                                     | ❌ W0       | ⬜ pending |
+| 19-01-03 | 01   | 1    | AQUI-01     | integration | same                                                                                     | ❌ W0       | ⬜ pending |
+| 19-02-01 | 02   | 1    | AQUI-02     | integration | same                                                                                     | ❌ W0       | ⬜ pending |
+| 19-02-02 | 02   | 1    | AQUI-02     | unit        | `pnpm --filter @protos-farm/shared test -- --testPathPattern installments`               | ✅ exists   | ⬜ pending |
+| 19-03-01 | 03   | 2    | AQUI-03     | unit        | `pnpm --filter @protos-farm/backend test -- --testPathPattern nfe-parser`                | ❌ W0       | ⬜ pending |
+| 19-03-02 | 03   | 2    | AQUI-03     | integration | `pnpm --filter @protos-farm/backend test -- --testPathPattern asset-acquisitions.routes` | ❌ W0       | ⬜ pending |
+| 19-04-01 | 04   | 2    | AQUI-04     | integration | same                                                                                     | ❌ W0       | ⬜ pending |
+| 19-04-02 | 04   | 2    | AQUI-04     | unit        | `pnpm --filter @protos-farm/backend test -- --testPathPattern nfe-parser`                | ❌ W0       | ⬜ pending |
+| 19-07-01 | 01   | 1    | AQUI-07     | integration | `pnpm --filter @protos-farm/backend test -- --testPathPattern asset-acquisitions.routes` | ❌ W0       | ⬜ pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+_Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
 
 ---
 
@@ -63,9 +63,9 @@ created: 2026-03-22
 
 ## Manual-Only Verifications
 
-| Behavior | Requirement | Why Manual | Test Instructions |
-|----------|-------------|------------|-------------------|
-| NF-e XML upload + preview UI | AQUI-03 | Frontend file upload + visual preview | Upload sample NF-e XML, verify parsed fields displayed correctly |
+| Behavior                     | Requirement | Why Manual                            | Test Instructions                                                |
+| ---------------------------- | ----------- | ------------------------------------- | ---------------------------------------------------------------- |
+| NF-e XML upload + preview UI | AQUI-03     | Frontend file upload + visual preview | Upload sample NF-e XML, verify parsed fields displayed correctly |
 
 ---
 

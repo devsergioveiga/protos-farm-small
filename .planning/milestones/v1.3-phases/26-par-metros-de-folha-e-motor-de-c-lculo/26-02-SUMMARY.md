@@ -1,6 +1,6 @@
 ---
 phase: 26-par-metros-de-folha-e-motor-de-c-lculo
-plan: "02"
+plan: '02'
 subsystem: payroll-engine
 tags: [tdd, payroll, inss, irrf, fgts, decimal, pure-functions]
 dependency_graph:
@@ -29,12 +29,12 @@ key_files:
     - apps/backend/package.json (added expr-eval dependency)
     - pnpm-lock.yaml
 decisions:
-  - "INSS uses upTo-boundary approach (min(effectiveBase, upTo) - prevUpTo) instead of from+0.01 bracket width pattern to avoid 1-cent discrepancy at R$ 2000 bracket boundary"
-  - "INSS accumulates full-precision contributions and rounds only at end (total rounding per research document methodology) — matches 988.09 ceiling case"
-  - "IRRF exemption returns redutor=grossTax (not redutor=0) for transparent tracking of the exemption mechanism"
+  - 'INSS uses upTo-boundary approach (min(effectiveBase, upTo) - prevUpTo) instead of from+0.01 bracket width pattern to avoid 1-cent discrepancy at R$ 2000 bracket boundary'
+  - 'INSS accumulates full-precision contributions and rounds only at end (total rounding per research document methodology) — matches 988.09 ceiling case'
+  - 'IRRF exemption returns redutor=grossTax (not redutor=0) for transparent tracking of the exemption mechanism'
 metrics:
-  duration: "7 minutes"
-  completed: "2026-03-24"
+  duration: '7 minutes'
+  completed: '2026-03-24'
   tasks: 2
   files: 5
   tests: 38
@@ -50,15 +50,15 @@ The mathematical core of the HR module: 7 pure functions that every downstream p
 
 ### Functions Exported from `payroll-engine.service.ts`
 
-| Function | Law/Source | Key Logic |
-|---|---|---|
-| `calculateINSS` | Portaria MPS/MF nº 13/2026 | Progressive 4-bracket accumulation, ceiling cap at R$ 8.475,55 |
-| `calculateIRRF` | RFB tabela 2026 + Lei 15.079/2024 | Two-step: table + redutor for R$ 5k-7.35k range |
-| `calculateFGTS` | Lei 8.036/1990 | 8% no ceiling |
-| `calculateSalaryFamily` | NIT/INSS portaria | Income-limit check, per-dependent benefit R$ 67,54 |
-| `calculateRuralNightPremium` | Lei 5.889/1973 | 25% rate, 60-minute rural hour (21h-5h) |
-| `calculateRuralUtilityDeductions` | Lei 5.889/1973 art. 9 | Housing cap 20%, food cap 25% of regional min wage |
-| `evaluateFormula` | Custom | expr-eval safe math evaluation, FormulaEvaluationError on failure |
+| Function                          | Law/Source                        | Key Logic                                                         |
+| --------------------------------- | --------------------------------- | ----------------------------------------------------------------- |
+| `calculateINSS`                   | Portaria MPS/MF nº 13/2026        | Progressive 4-bracket accumulation, ceiling cap at R$ 8.475,55    |
+| `calculateIRRF`                   | RFB tabela 2026 + Lei 15.079/2024 | Two-step: table + redutor for R$ 5k-7.35k range                   |
+| `calculateFGTS`                   | Lei 8.036/1990                    | 8% no ceiling                                                     |
+| `calculateSalaryFamily`           | NIT/INSS portaria                 | Income-limit check, per-dependent benefit R$ 67,54                |
+| `calculateRuralNightPremium`      | Lei 5.889/1973                    | 25% rate, 60-minute rural hour (21h-5h)                           |
+| `calculateRuralUtilityDeductions` | Lei 5.889/1973 art. 9             | Housing cap 20%, food cap 25% of regional min wage                |
+| `evaluateFormula`                 | Custom                            | expr-eval safe math evaluation, FormulaEvaluationError on failure |
 
 ### Types in `payroll-engine.types.ts`
 
@@ -67,6 +67,7 @@ INSSBracket, INSSResult, IRRFBracket, IRRFInput, IRRFResult, FGTSResult, SalaryF
 ## Tests (38 passing)
 
 All tests validate against official 2026 Brazilian tax values:
+
 - INSS ceiling: R$ 8.475,55 → max contribution R$ 988,09
 - IRRF dependent deduction: R$ 189,59 per dependent
 - IRRF redutor A: R$ 978,62, redutor B: 0.133145
@@ -96,11 +97,11 @@ All tests validate against official 2026 Brazilian tax values:
 
 ## Self-Check: PASSED
 
-| Check | Result |
-|---|---|
-| `payroll-engine.types.ts` exists | FOUND |
-| `payroll-engine.spec.ts` exists | FOUND |
-| `payroll-engine.service.ts` exists | FOUND |
-| Commit `c80d4f74` (TDD RED) | FOUND |
-| Commit `dad9f23b` (GREEN + fix) | FOUND |
-| 38 tests passing | VERIFIED |
+| Check                              | Result   |
+| ---------------------------------- | -------- |
+| `payroll-engine.types.ts` exists   | FOUND    |
+| `payroll-engine.spec.ts` exists    | FOUND    |
+| `payroll-engine.service.ts` exists | FOUND    |
+| Commit `c80d4f74` (TDD RED)        | FOUND    |
+| Commit `dad9f23b` (GREEN + fix)    | FOUND    |
+| 38 tests passing                   | VERIFIED |

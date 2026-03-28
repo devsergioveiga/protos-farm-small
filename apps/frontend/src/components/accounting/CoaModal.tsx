@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
-import type { ChartOfAccount, CreateAccountInput, AccountType, AccountNature } from '@/types/accounting';
+import type {
+  ChartOfAccount,
+  CreateAccountInput,
+  AccountType,
+  AccountNature,
+} from '@/types/accounting';
 import './CoaModal.css';
 
 // ─── Props ────────────────────────────────────────────────────────────────
@@ -31,7 +36,13 @@ function getInitialForm(account?: ChartOfAccount): CreateAccountInput & { isActi
 
 // ─── Component ───────────────────────────────────────────────────────────
 
-export default function CoaModal({ isOpen, onClose, onSubmit, account, parentAccounts }: CoaModalProps) {
+export default function CoaModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  account,
+  parentAccounts,
+}: CoaModalProps) {
   const isEdit = !!account;
   const [form, setForm] = useState(getInitialForm(account));
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
@@ -99,7 +110,7 @@ export default function CoaModal({ isOpen, onClose, onSubmit, account, parentAcc
     }
   };
 
-  const set = <K extends keyof typeof form>(key: K, value: typeof form[K]) => {
+  const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
   };
@@ -107,7 +118,9 @@ export default function CoaModal({ isOpen, onClose, onSubmit, account, parentAcc
   return (
     <div
       className="coa-modal__overlay"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="coa-modal-title"
@@ -129,7 +142,13 @@ export default function CoaModal({ isOpen, onClose, onSubmit, account, parentAcc
         </div>
 
         {/* Body */}
-        <form className="coa-modal__body" onSubmit={(e) => { void handleSubmit(e); }} noValidate>
+        <form
+          className="coa-modal__body"
+          onSubmit={(e) => {
+            void handleSubmit(e);
+          }}
+          noValidate
+        >
           <div className="coa-modal__row">
             {/* Code */}
             <div className="coa-modal__field">
@@ -202,7 +221,9 @@ export default function CoaModal({ isOpen, onClose, onSubmit, account, parentAcc
           <div className="coa-modal__row">
             {/* Parent Account */}
             <div className="coa-modal__field">
-              <label htmlFor="coa-parent" className="coa-modal__label">Conta Pai</label>
+              <label htmlFor="coa-parent" className="coa-modal__label">
+                Conta Pai
+              </label>
               <select
                 id="coa-parent"
                 className="coa-modal__input"
@@ -266,7 +287,9 @@ export default function CoaModal({ isOpen, onClose, onSubmit, account, parentAcc
               Conta Sintética (grupo)
             </label>
 
-            <label className={`coa-modal__checkbox-label ${form.isSynthetic ? 'coa-modal__checkbox-label--disabled' : ''}`}>
+            <label
+              className={`coa-modal__checkbox-label ${form.isSynthetic ? 'coa-modal__checkbox-label--disabled' : ''}`}
+            >
               <input
                 type="checkbox"
                 className="coa-modal__checkbox"

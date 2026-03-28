@@ -10,17 +10,17 @@
 
 The following are already installed and actively used. All v1.4 work must reuse these — do not add duplicates.
 
-| Library | Version | Already Covers |
-|---------|---------|----------------|
-| `pdfkit` | ^0.17.2 | PDF generation — reuse for financial statement PDFs (DRE, BP, DFC) and closing reports |
-| `decimal.js` | ^10.6.0 | Monetary arithmetic — all accounting amounts MUST use `Money(n)` wrapper (same as payroll) |
-| `exceljs` | ^4.4.0 | Excel/CSV export — reuse for trial balance, ledger, and journal entry exports |
-| `xmlbuilder2` | ^4.0.3 | XML generation — SPED ECD is pipe-delimited text, NOT XML; do not use for ECD |
-| `recharts` | ^3.7.0 | Charts — reuse for accounting dashboard (DRE waterfall, BP composition, DFC flows) |
-| `bullmq` | *(via ioredis)* | Background jobs — reuse for SPED ECD generation (file can be large, async required) |
-| `node-cron` | ^4.2.1 | Scheduled jobs — reuse for period-close reminders and automatic entry generation |
-| `date-fns` | ^4.1.0 | Date arithmetic — reuse for fiscal period calculations and period validation |
-| `pino` | ^10.3.1 | Logging — reuse for accounting audit trail (entries created/reversed, period open/close) |
+| Library       | Version         | Already Covers                                                                             |
+| ------------- | --------------- | ------------------------------------------------------------------------------------------ |
+| `pdfkit`      | ^0.17.2         | PDF generation — reuse for financial statement PDFs (DRE, BP, DFC) and closing reports     |
+| `decimal.js`  | ^10.6.0         | Monetary arithmetic — all accounting amounts MUST use `Money(n)` wrapper (same as payroll) |
+| `exceljs`     | ^4.4.0          | Excel/CSV export — reuse for trial balance, ledger, and journal entry exports              |
+| `xmlbuilder2` | ^4.0.3          | XML generation — SPED ECD is pipe-delimited text, NOT XML; do not use for ECD              |
+| `recharts`    | ^3.7.0          | Charts — reuse for accounting dashboard (DRE waterfall, BP composition, DFC flows)         |
+| `bullmq`      | _(via ioredis)_ | Background jobs — reuse for SPED ECD generation (file can be large, async required)        |
+| `node-cron`   | ^4.2.1          | Scheduled jobs — reuse for period-close reminders and automatic entry generation           |
+| `date-fns`    | ^4.1.0          | Date arithmetic — reuse for fiscal period calculations and period validation               |
+| `pino`        | ^10.3.1         | Logging — reuse for accounting audit trail (entries created/reversed, period open/close)   |
 
 ---
 
@@ -77,6 +77,7 @@ Each block (Bloco 0, C, I, J, K, 9) becomes a method on a `SpedEcdService`. The 
 Available double-entry libraries (`medici` requires MongoDB, `ale` requires Sequelize, `ledger-ts` targets beancount format output) are incompatible with the existing Prisma 7 + PostgreSQL 16 stack. More importantly, the project already has an `AccountingEntry` model (Phase 32 Plan 02) with `debitAccount`, `creditAccount`, `amount`, `sourceType`, `sourceId` — a minimal double-entry ledger already exists.
 
 v1.4 extends this with:
+
 - `ChartOfAccount` model (hierarchical, self-referential, `parentId`)
 - `AccountingPeriod` model (fiscal year + month, open/closed status)
 - `JournalEntry` model (header with date, memo, period FK)
@@ -154,6 +155,7 @@ if (doc.y > doc.page.height - doc.page.margins.bottom - MIN_ROW_HEIGHT) {
 All debit/credit amounts, account balances, and financial statement totals use `Money(n)` (the existing wrapper in `packages/shared`). No `dinero.js` or `currency.js` needed — `decimal.js` provides arbitrary precision and is already the project standard.
 
 **Key accounting rules already enforced by Money():**
+
 - 2 decimal places for BRL
 - `ROUND_HALF_UP` rounding (Brazilian accounting standard)
 - No IEEE 754 floating point errors
@@ -167,6 +169,7 @@ All debit/credit amounts, account balances, and financial statement totals use `
 Materialized views seem appealing for running balances but have a critical problem: refreshing them on every journal entry insert makes inserts take seconds (verified: ~9s for 300K rows in community reports). For an accounting system where posting a journal entry must feel instant, this is unacceptable.
 
 **Approach instead:**
+
 - `AccountBalance` table: one row per `(organizationId, accountId, fiscalYear, month)` updated in the same transaction as journal entry posting
 - Balance is maintained incrementally: `newBalance = currentBalance + debitAmount - creditAmount`
 - Period-end balances (for BP/DRE) read from this cache table
@@ -193,45 +196,48 @@ No new packages required. All capabilities exist in the current dependency set.
 
 ## Alternatives Considered
 
-| Recommended | Alternative | Why Alternative Was Rejected |
-|-------------|-------------|------------------------------|
-| Custom `SpedEcdWriter` | `sped-checker` npm package | Validates only, does not generate; no generation library exists for Node.js |
-| Custom `SpedEcdWriter` | Python `sped-br/python-sped-ecd` | Python-only; would require spawning subprocess or microservice — unjustified complexity |
-| pdfkit (existing) | pdfmake ^0.3.7 | Second PDF paradigm with no migration path; pdfkit already covers all existing PDF use cases |
-| Prisma + PostgreSQL | medici (double-entry library) | Requires MongoDB — incompatible with Prisma 7 + PostgreSQL 16 stack |
-| Prisma + PostgreSQL | ale/ledger-ts | Sequelize/beancount — wrong ORM/output format for this stack |
-| Incremental AccountBalance table | PostgreSQL materialized views | Refresh on insert causes multi-second write latency — unacceptable for interactive use |
-| `$queryRaw` recursive CTE | Prisma nested relations | Prisma does not support recursive CTEs; nested relation traversal requires N+1 queries for arbitrary depth trees |
+| Recommended                      | Alternative                      | Why Alternative Was Rejected                                                                                     |
+| -------------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Custom `SpedEcdWriter`           | `sped-checker` npm package       | Validates only, does not generate; no generation library exists for Node.js                                      |
+| Custom `SpedEcdWriter`           | Python `sped-br/python-sped-ecd` | Python-only; would require spawning subprocess or microservice — unjustified complexity                          |
+| pdfkit (existing)                | pdfmake ^0.3.7                   | Second PDF paradigm with no migration path; pdfkit already covers all existing PDF use cases                     |
+| Prisma + PostgreSQL              | medici (double-entry library)    | Requires MongoDB — incompatible with Prisma 7 + PostgreSQL 16 stack                                              |
+| Prisma + PostgreSQL              | ale/ledger-ts                    | Sequelize/beancount — wrong ORM/output format for this stack                                                     |
+| Incremental AccountBalance table | PostgreSQL materialized views    | Refresh on insert causes multi-second write latency — unacceptable for interactive use                           |
+| `$queryRaw` recursive CTE        | Prisma nested relations          | Prisma does not support recursive CTEs; nested relation traversal requires N+1 queries for arbitrary depth trees |
 
 ---
 
 ## What NOT to Use
 
-| Avoid | Why | Use Instead |
-|-------|-----|-------------|
-| `medici` | MongoDB only; incompatible with PostgreSQL | Custom `JournalEntryService` with Prisma `$transaction` |
-| `pdfmake` | Duplicate PDF library; vfs_fonts adds build complexity | `pdfkit` (already installed, same capability) |
-| PostgreSQL materialized views for balances | Multi-second refresh latency on insert | `AccountBalance` incremental cache table (StockBalance pattern) |
-| String concatenation for SPED ECD | Character escaping bugs on accented names/addresses | `SpedEcdWriter` class with field validation |
-| `dinero.js` / `currency.js` | Duplicate money library | `decimal.js` via existing `Money()` factory |
-| Floating-point `number` for amounts | IEEE 754 rounding errors compound across ledger aggregations | `Decimal` (decimal.js) everywhere, stored as `@db.Decimal(14,2)` |
+| Avoid                                      | Why                                                          | Use Instead                                                      |
+| ------------------------------------------ | ------------------------------------------------------------ | ---------------------------------------------------------------- |
+| `medici`                                   | MongoDB only; incompatible with PostgreSQL                   | Custom `JournalEntryService` with Prisma `$transaction`          |
+| `pdfmake`                                  | Duplicate PDF library; vfs_fonts adds build complexity       | `pdfkit` (already installed, same capability)                    |
+| PostgreSQL materialized views for balances | Multi-second refresh latency on insert                       | `AccountBalance` incremental cache table (StockBalance pattern)  |
+| String concatenation for SPED ECD          | Character escaping bugs on accented names/addresses          | `SpedEcdWriter` class with field validation                      |
+| `dinero.js` / `currency.js`                | Duplicate money library                                      | `decimal.js` via existing `Money()` factory                      |
+| Floating-point `number` for amounts        | IEEE 754 rounding errors compound across ledger aggregations | `Decimal` (decimal.js) everywhere, stored as `@db.Decimal(14,2)` |
 
 ---
 
 ## Stack Patterns by Variant
 
 **If SPED ECD file exceeds 10MB (large organization with many accounts/entries):**
+
 - Generate via BullMQ job (already installed), not in the HTTP request cycle
 - Stream output to a temp file, return a download URL
 - Same pattern as eSocial batch export in v1.3
 
 **If financial statement PDFs need embedded charts (DRE waterfall, DFC flow):**
+
 - Generate chart as SVG from Recharts on the frontend, POST SVG string to backend
 - Embed SVG in pdfkit with `doc.image(Buffer.from(svgString), ...)` via `svg-to-pdfkit`
 - Alternative: render chart server-side with `@nivo/core` (no browser required) — evaluate only if needed
 - Do NOT use Puppeteer/Playwright for PDF generation — adds Chromium binary (~300MB) to backend Docker image for a feature pdfkit already handles
 
 **If trial balance has >500 line items (large chart of accounts):**
+
 - Use `pdfkit-table ^0.1.x` for automatic page-break handling in tables
 - Verify pdfkit-table compatibility with pdfkit 0.17 before adding (last confirmed compatible version: 0.1.45)
 
@@ -239,27 +245,27 @@ No new packages required. All capabilities exist in the current dependency set.
 
 ## Version Compatibility
 
-| Package | Version in Use | Notes |
-|---------|---------------|-------|
-| `pdfkit` | ^0.17.2 | Active — 0.17.2 released April 2025; 0.18.0 available (no breaking changes noted) |
-| `decimal.js` | ^10.6.0 | Stable — no major version changes expected |
-| `exceljs` | ^4.4.0 | Active — reuse existing CSV/XLSX export patterns |
-| `xmlbuilder2` | ^4.0.3 | Stable — NOT used for ECD (pipe-delimited text); used for eSocial only |
-| `prisma` | ^7.4.1 | Active — use `$queryRaw` for recursive CTEs; `$transaction` for double-entry invariant |
-| PostgreSQL | 16 | `WITH RECURSIVE` fully supported; window functions for running balance supported |
+| Package       | Version in Use | Notes                                                                                  |
+| ------------- | -------------- | -------------------------------------------------------------------------------------- |
+| `pdfkit`      | ^0.17.2        | Active — 0.17.2 released April 2025; 0.18.0 available (no breaking changes noted)      |
+| `decimal.js`  | ^10.6.0        | Stable — no major version changes expected                                             |
+| `exceljs`     | ^4.4.0         | Active — reuse existing CSV/XLSX export patterns                                       |
+| `xmlbuilder2` | ^4.0.3         | Stable — NOT used for ECD (pipe-delimited text); used for eSocial only                 |
+| `prisma`      | ^7.4.1         | Active — use `$queryRaw` for recursive CTEs; `$transaction` for double-entry invariant |
+| PostgreSQL    | 16             | `WITH RECURSIVE` fully supported; window functions for running balance supported       |
 
 ---
 
 ## Integration Points with Existing Modules
 
-| Existing Module | Integration Required | How |
-|----------------|---------------------|-----|
-| `accounting-entries` (v1.3) | Migrate to full `JournalEntry` model | Extend existing `AccountingEntry` model, add `JournalEntryLine` with FK to new `ChartOfAccount` |
-| `payroll-runs` | Auto-post salary/charges journal entries | Existing `accounting-entries.service.ts` pattern — extend `sourceType` enum |
-| `assets` + `depreciation` | Auto-post depreciation entries | New `sourceType: DEPRECIATION` in `AccountingSourceType` enum |
-| `stock-entries` / `stock-outputs` | Auto-post inventory entries | New `sourceType: INVENTORY_IN / INVENTORY_OUT` |
-| `payables` / `receivables` | Auto-post AP/AR entries | New `sourceType: PAYABLE_SETTLEMENT / RECEIVABLE_SETTLEMENT` |
-| `bank-accounts` | Conciliação contábil (razão vs extrato) | Join `AccountingEntry` with `BankTransaction` on amount + date |
+| Existing Module                   | Integration Required                     | How                                                                                             |
+| --------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `accounting-entries` (v1.3)       | Migrate to full `JournalEntry` model     | Extend existing `AccountingEntry` model, add `JournalEntryLine` with FK to new `ChartOfAccount` |
+| `payroll-runs`                    | Auto-post salary/charges journal entries | Existing `accounting-entries.service.ts` pattern — extend `sourceType` enum                     |
+| `assets` + `depreciation`         | Auto-post depreciation entries           | New `sourceType: DEPRECIATION` in `AccountingSourceType` enum                                   |
+| `stock-entries` / `stock-outputs` | Auto-post inventory entries              | New `sourceType: INVENTORY_IN / INVENTORY_OUT`                                                  |
+| `payables` / `receivables`        | Auto-post AP/AR entries                  | New `sourceType: PAYABLE_SETTLEMENT / RECEIVABLE_SETTLEMENT`                                    |
+| `bank-accounts`                   | Conciliação contábil (razão vs extrato)  | Join `AccountingEntry` with `BankTransaction` on amount + date                                  |
 
 ---
 
@@ -276,5 +282,5 @@ No new packages required. All capabilities exist in the current dependency set.
 
 ---
 
-*Stack research for: v1.4 Contabilidade e Demonstrações Financeiras — SPED ECD, Chart of Accounts, Double-Entry Bookkeeping, Financial Statements*
-*Researched: 2026-03-26*
+_Stack research for: v1.4 Contabilidade e Demonstrações Financeiras — SPED ECD, Chart of Accounts, Double-Entry Bookkeeping, Financial Statements_
+_Researched: 2026-03-26_

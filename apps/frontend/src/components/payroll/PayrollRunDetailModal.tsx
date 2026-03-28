@@ -15,8 +15,18 @@ function formatCurrency(value: number | null): string {
 function getRunReference(run: PayrollRun): string {
   const [year, month] = run.referenceMonth.split('-');
   const monthNames = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
   ];
   const monthName = monthNames[parseInt(month, 10) - 1] ?? month;
   const typeLabel = RUN_TYPE_LABELS[run.runType] ?? run.runType;
@@ -88,9 +98,7 @@ export default function PayrollRunDetailModal({
 
   const runReference = getRunReference(run);
   const totalDiscounts =
-    run.totalGross !== null && run.totalNet !== null
-      ? run.totalGross - run.totalNet
-      : null;
+    run.totalGross !== null && run.totalNet !== null ? run.totalGross - run.totalNet : null;
 
   async function handleCloseRun() {
     if (!run) return;
@@ -189,11 +197,21 @@ export default function PayrollRunDetailModal({
               <caption className="sr-only">Itens da folha de pagamento</caption>
               <thead>
                 <tr>
-                  <th scope="col" className="payroll-detail-modal__th">COLABORADOR</th>
-                  <th scope="col" className="payroll-detail-modal__th">STATUS</th>
-                  <th scope="col" className="payroll-detail-modal__th">BRUTO</th>
-                  <th scope="col" className="payroll-detail-modal__th">LIQUIDO</th>
-                  <th scope="col" className="payroll-detail-modal__th">ACOES</th>
+                  <th scope="col" className="payroll-detail-modal__th">
+                    COLABORADOR
+                  </th>
+                  <th scope="col" className="payroll-detail-modal__th">
+                    STATUS
+                  </th>
+                  <th scope="col" className="payroll-detail-modal__th">
+                    BRUTO
+                  </th>
+                  <th scope="col" className="payroll-detail-modal__th">
+                    LIQUIDO
+                  </th>
+                  <th scope="col" className="payroll-detail-modal__th">
+                    ACOES
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -209,9 +227,7 @@ export default function PayrollRunDetailModal({
               </tbody>
             </table>
           ) : (
-            <p className="payroll-detail-modal__empty">
-              Nenhum colaborador nesta folha.
-            </p>
+            <p className="payroll-detail-modal__empty">Nenhum colaborador nesta folha.</p>
           )}
         </div>
 

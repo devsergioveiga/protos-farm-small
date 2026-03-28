@@ -53,7 +53,9 @@
   padding: 12px 24px;
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
-  transition: color 200ms ease-out, border-color 200ms ease-out;
+  transition:
+    color 200ms ease-out,
+    border-color 200ms ease-out;
   min-height: 48px;
 }
 
@@ -346,8 +348,13 @@
 }
 
 @keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .payroll-params__skeleton {
@@ -356,12 +363,33 @@
   animation: skeleton-pulse 1.5s ease infinite;
 }
 
-.payroll-params__skeleton--name { height: 16px; width: 180px; }
-.payroll-params__skeleton--badge { height: 24px; width: 80px; border-radius: 20px; }
-.payroll-params__skeleton--text { height: 16px; width: 120px; }
-.payroll-params__skeleton--actions { height: 32px; width: 140px; }
-.payroll-params__skeleton--heading { height: 24px; width: 120px; margin-bottom: 12px; }
-.payroll-params__skeleton--row { height: 16px; width: 100%; margin-bottom: 8px; }
+.payroll-params__skeleton--name {
+  height: 16px;
+  width: 180px;
+}
+.payroll-params__skeleton--badge {
+  height: 24px;
+  width: 80px;
+  border-radius: 20px;
+}
+.payroll-params__skeleton--text {
+  height: 16px;
+  width: 120px;
+}
+.payroll-params__skeleton--actions {
+  height: 32px;
+  width: 140px;
+}
+.payroll-params__skeleton--heading {
+  height: 24px;
+  width: 120px;
+  margin-bottom: 12px;
+}
+.payroll-params__skeleton--row {
+  height: 16px;
+  width: 100%;
+  margin-bottom: 8px;
+}
 
 /* ─── Empty State ─────────────────────────────────────────────── */
 

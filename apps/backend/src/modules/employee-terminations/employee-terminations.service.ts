@@ -79,9 +79,10 @@ function mapToOutput(record: any): TerminationOutput {
     employeeId: record.employeeId as string,
     employeeName: (record.employee?.name ?? '') as string,
     terminationType: record.terminationType as string,
-    terminationDate: record.terminationDate instanceof Date
-      ? record.terminationDate.toISOString().split('T')[0]
-      : String(record.terminationDate),
+    terminationDate:
+      record.terminationDate instanceof Date
+        ? record.terminationDate.toISOString().split('T')[0]
+        : String(record.terminationDate),
     noticePeriodDays: record.noticePeriodDays as number,
     noticePeriodType: record.noticePeriodType as string,
     balanceSalary: record.balanceSalary.toString(),
@@ -96,21 +97,21 @@ function mapToOutput(record: any): TerminationOutput {
     inssAmount: record.inssAmount.toString(),
     irrfAmount: record.irrfAmount.toString(),
     totalNet: record.totalNet.toString(),
-    paymentDeadline: record.paymentDeadline instanceof Date
-      ? record.paymentDeadline.toISOString().split('T')[0]
-      : String(record.paymentDeadline),
+    paymentDeadline:
+      record.paymentDeadline instanceof Date
+        ? record.paymentDeadline.toISOString().split('T')[0]
+        : String(record.paymentDeadline),
     trctPdfUrl: record.trctPdfUrl as string | null,
     grfPdfUrl: record.grfPdfUrl as string | null,
     status: record.status as string,
     processedAt: record.processedAt
-      ? (record.processedAt instanceof Date
+      ? record.processedAt instanceof Date
         ? record.processedAt.toISOString()
-        : String(record.processedAt))
+        : String(record.processedAt)
       : null,
     createdBy: record.createdBy as string,
-    createdAt: record.createdAt instanceof Date
-      ? record.createdAt.toISOString()
-      : String(record.createdAt),
+    createdAt:
+      record.createdAt instanceof Date ? record.createdAt.toISOString() : String(record.createdAt),
   };
 }
 
@@ -168,7 +169,15 @@ export async function processTermination(
   input: CreateTerminationInput,
   ctx: RlsContext,
 ): Promise<TerminationOutput> {
-  const { organizationId, employeeId, terminationType, terminationDate, noticePeriodType, fgtsBalanceOverride, createdBy } = input;
+  const {
+    organizationId,
+    employeeId,
+    terminationType,
+    terminationDate,
+    noticePeriodType,
+    fgtsBalanceOverride,
+    createdBy,
+  } = input;
 
   const terminationDateObj = new Date(terminationDate + 'T00:00:00.000Z');
 
@@ -184,11 +193,7 @@ export async function processTermination(
     }
 
     if (employee.status === 'DESLIGADO' || employee.termination) {
-      throw new TerminationError(
-        'Este colaborador já foi desligado',
-        409,
-        'ALREADY_TERMINATED',
-      );
+      throw new TerminationError('Este colaborador já foi desligado', 409, 'ALREADY_TERMINATED');
     }
 
     if (employee.status === 'AFASTADO') {
@@ -474,7 +479,15 @@ export async function listTerminations(
   filters: ListTerminationsInput,
   ctx: RlsContext,
 ): Promise<{ data: TerminationOutput[]; total: number }> {
-  const { organizationId, terminationType, status, fromDate, toDate, page = 1, limit = 20 } = filters;
+  const {
+    organizationId,
+    terminationType,
+    status,
+    fromDate,
+    toDate,
+    page = 1,
+    limit = 20,
+  } = filters;
 
   const where: Record<string, unknown> = { organizationId };
   if (terminationType) where['terminationType'] = terminationType;
@@ -524,10 +537,7 @@ export async function getTerminationById(
 
 // ─── getTrctPdf ──────────────────────────────────────────────────────────
 
-export async function getTrctPdf(
-  terminationId: string,
-  ctx: RlsContext,
-): Promise<Buffer> {
+export async function getTrctPdf(terminationId: string, ctx: RlsContext): Promise<Buffer> {
   return withRlsContext(ctx, async (tx: TxClient) => {
     const termination = await tx.employeeTermination.findFirst({
       where: { id: terminationId, organizationId: ctx.organizationId },
@@ -540,7 +550,13 @@ export async function getTrctPdf(
 
     const employee = await tx.employee.findFirst({
       where: { id: termination.employeeId },
-      select: { id: true, name: true, cpf: true, admissionDate: true, position: { select: { title: true } } },
+      select: {
+        id: true,
+        name: true,
+        cpf: true,
+        admissionDate: true,
+        position: { select: { title: true } },
+      },
     });
 
     const employeeData: EmployeeData = {
@@ -557,10 +573,7 @@ export async function getTrctPdf(
 
 // ─── getGrffPdf ──────────────────────────────────────────────────────────
 
-export async function getGrffPdf(
-  terminationId: string,
-  ctx: RlsContext,
-): Promise<Buffer> {
+export async function getGrffPdf(terminationId: string, ctx: RlsContext): Promise<Buffer> {
   return withRlsContext(ctx, async (tx: TxClient) => {
     const termination = await tx.employeeTermination.findFirst({
       where: { id: terminationId, organizationId: ctx.organizationId },
@@ -573,7 +586,13 @@ export async function getGrffPdf(
 
     const employee = await tx.employee.findFirst({
       where: { id: termination.employeeId },
-      select: { id: true, name: true, cpf: true, admissionDate: true, position: { select: { title: true } } },
+      select: {
+        id: true,
+        name: true,
+        cpf: true,
+        admissionDate: true,
+        position: { select: { title: true } },
+      },
     });
 
     const employeeData: EmployeeData = {

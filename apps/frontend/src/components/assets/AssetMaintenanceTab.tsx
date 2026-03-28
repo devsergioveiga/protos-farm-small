@@ -81,12 +81,27 @@ export default function AssetMaintenanceTab({ assetId }: AssetMaintenanceTabProp
 
   if (!assetId) return null;
 
-  const hasNoData = !plansLoading && !ordersLoading && plans.length === 0 && workOrders.length === 0;
+  const hasNoData =
+    !plansLoading && !ordersLoading && plans.length === 0 && workOrders.length === 0;
 
   return (
-    <div style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+    <div
+      style={{
+        padding: 'var(--space-4)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--space-5)',
+      }}
+    >
       {/* Header actions */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: 'var(--space-3)',
+        }}
+      >
         <button
           type="button"
           onClick={() => setShowPlanModal(true)}
@@ -135,9 +150,26 @@ export default function AssetMaintenanceTab({ assetId }: AssetMaintenanceTabProp
 
       {/* Empty state */}
       {hasNoData && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-4)', padding: 'var(--space-8) var(--space-4)', textAlign: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 'var(--space-4)',
+            padding: 'var(--space-8) var(--space-4)',
+            textAlign: 'center',
+          }}
+        >
           <Wrench size={48} aria-hidden="true" color="var(--color-neutral-400)" />
-          <h3 style={{ fontFamily: 'var(--font-display, "DM Sans", system-ui, sans-serif)', fontSize: '1rem', fontWeight: 700, color: 'var(--color-neutral-700)', margin: 0 }}>
+          <h3
+            style={{
+              fontFamily: 'var(--font-display, "DM Sans", system-ui, sans-serif)',
+              fontSize: '1rem',
+              fontWeight: 700,
+              color: 'var(--color-neutral-700)',
+              margin: 0,
+            }}
+          >
             Nenhuma manutencao registrada
           </h3>
           <p style={{ color: 'var(--color-neutral-500)', fontSize: '0.875rem', margin: 0 }}>
@@ -166,27 +198,95 @@ export default function AssetMaintenanceTab({ assetId }: AssetMaintenanceTabProp
       {/* Planos de Manutencao */}
       {(plans.length > 0 || plansLoading) && (
         <section aria-labelledby="plans-section-title">
-          <h3 style={{
-            fontFamily: 'var(--font-body, "Source Sans 3", system-ui, sans-serif)',
-            fontSize: '0.8125rem',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            color: 'var(--color-neutral-500)',
-            margin: '0 0 var(--space-3)',
-          }} id="plans-section-title">Planos de Manutencao</h3>
+          <h3
+            style={{
+              fontFamily: 'var(--font-body, "Source Sans 3", system-ui, sans-serif)',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              color: 'var(--color-neutral-500)',
+              margin: '0 0 var(--space-3)',
+            }}
+            id="plans-section-title"
+          >
+            Planos de Manutencao
+          </h3>
 
           {plansLoading ? (
-            <div style={{ height: '60px', background: 'var(--color-neutral-200)', borderRadius: 'var(--radius-sm, 4px)', opacity: 0.5 }} aria-hidden="true" />
+            <div
+              style={{
+                height: '60px',
+                background: 'var(--color-neutral-200)',
+                borderRadius: 'var(--radius-sm, 4px)',
+                opacity: 0.5,
+              }}
+              aria-hidden="true"
+            />
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body, "Source Sans 3", system-ui, sans-serif)', fontSize: '0.875rem' }}>
+            <table
+              style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                fontFamily: 'var(--font-body, "Source Sans 3", system-ui, sans-serif)',
+                fontSize: '0.875rem',
+              }}
+            >
               <caption className="sr-only">Planos de manutencao do ativo</caption>
               <thead>
                 <tr>
-                  <th scope="col" style={{ padding: 'var(--space-2) var(--space-3)', background: 'var(--color-neutral-100)', textAlign: 'left', fontWeight: 600, color: 'var(--color-neutral-600)', borderBottom: '1px solid var(--color-neutral-200)' }}>Nome</th>
-                  <th scope="col" style={{ padding: 'var(--space-2) var(--space-3)', background: 'var(--color-neutral-100)', textAlign: 'left', fontWeight: 600, color: 'var(--color-neutral-600)', borderBottom: '1px solid var(--color-neutral-200)' }}>Gatilho</th>
-                  <th scope="col" style={{ padding: 'var(--space-2) var(--space-3)', background: 'var(--color-neutral-100)', textAlign: 'left', fontWeight: 600, color: 'var(--color-neutral-600)', borderBottom: '1px solid var(--color-neutral-200)' }}>Proxima</th>
-                  <th scope="col" style={{ padding: 'var(--space-2) var(--space-3)', background: 'var(--color-neutral-100)', textAlign: 'left', fontWeight: 600, color: 'var(--color-neutral-600)', borderBottom: '1px solid var(--color-neutral-200)' }}>Status</th>
+                  <th
+                    scope="col"
+                    style={{
+                      padding: 'var(--space-2) var(--space-3)',
+                      background: 'var(--color-neutral-100)',
+                      textAlign: 'left',
+                      fontWeight: 600,
+                      color: 'var(--color-neutral-600)',
+                      borderBottom: '1px solid var(--color-neutral-200)',
+                    }}
+                  >
+                    Nome
+                  </th>
+                  <th
+                    scope="col"
+                    style={{
+                      padding: 'var(--space-2) var(--space-3)',
+                      background: 'var(--color-neutral-100)',
+                      textAlign: 'left',
+                      fontWeight: 600,
+                      color: 'var(--color-neutral-600)',
+                      borderBottom: '1px solid var(--color-neutral-200)',
+                    }}
+                  >
+                    Gatilho
+                  </th>
+                  <th
+                    scope="col"
+                    style={{
+                      padding: 'var(--space-2) var(--space-3)',
+                      background: 'var(--color-neutral-100)',
+                      textAlign: 'left',
+                      fontWeight: 600,
+                      color: 'var(--color-neutral-600)',
+                      borderBottom: '1px solid var(--color-neutral-200)',
+                    }}
+                  >
+                    Proxima
+                  </th>
+                  <th
+                    scope="col"
+                    style={{
+                      padding: 'var(--space-2) var(--space-3)',
+                      background: 'var(--color-neutral-100)',
+                      textAlign: 'left',
+                      fontWeight: 600,
+                      color: 'var(--color-neutral-600)',
+                      borderBottom: '1px solid var(--color-neutral-200)',
+                    }}
+                  >
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -194,33 +294,74 @@ export default function AssetMaintenanceTab({ assetId }: AssetMaintenanceTabProp
                   const overdue = isOverdue(plan.nextDueAt);
                   return (
                     <tr key={plan.id}>
-                      <td style={{ padding: 'var(--space-2) var(--space-3)', borderBottom: '1px solid var(--color-neutral-100)', color: 'var(--color-neutral-700)' }}>{plan.name}</td>
-                      <td style={{ padding: 'var(--space-2) var(--space-3)', borderBottom: '1px solid var(--color-neutral-100)', color: 'var(--color-neutral-700)' }}>{TRIGGER_LABELS[plan.triggerType]}</td>
-                      <td style={{ padding: 'var(--space-2) var(--space-3)', borderBottom: '1px solid var(--color-neutral-100)' }}>
+                      <td
+                        style={{
+                          padding: 'var(--space-2) var(--space-3)',
+                          borderBottom: '1px solid var(--color-neutral-100)',
+                          color: 'var(--color-neutral-700)',
+                        }}
+                      >
+                        {plan.name}
+                      </td>
+                      <td
+                        style={{
+                          padding: 'var(--space-2) var(--space-3)',
+                          borderBottom: '1px solid var(--color-neutral-100)',
+                          color: 'var(--color-neutral-700)',
+                        }}
+                      >
+                        {TRIGGER_LABELS[plan.triggerType]}
+                      </td>
+                      <td
+                        style={{
+                          padding: 'var(--space-2) var(--space-3)',
+                          borderBottom: '1px solid var(--color-neutral-100)',
+                        }}
+                      >
                         {plan.nextDueAt ? (
                           overdue ? (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', color: 'var(--color-error-500)' }}>
+                            <span
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 'var(--space-1)',
+                                color: 'var(--color-error-500)',
+                              }}
+                            >
                               <AlertCircle size={14} aria-label="Vencido" />
                               {formatDate(plan.nextDueAt)}
                             </span>
                           ) : (
-                            <span style={{ color: 'var(--color-neutral-700)' }}>{formatDate(plan.nextDueAt)}</span>
+                            <span style={{ color: 'var(--color-neutral-700)' }}>
+                              {formatDate(plan.nextDueAt)}
+                            </span>
                           )
                         ) : (
                           <span style={{ color: 'var(--color-neutral-400)' }}>—</span>
                         )}
                       </td>
-                      <td style={{ padding: 'var(--space-2) var(--space-3)', borderBottom: '1px solid var(--color-neutral-100)' }}>
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          padding: '2px var(--space-2)',
-                          borderRadius: '9999px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          background: plan.isActive ? 'var(--color-success-100, #e8f5e9)' : 'var(--color-neutral-100)',
-                          color: plan.isActive ? 'var(--color-success-700, #1b5e20)' : 'var(--color-neutral-500)',
-                        }}>
+                      <td
+                        style={{
+                          padding: 'var(--space-2) var(--space-3)',
+                          borderBottom: '1px solid var(--color-neutral-100)',
+                        }}
+                      >
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            padding: '2px var(--space-2)',
+                            borderRadius: '9999px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            background: plan.isActive
+                              ? 'var(--color-success-100, #e8f5e9)'
+                              : 'var(--color-neutral-100)',
+                            color: plan.isActive
+                              ? 'var(--color-success-700, #1b5e20)'
+                              : 'var(--color-neutral-500)',
+                          }}
+                        >
                           {plan.isActive ? 'Ativo' : 'Inativo'}
                         </span>
                       </td>
@@ -236,40 +377,84 @@ export default function AssetMaintenanceTab({ assetId }: AssetMaintenanceTabProp
       {/* Historico de OS */}
       {(workOrders.length > 0 || ordersLoading) && (
         <section aria-labelledby="os-history-title">
-          <h3 style={{
-            fontFamily: 'var(--font-body, "Source Sans 3", system-ui, sans-serif)',
-            fontSize: '0.8125rem',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            color: 'var(--color-neutral-500)',
-            margin: '0 0 var(--space-3)',
-          }} id="os-history-title">Historico de OS</h3>
+          <h3
+            style={{
+              fontFamily: 'var(--font-body, "Source Sans 3", system-ui, sans-serif)',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              color: 'var(--color-neutral-500)',
+              margin: '0 0 var(--space-3)',
+            }}
+            id="os-history-title"
+          >
+            Historico de OS
+          </h3>
 
           {ordersLoading ? (
-            <div style={{ height: '60px', background: 'var(--color-neutral-200)', borderRadius: 'var(--radius-sm, 4px)', opacity: 0.5 }} aria-hidden="true" />
+            <div
+              style={{
+                height: '60px',
+                background: 'var(--color-neutral-200)',
+                borderRadius: 'var(--radius-sm, 4px)',
+                opacity: 0.5,
+              }}
+              aria-hidden="true"
+            />
           ) : (
-            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+            <ul
+              style={{
+                listStyle: 'none',
+                margin: 0,
+                padding: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--space-2)',
+              }}
+            >
               {workOrders.slice(0, 10).map((wo) => {
                 const StatusIcon = STATUS_ICONS[wo.status];
                 return (
-                  <li key={wo.id} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--space-3)',
-                    padding: 'var(--space-2) var(--space-3)',
-                    borderBottom: '1px solid var(--color-neutral-100)',
-                    fontFamily: 'var(--font-body, "Source Sans 3", system-ui, sans-serif)',
-                    fontSize: '0.875rem',
-                  }}>
-                    <span style={{ fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)', color: 'var(--color-neutral-800)' }}>
+                  <li
+                    key={wo.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--space-3)',
+                      padding: 'var(--space-2) var(--space-3)',
+                      borderBottom: '1px solid var(--color-neutral-100)',
+                      fontFamily: 'var(--font-body, "Source Sans 3", system-ui, sans-serif)',
+                      fontSize: '0.875rem',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
+                        color: 'var(--color-neutral-800)',
+                      }}
+                    >
                       #{String(wo.sequentialNumber).padStart(4, '0')}
                     </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', color: 'var(--color-neutral-600)', fontSize: '0.8125rem' }}>
+                    <span
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--space-1)',
+                        color: 'var(--color-neutral-600)',
+                        fontSize: '0.8125rem',
+                      }}
+                    >
                       <StatusIcon size={14} aria-hidden="true" />
                       {STATUS_LABELS[wo.status]}
                     </span>
-                    <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)', color: 'var(--color-neutral-700)' }}>
+                    <span
+                      style={{
+                        marginLeft: 'auto',
+                        fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
+                        color: 'var(--color-neutral-700)',
+                      }}
+                    >
                       {formatBRL(wo.totalCost)}
                     </span>
                     <span style={{ color: 'var(--color-neutral-500)', fontSize: '0.8125rem' }}>
@@ -287,14 +472,20 @@ export default function AssetMaintenanceTab({ assetId }: AssetMaintenanceTabProp
       <WorkOrderModal
         isOpen={showWorkOrderModal}
         onClose={() => setShowWorkOrderModal(false)}
-        onSuccess={() => { setShowWorkOrderModal(false); loadData(); }}
+        onSuccess={() => {
+          setShowWorkOrderModal(false);
+          loadData();
+        }}
         assetId={assetId}
       />
 
       <MaintenancePlanModal
         isOpen={showPlanModal}
         onClose={() => setShowPlanModal(false)}
-        onSuccess={() => { setShowPlanModal(false); loadData(); }}
+        onSuccess={() => {
+          setShowPlanModal(false);
+          loadData();
+        }}
         assetId={assetId}
       />
     </div>

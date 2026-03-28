@@ -124,7 +124,9 @@
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
   cursor: pointer;
-  transition: color 100ms ease-out, border-color 100ms ease-out;
+  transition:
+    color 100ms ease-out,
+    border-color 100ms ease-out;
   min-height: 48px;
 }
 
@@ -219,7 +221,9 @@
 }
 
 @keyframes tb-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -425,8 +429,13 @@
 }
 
 @keyframes skeleton-pulse-tb {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -436,9 +445,17 @@
   }
 }
 
-.trial-balance-page__skeleton-cell--sm { width: 80px; flex-shrink: 0; }
-.trial-balance-page__skeleton-cell--md { width: 110px; flex-shrink: 0; }
-.trial-balance-page__skeleton-cell--lg { flex: 1; }
+.trial-balance-page__skeleton-cell--sm {
+  width: 80px;
+  flex-shrink: 0;
+}
+.trial-balance-page__skeleton-cell--md {
+  width: 110px;
+  flex-shrink: 0;
+}
+.trial-balance-page__skeleton-cell--lg {
+  flex: 1;
+}
 
 /* ─── Daily Book ──────────────────────────────────────────────── */
 
@@ -583,8 +600,14 @@
 }
 
 @keyframes toast-enter-tb {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

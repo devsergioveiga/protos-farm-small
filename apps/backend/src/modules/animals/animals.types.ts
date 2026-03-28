@@ -339,7 +339,7 @@ export const COLUMN_AUTO_MAP: Record<string, keyof AnimalColumnMapping> = {
   identificacao: 'earTag',
   identificação: 'earTag',
   numero: 'earTag',
-  'número': 'earTag',
+  número: 'earTag',
   nome: 'name',
   name: 'name',
   sexo: 'sex',

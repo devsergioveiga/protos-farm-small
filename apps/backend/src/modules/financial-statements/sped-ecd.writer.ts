@@ -93,22 +93,22 @@ export class SpedEcdWriter {
 
     // 0000 — SPED header
     this.line('0000', [
-      'LECD',        // TIPO_ESCRT
-      dtIni,         // DT_INI
-      dtFin,         // DT_FIN
-      org.name,      // NOME
-      org.cnpj,      // CNPJ
-      org.uf,        // UF
-      org.ie,        // IE
-      org.codMun,    // COD_MUN
-      org.im,        // IM
-      '',            // IND_SIT_ESP (blank = normal)
-      '0',           // IND_SIT_ESP_DETALHE (0 = not in special situation)
-      '0',           // IND_NIRE
-      '0',           // IND_FIN_ESC
-      '',            // COD_SCP
-      '',            // HASH_ESCR
-      '',            // NR_LINHAS
+      'LECD', // TIPO_ESCRT
+      dtIni, // DT_INI
+      dtFin, // DT_FIN
+      org.name, // NOME
+      org.cnpj, // CNPJ
+      org.uf, // UF
+      org.ie, // IE
+      org.codMun, // COD_MUN
+      org.im, // IM
+      '', // IND_SIT_ESP (blank = normal)
+      '0', // IND_SIT_ESP_DETALHE (0 = not in special situation)
+      '0', // IND_NIRE
+      '0', // IND_FIN_ESC
+      '', // COD_SCP
+      '', // HASH_ESCR
+      '', // NR_LINHAS
     ]);
 
     // 0001 — Bloco 0 open
@@ -116,20 +116,21 @@ export class SpedEcdWriter {
 
     // 0007 — Book identification (Tipo G = Livro Diário)
     this.line('0007', [
-      'Livro 1',  // COD_LIVR
-      '1',        // NUM_ORD
-      'G',        // TIP_LIVR (G = Livro Diário)
-      dtIni,      // DT_INI
-      dtFin,      // DT_FIN
-      '1',        // QTD_LINHAS (placeholder)
-      '',         // COD_HASH
+      'Livro 1', // COD_LIVR
+      '1', // NUM_ORD
+      'G', // TIP_LIVR (G = Livro Diário)
+      dtIni, // DT_INI
+      dtFin, // DT_FIN
+      '1', // QTD_LINHAS (placeholder)
+      '', // COD_HASH
     ]);
 
     // 0990 — Bloco 0 close
-    const count0 = (this.registerCounts.get('0000') ?? 0)
-      + (this.registerCounts.get('0001') ?? 0)
-      + (this.registerCounts.get('0007') ?? 0)
-      + 1; // 0990 itself
+    const count0 =
+      (this.registerCounts.get('0000') ?? 0) +
+      (this.registerCounts.get('0001') ?? 0) +
+      (this.registerCounts.get('0007') ?? 0) +
+      1; // 0990 itself
     this.line('0990', [String(count0)]);
   }
 
@@ -143,8 +144,8 @@ export class SpedEcdWriter {
 
     // I010 — Writing software identification
     this.line('I010', [
-      'Protos Farm',  // VRS_AAC
-      '1.0',          // DT_VRS_AAC
+      'Protos Farm', // VRS_AAC
+      '1.0', // DT_VRS_AAC
     ]);
 
     // I050/I051 — Chart of accounts (all active accounts, synthetic + analytic)
@@ -153,20 +154,20 @@ export class SpedEcdWriter {
       const codNat = this.codNat(acct.accountType);
 
       this.line('I050', [
-        this.formatDate(fiscalYearStart),  // DT_ALT
-        codNat,                             // COD_NAT
-        indCta,                             // IND_CTA (S=synthetic, A=analytic)
-        String(acct.level),                 // NIVEL
-        acct.code,                          // COD_CTA
-        acct.parentCode ?? '',              // COD_CTA_SUP
-        acct.name,                          // CTA_NAME
+        this.formatDate(fiscalYearStart), // DT_ALT
+        codNat, // COD_NAT
+        indCta, // IND_CTA (S=synthetic, A=analytic)
+        String(acct.level), // NIVEL
+        acct.code, // COD_CTA
+        acct.parentCode ?? '', // COD_CTA_SUP
+        acct.name, // CTA_NAME
       ]);
 
       // I051 — only for analytic accounts with spedRefCode
       if (!acct.isSynthetic && acct.spedRefCode) {
         this.line('I051', [
-          acct.spedRefCode,  // COD_AGL (L300R referential code)
-          '',                // IND_COD_AGL
+          acct.spedRefCode, // COD_AGL (L300R referential code)
+          '', // IND_COD_AGL
         ]);
       }
     }
@@ -174,8 +175,8 @@ export class SpedEcdWriter {
     // I100 — Cost centers
     for (const cc of costCenters) {
       this.line('I100', [
-        cc.code,  // COD_CTA_CUS
-        cc.name,  // DESC_CUS
+        cc.code, // COD_CTA_CUS
+        cc.name, // DESC_CUS
       ]);
     }
 
@@ -199,8 +200,8 @@ export class SpedEcdWriter {
       const monthEnd = new Date(firstBal.year, firstBal.month, 0); // last day of month
 
       this.line('I150', [
-        this.formatDate(monthStart),  // DT_INI
-        this.formatDate(monthEnd),    // DT_FIN
+        this.formatDate(monthStart), // DT_INI
+        this.formatDate(monthEnd), // DT_FIN
       ]);
 
       for (const bal of bals) {
@@ -209,14 +210,14 @@ export class SpedEcdWriter {
         const nature = acct?.accountNature ?? 'DEVEDORA';
 
         this.line('I155', [
-          bal.accountCode,                              // COD_CTA
-          '',                                            // COD_CTA_CUS (blank = no CC)
-          this.formatAmount(bal.openingBalance),         // VL_SLD_INI
-          this.indDc(nature, bal.openingBalance),        // IND_DC_INI
-          this.formatAmount(bal.totalDebits),            // VL_DEB
-          this.formatAmount(bal.totalCredits),           // VL_CRED
-          this.formatAmount(bal.closingBalance),         // VL_SLD_FIN
-          this.indDc(nature, bal.closingBalance),        // IND_DC_FIN
+          bal.accountCode, // COD_CTA
+          '', // COD_CTA_CUS (blank = no CC)
+          this.formatAmount(bal.openingBalance), // VL_SLD_INI
+          this.indDc(nature, bal.openingBalance), // IND_DC_INI
+          this.formatAmount(bal.totalDebits), // VL_DEB
+          this.formatAmount(bal.totalCredits), // VL_CRED
+          this.formatAmount(bal.closingBalance), // VL_SLD_FIN
+          this.indDc(nature, bal.closingBalance), // IND_DC_FIN
         ]);
       }
     }
@@ -224,22 +225,22 @@ export class SpedEcdWriter {
     // I200/I250 — Journal entries (analytic accounts only in I250)
     for (const entry of journalEntries) {
       this.line('I200', [
-        String(entry.entryNumber),            // NUM_LCTO
-        this.formatDate(entry.entryDate),     // DT_LCTO
-        this.formatAmount(entry.totalDebit),  // VL_LCTO
-        'N',                                  // IND_LCTO (N = normal)
+        String(entry.entryNumber), // NUM_LCTO
+        this.formatDate(entry.entryDate), // DT_LCTO
+        this.formatAmount(entry.totalDebit), // VL_LCTO
+        'N', // IND_LCTO (N = normal)
       ]);
 
       for (const lineItem of entry.lines) {
         const dc = lineItem.isDebit ? 'D' : 'C';
         this.line('I250', [
-          lineItem.accountCode,                  // COD_CTA
-          '',                                     // COD_CTA_CUS
-          this.formatAmount(lineItem.amount),     // VL_DC
-          dc,                                     // IND_DC
-          String(entry.entryNumber),              // NUM_LCTO
-          lineItem.description,                   // HIST
-          this.formatDate(entry.entryDate),        // DT_LCTO
+          lineItem.accountCode, // COD_CTA
+          '', // COD_CTA_CUS
+          this.formatAmount(lineItem.amount), // VL_DC
+          dc, // IND_DC
+          String(entry.entryNumber), // NUM_LCTO
+          lineItem.description, // HIST
+          this.formatDate(entry.entryDate), // DT_LCTO
         ]);
       }
     }
@@ -264,9 +265,9 @@ export class SpedEcdWriter {
 
     // J005 — Period header
     this.line('J005', [
-      this.formatDate(fiscalYearStart),  // DT_INI
-      this.formatDate(fiscalYearEnd),    // DT_FIN
-      '0',                               // COD_AGL (0 = no grouping)
+      this.formatDate(fiscalYearStart), // DT_INI
+      this.formatDate(fiscalYearEnd), // DT_FIN
+      '0', // COD_AGL (0 = no grouping)
     ]);
 
     // J100 — Balance Sheet (BP)
@@ -277,16 +278,16 @@ export class SpedEcdWriter {
       const indAgl = 'T'; // T = total, D = detail
 
       this.line('J100', [
-        row.spedRefCode,                              // COD_AGL
-        indAgl,                                       // IND_COD_AGL
-        level,                                        // NIVEL_AGL
-        sup,                                          // COD_AGL_SUP
-        row.groupIndicator,                           // IND_GRP_BAL (A=Ativo, P=Passivo+PL)
-        row.name,                                     // DESCR
-        this.formatAmount(row.openingAmount),          // VL_CTA_INI
-        row.openingIsDebit ? 'D' : 'C',               // IND_DC_INI
-        this.formatAmount(row.closingAmount),          // VL_CTA_FIN
-        row.closingIsDebit ? 'D' : 'C',               // IND_DC_FIN
+        row.spedRefCode, // COD_AGL
+        indAgl, // IND_COD_AGL
+        level, // NIVEL_AGL
+        sup, // COD_AGL_SUP
+        row.groupIndicator, // IND_GRP_BAL (A=Ativo, P=Passivo+PL)
+        row.name, // DESCR
+        this.formatAmount(row.openingAmount), // VL_CTA_INI
+        row.openingIsDebit ? 'D' : 'C', // IND_DC_INI
+        this.formatAmount(row.closingAmount), // VL_CTA_FIN
+        row.closingIsDebit ? 'D' : 'C', // IND_DC_FIN
       ]);
     }
 
@@ -294,27 +295,27 @@ export class SpedEcdWriter {
     for (const row of dreRows) {
       const indGrpDre = row.isDebit ? 'D' : 'R'; // D=Despesa, R=Receita
       this.line('J150', [
-        row.spedRefCode,              // COD_AGL
-        'T',                          // IND_COD_AGL
-        '1',                          // NIVEL_AGL
-        '',                           // COD_AGL_SUP
-        row.name,                     // DESCR
+        row.spedRefCode, // COD_AGL
+        'T', // IND_COD_AGL
+        '1', // NIVEL_AGL
+        '', // COD_AGL_SUP
+        row.name, // DESCR
         this.formatAmount(row.amount), // VL_CTA
-        row.isDebit ? 'D' : 'C',      // IND_DC
-        indGrpDre,                    // IND_GRP_DRE
+        row.isDebit ? 'D' : 'C', // IND_DC
+        indGrpDre, // IND_GRP_DRE
       ]);
     }
 
     // J210 — DLPA (Demonstracao de Lucros e Prejuizos Acumulados)
     for (const row of dlpaRows) {
       this.line('J210', [
-        '0',                                          // NUM_LINHA
-        row.spedRefCode,                              // COD_AGL
-        row.name,                                     // DESCR
-        this.formatAmount(row.openingAmount),          // VL_CTA_INI
-        row.openingIsDebit ? 'D' : 'C',               // IND_DC_INI
-        this.formatAmount(row.closingAmount),          // VL_CTA_FIN
-        row.closingIsDebit ? 'D' : 'C',               // IND_DC_FIN
+        '0', // NUM_LINHA
+        row.spedRefCode, // COD_AGL
+        row.name, // DESCR
+        this.formatAmount(row.openingAmount), // VL_CTA_INI
+        row.openingIsDebit ? 'D' : 'C', // IND_DC_INI
+        this.formatAmount(row.closingAmount), // VL_CTA_FIN
+        row.closingIsDebit ? 'D' : 'C', // IND_DC_FIN
       ]);
     }
 

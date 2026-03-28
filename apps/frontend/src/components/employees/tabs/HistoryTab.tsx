@@ -29,7 +29,10 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
 };
 
 const TYPE_COLORS: Record<string, { icon: string; bg: string }> = {
-  STATUS_ATIVO: { icon: 'var(--color-success-700, #1B5E20)', bg: 'var(--color-success-50, #E8F5E9)' },
+  STATUS_ATIVO: {
+    icon: 'var(--color-success-700, #1B5E20)',
+    bg: 'var(--color-success-50, #E8F5E9)',
+  },
   STATUS_AFASTADO: {
     icon: 'var(--color-warning-700, #E65100)',
     bg: 'var(--color-warning-50, #FFF3E0)',

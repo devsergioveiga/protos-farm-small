@@ -13,7 +13,20 @@ interface PayrollCostTrendChartProps {
   data: Array<{ yearMonth: string; gross: number; net: number; charges: number }>;
 }
 
-const PT_MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+const PT_MONTHS = [
+  'Jan',
+  'Fev',
+  'Mar',
+  'Abr',
+  'Mai',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Set',
+  'Out',
+  'Nov',
+  'Dez',
+];
 
 function abbreviateYearMonth(yearMonth: string): string {
   // Format: "2025-03" → "Mar"
@@ -102,8 +115,20 @@ export default function PayrollCostTrendChart({ data }: PayrollCostTrendChartPro
               paddingTop: 8,
             }}
           />
-          <Bar dataKey="gross" name="Bruto" stackId="a" fill="var(--color-primary-600)" radius={0} />
-          <Bar dataKey="net" name="Líquido" stackId="a" fill="var(--color-primary-400)" radius={0} />
+          <Bar
+            dataKey="gross"
+            name="Bruto"
+            stackId="a"
+            fill="var(--color-primary-600)"
+            radius={0}
+          />
+          <Bar
+            dataKey="net"
+            name="Líquido"
+            stackId="a"
+            fill="var(--color-primary-400)"
+            radius={0}
+          />
           <Bar
             dataKey="charges"
             name="Encargos"

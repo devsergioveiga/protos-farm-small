@@ -18,11 +18,11 @@ export interface DreAccountData {
   nature: 'DEVEDORA' | 'CREDORA';
   isSynthetic: boolean;
   isFairValueAdj: boolean;
-  currentMonthDebit: string;   // Decimal string
+  currentMonthDebit: string; // Decimal string
   currentMonthCredit: string;
-  ytdDebit: string;            // Acumulado exercicio
+  ytdDebit: string; // Acumulado exercicio
   ytdCredit: string;
-  priorYearDebit: string;      // Mesmo periodo ano anterior
+  priorYearDebit: string; // Mesmo periodo ano anterior
   priorYearCredit: string;
 }
 
@@ -32,17 +32,17 @@ export interface DreInput {
 }
 
 export interface DreSectionRow {
-  accountId: string | null;    // null for computed subtotals
+  accountId: string | null; // null for computed subtotals
   code: string;
   name: string;
-  currentMonth: string;        // Decimal string
+  currentMonth: string; // Decimal string
   ytd: string;
   priorYear: string;
-  avPercent: string | null;    // AV% (vertical analysis over receita liquida)
-  ahPercent: string | null;    // AH% delta (horizontal vs prior year)
+  avPercent: string | null; // AV% (vertical analysis over receita liquida)
+  ahPercent: string | null; // AH% delta (horizontal vs prior year)
   isSubtotal: boolean;
   isCpc29: boolean;
-  level: number;               // indent level: 0=section, 1=account, 2=subtotal
+  level: number; // indent level: 0=section, 1=account, 2=subtotal
 }
 
 export type DreSectionId =
@@ -70,7 +70,7 @@ export interface DreSection {
   id: DreSectionId;
   label: string;
   rows: DreSectionRow[];
-  total: DreSectionRow;        // section subtotal row
+  total: DreSectionRow; // section subtotal row
 }
 
 export interface DreOutput {
@@ -98,7 +98,7 @@ export interface BpFilters {
 export interface BpInput {
   accounts: BpAccountData[];
   totalAreaHa: number;
-  resultadoLiquido: string;    // from DRE for ROE calculation
+  resultadoLiquido: string; // from DRE for ROE calculation
   sparklineMonths?: BpSparklineMonth[];
 }
 
@@ -108,8 +108,8 @@ export interface BpAccountData {
   name: string;
   accountType: 'ATIVO' | 'PASSIVO' | 'PL';
   isSynthetic: boolean;
-  currentBalance: string;      // closingBalance current month
-  priorBalance: string;        // closingBalance prior month
+  currentBalance: string; // closingBalance current month
+  priorBalance: string; // closingBalance prior month
 }
 
 export interface BpGroupRow {
@@ -143,18 +143,18 @@ export interface BpSparklineMonth {
 }
 
 export interface BpIndicators {
-  liquidezCorrente: string | null;        // AC / PC — null if PC = 0
-  liquidezSeca: string | null;            // (AC - Estoques) / PC
-  endividamentoGeral: string | null;      // PE / AT — null if AT = 0
+  liquidezCorrente: string | null; // AC / PC — null if PC = 0
+  liquidezSeca: string | null; // (AC - Estoques) / PC
+  endividamentoGeral: string | null; // PE / AT — null if AT = 0
   composicaoEndividamento: string | null; // PC / PE — null if PE = 0
-  roe: string | null;                     // RL / PL — null if PL = 0
-  plPorHectare: string | null;            // PL / totalAreaHa — null if area = 0
+  roe: string | null; // RL / PL — null if PL = 0
+  plPorHectare: string | null; // PL / totalAreaHa — null if area = 0
   // Sparkline data: last 6 months of each indicator
   sparklines: Record<string, { month: number; value: number }[]>;
 }
 
 export interface BpOutput {
-  ativo: BpGroup[];   // [AC, ANC]
+  ativo: BpGroup[]; // [AC, ANC]
   passivo: BpGroup[]; // [PC, PNC, PL]
   totalAtivo: BpGroupRow;
   totalPassivo: BpGroupRow; // passivo + PL
@@ -183,7 +183,7 @@ export interface CrossValidationInput {
   plTotal: string;
   totalDebitos: string;
   totalCreditos: string;
-  dfcNetCashFlow?: string;  // optional — null/undefined means PENDING
+  dfcNetCashFlow?: string; // optional — null/undefined means PENDING
   bpCashDelta?: string;
 }
 

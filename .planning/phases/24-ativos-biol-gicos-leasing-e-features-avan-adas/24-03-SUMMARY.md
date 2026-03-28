@@ -61,6 +61,7 @@ completed: 2026-03-23
 - **Files modified:** 4
 
 ## Accomplishments
+
 - AssetTradeIn Prisma model with unique constraints on tradedAssetId/newAssetId
 - createTradeIn atomically: validates old asset, computes NBV, disposes old, creates new with sequential tag, generates CP if netPayable > 0
 - 15 backend tests covering all scenarios (404, 409, 401, 400, gain/loss calc)
@@ -73,19 +74,24 @@ completed: 2026-03-23
 2. **Task 2: Frontend** - `4cb15172` (feat: asset trade-in frontend + AssetDrawer integration)
 
 ## Decisions Made
+
 - @unique on tradedAssetId and newAssetId — enforces one trade-in per asset at DB level
 - CP only generated when net payable is positive (new asset costs more than traded value)
 - gainLoss calculation: tradedAssetValue - NBV (positive = gain, negative = loss)
 
 ## Deviations from Plan
+
 None - plan executed as specified.
 
 ## Issues Encountered
+
 None.
 
 ## Next Phase Readiness
+
 - Trade-in transactions integrate with existing asset and payable modules
 
 ---
-*Phase: 24-ativos-biol-gicos-leasing-e-features-avan-adas*
-*Completed: 2026-03-23*
+
+_Phase: 24-ativos-biol-gicos-leasing-e-features-avan-adas_
+_Completed: 2026-03-23_

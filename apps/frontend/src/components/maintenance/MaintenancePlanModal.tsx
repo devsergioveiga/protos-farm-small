@@ -225,12 +225,7 @@ export default function MaintenancePlanModal({
           <h2 className="mp-modal__title">
             {plan ? 'Editar plano de manutencao' : 'Novo plano de manutencao'}
           </h2>
-          <button
-            type="button"
-            className="mp-modal__close"
-            onClick={onClose}
-            aria-label="Fechar"
-          >
+          <button type="button" className="mp-modal__close" onClick={onClose} aria-label="Fechar">
             <X size={20} aria-hidden="true" />
           </button>
         </header>
@@ -299,28 +294,29 @@ export default function MaintenancePlanModal({
             {/* Tipo de gatilho */}
             <fieldset className="mp-modal__fieldset">
               <legend className="mp-modal__legend">
-                Tipo de gatilho <span className="mp-modal__required" aria-hidden="true">*</span>
+                Tipo de gatilho{' '}
+                <span className="mp-modal__required" aria-hidden="true">
+                  *
+                </span>
               </legend>
               <div className="mp-modal__radio-group">
-                {(['CALENDAR', 'HOURMETER', 'ODOMETER'] as MaintenanceTriggerType[]).map(
-                  (type) => {
-                    const label =
-                      type === 'CALENDAR' ? 'Calendario' : type === 'HOURMETER' ? 'Horimetro' : 'Km';
-                    return (
-                      <label key={type} className="mp-modal__radio-label">
-                        <input
-                          type="radio"
-                          name="triggerType"
-                          value={type}
-                          checked={formData.triggerType === type}
-                          onChange={() => setField('triggerType', type)}
-                          className="mp-modal__radio"
-                        />
-                        {label}
-                      </label>
-                    );
-                  },
-                )}
+                {(['CALENDAR', 'HOURMETER', 'ODOMETER'] as MaintenanceTriggerType[]).map((type) => {
+                  const label =
+                    type === 'CALENDAR' ? 'Calendario' : type === 'HOURMETER' ? 'Horimetro' : 'Km';
+                  return (
+                    <label key={type} className="mp-modal__radio-label">
+                      <input
+                        type="radio"
+                        name="triggerType"
+                        value={type}
+                        checked={formData.triggerType === type}
+                        onChange={() => setField('triggerType', type)}
+                        className="mp-modal__radio"
+                      />
+                      {label}
+                    </label>
+                  );
+                })}
               </div>
             </fieldset>
 

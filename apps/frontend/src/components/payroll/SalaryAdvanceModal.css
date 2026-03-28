@@ -21,7 +21,7 @@
   flex-direction: column;
   max-height: 90vh;
   /* Modal open animation: 300ms ease-out */
-  animation: salary-modal-enter 300ms cubic-bezier(0.0, 0, 0.2, 1);
+  animation: salary-modal-enter 300ms cubic-bezier(0, 0, 0.2, 1);
 }
 
 @keyframes salary-modal-enter {
@@ -71,7 +71,9 @@
   cursor: pointer;
   border-radius: 6px;
   color: var(--color-neutral-600, #6b6560);
-  transition: background 200ms ease-out, color 200ms ease-out;
+  transition:
+    background 200ms ease-out,
+    color 200ms ease-out;
   flex-shrink: 0;
 }
 
@@ -262,7 +264,9 @@
   padding: 0 20px;
   min-height: 48px;
   cursor: pointer;
-  transition: background 150ms ease-out, border-color 150ms ease-out;
+  transition:
+    background 150ms ease-out,
+    border-color 150ms ease-out;
   white-space: nowrap;
 }
 

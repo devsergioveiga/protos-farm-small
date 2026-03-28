@@ -15,13 +15,13 @@ created: 2026-03-26
 
 ## Test Infrastructure
 
-| Property | Value |
-|----------|-------|
-| **Framework** | jest 29.x |
-| **Config file** | `apps/backend/jest.config.ts` |
-| **Quick run command** | `pnpm --filter @protos-farm/backend test -- --testPathPattern="payroll-calculation"` |
+| Property               | Value                                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------------------- |
+| **Framework**          | jest 29.x                                                                                    |
+| **Config file**        | `apps/backend/jest.config.ts`                                                                |
+| **Quick run command**  | `pnpm --filter @protos-farm/backend test -- --testPathPattern="payroll-calculation"`         |
 | **Full suite command** | `pnpm --filter @protos-farm/backend test -- --testPathPattern="payroll-(calculation\|runs)"` |
-| **Estimated runtime** | ~15 seconds |
+| **Estimated runtime**  | ~15 seconds                                                                                  |
 
 ---
 
@@ -36,28 +36,28 @@ created: 2026-03-26
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 34-01-01 | 01 | 1 | FERIAS-02 | unit | `pnpm --filter @protos-farm/backend test -- --testPathPattern="payroll-calculation"` | yes | pending |
-| 34-02-01 | 02 | 2 | FERIAS-02 | typecheck | `cd apps/backend && npx tsc --noEmit 2>&1 \| head -30` | yes | pending |
-| 34-02-02 | 02 | 2 | FERIAS-02 | integration | `cd apps/backend && npx jest --no-coverage 2>&1 \| tail -10` | yes | pending |
+| Task ID  | Plan | Wave | Requirement | Test Type   | Automated Command                                                                    | File Exists | Status  |
+| -------- | ---- | ---- | ----------- | ----------- | ------------------------------------------------------------------------------------ | ----------- | ------- |
+| 34-01-01 | 01   | 1    | FERIAS-02   | unit        | `pnpm --filter @protos-farm/backend test -- --testPathPattern="payroll-calculation"` | yes         | pending |
+| 34-02-01 | 02   | 2    | FERIAS-02   | typecheck   | `cd apps/backend && npx tsc --noEmit 2>&1 \| head -30`                               | yes         | pending |
+| 34-02-02 | 02   | 2    | FERIAS-02   | integration | `cd apps/backend && npx jest --no-coverage 2>&1 \| tail -10`                         | yes         | pending |
 
-*Status: pending / green / red / flaky*
+_Status: pending / green / red / flaky_
 
 ---
 
 ## Wave 0 Requirements
 
-*Existing infrastructure covers all phase requirements.*
+_Existing infrastructure covers all phase requirements._
 
 ---
 
 ## Manual-Only Verifications
 
-| Behavior | Requirement | Why Manual | Test Instructions |
-|----------|-------------|------------|-------------------|
-| Payslip PDF shows absence deduction breakdown | FERIAS-02 | PDF visual layout | Generate payslip for employee with INSS absence >15 days, verify deduction line item appears in Descontos section |
-| Base FGTS integral in PDF footer | FERIAS-02 | PDF visual layout | Generate payslip with fgtsFullMonth=true, verify "Base FGTS" shows full salary |
+| Behavior                                      | Requirement | Why Manual        | Test Instructions                                                                                                 |
+| --------------------------------------------- | ----------- | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Payslip PDF shows absence deduction breakdown | FERIAS-02   | PDF visual layout | Generate payslip for employee with INSS absence >15 days, verify deduction line item appears in Descontos section |
+| Base FGTS integral in PDF footer              | FERIAS-02   | PDF visual layout | Generate payslip with fgtsFullMonth=true, verify "Base FGTS" shows full salary                                    |
 
 ---
 

@@ -181,11 +181,7 @@ function EmployeesPage() {
       {/* Empty state */}
       {!isLoading && !error && employees.length === 0 && (
         <div className="employees__empty">
-          <UserRound
-            size={48}
-            className="employees__empty-icon"
-            aria-hidden="true"
-          />
+          <UserRound size={48} className="employees__empty-icon" aria-hidden="true" />
           <h2 className="employees__empty-title">
             {hasFilters ? 'Nenhum resultado encontrado' : 'Nenhum colaborador cadastrado'}
           </h2>
@@ -318,14 +314,15 @@ function EmployeesPage() {
                 }}
               >
                 <div className="employees__card-header">
-                  <div className="employees__avatar employees__avatar--lg" aria-label="Foto não disponível">
+                  <div
+                    className="employees__avatar employees__avatar--lg"
+                    aria-label="Foto não disponível"
+                  >
                     <UserRound size={24} aria-hidden="true" />
                   </div>
                   <div>
                     <div className="employees__card-name">{emp.name}</div>
-                    <div className="employees__card-position">
-                      {activePosition?.name ?? '—'}
-                    </div>
+                    <div className="employees__card-position">{activePosition?.name ?? '—'}</div>
                   </div>
                 </div>
                 <EmployeeStatusBadge status={emp.status} />

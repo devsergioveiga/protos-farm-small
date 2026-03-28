@@ -18,10 +18,7 @@ import {
   useCompleteClosing,
   useReopenClosing,
 } from '@/hooks/useMonthlyClosing';
-import {
-  STEP_LABELS,
-  STEP_MODULE_LINKS,
-} from '@/types/monthly-closing';
+import { STEP_LABELS, STEP_MODULE_LINKS } from '@/types/monthly-closing';
 import type { MonthlyClosingOutput, StepResults } from '@/types/monthly-closing';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useAuth } from '@/stores/AuthContext';
@@ -30,8 +27,18 @@ import './MonthlyClosingPage.css';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const MONTH_NAMES = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
 ];
 
 function getMonthLabel(month: number, year: number): string {
@@ -109,8 +116,7 @@ function StepCard({ stepNumber, closing, onValidate, validatingStep }: StepCardP
   const isValidating = validatingStep === stepNumber;
   const closingDone = closing.status === 'COMPLETED';
 
-  const canValidate =
-    !closingDone && (displayStatus === 'pending' || displayStatus === 'failed');
+  const canValidate = !closingDone && (displayStatus === 'pending' || displayStatus === 'failed');
   const hasDetails = !!stepResult?.details && Object.keys(stepResult.details).length > 0;
 
   return (
@@ -137,7 +143,9 @@ function StepCard({ stepNumber, closing, onValidate, validatingStep }: StepCardP
                 type="button"
                 className={`mc-step__toggle ${expanded ? 'mc-step__toggle--expanded' : ''}`}
                 onClick={() => setExpanded((v) => !v)}
-                aria-label={expanded ? `Recolher detalhes de ${label}` : `Expandir detalhes de ${label}`}
+                aria-label={
+                  expanded ? `Recolher detalhes de ${label}` : `Expandir detalhes de ${label}`
+                }
                 aria-expanded={expanded}
               >
                 <ChevronDown size={16} aria-hidden="true" />
@@ -148,7 +156,9 @@ function StepCard({ stepNumber, closing, onValidate, validatingStep }: StepCardP
 
         {/* Summary */}
         {stepResult?.summary && (
-          <p className={`mc-step__summary ${displayStatus === 'failed' ? 'mc-step__summary--failed' : ''}`}>
+          <p
+            className={`mc-step__summary ${displayStatus === 'failed' ? 'mc-step__summary--failed' : ''}`}
+          >
             {stepResult.summary}
           </p>
         )}
@@ -172,11 +182,7 @@ function StepCard({ stepNumber, closing, onValidate, validatingStep }: StepCardP
               disabled={isValidating}
               aria-label={displayStatus === 'failed' ? `Revalidar ${label}` : `Validar ${label}`}
             >
-              {isValidating
-                ? 'Validando...'
-                : displayStatus === 'failed'
-                  ? 'Revalidar'
-                  : 'Validar'}
+              {isValidating ? 'Validando...' : displayStatus === 'failed' ? 'Revalidar' : 'Validar'}
             </button>
           </div>
         )}
@@ -212,9 +218,7 @@ function ClosingStatusBadge({ status }: { status: MonthlyClosingOutput['status']
     );
   }
   return (
-    <span className="mc-page__status-badge mc-page__status-badge--in-progress">
-      Em Andamento
-    </span>
+    <span className="mc-page__status-badge mc-page__status-badge--in-progress">Em Andamento</span>
   );
 }
 
@@ -262,14 +266,10 @@ export default function MonthlyClosingPage() {
     user?.role === 'super_admin';
 
   const allStepsOk = closing
-    ? [1, 2, 3, 4, 5, 6].every(
-        (n) => getStepResult(closing.stepResults, n)?.status === 'OK',
-      )
+    ? [1, 2, 3, 4, 5, 6].every((n) => getStepResult(closing.stepResults, n)?.status === 'OK')
     : false;
 
-  const monthLabel = closing
-    ? getMonthLabel(closing.periodMonth, closing.periodYear)
-    : '';
+  const monthLabel = closing ? getMonthLabel(closing.periodMonth, closing.periodYear) : '';
 
   const handleStartClosing = useCallback(async () => {
     if (!periodId) return;
@@ -336,7 +336,9 @@ export default function MonthlyClosingPage() {
       <main className="mc-page" id="main-content">
         <nav className="mc-page__breadcrumb" aria-label="Caminho da página">
           <span className="mc-page__breadcrumb-item">Contabilidade</span>
-          <span className="mc-page__breadcrumb-sep" aria-hidden="true">/</span>
+          <span className="mc-page__breadcrumb-sep" aria-hidden="true">
+            /
+          </span>
           <span className="mc-page__breadcrumb-item mc-page__breadcrumb-item--current">
             Fechamento Mensal
           </span>
@@ -363,7 +365,9 @@ export default function MonthlyClosingPage() {
       <main className="mc-page" id="main-content">
         <nav className="mc-page__breadcrumb" aria-label="Caminho da página">
           <span className="mc-page__breadcrumb-item">Contabilidade</span>
-          <span className="mc-page__breadcrumb-sep" aria-hidden="true">/</span>
+          <span className="mc-page__breadcrumb-sep" aria-hidden="true">
+            /
+          </span>
           <span className="mc-page__breadcrumb-item mc-page__breadcrumb-item--current">
             Fechamento Mensal
           </span>
@@ -380,7 +384,9 @@ export default function MonthlyClosingPage() {
       <main className="mc-page" id="main-content">
         <nav className="mc-page__breadcrumb" aria-label="Caminho da página">
           <span className="mc-page__breadcrumb-item">Contabilidade</span>
-          <span className="mc-page__breadcrumb-sep" aria-hidden="true">/</span>
+          <span className="mc-page__breadcrumb-sep" aria-hidden="true">
+            /
+          </span>
           <span className="mc-page__breadcrumb-item mc-page__breadcrumb-item--current">
             Fechamento Mensal
           </span>
@@ -400,7 +406,9 @@ export default function MonthlyClosingPage() {
       <main className="mc-page" id="main-content">
         <nav className="mc-page__breadcrumb" aria-label="Caminho da página">
           <span className="mc-page__breadcrumb-item">Contabilidade</span>
-          <span className="mc-page__breadcrumb-sep" aria-hidden="true">/</span>
+          <span className="mc-page__breadcrumb-sep" aria-hidden="true">
+            /
+          </span>
           <span className="mc-page__breadcrumb-item mc-page__breadcrumb-item--current">
             Fechamento Mensal
           </span>
@@ -416,7 +424,8 @@ export default function MonthlyClosingPage() {
           <ClipboardCheck size={48} aria-hidden="true" className="mc-page__start-icon" />
           <h2 className="mc-page__start-title">Pronto para iniciar o fechamento</h2>
           <p className="mc-page__start-desc">
-            O processo de fechamento mensal verifica 6 etapas para garantir a integridade contábil do período.
+            O processo de fechamento mensal verifica 6 etapas para garantir a integridade contábil
+            do período.
           </p>
           <button
             type="button"
@@ -445,9 +454,13 @@ export default function MonthlyClosingPage() {
       {/* Breadcrumb */}
       <nav className="mc-page__breadcrumb" aria-label="Caminho da página">
         <span className="mc-page__breadcrumb-item">Início</span>
-        <span className="mc-page__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="mc-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="mc-page__breadcrumb-item">Contabilidade</span>
-        <span className="mc-page__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="mc-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="mc-page__breadcrumb-item mc-page__breadcrumb-item--current">
           Fechamento Mensal
         </span>
@@ -456,9 +469,7 @@ export default function MonthlyClosingPage() {
       {/* Header */}
       <header className="mc-page__header">
         <div className="mc-page__title-area">
-          <h1 className="mc-page__title">
-            Fechamento Mensal — {monthLabel}
-          </h1>
+          <h1 className="mc-page__title">Fechamento Mensal — {monthLabel}</h1>
           <ClosingStatusBadge status={closing.status} />
         </div>
       </header>
@@ -516,7 +527,9 @@ export default function MonthlyClosingPage() {
         confirmLabel="Fechar Período"
         variant="warning"
         isLoading={completing}
-        onConfirm={() => { void handleCompleteClosing(); }}
+        onConfirm={() => {
+          void handleCompleteClosing();
+        }}
         onCancel={() => setShowCloseConfirm(false)}
       />
 
@@ -543,7 +556,10 @@ export default function MonthlyClosingPage() {
                 id="mc-reopen-reason"
                 className="mc-reopen-form__textarea"
                 value={reopenReason}
-                onChange={(e) => { setReopenReason(e.target.value); setReopenError(''); }}
+                onChange={(e) => {
+                  setReopenReason(e.target.value);
+                  setReopenError('');
+                }}
                 rows={3}
                 placeholder="Descreva o motivo da reabertura..."
                 aria-required="true"
@@ -570,7 +586,9 @@ export default function MonthlyClosingPage() {
                 <button
                   type="button"
                   className="mc-btn mc-btn--warning"
-                  onClick={() => { void handleReopenClosing(); }}
+                  onClick={() => {
+                    void handleReopenClosing();
+                  }}
                   disabled={reopening}
                 >
                   <Unlock size={16} aria-hidden="true" />

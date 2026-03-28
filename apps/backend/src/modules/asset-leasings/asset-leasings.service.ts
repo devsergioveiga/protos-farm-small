@@ -34,33 +34,31 @@ function monthsBetween(start: Date, end: Date): number {
   return (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
 }
 
-function formatLeasing(
-  leasing: {
-    id: string;
-    organizationId: string;
-    farmId: string;
-    farm: { name: string };
-    rouAssetId: string;
-    rouAsset: { assetTag: string; name: string };
-    lessorName: string;
-    lessorDocument: string | null;
-    contractNumber: string | null;
-    contractDate: Date;
-    startDate: Date;
-    endDate: Date;
-    totalContractValue: Decimal;
-    monthlyInstallment: Decimal;
-    installmentCount: number;
-    purchaseOptionValue: Decimal | null;
-    purchaseOptionDate: Date | null;
-    hasPurchaseOption: boolean;
-    status: string;
-    payableId: string | null;
-    notes: string | null;
-    createdBy: string;
-    createdAt: Date;
-  },
-): LeasingOutput {
+function formatLeasing(leasing: {
+  id: string;
+  organizationId: string;
+  farmId: string;
+  farm: { name: string };
+  rouAssetId: string;
+  rouAsset: { assetTag: string; name: string };
+  lessorName: string;
+  lessorDocument: string | null;
+  contractNumber: string | null;
+  contractDate: Date;
+  startDate: Date;
+  endDate: Date;
+  totalContractValue: Decimal;
+  monthlyInstallment: Decimal;
+  installmentCount: number;
+  purchaseOptionValue: Decimal | null;
+  purchaseOptionDate: Date | null;
+  hasPurchaseOption: boolean;
+  status: string;
+  payableId: string | null;
+  notes: string | null;
+  createdBy: string;
+  createdAt: Date;
+}): LeasingOutput {
   return {
     id: leasing.id,
     organizationId: leasing.organizationId,
@@ -78,11 +76,15 @@ function formatLeasing(
     totalContractValue: Number(leasing.totalContractValue),
     monthlyInstallment: Number(leasing.monthlyInstallment),
     installmentCount: leasing.installmentCount,
-    purchaseOptionValue: leasing.purchaseOptionValue !== null ? Number(leasing.purchaseOptionValue) : null,
-    purchaseOptionDate: leasing.purchaseOptionDate ? leasing.purchaseOptionDate.toISOString().split('T')[0] : null,
+    purchaseOptionValue:
+      leasing.purchaseOptionValue !== null ? Number(leasing.purchaseOptionValue) : null,
+    purchaseOptionDate: leasing.purchaseOptionDate
+      ? leasing.purchaseOptionDate.toISOString().split('T')[0]
+      : null,
     hasPurchaseOption: leasing.hasPurchaseOption,
     status: leasing.status as LeasingOutput['status'],
-    statusLabel: LEASING_STATUS_LABELS[leasing.status as keyof typeof LEASING_STATUS_LABELS] ?? leasing.status,
+    statusLabel:
+      LEASING_STATUS_LABELS[leasing.status as keyof typeof LEASING_STATUS_LABELS] ?? leasing.status,
     payableId: leasing.payableId,
     notes: leasing.notes,
     createdBy: leasing.createdBy,
@@ -104,7 +106,11 @@ const LEASING_INCLUDE = {
 export async function createLeasing(
   ctx: RlsContext,
   input: CreateLeasingInput,
-): Promise<{ leasing: LeasingOutput; rouAsset: { id: string; assetTag: string; name: string }; payableId: string | null }> {
+): Promise<{
+  leasing: LeasingOutput;
+  rouAsset: { id: string; assetTag: string; name: string };
+  payableId: string | null;
+}> {
   // Validate required fields
   if (!input.lessorName?.trim()) {
     throw new AssetLeasingError('Nome do arrendador é obrigatório', 400);
@@ -292,10 +298,7 @@ export async function getLeasing(ctx: RlsContext, id: string): Promise<LeasingOu
 
 // ─── Exercise Purchase Option ─────────────────────────────────────────
 
-export async function exercisePurchaseOption(
-  ctx: RlsContext,
-  id: string,
-): Promise<LeasingOutput> {
+export async function exercisePurchaseOption(ctx: RlsContext, id: string): Promise<LeasingOutput> {
   const leasing = await prisma.assetLeasing.findFirst({
     where: { id, organizationId: ctx.organizationId },
     include: LEASING_INCLUDE,

@@ -7,16 +7,18 @@
 ---
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|------------------|
-| LANC-03 | Contador cria lançamentos manuais com N linhas débito/crédito, validação de balanceamento, templates, import CSV | `assertBalanced()` already exists in `packages/shared`; new `JournalEntry` + `JournalEntryLine` Prisma models; multi-line form component follows `StockEntriesPage` pattern |
-| LANC-04 | Estorno gera lançamento inverso vinculado ao original, motivo obrigatório, trail de auditoria, bloqueio em período fechado | `assertPeriodOpen()` already exists; reversal pattern mirrors `AccountingEntry.reversedByEntryId` already in schema; `createdBy` field covers audit trail |
-| LANC-05 | Saldo de abertura: wizard pré-populado com saldo bancário, CP/CR em aberto, valor contábil líquido dos ativos, provisões — contra conta Lucros/Prejuízos Acumulados | Requires aggregate queries across `BankAccountBalance`, `Payable`/`Receivable`, `DepreciationRun` (netBookValue), `PayrollProvision`; special `OPENING_BALANCE` entry type |
-| RAZAO-01 | Razão contábil por conta e período: saldo anterior, lançamentos cronológicos, saldo progressivo, drill-down, export PDF/CSV | Running balance computed in SQL with window function or computed in service layer; PDF via existing `pdfkit` pattern from `pesticide-prescriptions` |
-| RAZAO-02 | Balancete 3 colunas (saldo anterior, movimento, saldo atual) para qualquer período, totais por grupo, validação equilíbrio, comparativo, export PDF/XLSX | Aggregates from `AccountBalance` + `JournalEntryLine`; XLSX via existing `exceljs` from `depreciation` module |
-| RAZAO-03 | Livro diário: lançamentos cronológicos, termos de abertura/encerramento, numeração sequencial, filtros, export PDF | Numeração sequencial via `entryNumber` sequence field; PDF via `pdfkit` |
+| ID       | Description                                                                                                                                                         | Research Support                                                                                                                                                            |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LANC-03  | Contador cria lançamentos manuais com N linhas débito/crédito, validação de balanceamento, templates, import CSV                                                    | `assertBalanced()` already exists in `packages/shared`; new `JournalEntry` + `JournalEntryLine` Prisma models; multi-line form component follows `StockEntriesPage` pattern |
+| LANC-04  | Estorno gera lançamento inverso vinculado ao original, motivo obrigatório, trail de auditoria, bloqueio em período fechado                                          | `assertPeriodOpen()` already exists; reversal pattern mirrors `AccountingEntry.reversedByEntryId` already in schema; `createdBy` field covers audit trail                   |
+| LANC-05  | Saldo de abertura: wizard pré-populado com saldo bancário, CP/CR em aberto, valor contábil líquido dos ativos, provisões — contra conta Lucros/Prejuízos Acumulados | Requires aggregate queries across `BankAccountBalance`, `Payable`/`Receivable`, `DepreciationRun` (netBookValue), `PayrollProvision`; special `OPENING_BALANCE` entry type  |
+| RAZAO-01 | Razão contábil por conta e período: saldo anterior, lançamentos cronológicos, saldo progressivo, drill-down, export PDF/CSV                                         | Running balance computed in SQL with window function or computed in service layer; PDF via existing `pdfkit` pattern from `pesticide-prescriptions`                         |
+| RAZAO-02 | Balancete 3 colunas (saldo anterior, movimento, saldo atual) para qualquer período, totais por grupo, validação equilíbrio, comparativo, export PDF/XLSX            | Aggregates from `AccountBalance` + `JournalEntryLine`; XLSX via existing `exceljs` from `depreciation` module                                                               |
+| RAZAO-03 | Livro diário: lançamentos cronológicos, termos de abertura/encerramento, numeração sequencial, filtros, export PDF                                                  | Numeração sequencial via `entryNumber` sequence field; PDF via `pdfkit`                                                                                                     |
+
 </phase_requirements>
 
 ---
@@ -56,16 +58,17 @@ The reports (RAZAO-01/02/03) are read-only aggregations over `JournalEntryLine` 
 
 ### Core (no new packages needed — confirmed against project)
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| `prisma` | ^7.4.1 | ORM + migrations; `$queryRaw` for window functions the Prisma query builder cannot express | Already installed; Phase 35 established `prisma migrate diff + deploy` pattern |
-| `decimal.js` via `Money()` | ^10.6.0 | All monetary arithmetic: running balance, aggregation, trial balance | Project-wide standard; `packages/shared/src/types/money.ts` |
-| `pdfkit` | ^0.15.x | PDF export for razão, balancete, livro diário | Already installed — `pesticide-prescriptions` module uses it |
-| `exceljs` | ^4.x | XLSX export for balancete (RAZAO-02 specifies XLSX) | Already installed — `depreciation` module uses it |
-| `date-fns` | ^4.1.0 | Entry date validation, period boundary checks | Already installed |
-| `pino` | ^10.3.1 | Audit logging for entry creation/reversal | Already installed |
+| Library                    | Version | Purpose                                                                                    | Why Standard                                                                   |
+| -------------------------- | ------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `prisma`                   | ^7.4.1  | ORM + migrations; `$queryRaw` for window functions the Prisma query builder cannot express | Already installed; Phase 35 established `prisma migrate diff + deploy` pattern |
+| `decimal.js` via `Money()` | ^10.6.0 | All monetary arithmetic: running balance, aggregation, trial balance                       | Project-wide standard; `packages/shared/src/types/money.ts`                    |
+| `pdfkit`                   | ^0.15.x | PDF export for razão, balancete, livro diário                                              | Already installed — `pesticide-prescriptions` module uses it                   |
+| `exceljs`                  | ^4.x    | XLSX export for balancete (RAZAO-02 specifies XLSX)                                        | Already installed — `depreciation` module uses it                              |
+| `date-fns`                 | ^4.1.0  | Entry date validation, period boundary checks                                              | Already installed                                                              |
+| `pino`                     | ^10.3.1 | Audit logging for entry creation/reversal                                                  | Already installed                                                              |
 
 ### No new npm packages
+
 The entire phase is implementable with the existing dependency set. Confirmed March 2026.
 
 ---
@@ -196,6 +199,7 @@ model JournalEntryLine {
 ```
 
 **Key constraints:**
+
 - `entryNumber` is assigned on POST (not on DRAFT creation) — sequential per org, use `SELECT MAX(entryNumber) + 1` inside the same transaction
 - Only POSTED entries appear in the ledger and update `AccountBalance`
 - Only POSTED entries can be reversed
@@ -219,13 +223,16 @@ export async function postJournalEntry(
       include: { lines: true, period: true },
     });
     if (!entry) throw new JournalEntryError('Lançamento não encontrado', 'NOT_FOUND', 404);
-    if (entry.status !== 'DRAFT') throw new JournalEntryError('Apenas rascunhos podem ser postados', 'ALREADY_POSTED', 409);
+    if (entry.status !== 'DRAFT')
+      throw new JournalEntryError('Apenas rascunhos podem ser postados', 'ALREADY_POSTED', 409);
 
     // Guard: period must be OPEN
     assertPeriodOpen(entry.period);
 
     // Guard: lines must balance
-    assertBalanced(entry.lines.map(l => ({ side: l.side as 'DEBIT' | 'CREDIT', amount: l.amount.toString() })));
+    assertBalanced(
+      entry.lines.map((l) => ({ side: l.side as 'DEBIT' | 'CREDIT', amount: l.amount.toString() })),
+    );
 
     // Assign sequential entry number
     const maxResult = await tx.journalEntry.aggregate({
@@ -268,7 +275,12 @@ export async function postJournalEntry(
 
     return tx.journalEntry.update({
       where: { id: entryId },
-      data: { status: 'POSTED', entryNumber: nextNumber, postedAt: new Date(), createdBy: postedBy },
+      data: {
+        status: 'POSTED',
+        entryNumber: nextNumber,
+        postedAt: new Date(),
+        createdBy: postedBy,
+      },
       include: { lines: { include: { account: true } } },
     });
   });
@@ -286,7 +298,8 @@ export async function reverseJournalEntry(
   reason: string,
   reversedBy: string,
 ): Promise<JournalEntryOutput> {
-  if (!reason.trim()) throw new JournalEntryError('Motivo do estorno é obrigatório', 'REASON_REQUIRED');
+  if (!reason.trim())
+    throw new JournalEntryError('Motivo do estorno é obrigatório', 'REASON_REQUIRED');
 
   return prisma.$transaction(async (tx) => {
     const original = await tx.journalEntry.findFirst({
@@ -294,8 +307,14 @@ export async function reverseJournalEntry(
       include: { lines: true, period: true },
     });
     if (!original) throw new JournalEntryError('Lançamento não encontrado', 'NOT_FOUND', 404);
-    if (original.status !== 'POSTED') throw new JournalEntryError('Apenas lançamentos postados podem ser estornados', 'NOT_POSTED', 409);
-    if (original.status === 'REVERSED') throw new JournalEntryError('Lançamento já estornado', 'ALREADY_REVERSED', 409);
+    if (original.status !== 'POSTED')
+      throw new JournalEntryError(
+        'Apenas lançamentos postados podem ser estornados',
+        'NOT_POSTED',
+        409,
+      );
+    if (original.status === 'REVERSED')
+      throw new JournalEntryError('Lançamento já estornado', 'ALREADY_REVERSED', 409);
 
     assertPeriodOpen(original.period); // blocks reversal in closed periods
 
@@ -327,7 +346,10 @@ export async function reverseJournalEntry(
     });
 
     // Mark original as REVERSED
-    await tx.journalEntry.update({ where: { id: entryId }, data: { status: 'REVERSED', reversedById: reversal.id } });
+    await tx.journalEntry.update({
+      where: { id: entryId },
+      data: { status: 'REVERSED', reversedById: reversal.id },
+    });
 
     return reversal;
   });
@@ -341,13 +363,13 @@ export async function reverseJournalEntry(
 
 **Pre-population sources (all verified in schema):**
 
-| Source | Model | Field | How |
-|--------|-------|-------|-----|
-| Saldo bancário | `BankAccountBalance` | `currentBalance` | Sum per org, map to account `1.1.01` or per-bank COA account |
-| CP em aberto | `Payable` | `totalAmount WHERE status IN ('PENDING','PARTIAL','OVERDUE')` | Map to `2.x` COA accounts by `category` |
-| CR em aberto | `Receivable` | `totalAmount WHERE status IN ('PENDING','PARTIAL','OVERDUE')` | Map to `1.x` COA accounts |
-| Valor líquido ativos | `DepreciationRun` / `Asset` join | `netBookValue` on latest run per asset | Map to `1.2.x` accounts (imobilizado) |
-| Provisões trabalhistas | `PayrollProvision` | `vacationProvision`, `thirteenthProvision` | Map to `2.2.01`, `2.2.02` |
+| Source                 | Model                            | Field                                                         | How                                                          |
+| ---------------------- | -------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------ |
+| Saldo bancário         | `BankAccountBalance`             | `currentBalance`                                              | Sum per org, map to account `1.1.01` or per-bank COA account |
+| CP em aberto           | `Payable`                        | `totalAmount WHERE status IN ('PENDING','PARTIAL','OVERDUE')` | Map to `2.x` COA accounts by `category`                      |
+| CR em aberto           | `Receivable`                     | `totalAmount WHERE status IN ('PENDING','PARTIAL','OVERDUE')` | Map to `1.x` COA accounts                                    |
+| Valor líquido ativos   | `DepreciationRun` / `Asset` join | `netBookValue` on latest run per asset                        | Map to `1.2.x` accounts (imobilizado)                        |
+| Provisões trabalhistas | `PayrollProvision`               | `vacationProvision`, `thirteenthProvision`                    | Map to `2.2.01`, `2.2.02`                                    |
 
 **Contra-entry:** All opening balance lines must balance against the "Lucros e Prejuízos Acumulados" account (PL account, typically code `3.x.xx` in the rural template). The wizard computes the net difference automatically.
 
@@ -426,57 +448,64 @@ ORDER BY je."entryDate", je.entry_number, jel."lineOrder";
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Debit/credit balance validation | Custom sum loop | `assertBalanced()` in `packages/shared/src/utils/accounting/assert-balanced.ts` | Already exists, tested, handles Decimal/string amounts |
-| Period open check | Custom status check | `assertPeriodOpen()` in `packages/shared/src/utils/accounting/assert-period-open.ts` | Already exists, throws `PeriodNotOpenError` |
-| Cost center proportional split | Custom division | `rateio()` in `packages/shared/src/utils/accounting/rateio.ts` | Already exists, handles remainder distribution |
-| Monetary arithmetic | Plain `number` addition | `Money()` from `packages/shared/src/types/money.ts` | Decimal-precise, `ROUND_HALF_UP` for BRL |
-| PDF generation | Custom PDF | `pdfkit` — follow `pesticide-prescriptions.service.ts` pattern | Already installed, proven in production |
-| XLSX generation | Custom CSV/HTML | `exceljs` — follow `depreciation.service.ts` pattern | Already installed, multi-sheet support |
-| Running balance | In-memory JS reduce | PostgreSQL `SUM(...) OVER (ORDER BY ...)` window function via `$queryRaw` | Database handles ordering + precision; no memory load |
+| Problem                         | Don't Build             | Use Instead                                                                          | Why                                                    |
+| ------------------------------- | ----------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------ |
+| Debit/credit balance validation | Custom sum loop         | `assertBalanced()` in `packages/shared/src/utils/accounting/assert-balanced.ts`      | Already exists, tested, handles Decimal/string amounts |
+| Period open check               | Custom status check     | `assertPeriodOpen()` in `packages/shared/src/utils/accounting/assert-period-open.ts` | Already exists, throws `PeriodNotOpenError`            |
+| Cost center proportional split  | Custom division         | `rateio()` in `packages/shared/src/utils/accounting/rateio.ts`                       | Already exists, handles remainder distribution         |
+| Monetary arithmetic             | Plain `number` addition | `Money()` from `packages/shared/src/types/money.ts`                                  | Decimal-precise, `ROUND_HALF_UP` for BRL               |
+| PDF generation                  | Custom PDF              | `pdfkit` — follow `pesticide-prescriptions.service.ts` pattern                       | Already installed, proven in production                |
+| XLSX generation                 | Custom CSV/HTML         | `exceljs` — follow `depreciation.service.ts` pattern                                 | Already installed, multi-sheet support                 |
+| Running balance                 | In-memory JS reduce     | PostgreSQL `SUM(...) OVER (ORDER BY ...)` window function via `$queryRaw`            | Database handles ordering + precision; no memory load  |
 
 ---
 
 ## Common Pitfalls
 
 ### Pitfall 1: AccountBalance Drift (Balance Inconsistency)
+
 **What goes wrong:** `AccountBalance` rows show wrong totals because a post or reversal failed after partial balance updates.
 **Why it happens:** Updating balances in a loop with individual `prisma.accountBalance.upsert()` calls outside a transaction — if any call fails after some succeed, balance becomes inconsistent.
 **How to avoid:** All `accountBalance.upsert()` calls for a single `postJournalEntry()` or `reverseJournalEntry()` must be inside the same `prisma.$transaction()` callback.
 **Warning signs:** Trial balance where total debits != total credits; ledger running balance doesn't match AccountBalance.closingBalance.
 
 ### Pitfall 2: entryNumber Race Condition
+
 **What goes wrong:** Two concurrent POST requests get the same `entryNumber`.
 **Why it happens:** `SELECT MAX(entryNumber) + 1` is not atomic across concurrent requests.
 **How to avoid:** Run inside `prisma.$transaction()` at SERIALIZABLE level, or use a Postgres sequence (`CREATE SEQUENCE journal_entry_number_seq`). The simpler approach: wrap in `$transaction()` with `isolationLevel: 'Serializable'` for the entry number assignment step.
 **Warning signs:** `unique constraint violation` on `[organizationId, entryNumber]`.
 
 ### Pitfall 3: Opening Balance Posted Twice
+
 **What goes wrong:** `OPENING_BALANCE` entry created twice → double-counts all balances.
 **Why it happens:** Wizard "Post" button clicked twice or re-run after fiscal year already initialized.
 **How to avoid:** Add `@@unique([organizationId, fiscalYearId, entryType])` on `JournalEntry` for `OPENING_BALANCE` type, or service-level guard checking `existingOpeningBalance`.
 **Warning signs:** AccountBalance values doubled.
 
 ### Pitfall 4: Reversal Fails Silently on Closed Period
+
 **What goes wrong:** Reversal button visible on entry but request returns 422; user confused.
 **Why it happens:** The period was closed between when the user loaded the list and when they clicked Reverse.
 **How to avoid:** Frontend shows period status badge on each entry; reversal button disabled if `period.status !== 'OPEN'`. Backend always re-validates anyway.
 **Warning signs:** User sees "Lançamento não pode ser estornado" with no explanation.
 
 ### Pitfall 5: closingBalance Not Recomputed After upsert
+
 **What goes wrong:** `AccountBalance.closingBalance` stays 0 or wrong after posting entries.
 **Why it happens:** Incrementing `debitTotal`/`creditTotal` but forgetting to recompute `closingBalance = openingBalance + debits - credits` (or reversed for CREDORA accounts).
 **How to avoid:** After all upserts, run a separate `UPDATE account_balances SET closing_balance = opening_balance + debit_total - credit_total WHERE nature = 'DEVEDORA'` (and inverse for CREDORA) within the same transaction.
 **Warning signs:** Razão shows correct movements but wrong saldo final; trial balance saldo_atual is always 0.
 
 ### Pitfall 6: `allowManualEntry: false` Not Enforced
+
 **What goes wrong:** User posts an entry to a synthetic account or a restricted account, corrupting the COA integrity.
 **Why it happens:** Service doesn't validate account `isSynthetic` or `allowManualEntry` flags.
 **How to avoid:** In `createJournalEntry`, for each line validate: `account.isActive === true`, `account.isSynthetic === false`, `account.allowManualEntry === true`.
 **Warning signs:** Synthetic aggregation accounts show direct entries; subtotals broken in trial balance.
 
 ### Pitfall 7: PDF Stream Not Piped Correctly
+
 **What goes wrong:** PDF response returns empty or partial content.
 **Why it happens:** `pdfkit` uses a streaming API — `doc.end()` must be called and `doc.pipe(res)` must be set before writing content. Forgetting `doc.end()` or calling `res.end()` separately causes issues.
 **How to avoid:** Follow the exact pattern in `pesticide-prescriptions.service.ts`: `doc.pipe(res)`, write content, `doc.end()`. Never call `res.end()` or `res.json()` after `doc.pipe(res)`.
@@ -498,21 +527,36 @@ export async function createJournalEntryDraft(
   createdBy: string,
 ): Promise<JournalEntryOutput> {
   // Validate all accounts exist, are active, allow manual entry
-  const accountIds = input.lines.map(l => l.accountId);
+  const accountIds = input.lines.map((l) => l.accountId);
   const accounts = await prisma.chartOfAccount.findMany({
     where: { organizationId, id: { in: accountIds } },
     select: { id: true, isActive: true, isSynthetic: true, allowManualEntry: true, nature: true },
   });
   for (const line of input.lines) {
-    const acc = accounts.find(a => a.id === line.accountId);
-    if (!acc) throw new JournalEntryError(`Conta ${line.accountId} não encontrada`, 'ACCOUNT_NOT_FOUND', 404);
+    const acc = accounts.find((a) => a.id === line.accountId);
+    if (!acc)
+      throw new JournalEntryError(
+        `Conta ${line.accountId} não encontrada`,
+        'ACCOUNT_NOT_FOUND',
+        404,
+      );
     if (!acc.isActive) throw new JournalEntryError('Conta inativa', 'ACCOUNT_INACTIVE', 422);
-    if (acc.isSynthetic) throw new JournalEntryError('Conta sintética não aceita lançamentos', 'SYNTHETIC_ACCOUNT', 422);
-    if (!acc.allowManualEntry) throw new JournalEntryError('Conta não permite lançamento manual', 'MANUAL_ENTRY_DISALLOWED', 422);
+    if (acc.isSynthetic)
+      throw new JournalEntryError(
+        'Conta sintética não aceita lançamentos',
+        'SYNTHETIC_ACCOUNT',
+        422,
+      );
+    if (!acc.allowManualEntry)
+      throw new JournalEntryError(
+        'Conta não permite lançamento manual',
+        'MANUAL_ENTRY_DISALLOWED',
+        422,
+      );
   }
 
   // Validate balance (DRAFT validation — prevents saving unbalanced entries)
-  assertBalanced(input.lines.map(l => ({ side: l.side, amount: l.amount })));
+  assertBalanced(input.lines.map((l) => ({ side: l.side, amount: l.amount })));
 
   // Validate period exists and is OPEN
   const period = await prisma.accountingPeriod.findFirst({
@@ -543,7 +587,10 @@ export async function createJournalEntryDraft(
         })),
       },
     },
-    include: { lines: { include: { account: { select: { code: true, name: true, nature: true } } } }, period: true },
+    include: {
+      lines: { include: { account: { select: { code: true, name: true, nature: true } } } },
+      period: true,
+    },
   });
 }
 ```
@@ -600,16 +647,20 @@ function JournalEntryModal({ isOpen, onClose, onSuccess }: JournalEntryModalProp
     { accountId: '', side: 'CREDIT', amount: '', description: '' },
   ]);
 
-  const totalDebit  = lines.filter(l => l.side === 'DEBIT').reduce((s, l) => s + parseFloat(l.amount || '0'), 0);
-  const totalCredit = lines.filter(l => l.side === 'CREDIT').reduce((s, l) => s + parseFloat(l.amount || '0'), 0);
-  const isBalanced  = Math.abs(totalDebit - totalCredit) < 0.005;
+  const totalDebit = lines
+    .filter((l) => l.side === 'DEBIT')
+    .reduce((s, l) => s + parseFloat(l.amount || '0'), 0);
+  const totalCredit = lines
+    .filter((l) => l.side === 'CREDIT')
+    .reduce((s, l) => s + parseFloat(l.amount || '0'), 0);
+  const isBalanced = Math.abs(totalDebit - totalCredit) < 0.005;
 
   function addLine(side: 'DEBIT' | 'CREDIT') {
-    setLines(prev => [...prev, { accountId: '', side, amount: '', description: '' }]);
+    setLines((prev) => [...prev, { accountId: '', side, amount: '', description: '' }]);
   }
 
   function removeLine(idx: number) {
-    setLines(prev => prev.filter((_, i) => i !== idx));
+    setLines((prev) => prev.filter((_, i) => i !== idx));
   }
 
   // Submit disabled until isBalanced && all accountIds filled
@@ -620,12 +671,13 @@ function JournalEntryModal({ isOpen, onClose, onSuccess }: JournalEntryModalProp
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Single-row `AccountingEntry` (debitAccount string, creditAccount string, amount) | Multi-line `JournalEntry` + `JournalEntryLine` (N debits, M credits) | Phase 36 | Supports N-way entries (rateio), audit trail, templates |
-| Hardcoded `ACCOUNT_CODES` constants in `accounting-entries.types.ts` | Dynamic FK references to `ChartOfAccount.id` via `JournalEntryLine.accountId` | Phase 36 | COA-managed accounts; existing `AccountingEntry` remains frozen for payroll |
+| Old Approach                                                                     | Current Approach                                                              | When Changed | Impact                                                                      |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------ | --------------------------------------------------------------------------- |
+| Single-row `AccountingEntry` (debitAccount string, creditAccount string, amount) | Multi-line `JournalEntry` + `JournalEntryLine` (N debits, M credits)          | Phase 36     | Supports N-way entries (rateio), audit trail, templates                     |
+| Hardcoded `ACCOUNT_CODES` constants in `accounting-entries.types.ts`             | Dynamic FK references to `ChartOfAccount.id` via `JournalEntryLine.accountId` | Phase 36     | COA-managed accounts; existing `AccountingEntry` remains frozen for payroll |
 
 **Deprecated/outdated:**
+
 - `AccountingEntry` model: frozen for payroll entries only; do NOT extend for new features — use `JournalEntry` going forward
 - `ACCOUNT_CODES` constants: remain valid for legacy payroll entries; new manual entries reference `ChartOfAccount` by ID
 
@@ -665,30 +717,30 @@ Step 2.6: SKIPPED (no external dependencies identified — all tools already ins
 
 ### Test Framework
 
-| Property | Value |
-|----------|-------|
-| Framework | Jest 29 + supertest |
-| Config file | `apps/backend/jest.config.js` |
-| Quick run command | `cd apps/backend && npx jest --testPathPattern=journal-entries --no-coverage` |
-| Full suite command | `cd apps/backend && npx jest --no-coverage` |
+| Property           | Value                                                                         |
+| ------------------ | ----------------------------------------------------------------------------- |
+| Framework          | Jest 29 + supertest                                                           |
+| Config file        | `apps/backend/jest.config.js`                                                 |
+| Quick run command  | `cd apps/backend && npx jest --testPathPattern=journal-entries --no-coverage` |
+| Full suite command | `cd apps/backend && npx jest --no-coverage`                                   |
 
 ### Phase Requirements → Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| LANC-03 | POST /journal-entries creates DRAFT with N lines | integration | `npx jest --testPathPattern=journal-entries.routes.spec -t "creates draft"` | Wave 0 |
-| LANC-03 | POST .../post rejects unbalanced entry | integration | `npx jest --testPathPattern=journal-entries.routes.spec -t "rejects unbalanced"` | Wave 0 |
-| LANC-03 | POST .../post assigns sequential entryNumber | integration | `npx jest --testPathPattern=journal-entries.routes.spec -t "assigns sequential"` | Wave 0 |
-| LANC-03 | Templates: save and list draft templates | integration | `npx jest --testPathPattern=journal-entries.routes.spec -t "template"` | Wave 0 |
-| LANC-04 | POST .../reverse creates inverse entry linked to original | integration | `npx jest --testPathPattern=journal-entries.routes.spec -t "reversal"` | Wave 0 |
-| LANC-04 | Reversal blocked on closed period | integration | `npx jest --testPathPattern=journal-entries.routes.spec -t "closed period"` | Wave 0 |
-| LANC-04 | Reversal requires non-empty reason | integration | `npx jest --testPathPattern=journal-entries.routes.spec -t "reason required"` | Wave 0 |
-| LANC-05 | GET opening-balance/preview returns aggregated balances from 4 sources | integration | `npx jest --testPathPattern=opening-balance.routes.spec -t "preview"` | Wave 0 |
-| LANC-05 | POST opening-balance/post creates OPENING_BALANCE entry | integration | `npx jest --testPathPattern=opening-balance.routes.spec -t "posts opening balance"` | Wave 0 |
-| RAZAO-01 | GET ledger/:accountId returns lines with running balance | integration | `npx jest --testPathPattern=ledger.routes.spec -t "running balance"` | Wave 0 |
-| RAZAO-02 | GET trial-balance returns 3-column data with totals | integration | `npx jest --testPathPattern=ledger.routes.spec -t "trial balance"` | Wave 0 |
-| RAZAO-02 | Trial balance total debits == total credits | integration | `npx jest --testPathPattern=ledger.routes.spec -t "balanced"` | Wave 0 |
-| RAZAO-03 | GET daily-book returns entries in chronological order with entry numbers | integration | `npx jest --testPathPattern=ledger.routes.spec -t "daily book"` | Wave 0 |
+| Req ID   | Behavior                                                                 | Test Type   | Automated Command                                                                   | File Exists? |
+| -------- | ------------------------------------------------------------------------ | ----------- | ----------------------------------------------------------------------------------- | ------------ |
+| LANC-03  | POST /journal-entries creates DRAFT with N lines                         | integration | `npx jest --testPathPattern=journal-entries.routes.spec -t "creates draft"`         | Wave 0       |
+| LANC-03  | POST .../post rejects unbalanced entry                                   | integration | `npx jest --testPathPattern=journal-entries.routes.spec -t "rejects unbalanced"`    | Wave 0       |
+| LANC-03  | POST .../post assigns sequential entryNumber                             | integration | `npx jest --testPathPattern=journal-entries.routes.spec -t "assigns sequential"`    | Wave 0       |
+| LANC-03  | Templates: save and list draft templates                                 | integration | `npx jest --testPathPattern=journal-entries.routes.spec -t "template"`              | Wave 0       |
+| LANC-04  | POST .../reverse creates inverse entry linked to original                | integration | `npx jest --testPathPattern=journal-entries.routes.spec -t "reversal"`              | Wave 0       |
+| LANC-04  | Reversal blocked on closed period                                        | integration | `npx jest --testPathPattern=journal-entries.routes.spec -t "closed period"`         | Wave 0       |
+| LANC-04  | Reversal requires non-empty reason                                       | integration | `npx jest --testPathPattern=journal-entries.routes.spec -t "reason required"`       | Wave 0       |
+| LANC-05  | GET opening-balance/preview returns aggregated balances from 4 sources   | integration | `npx jest --testPathPattern=opening-balance.routes.spec -t "preview"`               | Wave 0       |
+| LANC-05  | POST opening-balance/post creates OPENING_BALANCE entry                  | integration | `npx jest --testPathPattern=opening-balance.routes.spec -t "posts opening balance"` | Wave 0       |
+| RAZAO-01 | GET ledger/:accountId returns lines with running balance                 | integration | `npx jest --testPathPattern=ledger.routes.spec -t "running balance"`                | Wave 0       |
+| RAZAO-02 | GET trial-balance returns 3-column data with totals                      | integration | `npx jest --testPathPattern=ledger.routes.spec -t "trial balance"`                  | Wave 0       |
+| RAZAO-02 | Trial balance total debits == total credits                              | integration | `npx jest --testPathPattern=ledger.routes.spec -t "balanced"`                       | Wave 0       |
+| RAZAO-03 | GET daily-book returns entries in chronological order with entry numbers | integration | `npx jest --testPathPattern=ledger.routes.spec -t "daily book"`                     | Wave 0       |
 
 ### Sampling Rate
 
@@ -707,6 +759,7 @@ Step 2.6: SKIPPED (no external dependencies identified — all tools already ins
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Direct codebase inspection — `apps/backend/prisma/schema.prisma` (AccountBalance, ChartOfAccount, FiscalYear, AccountingPeriod, Payable, Receivable, BankAccountBalance, DepreciationRun, PayrollProvision models verified)
 - `packages/shared/src/utils/accounting/` — `assertBalanced.ts`, `assertPeriodOpen.ts`, `rateio.ts` verified as existing and tested
 - `apps/backend/src/modules/chart-of-accounts/chart-of-accounts.service.ts` — `$queryRaw` WITH RECURSIVE pattern confirmed
@@ -715,11 +768,13 @@ Step 2.6: SKIPPED (no external dependencies identified — all tools already ins
 - `apps/frontend/src/components/layout/Sidebar.tsx` — CONTABILIDADE sidebar section location confirmed
 
 ### Secondary (MEDIUM confidence)
+
 - Brazilian double-entry bookkeeping standards (partidas dobradas) — well-established accounting domain; `assertBalanced()` constraint confirms project alignment
 - pdfkit streaming pattern — `modules/pesticide-prescriptions/pesticide-prescriptions.service.ts` confirmed as existing usage
 - ExcelJS multi-sheet — `modules/depreciation/depreciation.service.ts` confirmed as existing usage
 
 ### Tertiary (LOW confidence)
+
 - PostgreSQL window function `SUM() OVER (ORDER BY ...)` for running balance — standard SQL; project already uses `$queryRaw` for complex queries (HIGH confidence on the pattern, MEDIUM on exact column alias escaping in Prisma)
 
 ---
@@ -727,6 +782,7 @@ Step 2.6: SKIPPED (no external dependencies identified — all tools already ins
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH — all packages verified in project
 - Architecture (JournalEntry model): HIGH — follows Phase 35 pattern; schema fields verified
 - Architecture (ledger query): MEDIUM — SQL window function pattern is standard; exact Prisma `$queryRaw` template literal escaping requires care

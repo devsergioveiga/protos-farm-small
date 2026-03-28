@@ -30,12 +30,7 @@ function formatAmount(lines: JournalEntry['lines']): string {
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
-export default function ReversalModal({
-  isOpen,
-  entry,
-  onClose,
-  onSuccess,
-}: ReversalModalProps) {
+export default function ReversalModal({ isOpen, entry, onClose, onSuccess }: ReversalModalProps) {
   const { reverseEntry } = useJournalEntryActions();
   const [reason, setReason] = useState('');
   const [reasonError, setReasonError] = useState<string | null>(null);
@@ -55,7 +50,9 @@ export default function ReversalModal({
 
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [isOpen, onClose]);
@@ -101,7 +98,9 @@ export default function ReversalModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={headingId}
-        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
       >
         <div className="reversal-modal">
           {/* Header */}
@@ -201,7 +200,9 @@ export default function ReversalModal({
         confirmLabel="Confirmar Estorno"
         variant="danger"
         isLoading={isReversing}
-        onConfirm={() => { void handleReverseConfirm(); }}
+        onConfirm={() => {
+          void handleReverseConfirm();
+        }}
         onCancel={() => setShowConfirm(false)}
       />
     </>

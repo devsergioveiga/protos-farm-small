@@ -63,7 +63,11 @@ export function useTrainingRecords() {
       setSuccessMessage('Treinamento registrado. Certificados disponíveis para download.');
       return true;
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Não foi possível salvar. Verifique os dados e tente novamente.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Não foi possível salvar. Verifique os dados e tente novamente.',
+      );
       return false;
     } finally {
       setLoading(false);

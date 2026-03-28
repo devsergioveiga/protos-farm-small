@@ -15,7 +15,6 @@ import type {
   TimesheetCorrectionInput,
   TimesheetListQuery,
   TimesheetOutput,
-
   TimesheetInconsistency,
 } from './timesheets.types';
 import type { DailyWorkInput, DailyWorkResult } from '../time-calculations/time-calculations.types';
@@ -31,10 +30,7 @@ type TimesheetStatus =
   | 'LOCKED'
   | 'REJECTED';
 
-const VALID_TRANSITIONS: Record<
-  string,
-  Partial<Record<string, TimesheetStatus>>
-> = {
+const VALID_TRANSITIONS: Record<string, Partial<Record<string, TimesheetStatus>>> = {
   APPROVE_MANAGER: { PENDING_MANAGER: 'MANAGER_APPROVED' },
   APPROVE_RH: { PENDING_RH: 'APPROVED' },
   REJECT: {
@@ -48,16 +44,18 @@ const VALID_TRANSITIONS: Record<
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
-function calcScheduledMinutesFromSchedule(schedule: {
-  startTime: string; // "HH:MM"
-  endTime: string;   // "HH:MM"
-  breakMinutes: number;
-} | null): number {
+function calcScheduledMinutesFromSchedule(
+  schedule: {
+    startTime: string; // "HH:MM"
+    endTime: string; // "HH:MM"
+    breakMinutes: number;
+  } | null,
+): number {
   if (!schedule) return 480; // default 8h
 
   const [startH, startM] = schedule.startTime.split(':').map(Number);
   const [endH, endM] = schedule.endTime.split(':').map(Number);
-  const totalMinutes = (endH * 60 + endM) - (startH * 60 + startM);
+  const totalMinutes = endH * 60 + endM - (startH * 60 + startM);
   return Math.max(0, totalMinutes - schedule.breakMinutes);
 }
 
@@ -75,37 +73,40 @@ function _calcNightMinutesForPeriod(clockIn: Date, clockOut: Date): number {
   return nightMinutes;
 }
 
-function formatTimesheet(row: {
-  id: string;
-  employeeId: string;
-  employee: { name: string };
-  referenceMonth: Date;
-  status: string;
-  totalWorked: number;
-  totalOvertime50: number;
-  totalOvertime100: number;
-  totalNightMinutes: number;
-  totalAbsences: number;
-  closingDeadline: Date | null;
-  managerApprovedBy: string | null;
-  managerApprovedAt: Date | null;
-  rhApprovedBy: string | null;
-  rhApprovedAt: Date | null;
-  employeeAcceptedAt: Date | null;
-  employeeDisputeNote: string | null;
-  payrollRunId: string | null;
-  notes: string | null;
-  corrections: Array<{
+function formatTimesheet(
+  row: {
     id: string;
-    timeEntryId: string | null;
-    correctedBy: string;
-    justification: string;
-    beforeJson: unknown;
-    afterJson: unknown;
+    employeeId: string;
+    employee: { name: string };
+    referenceMonth: Date;
+    status: string;
+    totalWorked: number;
+    totalOvertime50: number;
+    totalOvertime100: number;
+    totalNightMinutes: number;
+    totalAbsences: number;
+    closingDeadline: Date | null;
+    managerApprovedBy: string | null;
+    managerApprovedAt: Date | null;
+    rhApprovedBy: string | null;
+    rhApprovedAt: Date | null;
+    employeeAcceptedAt: Date | null;
+    employeeDisputeNote: string | null;
+    payrollRunId: string | null;
+    notes: string | null;
+    corrections: Array<{
+      id: string;
+      timeEntryId: string | null;
+      correctedBy: string;
+      justification: string;
+      beforeJson: unknown;
+      afterJson: unknown;
+      createdAt: Date;
+    }>;
     createdAt: Date;
-  }>;
-  createdAt: Date;
-}, inconsistencies: TimesheetInconsistency[] = []): TimesheetOutput {
+  },
+  inconsistencies: TimesheetInconsistency[] = [],
+): TimesheetOutput {
   return {
     id: row.id,
     employeeId: row.employeeId,
@@ -493,7 +494,15 @@ export async function correctTimeEntry(
     // Fetch current time entry state as beforeJson
     const timeEntry = await tx.timeEntry.findUnique({
       where: { id: input.timeEntryId },
-      select: { id: true, clockIn: true, breakStart: true, breakEnd: true, clockOut: true, workedMinutes: true, nightMinutes: true },
+      select: {
+        id: true,
+        clockIn: true,
+        breakStart: true,
+        breakEnd: true,
+        clockOut: true,
+        workedMinutes: true,
+        nightMinutes: true,
+      },
     });
 
     if (!timeEntry) {
@@ -508,7 +517,9 @@ export async function correctTimeEntry(
     };
 
     // Apply corrections
-    const newClockIn = input.corrections.clockIn ? new Date(input.corrections.clockIn) : timeEntry.clockIn;
+    const newClockIn = input.corrections.clockIn
+      ? new Date(input.corrections.clockIn)
+      : timeEntry.clockIn;
     const newClockOut =
       'clockOut' in input.corrections
         ? input.corrections.clockOut
@@ -533,9 +544,7 @@ export async function correctTimeEntry(
     let nightMinutes: number | null = null;
     if (newClockOut) {
       const breakDuration =
-        newBreakStart && newBreakEnd
-          ? differenceInMinutes(newBreakEnd, newBreakStart)
-          : 0;
+        newBreakStart && newBreakEnd ? differenceInMinutes(newBreakEnd, newBreakStart) : 0;
       workedMinutes = differenceInMinutes(newClockOut, newClockIn) - Math.max(0, breakDuration);
 
       // Simple night minutes calculation
@@ -777,7 +786,10 @@ export async function generateTimesheetPdf(
     doc.on('data', (chunk: Buffer) => chunks.push(chunk));
     doc.on('end', () => {
       const buffer = Buffer.concat(chunks);
-      resolve({ buffer, filename: `espelho-ponto-${sheet.employee.name.toLowerCase().replace(/\s+/g, '-')}-${sheet.referenceMonth.toISOString().substring(0, 7)}.pdf` });
+      resolve({
+        buffer,
+        filename: `espelho-ponto-${sheet.employee.name.toLowerCase().replace(/\s+/g, '-')}-${sheet.referenceMonth.toISOString().substring(0, 7)}.pdf`,
+      });
     });
     doc.on('error', reject);
 
@@ -786,14 +798,27 @@ export async function generateTimesheetPdf(
 
     // Header
     doc.fontSize(16).font('Helvetica-Bold').text('ESPELHO DE PONTO', { align: 'center' });
-    doc.fontSize(12).font('Helvetica').text(`Funcionário: ${sheet.employee.name}`, { align: 'center' });
+    doc
+      .fontSize(12)
+      .font('Helvetica')
+      .text(`Funcionário: ${sheet.employee.name}`, { align: 'center' });
     doc.text(`CPF: ${sheet.employee.cpf}`, { align: 'center' });
     doc.text(`Referência: ${monthStr}`, { align: 'center' });
     doc.text(`Status: ${sheet.status}`, { align: 'center' });
     doc.moveDown();
 
     // Table header
-    const cols = ['Data', 'Entrada', 'Int.Início', 'Int.Fim', 'Saída', 'Horas', 'HE 50%', 'HE 100%', 'Noturno'];
+    const cols = [
+      'Data',
+      'Entrada',
+      'Int.Início',
+      'Int.Fim',
+      'Saída',
+      'Horas',
+      'HE 50%',
+      'HE 100%',
+      'Noturno',
+    ];
     const colWidths = [60, 60, 60, 60, 60, 45, 45, 45, 45];
     const startX = 50;
     let x = startX;
@@ -805,7 +830,10 @@ export async function generateTimesheetPdf(
       x += colWidths[i];
     });
     doc.moveDown(0.5);
-    doc.moveTo(startX, doc.y).lineTo(startX + colWidths.reduce((a, b) => a + b, 0), doc.y).stroke();
+    doc
+      .moveTo(startX, doc.y)
+      .lineTo(startX + colWidths.reduce((a, b) => a + b, 0), doc.y)
+      .stroke();
 
     // Table rows
     doc.fontSize(7).font('Helvetica');
@@ -818,7 +846,9 @@ export async function generateTimesheetPdf(
         entry.breakStart ? entry.breakStart.toISOString().substring(11, 16) : '-',
         entry.breakEnd ? entry.breakEnd.toISOString().substring(11, 16) : '-',
         entry.clockOut ? entry.clockOut.toISOString().substring(11, 16) : '-',
-        entry.workedMinutes ? `${Math.floor(entry.workedMinutes / 60)}:${String(entry.workedMinutes % 60).padStart(2, '0')}` : '-',
+        entry.workedMinutes
+          ? `${Math.floor(entry.workedMinutes / 60)}:${String(entry.workedMinutes % 60).padStart(2, '0')}`
+          : '-',
         '-',
         '-',
         entry.nightMinutes ? `${entry.nightMinutes}min` : '-',
@@ -832,12 +862,24 @@ export async function generateTimesheetPdf(
 
     // Totals
     doc.moveDown();
-    doc.moveTo(startX, doc.y).lineTo(startX + colWidths.reduce((a, b) => a + b, 0), doc.y).stroke();
+    doc
+      .moveTo(startX, doc.y)
+      .lineTo(startX + colWidths.reduce((a, b) => a + b, 0), doc.y)
+      .stroke();
     doc.moveDown(0.5);
     doc.fontSize(9).font('Helvetica-Bold');
-    doc.text(`Total Horas Trabalhadas: ${Math.floor(sheet.totalWorked / 60)}h${String(sheet.totalWorked % 60).padStart(2, '0')}min`, startX);
-    doc.text(`Total HE 50%: ${Math.floor(sheet.totalOvertime50 / 60)}h${String(sheet.totalOvertime50 % 60).padStart(2, '0')}min`, startX);
-    doc.text(`Total HE 100%: ${Math.floor(sheet.totalOvertime100 / 60)}h${String(sheet.totalOvertime100 % 60).padStart(2, '0')}min`, startX);
+    doc.text(
+      `Total Horas Trabalhadas: ${Math.floor(sheet.totalWorked / 60)}h${String(sheet.totalWorked % 60).padStart(2, '0')}min`,
+      startX,
+    );
+    doc.text(
+      `Total HE 50%: ${Math.floor(sheet.totalOvertime50 / 60)}h${String(sheet.totalOvertime50 % 60).padStart(2, '0')}min`,
+      startX,
+    );
+    doc.text(
+      `Total HE 100%: ${Math.floor(sheet.totalOvertime100 / 60)}h${String(sheet.totalOvertime100 % 60).padStart(2, '0')}min`,
+      startX,
+    );
     doc.text(`Total Noturno: ${sheet.totalNightMinutes}min`, startX);
     doc.text(`Faltas: ${sheet.totalAbsences} dia(s)`, startX);
 
@@ -845,13 +887,22 @@ export async function generateTimesheetPdf(
     doc.moveDown(3);
     const sigY = doc.y;
     doc.fontSize(9).font('Helvetica');
-    doc.moveTo(startX, sigY).lineTo(startX + 160, sigY).stroke();
+    doc
+      .moveTo(startX, sigY)
+      .lineTo(startX + 160, sigY)
+      .stroke();
     doc.text('Assinatura do Empregado', startX, sigY + 5);
 
-    doc.moveTo(startX + 200, sigY).lineTo(startX + 360, sigY).stroke();
+    doc
+      .moveTo(startX + 200, sigY)
+      .lineTo(startX + 360, sigY)
+      .stroke();
     doc.text('Assinatura do Gerente', startX + 200, sigY + 5);
 
-    doc.moveTo(startX + 400, sigY).lineTo(startX + 480, sigY).stroke();
+    doc
+      .moveTo(startX + 400, sigY)
+      .lineTo(startX + 480, sigY)
+      .stroke();
     doc.text('RH', startX + 400, sigY + 5);
 
     doc.end();

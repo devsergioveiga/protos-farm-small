@@ -44,6 +44,7 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 **Goal:** Completar o módulo financeiro base com conciliação bancária automática, projeção de fluxo de caixa 12 meses e gestão de crédito rural
 
 **Target features:**
+
 - Import OFX/CSV com matching por score de confiança (exato/provável/sem match)
 - Fluxo de caixa projetado 12 meses com cenários otimista/realista/pessimista e alerta saldo negativo
 - Gestão de crédito rural (PRONAF/PRONAMP/Funcafé/CPR) com cronograma SAC/Price/Bullet e carência
@@ -117,6 +118,7 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 This document evolves at phase transitions and milestone boundaries.
 
 **After each phase transition** (via `/gsd:transition`):
+
 1. Requirements invalidated? → Move to Out of Scope with reason
 2. Requirements validated? → Move to Validated with phase reference
 3. New requirements emerged? → Add to Active
@@ -124,6 +126,7 @@ This document evolves at phase transitions and milestone boundaries.
 5. "What This Is" still accurate? → Update if drifted
 
 **After each milestone** (via `/gsd:complete-milestone`):
+
 1. Full review of all sections
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?

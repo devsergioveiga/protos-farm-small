@@ -81,10 +81,7 @@ export default function BulkInseminationModal({ isOpen, onClose, farmId, onSucce
   const filteredAnimals = animalSearch.trim()
     ? animals.filter((a) => {
         const q = animalSearch.trim().toLowerCase();
-        return (
-          a.earTag.toLowerCase().includes(q) ||
-          (a.name && a.name.toLowerCase().includes(q))
-        );
+        return a.earTag.toLowerCase().includes(q) || (a.name && a.name.toLowerCase().includes(q));
       })
     : animals;
 
@@ -166,7 +163,8 @@ export default function BulkInseminationModal({ isOpen, onClose, farmId, onSucce
 
   if (!isOpen) return null;
 
-  const allFiltered = filteredAnimals.length > 0 && selectedAnimalIds.size === filteredAnimals.length;
+  const allFiltered =
+    filteredAnimals.length > 0 && selectedAnimalIds.size === filteredAnimals.length;
 
   return (
     <div className="bulk-insem__overlay" onClick={onClose}>
@@ -224,9 +222,7 @@ export default function BulkInseminationModal({ isOpen, onClose, farmId, onSucce
                 </span>
                 {allFiltered ? 'Desmarcar todos' : 'Selecionar todos'}
               </button>
-              <span className="bulk-insem__count">
-                {filteredAnimals.length} animais
-              </span>
+              <span className="bulk-insem__count">{filteredAnimals.length} animais</span>
             </div>
 
             {isLoadingAnimals ? (
@@ -250,7 +246,9 @@ export default function BulkInseminationModal({ isOpen, onClose, farmId, onSucce
                       </span>
                       <span className="bulk-insem__animal-tag">{a.earTag}</span>
                       <span className="bulk-insem__animal-name">{a.name || '—'}</span>
-                      <span className="bulk-insem__animal-cat">{CATEGORY_LABELS[a.category] || a.category}</span>
+                      <span className="bulk-insem__animal-cat">
+                        {CATEGORY_LABELS[a.category] || a.category}
+                      </span>
                     </li>
                   );
                 })}
@@ -281,11 +279,7 @@ export default function BulkInseminationModal({ isOpen, onClose, farmId, onSucce
                 </div>
                 <div className="bulk-insem__field">
                   <label htmlFor="bulk-bull">Touro</label>
-                  <select
-                    id="bulk-bull"
-                    value={bullId}
-                    onChange={(e) => setBullId(e.target.value)}
-                  >
+                  <select id="bulk-bull" value={bullId} onChange={(e) => setBullId(e.target.value)}>
                     <option value="">Selecione o touro</option>
                     {bulls.map((b) => (
                       <option key={b.id} value={b.id}>
@@ -367,10 +361,7 @@ export default function BulkInseminationModal({ isOpen, onClose, farmId, onSucce
               {isSubmitting && (
                 <div className="bulk-insem__progress">
                   <div className="bulk-insem__progress-bar">
-                    <div
-                      className="bulk-insem__progress-fill"
-                      style={{ width: `${progress}%` }}
-                    />
+                    <div className="bulk-insem__progress-fill" style={{ width: `${progress}%` }} />
                   </div>
                   <span className="bulk-insem__progress-text">{progress}%</span>
                 </div>

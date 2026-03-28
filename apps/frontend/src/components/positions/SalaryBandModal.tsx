@@ -294,7 +294,13 @@ export default function SalaryBandModal({
                   <td style={{ padding: '8px 8px' }}>
                     <label
                       htmlFor={`band-${level}-min`}
-                      style={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
+                      style={{
+                        position: 'absolute',
+                        width: '1px',
+                        height: '1px',
+                        overflow: 'hidden',
+                        clip: 'rect(0,0,0,0)',
+                      }}
                     >
                       Salário mínimo {SALARY_BAND_LABELS[level]}
                     </label>
@@ -312,7 +318,13 @@ export default function SalaryBandModal({
                   <td style={{ padding: '8px 8px' }}>
                     <label
                       htmlFor={`band-${level}-max`}
-                      style={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
+                      style={{
+                        position: 'absolute',
+                        width: '1px',
+                        height: '1px',
+                        overflow: 'hidden',
+                        clip: 'rect(0,0,0,0)',
+                      }}
                     >
                       Salário máximo {SALARY_BAND_LABELS[level]}
                     </label>

@@ -32,7 +32,20 @@ function formatDate(dateStr: string | null | undefined): string {
 
 function getMonthLabel(referenceMonth: string): string {
   const [year, month] = referenceMonth.split('-');
-  const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  const monthNames = [
+    'Jan',
+    'Fev',
+    'Mar',
+    'Abr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Set',
+    'Out',
+    'Nov',
+    'Dez',
+  ];
   const m = parseInt(month, 10) - 1;
   return `${monthNames[m] ?? month}/${year}`;
 }
@@ -59,7 +72,11 @@ function SkeletonRow({ cols }: { cols: number }) {
 function PeriodStatusBadge({ status }: { status: VacationAcquisitivePeriod['status'] }) {
   const config: Record<string, { label: string; cls: string; desc: string }> = {
     ACCRUING: { label: 'AGUARDANDO', cls: 'badge--neutral', desc: 'Periodo em aquisicao' },
-    AVAILABLE: { label: 'DISPONIVEL', cls: 'badge--info', desc: 'Periodo disponivel para agendamento' },
+    AVAILABLE: {
+      label: 'DISPONIVEL',
+      cls: 'badge--info',
+      desc: 'Periodo disponivel para agendamento',
+    },
     SCHEDULED: { label: 'AGENDADO', cls: 'badge--warning', desc: 'Ferias agendadas' },
     EXPIRED: { label: 'VENCIDO', cls: 'badge--error', desc: 'Periodo vencido' },
   };
@@ -151,22 +168,30 @@ function VacationScheduleModal({ isOpen, periods, onClose, onSubmit }: VacationS
   function validateStep2() {
     const errs: Record<string, string> = {};
     if (!step2.startDate) errs.startDate = 'Informe a data de inicio';
-    if (step2.totalDays < 5) errs.totalDays = 'O periodo minimo de ferias e 5 dias corridos. Ajuste as datas.';
+    if (step2.totalDays < 5)
+      errs.totalDays = 'O periodo minimo de ferias e 5 dias corridos. Ajuste as datas.';
     if (selectedPeriod && step2.totalDays > selectedPeriod.balance) {
       errs.totalDays = `Saldo disponivel: ${selectedPeriod.balance} dias`;
     }
-    if (step2.abono > 0 && step2.abono !== 10) errs.abono = 'O abono pecuniario e de exatamente 10 dias';
+    if (step2.abono > 0 && step2.abono !== 10)
+      errs.abono = 'O abono pecuniario e de exatamente 10 dias';
     return errs;
   }
 
   function handleNext() {
     if (step === 1) {
       const errs = validateStep1();
-      if (Object.keys(errs).length) { setErrors(errs); return; }
+      if (Object.keys(errs).length) {
+        setErrors(errs);
+        return;
+      }
     }
     if (step === 2) {
       const errs = validateStep2();
-      if (Object.keys(errs).length) { setErrors(errs); return; }
+      if (Object.keys(errs).length) {
+        setErrors(errs);
+        return;
+      }
     }
     setErrors({});
     setStep((s) => s + 1);
@@ -198,12 +223,16 @@ function VacationScheduleModal({ isOpen, periods, onClose, onSubmit }: VacationS
       role="dialog"
       aria-modal="true"
       aria-labelledby="vac-modal-title"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="vac-page__modal">
         {/* Modal header with steps */}
         <div className="vac-page__modal-header">
-          <h2 id="vac-modal-title" className="vac-page__modal-title">Agendar Ferias</h2>
+          <h2 id="vac-modal-title" className="vac-page__modal-title">
+            Agendar Ferias
+          </h2>
           <div className="vac-page__modal-steps" aria-label="Progresso do formulario">
             {[1, 2, 3].map((s) => (
               <div
@@ -239,12 +268,18 @@ function VacationScheduleModal({ isOpen, periods, onClose, onSubmit }: VacationS
                 <option value="">Selecione um periodo disponivel...</option>
                 {availablePeriods.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.employeeName} — {formatDate(p.startDate)} a {formatDate(p.endDate)} ({p.balance} dias)
+                    {p.employeeName} — {formatDate(p.startDate)} a {formatDate(p.endDate)} (
+                    {p.balance} dias)
                   </option>
                 ))}
               </select>
               {errors.period && (
-                <span id="modal-period-error" className="vac-page__form-error" role="alert" aria-live="polite">
+                <span
+                  id="modal-period-error"
+                  className="vac-page__form-error"
+                  role="alert"
+                  aria-live="polite"
+                >
                   {errors.period}
                 </span>
               )}
@@ -281,7 +316,12 @@ function VacationScheduleModal({ isOpen, periods, onClose, onSubmit }: VacationS
                 aria-describedby={errors.startDate ? 'modal-startdate-error' : undefined}
               />
               {errors.startDate && (
-                <span id="modal-startdate-error" className="vac-page__form-error" role="alert" aria-live="polite">
+                <span
+                  id="modal-startdate-error"
+                  className="vac-page__form-error"
+                  role="alert"
+                  aria-live="polite"
+                >
                   {errors.startDate}
                 </span>
               )}
@@ -297,12 +337,19 @@ function VacationScheduleModal({ isOpen, periods, onClose, onSubmit }: VacationS
                 value={step2.totalDays}
                 min={5}
                 max={selectedPeriod?.balance ?? 30}
-                onChange={(e) => setStep2((p) => ({ ...p, totalDays: parseInt(e.target.value, 10) || 0 }))}
+                onChange={(e) =>
+                  setStep2((p) => ({ ...p, totalDays: parseInt(e.target.value, 10) || 0 }))
+                }
                 aria-required="true"
                 aria-describedby={errors.totalDays ? 'modal-days-error' : undefined}
               />
               {errors.totalDays && (
-                <span id="modal-days-error" className="vac-page__form-error" role="alert" aria-live="polite">
+                <span
+                  id="modal-days-error"
+                  className="vac-page__form-error"
+                  role="alert"
+                  aria-live="polite"
+                >
                   {errors.totalDays}
                 </span>
               )}
@@ -361,8 +408,12 @@ function VacationScheduleModal({ isOpen, periods, onClose, onSubmit }: VacationS
                   </td>
                 </tr>
                 <tr className="vac-page__preview-total">
-                  <td><strong>Liquido estimado</strong></td>
-                  <td className="vac-page__preview-value"><strong>{formatCurrency(grossAmount * 0.85)}</strong></td>
+                  <td>
+                    <strong>Liquido estimado</strong>
+                  </td>
+                  <td className="vac-page__preview-value">
+                    <strong>{formatCurrency(grossAmount * 0.85)}</strong>
+                  </td>
                 </tr>
                 <tr>
                   <td>FGTS</td>
@@ -386,7 +437,9 @@ function VacationScheduleModal({ isOpen, periods, onClose, onSubmit }: VacationS
             className="vac-page__modal-btn vac-page__modal-btn--secondary"
             onClick={step === 1 ? onClose : () => setStep((s) => s - 1)}
           >
-            {step === 1 ? 'Cancelar' : (
+            {step === 1 ? (
+              'Cancelar'
+            ) : (
               <>
                 <ChevronLeft size={16} aria-hidden="true" />
                 Voltar
@@ -428,7 +481,20 @@ interface CalendarViewProps {
 }
 
 function CalendarView({ schedules, year, month, onNavigate }: CalendarViewProps) {
-  const monthNames = ['Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  const monthNames = [
+    'Janeiro',
+    'Fevereiro',
+    'Marco',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
+  ];
   const firstDay = new Date(year, month - 1, 1).getDay();
   const daysInMonth = new Date(year, month, 0).getDate();
 
@@ -491,20 +557,25 @@ function CalendarView({ schedules, year, month, onNavigate }: CalendarViewProps)
 
       <div className="vac-page__calendar-grid">
         {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map((d) => (
-          <div key={d} className="vac-page__calendar-weekday">{d}</div>
+          <div key={d} className="vac-page__calendar-weekday">
+            {d}
+          </div>
         ))}
         {Array.from({ length: firstDay }).map((_, i) => (
-          <div key={`empty-${i}`} className="vac-page__calendar-cell vac-page__calendar-cell--empty" />
+          <div
+            key={`empty-${i}`}
+            className="vac-page__calendar-cell vac-page__calendar-cell--empty"
+          />
         ))}
         {Array.from({ length: daysInMonth }).map((_, i) => {
           const day = i + 1;
           const vacEmployees = employeeList.filter((empId) => isOnVacation(empId, day));
-          const schedule = vacEmployees.length > 0
-            ? schedules.find((s) => s.employeeId === vacEmployees[0])
-            : undefined;
-          const ariaLabel = vacEmployees.length > 0
-            ? `${day}: ${schedule?.employeeName} em ferias`
-            : `${day}`;
+          const schedule =
+            vacEmployees.length > 0
+              ? schedules.find((s) => s.employeeId === vacEmployees[0])
+              : undefined;
+          const ariaLabel =
+            vacEmployees.length > 0 ? `${day}: ${schedule?.employeeName} em ferias` : `${day}`;
 
           return (
             <div
@@ -517,7 +588,9 @@ function CalendarView({ schedules, year, month, onNavigate }: CalendarViewProps)
                 <div
                   key={empId}
                   className="vac-page__calendar-band"
-                  style={{ background: employeeColors[employeeList.indexOf(empId) % employeeColors.length] }}
+                  style={{
+                    background: employeeColors[employeeList.indexOf(empId) % employeeColors.length],
+                  }}
                   aria-hidden="true"
                 />
               ))}
@@ -561,22 +634,25 @@ export default function VacationSchedulesPage() {
 
   // Debounced employee search
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchEmployee(value);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      if (activeTab === 'periodos') {
-        fetchPeriods({ employeeSearch: value.length >= 2 ? value : undefined });
-      } else {
-        fetchSchedules({
-          employeeSearch: value.length >= 2 ? value : undefined,
-          status: filterStatus || undefined,
-          startDate: filterStartDate || undefined,
-          endDate: filterEndDate || undefined,
-        });
-      }
-    }, 300);
-  }, [activeTab, filterStatus, filterStartDate, filterEndDate, fetchPeriods, fetchSchedules]);
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchEmployee(value);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        if (activeTab === 'periodos') {
+          fetchPeriods({ employeeSearch: value.length >= 2 ? value : undefined });
+        } else {
+          fetchSchedules({
+            employeeSearch: value.length >= 2 ? value : undefined,
+            status: filterStatus || undefined,
+            startDate: filterStartDate || undefined,
+            endDate: filterEndDate || undefined,
+          });
+        }
+      }, 300);
+    },
+    [activeTab, filterStatus, filterStartDate, filterEndDate, fetchPeriods, fetchSchedules],
+  );
 
   useEffect(() => {
     if (activeTab === 'periodos') {
@@ -618,9 +694,13 @@ export default function VacationSchedulesPage() {
 
   function handleCalendarNavigate(direction: -1 | 1) {
     const newMonth = calMonth + direction;
-    if (newMonth < 1) { setCalMonth(12); setCalYear((y) => y - 1); }
-    else if (newMonth > 12) { setCalMonth(1); setCalYear((y) => y + 1); }
-    else setCalMonth(newMonth);
+    if (newMonth < 1) {
+      setCalMonth(12);
+      setCalYear((y) => y - 1);
+    } else if (newMonth > 12) {
+      setCalMonth(1);
+      setCalYear((y) => y + 1);
+    } else setCalMonth(newMonth);
   }
 
   const expiringPeriods = periods.filter((p) => p.isNearDoubling && p.status !== 'EXPIRED');
@@ -630,8 +710,13 @@ export default function VacationSchedulesPage() {
       {/* Breadcrumb */}
       <nav className="vac-page__breadcrumb" aria-label="Navegacao">
         <span className="vac-page__breadcrumb-item">RH</span>
-        <span className="vac-page__breadcrumb-sep" aria-hidden="true">/</span>
-        <span className="vac-page__breadcrumb-item vac-page__breadcrumb-item--current" aria-current="page">
+        <span className="vac-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
+        <span
+          className="vac-page__breadcrumb-item vac-page__breadcrumb-item--current"
+          aria-current="page"
+        >
           Ferias
         </span>
       </nav>
@@ -669,7 +754,8 @@ export default function VacationSchedulesPage() {
           <div key={p.id} className="vac-page__alert-banner" role="alert">
             <TriangleAlert size={16} aria-hidden="true" className="vac-page__alert-icon" />
             <span>
-              <strong>{p.employeeName}:</strong> Ferias vencerao em {daysLeft} dias. Programe antes de {formatDate(p.doublingDeadline)}.
+              <strong>{p.employeeName}:</strong> Ferias vencerao em {daysLeft} dias. Programe antes
+              de {formatDate(p.doublingDeadline)}.
             </span>
           </div>
         );
@@ -703,7 +789,12 @@ export default function VacationSchedulesPage() {
 
       {/* Tab: Periodos Aquisitivos */}
       {activeTab === 'periodos' && (
-        <section id="panel-periodos" role="tabpanel" aria-labelledby="tab-periodos" className="vac-page__panel">
+        <section
+          id="panel-periodos"
+          role="tabpanel"
+          aria-labelledby="tab-periodos"
+          className="vac-page__panel"
+        >
           <div className="vac-page__filters">
             <div className="vac-page__filter-group">
               <label htmlFor="search-employee-periodos" className="vac-page__filter-label">
@@ -725,61 +816,88 @@ export default function VacationSchedulesPage() {
               <caption className="sr-only">Periodos aquisitivos de ferias</caption>
               <thead>
                 <tr>
-                  <th scope="col" className="vac-page__th">COLABORADOR</th>
-                  <th scope="col" className="vac-page__th">INICIO AQUISICAO</th>
-                  <th scope="col" className="vac-page__th">FIM AQUISICAO</th>
-                  <th scope="col" className="vac-page__th">DIAS GANHOS</th>
-                  <th scope="col" className="vac-page__th">DIAS GOZADOS</th>
-                  <th scope="col" className="vac-page__th">SALDO</th>
-                  <th scope="col" className="vac-page__th">STATUS</th>
-                  <th scope="col" className="vac-page__th">ACOES</th>
+                  <th scope="col" className="vac-page__th">
+                    COLABORADOR
+                  </th>
+                  <th scope="col" className="vac-page__th">
+                    INICIO AQUISICAO
+                  </th>
+                  <th scope="col" className="vac-page__th">
+                    FIM AQUISICAO
+                  </th>
+                  <th scope="col" className="vac-page__th">
+                    DIAS GANHOS
+                  </th>
+                  <th scope="col" className="vac-page__th">
+                    DIAS GOZADOS
+                  </th>
+                  <th scope="col" className="vac-page__th">
+                    SALDO
+                  </th>
+                  <th scope="col" className="vac-page__th">
+                    STATUS
+                  </th>
+                  <th scope="col" className="vac-page__th">
+                    ACOES
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {loading && Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={8} />)}
+                {loading &&
+                  Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={8} />)}
                 {!loading && periods.length === 0 && (
                   <tr>
                     <td colSpan={8}>
                       <div className="vac-page__empty">
-                        <CalendarOff size={48} aria-hidden="true" className="vac-page__empty-icon" />
-                        <p className="vac-page__empty-title">Nenhum periodo aquisitivo encontrado</p>
+                        <CalendarOff
+                          size={48}
+                          aria-hidden="true"
+                          className="vac-page__empty-icon"
+                        />
+                        <p className="vac-page__empty-title">
+                          Nenhum periodo aquisitivo encontrado
+                        </p>
                         <p className="vac-page__empty-desc">
-                          Os periodos aquisitivos sao criados automaticamente ao cadastrar um colaborador com data de admissao.
+                          Os periodos aquisitivos sao criados automaticamente ao cadastrar um
+                          colaborador com data de admissao.
                         </p>
                       </div>
                     </td>
                   </tr>
                 )}
-                {!loading && periods.map((period) => (
-                  <tr key={period.id} className="vac-page__row">
-                    <td className="vac-page__td">{period.employeeName}</td>
-                    <td className="vac-page__td">{formatDate(period.startDate)}</td>
-                    <td className="vac-page__td">{formatDate(period.endDate)}</td>
-                    <td className="vac-page__td">{period.daysEarned}</td>
-                    <td className="vac-page__td">{period.daysTaken}</td>
-                    <td className="vac-page__td">
-                      <span className={period.balance <= 10 ? 'vac-page__balance--low' : ''}>
-                        {period.balance}
-                      </span>
-                    </td>
-                    <td className="vac-page__td">
-                      <PeriodStatusBadge status={period.status} />
-                    </td>
-                    <td className="vac-page__td vac-page__td--actions">
-                      {period.status === 'AVAILABLE' && (
-                        <button
-                          type="button"
-                          className="vac-page__action-btn"
-                          onClick={() => { setShowModal(true); }}
-                          aria-label={`Agendar ferias para ${period.employeeName}`}
-                          title="Agendar ferias"
-                        >
-                          <CalendarPlus size={16} aria-hidden="true" />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                {!loading &&
+                  periods.map((period) => (
+                    <tr key={period.id} className="vac-page__row">
+                      <td className="vac-page__td">{period.employeeName}</td>
+                      <td className="vac-page__td">{formatDate(period.startDate)}</td>
+                      <td className="vac-page__td">{formatDate(period.endDate)}</td>
+                      <td className="vac-page__td">{period.daysEarned}</td>
+                      <td className="vac-page__td">{period.daysTaken}</td>
+                      <td className="vac-page__td">
+                        <span className={period.balance <= 10 ? 'vac-page__balance--low' : ''}>
+                          {period.balance}
+                        </span>
+                      </td>
+                      <td className="vac-page__td">
+                        <PeriodStatusBadge status={period.status} />
+                      </td>
+                      <td className="vac-page__td vac-page__td--actions">
+                        {period.status === 'AVAILABLE' && (
+                          <button
+                            type="button"
+                            className="vac-page__action-btn"
+                            onClick={() => {
+                              setShowModal(true);
+                            }}
+                            aria-label={`Agendar ferias para ${period.employeeName}`}
+                            title="Agendar ferias"
+                          >
+                            <CalendarPlus size={16} aria-hidden="true" />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -788,7 +906,12 @@ export default function VacationSchedulesPage() {
 
       {/* Tab: Agendamentos */}
       {activeTab === 'agendamentos' && (
-        <section id="panel-agendamentos" role="tabpanel" aria-labelledby="tab-agendamentos" className="vac-page__panel">
+        <section
+          id="panel-agendamentos"
+          role="tabpanel"
+          aria-labelledby="tab-agendamentos"
+          className="vac-page__panel"
+        >
           <div className="vac-page__filters">
             <div className="vac-page__filter-group">
               <label htmlFor="search-employee-agend" className="vac-page__filter-label">
@@ -804,7 +927,9 @@ export default function VacationSchedulesPage() {
               />
             </div>
             <div className="vac-page__filter-group">
-              <label htmlFor="filter-status-agend" className="vac-page__filter-label">Status</label>
+              <label htmlFor="filter-status-agend" className="vac-page__filter-label">
+                Status
+              </label>
               <select
                 id="filter-status-agend"
                 className="vac-page__filter-select"
@@ -818,7 +943,9 @@ export default function VacationSchedulesPage() {
               </select>
             </div>
             <div className="vac-page__filter-group">
-              <label htmlFor="filter-start" className="vac-page__filter-label">De</label>
+              <label htmlFor="filter-start" className="vac-page__filter-label">
+                De
+              </label>
               <input
                 id="filter-start"
                 type="date"
@@ -828,7 +955,9 @@ export default function VacationSchedulesPage() {
               />
             </div>
             <div className="vac-page__filter-group">
-              <label htmlFor="filter-end" className="vac-page__filter-label">Ate</label>
+              <label htmlFor="filter-end" className="vac-page__filter-label">
+                Ate
+              </label>
               <input
                 id="filter-end"
                 type="date"
@@ -864,28 +993,54 @@ export default function VacationSchedulesPage() {
                 <caption className="sr-only">Agendamentos de ferias</caption>
                 <thead>
                   <tr>
-                    <th scope="col" className="vac-page__th">COLABORADOR</th>
-                    <th scope="col" className="vac-page__th">PERIODO</th>
-                    <th scope="col" className="vac-page__th">DATA INICIO</th>
-                    <th scope="col" className="vac-page__th">DATA FIM</th>
-                    <th scope="col" className="vac-page__th">DIAS</th>
-                    <th scope="col" className="vac-page__th">ABONO</th>
-                    <th scope="col" className="vac-page__th vac-page__th--right">VALOR LIQUIDO</th>
-                    <th scope="col" className="vac-page__th">PAGAMENTO ATE</th>
-                    <th scope="col" className="vac-page__th">STATUS</th>
-                    <th scope="col" className="vac-page__th">ACOES</th>
+                    <th scope="col" className="vac-page__th">
+                      COLABORADOR
+                    </th>
+                    <th scope="col" className="vac-page__th">
+                      PERIODO
+                    </th>
+                    <th scope="col" className="vac-page__th">
+                      DATA INICIO
+                    </th>
+                    <th scope="col" className="vac-page__th">
+                      DATA FIM
+                    </th>
+                    <th scope="col" className="vac-page__th">
+                      DIAS
+                    </th>
+                    <th scope="col" className="vac-page__th">
+                      ABONO
+                    </th>
+                    <th scope="col" className="vac-page__th vac-page__th--right">
+                      VALOR LIQUIDO
+                    </th>
+                    <th scope="col" className="vac-page__th">
+                      PAGAMENTO ATE
+                    </th>
+                    <th scope="col" className="vac-page__th">
+                      STATUS
+                    </th>
+                    <th scope="col" className="vac-page__th">
+                      ACOES
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {loading && Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={10} />)}
+                  {loading &&
+                    Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={10} />)}
                   {!loading && schedules.length === 0 && (
                     <tr>
                       <td colSpan={10}>
                         <div className="vac-page__empty">
-                          <CalendarCheck size={48} aria-hidden="true" className="vac-page__empty-icon" />
+                          <CalendarCheck
+                            size={48}
+                            aria-hidden="true"
+                            className="vac-page__empty-icon"
+                          />
                           <p className="vac-page__empty-title">Nenhuma ferias agendada</p>
                           <p className="vac-page__empty-desc">
-                            Selecione um colaborador com periodo disponivel e agende o gozo das ferias.
+                            Selecione um colaborador com periodo disponivel e agende o gozo das
+                            ferias.
                           </p>
                           <button
                             type="button"
@@ -898,56 +1053,61 @@ export default function VacationSchedulesPage() {
                       </td>
                     </tr>
                   )}
-                  {!loading && schedules.map((schedule) => (
-                    <tr key={schedule.id} className="vac-page__row">
-                      <td className="vac-page__td">{schedule.employeeName}</td>
-                      <td className="vac-page__td">{getMonthLabel(schedule.acquisitivePeriodId.slice(0, 7) || '2026-01')}</td>
-                      <td className="vac-page__td">{formatDate(schedule.startDate)}</td>
-                      <td className="vac-page__td">{formatDate(schedule.endDate)}</td>
-                      <td className="vac-page__td">{schedule.totalDays}</td>
-                      <td className="vac-page__td">{schedule.abono > 0 ? `${schedule.abono} dias` : '—'}</td>
-                      <td className="vac-page__td vac-page__td--mono vac-page__td--right">
-                        {formatCurrency(schedule.netAmount)}
-                      </td>
-                      <td className="vac-page__td">{formatDate(schedule.paymentDueDate)}</td>
-                      <td className="vac-page__td">
-                        <ScheduleStatusBadge status={schedule.status} />
-                      </td>
-                      <td className="vac-page__td vac-page__td--actions">
-                        {schedule.status === 'SCHEDULED' && (
+                  {!loading &&
+                    schedules.map((schedule) => (
+                      <tr key={schedule.id} className="vac-page__row">
+                        <td className="vac-page__td">{schedule.employeeName}</td>
+                        <td className="vac-page__td">
+                          {getMonthLabel(schedule.acquisitivePeriodId.slice(0, 7) || '2026-01')}
+                        </td>
+                        <td className="vac-page__td">{formatDate(schedule.startDate)}</td>
+                        <td className="vac-page__td">{formatDate(schedule.endDate)}</td>
+                        <td className="vac-page__td">{schedule.totalDays}</td>
+                        <td className="vac-page__td">
+                          {schedule.abono > 0 ? `${schedule.abono} dias` : '—'}
+                        </td>
+                        <td className="vac-page__td vac-page__td--mono vac-page__td--right">
+                          {formatCurrency(schedule.netAmount)}
+                        </td>
+                        <td className="vac-page__td">{formatDate(schedule.paymentDueDate)}</td>
+                        <td className="vac-page__td">
+                          <ScheduleStatusBadge status={schedule.status} />
+                        </td>
+                        <td className="vac-page__td vac-page__td--actions">
+                          {schedule.status === 'SCHEDULED' && (
+                            <button
+                              type="button"
+                              className="vac-page__action-btn"
+                              onClick={() => markAsPaid(schedule.id)}
+                              aria-label={`Marcar ferias de ${schedule.employeeName} como pagas`}
+                              title="Marcar como pago"
+                            >
+                              Pagar
+                            </button>
+                          )}
+                          {schedule.status === 'SCHEDULED' && (
+                            <button
+                              type="button"
+                              className="vac-page__action-btn vac-page__action-btn--danger"
+                              onClick={() => setCancelTargetId(schedule.id)}
+                              aria-label={`Cancelar ferias de ${schedule.employeeName}`}
+                              title="Cancelar agendamento"
+                            >
+                              Cancelar
+                            </button>
+                          )}
                           <button
                             type="button"
                             className="vac-page__action-btn"
-                            onClick={() => markAsPaid(schedule.id)}
-                            aria-label={`Marcar ferias de ${schedule.employeeName} como pagas`}
-                            title="Marcar como pago"
+                            onClick={() => getReceiptPdf(schedule.id, schedule.employeeName)}
+                            aria-label={`Baixar recibo de ferias de ${schedule.employeeName}`}
+                            title="Baixar recibo PDF"
                           >
-                            Pagar
+                            <FileText size={16} aria-hidden="true" />
                           </button>
-                        )}
-                        {schedule.status === 'SCHEDULED' && (
-                          <button
-                            type="button"
-                            className="vac-page__action-btn vac-page__action-btn--danger"
-                            onClick={() => setCancelTargetId(schedule.id)}
-                            aria-label={`Cancelar ferias de ${schedule.employeeName}`}
-                            title="Cancelar agendamento"
-                          >
-                            Cancelar
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          className="vac-page__action-btn"
-                          onClick={() => getReceiptPdf(schedule.id, schedule.employeeName)}
-                          aria-label={`Baixar recibo de ferias de ${schedule.employeeName}`}
-                          title="Baixar recibo PDF"
-                        >
-                          <FileText size={16} aria-hidden="true" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>

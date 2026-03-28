@@ -19,15 +19,15 @@ created: 2026-03-26
 
 ## Design System
 
-| Property | Value |
-|----------|-------|
-| Tool | none — custom CSS + CSS custom properties |
-| Preset | not applicable |
-| Component library | none (custom components, existing project patterns) |
-| Icon library | lucide-react (current project version) |
-| Font — headlines | DM Sans 600 via Google Fonts (already loaded in index.html) |
-| Font — body/UI | Source Sans 3 400/600 via Google Fonts (already loaded in index.html) |
-| Font — data/mono | JetBrains Mono 400 via Google Fonts (already loaded in index.html) |
+| Property          | Value                                                                 |
+| ----------------- | --------------------------------------------------------------------- |
+| Tool              | none — custom CSS + CSS custom properties                             |
+| Preset            | not applicable                                                        |
+| Component library | none (custom components, existing project patterns)                   |
+| Icon library      | lucide-react (current project version)                                |
+| Font — headlines  | DM Sans 600 via Google Fonts (already loaded in index.html)           |
+| Font — body/UI    | Source Sans 3 400/600 via Google Fonts (already loaded in index.html) |
+| Font — data/mono  | JetBrains Mono 400 via Google Fonts (already loaded in index.html)    |
 
 > Source: CLAUDE.md design system rules, `apps/frontend/src/styles/tokens.css`, existing pages.
 
@@ -35,19 +35,20 @@ created: 2026-03-26
 
 ## Spacing Scale
 
-Declared values — multiples of 4px only. Source: `tokens.css` --space-* variables.
+Declared values — multiples of 4px only. Source: `tokens.css` --space-\* variables.
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| xs | 4px (`--space-1`) | Icon gaps, badge padding, cell inner padding |
-| sm | 8px (`--space-2`) | Compact row padding, label-to-input gap |
-| md | 16px (`--space-4`) | Default element spacing, card internal padding |
-| lg | 24px (`--space-6`) | Section padding, modal section gaps |
-| xl | 32px (`--space-8`) | Layout column gaps, card grid gaps |
-| 2xl | 48px (`--space-12`) | Major section breaks inside dashboard |
-| 3xl | 64px (`--space-16`) | Page-level top/bottom spacing |
+| Token | Value               | Usage                                          |
+| ----- | ------------------- | ---------------------------------------------- |
+| xs    | 4px (`--space-1`)   | Icon gaps, badge padding, cell inner padding   |
+| sm    | 8px (`--space-2`)   | Compact row padding, label-to-input gap        |
+| md    | 16px (`--space-4`)  | Default element spacing, card internal padding |
+| lg    | 24px (`--space-6`)  | Section padding, modal section gaps            |
+| xl    | 32px (`--space-8`)  | Layout column gaps, card grid gaps             |
+| 2xl   | 48px (`--space-12`) | Major section breaks inside dashboard          |
+| 3xl   | 64px (`--space-16`) | Page-level top/bottom spacing                  |
 
 Exceptions:
+
 - KPI card grid: 20px gap (`--space-5`) — matches HerdDashboardPage and FinancialDashboardPage card grid pattern
 - Touch targets: minimum 48x48px for all interactive elements (filter dropdowns, tabs, icon buttons) per CLAUDE.md
 
@@ -59,14 +60,15 @@ Source: `tokens.css` typography scale + CLAUDE.md font rules.
 
 Two weights only: 400 (regular) and 600 (semibold). DM Sans uses weight 600 for all heading sizes.
 
-| Role | Font | Size | Weight | Line Height | Token |
-|------|------|------|--------|-------------|-------|
-| Body | Source Sans 3 | 16px (`--text-base`, 1rem) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) | text-base |
-| Label / table header | Source Sans 3 | 14px (`--text-sm`, 0.875rem) | 600 (`--font-semibold`) | 1.3 (`--leading-snug`) | text-sm |
-| Heading (card/section) | DM Sans | 20px (`--text-lg`, 1.25rem) | 600 (`--font-semibold`) | 1.2 (`--leading-tight`) | text-lg |
-| Display (page title) | DM Sans | 28px (`--text-2xl`, 1.875rem) | 600 (`--font-semibold`) | 1.2 (`--leading-tight`) | text-2xl |
+| Role                   | Font          | Size                          | Weight                  | Line Height              | Token     |
+| ---------------------- | ------------- | ----------------------------- | ----------------------- | ------------------------ | --------- |
+| Body                   | Source Sans 3 | 16px (`--text-base`, 1rem)    | 400 (`--font-regular`)  | 1.5 (`--leading-normal`) | text-base |
+| Label / table header   | Source Sans 3 | 14px (`--text-sm`, 0.875rem)  | 600 (`--font-semibold`) | 1.3 (`--leading-snug`)   | text-sm   |
+| Heading (card/section) | DM Sans       | 20px (`--text-lg`, 1.25rem)   | 600 (`--font-semibold`) | 1.2 (`--leading-tight`)  | text-lg   |
+| Display (page title)   | DM Sans       | 28px (`--text-2xl`, 1.875rem) | 600 (`--font-semibold`) | 1.2 (`--leading-tight`)  | text-2xl  |
 
 Additional rules carried from project conventions:
+
 - Table column headers: ALL CAPS, 14px, weight 600 — matches Phase 29 decision ("All column headers rendered ALL CAPS per design system")
 - Monetary values: JetBrains Mono 400 (`--font-mono`) at 14–16px — ensures column alignment in reconciliation tables
 - No text block wider than 72ch — never center blocks of more than 2 lines
@@ -77,19 +79,20 @@ Additional rules carried from project conventions:
 
 Source: `tokens.css` + CLAUDE.md color rules.
 
-| Role | Token | Hex | Usage |
-|------|-------|-----|-------|
-| Dominant (60%) | `--color-neutral-50` | #FAFAF8 | Page background, modal backdrop surface |
-| Secondary (30%) | `--color-neutral-100` | #F5F3EF | Card backgrounds, table row alternates, sidebar |
-| Accent (10%) | `--color-primary-600` | #2E7D32 | Reserved for elements listed below |
-| Text (body) | `--color-neutral-700` | #3E3833 | All body and table cell text |
-| Text (heading) | `--color-neutral-800` | #2A2520 | Page titles, card headings |
-| Destructive | `--color-error-500` | #C62828 | Rollback/estorno actions, negative variance badges only |
-| Warning | `--color-warning-500` | #F57F17 | Alert counts, overdue payables badge, expiry warnings |
-| Success | `--color-success-500` | #2E7D32 | Confirmed close status badge, positive trend indicators |
-| Info | `--color-info-500` | #0277BD | Neutral status badges, informational tooltips |
+| Role            | Token                 | Hex     | Usage                                                   |
+| --------------- | --------------------- | ------- | ------------------------------------------------------- |
+| Dominant (60%)  | `--color-neutral-50`  | #FAFAF8 | Page background, modal backdrop surface                 |
+| Secondary (30%) | `--color-neutral-100` | #F5F3EF | Card backgrounds, table row alternates, sidebar         |
+| Accent (10%)    | `--color-primary-600` | #2E7D32 | Reserved for elements listed below                      |
+| Text (body)     | `--color-neutral-700` | #3E3833 | All body and table cell text                            |
+| Text (heading)  | `--color-neutral-800` | #2A2520 | Page titles, card headings                              |
+| Destructive     | `--color-error-500`   | #C62828 | Rollback/estorno actions, negative variance badges only |
+| Warning         | `--color-warning-500` | #F57F17 | Alert counts, overdue payables badge, expiry warnings   |
+| Success         | `--color-success-500` | #2E7D32 | Confirmed close status badge, positive trend indicators |
+| Info            | `--color-info-500`    | #0277BD | Neutral status badges, informational tooltips           |
 
 Accent (`--color-primary-600`) reserved specifically for:
+
 1. Primary CTA button: "Fechar Folha" on PayrollCpReviewModal confirm step
 2. Active tab indicator on HrDashboardPage filter tabs
 3. Trend line on 12-month BarChart (gross cost series)
@@ -98,6 +101,7 @@ Accent (`--color-primary-600`) reserved specifically for:
 Accent is NOT used for: generic links, neutral badges, secondary actions, table borders, or decoration.
 
 Chart palette for PieChart (composition breakdown) — uses project accent tokens in order:
+
 1. `--color-primary-500` (#388E3C) — Salários base
 2. `--color-sun-500` (#F9A825) — Horas extras
 3. `--color-sky-500` (#0288D1) — Encargos patronais
@@ -110,26 +114,26 @@ Chart palette for PieChart (composition breakdown) — uses project accent token
 
 Existing components to reuse (do not rebuild):
 
-| Component | Path | Used in Phase 32 |
-|-----------|------|-----------------|
-| `ConfirmModal` | `@/components/ui/ConfirmModal` | Estorno/rollback confirmation (medium criticality — variant="danger") |
-| `PayrollRunStatusBadge` | `@/components/payroll/PayrollRunStatusBadge` | CP review modal header, status column |
-| `ComplianceStatusBadge` | `@/components/shared/ComplianceStatusBadge` | Alert count badges in dashboard |
-| `SafetyKpiCard` | `@/components/shared/SafetyKpiCard` | HR KPI cards (reuse structure, new CSS class) |
-| Recharts `BarChart` | `recharts` ^3.7.0 | 12-month payroll cost trend (lazy-loaded) |
-| Recharts `PieChart` | `recharts` ^3.7.0 | Folha composition breakdown (lazy-loaded) |
-| Skeleton pulse pattern | existing CSS | Loading state for all data tables and KPI cards |
+| Component               | Path                                         | Used in Phase 32                                                      |
+| ----------------------- | -------------------------------------------- | --------------------------------------------------------------------- |
+| `ConfirmModal`          | `@/components/ui/ConfirmModal`               | Estorno/rollback confirmation (medium criticality — variant="danger") |
+| `PayrollRunStatusBadge` | `@/components/payroll/PayrollRunStatusBadge` | CP review modal header, status column                                 |
+| `ComplianceStatusBadge` | `@/components/shared/ComplianceStatusBadge`  | Alert count badges in dashboard                                       |
+| `SafetyKpiCard`         | `@/components/shared/SafetyKpiCard`          | HR KPI cards (reuse structure, new CSS class)                         |
+| Recharts `BarChart`     | `recharts` ^3.7.0                            | 12-month payroll cost trend (lazy-loaded)                             |
+| Recharts `PieChart`     | `recharts` ^3.7.0                            | Folha composition breakdown (lazy-loaded)                             |
+| Skeleton pulse pattern  | existing CSS                                 | Loading state for all data tables and KPI cards                       |
 
 New components this phase:
 
-| Component | Path | Description |
-|-----------|------|-------------|
-| `PayrollCpReviewModal` | `@/components/payroll/PayrollCpReviewModal.tsx` | Pre-close review: table of CPs-to-be-created, reconciliation total, confirm/cancel |
-| `HrDashboardPage` | `@/pages/HrDashboardPage.tsx` | Full KPI dashboard page |
-| `HrDashboardPage.css` | `@/pages/HrDashboardPage.css` | Page-scoped styles |
-| `PayrollCostTrendChart` | `@/components/hr-dashboard/PayrollCostTrendChart.tsx` | 12-month stacked BarChart (lazy-loaded) |
-| `PayrollCompositionChart` | `@/components/hr-dashboard/PayrollCompositionChart.tsx` | PieChart folha composition (lazy-loaded) |
-| `useHrDashboard` | `@/hooks/useHrDashboard.ts` | `useState + useCallback` hook — matches useFinancialDashboard pattern |
+| Component                 | Path                                                    | Description                                                                        |
+| ------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `PayrollCpReviewModal`    | `@/components/payroll/PayrollCpReviewModal.tsx`         | Pre-close review: table of CPs-to-be-created, reconciliation total, confirm/cancel |
+| `HrDashboardPage`         | `@/pages/HrDashboardPage.tsx`                           | Full KPI dashboard page                                                            |
+| `HrDashboardPage.css`     | `@/pages/HrDashboardPage.css`                           | Page-scoped styles                                                                 |
+| `PayrollCostTrendChart`   | `@/components/hr-dashboard/PayrollCostTrendChart.tsx`   | 12-month stacked BarChart (lazy-loaded)                                            |
+| `PayrollCompositionChart` | `@/components/hr-dashboard/PayrollCompositionChart.tsx` | PieChart folha composition (lazy-loaded)                                           |
+| `useHrDashboard`          | `@/hooks/useHrDashboard.ts`                             | `useState + useCallback` hook — matches useFinancialDashboard pattern              |
 
 ---
 
@@ -140,6 +144,7 @@ New components this phase:
 **Trigger:** User clicks "Fechar Folha" on PayrollRunsPage when run is in CALCULATED state.
 
 **Structure:**
+
 - Modal with header / scrollable body / sticky footer
 - Header: title "Revisão de Contas a Pagar — [Mês/Ano]" + PayrollRunStatusBadge
 - Body: grouped table — sections: "Salários Líquidos", "Encargos Patronais", "Impostos a Recolher", "Outros"
@@ -159,6 +164,7 @@ New components this phase:
 **Route:** `/accounting-entries`
 
 **Structure:**
+
 - Full page with breadcrumb: Dashboard > Contabilidade > Lançamentos
 - Filter bar: month/year picker + fazenda select + entry type multi-select — all in a single row below breadcrumb
 - Table: Competência | Tipo | Débito | Crédito | Valor | Centro de Custo | Origem
@@ -172,20 +178,21 @@ New components this phase:
 
 AccountingEntryType badge colors:
 
-| Type | Badge Color |
-|------|-------------|
-| PAYROLL_SALARY | `--color-primary-100` bg / `--color-primary-700` text |
-| PAYROLL_CHARGES | `--color-sky-100` bg / `--color-sky-500` text |
-| VACATION_PROVISION | `--color-sun-100` bg / `--color-sun-500` text |
-| THIRTEENTH_PROVISION | `--color-earth-100` bg / `--color-earth-500` text |
-| TAX_LIABILITY | `--color-error-100` bg / `--color-error-500` text |
-| SALARY_REVERSAL | `--color-neutral-100` bg / `--color-neutral-600` text |
+| Type                 | Badge Color                                           |
+| -------------------- | ----------------------------------------------------- |
+| PAYROLL_SALARY       | `--color-primary-100` bg / `--color-primary-700` text |
+| PAYROLL_CHARGES      | `--color-sky-100` bg / `--color-sky-500` text         |
+| VACATION_PROVISION   | `--color-sun-100` bg / `--color-sun-500` text         |
+| THIRTEENTH_PROVISION | `--color-earth-100` bg / `--color-earth-500` text     |
+| TAX_LIABILITY        | `--color-error-100` bg / `--color-error-500` text     |
+| SALARY_REVERSAL      | `--color-neutral-100` bg / `--color-neutral-600` text |
 
 ### Screen 3: HrDashboardPage (INTEGR-03)
 
 **Route:** `/hr-dashboard`
 
 **Structure:**
+
 - Page layout mirrors FinancialDashboardPage exactly: breadcrumb + filter bar + KPI card row + charts section + tables section
 - Filter bar: fazenda select + year/month — auto-applies on change (no submit button needed)
 - KPI card row (4 cards, responsive 2x2 on mobile → 4x1 on desktop): Total Colaboradores | Custo Bruto Folha | Custo por Hectare | Turnover 12m
@@ -207,38 +214,38 @@ Charts are `React.lazy` + `Suspense` wrapped with skeleton fallback.
 
 All copy in pt-BR, direct tone ("você" form when addressing user), colloquial but professional. Source: CLAUDE.md UX copywriting rules.
 
-| Element | Copy |
-|---------|------|
-| PayrollCpReviewModal title | "Revisão de Contas a Pagar" |
-| PayrollCpReviewModal primary CTA | "Confirmar Fechamento" |
-| PayrollCpReviewModal secondary CTA | "Voltar à Folha" |
-| PayrollCpReviewModal reconciliation OK | "Total reconciliado com a folha." |
-| PayrollCpReviewModal reconciliation divergence | "Atenção: diferença de R$ [valor] entre CPs e folha líquida. Verifique rateios por centro de custo." |
-| Estorno confirm heading | "Estornar fechamento da folha?" |
-| Estorno confirm body | "Esta ação cancela todas as contas a pagar geradas e os lançamentos contábeis do fechamento. O espelho de ponto volta a ficar editável. Não é possível desfazer sem reprocessar a folha." |
-| Estorno confirm CTA | "Estornar Folha" |
-| Estorno cancel CTA | "Manter Fechamento" |
-| AccountingEntriesPage empty state heading | "Nenhum lançamento contábil ainda" |
-| AccountingEntriesPage empty state body | "Os lançamentos são gerados automaticamente ao fechar uma folha de pagamento. Feche a folha do mês para ver os registros aqui." |
-| AccountingEntriesPage empty state CTA | "Ir para Folha de Pagamento" |
-| AccountingEntriesPage export button | "Exportar CSV" |
-| HrDashboardPage empty state heading | "Sem dados de folha para o período" |
-| HrDashboardPage empty state body | "Não encontramos folhas processadas para a fazenda e período selecionados. Ajuste os filtros ou processe a folha do mês." |
-| HrDashboardPage empty state CTA | "Processar Folha" |
-| HrDashboardPage KPI label — headcount | "Total de Colaboradores" |
-| HrDashboardPage KPI label — gross cost | "Custo Bruto da Folha" |
-| HrDashboardPage KPI label — cost/hectare | "Custo por Hectare" |
-| HrDashboardPage KPI label — turnover | "Turnover 12 meses" |
-| Error — cp-preview fetch fails | "Não foi possível carregar a prévia. Verifique sua conexão e tente novamente." |
-| Error — confirm close fails | "Não foi possível fechar a folha. Tente novamente ou entre em contato com o suporte." |
-| Error — dashboard load fails | "Não foi possível carregar o dashboard. Verifique sua conexão e tente novamente." |
-| Toast — payroll closed successfully | "Folha fechada. Contas a pagar e lançamentos contábeis gerados." |
-| Toast — estorno completed | "Estorno concluído. A folha voltou ao estado de calculada." |
+| Element                                        | Copy                                                                                                                                                                                      |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PayrollCpReviewModal title                     | "Revisão de Contas a Pagar"                                                                                                                                                               |
+| PayrollCpReviewModal primary CTA               | "Confirmar Fechamento"                                                                                                                                                                    |
+| PayrollCpReviewModal secondary CTA             | "Voltar à Folha"                                                                                                                                                                          |
+| PayrollCpReviewModal reconciliation OK         | "Total reconciliado com a folha."                                                                                                                                                         |
+| PayrollCpReviewModal reconciliation divergence | "Atenção: diferença de R$ [valor] entre CPs e folha líquida. Verifique rateios por centro de custo."                                                                                      |
+| Estorno confirm heading                        | "Estornar fechamento da folha?"                                                                                                                                                           |
+| Estorno confirm body                           | "Esta ação cancela todas as contas a pagar geradas e os lançamentos contábeis do fechamento. O espelho de ponto volta a ficar editável. Não é possível desfazer sem reprocessar a folha." |
+| Estorno confirm CTA                            | "Estornar Folha"                                                                                                                                                                          |
+| Estorno cancel CTA                             | "Manter Fechamento"                                                                                                                                                                       |
+| AccountingEntriesPage empty state heading      | "Nenhum lançamento contábil ainda"                                                                                                                                                        |
+| AccountingEntriesPage empty state body         | "Os lançamentos são gerados automaticamente ao fechar uma folha de pagamento. Feche a folha do mês para ver os registros aqui."                                                           |
+| AccountingEntriesPage empty state CTA          | "Ir para Folha de Pagamento"                                                                                                                                                              |
+| AccountingEntriesPage export button            | "Exportar CSV"                                                                                                                                                                            |
+| HrDashboardPage empty state heading            | "Sem dados de folha para o período"                                                                                                                                                       |
+| HrDashboardPage empty state body               | "Não encontramos folhas processadas para a fazenda e período selecionados. Ajuste os filtros ou processe a folha do mês."                                                                 |
+| HrDashboardPage empty state CTA                | "Processar Folha"                                                                                                                                                                         |
+| HrDashboardPage KPI label — headcount          | "Total de Colaboradores"                                                                                                                                                                  |
+| HrDashboardPage KPI label — gross cost         | "Custo Bruto da Folha"                                                                                                                                                                    |
+| HrDashboardPage KPI label — cost/hectare       | "Custo por Hectare"                                                                                                                                                                       |
+| HrDashboardPage KPI label — turnover           | "Turnover 12 meses"                                                                                                                                                                       |
+| Error — cp-preview fetch fails                 | "Não foi possível carregar a prévia. Verifique sua conexão e tente novamente."                                                                                                            |
+| Error — confirm close fails                    | "Não foi possível fechar a folha. Tente novamente ou entre em contato com o suporte."                                                                                                     |
+| Error — dashboard load fails                   | "Não foi possível carregar o dashboard. Verifique sua conexão e tente novamente."                                                                                                         |
+| Toast — payroll closed successfully            | "Folha fechada. Contas a pagar e lançamentos contábeis gerados."                                                                                                                          |
+| Toast — estorno completed                      | "Estorno concluído. A folha voltou ao estado de calculada."                                                                                                                               |
 
 Destructive actions in this phase:
 
-| Action | Criticality | Confirmation approach |
-|--------|-------------|----------------------|
+| Action                       | Criticality                                       | Confirmation approach                                            |
+| ---------------------------- | ------------------------------------------------- | ---------------------------------------------------------------- |
 | Estornar fechamento da folha | Medium — reversible (run goes back to CALCULATED) | `ConfirmModal` with `variant="danger"` — no name typing required |
 
 No high-criticality (irreversible) destructive actions in this phase. ConfirmDeleteModal with name typing is NOT required.
@@ -249,14 +256,14 @@ No high-criticality (irreversible) destructive actions in this phase. ConfirmDel
 
 Source: CLAUDE.md animation rules + `tokens.css` duration and easing tokens.
 
-| Interaction | Duration | Easing | Token |
-|-------------|----------|--------|-------|
-| PayrollCpReviewModal open/close | 300ms | ease-out / ease-in | `--duration-normal`, `--ease-out` |
-| Collapsible section expand/collapse | 200ms | ease-out | `--duration-fast`, `--ease-out` |
-| Tab active indicator slide | 200ms | ease-out | `--duration-fast`, `--ease-out` |
-| Hover on KPI card | 100ms | ease-out | `--duration-instant`, `--ease-out` |
-| Chart lazy-load Suspense fade-in | 300ms | ease-out | `--duration-normal`, `--ease-out` |
-| Skeleton pulse (opacity 0.4→0.7) | 1500ms | ease-in-out, infinite | — |
+| Interaction                         | Duration | Easing                | Token                              |
+| ----------------------------------- | -------- | --------------------- | ---------------------------------- |
+| PayrollCpReviewModal open/close     | 300ms    | ease-out / ease-in    | `--duration-normal`, `--ease-out`  |
+| Collapsible section expand/collapse | 200ms    | ease-out              | `--duration-fast`, `--ease-out`    |
+| Tab active indicator slide          | 200ms    | ease-out              | `--duration-fast`, `--ease-out`    |
+| Hover on KPI card                   | 100ms    | ease-out              | `--duration-instant`, `--ease-out` |
+| Chart lazy-load Suspense fade-in    | 300ms    | ease-out              | `--duration-normal`, `--ease-out`  |
+| Skeleton pulse (opacity 0.4→0.7)    | 1500ms   | ease-in-out, infinite | —                                  |
 
 `prefers-reduced-motion`: all transitions and animations collapse to 0.01ms via existing global.css rule.
 
@@ -266,12 +273,12 @@ Source: CLAUDE.md animation rules + `tokens.css` duration and easing tokens.
 
 Source: CLAUDE.md responsiveness rules.
 
-| Breakpoint | Layout change |
-|------------|--------------|
-| < 640px (mobile) | Single column. KPI cards 2x2 grid. Tables → stacked cards. Charts stack vertically. Filter bar wraps to 2 rows. |
-| 640–1023px (tablet) | Two-column card grid. Charts side-by-side if width permits. Sidebar hidden (drawer trigger visible). |
-| ≥ 1024px (desktop) | Sidebar collapsed (64px). 4-column KPI card row. Charts 2-column. Full table with all columns visible. |
-| ≥ 1280px (desktop-wide) | Sidebar expanded (240px). Max content width 1280px centered. |
+| Breakpoint              | Layout change                                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+| < 640px (mobile)        | Single column. KPI cards 2x2 grid. Tables → stacked cards. Charts stack vertically. Filter bar wraps to 2 rows. |
+| 640–1023px (tablet)     | Two-column card grid. Charts side-by-side if width permits. Sidebar hidden (drawer trigger visible).            |
+| ≥ 1024px (desktop)      | Sidebar collapsed (64px). 4-column KPI card row. Charts 2-column. Full table with all columns visible.          |
+| ≥ 1280px (desktop-wide) | Sidebar expanded (240px). Max content width 1280px centered.                                                    |
 
 PayrollCpReviewModal width: 640px max on desktop, full-width on mobile. Modal body scrollable with max-height 70vh.
 
@@ -300,10 +307,10 @@ Source: CLAUDE.md accessibility rules (WCAG 2.1 AA).
 
 ## Registry Safety
 
-| Registry | Blocks Used | Safety Gate |
-|----------|-------------|-------------|
-| shadcn official | none — project does not use shadcn | not applicable |
-| Third-party registries | none declared | not applicable |
+| Registry               | Blocks Used                        | Safety Gate    |
+| ---------------------- | ---------------------------------- | -------------- |
+| shadcn official        | none — project does not use shadcn | not applicable |
+| Third-party registries | none declared                      | not applicable |
 
 No third-party component registries are introduced in this phase. All components are built in-house using the established project patterns.
 
@@ -311,23 +318,23 @@ No third-party component registries are introduced in this phase. All components
 
 ## Pre-Population Sources
 
-| Design Decision | Source |
-|-----------------|--------|
-| Font families (DM Sans / Source Sans 3 / JetBrains Mono) | CLAUDE.md + `apps/frontend/CLAUDE.md` + tokens.css |
-| Color tokens (all hex values) | `apps/frontend/src/styles/tokens.css` |
-| Spacing scale (4px base) | CLAUDE.md + tokens.css |
-| No shadcn — custom CSS pattern | Existing codebase (no components.json found) |
-| Recharts for charts (BarChart + PieChart) | RESEARCH.md Standard Stack |
-| `useState + useCallback` hook pattern | RESEARCH.md + STATE.md Phase 25 decision |
-| `React.lazy + Suspense` for charts | FinancialDashboardPage.tsx pattern |
-| Skeleton screens (no spinner) | CLAUDE.md components rules |
-| ConfirmModal for estorno (not window.confirm) | CLAUDE.md + STATE.md Phase 28 decision |
-| ALL CAPS table headers | STATE.md Phase 29 decision |
-| Modal for forms, not dedicated pages | `apps/frontend/CLAUDE.md` |
-| Accounting entry badge color scheme | RESEARCH.md AccountingEntry model + project accent tokens |
-| pt-BR colloquial copy tone | CLAUDE.md UX rules |
-| Mobile table → stacked cards | CLAUDE.md + `apps/frontend/CLAUDE.md` |
-| Chart palette order | tokens.css accent color order |
+| Design Decision                                          | Source                                                    |
+| -------------------------------------------------------- | --------------------------------------------------------- |
+| Font families (DM Sans / Source Sans 3 / JetBrains Mono) | CLAUDE.md + `apps/frontend/CLAUDE.md` + tokens.css        |
+| Color tokens (all hex values)                            | `apps/frontend/src/styles/tokens.css`                     |
+| Spacing scale (4px base)                                 | CLAUDE.md + tokens.css                                    |
+| No shadcn — custom CSS pattern                           | Existing codebase (no components.json found)              |
+| Recharts for charts (BarChart + PieChart)                | RESEARCH.md Standard Stack                                |
+| `useState + useCallback` hook pattern                    | RESEARCH.md + STATE.md Phase 25 decision                  |
+| `React.lazy + Suspense` for charts                       | FinancialDashboardPage.tsx pattern                        |
+| Skeleton screens (no spinner)                            | CLAUDE.md components rules                                |
+| ConfirmModal for estorno (not window.confirm)            | CLAUDE.md + STATE.md Phase 28 decision                    |
+| ALL CAPS table headers                                   | STATE.md Phase 29 decision                                |
+| Modal for forms, not dedicated pages                     | `apps/frontend/CLAUDE.md`                                 |
+| Accounting entry badge color scheme                      | RESEARCH.md AccountingEntry model + project accent tokens |
+| pt-BR colloquial copy tone                               | CLAUDE.md UX rules                                        |
+| Mobile table → stacked cards                             | CLAUDE.md + `apps/frontend/CLAUDE.md`                     |
+| Chart palette order                                      | tokens.css accent color order                             |
 
 ---
 

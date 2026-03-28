@@ -136,7 +136,10 @@ function InseminationsPage() {
           <Filter size={16} aria-hidden="true" className="inseminations-page__filter-icon" />
           <select
             value={typeFilter}
-            onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setTypeFilter(e.target.value);
+              setPage(1);
+            }}
             aria-label="Filtrar por tipo"
           >
             <option value="">Todos os tipos</option>
@@ -147,13 +150,19 @@ function InseminationsPage() {
           <input
             type="date"
             value={dateFrom}
-            onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setDateFrom(e.target.value);
+              setPage(1);
+            }}
             aria-label="Data inicial"
           />
           <input
             type="date"
             value={dateTo}
-            onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setDateTo(e.target.value);
+              setPage(1);
+            }}
             aria-label="Data final"
           />
         </div>
@@ -210,7 +219,9 @@ function InseminationsPage() {
                     <td>{ins.animalName || '—'}</td>
                     <td>{formatDate(ins.inseminationDate)}</td>
                     <td>
-                      <span className={`inseminations-page__badge inseminations-page__badge--${ins.inseminationType.toLowerCase()}`}>
+                      <span
+                        className={`inseminations-page__badge inseminations-page__badge--${ins.inseminationType.toLowerCase()}`}
+                      >
                         {ins.inseminationTypeLabel}
                       </span>
                     </td>
@@ -229,7 +240,9 @@ function InseminationsPage() {
               <div key={ins.id} className="inseminations-page__card">
                 <div className="inseminations-page__card-header">
                   <span className="inseminations-page__card-tag">{ins.animalEarTag}</span>
-                  <span className={`inseminations-page__badge inseminations-page__badge--${ins.inseminationType.toLowerCase()}`}>
+                  <span
+                    className={`inseminations-page__badge inseminations-page__badge--${ins.inseminationType.toLowerCase()}`}
+                  >
                     {ins.inseminationTypeLabel}
                   </span>
                 </div>
@@ -278,9 +291,12 @@ function InseminationsPage() {
         onSuccess={(count) => {
           setShowModal(false);
           void fetchData();
-          showToast('success', count === 1
-            ? 'Inseminação registrada com sucesso'
-            : `${count} inseminações registradas com sucesso`);
+          showToast(
+            'success',
+            count === 1
+              ? 'Inseminação registrada com sucesso'
+              : `${count} inseminações registradas com sucesso`,
+          );
         }}
       />
     </main>

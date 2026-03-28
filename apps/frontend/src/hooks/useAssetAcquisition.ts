@@ -71,10 +71,7 @@ export function useAssetAcquisition() {
   );
 
   const createFromNfe = useCallback(
-    async (
-      nfeParsed: NfeParsedData,
-      input: CreateFromNfeInput,
-    ): Promise<NfeAcquisitionOutput> => {
+    async (nfeParsed: NfeParsedData, input: CreateFromNfeInput): Promise<NfeAcquisitionOutput> => {
       if (!orgId) throw new Error('Organizacao nao encontrada.');
       setIsLoading(true);
       setError(null);

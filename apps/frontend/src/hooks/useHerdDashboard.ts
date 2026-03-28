@@ -32,8 +32,7 @@ export function useHerdDashboard(params: UseHerdDashboardParams): UseHerdDashboa
       const result = await api.get<AnimalsSummary>(`/org/farms/${farmId}/animals/summary`);
       setData(result);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Erro ao carregar resumo do rebanho';
+      const message = err instanceof Error ? err.message : 'Erro ao carregar resumo do rebanho';
       setError(message);
       setData(null);
     } finally {

@@ -2,21 +2,33 @@
 phase: 29-f-rias-afastamentos-rescis-o-e-provis-es
 plan: 02
 subsystem: api
-tags: [employee-terminations, rescisao, trct, grrf, pdfkit, prisma, decimal-js, clt, lei-12506, lei-13467]
+tags:
+  [
+    employee-terminations,
+    rescisao,
+    trct,
+    grrf,
+    pdfkit,
+    prisma,
+    decimal-js,
+    clt,
+    lei-12506,
+    lei-13467,
+  ]
 
 requires:
   - phase: 29-f-rias-afastamentos-rescis-o-e-provis-es
-    provides: "Plan 01 — vacation schedules, absences, and payroll provisions foundation"
+    provides: 'Plan 01 — vacation schedules, absences, and payroll provisions foundation'
   - phase: 28-processamento-da-folha-mensal
-    provides: "payroll-engine.service (calculateINSS, calculateIRRF), EngineParams, loadEngineParams pattern, payroll-pdf.service pdfkit pattern"
+    provides: 'payroll-engine.service (calculateINSS, calculateIRRF), EngineParams, loadEngineParams pattern, payroll-pdf.service pdfkit pattern'
 
 provides:
-  - "termination-calculation.service: pure calcNoticePeriodDays (Lei 12.506/2011) and calculateTermination for all 5 types"
-  - "termination-pdf.service: generateTRCTPdf (TRCT — CLT Art. 477) and generateGRRFPdf (Lei 8.036/1990)"
-  - "employee-terminations.service: processTermination, confirmTermination, markAsPaid, listTerminations, getTrctPdf, getGrffPdf, getExpiringDeadlines"
-  - "employee-terminations.routes: 8 endpoints — POST create DRAFT, GET list/expiring/:id, PATCH /confirm /pay, GET /:id/trct /:id/grrf"
-  - "DRAFT→PROCESSED→PAID state machine with employee DESLIGADO transition on confirmation"
-  - "36 tests passing across calculation unit tests and integration tests"
+  - 'termination-calculation.service: pure calcNoticePeriodDays (Lei 12.506/2011) and calculateTermination for all 5 types'
+  - 'termination-pdf.service: generateTRCTPdf (TRCT — CLT Art. 477) and generateGRRFPdf (Lei 8.036/1990)'
+  - 'employee-terminations.service: processTermination, confirmTermination, markAsPaid, listTerminations, getTrctPdf, getGrffPdf, getExpiringDeadlines'
+  - 'employee-terminations.routes: 8 endpoints — POST create DRAFT, GET list/expiring/:id, PATCH /confirm /pay, GET /:id/trct /:id/grrf'
+  - 'DRAFT→PROCESSED→PAID state machine with employee DESLIGADO transition on confirmation'
+  - '36 tests passing across calculation unit tests and integration tests'
 
 affects:
   - 29-f-rias-afastamentos-rescis-o-e-provis-es (frontend plan if any)
@@ -25,10 +37,10 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "loadEngineParams — reuse payroll-runs pattern for INSS/IRRF tables"
-    - "terminationSelect const — typed select object shared between create and queries"
+    - 'loadEngineParams — reuse payroll-runs pattern for INSS/IRRF tables'
+    - 'terminationSelect const — typed select object shared between create and queries'
     - "pdfkit dynamic import — (await import('pdfkit')).default inside Promise<Buffer>"
-    - "Express 5 route ordering — /expiring and /:id/trct registered before /:id to prevent shadowing"
+    - 'Express 5 route ordering — /expiring and /:id/trct registered before /:id to prevent shadowing'
 
 key-files:
   created:
@@ -44,17 +56,17 @@ key-files:
     - apps/backend/src/modules/employee-terminations/employee-terminations.routes.spec.ts (Task 1 stub, used in Task 2)
 
 key-decisions:
-  - "FGTS penalty rates: WITHOUT_CAUSE=40%, MUTUAL_AGREEMENT=20%, others=0% (CLT Art. 18 §1 + Lei 13.467/2017)"
-  - "Notice period via Lei 12.506/2011: 30 + 3 days/year after first, capped at 90"
-  - "MUTUAL_AGREEMENT notice = ceil(full_notice / 2) per Lei 13.467/2017"
-  - "getUTCDate used for all date arithmetic (Phase 28 decision for pro-rata consistency)"
-  - "fgtsBalance can be manually overridden via fgtsBalanceOverride field (customer may have actual FGTS statement)"
-  - "getExpiringDeadlines uses raw prisma (no withRlsContext) with explicit organizationId filter — avoids nested RLS transaction"
-  - "Employee DESLIGADO transition done inside confirmTermination withRlsContext, not a separate call"
+  - 'FGTS penalty rates: WITHOUT_CAUSE=40%, MUTUAL_AGREEMENT=20%, others=0% (CLT Art. 18 §1 + Lei 13.467/2017)'
+  - 'Notice period via Lei 12.506/2011: 30 + 3 days/year after first, capped at 90'
+  - 'MUTUAL_AGREEMENT notice = ceil(full_notice / 2) per Lei 13.467/2017'
+  - 'getUTCDate used for all date arithmetic (Phase 28 decision for pro-rata consistency)'
+  - 'fgtsBalance can be manually overridden via fgtsBalanceOverride field (customer may have actual FGTS statement)'
+  - 'getExpiringDeadlines uses raw prisma (no withRlsContext) with explicit organizationId filter — avoids nested RLS transaction'
+  - 'Employee DESLIGADO transition done inside confirmTermination withRlsContext, not a separate call'
 
 patterns-established:
-  - "TRCT PDF layout: title → employee section → termination details → calculation table with proventos/deductions/net → FGTS info → signatures"
-  - "GRRF PDF: simplified cover with FGTS balance, penalty rate, amount to deposit, payment deadline"
+  - 'TRCT PDF layout: title → employee section → termination details → calculation table with proventos/deductions/net → FGTS info → signatures'
+  - 'GRRF PDF: simplified cover with FGTS balance, penalty rate, amount to deposit, payment deadline'
 
 requirements-completed:
   - FERIAS-03
@@ -103,7 +115,7 @@ completed: 2026-03-25
 
 - **FGTS penalty**: WITHOUT_CAUSE=40%, MUTUAL_AGREEMENT=20% (Lei 13.467/2017), others=0%. These rates are in `FGTS_PENALTY` constant for single source of truth.
 - **MUTUAL_AGREEMENT notice**: half of full notice rounded up (`Math.ceil(full/2)`).
-- **fgtsBalanceOverride**: Optional field — if provided, uses the manual value (contador has the actual CAIXA FGTS statement). Otherwise estimates from 8% * gross per payroll item.
+- **fgtsBalanceOverride**: Optional field — if provided, uses the manual value (contador has the actual CAIXA FGTS statement). Otherwise estimates from 8% \* gross per payroll item.
 - **getExpiringDeadlines** uses raw prisma (not withRlsContext) with explicit `organizationId` filter — cleaner for a simple alerting query without a full RLS transaction.
 
 ## Deviations from Plan
@@ -125,8 +137,9 @@ None — all calculation values are wired from real DB data (salary history, vac
 - Expiring deadline query ready for dashboard alerting.
 
 ---
-*Phase: 29-f-rias-afastamentos-rescis-o-e-provis-es*
-*Completed: 2026-03-25*
+
+_Phase: 29-f-rias-afastamentos-rescis-o-e-provis-es_
+_Completed: 2026-03-25_
 
 ## Self-Check: PASSED
 

@@ -12,14 +12,7 @@ export class AnimalExitError extends Error {
 
 // ─── Constants ─────────────────────────────────────────────────────
 
-export const EXIT_TYPES = [
-  'MORTE',
-  'VENDA',
-  'DOACAO',
-  'ABATE',
-  'TRANSFERENCIA',
-  'PERDA',
-] as const;
+export const EXIT_TYPES = ['MORTE', 'VENDA', 'DOACAO', 'ABATE', 'TRANSFERENCIA', 'PERDA'] as const;
 export type ExitTypeValue = (typeof EXIT_TYPES)[number];
 
 export const EXIT_TYPE_LABELS: Record<ExitTypeValue, string> = {
@@ -31,13 +24,7 @@ export const EXIT_TYPE_LABELS: Record<ExitTypeValue, string> = {
   PERDA: 'Perda',
 };
 
-export const DEATH_TYPES = [
-  'NATURAL',
-  'ACIDENTE',
-  'DOENCA',
-  'PREDADOR',
-  'DESCONHECIDA',
-] as const;
+export const DEATH_TYPES = ['NATURAL', 'ACIDENTE', 'DOENCA', 'PREDADOR', 'DESCONHECIDA'] as const;
 export type DeathTypeValue = (typeof DEATH_TYPES)[number];
 
 export const DEATH_TYPE_LABELS: Record<DeathTypeValue, string> = {

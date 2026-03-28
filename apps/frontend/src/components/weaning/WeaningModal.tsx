@@ -230,9 +230,7 @@ export default function WeaningModal({ isOpen, onClose, farmId, onSuccess }: Pro
             <select
               id="wean-lot"
               value={formData.targetLotId ?? ''}
-              onChange={(e) =>
-                setFormData({ ...formData, targetLotId: e.target.value || null })
-              }
+              onChange={(e) => setFormData({ ...formData, targetLotId: e.target.value || null })}
             >
               <option value="">Nenhum (manter no lote atual)</option>
               {lots.map((lot) => (

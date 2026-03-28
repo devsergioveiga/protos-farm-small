@@ -124,10 +124,16 @@ async function generateIncomePdf(data: PdfData): Promise<Buffer> {
     y += 16;
 
     doc.font('Helvetica').fontSize(9);
-    doc.text(`Ano-Calendário: ${data.yearBase}`, margin, y, { align: 'center', width: usableWidth });
+    doc.text(`Ano-Calendário: ${data.yearBase}`, margin, y, {
+      align: 'center',
+      width: usableWidth,
+    });
     y += 20;
 
-    doc.moveTo(margin, y).lineTo(margin + usableWidth, y).stroke();
+    doc
+      .moveTo(margin, y)
+      .lineTo(margin + usableWidth, y)
+      .stroke();
     y += 8;
 
     // ── Section 1 — Fonte Pagadora ───────────────────────────────────────
@@ -144,7 +150,10 @@ async function generateIncomePdf(data: PdfData): Promise<Buffer> {
     }
     y += 6;
 
-    doc.moveTo(margin, y).lineTo(margin + usableWidth, y).stroke('#CCCCCC');
+    doc
+      .moveTo(margin, y)
+      .lineTo(margin + usableWidth, y)
+      .stroke('#CCCCCC');
     y += 8;
 
     // ── Section 2 — Pessoa Fisica Beneficiaria ───────────────────────────
@@ -163,7 +172,10 @@ async function generateIncomePdf(data: PdfData): Promise<Buffer> {
     }
     y += 6;
 
-    doc.moveTo(margin, y).lineTo(margin + usableWidth, y).stroke('#CCCCCC');
+    doc
+      .moveTo(margin, y)
+      .lineTo(margin + usableWidth, y)
+      .stroke('#CCCCCC');
     y += 8;
 
     // ── Section 3 — Rendimentos Tributaveis ──────────────────────────────
@@ -172,10 +184,17 @@ async function generateIncomePdf(data: PdfData): Promise<Buffer> {
     y += 14;
 
     doc.font('Helvetica').fontSize(9);
-    doc.text(`Total de Rendimentos Tributaveis (Trabalho Assalariado): ${formatCurrency(data.totalTaxable)}`, margin, y);
+    doc.text(
+      `Total de Rendimentos Tributaveis (Trabalho Assalariado): ${formatCurrency(data.totalTaxable)}`,
+      margin,
+      y,
+    );
     y += 16;
 
-    doc.moveTo(margin, y).lineTo(margin + usableWidth, y).stroke('#CCCCCC');
+    doc
+      .moveTo(margin, y)
+      .lineTo(margin + usableWidth, y)
+      .stroke('#CCCCCC');
     y += 8;
 
     // ── Section 4 — Deducoes ─────────────────────────────────────────────
@@ -184,7 +203,11 @@ async function generateIncomePdf(data: PdfData): Promise<Buffer> {
     y += 14;
 
     doc.font('Helvetica').fontSize(9);
-    doc.text(`Contribuicao Previdenciaria Oficial (INSS): ${formatCurrency(data.totalInss)}`, margin, y);
+    doc.text(
+      `Contribuicao Previdenciaria Oficial (INSS): ${formatCurrency(data.totalInss)}`,
+      margin,
+      y,
+    );
     y += 12;
     if (data.dependentCount > 0) {
       doc.text(
@@ -199,7 +222,10 @@ async function generateIncomePdf(data: PdfData): Promise<Buffer> {
     doc.text(`Total de Deducoes: ${formatCurrency(totalDeductions)}`, margin, y);
     y += 16;
 
-    doc.moveTo(margin, y).lineTo(margin + usableWidth, y).stroke('#CCCCCC');
+    doc
+      .moveTo(margin, y)
+      .lineTo(margin + usableWidth, y)
+      .stroke('#CCCCCC');
     y += 8;
 
     // ── Section 5 — Imposto de Renda Retido ──────────────────────────────
@@ -211,7 +237,10 @@ async function generateIncomePdf(data: PdfData): Promise<Buffer> {
     doc.text(`IRRF Retido: ${formatCurrency(data.totalIrrf)}`, margin, y);
     y += 16;
 
-    doc.moveTo(margin, y).lineTo(margin + usableWidth, y).stroke('#CCCCCC');
+    doc
+      .moveTo(margin, y)
+      .lineTo(margin + usableWidth, y)
+      .stroke('#CCCCCC');
     y += 8;
 
     // ── Section 6 — Rendimentos Isentos e Nao Tributaveis ────────────────
@@ -221,7 +250,11 @@ async function generateIncomePdf(data: PdfData): Promise<Buffer> {
 
     doc.font('Helvetica').fontSize(9);
     if (data.totalExempt > 0) {
-      doc.text(`Salario-Familia / 13o Salario 1a Parcela: ${formatCurrency(data.totalExempt)}`, margin, y);
+      doc.text(
+        `Salario-Familia / 13o Salario 1a Parcela: ${formatCurrency(data.totalExempt)}`,
+        margin,
+        y,
+      );
       y += 12;
     } else {
       doc.text('Nao ha rendimentos isentos no periodo.', margin, y);
@@ -229,7 +262,10 @@ async function generateIncomePdf(data: PdfData): Promise<Buffer> {
     }
     y += 6;
 
-    doc.moveTo(margin, y).lineTo(margin + usableWidth, y).stroke('#CCCCCC');
+    doc
+      .moveTo(margin, y)
+      .lineTo(margin + usableWidth, y)
+      .stroke('#CCCCCC');
     y += 8;
 
     // ── Section 7 — Informacoes Complementares ───────────────────────────
@@ -488,7 +524,15 @@ export class IncomeStatementsService {
       const stmts = await (tx as TxClient).incomeStatement.findMany({
         where,
         include: {
-          employee: { select: { name: true, cpf: true, email: true, pisPassep: true, dependents: { select: { id: true } } } },
+          employee: {
+            select: {
+              name: true,
+              cpf: true,
+              email: true,
+              pisPassep: true,
+              dependents: { select: { id: true } },
+            },
+          },
           organization: { select: { name: true, cnpj: true } },
         },
       });
@@ -589,10 +633,7 @@ export class IncomeStatementsService {
       const employees = await (tx as TxClient).employee.findMany({
         where: {
           organizationId: orgId,
-          OR: [
-            { terminationDate: null },
-            { terminationDate: { gte: yearStart } },
-          ],
+          OR: [{ terminationDate: null }, { terminationDate: { gte: yearStart } }],
           admissionDate: { lt: yearEnd },
         },
         select: { id: true, name: true, terminationDate: true },

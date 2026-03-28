@@ -20,9 +20,7 @@ export function useAssetTradeIns() {
       setError(null);
       try {
         const params = farmId ? `?farmId=${encodeURIComponent(farmId)}` : '';
-        const result = await api.get<TradeInOutput[]>(
-          `/org/${orgId}/asset-trade-ins${params}`,
-        );
+        const result = await api.get<TradeInOutput[]>(`/org/${orgId}/asset-trade-ins${params}`);
         setTradeIns(result);
       } catch (err) {
         const message =
@@ -41,10 +39,7 @@ export function useAssetTradeIns() {
       setLoading(true);
       setError(null);
       try {
-        const result = await api.post<TradeInOutput>(
-          `/org/${orgId}/asset-trade-ins`,
-          input,
-        );
+        const result = await api.post<TradeInOutput>(`/org/${orgId}/asset-trade-ins`, input);
         // Refresh list after creation
         await fetchTradeIns();
         return result;

@@ -14,12 +14,18 @@
 }
 
 @keyframes inventory-overlay-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .inventory-modal__overlay { animation: none; }
+  .inventory-modal__overlay {
+    animation: none;
+  }
 }
 
 .inventory-modal {
@@ -32,12 +38,20 @@
 }
 
 @keyframes inventory-modal-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .inventory-modal { animation: none; }
+  .inventory-modal {
+    animation: none;
+  }
 }
 
 @media (min-width: 768px) {
@@ -85,7 +99,9 @@
   transition: background 200ms ease-out;
 }
 
-.inventory-modal__close:hover { background: var(--color-neutral-100); }
+.inventory-modal__close:hover {
+  background: var(--color-neutral-100);
+}
 
 .inventory-modal__close:focus-visible {
   outline: 2px solid var(--color-primary-500);
@@ -192,11 +208,16 @@
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: background 200ms ease-out, opacity 200ms ease-out;
+  transition:
+    background 200ms ease-out,
+    opacity 200ms ease-out;
   min-height: 48px;
 }
 
-.inventory-modal__btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.inventory-modal__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 .inventory-modal__btn:focus-visible {
   outline: 2px solid var(--color-primary-500);
@@ -208,11 +229,15 @@
   color: var(--color-neutral-700);
 }
 
-.inventory-modal__btn--cancel:hover:not(:disabled) { background: var(--color-neutral-200); }
+.inventory-modal__btn--cancel:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+}
 
 .inventory-modal__btn--primary {
   background: var(--color-primary-600);
   color: var(--color-neutral-0);
 }
 
-.inventory-modal__btn--primary:hover:not(:disabled) { background: var(--color-primary-700); }
+.inventory-modal__btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-700);
+}

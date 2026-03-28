@@ -1,23 +1,23 @@
 ---
 phase: 22-hierarquia-avancada-imobilizado-andamento
-plan: "02"
+plan: '02'
 subsystem: api
 tags: [prisma, express, assets, depreciation, wip, renovation, backend]
 
 requires:
   - phase: 22-hierarquia-avancada-imobilizado-andamento
-    provides: "Plan 01 - AssetRenovation, AssetWipContribution, AssetWipStage models + wipBudget/wipBudgetAlertPct on Asset"
+    provides: 'Plan 01 - AssetRenovation, AssetWipContribution, AssetWipStage models + wipBudget/wipBudgetAlertPct on Asset'
   - phase: 20-alienacao-baixa-ativos
-    provides: "AssetStatus enum (ATIVO, EM_ANDAMENTO, ALIENADO), prisma.$transaction direct pattern"
+    provides: 'AssetStatus enum (ATIVO, EM_ANDAMENTO, ALIENADO), prisma.$transaction direct pattern'
 
 provides:
-  - "POST /org/:orgId/assets/:assetId/renovations — CAPITALIZAR increments acquisitionValue, updates DepreciationConfig; DESPESA no asset change"
-  - "GET /org/:orgId/assets/:assetId/renovations — list by renovationDate desc"
-  - "POST /org/:orgId/asset-wip/:assetId/contributions — addContribution with budgetAlert/budgetExceeded flags"
-  - "GET /org/:orgId/asset-wip/:assetId/summary — totalContributed, contributions, stages, budget flags"
-  - "POST /org/:orgId/asset-wip/:assetId/activate — sets status=ATIVO, acquisitionValue=totalContributed, returns depreciationConfigMissing flag"
-  - "POST/GET /org/:orgId/asset-wip/:assetId/stages — create and list WIP stages"
-  - "PATCH /org/:orgId/asset-wip/:assetId/stages/:stageId/complete — mark stage complete"
+  - 'POST /org/:orgId/assets/:assetId/renovations — CAPITALIZAR increments acquisitionValue, updates DepreciationConfig; DESPESA no asset change'
+  - 'GET /org/:orgId/assets/:assetId/renovations — list by renovationDate desc'
+  - 'POST /org/:orgId/asset-wip/:assetId/contributions — addContribution with budgetAlert/budgetExceeded flags'
+  - 'GET /org/:orgId/asset-wip/:assetId/summary — totalContributed, contributions, stages, budget flags'
+  - 'POST /org/:orgId/asset-wip/:assetId/activate — sets status=ATIVO, acquisitionValue=totalContributed, returns depreciationConfigMissing flag'
+  - 'POST/GET /org/:orgId/asset-wip/:assetId/stages — create and list WIP stages'
+  - 'PATCH /org/:orgId/asset-wip/:assetId/stages/:stageId/complete — mark stage complete'
 
 affects:
   - 22-hierarquia-avancada-imobilizado-andamento (plan 03 — frontend consumes these endpoints)
@@ -26,11 +26,11 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "prisma.$transaction used directly (NOT withRlsContext) — consistent with asset-acquisitions/disposals pattern"
-    - "accountingDecision mandatory field on renovation (CAPITALIZAR|DESPESA) — same OS accounting treatment pattern as work orders"
-    - "Budget alert via wipBudgetAlertPct percentage threshold (default 90%)"
-    - "WipError and RenovationError classes following AssetError pattern"
-    - "depreciationConfigMissing flag on activate response — non-blocking warning for UI to prompt user"
+    - 'prisma.$transaction used directly (NOT withRlsContext) — consistent with asset-acquisitions/disposals pattern'
+    - 'accountingDecision mandatory field on renovation (CAPITALIZAR|DESPESA) — same OS accounting treatment pattern as work orders'
+    - 'Budget alert via wipBudgetAlertPct percentage threshold (default 90%)'
+    - 'WipError and RenovationError classes following AssetError pattern'
+    - 'depreciationConfigMissing flag on activate response — non-blocking warning for UI to prompt user'
 
 key-files:
   created:
@@ -46,21 +46,21 @@ key-files:
     - apps/backend/src/app.ts
 
 key-decisions:
-  - "RenovationError and WipError classes follow AssetError pattern with statusCode field"
-  - "CAPITALIZAR path uses Prisma increment operator for acquisitionValue — atomic with renovation record creation"
-  - "Budget alert threshold defaults to 90% when wipBudgetAlertPct is null — sensible default"
-  - "activateWipAsset returns depreciationConfigMissing=true as non-blocking flag (not 400) — frontend prompts user to configure depreciation"
-  - "addContribution guard: checks asset.status=EM_ANDAMENTO, throws 400 if not — consistent with renovation EM_ANDAMENTO guard"
+  - 'RenovationError and WipError classes follow AssetError pattern with statusCode field'
+  - 'CAPITALIZAR path uses Prisma increment operator for acquisitionValue — atomic with renovation record creation'
+  - 'Budget alert threshold defaults to 90% when wipBudgetAlertPct is null — sensible default'
+  - 'activateWipAsset returns depreciationConfigMissing=true as non-blocking flag (not 400) — frontend prompts user to configure depreciation'
+  - 'addContribution guard: checks asset.status=EM_ANDAMENTO, throws 400 if not — consistent with renovation EM_ANDAMENTO guard'
 
 patterns-established:
-  - "Asset module sub-routes: nested under /org/:orgId/assets/:assetId/<resource> for asset-scoped operations"
-  - "WIP operations: separate /org/:orgId/asset-wip/:assetId base path to distinguish WIP-specific endpoints"
-  - "Budget flags returned inline in contribution response (not separate endpoint)"
+  - 'Asset module sub-routes: nested under /org/:orgId/assets/:assetId/<resource> for asset-scoped operations'
+  - 'WIP operations: separate /org/:orgId/asset-wip/:assetId base path to distinguish WIP-specific endpoints'
+  - 'Budget flags returned inline in contribution response (not separate endpoint)'
 
 requirements-completed: [HIER-02, HIER-03]
 
 duration: 15min
-completed: "2026-03-22"
+completed: '2026-03-22'
 ---
 
 # Phase 22 Plan 02: HIER-02 + HIER-03 Backend Modules Summary
@@ -122,5 +122,6 @@ None — no external service configuration required.
 - Both routers registered in app.ts and tested
 
 ---
-*Phase: 22-hierarquia-avancada-imobilizado-andamento*
-*Completed: 2026-03-22*
+
+_Phase: 22-hierarquia-avancada-imobilizado-andamento_
+_Completed: 2026-03-22_

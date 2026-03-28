@@ -1,6 +1,6 @@
 ---
 phase: 32-integra-o-financeira-cont-bil-e-dashboard-rh
-plan: "02"
+plan: '02'
 subsystem: accounting-entries
 tags: [accounting, payroll, contas-a-pagar, lancamentos-contabeis, integr-02]
 dependency_graph:
@@ -26,12 +26,12 @@ key_files:
     - apps/backend/src/modules/payables/payables.service.ts
     - apps/backend/src/app.ts
 decisions:
-  - "PAYROLL_PROVISION entries use runId as sourceId (not provisionId) for easy revert by run"
-  - "revertPayrollEntries makes 2 deleteMany calls (PAYROLL_RUN + PAYROLL_PROVISION) to cover all 5 entry types"
+  - 'PAYROLL_PROVISION entries use runId as sourceId (not provisionId) for easy revert by run'
+  - 'revertPayrollEntries makes 2 deleteMany calls (PAYROLL_RUN + PAYROLL_PROVISION) to cover all 5 entry types'
   - "farmId captured from first employee's active farm assignment (PayrollRun has no direct farmId)"
 metrics:
-  duration: "~12 minutes"
-  completed: "2026-03-26T20:02:19Z"
+  duration: '~12 minutes'
+  completed: '2026-03-26T20:02:19Z'
   tasks_completed: 2
   files_modified: 8
 ---
@@ -42,10 +42,10 @@ Created the accounting-entries module (INTEGR-02) with AccountingEntry Prisma mo
 
 ## Tasks Completed
 
-| # | Task | Commit | Files |
-|---|------|--------|-------|
-| 1 | AccountingEntry model + AccountingSourceType enum + types + service skeleton | 38641309 | schema.prisma, accounting-entries.types.ts, accounting-entries.service.ts |
-| 2 | Routes + hooks in closeRun/settlePayment + 18 tests | 17adc67d | accounting-entries.routes.ts, .routes.spec.ts, payroll-runs.service.ts, payables.service.ts, app.ts |
+| #   | Task                                                                         | Commit   | Files                                                                                               |
+| --- | ---------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------- |
+| 1   | AccountingEntry model + AccountingSourceType enum + types + service skeleton | 38641309 | schema.prisma, accounting-entries.types.ts, accounting-entries.service.ts                           |
+| 2   | Routes + hooks in closeRun/settlePayment + 18 tests                          | 17adc67d | accounting-entries.routes.ts, .routes.spec.ts, payroll-runs.service.ts, payables.service.ts, app.ts |
 
 ## What Was Built
 

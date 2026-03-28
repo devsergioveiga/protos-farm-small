@@ -44,7 +44,9 @@ function ContractCard({
           <span className="employee-detail__contract-type">
             {CONTRACT_TYPE_LABELS[contract.contractType] ?? contract.contractType}
           </span>
-          {isActive && <span className="employee-detail__badge employee-detail__badge--green">Vigente</span>}
+          {isActive && (
+            <span className="employee-detail__badge employee-detail__badge--green">Vigente</span>
+          )}
         </div>
         <div className="employee-detail__contract-actions">
           {isActive && onAmendment && (
@@ -132,8 +134,7 @@ function ContractCard({
                     <ul className="employee-detail__amendment-changes">
                       {Object.entries(am.changes).map(([field, change]) => (
                         <li key={field}>
-                          <strong>{field}:</strong>{' '}
-                          {String(change.from)} → {String(change.to)}
+                          <strong>{field}:</strong> {String(change.from)} → {String(change.to)}
                         </li>
                       ))}
                     </ul>
@@ -171,13 +172,11 @@ export default function ContractTab({
   return (
     <div className="employee-detail__tab-content">
       <div className="employee-detail__section-header" style={{ marginBottom: 16 }}>
-        <h3 className="employee-detail__section-title" style={{ margin: 0 }}>Contratos</h3>
+        <h3 className="employee-detail__section-title" style={{ margin: 0 }}>
+          Contratos
+        </h3>
         {onNewContract && (
-          <button
-            type="button"
-            className="employee-detail__btn-primary"
-            onClick={onNewContract}
-          >
+          <button type="button" className="employee-detail__btn-primary" onClick={onNewContract}>
             <FilePlus size={16} aria-hidden="true" />
             Novo contrato
           </button>

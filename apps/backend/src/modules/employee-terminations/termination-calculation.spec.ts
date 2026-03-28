@@ -6,7 +6,11 @@ import Decimal from 'decimal.js';
 import type { IRRFBracket } from '../payroll-engine/payroll-engine.types';
 import type { INSSBracket } from '../payroll-engine/payroll-engine.types';
 import type { EngineParams } from '../payroll-runs/payroll-runs.types';
-import { calcNoticePeriodDays, calculateTermination, FGTS_PENALTY } from './termination-calculation.service';
+import {
+  calcNoticePeriodDays,
+  calculateTermination,
+  FGTS_PENALTY,
+} from './termination-calculation.service';
 import type { TerminationInput } from './employee-terminations.types';
 
 beforeAll(() => {
@@ -83,19 +87,19 @@ describe('calcNoticePeriodDays', () => {
 
 describe('FGTS_PENALTY', () => {
   it('WITHOUT_CAUSE → 0.40', () => {
-    expect(FGTS_PENALTY['WITHOUT_CAUSE'].toNumber()).toBe(0.40);
+    expect(FGTS_PENALTY['WITHOUT_CAUSE'].toNumber()).toBe(0.4);
   });
   it('MUTUAL_AGREEMENT → 0.20', () => {
-    expect(FGTS_PENALTY['MUTUAL_AGREEMENT'].toNumber()).toBe(0.20);
+    expect(FGTS_PENALTY['MUTUAL_AGREEMENT'].toNumber()).toBe(0.2);
   });
   it('WITH_CAUSE → 0.00', () => {
-    expect(FGTS_PENALTY['WITH_CAUSE'].toNumber()).toBe(0.00);
+    expect(FGTS_PENALTY['WITH_CAUSE'].toNumber()).toBe(0.0);
   });
   it('VOLUNTARY → 0.00', () => {
-    expect(FGTS_PENALTY['VOLUNTARY'].toNumber()).toBe(0.00);
+    expect(FGTS_PENALTY['VOLUNTARY'].toNumber()).toBe(0.0);
   });
   it('SEASONAL_END → 0.00 (Lei 5.889/73)', () => {
-    expect(FGTS_PENALTY['SEASONAL_END'].toNumber()).toBe(0.00);
+    expect(FGTS_PENALTY['SEASONAL_END'].toNumber()).toBe(0.0);
   });
 });
 

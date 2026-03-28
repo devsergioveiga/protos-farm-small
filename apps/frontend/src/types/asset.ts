@@ -401,7 +401,10 @@ export const LEASING_STATUS_LABELS: Record<LeasingStatus, string> = {
   CANCELLED: 'Cancelado',
 };
 
-export const LEASING_STATUS_VARIANTS: Record<LeasingStatus, 'success' | 'info' | 'warning' | 'error'> = {
+export const LEASING_STATUS_VARIANTS: Record<
+  LeasingStatus,
+  'success' | 'info' | 'warning' | 'error'
+> = {
   ACTIVE: 'success',
   PURCHASE_OPTION_EXERCISED: 'info',
   RETURNED: 'warning',

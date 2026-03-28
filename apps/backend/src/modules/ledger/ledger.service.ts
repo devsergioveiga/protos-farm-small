@@ -109,7 +109,8 @@ export async function getLedger(
   const formattedLines = lines.map((l) => ({
     entryId: l.entryId,
     entryNumber: Number(l.entryNumber),
-    entryDate: l.entryDate instanceof Date ? l.entryDate.toISOString().slice(0, 10) : String(l.entryDate),
+    entryDate:
+      l.entryDate instanceof Date ? l.entryDate.toISOString().slice(0, 10) : String(l.entryDate),
     description: l.description,
     side: l.side as 'DEBIT' | 'CREDIT',
     amount: l.amount,
@@ -197,7 +198,10 @@ export async function getTrialBalance(
     },
   });
 
-  const balanceMap = new Map<string, { openingBalance: Decimal; debitTotal: Decimal; creditTotal: Decimal; closingBalance: Decimal }>();
+  const balanceMap = new Map<
+    string,
+    { openingBalance: Decimal; debitTotal: Decimal; creditTotal: Decimal; closingBalance: Decimal }
+  >();
   for (const b of balances) {
     balanceMap.set(b.accountId, {
       openingBalance: new Decimal(b.openingBalance.toString()),
@@ -229,24 +233,44 @@ export async function getTrialBalance(
   }
 
   // Compute aggregate values for each account (synthetic = sum of children recursively)
-  type AccountValues = { previousBalance: Decimal; debitMovement: Decimal; creditMovement: Decimal; currentBalance: Decimal };
+  type AccountValues = {
+    previousBalance: Decimal;
+    debitMovement: Decimal;
+    creditMovement: Decimal;
+    currentBalance: Decimal;
+  };
 
   function getAccountValues(accountId: string, visited: Set<string> = new Set()): AccountValues {
     if (visited.has(accountId)) {
-      return { previousBalance: new Decimal(0), debitMovement: new Decimal(0), creditMovement: new Decimal(0), currentBalance: new Decimal(0) };
+      return {
+        previousBalance: new Decimal(0),
+        debitMovement: new Decimal(0),
+        creditMovement: new Decimal(0),
+        currentBalance: new Decimal(0),
+      };
     }
     visited.add(accountId);
 
     const acct = accountMap.get(accountId);
     if (!acct) {
-      return { previousBalance: new Decimal(0), debitMovement: new Decimal(0), creditMovement: new Decimal(0), currentBalance: new Decimal(0) };
+      return {
+        previousBalance: new Decimal(0),
+        debitMovement: new Decimal(0),
+        creditMovement: new Decimal(0),
+        currentBalance: new Decimal(0),
+      };
     }
 
     if (!acct.isSynthetic) {
       // Analytic account: get from balanceMap
       const bal = balanceMap.get(accountId);
       if (!bal) {
-        return { previousBalance: new Decimal(0), debitMovement: new Decimal(0), creditMovement: new Decimal(0), currentBalance: new Decimal(0) };
+        return {
+          previousBalance: new Decimal(0),
+          debitMovement: new Decimal(0),
+          creditMovement: new Decimal(0),
+          currentBalance: new Decimal(0),
+        };
       }
       return {
         previousBalance: bal.openingBalance,
@@ -271,7 +295,12 @@ export async function getTrialBalance(
       currBal = currBal.plus(childVals.currentBalance);
     }
 
-    return { previousBalance: prevBal, debitMovement: debitMov, creditMovement: creditMov, currentBalance: currBal };
+    return {
+      previousBalance: prevBal,
+      debitMovement: debitMov,
+      creditMovement: creditMov,
+      currentBalance: currBal,
+    };
   }
 
   // Build rows — only include accounts that have activity or have balance
@@ -423,7 +452,10 @@ export async function getDailyBook(
     entries: filteredEntries.map((entry) => ({
       entryId: entry.id,
       entryNumber: entry.entryNumber,
-      entryDate: entry.entryDate instanceof Date ? entry.entryDate.toISOString().slice(0, 10) : String(entry.entryDate),
+      entryDate:
+        entry.entryDate instanceof Date
+          ? entry.entryDate.toISOString().slice(0, 10)
+          : String(entry.entryDate),
       description: entry.description,
       entryType: entry.entryType,
       lines: entry.lines.map((l) => ({
@@ -477,10 +509,7 @@ export async function exportLedgerPdf(
   doc.pipe(res);
 
   // Header
-  doc
-    .fontSize(14)
-    .font('Helvetica-Bold')
-    .text('RAZÃO CONTÁBIL', { align: 'center' });
+  doc.fontSize(14).font('Helvetica-Bold').text('RAZÃO CONTÁBIL', { align: 'center' });
   doc.moveDown(0.3);
   doc
     .fontSize(11)
@@ -517,8 +546,14 @@ export async function exportLedgerPdf(
     doc.text(brDate, colX.date, y, { width: 55 });
     doc.text(String(line.entryNumber), colX.num, y, { width: 35 });
     doc.text(line.description, colX.desc, y, { width: 190 });
-    doc.text(line.side === 'DEBIT' ? line.amount : '', colX.debit, y, { width: 65, align: 'right' });
-    doc.text(line.side === 'CREDIT' ? line.amount : '', colX.credit, y, { width: 75, align: 'right' });
+    doc.text(line.side === 'DEBIT' ? line.amount : '', colX.debit, y, {
+      width: 65,
+      align: 'right',
+    });
+    doc.text(line.side === 'CREDIT' ? line.amount : '', colX.credit, y, {
+      width: 75,
+      align: 'right',
+    });
     doc.text(line.runningBalance, colX.balance, y, { width: 65, align: 'right' });
     doc.moveDown(0.5);
 
@@ -548,22 +583,30 @@ export async function exportTrialBalancePdf(
   doc.pipe(res);
 
   // Header
-  doc
-    .fontSize(14)
-    .font('Helvetica-Bold')
-    .text('BALANCETE DE VERIFICAÇÃO', { align: 'center' });
+  doc.fontSize(14).font('Helvetica-Bold').text('BALANCETE DE VERIFICAÇÃO', { align: 'center' });
   doc.moveDown(0.3);
   doc
     .fontSize(10)
     .font('Helvetica')
-    .text(`Período: ${String(balance.periodMonth).padStart(2, '0')}/${balance.periodYear}`, { align: 'center' });
-  doc
-    .fontSize(9)
-    .text(`Balancete ${balance.isBalanced ? 'EQUILIBRADO' : 'DESEQUILIBRADO'}`, { align: 'center' });
+    .text(`Período: ${String(balance.periodMonth).padStart(2, '0')}/${balance.periodYear}`, {
+      align: 'center',
+    });
+  doc.fontSize(9).text(`Balancete ${balance.isBalanced ? 'EQUILIBRADO' : 'DESEQUILIBRADO'}`, {
+    align: 'center',
+  });
   doc.moveDown(0.5);
 
   // Table header
-  const colX = { code: 40, name: 90, prevDeb: 250, prevCred: 320, movDeb: 390, movCred: 460, currDeb: 530, currCred: 600 };
+  const colX = {
+    code: 40,
+    name: 90,
+    prevDeb: 250,
+    prevCred: 320,
+    movDeb: 390,
+    movCred: 460,
+    currDeb: 530,
+    currCred: 600,
+  };
   doc.font('Helvetica-Bold').fontSize(8);
   const headerY = doc.y;
   doc.text('Código', colX.code, headerY, { width: 45 });
@@ -588,12 +631,32 @@ export async function exportTrialBalancePdf(
 
     doc.text(row.accountCode, colX.code + indent, y, { width: 45 });
     doc.text(row.accountName, colX.name + indent, y, { width: 155 - indent });
-    doc.text(prevBal.gte(0) && row.nature === 'DEVEDORA' ? prevBal.toFixed(2) : '', colX.prevDeb, y, { width: 65, align: 'right' });
-    doc.text(prevBal.gte(0) && row.nature === 'CREDORA' ? prevBal.toFixed(2) : '', colX.prevCred, y, { width: 65, align: 'right' });
+    doc.text(
+      prevBal.gte(0) && row.nature === 'DEVEDORA' ? prevBal.toFixed(2) : '',
+      colX.prevDeb,
+      y,
+      { width: 65, align: 'right' },
+    );
+    doc.text(
+      prevBal.gte(0) && row.nature === 'CREDORA' ? prevBal.toFixed(2) : '',
+      colX.prevCred,
+      y,
+      { width: 65, align: 'right' },
+    );
     doc.text(row.debitMovement, colX.movDeb, y, { width: 65, align: 'right' });
     doc.text(row.creditMovement, colX.movCred, y, { width: 65, align: 'right' });
-    doc.text(currBal.gte(0) && row.nature === 'DEVEDORA' ? currBal.toFixed(2) : '', colX.currDeb, y, { width: 65, align: 'right' });
-    doc.text(currBal.gte(0) && row.nature === 'CREDORA' ? currBal.toFixed(2) : '', colX.currCred, y, { width: 65, align: 'right' });
+    doc.text(
+      currBal.gte(0) && row.nature === 'DEVEDORA' ? currBal.toFixed(2) : '',
+      colX.currDeb,
+      y,
+      { width: 65, align: 'right' },
+    );
+    doc.text(
+      currBal.gte(0) && row.nature === 'CREDORA' ? currBal.toFixed(2) : '',
+      colX.currCred,
+      y,
+      { width: 65, align: 'right' },
+    );
     doc.moveDown(0.4);
 
     if (doc.y > 550) {
@@ -682,7 +745,14 @@ export async function exportTrialBalanceXlsx(
     }
 
     // Apply number formats
-    ['prevBalDebit', 'prevBalCredit', 'movDebit', 'movCredit', 'currBalDebit', 'currBalCredit'].forEach((key) => {
+    [
+      'prevBalDebit',
+      'prevBalCredit',
+      'movDebit',
+      'movCredit',
+      'currBalDebit',
+      'currBalCredit',
+    ].forEach((key) => {
       dataRow.getCell(key).numFmt = currencyFormat;
     });
   }
@@ -703,7 +773,14 @@ export async function exportTrialBalanceXlsx(
   });
   totalsRow.font = { bold: true };
   totalsRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFAFAF8' } };
-  ['prevBalDebit', 'prevBalCredit', 'movDebit', 'movCredit', 'currBalDebit', 'currBalCredit'].forEach((key) => {
+  [
+    'prevBalDebit',
+    'prevBalCredit',
+    'movDebit',
+    'movCredit',
+    'currBalDebit',
+    'currBalCredit',
+  ].forEach((key) => {
     totalsRow.getCell(key).numFmt = currencyFormat;
   });
 
@@ -733,7 +810,7 @@ export async function exportDailyBookPdf(
     .font('Helvetica')
     .text(
       `Livro Diário — Período: ${dailyBook.periodStart} a ${dailyBook.periodEnd}. ` +
-      `Total de lançamentos: ${dailyBook.totalEntries}.`,
+        `Total de lançamentos: ${dailyBook.totalEntries}.`,
       { align: 'justify' },
     );
   doc.moveDown(1);
@@ -744,16 +821,17 @@ export async function exportDailyBookPdf(
     const brDate = `${dy}/${mo}/${yr}`;
 
     doc.font('Helvetica-Bold').fontSize(9);
-    doc.text(
-      `Lançamento Nº ${entry.entryNumber} — ${brDate} — ${entry.description}`,
-      { continued: false },
-    );
+    doc.text(`Lançamento Nº ${entry.entryNumber} — ${brDate} — ${entry.description}`, {
+      continued: false,
+    });
     doc.moveDown(0.2);
 
     doc.font('Helvetica').fontSize(8);
     for (const line of entry.lines) {
       const side = line.side === 'DEBIT' ? 'D' : 'C';
-      doc.text(`  ${side}  ${line.accountCode} — ${line.accountName}  R$ ${line.amount}${line.description ? ' — ' + line.description : ''}`);
+      doc.text(
+        `  ${side}  ${line.accountCode} — ${line.accountName}  R$ ${line.amount}${line.description ? ' — ' + line.description : ''}`,
+      );
     }
     doc.moveDown(0.5);
 
@@ -773,7 +851,7 @@ export async function exportDailyBookPdf(
     .font('Helvetica')
     .text(
       `Encerramento do Livro Diário referente ao período de ${dailyBook.periodStart} a ${dailyBook.periodEnd}. ` +
-      `Total de ${dailyBook.totalEntries} lançamentos registrados.`,
+        `Total de ${dailyBook.totalEntries} lançamentos registrados.`,
       { align: 'justify' },
     );
 

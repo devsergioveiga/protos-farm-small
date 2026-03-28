@@ -15,13 +15,13 @@ created: 2026-03-28
 
 ## Test Infrastructure
 
-| Property | Value |
-|----------|-------|
-| **Framework** | jest 29.x |
-| **Config file** | `apps/backend/jest.config.ts` |
-| **Quick run command** | `cd apps/backend && npx jest --testPathPattern monthly-closing --no-coverage` |
+| Property               | Value                                                                                           |
+| ---------------------- | ----------------------------------------------------------------------------------------------- |
+| **Framework**          | jest 29.x                                                                                       |
+| **Config file**        | `apps/backend/jest.config.ts`                                                                   |
+| **Quick run command**  | `cd apps/backend && npx jest --testPathPattern monthly-closing --no-coverage`                   |
 | **Full suite command** | `cd apps/backend && npx jest --testPathPattern "monthly-closing\|fiscal-periods" --no-coverage` |
-| **Estimated runtime** | ~15 seconds |
+| **Estimated runtime**  | ~15 seconds                                                                                     |
 
 ---
 
@@ -36,28 +36,28 @@ created: 2026-03-28
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| TBD | 01 | 1 | FECH-01 | unit+integration | `npx jest --testPathPattern monthly-closing` | TBD | ⬜ pending |
-| TBD | 01 | 1 | FECH-03 | unit+integration | `npx jest --testPathPattern monthly-closing` | TBD | ⬜ pending |
-| TBD | 02 | 2 | FECH-02 | integration | `npx jest --testPathPattern monthly-closing` | TBD | ⬜ pending |
+| Task ID | Plan | Wave | Requirement | Test Type        | Automated Command                            | File Exists | Status     |
+| ------- | ---- | ---- | ----------- | ---------------- | -------------------------------------------- | ----------- | ---------- |
+| TBD     | 01   | 1    | FECH-01     | unit+integration | `npx jest --testPathPattern monthly-closing` | TBD         | ⬜ pending |
+| TBD     | 01   | 1    | FECH-03     | unit+integration | `npx jest --testPathPattern monthly-closing` | TBD         | ⬜ pending |
+| TBD     | 02   | 2    | FECH-02     | integration      | `npx jest --testPathPattern monthly-closing` | TBD         | ⬜ pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+_Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
 
 ---
 
 ## Wave 0 Requirements
 
-*Existing infrastructure covers all phase requirements — jest is already configured, test patterns established.*
+_Existing infrastructure covers all phase requirements — jest is already configured, test patterns established._
 
 ---
 
 ## Manual-Only Verifications
 
-| Behavior | Requirement | Why Manual | Test Instructions |
-|----------|-------------|------------|-------------------|
-| Stepper UI navigation | FECH-01 | Frontend visual flow | Open /monthly-closing, verify stepper renders 6 steps with correct status icons |
-| Period lock enforcement | FECH-03 | Cross-module integration | Close period, attempt to create JournalEntry via API, verify 422 response |
+| Behavior                | Requirement | Why Manual               | Test Instructions                                                               |
+| ----------------------- | ----------- | ------------------------ | ------------------------------------------------------------------------------- |
+| Stepper UI navigation   | FECH-01     | Frontend visual flow     | Open /monthly-closing, verify stepper renders 6 steps with correct status icons |
+| Period lock enforcement | FECH-03     | Cross-module integration | Close period, attempt to create JournalEntry via API, verify 422 response       |
 
 ---
 

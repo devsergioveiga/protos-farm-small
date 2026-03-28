@@ -126,10 +126,7 @@ export async function listWorkSchedules(
   });
 }
 
-export async function getWorkSchedule(
-  ctx: RlsContext,
-  id: string,
-): Promise<WorkScheduleOutput> {
+export async function getWorkSchedule(ctx: RlsContext, id: string): Promise<WorkScheduleOutput> {
   return withRlsContext(ctx, async (tx: TxClient) => {
     const schedule = await tx.workSchedule.findFirst({
       where: { id, organizationId: ctx.organizationId },
@@ -216,7 +213,9 @@ export async function deleteWorkSchedule(ctx: RlsContext, id: string): Promise<v
   });
 }
 
-export async function seedTemplates(ctx: RlsContext): Promise<{ created: number; skipped: number }> {
+export async function seedTemplates(
+  ctx: RlsContext,
+): Promise<{ created: number; skipped: number }> {
   const templates: CreateWorkScheduleInput[] = [
     {
       name: '5x2 Padrao',

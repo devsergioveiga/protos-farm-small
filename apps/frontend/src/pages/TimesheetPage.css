@@ -140,18 +140,36 @@
 
 .timesheet-page__skeleton {
   border-radius: 6px;
-  background: linear-gradient(90deg, var(--color-neutral-100, #f5f5f5) 25%, var(--color-neutral-200, #e5e5e5) 50%, var(--color-neutral-100, #f5f5f5) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--color-neutral-100, #f5f5f5) 25%,
+    var(--color-neutral-200, #e5e5e5) 50%,
+    var(--color-neutral-100, #f5f5f5) 75%
+  );
   background-size: 200% 100%;
   animation: skeleton-pulse 1.5s infinite;
 }
 
-.timesheet-page__skeleton--sm { height: 16px; width: 40%; }
-.timesheet-page__skeleton--md { height: 20px; width: 60%; }
-.timesheet-page__skeleton--lg { height: 24px; width: 80%; }
+.timesheet-page__skeleton--sm {
+  height: 16px;
+  width: 40%;
+}
+.timesheet-page__skeleton--md {
+  height: 20px;
+  width: 60%;
+}
+.timesheet-page__skeleton--lg {
+  height: 24px;
+  width: 80%;
+}
 
 @keyframes skeleton-pulse {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Empty state */

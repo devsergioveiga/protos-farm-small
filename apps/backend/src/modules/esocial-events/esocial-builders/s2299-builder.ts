@@ -72,9 +72,9 @@ export function buildS2299(data: S2299Input): string {
   const infoDeslig = evt.ele('infoDeslig');
   infoDeslig.ele('modDeslig').txt('1'); // 1 = sem justa causa
   infoDeslig.ele('dtDeslig').txt(formatDate(termDate));
-  infoDeslig.ele('mtvDeslig').txt(
-    TERMINATION_REASON_MAP[termination.terminationReason ?? ''] ?? '01',
-  );
+  infoDeslig
+    .ele('mtvDeslig')
+    .txt(TERMINATION_REASON_MAP[termination.terminationReason ?? ''] ?? '01');
 
   return doc.end({ prettyPrint: false });
 }

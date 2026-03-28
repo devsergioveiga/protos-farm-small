@@ -1,4 +1,9 @@
-import type { DfcMethodOutput, DfcSectionRow, DfcSection, DfcCashSummary } from '@/types/financial-statements';
+import type {
+  DfcMethodOutput,
+  DfcSectionRow,
+  DfcSection,
+  DfcCashSummary,
+} from '@/types/financial-statements';
 import './DfcTable.css';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

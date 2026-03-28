@@ -33,7 +33,11 @@ function MonoField({ label, value }: { label: string; value?: string | null }) {
   );
 }
 
-export default function PersonalDataTab({ employee, onAddDependent, onAddFarm }: PersonalDataTabProps) {
+export default function PersonalDataTab({
+  employee,
+  onAddDependent,
+  onAddFarm,
+}: PersonalDataTabProps) {
   const [dependentsOpen, setDependentsOpen] = useState(true);
   const [farmsOpen, setFarmsOpen] = useState(true);
 
@@ -69,7 +73,7 @@ export default function PersonalDataTab({ employee, onAddDependent, onAddFarm }:
           <Field label="Nome do pai" value={employee.fatherName} />
           <Field
             label="Deficiência"
-            value={employee.hasDisability ? employee.disabilityType ?? 'Sim' : 'Não'}
+            value={employee.hasDisability ? (employee.disabilityType ?? 'Sim') : 'Não'}
           />
         </dl>
       </section>
@@ -106,7 +110,13 @@ export default function PersonalDataTab({ employee, onAddDependent, onAddFarm }:
           <MonoField label="Conta" value={employee.bankAccount} />
           <Field
             label="Tipo de conta"
-            value={employee.bankAccountType === 'CORRENTE' ? 'Conta Corrente' : employee.bankAccountType === 'POUPANCA' ? 'Poupança' : undefined}
+            value={
+              employee.bankAccountType === 'CORRENTE'
+                ? 'Conta Corrente'
+                : employee.bankAccountType === 'POUPANCA'
+                  ? 'Poupança'
+                  : undefined
+            }
           />
         </dl>
       </section>
@@ -115,8 +125,7 @@ export default function PersonalDataTab({ employee, onAddDependent, onAddFarm }:
       <section className="employee-detail__section">
         <div className="employee-detail__section-header">
           <h3 className="employee-detail__section-title">
-            Dependentes{' '}
-            <span className="employee-detail__count">({dependents.length})</span>
+            Dependentes <span className="employee-detail__count">({dependents.length})</span>
           </h3>
           <div style={{ display: 'flex', gap: 8 }}>
             <button
@@ -151,12 +160,12 @@ export default function PersonalDataTab({ employee, onAddDependent, onAddFarm }:
                     <div className="employee-detail__dependent-name">{dep.name}</div>
                     <div className="employee-detail__dependent-meta">
                       <span>{dep.relationship}</span>
-                      {dep.cpf && (
-                        <span className="employee-detail__mono">{dep.cpf}</span>
-                      )}
+                      {dep.cpf && <span className="employee-detail__mono">{dep.cpf}</span>}
                       <span>{formatDate(dep.birthDate)}</span>
                       {dep.irrf && <span className="employee-detail__badge">IRRF</span>}
-                      {dep.salaryFamily && <span className="employee-detail__badge">Sal. Família</span>}
+                      {dep.salaryFamily && (
+                        <span className="employee-detail__badge">Sal. Família</span>
+                      )}
                     </div>
                   </li>
                 ))}
@@ -170,8 +179,7 @@ export default function PersonalDataTab({ employee, onAddDependent, onAddFarm }:
       <section className="employee-detail__section">
         <div className="employee-detail__section-header">
           <h3 className="employee-detail__section-title">
-            Fazendas{' '}
-            <span className="employee-detail__count">({farms.length})</span>
+            Fazendas <span className="employee-detail__count">({farms.length})</span>
           </h3>
           <div style={{ display: 'flex', gap: 8 }}>
             <button

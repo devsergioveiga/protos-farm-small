@@ -60,23 +60,23 @@ hardcoded pattern with a proper hierarchical COA, period management, and stateme
 
 ## Component Responsibilities
 
-| Component | Responsibility | Status |
-|-----------|---------------|--------|
-| `modules/chart-of-accounts/` | CRUD for hierarchical COA; seed rural model; COA code validation | NEW |
-| `modules/fiscal-periods/` | Fiscal year and monthly period management; open/close/reopen with checklist | NEW |
-| `modules/journal-entries/` | Manual and automatic GL entries; reversal; period-lock guard; razão/livro diário | NEW (supersedes stub in `accounting-entries`) |
-| `modules/accounting-rules/` | Mapping table: sourceType → debit/credit account codes; replaces `ACCOUNT_CODES` const | NEW |
-| `modules/ledger/` | Read-side: razão por conta, balancete de verificação, saldo progressivo | NEW |
-| `modules/financial-statements/` | DRE / BP / DFC calculators; vinculação cruzada validation; PDF export | NEW |
-| `modules/sped-ecd/` | SPED ECD Leiaute 9 file generator (pipe-delimited text, Blocos 0/I/J/K/9) | NEW |
-| `modules/accounting-dashboard/` | Executive KPI aggregation endpoint | NEW |
-| `modules/accounting-entries/` | Existing payroll stub — kept read-only, not deleted | UNCHANGED (frozen) |
-| `modules/payroll-runs/` | Calls `createPayrollEntries()` after close | MODIFIED — add new journal-entries hook alongside existing stub |
-| `modules/depreciation/` | No GL hook yet | MODIFIED — add post-run GL hook |
-| `modules/payables/` | Calls `createReversalEntry()` on settlement | MODIFIED — add new journal-entries hook |
-| `modules/receivables/` | No GL hook | MODIFIED — add GL hook on receipt |
-| `modules/stock-entries/` | No GL hook | MODIFIED — add GL hook for inventory increase |
-| `modules/stock-outputs/` | No GL hook | MODIFIED — add GL hook for consumption |
+| Component                       | Responsibility                                                                         | Status                                                          |
+| ------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `modules/chart-of-accounts/`    | CRUD for hierarchical COA; seed rural model; COA code validation                       | NEW                                                             |
+| `modules/fiscal-periods/`       | Fiscal year and monthly period management; open/close/reopen with checklist            | NEW                                                             |
+| `modules/journal-entries/`      | Manual and automatic GL entries; reversal; period-lock guard; razão/livro diário       | NEW (supersedes stub in `accounting-entries`)                   |
+| `modules/accounting-rules/`     | Mapping table: sourceType → debit/credit account codes; replaces `ACCOUNT_CODES` const | NEW                                                             |
+| `modules/ledger/`               | Read-side: razão por conta, balancete de verificação, saldo progressivo                | NEW                                                             |
+| `modules/financial-statements/` | DRE / BP / DFC calculators; vinculação cruzada validation; PDF export                  | NEW                                                             |
+| `modules/sped-ecd/`             | SPED ECD Leiaute 9 file generator (pipe-delimited text, Blocos 0/I/J/K/9)              | NEW                                                             |
+| `modules/accounting-dashboard/` | Executive KPI aggregation endpoint                                                     | NEW                                                             |
+| `modules/accounting-entries/`   | Existing payroll stub — kept read-only, not deleted                                    | UNCHANGED (frozen)                                              |
+| `modules/payroll-runs/`         | Calls `createPayrollEntries()` after close                                             | MODIFIED — add new journal-entries hook alongside existing stub |
+| `modules/depreciation/`         | No GL hook yet                                                                         | MODIFIED — add post-run GL hook                                 |
+| `modules/payables/`             | Calls `createReversalEntry()` on settlement                                            | MODIFIED — add new journal-entries hook                         |
+| `modules/receivables/`          | No GL hook                                                                             | MODIFIED — add GL hook on receipt                               |
+| `modules/stock-entries/`        | No GL hook                                                                             | MODIFIED — add GL hook for inventory increase                   |
+| `modules/stock-outputs/`        | No GL hook                                                                             | MODIFIED — add GL hook for consumption                          |
 
 ---
 
@@ -301,7 +301,9 @@ payables settlement, receivables receipt, stock in/out).
 // Pattern: depreciation GL hook (mirrors existing payroll pattern)
 export async function processDepreciationRun(rls: RlsContext, runId: string): Promise<void> {
   // Primary operation — inside transaction
-  await prisma.$transaction(async (tx) => { /* ... */ });
+  await prisma.$transaction(async (tx) => {
+    /* ... */
+  });
 
   // GL hook — OUTSIDE transaction, non-blocking
   try {
@@ -390,6 +392,7 @@ File blocks in order: `0` (identification) → `I` (COA + balances + entries) �
 `K` (demonstração mutação PL, optional) → `9` (totals/closing).
 
 **Key registers:**
+
 - `I010` — escrituração identifier (LALUR indicator, audit flag)
 - `I050` — plano de contas (one row per ChartOfAccount)
 - `I100` — centros de custo (optional)
@@ -509,14 +512,14 @@ JournalEntriesPage mounts
 
 ### Existing Modules That Get Modified
 
-| Module | Current State | v1.4 Change | Hook Location |
-|--------|--------------|-------------|---------------|
-| `payroll-runs` | Calls `createPayrollEntries()` from `accounting-entries` stub | ADD new `createPayrollGlEntries()` call from `journal-entries` module. Keep existing call to not break `AccountingEntriesPage`. | After `closeRun()` — same non-blocking position |
-| `payables` | Calls `createReversalEntry()` on settlement | ADD new GL hook for CP settlement | After `settlePayable()` |
-| `depreciation` | No GL hook | ADD `createDepreciationGlEntries()` post-run | After `processRun()` batch commits |
-| `receivables` | No GL hook | ADD GL hook on receipt status change | After receipt confirmation |
-| `stock-entries` | No GL hook | ADD GL hook for inventory increase + cost | After `create()` |
-| `stock-outputs` | No GL hook | ADD GL hook for inventory decrease + COGS | After `create()` |
+| Module          | Current State                                                 | v1.4 Change                                                                                                                     | Hook Location                                   |
+| --------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `payroll-runs`  | Calls `createPayrollEntries()` from `accounting-entries` stub | ADD new `createPayrollGlEntries()` call from `journal-entries` module. Keep existing call to not break `AccountingEntriesPage`. | After `closeRun()` — same non-blocking position |
+| `payables`      | Calls `createReversalEntry()` on settlement                   | ADD new GL hook for CP settlement                                                                                               | After `settlePayable()`                         |
+| `depreciation`  | No GL hook                                                    | ADD `createDepreciationGlEntries()` post-run                                                                                    | After `processRun()` batch commits              |
+| `receivables`   | No GL hook                                                    | ADD GL hook on receipt status change                                                                                            | After receipt confirmation                      |
+| `stock-entries` | No GL hook                                                    | ADD GL hook for inventory increase + cost                                                                                       | After `create()`                                |
+| `stock-outputs` | No GL hook                                                    | ADD GL hook for inventory decrease + COGS                                                                                       | After `create()`                                |
 
 ### Existing Data — No Migration Required for v1.4
 
@@ -554,44 +557,24 @@ from the `JournalEntriesPage` as "ver lançamentos legados (folha)".
 Modules have strict data dependencies. Build in this order:
 
 **Phase 1 — Foundation (no deps on other v1.4 work)**
+
 1. `chart-of-accounts` — COA CRUD + rural model seed (CPC 29 agro accounts) + frontend page
 2. `fiscal-periods` — period management: open/close/reopen + frontend page
 3. `accounting-rules` — rule mapping table that replaces `ACCOUNT_CODES` const
 
-**Phase 2 — GL Engine (depends on Phase 1)**
-4. `journal-entries` — write engine: period-lock guard + manual entry + debit=credit validation + reversal
-5. `journal-entries` frontend page (replaces AccountingEntriesPage visually but coexists)
+**Phase 2 — GL Engine (depends on Phase 1)** 4. `journal-entries` — write engine: period-lock guard + manual entry + debit=credit validation + reversal 5. `journal-entries` frontend page (replaces AccountingEntriesPage visually but coexists)
 
-**Phase 3 — Expand Auto-Entry Hooks (depends on Phase 2 engine being live)**
-6. Wire payroll-runs to journal-entries (GL hook alongside existing accounting-entries hook)
-7. Wire payables settlement to journal-entries
-8. Wire depreciation run to journal-entries
-9. Wire receivables receipt to journal-entries
-10. Wire stock-entries / stock-outputs to journal-entries
+**Phase 3 — Expand Auto-Entry Hooks (depends on Phase 2 engine being live)** 6. Wire payroll-runs to journal-entries (GL hook alongside existing accounting-entries hook) 7. Wire payables settlement to journal-entries 8. Wire depreciation run to journal-entries 9. Wire receivables receipt to journal-entries 10. Wire stock-entries / stock-outputs to journal-entries
 
-**Phase 4 — Read Side / Ledger (depends on Phase 3 data existing)**
-11. `ledger` — razão contábil endpoint: saldo progressivo per account + livro diário
-12. `ledger` frontend — LedgerPage with account picker and date range drill-down
-13. `balancete` — balancete de verificação endpoint + BalancetePage
+**Phase 4 — Read Side / Ledger (depends on Phase 3 data existing)** 11. `ledger` — razão contábil endpoint: saldo progressivo per account + livro diário 12. `ledger` frontend — LedgerPage with account picker and date range drill-down 13. `balancete` — balancete de verificação endpoint + BalancetePage
 
-**Phase 5 — Period Closing (depends on ledger for checklist validation)**
-14. `fiscal-periods` — closing checklist endpoint (validates: balancete balanced, all hooks fired)
-15. Frontend: PeriodCloseModal with checklist steps and reopen confirmation
+**Phase 5 — Period Closing (depends on ledger for checklist validation)** 14. `fiscal-periods` — closing checklist endpoint (validates: balancete balanced, all hooks fired) 15. Frontend: PeriodCloseModal with checklist steps and reopen confirmation
 
-**Phase 6 — Financial Statements (depends on COA + journal data + periods)**
-16. `dre-calculator.service.ts` + DRE endpoint (pure engine first, verified by tests)
-17. `bp-calculator.service.ts` + BP endpoint
-18. `dfc-calculator.service.ts` + DFC endpoint (most complex — requires DFC classification per account)
-19. Cross-validation endpoint: DRE net income == BP equity change (DRE↔BP↔DFC linkage)
-20. `financial-statements-pdf.service.ts` — pdfkit multi-statement PDF (reuses pdfkit pattern)
+**Phase 6 — Financial Statements (depends on COA + journal data + periods)** 16. `dre-calculator.service.ts` + DRE endpoint (pure engine first, verified by tests) 17. `bp-calculator.service.ts` + BP endpoint 18. `dfc-calculator.service.ts` + DFC endpoint (most complex — requires DFC classification per account) 19. Cross-validation endpoint: DRE net income == BP equity change (DRE↔BP↔DFC linkage) 20. `financial-statements-pdf.service.ts` — pdfkit multi-statement PDF (reuses pdfkit pattern)
 
-**Phase 7 — SPED ECD (depends on all journal data + COA + closed periods)**
-21. `sped-ecd-builder.ts` — record builders with unit tests against known-good samples
-22. `sped-ecd.service.ts` + route + SpedEcdPage frontend
+**Phase 7 — SPED ECD (depends on all journal data + COA + closed periods)** 21. `sped-ecd-builder.ts` — record builders with unit tests against known-good samples 22. `sped-ecd.service.ts` + route + SpedEcdPage frontend
 
-**Phase 8 — Dashboard and Executive UI**
-23. `accounting-dashboard` — executive KPIs (indicadores: liquidez, endividamento, PL/ha)
-24. Frontend: AccountingDashboardPage, StatementLinkagePage (DRE↔BP↔DFC panel)
+**Phase 8 — Dashboard and Executive UI** 23. `accounting-dashboard` — executive KPIs (indicadores: liquidez, endividamento, PL/ha) 24. Frontend: AccountingDashboardPage, StatementLinkagePage (DRE↔BP↔DFC panel)
 
 ---
 
@@ -666,11 +649,11 @@ FINANCIAMENTO | null`). The DFC calculator aggregates by this category, not by a
 
 ## Scaling Considerations
 
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| Single farm, < 500 entries/month | Current architecture sufficient. No special indexing needed beyond `@@index([organizationId, referenceMonth])`. |
-| Multi-farm org, 5K–50K entries/month | Statement queries aggregate all `journal_entry_lines` per period. Add a `account_monthly_balances` materialized snapshot table updated on each JournalEntry commit. Statements read from snapshot. |
-| Large agribusiness, 500K+ entries/year | SPED ECD generation becomes a background job with polling endpoint (mirrors eSocial async pattern). Monthly balance snapshots mandatory. |
+| Scale                                  | Architecture Adjustments                                                                                                                                                                           |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Single farm, < 500 entries/month       | Current architecture sufficient. No special indexing needed beyond `@@index([organizationId, referenceMonth])`.                                                                                    |
+| Multi-farm org, 5K–50K entries/month   | Statement queries aggregate all `journal_entry_lines` per period. Add a `account_monthly_balances` materialized snapshot table updated on each JournalEntry commit. Statements read from snapshot. |
+| Large agribusiness, 500K+ entries/year | SPED ECD generation becomes a background job with polling endpoint (mirrors eSocial async pattern). Monthly balance snapshots mandatory.                                                           |
 
 ### First Bottleneck
 
@@ -698,5 +681,6 @@ reconciliation bugs.
 - Sidebar structure: `apps/frontend/src/components/layout/Sidebar.tsx` lines 294–298 (CONTABILIDADE group)
 
 ---
-*Architecture research for: v1.4 Contabilidade e Demonstrações Financeiras — Protos Farm*
-*Researched: 2026-03-26*
+
+_Architecture research for: v1.4 Contabilidade e Demonstrações Financeiras — Protos Farm_
+_Researched: 2026-03-26_

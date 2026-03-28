@@ -1,13 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Clock,
-  MapPin,
-  Monitor,
-  UserPen,
-  AlertCircle,
-  ClockArrowUp,
-  Link2,
-} from 'lucide-react';
+import { Clock, MapPin, Monitor, UserPen, AlertCircle, ClockArrowUp, Link2 } from 'lucide-react';
 import { useAuth } from '@/stores/AuthContext';
 import { useTimeEntries } from '@/hooks/useTimeEntries';
 import { useEmployees } from '@/hooks/useEmployees';
@@ -16,12 +8,16 @@ import ManualPunchModal from '@/components/attendance/ManualPunchModal';
 import LinkOperationModal from '@/components/attendance/LinkOperationModal';
 import OvertimeBankCard from '@/components/attendance/OvertimeBankCard';
 import TeamLinkingTab from '@/components/attendance/TeamLinkingTab';
-import type { TimeEntry, OvertimeBankSummary, CreateTimeEntryInput, AddActivityInput } from '@/types/attendance';
+import type {
+  TimeEntry,
+  OvertimeBankSummary,
+  CreateTimeEntryInput,
+  AddActivityInput,
+} from '@/types/attendance';
 import type { Employee } from '@/types/employee';
 import './AttendancePage.css';
 
 type Tab = 'apontamentos' | 'banco-horas' | 'vincular';
-
 
 function formatTime(isoString: string | null): string {
   if (!isoString) return '—';
@@ -39,7 +35,9 @@ function formatMinutes(minutes: number | null): string {
 function SourceChip({ source, outOfRange }: { source: string; outOfRange: boolean }) {
   if (source === 'MOBILE') {
     return (
-      <span className={`attendance-page__source-chip attendance-page__source-chip--${outOfRange ? 'warning' : 'mobile'}`}>
+      <span
+        className={`attendance-page__source-chip attendance-page__source-chip--${outOfRange ? 'warning' : 'mobile'}`}
+      >
         <MapPin size={12} aria-hidden="true" />
         {outOfRange ? 'Fora do perímetro' : 'Mobile'}
       </span>
@@ -74,7 +72,8 @@ export default function AttendancePage() {
   const [overtimeLoading, setOvertimeLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const { timeEntries, loading, error, fetchTimeEntries, createTimeEntry, addActivity } = useTimeEntries();
+  const { timeEntries, loading, error, fetchTimeEntries, createTimeEntry, addActivity } =
+    useTimeEntries();
   const { employees } = useEmployees({ farmId: selectedFarmId || undefined, limit: 200 });
 
   const orgId = user?.organizationId;
@@ -103,7 +102,9 @@ export default function AttendancePage() {
       const result = await api.get<OvertimeBankSummary[] | { data: OvertimeBankSummary[] }>(
         `/org/${orgId}/overtime-bank${qs ? `?${qs}` : ''}`,
       );
-      const summaries = Array.isArray(result) ? result : (result as { data: OvertimeBankSummary[] }).data;
+      const summaries = Array.isArray(result)
+        ? result
+        : (result as { data: OvertimeBankSummary[] }).data;
       setOvertimeSummaries(summaries);
     } catch {
       setOvertimeSummaries([]);
@@ -116,7 +117,10 @@ export default function AttendancePage() {
     void fetchOvertime();
   }, [fetchOvertime]);
 
-  async function handleCreatePunch(employeeId: string, data: CreateTimeEntryInput): Promise<boolean> {
+  async function handleCreatePunch(
+    employeeId: string,
+    data: CreateTimeEntryInput,
+  ): Promise<boolean> {
     const success = await createTimeEntry(employeeId, data);
     if (success) {
       setSuccessMsg('Ponto registrado com sucesso');
@@ -217,7 +221,11 @@ export default function AttendancePage() {
       </div>
 
       {/* Tabs */}
-      <div className="attendance-page__tabs" role="tablist" aria-label="Seções de controle de ponto">
+      <div
+        className="attendance-page__tabs"
+        role="tablist"
+        aria-label="Seções de controle de ponto"
+      >
         <button
           type="button"
           role="tab"
@@ -283,15 +291,33 @@ export default function AttendancePage() {
                 <tbody>
                   {Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="attendance-page__skeleton-row">
-                      <td><div className="attendance-page__skeleton attendance-page__skeleton--sm" /></td>
-                      <td><div className="attendance-page__skeleton attendance-page__skeleton--md" /></td>
-                      <td><div className="attendance-page__skeleton attendance-page__skeleton--sm" /></td>
-                      <td><div className="attendance-page__skeleton attendance-page__skeleton--sm" /></td>
-                      <td><div className="attendance-page__skeleton attendance-page__skeleton--sm" /></td>
-                      <td><div className="attendance-page__skeleton attendance-page__skeleton--sm" /></td>
-                      <td><div className="attendance-page__skeleton attendance-page__skeleton--sm" /></td>
-                      <td><div className="attendance-page__skeleton attendance-page__skeleton--badge" /></td>
-                      <td><div className="attendance-page__skeleton attendance-page__skeleton--sm" /></td>
+                      <td>
+                        <div className="attendance-page__skeleton attendance-page__skeleton--sm" />
+                      </td>
+                      <td>
+                        <div className="attendance-page__skeleton attendance-page__skeleton--md" />
+                      </td>
+                      <td>
+                        <div className="attendance-page__skeleton attendance-page__skeleton--sm" />
+                      </td>
+                      <td>
+                        <div className="attendance-page__skeleton attendance-page__skeleton--sm" />
+                      </td>
+                      <td>
+                        <div className="attendance-page__skeleton attendance-page__skeleton--sm" />
+                      </td>
+                      <td>
+                        <div className="attendance-page__skeleton attendance-page__skeleton--sm" />
+                      </td>
+                      <td>
+                        <div className="attendance-page__skeleton attendance-page__skeleton--sm" />
+                      </td>
+                      <td>
+                        <div className="attendance-page__skeleton attendance-page__skeleton--badge" />
+                      </td>
+                      <td>
+                        <div className="attendance-page__skeleton attendance-page__skeleton--sm" />
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -305,7 +331,8 @@ export default function AttendancePage() {
               <Clock size={48} className="attendance-page__empty-icon" aria-hidden="true" />
               <h2 className="attendance-page__empty-title">Nenhum ponto registrado hoje</h2>
               <p className="attendance-page__empty-body">
-                Os colaboradores ainda nao registraram ponto. Voce pode registrar manualmente pelo botao acima.
+                Os colaboradores ainda nao registraram ponto. Voce pode registrar manualmente pelo
+                botao acima.
               </p>
               <button
                 type="button"
@@ -346,10 +373,14 @@ export default function AttendancePage() {
                         </td>
                         <td className="attendance-page__cell-name">{entry.employeeName}</td>
                         <td className="attendance-page__cell-time">{formatTime(entry.clockIn)}</td>
-                        <td className="attendance-page__cell-time">{formatTime(entry.breakStart)}</td>
+                        <td className="attendance-page__cell-time">
+                          {formatTime(entry.breakStart)}
+                        </td>
                         <td className="attendance-page__cell-time">{formatTime(entry.breakEnd)}</td>
                         <td className="attendance-page__cell-time">{formatTime(entry.clockOut)}</td>
-                        <td className="attendance-page__cell-time">{formatMinutes(entry.workedMinutes)}</td>
+                        <td className="attendance-page__cell-time">
+                          {formatMinutes(entry.workedMinutes)}
+                        </td>
                         <td>
                           <SourceChip source={entry.source} outOfRange={entry.outOfRange} />
                         </td>
@@ -375,7 +406,10 @@ export default function AttendancePage() {
               {/* Mobile cards */}
               <div className="attendance-page__cards attendance-page__cards--mobile">
                 {timeEntries.map((entry) => (
-                  <article key={`card-${entry.id}`} className={`attendance-page__card ${entry.outOfRange ? 'attendance-page__card--warning' : ''}`}>
+                  <article
+                    key={`card-${entry.id}`}
+                    className={`attendance-page__card ${entry.outOfRange ? 'attendance-page__card--warning' : ''}`}
+                  >
                     <div className="attendance-page__card-header">
                       <div>
                         <div className="attendance-page__card-name">{entry.employeeName}</div>
@@ -388,27 +422,37 @@ export default function AttendancePage() {
                     <div className="attendance-page__card-times">
                       <div className="attendance-page__card-time-item">
                         <span className="attendance-page__card-time-label">Entrada</span>
-                        <span className="attendance-page__card-time-value">{formatTime(entry.clockIn)}</span>
+                        <span className="attendance-page__card-time-value">
+                          {formatTime(entry.clockIn)}
+                        </span>
                       </div>
                       {entry.breakStart && (
                         <div className="attendance-page__card-time-item">
                           <span className="attendance-page__card-time-label">Int. Início</span>
-                          <span className="attendance-page__card-time-value">{formatTime(entry.breakStart)}</span>
+                          <span className="attendance-page__card-time-value">
+                            {formatTime(entry.breakStart)}
+                          </span>
                         </div>
                       )}
                       {entry.breakEnd && (
                         <div className="attendance-page__card-time-item">
                           <span className="attendance-page__card-time-label">Int. Fim</span>
-                          <span className="attendance-page__card-time-value">{formatTime(entry.breakEnd)}</span>
+                          <span className="attendance-page__card-time-value">
+                            {formatTime(entry.breakEnd)}
+                          </span>
                         </div>
                       )}
                       <div className="attendance-page__card-time-item">
                         <span className="attendance-page__card-time-label">Saída</span>
-                        <span className="attendance-page__card-time-value">{formatTime(entry.clockOut)}</span>
+                        <span className="attendance-page__card-time-value">
+                          {formatTime(entry.clockOut)}
+                        </span>
                       </div>
                       <div className="attendance-page__card-time-item attendance-page__card-time-item--total">
                         <span className="attendance-page__card-time-label">Total</span>
-                        <span className="attendance-page__card-time-value">{formatMinutes(entry.workedMinutes)}</span>
+                        <span className="attendance-page__card-time-value">
+                          {formatMinutes(entry.workedMinutes)}
+                        </span>
                       </div>
                     </div>
                     {entry.managerNote && (

@@ -57,8 +57,8 @@ export default function BulkWeaningModal({
         observations: '',
         minWeight:
           a.sex === 'MALE'
-            ? config?.minWeightKgMale ?? null
-            : config?.minWeightKgFemale ?? null,
+            ? (config?.minWeightKgMale ?? null)
+            : (config?.minWeightKgFemale ?? null),
       })),
     );
   }, [isOpen, selectedAnimals, config]);
@@ -164,9 +164,17 @@ export default function BulkWeaningModal({
               >
                 <div className="bulk-wean-modal__result-header">
                   {r.status === 'created' ? (
-                    <CheckCircle size={16} className="bulk-wean-modal__icon--success" aria-hidden="true" />
+                    <CheckCircle
+                      size={16}
+                      className="bulk-wean-modal__icon--success"
+                      aria-hidden="true"
+                    />
                   ) : (
-                    <AlertCircle size={16} className="bulk-wean-modal__icon--error" aria-hidden="true" />
+                    <AlertCircle
+                      size={16}
+                      className="bulk-wean-modal__icon--error"
+                      aria-hidden="true"
+                    />
                   )}
                   <strong>{r.calfEarTag}</strong>
                   <span>{r.status === 'created' ? 'Desmamado' : 'Erro'}</span>
@@ -227,7 +235,8 @@ export default function BulkWeaningModal({
             {hasWarnings && (
               <div className="bulk-wean-modal__warning-banner" role="status">
                 <AlertTriangle size={16} aria-hidden="true" />
-                Alguns animais estão abaixo do peso mínimo configurado. Verifique antes de confirmar.
+                Alguns animais estão abaixo do peso mínimo configurado. Verifique antes de
+                confirmar.
               </div>
             )}
 
@@ -242,7 +251,9 @@ export default function BulkWeaningModal({
                   >
                     <div className="bulk-wean-modal__animal-info">
                       <span className="bulk-wean-modal__animal-tag">{entry.earTag}</span>
-                      {entry.name && <span className="bulk-wean-modal__animal-name">{entry.name}</span>}
+                      {entry.name && (
+                        <span className="bulk-wean-modal__animal-name">{entry.name}</span>
+                      )}
                       <span className="bulk-wean-modal__animal-sex">
                         {entry.sex === 'MALE' ? 'M' : 'F'}
                       </span>

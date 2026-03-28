@@ -21,12 +21,7 @@ export function useEpiProducts() {
   // ─── EPI Products ────────────────────────────────────────────────────
 
   const fetchEpiProducts = useCallback(
-    async (params?: {
-      search?: string;
-      epiType?: string;
-      page?: number;
-      limit?: number;
-    }) => {
+    async (params?: { search?: string; epiType?: string; page?: number; limit?: number }) => {
       setLoading(true);
       setError(null);
       try {
@@ -54,11 +49,14 @@ export function useEpiProducts() {
     [],
   );
 
-  const createEpiProduct = useCallback(async (input: CreateEpiProductInput): Promise<EpiProduct> => {
-    const data = await api.post<EpiProduct>('/org/epi-products', input);
-    setSuccessMessage('EPI cadastrado com sucesso.');
-    return data;
-  }, []);
+  const createEpiProduct = useCallback(
+    async (input: CreateEpiProductInput): Promise<EpiProduct> => {
+      const data = await api.post<EpiProduct>('/org/epi-products', input);
+      setSuccessMessage('EPI cadastrado com sucesso.');
+      return data;
+    },
+    [],
+  );
 
   const updateEpiProduct = useCallback(
     async (id: string, input: UpdateEpiProductInput): Promise<EpiProduct> => {

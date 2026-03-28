@@ -21,7 +21,8 @@ function toOutput(disposal: TxClient, asset: TxClient): DisposalOutput {
     assetTag: (asset.assetTag ?? '') as string,
     assetName: (asset.name ?? '') as string,
     disposalType: disposal.disposalType,
-    disposalTypeLabel: DISPOSAL_TYPE_LABELS[disposal.disposalType as keyof typeof DISPOSAL_TYPE_LABELS],
+    disposalTypeLabel:
+      DISPOSAL_TYPE_LABELS[disposal.disposalType as keyof typeof DISPOSAL_TYPE_LABELS],
     disposalDate: (disposal.disposalDate as Date).toISOString(),
     saleValue: disposal.saleValue != null ? new Decimal(disposal.saleValue).toNumber() : null,
     netBookValue: new Decimal(disposal.netBookValue).toNumber(),
@@ -141,8 +142,7 @@ export async function createDisposal(
     });
 
     // ── Determine installmentCount for disposal record ────────────
-    const installmentCount =
-      disposalType === 'VENDA' ? (input.installmentCount ?? 1) : 1;
+    const installmentCount = disposalType === 'VENDA' ? (input.installmentCount ?? 1) : 1;
 
     // ── Create AssetDisposal ──────────────────────────────────────
     const disposal = await tx.assetDisposal.create({
@@ -210,10 +210,7 @@ export async function createDisposal(
       });
     }
 
-    return toOutput(
-      { ...disposal, installmentCount, receivableId },
-      asset,
-    );
+    return toOutput({ ...disposal, installmentCount, receivableId }, asset);
   });
 }
 
@@ -234,8 +231,5 @@ export async function getDisposal(ctx: RlsContext, assetId: string): Promise<Dis
     throw new AssetDisposalError('Alienacao nao encontrada para este ativo', 404);
   }
 
-  return toOutput(
-    { ...disposal, installmentCount: 1 },
-    disposal.asset,
-  );
+  return toOutput({ ...disposal, installmentCount: 1 }, disposal.asset);
 }

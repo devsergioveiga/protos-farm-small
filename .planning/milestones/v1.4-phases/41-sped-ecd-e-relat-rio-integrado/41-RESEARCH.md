@@ -7,6 +7,7 @@
 ---
 
 <user_constraints>
+
 ## User Constraints (from CONTEXT.md)
 
 ### Locked Decisions
@@ -22,7 +23,7 @@
 - **D-09:** Encoding: **UTF-8**.
 - **D-10:** Quebra de linha: **CRLF (\r\n)** conforme manual SPED.
 - **D-11:** Assinatura: **sem hash interno** — PVA da RFB assina com certificado digital A1/A3.
-- **D-12:** Nome do arquivo: **SPED_ECD_{CNPJ}_{ANO}.txt** — CNPJ da Organization.
+- **D-12:** Nome do arquivo: **SPED*ECD*{CNPJ}\_{ANO}.txt** — CNPJ da Organization.
 - **D-13:** Registros I350/I355 (saldos diários): **omitidos**. Rurais usam I150/I155 (mensal).
 - **D-14:** Severidade: **ERRO bloqueia download + AVISO informativo permite**.
 - **D-15:** Apresentação: **lista inline na página** com ícones vermelho/amarelo. Botão "Gerar SPED" desabilitado se houver erros.
@@ -56,12 +57,13 @@ None — discussion stayed within phase scope.
 </user_constraints>
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|------------------|
-| VINC-02 | Contador pode gerar relatório integrado de demonstrações financeiras em PDF profissional contendo DRE, BP, DFC e notas explicativas em documento único, com capa, índice, cabeçalho com dados da fazenda/empresa e formatação compatível com exigências PRONAF/Funcafé | pdfkit pattern from pesticide-prescriptions; calculateDre/Bp/Dfc already return all needed data; buffer-based PDF generation pattern established |
-| SPED-01 | Contador pode gerar arquivo SPED Contábil (ECD) no formato pipe-delimited da RFB com Blocos 0/I/J/9, registros I050, I100, I150/I155, I200/I250, J005/J100/J150/J210, usando plano referencial L300R rural | SPED ECD Layout 9 format verified; all register field layouts documented; spedRefCode already populated on ChartOfAccount; existing getTrialBalance and getLedger queries provide needed data |
+| ID      | Description                                                                                                                                                                                                                                                                                | Research Support                                                                                                                                                                                                                           |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| VINC-02 | Contador pode gerar relatório integrado de demonstrações financeiras em PDF profissional contendo DRE, BP, DFC e notas explicativas em documento único, com capa, índice, cabeçalho com dados da fazenda/empresa e formatação compatível com exigências PRONAF/Funcafé                     | pdfkit pattern from pesticide-prescriptions; calculateDre/Bp/Dfc already return all needed data; buffer-based PDF generation pattern established                                                                                           |
+| SPED-01 | Contador pode gerar arquivo SPED Contábil (ECD) no formato pipe-delimited da RFB com Blocos 0/I/J/9, registros I050, I100, I150/I155, I200/I250, J005/J100/J150/J210, usando plano referencial L300R rural                                                                                 | SPED ECD Layout 9 format verified; all register field layouts documented; spedRefCode already populated on ChartOfAccount; existing getTrialBalance and getLedger queries provide needed data                                              |
 | SPED-02 | Sistema executa pré-validação do arquivo ECD antes do download verificando: contas mapeadas ao referencial, períodos fechados, balancete equilibrado, I050 sem duplicatas, totalização I155 consistente — com relatório de erros/avisos e impedimento de download se houver erros críticos | getUnmappedSped() already exists in chart-of-accounts.service; AccountingPeriod.status field available; getTrialBalance provides balance data for equilibrium check; spedRefCode null check pattern exists in accounting-dashboard.service |
 
 </phase_requirements>
@@ -84,26 +86,26 @@ The main new work is: (1) the `SpedEcdWriter` class that formats data into pipe-
 
 ### Core
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| pdfkit | ^0.17.2 | PDF generation | Already installed, used in 19+ modules, mature pattern |
-| Node.js Buffer / string | built-in | SPED text file generation | No library needed; pipe-delimited text with CRLF |
-| Prisma 7 | installed | DB queries for SPED data | Project standard; existing patterns for AccountBalance, JournalEntry |
-| Decimal.js | installed | Monetary arithmetic | Prevents floating-point errors in SPED amounts |
+| Library                 | Version   | Purpose                   | Why Standard                                                         |
+| ----------------------- | --------- | ------------------------- | -------------------------------------------------------------------- |
+| pdfkit                  | ^0.17.2   | PDF generation            | Already installed, used in 19+ modules, mature pattern               |
+| Node.js Buffer / string | built-in  | SPED text file generation | No library needed; pipe-delimited text with CRLF                     |
+| Prisma 7                | installed | DB queries for SPED data  | Project standard; existing patterns for AccountBalance, JournalEntry |
+| Decimal.js              | installed | Monetary arithmetic       | Prevents floating-point errors in SPED amounts                       |
 
 ### Supporting
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| date-fns | installed | Date formatting for DDMMAAAA fields | SPED requires dates as 8-digit DDMMAAAA strings |
-| @types/pdfkit | ^0.17.5 | TypeScript types for pdfkit | Already installed |
+| Library       | Version   | Purpose                             | When to Use                                     |
+| ------------- | --------- | ----------------------------------- | ----------------------------------------------- |
+| date-fns      | installed | Date formatting for DDMMAAAA fields | SPED requires dates as 8-digit DDMMAAAA strings |
+| @types/pdfkit | ^0.17.5   | TypeScript types for pdfkit         | Already installed                               |
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
+| Instead of                   | Could Use          | Tradeoff                                                               |
+| ---------------------------- | ------------------ | ---------------------------------------------------------------------- |
 | Pure string builder for SPED | BullMQ async queue | D-01 locked: synchronous. File generates in < 2s for typical rural org |
-| pdfkit buffer pattern | pdf-lib | pdfkit already installed and battle-tested in project |
+| pdfkit buffer pattern        | pdf-lib            | pdfkit already installed and battle-tested in project                  |
 
 **Installation:** No new packages required. All dependencies already installed.
 
@@ -179,7 +181,7 @@ export interface SpedValidationItem {
   severity: 'ERROR' | 'WARNING';
   code: string;
   message: string;
-  navigateTo?: string;  // link for user to fix issue
+  navigateTo?: string; // link for user to fix issue
 }
 
 export async function validateSpedEcd(
@@ -266,65 +268,65 @@ res.send(pdfBuffer);
 
 **Registro 0000 fields (Layout 9):**
 
-| # | Field | Value |
-|---|-------|-------|
-| 1 | REG | 0000 |
-| 2 | LECD | Fixed: LECD |
-| 3 | DT_INI | First day of fiscal year (DDMMAAAA) |
-| 4 | DT_FIN | Last day of fiscal year (DDMMAAAA) |
-| 5 | NOME | Organization.name |
-| 6 | CNPJ | Organization.document (CNPJ, digits only) |
-| 7 | UF | Organization state code |
-| 8 | IE | Organization state registration |
-| 9 | COD_MUN | IBGE municipality code |
-| 10 | IM | Municipal registration |
-| 11 | IND_SIT_ESP | Special situation (blank = normal) |
-| 12 | IND_SIT_INI_PER | 0 = normal opening |
-| 13 | IND_NIRE | 0 = no NIRE |
-| 14 | IND_FIN_ESC | 0 = original |
-| 15 | COD_HASH_SUB | blank |
-| 16 | NIRE_SUBST | blank |
-| 17 | IND_EMP_GRD_PRT | blank |
+| #   | Field           | Value                                     |
+| --- | --------------- | ----------------------------------------- |
+| 1   | REG             | 0000                                      |
+| 2   | LECD            | Fixed: LECD                               |
+| 3   | DT_INI          | First day of fiscal year (DDMMAAAA)       |
+| 4   | DT_FIN          | Last day of fiscal year (DDMMAAAA)        |
+| 5   | NOME            | Organization.name                         |
+| 6   | CNPJ            | Organization.document (CNPJ, digits only) |
+| 7   | UF              | Organization state code                   |
+| 8   | IE              | Organization state registration           |
+| 9   | COD_MUN         | IBGE municipality code                    |
+| 10  | IM              | Municipal registration                    |
+| 11  | IND_SIT_ESP     | Special situation (blank = normal)        |
+| 12  | IND_SIT_INI_PER | 0 = normal opening                        |
+| 13  | IND_NIRE        | 0 = no NIRE                               |
+| 14  | IND_FIN_ESC     | 0 = original                              |
+| 15  | COD_HASH_SUB    | blank                                     |
+| 16  | NIRE_SUBST      | blank                                     |
+| 17  | IND_EMP_GRD_PRT | blank                                     |
 
 **Registro 0007 fields (Livro):**
 
-| # | Field | Value |
-|---|-------|-------|
-| 1 | REG | 0007 |
-| 2 | COD_ENT_LIVRO | Livro description (e.g., "Livro 1") |
-| 3 | NUM_ORD | Book number (1) |
-| 4 | TIP_ESCRIT | G (Diário Geral — D-08) |
-| 5 | DT_INI | fiscal year start DDMMAAAA |
-| 6 | DT_FIN | fiscal year end DDMMAAAA |
-| 7 | NUM_ORD_INI | Initial entry number (1) |
-| 8 | HASH_ESC | blank (D-11: no hash) |
+| #   | Field         | Value                               |
+| --- | ------------- | ----------------------------------- |
+| 1   | REG           | 0007                                |
+| 2   | COD_ENT_LIVRO | Livro description (e.g., "Livro 1") |
+| 3   | NUM_ORD       | Book number (1)                     |
+| 4   | TIP_ESCRIT    | G (Diário Geral — D-08)             |
+| 5   | DT_INI        | fiscal year start DDMMAAAA          |
+| 6   | DT_FIN        | fiscal year end DDMMAAAA            |
+| 7   | NUM_ORD_INI   | Initial entry number (1)            |
+| 8   | HASH_ESC      | blank (D-11: no hash)               |
 
 **Bloco I — register summary:**
 
-| Register | Purpose | Key fields |
-|----------|---------|------------|
-| I001 | Block open | IND_DAD=0 |
-| I010 | Writer identification | COD_VRS_LC=009 (Layout 9) |
-| I050 | Chart of accounts | All active accounts (D-05), DT_ALT=last update, COD_NAT (01-05/09), IND_CTA (S/A), NIVEL, COD_CTA, COD_CTA_SUP, CTA |
-| I051 | COA referential mapping | COD_CTA → spedRefCode (L300R), one I051 per analytic account with spedRefCode |
-| I052 | Aggregation codes | One per I050 line that has a spedRefCode aggregation code |
-| I100 | Cost centers | Per farm/cost center (optional but recommended) |
-| I150 | Monthly balance period header | DT_INI=month start, DT_FIN=month end (one per month) |
-| I155 | Monthly balance detail | Per analytic account: VL_SLD_INI, IND_DC_INI, VL_DEB, VL_CRED, VL_SLD_FIN, IND_DC_FIN |
-| I200 | Journal entry header | NUM_LCTO=entryNumber, DT_LCTO, VL_LCTO=sum of debit lines, IND_LCTO=N |
-| I250 | Journal entry lines | COD_CTA, VL_DC, IND_DC (D/C), HIST=description |
-| I990 | Block close | QTD_LIN |
+| Register | Purpose                       | Key fields                                                                                                          |
+| -------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| I001     | Block open                    | IND_DAD=0                                                                                                           |
+| I010     | Writer identification         | COD_VRS_LC=009 (Layout 9)                                                                                           |
+| I050     | Chart of accounts             | All active accounts (D-05), DT_ALT=last update, COD_NAT (01-05/09), IND_CTA (S/A), NIVEL, COD_CTA, COD_CTA_SUP, CTA |
+| I051     | COA referential mapping       | COD_CTA → spedRefCode (L300R), one I051 per analytic account with spedRefCode                                       |
+| I052     | Aggregation codes             | One per I050 line that has a spedRefCode aggregation code                                                           |
+| I100     | Cost centers                  | Per farm/cost center (optional but recommended)                                                                     |
+| I150     | Monthly balance period header | DT_INI=month start, DT_FIN=month end (one per month)                                                                |
+| I155     | Monthly balance detail        | Per analytic account: VL_SLD_INI, IND_DC_INI, VL_DEB, VL_CRED, VL_SLD_FIN, IND_DC_FIN                               |
+| I200     | Journal entry header          | NUM_LCTO=entryNumber, DT_LCTO, VL_LCTO=sum of debit lines, IND_LCTO=N                                               |
+| I250     | Journal entry lines           | COD_CTA, VL_DC, IND_DC (D/C), HIST=description                                                                      |
+| I990     | Block close                   | QTD_LIN                                                                                                             |
 
 **COD_NAT mapping from AccountType:**
 
-| AccountType | COD_NAT |
-|-------------|---------|
-| ATIVO | 01 |
-| PASSIVO | 02 |
-| PL | 03 |
-| RECEITA | 04 |
-| DESPESA | 04 (Result) |
-| Compensation | 05 |
+| AccountType  | COD_NAT     |
+| ------------ | ----------- |
+| ATIVO        | 01          |
+| PASSIVO      | 02          |
+| PL           | 03          |
+| RECEITA      | 04          |
+| DESPESA      | 04 (Result) |
+| Compensation | 05          |
 
 **IND_DC_INI / IND_DC_FIN logic:**
 
@@ -334,23 +336,23 @@ res.send(pdfBuffer);
 
 **Bloco J — register summary:**
 
-| Register | Purpose | Key fields |
-|----------|---------|------------|
-| J001 | Block open | IND_DAD=0 |
-| J005 | Statement period header | DT_INI=year start, DT_FIN=year end, ID_DEM=1 (single entity) |
-| J100 | Balance sheet line | COD_AGL=spedRefCode, IND_COD_AGL (T/D), NIVEL_AGL, COD_AGL_SUP, IND_GRP_BAL (A/P), DESCR_COD_AGL, VL_CTA_INI, IND_DC_CTA_INI, VL_CTA_FIN, IND_DC_CTA_FIN |
-| J150 | Income statement line | COD_AGL=spedRefCode, IND_COD_AGL, NIVEL_AGL, COD_AGL_SUP, DESCR_COD_AGL, VL_CTA, IND_DC_CTA, IND_GRP_DRE (D/R) |
-| J210 | DLPA line | IND_TIP=0 (DLPA), COD_AGL, DESCR_COD_AGL, VL_CTA_INI, IND_DC_CTA_INI, VL_CTA_FIN, IND_DC_CTA_FIN |
-| J990 | Block close | QTD_LIN |
+| Register | Purpose                 | Key fields                                                                                                                                               |
+| -------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| J001     | Block open              | IND_DAD=0                                                                                                                                                |
+| J005     | Statement period header | DT_INI=year start, DT_FIN=year end, ID_DEM=1 (single entity)                                                                                             |
+| J100     | Balance sheet line      | COD_AGL=spedRefCode, IND_COD_AGL (T/D), NIVEL_AGL, COD_AGL_SUP, IND_GRP_BAL (A/P), DESCR_COD_AGL, VL_CTA_INI, IND_DC_CTA_INI, VL_CTA_FIN, IND_DC_CTA_FIN |
+| J150     | Income statement line   | COD_AGL=spedRefCode, IND_COD_AGL, NIVEL_AGL, COD_AGL_SUP, DESCR_COD_AGL, VL_CTA, IND_DC_CTA, IND_GRP_DRE (D/R)                                           |
+| J210     | DLPA line               | IND_TIP=0 (DLPA), COD_AGL, DESCR_COD_AGL, VL_CTA_INI, IND_DC_CTA_INI, VL_CTA_FIN, IND_DC_CTA_FIN                                                         |
+| J990     | Block close             | QTD_LIN                                                                                                                                                  |
 
 **Bloco 9 — encerramento:**
 
-| Register | Purpose |
-|----------|---------|
-| 9001 | Block open (IND_DAD=0) |
-| 9900 | Record count per type (one line per REG type used) |
-| 9990 | Block close count |
-| 9999 | Total file line count |
+| Register | Purpose                                            |
+| -------- | -------------------------------------------------- |
+| 9001     | Block open (IND_DAD=0)                             |
+| 9900     | Record count per type (one line per REG type used) |
+| 9990     | Block close count                                  |
+| 9999     | Total file line count                              |
 
 ### Anti-Patterns to Avoid
 
@@ -365,14 +367,14 @@ res.send(pdfBuffer);
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| PDF generation | Custom PDF builder | pdfkit (already installed) | Layout engine, fonts, page breaks |
-| Monetary arithmetic | `parseFloat()` + `+` | `Decimal.js` (already installed) | Floating-point precision in SPED amounts |
-| Date formatting | Custom DDMMAAAA function | `date-fns format(d, 'ddMMyyyy')` | Already in project, handles edge cases |
-| SPED unmapped accounts | New query | `getUnmappedSped()` in chart-of-accounts.service | Already implemented |
-| Financial data | New DB queries | Reuse `calculateDre()`, `calculateBp()`, `calculateDfc()` | Pure calculators already return all needed numbers |
-| Trial balance | New aggregation | `getTrialBalance()` in ledger.service | Returns AccountBalance aggregation per account/month |
+| Problem                | Don't Build              | Use Instead                                               | Why                                                  |
+| ---------------------- | ------------------------ | --------------------------------------------------------- | ---------------------------------------------------- |
+| PDF generation         | Custom PDF builder       | pdfkit (already installed)                                | Layout engine, fonts, page breaks                    |
+| Monetary arithmetic    | `parseFloat()` + `+`     | `Decimal.js` (already installed)                          | Floating-point precision in SPED amounts             |
+| Date formatting        | Custom DDMMAAAA function | `date-fns format(d, 'ddMMyyyy')`                          | Already in project, handles edge cases               |
+| SPED unmapped accounts | New query                | `getUnmappedSped()` in chart-of-accounts.service          | Already implemented                                  |
+| Financial data         | New DB queries           | Reuse `calculateDre()`, `calculateBp()`, `calculateDfc()` | Pure calculators already return all needed numbers   |
+| Trial balance          | New aggregation          | `getTrialBalance()` in ledger.service                     | Returns AccountBalance aggregation per account/month |
 
 **Key insight:** The SpedEcdWriter's only job is format transformation — data → pipe-delimited text. All data loading already exists in the project.
 
@@ -382,13 +384,13 @@ res.send(pdfBuffer);
 
 > Greenfield module — no rename/refactor. However, the migration adds fields to Organization model.
 
-| Category | Items Found | Action Required |
-|----------|-------------|------------------|
-| Stored data | Organization records exist without accountantName/accountantCrc/accountantCpf | Migration adds nullable columns; existing records will have NULL values (acceptable — fields shown as empty in generated files) |
-| Live service config | None — SPED ECD is a new module | None |
-| OS-registered state | None | None |
-| Secrets/env vars | None | None |
-| Build artifacts | None — new module, no stale artifacts | None |
+| Category            | Items Found                                                                   | Action Required                                                                                                                 |
+| ------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Stored data         | Organization records exist without accountantName/accountantCrc/accountantCpf | Migration adds nullable columns; existing records will have NULL values (acceptable — fields shown as empty in generated files) |
+| Live service config | None — SPED ECD is a new module                                               | None                                                                                                                            |
+| OS-registered state | None                                                                          | None                                                                                                                            |
+| Secrets/env vars    | None                                                                          | None                                                                                                                            |
+| Build artifacts     | None — new module, no stale artifacts                                         | None                                                                                                                            |
 
 ---
 
@@ -515,8 +517,7 @@ export async function generateIntegratedReport(
     doc.on('error', reject);
 
     // Section 1: Cover page
-    doc.fontSize(20).font('Helvetica-Bold')
-      .text('DEMONSTRAÇÕES FINANCEIRAS', { align: 'center' });
+    doc.fontSize(20).font('Helvetica-Bold').text('DEMONSTRAÇÕES FINANCEIRAS', { align: 'center' });
     // ... etc
     doc.end();
   });
@@ -533,8 +534,7 @@ const fiscalYearId = req.query.fiscalYearId as string | undefined;
 
 // For SPED text file download:
 res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-res.setHeader('Content-Disposition',
-  `attachment; filename="SPED_ECD_${cnpj}_${year}.txt"`);
+res.setHeader('Content-Disposition', `attachment; filename="SPED_ECD_${cnpj}_${year}.txt"`);
 res.send(Buffer.from(content, 'utf-8'));
 ```
 
@@ -565,11 +565,11 @@ ALTER TABLE "organizations" ADD COLUMN "accountantCpf"  VARCHAR(14);
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| SPED ECD only in closed-source ERP (Protheus, Senior, Sankhya) | Open format in Layout 9 since 2020 | ADE Cofis 1/2021 | Can implement custom writer |
-| BullMQ required for large file generation | Synchronous for SMB rural orgs | D-01 (locked) | Simpler implementation |
-| Hash signature in file | PVA/SPED handles signing | Layout 9 spec | D-11: no internal hash needed |
+| Old Approach                                                   | Current Approach                   | When Changed     | Impact                        |
+| -------------------------------------------------------------- | ---------------------------------- | ---------------- | ----------------------------- |
+| SPED ECD only in closed-source ERP (Protheus, Senior, Sankhya) | Open format in Layout 9 since 2020 | ADE Cofis 1/2021 | Can implement custom writer   |
+| BullMQ required for large file generation                      | Synchronous for SMB rural orgs     | D-01 (locked)    | Simpler implementation        |
+| Hash signature in file                                         | PVA/SPED handles signing           | Layout 9 spec    | D-11: no internal hash needed |
 
 **SPED ECD Layout version:** Layout 9 is current and stable. In use since 2020 (ADE Cofis nº 1/2021). No planned changes for 2025-2026 fiscal years.
 
@@ -596,13 +596,13 @@ ALTER TABLE "organizations" ADD COLUMN "accountantCpf"  VARCHAR(14);
 
 ## Environment Availability
 
-| Dependency | Required By | Available | Version | Fallback |
-|------------|------------|-----------|---------|----------|
-| pdfkit | Integrated report PDF | Yes | 0.17.2 | — |
-| date-fns | SPED date formatting | Yes | installed | Use manual string formatting |
-| Decimal.js | SPED amount formatting | Yes | installed | — |
-| PostgreSQL | DB queries | Yes | 16 | — |
-| Node.js | Buffer/string ops | Yes | v24.12 | — |
+| Dependency | Required By            | Available | Version   | Fallback                     |
+| ---------- | ---------------------- | --------- | --------- | ---------------------------- |
+| pdfkit     | Integrated report PDF  | Yes       | 0.17.2    | —                            |
+| date-fns   | SPED date formatting   | Yes       | installed | Use manual string formatting |
+| Decimal.js | SPED amount formatting | Yes       | installed | —                            |
+| PostgreSQL | DB queries             | Yes       | 16        | —                            |
+| Node.js    | Buffer/string ops      | Yes       | v24.12    | —                            |
 
 No missing dependencies.
 
@@ -612,24 +612,24 @@ No missing dependencies.
 
 ### Test Framework
 
-| Property | Value |
-|----------|-------|
-| Framework | Jest (backend) |
-| Config file | apps/backend/jest.config.ts |
-| Quick run command | `pnpm --filter @protos-farm/backend test --testPathPattern=sped-ecd` |
-| Full suite command | `pnpm --filter @protos-farm/backend test` |
+| Property           | Value                                                                |
+| ------------------ | -------------------------------------------------------------------- |
+| Framework          | Jest (backend)                                                       |
+| Config file        | apps/backend/jest.config.ts                                          |
+| Quick run command  | `pnpm --filter @protos-farm/backend test --testPathPattern=sped-ecd` |
+| Full suite command | `pnpm --filter @protos-farm/backend test`                            |
 
 ### Phase Requirements → Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| SPED-01 | SpedEcdWriter generates valid pipe-delimited lines for each register | unit | `pnpm --filter @protos-farm/backend test --testPathPattern=sped-ecd.writer` | ❌ Wave 0 |
-| SPED-01 | Route GET /sped-ecd/generate returns 200 with Content-Disposition attachment | integration | `pnpm --filter @protos-farm/backend test --testPathPattern=sped-ecd.routes` | ❌ Wave 0 |
-| SPED-02 | validateSpedEcd returns ERROR for accounts without spedRefCode | unit | `pnpm --filter @protos-farm/backend test --testPathPattern=sped-ecd.service` | ❌ Wave 0 |
-| SPED-02 | validateSpedEcd returns ERROR for open periods | unit | same file | ❌ Wave 0 |
-| SPED-02 | Route GET /sped-ecd/validate returns validation items | integration | `pnpm --filter @protos-farm/backend test --testPathPattern=sped-ecd.routes` | ❌ Wave 0 |
-| VINC-02 | generateIntegratedReport returns Buffer (PDF) | unit | `pnpm --filter @protos-farm/backend test --testPathPattern=integrated-report` | ❌ Wave 0 |
-| VINC-02 | Route GET /sped-ecd/integrated-report returns 200 with PDF content-type | integration | same routes file | ❌ Wave 0 |
+| Req ID  | Behavior                                                                     | Test Type   | Automated Command                                                             | File Exists? |
+| ------- | ---------------------------------------------------------------------------- | ----------- | ----------------------------------------------------------------------------- | ------------ |
+| SPED-01 | SpedEcdWriter generates valid pipe-delimited lines for each register         | unit        | `pnpm --filter @protos-farm/backend test --testPathPattern=sped-ecd.writer`   | ❌ Wave 0    |
+| SPED-01 | Route GET /sped-ecd/generate returns 200 with Content-Disposition attachment | integration | `pnpm --filter @protos-farm/backend test --testPathPattern=sped-ecd.routes`   | ❌ Wave 0    |
+| SPED-02 | validateSpedEcd returns ERROR for accounts without spedRefCode               | unit        | `pnpm --filter @protos-farm/backend test --testPathPattern=sped-ecd.service`  | ❌ Wave 0    |
+| SPED-02 | validateSpedEcd returns ERROR for open periods                               | unit        | same file                                                                     | ❌ Wave 0    |
+| SPED-02 | Route GET /sped-ecd/validate returns validation items                        | integration | `pnpm --filter @protos-farm/backend test --testPathPattern=sped-ecd.routes`   | ❌ Wave 0    |
+| VINC-02 | generateIntegratedReport returns Buffer (PDF)                                | unit        | `pnpm --filter @protos-farm/backend test --testPathPattern=integrated-report` | ❌ Wave 0    |
+| VINC-02 | Route GET /sped-ecd/integrated-report returns 200 with PDF content-type      | integration | same routes file                                                              | ❌ Wave 0    |
 
 ### Sampling Rate
 

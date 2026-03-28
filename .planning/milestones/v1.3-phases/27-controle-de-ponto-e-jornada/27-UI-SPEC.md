@@ -17,13 +17,13 @@ created: 2026-03-24
 
 ## Design System
 
-| Property | Value |
-|----------|-------|
-| Tool | none (custom CSS custom properties) |
-| Preset | not applicable |
-| Component library | Custom components + React Native core |
-| Icon library | lucide-react (web), lucide-react-native (mobile) |
-| Font | DM Sans (headlines), Source Sans 3 (body/UI), JetBrains Mono (timestamps/durations) |
+| Property          | Value                                                                               |
+| ----------------- | ----------------------------------------------------------------------------------- |
+| Tool              | none (custom CSS custom properties)                                                 |
+| Preset            | not applicable                                                                      |
+| Component library | Custom components + React Native core                                               |
+| Icon library      | lucide-react (web), lucide-react-native (mobile)                                    |
+| Font              | DM Sans (headlines), Source Sans 3 (body/UI), JetBrains Mono (timestamps/durations) |
 
 Source: CLAUDE.md + tokens.css — no shadcn. Project uses hand-rolled components with CSS custom properties.
 
@@ -33,17 +33,18 @@ Source: CLAUDE.md + tokens.css — no shadcn. Project uses hand-rolled component
 
 Declared values (multiples of 4px only — from tokens.css):
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| xs | 4px (`--space-1`) | Icon gaps, badge padding, inline chip gaps |
-| sm | 8px (`--space-2`) | Compact row padding, input icon offset |
-| md | 16px (`--space-4`) | Default element spacing, card internal padding, form row gap |
-| lg | 24px (`--space-6`) | Section padding, card-to-card gap, tab bar padding |
-| xl | 32px (`--space-8`) | Page horizontal padding, header bottom margin |
-| 2xl | 48px (`--space-12`) | Major section breaks |
-| 3xl | 64px (`--space-16`) | Page-level spacing, empty state icon size |
+| Token | Value               | Usage                                                        |
+| ----- | ------------------- | ------------------------------------------------------------ |
+| xs    | 4px (`--space-1`)   | Icon gaps, badge padding, inline chip gaps                   |
+| sm    | 8px (`--space-2`)   | Compact row padding, input icon offset                       |
+| md    | 16px (`--space-4`)  | Default element spacing, card internal padding, form row gap |
+| lg    | 24px (`--space-6`)  | Section padding, card-to-card gap, tab bar padding           |
+| xl    | 32px (`--space-8`)  | Page horizontal padding, header bottom margin                |
+| 2xl   | 48px (`--space-12`) | Major section breaks                                         |
+| 3xl   | 64px (`--space-16`) | Page-level spacing, empty state icon size                    |
 
 Exceptions:
+
 - Touch targets (mobile): minimum 48x48px — use `hitSlop` if visual size is smaller
 - Clock-in/out primary button (mobile): 72x72px circular button — exception granted for single primary CTA prominence
 - Timesheet calendar cell: 40x40px minimum — acceptable at ≥640px viewport only; on mobile, calendar renders as day-list rows at 56px height
@@ -56,15 +57,16 @@ All sizes from `tokens.css`. Use CSS vars — never hardcode.
 
 Two weights only: 400 (`--font-regular`) and 600 (`--font-semibold`). No `--font-bold` (700) is used in this phase — aligns with CLAUDE.md's DM Sans specification (500, 700 for headlines is the font capability, but the project token scale declares 400 and 600 as the two allowed weights in UI).
 
-| Role | Size | Weight | Line Height | Font | Usage |
-|------|------|--------|-------------|------|-------|
-| Body | 16px (`--text-base`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) | Source Sans 3 | Row labels, table cells, form help text |
-| Label | 14px (`--text-sm`) | 600 (`--font-semibold`) | 1.3 (`--leading-snug`) | Source Sans 3 | Table headers, form labels, badge text, status chips |
-| Heading | 20px (`--text-md`) | 600 (`--font-semibold`) | 1.2 (`--leading-tight`) | DM Sans | Page section titles, modal titles |
-| Display | 24px (`--text-xl`) | 600 (`--font-semibold`) | 1.2 (`--leading-tight`) | DM Sans | Page `<h1>` title |
-| Mono | 14px (`--text-sm`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) | JetBrains Mono | Timestamps (08:07), durations (7h32m), hour totals, GPS coordinates |
+| Role    | Size                 | Weight                  | Line Height              | Font           | Usage                                                               |
+| ------- | -------------------- | ----------------------- | ------------------------ | -------------- | ------------------------------------------------------------------- |
+| Body    | 16px (`--text-base`) | 400 (`--font-regular`)  | 1.5 (`--leading-normal`) | Source Sans 3  | Row labels, table cells, form help text                             |
+| Label   | 14px (`--text-sm`)   | 600 (`--font-semibold`) | 1.3 (`--leading-snug`)   | Source Sans 3  | Table headers, form labels, badge text, status chips                |
+| Heading | 20px (`--text-md`)   | 600 (`--font-semibold`) | 1.2 (`--leading-tight`)  | DM Sans        | Page section titles, modal titles                                   |
+| Display | 24px (`--text-xl`)   | 600 (`--font-semibold`) | 1.2 (`--leading-tight`)  | DM Sans        | Page `<h1>` title                                                   |
+| Mono    | 14px (`--text-sm`)   | 400 (`--font-regular`)  | 1.5 (`--leading-normal`) | JetBrains Mono | Timestamps (08:07), durations (7h32m), hour totals, GPS coordinates |
 
 Notes:
+
 - Minimum 12px — never go below (outdoor readability, CLAUDE.md)
 - Mono font is mandatory for all time values — operators compare registers visually; consistent character width prevents misreading
 - ALL CAPS only for short column headers ("ENTRADA", "SAÍDA", "HE") — never in body or description text
@@ -75,14 +77,15 @@ Notes:
 
 All values from `tokens.css`. Always use CSS vars.
 
-| Role | Token | Hex | Usage |
-|------|-------|-----|-------|
-| Dominant (60%) | `--color-neutral-50` | #FAFAF8 | Page background, table row default |
-| Secondary (30%) | `--color-neutral-100` / `--color-neutral-0` | #F5F3EF / #FFF | Cards, sidebar, modal backgrounds, alternate table rows |
-| Accent (10%) | `--color-primary-600` | #2E7D32 | Clock-in button, active tab underline, "Aprovar" action, approved/active status badge |
-| Destructive | `--color-error-500` | #C62828 | "Rejeitar" action, inconsistency flag, error alerts, interjornada <11h warning |
+| Role            | Token                                       | Hex            | Usage                                                                                 |
+| --------------- | ------------------------------------------- | -------------- | ------------------------------------------------------------------------------------- |
+| Dominant (60%)  | `--color-neutral-50`                        | #FAFAF8        | Page background, table row default                                                    |
+| Secondary (30%) | `--color-neutral-100` / `--color-neutral-0` | #F5F3EF / #FFF | Cards, sidebar, modal backgrounds, alternate table rows                               |
+| Accent (10%)    | `--color-primary-600`                       | #2E7D32        | Clock-in button, active tab underline, "Aprovar" action, approved/active status badge |
+| Destructive     | `--color-error-500`                         | #C62828        | "Rejeitar" action, inconsistency flag, error alerts, interjornada <11h warning        |
 
 Accent (`--color-primary-600`) is reserved for:
+
 1. Primary clock-in/out CTA button (mobile)
 2. Active tab indicator underline (web — AttendancePage, TimesheetPage)
 3. "Aprovar espelho" confirm action (web)
@@ -91,15 +94,15 @@ Accent (`--color-primary-600`) is reserved for:
 
 Semantic additions for this phase:
 
-| Token | Hex | Usage |
-|-------|-----|-------|
+| Token                 | Hex     | Usage                                                                        |
+| --------------------- | ------- | ---------------------------------------------------------------------------- |
 | `--color-warning-500` | #F57F17 | Banco de horas próximo do vencimento (≤30 dias), ponto pendente de aprovação |
-| `--color-warning-100` | #FFF8E1 | Warning badge background, inconsistency row highlight (fundo) |
-| `--color-error-100` | #FFEBEE | Inconsistency row highlight background (missing punch, <11h interjornada) |
-| `--color-info-500` | #0277BD | Manual correction indicator, apontamento pelo gerente (not self-registered) |
-| `--color-offline` | #78909C | Offline badge, pending sync indicator |
-| `--color-syncing` | #FFB300 | Syncing in-progress indicator dot |
-| `--color-synced` | #43A047 | Sync confirmed indicator dot |
+| `--color-warning-100` | #FFF8E1 | Warning badge background, inconsistency row highlight (fundo)                |
+| `--color-error-100`   | #FFEBEE | Inconsistency row highlight background (missing punch, <11h interjornada)    |
+| `--color-info-500`    | #0277BD | Manual correction indicator, apontamento pelo gerente (not self-registered)  |
+| `--color-offline`     | #78909C | Offline badge, pending sync indicator                                        |
+| `--color-syncing`     | #FFB300 | Syncing in-progress indicator dot                                            |
+| `--color-synced`      | #43A047 | Sync confirmed indicator dot                                                 |
 
 Rule: never use color as the only state indicator — always pair with an icon or text label.
 
@@ -109,27 +112,27 @@ Rule: never use color as the only state indicator — always pair with an icon o
 
 Existing components to reuse (no re-implementation):
 
-| Component | Path | Used For |
-|-----------|------|----------|
-| `ConfirmModal` | `@/components/ui/ConfirmModal` | Reject timesheet, delete manual correction |
-| Tab bar pattern | `PayrollParametersPage.css` (`.payroll-params__tab`) | AttendancePage tabs (Apontamentos, Banco de Horas, Operações); TimesheetPage tabs (Espelho, Inconsistências) |
-| Breadcrumb pattern | `PayrollParametersPage.css` (`.payroll-params__breadcrumb`) | Both web pages |
-| Offline banner | `planting-operation.tsx` (`WifiOff` icon + banner) | Mobile time-punch screen — identical offline UX |
-| `Skeleton` loading | project-wide | All list loading states |
+| Component          | Path                                                        | Used For                                                                                                     |
+| ------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `ConfirmModal`     | `@/components/ui/ConfirmModal`                              | Reject timesheet, delete manual correction                                                                   |
+| Tab bar pattern    | `PayrollParametersPage.css` (`.payroll-params__tab`)        | AttendancePage tabs (Apontamentos, Banco de Horas, Operações); TimesheetPage tabs (Espelho, Inconsistências) |
+| Breadcrumb pattern | `PayrollParametersPage.css` (`.payroll-params__breadcrumb`) | Both web pages                                                                                               |
+| Offline banner     | `planting-operation.tsx` (`WifiOff` icon + banner)          | Mobile time-punch screen — identical offline UX                                                              |
+| `Skeleton` loading | project-wide                                                | All list loading states                                                                                      |
 
 New components to create:
 
-| Component | Path | Notes |
-|-----------|------|-------|
-| `AttendancePage` | `src/pages/AttendancePage.tsx` + `.css` | Web: manual punch, link to operations |
-| `TimesheetPage` | `src/pages/TimesheetPage.tsx` + `.css` | Web: monthly timesheet review + approval |
-| `ManualPunchModal` | `src/components/attendance/ManualPunchModal.tsx` | Form modal for manager-entered punches |
-| `LinkOperationModal` | `src/components/attendance/LinkOperationModal.tsx` | Link time entries to field operations |
-| `TimesheetApprovalModal` | `src/components/attendance/TimesheetApprovalModal.tsx` | Approve/reject with justification |
-| `TimeEntryEditModal` | `src/components/attendance/TimeEntryEditModal.tsx` | Correct inconsistency with justification field |
-| `OvertimeBankCard` | `src/components/attendance/OvertimeBankCard.tsx` | Saldo, alertas de vencimento |
-| `time-punch.tsx` (mobile) | `apps/mobile/app/(app)/time-punch.tsx` | Clock-in/out screen with geofencing |
-| `TimePunchRepository` | `apps/mobile/services/db/time-punch-repository.ts` | SQLite offline store |
+| Component                 | Path                                                   | Notes                                          |
+| ------------------------- | ------------------------------------------------------ | ---------------------------------------------- |
+| `AttendancePage`          | `src/pages/AttendancePage.tsx` + `.css`                | Web: manual punch, link to operations          |
+| `TimesheetPage`           | `src/pages/TimesheetPage.tsx` + `.css`                 | Web: monthly timesheet review + approval       |
+| `ManualPunchModal`        | `src/components/attendance/ManualPunchModal.tsx`       | Form modal for manager-entered punches         |
+| `LinkOperationModal`      | `src/components/attendance/LinkOperationModal.tsx`     | Link time entries to field operations          |
+| `TimesheetApprovalModal`  | `src/components/attendance/TimesheetApprovalModal.tsx` | Approve/reject with justification              |
+| `TimeEntryEditModal`      | `src/components/attendance/TimeEntryEditModal.tsx`     | Correct inconsistency with justification field |
+| `OvertimeBankCard`        | `src/components/attendance/OvertimeBankCard.tsx`       | Saldo, alertas de vencimento                   |
+| `time-punch.tsx` (mobile) | `apps/mobile/app/(app)/time-punch.tsx`                 | Clock-in/out screen with geofencing            |
+| `TimePunchRepository`     | `apps/mobile/services/db/time-punch-repository.ts`     | SQLite offline store                           |
 
 ---
 
@@ -138,6 +141,7 @@ New components to create:
 ### Web: AttendancePage (`/attendance`)
 
 Structure:
+
 ```
 <main>
   Breadcrumb: RH > Controle de Ponto
@@ -156,6 +160,7 @@ Structure:
 ### Web: TimesheetPage (`/timesheets`)
 
 Structure:
+
 ```
 <main>
   Breadcrumb: RH > Espelho de Ponto
@@ -175,6 +180,7 @@ Structure:
 ### Mobile: time-punch.tsx
 
 Structure:
+
 ```
 <SafeAreaView>
   Header: back arrow + "Registro de Ponto" title
@@ -206,7 +212,7 @@ Structure:
 ### Manual Punch Entry (Web — Manager)
 
 1. Manager opens `ManualPunchModal` from primary CTA
-2. Fields: Colaborador* (searchable select), Data*, Tipo* (ENTRADA / SAÍDA / INTERVALO_INÍCIO / INTERVALO_FIM), Horário*, Justificativa* (textarea, min 10 chars)
+2. Fields: Colaborador* (searchable select), Data*, Tipo* (ENTRADA / SAÍDA / INTERVALO_INÍCIO / INTERVALO_FIM), Horário*, Justificativa\* (textarea, min 10 chars)
 3. Validation inline on blur: required fields, time format HH:MM, justificativa length
 4. Submit: POST `/time-entries` — on success, close modal + success toast + refetch list
 5. Justificativa stored in audit log — visible in timesheet view as info badge with `Info` icon
@@ -223,7 +229,7 @@ Structure:
 
 1. Row flagged with `AlertCircle` icon (16px, `--color-error-500`) + red background
 2. Click row or "Corrigir" action opens `TimeEntryEditModal`
-3. Fields: horário corrigido, justificativa* (required for any edit)
+3. Fields: horário corrigido, justificativa\* (required for any edit)
 4. Audit trail: original value shown in modal as read-only "Valor original: 07:58", new value in editable field
 5. ConfirmModal with `variant="warning"` before saving — "Confirmar correção? Esta alteração ficará no histórico de auditoria."
 
@@ -241,40 +247,40 @@ Language: pt-BR coloquial. Never use system-language ("recurso criado", "registr
 
 Mobile clock-in/out buttons display a primary label (large) and a sub-label below it at 12px (`--font-regular`, Source Sans 3) to satisfy the verb+noun pattern while keeping the button face scannable at a glance.
 
-| Element | Copy |
-|---------|------|
-| Primary CTA (web) | "Registrar Ponto" |
-| Primary CTA (mobile — clock in) | "Entrar" + sub-label "Registrar entrada" (12px) |
-| Primary CTA (mobile — clock out) | "Sair" + sub-label "Registrar saída" (12px) |
-| Primary CTA (mobile — interval start) | "Iniciar Intervalo" |
-| Primary CTA (mobile — interval end) | "Retornar" + sub-label "Registrar retorno" (12px) |
-| Approve action | "Aprovar Espelho" |
-| Reject action | "Rejeitar e Devolver" |
-| Export action | "Exportar PDF" |
-| Empty state heading (AttendancePage — no entries today) | "Nenhum ponto registrado hoje" |
-| Empty state body (AttendancePage) | "Os colaboradores ainda não registraram ponto. Você pode registrar manualmente pelo botão acima." |
-| Empty state heading (TimesheetPage — no timesheets) | "Nenhum espelho disponível" |
-| Empty state body (TimesheetPage) | "Selecione um colaborador e um mês para visualizar o espelho de ponto." |
-| Empty state heading (Banco de Horas — zero balance) | "Sem saldo no banco de horas" |
-| Empty state body (Banco de Horas) | "Nenhuma hora extra acumulada para este período." |
-| Error state (generic) | "Não foi possível carregar os registros. Verifique sua conexão e tente novamente." |
-| Error state (geofence fail) | "Você está fora do perímetro da fazenda. Registrar mesmo assim?" |
-| Error state (punch outside hours) | "Horário fora da jornada configurada. Registrar com justificativa?" |
-| Inconsistency label — missing punch | "Ponto de saída não registrado" |
-| Inconsistency label — interjornada | "Interjornada inferior a 11h" |
-| Inconsistency label — outside geofence | "Ponto registrado fora do perímetro" |
-| Banco de horas expiry warning | "Horas vencem em [N] dias" |
-| Timesheet status: pending | "Aguardando aprovação" |
-| Timesheet status: approved by manager | "Aprovado pelo gerente" |
-| Timesheet status: approved by HR | "Aprovado pelo RH" |
-| Timesheet status: closed | "Fechado" |
-| Manual punch audit label | "Registrado pelo gerente" |
-| Destructive confirmation — reject timesheet | "Rejeitar espelho de [Nome]? O colaborador será notificado para corrigir os apontamentos. Informe o motivo:" |
-| Destructive confirmation — delete manual correction | "Excluir correção? O registro voltará ao valor original." |
-| Sync status — pending | "Aguardando conexão" |
-| Sync status — syncing | "Sincronizando..." |
-| Sync status — synced | "Sincronizado" |
-| Offline banner | "Sem conexão. Os registros serão enviados quando você voltar online." |
+| Element                                                 | Copy                                                                                                         |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Primary CTA (web)                                       | "Registrar Ponto"                                                                                            |
+| Primary CTA (mobile — clock in)                         | "Entrar" + sub-label "Registrar entrada" (12px)                                                              |
+| Primary CTA (mobile — clock out)                        | "Sair" + sub-label "Registrar saída" (12px)                                                                  |
+| Primary CTA (mobile — interval start)                   | "Iniciar Intervalo"                                                                                          |
+| Primary CTA (mobile — interval end)                     | "Retornar" + sub-label "Registrar retorno" (12px)                                                            |
+| Approve action                                          | "Aprovar Espelho"                                                                                            |
+| Reject action                                           | "Rejeitar e Devolver"                                                                                        |
+| Export action                                           | "Exportar PDF"                                                                                               |
+| Empty state heading (AttendancePage — no entries today) | "Nenhum ponto registrado hoje"                                                                               |
+| Empty state body (AttendancePage)                       | "Os colaboradores ainda não registraram ponto. Você pode registrar manualmente pelo botão acima."            |
+| Empty state heading (TimesheetPage — no timesheets)     | "Nenhum espelho disponível"                                                                                  |
+| Empty state body (TimesheetPage)                        | "Selecione um colaborador e um mês para visualizar o espelho de ponto."                                      |
+| Empty state heading (Banco de Horas — zero balance)     | "Sem saldo no banco de horas"                                                                                |
+| Empty state body (Banco de Horas)                       | "Nenhuma hora extra acumulada para este período."                                                            |
+| Error state (generic)                                   | "Não foi possível carregar os registros. Verifique sua conexão e tente novamente."                           |
+| Error state (geofence fail)                             | "Você está fora do perímetro da fazenda. Registrar mesmo assim?"                                             |
+| Error state (punch outside hours)                       | "Horário fora da jornada configurada. Registrar com justificativa?"                                          |
+| Inconsistency label — missing punch                     | "Ponto de saída não registrado"                                                                              |
+| Inconsistency label — interjornada                      | "Interjornada inferior a 11h"                                                                                |
+| Inconsistency label — outside geofence                  | "Ponto registrado fora do perímetro"                                                                         |
+| Banco de horas expiry warning                           | "Horas vencem em [N] dias"                                                                                   |
+| Timesheet status: pending                               | "Aguardando aprovação"                                                                                       |
+| Timesheet status: approved by manager                   | "Aprovado pelo gerente"                                                                                      |
+| Timesheet status: approved by HR                        | "Aprovado pelo RH"                                                                                           |
+| Timesheet status: closed                                | "Fechado"                                                                                                    |
+| Manual punch audit label                                | "Registrado pelo gerente"                                                                                    |
+| Destructive confirmation — reject timesheet             | "Rejeitar espelho de [Nome]? O colaborador será notificado para corrigir os apontamentos. Informe o motivo:" |
+| Destructive confirmation — delete manual correction     | "Excluir correção? O registro voltará ao valor original."                                                    |
+| Sync status — pending                                   | "Aguardando conexão"                                                                                         |
+| Sync status — syncing                                   | "Sincronizando..."                                                                                           |
+| Sync status — synced                                    | "Sincronizado"                                                                                               |
+| Offline banner                                          | "Sem conexão. Os registros serão enviados quando você voltar online."                                        |
 
 ---
 
@@ -282,40 +288,40 @@ Mobile clock-in/out buttons display a primary label (large) and a sub-label belo
 
 Timesheet approval state (use `Label` typography — 14px/600 Source Sans 3):
 
-| Status | Background | Text Color | Icon |
-|--------|-----------|------------|------|
-| PENDENTE | `--color-warning-100` | `--color-warning-500` | `Clock` 14px |
-| APROVADO_GERENTE | `--color-info-100` | `--color-info-500` | `CheckCircle` 14px |
-| APROVADO_RH | `--color-primary-50` | `--color-primary-600` | `CheckCircle2` 14px |
-| FECHADO | `--color-neutral-200` | `--color-neutral-600` | `Lock` 14px |
+| Status           | Background            | Text Color            | Icon                |
+| ---------------- | --------------------- | --------------------- | ------------------- |
+| PENDENTE         | `--color-warning-100` | `--color-warning-500` | `Clock` 14px        |
+| APROVADO_GERENTE | `--color-info-100`    | `--color-info-500`    | `CheckCircle` 14px  |
+| APROVADO_RH      | `--color-primary-50`  | `--color-primary-600` | `CheckCircle2` 14px |
+| FECHADO          | `--color-neutral-200` | `--color-neutral-600` | `Lock` 14px         |
 
 Time entry type (compact, inline in table rows):
 
-| Type | Icon | Label |
-|------|------|-------|
-| ENTRADA | `LogIn` | "Entrada" |
-| SAÍDA | `LogOut` | "Saída" |
-| INTERVALO_INÍCIO | `Coffee` | "Intervalo" |
-| INTERVALO_FIM | `RotateCcw` | "Retorno" |
-| MANUAL | `UserPen` | "Manual" — paired with info badge |
+| Type             | Icon        | Label                             |
+| ---------------- | ----------- | --------------------------------- |
+| ENTRADA          | `LogIn`     | "Entrada"                         |
+| SAÍDA            | `LogOut`    | "Saída"                           |
+| INTERVALO_INÍCIO | `Coffee`    | "Intervalo"                       |
+| INTERVALO_FIM    | `RotateCcw` | "Retorno"                         |
+| MANUAL           | `UserPen`   | "Manual" — paired with info badge |
 
 Punch source (table column, 12px label):
 
-| Source | Icon | Color |
-|--------|------|-------|
-| Mobile — dentro perímetro | `MapPin` | `--color-success-500` |
-| Mobile — fora perímetro | `MapPin` | `--color-warning-500` |
-| Web — manual | `Monitor` | `--color-info-500` |
-| Gerente — apontamento | `UserPen` | `--color-info-500` |
+| Source                    | Icon      | Color                 |
+| ------------------------- | --------- | --------------------- |
+| Mobile — dentro perímetro | `MapPin`  | `--color-success-500` |
+| Mobile — fora perímetro   | `MapPin`  | `--color-warning-500` |
+| Web — manual              | `Monitor` | `--color-info-500`    |
+| Gerente — apontamento     | `UserPen` | `--color-info-500`    |
 
 ---
 
 ## Registry Safety
 
-| Registry | Blocks Used | Safety Gate |
-|----------|-------------|-------------|
+| Registry        | Blocks Used                        | Safety Gate    |
+| --------------- | ---------------------------------- | -------------- |
 | shadcn official | none — project does not use shadcn | not applicable |
-| Third-party | none | not applicable |
+| Third-party     | none                               | not applicable |
 
 No third-party component registries or blocks are declared for this phase.
 
@@ -341,17 +347,17 @@ No third-party component registries or blocks are declared for this phase.
 
 All durations from `tokens.css` — never custom values.
 
-| Interaction | Duration | Easing | Notes |
-|-------------|----------|--------|-------|
-| Tab switch | 200ms | `--ease-out` | Content fade, not slide |
-| Modal open | 300ms | `--ease-out` | translateY(16px) → translateY(0) + opacity 0 → 1 |
-| Modal close | 200ms | `--ease-in` | opacity 1 → 0 |
-| Status chip update | 200ms | `--ease-out` | Color cross-fade via CSS transition |
-| Sync dot state change | 200ms | `--ease-out` | Color only, no size change |
-| Clock-in button press (mobile) | 100ms | `--ease-out` | scale(0.98) + opacity 0.85 |
-| Clock-in button active pulse | 1500ms infinite | ease-in-out | Ring pulse on --color-primary-200; suppress with `prefers-reduced-motion` |
-| Skeleton loading pulse | 1500ms infinite | ease-in-out | opacity 0.4 → 0.7 |
-| Row appear (new punch registered) | 300ms | `--ease-spring` | translateX(-8px) → 0 + opacity 0 → 1 |
+| Interaction                       | Duration        | Easing          | Notes                                                                     |
+| --------------------------------- | --------------- | --------------- | ------------------------------------------------------------------------- |
+| Tab switch                        | 200ms           | `--ease-out`    | Content fade, not slide                                                   |
+| Modal open                        | 300ms           | `--ease-out`    | translateY(16px) → translateY(0) + opacity 0 → 1                          |
+| Modal close                       | 200ms           | `--ease-in`     | opacity 1 → 0                                                             |
+| Status chip update                | 200ms           | `--ease-out`    | Color cross-fade via CSS transition                                       |
+| Sync dot state change             | 200ms           | `--ease-out`    | Color only, no size change                                                |
+| Clock-in button press (mobile)    | 100ms           | `--ease-out`    | scale(0.98) + opacity 0.85                                                |
+| Clock-in button active pulse      | 1500ms infinite | ease-in-out     | Ring pulse on --color-primary-200; suppress with `prefers-reduced-motion` |
+| Skeleton loading pulse            | 1500ms infinite | ease-in-out     | opacity 0.4 → 0.7                                                         |
+| Row appear (new punch registered) | 300ms           | `--ease-spring` | translateX(-8px) → 0 + opacity 0 → 1                                      |
 
 ---
 

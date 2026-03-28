@@ -15,13 +15,13 @@ created: 2026-03-25
 
 ## Design System
 
-| Property | Value |
-|----------|-------|
-| Tool | none — project uses hand-authored CSS with design tokens |
-| Preset | not applicable |
-| Component library | Custom components under `src/components/ui/` (ConfirmModal, ConfirmDeleteModal) |
-| Icon library | lucide-react |
-| Font | DM Sans (headlines) + Source Sans 3 (body/UI) + JetBrains Mono (monetary values) |
+| Property          | Value                                                                            |
+| ----------------- | -------------------------------------------------------------------------------- |
+| Tool              | none — project uses hand-authored CSS with design tokens                         |
+| Preset            | not applicable                                                                   |
+| Component library | Custom components under `src/components/ui/` (ConfirmModal, ConfirmDeleteModal)  |
+| Icon library      | lucide-react                                                                     |
+| Font              | DM Sans (headlines) + Source Sans 3 (body/UI) + JetBrains Mono (monetary values) |
 
 Source: CLAUDE.md + `apps/frontend/src/styles/tokens.css`
 
@@ -31,17 +31,18 @@ Source: CLAUDE.md + `apps/frontend/src/styles/tokens.css`
 
 Declared values (multiples of 4 only — project rule from CLAUDE.md):
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| xs | 4px | Icon gaps, badge padding, inline chip spacing |
-| sm | 8px | Compact element spacing, table cell padding |
-| md | 16px | Default element spacing, form field gap, card padding |
-| lg | 24px | Section padding, page content padding |
-| xl | 32px | Layout gaps, modal padding |
-| 2xl | 48px | Major section breaks, empty state vertical spacing |
-| 3xl | 64px | Empty state icon size |
+| Token | Value | Usage                                                 |
+| ----- | ----- | ----------------------------------------------------- |
+| xs    | 4px   | Icon gaps, badge padding, inline chip spacing         |
+| sm    | 8px   | Compact element spacing, table cell padding           |
+| md    | 16px  | Default element spacing, form field gap, card padding |
+| lg    | 24px  | Section padding, page content padding                 |
+| xl    | 32px  | Layout gaps, modal padding                            |
+| 2xl   | 48px  | Major section breaks, empty state vertical spacing    |
+| 3xl   | 64px  | Empty state icon size                                 |
 
 Exceptions:
+
 - Touch targets: minimum 48x48px for all interactive elements (buttons, tabs, row actions)
 - Input padding: 12px vertical, 16px horizontal (project minimum)
 - Breadcrumb separator gap: 8px (--space-sm) — aligned to 4px grid
@@ -52,16 +53,17 @@ Exceptions:
 
 Source: `apps/frontend/src/styles/tokens.css` + CLAUDE.md — pre-populated, not re-asked.
 
-| Role | Size | Family | Weight | Line Height |
-|------|------|--------|--------|-------------|
-| Body | 16px (--text-base) | Source Sans 3 | 400 | 1.5 |
-| Label / UI text | 14px (--text-sm) | Source Sans 3 | 400 | 1.4 |
-| Heading (page title) | 20px (--text-lg) | DM Sans | 700 | 1.2 |
-| Subheading (section/tab) | 16px (--text-base) | DM Sans | 500 | 1.3 |
-| Monetary values | 14px (--text-sm) | JetBrains Mono | 400 | 1.4 |
-| Status badge / caption | 12px (--text-xs) | Source Sans 3 | 600 (ALL CAPS, max 2 words) | 1.2 |
+| Role                     | Size               | Family         | Weight                      | Line Height |
+| ------------------------ | ------------------ | -------------- | --------------------------- | ----------- |
+| Body                     | 16px (--text-base) | Source Sans 3  | 400                         | 1.5         |
+| Label / UI text          | 14px (--text-sm)   | Source Sans 3  | 400                         | 1.4         |
+| Heading (page title)     | 20px (--text-lg)   | DM Sans        | 700                         | 1.2         |
+| Subheading (section/tab) | 16px (--text-base) | DM Sans        | 500                         | 1.3         |
+| Monetary values          | 14px (--text-sm)   | JetBrains Mono | 400                         | 1.4         |
+| Status badge / caption   | 12px (--text-xs)   | Source Sans 3  | 600 (ALL CAPS, max 2 words) | 1.2         |
 
 Notes:
+
 - Nothing smaller than 12px (outdoor legibility rule from CLAUDE.md)
 - Monetary amounts (vacation pay, provision totals, termination items) always use JetBrains Mono
 - ALL CAPS only on status badges: "AGENDADO", "PAGO", "RASCUNHO", "PROCESSADO", "AFASTADO" — never on sentences
@@ -72,21 +74,22 @@ Notes:
 
 Source: `apps/frontend/src/styles/tokens.css` + CLAUDE.md — pre-populated.
 
-| Role | Token | Hex | Usage |
-|------|-------|-----|-------|
-| Dominant (60%) | --color-neutral-50 | #FAFAF8 | Page background, table backgrounds |
-| Secondary (30%) | --color-neutral-100 | #F5F3EF | Cards, modals, sidebar, table row stripes |
-| Accent (10%) | --color-primary-600 | #2E7D32 | Primary CTA buttons only (one per screen) |
-| Text heading | --color-neutral-800 | #2A2520 | Page titles, modal titles |
-| Text body | --color-neutral-700 | #3E3833 | All body text, table cell content |
-| Text secondary | --color-neutral-500 | #7A7267 | Labels, captions, breadcrumb links |
-| Border | --color-neutral-200 | #E8E4DD | Table borders, card borders, input borders |
-| Destructive | --color-error-500 | #C62828 | Rescisão buttons, absence status EXPIRED, termination confirm |
-| Warning | --color-warning-500 | #F57F17 | Vacation expiry alerts (60-day warning), overdue payment badge |
-| Info | --color-info-500 | #0277BD | Informational banners (ASO required, CAT registered) |
-| Success | --color-success-500 | #2E7D32 | PAID status badge, PROCESSED termination badge |
+| Role            | Token               | Hex     | Usage                                                          |
+| --------------- | ------------------- | ------- | -------------------------------------------------------------- |
+| Dominant (60%)  | --color-neutral-50  | #FAFAF8 | Page background, table backgrounds                             |
+| Secondary (30%) | --color-neutral-100 | #F5F3EF | Cards, modals, sidebar, table row stripes                      |
+| Accent (10%)    | --color-primary-600 | #2E7D32 | Primary CTA buttons only (one per screen)                      |
+| Text heading    | --color-neutral-800 | #2A2520 | Page titles, modal titles                                      |
+| Text body       | --color-neutral-700 | #3E3833 | All body text, table cell content                              |
+| Text secondary  | --color-neutral-500 | #7A7267 | Labels, captions, breadcrumb links                             |
+| Border          | --color-neutral-200 | #E8E4DD | Table borders, card borders, input borders                     |
+| Destructive     | --color-error-500   | #C62828 | Rescisão buttons, absence status EXPIRED, termination confirm  |
+| Warning         | --color-warning-500 | #F57F17 | Vacation expiry alerts (60-day warning), overdue payment badge |
+| Info            | --color-info-500    | #0277BD | Informational banners (ASO required, CAT registered)           |
+| Success         | --color-success-500 | #2E7D32 | PAID status badge, PROCESSED termination badge                 |
 
 Accent (`--color-primary-600`) reserved for:
+
 1. "Agendar Férias" button (VacationSchedulesPage — single primary CTA)
 2. "Registrar Afastamento" button (EmployeeAbsencesPage — single primary CTA)
 3. "Iniciar Rescisão" button (EmployeeTerminationsPage — single primary CTA)
@@ -162,12 +165,12 @@ Four new pages follow the established HR payroll pattern (PayrollRunsPage patter
 
 ### New Modals (all follow existing pattern: isOpen, onClose, onSuccess props)
 
-| Modal | Trigger | Criticality | Confirmation Pattern |
-|-------|---------|-------------|---------------------|
-| VacationScheduleModal | "Agendar Férias" button | Low | Standard submit button |
-| EmployeeAbsenceModal | "Registrar Afastamento" button | Low | Standard submit button |
-| EmployeeTerminationModal | "Iniciar Rescisão" button | Medium | ConfirmModal variant="danger" before submitting |
-| ProvisionReversalConfirm | "Estornar" row action | Medium | ConfirmModal variant="warning" |
+| Modal                    | Trigger                        | Criticality | Confirmation Pattern                            |
+| ------------------------ | ------------------------------ | ----------- | ----------------------------------------------- |
+| VacationScheduleModal    | "Agendar Férias" button        | Low         | Standard submit button                          |
+| EmployeeAbsenceModal     | "Registrar Afastamento" button | Low         | Standard submit button                          |
+| EmployeeTerminationModal | "Iniciar Rescisão" button      | Medium      | ConfirmModal variant="danger" before submitting |
+| ProvisionReversalConfirm | "Estornar" row action          | Medium      | ConfirmModal variant="warning"                  |
 
 ### VacationScheduleModal — Step Flow (multi-step, ≤3 steps)
 
@@ -209,55 +212,55 @@ All copy in pt-BR, informal register, actionable.
 
 ### Primary CTAs (one per screen)
 
-| Page | CTA Label |
-|------|-----------|
-| VacationSchedulesPage | "Agendar Férias" |
-| EmployeeAbsencesPage | "Registrar Afastamento" |
-| EmployeeTerminationsPage | "Iniciar Rescisão" |
-| PayrollProvisionsPage | "Calcular Provisões" |
+| Page                     | CTA Label               |
+| ------------------------ | ----------------------- |
+| VacationSchedulesPage    | "Agendar Férias"        |
+| EmployeeAbsencesPage     | "Registrar Afastamento" |
+| EmployeeTerminationsPage | "Iniciar Rescisão"      |
+| PayrollProvisionsPage    | "Calcular Provisões"    |
 
 ### Empty States (icon 48px + heading + body + CTA)
 
-| Page / Tab | Icon | Heading | Body | CTA |
-|------------|------|---------|------|-----|
-| VacationSchedules — períodos | CalendarOff | "Nenhum período aquisitivo encontrado" | "Os períodos aquisitivos são criados automaticamente ao cadastrar um colaborador com data de admissão." | none (auto-generated) |
-| VacationSchedules — agendamentos | CalendarCheck | "Nenhuma férias agendada" | "Selecione um colaborador com período disponível e agende o gozo das férias." | "Agendar Férias" |
-| EmployeeAbsencesPage | Stethoscope | "Nenhum afastamento registrado" | "Registre atestados, afastamentos por INSS ou acidentes de trabalho para que a folha seja ajustada automaticamente." | "Registrar Afastamento" |
-| EmployeeTerminationsPage | UserMinus | "Nenhuma rescisão registrada" | "Ao iniciar uma rescisão, o sistema calcula automaticamente todos os direitos trabalhistas e gera o TRCT." | "Iniciar Rescisão" |
-| PayrollProvisions — mês | BarChart3 | "Provisões não calculadas para este mês" | "Clique em Calcular Provisões para apurar férias e 13º de todos os colaboradores ativos." | "Calcular Provisões" |
+| Page / Tab                       | Icon          | Heading                                  | Body                                                                                                                 | CTA                     |
+| -------------------------------- | ------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| VacationSchedules — períodos     | CalendarOff   | "Nenhum período aquisitivo encontrado"   | "Os períodos aquisitivos são criados automaticamente ao cadastrar um colaborador com data de admissão."              | none (auto-generated)   |
+| VacationSchedules — agendamentos | CalendarCheck | "Nenhuma férias agendada"                | "Selecione um colaborador com período disponível e agende o gozo das férias."                                        | "Agendar Férias"        |
+| EmployeeAbsencesPage             | Stethoscope   | "Nenhum afastamento registrado"          | "Registre atestados, afastamentos por INSS ou acidentes de trabalho para que a folha seja ajustada automaticamente." | "Registrar Afastamento" |
+| EmployeeTerminationsPage         | UserMinus     | "Nenhuma rescisão registrada"            | "Ao iniciar uma rescisão, o sistema calcula automaticamente todos os direitos trabalhistas e gera o TRCT."           | "Iniciar Rescisão"      |
+| PayrollProvisions — mês          | BarChart3     | "Provisões não calculadas para este mês" | "Clique em Calcular Provisões para apurar férias e 13º de todos os colaboradores ativos."                            | "Calcular Provisões"    |
 
 ### Error States
 
-| Context | Error Copy |
-|---------|-----------|
-| Generic API failure | "Não foi possível carregar os dados. Verifique sua conexão e tente novamente." |
-| Vacation schedule conflict | "O colaborador já tem férias agendadas neste período. Escolha outras datas." |
-| Minimum days violation | "O período mínimo de férias é 5 dias corridos. Ajuste as datas." |
+| Context                          | Error Copy                                                                                                          |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Generic API failure              | "Não foi possível carregar os dados. Verifique sua conexão e tente novamente."                                      |
+| Vacation schedule conflict       | "O colaborador já tem férias agendadas neste período. Escolha outras datas."                                        |
+| Minimum days violation           | "O período mínimo de férias é 5 dias corridos. Ajuste as datas."                                                    |
 | Termination on AFASTADO employee | "Colaborador está afastado com estabilidade provisória até [data]. A rescisão não pode ser iniciada neste período." |
-| Provision already calculated | "Provisões de [mês/ano] já foram calculadas. Estorne as existentes antes de recalcular." |
-| PDF generation failure | "Não foi possível gerar o PDF. Tente novamente ou entre em contato com o suporte." |
+| Provision already calculated     | "Provisões de [mês/ano] já foram calculadas. Estorne as existentes antes de recalcular."                            |
+| PDF generation failure           | "Não foi possível gerar o PDF. Tente novamente ou entre em contato com o suporte."                                  |
 
 ### Destructive Action Confirmations
 
-| Action | Criticality | Modal Type | Confirmation Copy |
-|--------|-------------|------------|-------------------|
-| Cancelar férias agendadas | Medium | ConfirmModal variant="danger" | "Cancelar este agendamento de férias? Os dias voltarão ao saldo disponível do colaborador." |
-| Iniciar rescisão | Medium | ConfirmModal variant="danger" | "Iniciar a rescisão bloqueia o contrato do colaborador. Confirme apenas após revisar todos os dados." |
-| Estornar provisão | Medium | ConfirmModal variant="warning" | "Estornar a provisão de [tipo] de [mês]? Os valores serão removidos do passivo apurado." |
-| Registrar afastamento por acidente (CAT) | Low | Inline info (not modal) | Banner: "Ao confirmar, o sistema registra estabilidade provisória de 12 meses após o retorno." |
+| Action                                   | Criticality | Modal Type                     | Confirmation Copy                                                                                     |
+| ---------------------------------------- | ----------- | ------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| Cancelar férias agendadas                | Medium      | ConfirmModal variant="danger"  | "Cancelar este agendamento de férias? Os dias voltarão ao saldo disponível do colaborador."           |
+| Iniciar rescisão                         | Medium      | ConfirmModal variant="danger"  | "Iniciar a rescisão bloqueia o contrato do colaborador. Confirme apenas após revisar todos os dados." |
+| Estornar provisão                        | Medium      | ConfirmModal variant="warning" | "Estornar a provisão de [tipo] de [mês]? Os valores serão removidos do passivo apurado."              |
+| Registrar afastamento por acidente (CAT) | Low         | Inline info (not modal)        | Banner: "Ao confirmar, o sistema registra estabilidade provisória de 12 meses após o retorno."        |
 
 Rule: Never use `window.confirm()`. Use `ConfirmModal` from `@/components/ui/ConfirmModal`. No rescisão action is high-criticality enough to require ConfirmDeleteModal with name typing.
 
 ### Toast Messages (auto-dismiss 5s for success/info, persistent for error)
 
-| Action | Toast |
-|--------|-------|
-| Férias agendadas | "Férias agendadas com sucesso. Pagamento deve ser realizado até [data]." |
+| Action                 | Toast                                                                      |
+| ---------------------- | -------------------------------------------------------------------------- |
+| Férias agendadas       | "Férias agendadas com sucesso. Pagamento deve ser realizado até [data]."   |
 | Afastamento registrado | "Afastamento registrado. A folha deste mês será ajustada automaticamente." |
-| Rescisão processada | "Rescisão processada. TRCT disponível para download." |
-| Provisões calculadas | "Provisões de [mês/ano] calculadas para [N] colaboradores." |
-| Férias canceladas | "Agendamento cancelado. Dias retornados ao saldo do colaborador." |
-| Provisão estornada | "Provisão estornada com sucesso." |
+| Rescisão processada    | "Rescisão processada. TRCT disponível para download."                      |
+| Provisões calculadas   | "Provisões de [mês/ano] calculadas para [N] colaboradores."                |
+| Férias canceladas      | "Agendamento cancelado. Dias retornados ao saldo do colaborador."          |
+| Provisão estornada     | "Provisão estornada com sucesso."                                          |
 
 ---
 
@@ -319,7 +322,7 @@ Rule: Never use `window.confirm()`. Use `ConfirmModal` from `@/components/ui/Con
 - Calendar cells: `aria-label="[data]: [nome do colaborador] em férias"`
 - Alert banners: `role="alert"` for time-sensitive warnings (expiry within 60 days)
 - Form errors: `role="alert"` + `aria-live="polite"` on error containers
-- Required fields: `aria-required="true"` + asterisk (*) in visible label
+- Required fields: `aria-required="true"` + asterisk (\*) in visible label
 - Focus visible: 2px outline using `var(--color-primary-500)` — never removed
 
 ---
@@ -328,14 +331,14 @@ Rule: Never use `window.confirm()`. Use `ConfirmModal` from `@/components/ui/Con
 
 Source: CLAUDE.md animation rules — pre-populated.
 
-| Interaction | Duration | Easing |
-|------------|---------|--------|
-| Button hover | 100ms | ease-out |
-| Dropdown / select open | 200ms | ease-out |
-| Modal enter | 300ms | ease-out |
-| Modal exit | 200ms | ease-in |
-| Skeleton pulse | 1.5s infinite | opacity 0.4→0.7 |
-| Tab switch | 150ms | ease-out |
+| Interaction            | Duration      | Easing          |
+| ---------------------- | ------------- | --------------- |
+| Button hover           | 100ms         | ease-out        |
+| Dropdown / select open | 200ms         | ease-out        |
+| Modal enter            | 300ms         | ease-out        |
+| Modal exit             | 200ms         | ease-in         |
+| Skeleton pulse         | 1.5s infinite | opacity 0.4→0.7 |
+| Tab switch             | 150ms         | ease-out        |
 
 `prefers-reduced-motion: reduce` — suppress all transitions, show content immediately.
 
@@ -365,23 +368,23 @@ Icons: all from lucide-react, 20px in nav, 24px in mobile nav.
 
 No shadcn initialized. No third-party component registries used. Project uses hand-authored components.
 
-| Registry | Blocks Used | Safety Gate |
-|----------|-------------|-------------|
-| shadcn official | none | not applicable |
-| Third-party | none | not applicable |
+| Registry        | Blocks Used | Safety Gate    |
+| --------------- | ----------- | -------------- |
+| shadcn official | none        | not applicable |
+| Third-party     | none        | not applicable |
 
 ---
 
 ## Pre-Population Sources
 
-| Source | Decisions Pre-Populated |
-|--------|------------------------|
-| CLAUDE.md | Fonts (DM Sans/Source Sans 3/JetBrains Mono), colors (#2E7D32, #FAFAF8, #C62828), spacing scale (4px grid), touch targets (48px min), ConfirmModal vs window.confirm, no spinner full-page, skeleton pattern, pt-BR voice, Lucide React, animation durations, ALL CAPS badge rule, breadcrumb requirement |
-| tokens.css | All hex values, CSS custom property names, font tokens |
-| REQUIREMENTS.md (FERIAS-01 to FERIAS-04) | Four page scope, vacation fractionation rules, absence types, termination types, provision calculation targets |
-| RESEARCH.md | Four module structure, Prisma enum values, VacationPeriodStatus/VacationScheduleStatus/AbsenceType/TerminationType/TerminationStatus/ProvisionType — used for status badge labels |
-| PayrollRunsPage.tsx + .css | Tab pattern, skeleton row pattern, filter bar, formatCurrency function, breadcrumb DOM pattern, 24px page padding, max-width 1280px |
-| User input | 0 (all answered by upstream artifacts and project conventions) |
+| Source                                   | Decisions Pre-Populated                                                                                                                                                                                                                                                                                   |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CLAUDE.md                                | Fonts (DM Sans/Source Sans 3/JetBrains Mono), colors (#2E7D32, #FAFAF8, #C62828), spacing scale (4px grid), touch targets (48px min), ConfirmModal vs window.confirm, no spinner full-page, skeleton pattern, pt-BR voice, Lucide React, animation durations, ALL CAPS badge rule, breadcrumb requirement |
+| tokens.css                               | All hex values, CSS custom property names, font tokens                                                                                                                                                                                                                                                    |
+| REQUIREMENTS.md (FERIAS-01 to FERIAS-04) | Four page scope, vacation fractionation rules, absence types, termination types, provision calculation targets                                                                                                                                                                                            |
+| RESEARCH.md                              | Four module structure, Prisma enum values, VacationPeriodStatus/VacationScheduleStatus/AbsenceType/TerminationType/TerminationStatus/ProvisionType — used for status badge labels                                                                                                                         |
+| PayrollRunsPage.tsx + .css               | Tab pattern, skeleton row pattern, filter bar, formatCurrency function, breadcrumb DOM pattern, 24px page padding, max-width 1280px                                                                                                                                                                       |
+| User input                               | 0 (all answered by upstream artifacts and project conventions)                                                                                                                                                                                                                                            |
 
 ---
 

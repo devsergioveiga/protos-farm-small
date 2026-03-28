@@ -146,12 +146,25 @@ function StepUpload({
         aria-label="Área de upload por arrastar e soltar"
       >
         <Upload size={48} aria-hidden="true" color="var(--color-neutral-400)" />
-        <p style={{ margin: '12px 0 4px', fontFamily: "'Source Sans 3', system-ui, sans-serif", fontSize: '1rem', color: 'var(--color-neutral-700)' }}>
+        <p
+          style={{
+            margin: '12px 0 4px',
+            fontFamily: "'Source Sans 3', system-ui, sans-serif",
+            fontSize: '1rem',
+            color: 'var(--color-neutral-700)',
+          }}
+        >
           Arraste o arquivo aqui ou
         </p>
         <label
           className="employee-detail__btn-primary"
-          style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 8 }}
+          style={{
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            marginTop: 8,
+          }}
           aria-label="Selecionar arquivo para importação"
         >
           Selecionar arquivo
@@ -201,8 +214,15 @@ function StepMapping({
 }) {
   return (
     <div className="bulk-modal__step">
-      <p style={{ marginBottom: 16, color: 'var(--color-neutral-600)', fontFamily: "'Source Sans 3', system-ui, sans-serif" }}>
-        {uploadResult.totalRows} linhas detectadas. Mapeie as colunas do arquivo para os campos do sistema.
+      <p
+        style={{
+          marginBottom: 16,
+          color: 'var(--color-neutral-600)',
+          fontFamily: "'Source Sans 3', system-ui, sans-serif",
+        }}
+      >
+        {uploadResult.totalRows} linhas detectadas. Mapeie as colunas do arquivo para os campos do
+        sistema.
       </p>
 
       <div className="bulk-modal__mapping-table" role="table" aria-label="Mapeamento de colunas">
@@ -212,11 +232,7 @@ function StepMapping({
         </div>
         {EXPECTED_FIELDS.map((field) => (
           <div key={field.key} className="bulk-modal__mapping-row" role="row">
-            <label
-              htmlFor={`map-${field.key}`}
-              className="bulk-modal__mapping-label"
-              role="cell"
-            >
+            <label htmlFor={`map-${field.key}`} className="bulk-modal__mapping-label" role="cell">
               {field.label}
             </label>
             <div role="cell">
@@ -242,7 +258,14 @@ function StepMapping({
       {/* Sample data */}
       {uploadResult.sampleRows.length > 0 && (
         <div style={{ marginTop: 20 }}>
-          <h4 style={{ fontFamily: "'Source Sans 3', system-ui, sans-serif", fontSize: '0.875rem', color: 'var(--color-neutral-600)', marginBottom: 8 }}>
+          <h4
+            style={{
+              fontFamily: "'Source Sans 3', system-ui, sans-serif",
+              fontSize: '0.875rem',
+              color: 'var(--color-neutral-600)',
+              marginBottom: 8,
+            }}
+          >
             Pré-visualização (primeiras linhas):
           </h4>
           <div style={{ overflowX: 'auto' }}>
@@ -250,7 +273,9 @@ function StepMapping({
               <thead>
                 <tr>
                   {uploadResult.columnHeaders.map((h) => (
-                    <th key={h} scope="col">{h}</th>
+                    <th key={h} scope="col">
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -326,18 +351,30 @@ function StepPreview({ previewResult }: { previewResult: PreviewResult | null })
                   row.status === 'error'
                     ? 'bulk-modal__row--error'
                     : row.status === 'warning'
-                    ? 'bulk-modal__row--warning'
-                    : ''
+                      ? 'bulk-modal__row--warning'
+                      : ''
                 }
               >
                 <td>{row.rowNumber}</td>
                 <td>
                   {row.status === 'error' ? (
-                    <AlertCircle size={16} color="var(--color-error-500, #C62828)" aria-label="Erro" />
+                    <AlertCircle
+                      size={16}
+                      color="var(--color-error-500, #C62828)"
+                      aria-label="Erro"
+                    />
                   ) : row.status === 'warning' ? (
-                    <AlertTriangle size={16} color="var(--color-warning-600, #F57C00)" aria-label="Aviso" />
+                    <AlertTriangle
+                      size={16}
+                      color="var(--color-warning-600, #F57C00)"
+                      aria-label="Aviso"
+                    />
                   ) : (
-                    <CheckCircle size={16} color="var(--color-success-600, #388E3C)" aria-label="Válido" />
+                    <CheckCircle
+                      size={16}
+                      color="var(--color-success-600, #388E3C)"
+                      aria-label="Válido"
+                    />
                   )}
                 </td>
                 <td>{String(row.data.name ?? '—')}</td>
@@ -386,17 +423,36 @@ function StepReport({
   return (
     <div className="bulk-modal__step bulk-modal__step--center">
       <CheckCircle size={64} color="var(--color-success-600, #388E3C)" aria-hidden="true" />
-      <h3 style={{ marginTop: 16, fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: '1.25rem', color: 'var(--color-neutral-800)' }}>
+      <h3
+        style={{
+          marginTop: 16,
+          fontFamily: "'DM Sans', system-ui, sans-serif",
+          fontSize: '1.25rem',
+          color: 'var(--color-neutral-800)',
+        }}
+      >
         Importação concluída
       </h3>
-      <p style={{ fontFamily: "'Source Sans 3', system-ui, sans-serif", color: 'var(--color-neutral-600)', marginTop: 8 }}>
+      <p
+        style={{
+          fontFamily: "'Source Sans 3', system-ui, sans-serif",
+          color: 'var(--color-neutral-600)',
+          marginTop: 8,
+        }}
+      >
         <strong>{confirmResult.created}</strong>{' '}
         {confirmResult.created === 1 ? 'colaborador criado' : 'colaboradores criados'} com sucesso.
       </p>
 
       {confirmResult.errors.length > 0 && (
         <div
-          style={{ marginTop: 16, padding: '12px 16px', background: 'var(--color-error-50, #FFEBEE)', borderRadius: 8, color: 'var(--color-error-700, #B71C1C)' }}
+          style={{
+            marginTop: 16,
+            padding: '12px 16px',
+            background: 'var(--color-error-50, #FFEBEE)',
+            borderRadius: 8,
+            color: 'var(--color-error-700, #B71C1C)',
+          }}
           role="alert"
         >
           <p style={{ fontFamily: "'Source Sans 3', system-ui, sans-serif", marginBottom: 8 }}>
@@ -557,7 +613,7 @@ export default function EmployeeBulkImportModal({
     step === 3 &&
     !isLoading &&
     previewResult !== null &&
-    (previewResult.validRows.length + previewResult.warningRows.length) > 0;
+    previewResult.validRows.length + previewResult.warningRows.length > 0;
 
   return (
     <div
@@ -581,8 +637,8 @@ export default function EmployeeBulkImportModal({
                       s === step
                         ? 'bulk-modal__step-indicator--active'
                         : s < step
-                        ? 'bulk-modal__step-indicator--done'
-                        : ''
+                          ? 'bulk-modal__step-indicator--done'
+                          : ''
                     }`}
                     aria-current={s === step ? 'step' : undefined}
                   >
@@ -622,11 +678,7 @@ export default function EmployeeBulkImportModal({
             />
           )}
           {step === 2 && uploadResult && (
-            <StepMapping
-              uploadResult={uploadResult}
-              mapping={mapping}
-              setMapping={setMapping}
-            />
+            <StepMapping uploadResult={uploadResult} mapping={mapping} setMapping={setMapping} />
           )}
           {step === 3 && <StepPreview previewResult={previewResult} />}
           {step === 4 && <StepReport confirmResult={confirmResult} onClose={handleClose} />}
@@ -664,7 +716,9 @@ export default function EmployeeBulkImportModal({
                 disabled={isLoading}
               >
                 <FileText size={16} aria-hidden="true" />
-                {isLoading ? 'Importando...' : `Importar ${(previewResult?.validRows.length ?? 0) + (previewResult?.warningRows.length ?? 0)} colaboradores`}
+                {isLoading
+                  ? 'Importando...'
+                  : `Importar ${(previewResult?.validRows.length ?? 0) + (previewResult?.warningRows.length ?? 0)} colaboradores`}
               </button>
             )}
           </footer>

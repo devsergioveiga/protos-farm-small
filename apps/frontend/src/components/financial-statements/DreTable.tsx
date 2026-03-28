@@ -38,7 +38,10 @@ function DreTableSkeleton({ showVH }: { showVH: boolean }) {
     <tbody aria-label="Carregando demonstracao do resultado..." aria-busy="true">
       {Array.from({ length: 12 }).map((_, i) => (
         <tr key={i} className="dre-table__skeleton-row">
-          <td className="dre-table__td dre-table__td--name" style={{ paddingLeft: `${(i % 3) * 16 + 16}px` }}>
+          <td
+            className="dre-table__td dre-table__td--name"
+            style={{ paddingLeft: `${(i % 3) * 16 + 16}px` }}
+          >
             <div className="dre-table__skeleton-cell dre-table__skeleton-cell--name" />
           </td>
           {Array.from({ length: amountCols }).map((_, j) => (
@@ -81,16 +84,24 @@ function DreRow({ row, showVH, isSubtotal, isFoot }: DreRowProps) {
       >
         {row.name}
       </th>
-      <td className="dre-table__td dre-table__td--amount amount-mono">{formatCurrency(row.currentMonth)}</td>
+      <td className="dre-table__td dre-table__td--amount amount-mono">
+        {formatCurrency(row.currentMonth)}
+      </td>
       <td className="dre-table__td dre-table__td--amount amount-mono">{formatCurrency(row.ytd)}</td>
-      <td className="dre-table__td dre-table__td--amount amount-mono">{formatCurrency(row.priorYear)}</td>
+      <td className="dre-table__td dre-table__td--amount amount-mono">
+        {formatCurrency(row.priorYear)}
+      </td>
       {showVH && (
         <>
           <td className="dre-table__td dre-table__td--amount amount-mono dre-table__vh-col">
             {formatPercent(row.avPercent)}
           </td>
-          <td className={`dre-table__td dre-table__td--amount amount-mono dre-table__vh-col ${getAhClass(row.ahPercent)}`}>
-            {row.ahPercent !== null ? `${parseFloat(row.ahPercent) > 0 ? '+' : ''}${formatPercent(row.ahPercent)}` : '—'}
+          <td
+            className={`dre-table__td dre-table__td--amount amount-mono dre-table__vh-col ${getAhClass(row.ahPercent)}`}
+          >
+            {row.ahPercent !== null
+              ? `${parseFloat(row.ahPercent) > 0 ? '+' : ''}${formatPercent(row.ahPercent)}`
+              : '—'}
           </td>
         </>
       )}
@@ -110,7 +121,13 @@ interface DreTableProps {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function DreTable({ sections, resultadoLiquido, showVH, loading, period }: DreTableProps) {
+export default function DreTable({
+  sections,
+  resultadoLiquido,
+  showVH,
+  loading,
+  period,
+}: DreTableProps) {
   return (
     <div className="dre-table__wrapper">
       <table className="dre-table" aria-label="Demonstracao do Resultado do Exercicio">

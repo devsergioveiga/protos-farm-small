@@ -166,7 +166,9 @@
   padding: 12px 24px;
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
-  transition: color 200ms ease-out, border-color 200ms ease-out;
+  transition:
+    color 200ms ease-out,
+    border-color 200ms ease-out;
   min-height: 48px;
   display: inline-flex;
   align-items: center;
@@ -317,8 +319,13 @@
 }
 
 @keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .attendance-page__skeleton {
@@ -327,10 +334,23 @@
   animation: skeleton-pulse 1.5s ease infinite;
 }
 
-.attendance-page__skeleton--sm { height: 14px; width: 80px; }
-.attendance-page__skeleton--md { height: 14px; width: 130px; }
-.attendance-page__skeleton--lg { height: 20px; width: 160px; }
-.attendance-page__skeleton--badge { height: 24px; width: 80px; border-radius: 20px; }
+.attendance-page__skeleton--sm {
+  height: 14px;
+  width: 80px;
+}
+.attendance-page__skeleton--md {
+  height: 14px;
+  width: 130px;
+}
+.attendance-page__skeleton--lg {
+  height: 20px;
+  width: 160px;
+}
+.attendance-page__skeleton--badge {
+  height: 24px;
+  width: 80px;
+  border-radius: 20px;
+}
 
 .attendance-page__skeleton-card {
   border: 1px solid var(--color-neutral-200);
@@ -980,8 +1000,14 @@
 }
 
 @keyframes modal-enter {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .manual-punch-modal__header {

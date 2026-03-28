@@ -1,6 +1,6 @@
 ---
 phase: 36-lan-amentos-manuais-raz-o-e-saldo-de-abertura
-plan: "05"
+plan: '05'
 subsystem: frontend-accounting-reports
 tags: [frontend, accounting, ledger, trial-balance, daily-book, react, typescript]
 dependency_graph:
@@ -10,10 +10,10 @@ dependency_graph:
 tech_stack:
   added: []
   patterns:
-    - "useLedger/useTrialBalance/useDailyBook hooks matching existing useChartOfAccounts pattern"
-    - "api.getBlob for file downloads (CSV, PDF, XLSX)"
-    - "Tabbed page layout (TrialBalancePage) with role=tabpanel/tablist"
-    - "Searchable combobox for account selection (analytic-only filter)"
+    - 'useLedger/useTrialBalance/useDailyBook hooks matching existing useChartOfAccounts pattern'
+    - 'api.getBlob for file downloads (CSV, PDF, XLSX)'
+    - 'Tabbed page layout (TrialBalancePage) with role=tabpanel/tablist'
+    - 'Searchable combobox for account selection (analytic-only filter)'
 key_files:
   created:
     - apps/frontend/src/hooks/useLedger.ts
@@ -25,13 +25,13 @@ key_files:
     - apps/frontend/src/components/layout/Sidebar.tsx
     - apps/frontend/src/App.tsx
 decisions:
-  - "useLedger derives startDate/endDate from fiscalYearId+month client-side — avoids extra API call"
-  - "TrialBalancePage uses tab pattern (Balancete + Livro Diário) per UI-SPEC — single page, two panels"
-  - "LedgerPage entry drill-down uses inline modal (role=dialog) — not a separate route"
-  - "orgId null→undefined coercion with ?? undefined per CLAUDE.md Prisma/null vs undefined rule"
+  - 'useLedger derives startDate/endDate from fiscalYearId+month client-side — avoids extra API call'
+  - 'TrialBalancePage uses tab pattern (Balancete + Livro Diário) per UI-SPEC — single page, two panels'
+  - 'LedgerPage entry drill-down uses inline modal (role=dialog) — not a separate route'
+  - 'orgId null→undefined coercion with ?? undefined per CLAUDE.md Prisma/null vs undefined rule'
 metrics:
   duration_seconds: 444
-  completed_date: "2026-03-27"
+  completed_date: '2026-03-27'
   tasks_completed: 2
   tasks_total: 2
   files_created: 5
@@ -49,11 +49,13 @@ Ledger page (Razão Contábil) with running balance table and entry drill-down, 
 **`apps/frontend/src/hooks/useLedger.ts`**
 
 Three data hooks matching the existing project pattern:
+
 - `useLedger(orgId, accountId, startDate, endDate, costCenterId?)` — fetches `/api/org/:orgId/ledger/razao`
 - `useTrialBalance(orgId, fiscalYearId, month, comparePreviousPeriod?)` — fetches `/api/org/:orgId/ledger/balancete`
 - `useDailyBook(orgId, startDate, endDate, entryType?)` — fetches `/api/org/:orgId/ledger/diario`
 
 Five export functions using `api.getBlob` + `URL.createObjectURL` blob download pattern:
+
 - `exportLedgerCsv`, `exportLedgerPdf`, `exportTrialBalancePdf`, `exportTrialBalanceXlsx`, `exportDailyBookPdf`
 
 Helper `useOrgId()` returns `user?.organizationId ?? undefined` (null coercion per CLAUDE.md).
@@ -76,6 +78,7 @@ Helper `useOrgId()` returns `user?.organizationId ?? undefined` (null coercion p
 **`apps/frontend/src/pages/LedgerPage.css`**
 
 All colors via `var(--)` tokens only. Key classes:
+
 - `.amount-debit` → `var(--color-error-500)`
 - `.amount-credit` → `var(--color-success-500)`
 - `.amount-mono` → `font-family: 'JetBrains Mono', monospace`
@@ -102,12 +105,14 @@ All colors via `var(--)` tokens only. Key classes:
 - Export: "Exportar XLSX" and "Exportar PDF" with spinner
 
 **Sidebar.tsx** — CONTABILIDADE group extended with:
+
 ```typescript
 { to: '/ledger', icon: BookOpen, label: 'Razão Contábil' },
 { to: '/trial-balance', icon: BarChart3, label: 'Balancete' },
 ```
 
 **App.tsx** — lazy imports and routes added:
+
 ```typescript
 const LedgerPage = lazy(() => import('@/pages/LedgerPage'));
 const TrialBalancePage = lazy(() => import('@/pages/TrialBalancePage'));
@@ -128,12 +133,12 @@ None. Both pages are fully wired to real API endpoints via hooks. Export functio
 
 ## Self-Check: PASSED
 
-| Item | Status |
-|------|--------|
-| `apps/frontend/src/hooks/useLedger.ts` | FOUND |
-| `apps/frontend/src/pages/LedgerPage.tsx` | FOUND |
-| `apps/frontend/src/pages/LedgerPage.css` | FOUND |
-| `apps/frontend/src/pages/TrialBalancePage.tsx` | FOUND |
-| `apps/frontend/src/pages/TrialBalancePage.css` | FOUND |
-| Task 1 commit `1cdb1cb9` | FOUND |
-| Task 2 commit `ccfb6b5d` | FOUND |
+| Item                                           | Status |
+| ---------------------------------------------- | ------ |
+| `apps/frontend/src/hooks/useLedger.ts`         | FOUND  |
+| `apps/frontend/src/pages/LedgerPage.tsx`       | FOUND  |
+| `apps/frontend/src/pages/LedgerPage.css`       | FOUND  |
+| `apps/frontend/src/pages/TrialBalancePage.tsx` | FOUND  |
+| `apps/frontend/src/pages/TrialBalancePage.css` | FOUND  |
+| Task 1 commit `1cdb1cb9`                       | FOUND  |
+| Task 2 commit `ccfb6b5d`                       | FOUND  |

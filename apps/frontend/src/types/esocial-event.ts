@@ -35,7 +35,10 @@ export interface EsocialDashboard {
   exportado: number;
   aceito: number;
   rejeitado: number;
-  byGroup: Record<EsocialGroup, { total: number; pendente: number; exportado: number; aceito: number; rejeitado: number }>;
+  byGroup: Record<
+    EsocialGroup,
+    { total: number; pendente: number; exportado: number; aceito: number; rejeitado: number }
+  >;
 }
 
 export interface UpdateEsocialStatusInput {

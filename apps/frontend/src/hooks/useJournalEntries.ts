@@ -36,12 +36,21 @@ export function useJournalEntries(filters?: JournalEntryFilters) {
       const result = await api.get<JournalEntry[]>(path);
       setEntries(result);
     } catch {
-      setError('Não foi possível carregar os lançamentos. Verifique sua conexão e tente novamente.');
+      setError(
+        'Não foi possível carregar os lançamentos. Verifique sua conexão e tente novamente.',
+      );
       setEntries([]);
     } finally {
       setIsLoading(false);
     }
-  }, [orgId, filters?.periodId, filters?.status, filters?.entryType, filters?.page, filters?.limit]);
+  }, [
+    orgId,
+    filters?.periodId,
+    filters?.status,
+    filters?.entryType,
+    filters?.page,
+    filters?.limit,
+  ]);
 
   useEffect(() => {
     void fetchEntries();
@@ -143,7 +152,9 @@ export function useJournalEntryActions() {
   const deleteTemplate = useCallback(
     async (templateId: string): Promise<void> => {
       if (!orgId) throw new Error('Organização não encontrada');
-      await api.delete<{ message: string }>(`/org/${orgId}/journal-entries/templates/${templateId}`);
+      await api.delete<{ message: string }>(
+        `/org/${orgId}/journal-entries/templates/${templateId}`,
+      );
     },
     [orgId],
   );
@@ -153,7 +164,10 @@ export function useJournalEntryActions() {
       if (!orgId) throw new Error('Organização não encontrada');
       const formData = new FormData();
       formData.append('file', file);
-      return api.postFormData<CsvImportPreview>(`/org/${orgId}/journal-entries/import-csv`, formData);
+      return api.postFormData<CsvImportPreview>(
+        `/org/${orgId}/journal-entries/import-csv`,
+        formData,
+      );
     },
     [orgId],
   );

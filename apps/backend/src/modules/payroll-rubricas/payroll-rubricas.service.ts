@@ -203,7 +203,10 @@ const SYSTEM_RUBRICAS: CreateRubricaInput[] = [
 // ─── Service ──────────────────────────────────────────────────────────
 
 export const payrollRubricasService = {
-  async list(orgId: string, query: RubricaListQuery): Promise<{ items: RubricaOutput[]; total: number }> {
+  async list(
+    orgId: string,
+    query: RubricaListQuery,
+  ): Promise<{ items: RubricaOutput[]; total: number }> {
     const page = query.page ?? 1;
     const limit = query.limit ?? 50;
     const skip = (page - 1) * limit;

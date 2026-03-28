@@ -13,12 +13,18 @@
 }
 
 @keyframes epi-modal-bg-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .epi-product-modal__overlay { animation: none; }
+  .epi-product-modal__overlay {
+    animation: none;
+  }
 }
 
 .epi-product-modal {
@@ -33,12 +39,20 @@
 }
 
 @keyframes epi-modal-in {
-  from { opacity: 0; transform: translateY(-12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .epi-product-modal { animation: none; }
+  .epi-product-modal {
+    animation: none;
+  }
 }
 
 .epi-product-modal__header {

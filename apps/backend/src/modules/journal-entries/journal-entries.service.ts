@@ -140,10 +140,7 @@ async function validateAccountsForManualEntry(
       );
     }
     if (!account.allowManualEntry) {
-      throw new JournalEntryError(
-        'Conta não permite lançamento manual',
-        'MANUAL_ENTRY_DISALLOWED',
-      );
+      throw new JournalEntryError('Conta não permite lançamento manual', 'MANUAL_ENTRY_DISALLOWED');
     }
   }
 }
@@ -224,7 +221,9 @@ export async function postJournalEntry(
               lineOrder: true,
             },
           },
-          period: { select: { id: true, month: true, year: true, status: true, fiscalYearId: true } },
+          period: {
+            select: { id: true, month: true, year: true, status: true, fiscalYearId: true },
+          },
         },
       });
 
@@ -240,7 +239,10 @@ export async function postJournalEntry(
 
       assertPeriodOpen(entry.period);
       assertBalanced(
-        entry.lines.map((l) => ({ side: l.side as 'DEBIT' | 'CREDIT', amount: l.amount.toString() })),
+        entry.lines.map((l) => ({
+          side: l.side as 'DEBIT' | 'CREDIT',
+          amount: l.amount.toString(),
+        })),
       );
 
       // Assign sequential entry number (within org)
@@ -273,14 +275,8 @@ export async function postJournalEntry(
             closingBalance: 0,
           },
           update: {
-            debitTotal:
-              line.side === 'DEBIT'
-                ? { increment: line.amount }
-                : undefined,
-            creditTotal:
-              line.side === 'CREDIT'
-                ? { increment: line.amount }
-                : undefined,
+            debitTotal: line.side === 'DEBIT' ? { increment: line.amount } : undefined,
+            creditTotal: line.side === 'CREDIT' ? { increment: line.amount } : undefined,
           },
         });
       }
@@ -573,10 +569,7 @@ export async function deleteDraft(organizationId: string, entryId: string): Prom
     );
   }
   if (entry.templateName !== null) {
-    throw new JournalEntryError(
-      'Use deleteTemplate para remover templates',
-      'USE_DELETE_TEMPLATE',
-    );
+    throw new JournalEntryError('Use deleteTemplate para remover templates', 'USE_DELETE_TEMPLATE');
   }
   await prisma.journalEntry.delete({ where: { id: entryId } });
 }
@@ -742,14 +735,29 @@ export async function importCsvJournalEntries(
       continue;
     }
 
-    validRows.push({ rowNumber, entryDate, periodId, description, accountId, side, amount, costCenterId });
+    validRows.push({
+      rowNumber,
+      entryDate,
+      periodId,
+      description,
+      accountId,
+      side,
+      amount,
+      costCenterId,
+    });
   }
 
   // Group valid rows by entryDate + description (natural grouping key)
   type GroupKey = string;
   const groups = new Map<
     GroupKey,
-    { entryDate: string; periodId: string; description: string; costCenterId?: string; rows: RowParsed[] }
+    {
+      entryDate: string;
+      periodId: string;
+      description: string;
+      costCenterId?: string;
+      rows: RowParsed[];
+    }
   >();
 
   for (const row of validRows) {

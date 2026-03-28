@@ -190,7 +190,7 @@ function findValueBelow(
   if (candidates.length === 0) return '';
 
   // Sort by proximity (closest y first)
-  candidates.sort((a, b) => (labelY - a.y) - (labelY - b.y));
+  candidates.sort((a, b) => labelY - a.y - (labelY - b.y));
   return candidates[0].str.trim();
 }
 
@@ -280,17 +280,15 @@ export async function parseIeDocument(file: File): Promise<ParsedIeDocument> {
   const ieNumber = ieLabel ? findValueBelow(items, ieLabel.y, ieLabel.x) : '';
 
   // CPF: label "CPF" in the dados cadastrais section (y > 700)
-  const cpfLabel = items.find(
-    (it) => it.str.trim() === 'CPF' && it.y > 650,
-  );
+  const cpfLabel = items.find((it) => it.str.trim() === 'CPF' && it.y > 650);
   const cpf = cpfLabel ? findValueBelow(items, cpfLabel.y, cpfLabel.x) : '';
 
   // Nome do Responsável
-  const name = getValueForLabel('NOME DO RESPONSÁVEL') ||
-    getValueForLabel('NOME DO RESPONSAVEL');
+  const name = getValueForLabel('NOME DO RESPONSÁVEL') || getValueForLabel('NOME DO RESPONSAVEL');
 
   // Nome do Estabelecimento
-  const tradeName = getValueForLabel('NOME DO ESTABELECIMENTO / PROPRIEDADE RURAL') ||
+  const tradeName =
+    getValueForLabel('NOME DO ESTABELECIMENTO / PROPRIEDADE RURAL') ||
     getValueForLabel('NOME DO ESTABELECIMENTO');
 
   // CNAE - value is below the label
@@ -299,7 +297,9 @@ export async function parseIeDocument(file: File): Promise<ParsedIeDocument> {
 
   // Regime de Apuração - value is below
   const regimeLabel = findItemByText(items, 'REGIME DE APURA');
-  const assessmentRegime = regimeLabel ? findValueBelow(items, regimeLabel.y, regimeLabel.x, 20, 200) : '';
+  const assessmentRegime = regimeLabel
+    ? findValueBelow(items, regimeLabel.y, regimeLabel.x, 20, 200)
+    : '';
 
   // Categoria - value is below
   const catLabel = items.find((it) => it.str.trim() === 'CATEGORIA');
@@ -307,8 +307,8 @@ export async function parseIeDocument(file: File): Promise<ParsedIeDocument> {
   const category = mapCategory(categoryRaw);
 
   // Data da Inscrição
-  const insDateLabel = findItemByText(items, 'DATA DA INSCRIÇÃO') ||
-    findItemByText(items, 'DATA DA INSCRICAO');
+  const insDateLabel =
+    findItemByText(items, 'DATA DA INSCRIÇÃO') || findItemByText(items, 'DATA DA INSCRICAO');
   const inscriptionDateRaw = insDateLabel
     ? findValueBelow(items, insDateLabel.y, insDateLabel.x)
     : '';
@@ -322,8 +322,8 @@ export async function parseIeDocument(file: File): Promise<ParsedIeDocument> {
   const contractEndDate = parseBrDate(contractEndRaw);
 
   // Situação da Inscrição (exact match to avoid "DATA DA SITUAÇÃO DA INSCRIÇÃO")
-  const sitLabel = findItemExact(items, 'SITUAÇÃO DA INSCRIÇÃO') ||
-    findItemExact(items, 'SITUACAO DA INSCRICAO');
+  const sitLabel =
+    findItemExact(items, 'SITUAÇÃO DA INSCRIÇÃO') || findItemExact(items, 'SITUACAO DA INSCRICAO');
   const situationRaw = sitLabel ? findValueBelow(items, sitLabel.y, sitLabel.x) : '';
   const situation = mapSituation(situationRaw);
 
@@ -357,15 +357,14 @@ export async function parseIeDocument(file: File): Promise<ParsedIeDocument> {
   const logLabel = findItemByText(items, 'LOGRADOURO');
   const street = logLabel ? findValueBelow(items, logLabel.y, logLabel.x) : '';
 
-  const numLabel = items.find(
-    (it) => it.str.trim() === 'NÚMERO' || it.str.trim() === 'NUMERO',
-  );
+  const numLabel = items.find((it) => it.str.trim() === 'NÚMERO' || it.str.trim() === 'NUMERO');
   const addressNumber = numLabel ? findValueBelow(items, numLabel.y, numLabel.x) : '';
 
   const compLabel = items.find((it) => it.str.trim() === 'COMPLEMENTO');
   const complement = compLabel ? findValueBelow(items, compLabel.y, compLabel.x) : '';
 
-  const refLabel = findItemByText(items, 'REFERÊNCIA DE LOCALIZAÇÃO') ||
+  const refLabel =
+    findItemByText(items, 'REFERÊNCIA DE LOCALIZAÇÃO') ||
     findItemByText(items, 'REFERENCIA DE LOCALIZACAO');
   const locationReference = refLabel ? findValueBelow(items, refLabel.y, refLabel.x, 30, 400) : '';
 
@@ -386,7 +385,11 @@ export async function parseIeDocument(file: File): Promise<ParsedIeDocument> {
       for (const cpfItem of partCpfs) {
         // Find name on same y line, to the right
         const nameItem = items.find(
-          (it) => Math.abs(it.y - cpfItem.y) < 3 && it.x > cpfItem.x + 50 && !cpfPattern.test(it.str.trim()) && it.str.trim().length > 1,
+          (it) =>
+            Math.abs(it.y - cpfItem.y) < 3 &&
+            it.x > cpfItem.x + 50 &&
+            !cpfPattern.test(it.str.trim()) &&
+            it.str.trim().length > 1,
         );
         if (nameItem) {
           participants.push({

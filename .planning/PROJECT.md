@@ -157,27 +157,27 @@ Complete accounting suite: COA rural 115 contas, auto-posting 12 source types, j
 
 ## Key Decisions
 
-| Decision                                     | Rationale                                                       | Outcome                                |
-| -------------------------------------------- | --------------------------------------------------------------- | -------------------------------------- |
-| Financeiro Base primeiro na Fase 3           | Pré-requisito para Compras, Patrimônio, RH, Contabilidade       | ✓ Good — shipped v1.0, fundação sólida |
-| 5 milestones separados para Fase 3           | Fase 3 tem 126 stories/865 pts — muito grande para um milestone | ✓ Good — v1.0 completo em 2 dias       |
-| Web-only neste milestone                     | Financeiro é operação de escritório, não de campo               | ✓ Good — decisão correta               |
-| Money factory (not class)                    | Money(100) funciona sem new keyword                             | ✓ Good — ergonômico                    |
-| producerId nullable em BankAccount           | Contas de org não têm produtor, rural sim                       | ✓ Good — flexível                      |
-| CnabAdapter pattern por banco                | BB e Sicoob têm extensões proprietárias                         | ✓ Good — extensível                    |
-| Cheques como entidade com máquina de estados | Não campo metadata em pagamento                                 | ✓ Good — rastreável                    |
-| OFX parser custom (regex SGML, não ofx-js)   | Baixa manutenção, mirrors CNAB pattern                          | ✓ Good — funciona                      |
-| Fluxo de caixa 12 meses (não 90 dias)        | Sazonalidade agrícola                                           | ✓ Good — essential                     |
-| reconciliation:manage permission separada    | Não financial:\* per spec                                       | ✓ Good — granular                      |
-| Pure calculation engine separado de service  | Testabilidade: 43 tests sem DB, payroll-calculation.service.ts  | ✓ Good — facilita TDD                  |
-| Rubricas-sistema auto-seed na migration      | 18 rubricas legais não devem depender de setup manual           | ✓ Good — onboarding instantâneo        |
-| Rural night shift 21h-5h hardcoded           | Lei 5.889/73 não permite configuração — jurisprudência clara    | ✓ Good — compliance correto            |
-| eSocial XML geração local, transmissão async | Portal tem rate limits e janelas de manutenção                  | ✓ Good — resiliente                    |
-| Absence impact calculado dentro da tx payroll| Consistência: dados de ausência lidos no mesmo snapshot         | ✓ Good — sem race conditions           |
-| Pure calculator pattern (DRE/BP/DFC)         | Sem imports Prisma → testável sem DB, segue payroll-calculation | ✓ Good — testabilidade excelente       |
-| Auto-posting hooks non-blocking (try/catch)  | GL não deve bloquear operação principal                         | ✓ Good — resiliente                    |
-| SpedEcdWriter pure class sem Prisma          | Testável com dados mock, separação de concerns                  | ✓ Good — 7 blocos, validação incluída  |
-| SPED L300R plano referencial rural           | Compatível com SPED PVA da RFB para empresas rurais             | ✓ Good — compliance correto            |
+| Decision                                      | Rationale                                                       | Outcome                                |
+| --------------------------------------------- | --------------------------------------------------------------- | -------------------------------------- |
+| Financeiro Base primeiro na Fase 3            | Pré-requisito para Compras, Patrimônio, RH, Contabilidade       | ✓ Good — shipped v1.0, fundação sólida |
+| 5 milestones separados para Fase 3            | Fase 3 tem 126 stories/865 pts — muito grande para um milestone | ✓ Good — v1.0 completo em 2 dias       |
+| Web-only neste milestone                      | Financeiro é operação de escritório, não de campo               | ✓ Good — decisão correta               |
+| Money factory (not class)                     | Money(100) funciona sem new keyword                             | ✓ Good — ergonômico                    |
+| producerId nullable em BankAccount            | Contas de org não têm produtor, rural sim                       | ✓ Good — flexível                      |
+| CnabAdapter pattern por banco                 | BB e Sicoob têm extensões proprietárias                         | ✓ Good — extensível                    |
+| Cheques como entidade com máquina de estados  | Não campo metadata em pagamento                                 | ✓ Good — rastreável                    |
+| OFX parser custom (regex SGML, não ofx-js)    | Baixa manutenção, mirrors CNAB pattern                          | ✓ Good — funciona                      |
+| Fluxo de caixa 12 meses (não 90 dias)         | Sazonalidade agrícola                                           | ✓ Good — essential                     |
+| reconciliation:manage permission separada     | Não financial:\* per spec                                       | ✓ Good — granular                      |
+| Pure calculation engine separado de service   | Testabilidade: 43 tests sem DB, payroll-calculation.service.ts  | ✓ Good — facilita TDD                  |
+| Rubricas-sistema auto-seed na migration       | 18 rubricas legais não devem depender de setup manual           | ✓ Good — onboarding instantâneo        |
+| Rural night shift 21h-5h hardcoded            | Lei 5.889/73 não permite configuração — jurisprudência clara    | ✓ Good — compliance correto            |
+| eSocial XML geração local, transmissão async  | Portal tem rate limits e janelas de manutenção                  | ✓ Good — resiliente                    |
+| Absence impact calculado dentro da tx payroll | Consistência: dados de ausência lidos no mesmo snapshot         | ✓ Good — sem race conditions           |
+| Pure calculator pattern (DRE/BP/DFC)          | Sem imports Prisma → testável sem DB, segue payroll-calculation | ✓ Good — testabilidade excelente       |
+| Auto-posting hooks non-blocking (try/catch)   | GL não deve bloquear operação principal                         | ✓ Good — resiliente                    |
+| SpedEcdWriter pure class sem Prisma           | Testável com dados mock, separação de concerns                  | ✓ Good — 7 blocos, validação incluída  |
+| SPED L300R plano referencial rural            | Compatível com SPED PVA da RFB para empresas rurais             | ✓ Good — compliance correto            |
 
 ---
 

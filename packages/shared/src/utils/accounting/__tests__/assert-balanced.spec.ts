@@ -76,7 +76,7 @@ describe('assertBalanced', () => {
     expect(() =>
       assertBalanced([
         { side: 'DEBIT', amount: '100.50' },
-        { side: 'DEBIT', amount: 49.50 },
+        { side: 'DEBIT', amount: 49.5 },
         { side: 'CREDIT', amount: 150 },
       ]),
     ).not.toThrow();

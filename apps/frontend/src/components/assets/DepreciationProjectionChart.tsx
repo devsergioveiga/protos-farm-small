@@ -25,7 +25,20 @@ interface DepreciationProjectionChartProps {
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
-const MONTH_ABBR = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+const MONTH_ABBR = [
+  'Jan',
+  'Fev',
+  'Mar',
+  'Abr',
+  'Mai',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Set',
+  'Out',
+  'Nov',
+  'Dez',
+];
 
 const compactFmt = new Intl.NumberFormat('pt-BR', {
   notation: 'compact',
@@ -76,8 +89,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
         <p key={entry.name} style={{ margin: '4px 0', color: entry.color }}>
           <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>
             {fullFmt.format(entry.value)}
-          </span>
-          {' '}
+          </span>{' '}
           <span style={{ color: 'var(--color-neutral-500)', fontSize: 12 }}>{entry.name}</span>
         </p>
       ))}
@@ -95,9 +107,7 @@ export default function DepreciationProjectionChart({ data }: DepreciationProjec
 
   return (
     <figure className="depr-projection-chart">
-      <figcaption className="sr-only">
-        Projecao de depreciacao para os proximos meses
-      </figcaption>
+      <figcaption className="sr-only">Projecao de depreciacao para os proximos meses</figcaption>
       <div className="depr-projection-chart__container">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>

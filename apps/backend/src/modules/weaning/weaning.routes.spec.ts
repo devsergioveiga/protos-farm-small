@@ -291,7 +291,12 @@ describe('Weaning routes', () => {
       const res = await request(app)
         .put('/api/org/weaning-config')
         .set('Authorization', 'Bearer tok')
-        .send({ weaningDaysMale: 210, weaningDaysFemale: 180, minWeightKgMale: 180, minWeightKgFemale: 160 });
+        .send({
+          weaningDaysMale: 210,
+          weaningDaysFemale: 180,
+          minWeightKgMale: 180,
+          minWeightKgFemale: 160,
+        });
 
       expect(res.status).toBe(200);
       expect(res.body.weaningDaysMale).toBe(210);
@@ -347,8 +352,20 @@ describe('Weaning routes', () => {
   describe('POST /api/org/farms/:farmId/weanings/bulk', () => {
     it('deve registrar desmame em lote e retornar 201', async () => {
       mockedService.createBulkWeaning.mockResolvedValue([
-        { calfId: 'calf-1', calfEarTag: '001-1', status: 'created', weaningId: 'w-1', weightWarning: null },
-        { calfId: 'calf-2', calfEarTag: '002-1', status: 'created', weaningId: 'w-2', weightWarning: 'Peso 150 kg abaixo do mínimo configurado (180 kg)' },
+        {
+          calfId: 'calf-1',
+          calfEarTag: '001-1',
+          status: 'created',
+          weaningId: 'w-1',
+          weightWarning: null,
+        },
+        {
+          calfId: 'calf-2',
+          calfEarTag: '002-1',
+          status: 'created',
+          weaningId: 'w-2',
+          weightWarning: 'Peso 150 kg abaixo do mínimo configurado (180 kg)',
+        },
       ]);
 
       const res = await request(app)

@@ -1,6 +1,6 @@
 ---
 phase: 18-manutencao-ordens-servico
-plan: "09"
+plan: '09'
 subsystem: backend/maintenance-provisions
 tags: [tests, integration-tests, maintenance, provisions, gap-closure]
 dependency_graph:
@@ -15,11 +15,11 @@ key_files:
   modified:
     - apps/backend/src/modules/maintenance-provisions/maintenance-provisions.routes.spec.ts
 decisions:
-  - "Mocked prisma.maintenanceProvision.findFirst directly for GET /:id route which bypasses service layer"
-  - "Used smoke-test pattern for processMonthlyProvisions cron tests (not HTTP endpoint)"
+  - 'Mocked prisma.maintenanceProvision.findFirst directly for GET /:id route which bypasses service layer'
+  - 'Used smoke-test pattern for processMonthlyProvisions cron tests (not HTTP endpoint)'
 metrics:
   duration: 89s
-  completed: "2026-03-22"
+  completed: '2026-03-22'
   tasks_completed: 1
   files_modified: 1
 ---
@@ -30,9 +30,9 @@ metrics:
 
 ## Tasks Completed
 
-| # | Task | Commit | Files |
-|---|------|--------|-------|
-| 1 | Implement all 19 maintenance provision integration tests | 337250d1 | maintenance-provisions.routes.spec.ts |
+| #   | Task                                                     | Commit   | Files                                 |
+| --- | -------------------------------------------------------- | -------- | ------------------------------------- |
+| 1   | Implement all 19 maintenance provision integration tests | 337250d1 | maintenance-provisions.routes.spec.ts |
 
 ## What Was Built
 

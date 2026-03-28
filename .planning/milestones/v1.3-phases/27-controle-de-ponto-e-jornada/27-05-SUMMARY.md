@@ -13,10 +13,12 @@ Mobile time-punch screen with offline-first architecture: clock-in/out with GPS 
 ## Key Files
 
 ### Created
+
 - `apps/mobile/app/(app)/time-punch.tsx` — Clock-in/out screen with GPS, geofence, haptics, offline banner, elapsed timer
 - `apps/mobile/services/db/time-punch-repository.ts` — SQLite CRUD for offline punches
 
 ### Modified
+
 - `apps/mobile/services/db/migrations.ts` — V12 migration for time_punches table
 - `apps/mobile/services/offline-queue.ts` — Added time_punches to OperationEntity
 - `apps/mobile/app/(app)/(tabs)/more.tsx` — Navigation entry with Clock icon

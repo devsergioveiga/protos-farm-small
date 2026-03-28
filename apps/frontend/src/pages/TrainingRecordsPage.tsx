@@ -31,7 +31,6 @@ function getExpiryStatus(expiresAt: string): 'OK' | 'YELLOW' | 'RED' | 'EXPIRED'
   return 'OK';
 }
 
-
 export default function TrainingRecordsPage() {
   const [showModal, setShowModal] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -283,7 +282,9 @@ export default function TrainingRecordsPage() {
                         onClick={() => toggleExpand(item.id)}
                         aria-expanded={expandedId === item.id}
                         aria-label={
-                          expandedId === item.id ? 'Recolher participantes' : 'Expandir participantes'
+                          expandedId === item.id
+                            ? 'Recolher participantes'
+                            : 'Expandir participantes'
                         }
                       >
                         {expandedId === item.id ? (
@@ -318,7 +319,10 @@ export default function TrainingRecordsPage() {
 
                   {/* Expanded participants */}
                   {expandedId === item.id && (
-                    <tr key={`${item.id}-participants`} className="training-records-page__expanded-row">
+                    <tr
+                      key={`${item.id}-participants`}
+                      className="training-records-page__expanded-row"
+                    >
                       <td colSpan={9}>
                         <div className="training-records-page__participants">
                           <p className="training-records-page__participants-title">Participantes</p>
@@ -329,10 +333,7 @@ export default function TrainingRecordsPage() {
                           ) : (
                             <ul className="training-records-page__participants-list">
                               {item.participants.map((p) => (
-                                <li
-                                  key={p.id}
-                                  className="training-records-page__participant-item"
-                                >
+                                <li key={p.id} className="training-records-page__participant-item">
                                   <span className="training-records-page__participant-name">
                                     {p.employeeName}
                                   </span>

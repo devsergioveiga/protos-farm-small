@@ -1,6 +1,6 @@
 ---
 phase: 38-fechamento-mensal-e-concilia-o-cont-bil
-plan: "02"
+plan: '02'
 subsystem: api
 tags: [express, middleware, accounting, period-close, journal-entries, auto-posting]
 
@@ -10,12 +10,12 @@ requires:
     provides: checkPeriodOpen middleware at apps/backend/src/middleware/check-period-open.ts
 
 provides:
-  - "checkPeriodOpen() applied to POST /journal-entries (create draft)"
-  - "checkPeriodOpen() applied to POST /journal-entries/:id/post (post draft)"
-  - "checkPeriodOpen() applied to POST /journal-entries/import-csv (CSV import)"
-  - "checkPeriodOpen() applied to POST /auto-posting/pending/retry-batch"
-  - "checkPeriodOpen() applied to POST /auto-posting/pending/:id/retry"
-  - "FECH-03 enforcement complete: all accounting write endpoints guarded against closed/blocked periods"
+  - 'checkPeriodOpen() applied to POST /journal-entries (create draft)'
+  - 'checkPeriodOpen() applied to POST /journal-entries/:id/post (post draft)'
+  - 'checkPeriodOpen() applied to POST /journal-entries/import-csv (CSV import)'
+  - 'checkPeriodOpen() applied to POST /auto-posting/pending/retry-batch'
+  - 'checkPeriodOpen() applied to POST /auto-posting/pending/:id/retry'
+  - 'FECH-03 enforcement complete: all accounting write endpoints guarded against closed/blocked periods'
 
 affects: [39-demonstracoes-financeiras, journal-entries, auto-posting]
 
@@ -23,8 +23,8 @@ affects: [39-demonstracoes-financeiras, journal-entries, auto-posting]
 tech-stack:
   added: []
   patterns:
-    - "checkPeriodOpen() middleware applied as defense-in-depth on all HTTP write endpoints that accept entryDate/date in body"
-    - "Middleware placement: after authenticate + checkPermission, before async handler"
+    - 'checkPeriodOpen() middleware applied as defense-in-depth on all HTTP write endpoints that accept entryDate/date in body'
+    - 'Middleware placement: after authenticate + checkPermission, before async handler'
 
 key-files:
   created: []
@@ -33,11 +33,11 @@ key-files:
     - apps/backend/src/modules/auto-posting/auto-posting.routes.ts
 
 key-decisions:
-  - "Applied checkPeriodOpen() to pending/retry-batch and pending/:id/retry (actual HTTP routes) rather than the internal process() function which is called by module hooks only"
-  - "For import-csv: checkPeriodOpen() placed after multer wrapper middleware but before the async handler, since CSV import parses dates that may be in req.body after file upload"
+  - 'Applied checkPeriodOpen() to pending/retry-batch and pending/:id/retry (actual HTTP routes) rather than the internal process() function which is called by module hooks only'
+  - 'For import-csv: checkPeriodOpen() placed after multer wrapper middleware but before the async handler, since CSV import parses dates that may be in req.body after file upload'
 
 patterns-established:
-  - "Period guard middleware chain: authenticate -> checkPermission -> checkPeriodOpen() -> async handler"
+  - 'Period guard middleware chain: authenticate -> checkPermission -> checkPeriodOpen() -> async handler'
 
 requirements-completed: [FECH-03]
 
@@ -95,5 +95,6 @@ None - plan executed exactly as written (with one clarification: plan mentioned 
 - Ready for Phase 38-03: monthly closing checklist UI or subsequent accounting phases
 
 ---
-*Phase: 38-fechamento-mensal-e-concilia-o-cont-bil*
-*Completed: 2026-03-28*
+
+_Phase: 38-fechamento-mensal-e-concilia-o-cont-bil_
+_Completed: 2026-03-28_

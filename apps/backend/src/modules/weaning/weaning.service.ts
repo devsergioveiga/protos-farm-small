@@ -67,16 +67,32 @@ export async function setWeaningConfig(
   ctx: RlsContext,
   input: WeaningConfigInput,
 ): Promise<WeaningConfigItem> {
-  if (input.weaningDaysMale !== undefined && input.weaningDaysMale !== null && input.weaningDaysMale < 1) {
+  if (
+    input.weaningDaysMale !== undefined &&
+    input.weaningDaysMale !== null &&
+    input.weaningDaysMale < 1
+  ) {
     throw new WeaningError('Dias para desmame (macho) deve ser pelo menos 1', 400);
   }
-  if (input.weaningDaysFemale !== undefined && input.weaningDaysFemale !== null && input.weaningDaysFemale < 1) {
+  if (
+    input.weaningDaysFemale !== undefined &&
+    input.weaningDaysFemale !== null &&
+    input.weaningDaysFemale < 1
+  ) {
     throw new WeaningError('Dias para desmame (fêmea) deve ser pelo menos 1', 400);
   }
-  if (input.minWeightKgMale !== undefined && input.minWeightKgMale !== null && input.minWeightKgMale <= 0) {
+  if (
+    input.minWeightKgMale !== undefined &&
+    input.minWeightKgMale !== null &&
+    input.minWeightKgMale <= 0
+  ) {
     throw new WeaningError('Peso mínimo (macho) deve ser maior que 0', 400);
   }
-  if (input.minWeightKgFemale !== undefined && input.minWeightKgFemale !== null && input.minWeightKgFemale <= 0) {
+  if (
+    input.minWeightKgFemale !== undefined &&
+    input.minWeightKgFemale !== null &&
+    input.minWeightKgFemale <= 0
+  ) {
     throw new WeaningError('Peso mínimo (fêmea) deve ser maior que 0', 400);
   }
 
@@ -169,11 +185,11 @@ export async function getUnweanedAnimals(
           ? addDays(birthDate, weaningDays).toISOString().slice(0, 10)
           : null;
 
-      const isOverdue =
-        expectedWeaningDate ? new Date(expectedWeaningDate) <= now : false;
+      const isOverdue = expectedWeaningDate ? new Date(expectedWeaningDate) <= now : false;
 
       const weighing = weightMap.get(calf.id);
-      const lastWeightKg = weighing?.weightKg ?? (calf.entryWeightKg ? Number(calf.entryWeightKg) : null);
+      const lastWeightKg =
+        weighing?.weightKg ?? (calf.entryWeightKg ? Number(calf.entryWeightKg) : null);
       const lastWeighingDate = weighing?.date ?? null;
 
       return {

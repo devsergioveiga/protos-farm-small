@@ -8,10 +8,7 @@ function getAccessToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
 
-async function downloadBlob(
-  path: string,
-  fallbackFilename: string,
-): Promise<string> {
+async function downloadBlob(path: string, fallbackFilename: string): Promise<string> {
   const token = getAccessToken();
   const headers: Record<string, string> = {};
   if (token) {
@@ -21,7 +18,7 @@ async function downloadBlob(
   const res = await fetch(`/api${path}`, { method: 'GET', headers });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({})) as { error?: string };
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
     throw new Error(body.error ?? 'Erro ao baixar arquivo');
   }
 

@@ -33,15 +33,15 @@ No shadcn gate applies — project uses its own established design system. All t
 
 Declared values (multiples of 4px via `--space-*` tokens):
 
-| Token | Value               | Usage                                                        |
-| ----- | ------------------- | ------------------------------------------------------------ |
-| xs    | 4px (`--space-1`)   | Icon gaps, inline padding, badge internal padding            |
-| sm    | 8px (`--space-2`)   | Compact element spacing, input addon gaps                    |
-| md    | 16px (`--space-4`)  | Default element spacing, form field gaps                     |
-| lg    | 24px (`--space-6`)  | Section padding, card internal padding                       |
-| xl    | 32px (`--space-8`)  | Layout gaps between sections                                 |
-| 2xl   | 48px (`--space-12`) | Major section breaks, page top padding                       |
-| 3xl   | 64px (`--space-16`) | Empty state icon size, page-level spacing                    |
+| Token | Value               | Usage                                             |
+| ----- | ------------------- | ------------------------------------------------- |
+| xs    | 4px (`--space-1`)   | Icon gaps, inline padding, badge internal padding |
+| sm    | 8px (`--space-2`)   | Compact element spacing, input addon gaps         |
+| md    | 16px (`--space-4`)  | Default element spacing, form field gaps          |
+| lg    | 24px (`--space-6`)  | Section padding, card internal padding            |
+| xl    | 32px (`--space-8`)  | Layout gaps between sections                      |
+| 2xl   | 48px (`--space-12`) | Major section breaks, page top padding            |
+| 3xl   | 64px (`--space-16`) | Empty state icon size, page-level spacing         |
 
 Exceptions:
 
@@ -55,12 +55,12 @@ Exceptions:
 
 ## Typography
 
-| Role                              | Size                 | Weight                  | Line Height              | Font          | Token            |
-| --------------------------------- | -------------------- | ----------------------- | ------------------------ | ------------- | ---------------- |
-| Body                              | 16px (`--text-base`) | 400 (`--font-regular`)  | 1.5 (`--leading-normal`) | Source Sans 3 | `--font-body`    |
-| Label / UI text                   | 14px (`--text-sm`)   | 600 (`--font-semibold`) | 1.5 (`--leading-normal`) | Source Sans 3 | `--font-body`    |
-| Heading (page, modal title)       | 20px (`--text-lg`)   | 700 (`--font-bold`)     | 1.2 (`--leading-tight`)  | DM Sans       | `--font-display` |
-| Display (KPI totals, NF amounts)  | 24px (`--text-xl`)   | 500 (`--font-medium`)   | 1.2 (`--leading-tight`)  | DM Sans       | `--font-display` |
+| Role                             | Size                 | Weight                  | Line Height              | Font          | Token            |
+| -------------------------------- | -------------------- | ----------------------- | ------------------------ | ------------- | ---------------- |
+| Body                             | 16px (`--text-base`) | 400 (`--font-regular`)  | 1.5 (`--leading-normal`) | Source Sans 3 | `--font-body`    |
+| Label / UI text                  | 14px (`--text-sm`)   | 600 (`--font-semibold`) | 1.5 (`--leading-normal`) | Source Sans 3 | `--font-body`    |
+| Heading (page, modal title)      | 20px (`--text-lg`)   | 700 (`--font-bold`)     | 1.2 (`--leading-tight`)  | DM Sans       | `--font-display` |
+| Display (KPI totals, NF amounts) | 24px (`--text-xl`)   | 500 (`--font-medium`)   | 1.2 (`--leading-tight`)  | DM Sans       | `--font-display` |
 
 Monetary and fiscal data values (asset tag, invoice number, installment amounts, NF-e total):
 
@@ -82,12 +82,12 @@ Constraints from CLAUDE.md:
 
 ## Color
 
-| Role            | Value     | Token                 | Usage                                                              |
-| --------------- | --------- | --------------------- | ------------------------------------------------------------------ |
-| Dominant (60%)  | `#FAFAF8` | `--color-neutral-50`  | Page background, modal body, drawer background                     |
-| Secondary (30%) | `#F5F3EF` | `--color-neutral-100` | Cards, sidebar, collapsible section backgrounds, table headers     |
-| Accent (10%)    | `#2E7D32` | `--color-primary-600` | See reserved-for list below                                        |
-| Destructive     | `#C62828` | `--color-error-500`   | Destructive actions, error states only — never decorative          |
+| Role            | Value     | Token                 | Usage                                                          |
+| --------------- | --------- | --------------------- | -------------------------------------------------------------- |
+| Dominant (60%)  | `#FAFAF8` | `--color-neutral-50`  | Page background, modal body, drawer background                 |
+| Secondary (30%) | `#F5F3EF` | `--color-neutral-100` | Cards, sidebar, collapsible section backgrounds, table headers |
+| Accent (10%)    | `#2E7D32` | `--color-primary-600` | See reserved-for list below                                    |
+| Destructive     | `#C62828` | `--color-error-500`   | Destructive actions, error states only — never decorative      |
 
 Accent (`--color-primary-600`) reserved for exactly these elements in Phase 19:
 
@@ -114,28 +114,28 @@ NF-e parse preview status color coding (within `AssetNfeImportModal` step 2 item
 
 ### New Components (Phase 19)
 
-| Component                    | Path                                                           | Pattern Basis                                                                       |
-| ---------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `AssetNfeImportModal`        | `components/assets/AssetNfeImportModal.tsx`                    | `AssetImportModal.tsx` multi-step pattern — 3 steps: upload → preview → confirm      |
-| `AssetNfeImportModal.css`    | `components/assets/AssetNfeImportModal.css`                    | Plain CSS, var tokens only                                                          |
-| `InstallmentPreviewTable`    | `components/assets/InstallmentPreviewTable.tsx`                | `SchedulePreviewTable.tsx` from rural-credit — read-only installment list            |
-| `InstallmentPreviewTable.css`| `components/assets/InstallmentPreviewTable.css`                | Plain CSS, var tokens only                                                          |
+| Component                     | Path                                            | Pattern Basis                                                                   |
+| ----------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------- |
+| `AssetNfeImportModal`         | `components/assets/AssetNfeImportModal.tsx`     | `AssetImportModal.tsx` multi-step pattern — 3 steps: upload → preview → confirm |
+| `AssetNfeImportModal.css`     | `components/assets/AssetNfeImportModal.css`     | Plain CSS, var tokens only                                                      |
+| `InstallmentPreviewTable`     | `components/assets/InstallmentPreviewTable.tsx` | `SchedulePreviewTable.tsx` from rural-credit — read-only installment list       |
+| `InstallmentPreviewTable.css` | `components/assets/InstallmentPreviewTable.css` | Plain CSS, var tokens only                                                      |
 
 ### Modified Components (Phase 19)
 
-| Component     | Change                                                                              | Why                                                             |
-| ------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `AssetModal`  | Add collapsible "Dados Financeiros" section below existing "Dados de Aquisição"     | AQUI-01: CP generation requires payment type, installments, CC  |
-| `AssetModal`  | Add "Importar NF-e" secondary button in modal header (opens `AssetNfeImportModal`)  | AQUI-03: NF-e XML upload flow launches from asset context        |
+| Component    | Change                                                                             | Why                                                            |
+| ------------ | ---------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `AssetModal` | Add collapsible "Dados Financeiros" section below existing "Dados de Aquisição"    | AQUI-01: CP generation requires payment type, installments, CC |
+| `AssetModal` | Add "Importar NF-e" secondary button in modal header (opens `AssetNfeImportModal`) | AQUI-03: NF-e XML upload flow launches from asset context      |
 
 ### Reused Components (unchanged)
 
-| Component            | Usage in Phase 19                                                           |
-| -------------------- | --------------------------------------------------------------------------- |
-| `ConfirmModal`       | No destructive action in this phase — not used                              |
-| `AssetModal`         | Base pattern extended with "Dados Financeiros" collapsible section          |
-| `AssetImportModal`   | Multi-step wizard pattern reference for `AssetNfeImportModal`               |
-| `SchedulePreviewTable` | Pattern reference only — `InstallmentPreviewTable` is a new component     |
+| Component              | Usage in Phase 19                                                     |
+| ---------------------- | --------------------------------------------------------------------- |
+| `ConfirmModal`         | No destructive action in this phase — not used                        |
+| `AssetModal`           | Base pattern extended with "Dados Financeiros" collapsible section    |
+| `AssetImportModal`     | Multi-step wizard pattern reference for `AssetNfeImportModal`         |
+| `SchedulePreviewTable` | Pattern reference only — `InstallmentPreviewTable` is a new component |
 
 ---
 
@@ -158,8 +158,8 @@ NF-e parse preview status color coding (within `AssetNfeImportModal` step 2 item
 2. **Vencimento** (shown when "À Vista" selected): date input, `aria-label="Data de vencimento"`, required when payment type present.
 
 3. **Financing block** (shown only when "Financiado" selected — `display:none` when not selected):
-   - Número de parcelas: numeric input, min 1 max 360, label "Número de parcelas *"
-   - Primeira parcela: date input, label "Vencimento da 1ª parcela *"
+   - Número de parcelas: numeric input, min 1 max 360, label "Número de parcelas \*"
+   - Primeira parcela: date input, label "Vencimento da 1ª parcela \*"
    - Taxa de juros a.m.: optional decimal input, label "Taxa de juros a.m. (%)", placeholder "0,00 — deixe em branco para parcelas iguais"
    - Below those fields: `InstallmentPreviewTable` — live-updating installment schedule preview (recalculates on blur of any financing field)
 
@@ -257,30 +257,30 @@ Summary of what will be created:
 
 ## Copywriting Contract
 
-| Element                                                          | Copy                                                                                                                             |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Primary CTA — AssetModal footer (create with financial data)     | "Registrar Ativo"                                                                                                                |
-| Primary CTA — AssetNfeImportModal step 1                         | "Continuar"                                                                                                                      |
-| Primary CTA — AssetNfeImportModal step 2                         | "Confirmar e criar ativos"                                                                                                       |
-| Primary CTA — AssetNfeImportModal step 3                         | "Criar Ativos"                                                                                                                   |
-| CP auto-generation banner                                        | "Uma conta a pagar será criada automaticamente ao salvar este ativo."                                                            |
-| CP auto-generation confirmation (step 3 NF-e flow)               | "1 conta a pagar de [valor] será criada para [fornecedor]."                                                                      |
-| Empty state heading — AssetNfeImportModal step 2 (no items)      | "Nenhum item encontrado no XML"                                                                                                   |
-| Empty state body — AssetNfeImportModal step 2 (no items)         | "O arquivo XML não contém itens de produto. Verifique se é uma NF-e de aquisição de ativo."                                      |
-| Success state heading — AssetNfeImportModal step 3 (after save)  | "X ativos criados com sucesso."                                                                                                   |
-| Success state body — AssetNfeImportModal                         | "Conta a pagar registrada automaticamente."                                                                                      |
-| Error state — CP creation failure (transaction rollback)         | "Não foi possível registrar o ativo. A conta a pagar não foi criada. Verifique sua conexão e tente novamente."                    |
-| Error state — NF-e XML parse failure (unrecognized format)       | "Não foi possível ler o XML. Verifique se o arquivo é uma NF-e válida e tente novamente."                                        |
-| Error state — NF-e XML parse partial (some fields empty)         | "Alguns dados não foram encontrados no XML. Revise os campos marcados antes de continuar."                                       |
-| Error state — duplicate asset tag on financed save               | "Não foi possível salvar. Já existe um ativo com essa etiqueta. Altere a etiqueta e tente novamente."                             |
-| Error state — missing payment fields when acquisitionValue > 0   | "Informe o tipo de pagamento e a data de vencimento para continuar."                                                             |
-| Installment preview label                                        | "Parcelas geradas"                                                                                                               |
-| Financing section expand/collapse toggle                         | "Dados do Financiamento" (collapsed: `ChevronDown`) / "Dados do Financiamento" (expanded: `ChevronUp`)                           |
-| Accessory expenses section label                                 | "Despesas Acessórias (rateio proporcional)"                                                                                      |
-| Item needs review badge                                          | "Revisar"                                                                                                                        |
-| Item mapped badge                                                | "Vinculado"                                                                                                                      |
-| Toast — asset created with CP                                    | "Ativo registrado. Conta a pagar criada automaticamente."                                                                        |
-| Toast — NF-e assets created                                      | "X ativos criados a partir da NF-e. Conta a pagar registrada."                                                                   |
+| Element                                                         | Copy                                                                                                           |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Primary CTA — AssetModal footer (create with financial data)    | "Registrar Ativo"                                                                                              |
+| Primary CTA — AssetNfeImportModal step 1                        | "Continuar"                                                                                                    |
+| Primary CTA — AssetNfeImportModal step 2                        | "Confirmar e criar ativos"                                                                                     |
+| Primary CTA — AssetNfeImportModal step 3                        | "Criar Ativos"                                                                                                 |
+| CP auto-generation banner                                       | "Uma conta a pagar será criada automaticamente ao salvar este ativo."                                          |
+| CP auto-generation confirmation (step 3 NF-e flow)              | "1 conta a pagar de [valor] será criada para [fornecedor]."                                                    |
+| Empty state heading — AssetNfeImportModal step 2 (no items)     | "Nenhum item encontrado no XML"                                                                                |
+| Empty state body — AssetNfeImportModal step 2 (no items)        | "O arquivo XML não contém itens de produto. Verifique se é uma NF-e de aquisição de ativo."                    |
+| Success state heading — AssetNfeImportModal step 3 (after save) | "X ativos criados com sucesso."                                                                                |
+| Success state body — AssetNfeImportModal                        | "Conta a pagar registrada automaticamente."                                                                    |
+| Error state — CP creation failure (transaction rollback)        | "Não foi possível registrar o ativo. A conta a pagar não foi criada. Verifique sua conexão e tente novamente." |
+| Error state — NF-e XML parse failure (unrecognized format)      | "Não foi possível ler o XML. Verifique se o arquivo é uma NF-e válida e tente novamente."                      |
+| Error state — NF-e XML parse partial (some fields empty)        | "Alguns dados não foram encontrados no XML. Revise os campos marcados antes de continuar."                     |
+| Error state — duplicate asset tag on financed save              | "Não foi possível salvar. Já existe um ativo com essa etiqueta. Altere a etiqueta e tente novamente."          |
+| Error state — missing payment fields when acquisitionValue > 0  | "Informe o tipo de pagamento e a data de vencimento para continuar."                                           |
+| Installment preview label                                       | "Parcelas geradas"                                                                                             |
+| Financing section expand/collapse toggle                        | "Dados do Financiamento" (collapsed: `ChevronDown`) / "Dados do Financiamento" (expanded: `ChevronUp`)         |
+| Accessory expenses section label                                | "Despesas Acessórias (rateio proporcional)"                                                                    |
+| Item needs review badge                                         | "Revisar"                                                                                                      |
+| Item mapped badge                                               | "Vinculado"                                                                                                    |
+| Toast — asset created with CP                                   | "Ativo registrado. Conta a pagar criada automaticamente."                                                      |
+| Toast — NF-e assets created                                     | "X ativos criados a partir da NF-e. Conta a pagar registrada."                                                 |
 
 **Language rules (source: CLAUDE.md):**
 
@@ -324,7 +324,7 @@ Recalculates on every `onBlur` event on `installmentCount`, `firstDueDate`, or `
 ### NF-e Step 2 — Item Assignment
 
 - Each item's asset dropdown is searchable (type to filter existing assets)
-- "Criar novo ativo" option at top of dropdown list — when selected, item row shows inline mini-form: "Nome do ativo *" text input (pre-filled with `xProd` trimmed to 80 chars)
+- "Criar novo ativo" option at top of dropdown list — when selected, item row shows inline mini-form: "Nome do ativo \*" text input (pre-filled with `xProd` trimmed to 80 chars)
 - Confirmar button disabled until all items have an assignment (existing asset OR new asset name provided)
 
 ---
@@ -333,37 +333,37 @@ Recalculates on every `onBlur` event on `installmentCount`, `firstDueDate`, or `
 
 All components in Phase 19 must satisfy:
 
-| Rule              | Requirement                                                                                                                                                                                          | Source         |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| Touch targets     | 48x48px minimum for all buttons, payment type radio cards, modal close buttons, file upload zone click area                                                                                          | CLAUDE.md      |
-| Focus visible     | `outline: 2px solid var(--color-primary-500); outline-offset: 2px` — never removed                                                                                                                   | CLAUDE.md      |
-| Form labels       | `<label htmlFor>` for every input — placeholder is supplementary only; all financing sub-fields labeled even when conditionally hidden (hidden fields still need label associated)                    | CLAUDE.md      |
-| Error messages    | `role="alert"` + icon + text — never color alone                                                                                                                                                     | CLAUDE.md      |
-| Icon-only buttons | `aria-label` mandatory — specific values: collapse section `aria-label="Recolher Dados Financeiros"` / `aria-label="Expandir Dados Financeiros"`, close NF-e modal `aria-label="Fechar"`, remove file `aria-label="Remover arquivo"` | CLAUDE.md |
-| Modal focus trap  | Focus must stay inside open modal; Escape closes `AssetNfeImportModal`; focus returns to "Importar NF-e" button on close                                                                              | CLAUDE.md      |
-| Payment radio cards | `<fieldset>` + `<legend>` wrapping radio card group: `<legend>Tipo de pagamento</legend>`. Radio inputs receive `aria-required="true"` when `acquisitionValue > 0`                                   | CLAUDE.md      |
-| InstallmentPreviewTable | `<table>` with `<caption>Parcelas geradas</caption>` + `<th scope="col">` for each column header                                                                                            | CLAUDE.md      |
-| NF-e item list    | Each item row wrapped in `<article>` with `aria-label="Item [N]: [xProd]"`                                                                                                                           | frontend CLAUDE.md |
-| CP banner         | Info banner uses `role="status"` (not `role="alert"` — it is informational, not an error)                                                                                                            | WCAG 4.1.3     |
-| Reduced motion    | All transitions must respect `prefers-reduced-motion: reduce` via existing tokens.css rule                                                                                                            | tokens.css     |
-| WCAG AA contrast  | `--color-primary-600` on white: 7.2:1 — passes; `--color-error-500` on white: 5.4:1 — passes; `--color-sky-100` background with `--color-neutral-800` text: verified > 4.5:1                        | CLAUDE.md spec |
+| Rule                    | Requirement                                                                                                                                                                                                                          | Source             |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
+| Touch targets           | 48x48px minimum for all buttons, payment type radio cards, modal close buttons, file upload zone click area                                                                                                                          | CLAUDE.md          |
+| Focus visible           | `outline: 2px solid var(--color-primary-500); outline-offset: 2px` — never removed                                                                                                                                                   | CLAUDE.md          |
+| Form labels             | `<label htmlFor>` for every input — placeholder is supplementary only; all financing sub-fields labeled even when conditionally hidden (hidden fields still need label associated)                                                   | CLAUDE.md          |
+| Error messages          | `role="alert"` + icon + text — never color alone                                                                                                                                                                                     | CLAUDE.md          |
+| Icon-only buttons       | `aria-label` mandatory — specific values: collapse section `aria-label="Recolher Dados Financeiros"` / `aria-label="Expandir Dados Financeiros"`, close NF-e modal `aria-label="Fechar"`, remove file `aria-label="Remover arquivo"` | CLAUDE.md          |
+| Modal focus trap        | Focus must stay inside open modal; Escape closes `AssetNfeImportModal`; focus returns to "Importar NF-e" button on close                                                                                                             | CLAUDE.md          |
+| Payment radio cards     | `<fieldset>` + `<legend>` wrapping radio card group: `<legend>Tipo de pagamento</legend>`. Radio inputs receive `aria-required="true"` when `acquisitionValue > 0`                                                                   | CLAUDE.md          |
+| InstallmentPreviewTable | `<table>` with `<caption>Parcelas geradas</caption>` + `<th scope="col">` for each column header                                                                                                                                     | CLAUDE.md          |
+| NF-e item list          | Each item row wrapped in `<article>` with `aria-label="Item [N]: [xProd]"`                                                                                                                                                           | frontend CLAUDE.md |
+| CP banner               | Info banner uses `role="status"` (not `role="alert"` — it is informational, not an error)                                                                                                                                            | WCAG 4.1.3         |
+| Reduced motion          | All transitions must respect `prefers-reduced-motion: reduce` via existing tokens.css rule                                                                                                                                           | tokens.css         |
+| WCAG AA contrast        | `--color-primary-600` on white: 7.2:1 — passes; `--color-error-500` on white: 5.4:1 — passes; `--color-sky-100` background with `--color-neutral-800` text: verified > 4.5:1                                                         | CLAUDE.md spec     |
 
 ---
 
 ## Animation Contract
 
-| Interaction                                         | Duration           | Easing   | Token                               |
-| --------------------------------------------------- | ------------------ | -------- | ----------------------------------- |
-| Button hover (state change)                         | 100ms              | ease-out | `--duration-instant` + `--ease-out` |
-| Dropdown / asset selector open                      | 200ms              | ease-out | `--duration-fast` + `--ease-out`    |
-| AssetNfeImportModal open                            | 300ms              | ease-out | `--duration-normal` + `--ease-out`  |
-| AssetNfeImportModal close                           | 200ms              | ease-in  | `--duration-fast` + `--ease-in`     |
-| Wizard step transition (content swap)               | 0ms (no animation) | —        | display:none / display:block        |
-| "Dados Financeiros" section expand/collapse         | 0ms (no animation) | —        | display:none / display:block        |
-| Financing sub-fields toggle (À Vista ↔ Financiado) | 0ms (no animation) | —        | display:none / display:block        |
-| InstallmentPreviewTable skeleton pulse              | 1.5s infinite      | ease-in-out | opacity 0.4 → 0.7                |
-| Toast slide-in                                      | 200ms              | ease-out | `--duration-fast`                   |
-| NF-e upload zone drag-over state                    | 100ms              | ease-out | `--duration-instant` + `--ease-out` |
+| Interaction                                        | Duration           | Easing      | Token                               |
+| -------------------------------------------------- | ------------------ | ----------- | ----------------------------------- |
+| Button hover (state change)                        | 100ms              | ease-out    | `--duration-instant` + `--ease-out` |
+| Dropdown / asset selector open                     | 200ms              | ease-out    | `--duration-fast` + `--ease-out`    |
+| AssetNfeImportModal open                           | 300ms              | ease-out    | `--duration-normal` + `--ease-out`  |
+| AssetNfeImportModal close                          | 200ms              | ease-in     | `--duration-fast` + `--ease-in`     |
+| Wizard step transition (content swap)              | 0ms (no animation) | —           | display:none / display:block        |
+| "Dados Financeiros" section expand/collapse        | 0ms (no animation) | —           | display:none / display:block        |
+| Financing sub-fields toggle (À Vista ↔ Financiado) | 0ms (no animation) | —           | display:none / display:block        |
+| InstallmentPreviewTable skeleton pulse             | 1.5s infinite      | ease-in-out | opacity 0.4 → 0.7                   |
+| Toast slide-in                                     | 200ms              | ease-out    | `--duration-fast`                   |
+| NF-e upload zone drag-over state                   | 100ms              | ease-out    | `--duration-instant` + `--ease-out` |
 
 All conditional field show/hide: `display:none` ↔ `display:block` — zero animation. Source: STATE.md locked decision applied throughout v1.2 (Phase 17 + Phase 18 precedent).
 
@@ -371,11 +371,11 @@ All conditional field show/hide: `display:none` ↔ `display:block` — zero ani
 
 ## Responsive Contract
 
-| Breakpoint          | AssetModal "Dados Financeiros"                                         | AssetNfeImportModal                                             | InstallmentPreviewTable                           |
-| ------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------- |
-| < 640px (mobile)    | Section stacks vertically; payment type radio cards stack 1-col        | Full-screen modal; stepper labels hidden (numbers only)          | Show 3 rows + expand link; columns: # / Valor     |
-| 640–1024px (tablet) | Two-column form layout for financing fields; radio cards side-by-side  | max-width 100% modal; all 3 stepper labels visible              | Show 6 rows + expand; all 3 columns               |
-| ≥ 1024px (desktop)  | Full two-column financing block; radio cards side-by-side              | max-width 720px modal centered                                  | All rows visible up to installmentCount            |
+| Breakpoint          | AssetModal "Dados Financeiros"                                        | AssetNfeImportModal                                     | InstallmentPreviewTable                       |
+| ------------------- | --------------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------- |
+| < 640px (mobile)    | Section stacks vertically; payment type radio cards stack 1-col       | Full-screen modal; stepper labels hidden (numbers only) | Show 3 rows + expand link; columns: # / Valor |
+| 640–1024px (tablet) | Two-column form layout for financing fields; radio cards side-by-side | max-width 100% modal; all 3 stepper labels visible      | Show 6 rows + expand; all 3 columns           |
+| ≥ 1024px (desktop)  | Full two-column financing block; radio cards side-by-side             | max-width 720px modal centered                          | All rows visible up to installmentCount       |
 
 Sidebar behavior: `--sidebar-width: 240px` collapsed on < 1024px (per existing pattern in `CLAUDE.md` — unchanged from previous phases).
 
@@ -394,29 +394,29 @@ No third-party component registries are used. All components are hand-authored f
 
 ## Pre-Population Sources
 
-| Decision                           | Source                                                         | Value                                                                                                              |
-| ---------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Color palette                      | `tokens.css` + `CLAUDE.md`                                     | `--color-primary-600` (#2E7D32), `--color-neutral-50` (#FAFAF8), `--color-error-500` (#C62828)                     |
-| Font families                      | `tokens.css` + `CLAUDE.md`                                     | DM Sans headings, Source Sans 3 body, JetBrains Mono data                                                          |
-| Font sizes (4 roles)               | `tokens.css`                                                   | 14px label, 16px body, 20px heading, 24px display                                                                  |
-| Font weights (4 — see exception)   | `tokens.css` + `CLAUDE.md`                                     | Source Sans 3: 400 body / 600 label; DM Sans: 500 display / 700 heading — pre-existing project constraint           |
-| Spacing scale                      | `tokens.css`                                                   | `--space-1` through `--space-16` (base 4px)                                                                        |
-| Touch targets                      | `CLAUDE.md`                                                    | 48x48px minimum                                                                                                    |
-| Input padding                      | `CLAUDE.md`                                                    | 12px vertical, 16px horizontal                                                                                     |
-| Conditional field animation        | `STATE.md` locked decision (Phase 17 + 18 precedent)           | `display:none` — no animation                                                                                      |
-| Modal pattern                      | `AssetModal.tsx`, `AssetImportModal.tsx` (codebase)            | header + scrollable body + sticky footer; stepper for multi-step                                                   |
-| InstallmentPreviewTable pattern    | `SchedulePreviewTable.tsx` from rural-credit (codebase)        | Read-only table, JetBrains Mono for amounts, same row/footer pattern                                               |
-| NF-e XML parsing                   | `RESEARCH.md` Pattern 2 + Pattern 3                            | `@xmldom/xmldom` DOMParser, defensive `?.textContent?.trim()`, preview before create                               |
-| Atomic asset + CP creation         | `RESEARCH.md` Pattern 1 + STATE.md locked decision              | Never route through GoodsReceipt; `asset-acquisitions` module; `originType = 'ASSET_ACQUISITION'`                   |
-| Installment generation             | `RESEARCH.md` Pattern code + `rural-credit` (codebase)         | `generateInstallments` from `@protos-farm/shared`; `SchedulePreviewTable` pattern                                  |
-| Destructive confirmation modals    | `CLAUDE.md` + `apps/frontend/CLAUDE.md`                        | `ConfirmModal` (medium criticality) — no destructive action exists in Phase 19 acquisition flow                    |
-| Destructive color                  | `CLAUDE.md`                                                    | `--color-error-500` (#C62828) — only for errors; not used for payment type selection                               |
-| Payment type radio card pattern    | Phase 18 `WorkOrderCloseWizard` accounting treatment cards      | Unselected: neutral border; selected: treatment-specific background + `--color-primary-600` 2px border             |
-| Animation durations                | `tokens.css`                                                   | 100ms / 200ms / 300ms / 500ms                                                                                      |
-| Animation curves                   | `tokens.css`                                                   | `--ease-out` entries, `--ease-in` exits                                                                            |
-| Language register                  | `CLAUDE.md`                                                    | pt-BR colloquial, human errors, no system-speak                                                                    |
-| Icon library                       | `CLAUDE.md`                                                    | lucide-react, 16px inline / 20px button / 24px nav / 48–64px empty state                                          |
-| HTML semantics                     | `CLAUDE.md` + `apps/frontend/CLAUDE.md`                        | `<fieldset>` + `<legend>` for radio groups; `<table>` for installment data; `<article>` for NF-e item rows         |
+| Decision                         | Source                                                     | Value                                                                                                      |
+| -------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Color palette                    | `tokens.css` + `CLAUDE.md`                                 | `--color-primary-600` (#2E7D32), `--color-neutral-50` (#FAFAF8), `--color-error-500` (#C62828)             |
+| Font families                    | `tokens.css` + `CLAUDE.md`                                 | DM Sans headings, Source Sans 3 body, JetBrains Mono data                                                  |
+| Font sizes (4 roles)             | `tokens.css`                                               | 14px label, 16px body, 20px heading, 24px display                                                          |
+| Font weights (4 — see exception) | `tokens.css` + `CLAUDE.md`                                 | Source Sans 3: 400 body / 600 label; DM Sans: 500 display / 700 heading — pre-existing project constraint  |
+| Spacing scale                    | `tokens.css`                                               | `--space-1` through `--space-16` (base 4px)                                                                |
+| Touch targets                    | `CLAUDE.md`                                                | 48x48px minimum                                                                                            |
+| Input padding                    | `CLAUDE.md`                                                | 12px vertical, 16px horizontal                                                                             |
+| Conditional field animation      | `STATE.md` locked decision (Phase 17 + 18 precedent)       | `display:none` — no animation                                                                              |
+| Modal pattern                    | `AssetModal.tsx`, `AssetImportModal.tsx` (codebase)        | header + scrollable body + sticky footer; stepper for multi-step                                           |
+| InstallmentPreviewTable pattern  | `SchedulePreviewTable.tsx` from rural-credit (codebase)    | Read-only table, JetBrains Mono for amounts, same row/footer pattern                                       |
+| NF-e XML parsing                 | `RESEARCH.md` Pattern 2 + Pattern 3                        | `@xmldom/xmldom` DOMParser, defensive `?.textContent?.trim()`, preview before create                       |
+| Atomic asset + CP creation       | `RESEARCH.md` Pattern 1 + STATE.md locked decision         | Never route through GoodsReceipt; `asset-acquisitions` module; `originType = 'ASSET_ACQUISITION'`          |
+| Installment generation           | `RESEARCH.md` Pattern code + `rural-credit` (codebase)     | `generateInstallments` from `@protos-farm/shared`; `SchedulePreviewTable` pattern                          |
+| Destructive confirmation modals  | `CLAUDE.md` + `apps/frontend/CLAUDE.md`                    | `ConfirmModal` (medium criticality) — no destructive action exists in Phase 19 acquisition flow            |
+| Destructive color                | `CLAUDE.md`                                                | `--color-error-500` (#C62828) — only for errors; not used for payment type selection                       |
+| Payment type radio card pattern  | Phase 18 `WorkOrderCloseWizard` accounting treatment cards | Unselected: neutral border; selected: treatment-specific background + `--color-primary-600` 2px border     |
+| Animation durations              | `tokens.css`                                               | 100ms / 200ms / 300ms / 500ms                                                                              |
+| Animation curves                 | `tokens.css`                                               | `--ease-out` entries, `--ease-in` exits                                                                    |
+| Language register                | `CLAUDE.md`                                                | pt-BR colloquial, human errors, no system-speak                                                            |
+| Icon library                     | `CLAUDE.md`                                                | lucide-react, 16px inline / 20px button / 24px nav / 48–64px empty state                                   |
+| HTML semantics                   | `CLAUDE.md` + `apps/frontend/CLAUDE.md`                    | `<fieldset>` + `<legend>` for radio groups; `<table>` for installment data; `<article>` for NF-e item rows |
 
 ---
 

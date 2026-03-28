@@ -169,7 +169,9 @@ export default function ChartOfAccountsPage() {
       {/* Breadcrumb */}
       <nav className="coa-page__breadcrumb" aria-label="Caminho da página">
         <span className="coa-page__breadcrumb-item">Contabilidade</span>
-        <span className="coa-page__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="coa-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="coa-page__breadcrumb-item coa-page__breadcrumb-item--current">
           Plano de Contas
         </span>
@@ -185,7 +187,9 @@ export default function ChartOfAccountsPage() {
           <button
             type="button"
             className="coa-page__btn coa-page__btn--secondary"
-            onClick={() => { void handleSeed(); }}
+            onClick={() => {
+              void handleSeed();
+            }}
             disabled={seeding}
           >
             <TreePine size={16} aria-hidden="true" />
@@ -194,7 +198,10 @@ export default function ChartOfAccountsPage() {
           <button
             type="button"
             className="coa-page__btn coa-page__btn--primary"
-            onClick={() => { setEditingAccount(undefined); setShowModal(true); }}
+            onClick={() => {
+              setEditingAccount(undefined);
+              setShowModal(true);
+            }}
           >
             <Plus size={16} aria-hidden="true" />
             Nova Conta
@@ -249,7 +256,9 @@ export default function ChartOfAccountsPage() {
               <button
                 type="button"
                 className="coa-page__btn coa-page__btn--primary"
-                onClick={() => { void handleSeed(); }}
+                onClick={() => {
+                  void handleSeed();
+                }}
                 disabled={seeding}
               >
                 <TreePine size={16} aria-hidden="true" />
@@ -260,11 +269,7 @@ export default function ChartOfAccountsPage() {
         )}
 
         {!isLoading && !error && filteredTree.length > 0 && (
-          <div
-            className="coa-page__tree"
-            role="tree"
-            aria-label="Plano de contas hierárquico"
-          >
+          <div className="coa-page__tree" role="tree" aria-label="Plano de contas hierárquico">
             {filteredTree.map((root) => (
               <CoaTreeNode
                 key={root.id}
@@ -283,7 +288,10 @@ export default function ChartOfAccountsPage() {
       {/* Create/Edit Modal */}
       <CoaModal
         isOpen={showModal}
-        onClose={() => { setShowModal(false); setEditingAccount(undefined); }}
+        onClose={() => {
+          setShowModal(false);
+          setEditingAccount(undefined);
+        }}
         onSubmit={handleModalSubmit}
         account={editingAccount}
         parentAccounts={allAccounts.filter((a) => a.isSynthetic)}
@@ -296,7 +304,9 @@ export default function ChartOfAccountsPage() {
         message={`Deseja desativar a conta "${deactivatingAccount?.code} — ${deactivatingAccount?.name}"? Esta ação pode ser revertida editando a conta.`}
         confirmLabel="Desativar"
         variant="warning"
-        onConfirm={() => { void handleConfirmDeactivate(); }}
+        onConfirm={() => {
+          void handleConfirmDeactivate();
+        }}
         onCancel={() => setDeactivatingAccount(null)}
       />
 

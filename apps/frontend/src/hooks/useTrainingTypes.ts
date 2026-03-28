@@ -62,23 +62,20 @@ export function useTrainingTypes() {
     }
   }, []);
 
-  const updateTrainingType = useCallback(
-    async (id: string, input: UpdateTrainingTypeInput) => {
-      setLoading(true);
-      setError(null);
-      try {
-        await api.put(`/org/training-types/${id}`, input);
-        setSuccessMessage('Tipo de treinamento atualizado com sucesso.');
-        return true;
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'Erro ao atualizar tipo de treinamento');
-        return false;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  const updateTrainingType = useCallback(async (id: string, input: UpdateTrainingTypeInput) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await api.put(`/org/training-types/${id}`, input);
+      setSuccessMessage('Tipo de treinamento atualizado com sucesso.');
+      return true;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erro ao atualizar tipo de treinamento');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const deleteTrainingType = useCallback(async (id: string) => {
     setLoading(true);

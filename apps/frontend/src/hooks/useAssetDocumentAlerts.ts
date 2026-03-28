@@ -42,9 +42,7 @@ export function useAssetDocumentAlerts() {
     setLoading(true);
     setError(null);
     try {
-      const result = await api.get<DocumentAlerts>(
-        `/org/${orgId}/asset-documents/expiring`,
-      );
+      const result = await api.get<DocumentAlerts>(`/org/${orgId}/asset-documents/expiring`);
       setAlerts(result);
     } catch {
       setError('Nao foi possivel carregar os alertas de documentos.');

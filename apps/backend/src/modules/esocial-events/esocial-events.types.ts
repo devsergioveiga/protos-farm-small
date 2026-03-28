@@ -1,7 +1,10 @@
 import type { EsocialGroup, EsocialStatus } from '@prisma/client';
 
 export class EsocialEventError extends Error {
-  constructor(message: string, public statusCode: number = 400) {
+  constructor(
+    message: string,
+    public statusCode: number = 400,
+  ) {
     super(message);
     this.name = 'EsocialEventError';
   }
@@ -62,7 +65,10 @@ export interface EsocialDashboardOutput {
   exportado: number;
   aceito: number;
   rejeitado: number;
-  byGroup: Record<EsocialGroup, { total: number; pendente: number; exportado: number; aceito: number; rejeitado: number }>;
+  byGroup: Record<
+    EsocialGroup,
+    { total: number; pendente: number; exportado: number; aceito: number; rejeitado: number }
+  >;
 }
 
 // State machine transitions (per D-10)

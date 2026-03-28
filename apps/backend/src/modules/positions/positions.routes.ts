@@ -56,8 +56,7 @@ positionsRouter.get(
       const ctx = buildRlsContext(req);
       const search = req.query.search as string | undefined;
       const isActiveRaw = req.query.isActive as string | undefined;
-      const isActive =
-        isActiveRaw === 'true' ? true : isActiveRaw === 'false' ? false : undefined;
+      const isActive = isActiveRaw === 'true' ? true : isActiveRaw === 'false' ? false : undefined;
       const page = req.query.page ? Number(req.query.page as string) : undefined;
       const limit = req.query.limit ? Number(req.query.limit as string) : undefined;
 

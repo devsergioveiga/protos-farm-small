@@ -199,9 +199,7 @@ export default function WeaningPage() {
         >
           <Settings size={16} aria-hidden="true" />
           Configuração de desmama
-          {!configIsSet && (
-            <span className="weaning-page__config-badge">Não configurado</span>
-          )}
+          {!configIsSet && <span className="weaning-page__config-badge">Não configurado</span>}
           {configExpanded ? (
             <ChevronUp size={16} aria-hidden="true" />
           ) : (
@@ -328,7 +326,9 @@ export default function WeaningPage() {
         <div className="weaning-page__tab-content">
           {selectedIds.size > 0 && (
             <div className="weaning-page__bulk-bar">
-              <span>{selectedIds.size} selecionado{selectedIds.size > 1 ? 's' : ''}</span>
+              <span>
+                {selectedIds.size} selecionado{selectedIds.size > 1 ? 's' : ''}
+              </span>
               <button
                 type="button"
                 className="weaning-page__btn-primary"
@@ -340,9 +340,7 @@ export default function WeaningPage() {
             </div>
           )}
 
-          {unweanedLoading && (
-            <div className="weaning-page__loading">Carregando bezerros...</div>
-          )}
+          {unweanedLoading && <div className="weaning-page__loading">Carregando bezerros...</div>}
 
           {!unweanedLoading && unweanedAnimals.length === 0 && (
             <div className="weaning-page__empty">
@@ -378,10 +376,7 @@ export default function WeaningPage() {
                   </thead>
                   <tbody>
                     {unweanedAnimals.map((a) => (
-                      <tr
-                        key={a.id}
-                        className={a.isOverdue ? 'weaning-page__row--overdue' : ''}
-                      >
+                      <tr key={a.id} className={a.isOverdue ? 'weaning-page__row--overdue' : ''}>
                         <td>
                           <input
                             type="checkbox"
@@ -463,8 +458,12 @@ export default function WeaningPage() {
                       </span>
                     </div>
                     <div className="weaning-page__unweaned-card-details">
-                      <span>Idade: <strong>{a.ageDays ?? '—'}</strong> dias</span>
-                      <span>Peso: <strong>{a.lastWeightKg ?? '—'}</strong> kg</span>
+                      <span>
+                        Idade: <strong>{a.ageDays ?? '—'}</strong> dias
+                      </span>
+                      <span>
+                        Peso: <strong>{a.lastWeightKg ?? '—'}</strong> kg
+                      </span>
                       {a.expectedWeaningDate && (
                         <span className={a.isOverdue ? 'weaning-page__overdue-text' : ''}>
                           {a.isOverdue && <AlertTriangle size={12} aria-hidden="true" />}
@@ -510,7 +509,10 @@ export default function WeaningPage() {
             <div className="weaning-page__empty">
               <CupSoda size={48} aria-hidden="true" />
               <h2>Nenhuma desmama registrada</h2>
-              <p>Registre a primeira desmama usando o botão acima ou selecione bezerros na aba anterior.</p>
+              <p>
+                Registre a primeira desmama usando o botão acima ou selecione bezerros na aba
+                anterior.
+              </p>
             </div>
           )}
 

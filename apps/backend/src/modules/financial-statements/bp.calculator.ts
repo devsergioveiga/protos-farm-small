@@ -113,29 +113,19 @@ function computeIndicators(
 ): Omit<BpIndicators, 'sparklines'> {
   const peTotal = pcTotal.plus(pncTotal);
 
-  const liquidezCorrente = pcTotal.isZero()
-    ? null
-    : acTotal.div(pcTotal).toFixed(2);
+  const liquidezCorrente = pcTotal.isZero() ? null : acTotal.div(pcTotal).toFixed(2);
 
   const liquidezSeca = pcTotal.isZero()
     ? null
     : acTotal.minus(estoquesBalance).div(pcTotal).toFixed(2);
 
-  const endividamentoGeral = ativoTotal.isZero()
-    ? null
-    : peTotal.div(ativoTotal).toFixed(2);
+  const endividamentoGeral = ativoTotal.isZero() ? null : peTotal.div(ativoTotal).toFixed(2);
 
-  const composicaoEndividamento = peTotal.isZero()
-    ? null
-    : pcTotal.div(peTotal).toFixed(2);
+  const composicaoEndividamento = peTotal.isZero() ? null : pcTotal.div(peTotal).toFixed(2);
 
-  const roe = plTotal.isZero()
-    ? null
-    : resultadoLiquido.div(plTotal).toFixed(2);
+  const roe = plTotal.isZero() ? null : resultadoLiquido.div(plTotal).toFixed(2);
 
-  const plPorHectare = totalAreaHa === 0
-    ? null
-    : plTotal.div(new Decimal(totalAreaHa)).toFixed(2);
+  const plPorHectare = totalAreaHa === 0 ? null : plTotal.div(new Decimal(totalAreaHa)).toFixed(2);
 
   return {
     liquidezCorrente,
@@ -190,7 +180,10 @@ function computeSparklines(
     }
 
     if (totalAreaHa !== 0) {
-      result.plPorHectare.push({ month: m.month, value: pl.div(new Decimal(totalAreaHa)).toNumber() });
+      result.plPorHectare.push({
+        month: m.month,
+        value: pl.div(new Decimal(totalAreaHa)).toNumber(),
+      });
     }
   }
 
@@ -274,8 +267,20 @@ export function calculateBp(input: BpInput): BpOutput {
     sparklines,
   };
 
-  const totalAtivoRow = buildSubtotalRow('Total Ativo', 'total-ativo', ativoTotal, new Decimal(ancGroup.total.priorBalance).plus(new Decimal(acGroup.total.priorBalance)));
-  const totalPassivoRow = buildSubtotalRow('Total Passivo + PL', 'total-passivo', passivoTotal, new Decimal(pcGroup.total.priorBalance).plus(new Decimal(pncGroup.total.priorBalance)).plus(new Decimal(plGroup.total.priorBalance)));
+  const totalAtivoRow = buildSubtotalRow(
+    'Total Ativo',
+    'total-ativo',
+    ativoTotal,
+    new Decimal(ancGroup.total.priorBalance).plus(new Decimal(acGroup.total.priorBalance)),
+  );
+  const totalPassivoRow = buildSubtotalRow(
+    'Total Passivo + PL',
+    'total-passivo',
+    passivoTotal,
+    new Decimal(pcGroup.total.priorBalance)
+      .plus(new Decimal(pncGroup.total.priorBalance))
+      .plus(new Decimal(plGroup.total.priorBalance)),
+  );
 
   return {
     ativo: [acGroup, ancGroup],

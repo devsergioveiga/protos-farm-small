@@ -57,12 +57,10 @@ export interface ComplianceDashboardQuery {
 // Helper function — shared across modules
 export function classifyExpiryAlert(
   nextDate: Date | null,
-  today: Date = new Date()
+  today: Date = new Date(),
 ): ComplianceAlertLevel {
   if (!nextDate) return 'OK';
-  const daysUntil = Math.floor(
-    (nextDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-  );
+  const daysUntil = Math.floor((nextDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   if (daysUntil < 0) return 'EXPIRED';
   if (daysUntil <= 15) return 'RED';
   if (daysUntil <= 30) return 'YELLOW';

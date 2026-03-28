@@ -13,6 +13,7 @@ Frontend TimesheetPage (Espelho de Ponto) with monthly timesheet review, calenda
 ## Key Files
 
 ### Created
+
 - apps/frontend/src/pages/TimesheetPage.tsx - Main page with filters, summary bar, two tabs
 - apps/frontend/src/pages/TimesheetPage.css - Styles
 - apps/frontend/src/components/attendance/TimesheetApprovalModal.tsx - Approve/reject flow
@@ -21,6 +22,7 @@ Frontend TimesheetPage (Espelho de Ponto) with monthly timesheet review, calenda
 - apps/frontend/src/components/attendance/TimeEntryEditModal.css - Styles
 
 ### Modified
+
 - apps/frontend/src/App.tsx - Route /timesheets
 - apps/frontend/src/components/layout/Sidebar.tsx - Espelho de Ponto under RH
 

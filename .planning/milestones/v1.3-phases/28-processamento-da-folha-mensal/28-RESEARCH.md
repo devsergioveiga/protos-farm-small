@@ -7,6 +7,7 @@
 ---
 
 <user_constraints>
+
 ## User Constraints (from CONTEXT.md)
 
 ### Locked Decisions
@@ -49,14 +50,16 @@ None — discussion stayed within phase scope
 ---
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|------------------|
+| ID       | Description                                                                                                                                                      | Research Support                                                                                                                               |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | FOLHA-02 | Processamento em lote com cálculo automático, encargos patronais, preview, recálculo individual, bloqueio se ponto não aprovado, fechamento imutável com estorno | DepreciationRun state machine is the direct pattern; payroll-engine provides all calculation functions; timesheets.status=APPROVED is the gate |
-| FOLHA-03 | Adiantamentos salariais: limite configurável, lote (dia 15, 40%), desconto automático na folha, recibo PDF, integração CP | payables.service + originType upsert pattern established; jszip + pdfkit ready; nodemailer ready |
-| FOLHA-04 | Holerite PDF individual/lote, email ou app mobile, histórico 12 meses na ficha | pdfkit + pdfkit-table (needs install); jszip (installed); mail.service.ts ready; new tab on employee ficha |
-| FOLHA-05 | 13º salário: duas parcelas com lógica diferente, proporcional, médias HE/noturno, recibo PDF, encargos | runType enum extension; timesheets aggregation already available in service |
+| FOLHA-03 | Adiantamentos salariais: limite configurável, lote (dia 15, 40%), desconto automático na folha, recibo PDF, integração CP                                        | payables.service + originType upsert pattern established; jszip + pdfkit ready; nodemailer ready                                               |
+| FOLHA-04 | Holerite PDF individual/lote, email ou app mobile, histórico 12 meses na ficha                                                                                   | pdfkit + pdfkit-table (needs install); jszip (installed); mail.service.ts ready; new tab on employee ficha                                     |
+| FOLHA-05 | 13º salário: duas parcelas com lógica diferente, proporcional, médias HE/noturno, recibo PDF, encargos                                                           | runType enum extension; timesheets aggregation already available in service                                                                    |
+
 </phase_requirements>
 
 ---
@@ -75,14 +78,14 @@ The primary complexity areas are: (1) the orchestrator service that iterates emp
 
 ### Core (all already installed)
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| pdfkit | 0.17.2 | Payslip and advance receipt PDF generation | Already installed; used in 9+ modules for professional PDFs |
-| jszip | 3.10.1 | ZIP bundle of individual payslip PDFs | Already installed; used in geo-parser |
-| nodemailer | 8.0.1 | Batch email distribution of payslips | Already installed; mail.service.ts abstraction exists |
-| decimal.js | 10.6.0 | All monetary arithmetic | Mandated project-wide; all payroll engine functions use it |
-| date-fns | 4.1.0 | Month/date calculations (competência, pro-rata, 5th business day) | Already installed project-wide |
-| Prisma 7 | 7.4.1 | ORM for new PayrollRun / PayrollRunItem / SalaryAdvance / Payslip models | Project ORM |
+| Library    | Version | Purpose                                                                  | Why Standard                                                |
+| ---------- | ------- | ------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| pdfkit     | 0.17.2  | Payslip and advance receipt PDF generation                               | Already installed; used in 9+ modules for professional PDFs |
+| jszip      | 3.10.1  | ZIP bundle of individual payslip PDFs                                    | Already installed; used in geo-parser                       |
+| nodemailer | 8.0.1   | Batch email distribution of payslips                                     | Already installed; mail.service.ts abstraction exists       |
+| decimal.js | 10.6.0  | All monetary arithmetic                                                  | Mandated project-wide; all payroll engine functions use it  |
+| date-fns   | 4.1.0   | Month/date calculations (competência, pro-rata, 5th business day)        | Already installed project-wide                              |
+| Prisma 7   | 7.4.1   | ORM for new PayrollRun / PayrollRunItem / SalaryAdvance / Payslip models | Project ORM                                                 |
 
 ### pdfkit-table — NOT installed
 
@@ -96,6 +99,7 @@ cd apps/backend && pnpm add -D @types/pdfkit-table
 ```
 
 Verify current version:
+
 ```bash
 npm view pdfkit-table version
 # Expected: ~0.1.99
@@ -103,17 +107,17 @@ npm view pdfkit-table version
 
 ### Supporting
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
+| Library       | Version | Purpose                               | When to Use                                  |
+| ------------- | ------- | ------------------------------------- | -------------------------------------------- |
 | date-holidays | 3.26.11 | Holiday calendars for DSR calculation | Already installed; used by time-calculations |
-| expr-eval | 2.0.2 | Custom rubrica formula evaluation | Already installed in payroll-engine |
+| expr-eval     | 2.0.2   | Custom rubrica formula evaluation     | Already installed in payroll-engine          |
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
+| Instead of            | Could Use    | Tradeoff                                                        |
+| --------------------- | ------------ | --------------------------------------------------------------- |
 | Manual pdfkit columns | pdfkit-table | pdfkit-table makes structured tables simpler — worth installing |
-| jszip for zip | archiver | archiver not installed; jszip already installed and working |
+| jszip for zip         | archiver     | archiver not installed; jszip already installed and working     |
 
 ---
 
@@ -157,7 +161,7 @@ for (const employee of employees) {
     await tx.payable.upsert({
       where: { originType_originId: { originType: 'PAYROLL_RUN_ITEM', originId: item.id } },
       create: { ...cpData },
-      update: {},  // idempotent — do not overwrite on re-process
+      update: {}, // idempotent — do not overwrite on re-process
     });
   });
 }
@@ -174,7 +178,13 @@ for (const employee of employees) {
 // Gate: only APPROVED timesheets feed payroll computation
 const timesheet = await tx.timesheet.findFirst({
   where: { employeeId, referenceMonth, organizationId, status: 'APPROVED' },
-  select: { totalWorked: true, totalOvertime50: true, totalOvertime100: true, totalNightMinutes: true, totalAbsences: true }
+  select: {
+    totalWorked: true,
+    totalOvertime50: true,
+    totalOvertime100: true,
+    totalNightMinutes: true,
+    totalAbsences: true,
+  },
 });
 if (!timesheet) {
   // Create item with status 'PENDING_TIMESHEET' — not computed
@@ -284,11 +294,13 @@ await sendMail({
   to: employee.email,
   subject: `Holerite ${monthLabel} - ${orgName}`,
   text: `Segue em anexo seu holerite de ${monthLabel}.`,
-  attachments: [{
-    filename: `holerite_${referenceMonth}_${slugName}.pdf`,
-    content: pdfBuffer,
-    contentType: 'application/pdf',
-  }],
+  attachments: [
+    {
+      filename: `holerite_${referenceMonth}_${slugName}.pdf`,
+      content: pdfBuffer,
+      contentType: 'application/pdf',
+    },
+  ],
 });
 ```
 
@@ -329,18 +341,18 @@ await sendMail({
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| INSS progressive calculation | Custom bracket logic | `calculateINSS()` in payroll-engine | Already implemented with correct 2026 Portaria MPS/MF nº 13 values |
-| IRRF with 2026 redutor | Custom IRRF logic | `calculateIRRF()` in payroll-engine | Lei 15.079/2024 redutor already implemented and unit-tested |
-| FGTS calculation | Custom percentage logic | `calculateFGTS()` in payroll-engine | Handles ceiling correctly |
-| Noturno rural premium | Custom night premium | `calculateRuralNightPremium()` in payroll-engine | Correct 21h-5h, 25%, 60min hour rules |
-| Moradia/alimentação caps | Custom cap logic | `calculateRuralUtilityDeductions()` in payroll-engine | Correct Lei 5.889/1973 caps |
-| Custom rubrica formulas | Custom evaluator | `evaluateFormula()` in payroll-engine | Uses expr-eval safely |
-| Salary-família benefit | Custom eligibility check | `calculateSalaryFamily()` in payroll-engine | Correct income limits |
-| Holiday detection for DSR | Custom calendar | date-holidays (installed) | Already instantiated in time-calculations |
-| Email sending | Raw nodemailer setup | `sendMail()` in shared/mail/mail.service.ts | SMTP config wired, attachment support included |
-| Duplicate CP prevention | Guard clauses | originType + originId unique constraint + upsert | Database-level idempotency |
+| Problem                      | Don't Build              | Use Instead                                           | Why                                                                |
+| ---------------------------- | ------------------------ | ----------------------------------------------------- | ------------------------------------------------------------------ |
+| INSS progressive calculation | Custom bracket logic     | `calculateINSS()` in payroll-engine                   | Already implemented with correct 2026 Portaria MPS/MF nº 13 values |
+| IRRF with 2026 redutor       | Custom IRRF logic        | `calculateIRRF()` in payroll-engine                   | Lei 15.079/2024 redutor already implemented and unit-tested        |
+| FGTS calculation             | Custom percentage logic  | `calculateFGTS()` in payroll-engine                   | Handles ceiling correctly                                          |
+| Noturno rural premium        | Custom night premium     | `calculateRuralNightPremium()` in payroll-engine      | Correct 21h-5h, 25%, 60min hour rules                              |
+| Moradia/alimentação caps     | Custom cap logic         | `calculateRuralUtilityDeductions()` in payroll-engine | Correct Lei 5.889/1973 caps                                        |
+| Custom rubrica formulas      | Custom evaluator         | `evaluateFormula()` in payroll-engine                 | Uses expr-eval safely                                              |
+| Salary-família benefit       | Custom eligibility check | `calculateSalaryFamily()` in payroll-engine           | Correct income limits                                              |
+| Holiday detection for DSR    | Custom calendar          | date-holidays (installed)                             | Already instantiated in time-calculations                          |
+| Email sending                | Raw nodemailer setup     | `sendMail()` in shared/mail/mail.service.ts           | SMTP config wired, attachment support included                     |
+| Duplicate CP prevention      | Guard clauses            | originType + originId unique constraint + upsert      | Database-level idempotency                                         |
 
 **Key insight:** The payroll engine (Phase 26) was built precisely so Phase 28 does NOT have to implement calculations. PayrollRun is an orchestrator that calls these pure functions.
 
@@ -430,11 +442,11 @@ router.get('/payroll-runs/:id', ...)            // param second
 // any state   → ERROR        (on unrecoverable exception)
 
 const VALID_PAYROLL_TRANSITIONS = {
-  START:     { PENDING: 'PROCESSING' },
+  START: { PENDING: 'PROCESSING' },
   CALCULATE: { PROCESSING: 'CALCULATED' },
-  CLOSE:     { CALCULATED: 'COMPLETED' },
-  REVERT:    { COMPLETED: 'REVERTED' },
-  ERROR:     { PROCESSING: 'ERROR', CALCULATED: 'ERROR' },
+  CLOSE: { CALCULATED: 'COMPLETED' },
+  REVERT: { COMPLETED: 'REVERTED' },
+  ERROR: { PROCESSING: 'ERROR', CALCULATED: 'ERROR' },
 };
 ```
 
@@ -451,9 +463,7 @@ const salaryRecord = await tx.employeeSalaryHistory.findFirst({
   select: { salary: true },
 });
 // Fall back to contract salary if no history entry
-const salary = salaryRecord
-  ? new Decimal(salaryRecord.salary)
-  : new Decimal(contract.salary);
+const salary = salaryRecord ? new Decimal(salaryRecord.salary) : new Decimal(contract.salary);
 ```
 
 ### Pro-rata Calculation
@@ -462,10 +472,11 @@ const salary = salaryRecord
 // Days worked in month for employees admitted mid-month
 const daysInMonth = getDaysInMonth(referenceYear, referenceMonthNum);
 const admissionDay = admissionDate.getDate();
-const daysWorked = admissionDate.getMonth() === referenceMonthNum - 1
-  && admissionDate.getFullYear() === referenceYear
-  ? daysInMonth - admissionDay + 1
-  : daysInMonth;
+const daysWorked =
+  admissionDate.getMonth() === referenceMonthNum - 1 &&
+  admissionDate.getFullYear() === referenceYear
+    ? daysInMonth - admissionDay + 1
+    : daysInMonth;
 const proRataFactor = new Decimal(daysWorked).div(daysInMonth);
 const proRataSalary = salary.mul(proRataFactor).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
 ```
@@ -513,11 +524,13 @@ await sendMail({
   to: employee.email!,
   subject: `Holerite ${competenciaLabel} — ${orgName}`,
   text: `Prezado(a) ${employee.name},\n\nSegue em anexo seu holerite referente a ${competenciaLabel}.\n\nAtenciosamente,\n${orgName}`,
-  attachments: [{
-    filename: `holerite_${referenceMonth}_${normalizedName}.pdf`,
-    content: pdfBuffer,
-    contentType: 'application/pdf',
-  }],
+  attachments: [
+    {
+      filename: `holerite_${referenceMonth}_${normalizedName}.pdf`,
+      content: pdfBuffer,
+      contentType: 'application/pdf',
+    },
+  ],
 });
 ```
 
@@ -525,14 +538,15 @@ await sendMail({
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Flat INSS rate | Progressive bracket accumulation | Phase 26 | Must use calculateINSS() — never hand-roll |
-| Fixed IRRF table | 2026 redutor (Lei 15.079/2024) | Phase 26 | Must use calculateIRRF() with redutor params |
-| Single PayrollRun transaction | Per-employee individual transactions | Phase 27 design (mirrors Phase 22 depreciation) | Prevents DB timeout on large payrolls |
-| Payable originType as nullable | originType + originId unique constraint | Phase 25 schema | Enables upsert idempotency |
+| Old Approach                   | Current Approach                        | When Changed                                    | Impact                                       |
+| ------------------------------ | --------------------------------------- | ----------------------------------------------- | -------------------------------------------- |
+| Flat INSS rate                 | Progressive bracket accumulation        | Phase 26                                        | Must use calculateINSS() — never hand-roll   |
+| Fixed IRRF table               | 2026 redutor (Lei 15.079/2024)          | Phase 26                                        | Must use calculateIRRF() with redutor params |
+| Single PayrollRun transaction  | Per-employee individual transactions    | Phase 27 design (mirrors Phase 22 depreciation) | Prevents DB timeout on large payrolls        |
+| Payable originType as nullable | originType + originId unique constraint | Phase 25 schema                                 | Enables upsert idempotency                   |
 
 **Deprecated/outdated:**
+
 - pdfkit-table note in STATE.md: listed as new dependency but NOT yet installed — install in Wave 0 or use manual columns.
 - DIRF: abolished in 2025 per REQUIREMENTS.md Out of Scope section.
 
@@ -540,22 +554,24 @@ await sendMail({
 
 ## Environment Availability
 
-| Dependency | Required By | Available | Version | Fallback |
-|------------|------------|-----------|---------|----------|
-| Node.js | Backend runtime | ✓ | 24.12.0 | — |
-| pdfkit | Payslip PDF | ✓ | 0.17.2 | — |
-| jszip | ZIP bundle of PDFs | ✓ | 3.10.1 | — |
-| nodemailer | Email distribution | ✓ | 8.0.1 | — |
-| decimal.js | Monetary arithmetic | ✓ | 10.6.0 | — |
-| date-fns | Date calculations | ✓ | 4.1.0 | — |
-| date-holidays | DSR/overtime holiday calendar | ✓ | 3.26.11 | — |
-| pdfkit-table | Structured PDF tables | ✗ | — | Use manual column layout (established pattern) |
-| SMTP server | Email delivery in production | ✓ (configured) | localhost:1025 (dev) | Dev uses MailHog or null transport |
+| Dependency    | Required By                   | Available      | Version              | Fallback                                       |
+| ------------- | ----------------------------- | -------------- | -------------------- | ---------------------------------------------- |
+| Node.js       | Backend runtime               | ✓              | 24.12.0              | —                                              |
+| pdfkit        | Payslip PDF                   | ✓              | 0.17.2               | —                                              |
+| jszip         | ZIP bundle of PDFs            | ✓              | 3.10.1               | —                                              |
+| nodemailer    | Email distribution            | ✓              | 8.0.1                | —                                              |
+| decimal.js    | Monetary arithmetic           | ✓              | 10.6.0               | —                                              |
+| date-fns      | Date calculations             | ✓              | 4.1.0                | —                                              |
+| date-holidays | DSR/overtime holiday calendar | ✓              | 3.26.11              | —                                              |
+| pdfkit-table  | Structured PDF tables         | ✗              | —                    | Use manual column layout (established pattern) |
+| SMTP server   | Email delivery in production  | ✓ (configured) | localhost:1025 (dev) | Dev uses MailHog or null transport             |
 
 **Missing dependencies with no fallback:**
+
 - None that block execution.
 
 **Missing dependencies with fallback:**
+
 - pdfkit-table: NOT installed. Either `pnpm add pdfkit-table` in Wave 0, or use manual column layout from timesheets.service.ts pattern. Manual approach is simpler and avoids a new dependency.
 
 ---
@@ -564,26 +580,26 @@ await sendMail({
 
 ### Test Framework
 
-| Property | Value |
-|----------|-------|
-| Framework | Jest 29.7 + @swc/jest |
-| Config file | apps/backend/jest.config.js |
-| Quick run command | `cd apps/backend && pnpm jest --testPathPattern="payroll-runs" --no-coverage` |
-| Full suite command | `cd apps/backend && pnpm test` |
+| Property           | Value                                                                         |
+| ------------------ | ----------------------------------------------------------------------------- |
+| Framework          | Jest 29.7 + @swc/jest                                                         |
+| Config file        | apps/backend/jest.config.js                                                   |
+| Quick run command  | `cd apps/backend && pnpm jest --testPathPattern="payroll-runs" --no-coverage` |
+| Full suite command | `cd apps/backend && pnpm test`                                                |
 
 ### Phase Requirements → Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| FOLHA-02 | PayrollRun batch processes employees, creates items, gates on timesheet status | unit | `pnpm jest payroll-runs.routes.spec` | ❌ Wave 0 |
-| FOLHA-02 | Estorno reverts COMPLETED→REVERTED, cancels CPs, unlocks timesheets | unit | `pnpm jest payroll-runs.routes.spec` | ❌ Wave 0 |
-| FOLHA-02 | State machine transitions only allow valid paths | unit | `pnpm jest payroll-calculation.spec` | ❌ Wave 0 |
-| FOLHA-02 | Pro-rata calculation correct for mid-month admission | unit | `pnpm jest payroll-calculation.spec` | ❌ Wave 0 |
-| FOLHA-03 | Salary advance creates CP with correct originType | unit | `pnpm jest salary-advances.routes.spec` | ❌ Wave 0 |
-| FOLHA-03 | Batch advance (day 15) creates advances for all active employees | unit | `pnpm jest salary-advances.routes.spec` | ❌ Wave 0 |
-| FOLHA-04 | Payslip PDF generated with correct proventos/descontos | unit (buffer check) | `pnpm jest payroll-pdf.spec` | ❌ Wave 0 |
-| FOLHA-05 | 13th salary THIRTEENTH_FIRST: no INSS/IRRF deductions | unit | `pnpm jest payroll-calculation.spec` | ❌ Wave 0 |
-| FOLHA-05 | 13th salary proportional factor calculation | unit | `pnpm jest payroll-calculation.spec` | ❌ Wave 0 |
+| Req ID   | Behavior                                                                       | Test Type           | Automated Command                       | File Exists? |
+| -------- | ------------------------------------------------------------------------------ | ------------------- | --------------------------------------- | ------------ |
+| FOLHA-02 | PayrollRun batch processes employees, creates items, gates on timesheet status | unit                | `pnpm jest payroll-runs.routes.spec`    | ❌ Wave 0    |
+| FOLHA-02 | Estorno reverts COMPLETED→REVERTED, cancels CPs, unlocks timesheets            | unit                | `pnpm jest payroll-runs.routes.spec`    | ❌ Wave 0    |
+| FOLHA-02 | State machine transitions only allow valid paths                               | unit                | `pnpm jest payroll-calculation.spec`    | ❌ Wave 0    |
+| FOLHA-02 | Pro-rata calculation correct for mid-month admission                           | unit                | `pnpm jest payroll-calculation.spec`    | ❌ Wave 0    |
+| FOLHA-03 | Salary advance creates CP with correct originType                              | unit                | `pnpm jest salary-advances.routes.spec` | ❌ Wave 0    |
+| FOLHA-03 | Batch advance (day 15) creates advances for all active employees               | unit                | `pnpm jest salary-advances.routes.spec` | ❌ Wave 0    |
+| FOLHA-04 | Payslip PDF generated with correct proventos/descontos                         | unit (buffer check) | `pnpm jest payroll-pdf.spec`            | ❌ Wave 0    |
+| FOLHA-05 | 13th salary THIRTEENTH_FIRST: no INSS/IRRF deductions                          | unit                | `pnpm jest payroll-calculation.spec`    | ❌ Wave 0    |
+| FOLHA-05 | 13th salary proportional factor calculation                                    | unit                | `pnpm jest payroll-calculation.spec`    | ❌ Wave 0    |
 
 ### Sampling Rate
 
@@ -765,6 +781,7 @@ Pattern from CONTEXT.md: "HR endpoints use farms:read permission (hr module not 
 ### Sidebar Addition
 
 Add to existing 'RH' group in `apps/frontend/src/components/layout/Sidebar.tsx`:
+
 ```typescript
 { to: '/payroll-runs', icon: Receipt, label: 'Folha de Pagamento' },
 { to: '/salary-advances', icon: Wallet, label: 'Adiantamentos' },
@@ -840,6 +857,7 @@ Use the established modal/multi-step pattern. Header shows step indicator (1 of 
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH — all packages verified in package.json; versions confirmed via npm view
 - Architecture: HIGH — DepreciationRun pattern directly applicable; all engine functions confirmed; CP upsert confirmed
 - Pitfalls: HIGH — shadow DB, route shadowing, and pdfkit-table issues are confirmed recurring problems in this codebase

@@ -15,13 +15,13 @@ created: 2026-03-26
 
 ## Test Infrastructure
 
-| Property | Value |
-|----------|-------|
-| **Framework** | jest 29.x |
-| **Config file** | `apps/backend/jest.config.js` |
-| **Quick run command** | `cd apps/backend && npx jest --testPathPattern="chart-of-accounts\|fiscal-periods\|accounting-periods" --no-coverage` |
-| **Full suite command** | `cd apps/backend && npx jest --no-coverage` |
-| **Estimated runtime** | ~30 seconds (phase tests) |
+| Property               | Value                                                                                                                 |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Framework**          | jest 29.x                                                                                                             |
+| **Config file**        | `apps/backend/jest.config.js`                                                                                         |
+| **Quick run command**  | `cd apps/backend && npx jest --testPathPattern="chart-of-accounts\|fiscal-periods\|accounting-periods" --no-coverage` |
+| **Full suite command** | `cd apps/backend && npx jest --no-coverage`                                                                           |
+| **Estimated runtime**  | ~30 seconds (phase tests)                                                                                             |
 
 ---
 
@@ -36,17 +36,17 @@ created: 2026-03-26
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 35-01-01 | 01 | 1 | COA-01 | integration | `npx jest chart-of-accounts` | ❌ W0 | ⬜ pending |
-| 35-02-01 | 02 | 1 | COA-02 | integration | `npx jest chart-of-accounts` | ❌ W0 | ⬜ pending |
-| 35-02-02 | 02 | 1 | COA-03 | integration | `npx jest chart-of-accounts` | ❌ W0 | ⬜ pending |
-| 35-03-01 | 03 | 1 | COA-04 | integration | `npx jest fiscal-periods` | ❌ W0 | ⬜ pending |
-| 35-04-01 | 04 | 2 | COA-01 | unit | `npx jest rateio` | ❌ W0 | ⬜ pending |
-| 35-05-01 | 05 | 3 | COA-01 | render | `cd apps/frontend && npx vitest run` | ❌ W0 | ⬜ pending |
-| 35-05-02 | 05 | 3 | COA-05 | render | `cd apps/frontend && npx vitest run` | ❌ W0 | ⬜ pending |
+| Task ID  | Plan | Wave | Requirement | Test Type   | Automated Command                    | File Exists | Status     |
+| -------- | ---- | ---- | ----------- | ----------- | ------------------------------------ | ----------- | ---------- |
+| 35-01-01 | 01   | 1    | COA-01      | integration | `npx jest chart-of-accounts`         | ❌ W0       | ⬜ pending |
+| 35-02-01 | 02   | 1    | COA-02      | integration | `npx jest chart-of-accounts`         | ❌ W0       | ⬜ pending |
+| 35-02-02 | 02   | 1    | COA-03      | integration | `npx jest chart-of-accounts`         | ❌ W0       | ⬜ pending |
+| 35-03-01 | 03   | 1    | COA-04      | integration | `npx jest fiscal-periods`            | ❌ W0       | ⬜ pending |
+| 35-04-01 | 04   | 2    | COA-01      | unit        | `npx jest rateio`                    | ❌ W0       | ⬜ pending |
+| 35-05-01 | 05   | 3    | COA-01      | render      | `cd apps/frontend && npx vitest run` | ❌ W0       | ⬜ pending |
+| 35-05-02 | 05   | 3    | COA-05      | render      | `cd apps/frontend && npx vitest run` | ❌ W0       | ⬜ pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+_Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
 
 ---
 
@@ -56,16 +56,16 @@ created: 2026-03-26
 - [ ] `apps/backend/src/modules/fiscal-periods/__tests__/fiscal-periods.spec.ts` — stubs for COA-04
 - [ ] `packages/shared/src/utils/accounting/__tests__/rateio.spec.ts` — stubs for rateio utility
 
-*Existing jest/vitest infrastructure covers all framework needs.*
+_Existing jest/vitest infrastructure covers all framework needs._
 
 ---
 
 ## Manual-Only Verifications
 
-| Behavior | Requirement | Why Manual | Test Instructions |
-|----------|-------------|------------|-------------------|
-| Tree expand/collapse UI | COA-01 | Visual interaction | Open COA page, expand 3 levels, verify indent and icons |
-| SPED mapping report PDF | COA-03 | PDF visual layout | Export mapping report, verify account codes are correct |
+| Behavior                | Requirement | Why Manual         | Test Instructions                                       |
+| ----------------------- | ----------- | ------------------ | ------------------------------------------------------- |
+| Tree expand/collapse UI | COA-01      | Visual interaction | Open COA page, expand 3 levels, verify indent and icons |
+| SPED mapping report PDF | COA-03      | PDF visual layout  | Export mapping report, verify account codes are correct |
 
 ---
 

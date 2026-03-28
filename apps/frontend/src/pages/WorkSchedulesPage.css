@@ -83,7 +83,7 @@
 }
 
 .work-schedules__btn--primary:hover {
-  background: var(--color-primary-700, #1B5E20);
+  background: var(--color-primary-700, #1b5e20);
 }
 
 .work-schedules__btn--primary:focus-visible {
@@ -116,10 +116,10 @@
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background: var(--color-error-50, #FFEBEE);
-  border: 1px solid var(--color-error-200, #EF9A9A);
+  background: var(--color-error-50, #ffebee);
+  border: 1px solid var(--color-error-200, #ef9a9a);
   border-radius: 8px;
-  color: var(--color-error-700, #B71C1C);
+  color: var(--color-error-700, #b71c1c);
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 0.9375rem;
   margin-bottom: 20px;
@@ -205,8 +205,8 @@
   display: inline-block;
   padding: 2px 8px;
   border-radius: 12px;
-  background: var(--color-info-50, #E1F5FE);
-  color: var(--color-info-700, #01579B);
+  background: var(--color-info-50, #e1f5fe);
+  color: var(--color-info-700, #01579b);
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 0.75rem;
   font-weight: 700;
@@ -224,13 +224,28 @@
 }
 
 @keyframes skeleton-pulse-ws {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
-.work-schedules__skeleton--name { height: 16px; width: 140px; }
-.work-schedules__skeleton--text { height: 14px; width: 80px; }
-.work-schedules__skeleton--badge { height: 22px; width: 70px; border-radius: 12px; }
+.work-schedules__skeleton--name {
+  height: 16px;
+  width: 140px;
+}
+.work-schedules__skeleton--text {
+  height: 14px;
+  width: 80px;
+}
+.work-schedules__skeleton--badge {
+  height: 22px;
+  width: 70px;
+  border-radius: 12px;
+}
 
 /* Empty state */
 .work-schedules__empty {

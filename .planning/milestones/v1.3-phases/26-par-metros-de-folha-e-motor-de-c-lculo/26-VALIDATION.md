@@ -15,13 +15,13 @@ created: 2026-03-24
 
 ## Test Infrastructure
 
-| Property | Value |
-|----------|-------|
-| **Framework** | jest 29.x (backend) / vitest (frontend) |
-| **Config file** | `apps/backend/jest.config.ts` / `apps/frontend/vitest.config.ts` |
-| **Quick run command** | `cd apps/backend && npx jest --testPathPattern="payroll-params\|payroll-engine\|legal-tables" --no-coverage` |
-| **Full suite command** | `cd apps/backend && npx jest --no-coverage` |
-| **Estimated runtime** | ~30 seconds (quick) / ~120 seconds (full) |
+| Property               | Value                                                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Framework**          | jest 29.x (backend) / vitest (frontend)                                                                      |
+| **Config file**        | `apps/backend/jest.config.ts` / `apps/frontend/vitest.config.ts`                                             |
+| **Quick run command**  | `cd apps/backend && npx jest --testPathPattern="payroll-params\|payroll-engine\|legal-tables" --no-coverage` |
+| **Full suite command** | `cd apps/backend && npx jest --no-coverage`                                                                  |
+| **Estimated runtime**  | ~30 seconds (quick) / ~120 seconds (full)                                                                    |
 
 ---
 
@@ -36,16 +36,16 @@ created: 2026-03-24
 
 ## Per-Task Verification Map
 
-| Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
-|---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 26-01-01 | 01 | 1 | FOLHA-01 | unit | `npx jest payroll-params` | ❌ W0 | ⬜ pending |
-| 26-01-02 | 01 | 1 | FOLHA-01 | unit | `npx jest legal-tables` | ❌ W0 | ⬜ pending |
-| 26-02-01 | 02 | 1 | FOLHA-01 | unit | `npx jest payroll-engine` | ❌ W0 | ⬜ pending |
-| 26-02-02 | 02 | 1 | FOLHA-01 | unit | `npx jest payroll-engine` | ❌ W0 | ⬜ pending |
-| 26-03-01 | 03 | 2 | FOLHA-01 | integration | `npx jest payroll-params.routes` | ❌ W0 | ⬜ pending |
-| 26-04-01 | 04 | 3 | FOLHA-01 | visual | manual verification | N/A | ⬜ pending |
+| Task ID  | Plan | Wave | Requirement | Test Type   | Automated Command                | File Exists | Status     |
+| -------- | ---- | ---- | ----------- | ----------- | -------------------------------- | ----------- | ---------- |
+| 26-01-01 | 01   | 1    | FOLHA-01    | unit        | `npx jest payroll-params`        | ❌ W0       | ⬜ pending |
+| 26-01-02 | 01   | 1    | FOLHA-01    | unit        | `npx jest legal-tables`          | ❌ W0       | ⬜ pending |
+| 26-02-01 | 02   | 1    | FOLHA-01    | unit        | `npx jest payroll-engine`        | ❌ W0       | ⬜ pending |
+| 26-02-02 | 02   | 1    | FOLHA-01    | unit        | `npx jest payroll-engine`        | ❌ W0       | ⬜ pending |
+| 26-03-01 | 03   | 2    | FOLHA-01    | integration | `npx jest payroll-params.routes` | ❌ W0       | ⬜ pending |
+| 26-04-01 | 04   | 3    | FOLHA-01    | visual      | manual verification              | N/A         | ⬜ pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+_Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky_
 
 ---
 
@@ -55,16 +55,16 @@ created: 2026-03-24
 - [ ] `apps/backend/src/modules/legal-tables/*.spec.ts` — stubs for INSS/IRRF/FGTS tables
 - [ ] `apps/backend/src/modules/payroll-engine/*.spec.ts` — stubs for calculation engine
 
-*Existing jest infrastructure covers all framework requirements.*
+_Existing jest infrastructure covers all framework requirements._
 
 ---
 
 ## Manual-Only Verifications
 
-| Behavior | Requirement | Why Manual | Test Instructions |
-|----------|-------------|------------|-------------------|
-| Frontend rubrica config UI | FOLHA-01 | Visual layout verification | Open /payroll-params, create rubrica, verify form fields |
-| Legal table update UX | FOLHA-01 | Date picker + effective date flow | Update INSS table, verify new rates appear after effectiveFrom |
+| Behavior                   | Requirement | Why Manual                        | Test Instructions                                              |
+| -------------------------- | ----------- | --------------------------------- | -------------------------------------------------------------- |
+| Frontend rubrica config UI | FOLHA-01    | Visual layout verification        | Open /payroll-params, create rubrica, verify form fields       |
+| Legal table update UX      | FOLHA-01    | Date picker + effective date flow | Update INSS table, verify new rates appear after effectiveFrom |
 
 ---
 

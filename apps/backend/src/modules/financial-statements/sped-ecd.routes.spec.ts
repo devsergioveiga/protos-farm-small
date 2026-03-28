@@ -125,9 +125,7 @@ describe('SPED ECD Routes', () => {
     });
 
     it('returns 400 when fiscalYearId is missing', async () => {
-      const res = await request(app)
-        .get(BASE_VALIDATE)
-        .set('Authorization', 'Bearer token');
+      const res = await request(app).get(BASE_VALIDATE).set('Authorization', 'Bearer token');
 
       expect(res.status).toBe(400);
       expect(res.body.code).toBe('MISSING_FISCAL_YEAR_ID');
@@ -135,7 +133,11 @@ describe('SPED ECD Routes', () => {
 
     it('returns 404 when fiscal year not found', async () => {
       // Use the mocked SpedEcdError class so instanceof checks pass in the route handler
-      const err = new service.SpedEcdError('Exercicio fiscal nao encontrado', 'FISCAL_YEAR_NOT_FOUND', 404);
+      const err = new service.SpedEcdError(
+        'Exercicio fiscal nao encontrado',
+        'FISCAL_YEAR_NOT_FOUND',
+        404,
+      );
       (mockedService.validateSpedEcd as jest.Mock).mockRejectedValue(err);
 
       const res = await request(app)
@@ -184,16 +186,18 @@ describe('SPED ECD Routes', () => {
     });
 
     it('returns 400 when fiscalYearId is missing', async () => {
-      const res = await request(app)
-        .get(BASE_DOWNLOAD)
-        .set('Authorization', 'Bearer token');
+      const res = await request(app).get(BASE_DOWNLOAD).set('Authorization', 'Bearer token');
 
       expect(res.status).toBe(400);
       expect(res.body.code).toBe('MISSING_FISCAL_YEAR_ID');
     });
 
     it('returns 404 when fiscal year not found', async () => {
-      const err = new service.SpedEcdError('Exercicio fiscal nao encontrado', 'FISCAL_YEAR_NOT_FOUND', 404);
+      const err = new service.SpedEcdError(
+        'Exercicio fiscal nao encontrado',
+        'FISCAL_YEAR_NOT_FOUND',
+        404,
+      );
       (mockedService.generateSpedEcd as jest.Mock).mockRejectedValue(err);
 
       const res = await request(app)

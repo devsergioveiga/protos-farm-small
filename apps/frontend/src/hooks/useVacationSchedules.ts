@@ -38,11 +38,16 @@ export function useVacationSchedules() {
         if (filters?.employeeSearch) params.set('search', filters.employeeSearch);
         const qs = params.toString();
         const path = `/org/${orgId}/vacation-periods${qs ? `?${qs}` : ''}`;
-        const result = await api.get<VacationAcquisitivePeriod[] | { data: VacationAcquisitivePeriod[] }>(path);
-        const items = Array.isArray(result) ? result : (result as { data: VacationAcquisitivePeriod[] }).data;
+        const result = await api.get<
+          VacationAcquisitivePeriod[] | { data: VacationAcquisitivePeriod[] }
+        >(path);
+        const items = Array.isArray(result)
+          ? result
+          : (result as { data: VacationAcquisitivePeriod[] }).data;
         setPeriods(items);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Erro ao carregar periodos aquisitivos';
+        const message =
+          err instanceof Error ? err.message : 'Erro ao carregar periodos aquisitivos';
         setError(message);
         setPeriods([]);
       } finally {
@@ -66,10 +71,13 @@ export function useVacationSchedules() {
         const qs = params.toString();
         const path = `/org/${orgId}/vacation-schedules${qs ? `?${qs}` : ''}`;
         const result = await api.get<VacationSchedule[] | { data: VacationSchedule[] }>(path);
-        const items = Array.isArray(result) ? result : (result as { data: VacationSchedule[] }).data;
+        const items = Array.isArray(result)
+          ? result
+          : (result as { data: VacationSchedule[] }).data;
         setSchedules(items);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Erro ao carregar agendamentos de ferias';
+        const message =
+          err instanceof Error ? err.message : 'Erro ao carregar agendamentos de ferias';
         setError(message);
         setSchedules([]);
       } finally {
@@ -87,7 +95,9 @@ export function useVacationSchedules() {
       setSuccessMessage(null);
       try {
         const result = await api.post<VacationSchedule>(`/org/${orgId}/vacation-schedules`, data);
-        setSuccessMessage(`Ferias agendadas com sucesso. Pagamento deve ser realizado ate ${result.paymentDueDate}.`);
+        setSuccessMessage(
+          `Ferias agendadas com sucesso. Pagamento deve ser realizado ate ${result.paymentDueDate}.`,
+        );
         return result;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Erro ao agendar ferias';
@@ -142,22 +152,21 @@ export function useVacationSchedules() {
     [orgId],
   );
 
-  const fetchExpiring = useCallback(
-    async (): Promise<VacationAcquisitivePeriod[]> => {
-      if (!orgId) return [];
-      try {
-        const result = await api.get<VacationAcquisitivePeriod[] | { data: VacationAcquisitivePeriod[] }>(
-          `/org/${orgId}/vacation-periods/expiring`,
-        );
-        return Array.isArray(result) ? result : (result as { data: VacationAcquisitivePeriod[] }).data;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Erro ao carregar ferias vencendo';
-        setError(message);
-        return [];
-      }
-    },
-    [orgId],
-  );
+  const fetchExpiring = useCallback(async (): Promise<VacationAcquisitivePeriod[]> => {
+    if (!orgId) return [];
+    try {
+      const result = await api.get<
+        VacationAcquisitivePeriod[] | { data: VacationAcquisitivePeriod[] }
+      >(`/org/${orgId}/vacation-periods/expiring`);
+      return Array.isArray(result)
+        ? result
+        : (result as { data: VacationAcquisitivePeriod[] }).data;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao carregar ferias vencendo';
+      setError(message);
+      return [];
+    }
+  }, [orgId]);
 
   const getReceiptPdf = useCallback(
     async (scheduleId: string, employeeName: string): Promise<void> => {
@@ -171,7 +180,10 @@ export function useVacationSchedules() {
         link.click();
         window.URL.revokeObjectURL(url);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Nao foi possivel gerar o PDF. Tente novamente ou entre em contato com o suporte.';
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Nao foi possivel gerar o PDF. Tente novamente ou entre em contato com o suporte.';
         setError(message);
       }
     },

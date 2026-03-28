@@ -183,9 +183,7 @@ describe('Asset Renovations API', () => {
       const list = [VALID_RENOVATION, { ...VALID_RENOVATION, id: 'reno-2', totalCost: '3000.00' }];
       mockedService.listRenovations.mockResolvedValue(list as never);
 
-      const res = await request(app)
-        .get(BASE_URL)
-        .set('Authorization', 'Bearer valid-token');
+      const res = await request(app).get(BASE_URL).set('Authorization', 'Bearer valid-token');
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(2);

@@ -149,10 +149,14 @@ describe('auto-posting.service', () => {
 
       // Upsert pending → PROCESSING
       const upsertedPending = makePending({ status: 'PROCESSING', errorMessage: null });
-      (mockedPrisma.pendingJournalPosting.upsert as jest.Mock).mockResolvedValueOnce(upsertedPending);
+      (mockedPrisma.pendingJournalPosting.upsert as jest.Mock).mockResolvedValueOnce(
+        upsertedPending,
+      );
 
       // PayrollRun extractor data
-      (mockedPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValueOnce(makeExtractedPayrollData());
+      (mockedPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValueOnce(
+        makeExtractedPayrollData(),
+      );
 
       // Open accounting period
       (mockedPrisma.accountingPeriod.findFirst as jest.Mock).mockResolvedValueOnce({
@@ -163,25 +167,27 @@ describe('auto-posting.service', () => {
       });
 
       // Transaction mock
-      (mockedPrisma.$transaction as jest.Mock).mockImplementationOnce(async (fn: (tx: typeof prisma) => Promise<unknown>) => {
-        // Mock tx operations inside transaction
-        const tx = {
-          journalEntry: {
-            aggregate: jest.fn().mockResolvedValue({ _max: { entryNumber: 5 } }),
-            create: jest.fn().mockResolvedValue({
-              id: 'entry-1',
-              lines: [
-                { accountId: 'account-1', side: 'DEBIT', amount: { toString: () => '5000.00' } },
-                { accountId: 'account-2', side: 'CREDIT', amount: { toString: () => '5000.00' } },
-              ],
-            }),
-          },
-          accountBalance: { upsert: jest.fn().mockResolvedValue({}) },
-          pendingJournalPosting: { update: jest.fn().mockResolvedValue({}) },
-          $executeRaw: jest.fn().mockResolvedValue(1),
-        } as unknown as typeof prisma;
-        return fn(tx);
-      });
+      (mockedPrisma.$transaction as jest.Mock).mockImplementationOnce(
+        async (fn: (tx: typeof prisma) => Promise<unknown>) => {
+          // Mock tx operations inside transaction
+          const tx = {
+            journalEntry: {
+              aggregate: jest.fn().mockResolvedValue({ _max: { entryNumber: 5 } }),
+              create: jest.fn().mockResolvedValue({
+                id: 'entry-1',
+                lines: [
+                  { accountId: 'account-1', side: 'DEBIT', amount: { toString: () => '5000.00' } },
+                  { accountId: 'account-2', side: 'CREDIT', amount: { toString: () => '5000.00' } },
+                ],
+              }),
+            },
+            accountBalance: { upsert: jest.fn().mockResolvedValue({}) },
+            pendingJournalPosting: { update: jest.fn().mockResolvedValue({}) },
+            $executeRaw: jest.fn().mockResolvedValue(1),
+          } as unknown as typeof prisma;
+          return fn(tx);
+        },
+      );
 
       await service.process('PAYROLL_RUN_CLOSE', 'payroll-run-1', 'org-1');
 
@@ -228,9 +234,13 @@ describe('auto-posting.service', () => {
       (mockedPrisma.accountingRule.findFirst as jest.Mock).mockResolvedValueOnce(makeRule());
 
       const upsertedPending = makePending({ status: 'PROCESSING', errorMessage: null });
-      (mockedPrisma.pendingJournalPosting.upsert as jest.Mock).mockResolvedValueOnce(upsertedPending);
+      (mockedPrisma.pendingJournalPosting.upsert as jest.Mock).mockResolvedValueOnce(
+        upsertedPending,
+      );
 
-      (mockedPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValueOnce(makeExtractedPayrollData());
+      (mockedPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValueOnce(
+        makeExtractedPayrollData(),
+      );
 
       // No open period
       (mockedPrisma.accountingPeriod.findFirst as jest.Mock).mockResolvedValueOnce(null);
@@ -258,7 +268,8 @@ describe('auto-posting.service', () => {
       const errorPending = makePending({ status: 'ERROR' });
       (mockedPrisma.pendingJournalPosting.findFirst as jest.Mock)
         .mockResolvedValueOnce(errorPending) // fetch for retry
-        .mockResolvedValueOnce({ // fetch after retry for return value
+        .mockResolvedValueOnce({
+          // fetch after retry for return value
           ...errorPending,
           status: 'COMPLETED',
           journalEntryId: 'entry-1',
@@ -274,7 +285,9 @@ describe('auto-posting.service', () => {
         status: 'PROCESSING',
       });
 
-      (mockedPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValueOnce(makeExtractedPayrollData());
+      (mockedPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValueOnce(
+        makeExtractedPayrollData(),
+      );
       (mockedPrisma.accountingPeriod.findFirst as jest.Mock).mockResolvedValueOnce({
         id: 'period-1',
         fiscalYearId: 'fy-1',
@@ -282,21 +295,25 @@ describe('auto-posting.service', () => {
         status: 'OPEN',
       });
 
-      (mockedPrisma.$transaction as jest.Mock).mockImplementationOnce(async (fn: (tx: typeof prisma) => Promise<unknown>) => {
-        const tx = {
-          journalEntry: {
-            aggregate: jest.fn().mockResolvedValue({ _max: { entryNumber: 3 } }),
-            create: jest.fn().mockResolvedValue({
-              id: 'entry-1',
-              lines: [{ accountId: 'account-1', side: 'DEBIT', amount: { toString: () => '5000' } }],
-            }),
-          },
-          accountBalance: { upsert: jest.fn().mockResolvedValue({}) },
-          pendingJournalPosting: { update: jest.fn().mockResolvedValue({}) },
-          $executeRaw: jest.fn().mockResolvedValue(1),
-        } as unknown as typeof prisma;
-        return fn(tx);
-      });
+      (mockedPrisma.$transaction as jest.Mock).mockImplementationOnce(
+        async (fn: (tx: typeof prisma) => Promise<unknown>) => {
+          const tx = {
+            journalEntry: {
+              aggregate: jest.fn().mockResolvedValue({ _max: { entryNumber: 3 } }),
+              create: jest.fn().mockResolvedValue({
+                id: 'entry-1',
+                lines: [
+                  { accountId: 'account-1', side: 'DEBIT', amount: { toString: () => '5000' } },
+                ],
+              }),
+            },
+            accountBalance: { upsert: jest.fn().mockResolvedValue({}) },
+            pendingJournalPosting: { update: jest.fn().mockResolvedValue({}) },
+            $executeRaw: jest.fn().mockResolvedValue(1),
+          } as unknown as typeof prisma;
+          return fn(tx);
+        },
+      );
 
       const result = await service.retry('pending-1', 'org-1');
 
@@ -324,18 +341,22 @@ describe('auto-posting.service', () => {
     it('updates isActive flag, history template, and rule lines', async () => {
       (mockedPrisma.accountingRule.findFirst as jest.Mock)
         .mockResolvedValueOnce({ id: 'rule-1' }) // existence check
-        .mockResolvedValueOnce(makeRule({ isActive: false, historyTemplate: 'Novo template {{referenceMonth}}' })); // after update
+        .mockResolvedValueOnce(
+          makeRule({ isActive: false, historyTemplate: 'Novo template {{referenceMonth}}' }),
+        ); // after update
 
-      (mockedPrisma.$transaction as jest.Mock).mockImplementationOnce(async (fn: (tx: typeof prisma) => Promise<unknown>) => {
-        const tx = {
-          accountingRule: { update: jest.fn().mockResolvedValue({}) },
-          accountingRuleLine: {
-            deleteMany: jest.fn().mockResolvedValue({ count: 2 }),
-            createMany: jest.fn().mockResolvedValue({ count: 2 }),
-          },
-        } as unknown as typeof prisma;
-        return fn(tx);
-      });
+      (mockedPrisma.$transaction as jest.Mock).mockImplementationOnce(
+        async (fn: (tx: typeof prisma) => Promise<unknown>) => {
+          const tx = {
+            accountingRule: { update: jest.fn().mockResolvedValue({}) },
+            accountingRuleLine: {
+              deleteMany: jest.fn().mockResolvedValue({ count: 2 }),
+              createMany: jest.fn().mockResolvedValue({ count: 2 }),
+            },
+          } as unknown as typeof prisma;
+          return fn(tx);
+        },
+      );
 
       const result = await service.updateRule('org-1', 'rule-1', {
         isActive: false,
@@ -362,7 +383,9 @@ describe('auto-posting.service', () => {
       });
 
       // Data from extractor
-      (mockedPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValueOnce(makeExtractedPayrollData());
+      (mockedPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValueOnce(
+        makeExtractedPayrollData(),
+      );
 
       // No cost center (no farmId)
       (mockedPrisma.costCenter.findFirst as jest.Mock).mockResolvedValueOnce(null);

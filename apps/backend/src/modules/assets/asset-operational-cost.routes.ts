@@ -32,19 +32,19 @@ function handleError(err: unknown, res: Response): void {
 
 // ─── GET /org/:orgId/assets/:assetId/operational-cost ─────────────────
 
-operationalCostRouter.get(
-  base,
-  authenticate,
-  checkPermission('assets:read'),
-  async (req, res) => {
-    try {
-      const ctx = buildCtx(req);
-      const periodStart = req.query.periodStart as string | undefined;
-      const periodEnd = req.query.periodEnd as string | undefined;
-      const result = await getOperationalCost(ctx, req.params.assetId as string, periodStart, periodEnd);
-      res.json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
+operationalCostRouter.get(base, authenticate, checkPermission('assets:read'), async (req, res) => {
+  try {
+    const ctx = buildCtx(req);
+    const periodStart = req.query.periodStart as string | undefined;
+    const periodEnd = req.query.periodEnd as string | undefined;
+    const result = await getOperationalCost(
+      ctx,
+      req.params.assetId as string,
+      periodStart,
+      periodEnd,
+    );
+    res.json(result);
+  } catch (err) {
+    handleError(err, res);
+  }
+});

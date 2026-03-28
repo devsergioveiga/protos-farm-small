@@ -6,56 +6,57 @@ Banco de dados Firebird 2.5 (ODS 11, page size 16384) de software pecuário lega
 
 ### Volumetria
 
-| Tabela FDB | Registros | Mapeamento Protos Farm |
-|---|---|---|
-| ANIMAL | 3.563 | Animal |
-| RACA | 111 | Breed |
-| COMPOSICAORACIAL | 132 | AnimalBreedComposition |
-| ANIMALRACA | 3.562 | AnimalBreedComposition |
-| PESO | 23.895 | AnimalWeighing |
-| LEITE | 83.484 | MilkingRecord |
-| LACTACAO | 4.326 | Lactation |
-| MAMITE | 5.280 | MastitisCase + MastitisQuarter |
-| REPRODUCAO | 82.149 | Insemination / NaturalMating / PregnancyDiagnosis / CalvingEvent (separar por TIPOREPRODUCAO) |
-| EXAMEANIMAL | 1.125 | AnimalExam |
-| APLICACAOPRODUTO | 582 | Vaccination / Deworming / TreatmentApplication |
-| PROTOCOLOSANITARIO | 4 | SanitaryProtocol |
-| PROTOCOLOIATF | 9 | IatfProtocol |
-| GRUPOANIMAL | 11 | AnimalLot |
-| MOVGRUPOANIMAL | 7.299 | AnimalLotMovement |
-| CATEGORIA | 7 | Enum no Animal |
-| CENTRALSEMEN | 25 | Bull / SemenBatch |
-| MOTIVOBAIXA | 79 | AnimalExit (tipo) |
-| PRODUTO | 19.934 | Product |
-| PRINCIPIOATIVO | 667 | **ActiveIngredient** (novo) |
-| PRODUTOPRINCIPIOATIVO | 12.420 | **ProductActiveIngredient** (novo) |
-| CLASSIFICACAO | 96 | Product.category / Product.type |
-| UNIDADEMEDIDA | 27 | MeasurementUnit |
-| MOVIMENTOESTOQUE | 13.150 | StockEntry / StockOutput |
-| LOCALARMAZENAMENTO | 4 | **StorageLocation** (novo) |
-| CENTROCUSTO | 266 | CostCenter |
-| PATRIMONIO | 79 | Asset |
-| PESSOA | 2.491 | Producer + Supplier (separar por uso) |
-| MUNICIPIO | 5.570 | Dados de endereço (inline) |
-| FAZENDA | 1 | Farm |
-| SETOR | 1 | FarmLocation |
-| NOTA | 50.123 | FinancialTransaction / Payable / Receivable |
-| NOTAITEM | 102.771 | (itens das notas — granularidade não existe hoje) |
-| NOTAITEMAPRO | 105.511 | PayableCostCenterItem / ReceivableCostCenterItem |
-| NOTAANIMAL | 359 | (vínculo animal ↔ transação — não existe hoje) |
-| MOVIMENTO | 57.920 | PayableInstallment / ReceivableInstallment |
-| CONTAGERENCIAL | 188 | **Não implementado** — futuro milestone Contabilidade |
-| RATEIO / RATEIOITEM | 1.099 | Rateio parcial via CostCenter |
-| BANCO | 216 | BankAccount (dados de referência) |
-| CONTACORRENTE | 25 | BankAccount |
-| TRANSFERENCIABANCARIA | 1.309 | AccountTransfer |
-| DOENCA | 35 | Disease |
-| TRATAMENTO | 91 | TreatmentProtocol |
-| NUTRIENTE | 32 | FeedIngredient |
-| PRODUCAOLEITE | 227 | MilkCollection |
+| Tabela FDB            | Registros | Mapeamento Protos Farm                                                                        |
+| --------------------- | --------- | --------------------------------------------------------------------------------------------- |
+| ANIMAL                | 3.563     | Animal                                                                                        |
+| RACA                  | 111       | Breed                                                                                         |
+| COMPOSICAORACIAL      | 132       | AnimalBreedComposition                                                                        |
+| ANIMALRACA            | 3.562     | AnimalBreedComposition                                                                        |
+| PESO                  | 23.895    | AnimalWeighing                                                                                |
+| LEITE                 | 83.484    | MilkingRecord                                                                                 |
+| LACTACAO              | 4.326     | Lactation                                                                                     |
+| MAMITE                | 5.280     | MastitisCase + MastitisQuarter                                                                |
+| REPRODUCAO            | 82.149    | Insemination / NaturalMating / PregnancyDiagnosis / CalvingEvent (separar por TIPOREPRODUCAO) |
+| EXAMEANIMAL           | 1.125     | AnimalExam                                                                                    |
+| APLICACAOPRODUTO      | 582       | Vaccination / Deworming / TreatmentApplication                                                |
+| PROTOCOLOSANITARIO    | 4         | SanitaryProtocol                                                                              |
+| PROTOCOLOIATF         | 9         | IatfProtocol                                                                                  |
+| GRUPOANIMAL           | 11        | AnimalLot                                                                                     |
+| MOVGRUPOANIMAL        | 7.299     | AnimalLotMovement                                                                             |
+| CATEGORIA             | 7         | Enum no Animal                                                                                |
+| CENTRALSEMEN          | 25        | Bull / SemenBatch                                                                             |
+| MOTIVOBAIXA           | 79        | AnimalExit (tipo)                                                                             |
+| PRODUTO               | 19.934    | Product                                                                                       |
+| PRINCIPIOATIVO        | 667       | **ActiveIngredient** (novo)                                                                   |
+| PRODUTOPRINCIPIOATIVO | 12.420    | **ProductActiveIngredient** (novo)                                                            |
+| CLASSIFICACAO         | 96        | Product.category / Product.type                                                               |
+| UNIDADEMEDIDA         | 27        | MeasurementUnit                                                                               |
+| MOVIMENTOESTOQUE      | 13.150    | StockEntry / StockOutput                                                                      |
+| LOCALARMAZENAMENTO    | 4         | **StorageLocation** (novo)                                                                    |
+| CENTROCUSTO           | 266       | CostCenter                                                                                    |
+| PATRIMONIO            | 79        | Asset                                                                                         |
+| PESSOA                | 2.491     | Producer + Supplier (separar por uso)                                                         |
+| MUNICIPIO             | 5.570     | Dados de endereço (inline)                                                                    |
+| FAZENDA               | 1         | Farm                                                                                          |
+| SETOR                 | 1         | FarmLocation                                                                                  |
+| NOTA                  | 50.123    | FinancialTransaction / Payable / Receivable                                                   |
+| NOTAITEM              | 102.771   | (itens das notas — granularidade não existe hoje)                                             |
+| NOTAITEMAPRO          | 105.511   | PayableCostCenterItem / ReceivableCostCenterItem                                              |
+| NOTAANIMAL            | 359       | (vínculo animal ↔ transação — não existe hoje)                                                |
+| MOVIMENTO             | 57.920    | PayableInstallment / ReceivableInstallment                                                    |
+| CONTAGERENCIAL        | 188       | **Não implementado** — futuro milestone Contabilidade                                         |
+| RATEIO / RATEIOITEM   | 1.099     | Rateio parcial via CostCenter                                                                 |
+| BANCO                 | 216       | BankAccount (dados de referência)                                                             |
+| CONTACORRENTE         | 25        | BankAccount                                                                                   |
+| TRANSFERENCIABANCARIA | 1.309     | AccountTransfer                                                                               |
+| DOENCA                | 35        | Disease                                                                                       |
+| TRATAMENTO            | 91        | TreatmentProtocol                                                                             |
+| NUTRIENTE             | 32        | FeedIngredient                                                                                |
+| PRODUCAOLEITE         | 227       | MilkCollection                                                                                |
 
 ### Tabelas com zero registros (não importar)
-DIETA, TANQUE, ANALISELEITE, ANALISETANQUE, ESTACAO, INVENTARIO, MANEJOAGRICOLA, PROJETOAGRICOLA, PLANEJAMENTO, DOENCAANIMAL, MOVSETOR, BRINCOSISBOV, PATRIMONIOMANUTENCAO, AGENDASANIDADE, CLT_*, COTACAO, PELAGEM, MOVREBANHO, PRODUCAOLEITERATEIO, HORAMAQUINAHOMEM, PESSOALIVROCAIXA, CLASSIFICACAOCARCACA.
+
+DIETA, TANQUE, ANALISELEITE, ANALISETANQUE, ESTACAO, INVENTARIO, MANEJOAGRICOLA, PROJETOAGRICOLA, PLANEJAMENTO, DOENCAANIMAL, MOVSETOR, BRINCOSISBOV, PATRIMONIOMANUTENCAO, AGENDASANIDADE, CLT\_\*, COTACAO, PELAGEM, MOVREBANHO, PRODUCAOLEITERATEIO, HORAMAQUINAHOMEM, PESSOALIVROCAIXA, CLASSIFICACAOCARCACA.
 
 ## Models Criados para Importação
 
@@ -81,16 +82,17 @@ Normaliza o campo texto livre `StockEntry.storageLocation` para entidade referen
 
 ### O que NÃO foi criado e por quê
 
-| Conceito FDB | Decisão | Motivo |
-|---|---|---|
-| **CONTAGERENCIAL** (plano de contas) | Postergar | Pertence ao futuro milestone "Contabilidade" (pós-v1.2) |
-| **Pessoa unificada** | Manter separado | Design intencional: Producer + Supplier + User têm domínios distintos |
-| **CLIMA** (dados meteorológicos) | Descartar | Zero registros no FDB, baixa prioridade |
-| **NF-e / módulo fiscal** | Fora de escopo | Explicitamente fora de escopo no PROJECT.md. Phase 19 importa XML apenas para ativos |
+| Conceito FDB                         | Decisão         | Motivo                                                                               |
+| ------------------------------------ | --------------- | ------------------------------------------------------------------------------------ |
+| **CONTAGERENCIAL** (plano de contas) | Postergar       | Pertence ao futuro milestone "Contabilidade" (pós-v1.2)                              |
+| **Pessoa unificada**                 | Manter separado | Design intencional: Producer + Supplier + User têm domínios distintos                |
+| **CLIMA** (dados meteorológicos)     | Descartar       | Zero registros no FDB, baixa prioridade                                              |
+| **NF-e / módulo fiscal**             | Fora de escopo  | Explicitamente fora de escopo no PROJECT.md. Phase 19 importa XML apenas para ativos |
 
 ### Mapeamento PESSOA → Producer + Supplier
 
 A tabela PESSOA do FDB é unificada. Na importação, determinar o papel pela utilização:
+
 - Se referenciado em NOTA como fornecedor → **Supplier**
 - Se referenciado como proprietário de animal → **Producer**
 - Se referenciado como inseminador (REPRODUCAO.CDPESSOA) → **User** ou campo texto
@@ -99,6 +101,7 @@ A tabela PESSOA do FDB é unificada. Na importação, determinar o papel pela ut
 ### Mapeamento REPRODUCAO → Múltiplos models
 
 A tabela REPRODUCAO do FDB é genérica (tipo definido por TIPOREPRODUCAO). Mapear para:
+
 - Inseminação (IA/IATF) → **Insemination**
 - Monta natural → **NaturalMating**
 - Diagnóstico gestação → **PregnancyDiagnosis**
@@ -110,6 +113,7 @@ A tabela REPRODUCAO do FDB é genérica (tipo definido por TIPOREPRODUCAO). Mape
 ### Mapeamento NOTA → Financeiro
 
 NOTA.TIPONOTA determina o destino:
+
 - Compra → **Payable** + **PayableInstallment** (via MOVIMENTO)
 - Venda → **Receivable** + **ReceivableInstallment**
 - NOTAITEMAPRO → **PayableCostCenterItem** / **ReceivableCostCenterItem**

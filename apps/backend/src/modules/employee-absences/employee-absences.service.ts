@@ -238,7 +238,11 @@ export async function createAbsence(
         }
     }
 
-    const payrollImpact = computePayrollImpact(input.absenceType, totalDays, defaults.fgtsFullMonth);
+    const payrollImpact = computePayrollImpact(
+      input.absenceType,
+      totalDays,
+      defaults.fgtsFullMonth,
+    );
 
     // Validate employee exists in org
     const employee = await tx.employee.findFirst({
@@ -400,8 +404,7 @@ export async function getAbsenceImpactForMonth(
 
   for (const absence of absences) {
     const absStart = absence.startDate > monthStart ? absence.startDate : monthStart;
-    const absEnd =
-      absence.endDate && absence.endDate < monthEnd ? absence.endDate : monthEnd;
+    const absEnd = absence.endDate && absence.endDate < monthEnd ? absence.endDate : monthEnd;
 
     const daysInMonth = diffDays(absStart, absEnd);
     const impact = computePayrollImpact(absence.absenceType, daysInMonth, false);

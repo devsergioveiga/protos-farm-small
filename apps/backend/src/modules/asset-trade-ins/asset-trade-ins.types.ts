@@ -14,17 +14,17 @@ export class AssetTradeInError extends Error {
 
 export interface CreateTradeInInput {
   farmId: string;
-  tradedAssetId: string;       // existing asset to trade in
-  tradeInDate: string;         // ISO 8601
-  tradedAssetValue: number;    // agreed value for old asset
+  tradedAssetId: string; // existing asset to trade in
+  tradeInDate: string; // ISO 8601
+  tradedAssetValue: number; // agreed value for old asset
   // New asset data:
-  newAssetType: string;        // AssetType enum value
+  newAssetType: string; // AssetType enum value
   newAssetClassification: string; // AssetClassification enum value
   newAssetName: string;
-  newAssetValue: number;       // price of new asset
+  newAssetValue: number; // price of new asset
   newAssetAcquisitionDate?: string;
   supplierName?: string;
-  dueDate?: string;            // for CP if netPayable > 0
+  dueDate?: string; // for CP if netPayable > 0
   notes?: string;
 }
 

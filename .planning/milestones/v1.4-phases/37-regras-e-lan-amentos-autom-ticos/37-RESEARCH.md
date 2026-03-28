@@ -15,11 +15,13 @@ The frontend extends the existing `JournalEntriesPage` with two new tabs (Pendê
 **Primary recommendation:** Build `auto-posting` module first (schema + service + routes), then add hooks to the 6 source modules, then wire the frontend tabs.
 
 <user_constraints>
+
 ## User Constraints (from CONTEXT.md)
 
 ### Locked Decisions
 
 **Regras de Mapeamento**
+
 - D-01: Tabela única administrativa listando todas as operações. Cada linha mapeia tipo → conta débito + conta crédito + template de histórico + flag CC obrigatório. Modal para edição.
 - D-02: Regras pré-populadas com mapeamentos padrão quando o template COA rural é criado. Contador só ajusta se necessário.
 - D-03: Preview de lançamento no modal da regra — botão "Pré-visualizar" mostra exemplo com dados reais da última operação daquele tipo.
@@ -35,6 +37,7 @@ The frontend extends the existing `JournalEntriesPage` with two new tabs (Pendê
 - D-13: Regras por organização com seed automático. organizationId + RLS. Seed cria regras junto com template COA.
 
 **Estratégia de Fila**
+
 - D-14: Tabela Postgres PendingJournalPosting como fila (sem BullMQ/Redis). Status: PENDING → PROCESSING → COMPLETED | ERROR.
 - D-15: Processamento síncrono inline — após a transaction da operação (non-blocking). Falha no GL não reverte a operação.
 - D-16: Retry manual via botão na tela de pendências. Sem cron automático.
@@ -49,6 +52,7 @@ The frontend extends the existing `JournalEntriesPage` with two new tabs (Pendê
 - D-25: Período contábil fechado = PendingJournalPosting com ERROR "período fechado".
 
 **Hooks nos Módulos**
+
 - D-26: Chamada direta ao service (não event system). Módulo importa e chama `autoPostingService.process(sourceType, sourceId, orgId)`.
 - D-27: Módulo novo `modules/auto-posting/` com service, types, routes (CRUD regras + retry + pendências).
 - D-28: Data extractors centralizados no auto-posting.service com map sourceType → função extratora.
@@ -59,6 +63,7 @@ The frontend extends the existing `JournalEntriesPage` with two new tabs (Pendê
 - D-33: Para CR, usar `settleReceivable` (análoga a `settlePayment` de payables). Criar se não existir.
 
 **Tela de Pendências e Regras (Frontend)**
+
 - D-34: 3 tabs na JournalEntriesPage: Lançamentos | Pendências | Regras.
 - D-35: Tab Pendências: filtros por status e tipo de operação. Retry individual + retry em lote.
 - D-36: Colunas: badge status (cor), tipo operação, link para origem, data, ações.
@@ -70,48 +75,52 @@ The frontend extends the existing `JournalEntriesPage` with two new tabs (Pendê
 - D-42: CRUD de regras em modal. Modal com: tipo (readonly), isActive, linhas débito/crédito (tabela editável), template histórico, flag CC obrigatório, botão preview.
 
 ### Claude's Discretion
+
 - Escolha de nomes específicos dos valores do enum extenso de sourceType
 - Estrutura interna do data extractor map
 - Ordem das colunas e detalhes visuais de badges
 - Validação de contas no processamento (período aberto + regra ativa confirmados como suficientes)
 
 ### Deferred Ideas (OUT OF SCOPE)
+
 None — discussion stayed within phase scope
 </user_constraints>
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|------------------|
-| LANC-01 | Sistema gera lançamentos contábeis automáticos (partidas dobradas) para: liquidação de CP, recebimento de CR, fechamento de folha, depreciação mensal, entrada/saída de estoque | AccountingRule engine + PendingJournalPosting queue + hooks in 6 modules |
-| LANC-02 | Contador pode configurar regras de lançamento automático por tipo de operação com conta débito, conta crédito, template de histórico e flag CC obrigatório, com tela administrativa | AccountingRule CRUD + RulesTab + AccountingRuleModal in frontend |
-| LANC-06 | Sistema garante idempotência — re-processamento não gera duplicatas, constraint único (sourceType + sourceId), fila de pendências com retry | UNIQUE constraint on PendingJournalPosting + JournalEntry.sourceType/sourceId + retry endpoint |
+| ID      | Description                                                                                                                                                                         | Research Support                                                                               |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| LANC-01 | Sistema gera lançamentos contábeis automáticos (partidas dobradas) para: liquidação de CP, recebimento de CR, fechamento de folha, depreciação mensal, entrada/saída de estoque     | AccountingRule engine + PendingJournalPosting queue + hooks in 6 modules                       |
+| LANC-02 | Contador pode configurar regras de lançamento automático por tipo de operação com conta débito, conta crédito, template de histórico e flag CC obrigatório, com tela administrativa | AccountingRule CRUD + RulesTab + AccountingRuleModal in frontend                               |
+| LANC-06 | Sistema garante idempotência — re-processamento não gera duplicatas, constraint único (sourceType + sourceId), fila de pendências com retry                                         | UNIQUE constraint on PendingJournalPosting + JournalEntry.sourceType/sourceId + retry endpoint |
+
 </phase_requirements>
 
 ## Standard Stack
 
 ### Core
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| Prisma | 7.6.0 | ORM + migrations | Already in use; AccountingRule and PendingJournalPosting as native Postgres tables |
-| Decimal.js | ^10.6.0 | Monetary arithmetic | Already in use throughout service layer; no float math |
-| Express 5 | ^5.1.0 | HTTP routes | Already in use |
+| Library    | Version | Purpose             | Why Standard                                                                       |
+| ---------- | ------- | ------------------- | ---------------------------------------------------------------------------------- |
+| Prisma     | 7.6.0   | ORM + migrations    | Already in use; AccountingRule and PendingJournalPosting as native Postgres tables |
+| Decimal.js | ^10.6.0 | Monetary arithmetic | Already in use throughout service layer; no float math                             |
+| Express 5  | ^5.1.0  | HTTP routes         | Already in use                                                                     |
 
 ### Supporting
 
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| @protos-farm/shared | workspace | assertBalanced, assertPeriodOpen, Money | GL line validation before auto-post |
-| lucide-react | installed | Icons (Settings, Clock, AlertTriangle, CheckCircle, RefreshCw) | Badges and action buttons in Pendências/Regras tabs |
+| Library             | Version   | Purpose                                                        | When to Use                                         |
+| ------------------- | --------- | -------------------------------------------------------------- | --------------------------------------------------- |
+| @protos-farm/shared | workspace | assertBalanced, assertPeriodOpen, Money                        | GL line validation before auto-post                 |
+| lucide-react        | installed | Icons (Settings, Clock, AlertTriangle, CheckCircle, RefreshCw) | Badges and action buttons in Pendências/Regras tabs |
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Postgres-as-queue (PendingJournalPosting) | BullMQ + Redis | BullMQ needs Redis; D-14 locks this to Postgres-only |
-| Sync inline processing (D-15) | Async worker | Async worker needs queue polling; D-15 mandates non-blocking inline |
+| Instead of                                | Could Use      | Tradeoff                                                            |
+| ----------------------------------------- | -------------- | ------------------------------------------------------------------- |
+| Postgres-as-queue (PendingJournalPosting) | BullMQ + Redis | BullMQ needs Redis; D-14 locks this to Postgres-only                |
+| Sync inline processing (D-15)             | Async worker   | Async worker needs queue polling; D-15 mandates non-blocking inline |
 
 **Installation:** No new packages required. All dependencies already installed.
 
@@ -154,6 +163,7 @@ try {
 ```
 
 **Current hook points identified:**
+
 - `payroll-runs.service.ts` line 1059: Currently calls `createPayrollEntries()`. Replace with `autoPostingService.process('PAYROLL_RUN_CLOSE', runId, orgId)`.
 - `payables.service.ts` line 479: Currently calls `createReversalEntry()`. Replace with `autoPostingService.process('PAYABLE_SETTLEMENT', payableId, orgId)`.
 - `receivables.service.ts` line ~460: After `settleReceivable`. Add call with `'RECEIVABLE_SETTLEMENT'`.
@@ -169,6 +179,7 @@ PENDING → PROCESSING → COMPLETED
 ```
 
 The `process()` function:
+
 1. Check if COMPLETED already exists for (sourceType, sourceId) → if yes, return silently (D-17).
 2. Create PendingJournalPosting with status=PENDING.
 3. Find active AccountingRule for (organizationId, sourceType).
@@ -275,14 +286,14 @@ function interpolate(template: string, vars: Record<string, string>): string {
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Decimal arithmetic | Custom rounding | Decimal.js (already used) | Float precision errors in monetary amounts |
-| Period open check | Custom query | `assertPeriodOpen` from @protos-farm/shared | Already handles OPEN/CLOSED/BLOCKED status |
-| Balance validation | Manual sum | `assertBalanced` from @protos-farm/shared | Already validates DEBIT === CREDIT |
-| Template interpolation | regex library | Inline `replace(/{{(\w+)}}/g)` | ~3 lines, no dependency needed |
-| Account balance update | Custom SQL | Reuse the raw SQL block from `postJournalEntry` | Tested, handles closing balance recalculation |
-| Sequential entry number | UUID or timestamp | Reuse `aggregate._max.entryNumber + 1` pattern | Matches existing ledger numbering scheme |
+| Problem                 | Don't Build       | Use Instead                                     | Why                                           |
+| ----------------------- | ----------------- | ----------------------------------------------- | --------------------------------------------- |
+| Decimal arithmetic      | Custom rounding   | Decimal.js (already used)                       | Float precision errors in monetary amounts    |
+| Period open check       | Custom query      | `assertPeriodOpen` from @protos-farm/shared     | Already handles OPEN/CLOSED/BLOCKED status    |
+| Balance validation      | Manual sum        | `assertBalanced` from @protos-farm/shared       | Already validates DEBIT === CREDIT            |
+| Template interpolation  | regex library     | Inline `replace(/{{(\w+)}}/g)`                  | ~3 lines, no dependency needed                |
+| Account balance update  | Custom SQL        | Reuse the raw SQL block from `postJournalEntry` | Tested, handles closing balance recalculation |
+| Sequential entry number | UUID or timestamp | Reuse `aggregate._max.entryNumber + 1` pattern  | Matches existing ledger numbering scheme      |
 
 **Key insight:** The posting engine in `journal-entries.service.ts` (`postJournalEntry`) already handles all the complex accounting mechanics. The auto-posting service should reuse the account balance update SQL and sequential numbering logic, extracted into a shared internal helper or called via the existing service (with a bypass flag for `allowManualEntry`).
 
@@ -367,7 +378,7 @@ const period = await prisma.accountingPeriod.findFirst({
   where: { id: input.periodId, organizationId },
   select: { id: true, month: true, year: true, status: true },
 });
-assertPeriodOpen(period);  // throws PeriodNotOpenError if CLOSED/BLOCKED
+assertPeriodOpen(period); // throws PeriodNotOpenError if CLOSED/BLOCKED
 ```
 
 ### AccountBalance Update (from journal-entries.service.ts L255-301)
@@ -422,23 +433,29 @@ if (!posting) {
 
 ```typescript
 // Add to JournalEntryType enum in types/journal-entries.ts:
-type JournalEntryType = 'MANUAL' | 'OPENING_BALANCE' | 'REVERSAL' | 'TEMPLATE_INSTANCE' | 'AUTOMATIC';
+type JournalEntryType =
+  | 'MANUAL'
+  | 'OPENING_BALANCE'
+  | 'REVERSAL'
+  | 'TEMPLATE_INSTANCE'
+  | 'AUTOMATIC';
 
 // Tab component (3 tabs):
 const TABS = ['lancamentos', 'pendencias', 'regras'] as const;
-type TabId = typeof TABS[number];
+type TabId = (typeof TABS)[number];
 const [activeTab, setActiveTab] = useState<TabId>('lancamentos');
 ```
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| AccountingEntry flat records (v1.3) | JournalEntry multi-line (double-entry) | Phase 36 | Full double-entry GL; AccountingEntry is now legacy |
-| Hardcoded ACCOUNT_CODES const | Configurable AccountingRule per org | Phase 37 | Accountants can adjust mappings without code changes |
-| BullMQ as queue option | Postgres table as queue (D-14) | Phase 37 decision | No Redis dependency; simpler ops |
+| Old Approach                        | Current Approach                       | When Changed      | Impact                                               |
+| ----------------------------------- | -------------------------------------- | ----------------- | ---------------------------------------------------- |
+| AccountingEntry flat records (v1.3) | JournalEntry multi-line (double-entry) | Phase 36          | Full double-entry GL; AccountingEntry is now legacy  |
+| Hardcoded ACCOUNT_CODES const       | Configurable AccountingRule per org    | Phase 37          | Accountants can adjust mappings without code changes |
+| BullMQ as queue option              | Postgres table as queue (D-14)         | Phase 37 decision | No Redis dependency; simpler ops                     |
 
 **Deprecated/outdated after Phase 37:**
+
 - `AccountingEntry` model: deleted. Data should be migrated (or accepted as historical loss — confirm with user).
 - `AccountingEntryType` enum: deleted from schema.
 - `AccountingSourceType` enum: deleted from schema.
@@ -476,29 +493,29 @@ Step 2.6: SKIPPED — Phase 37 is purely code/schema changes with no new externa
 
 ### Test Framework
 
-| Property | Value |
-|----------|-------|
-| Framework | Jest 29 |
-| Config file | `apps/backend/jest.config.js` |
-| Quick run command | `pnpm --filter @protos-farm/backend test -- --testPathPattern=auto-posting --no-coverage` |
-| Full suite command | `pnpm --filter @protos-farm/backend test` |
+| Property           | Value                                                                                     |
+| ------------------ | ----------------------------------------------------------------------------------------- |
+| Framework          | Jest 29                                                                                   |
+| Config file        | `apps/backend/jest.config.js`                                                             |
+| Quick run command  | `pnpm --filter @protos-farm/backend test -- --testPathPattern=auto-posting --no-coverage` |
+| Full suite command | `pnpm --filter @protos-farm/backend test`                                                 |
 
 ### Phase Requirements → Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| LANC-01 | Auto-posting creates JournalEntry for PAYROLL_RUN_CLOSE | unit | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "PAYROLL_RUN_CLOSE"` | ❌ Wave 0 |
-| LANC-01 | Auto-posting creates JournalEntry for PAYABLE_SETTLEMENT | unit | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "PAYABLE_SETTLEMENT"` | ❌ Wave 0 |
-| LANC-01 | Auto-posting creates JournalEntry for RECEIVABLE_SETTLEMENT | unit | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "RECEIVABLE_SETTLEMENT"` | ❌ Wave 0 |
-| LANC-01 | Auto-posting creates JournalEntry for DEPRECIATION_RUN | unit | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "DEPRECIATION_RUN"` | ❌ Wave 0 |
-| LANC-01 | Auto-posting creates JournalEntry for STOCK_ENTRY | unit | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "STOCK_ENTRY"` | ❌ Wave 0 |
-| LANC-01 | Auto-posting creates JournalEntry for STOCK_OUTPUT | unit | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "STOCK_OUTPUT"` | ❌ Wave 0 |
-| LANC-02 | GET /auto-posting/rules lists all org rules | unit | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "list rules"` | ❌ Wave 0 |
-| LANC-02 | PATCH /auto-posting/rules/:id updates rule | unit | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "update rule"` | ❌ Wave 0 |
-| LANC-02 | GET /auto-posting/rules/:id/preview returns dry-run lines | unit | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "preview"` | ❌ Wave 0 |
-| LANC-06 | Re-processing COMPLETED operation returns silently (no duplicate) | unit | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "idempotent"` | ❌ Wave 0 |
-| LANC-06 | Retry endpoint resets ERROR posting to PENDING | unit | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "retry"` | ❌ Wave 0 |
-| LANC-06 | GET /auto-posting/pending lists with status filter | unit | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "list pending"` | ❌ Wave 0 |
+| Req ID  | Behavior                                                          | Test Type | Automated Command                                                                         | File Exists? |
+| ------- | ----------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------- | ------------ |
+| LANC-01 | Auto-posting creates JournalEntry for PAYROLL_RUN_CLOSE           | unit      | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "PAYROLL_RUN_CLOSE"`     | ❌ Wave 0    |
+| LANC-01 | Auto-posting creates JournalEntry for PAYABLE_SETTLEMENT          | unit      | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "PAYABLE_SETTLEMENT"`    | ❌ Wave 0    |
+| LANC-01 | Auto-posting creates JournalEntry for RECEIVABLE_SETTLEMENT       | unit      | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "RECEIVABLE_SETTLEMENT"` | ❌ Wave 0    |
+| LANC-01 | Auto-posting creates JournalEntry for DEPRECIATION_RUN            | unit      | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "DEPRECIATION_RUN"`      | ❌ Wave 0    |
+| LANC-01 | Auto-posting creates JournalEntry for STOCK_ENTRY                 | unit      | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "STOCK_ENTRY"`           | ❌ Wave 0    |
+| LANC-01 | Auto-posting creates JournalEntry for STOCK_OUTPUT                | unit      | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "STOCK_OUTPUT"`          | ❌ Wave 0    |
+| LANC-02 | GET /auto-posting/rules lists all org rules                       | unit      | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "list rules"`            | ❌ Wave 0    |
+| LANC-02 | PATCH /auto-posting/rules/:id updates rule                        | unit      | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "update rule"`           | ❌ Wave 0    |
+| LANC-02 | GET /auto-posting/rules/:id/preview returns dry-run lines         | unit      | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "preview"`               | ❌ Wave 0    |
+| LANC-06 | Re-processing COMPLETED operation returns silently (no duplicate) | unit      | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "idempotent"`            | ❌ Wave 0    |
+| LANC-06 | Retry endpoint resets ERROR posting to PENDING                    | unit      | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "retry"`                 | ❌ Wave 0    |
+| LANC-06 | GET /auto-posting/pending lists with status filter                | unit      | `pnpm --filter backend test -- --testPathPattern=auto-posting -t "list pending"`          | ❌ Wave 0    |
 
 ### Sampling Rate
 
@@ -535,6 +552,7 @@ None — all findings based on direct codebase inspection.
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH — all packages already installed and in use
 - Architecture: HIGH — patterns directly read from existing working code
 - Pitfalls: HIGH — identified from direct reading of `validateAccountsForManualEntry` and existing hook patterns

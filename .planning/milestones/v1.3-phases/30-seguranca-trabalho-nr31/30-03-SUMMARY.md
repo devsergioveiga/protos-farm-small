@@ -1,6 +1,6 @@
 ---
 phase: 30-seguranca-trabalho-nr31
-plan: "03"
+plan: '03'
 subsystem: backend
 tags: [training, nr31, epi, safety, pdf, certificate, position-requirements]
 dependency_graph:
@@ -31,12 +31,12 @@ key_files:
     - apps/backend/src/modules/training-types/training-types.routes.ts
     - apps/backend/src/modules/training-records/training-records.routes.ts
 decisions:
-  - "findFirst+create instead of upsert for NR-31 seed: Postgres null!=null in unique constraints"
-  - "employees:read / employees:manage permissions for training routes (no hr: module exists)"
-  - "expiresAt calculated via setMonth(d.getMonth() + validityMonths) inside withRlsContext transaction"
+  - 'findFirst+create instead of upsert for NR-31 seed: Postgres null!=null in unique constraints'
+  - 'employees:read / employees:manage permissions for training routes (no hr: module exists)'
+  - 'expiresAt calculated via setMonth(d.getMonth() + validityMonths) inside withRlsContext transaction'
 metrics:
-  duration: "9 minutes"
-  completed: "2026-03-26"
+  duration: '9 minutes'
+  completed: '2026-03-26'
   tasks_completed: 2
   files_changed: 6
 ---
@@ -47,16 +47,17 @@ JWT-authenticated training type CRUD with 7 NR-31 system types seeded via findFi
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | training-types service + routes + tests + NR-31 seed | 74741d24 | training-types.service.ts, routes.ts, routes.spec.ts |
-| 2 | training-records service + routes + tests + certificate PDF | c90990b0 | training-records.service.ts, routes.ts, routes.spec.ts |
+| Task | Name                                                        | Commit   | Files                                                  |
+| ---- | ----------------------------------------------------------- | -------- | ------------------------------------------------------ |
+| 1    | training-types service + routes + tests + NR-31 seed        | 74741d24 | training-types.service.ts, routes.ts, routes.spec.ts   |
+| 2    | training-records service + routes + tests + certificate PDF | c90990b0 | training-records.service.ts, routes.ts, routes.spec.ts |
 
 ## Deviations from Plan
 
 ### Auto-fixed Issues
 
 **1. [Rule 2 - Missing critical functionality] Used `employees:read`/`employees:manage` instead of `hr:read`/`hr:admin`**
+
 - **Found during:** Task 1 implementation
 - **Issue:** Plan specified `hr:read` and `hr:admin` permissions which do not exist in the PermissionModule type or DEFAULT_ROLE_PERMISSIONS matrix
 - **Fix:** Mapped to existing `employees:read` (for read operations) and `employees:manage` (for write/admin operations), which are semantically correct and already granted to MANAGER role

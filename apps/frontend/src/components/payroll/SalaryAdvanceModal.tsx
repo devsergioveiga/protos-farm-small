@@ -221,9 +221,7 @@ export default function SalaryAdvanceModal({
         });
         if (result) {
           const count = result.count ?? result.advances?.length ?? 0;
-          setSuccessMessage(
-            `Adiantamento em lote registrado para ${count} colaboradores.`,
-          );
+          setSuccessMessage(`Adiantamento em lote registrado para ${count} colaboradores.`);
           setTimeout(() => {
             resetState();
             onSuccess?.();
@@ -377,9 +375,7 @@ export default function SalaryAdvanceModal({
                     onBlur={(e) => validateIndividualField('amount', e.target.value)}
                     placeholder="0,00"
                     aria-required="true"
-                    aria-describedby={
-                      individualErrors.amount ? 'advance-amount-error' : undefined
-                    }
+                    aria-describedby={individualErrors.amount ? 'advance-amount-error' : undefined}
                   />
                 </div>
                 {individualErrors.amount && (
@@ -406,9 +402,7 @@ export default function SalaryAdvanceModal({
                   onChange={(e) => setAdvanceDate(e.target.value)}
                   onBlur={(e) => validateIndividualField('advanceDate', e.target.value)}
                   aria-required="true"
-                  aria-describedby={
-                    individualErrors.advanceDate ? 'advance-date-error' : undefined
-                  }
+                  aria-describedby={individualErrors.advanceDate ? 'advance-date-error' : undefined}
                 />
                 {individualErrors.advanceDate && (
                   <span
@@ -440,9 +434,8 @@ export default function SalaryAdvanceModal({
             <>
               {/* Batch summary */}
               <p className="salary-advance-modal__batch-summary">
-                Sera criado adiantamento de{' '}
-                <strong>{percentOfSalary || '40'}%</strong> do salario para todos os
-                colaboradores ativos.
+                Sera criado adiantamento de <strong>{percentOfSalary || '40'}%</strong> do salario
+                para todos os colaboradores ativos.
               </p>
 
               {/* Batch reference month */}
@@ -518,9 +511,7 @@ export default function SalaryAdvanceModal({
                   onChange={(e) => setPercentOfSalary(e.target.value)}
                   onBlur={(e) => validateBatchField('percentOfSalary', e.target.value)}
                   aria-required="true"
-                  aria-describedby={
-                    batchErrors.percentOfSalary ? 'batch-percent-error' : undefined
-                  }
+                  aria-describedby={batchErrors.percentOfSalary ? 'batch-percent-error' : undefined}
                 />
                 {batchErrors.percentOfSalary && (
                   <span

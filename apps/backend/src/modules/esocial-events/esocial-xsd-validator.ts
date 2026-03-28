@@ -36,9 +36,14 @@ export function validateXmlAgainstXsd(
 
     for (let i = 1; i < segments.length && node !== null; i++) {
       const segment = segments[i];
-      if (!segment) { node = null; break; }
-       
-      const nodeChildren: HTMLCollectionOf<Element> = (node as Element).getElementsByTagName(segment) as HTMLCollectionOf<Element>;
+      if (!segment) {
+        node = null;
+        break;
+      }
+
+      const nodeChildren: HTMLCollectionOf<Element> = (node as Element).getElementsByTagName(
+        segment,
+      ) as HTMLCollectionOf<Element>;
       node = nodeChildren.length > 0 ? (nodeChildren[0] as Element) : null;
     }
 

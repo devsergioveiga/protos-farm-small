@@ -78,12 +78,12 @@ export default function CoaTreeNode({
         {/* Account info */}
         <div className="coa-tree-node__info">
           <span className="coa-tree-node__code">{account.code}</span>
-          <span className={`coa-tree-node__name ${isInactive ? 'coa-tree-node__name--strikethrough' : ''}`}>
+          <span
+            className={`coa-tree-node__name ${isInactive ? 'coa-tree-node__name--strikethrough' : ''}`}
+          >
             {account.name}
           </span>
-          {account.isSynthetic && (
-            <span className="coa-tree-node__synthetic-label">Grupo</span>
-          )}
+          {account.isSynthetic && <span className="coa-tree-node__synthetic-label">Grupo</span>}
         </div>
 
         {/* Badges */}
@@ -91,9 +91,7 @@ export default function CoaTreeNode({
           <span className={`coa-tree-node__type ${TYPE_CSS[account.accountType]}`}>
             {TYPE_LABELS[account.accountType]}
           </span>
-          <span className="coa-tree-node__nature">
-            {account.nature === 'DEVEDORA' ? 'D' : 'C'}
-          </span>
+          <span className="coa-tree-node__nature">{account.nature === 'DEVEDORA' ? 'D' : 'C'}</span>
         </div>
 
         {/* Actions */}
@@ -118,17 +116,19 @@ export default function CoaTreeNode({
       </div>
 
       {/* Recursive children */}
-      {isExpanded && hasChildren && account.children?.map((child) => (
-        <CoaTreeNode
-          key={child.id}
-          account={child}
-          expandedIds={expandedIds}
-          onToggle={onToggle}
-          onEdit={onEdit}
-          onDeactivate={onDeactivate}
-          level={level + 1}
-        />
-      ))}
+      {isExpanded &&
+        hasChildren &&
+        account.children?.map((child) => (
+          <CoaTreeNode
+            key={child.id}
+            account={child}
+            expandedIds={expandedIds}
+            onToggle={onToggle}
+            onEdit={onEdit}
+            onDeactivate={onDeactivate}
+            level={level + 1}
+          />
+        ))}
     </>
   );
 }

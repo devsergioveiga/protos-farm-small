@@ -43,7 +43,12 @@ export async function getOperationalCost(
   // 1. Verify asset
   const asset = await prisma.asset.findFirst({
     where: { id: assetId, organizationId: ctx.organizationId, deletedAt: null },
-    select: { acquisitionValue: true, currentHourmeter: true, currentOdometer: true, assetType: true },
+    select: {
+      acquisitionValue: true,
+      currentHourmeter: true,
+      currentOdometer: true,
+      assetType: true,
+    },
   });
   if (!asset) throw new OperationalCostError('Ativo não encontrado', 404);
 
@@ -119,7 +124,10 @@ export async function getOperationalCost(
     totalOperationalCost: totalOperationalCost.toNumber(),
     totalLifetimeCost: totalLifetimeCost.toNumber(),
     costPerHour,
-    currentHourmeter: asset.currentHourmeter != null ? new Decimal(String(asset.currentHourmeter)).toNumber() : null,
+    currentHourmeter:
+      asset.currentHourmeter != null
+        ? new Decimal(String(asset.currentHourmeter)).toNumber()
+        : null,
     fuelRecordCount: fuelAgg._count.id,
     notes,
   };

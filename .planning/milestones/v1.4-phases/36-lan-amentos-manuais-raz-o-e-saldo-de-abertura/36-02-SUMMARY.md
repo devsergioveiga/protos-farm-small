@@ -1,6 +1,6 @@
 ---
 phase: 36-lan-amentos-manuais-raz-o-e-saldo-de-abertura
-plan: "02"
+plan: '02'
 subsystem: backend/accounting
 tags: [opening-balance, journal-entries, accounting, wizard, double-entry]
 dependency_graph:
@@ -39,7 +39,7 @@ decisions:
   - DepreciationRun query wrapped in try/catch for resilience across environments
 metrics:
   duration_seconds: 207
-  completed_date: "2026-03-27"
+  completed_date: '2026-03-27'
   tasks_completed: 2
   files_created: 4
   files_modified: 1
@@ -55,6 +55,7 @@ metrics:
 ### Task 1: Opening Balance Service + Types + Tests (TDD)
 
 **Types** (`opening-balance.types.ts`):
+
 - `OpeningBalanceError` — typed error class with `code` and `statusCode`
 - `OpeningBalanceLinePreview` — wizard output with source attribution
 - `PostOpeningBalanceInput` — user-editable lines + fiscalYearId + periodId
@@ -62,6 +63,7 @@ metrics:
 **Service** (`opening-balance.service.ts`):
 
 `getOpeningBalancePreview(organizationId, fiscalYearId)`:
+
 - Runs 5 parallel queries via `Promise.all`: BankAccountBalance, Payable.groupBy, Receivable.groupBy, Asset (NBV), PayrollProvision.groupBy
 - Maps each source to DEBIT/CREDIT lines with description
 - COA account lookup by code prefix first, then name keywords as fallback
@@ -69,6 +71,7 @@ metrics:
 - Asset NBV computed as `acquisitionValue - accumulatedDepreciation` (from DepreciationRun)
 
 `postOpeningBalance(organizationId, input, createdBy)`:
+
 - Guards against duplicate OPENING_BALANCE for same fiscal year (409 ALREADY_EXISTS)
 - Auto-computes contra-entry to "Lucros e Prejuizos Acumulados" (3.x) if lines unbalanced
 - Creates `JournalEntry` directly via Prisma with `entryType: 'OPENING_BALANCE'`
@@ -78,10 +81,10 @@ metrics:
 
 **Routes** (`opening-balance.routes.ts`):
 
-| Method | Path | Permission | Service |
-|--------|------|------------|---------|
-| GET | `/api/org/:orgId/opening-balance/preview/:fiscalYearId` | `financial:read` | `getOpeningBalancePreview` |
-| POST | `/api/org/:orgId/opening-balance` | `financial:manage` | `postOpeningBalance` |
+| Method | Path                                                    | Permission         | Service                    |
+| ------ | ------------------------------------------------------- | ------------------ | -------------------------- |
+| GET    | `/api/org/:orgId/opening-balance/preview/:fiscalYearId` | `financial:read`   | `getOpeningBalancePreview` |
+| POST   | `/api/org/:orgId/opening-balance`                       | `financial:manage` | `postOpeningBalance`       |
 
 - Error handling for `OpeningBalanceError` + any error with `statusCode` property (covers UnbalancedEntryError, PeriodNotOpenError from Plan 01)
 - Express 5 pattern: `req.params.orgId as string`
@@ -91,6 +94,7 @@ metrics:
 ## Tests
 
 12 tests across preview endpoint, post endpoint, error cases, and OpeningBalanceError class:
+
 - Preview: returns lines, empty array, 401, 500
 - Post: creates 201, 409 duplicate, 422 unbalanced, 422 period closed, 401, 500
 - OpeningBalanceError: properties, default statusCode
@@ -100,12 +104,14 @@ metrics:
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] PayrollProvision schema mismatch**
+
 - **Found during:** Task 1 service implementation
 - **Issue:** Plan specified `vacationProvision` + `thirteenthProvision` fields, but actual PayrollProvision model (EPIC-16 schema) has `provisionType: VACATION|THIRTEENTH` + `totalAmount` fields
 - **Fix:** Used `prisma.payrollProvision.groupBy({ by: ['provisionType'] })` with `_sum: { totalAmount: true }` instead
 - **Files modified:** opening-balance.service.ts
 
 **2. [Rule 1 - Bug] Asset status enum mismatch**
+
 - **Found during:** Task 1 service implementation
 - **Issue:** Plan used `status: 'ACTIVE'` but schema has `enum AssetStatus { ATIVO ... }`
 - **Fix:** Used `status: 'ATIVO'` to match actual schema enum

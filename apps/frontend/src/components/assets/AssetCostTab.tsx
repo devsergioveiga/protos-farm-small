@@ -104,9 +104,7 @@ export default function AssetCostTab({ assetId }: AssetCostTabProps) {
             <dt className="cost-tab__row-label">
               <Fuel size={20} aria-hidden="true" />
               Combustível
-              <span className="cost-tab__row-annotation">
-                ({data.fuelRecordCount} registros)
-              </span>
+              <span className="cost-tab__row-annotation">({data.fuelRecordCount} registros)</span>
             </dt>
             <dd className="cost-tab__row-value">{formatBRL(data.fuelCost)}</dd>
           </div>

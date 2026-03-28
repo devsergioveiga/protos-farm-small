@@ -291,7 +291,10 @@ describe('PATCH /org/:orgId/employees/:id/status', () => {
   it('should return 400 when transitioning from DESLIGADO (terminal state)', async () => {
     authAs(ADMIN_PAYLOAD);
     mockedService.transitionEmployeeStatus.mockRejectedValue(
-      new EmployeeError('Transição inválida: DESLIGADO → ATIVO. Transições permitidas: nenhuma (estado terminal)', 400),
+      new EmployeeError(
+        'Transição inválida: DESLIGADO → ATIVO. Transições permitidas: nenhuma (estado terminal)',
+        400,
+      ),
     );
 
     const res = await request(app)
@@ -328,7 +331,10 @@ describe('POST /org/:orgId/employees/:id/dependents', () => {
   it('should return 400 when irrf=true but CPF is missing', async () => {
     authAs(ADMIN_PAYLOAD);
     mockedService.addDependent.mockRejectedValue(
-      new EmployeeError('CPF é obrigatório para dependentes marcados para IRRF ou salário família', 400),
+      new EmployeeError(
+        'CPF é obrigatório para dependentes marcados para IRRF ou salário família',
+        400,
+      ),
     );
 
     const res = await request(app)
@@ -410,7 +416,10 @@ describe('POST /org/:orgId/employees/:id/documents', () => {
       .post(`/api/org/${ORG_ID}/employees/${EMPLOYEE_ID}/documents`)
       .set('Authorization', 'Bearer token')
       .field('documentType', 'RG')
-      .attach('file', Buffer.from('mock pdf content'), { filename: 'rg.pdf', contentType: 'application/pdf' });
+      .attach('file', Buffer.from('mock pdf content'), {
+        filename: 'rg.pdf',
+        contentType: 'application/pdf',
+      });
 
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty('documentType', 'RG');
@@ -465,12 +474,18 @@ describe('POST /org/:orgId/employees/bulk/upload', () => {
     mockedBulkService.uploadAndParse.mockResolvedValue({
       columnHeaders: ['nome', 'cpf', 'data_nascimento', 'data_admissao'],
       sampleRows: [
-        { nome: 'João Silva', cpf: '529.982.247-25', data_nascimento: '1990-01-01', data_admissao: '2025-01-01' },
+        {
+          nome: 'João Silva',
+          cpf: '529.982.247-25',
+          data_nascimento: '1990-01-01',
+          data_admissao: '2025-01-01',
+        },
       ],
       totalRows: 1,
     });
 
-    const csvContent = 'nome,cpf,data_nascimento,data_admissao\nJoão Silva,529.982.247-25,1990-01-01,2025-01-01';
+    const csvContent =
+      'nome,cpf,data_nascimento,data_admissao\nJoão Silva,529.982.247-25,1990-01-01,2025-01-01';
 
     const res = await request(app)
       .post(`/api/org/${ORG_ID}/employees/bulk/upload`)
@@ -504,11 +519,14 @@ describe('POST /org/:orgId/employees/bulk/preview', () => {
       validRows: [
         { rowNumber: 2, status: 'valid', messages: [], data: { name: 'João', cpf: '52998224725' } },
       ],
-      errorRows: [
-        { rowNumber: 3, status: 'error', messages: ['CPF inválido'], data: {} },
-      ],
+      errorRows: [{ rowNumber: 3, status: 'error', messages: ['CPF inválido'], data: {} }],
       warningRows: [
-        { rowNumber: 4, status: 'warning', messages: ['PIS/PASEP parece inválido'], data: { name: 'Maria' } },
+        {
+          rowNumber: 4,
+          status: 'warning',
+          messages: ['PIS/PASEP parece inválido'],
+          data: { name: 'Maria' },
+        },
       ],
       totalRows: 3,
     });
@@ -536,9 +554,7 @@ describe('POST /org/:orgId/employees/bulk/preview', () => {
     authAs(ADMIN_PAYLOAD);
     mockedBulkService.previewBulkImport.mockResolvedValue({
       validRows: [],
-      errorRows: [
-        { rowNumber: 2, status: 'error', messages: ['CPF inválido'], data: {} },
-      ],
+      errorRows: [{ rowNumber: 2, status: 'error', messages: ['CPF inválido'], data: {} }],
       warningRows: [],
       totalRows: 1,
     });

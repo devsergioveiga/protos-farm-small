@@ -65,10 +65,19 @@ async function main() {
       const detail = await (prisma as any).animal.findUnique({
         where: { id: animal.id },
         select: {
-          birthDate: true, origin: true, sex: true, category: true, createdAt: true,
+          birthDate: true,
+          origin: true,
+          sex: true,
+          category: true,
+          createdAt: true,
           lot: { select: { name: true } },
           _count: {
-            select: { lactations: true, healthRecords: true, reproductiveRecords: true, weighings: true },
+            select: {
+              lactations: true,
+              healthRecords: true,
+              reproductiveRecords: true,
+              weighings: true,
+            },
           },
         },
       });
@@ -77,7 +86,9 @@ async function main() {
       console.log(`  Origem: ${detail.origin}`);
       console.log(`  Lote: ${detail.lot?.name ?? 'sem lote'}`);
       console.log(`  Criado em: ${detail.createdAt}`);
-      console.log(`  Relações: lactações=${detail._count.lactations}, saúde=${detail._count.healthRecords}, repro=${detail._count.reproductiveRecords}, pesagens=${detail._count.weighings}`);
+      console.log(
+        `  Relações: lactações=${detail._count.lactations}, saúde=${detail._count.healthRecords}, repro=${detail._count.reproductiveRecords}, pesagens=${detail._count.weighings}`,
+      );
 
       // Check lactations status
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,7 +101,9 @@ async function main() {
       if (lacs.length > 0) {
         console.log(`  Lactações:`);
         for (const lac of lacs) {
-          console.log(`    #${lac.lactationNumber} status=${lac.status} início=${lac.startDate} fim=${lac.endDate ?? '—'}`);
+          console.log(
+            `    #${lac.lactationNumber} status=${lac.status} início=${lac.startDate} fim=${lac.endDate ?? '—'}`,
+          );
         }
       } else {
         console.log(`  Nenhuma lactação registrada`);

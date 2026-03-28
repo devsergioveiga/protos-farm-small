@@ -67,9 +67,7 @@ describe('checkPeriodOpen middleware', () => {
     await checkPeriodOpen()(req, res, next);
 
     expect(status).toHaveBeenCalledWith(422);
-    expect(json).toHaveBeenCalledWith(
-      expect.objectContaining({ code: 'PERIOD_NOT_OPEN' }),
-    );
+    expect(json).toHaveBeenCalledWith(expect.objectContaining({ code: 'PERIOD_NOT_OPEN' }));
     expect(next).not.toHaveBeenCalled();
   });
 
@@ -87,9 +85,7 @@ describe('checkPeriodOpen middleware', () => {
     await checkPeriodOpen()(req, res, next);
 
     expect(status).toHaveBeenCalledWith(422);
-    expect(json).toHaveBeenCalledWith(
-      expect.objectContaining({ code: 'PERIOD_NOT_OPEN' }),
-    );
+    expect(json).toHaveBeenCalledWith(expect.objectContaining({ code: 'PERIOD_NOT_OPEN' }));
     expect(next).not.toHaveBeenCalled();
   });
 
@@ -114,9 +110,7 @@ describe('checkPeriodOpen middleware', () => {
     await checkPeriodOpen()(req, res, next);
 
     expect(status).toHaveBeenCalledWith(422);
-    expect(json).toHaveBeenCalledWith(
-      expect.objectContaining({ code: 'PERIOD_NOT_FOUND' }),
-    );
+    expect(json).toHaveBeenCalledWith(expect.objectContaining({ code: 'PERIOD_NOT_FOUND' }));
     expect(next).not.toHaveBeenCalled();
   });
 });

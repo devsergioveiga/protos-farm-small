@@ -1,6 +1,6 @@
 ---
 phase: 26-par-metros-de-folha-e-motor-de-c-lculo
-plan: "01"
+plan: '01'
 subsystem: backend/payroll
 tags: [prisma, schema, migration, seed, types, payroll, INSS, IRRF, FUNRURAL]
 dependency_graph:
@@ -19,12 +19,12 @@ key_files:
   modified:
     - apps/backend/prisma/schema.prisma
 decisions:
-  - "Used prisma db push + migrate resolve (shadow DB out of sync, same as Phase 25 precedent)"
-  - "Used const EFFECTIVE_JAN/EFFECTIVE_APR instead of inline new Date() for seed clarity"
-  - "FUNRURAL split into two tables: Jan-Mar (effectiveFrom 2026-01-01) and Apr-Dec (effectiveFrom 2026-04-01)"
+  - 'Used prisma db push + migrate resolve (shadow DB out of sync, same as Phase 25 precedent)'
+  - 'Used const EFFECTIVE_JAN/EFFECTIVE_APR instead of inline new Date() for seed clarity'
+  - 'FUNRURAL split into two tables: Jan-Mar (effectiveFrom 2026-01-01) and Apr-Dec (effectiveFrom 2026-04-01)'
 metrics:
   duration: ~7 minutes
-  completed_date: "2026-03-24"
+  completed_date: '2026-03-24'
   tasks_completed: 2
   tasks_total: 2
   files_created: 4
@@ -37,52 +37,56 @@ metrics:
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Prisma schema — 4 models, 4 enums, migration | 73aea5f1 | schema.prisma, migration.sql |
-| 2 | Seed 2026 legal tables + TypeScript types | 676f4e0f | seed-payroll-2026.ts, payroll-rubricas.types.ts, payroll-tables.types.ts |
+| Task | Name                                         | Commit   | Files                                                                    |
+| ---- | -------------------------------------------- | -------- | ------------------------------------------------------------------------ |
+| 1    | Prisma schema — 4 models, 4 enums, migration | 73aea5f1 | schema.prisma, migration.sql                                             |
+| 2    | Seed 2026 legal tables + TypeScript types    | 676f4e0f | seed-payroll-2026.ts, payroll-rubricas.types.ts, payroll-tables.types.ts |
 
 ## What Was Built
 
 ### Prisma Models
 
 **PayrollRubrica** — Payroll line items (proventos/descontos) configurable per organization:
+
 - `@@unique([organizationId, code])` prevents duplicate codes
 - `@@index([organizationId, rubricaType])` for efficient list queries by type
 - `formulaType` nullable SystemFormulaType for system-calculated rubricas (INSS, IRRF, FGTS)
 - `isSystem: Boolean` flags built-in rubricas that cannot be deleted
 
 **PayrollLegalTable** — Tax rate table with validity period:
+
 - `organizationId: null` for global seed tables (visible to all organizations)
 - `organizationId: String` for org-specific overrides (engine looks here first, then falls back to global)
 - `effectiveFrom: DateTime @db.Date` enables multi-year tables co-existing
 
 **PayrollTableBracket** — Progressive tax brackets:
+
 - `deduction: Decimal?` carries "parcela a deduzir" for IRRF method-of-tables calculation
 - `upTo: Decimal?` nullable = unlimited (last bracket)
 
 **PayrollTableScalar** — Named scalar values:
+
 - Used for CEILING (INSS), DEPENDENT_DEDUCTION (IRRF), VALUE_PER_CHILD (salário-família), FEDERAL_MINIMUM, FUNRURAL rates
 
 ### Enums Added
 
-| Enum | Values |
-|------|--------|
-| RubricaType | PROVENTO, DESCONTO, INFORMATIVO |
-| CalculationType | FIXED_VALUE, PERCENTAGE, FORMULA, SYSTEM |
+| Enum              | Values                                                                       |
+| ----------------- | ---------------------------------------------------------------------------- |
+| RubricaType       | PROVENTO, DESCONTO, INFORMATIVO                                              |
+| CalculationType   | FIXED_VALUE, PERCENTAGE, FORMULA, SYSTEM                                     |
 | SystemFormulaType | SYSTEM_INSS, SYSTEM_IRRF, SYSTEM_FGTS, SYSTEM_SALARY_FAMILY, SYSTEM_FUNRURAL |
-| LegalTableType | INSS, IRRF, SALARY_FAMILY, MINIMUM_WAGE, FUNRURAL |
+| LegalTableType    | INSS, IRRF, SALARY_FAMILY, MINIMUM_WAGE, FUNRURAL                            |
 
 ### 2026 Seed Data
 
-| Table | effectiveFrom | Key Values |
-|-------|---------------|------------|
-| INSS | 2026-01-01 | 4 brackets: 7.5%/9%/12%/14%, CEILING=8475.55 |
-| IRRF | 2026-01-01 | 5 brackets + DEPENDENT_DEDUCTION=189.59, EXEMPTION_LIMIT=5000.00, redutor progressivo |
-| SALARY_FAMILY | 2026-01-01 | VALUE_PER_CHILD=67.54, INCOME_LIMIT=1980.38 |
-| MINIMUM_WAGE | 2026-01-01 | FEDERAL_MINIMUM=1621.00 |
-| FUNRURAL | 2026-01-01 | PF_TOTAL=1.50%, PJ_TOTAL=2.05% (Jan-Mar) |
-| FUNRURAL | 2026-04-01 | PF_TOTAL=1.63%, PJ_TOTAL=2.23% (Apr-Dec) |
+| Table         | effectiveFrom | Key Values                                                                            |
+| ------------- | ------------- | ------------------------------------------------------------------------------------- |
+| INSS          | 2026-01-01    | 4 brackets: 7.5%/9%/12%/14%, CEILING=8475.55                                          |
+| IRRF          | 2026-01-01    | 5 brackets + DEPENDENT_DEDUCTION=189.59, EXEMPTION_LIMIT=5000.00, redutor progressivo |
+| SALARY_FAMILY | 2026-01-01    | VALUE_PER_CHILD=67.54, INCOME_LIMIT=1980.38                                           |
+| MINIMUM_WAGE  | 2026-01-01    | FEDERAL_MINIMUM=1621.00                                                               |
+| FUNRURAL      | 2026-01-01    | PF_TOTAL=1.50%, PJ_TOTAL=2.05% (Jan-Mar)                                              |
+| FUNRURAL      | 2026-04-01    | PF_TOTAL=1.63%, PJ_TOTAL=2.23% (Apr-Dec)                                              |
 
 ### TypeScript Types
 
@@ -109,11 +113,13 @@ None.
 ### Minor Adjustments
 
 **1. Used constants for dates in seed script** (not a deviation — purely cosmetic)
+
 - Used `const EFFECTIVE_JAN = new Date('2026-01-01')` instead of inline literals
 - Functionally identical; `new Date('2026-01-01')` string still present in file
 - Acceptance criteria verified by `grep -c "new Date('2026-01-01')"` = 1
 
 **2. Migration approach** (same as Phase 25 — documented in STATE.md decision)
+
 - Shadow DB out of sync prevents `prisma migrate dev`
 - Used: `prisma db push` → manual SQL file → `prisma migrate resolve --applied`
 - No functional difference from standard migration flow

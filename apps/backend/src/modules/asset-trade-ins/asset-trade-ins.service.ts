@@ -221,10 +221,7 @@ export async function createTradeIn(
 
 // ─── List Trade-ins ───────────────────────────────────────────────────
 
-export async function listTradeIns(
-  ctx: RlsContext,
-  farmId?: string,
-): Promise<TradeInOutput[]> {
+export async function listTradeIns(ctx: RlsContext, farmId?: string): Promise<TradeInOutput[]> {
   const tradeIns = await prisma.assetTradeIn.findMany({
     where: {
       organizationId: ctx.organizationId,

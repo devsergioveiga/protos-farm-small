@@ -60,7 +60,8 @@ export default function EpiProductsPage() {
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<EpiProduct | null>(null);
-  const [positionForRequirements, setPositionForRequirements] = useState<PositionWithEpiCount | null>(null);
+  const [positionForRequirements, setPositionForRequirements] =
+    useState<PositionWithEpiCount | null>(null);
   const [deliveryProduct, setDeliveryProduct] = useState<EpiProduct | null>(null);
 
   const [positionRequirements, setPositionRequirements] = useState<PositionWithEpiCount[]>([]);
@@ -206,11 +207,16 @@ export default function EpiProductsPage() {
               className="epi-products-page__filter"
               aria-label="Filtrar por tipo de EPI"
               value={epiTypeFilter}
-              onChange={(e) => { setEpiTypeFilter(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setEpiTypeFilter(e.target.value);
+                setPage(1);
+              }}
             >
               <option value="">Todos os tipos</option>
               {EPI_TYPES.map((t) => (
-                <option key={t} value={t}>{EPI_TYPE_LABELS[t]}</option>
+                <option key={t} value={t}>
+                  {EPI_TYPE_LABELS[t]}
+                </option>
               ))}
             </select>
           </div>
@@ -362,12 +368,16 @@ export default function EpiProductsPage() {
                   <>
                     <tr className="epi-products-page__skeleton-row">
                       {[1, 2, 3].map((i) => (
-                        <td key={i}><div className="epi-products-page__skeleton" /></td>
+                        <td key={i}>
+                          <div className="epi-products-page__skeleton" />
+                        </td>
                       ))}
                     </tr>
                     <tr className="epi-products-page__skeleton-row">
                       {[1, 2, 3].map((i) => (
-                        <td key={i}><div className="epi-products-page__skeleton" /></td>
+                        <td key={i}>
+                          <div className="epi-products-page__skeleton" />
+                        </td>
                       ))}
                     </tr>
                   </>
@@ -435,8 +445,7 @@ export default function EpiProductsPage() {
           position={positionForRequirements}
           onClose={() => setPositionForRequirements(null)}
           onSuccess={() => {
-            void fetchPositionRequirements()
-              .then(setPositionRequirements);
+            void fetchPositionRequirements().then(setPositionRequirements);
           }}
         />
       )}

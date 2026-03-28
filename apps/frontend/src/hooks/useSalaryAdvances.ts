@@ -80,12 +80,11 @@ export function useSalaryAdvances() {
           `/org/${orgId}/salary-advances/batch`,
           data,
         );
-        setSuccessMessage(
-          `Adiantamento em lote registrado para ${result.count} colaboradores.`,
-        );
+        setSuccessMessage(`Adiantamento em lote registrado para ${result.count} colaboradores.`);
         return result;
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Erro ao processar lote de adiantamentos';
+        const message =
+          err instanceof Error ? err.message : 'Erro ao processar lote de adiantamentos';
         setError(message);
         return null;
       } finally {

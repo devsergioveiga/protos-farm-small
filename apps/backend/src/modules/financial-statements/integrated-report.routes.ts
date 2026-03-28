@@ -32,11 +32,17 @@ integratedReportRouter.get(
       const costCenterId = req.query.costCenterId as string | undefined;
 
       if (!fiscalYearId) {
-        res.status(400).json({ error: 'fiscalYearId e obrigatorio', code: 'MISSING_FISCAL_YEAR_ID' });
+        res
+          .status(400)
+          .json({ error: 'fiscalYearId e obrigatorio', code: 'MISSING_FISCAL_YEAR_ID' });
         return;
       }
 
-      const { buffer, filename } = await generateIntegratedReport(orgId, fiscalYearId, costCenterId);
+      const { buffer, filename } = await generateIntegratedReport(
+        orgId,
+        fiscalYearId,
+        costCenterId,
+      );
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -63,7 +69,9 @@ integratedReportRouter.patch(
       const { notesText } = req.body as { notesText?: string };
 
       if (typeof notesText !== 'string') {
-        res.status(400).json({ error: 'notesText deve ser uma string', code: 'INVALID_NOTES_TEXT' });
+        res
+          .status(400)
+          .json({ error: 'notesText deve ser uma string', code: 'INVALID_NOTES_TEXT' });
         return;
       }
 

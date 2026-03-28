@@ -1,6 +1,6 @@
 ---
 phase: 26-par-metros-de-folha-e-motor-de-c-lculo
-plan: "04"
+plan: '04'
 subsystem: frontend/payroll
 tags: [frontend, react, payroll, rubricas, legal-tables, hr]
 dependency_graph:
@@ -56,26 +56,28 @@ metrics:
 
 ## Completed Tasks
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Frontend types, hooks, and PayrollParametersPage with Rubricas tab | 6bd2e4e5 | types/payroll.ts, hooks/usePayrollRubricas.ts, hooks/usePayrollTables.ts, PayrollParametersPage.tsx/.css, PayrollRubricaModal.tsx/.css, App.tsx, Sidebar.tsx |
-| 2 | Legal Tables tab with table display and update modal | 6bd2e4e5 | PayrollLegalTableModal.tsx/.css (committed with Task 1 since required for page to compile) |
+| Task | Name                                                               | Commit   | Files                                                                                                                                                        |
+| ---- | ------------------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1    | Frontend types, hooks, and PayrollParametersPage with Rubricas tab | 6bd2e4e5 | types/payroll.ts, hooks/usePayrollRubricas.ts, hooks/usePayrollTables.ts, PayrollParametersPage.tsx/.css, PayrollRubricaModal.tsx/.css, App.tsx, Sidebar.tsx |
+| 2    | Legal Tables tab with table display and update modal               | 6bd2e4e5 | PayrollLegalTableModal.tsx/.css (committed with Task 1 since required for page to compile)                                                                   |
 
 ## Pending
 
-| Task | Name | Status |
-|------|------|--------|
-| 3 | Visual verification of PayrollParametersPage | Awaiting checkpoint |
+| Task | Name                                         | Status              |
+| ---- | -------------------------------------------- | ------------------- |
+| 3    | Visual verification of PayrollParametersPage | Awaiting checkpoint |
 
 ## What Was Built
 
 ### PayrollParametersPage (`/payroll-parameters`)
+
 - Breadcrumb: RH > Parâmetros de Folha
 - Page title with Settings icon
 - Tab layout: Rubricas | Tabelas Legais with active underline using `--color-primary-600`
 - Skeleton loading (3 rows per tab)
 
 ### Rubricas Tab
+
 - Table with RUBRICA, TIPO, CÁLCULO, TAXA/FÓRMULA, AÇÕES columns
 - Type badges: PROVENTO (success green, TrendingUp icon), DESCONTO (error red, TrendingDown icon)
 - Calculation badges: SISTEMA (warning orange, Lock icon), FORMULA (info blue, Code icon), PERCENTUAL (neutral)
@@ -85,6 +87,7 @@ metrics:
 - Empty state with ListTree icon and "Nova Rubrica" CTA
 
 ### PayrollRubricaModal
+
 - Name, Code (hidden on edit), Tipo (fieldset/legend radio), Tipo de Cálculo (fieldset/legend radio)
 - Rate input (conditional on PERCENTAGE), Formula input with `--font-mono` (conditional on FORMULA)
 - Variable reference panel with `<code>` tags
@@ -92,6 +95,7 @@ metrics:
 - `role="alert"` on all error messages, focus management, Escape closes
 
 ### Tabelas Legais Tab
+
 - All 5 table types displayed: INSS, IRRF, SALARY_FAMILY, MINIMUM_WAGE, FUNRURAL
 - Effective/Agendada/Historico badges per effectiveFrom vs today
 - Bracket table with `<th scope="col">`, monetary cells in JetBrains Mono, "Sem limite" for last bracket
@@ -100,6 +104,7 @@ metrics:
 - "Atualizar Tabela" button per group
 
 ### PayrollLegalTableModal
+
 - tableType: display-only
 - effectiveFrom: `<input type="month">` — ensures first-of-month dates
 - Dynamic bracket rows with "Adicionar faixa" / Trash2 remove
@@ -109,6 +114,7 @@ metrics:
 - `role="alert"` on errors, "Confirmar Tabela" CTA
 
 ### Routing & Navigation
+
 - `/payroll-parameters` route added to App.tsx (lazy loaded)
 - "Parâmetros de Folha" with Settings icon added to RH group in Sidebar.tsx
 
@@ -117,6 +123,7 @@ metrics:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] sonner not installed in project**
+
 - **Found during:** Task 1 — hook creation
 - **Issue:** Plan specified `import { toast } from 'sonner'` but sonner package is not installed in the frontend
 - **Fix:** Changed hooks to return `successMessage: string | null` and `error: string | null` states instead of calling toast directly. Page can use these states to show inline feedback.
@@ -124,6 +131,7 @@ metrics:
 - **Commit:** 6bd2e4e5
 
 **2. [Note] Tasks 1 and 2 combined into single commit**
+
 - **Found during:** Task 1
 - **Issue:** PayrollLegalTableModal was imported by PayrollParametersPage which needed to compile for tsc to pass
 - **Fix:** Both components were created together in the same commit. Task 2 had no additional code changes beyond what was already implemented.

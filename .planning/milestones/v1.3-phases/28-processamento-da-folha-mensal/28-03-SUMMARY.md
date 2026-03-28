@@ -1,6 +1,6 @@
 ---
 phase: 28-processamento-da-folha-mensal
-plan: "03"
+plan: '03'
 subsystem: payroll
 tags: [payroll-runs, orchestrator, pdf, email, state-machine, per-employee-tx]
 dependency_graph:
@@ -39,7 +39,7 @@ decisions:
   - cnpj field not selected from Organization (not in Prisma schema) — routes cast to any
 metrics:
   duration_minutes: 11
-  completed_date: "2026-03-24"
+  completed_date: '2026-03-24'
   tasks_completed: 2
   tasks_total: 2
   files_created: 5
@@ -54,10 +54,10 @@ One-liner: PayrollRun orchestrator with per-employee transactions, pdfkit paysli
 
 ## Tasks Completed
 
-| # | Task | Commit | Files |
-|---|------|--------|-------|
-| 1 | PayrollRun orchestrator service (TDD: spec RED then GREEN) | b975fd9a | payroll-runs.service.ts, payroll-pdf.service.ts, payroll-runs.routes.spec.ts |
-| 2 | Payslip PDF spec + routes + app registration | 631bdb96 | payroll-pdf.service.spec.ts, payroll-runs.routes.ts, app.ts |
+| #   | Task                                                       | Commit   | Files                                                                        |
+| --- | ---------------------------------------------------------- | -------- | ---------------------------------------------------------------------------- |
+| 1   | PayrollRun orchestrator service (TDD: spec RED then GREEN) | b975fd9a | payroll-runs.service.ts, payroll-pdf.service.ts, payroll-runs.routes.spec.ts |
+| 2   | Payslip PDF spec + routes + app registration               | 631bdb96 | payroll-pdf.service.spec.ts, payroll-runs.routes.ts, app.ts                  |
 
 ## What Was Built
 
@@ -80,6 +80,7 @@ Due dates: salary = 5th business day of following month; FGTS = 7th; INSS patron
 ### payroll-pdf.service.ts
 
 `generatePayslipPdf(data: PayslipData): Promise<Buffer>` using pdfkit dynamic import:
+
 - Header: org name, CNPJ, "RECIBO DE PAGAMENTO" right-aligned, employee info, competência
 - Proventos table with CODIGO/DESCRICAO/REF/VALOR columns
 - Descontos table (same layout)
@@ -117,6 +118,7 @@ Total: 24 tests, 3 suites, 0 failures
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] THIRTEENTH runs were creating PENDING_TIMESHEET items instead of calling calculateThirteenthSalary**
+
 - **Found during:** Task 1 TDD (test failure on THIRTEENTH_FIRST test case)
 - **Issue:** The timesheet gate was applied to ALL run types, but THIRTEENTH salary calculation doesn't require a timesheet
 - **Fix:** Added `isThirteenth` flag that skips the timesheet findFirst + PENDING_TIMESHEET branch
@@ -124,6 +126,7 @@ Total: 24 tests, 3 suites, 0 failures
 - **Commit:** b975fd9a
 
 **2. [Rule 1 - Bug] TypeScript error: Organization.cnpj not in Prisma select (not in schema)**
+
 - **Found during:** Task 2 TypeScript check
 - **Issue:** The individual payslip route tried to select `cnpj` from Organization but it's not in the schema
 - **Fix:** Removed cnpj from Organization select, left orgCnpj as empty string in PDF data

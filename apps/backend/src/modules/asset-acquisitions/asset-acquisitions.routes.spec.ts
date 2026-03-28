@@ -118,21 +118,18 @@ describe('Asset Acquisitions API', () => {
       authAs(ADMIN_PAYLOAD);
       mockedService.createAcquisitionAndPayable.mockResolvedValue(VALID_ACQUISITION_OUTPUT);
 
-      const res = await request(app)
-        .post(BASE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          name: 'Trator John Deere',
-          assetType: 'MAQUINA',
-          classification: 'DEPRECIABLE_CPC27',
-          farmId: 'farm-1',
-          supplierId: 'supplier-1',
-          acquisitionValue: 250000,
-          acquisitionDate: '2026-04-26',
-          paymentType: 'AVISTA',
-          dueDate: '2026-05-10',
-          costCenterId: 'cc-1',
-        });
+      const res = await request(app).post(BASE).set('Authorization', 'Bearer token').send({
+        name: 'Trator John Deere',
+        assetType: 'MAQUINA',
+        classification: 'DEPRECIABLE_CPC27',
+        farmId: 'farm-1',
+        supplierId: 'supplier-1',
+        acquisitionValue: 250000,
+        acquisitionDate: '2026-04-26',
+        paymentType: 'AVISTA',
+        dueDate: '2026-05-10',
+        costCenterId: 'cc-1',
+      });
 
       expect(res.status).toBe(201);
       expect(res.body.asset.id).toBe('asset-1');
@@ -147,20 +144,17 @@ describe('Asset Acquisitions API', () => {
       authAs(ADMIN_PAYLOAD);
       mockedService.createAcquisitionAndPayable.mockResolvedValue(VALID_ACQUISITION_OUTPUT);
 
-      await request(app)
-        .post(BASE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          name: 'Trator',
-          assetType: 'MAQUINA',
-          classification: 'DEPRECIABLE_CPC27',
-          farmId: 'farm-1',
-          supplierId: 'supplier-1',
-          acquisitionValue: 150000,
-          acquisitionDate: '2026-04-26',
-          paymentType: 'AVISTA',
-          dueDate: '2026-05-10',
-        });
+      await request(app).post(BASE).set('Authorization', 'Bearer token').send({
+        name: 'Trator',
+        assetType: 'MAQUINA',
+        classification: 'DEPRECIABLE_CPC27',
+        farmId: 'farm-1',
+        supplierId: 'supplier-1',
+        acquisitionValue: 150000,
+        acquisitionDate: '2026-04-26',
+        paymentType: 'AVISTA',
+        dueDate: '2026-05-10',
+      });
 
       expect(mockedService.createAcquisitionAndPayable).toHaveBeenCalledWith(
         { organizationId: ORG_ID },
@@ -179,21 +173,18 @@ describe('Asset Acquisitions API', () => {
         VALID_ACQUISITION_OUTPUT_FINANCED,
       );
 
-      const res = await request(app)
-        .post(BASE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          name: 'Colheitadeira',
-          assetType: 'MAQUINA',
-          classification: 'DEPRECIABLE_CPC27',
-          farmId: 'farm-1',
-          supplierId: 'supplier-1',
-          acquisitionValue: 800000,
-          acquisitionDate: '2026-04-26',
-          paymentType: 'FINANCIADO',
-          installmentCount: 36,
-          firstDueDate: '2026-06-01',
-        });
+      const res = await request(app).post(BASE).set('Authorization', 'Bearer token').send({
+        name: 'Colheitadeira',
+        assetType: 'MAQUINA',
+        classification: 'DEPRECIABLE_CPC27',
+        farmId: 'farm-1',
+        supplierId: 'supplier-1',
+        acquisitionValue: 800000,
+        acquisitionDate: '2026-04-26',
+        paymentType: 'FINANCIADO',
+        installmentCount: 36,
+        firstDueDate: '2026-06-01',
+      });
 
       expect(res.status).toBe(201);
       expect(res.body.installmentCount).toBe(36);
@@ -207,21 +198,18 @@ describe('Asset Acquisitions API', () => {
         VALID_ACQUISITION_OUTPUT_FINANCED,
       );
 
-      await request(app)
-        .post(BASE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          name: 'Colheitadeira',
-          assetType: 'MAQUINA',
-          classification: 'DEPRECIABLE_CPC27',
-          farmId: 'farm-1',
-          supplierId: 'supplier-1',
-          acquisitionValue: 800000,
-          acquisitionDate: '2026-04-26',
-          paymentType: 'FINANCIADO',
-          installmentCount: 36,
-          firstDueDate: '2026-06-01',
-        });
+      await request(app).post(BASE).set('Authorization', 'Bearer token').send({
+        name: 'Colheitadeira',
+        assetType: 'MAQUINA',
+        classification: 'DEPRECIABLE_CPC27',
+        farmId: 'farm-1',
+        supplierId: 'supplier-1',
+        acquisitionValue: 800000,
+        acquisitionDate: '2026-04-26',
+        paymentType: 'FINANCIADO',
+        installmentCount: 36,
+        firstDueDate: '2026-06-01',
+      });
 
       expect(mockedService.createAcquisitionAndPayable).toHaveBeenCalledWith(
         { organizationId: ORG_ID },
@@ -240,19 +228,16 @@ describe('Asset Acquisitions API', () => {
         new AssetAcquisitionError('Fornecedor obrigatório para aquisição com valor', 400),
       );
 
-      const res = await request(app)
-        .post(BASE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          name: 'Trator',
-          assetType: 'MAQUINA',
-          classification: 'DEPRECIABLE_CPC27',
-          farmId: 'farm-1',
-          acquisitionValue: 150000,
-          acquisitionDate: '2026-04-26',
-          paymentType: 'AVISTA',
-          dueDate: '2026-05-10',
-        });
+      const res = await request(app).post(BASE).set('Authorization', 'Bearer token').send({
+        name: 'Trator',
+        assetType: 'MAQUINA',
+        classification: 'DEPRECIABLE_CPC27',
+        farmId: 'farm-1',
+        acquisitionValue: 150000,
+        acquisitionDate: '2026-04-26',
+        paymentType: 'AVISTA',
+        dueDate: '2026-05-10',
+      });
 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain('Fornecedor');
@@ -266,19 +251,16 @@ describe('Asset Acquisitions API', () => {
         new AssetAcquisitionError('Data de vencimento obrigatória para pagamento à vista', 400),
       );
 
-      const res = await request(app)
-        .post(BASE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          name: 'Trator',
-          assetType: 'MAQUINA',
-          classification: 'DEPRECIABLE_CPC27',
-          farmId: 'farm-1',
-          supplierId: 'supplier-1',
-          acquisitionValue: 150000,
-          acquisitionDate: '2026-04-26',
-          paymentType: 'AVISTA',
-        });
+      const res = await request(app).post(BASE).set('Authorization', 'Bearer token').send({
+        name: 'Trator',
+        assetType: 'MAQUINA',
+        classification: 'DEPRECIABLE_CPC27',
+        farmId: 'farm-1',
+        supplierId: 'supplier-1',
+        acquisitionValue: 150000,
+        acquisitionDate: '2026-04-26',
+        paymentType: 'AVISTA',
+      });
 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain('vencimento');
@@ -289,18 +271,15 @@ describe('Asset Acquisitions API', () => {
     it('Test 13: returns 403 for CONSULTANT role (lacks assets:create permission)', async () => {
       authAs(CONSULTANT_PAYLOAD);
 
-      const res = await request(app)
-        .post(BASE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          name: 'Trator',
-          assetType: 'MAQUINA',
-          classification: 'DEPRECIABLE_CPC27',
-          farmId: 'farm-1',
-          acquisitionValue: 100000,
-          paymentType: 'AVISTA',
-          dueDate: '2026-05-10',
-        });
+      const res = await request(app).post(BASE).set('Authorization', 'Bearer token').send({
+        name: 'Trator',
+        assetType: 'MAQUINA',
+        classification: 'DEPRECIABLE_CPC27',
+        farmId: 'farm-1',
+        acquisitionValue: 100000,
+        paymentType: 'AVISTA',
+        dueDate: '2026-05-10',
+      });
 
       expect(res.status).toBe(403);
     });
@@ -315,16 +294,13 @@ describe('Asset Acquisitions API', () => {
         installmentCount: 0,
       });
 
-      const res = await request(app)
-        .post(BASE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          name: 'Galpão',
-          assetType: 'BENFEITORIA',
-          classification: 'DEPRECIABLE_CPC27',
-          farmId: 'farm-1',
-          paymentType: 'AVISTA',
-        });
+      const res = await request(app).post(BASE).set('Authorization', 'Bearer token').send({
+        name: 'Galpão',
+        assetType: 'BENFEITORIA',
+        classification: 'DEPRECIABLE_CPC27',
+        farmId: 'farm-1',
+        paymentType: 'AVISTA',
+      });
 
       expect(res.status).toBe(201);
       expect(res.body.payableId).toBeNull();
@@ -338,19 +314,16 @@ describe('Asset Acquisitions API', () => {
         new AssetAcquisitionError('Erro ao criar conta a pagar', 400),
       );
 
-      const res = await request(app)
-        .post(BASE)
-        .set('Authorization', 'Bearer token')
-        .send({
-          name: 'Trator',
-          assetType: 'MAQUINA',
-          classification: 'DEPRECIABLE_CPC27',
-          farmId: 'farm-1',
-          supplierId: 'supplier-1',
-          acquisitionValue: 150000,
-          paymentType: 'AVISTA',
-          dueDate: '2026-05-10',
-        });
+      const res = await request(app).post(BASE).set('Authorization', 'Bearer token').send({
+        name: 'Trator',
+        assetType: 'MAQUINA',
+        classification: 'DEPRECIABLE_CPC27',
+        farmId: 'farm-1',
+        supplierId: 'supplier-1',
+        acquisitionValue: 150000,
+        paymentType: 'AVISTA',
+        dueDate: '2026-05-10',
+      });
 
       expect(res.status).toBe(400);
     });
@@ -381,9 +354,7 @@ describe('Asset Acquisitions API', () => {
         new AssetAcquisitionError('Arquivo XML não enviado', 400),
       );
 
-      const res = await request(app)
-        .post(`${BASE}/parse-nfe`)
-        .set('Authorization', 'Bearer token');
+      const res = await request(app).post(`${BASE}/parse-nfe`).set('Authorization', 'Bearer token');
 
       expect(res.status).toBe(400);
     });

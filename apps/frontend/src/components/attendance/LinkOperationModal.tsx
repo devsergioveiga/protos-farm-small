@@ -160,7 +160,13 @@ export default function LinkOperationModal({
           </button>
         </header>
 
-        <form className="link-op-modal__form" onSubmit={(e) => { void handleSubmit(e); }} noValidate>
+        <form
+          className="link-op-modal__form"
+          onSubmit={(e) => {
+            void handleSubmit(e);
+          }}
+          noValidate
+        >
           <div className="link-op-modal__body">
             {/* Operação */}
             <div className="link-op-modal__field">
@@ -175,7 +181,9 @@ export default function LinkOperationModal({
                 onChange={(e) => setOperationType(e.target.value)}
                 onBlur={() => handleBlur('operationType')}
                 aria-required="true"
-                aria-describedby={touched.operationType && errors.operationType ? 'link-op-type-error' : undefined}
+                aria-describedby={
+                  touched.operationType && errors.operationType ? 'link-op-type-error' : undefined
+                }
               >
                 <option value="">Selecione a operação...</option>
                 {fieldOperations.map((op) => (
@@ -253,11 +261,11 @@ export default function LinkOperationModal({
                 onBlur={() => handleBlur('minutes')}
                 placeholder="Ex: 120"
                 aria-required="true"
-                aria-describedby={touched.minutes && errors.minutes ? 'link-op-minutes-error' : undefined}
+                aria-describedby={
+                  touched.minutes && errors.minutes ? 'link-op-minutes-error' : undefined
+                }
               />
-              {estimatedCost && (
-                <span className="link-op-modal__hint">{estimatedCost}</span>
-              )}
+              {estimatedCost && <span className="link-op-modal__hint">{estimatedCost}</span>}
               {touched.minutes && errors.minutes && (
                 <span id="link-op-minutes-error" className="link-op-modal__error" role="alert">
                   <AlertCircle size={14} aria-hidden="true" />

@@ -203,10 +203,10 @@ describe('calcMonthlyTotals', () => {
   // Test 18: Aggregate 30 days
   it('Test 18: aggregate 30 days with mixed data', () => {
     const days: DailyWorkResult[] = [
-      makeDailyResult(480, 60, 0, 120),   // day 1: normal + overtime + night
-      makeDailyResult(480, 0, 0, 0),       // day 2: normal
-      makeDailyResult(0, 0, 480, 0),       // day 3: sunday all overtime100
-      makeDailyResult(0, 0, 0, 0),         // day 4: absence
+      makeDailyResult(480, 60, 0, 120), // day 1: normal + overtime + night
+      makeDailyResult(480, 0, 0, 0), // day 2: normal
+      makeDailyResult(0, 0, 480, 0), // day 3: sunday all overtime100
+      makeDailyResult(0, 0, 0, 0), // day 4: absence
     ];
     const result = calcMonthlyTotals(days);
     expect(result.totalWorked.toNumber()).toBe(480 + 60 + 480 + 480);

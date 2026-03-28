@@ -101,9 +101,13 @@ export default function AccountingDashboardPage() {
       {/* Breadcrumb */}
       <nav className="accounting-dashboard__breadcrumb" aria-label="Caminho da pagina">
         <span className="accounting-dashboard__breadcrumb-item">Inicio</span>
-        <span className="accounting-dashboard__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="accounting-dashboard__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="accounting-dashboard__breadcrumb-item">Contabilidade</span>
-        <span className="accounting-dashboard__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="accounting-dashboard__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="accounting-dashboard__breadcrumb-item accounting-dashboard__breadcrumb-item--current">
           Dashboard Contabil
         </span>
@@ -121,7 +125,11 @@ export default function AccountingDashboardPage() {
       </header>
 
       {/* Filters */}
-      <div className="accounting-dashboard__filters" role="search" aria-label="Filtros do dashboard">
+      <div
+        className="accounting-dashboard__filters"
+        role="search"
+        aria-label="Filtros do dashboard"
+      >
         <div className="accounting-dashboard__filter-group">
           <label htmlFor="acc-fy-select" className="accounting-dashboard__filter-label">
             Exercicio Fiscal
@@ -248,12 +256,14 @@ export default function AccountingDashboardPage() {
           </section>
 
           {/* Zone 4: Alerts */}
-          <section className="accounting-dashboard__alerts-section" role="status" aria-label="Alertas contabeis">
+          <section
+            className="accounting-dashboard__alerts-section"
+            role="status"
+            aria-label="Alertas contabeis"
+          >
             <h2 className="accounting-dashboard__section-title">Alertas Contabeis</h2>
             {data.alerts.length === 0 ? (
-              <p className="accounting-dashboard__no-alerts">
-                Nenhum alerta contabil no momento.
-              </p>
+              <p className="accounting-dashboard__no-alerts">Nenhum alerta contabil no momento.</p>
             ) : (
               <ul className="accounting-dashboard__alerts" role="list">
                 {data.alerts.map((alert) => (

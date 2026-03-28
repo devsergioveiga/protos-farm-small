@@ -116,9 +116,7 @@ export default function InstallmentPreviewTable({
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
         >
-          {expanded
-            ? 'Recolher'
-            : `Ver todas as ${installments.length} parcelas`}
+          {expanded ? 'Recolher' : `Ver todas as ${installments.length} parcelas`}
         </button>
       )}
     </>

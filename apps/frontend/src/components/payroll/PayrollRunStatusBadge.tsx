@@ -1,4 +1,12 @@
-import { Clock, Loader2, Calculator, Lock, AlertCircle, RotateCcw, AlertTriangle } from 'lucide-react';
+import {
+  Clock,
+  Loader2,
+  Calculator,
+  Lock,
+  AlertCircle,
+  RotateCcw,
+  AlertTriangle,
+} from 'lucide-react';
 import './PayrollRunStatusBadge.css';
 
 type StatusKey =

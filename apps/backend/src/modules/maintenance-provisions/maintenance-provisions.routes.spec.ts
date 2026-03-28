@@ -96,7 +96,13 @@ const VALID_RECONCILIATION = {
   totalActualCost: 1200,
   variance: 300,
   byAsset: [
-    { assetId: ASSET_ID, assetName: 'Trator John Deere', provisioned: 500, actual: 400, variance: 100 },
+    {
+      assetId: ASSET_ID,
+      assetName: 'Trator John Deere',
+      provisioned: 500,
+      actual: 400,
+      variance: 100,
+    },
   ],
 };
 
@@ -232,7 +238,12 @@ describe('MaintenanceProvisions Routes', () => {
 
     it('returns single provision with asset', async () => {
       // The route calls listProvisions then does a direct prisma query
-      mockedService.listProvisions.mockResolvedValue({ data: [], total: 0, page: 1, limit: 1 } as never);
+      mockedService.listProvisions.mockResolvedValue({
+        data: [],
+        total: 0,
+        page: 1,
+        limit: 1,
+      } as never);
       const rawProvision = {
         id: PROVISION_ID,
         organizationId: ORG_ID,
@@ -256,7 +267,12 @@ describe('MaintenanceProvisions Routes', () => {
     });
 
     it('returns 404 when provision not found', async () => {
-      mockedService.listProvisions.mockResolvedValue({ data: [], total: 0, page: 1, limit: 1 } as never);
+      mockedService.listProvisions.mockResolvedValue({
+        data: [],
+        total: 0,
+        page: 1,
+        limit: 1,
+      } as never);
       (mockedPrisma.maintenanceProvision.findFirst as jest.Mock).mockResolvedValue(null);
 
       const res = await request(app)

@@ -19,7 +19,6 @@ async function main() {
     process.env.DATABASE_URL ??
     `postgresql://${process.env.POSTGRES_USER ?? 'protos'}:${process.env.POSTGRES_PASSWORD ?? 'protos'}@${process.env.POSTGRES_HOST ?? 'localhost'}:${process.env.POSTGRES_PORT ?? '5450'}/${process.env.POSTGRES_DB ?? 'protos_farm'}`;
 
-
   const prisma = new PrismaClient({
     adapter: new PrismaPg({ connectionString: databaseUrl }),
   });
@@ -69,7 +68,9 @@ async function main() {
       }
     }
 
-    console.log(`\n${dryRun ? '[DRY-RUN] ' : ''}${candidates.length} animais ${dryRun ? 'seriam atualizados' : 'atualizados com sucesso'}.`);
+    console.log(
+      `\n${dryRun ? '[DRY-RUN] ' : ''}${candidates.length} animais ${dryRun ? 'seriam atualizados' : 'atualizados com sucesso'}.`,
+    );
   } finally {
     await prisma.$disconnect();
   }

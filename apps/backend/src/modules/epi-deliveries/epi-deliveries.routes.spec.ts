@@ -117,7 +117,10 @@ describe('POST /api/epi-deliveries', () => {
   it('should return 400 when stock is insufficient (INSUFFICIENT_STOCK)', async () => {
     authAs(ADMIN_PAYLOAD);
     mockedService.createEpiDelivery.mockRejectedValue(
-      new EpiDeliveryError('Saldo insuficiente. Disponível: 0, solicitado: 1', 'INSUFFICIENT_STOCK'),
+      new EpiDeliveryError(
+        'Saldo insuficiente. Disponível: 0, solicitado: 1',
+        'INSUFFICIENT_STOCK',
+      ),
     );
 
     const res = await request(app)
@@ -207,9 +210,7 @@ describe('GET /api/epi-deliveries', () => {
       limit: 20,
     });
 
-    const res = await request(app)
-      .get('/api/epi-deliveries')
-      .set('Authorization', 'Bearer tok');
+    const res = await request(app).get('/api/epi-deliveries').set('Authorization', 'Bearer tok');
 
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
@@ -221,7 +222,9 @@ describe('GET /api/epi-deliveries', () => {
     mockedService.listEpiDeliveries.mockResolvedValue({ data: [], total: 0, page: 1, limit: 20 });
 
     await request(app)
-      .get('/api/epi-deliveries?employeeId=emp-1&epiType=CAPACETE&dateFrom=2026-01-01&dateTo=2026-12-31')
+      .get(
+        '/api/epi-deliveries?employeeId=emp-1&epiType=CAPACETE&dateFrom=2026-01-01&dateTo=2026-12-31',
+      )
       .set('Authorization', 'Bearer tok');
 
     expect(mockedService.listEpiDeliveries).toHaveBeenCalledWith(
@@ -239,9 +242,7 @@ describe('GET /api/epi-deliveries', () => {
     authAs(VIEWER_PAYLOAD);
     mockedService.listEpiDeliveries.mockResolvedValue({ data: [], total: 0, page: 1, limit: 20 });
 
-    const res = await request(app)
-      .get('/api/epi-deliveries')
-      .set('Authorization', 'Bearer tok');
+    const res = await request(app).get('/api/epi-deliveries').set('Authorization', 'Bearer tok');
 
     expect(res.status).toBe(200);
   });

@@ -15,13 +15,13 @@ created: 2026-03-26
 
 ## Design System
 
-| Property | Value |
-|----------|-------|
-| Tool | none |
-| Preset | not applicable |
-| Component library | Custom CSS tokens (`apps/frontend/src/styles/tokens.css`) |
-| Icon library | lucide-react |
-| Font | DM Sans (headings 500/700) + Source Sans 3 (body 400/600) + JetBrains Mono (data) |
+| Property          | Value                                                                             |
+| ----------------- | --------------------------------------------------------------------------------- |
+| Tool              | none                                                                              |
+| Preset            | not applicable                                                                    |
+| Component library | Custom CSS tokens (`apps/frontend/src/styles/tokens.css`)                         |
+| Icon library      | lucide-react                                                                      |
+| Font              | DM Sans (headings 500/700) + Source Sans 3 (body 400/600) + JetBrains Mono (data) |
 
 Source: `apps/frontend/src/styles/tokens.css` — fully established, no new tokens needed.
 
@@ -31,17 +31,18 @@ Source: `apps/frontend/src/styles/tokens.css` — fully established, no new toke
 
 Declared values — multiples of 4px only, drawn from `--space-*` tokens:
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| xs | 4px (`--space-1`) | Icon gaps, inline chip spacing |
-| sm | 8px (`--space-2`) | Between badge and text, row cell padding |
-| md | 16px (`--space-4`) | Default element spacing, input padding horizontal |
-| lg | 24px (`--space-6`) | Page padding, section header margin-bottom |
-| xl | 32px (`--space-8`) | Card grid gap, section separation |
-| 2xl | 48px (`--space-12`) | Major section breaks, empty state vertical padding |
-| 3xl | 64px (`--space-16`) | Empty state icon size |
+| Token | Value               | Usage                                              |
+| ----- | ------------------- | -------------------------------------------------- |
+| xs    | 4px (`--space-1`)   | Icon gaps, inline chip spacing                     |
+| sm    | 8px (`--space-2`)   | Between badge and text, row cell padding           |
+| md    | 16px (`--space-4`)  | Default element spacing, input padding horizontal  |
+| lg    | 24px (`--space-6`)  | Page padding, section header margin-bottom         |
+| xl    | 32px (`--space-8`)  | Card grid gap, section separation                  |
+| 2xl   | 48px (`--space-12`) | Major section breaks, empty state vertical padding |
+| 3xl   | 64px (`--space-16`) | Empty state icon size                              |
 
 Exceptions:
+
 - Touch targets: minimum 48x48px for all interactive elements (buttons, tab items, row action icons)
 - Input padding: 12px vertical (`--space-3`), 16px horizontal (`--space-4`) — matches established form pattern
 - Table cell padding: 12px vertical, 16px horizontal — matches `StockAlertsPage` pattern
@@ -52,15 +53,16 @@ Source: existing page patterns (`StockAlertsPage.css` line 244, `EmployeesPage` 
 
 ## Typography
 
-| Role | Font Family | Size | Weight | Line Height |
-|------|-------------|------|--------|-------------|
-| Body | Source Sans 3 | 16px (`--text-base`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) |
-| Label / table header | Source Sans 3 | 14px (`--text-sm`) | 600 (`--font-semibold`) | 1.3 (`--leading-snug`) |
-| Heading (page title) | DM Sans | 24px (`--text-xl`) | 700 (`--font-bold`) | 1.2 (`--leading-tight`) |
-| Display (dashboard KPI number) | DM Sans | 30px (`--text-2xl`) | 700 (`--font-bold`) | 1.2 (`--leading-tight`) |
-| Mono (CA numbers, CRM) | JetBrains Mono | 14px (`--text-sm`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) |
+| Role                           | Font Family    | Size                 | Weight                  | Line Height              |
+| ------------------------------ | -------------- | -------------------- | ----------------------- | ------------------------ |
+| Body                           | Source Sans 3  | 16px (`--text-base`) | 400 (`--font-regular`)  | 1.5 (`--leading-normal`) |
+| Label / table header           | Source Sans 3  | 14px (`--text-sm`)   | 600 (`--font-semibold`) | 1.3 (`--leading-snug`)   |
+| Heading (page title)           | DM Sans        | 24px (`--text-xl`)   | 700 (`--font-bold`)     | 1.2 (`--leading-tight`)  |
+| Display (dashboard KPI number) | DM Sans        | 30px (`--text-2xl`)  | 700 (`--font-bold`)     | 1.2 (`--leading-tight`)  |
+| Mono (CA numbers, CRM)         | JetBrains Mono | 14px (`--text-sm`)   | 400 (`--font-regular`)  | 1.5 (`--leading-normal`) |
 
 Rules:
+
 - Minimum 14px on any visible element — nothing smaller.
 - ALL CAPS only for short column headers ("STATUS", "TIPO", "CA"). Never for sentence-length copy.
 - Do not center-align blocks of text longer than 2 lines.
@@ -71,12 +73,12 @@ Source: `CLAUDE.md` typography rules + existing page patterns.
 
 ## Color
 
-| Role | Token | Hex | Usage |
-|------|-------|-----|-------|
-| Dominant (60%) | `--color-neutral-0` / `--color-neutral-50` | `#FFFFFF` / `#FAFAF8` | Page background, form backgrounds |
-| Secondary (30%) | `--color-neutral-100` | `#F5F3EF` | Cards, sidebar, table row alternation |
-| Accent (10%) | `--color-primary-600` | `#2E7D32` | Primary CTA buttons, active tab indicator, sidebar group active state |
-| Destructive | `--color-error-500` | `#C62828` | Delete actions, INAPTO ASO result badge, EXPIRED alert states only |
+| Role            | Token                                      | Hex                   | Usage                                                                 |
+| --------------- | ------------------------------------------ | --------------------- | --------------------------------------------------------------------- |
+| Dominant (60%)  | `--color-neutral-0` / `--color-neutral-50` | `#FFFFFF` / `#FAFAF8` | Page background, form backgrounds                                     |
+| Secondary (30%) | `--color-neutral-100`                      | `#F5F3EF`             | Cards, sidebar, table row alternation                                 |
+| Accent (10%)    | `--color-primary-600`                      | `#2E7D32`             | Primary CTA buttons, active tab indicator, sidebar group active state |
+| Destructive     | `--color-error-500`                        | `#C62828`             | Delete actions, INAPTO ASO result badge, EXPIRED alert states only    |
 
 Accent reserved for: primary CTA buttons (max 1 per screen), active tab underline, Shield icon in sidebar group header, active sidebar navigation item. Not used in text, table headers, or decorative elements.
 
@@ -84,14 +86,14 @@ Accent reserved for: primary CTA buttons (max 1 per screen), active tab underlin
 
 These four states appear across EPI, training, and ASO expiry displays. Each state uses a background + text combination from existing semantic tokens:
 
-| State | Background Token | Text/Icon Token | Hex (bg / text) | Also requires |
-|-------|-----------------|-----------------|-----------------|---------------|
-| OK / Conforme | `--color-success-100` | `--color-success-500` | `#E8F5E9` / `#2E7D32` | CheckCircle icon |
+| State                    | Background Token      | Text/Icon Token       | Hex (bg / text)       | Also requires      |
+| ------------------------ | --------------------- | --------------------- | --------------------- | ------------------ |
+| OK / Conforme            | `--color-success-100` | `--color-success-500` | `#E8F5E9` / `#2E7D32` | CheckCircle icon   |
 | YELLOW (vencendo em 30d) | `--color-warning-100` | `--color-warning-500` | `#FFF8E1` / `#F57F17` | AlertTriangle icon |
-| RED (vencendo em 15d) | `--color-error-100` | `--color-error-500` | `#FFEBEE` / `#C62828` | AlertCircle icon |
-| EXPIRED / Vencido | `--color-neutral-200` | `--color-neutral-600` | `#E8E4DD` / `#5C554C` | Clock icon |
-| INAPTO (ASO result) | `--color-error-100` | `--color-error-500` | `#FFEBEE` / `#C62828` | XCircle icon |
-| APTO_COM_RESTRICAO | `--color-warning-100` | `--color-warning-500` | `#FFF8E1` / `#F57F17` | AlertTriangle icon |
+| RED (vencendo em 15d)    | `--color-error-100`   | `--color-error-500`   | `#FFEBEE` / `#C62828` | AlertCircle icon   |
+| EXPIRED / Vencido        | `--color-neutral-200` | `--color-neutral-600` | `#E8E4DD` / `#5C554C` | Clock icon         |
+| INAPTO (ASO result)      | `--color-error-100`   | `--color-error-500`   | `#FFEBEE` / `#C62828` | XCircle icon       |
+| APTO_COM_RESTRICAO       | `--color-warning-100` | `--color-warning-500` | `#FFF8E1` / `#F57F17` | AlertTriangle icon |
 
 Rule: color is never the sole indicator — every status badge must pair a color with an icon and a text label.
 
@@ -105,30 +107,30 @@ All components listed below follow established patterns from `apps/frontend/src/
 
 ### Shared / Reused UI Primitives
 
-| Component | Source | Usage in Phase 30 |
-|-----------|--------|-------------------|
-| `ConfirmModal` | `components/ui/ConfirmModal` | Confirm EpiDelivery deletion (variant `warning`) |
-| Page header pattern | `StockAlertsPage`, `EmployeesPage` | All 6 pages: title + icon + primary CTA |
-| Tab strip pattern | `StockAlertsPage__tabs` | EpiProductsPage (tabs: Produtos / Requisitos por Cargo), EpiDeliveriesPage (tabs: Entregas / Ficha por Colaborador), SafetyDashboardPage (tabs: Visão Geral / EPIs / Treinamentos / ASOs) |
-| Status badge (pill) | `EmployeeStatusBadge` pattern | ComplianceStatusBadge (OK / YELLOW / RED / EXPIRED) |
-| Skeleton loader | Existing skeleton pattern | All list/table loading states |
-| Search + filter bar | `EmployeesPage` debounce pattern | EpiDeliveriesPage, TrainingRecordsPage, MedicalExamsPage, SafetyDashboardPage |
-| Pagination | `EmployeesPage` pattern | All list pages with >20 rows |
-| PDF download button | `pesticide-prescriptions` pattern | Ficha EPI, Certificado treinamento, Relatório conformidade |
+| Component           | Source                             | Usage in Phase 30                                                                                                                                                                         |
+| ------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ConfirmModal`      | `components/ui/ConfirmModal`       | Confirm EpiDelivery deletion (variant `warning`)                                                                                                                                          |
+| Page header pattern | `StockAlertsPage`, `EmployeesPage` | All 6 pages: title + icon + primary CTA                                                                                                                                                   |
+| Tab strip pattern   | `StockAlertsPage__tabs`            | EpiProductsPage (tabs: Produtos / Requisitos por Cargo), EpiDeliveriesPage (tabs: Entregas / Ficha por Colaborador), SafetyDashboardPage (tabs: Visão Geral / EPIs / Treinamentos / ASOs) |
+| Status badge (pill) | `EmployeeStatusBadge` pattern      | ComplianceStatusBadge (OK / YELLOW / RED / EXPIRED)                                                                                                                                       |
+| Skeleton loader     | Existing skeleton pattern          | All list/table loading states                                                                                                                                                             |
+| Search + filter bar | `EmployeesPage` debounce pattern   | EpiDeliveriesPage, TrainingRecordsPage, MedicalExamsPage, SafetyDashboardPage                                                                                                             |
+| Pagination          | `EmployeesPage` pattern            | All list pages with >20 rows                                                                                                                                                              |
+| PDF download button | `pesticide-prescriptions` pattern  | Ficha EPI, Certificado treinamento, Relatório conformidade                                                                                                                                |
 
 ### New Domain Components (co-located in `components/` subdirectory)
 
-| Component | Location | Responsibility |
-|-----------|----------|----------------|
-| `EpiProductModal` | `components/epi-products/` | Create/edit EPI product (fields: name, CA number, CA expiry, EPI type, stock unit) |
-| `EpiDeliveryModal` | `components/epi-deliveries/` | Register EPI delivery to employee (employee picker, EPI picker, quantity, reason, optional signature upload) |
-| `PositionEpiRequirementsModal` | `components/epi-products/` | Configure which EPIs are required for a given Position |
-| `TrainingTypeModal` | `components/training-types/` | Create/edit custom training type (system types read-only) |
-| `TrainingRecordModal` | `components/training-records/` | Register training session + add participants (multi-select employee list) |
-| `PositionTrainingRequirementsModal` | `components/training-types/` | Configure required training types per Position |
-| `MedicalExamModal` | `components/medical-exams/` | Register ASO (employee picker, type, date, doctor CRM, result, next exam date, document upload) |
-| `ComplianceStatusBadge` | `components/shared/` | Reusable pill: status text + icon + color for OK/YELLOW/RED/EXPIRED |
-| `SafetyKpiCard` | `components/payroll/` or `components/shared/` | Dashboard KPI card (number + label + optional trend indicator) |
+| Component                           | Location                                      | Responsibility                                                                                               |
+| ----------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `EpiProductModal`                   | `components/epi-products/`                    | Create/edit EPI product (fields: name, CA number, CA expiry, EPI type, stock unit)                           |
+| `EpiDeliveryModal`                  | `components/epi-deliveries/`                  | Register EPI delivery to employee (employee picker, EPI picker, quantity, reason, optional signature upload) |
+| `PositionEpiRequirementsModal`      | `components/epi-products/`                    | Configure which EPIs are required for a given Position                                                       |
+| `TrainingTypeModal`                 | `components/training-types/`                  | Create/edit custom training type (system types read-only)                                                    |
+| `TrainingRecordModal`               | `components/training-records/`                | Register training session + add participants (multi-select employee list)                                    |
+| `PositionTrainingRequirementsModal` | `components/training-types/`                  | Configure required training types per Position                                                               |
+| `MedicalExamModal`                  | `components/medical-exams/`                   | Register ASO (employee picker, type, date, doctor CRM, result, next exam date, document upload)              |
+| `ComplianceStatusBadge`             | `components/shared/`                          | Reusable pill: status text + icon + color for OK/YELLOW/RED/EXPIRED                                          |
+| `SafetyKpiCard`                     | `components/payroll/` or `components/shared/` | Dashboard KPI card (number + label + optional trend indicator)                                               |
 
 ---
 
@@ -139,6 +141,7 @@ All components listed below follow established patterns from `apps/frontend/src/
 Layout: page header → tab strip (2 tabs) → tab content.
 
 **Tab 1 — Produtos EPI:**
+
 - Toolbar: search input (debounce 300ms) + filter by EPI type (dropdown) + "Novo EPI" button (primary, max 1).
 - Table columns: Nome, Tipo, Número CA, Validade CA (status badge), Estoque atual, Ações (editar / entregar).
 - CA Validade column: render `ComplianceStatusBadge` based on CA expiry date.
@@ -146,6 +149,7 @@ Layout: page header → tab strip (2 tabs) → tab content.
 - Empty state: Shield icon (48px, `--color-neutral-400`) + "Nenhum EPI cadastrado" + "Cadastre o primeiro EPI para começar o controle de conformidade." + "Novo EPI" CTA.
 
 **Tab 2 — Requisitos por Cargo:**
+
 - Table: Cargo, EPIs obrigatórios (count chip), Ações (configurar).
 - "Configurar" opens `PositionEpiRequirementsModal`.
 - Roles with zero requirements: show "Nenhum EPI definido" in italic neutral-400.
@@ -157,12 +161,14 @@ Layout: page header → filter bar → tab strip (2 tabs) → tab content.
 Filter bar (always visible): employee search, EPI type filter, date range (from/to), compliance status filter.
 
 **Tab 1 — Entregas:**
+
 - Table columns: Data, Colaborador, Função, EPI entregue, Nº CA, Motivo, Quantidade, Assinatura (ícone se presente), Ações (ver / excluir).
 - Motivo labels: NOVO → "Novo", TROCA → "Troca", DANIFICADO → "Danificado", EXTRAVIO → "Extravio".
 - "Excluir": `ConfirmModal` variant `warning`, mensagem: "Remover esta entrega irá restaurar o saldo de estoque."
 - Row click: expand inline para mostrar observações e link da assinatura.
 
 **Tab 2 — Ficha por Colaborador:**
+
 - Employee picker (search autocomplete, single select).
 - Upon selection: show employee card (name, position, admission date) + table of all deliveries for that employee.
 - "Imprimir Ficha EPI" button (secondary): triggers GET to PDF endpoint, opens in new tab.
@@ -173,12 +179,14 @@ Filter bar (always visible): employee search, EPI type filter, date range (from/
 Layout: page header → tab strip (2 tabs) → tab content.
 
 **Tab 1 — Tipos de Treinamento:**
+
 - Table columns: Nome, Referência NR, Carga horária mínima, Validade padrão, Sistema (badge), Ações.
 - System rows (`isSystem = true`): read-only. Show "Sistema" badge (sky-100/sky-500). No edit/delete actions. Tooltip: "Treinamento obrigatório NR-31 — não editável."
 - Custom rows: full edit/delete actions.
 - Primary CTA: "Novo Tipo de Treinamento" (only triggers for custom types, creates with `isSystem = false`).
 
 **Tab 2 — Requisitos por Cargo:**
+
 - Same layout as EpiProductsPage Tab 2 but for training types.
 - Global training types (isGlobal = true): shown with "Todos os cargos" chip instead of Position picker.
 
@@ -206,6 +214,7 @@ Filter bar: employee search, ASO type filter, result filter (APTO / INAPTO / APT
 Table columns: Colaborador, Função, Tipo ASO, Data, Médico (CRM), Resultado (badge), Próximo exame (expiry badge), Ações (ver / excluir / download ASO).
 
 Result badge mapping:
+
 - APTO → success-100/success-500 + CheckCircle
 - INAPTO → error-100/error-500 + XCircle
 - APTO_COM_RESTRICAO → warning-100/warning-500 + AlertTriangle
@@ -224,16 +233,17 @@ Layout: page header → farm filter (FarmContext) → KPI row → tab strip (4 t
 
 **KPI Row (4 cards side by side, responsive → 2×2 on mobile):**
 
-| Card | Metric | Icon |
-|------|--------|------|
-| Total colaboradores | count | Users |
-| Conformes | count + % | ShieldCheck |
-| Com pendências | count | ShieldAlert |
-| Vencimentos nos próximos 30 dias | count | Clock |
+| Card                             | Metric    | Icon        |
+| -------------------------------- | --------- | ----------- |
+| Total colaboradores              | count     | Users       |
+| Conformes                        | count + % | ShieldCheck |
+| Com pendências                   | count     | ShieldAlert |
+| Vencimentos nos próximos 30 dias | count     | Clock       |
 
 KPI cards: neutral-100 background, DM Sans 700 for the number (30px), Source Sans 3 600 for the label (14px). Border-left 4px `--color-primary-600` on the "Conformes" card. Border-left 4px `--color-warning-500` on the "Vencimentos" card.
 
 **Tab 1 — Visão Geral:**
+
 - Table of non-compliant employees: Name, Position, Pending EPIs (count badge), Expired trainings (count badge), ASO status (expiry badge).
 - Filter bar: search, pending type (EPI / Treinamento / ASO).
 - "Exportar CSV" button (secondary) + "Relatório PDF" button (secondary).
@@ -241,14 +251,17 @@ KPI cards: neutral-100 background, DM Sans 700 for the number (30px), Source San
 - Empty state (all compliant): ShieldCheck icon (64px, success-500) + "Todos os colaboradores estão em conformidade com a NR-31." (no CTA needed).
 
 **Tab 2 — EPIs:**
+
 - Table: Colaborador, Função, EPI Obrigatório, Última entrega, Validade CA, Status.
 - Filter: compliance status only.
 
 **Tab 3 — Treinamentos:**
+
 - Table: Colaborador, Função, Treinamento, Vencimento, Status.
 - Filter: treinamento type + compliance status.
 
 **Tab 4 — ASOs:**
+
 - Table: Colaborador, Função, Tipo ASO, Data último exame, Próximo exame, Status.
 - Filter: ASO type + compliance status.
 
@@ -260,13 +273,13 @@ KPI cards: neutral-100 background, DM Sans 700 for the number (30px), Source San
 
 All create/edit forms open in modals, never as dedicated pages (per `apps/frontend/CLAUDE.md`).
 
-| Modal | Trigger | Close triggers |
-|-------|---------|----------------|
-| `EpiProductModal` | "Novo EPI" / row edit icon | Escape, backdrop click (with unsaved-changes guard if dirty), explicit Close button |
-| `EpiDeliveryModal` | "Entregar" row action / "Nova Entrega" | Same as above. On success: toast + list refetch |
-| `TrainingRecordModal` | "Registrar Treinamento" | Same. Multi-step: back/next buttons, step 1 validated before advancing |
-| `MedicalExamModal` | "Registrar ASO" | Same |
-| `ConfirmModal` (delete) | Row delete icon | Cancel button + Escape. Variant `warning` for delivery deletion |
+| Modal                   | Trigger                                | Close triggers                                                                      |
+| ----------------------- | -------------------------------------- | ----------------------------------------------------------------------------------- |
+| `EpiProductModal`       | "Novo EPI" / row edit icon             | Escape, backdrop click (with unsaved-changes guard if dirty), explicit Close button |
+| `EpiDeliveryModal`      | "Entregar" row action / "Nova Entrega" | Same as above. On success: toast + list refetch                                     |
+| `TrainingRecordModal`   | "Registrar Treinamento"                | Same. Multi-step: back/next buttons, step 1 validated before advancing              |
+| `MedicalExamModal`      | "Registrar ASO"                        | Same                                                                                |
+| `ConfirmModal` (delete) | Row delete icon                        | Cancel button + Escape. Variant `warning` for delivery deletion                     |
 
 ### Form Validation
 
@@ -293,6 +306,7 @@ Pattern from `pesticide-prescriptions`: button triggers GET to PDF endpoint, bro
 ### Tab Badges
 
 Tab strip items with pending-count use the same pattern as `StockAlertsPage`:
+
 - Pending count displayed as a small pill badge to the right of the tab label.
 - Badge background: `--color-warning-100`, text: `--color-warning-500` for warnings.
 - Badge background: `--color-error-100`, text: `--color-error-500` for critical/expired.
@@ -307,14 +321,14 @@ SafetyDashboardPage and all list pages respect FarmContext. When a farm is selec
 
 Group: **SEGURANÇA** (placed below RH / Folha group in sidebar).
 
-| Item | Route | Icon |
-|------|-------|------|
-| EPIs | `/epi-products` | `HardHat` |
-| Entregas EPI | `/epi-deliveries` | `Package` |
-| Treinamentos | `/training-types` | `GraduationCap` |
+| Item                     | Route               | Icon            |
+| ------------------------ | ------------------- | --------------- |
+| EPIs                     | `/epi-products`     | `HardHat`       |
+| Entregas EPI             | `/epi-deliveries`   | `Package`       |
+| Treinamentos             | `/training-types`   | `GraduationCap` |
 | Registros de Treinamento | `/training-records` | `ClipboardList` |
-| ASOs | `/medical-exams` | `Stethoscope` |
-| Dashboard NR-31 | `/safety-dashboard` | `Shield` |
+| ASOs                     | `/medical-exams`    | `Stethoscope`   |
+| Dashboard NR-31          | `/safety-dashboard` | `Shield`        |
 
 Group header icon: `Shield` (24px) — as specified in CONTEXT.md Decision 4.
 
@@ -322,46 +336,46 @@ Group header icon: `Shield` (24px) — as specified in CONTEXT.md Decision 4.
 
 ## Copywriting Contract
 
-| Element | Copy |
-|---------|------|
-| Primary CTA — EPI Products | "Novo EPI" |
-| Primary CTA — EPI Deliveries | "Registrar Entrega" |
-| Primary CTA — Training Types | "Novo Tipo de Treinamento" |
-| Primary CTA — Training Records | "Registrar Treinamento" |
-| Primary CTA — Medical Exams | "Registrar ASO" |
-| Empty state heading — EPIs | "Nenhum EPI cadastrado" |
-| Empty state body — EPIs | "Cadastre os EPIs para começar o controle de conformidade NR-31." |
-| Empty state heading — Deliveries | "Nenhuma entrega registrada" |
-| Empty state body — Deliveries | "Registre a primeira entrega de EPI para um colaborador." |
-| Empty state heading — Trainings | "Nenhum treinamento registrado" |
-| Empty state body — Trainings | "Registre o primeiro treinamento realizado para acompanhar a conformidade." |
-| Empty state heading — Medical Exams | "Nenhum ASO registrado" |
-| Empty state body — Medical Exams | "Registre o ASO admissional dos colaboradores para iniciar o controle." |
-| Empty state heading — Dashboard (all compliant) | "Todos os colaboradores em conformidade" |
-| Empty state body — Dashboard (all compliant) | "Nenhuma pendência de EPI, treinamento ou ASO no momento." |
-| Error — list failed to load | "Não foi possível carregar os dados. Verifique sua conexão e tente novamente." |
-| Error — save failed | "Não foi possível salvar. Verifique os dados e tente novamente." |
-| Error — PDF generation failed | "Não foi possível gerar o PDF. Tente novamente." |
-| Destructive — delete EPI delivery | "Excluir entrega: Esta ação irá restaurar o saldo de estoque do EPI. Confirmar exclusão?" |
-| Destructive — delete training record | "Excluir registro: Os certificados dos participantes serão removidos. Confirmar exclusão?" |
-| Destructive — delete medical exam | "Excluir ASO: O histórico do exame será removido permanentemente. Confirmar exclusão?" |
-| Compliance status — OK | "Conforme" |
-| Compliance status — YELLOW | "Vencendo em breve" |
-| Compliance status — RED | "Vencendo em 15 dias" |
-| Compliance status — EXPIRED | "Vencido" |
-| ASO result — APTO | "Apto" |
-| ASO result — INAPTO | "Inapto" |
-| ASO result — APTO_COM_RESTRICAO | "Apto com restrição" |
-| EPI delivery reason — NOVO | "Novo" |
-| EPI delivery reason — TROCA | "Troca" |
-| EPI delivery reason — DANIFICADO | "Danificado" |
-| EPI delivery reason — EXTRAVIO | "Extravio" |
-| Training instructor — INTERNO | "Interno" |
-| Training instructor — EXTERNO | "Externo" |
-| System training type badge | "Sistema" |
-| Toast — EPI delivery success | "Entrega registrada. Estoque atualizado automaticamente." |
-| Toast — Training record success | "Treinamento registrado. Certificados disponíveis para download." |
-| Toast — ASO success | "ASO registrado com sucesso." |
+| Element                                         | Copy                                                                                       |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Primary CTA — EPI Products                      | "Novo EPI"                                                                                 |
+| Primary CTA — EPI Deliveries                    | "Registrar Entrega"                                                                        |
+| Primary CTA — Training Types                    | "Novo Tipo de Treinamento"                                                                 |
+| Primary CTA — Training Records                  | "Registrar Treinamento"                                                                    |
+| Primary CTA — Medical Exams                     | "Registrar ASO"                                                                            |
+| Empty state heading — EPIs                      | "Nenhum EPI cadastrado"                                                                    |
+| Empty state body — EPIs                         | "Cadastre os EPIs para começar o controle de conformidade NR-31."                          |
+| Empty state heading — Deliveries                | "Nenhuma entrega registrada"                                                               |
+| Empty state body — Deliveries                   | "Registre a primeira entrega de EPI para um colaborador."                                  |
+| Empty state heading — Trainings                 | "Nenhum treinamento registrado"                                                            |
+| Empty state body — Trainings                    | "Registre o primeiro treinamento realizado para acompanhar a conformidade."                |
+| Empty state heading — Medical Exams             | "Nenhum ASO registrado"                                                                    |
+| Empty state body — Medical Exams                | "Registre o ASO admissional dos colaboradores para iniciar o controle."                    |
+| Empty state heading — Dashboard (all compliant) | "Todos os colaboradores em conformidade"                                                   |
+| Empty state body — Dashboard (all compliant)    | "Nenhuma pendência de EPI, treinamento ou ASO no momento."                                 |
+| Error — list failed to load                     | "Não foi possível carregar os dados. Verifique sua conexão e tente novamente."             |
+| Error — save failed                             | "Não foi possível salvar. Verifique os dados e tente novamente."                           |
+| Error — PDF generation failed                   | "Não foi possível gerar o PDF. Tente novamente."                                           |
+| Destructive — delete EPI delivery               | "Excluir entrega: Esta ação irá restaurar o saldo de estoque do EPI. Confirmar exclusão?"  |
+| Destructive — delete training record            | "Excluir registro: Os certificados dos participantes serão removidos. Confirmar exclusão?" |
+| Destructive — delete medical exam               | "Excluir ASO: O histórico do exame será removido permanentemente. Confirmar exclusão?"     |
+| Compliance status — OK                          | "Conforme"                                                                                 |
+| Compliance status — YELLOW                      | "Vencendo em breve"                                                                        |
+| Compliance status — RED                         | "Vencendo em 15 dias"                                                                      |
+| Compliance status — EXPIRED                     | "Vencido"                                                                                  |
+| ASO result — APTO                               | "Apto"                                                                                     |
+| ASO result — INAPTO                             | "Inapto"                                                                                   |
+| ASO result — APTO_COM_RESTRICAO                 | "Apto com restrição"                                                                       |
+| EPI delivery reason — NOVO                      | "Novo"                                                                                     |
+| EPI delivery reason — TROCA                     | "Troca"                                                                                    |
+| EPI delivery reason — DANIFICADO                | "Danificado"                                                                               |
+| EPI delivery reason — EXTRAVIO                  | "Extravio"                                                                                 |
+| Training instructor — INTERNO                   | "Interno"                                                                                  |
+| Training instructor — EXTERNO                   | "Externo"                                                                                  |
+| System training type badge                      | "Sistema"                                                                                  |
+| Toast — EPI delivery success                    | "Entrega registrada. Estoque atualizado automaticamente."                                  |
+| Toast — Training record success                 | "Treinamento registrado. Certificados disponíveis para download."                          |
+| Toast — ASO success                             | "ASO registrado com sucesso."                                                              |
 
 All copy in pt-BR, direct and friendly tone. No technical jargon or HTTP status codes exposed to users.
 
@@ -383,16 +397,16 @@ All copy in pt-BR, direct and friendly tone. No technical jargon or HTTP status 
 
 ## Animation Contract
 
-| Interaction | Duration | Easing | Token |
-|-------------|----------|--------|-------|
-| Modal enter | 300ms | ease-out | `--duration-normal`, `--ease-out` |
-| Modal exit | 200ms | ease-in | `--duration-fast`, `--ease-in` |
-| Tab switch (content fade) | 200ms | ease-out | `--duration-fast` |
-| Dropdown open | 200ms | ease-out | `--duration-fast` |
-| Button hover | 100ms | ease-out | `--duration-instant` |
-| KPI card hover (lift) | 100ms | ease-out | `translateY(-2px) + shadow-lg` |
-| Skeleton pulse | 1500ms | linear infinite | opacity 0.4 → 0.7 |
-| PDF download spinner | 200ms spin | linear | rotation |
+| Interaction               | Duration   | Easing          | Token                             |
+| ------------------------- | ---------- | --------------- | --------------------------------- |
+| Modal enter               | 300ms      | ease-out        | `--duration-normal`, `--ease-out` |
+| Modal exit                | 200ms      | ease-in         | `--duration-fast`, `--ease-in`    |
+| Tab switch (content fade) | 200ms      | ease-out        | `--duration-fast`                 |
+| Dropdown open             | 200ms      | ease-out        | `--duration-fast`                 |
+| Button hover              | 100ms      | ease-out        | `--duration-instant`              |
+| KPI card hover (lift)     | 100ms      | ease-out        | `translateY(-2px) + shadow-lg`    |
+| Skeleton pulse            | 1500ms     | linear infinite | opacity 0.4 → 0.7                 |
+| PDF download spinner      | 200ms spin | linear          | rotation                          |
 
 `prefers-reduced-motion: reduce` collapses all durations to 0.01ms (already handled by global tokens.css rule).
 
@@ -400,10 +414,10 @@ All copy in pt-BR, direct and friendly tone. No technical jargon or HTTP status 
 
 ## Registry Safety
 
-| Registry | Blocks Used | Safety Gate |
-|----------|-------------|-------------|
-| shadcn official | none | not applicable — project does not use shadcn |
-| Third-party | none | not applicable |
+| Registry        | Blocks Used | Safety Gate                                  |
+| --------------- | ----------- | -------------------------------------------- |
+| shadcn official | none        | not applicable — project does not use shadcn |
+| Third-party     | none        | not applicable                               |
 
 No third-party component registries declared. All components built from project-internal patterns.
 

@@ -27,8 +27,18 @@ function formatDate(dateStr: string): string {
 function getMonthLabel(referenceMonth: string): string {
   const [year, month] = referenceMonth.split('-');
   const monthNames = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
   ];
   const m = parseInt(month, 10) - 1;
   return `${monthNames[m] ?? month}/${year}`;
@@ -61,11 +71,13 @@ interface SectionGroup {
 }
 
 function groupItemsBySection(items: CpPreviewItem[]): SectionGroup[] {
-  return Object.entries(CP_SECTION_KEYS).map(([title, types]) => {
-    const sectionItems = items.filter((it) => types.includes(it.type));
-    const total = sectionItems.reduce((sum, it) => sum + it.amount, 0);
-    return { title, items: sectionItems, total };
-  }).filter((g) => g.items.length > 0);
+  return Object.entries(CP_SECTION_KEYS)
+    .map(([title, types]) => {
+      const sectionItems = items.filter((it) => types.includes(it.type));
+      const total = sectionItems.reduce((sum, it) => sum + it.amount, 0);
+      return { title, items: sectionItems, total };
+    })
+    .filter((g) => g.items.length > 0);
 }
 
 export default function PayrollCpReviewModal({
@@ -165,58 +177,69 @@ export default function PayrollCpReviewModal({
               <caption className="sr-only">Contas a pagar a serem geradas no fechamento</caption>
               <thead>
                 <tr>
-                  <th scope="col" className="cp-review-modal__th">TIPO</th>
-                  <th scope="col" className="cp-review-modal__th">COLABORADOR</th>
-                  <th scope="col" className="cp-review-modal__th cp-review-modal__th--mono">VALOR</th>
-                  <th scope="col" className="cp-review-modal__th">VENCIMENTO</th>
-                  <th scope="col" className="cp-review-modal__th">CENTRO DE CUSTO</th>
+                  <th scope="col" className="cp-review-modal__th">
+                    TIPO
+                  </th>
+                  <th scope="col" className="cp-review-modal__th">
+                    COLABORADOR
+                  </th>
+                  <th scope="col" className="cp-review-modal__th cp-review-modal__th--mono">
+                    VALOR
+                  </th>
+                  <th scope="col" className="cp-review-modal__th">
+                    VENCIMENTO
+                  </th>
+                  <th scope="col" className="cp-review-modal__th">
+                    CENTRO DE CUSTO
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {isLoading &&
-                  Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)}
+                {isLoading && Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)}
 
-                {!isLoading && !error && sections.map((section) => (
-                  <tr key={section.title} className="cp-review-modal__section-row">
-                    <td colSpan={5} className="cp-review-modal__section-cell">
-                      <details className="cp-review-modal__details" open>
-                        <summary className="cp-review-modal__summary">
-                          <span className="cp-review-modal__section-title">{section.title}</span>
-                          <span className="cp-review-modal__section-total">
-                            {formatCurrency(section.total)}
-                          </span>
-                        </summary>
-                        <table className="cp-review-modal__inner-table">
-                          <tbody>
-                            {section.items.map((item, idx) => (
-                              <tr key={idx} className="cp-review-modal__inner-row">
-                                <td className="cp-review-modal__inner-td">
-                                  {CP_TYPE_LABELS[item.type] ?? item.type}
-                                </td>
-                                <td className="cp-review-modal__inner-td">
-                                  {item.employeeName ?? '—'}
-                                </td>
-                                <td className="cp-review-modal__inner-td cp-review-modal__inner-td--mono">
-                                  {formatCurrency(item.amount)}
-                                </td>
-                                <td className="cp-review-modal__inner-td">
-                                  {formatDate(item.dueDate)}
-                                </td>
-                                <td className="cp-review-modal__inner-td">
-                                  {item.costCenterItems.length > 0
-                                    ? item.costCenterItems
-                                        .map((cc) => `${cc.costCenterName} (${cc.percentage}%)`)
-                                        .join(', ')
-                                    : '—'}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </details>
-                    </td>
-                  </tr>
-                ))}
+                {!isLoading &&
+                  !error &&
+                  sections.map((section) => (
+                    <tr key={section.title} className="cp-review-modal__section-row">
+                      <td colSpan={5} className="cp-review-modal__section-cell">
+                        <details className="cp-review-modal__details" open>
+                          <summary className="cp-review-modal__summary">
+                            <span className="cp-review-modal__section-title">{section.title}</span>
+                            <span className="cp-review-modal__section-total">
+                              {formatCurrency(section.total)}
+                            </span>
+                          </summary>
+                          <table className="cp-review-modal__inner-table">
+                            <tbody>
+                              {section.items.map((item, idx) => (
+                                <tr key={idx} className="cp-review-modal__inner-row">
+                                  <td className="cp-review-modal__inner-td">
+                                    {CP_TYPE_LABELS[item.type] ?? item.type}
+                                  </td>
+                                  <td className="cp-review-modal__inner-td">
+                                    {item.employeeName ?? '—'}
+                                  </td>
+                                  <td className="cp-review-modal__inner-td cp-review-modal__inner-td--mono">
+                                    {formatCurrency(item.amount)}
+                                  </td>
+                                  <td className="cp-review-modal__inner-td">
+                                    {formatDate(item.dueDate)}
+                                  </td>
+                                  <td className="cp-review-modal__inner-td">
+                                    {item.costCenterItems.length > 0
+                                      ? item.costCenterItems
+                                          .map((cc) => `${cc.costCenterName} (${cc.percentage}%)`)
+                                          .join(', ')
+                                      : '—'}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </details>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -229,10 +252,18 @@ export default function PayrollCpReviewModal({
                 <caption className="sr-only">Guias de recolhimento tributário</caption>
                 <thead>
                   <tr>
-                    <th scope="col" className="cp-review-modal__th">TIPO</th>
-                    <th scope="col" className="cp-review-modal__th cp-review-modal__th--mono">VALOR</th>
-                    <th scope="col" className="cp-review-modal__th">VENCIMENTO</th>
-                    <th scope="col" className="cp-review-modal__th">COMPETÊNCIA</th>
+                    <th scope="col" className="cp-review-modal__th">
+                      TIPO
+                    </th>
+                    <th scope="col" className="cp-review-modal__th cp-review-modal__th--mono">
+                      VALOR
+                    </th>
+                    <th scope="col" className="cp-review-modal__th">
+                      VENCIMENTO
+                    </th>
+                    <th scope="col" className="cp-review-modal__th">
+                      COMPETÊNCIA
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -252,7 +283,10 @@ export default function PayrollCpReviewModal({
                     <td className="cp-review-modal__td cp-review-modal__td--label" colSpan={1}>
                       Total guias
                     </td>
-                    <td className="cp-review-modal__td cp-review-modal__td--mono cp-review-modal__td--total" colSpan={3}>
+                    <td
+                      className="cp-review-modal__td cp-review-modal__td--mono cp-review-modal__td--total"
+                      colSpan={3}
+                    >
                       {formatCurrency(data.totalTaxGuides)}
                     </td>
                   </tr>
@@ -281,16 +315,24 @@ export default function PayrollCpReviewModal({
               <div className="cp-review-modal__reconciliation-status">
                 {data.reconciled ? (
                   <>
-                    <CheckCircle size={16} aria-hidden="true" className="cp-review-modal__icon-ok" />
+                    <CheckCircle
+                      size={16}
+                      aria-hidden="true"
+                      className="cp-review-modal__icon-ok"
+                    />
                     <span>Total reconciliado com a folha.</span>
                   </>
                 ) : (
                   <>
-                    <AlertTriangle size={16} aria-hidden="true" className="cp-review-modal__icon-warn" />
+                    <AlertTriangle
+                      size={16}
+                      aria-hidden="true"
+                      className="cp-review-modal__icon-warn"
+                    />
                     <span>
                       Atenção: diferença de{' '}
-                      {formatCurrency(Math.abs(data.totalAmount - data.runTotalNet))}{' '}
-                      entre CPs e folha líquida. Verifique rateios por centro de custo.
+                      {formatCurrency(Math.abs(data.totalAmount - data.runTotalNet))} entre CPs e
+                      folha líquida. Verifique rateios por centro de custo.
                     </span>
                   </>
                 )}

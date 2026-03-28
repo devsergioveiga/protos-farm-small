@@ -1,10 +1,10 @@
 ---
 phase: 27-controle-de-ponto-e-jornada
-plan: "03"
+plan: '03'
 subsystem: backend/time-tracking
 tags: [time-entries, overtime-bank, timesheets, geofencing, pdf-export, rbac]
 dependency_graph:
-  requires: ["27-01", "27-02"]
+  requires: ['27-01', '27-02']
   provides: [time-entries-api, overtime-bank-api, timesheets-api]
   affects: [app.ts, permissions.ts]
 tech_stack:
@@ -52,6 +52,7 @@ metrics:
 ### Task 1: Time Entries + Overtime Bank (commit 5d92f665)
 
 **time-entries.service.ts** — 6 exported functions:
+
 - `createTimeEntry`: PostGIS `ST_Contains` geofence against `farms.boundary`, LOCKED month check via `payrollRunId IS NOT NULL`, MANAGER source note validation (10+ chars), night minutes calculation (21h–05h rural window), workedMinutes from clockIn/clockOut/break
 - `listTimeEntries`: paginated with farmId/employeeId/dateFrom/dateTo/source filters, max limit 200
 - `getTimeEntry`: full detail with activities
@@ -60,6 +61,7 @@ metrics:
 - `addTeamActivity`: fetches FieldTeam members, finds each member's TimeEntry for the date, calls addActivity for each — returns created/skipped counts (PONTO-02 modo rapido)
 
 **time-entries.routes.ts** — 6 endpoints:
+
 - `POST /org/:orgId/employees/:employeeId/time-entries` — attendance:write
 - `GET /org/:orgId/time-entries` — attendance:read
 - `GET /org/:orgId/time-entries/:id` — attendance:read
@@ -68,11 +70,13 @@ metrics:
 - `POST /org/:orgId/time-entries/team/:teamId/activities` — attendance:write (PONTO-02)
 
 **overtime-bank.service.ts** — 3 exported functions:
+
 - `getOvertimeBankSummary`: aggregates CREDIT/COMPENSATION/EXPIRATION, calculates currentBalance, expiringIn7Days, expiringIn30Days
 - `listOvertimeBankEntries`: paginated with employeeId/expiringBefore filters
 - `createOvertimeBankEntry`: validates employee, sets expiresAt = referenceMonth + 6 months
 
 **overtime-bank.routes.ts** — 3 endpoints:
+
 - `GET /org/:orgId/overtime-bank` — attendance:read
 - `GET /org/:orgId/overtime-bank/summary/:employeeId` — attendance:read
 - `POST /org/:orgId/overtime-bank` — attendance:write
@@ -82,6 +86,7 @@ metrics:
 ### Task 2: Timesheets + PDF (commit be38c655)
 
 **timesheets.service.ts** — 7 exported functions:
+
 - `createTimesheet`: validates employee, creates with DRAFT status, all totals=0
 - `calculateTimesheet`: fetches month's TimeEntries, runs calcDailyWork per day, calcMonthlyTotals, detects 4 inconsistency types, creates OvertimeBankEntry CREDIT if overtime50>0, transitions DRAFT→PENDING_MANAGER
 - `approveTimesheet`: state machine with VALID_TRANSITIONS map — APPROVE_MANAGER (→PENDING_RH), APPROVE_RH (→APPROVED), REJECT (→DRAFT, requires 20+ char justification), EMPLOYEE_ACCEPT, EMPLOYEE_DISPUTE
@@ -91,6 +96,7 @@ metrics:
 - `generateTimesheetPdf`: pdfkit A4 portrait — header, date table (data/entrada/intervalos/saída/horas/HE/noturno), totals row, 3-column signature section
 
 **timesheets.routes.ts** — 7 endpoints:
+
 - `POST /org/:orgId/timesheets` — attendance:write
 - `GET /org/:orgId/timesheets` — attendance:read
 - `GET /org/:orgId/timesheets/:id` — attendance:read
@@ -101,13 +107,14 @@ metrics:
 
 ## Tests
 
-| Suite | Tests | Result |
-| --- | --- | --- |
-| time-entries.routes.spec.ts | 7 | PASS |
-| timesheets.routes.spec.ts | 7 | PASS |
-| **Total** | **14** | **PASS** |
+| Suite                       | Tests  | Result   |
+| --------------------------- | ------ | -------- |
+| time-entries.routes.spec.ts | 7      | PASS     |
+| timesheets.routes.spec.ts   | 7      | PASS     |
+| **Total**                   | **14** | **PASS** |
 
 Test coverage:
+
 - POST create time entry returns 201
 - POST MANAGER source without managerNote returns 400
 - POST locked month returns 409

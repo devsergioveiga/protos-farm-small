@@ -61,7 +61,12 @@ function makeAbsence(overrides: Record<string, any> = {}) {
     returnDate: null,
     asoRequired: false,
     asoDocumentId: null,
-    payrollImpact: JSON.stringify({ companyPaidDays: 6, inssPaidDays: 0, suspendedDays: 0, fgtsFullMonth: true }),
+    payrollImpact: JSON.stringify({
+      companyPaidDays: 6,
+      inssPaidDays: 0,
+      suspendedDays: 0,
+      fgtsFullMonth: true,
+    }),
     notes: null,
     createdBy: 'user-1',
     createdAt: new Date(),
@@ -91,7 +96,12 @@ describe('createAbsence', () => {
     const absence = makeAbsence({
       absenceType: 'MEDICAL_CERTIFICATE',
       totalDays: 20,
-      payrollImpact: JSON.stringify({ companyPaidDays: 15, inssPaidDays: 5, suspendedDays: 0, fgtsFullMonth: true }),
+      payrollImpact: JSON.stringify({
+        companyPaidDays: 15,
+        inssPaidDays: 5,
+        suspendedDays: 0,
+        fgtsFullMonth: true,
+      }),
     });
     (mockPrisma.employeeAbsence.create as jest.Mock).mockResolvedValue(absence);
 
@@ -431,7 +441,12 @@ describe('listAbsences', () => {
 
     await listAbsences(
       'org-1',
-      { employeeId: 'emp-1', absenceType: 'MEDICAL_CERTIFICATE', from: '2026-01-01', to: '2026-01-31' },
+      {
+        employeeId: 'emp-1',
+        absenceType: 'MEDICAL_CERTIFICATE',
+        from: '2026-01-01',
+        to: '2026-01-31',
+      },
       rls,
     );
 

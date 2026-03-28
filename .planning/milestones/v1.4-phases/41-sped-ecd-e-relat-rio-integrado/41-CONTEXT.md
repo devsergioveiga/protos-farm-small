@@ -14,6 +14,7 @@ SpedEcdWriter custom (pipe-delimited, UTF-8, CRLF) gerando arquivo ECD com Bloco
 ## Implementation Decisions
 
 ### Formato SPED ECD
+
 - **D-01:** Geração **síncrona** — resposta HTTP direta com download do arquivo. Sem BullMQ/fila async. Arquivo texto puro pipe-delimited gera em segundos.
 - **D-02:** **Todos os blocos fixos**: Bloco 0 (abertura) + I (lançamentos/saldos) + J (demonstrações) + 9 (encerramento). Sem seleção de blocos.
 - **D-03:** Período: **exercício fiscal completo** (FiscalYear). Seletor de exercício fiscal, gera todos os meses do ano.
@@ -25,16 +26,18 @@ SpedEcdWriter custom (pipe-delimited, UTF-8, CRLF) gerando arquivo ECD com Bloco
 - **D-09:** Encoding: **UTF-8**. PVA 10.x aceita. Mais compatível com Node.js.
 - **D-10:** Quebra de linha: **CRLF (\r\n)** conforme manual SPED.
 - **D-11:** Assinatura: **sem hash interno** — PVA da RFB assina com certificado digital A1/A3. Sistema só gera o conteúdo.
-- **D-12:** Nome do arquivo: **SPED_ECD_{CNPJ}_{ANO}.txt** — padrão fixo. CNPJ da Organization.
+- **D-12:** Nome do arquivo: **SPED*ECD*{CNPJ}\_{ANO}.txt** — padrão fixo. CNPJ da Organization.
 - **D-13:** Registros I350/I355 (saldos diários): **omitidos**. Rurais usam I150/I155 (mensal). Simplifica geração.
 
 ### Pré-validação PVA
+
 - **D-14:** Severidade: **ERRO bloqueia download + AVISO informativo permite**. ERRO: contas sem spedRefCode, períodos não fechados, balancete desequilibrado, I050 duplicatas. AVISO: contas sem movimento, contas inativas.
 - **D-15:** Apresentação: **lista inline na página** com ícones vermelho (erro) / amarelo (aviso). Botão "Gerar SPED" desabilitado se houver erros. Links diretos para corrigir (ex: link para conta sem mapeamento).
 - **D-16:** Trigger: **automático ao selecionar exercício fiscal**. Usuário seleciona FiscalYear → validação roda automaticamente. Se tudo OK, botão "Gerar SPED" habilitado.
 - **D-17:** Consistência I155: **verificar** que soma dos débitos/créditos I250 bate com total de movimentação I155. Previne erros que o PVA pegaria.
 
 ### Relatório Integrado PDF
+
 - **D-18:** Estrutura: **6 seções** — (1) Capa com dados fazenda/empresa, (2) Índice, (3) DRE, (4) BP, (5) DFC método direto, (6) Notas explicativas. pdfkit (padrão do projeto).
 - **D-19:** Notas explicativas: **template automático + texto livre**. Notas geradas automaticamente (contexto operacional, políticas contábeis, CPC 29 se tem ativo biológico) + campo para notas adicionais do contador.
 - **D-20:** Dados da capa: **Organization + Farm selecionada**. Razão social e CNPJ da Organization. Se relatório por fazenda (filtro CC), mostra nome/endereço da fazenda. Logo: campo opcional na Organization.
@@ -42,11 +45,13 @@ SpedEcdWriter custom (pipe-delimited, UTF-8, CRLF) gerando arquivo ECD com Bloco
 - **D-22:** Formato numérico: **padrão BR** — separador milhar ponto, decimal vírgula, prefixo R$.
 
 ### Frontend e Navegação
+
 - **D-23:** **Página única /sped-ecd** com tabs: "SPED ECD" (geração + validação) e "Relatório Integrado" (PDF). Ambos usam mesmo seletor de exercício fiscal.
 - **D-24:** Sidebar: no **grupo CONTABILIDADE** existente, como último item. Label: "SPED / Relatórios".
 - **D-25:** Notas explicativas: **textarea na própria página** (tab Relatório Integrado). Salva como rascunho automático. Contador edita e depois gera PDF.
 
 ### Claude's Discretion
+
 - Estrutura interna do SpedEcdWriter (classe pura vs funções, streaming vs buffer completo)
 - Queries para buscar lançamentos do período (Prisma vs raw SQL)
 - Formato exato dos registros SPED (campos, padding, delimitadores internos)
@@ -60,20 +65,24 @@ SpedEcdWriter custom (pipe-delimited, UTF-8, CRLF) gerando arquivo ECD com Bloco
 </decisions>
 
 <canonical_refs>
+
 ## Canonical References
 
 **Downstream agents MUST read these before planning or implementing.**
 
 ### Requirements
+
 - `.planning/REQUIREMENTS.md` — VINC-02 (relatório integrado PDF), SPED-01 (arquivo ECD blocos 0/I/J/9), SPED-02 (pré-validação PVA)
 
 ### Prior Phase Context
+
 - `.planning/phases/39-dre-balan-o-patrimonial-e-valida-o-cruzada/39-CONTEXT.md` — DRE/BP calculator decisions, layout rural, indicadores
 - `.planning/phases/40-dfc-dashboard-executivo/40-CONTEXT.md` — DFC calculator, dashboard contábil, cross-validation
 - `.planning/phases/37-regras-e-lan-amentos-autom-ticos/37-CONTEXT.md` — auto-posting, JournalEntry model, AccountingRule
 - `.planning/phases/38-fechamento-mensal-e-concilia-o-cont-bil/38-CONTEXT.md` — fechamento mensal, period status, MonthlyClosing
 
 ### Existing Modules (Backend)
+
 - `apps/backend/src/modules/chart-of-accounts/coa-rural-template.ts` — Template COA rural com spedRefCode L300R mapeado em cada conta
 - `apps/backend/src/modules/chart-of-accounts/chart-of-accounts.service.ts` — getUnmappedSped(), getTree(), seed COA template
 - `apps/backend/src/modules/financial-statements/dre.calculator.ts` — calculateDre (dados para Bloco J150 e PDF)
@@ -85,22 +94,27 @@ SpedEcdWriter custom (pipe-delimited, UTF-8, CRLF) gerando arquivo ECD com Bloco
 - `apps/backend/src/modules/financial-statements/accounting-dashboard.service.ts` — spedRefCode null check pattern (reuse for validation)
 
 ### Schema
+
 - `apps/backend/prisma/schema.prisma` — ChartOfAccount (spedRefCode, accountType, isSynthetic, isActive, level, code), AccountBalance, JournalEntry, FiscalYear, AccountingPeriod, Organization
 
 ### Existing Frontend Pages
+
 - `apps/frontend/src/pages/DrePage.tsx` — fiscal year/month selector pattern
 - `apps/frontend/src/pages/TrialBalancePage.tsx` — tabs pattern
 - `apps/frontend/src/pages/FinancialDashboardPage.tsx` — alerts with links pattern
 
 ### Design System
+
 - `docs/design-system/04-componentes.md` — Cards, tabelas, toggles, badges, tabs
 
 </canonical_refs>
 
 <code_context>
+
 ## Existing Code Insights
 
 ### Reusable Assets
+
 - `spedRefCode` field on ChartOfAccount: already populated by COA rural template with L300R codes — no mapping needed
 - `getUnmappedSped()` in chart-of-accounts.service: returns accounts without spedRefCode — reusable for pre-validation
 - `calculateDre()`, `calculateBp()`, `calculateDfc()`: pure calculators providing data for both SPED blocks and PDF
@@ -110,6 +124,7 @@ SpedEcdWriter custom (pipe-delimited, UTF-8, CRLF) gerando arquivo ECD com Bloco
 - Fiscal year selector: reusable from DrePage/BalanceSheetPage
 
 ### Established Patterns
+
 - Pure calculator functions (no Prisma) — DRE/BP/DFC follow this
 - Service layer orchestrates: load DB data → call pure calculator → return
 - pdfkit for PDF generation with buffer response
@@ -118,6 +133,7 @@ SpedEcdWriter custom (pipe-delimited, UTF-8, CRLF) gerando arquivo ECD com Bloco
 - Express 5: `req.params.id as string`, `req.query.x as string | undefined`
 
 ### Integration Points
+
 - `financial-statements.service.ts` — add generateSpedEcd() and generateIntegratedReport() methods
 - Organization model — add accountantName, accountantCrc, accountantCpf fields (migration)
 - App.tsx routes — add /sped-ecd
@@ -146,5 +162,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 41-sped-ecd-e-relat-rio-integrado*
-*Context gathered: 2026-03-28*
+_Phase: 41-sped-ecd-e-relat-rio-integrado_
+_Context gathered: 2026-03-28_

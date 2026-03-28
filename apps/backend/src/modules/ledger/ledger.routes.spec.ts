@@ -247,7 +247,9 @@ describe('GET /api/org/:orgId/ledger/razao', () => {
   });
 
   it('returns 422 when service throws LedgerError', async () => {
-    mockedService.getLedger.mockRejectedValue(new LedgerError('Conta não encontrada', 'NOT_FOUND', 404));
+    mockedService.getLedger.mockRejectedValue(
+      new LedgerError('Conta não encontrada', 'NOT_FOUND', 404),
+    );
 
     const res = await request(app)
       .get(`${BASE}/razao`)
@@ -263,12 +265,20 @@ describe('GET /api/org/:orgId/ledger/razao', () => {
 
     await request(app)
       .get(`${BASE}/razao`)
-      .query({ accountId: 'acct-1', startDate: '2024-01-01', endDate: '2024-01-31', costCenterId: 'cc-1' })
+      .query({
+        accountId: 'acct-1',
+        startDate: '2024-01-01',
+        endDate: '2024-01-31',
+        costCenterId: 'cc-1',
+      })
       .set('Authorization', 'Bearer token');
 
-    expect(mockedService.getLedger).toHaveBeenCalledWith(ORG_ID, expect.objectContaining({
-      costCenterId: 'cc-1',
-    }));
+    expect(mockedService.getLedger).toHaveBeenCalledWith(
+      ORG_ID,
+      expect.objectContaining({
+        costCenterId: 'cc-1',
+      }),
+    );
   });
 });
 
@@ -281,7 +291,8 @@ describe('GET /api/org/:orgId/ledger/razao/export/csv', () => {
   });
 
   it('returns CSV with correct headers and content-type', async () => {
-    const csvContent = '\uFEFFData;Numero;Historico;Debito;Credito;Saldo\n05/01/2024;1;Venda;1000.00;;1000.00\n';
+    const csvContent =
+      '\uFEFFData;Numero;Historico;Debito;Credito;Saldo\n05/01/2024;1;Venda;1000.00;;1000.00\n';
     mockedService.exportLedgerCsv.mockResolvedValue(csvContent);
 
     const res = await request(app)
@@ -463,9 +474,12 @@ describe('GET /api/org/:orgId/ledger/diario', () => {
       .query({ startDate: '2024-01-01', endDate: '2024-01-31', entryType: 'MANUAL' })
       .set('Authorization', 'Bearer token');
 
-    expect(mockedService.getDailyBook).toHaveBeenCalledWith(ORG_ID, expect.objectContaining({
-      entryType: 'MANUAL',
-    }));
+    expect(mockedService.getDailyBook).toHaveBeenCalledWith(
+      ORG_ID,
+      expect.objectContaining({
+        entryType: 'MANUAL',
+      }),
+    );
   });
 
   it('returns 401 without auth', async () => {

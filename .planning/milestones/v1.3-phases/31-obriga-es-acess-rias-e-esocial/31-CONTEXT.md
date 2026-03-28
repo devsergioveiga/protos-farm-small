@@ -55,23 +55,28 @@ Compliance fiscal e trabalhista completo: geração de guias de recolhimento (FG
 </decisions>
 
 <canonical_refs>
+
 ## Canonical References
 
 **Downstream agents MUST read these before planning or implementing.**
 
 ### Requisitos e Roadmap
+
 - `.planning/REQUIREMENTS.md` — ESOCIAL-01, ESOCIAL-02, ESOCIAL-03 (critérios de aceite detalhados)
 - `.planning/ROADMAP.md` §Phase 31 — Goal, success criteria, dependencies
 
 ### Documentação de Domínio
+
 - `protos-farm-documentation-small/ProtosFarm_Fase3_RH_Folha_UserStories.docx` — User stories originais de RH e Folha de Pagamento
 
 ### Decisões Anteriores (Phases 28-30)
+
 - `.planning/phases/28-processamento-da-folha-mensal/28-CONTEXT.md` — PayrollRun, holerites, adiantamento, 13º, estorno, distribuição email
 - `.planning/phases/30-seguranca-trabalho-nr31/30-CONTEXT.md` — ASOs e MedicalExam (SST events source), TrainingRecord, EpiDelivery
 - `.planning/phases/25-cadastro-de-colaboradores-e-contratos/25-CONTEXT.md` — Employee entity, contracts, state machine (admissão/rescisão events source)
 
 ### Motor de Cálculo e Rubricas (já implementados)
+
 - `apps/backend/src/modules/payroll-engine/payroll-engine.service.ts` — calculateINSS, calculateIRRF, calculateFGTS (totais para guias)
 - `apps/backend/src/modules/payroll-engine/payroll-engine.types.ts` — INSSResult, IRRFResult, FGTSResult
 - `apps/backend/src/modules/payroll-rubricas/` — Rubricas com eSocialCode (mapeamento para eventos periódicos)
@@ -79,18 +84,22 @@ Compliance fiscal e trabalhista completo: geração de guias de recolhimento (FG
 - `apps/backend/src/modules/payroll-runs/` — PayrollRun com items, totais por colaborador
 
 ### Contas a Pagar (integração)
+
 - `apps/backend/src/modules/payables/` — originType/originId upsert pattern (reusar para TAX_GUIDE)
 
 ### Design System
+
 - `docs/design-system/04-componentes.md` — Specs de componentes (modals, tabs, tables, chips de status)
 - `docs/design-system/05-padroes-ux.md` — Padrões UX (voz pt-BR, validação, formulários)
 
 </canonical_refs>
 
 <code_context>
+
 ## Existing Code Insights
 
 ### Reusable Assets
+
 - `payroll-engine` — calculateINSS/IRRF/FGTS retornam totais que alimentam as guias
 - `payroll-runs` — PayrollRun com items agregados por competência (fonte dos valores das guias e eventos periódicos)
 - `payroll-rubricas` — Rubricas com `eSocialCode` já mapeado (alimenta S-1010 e S-1200)
@@ -103,6 +112,7 @@ Compliance fiscal e trabalhista completo: geração de guias de recolhimento (FG
 - EmployeeAbsence (Phase 29) — fonte para eventos S-2230 (afastamentos)
 
 ### Established Patterns
+
 - PayrollRun state machine (PENDING→PROCESSING→COMPLETED|ERROR) — modelo para EsocialEvent status
 - Payables upsert prevents duplicate CPs on re-processing
 - Express 5 module pattern: service + routes + types + spec colocalizados
@@ -111,6 +121,7 @@ Compliance fiscal e trabalhista completo: geração de guias de recolhimento (FG
 - Status chips coloridos: padrão existente em várias páginas
 
 ### Integration Points
+
 - PayrollRun.items → fonte para guias FGTS/INSS/IRRF (somar por competência)
 - PayrollRun fechamento → trigger eventos periódicos S-1200/S-1210/S-1299
 - Employee admissão/rescisão → trigger eventos não periódicos S-2200/S-2299
@@ -149,5 +160,5 @@ Compliance fiscal e trabalhista completo: geração de guias de recolhimento (FG
 
 ---
 
-*Phase: 31-obriga-es-acess-rias-e-esocial*
-*Context gathered: 2026-03-26*
+_Phase: 31-obriga-es-acess-rias-e-esocial_
+_Context gathered: 2026-03-26_

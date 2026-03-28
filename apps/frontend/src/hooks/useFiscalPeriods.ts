@@ -95,7 +95,11 @@ export function useReopenPeriod() {
   const [isLoading, setIsLoading] = useState(false);
 
   const mutate = useCallback(
-    async (periodId: string, reopenedBy: string, reopenReason: string): Promise<AccountingPeriod> => {
+    async (
+      periodId: string,
+      reopenedBy: string,
+      reopenReason: string,
+    ): Promise<AccountingPeriod> => {
       if (!orgId) throw new Error('Organização não encontrada');
       setIsLoading(true);
       try {

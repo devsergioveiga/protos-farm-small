@@ -116,8 +116,7 @@ export async function createAcquisitionAndPayable(
         carCode: input.carCode,
         currentHourmeter:
           input.currentHourmeter != null ? String(input.currentHourmeter) : undefined,
-        currentOdometer:
-          input.currentOdometer != null ? String(input.currentOdometer) : undefined,
+        currentOdometer: input.currentOdometer != null ? String(input.currentOdometer) : undefined,
         photoUrls: [],
         notes: input.notes,
       },
@@ -140,8 +139,7 @@ export async function createAcquisitionAndPayable(
     }
 
     // Determine installment parameters
-    const installmentCount =
-      input.paymentType === 'AVISTA' ? 1 : (input.installmentCount ?? 1);
+    const installmentCount = input.paymentType === 'AVISTA' ? 1 : (input.installmentCount ?? 1);
     const firstDueDate = new Date(
       input.paymentType === 'AVISTA' ? input.dueDate! : input.firstDueDate!,
     );
@@ -320,17 +318,12 @@ export async function createFromNfe(
 
     if (totalNf > 0 && (input.dueDate || input.firstDueDate)) {
       const supplierName = nfeParsed.supplierName ?? '';
-      const installmentCount =
-        input.paymentType === 'AVISTA' ? 1 : (input.installmentCount ?? 1);
+      const installmentCount = input.paymentType === 'AVISTA' ? 1 : (input.installmentCount ?? 1);
       const firstDueDateObj = new Date(
         input.paymentType === 'AVISTA' ? input.dueDate! : input.firstDueDate!,
       );
 
-      const installments = generateInstallments(
-        Money(totalNf),
-        installmentCount,
-        firstDueDateObj,
-      );
+      const installments = generateInstallments(Money(totalNf), installmentCount, firstDueDateObj);
 
       const payable = await tx.payable.create({
         data: {

@@ -1,8 +1,13 @@
 /* ─── AssetWipContributionsTab ───────────────────────────────────────────── */
 
 @keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .wip-tab {
@@ -93,7 +98,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wip-tab__progress-fill { transition: none; }
+  .wip-tab__progress-fill {
+    transition: none;
+  }
 }
 
 .wip-tab__progress-fill--healthy {
@@ -448,7 +455,9 @@
   font-weight: 600;
   cursor: pointer;
   min-height: 48px;
-  transition: background 200ms ease-out, border-color 200ms ease-out;
+  transition:
+    background 200ms ease-out,
+    border-color 200ms ease-out;
   align-self: flex-start;
 }
 

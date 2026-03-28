@@ -319,12 +319,10 @@ describe('Asset Trade-ins API', () => {
     });
 
     it('Test 10: Unauthenticated request returns 401', async () => {
-      const res = await request(app)
-        .post(BASE_TRADE_INS)
-        .send({
-          farmId: 'farm-1',
-          tradedAssetId: 'asset-old-1',
-        });
+      const res = await request(app).post(BASE_TRADE_INS).send({
+        farmId: 'farm-1',
+        tradedAssetId: 'asset-old-1',
+      });
 
       expect(res.status).toBe(401);
     });
@@ -337,9 +335,7 @@ describe('Asset Trade-ins API', () => {
       authAs(MANAGER_PAYLOAD);
       mockedService.listTradeIns.mockResolvedValue([TRADE_IN_OUTPUT]);
 
-      const res = await request(app)
-        .get(BASE_TRADE_INS)
-        .set('Authorization', 'Bearer token');
+      const res = await request(app).get(BASE_TRADE_INS).set('Authorization', 'Bearer token');
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);

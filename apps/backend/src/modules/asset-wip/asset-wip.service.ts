@@ -114,11 +114,7 @@ export async function getWipSummary(ctx: RlsContext, assetId: string) {
   };
 }
 
-export async function activateWipAsset(
-  ctx: RlsContext,
-  assetId: string,
-  input: ActivateWipInput,
-) {
+export async function activateWipAsset(ctx: RlsContext, assetId: string, input: ActivateWipInput) {
   return prisma.$transaction(async (tx) => {
     const txAny = tx as TxAny;
 

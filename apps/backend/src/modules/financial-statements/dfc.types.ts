@@ -8,8 +8,8 @@ export interface DfcFilters {
 }
 
 export interface DfcSectionRow {
-  id: string;           // e.g. 'recebimentos-clientes', 'pagamento-fornecedores'
-  label: string;        // Human-readable pt-BR label
+  id: string; // e.g. 'recebimentos-clientes', 'pagamento-fornecedores'
+  label: string; // Human-readable pt-BR label
   currentMonth: string; // Decimal string
   ytd: string;
   priorYear: string;
@@ -18,7 +18,7 @@ export interface DfcSectionRow {
 
 export interface DfcSection {
   id: 'operacional' | 'investimento' | 'financiamento';
-  label: string;        // 'Atividades Operacionais' etc.
+  label: string; // 'Atividades Operacionais' etc.
   rows: DfcSectionRow[];
   subtotal: DfcSectionRow;
 }
@@ -31,8 +31,8 @@ export interface DfcCashSummary {
 
 // Input for direto: paid CP/CR grouped by category
 export interface DfcPaidItem {
-  category: string;          // PayableCategory or ReceivableCategory
-  amount: string;            // Decimal string (positive)
+  category: string; // PayableCategory or ReceivableCategory
+  amount: string; // Decimal string (positive)
   type: 'outflow' | 'inflow';
 }
 
@@ -43,8 +43,8 @@ export interface DfcDiretoInput {
   cashBalances: {
     currentMonthOpening: string;
     currentMonthClosing: string;
-    ytdOpening: string;       // month 1 opening
-    ytdClosing: string;       // current month closing
+    ytdOpening: string; // month 1 opening
+    ytdClosing: string; // current month closing
     priorYearOpening: string;
     priorYearClosing: string;
   };
@@ -59,7 +59,7 @@ export interface DfcDiretoOutput {
 export interface DfcIndiretoInput {
   lucroLiquido: { currentMonth: string; ytd: string; priorYear: string };
   depreciacao: { currentMonth: string; ytd: string; priorYear: string };
-  provisoes: { currentMonth: string; ytd: string; priorYear: string };     // delta provisoes (ferias+13o)
+  provisoes: { currentMonth: string; ytd: string; priorYear: string }; // delta provisoes (ferias+13o)
   cpc29FairValue: { currentMonth: string; ytd: string; priorYear: string }; // variacao valor justo
   workingCapitalDeltas: {
     deltaContasReceber: { currentMonth: string; ytd: string; priorYear: string };
@@ -74,7 +74,7 @@ export interface DfcIndiretoInput {
 }
 
 export interface DfcIndiretoOutput {
-  sections: DfcSection[];  // operacional (adjustments) + investimento + financiamento
+  sections: DfcSection[]; // operacional (adjustments) + investimento + financiamento
   cash: DfcCashSummary;
 }
 

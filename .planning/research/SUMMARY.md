@@ -26,6 +26,7 @@ The milestone requires zero new npm packages. Every capability needed already ex
 The one architectural decision with no off-the-shelf solution is SPED ECD file generation. No production-ready Node.js library exists (the `sped-br` GitHub org is Python-only; `sped-checker` npm package validates only, does not generate). The correct approach is a custom `SpedEcdWriter` class in `src/shared/sped/` using the same record-by-record string accumulation pattern as the existing `CnabAdapter`.
 
 **Core technologies:**
+
 - `pdfkit` (existing): PDF generation for DRE, BP, DFC, closing reports — reuse established page-break pattern
 - `decimal.js` via `Money()` (existing): All GL amounts, rateio splits, account balances — mandatory for BRL precision
 - `exceljs` (existing): Trial balance and ledger CSV/XLSX export
@@ -39,6 +40,7 @@ The one architectural decision with no off-the-shelf solution is SPED ECD file g
 All three research files converge on the same feature dependency chain: Chart of Accounts is the gate for everything else.
 
 **Must have — v1.4 MVP (P1):**
+
 - Hierarchical chart of accounts (5 levels) with pre-loaded rural template (CFC/Embrapa model) and SPED referential account mapping
 - Accounting periods with open/closed/reopened status and period-lock enforcement on every GL write
 - Automatic journal entry generation for the four highest-volume event types: AP settlement, AR receipt, payroll run close, depreciation run
@@ -52,6 +54,7 @@ All three research files converge on the same feature dependency chain: Chart of
 - DFC direct method leveraging existing cash flow classification from v1.0
 
 **Should have — v1.4 completion (P2):**
+
 - DFC indirect method (requires BP working first — CPC 03 R2)
 - Per-culture / per-farm DRE drill-down via cost center attribution — the key rural differentiator
 - Cross-statement validation panel (DRE net income = BP retained earnings change; DFC = BP cash change; BP assets = liabilities + PL)
@@ -61,6 +64,7 @@ All three research files converge on the same feature dependency chain: Chart of
 - Executive accounting dashboard
 
 **Defer to v1.5+:**
+
 - Full LALUR / ECF (tax compliance scope, specialist complexity, separate product category)
 - Budget planning module (separate product category)
 - NF-e emission (requires SEFAZ homologation and digital certificate management)
@@ -70,6 +74,7 @@ All three research files converge on the same feature dependency chain: Chart of
 The architecture is built around 8 new backend modules following the established colocation pattern, plus GL hooks added to 6 existing modules (payroll, depreciation, payables, receivables, stock-entries, stock-outputs). The existing `accounting-entries` module is frozen read-only — it must not be extended. The new module boundary follows a clear write-side (`journal-entries`) / read-side (`ledger`) split with pure calculation engines for DRE/BP/DFC that have no Prisma imports, mirroring the `payroll-calculation.service.ts` pattern that produced 43 tests without a database.
 
 **Major components:**
+
 1. `modules/chart-of-accounts/` — Hierarchical COA CRUD, rural template seed, SPED referential mapping; foundation for all GL writes
 2. `modules/fiscal-periods/` — Period open/close/reopen with closing checklist; `assertPeriodOpen()` wired on every GL write
 3. `modules/journal-entries/` — Manual and automatic GL write engine; supersedes `accounting-entries` stub; enforces `assertBalanced()` and period lock
@@ -80,6 +85,7 @@ The architecture is built around 8 new backend modules following the established
 8. `modules/accounting-dashboard/` — Executive KPI aggregation endpoint (presentation only, no new data sources)
 
 **Key data model decisions:**
+
 - Two-table GL: `JournalEntry` (header) + `JournalEntryLine` (account, side, amount, cost center) — never flat columns
 - `AccountBalance` incremental cache table updated in the same Prisma transaction as journal entry posting (mirrors `StockBalance`)
 - `PendingJournalPosting` queue table with `UNIQUE(sourceType, sourceId)` constraint for idempotent auto-generation
@@ -118,6 +124,7 @@ ChartOfAccounts + FiscalPeriods (foundation)
 ```
 
 ### Phase 1: Plano de Contas e Períodos Fiscais
+
 **Rationale:** Hard gate for everything else. No GL write can proceed without a valid COA and an open period. This phase also introduces the two-table schema that unfreezes the rest of the milestone and establishes all shared utilities.
 **Delivers:** `ChartOfAccount` model + rural template seed (CFC/Embrapa model + SPED referential mapping), `FiscalPeriod` + `FiscalYear` models, `AccountBalance` cache table, `assertPeriodOpen()` utility, `assertBalanced()` utility, `rateio()` utility, COA CRUD API + frontend page, `isFairValueAdjustment` flag in model
 **Addresses:** EPIC-C1 (Chart of Accounts, Accounting Periods, SPED referential mapping, Cost center linkage)
@@ -125,6 +132,7 @@ ChartOfAccounts + FiscalPeriods (foundation)
 **Research flag:** Standard patterns — PostgreSQL recursive CTE + Prisma self-referential model are well-documented; no additional research needed
 
 ### Phase 2: Lançamentos Manuais e Saldo de Abertura
+
 **Rationale:** Manual journal entry engine must exist before any module integration. The opening balance wizard must be available before financial statements produce meaningful output.
 **Delivers:** `JournalEntry` + `JournalEntryLine` tables and service, manual entry form with `assertBalanced()`, entry reversal (estorno) with audit trail, opening balance wizard pre-populating from existing modules, General Ledger (Razão) read view, Trial Balance (Balancete de Verificação) in three-column format
 **Addresses:** EPIC-C2 (manual entries, reversal, Razão, Balancete); Pitfall 7 (historical data continuity)
@@ -132,6 +140,7 @@ ChartOfAccounts + FiscalPeriods (foundation)
 **Research flag:** Standard patterns — double-entry two-table schema is industry standard; no additional research needed
 
 ### Phase 3: Regras e Lançamentos Automáticos
+
 **Rationale:** The highest-value deliverable. Connects all 4 existing milestones to the GL engine without manual re-entry. Must follow Phase 2 (writes to new tables). `PendingJournalPosting` queue is the idempotency mechanism.
 **Delivers:** `AccountingRule` model and admin UI, `PendingJournalPosting` queue table with BullMQ processor, GL hooks for payroll close, depreciation run, AP settlement, AR receipt, stock entries/outputs; accounting dashboard "missing postings" alert section; fix for existing `createPayrollEntries` duplicate bug
 **Addresses:** EPIC-C2 (automatic journal entries — all module event types); differentiator "zero manual mapping for standard farms"
@@ -139,6 +148,7 @@ ChartOfAccounts + FiscalPeriods (foundation)
 **Research flag:** Needs phase research — mapping rules for all 40-60 auto-generation rule types, FUNRURAL producer vs. employer account code distinction, and cost center attribution requirements per event type need precise Brazilian accounting guidance before implementation
 
 ### Phase 4: Fechamento Mensal
+
 **Rationale:** Cannot close a period without confirmed postings from all modules. Phase 3 (auto-generation) must be complete first. Period close is the workflow gate before financial statements carry legal weight.
 **Delivers:** Monthly closing checklist with automated status queries (payroll closed? depreciation posted? bank reconciliation done?), period lock enforcement on all GL writes, controlled reopening with audit log (`reopenedBy`, reason), accounting bank reconciliation (razão vs. extrato) as second layer on v1.0 bank reconciliation
 **Addresses:** EPIC-C3 (closing checklist, accounting bank reconciliation, period lock and controlled reopening)
@@ -146,6 +156,7 @@ ChartOfAccounts + FiscalPeriods (foundation)
 **Research flag:** Standard patterns — closing checklist pattern already established in codebase (sanitary protocols, payroll close workflow)
 
 ### Phase 5: DRE e Balanço Patrimonial
+
 **Rationale:** Financial statements are the primary end-user deliverable. DRE and BP are built together because cross-validation (DRE net income = BP retained earnings change) requires both simultaneously.
 **Delivers:** Pure `DreCalculatorService` and `BpCalculatorService` (no Prisma imports, independently testable), DRE with rural layout + vertical/horizontal analysis + comparison columns, BP with CPC 29 biological asset classes + financial indicators (Liquidez Corrente, Liquidez Seca, Endividamento Geral, PL/hectare), cross-statement validation panel (4 invariant checks), PDF integrated financial report with explanatory notes
 **Addresses:** EPIC-C4 (DRE), EPIC-C5 (BP), differentiator "per-culture DRE drill-down" (via cost center filter on journal entries), differentiator "cross-statement validation panel"
@@ -153,6 +164,7 @@ ChartOfAccounts + FiscalPeriods (foundation)
 **Research flag:** Needs phase research — CPC 29 biological asset DRE section layout and exact rural account group codes for fair value adjustments are sparsely documented; verify against current CFC/Embrapa model before implementation
 
 ### Phase 6: DFC e Dashboard Executivo
+
 **Rationale:** DFC direct method reuses v1.0 cash flow classification (already built). DFC indirect method requires BP beginning/ending balances — Phase 5 must be complete first. Executive dashboard is presentation-only (no new data sources).
 **Delivers:** `DfcCalculatorService` (direct + indirect), DFC direct using v1.0 cash event classification aggregated into CPC 03 R2 sections (Operacional, Investimento, Financiamento), DFC indirect method with working capital deltas and non-cash reversal (depreciation, provisions, biological asset fair value via `isFairValueAdjustment`), DFC cross-validation against BP cash change, executive accounting dashboard with 12-month trend charts (Recharts, already installed)
 **Addresses:** EPIC-C6 (DFC direct + indirect), executive dashboard differentiator
@@ -160,6 +172,7 @@ ChartOfAccounts + FiscalPeriods (foundation)
 **Research flag:** Needs phase research — DFC indirect method CPC 03 R2 reconciliation line items and biological asset fair value reversal treatment need verification against official CVM source
 
 ### Phase 7: SPED ECD
+
 **Rationale:** Strictly last. Requires validated closed-period balances and a working financial statement pipeline. Cannot produce a valid file before all other phases compute correct data.
 **Delivers:** Custom `SpedEcdWriter` class in `src/shared/sped/`, all ECD block builders (Blocos 0, I, J, K optional, 9), key registers: I010, I050, I100, I150/I155, I200/I250, I350/I355, J150/J210, pre-submission validator against PVA rules (I050 uniqueness, period balance, analytic-only postings), async BullMQ generation for large files, safra fiscal year support in `DT_INI`/`DT_FIN`
 **Addresses:** EPIC-C7 (SPED ECD generation + pre-submission validation)
@@ -178,12 +191,14 @@ ChartOfAccounts + FiscalPeriods (foundation)
 ### Research Flags
 
 Phases needing deeper research during planning:
+
 - **Phase 3:** Brazilian accounting rules for all 40-60 auto-generation rule types; FUNRURAL producer vs. employer account code distinction (two different legal instruments); cost center attribution requirements per event type
 - **Phase 5:** CPC 29 biological asset DRE presentation and exact account group codes for `Variação Valor Justo Ativo Biológico` in Brazilian rural GAAP; verify against current CFC/Embrapa rural chart-of-accounts model
 - **Phase 6:** DFC indirect method CPC 03 R2 reconciliation items; biological asset fair value reversal treatment; verify against official CVM publication
 - **Phase 7:** SPED ECD Leiaute 11 vs. 12 specific record differences (I155, I157 changes for 2025 fiscal year); L300R rural referential account codes; PGE validator version for CI use
 
 Phases with standard patterns (skip research-phase):
+
 - **Phase 1:** PostgreSQL recursive CTE, self-referential Prisma model, period management — well-documented and directly analogous to existing patterns
 - **Phase 2:** Two-table double-entry schema, manual entry form with balance validation, reversal pattern — industry standard
 - **Phase 4:** Closing checklist pattern already established in codebase (sanitary protocols module, payroll close); period lock is a straightforward service guard
@@ -192,12 +207,12 @@ Phases with standard patterns (skip research-phase):
 
 ## Confidence Assessment
 
-| Area | Confidence | Notes |
-|------|------------|-------|
-| Stack | HIGH | Zero new packages confirmed. All existing library versions verified on npm registry March 2026. SpedEcdWriter approach confirmed — no Node.js library exists for ECD generation. |
-| Features | HIGH | Brazilian accounting law (Lei 6.404/76), CPC standards, SPED ECD obligations, and rural accounting requirements are officially published. Competitor landscape verified against Aegro, Omie, Senior, TOTVS. |
-| Architecture | HIGH | Based on direct codebase inspection of all 4 prior milestones. Existing patterns (StockBalance, CnabAdapter, payroll-calculation.service.ts) are directly applicable and confirmed. |
-| Pitfalls | HIGH for integration pitfalls (derived from direct code analysis of existing accounting-entries, payroll, depreciation modules); MEDIUM for CPC 29 biological asset GL treatment (principle clear, Brazilian application sparsely documented); LOW for safra-year edge cases (community forum only) |
+| Area         | Confidence                                                                                                                                                                                                                                                                                          | Notes                                                                                                                                                                                                       |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stack        | HIGH                                                                                                                                                                                                                                                                                                | Zero new packages confirmed. All existing library versions verified on npm registry March 2026. SpedEcdWriter approach confirmed — no Node.js library exists for ECD generation.                            |
+| Features     | HIGH                                                                                                                                                                                                                                                                                                | Brazilian accounting law (Lei 6.404/76), CPC standards, SPED ECD obligations, and rural accounting requirements are officially published. Competitor landscape verified against Aegro, Omie, Senior, TOTVS. |
+| Architecture | HIGH                                                                                                                                                                                                                                                                                                | Based on direct codebase inspection of all 4 prior milestones. Existing patterns (StockBalance, CnabAdapter, payroll-calculation.service.ts) are directly applicable and confirmed.                         |
+| Pitfalls     | HIGH for integration pitfalls (derived from direct code analysis of existing accounting-entries, payroll, depreciation modules); MEDIUM for CPC 29 biological asset GL treatment (principle clear, Brazilian application sparsely documented); LOW for safra-year edge cases (community forum only) |
 
 **Overall confidence:** HIGH for Phases 1-4 and 7. MEDIUM for Phases 5-6 (CPC 29 fair value treatment, DFC indirect reconciliation) — these need phase-level research before requirements are written.
 
@@ -213,6 +228,7 @@ Phases with standard patterns (skip research-phase):
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - RFB SPED ECD official documentation (sped.rfb.gov.br) — block structure, Leiaute 9/11/12, L300R rural referential accounts
 - CVM CPC 03 R2 (official) — DFC direct and indirect method requirements
 - CPC 29 / IAS 41 (official, via Unifaj academic publication) — biological asset fair value treatment
@@ -220,6 +236,7 @@ Phases with standard patterns (skip research-phase):
 - npm registry (March 2026) — pdfkit 0.17.2, decimal.js 10.6.0, exceljs 4.4.0 verified
 
 ### Secondary (MEDIUM confidence)
+
 - Qive Blog, Econet — SPED ECD 2025 obligations and deadlines
 - Senior ERP documentation — integration contábil patterns reference
 - Aegro, Omie product analysis — rural accounting competitor feature landscape
@@ -228,9 +245,11 @@ Phases with standard patterns (skip research-phase):
 - CNA Brasil — rural accounting Brazilian particularities
 
 ### Tertiary (LOW confidence)
+
 - pdfkit-table 0.1.45 compatibility with pdfkit 0.17 — community, needs verification before use
 - Safra-year fiscal calendar ECD submission edge cases — community forum only; needs RFB official source
 
 ---
-*Research completed: 2026-03-27*
-*Ready for roadmap: yes*
+
+_Research completed: 2026-03-27_
+_Ready for roadmap: yes_

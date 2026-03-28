@@ -176,7 +176,9 @@
   cursor: pointer;
   border-radius: 6px;
   color: var(--color-neutral-500, #857f78);
-  transition: background 100ms ease-out, color 100ms ease-out;
+  transition:
+    background 100ms ease-out,
+    color 100ms ease-out;
 }
 
 .coa-tree-node__action-btn:hover {

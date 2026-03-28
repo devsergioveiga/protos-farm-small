@@ -1,32 +1,32 @@
 ---
 phase: 22-hierarquia-avancada-imobilizado-andamento
-plan: "03"
+plan: '03'
 subsystem: ui
 tags: [react, typescript, assets, hierarchy, wip, renovation, frontend]
 
 requires:
   - phase: 22-01
-    provides: "Backend endpoints for asset hierarchy, renovations, and WIP management"
+    provides: 'Backend endpoints for asset hierarchy, renovations, and WIP management'
   - phase: 22-02
-    provides: "Backend WIP routes, activation, stages, and budget alert logic"
+    provides: 'Backend WIP routes, activation, stages, and budget alert logic'
 provides:
-  - "AssetHierarchyTab: tree view of parent-child hierarchy with BRL totalization"
-  - "AssetRenovationModal: CAPITALIZAR/DESPESA radio card form"
-  - "AssetWipContributionsTab: budget progress bar, stages, contributions list, activation"
-  - "AssetWipContributionModal: form for registering WIP contributions"
-  - "useAssetRenovation hook: create/fetch renovation records"
-  - "useAssetWip hook: fetch WIP summary, add contributions, activate"
-  - "AssetDrawer: conditional hierarquia and andamento tabs"
-  - "AssetGeneralTab: Registrar Reforma button for ATIVO/INATIVO assets"
+  - 'AssetHierarchyTab: tree view of parent-child hierarchy with BRL totalization'
+  - 'AssetRenovationModal: CAPITALIZAR/DESPESA radio card form'
+  - 'AssetWipContributionsTab: budget progress bar, stages, contributions list, activation'
+  - 'AssetWipContributionModal: form for registering WIP contributions'
+  - 'useAssetRenovation hook: create/fetch renovation records'
+  - 'useAssetWip hook: fetch WIP summary, add contributions, activate'
+  - 'AssetDrawer: conditional hierarquia and andamento tabs'
+  - 'AssetGeneralTab: Registrar Reforma button for ATIVO/INATIVO assets'
 affects: [phase-22, assets, patrimony]
 
 tech-stack:
   added: []
   patterns:
-    - "Conditional tab visibility in AssetDrawer based on asset state"
-    - "label-wrapping-hidden-input radio card pattern (from Phase 19)"
-    - "ConfirmModal variant=warning for medium-criticality irreversible actions"
-    - "BEM CSS naming following AssetCostTab convention"
+    - 'Conditional tab visibility in AssetDrawer based on asset state'
+    - 'label-wrapping-hidden-input radio card pattern (from Phase 19)'
+    - 'ConfirmModal variant=warning for medium-criticality irreversible actions'
+    - 'BEM CSS naming following AssetCostTab convention'
 
 key-files:
   created:
@@ -47,12 +47,12 @@ key-files:
     - apps/frontend/src/pages/AssetsPage.tsx
 
 key-decisions:
-  - "AssetHierarchyTab shows current asset highlighted, parent above (level 0), children indented (level 1/2)"
-  - "totalChildValue calculated client-side from acquisitionValue of direct children (not from API field)"
-  - "AssetGeneralTab action button uses secondary variant (not primary) per single-primary-CTA rule"
-  - "AssetDrawer.TabId exported so AssetsPage can use it directly (avoids duplicate type)"
-  - "WIP activation uses ConfirmModal variant=warning — medium criticality, irreversible"
-  - "depreciationConfigMissing shown as info banner with link to switch to depreciacao tab"
+  - 'AssetHierarchyTab shows current asset highlighted, parent above (level 0), children indented (level 1/2)'
+  - 'totalChildValue calculated client-side from acquisitionValue of direct children (not from API field)'
+  - 'AssetGeneralTab action button uses secondary variant (not primary) per single-primary-CTA rule'
+  - 'AssetDrawer.TabId exported so AssetsPage can use it directly (avoids duplicate type)'
+  - 'WIP activation uses ConfirmModal variant=warning — medium criticality, irreversible'
+  - 'depreciationConfigMissing shown as info banner with link to switch to depreciacao tab'
 
 requirements-completed: [HIER-01, HIER-02, HIER-03]
 
@@ -111,6 +111,7 @@ completed: 2026-03-22
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Fixed pre-existing TypeScript error in AssetsPage.tsx**
+
 - **Found during:** Task 2 (AssetDrawer integration)
 - **Issue:** AssetsPage.tsx had a hard-coded TabId union type that was missing `custo` — caused TS2322 error when `onTabChange` received the full `TabId` from AssetDrawer
 - **Fix:** Exported `TabId` from AssetDrawer, imported it in AssetsPage as `AssetDrawerTabId`
@@ -140,5 +141,6 @@ None — no external service configuration required.
 All created files verified to exist. Both task commits (f9037156, 27a5a35b) confirmed in git log. Task 3 checkpoint approved by user.
 
 ---
-*Phase: 22-hierarquia-avancada-imobilizado-andamento*
-*Completed: 2026-03-22*
+
+_Phase: 22-hierarquia-avancada-imobilizado-andamento_
+_Completed: 2026-03-22_

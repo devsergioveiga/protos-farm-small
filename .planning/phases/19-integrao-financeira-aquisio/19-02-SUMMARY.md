@@ -1,10 +1,10 @@
 ---
 phase: 19-integrao-financeira-aquisio
-plan: "02"
+plan: '02'
 subsystem: frontend
 tags: [assets, asset-acquisitions, payables, installments, financial-ui]
 dependency_graph:
-  requires: ["19-01"]
+  requires: ['19-01']
   provides: [AssetModal financial section, InstallmentPreviewTable, useAssetAcquisition hook]
   affects: [PayablesPage, PayableModal, AssetModal]
 tech_stack:
@@ -23,13 +23,13 @@ key_files:
     - apps/frontend/src/components/assets/AssetModal.tsx
     - apps/frontend/src/components/assets/AssetModal.css
 key_decisions:
-  - "Payment type radio cards use label-wrapping-hidden-input pattern for accessible card UI"
-  - "InstallmentPreviewTable shows first 6 rows with expand/collapse via display:none (per STATE.md zero-animation decision)"
-  - "ASSET_ACQUISITION excluded from PayableModal manual category dropdown (generated-only via asset-acquisitions endpoint)"
-  - "onSuccess() called with no args after createAcquisition (preserves AssetModalProps interface)"
+  - 'Payment type radio cards use label-wrapping-hidden-input pattern for accessible card UI'
+  - 'InstallmentPreviewTable shows first 6 rows with expand/collapse via display:none (per STATE.md zero-animation decision)'
+  - 'ASSET_ACQUISITION excluded from PayableModal manual category dropdown (generated-only via asset-acquisitions endpoint)'
+  - 'onSuccess() called with no args after createAcquisition (preserves AssetModalProps interface)'
 metrics:
   duration: 420s
-  completed: "2026-03-22"
+  completed: '2026-03-22'
   tasks: 2
   files: 9
 ---
@@ -40,16 +40,17 @@ Extended AssetModal with a collapsible "Dados Financeiros" section supporting AV
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Types, hook, InstallmentPreviewTable, PayableCategory updates | 23bd6635 | 7 files |
-| 2 | Extend AssetModal with Dados Financeiros collapsible section | f4bdc1b3 | 2 files |
+| Task | Name                                                          | Commit   | Files   |
+| ---- | ------------------------------------------------------------- | -------- | ------- |
+| 1    | Types, hook, InstallmentPreviewTable, PayableCategory updates | 23bd6635 | 7 files |
+| 2    | Extend AssetModal with Dados Financeiros collapsible section  | f4bdc1b3 | 2 files |
 
 ## What Was Built
 
 ### Task 1 — Foundation
 
 **types/asset.ts additions:**
+
 - `PaymentType = 'AVISTA' | 'FINANCIADO'`
 - `AssetAcquisitionInput` extending `CreateAssetInput` with payment fields
 - `AssetAcquisitionOutput` with asset tag + payableId + installmentCount
@@ -57,12 +58,14 @@ Extended AssetModal with a collapsible "Dados Financeiros" section supporting AV
 - NF-e types were already added by the linter from Plan 01 — preserved as-is
 
 **useAssetAcquisition hook:**
+
 - `createAcquisition(input)` — POST `/org/:orgId/asset-acquisitions`
 - `parseNfe(file)` — POST FormData to `/org/:orgId/asset-acquisitions/parse-nfe`
 - `createFromNfe(nfeParsed, input)` — POST to `/org/:orgId/asset-acquisitions/from-nfe`
 - `isLoading`, `error` state with pt-BR error messages
 
 **InstallmentPreviewTable component:**
+
 - Table with `<caption>Parcelas geradas</caption>` and `<th scope="col">` headers
 - Shows first 6 rows; expand/collapse button for more (display:none toggle, no animation)
 - Footer row with "Total" label and sum in JetBrains Mono
@@ -70,6 +73,7 @@ Extended AssetModal with a collapsible "Dados Financeiros" section supporting AV
 - All CSS uses `var(--*)` tokens exclusively
 
 **PayableCategory updates:**
+
 - `usePayables.ts`: added `ASSET_ACQUISITION` to PayableCategory union
 - `PayablesPage.tsx`: added `ASSET_ACQUISITION: 'Aquisicao de Ativo'` to CATEGORY_LABELS
 - `PayableModal.tsx`: added type + label, created `MANUAL_CATEGORIES` filter, excluded from dropdown
@@ -81,6 +85,7 @@ Extended AssetModal with a collapsible "Dados Financeiros" section supporting AV
 **recalculateInstallments:** Client-side calculation — divides total by count, residual on first installment, monthly dates from firstDueDate
 
 **"Dados Financeiros" section (shown when acquisitionValue > 0 and not editing):**
+
 - Collapsible header with ChevronDown/ChevronUp, aria-expanded, hover background
 - Payment type radio cards (`<fieldset>/<legend>`) — AVISTA and FINANCIADO with accessible hidden radio inputs
 - AVISTA: single due date field (display:none when not selected)
@@ -91,6 +96,7 @@ Extended AssetModal with a collapsible "Dados Financeiros" section supporting AV
 - Footer CTA changes to "Registrar Ativo" when financial data present
 
 **CSS additions (AssetModal.css):**
+
 - `.asset-modal__financial-section`, `.asset-modal__financial-header`, `.asset-modal__financial-body`
 - `.asset-modal__payment-cards`, `.asset-modal__payment-card` variants for selected states
 - `.asset-modal__financing-fields` (2-col grid)

@@ -14,6 +14,7 @@ Configuração de regras de mapeamento operação→contas GL e geração autom�
 ## Implementation Decisions
 
 ### Regras de Mapeamento
+
 - **D-01:** Tabela única administrativa listando todas as operações. Cada linha mapeia tipo → conta débito + conta crédito + template de histórico + flag CC obrigatório. Modal para edição.
 - **D-02:** Regras pré-populadas com mapeamentos padrão quando o template COA rural é criado. Contador só ajusta se necessário.
 - **D-03:** Preview de lançamento no modal da regra — botão "Pré-visualizar" mostra exemplo com dados reais da última operação daquele tipo.
@@ -29,6 +30,7 @@ Configuração de regras de mapeamento operação→contas GL e geração autom�
 - **D-13:** Regras por organização com seed automático. organizationId + RLS. Seed cria regras junto com template COA.
 
 ### Estratégia de Fila
+
 - **D-14:** Tabela Postgres PendingJournalPosting como fila (sem BullMQ/Redis). Status: PENDING → PROCESSING → COMPLETED | ERROR.
 - **D-15:** Processamento síncrono inline — após a transaction da operação (non-blocking). Falha no GL não reverte a operação. Padrão já usado em createPayrollEntries.
 - **D-16:** Retry manual via botão na tela de pendências. Sem cron automático.
@@ -43,6 +45,7 @@ Configuração de regras de mapeamento operação→contas GL e geração autom�
 - **D-25:** Período contábil fechado = PendingJournalPosting com ERROR "período fechado". Operação funciona normalmente. Contador reabre e faz retry.
 
 ### Hooks nos Módulos
+
 - **D-26:** Chamada direta ao service: cada módulo importa e chama autoPostingService.process(sourceType, sourceId, orgId). Explícito, sem event system.
 - **D-27:** Módulo novo modules/auto-posting/ com: service, types, routes (CRUD regras + retry + pendências).
 - **D-28:** Data extractors centralizados no auto-posting.service com map sourceType → função extratora.
@@ -53,6 +56,7 @@ Configuração de regras de mapeamento operação→contas GL e geração autom�
 - **D-33:** Para CR, usar receivePayment (análoga a settlePayment de payables). Criar se não existir.
 
 ### Tela de Pendências e Regras (Frontend)
+
 - **D-34:** 3 tabs na JournalEntriesPage: Lançamentos | Pendências | Regras.
 - **D-35:** Tab Pendências: filtros por status e tipo de operação. Retry individual + retry em lote.
 - **D-36:** Colunas: badge status (cor), tipo operação, link para origem, data, ações.
@@ -64,6 +68,7 @@ Configuração de regras de mapeamento operação→contas GL e geração autom�
 - **D-42:** CRUD de regras em modal. Modal com: tipo (readonly), isActive, linhas débito/crédito (tabela editável), template histórico, flag CC obrigatório, botão preview.
 
 ### Claude's Discretion
+
 - Escolha de nomes específicos dos valores do enum extenso de sourceType
 - Estrutura interna do data extractor map
 - Ordem das colunas e detalhes visuais de badges
@@ -72,17 +77,21 @@ Configuração de regras de mapeamento operação→contas GL e geração autom�
 </decisions>
 
 <canonical_refs>
+
 ## Canonical References
 
 **Downstream agents MUST read these before planning or implementing.**
 
 ### Requirements
+
 - `.planning/REQUIREMENTS.md` §Lançamentos Contábeis — LANC-01 (auto-entries), LANC-02 (rule config), LANC-06 (idempotency)
 
 ### Existing Models
+
 - `apps/backend/prisma/schema.prisma` — JournalEntry (L8985), JournalEntryLine (L9019), AccountingEntry (L9038), AccountingSourceType (L8753), AccountingEntryType (L8759), JournalEntryType (L8967), JournalEntryStatus (L8974)
 
 ### Existing Services
+
 - `apps/backend/src/modules/journal-entries/journal-entries.service.ts` — createJournalEntryDraft, postJournalEntry (posting engine)
 - `apps/backend/src/modules/accounting-entries/accounting-entries.service.ts` — v1.3 stubs: createPayrollEntries (to be replaced)
 - `apps/backend/src/modules/accounting-entries/accounting-entries.types.ts` — ACCOUNT_CODES const (to be eliminated)
@@ -94,18 +103,22 @@ Configuração de regras de mapeamento operação→contas GL e geração autom�
 - `apps/backend/src/modules/payroll-provisions/payroll-provisions.service.ts` — createProvisionEntries (to be replaced)
 
 ### Frontend
+
 - `apps/frontend/src/pages/JournalEntriesPage.tsx` — existing page (add tabs)
 - `apps/frontend/src/pages/AccountingEntriesPage.tsx` — v1.3 stubs page (to be removed or repurposed)
 
 ### Design System
+
 - `docs/design-system/04-componentes.md` — Modal, tabelas, badges, accordion patterns
 
 </canonical_refs>
 
 <code_context>
+
 ## Existing Code Insights
 
 ### Reusable Assets
+
 - `journal-entries.service.ts`: createJournalEntryDraft + postJournalEntry — the posting engine that auto-posting will call
 - `JournalEntryType` enum: needs AUTOMATIC value added
 - `CostCenter` model with farmId relation: used for CC inference from operations
@@ -114,12 +127,14 @@ Configuração de regras de mapeamento operação→contas GL e geração autom�
 - `assertBalanced` shared utility: reusable for balance validation
 
 ### Established Patterns
+
 - Non-blocking post-transaction pattern: createPayrollEntries called OUTSIDE closeRun transaction (accounting-entries.service.ts L5-6)
 - Modules colocated: controller+service+routes+types per domain
 - RLS via organizationId on all models
 - Prisma enums for type-safe source types
 
 ### Integration Points
+
 - 6 module services need hook call added after their completion functions
 - JournalEntriesPage needs 2 new tabs (Pendências, Regras)
 - Sidebar CONTABILIDADE group already exists
@@ -147,5 +162,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 37-regras-e-lan-amentos-autom-ticos*
-*Context gathered: 2026-03-27*
+_Phase: 37-regras-e-lan-amentos-autom-ticos_
+_Context gathered: 2026-03-27_

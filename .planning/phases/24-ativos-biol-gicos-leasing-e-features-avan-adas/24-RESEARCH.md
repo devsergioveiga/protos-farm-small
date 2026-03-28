@@ -21,13 +21,14 @@ Phase 24 fecha o ciclo de gestão patrimonial do Protos Farm com três features 
 ---
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|------------------|
+| ID      | Description                                                                                                                                                                                 | Research Support                                                                                                                                                         |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | DEPR-03 | Contador pode registrar valor justo de ativos biológicos (CPC 29/IAS 41) — rebanho por categoria com preço de mercado e culturas perenes por estágio — com variação registrada no resultado | Novo módulo `biological-assets` com modelo `BiologicalAssetValuation`; rebanho usa `AnimalCategory` enum existente; variação não-caixa gravada como resultado do período |
-| AQUI-05 | Gerente pode registrar leasing e arrendamento mercantil (CPC 06) com parcelas no CP e controle de opção de compra ao final do contrato | Novo módulo `asset-leasings`; ROU asset criado como `Asset` com `DEPRECIABLE_CPC27`; parcelas via `generateInstallments` + `tx.payable.create` (padrão Phase 19) |
-| AQUI-06 | Gerente pode registrar troca de ativo (trade-in) com compensação financeira automática (valor do ativo antigo abatido do novo) | Novo módulo `asset-trade-ins`; transação atômica: baixa ativo antigo + cria ativo novo + gera CP para diferença; reutiliza lógica de `AssetDisposal` |
+| AQUI-05 | Gerente pode registrar leasing e arrendamento mercantil (CPC 06) com parcelas no CP e controle de opção de compra ao final do contrato                                                      | Novo módulo `asset-leasings`; ROU asset criado como `Asset` com `DEPRECIABLE_CPC27`; parcelas via `generateInstallments` + `tx.payable.create` (padrão Phase 19)         |
+| AQUI-06 | Gerente pode registrar troca de ativo (trade-in) com compensação financeira automática (valor do ativo antigo abatido do novo)                                                              | Novo módulo `asset-trade-ins`; transação atômica: baixa ativo antigo + cria ativo novo + gera CP para diferença; reutiliza lógica de `AssetDisposal`                     |
 
 </phase_requirements>
 
@@ -36,6 +37,7 @@ Phase 24 fecha o ciclo de gestão patrimonial do Protos Farm com três features 
 ## Project Constraints (from CLAUDE.md)
 
 ### Backend
+
 - Express 5 + TypeScript + Prisma 7 — módulos colocalizados em `modules/{domínio}/`
 - `prisma.$transaction` direto (NÃO `withRlsContext`) para evitar deadlocks em nested transactions — padrão estabelecido em Phase 19 e confirmado em Phase 20
 - `tx.payable.create` direto (NÃO `payables.service.createPayable`) — padrão Phase 19
@@ -45,6 +47,7 @@ Phase 24 fecha o ciclo de gestão patrimonial do Protos Farm com três features 
 - `app.ts` separado de `main.ts`
 
 ### Frontend
+
 - React 19 + Vite 6 + TypeScript
 - Formulários de criação/edição SEMPRE em modal, nunca página dedicada
 - ConfirmModal para ações destrutivas, ConfirmDeleteModal para alta criticidade
@@ -54,6 +57,7 @@ Phase 24 fecha o ciclo de gestão patrimonial do Protos Farm com três features 
 - Lucide icons — tamanhos 16/20/24/48-64px
 
 ### Design System
+
 - Fonte: DM Sans (headlines), Source Sans 3 (body), JetBrains Mono (dados)
 - Touch targets mínimos 48x48px
 - Escala de 4px — sem valores arbitrários
@@ -66,24 +70,27 @@ Phase 24 fecha o ciclo de gestão patrimonial do Protos Farm com três features 
 ## Standard Stack
 
 ### Core
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| Prisma | 7.x | ORM + migrations | Padrão do projeto |
-| decimal.js | - | Aritmética monetária | Decisão locked — todo cálculo financeiro |
-| @protos-farm/shared | workspace | `generateInstallments`, `Money` | Reutilização entre Phase 19 e 24 |
-| supertest | - | Testes de rotas HTTP | Padrão em todos os `*.routes.spec.ts` |
-| jest | - | Framework de testes backend | Padrão do projeto |
+
+| Library             | Version   | Purpose                         | Why Standard                             |
+| ------------------- | --------- | ------------------------------- | ---------------------------------------- |
+| Prisma              | 7.x       | ORM + migrations                | Padrão do projeto                        |
+| decimal.js          | -         | Aritmética monetária            | Decisão locked — todo cálculo financeiro |
+| @protos-farm/shared | workspace | `generateInstallments`, `Money` | Reutilização entre Phase 19 e 24         |
+| supertest           | -         | Testes de rotas HTTP            | Padrão em todos os `*.routes.spec.ts`    |
+| jest                | -         | Framework de testes backend     | Padrão do projeto                        |
 
 ### Supporting
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| lucide-react | - | Ícones frontend | Sempre no frontend |
-| @testing-library/react | - | Testes componentes | Specs frontend |
+
+| Library                | Version | Purpose            | When to Use        |
+| ---------------------- | ------- | ------------------ | ------------------ |
+| lucide-react           | -       | Ícones frontend    | Sempre no frontend |
+| @testing-library/react | -       | Testes componentes | Specs frontend     |
 
 ### Alternatives Considered
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| Criar novo AssetType para ROU | Reutilizar MAQUINA/BENFEITORIA | ROU asset é ativo depreciável — classificação `DEPRECIABLE_CPC27` é suficiente; AssetType pode ser MAQUINA ou o que o usuário escolher |
+
+| Instead of                         | Could Use                           | Tradeoff                                                                                                                                |
+| ---------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Criar novo AssetType para ROU      | Reutilizar MAQUINA/BENFEITORIA      | ROU asset é ativo depreciável — classificação `DEPRECIABLE_CPC27` é suficiente; AssetType pode ser MAQUINA ou o que o usuário escolher  |
 | Novo enum para BiologicalAssetType | Reutilizar AnimalCategory existente | AnimalCategory já tem BEZERRO, BEZERRA, NOVILHA, NOVILHO, VACA_LACTACAO, VACA_SECA, TOURO_REPRODUTOR, DESCARTE — suficiente para CPC 29 |
 
 **Installation:** Nenhuma dependência nova requerida.
@@ -336,8 +343,8 @@ export async function createLeasing(
       data: {
         organizationId: ctx.organizationId,
         farmId: input.farmId,
-        assetType: input.assetType,           // escolhido pelo usuário
-        classification: 'DEPRECIABLE_CPC27',  // ROU sempre depreciável
+        assetType: input.assetType, // escolhido pelo usuário
+        classification: 'DEPRECIABLE_CPC27', // ROU sempre depreciável
         name: `ROU — ${input.lessorName} — ${input.contractNumber ?? assetTag}`,
         assetTag,
         acquisitionDate: new Date(input.startDate),
@@ -388,7 +395,9 @@ export async function createLeasing(
     });
 
     // 4. Criar contrato de leasing
-    const leasing = await tx.assetLeasing.create({ data: { ...input, rouAssetId: rouAsset.id, payableId: payable.id } });
+    const leasing = await tx.assetLeasing.create({
+      data: { ...input, rouAssetId: rouAsset.id, payableId: payable.id },
+    });
     return { leasing, rouAsset, payableId: payable.id };
   });
 }
@@ -407,13 +416,13 @@ export async function createLeasing(
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Geração de parcelas mensais | Loop manual de datas | `generateInstallments` de `@protos-farm/shared` | Já usado em Phase 19 (acquisitions) e Phase 6 (crédito rural) |
-| Aritmética de valor justo | JS nativo `number` | `Decimal` de `decimal.js` | Floating point errors em valores financeiros |
-| Sequência do asset tag (PAT-XXXXX) | Query separada | `getNextAssetTag(tx, orgId)` — copiar o helper de `asset-acquisitions.service.ts` | Já testado e consistente |
-| CP para leasing | Novo tipo de payable | `PayableCategory.FINANCING` existente | Leasing é financiamento de ativo — categoria correta e já no enum |
-| NBV para cálculo de ganho/perda | Cálculo from scratch | Query `depreciationEntries` (soma `depreciationAmount`) subtraída de `acquisitionValue` — padrão de `asset-disposals.service.ts` | Evita divergência com lógica de baixa já testada |
+| Problem                            | Don't Build          | Use Instead                                                                                                                      | Why                                                               |
+| ---------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Geração de parcelas mensais        | Loop manual de datas | `generateInstallments` de `@protos-farm/shared`                                                                                  | Já usado em Phase 19 (acquisitions) e Phase 6 (crédito rural)     |
+| Aritmética de valor justo          | JS nativo `number`   | `Decimal` de `decimal.js`                                                                                                        | Floating point errors em valores financeiros                      |
+| Sequência do asset tag (PAT-XXXXX) | Query separada       | `getNextAssetTag(tx, orgId)` — copiar o helper de `asset-acquisitions.service.ts`                                                | Já testado e consistente                                          |
+| CP para leasing                    | Novo tipo de payable | `PayableCategory.FINANCING` existente                                                                                            | Leasing é financiamento de ativo — categoria correta e já no enum |
+| NBV para cálculo de ganho/perda    | Cálculo from scratch | Query `depreciationEntries` (soma `depreciationAmount`) subtraída de `acquisitionValue` — padrão de `asset-disposals.service.ts` | Evita divergência com lógica de baixa já testada                  |
 
 **Key insight:** O projeto tem infra completa para aquisição financiada de ativos. Leasing reusa 100% desse padrão (generateInstallments + tx.payable.create). A única peça nova é o modelo `AssetLeasing` e a criação automática do ROU.
 
@@ -422,30 +431,35 @@ export async function createLeasing(
 ## Common Pitfalls
 
 ### Pitfall 1: FAIR_VALUE_CPC29 vs BEARER_PLANT_CPC27
+
 **What goes wrong:** Desenvolvedor classifica café/laranja como `FAIR_VALUE_CPC29` ao implementar DEPR-03.
 **Why it happens:** CPC 29 fala em "plantas" mas IAS 41 excluiu plantas portadoras em 2016 (emenda IAS 16). CPC 29 BR foi alinhado.
 **How to avoid:** DEPR-03 cobre apenas animais (`groupType: 'ANIMAL'`) e culturas em fase de formação (`groupType: 'PERENNIAL_CROP'`). Café e laranja em produção são `BEARER_PLANT_CPC27` e já estão no batch de depreciação normal.
 **Warning signs:** Se o success criterion 2 da fase ("Planta portadora... entra no lote de depreciação normal") estiver sendo testado com `FAIR_VALUE_CPC29` — está errado.
 
 ### Pitfall 2: DepreciationConfig ausente no ROU Asset
+
 **What goes wrong:** ROU Asset criado sem `DepreciationConfig` — batch de depreciação o pula silenciosamente.
 **Why it happens:** A criação de config é opcional em assets normais, mas obrigatória para ROU funcionar.
 **How to avoid:** Na transação de criação de leasing, sempre criar `DepreciationConfig` com `usefulLifeMonths = duração do contrato` e `method = STRAIGHT_LINE`. O frontend deve mostrar aviso se `depreciationConfigMissing` (padrão Phase 22).
 **Warning signs:** ROU asset existe mas não aparece nas projeções de depreciação.
 
 ### Pitfall 3: Trade-in sem cancelamento de depreciações pendentes
+
 **What goes wrong:** Ativo antigo é baixado (`status = ALIENADO`) mas entradas de depreciação futuras permanecem ativas — distorce relatórios.
 **Why it happens:** Padrão de baixa (`asset-disposals`) já trata isso via `cancelledDepreciationCount`, mas um trade-in novo pode não replicar essa lógica.
 **How to avoid:** Na transação de trade-in, aplicar `tx.depreciationEntry.updateMany({ where: { assetId: tradedAssetId, reversedAt: null }, data: { reversedAt: new Date() } })` — mesma lógica do disposal service.
 **Warning signs:** NBV do ativo antigo diferente de zero após trade-in quando calculado por relatórios.
 
 ### Pitfall 4: Variação de valor justo sem comparação ao período anterior correto
+
 **What goes wrong:** `fairValueChange` calculado errado porque busca a última avaliação de qualquer grupo ao invés de `organizationId + assetGroup`.
 **Why it happens:** Query sem filtro de `assetGroup`.
 **How to avoid:** `findFirst({ where: { organizationId, assetGroup, valuationDate: { lt: valuationDate } }, orderBy: { valuationDate: 'desc' } })`.
 **Warning signs:** Variação de VACA_LACTACAO mostrando diferença de NOVILHA.
 
 ### Pitfall 5: Opção de compra de leasing gerando CP automático sem confirmação
+
 **What goes wrong:** Ao exercer opção de compra, sistema cria CP automaticamente sem o usuário confirmar.
 **Why it happens:** Endpoint de "exercer opção" implementado como PUT sem modal de confirmação no frontend.
 **How to avoid:** Frontend usa `ConfirmModal variant="warning"` antes de chamar `PUT /asset-leasings/:id/exercise-purchase`. Backend retorna 400 se `hasPurchaseOption = false` ou `status != ACTIVE`.
@@ -519,12 +533,13 @@ export function useAssetLeasings() {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| IAS 41 incluía plantas portadoras como ativo biológico | Emenda IAS 16 (2016) retirou plantas portadoras do IAS 41 — CPC 29 BR alinhado | 2016 | Café/laranja são CPC 27 depreciáveis, não CPC 29 |
-| IFRS 16 / CPC 06 (R2) — leasing operacional off-balance | CPC 06 (R2) — todo leasing cria ROU asset e passivo (on-balance) | 2019 BR | Simplifica: sempre cria ROU asset, não há distinção operacional/financeiro para fins de reconhecimento |
+| Old Approach                                            | Current Approach                                                               | When Changed | Impact                                                                                                 |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------ | ------------------------------------------------------------------------------------------------------ |
+| IAS 41 incluía plantas portadoras como ativo biológico  | Emenda IAS 16 (2016) retirou plantas portadoras do IAS 41 — CPC 29 BR alinhado | 2016         | Café/laranja são CPC 27 depreciáveis, não CPC 29                                                       |
+| IFRS 16 / CPC 06 (R2) — leasing operacional off-balance | CPC 06 (R2) — todo leasing cria ROU asset e passivo (on-balance)               | 2019 BR      | Simplifica: sempre cria ROU asset, não há distinção operacional/financeiro para fins de reconhecimento |
 
 **Deprecated/outdated:**
+
 - Distinção leasing operacional vs financeiro para reconhecimento on/off-balance: obsoleta no CPC 06 (R2). Para o Protos Farm: todo contrato de arrendamento > 12 meses cria ROU asset. Arrendamentos de curto prazo (< 12 meses) podem ser isentos — implementar como opção no formulário.
 
 ---
@@ -562,33 +577,36 @@ Step 2.6: SKIPPED — fase é puramente código/configuração. Sem dependência
 ## Validation Architecture
 
 ### Test Framework
-| Property | Value |
-|----------|-------|
-| Framework | Jest (backend) + Vitest (frontend) |
-| Config file | `apps/backend/jest.config.js`, `apps/frontend/vite.config.ts` |
-| Quick run command | `cd apps/backend && pnpm test -- --testPathPattern biological-assets` |
-| Full suite command | `cd apps/backend && pnpm test` |
+
+| Property           | Value                                                                 |
+| ------------------ | --------------------------------------------------------------------- |
+| Framework          | Jest (backend) + Vitest (frontend)                                    |
+| Config file        | `apps/backend/jest.config.js`, `apps/frontend/vite.config.ts`         |
+| Quick run command  | `cd apps/backend && pnpm test -- --testPathPattern biological-assets` |
+| Full suite command | `cd apps/backend && pnpm test`                                        |
 
 ### Phase Requirements → Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| DEPR-03 | POST /biological-asset-valuations cria avaliação com fairValueChange calculado | unit (route+service mock) | `pnpm test -- --testPathPattern biological-assets.routes` | ❌ Wave 0 |
-| DEPR-03 | fairValueChange = null na primeira avaliação de um grupo | unit | idem | ❌ Wave 0 |
-| DEPR-03 | FAIR_VALUE_CPC29 excluído do lote de depreciação normal | unit (depreciation-batch) | `pnpm test -- --testPathPattern depreciation-batch` | ✅ existe — verificar cobertura |
-| AQUI-05 | POST /asset-leasings cria ROU asset + DepreciationConfig + CP com parcelas | unit (route+service mock) | `pnpm test -- --testPathPattern asset-leasings.routes` | ❌ Wave 0 |
-| AQUI-05 | PUT /asset-leasings/:id/exercise-purchase atualiza status e gera novo CP | unit | idem | ❌ Wave 0 |
-| AQUI-05 | Retorna 400 se hasPurchaseOption=false ao exercer opção | unit | idem | ❌ Wave 0 |
-| AQUI-06 | POST /asset-trade-ins cria ativo novo + baixa ativo antigo + CP p/ diferença | unit (route+service mock) | `pnpm test -- --testPathPattern asset-trade-ins.routes` | ❌ Wave 0 |
-| AQUI-06 | gainLoss calculado como tradedAssetValue - NBV do ativo antigo | unit | idem | ❌ Wave 0 |
-| AQUI-06 | Depreciações pendentes do ativo antigo canceladas (reversedAt set) | unit | idem | ❌ Wave 0 |
+| Req ID  | Behavior                                                                       | Test Type                 | Automated Command                                         | File Exists?                    |
+| ------- | ------------------------------------------------------------------------------ | ------------------------- | --------------------------------------------------------- | ------------------------------- |
+| DEPR-03 | POST /biological-asset-valuations cria avaliação com fairValueChange calculado | unit (route+service mock) | `pnpm test -- --testPathPattern biological-assets.routes` | ❌ Wave 0                       |
+| DEPR-03 | fairValueChange = null na primeira avaliação de um grupo                       | unit                      | idem                                                      | ❌ Wave 0                       |
+| DEPR-03 | FAIR_VALUE_CPC29 excluído do lote de depreciação normal                        | unit (depreciation-batch) | `pnpm test -- --testPathPattern depreciation-batch`       | ✅ existe — verificar cobertura |
+| AQUI-05 | POST /asset-leasings cria ROU asset + DepreciationConfig + CP com parcelas     | unit (route+service mock) | `pnpm test -- --testPathPattern asset-leasings.routes`    | ❌ Wave 0                       |
+| AQUI-05 | PUT /asset-leasings/:id/exercise-purchase atualiza status e gera novo CP       | unit                      | idem                                                      | ❌ Wave 0                       |
+| AQUI-05 | Retorna 400 se hasPurchaseOption=false ao exercer opção                        | unit                      | idem                                                      | ❌ Wave 0                       |
+| AQUI-06 | POST /asset-trade-ins cria ativo novo + baixa ativo antigo + CP p/ diferença   | unit (route+service mock) | `pnpm test -- --testPathPattern asset-trade-ins.routes`   | ❌ Wave 0                       |
+| AQUI-06 | gainLoss calculado como tradedAssetValue - NBV do ativo antigo                 | unit                      | idem                                                      | ❌ Wave 0                       |
+| AQUI-06 | Depreciações pendentes do ativo antigo canceladas (reversedAt set)             | unit                      | idem                                                      | ❌ Wave 0                       |
 
 ### Sampling Rate
+
 - **Per task commit:** `cd apps/backend && pnpm test -- --testPathPattern {módulo}`
 - **Per wave merge:** `cd apps/backend && pnpm test`
 - **Phase gate:** Full suite green antes de `/gsd:verify-work`
 
 ### Wave 0 Gaps
+
 - [ ] `apps/backend/src/modules/biological-assets/biological-assets.routes.spec.ts` — cobre DEPR-03
 - [ ] `apps/backend/src/modules/asset-leasings/asset-leasings.routes.spec.ts` — cobre AQUI-05
 - [ ] `apps/backend/src/modules/asset-trade-ins/asset-trade-ins.routes.spec.ts` — cobre AQUI-06
@@ -599,6 +617,7 @@ Step 2.6: SKIPPED — fase é puramente código/configuração. Sem dependência
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - Código-fonte analisado diretamente:
   - `apps/backend/prisma/schema.prisma` — modelos Asset, DepreciationConfig, DepreciationEntry, PayableCategory, AnimalCategory
   - `apps/backend/src/modules/asset-acquisitions/asset-acquisitions.service.ts` — padrão transacional, getNextAssetTag, generateInstallments
@@ -608,10 +627,12 @@ Step 2.6: SKIPPED — fase é puramente código/configuração. Sem dependência
   - `.planning/REQUIREMENTS.md` — DEPR-03, AQUI-05, AQUI-06 specs completas
 
 ### Secondary (MEDIUM confidence)
+
 - CPC 29 (Pronunciamento CPC 29 — Ativo Biológico e Produto Agrícola): plantas portadoras excluídas por emenda alinhada à IAS 16 (2016)
 - CPC 06 (R2) — Operações de Arrendamento Mercantil: todo arrendamento > 12 meses cria ROU asset e passivo financeiro
 
 ### Tertiary (LOW confidence)
+
 - Nenhum item de baixa confiança identificado — toda a arquitetura deriva do código existente
 
 ---
@@ -619,6 +640,7 @@ Step 2.6: SKIPPED — fase é puramente código/configuração. Sem dependência
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH — derivado do código existente, sem novas dependências
 - Architecture: HIGH — padrões idênticos a Phase 19 (acquisitions) e Phase 20 (disposals)
 - Pitfalls: HIGH — FAIR_VALUE_CPC29 vs BEARER_PLANT_CPC27 verificado diretamente no depreciation-batch.service.ts

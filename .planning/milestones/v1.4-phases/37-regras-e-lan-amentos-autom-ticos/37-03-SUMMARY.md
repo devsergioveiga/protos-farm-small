@@ -27,11 +27,11 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "Tab panel with hidden attribute: lancamentos panel stays mounted, others conditionally rendered"
-    - "Accordion row: ERROR rows expand on click with ChevronDown rotation (200ms ease-out)"
-    - "AccountCombobox: controlled input + role=combobox + role=listbox dropdown, client-side filter"
-    - "Toggle switch: role=switch + aria-checked, 40x22px, optimistic PATCH with revert on error"
-    - "URL tab sync: useEffect writes ?tab= on tab change, initial state reads from URL"
+    - 'Tab panel with hidden attribute: lancamentos panel stays mounted, others conditionally rendered'
+    - 'Accordion row: ERROR rows expand on click with ChevronDown rotation (200ms ease-out)'
+    - 'AccountCombobox: controlled input + role=combobox + role=listbox dropdown, client-side filter'
+    - 'Toggle switch: role=switch + aria-checked, 40x22px, optimistic PATCH with revert on error'
+    - 'URL tab sync: useEffect writes ?tab= on tab change, initial state reads from URL'
 
 key-files:
   created:
@@ -50,11 +50,11 @@ key-files:
     - apps/frontend/src/pages/JournalEntriesPage.css
 
 key-decisions:
-  - "Lancamentos panel uses hidden attribute (not conditional render) to preserve filter state when switching tabs"
-  - "AccountCombobox filters analytic accounts client-side (allAccounts already in memory from useChartOfAccounts)"
-  - "PendingPostingsTab has its own toast — avoids prop-drilling toast to sub-tab components"
-  - "ErrorRow tracks retried state locally so row updates optimistically without full refetch"
-  - "AUTOMATIC badge uses je-page__badge--automatic with --color-info-100/500 (blue) per UI-SPEC"
+  - 'Lancamentos panel uses hidden attribute (not conditional render) to preserve filter state when switching tabs'
+  - 'AccountCombobox filters analytic accounts client-side (allAccounts already in memory from useChartOfAccounts)'
+  - 'PendingPostingsTab has its own toast — avoids prop-drilling toast to sub-tab components'
+  - 'ErrorRow tracks retried state locally so row updates optimistically without full refetch'
+  - 'AUTOMATIC badge uses je-page__badge--automatic with --color-info-100/500 (blue) per UI-SPEC'
 
 # Metrics
 duration: 10min
@@ -94,12 +94,14 @@ completed: 2026-03-27
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] AUTOMATIC missing from ENTRY_TYPE_LABELS caused tsc error**
+
 - **Found during:** Task 1 — after adding AUTOMATIC to JournalEntryType, JournalEntriesPage.tsx failed tsc because its `Record<JournalEntryType, string>` was incomplete
 - **Fix:** Added `AUTOMATIC: 'Automático'` to ENTRY_TYPE_LABELS in JournalEntriesPage.tsx during Task 1 (before Task 2 was staged)
 - **Files modified:** apps/frontend/src/pages/JournalEntriesPage.tsx
 - **Commit:** f933bb8a
 
 **2. [Rule 2 - Critical] api imported as `{ api }` not default export**
+
 - **Found during:** Task 1 — checked useJournalEntries.ts and confirmed `import { api } from '@/services/api'` (named export), not `import api from '@/services/api'`
 - **Fix:** Used `{ api }` named import in all new hooks — matches existing codebase pattern
 - **Files modified:** usePendingPostings.ts, useAccountingRules.ts

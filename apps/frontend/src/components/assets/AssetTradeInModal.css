@@ -14,12 +14,18 @@
 }
 
 @keyframes trade-in-overlay-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .trade-in-modal__overlay { animation: none; }
+  .trade-in-modal__overlay {
+    animation: none;
+  }
 }
 
 .trade-in-modal {
@@ -32,12 +38,20 @@
 }
 
 @keyframes trade-in-modal-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .trade-in-modal { animation: none; }
+  .trade-in-modal {
+    animation: none;
+  }
 }
 
 @media (min-width: 768px) {
@@ -146,7 +160,9 @@
   font-size: 0.9375rem;
   color: var(--color-neutral-800);
   background: var(--color-neutral-0);
-  transition: border-color 200ms ease-out, box-shadow 200ms ease-out;
+  transition:
+    border-color 200ms ease-out,
+    box-shadow 200ms ease-out;
   min-height: 48px;
 }
 
@@ -281,7 +297,9 @@
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: background 200ms ease-out, color 200ms ease-out;
+  transition:
+    background 200ms ease-out,
+    color 200ms ease-out;
   min-height: 48px;
 }
 

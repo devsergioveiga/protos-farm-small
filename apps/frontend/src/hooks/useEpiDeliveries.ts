@@ -1,10 +1,6 @@
 import { useState, useCallback } from 'react';
 import { api } from '@/services/api';
-import type {
-  EpiDelivery,
-  EpiDeliveriesResponse,
-  CreateEpiDeliveryInput,
-} from '@/types/epi';
+import type { EpiDelivery, EpiDeliveriesResponse, CreateEpiDeliveryInput } from '@/types/epi';
 
 // ─── Hook ───────────────────────────────────────────────────────────────────
 
@@ -65,9 +61,7 @@ export function useEpiDeliveries() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<EpiDelivery[]>(
-        `/org/epi-deliveries/employee/${employeeId}`,
-      );
+      const data = await api.get<EpiDelivery[]>(`/org/epi-deliveries/employee/${employeeId}`);
       setEmployeeDeliveries(data);
     } catch (err: unknown) {
       setError(
@@ -82,11 +76,14 @@ export function useEpiDeliveries() {
 
   // ─── Create ──────────────────────────────────────────────────────────
 
-  const createEpiDelivery = useCallback(async (input: CreateEpiDeliveryInput): Promise<EpiDelivery> => {
-    const data = await api.post<EpiDelivery>('/org/epi-deliveries', input);
-    setSuccessMessage('Entrega registrada. Estoque atualizado automaticamente.');
-    return data;
-  }, []);
+  const createEpiDelivery = useCallback(
+    async (input: CreateEpiDeliveryInput): Promise<EpiDelivery> => {
+      const data = await api.post<EpiDelivery>('/org/epi-deliveries', input);
+      setSuccessMessage('Entrega registrada. Estoque atualizado automaticamente.');
+      return data;
+    },
+    [],
+  );
 
   // ─── Delete ──────────────────────────────────────────────────────────
 
@@ -97,19 +94,24 @@ export function useEpiDeliveries() {
 
   // ─── PDF Download (Ficha EPI) ────────────────────────────────────────
 
-  const downloadEpiFichaPdf = useCallback(async (employeeId: string, employeeName?: string): Promise<void> => {
-    try {
-      const blob = await api.getBlob(`/org/epi-deliveries/employee/${employeeId}/ficha-pdf`);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `ficha-epi-${employeeName ?? employeeId}.pdf`;
-      link.click();
-      window.URL.revokeObjectURL(url);
-    } catch (err: unknown) {
-      throw err instanceof Error ? err : new Error('Não foi possível gerar o PDF. Tente novamente.');
-    }
-  }, []);
+  const downloadEpiFichaPdf = useCallback(
+    async (employeeId: string, employeeName?: string): Promise<void> => {
+      try {
+        const blob = await api.getBlob(`/org/epi-deliveries/employee/${employeeId}/ficha-pdf`);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `ficha-epi-${employeeName ?? employeeId}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      } catch (err: unknown) {
+        throw err instanceof Error
+          ? err
+          : new Error('Não foi possível gerar o PDF. Tente novamente.');
+      }
+    },
+    [],
+  );
 
   return {
     deliveries,

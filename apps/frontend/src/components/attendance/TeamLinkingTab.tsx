@@ -61,7 +61,11 @@ export default function TeamLinkingTab({
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitResult, setSubmitResult] = useState<{ created: number; total: number; skipped: number } | null>(null);
+  const [submitResult, setSubmitResult] = useState<{
+    created: number;
+    total: number;
+    skipped: number;
+  } | null>(null);
 
   const fetchTeams = useCallback(async () => {
     if (!orgId) return;
@@ -131,10 +135,12 @@ export default function TeamLinkingTab({
         costCenterId: costCenterId || undefined,
       };
 
-      const result = await api.post<{ created: number; total: number; skipped: number; skippedMembers?: string[] }>(
-        `/org/${orgId}/time-entries/team/${teamId}/activities`,
-        payload,
-      );
+      const result = await api.post<{
+        created: number;
+        total: number;
+        skipped: number;
+        skippedMembers?: string[];
+      }>(`/org/${orgId}/time-entries/team/${teamId}/activities`, payload);
 
       setSubmitResult({ created: result.created, total: result.total, skipped: result.skipped });
       const msg = `Vinculado para ${result.created} de ${result.total} membros da equipe`;
@@ -167,19 +173,26 @@ export default function TeamLinkingTab({
           Vincule horas de todos os membros de uma equipe a uma operação de uma vez.
         </p>
 
-        {teamsLoading && (
-          <p className="team-linking-tab__loading">Carregando equipes...</p>
-        )}
+        {teamsLoading && <p className="team-linking-tab__loading">Carregando equipes...</p>}
 
         {!teamsLoading && teams.length === 0 && (
           <div className="team-linking-tab__empty" role="status">
             <UsersRound size={32} aria-hidden="true" />
-            <p>Nenhuma equipe cadastrada para esta fazenda. Cadastre equipes em Operacoes {'>'} Equipes de Campo.</p>
+            <p>
+              Nenhuma equipe cadastrada para esta fazenda. Cadastre equipes em Operacoes {'>'}{' '}
+              Equipes de Campo.
+            </p>
           </div>
         )}
 
         {!teamsLoading && teams.length > 0 && (
-          <form className="team-linking-tab__form" onSubmit={(e) => { void handleSubmit(e); }} noValidate>
+          <form
+            className="team-linking-tab__form"
+            onSubmit={(e) => {
+              void handleSubmit(e);
+            }}
+            noValidate
+          >
             <div className="team-linking-tab__fields">
               {/* Team select */}
               <div className="team-linking-tab__field">
@@ -193,7 +206,9 @@ export default function TeamLinkingTab({
                   onChange={(e) => setTeamId(e.target.value)}
                   onBlur={() => handleBlur('teamId')}
                   aria-required="true"
-                  aria-describedby={touched.teamId && errors.teamId ? 'team-select-error' : undefined}
+                  aria-describedby={
+                    touched.teamId && errors.teamId ? 'team-select-error' : undefined
+                  }
                 >
                   <option value="">Selecione a equipe...</option>
                   {teams.map((team) => (
@@ -286,7 +301,11 @@ export default function TeamLinkingTab({
                   className="team-linking-tab__input"
                   value={costCenterId}
                   onChange={(e) => setCostCenterId(e.target.value)}
-                  placeholder={selectedTeam?.costCenterId ? 'Pré-preenchido da equipe' : 'ID do centro de custo'}
+                  placeholder={
+                    selectedTeam?.costCenterId
+                      ? 'Pré-preenchido da equipe'
+                      : 'ID do centro de custo'
+                  }
                 />
               </div>
 
@@ -339,10 +358,12 @@ export default function TeamLinkingTab({
             {submitResult && (
               <div className="team-linking-tab__result" role="status" aria-live="polite">
                 <span className="team-linking-tab__result-text">
-                  Vinculado para <strong>{submitResult.created}</strong> de <strong>{submitResult.total}</strong> membros
+                  Vinculado para <strong>{submitResult.created}</strong> de{' '}
+                  <strong>{submitResult.total}</strong> membros
                   {submitResult.skipped > 0 && (
                     <span className="team-linking-tab__result-skipped">
-                      {' '}({submitResult.skipped} sem ponto na data)
+                      {' '}
+                      ({submitResult.skipped} sem ponto na data)
                     </span>
                   )}
                 </span>
@@ -379,7 +400,10 @@ export default function TeamLinkingTab({
           </div>
         ) : (
           <div className="team-linking-tab__table-wrapper">
-            <table className="team-linking-tab__table" aria-label="Apontamentos para vincular individualmente">
+            <table
+              className="team-linking-tab__table"
+              aria-label="Apontamentos para vincular individualmente"
+            >
               <thead>
                 <tr>
                   <th scope="col">DATA</th>
@@ -402,7 +426,8 @@ export default function TeamLinkingTab({
                     <td>
                       {entry.activities.length > 0 ? (
                         <span className="team-linking-tab__activity-count">
-                          {entry.activities.length} vinculada{entry.activities.length !== 1 ? 's' : ''}
+                          {entry.activities.length} vinculada
+                          {entry.activities.length !== 1 ? 's' : ''}
                         </span>
                       ) : (
                         <span className="team-linking-tab__activity-none">Nenhuma</span>

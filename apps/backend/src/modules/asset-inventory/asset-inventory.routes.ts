@@ -57,26 +57,21 @@ assetInventoryRouter.post(
 
 // ─── GET / — List inventories ─────────────────────────────────────────
 
-assetInventoryRouter.get(
-  base,
-  authenticate,
-  checkPermission('assets:read'),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const { page, limit, status, farmId } = req.query;
-      const result = await listInventories(ctx, {
-        page: page ? Number(page) : undefined,
-        limit: limit ? Number(limit) : undefined,
-        status: status as string | undefined,
-        farmId: farmId as string | undefined,
-      });
-      res.status(200).json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
+assetInventoryRouter.get(base, authenticate, checkPermission('assets:read'), async (req, res) => {
+  try {
+    const ctx = buildRlsContext(req);
+    const { page, limit, status, farmId } = req.query;
+    const result = await listInventories(ctx, {
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      status: status as string | undefined,
+      farmId: farmId as string | undefined,
+    });
+    res.status(200).json(result);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
 
 // ─── GET /:id — Get inventory detail ─────────────────────────────────
 

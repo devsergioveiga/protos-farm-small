@@ -33,7 +33,9 @@ export default function AssetRenovationModal({
   const [description, setDescription] = useState('');
   const [renovationDate, setRenovationDate] = useState(today());
   const [totalCost, setTotalCost] = useState('');
-  const [accountingDecision, setAccountingDecision] = useState<'CAPITALIZAR' | 'DESPESA'>('CAPITALIZAR');
+  const [accountingDecision, setAccountingDecision] = useState<'CAPITALIZAR' | 'DESPESA'>(
+    'CAPITALIZAR',
+  );
   const [newUsefulLifeMonths, setNewUsefulLifeMonths] = useState('');
   const [notes, setNotes] = useState('');
   const [formError, setFormError] = useState<string | null>(null);

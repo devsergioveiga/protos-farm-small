@@ -205,7 +205,11 @@ export default function AssetDisposalModal({
             {/* Tipo de alienacao */}
             <section className="disposal-section">
               <h3 className="disposal-section__title">Tipo de alienacao *</h3>
-              <div className="disposal-section__radio-group" role="radiogroup" aria-label="Tipo de alienacao">
+              <div
+                className="disposal-section__radio-group"
+                role="radiogroup"
+                aria-label="Tipo de alienacao"
+              >
                 {(Object.entries(DISPOSAL_TYPE_LABELS) as [DisposalType, string][]).map(
                   ([value, label]) => (
                     <label key={value} className="disposal-section__radio-label">
@@ -300,7 +304,9 @@ export default function AssetDisposalModal({
                     max="120"
                     className="disposal-section__input disposal-section__input--narrow"
                     value={installmentCount}
-                    onChange={(e) => setInstallmentCount(Math.max(1, parseInt(e.target.value) || 1))}
+                    onChange={(e) =>
+                      setInstallmentCount(Math.max(1, parseInt(e.target.value) || 1))
+                    }
                   />
                 </div>
 

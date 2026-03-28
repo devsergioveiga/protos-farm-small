@@ -64,7 +64,6 @@ function AsoResultBadge({ result }: ResultBadgeProps) {
   );
 }
 
-
 export default function MedicalExamsPage() {
   const [showModal, setShowModal] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -264,11 +263,7 @@ export default function MedicalExamsPage() {
       {/* Empty state */}
       {isEmpty && (
         <div className="medical-exams-page__empty">
-          <Stethoscope
-            size={48}
-            aria-hidden="true"
-            className="medical-exams-page__empty-icon"
-          />
+          <Stethoscope size={48} aria-hidden="true" className="medical-exams-page__empty-icon" />
           <p className="medical-exams-page__empty-title">Nenhum ASO registrado</p>
           <p className="medical-exams-page__empty-body">
             Registre o ASO admissional dos colaboradores para iniciar o controle.
@@ -306,7 +301,9 @@ export default function MedicalExamsPage() {
                   <td>{item.employeePosition ?? '—'}</td>
                   <td>{ASO_TYPE_LABELS[item.type] ?? item.type}</td>
                   <td>{formatDate(item.date)}</td>
-                  <td className="medical-exams-page__mono">{item.doctorName} · {item.doctorCrm}</td>
+                  <td className="medical-exams-page__mono">
+                    {item.doctorName} · {item.doctorCrm}
+                  </td>
                   <td>
                     <AsoResultBadge result={item.result} />
                   </td>
@@ -314,7 +311,9 @@ export default function MedicalExamsPage() {
                     {item.expiryStatus ? (
                       <ComplianceStatusBadge status={item.expiryStatus} />
                     ) : (
-                      <span className="medical-exams-page__no-date">{formatDate(item.nextExamDate)}</span>
+                      <span className="medical-exams-page__no-date">
+                        {formatDate(item.nextExamDate)}
+                      </span>
                     )}
                   </td>
                   <td className="medical-exams-page__actions">

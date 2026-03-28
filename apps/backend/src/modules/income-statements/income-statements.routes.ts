@@ -37,11 +37,7 @@ incomeStatementsRouter.post(
     try {
       const orgId = req.params.orgId as string;
       const userId = req.user?.userId ?? 'system';
-      const statements = await incomeStatementsService.generateStatements(
-        orgId,
-        req.body,
-        userId,
-      );
+      const statements = await incomeStatementsService.generateStatements(orgId, req.body, userId);
       res.status(201).json(statements);
     } catch (err) {
       handleError(err, res);

@@ -1,20 +1,20 @@
 ---
 phase: 28-processamento-da-folha-mensal
-plan: "04"
+plan: '04'
 subsystem: frontend-payroll
 tags: [frontend, payroll, typescript, react, ui-components]
 dependency_graph:
-  requires: ["28-02", "28-03"]
-  provides: ["payroll-runs-ui", "salary-advances-ui"]
-  affects: ["payroll-runs-module", "salary-advances-module"]
+  requires: ['28-02', '28-03']
+  provides: ['payroll-runs-ui', 'salary-advances-ui']
+  affects: ['payroll-runs-module', 'salary-advances-module']
 tech_stack:
   added: []
   patterns:
-    - "useState+useCallback hook pattern (no SWR)"
-    - "4-step wizard modal with focus trap and Escape handling"
-    - "Skeleton screens for loading state"
-    - "Mobile card collapse below 768px"
-    - "ConfirmDeleteModal with typing confirmation for destructive actions"
+    - 'useState+useCallback hook pattern (no SWR)'
+    - '4-step wizard modal with focus trap and Escape handling'
+    - 'Skeleton screens for loading state'
+    - 'Mobile card collapse below 768px'
+    - 'ConfirmDeleteModal with typing confirmation for destructive actions'
 key_files:
   created:
     - apps/frontend/src/types/payroll-runs.ts
@@ -31,16 +31,16 @@ key_files:
     - apps/frontend/src/components/payroll/PayrollRunItemRow.tsx
   modified: []
 decisions:
-  - "ConfirmDeleteModal reused for estorno typing confirmation — matches high-criticality pattern from CLAUDE.md"
-  - "PayrollRunsPage route and Sidebar entry already registered from a prior phase — not re-added"
-  - "processRun in wizard returns unknown (backend returns PayrollRun) — typed as unknown to avoid cast"
+  - 'ConfirmDeleteModal reused for estorno typing confirmation — matches high-criticality pattern from CLAUDE.md'
+  - 'PayrollRunsPage route and Sidebar entry already registered from a prior phase — not re-added'
+  - 'processRun in wizard returns unknown (backend returns PayrollRun) — typed as unknown to avoid cast'
 metrics:
   duration_minutes: 9
   completed_tasks: 2
   total_tasks: 2
   files_created: 12
   files_modified: 0
-  completed_date: "2026-03-24"
+  completed_date: '2026-03-24'
 requirements: [FOLHA-02, FOLHA-05]
 ---
 
@@ -50,10 +50,10 @@ Frontend for payroll run management — types, hooks, 4-step wizard, runs listin
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Frontend types + hooks for payroll runs | 7e29c8b6 | payroll-runs.ts, usePayrollRuns.ts, useSalaryAdvances.ts |
-| 2 | PayrollRunsPage + PayrollRunWizard + PayrollRunDetailModal + StatusBadge | eba8589d | PayrollRunsPage.tsx/css, PayrollRunWizard.tsx/css, PayrollRunDetailModal.tsx/css, PayrollRunStatusBadge.tsx/css, PayrollRunItemRow.tsx |
+| Task | Name                                                                     | Commit   | Files                                                                                                                                  |
+| ---- | ------------------------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Frontend types + hooks for payroll runs                                  | 7e29c8b6 | payroll-runs.ts, usePayrollRuns.ts, useSalaryAdvances.ts                                                                               |
+| 2    | PayrollRunsPage + PayrollRunWizard + PayrollRunDetailModal + StatusBadge | eba8589d | PayrollRunsPage.tsx/css, PayrollRunWizard.tsx/css, PayrollRunDetailModal.tsx/css, PayrollRunStatusBadge.tsx/css, PayrollRunItemRow.tsx |
 
 ## What Was Built
 
@@ -66,6 +66,7 @@ Frontend for payroll run management — types, hooks, 4-step wizard, runs listin
 ### Hooks
 
 **`usePayrollRuns`** — Full lifecycle:
+
 - `fetchRuns(filters)` — list with month/type/status filters
 - `createRun(data)` — initiate new run
 - `processRun(runId, employeeIds)` — trigger calculation
@@ -75,6 +76,7 @@ Frontend for payroll run management — types, hooks, 4-step wizard, runs listin
 - `downloadPayslips(runId)`, `downloadItemPayslip(runId, itemId)` — PDF/ZIP download
 
 **`useSalaryAdvances`** — CRUD + batch:
+
 - `fetchAdvances(filters)`, `createAdvance(data)`, `createBatchAdvances(data)`
 - `downloadReceipt(advanceId)` — PDF download
 
@@ -83,6 +85,7 @@ Both follow `useState+useCallback` pattern matching `useTimesheet` (no SWR).
 ### `PayrollRunStatusBadge`
 
 7 status configurations with icon + label + CSS variable colors:
+
 - PENDING (Clock, neutral), PROCESSING (Loader2 spinning, info), CALCULATED (Calculator, sun)
 - COMPLETED (Lock, success), ERROR (AlertCircle, error), REVERTED (RotateCcw, neutral)
 - PENDING_TIMESHEET (AlertTriangle, warning)

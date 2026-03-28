@@ -59,25 +59,20 @@ biologicalAssetsRouter.get(
 
 // ─── GET /org/:orgId/biological-assets ───────────────────────────────
 
-biologicalAssetsRouter.get(
-  base,
-  authenticate,
-  checkPermission('assets:read'),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const filters = {
-        farmId: req.query.farmId as string | undefined,
-        assetGroup: req.query.assetGroup as string | undefined,
-        groupType: req.query.groupType as string | undefined,
-      };
-      const result = await listValuations(ctx, filters);
-      res.json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
+biologicalAssetsRouter.get(base, authenticate, checkPermission('assets:read'), async (req, res) => {
+  try {
+    const ctx = buildRlsContext(req);
+    const filters = {
+      farmId: req.query.farmId as string | undefined,
+      assetGroup: req.query.assetGroup as string | undefined,
+      groupType: req.query.groupType as string | undefined,
+    };
+    const result = await listValuations(ctx, filters);
+    res.json(result);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
 
 // ─── GET /org/:orgId/biological-assets/:id ───────────────────────────
 

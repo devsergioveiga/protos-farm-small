@@ -1,12 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  FileText,
-  Download,
-  AlertTriangle,
-  AlertCircle,
-  Plus,
-  X,
-} from 'lucide-react';
+import { FileText, Download, AlertTriangle, AlertCircle, Plus, X } from 'lucide-react';
 import { useTaxGuides } from '@/hooks/useTaxGuides';
 import type { TaxGuide, TaxGuideType, TaxGuideStatus } from '@/types/tax-guide';
 import { TAX_GUIDE_TYPE_LABELS, TAX_GUIDE_STATUS_LABELS } from '@/types/tax-guide';
@@ -264,7 +257,10 @@ export default function TaxGuidesPage() {
       <main className="p-6 max-w-[1280px] mx-auto" id="main-content">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="mb-4">
-          <ol className="flex items-center gap-2 text-sm text-neutral-500" style={{ fontFamily: "'Source Sans 3', system-ui, sans-serif" }}>
+          <ol
+            className="flex items-center gap-2 text-sm text-neutral-500"
+            style={{ fontFamily: "'Source Sans 3', system-ui, sans-serif" }}
+          >
             <li>Obrigações Acessórias</li>
             <li aria-hidden="true">/</li>
             <li className="text-[#3E3833] font-medium">Guias de Recolhimento</li>
@@ -398,11 +394,7 @@ export default function TaxGuidesPage() {
             aria-label="Nenhuma guia encontrada"
             className="flex flex-col items-center justify-center py-20 text-center"
           >
-            <FileText
-              size={64}
-              className="text-neutral-300 mb-4"
-              aria-hidden="true"
-            />
+            <FileText size={64} className="text-neutral-300 mb-4" aria-hidden="true" />
             <h2
               className="text-lg font-semibold text-[#2A2520] mb-2"
               style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
@@ -503,11 +495,7 @@ export default function TaxGuidesPage() {
                         disabled={guide.status === 'PENDING'}
                         aria-label={`Baixar guia ${TAX_GUIDE_TYPE_LABELS[guide.guideType]} de ${formatCompetencia(guide.referenceMonth)}`}
                         className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-[#2E7D32] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                        title={
-                          guide.status === 'PENDING'
-                            ? 'Guia ainda não gerada'
-                            : 'Baixar guia'
-                        }
+                        title={guide.status === 'PENDING' ? 'Guia ainda não gerada' : 'Baixar guia'}
                       >
                         <Download size={16} aria-hidden="true" />
                       </button>

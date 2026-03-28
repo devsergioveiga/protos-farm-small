@@ -4,7 +4,7 @@ milestone: v1.1
 milestone_name: Conciliação, Fluxo de Caixa e Crédito Rural
 status: roadmap_ready
 stopped_at: Roadmap created — Phase 5 is next
-last_updated: "2026-03-26"
+last_updated: '2026-03-26'
 last_activity: 2026-03-26
 progress:
   total_phases: 2

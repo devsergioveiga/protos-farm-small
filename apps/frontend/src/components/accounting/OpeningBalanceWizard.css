@@ -15,8 +15,12 @@
 }
 
 @keyframes ob-overlay-open {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ─── Dialog ─────────────────────────────────────────────────────────────── */
@@ -35,8 +39,14 @@
 }
 
 @keyframes ob-modal-open {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─── Header ─────────────────────────────────────────────────────────────── */
@@ -177,8 +187,14 @@
 }
 
 @keyframes ob-step-in {
-  from { opacity: 0; transform: translateX(8px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* ─── Table ──────────────────────────────────────────────────────────────── */
@@ -206,10 +222,19 @@
   white-space: nowrap;
 }
 
-.ob-wizard__th--side { width: 80px; text-align: center; }
-.ob-wizard__th--amount { width: 120px; }
-.ob-wizard__th--source { width: 100px; }
-.ob-wizard__th--remove { width: 48px; }
+.ob-wizard__th--side {
+  width: 80px;
+  text-align: center;
+}
+.ob-wizard__th--amount {
+  width: 120px;
+}
+.ob-wizard__th--source {
+  width: 100px;
+}
+.ob-wizard__th--remove {
+  width: 48px;
+}
 
 .ob-wizard__line-row {
   border-bottom: 1px solid var(--color-neutral-100);
@@ -224,9 +249,15 @@
   vertical-align: middle;
 }
 
-.ob-wizard__td--side { text-align: center; }
-.ob-wizard__td--amount { text-align: right; }
-.ob-wizard__td--remove { text-align: center; }
+.ob-wizard__td--side {
+  text-align: center;
+}
+.ob-wizard__td--amount {
+  text-align: right;
+}
+.ob-wizard__td--remove {
+  text-align: center;
+}
 
 /* ─── Account Display ────────────────────────────────────────────────────── */
 
@@ -308,8 +339,12 @@
   min-height: 48px;
 }
 
-.ob-wizard__amount-input--debit { color: var(--color-error-500); }
-.ob-wizard__amount-input--credit { color: var(--color-success-500); }
+.ob-wizard__amount-input--debit {
+  color: var(--color-error-500);
+}
+.ob-wizard__amount-input--credit {
+  color: var(--color-success-500);
+}
 
 .ob-wizard__amount-input:focus-visible {
   outline: 2px solid var(--color-primary-500);
@@ -425,8 +460,13 @@
 }
 
 @keyframes ob-skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 /* ─── Step 2 ─────────────────────────────────────────────────────────────── */
@@ -497,8 +537,12 @@
   font-family: var(--font-mono);
 }
 
-.ob-wizard__debit-color { color: var(--color-error-500); }
-.ob-wizard__credit-color { color: var(--color-success-500); }
+.ob-wizard__debit-color {
+  color: var(--color-error-500);
+}
+.ob-wizard__credit-color {
+  color: var(--color-success-500);
+}
 
 /* ─── Error ──────────────────────────────────────────────────────────────── */
 

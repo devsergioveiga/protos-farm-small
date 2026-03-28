@@ -171,7 +171,9 @@
   cursor: pointer;
   min-height: 72px;
   min-width: 0;
-  transition: border-color 100ms ease-out, background 100ms ease-out;
+  transition:
+    border-color 100ms ease-out,
+    background 100ms ease-out;
 }
 
 .fp-period-cell:hover {
@@ -450,8 +452,12 @@
 }
 
 @keyframes fp-skeleton-pulse {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Error */
@@ -519,8 +525,14 @@
 }
 
 @keyframes fp-toast-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Responsive */

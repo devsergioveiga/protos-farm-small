@@ -1,11 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/services/api';
-import type {
-  WeaningItem,
-  WeaningsResponse,
-  WeaningConfig,
-  UnweanedAnimal,
-} from '@/types/weaning';
+import type { WeaningItem, WeaningsResponse, WeaningConfig, UnweanedAnimal } from '@/types/weaning';
 import type { PaginationMeta } from '@/types/admin';
 
 /* ─── useWeanings ────────────────────────────────────────────────── */

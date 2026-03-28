@@ -72,7 +72,8 @@ export function useWorkOrders() {
         setState((prev) => ({
           ...prev,
           loading: false,
-          error: 'Nao foi possivel carregar as ordens de servico. Verifique sua conexao e tente novamente.',
+          error:
+            'Nao foi possivel carregar as ordens de servico. Verifique sua conexao e tente novamente.',
           workOrders: [],
         }));
       }

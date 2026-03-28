@@ -271,9 +271,7 @@ export default function CostCenterWizardModal({
 
   const template = selectedType ? CC_TEMPLATES[selectedType] : null;
   const effectiveFarmName =
-    selectedFarm?.name ??
-    farms.find((f) => f.id === farmId)?.name ??
-    'Nenhuma fazenda selecionada';
+    selectedFarm?.name ?? farms.find((f) => f.id === farmId)?.name ?? 'Nenhuma fazenda selecionada';
 
   const stepTitles = ['Tipo de Ativo', 'Sugestao de Codigo', 'Configuracao', 'Confirmacao'];
 

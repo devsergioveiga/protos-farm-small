@@ -1,30 +1,31 @@
 ---
 phase: 31-obriga-es-acess-rias-e-esocial
-plan: "05"
+plan: '05'
 subsystem: integration-wiring
-tags: [cron, notifications, sidebar, routes, esocial, tax-guides, income-statements, frontend, backend]
+tags:
+  [cron, notifications, sidebar, routes, esocial, tax-guides, income-statements, frontend, backend]
 dependency_graph:
-  requires: ["31-02", "31-04"]
+  requires: ['31-02', '31-04']
   provides:
-    - "startTaxGuideAlertsCron (daily Redis-locked notification for tax guide due dates)"
-    - "TAX_GUIDE_DUE NotificationType"
-    - "Sidebar OBRIGACOES group (3 nav items)"
-    - "Routes /tax-guides, /esocial-events, /income-statements"
-    - "EsocialEventsPage + useEsocialEvents hook"
-    - "IncomeStatementsPage + useIncomeStatements hook"
+    - 'startTaxGuideAlertsCron (daily Redis-locked notification for tax guide due dates)'
+    - 'TAX_GUIDE_DUE NotificationType'
+    - 'Sidebar OBRIGACOES group (3 nav items)'
+    - 'Routes /tax-guides, /esocial-events, /income-statements'
+    - 'EsocialEventsPage + useEsocialEvents hook'
+    - 'IncomeStatementsPage + useIncomeStatements hook'
   affects:
-    - "apps/backend/src/main.ts (cron registration)"
-    - "apps/backend/src/modules/notifications/notifications.types.ts"
-    - "apps/frontend/src/components/layout/Sidebar.tsx"
-    - "apps/frontend/src/App.tsx"
+    - 'apps/backend/src/main.ts (cron registration)'
+    - 'apps/backend/src/modules/notifications/notifications.types.ts'
+    - 'apps/frontend/src/components/layout/Sidebar.tsx'
+    - 'apps/frontend/src/App.tsx'
 tech_stack:
   added: []
   patterns:
-    - "Redis NX lock per day for cron idempotency (same as contract-expiry-alerts.cron.ts)"
-    - "NotificationType union derived from const array — no as any"
-    - "findMany managers by role ADMIN/MANAGER for org-scoped notifications"
-    - "Lazy-loaded routes with React.lazy + Suspense"
-    - "NAV_GROUPS array extension pattern for sidebar groups"
+    - 'Redis NX lock per day for cron idempotency (same as contract-expiry-alerts.cron.ts)'
+    - 'NotificationType union derived from const array — no as any'
+    - 'findMany managers by role ADMIN/MANAGER for org-scoped notifications'
+    - 'Lazy-loaded routes with React.lazy + Suspense'
+    - 'NAV_GROUPS array extension pattern for sidebar groups'
 key_files:
   created:
     - apps/backend/src/shared/cron/tax-guide-alerts.cron.ts
@@ -38,13 +39,13 @@ key_files:
     - apps/frontend/src/components/layout/Sidebar.tsx
     - apps/frontend/src/App.tsx
 decisions:
-  - "Used body (not message) field for Notification model per schema inspection — plan had incorrect field name"
-  - "EsocialEventsPage and IncomeStatementsPage created in this plan (were documented in 31-04 SUMMARY but not on disk)"
-  - "useEsocialEvents uses raw fetch with Content-Type inspection to handle XSD error JSON vs XML blob response"
-  - "FileCode icon for eSocial events, FileBarChart2 for income statements (FileBarChart already used in PATRIMONIO)"
+  - 'Used body (not message) field for Notification model per schema inspection — plan had incorrect field name'
+  - 'EsocialEventsPage and IncomeStatementsPage created in this plan (were documented in 31-04 SUMMARY but not on disk)'
+  - 'useEsocialEvents uses raw fetch with Content-Type inspection to handle XSD error JSON vs XML blob response'
+  - 'FileCode icon for eSocial events, FileBarChart2 for income statements (FileBarChart already used in PATRIMONIO)'
 metrics:
   duration: ~15min
-  completed_date: "2026-03-26"
+  completed_date: '2026-03-26'
   tasks_completed: 1
   tasks_total: 2
   files_created: 5
@@ -58,9 +59,9 @@ Tax guide alert cron with Redis lock + TAX_GUIDE_DUE notification type + sidebar
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Tax guide alert cron + notification type + sidebar + routes wiring | 7ecb2610 | notifications.types.ts, tax-guide-alerts.cron.ts, main.ts, Sidebar.tsx, App.tsx, useEsocialEvents.ts, useIncomeStatements.ts, EsocialEventsPage.tsx, IncomeStatementsPage.tsx |
+| Task | Name                                                               | Commit   | Files                                                                                                                                                                         |
+| ---- | ------------------------------------------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Tax guide alert cron + notification type + sidebar + routes wiring | 7ecb2610 | notifications.types.ts, tax-guide-alerts.cron.ts, main.ts, Sidebar.tsx, App.tsx, useEsocialEvents.ts, useIncomeStatements.ts, EsocialEventsPage.tsx, IncomeStatementsPage.tsx |
 
 ## Task 2: Pending Human Verification
 
@@ -69,6 +70,7 @@ Task 2 is a `checkpoint:human-verify` task. The following verification steps are
 ### What Was Built
 
 Complete compliance module wired into the application shell:
+
 - **Guias de Recolhimento** (`/tax-guides`): FGTS/INSS/IRRF/FUNRURAL generation from payroll data, downloadable SEFIP .RE and PDF files
 - **Eventos eSocial** (`/esocial-events`): dashboard with 4 tabs, generate/download XML/reject/reprocess, XSD validation inline errors
 - **Informes de Rendimentos** (`/income-statements`): year filter, RAIS consistency check, generate + download PDF + send email
@@ -91,6 +93,7 @@ Complete compliance module wired into the application shell:
 **`notifications.types.ts`** — Added `TAX_GUIDE_DUE` to the `NOTIFICATION_TYPES` const array. The `NotificationType` union is derived from the array via `typeof NOTIFICATION_TYPES[number]`, so no `as any` needed.
 
 **`tax-guide-alerts.cron.ts`** — Daily cron at `0 7 * * *` (America/Sao_Paulo):
+
 - Redis key `cron:tax-guide-alerts:{date}` with `EX 3600 NX` for idempotency
 - Queries `TaxGuide` where `status NOT IN ['PAID']` and `dueDate >= now AND dueDate <= now+10days`
 - For each guide, computes `daysUntilDue` via `Math.ceil` (fractional days round up)
@@ -102,6 +105,7 @@ Complete compliance module wired into the application shell:
 ### Frontend
 
 **`Sidebar.tsx`** — Added `OBRIGACOES` group between SEGURANÇA and CONFIGURAÇÃO with 3 items:
+
 - Guias de Recolhimento → `/tax-guides` (Receipt icon)
 - Eventos eSocial → `/esocial-events` (FileCode icon)
 - Informes de Rendimentos → `/income-statements` (FileBarChart2 icon)
@@ -117,6 +121,7 @@ Complete compliance module wired into the application shell:
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] EsocialEventsPage and IncomeStatementsPage missing from disk**
+
 - **Found during:** Task 1 verification
 - **Issue:** Plan 04 SUMMARY documented creating these files, but neither page nor hooks existed on disk
 - **Fix:** Created EsocialEventsPage.tsx, IncomeStatementsPage.tsx, useEsocialEvents.ts, useIncomeStatements.ts — functional implementations matching the backend API endpoints from plans 03 and 04
@@ -124,6 +129,7 @@ Complete compliance module wired into the application shell:
 - **Commit:** 7ecb2610
 
 **2. [Rule 1 - Bug] Notification.body vs message field mismatch**
+
 - **Found during:** Task 1 implementation
 - **Issue:** Plan action used `message` field in notification create but Prisma schema has `body` field
 - **Fix:** Used `body` field per schema — no runtime error at startup

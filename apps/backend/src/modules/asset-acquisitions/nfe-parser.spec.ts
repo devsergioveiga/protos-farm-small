@@ -2,18 +2,20 @@ import { parseNfeXml, calculateRateio } from './nfe-parser';
 
 // ─── Helpers ────────────────────────────────────────────────────────────
 
-function makeNfe(overrides: {
-  xNome?: string;
-  CNPJ?: string;
-  nNF?: string;
-  dhEmi?: string;
-  vNF?: string;
-  vProd?: string;
-  vFrete?: string;
-  vSeg?: string;
-  vOutro?: string;
-  items?: Array<{ xProd: string; vProd: string; NCM?: string; qCom: string; uCom: string }>;
-} = {}): string {
+function makeNfe(
+  overrides: {
+    xNome?: string;
+    CNPJ?: string;
+    nNF?: string;
+    dhEmi?: string;
+    vNF?: string;
+    vProd?: string;
+    vFrete?: string;
+    vSeg?: string;
+    vOutro?: string;
+    items?: Array<{ xProd: string; vProd: string; NCM?: string; qCom: string; uCom: string }>;
+  } = {},
+): string {
   const {
     xNome = 'Fornecedor Teste LTDA',
     CNPJ = '12345678000195',

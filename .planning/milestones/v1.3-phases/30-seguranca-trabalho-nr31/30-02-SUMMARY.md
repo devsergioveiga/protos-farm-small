@@ -1,6 +1,6 @@
 ---
 phase: 30-seguranca-trabalho-nr31
-plan: "02"
+plan: '02'
 subsystem: backend
 tags: [epi, nr31, nr6, stock-integration, pdf, safety, crud]
 dependency_graph:
@@ -34,12 +34,12 @@ key_files:
     - apps/backend/src/modules/epi-deliveries/epi-deliveries.routes.ts (stub → full implementation)
     - apps/backend/jest.config.js (added .js → .ts moduleNameMapper)
 decisions:
-  - "Stock deduction implemented inline inside withRlsContext transaction (not via service call) to avoid nested transaction anti-pattern per STATE.md"
-  - "deleteEpiDelivery uses cascade pattern: delete StockOutput (which cascades to StockOutputItem) after restoring StockBalance, then deletes EpiDelivery"
-  - "jest.config.js .js→.ts mapper added as Rule 3 auto-fix to unblock all tests broken by plan 30-01 ESM-style imports in app.ts"
+  - 'Stock deduction implemented inline inside withRlsContext transaction (not via service call) to avoid nested transaction anti-pattern per STATE.md'
+  - 'deleteEpiDelivery uses cascade pattern: delete StockOutput (which cascades to StockOutputItem) after restoring StockBalance, then deletes EpiDelivery'
+  - 'jest.config.js .js→.ts mapper added as Rule 3 auto-fix to unblock all tests broken by plan 30-01 ESM-style imports in app.ts'
 metrics:
-  duration: "9 minutes"
-  completed: "2026-03-26"
+  duration: '9 minutes'
+  completed: '2026-03-26'
   tasks_completed: 2
   files_changed: 7
 ---
@@ -50,16 +50,17 @@ EPI product CRUD with position requirements + EPI delivery with automatic stock 
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | epi-products service + routes + tests | c3cc744c | epi-products.service.ts, epi-products.routes.ts, epi-products.routes.spec.ts, jest.config.js |
-| 2 | epi-deliveries service + routes + tests (stock + PDF) | 3718e177 | epi-deliveries.service.ts, epi-deliveries.routes.ts, epi-deliveries.routes.spec.ts |
+| Task | Name                                                  | Commit   | Files                                                                                        |
+| ---- | ----------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------- |
+| 1    | epi-products service + routes + tests                 | c3cc744c | epi-products.service.ts, epi-products.routes.ts, epi-products.routes.spec.ts, jest.config.js |
+| 2    | epi-deliveries service + routes + tests (stock + PDF) | 3718e177 | epi-deliveries.service.ts, epi-deliveries.routes.ts, epi-deliveries.routes.spec.ts           |
 
 ## What Was Built
 
 ### epi-products module (fully functional)
 
 9 endpoints registered:
+
 - `GET /api/epi-products` — list with search and epiType filter, paginated, includes currentStock from StockBalance
 - `POST /api/epi-products` — create EpiProduct linking Product to NR-31 CA metadata
 - `GET /api/epi-products/:id` — single EPI product with full details
@@ -75,6 +76,7 @@ Service functions: `createEpiProduct`, `updateEpiProduct`, `deleteEpiProduct`, `
 ### epi-deliveries module (fully functional)
 
 6 endpoints registered:
+
 - `GET /api/epi-deliveries` — list with filters (employeeId, epiType, reason, dateFrom, dateTo), paginated
 - `POST /api/epi-deliveries` — create delivery with atomic stock deduction
 - `GET /api/epi-deliveries/:id` — single delivery with employee + product names
@@ -87,6 +89,7 @@ Service functions: `createEpiDelivery`, `deleteEpiDelivery`, `listEpiDeliveries`
 ### Stock Integration
 
 `createEpiDelivery` inside single `withRlsContext` transaction:
+
 1. Verify EpiProduct + Employee belong to org
 2. Check StockBalance sufficiency → throws `INSUFFICIENT_STOCK` if insufficient
 3. `tx.stockOutput.create` (type: CONSUMPTION, status: CONFIRMED)
@@ -95,6 +98,7 @@ Service functions: `createEpiDelivery`, `deleteEpiDelivery`, `listEpiDeliveries`
 6. `tx.epiDelivery.create` with stockOutputId link
 
 `deleteEpiDelivery` inside single transaction:
+
 1. Restore StockBalance (increment quantity, recalculate averageCost)
 2. Delete StockOutput (cascades to StockOutputItem)
 3. Delete EpiDelivery
@@ -102,6 +106,7 @@ Service functions: `createEpiDelivery`, `deleteEpiDelivery`, `listEpiDeliveries`
 ### PDF Generation (NR-6 / NR-31 compliant)
 
 `generateEpiFichaPdf` uses pdfkit dynamic import pattern:
+
 - Header: "FICHA DE CONTROLE DE EPI" + "Conforme NR-6 e NR-31"
 - Employee section: name, position title, hire date
 - Table: Data | Descrição EPI | Nº CA | Qtd | Motivo | Assinatura
@@ -113,6 +118,7 @@ Service functions: `createEpiDelivery`, `deleteEpiDelivery`, `listEpiDeliveries`
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Fixed .js → .ts module resolution in Jest**
+
 - **Found during:** Task 1 test run
 - **Issue:** app.ts imports phase 30 stub routes with `.js` extension (ESM pattern), but jest.config.js had no moduleNameMapper for `.js` → `.ts`. This caused ALL test suites that import `app` to fail with "Cannot find module ... .routes.js". This was introduced in plan 30-01 when app.ts was updated.
 - **Fix:** Added `'^(\\.{1,2}/.*)\\.js$': '$1'` to `moduleNameMapper` in `jest.config.js`
@@ -126,16 +132,19 @@ None — both modules are fully implemented. The stub routes from plan 30-01 hav
 ## Self-Check: PASSED
 
 Files created:
+
 - apps/backend/src/modules/epi-products/epi-products.service.ts — FOUND
 - apps/backend/src/modules/epi-products/epi-products.routes.spec.ts — FOUND
 - apps/backend/src/modules/epi-deliveries/epi-deliveries.service.ts — FOUND
 - apps/backend/src/modules/epi-deliveries/epi-deliveries.routes.spec.ts — FOUND
 
 Commits:
+
 - c3cc744c — Task 1 epi-products CRUD + tests
 - 3718e177 — Task 2 epi-deliveries stock + PDF + tests
 
 Key acceptance criteria:
+
 - epi-products.service.ts contains `export async function createEpiProduct` — YES
 - epi-products.service.ts contains `export async function listEpiProducts` — YES
 - epi-products.service.ts contains `export async function createPositionEpiRequirement` — YES

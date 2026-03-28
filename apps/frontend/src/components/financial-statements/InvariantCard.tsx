@@ -29,9 +29,7 @@ export default function InvariantCard({ invariant }: InvariantCardProps) {
         </div>
         <div className="invariant-card__title">{title}</div>
         {difference !== null && (
-          <div className="invariant-card__difference">
-            Diferenca: R$ {difference}
-          </div>
+          <div className="invariant-card__difference">Diferenca: R$ {difference}</div>
         )}
         {investigateUrl && (
           <a
@@ -58,8 +56,7 @@ export default function InvariantCard({ invariant }: InvariantCardProps) {
       <div className="invariant-card__title">{title}</div>
       {(expected !== null || found !== null) && (
         <div className="invariant-card__detail">
-          Esperado: <span>{expected ?? '—'}</span> | Encontrado:{' '}
-          <span>{found ?? '—'}</span>
+          Esperado: <span>{expected ?? '—'}</span> | Encontrado: <span>{found ?? '—'}</span>
         </div>
       )}
     </div>

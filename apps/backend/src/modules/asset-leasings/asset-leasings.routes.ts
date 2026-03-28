@@ -41,41 +41,31 @@ function handleError(err: unknown, res: import('express').Response): void {
 
 // ─── POST / — Create leasing contract ────────────────────────────────
 
-assetLeasingsRouter.post(
-  base,
-  authenticate,
-  checkPermission('assets:create'),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const result = await createLeasing(ctx, req.body);
-      res.status(201).json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
+assetLeasingsRouter.post(base, authenticate, checkPermission('assets:create'), async (req, res) => {
+  try {
+    const ctx = buildRlsContext(req);
+    const result = await createLeasing(ctx, req.body);
+    res.status(201).json(result);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
 
 // ─── GET / — List leasings ────────────────────────────────────────────
 
-assetLeasingsRouter.get(
-  base,
-  authenticate,
-  checkPermission('assets:read'),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const filters = {
-        farmId: req.query.farmId as string | undefined,
-        status: req.query.status as string | undefined,
-      };
-      const leasings = await listLeasings(ctx, filters);
-      res.status(200).json(leasings);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
+assetLeasingsRouter.get(base, authenticate, checkPermission('assets:read'), async (req, res) => {
+  try {
+    const ctx = buildRlsContext(req);
+    const filters = {
+      farmId: req.query.farmId as string | undefined,
+      status: req.query.status as string | undefined,
+    };
+    const leasings = await listLeasings(ctx, filters);
+    res.status(200).json(leasings);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
 
 // ─── GET /:id — Get single leasing ───────────────────────────────────
 

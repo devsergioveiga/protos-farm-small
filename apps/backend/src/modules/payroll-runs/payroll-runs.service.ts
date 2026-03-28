@@ -8,10 +8,7 @@ import JSZip from 'jszip';
 import { prisma } from '../../database/prisma';
 import { type RlsContext } from '../../database/rls';
 import { payrollTablesService } from '../payroll-tables/payroll-tables.service';
-import {
-  calculateEmployeePayroll,
-  calculateThirteenthSalary,
-} from './payroll-calculation.service';
+import { calculateEmployeePayroll, calculateThirteenthSalary } from './payroll-calculation.service';
 import { generatePayslipPdf } from './payroll-pdf.service';
 import { sendMail } from '../../shared/mail/mail.service';
 import {
@@ -78,7 +75,9 @@ async function buildCostCenterItems(
   employeeId: string,
   referenceMonth: Date,
   farmId: string,
-): Promise<Array<{ costCenterId: string; farmId: string; allocMode: string; percentage: Decimal }>> {
+): Promise<
+  Array<{ costCenterId: string; farmId: string; allocMode: string; percentage: Decimal }>
+> {
   // Compute month range for time entry lookup
   const year = referenceMonth.getUTCFullYear();
   const month = referenceMonth.getUTCMonth();
@@ -114,7 +113,12 @@ async function buildCostCenterItems(
     if (totalMinutes === 0) return [];
 
     const entries = [...ccMinutes.entries()];
-    const result: Array<{ costCenterId: string; farmId: string; allocMode: string; percentage: Decimal }> = [];
+    const result: Array<{
+      costCenterId: string;
+      farmId: string;
+      allocMode: string;
+      percentage: Decimal;
+    }> = [];
 
     let sumSoFar = new Decimal(0);
     for (let i = 0; i < entries.length; i++) {
@@ -124,7 +128,10 @@ async function buildCostCenterItems(
         // Last entry: remainder to ensure sum = 100
         pct = new Decimal(100).minus(sumSoFar);
       } else {
-        pct = new Decimal(minutes).div(totalMinutes).mul(100).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+        pct = new Decimal(minutes)
+          .div(totalMinutes)
+          .mul(100)
+          .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
         sumSoFar = sumSoFar.plus(pct);
       }
       result.push({ costCenterId: ccId, farmId, allocMode: 'PERCENTAGE', percentage: pct });
@@ -210,9 +217,7 @@ async function calculateAndCreateItem(
 ): Promise<void> {
   // Get current salary from salary history (latest effectiveAt <= referenceMonth)
   const salaryEntry = employee.salaryHistory?.[0];
-  const baseSalary = salaryEntry
-    ? new Decimal(salaryEntry.salary.toString())
-    : new Decimal(0);
+  const baseSalary = salaryEntry ? new Decimal(salaryEntry.salary.toString()) : new Decimal(0);
 
   if (baseSalary.isZero()) {
     // Create PENDING_TIMESHEET item for employees without salary data
@@ -299,17 +304,12 @@ async function calculateAndCreateItem(
         ? new Date(Date.UTC(refYear, 10, 30)) // Nov 30
         : new Date(Date.UTC(refYear, 11, 31)); // Dec 31
     const startDate = new Date(
-      Math.max(
-        employee.admissionDate.getTime(),
-        new Date(Date.UTC(refYear, 0, 1)).getTime(),
-      ),
+      Math.max(employee.admissionDate.getTime(), new Date(Date.UTC(refYear, 0, 1)).getTime()),
     );
     const monthsWorked = Math.max(
       1,
-      Math.floor(
-        (cutoffDate.getTime() - startDate.getTime()) /
-          (30.4375 * 24 * 60 * 60 * 1000),
-      ) + 1,
+      Math.floor((cutoffDate.getTime() - startDate.getTime()) / (30.4375 * 24 * 60 * 60 * 1000)) +
+        1,
     );
 
     // Calculate averages from year's timesheets (provided via yearTimesheetMap for SECOND)
@@ -321,14 +321,38 @@ async function calculateAndCreateItem(
       const yearTimesheets = yearTimesheetMap.get(employee.id) ?? [];
       if (yearTimesheets.length > 0) {
         const hourlyRate = baseSalary.div(220).toDecimalPlaces(4, Decimal.ROUND_HALF_UP);
-        const totalOt50 = yearTimesheets.reduce((s: number, t: any) => s + (t.totalOvertime50 ?? 0), 0);
-        const totalOt100 = yearTimesheets.reduce((s: number, t: any) => s + (t.totalOvertime100 ?? 0), 0);
-        const totalNight = yearTimesheets.reduce((s: number, t: any) => s + (t.totalNightMinutes ?? 0), 0);
+        const totalOt50 = yearTimesheets.reduce(
+          (s: number, t: any) => s + (t.totalOvertime50 ?? 0),
+          0,
+        );
+        const totalOt100 = yearTimesheets.reduce(
+          (s: number, t: any) => s + (t.totalOvertime100 ?? 0),
+          0,
+        );
+        const totalNight = yearTimesheets.reduce(
+          (s: number, t: any) => s + (t.totalNightMinutes ?? 0),
+          0,
+        );
         const months = yearTimesheets.length;
 
-        avgOvertime50 = new Decimal(totalOt50).div(60).mul(hourlyRate).mul('1.5').div(months).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-        avgOvertime100 = new Decimal(totalOt100).div(60).mul(hourlyRate).mul('2.0').div(months).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
-        avgNightPremium = new Decimal(totalNight).div(60).mul(hourlyRate).mul('0.25').div(months).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+        avgOvertime50 = new Decimal(totalOt50)
+          .div(60)
+          .mul(hourlyRate)
+          .mul('1.5')
+          .div(months)
+          .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+        avgOvertime100 = new Decimal(totalOt100)
+          .div(60)
+          .mul(hourlyRate)
+          .mul('2.0')
+          .div(months)
+          .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+        avgNightPremium = new Decimal(totalNight)
+          .div(60)
+          .mul(hourlyRate)
+          .mul('0.25')
+          .div(months)
+          .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
       }
     }
 
@@ -574,9 +598,7 @@ export async function processRun(rls: RlsContext, runId: string): Promise<void> 
   );
   const totalCharges = calculatedItems.reduce(
     (s: Decimal, i: any) =>
-      s
-        .plus(new Decimal(i.inssPatronal.toString()))
-        .plus(new Decimal(i.fgtsAmount.toString())),
+      s.plus(new Decimal(i.inssPatronal.toString())).plus(new Decimal(i.fgtsAmount.toString())),
     new Decimal(0),
   );
 
@@ -691,9 +713,7 @@ export async function recalculateEmployee(
   );
   const totalCharges = calculatedItems.reduce(
     (s: Decimal, i: any) =>
-      s
-        .plus(new Decimal(i.inssPatronal.toString()))
-        .plus(new Decimal(i.fgtsAmount.toString())),
+      s.plus(new Decimal(i.inssPatronal.toString())).plus(new Decimal(i.fgtsAmount.toString())),
     new Decimal(0),
   );
 
@@ -857,11 +877,15 @@ export async function closeRun(rls: RlsContext, runId: string): Promise<void> {
         const sindicalAmount = new Decimal(
           typeof sindicalLineItem.value === 'string'
             ? parseFloat(sindicalLineItem.value)
-            : sindicalLineItem.value ?? 0,
+            : (sindicalLineItem.value ?? 0),
         );
         if (sindicalAmount.greaterThan(0)) {
           // Due date: last business day of month following deduction
-          const sindicalDueDate = nthBusinessDay(nextYear, nextMonth + 1 > 12 ? 1 : nextMonth + 1, 5);
+          const sindicalDueDate = nthBusinessDay(
+            nextYear,
+            nextMonth + 1 > 12 ? 1 : nextMonth + 1,
+            5,
+          );
           const sindicalPayable = await tx.payable.create({
             data: {
               organizationId: rls.organizationId,
@@ -1043,10 +1067,25 @@ export async function closeRun(rls: RlsContext, runId: string): Promise<void> {
   // Auto-generate periodic eSocial events (per D-08)
   const referenceMonth = `${run.referenceMonth.getUTCFullYear()}-${String(run.referenceMonth.getUTCMonth() + 1).padStart(2, '0')}`;
   try {
-    await esocialGenerateBatch(rls.organizationId, 'S-1200', referenceMonth, rls.userId ?? 'system');
-    await esocialGenerateBatch(rls.organizationId, 'S-1210', referenceMonth, rls.userId ?? 'system');
+    await esocialGenerateBatch(
+      rls.organizationId,
+      'S-1200',
+      referenceMonth,
+      rls.userId ?? 'system',
+    );
+    await esocialGenerateBatch(
+      rls.organizationId,
+      'S-1210',
+      referenceMonth,
+      rls.userId ?? 'system',
+    );
     // S-1299 guard is enforced internally — will block if S-1200/S-1210 not all EXPORTADO
-    await esocialGenerateBatch(rls.organizationId, 'S-1299', referenceMonth, rls.userId ?? 'system');
+    await esocialGenerateBatch(
+      rls.organizationId,
+      'S-1299',
+      referenceMonth,
+      rls.userId ?? 'system',
+    );
   } catch (err) {
     console.error('[payroll-runs] Failed to auto-generate periodic eSocial events:', err);
   }
@@ -1121,7 +1160,6 @@ export async function revertRun(rls: RlsContext, runId: string): Promise<void> {
       revertedBy: rls.userId ?? 'system',
     },
   });
-
 }
 
 // ─── cpPreview ─────────────────────────────────────────────────────────
@@ -1226,7 +1264,7 @@ export async function cpPreview(rls: RlsContext, runId: string): Promise<CpPrevi
       const sindicalAmount = new Decimal(
         typeof sindicalLineItem.value === 'string'
           ? parseFloat(sindicalLineItem.value)
-          : sindicalLineItem.value ?? 0,
+          : (sindicalLineItem.value ?? 0),
       );
       if (sindicalAmount.greaterThan(0)) {
         previewItems.push({
@@ -1369,10 +1407,7 @@ export async function listRuns(
 
 // ─── getRun ────────────────────────────────────────────────────────────
 
-export async function getRun(
-  rls: RlsContext,
-  runId: string,
-): Promise<Record<string, unknown>> {
+export async function getRun(rls: RlsContext, runId: string): Promise<Record<string, unknown>> {
   const run = await prisma.payrollRun.findFirst({
     where: { id: runId, organizationId: rls.organizationId },
     include: {
@@ -1400,10 +1435,7 @@ export async function getRun(
 
 // ─── downloadPayslipsZip ───────────────────────────────────────────────
 
-export async function downloadPayslipsZip(
-  rls: RlsContext,
-  runId: string,
-): Promise<Buffer> {
+export async function downloadPayslipsZip(rls: RlsContext, runId: string): Promise<Buffer> {
   const run = await prisma.payrollRun.findFirst({
     where: { id: runId, organizationId: rls.organizationId },
     include: {
@@ -1481,10 +1513,7 @@ export async function downloadPayslipsZip(
 
 // ─── getEmployeePayslips ───────────────────────────────────────────────
 
-export async function getEmployeePayslips(
-  rls: RlsContext,
-  employeeId: string,
-): Promise<any[]> {
+export async function getEmployeePayslips(rls: RlsContext, employeeId: string): Promise<any[]> {
   const items = await prisma.payrollRunItem.findMany({
     where: {
       employeeId,
@@ -1517,8 +1546,18 @@ export async function getEmployeePayslips(
 
 function _formatMonthLabel(date: Date): string {
   const months = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
   ];
   return `${months[date.getUTCMonth()]}/${date.getUTCFullYear()}`;
 }

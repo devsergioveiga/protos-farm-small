@@ -30,9 +30,9 @@ function mapEvent(row: Record<string, unknown>): EsocialEventOutput {
     eventType: row.eventType as string,
     eventGroup: row.eventGroup as EsocialGroup,
     referenceMonth: row.referenceMonth
-      ? (row.referenceMonth instanceof Date
-          ? row.referenceMonth.toISOString().slice(0, 7)
-          : String(row.referenceMonth))
+      ? row.referenceMonth instanceof Date
+        ? row.referenceMonth.toISOString().slice(0, 7)
+        : String(row.referenceMonth)
       : null,
     sourceType: row.sourceType as string,
     sourceId: row.sourceId as string,
@@ -41,13 +41,19 @@ function mapEvent(row: Record<string, unknown>): EsocialEventOutput {
     xmlContent: (row.xmlContent as string) ?? null,
     rejectionReason: (row.rejectionReason as string) ?? null,
     exportedAt: row.exportedAt
-      ? (row.exportedAt instanceof Date ? row.exportedAt.toISOString() : String(row.exportedAt))
+      ? row.exportedAt instanceof Date
+        ? row.exportedAt.toISOString()
+        : String(row.exportedAt)
       : null,
     acceptedAt: row.acceptedAt
-      ? (row.acceptedAt instanceof Date ? row.acceptedAt.toISOString() : String(row.acceptedAt))
+      ? row.acceptedAt instanceof Date
+        ? row.acceptedAt.toISOString()
+        : String(row.acceptedAt)
       : null,
     rejectedAt: row.rejectedAt
-      ? (row.rejectedAt instanceof Date ? row.rejectedAt.toISOString() : String(row.rejectedAt))
+      ? row.rejectedAt instanceof Date
+        ? row.rejectedAt.toISOString()
+        : String(row.rejectedAt)
       : null,
     createdBy: row.createdBy as string,
     createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
@@ -98,7 +104,11 @@ async function loadSourceData(
       const item = await (prisma.payrollRunItem as any).findFirst({
         where: { id: sourceId },
         include: {
-          employee: { include: { contracts: { where: { isActive: true }, orderBy: { startDate: 'desc' }, take: 1 } } },
+          employee: {
+            include: {
+              contracts: { where: { isActive: true }, orderBy: { startDate: 'desc' }, take: 1 },
+            },
+          },
           payrollRun: { include: { organization: true } },
         },
       });
@@ -250,13 +260,20 @@ export async function generateEvent(
         createdBy: userId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        validationErrors: [{ field: 'referenceMonth', message: 'Competência (referenceMonth) é obrigatória para S-1299' }],
+        validationErrors: [
+          {
+            field: 'referenceMonth',
+            message: 'Competência (referenceMonth) é obrigatória para S-1299',
+          },
+        ],
       };
     }
 
     // Parse referenceMonth (e.g. "2024-03" → Date)
     const [yearStr, monthStr] = referenceMonth.split('-');
-    const refDate = new Date(Date.UTC(parseInt(yearStr ?? '2024'), parseInt(monthStr ?? '1') - 1, 1));
+    const refDate = new Date(
+      Date.UTC(parseInt(yearStr ?? '2024'), parseInt(monthStr ?? '1') - 1, 1),
+    );
 
     // Check for any PENDENTE S-1200 or S-1210 for the same period + org
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -288,10 +305,12 @@ export async function generateEvent(
         createdBy: userId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        validationErrors: [{
-          field: 'S-1299',
-          message: `Exporte todos os eventos S-1200/S-1210 da competencia antes de gerar o S-1299. Encontrado(s) ${pendingPeriodic.length} evento(s) PENDENTE(s).`,
-        }],
+        validationErrors: [
+          {
+            field: 'S-1299',
+            message: `Exporte todos os eventos S-1200/S-1210 da competencia antes de gerar o S-1299. Encontrado(s) ${pendingPeriodic.length} evento(s) PENDENTE(s).`,
+          },
+        ],
       };
     }
   }
@@ -535,7 +554,8 @@ export async function downloadBatch(
   const events = await (prisma.esocialEvent as any).findMany({ where });
 
   const validEvents: EsocialEventOutput[] = [];
-  const invalidEvents: Array<EsocialEventOutput & { validationErrors: EsocialValidationError[] }> = [];
+  const invalidEvents: Array<EsocialEventOutput & { validationErrors: EsocialValidationError[] }> =
+    [];
 
   for (const event of events as Record<string, unknown>[]) {
     const xmlContent = event.xmlContent as string;
@@ -686,7 +706,7 @@ export async function getDashboard(
 
   // Fetch all events for this period
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const events = await (prisma.esocialEvent as any).findMany({
+  const events = (await (prisma.esocialEvent as any).findMany({
     where: {
       organizationId: orgId,
       OR: [
@@ -695,7 +715,7 @@ export async function getDashboard(
       ],
     },
     select: { status: true, eventGroup: true },
-  }) as Array<{ status: string; eventGroup: string }>;
+  })) as Array<{ status: string; eventGroup: string }>;
 
   const total = events.length;
   const pendente = events.filter((e) => e.status === 'PENDENTE').length;

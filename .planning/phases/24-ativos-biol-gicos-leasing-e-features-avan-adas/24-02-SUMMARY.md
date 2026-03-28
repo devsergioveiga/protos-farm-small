@@ -38,13 +38,13 @@ key-files:
 
 key-decisions:
   - "ROU Asset created with classification DEPRECIABLE_CPC27 and name 'ROU — lessorName — contractNumber'"
-  - "DepreciationConfig STRAIGHT_LINE with usefulLifeMonths = months between startDate and endDate"
-  - "Payable created with category FINANCING and originType ASSET_LEASING"
-  - "prisma.$transaction used directly (not withRlsContext) to avoid nested RLS deadlocks"
+  - 'DepreciationConfig STRAIGHT_LINE with usefulLifeMonths = months between startDate and endDate'
+  - 'Payable created with category FINANCING and originType ASSET_LEASING'
+  - 'prisma.$transaction used directly (not withRlsContext) to avoid nested RLS deadlocks'
 
 patterns-established:
-  - "Atomic ROU creation: asset + depreciationConfig + payable + installments in single transaction"
-  - "Leasing lifecycle: ACTIVE → PURCHASE_OPTION_EXERCISED | RETURNED | CANCELLED"
+  - 'Atomic ROU creation: asset + depreciationConfig + payable + installments in single transaction'
+  - 'Leasing lifecycle: ACTIVE → PURCHASE_OPTION_EXERCISED | RETURNED | CANCELLED'
 
 requirements-completed: [AQUI-05]
 
@@ -64,6 +64,7 @@ completed: 2026-03-23
 - **Files modified:** 4
 
 ## Accomplishments
+
 - AssetLeasing + LeasingStatus Prisma model with migration
 - createLeasing atomically creates ROU Asset + DepreciationConfig + Payable + Installments
 - exercisePurchaseOption generates CP for purchase option value
@@ -77,20 +78,25 @@ completed: 2026-03-23
 2. **Task 2: Frontend** - `5786c2b1` (feat: asset-leasings frontend)
 
 ## Decisions Made
+
 - ROU Asset name format: "ROU — {lessorName} — {contractNumber}"
-- Duration months computed as simple date diff: (endYear-startYear)*12 + (endMonth-startMonth)
+- Duration months computed as simple date diff: (endYear-startYear)\*12 + (endMonth-startMonth)
 - Exercise purchase option creates CP with category ASSET_ACQUISITION
 - Return disposes ROU asset (status ALIENADO) and cancels pending depreciation entries
 
 ## Deviations from Plan
+
 None - plan executed as specified.
 
 ## Issues Encountered
+
 None.
 
 ## Next Phase Readiness
+
 - Leasing contracts integrate with existing depreciation batch and payables
 
 ---
-*Phase: 24-ativos-biol-gicos-leasing-e-features-avan-adas*
-*Completed: 2026-03-23*
+
+_Phase: 24-ativos-biol-gicos-leasing-e-features-avan-adas_
+_Completed: 2026-03-23_

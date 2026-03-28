@@ -19,12 +19,7 @@ const MONTH_OPTIONS = [
   { value: '12', label: 'Dezembro' },
 ];
 
-const RUN_TYPES: PayrollRunType[] = [
-  'MONTHLY',
-  'ADVANCE',
-  'THIRTEENTH_FIRST',
-  'THIRTEENTH_SECOND',
-];
+const RUN_TYPES: PayrollRunType[] = ['MONTHLY', 'ADVANCE', 'THIRTEENTH_FIRST', 'THIRTEENTH_SECOND'];
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -146,9 +141,7 @@ export default function PayrollRunWizard({
       setEmployees(preview);
 
       // Pre-select eligible employees
-      const eligibleIds = new Set(
-        preview.filter((e) => e.eligible).map((e) => e.id),
-      );
+      const eligibleIds = new Set(preview.filter((e) => e.eligible).map((e) => e.id));
       setSelectedIds(eligibleIds);
 
       setStep(2);
@@ -200,11 +193,15 @@ export default function PayrollRunWizard({
     });
   }
 
-  const approvedCount = employees.filter(
-    (e) => e.timesheetStatus === 'APPROVED',
-  ).length;
+  const approvedCount = employees.filter((e) => e.timesheetStatus === 'APPROVED').length;
 
-  const yearOptions = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1, currentYear + 2];
+  const yearOptions = [
+    currentYear - 2,
+    currentYear - 1,
+    currentYear,
+    currentYear + 1,
+    currentYear + 2,
+  ];
 
   if (!isOpen) return null;
 
@@ -231,8 +228,8 @@ export default function PayrollRunWizard({
                 s < step
                   ? 'payroll-wizard__step-dot--completed'
                   : s === step
-                  ? 'payroll-wizard__step-dot--active'
-                  : 'payroll-wizard__step-dot--future'
+                    ? 'payroll-wizard__step-dot--active'
+                    : 'payroll-wizard__step-dot--future'
               }`}
               aria-hidden="true"
             />
@@ -355,7 +352,8 @@ export default function PayrollRunWizard({
           {step === 2 && (
             <div className="payroll-wizard__step-content">
               <p className="payroll-wizard__counter">
-                <strong>{approvedCount}</strong> de <strong>{employees.length}</strong> colaboradores com espelho aprovado
+                <strong>{approvedCount}</strong> de <strong>{employees.length}</strong>{' '}
+                colaboradores com espelho aprovado
               </p>
               <ul className="payroll-wizard__employee-list" role="list">
                 {employees.map((emp) => (
@@ -389,7 +387,8 @@ export default function PayrollRunWizard({
               </p>
               {employees.some((e) => !e.eligible) && (
                 <p className="payroll-wizard__note">
-                  Colaboradores sem espelho aprovado não entram no processamento. Você poderá incluí-los via recálculo individual.
+                  Colaboradores sem espelho aprovado não entram no processamento. Você poderá
+                  incluí-los via recálculo individual.
                 </p>
               )}
               <ul className="payroll-wizard__check-list" role="list">
@@ -429,7 +428,11 @@ export default function PayrollRunWizard({
             <div className="payroll-wizard__processing">
               {!errorMsg ? (
                 <>
-                  <Loader2 size={48} className="payroll-wizard__processing-spinner" aria-hidden="true" />
+                  <Loader2
+                    size={48}
+                    className="payroll-wizard__processing-spinner"
+                    aria-hidden="true"
+                  />
                   <p className="payroll-wizard__processing-text">
                     Processando {processTotal} colaborador{processTotal !== 1 ? 'es' : ''}...
                   </p>
@@ -439,7 +442,11 @@ export default function PayrollRunWizard({
                 </>
               ) : (
                 <>
-                  <AlertTriangle size={48} className="payroll-wizard__processing-error-icon" aria-hidden="true" />
+                  <AlertTriangle
+                    size={48}
+                    className="payroll-wizard__processing-error-icon"
+                    aria-hidden="true"
+                  />
                   <p className="payroll-wizard__processing-text">Erro ao processar folha</p>
                   <p className="payroll-wizard__processing-sub">{errorMsg}</p>
                 </>
@@ -484,7 +491,11 @@ export default function PayrollRunWizard({
                 >
                   {loadingStep ? (
                     <>
-                      <Loader2 size={16} className="payroll-wizard__btn-spinner" aria-hidden="true" />
+                      <Loader2
+                        size={16}
+                        className="payroll-wizard__btn-spinner"
+                        aria-hidden="true"
+                      />
                       Carregando...
                     </>
                   ) : (

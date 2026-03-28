@@ -67,8 +67,7 @@ export function usePayrollRubricas(): UsePayrollRubricasResult {
         await fetchRubricas();
         return true;
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : 'Erro ao criar rubrica';
+        const message = err instanceof Error ? err.message : 'Erro ao criar rubrica';
         setError(`Não foi possível salvar. ${message}`);
         return false;
       }
@@ -87,8 +86,7 @@ export function usePayrollRubricas(): UsePayrollRubricasResult {
         await fetchRubricas();
         return true;
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : 'Erro ao atualizar rubrica';
+        const message = err instanceof Error ? err.message : 'Erro ao atualizar rubrica';
         setError(`Não foi possível salvar. ${message}`);
         return false;
       }
@@ -107,8 +105,7 @@ export function usePayrollRubricas(): UsePayrollRubricasResult {
         await fetchRubricas();
         return true;
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : 'Erro ao desativar rubrica';
+        const message = err instanceof Error ? err.message : 'Erro ao desativar rubrica';
         setError(`Não foi possível salvar. ${message}`);
         return false;
       }

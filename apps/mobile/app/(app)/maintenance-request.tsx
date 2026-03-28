@@ -399,7 +399,10 @@ export default function MaintenanceRequestScreen() {
     }
     const lower = assetQuery.toLowerCase();
     const filtered = allAssets
-      .filter((a) => a.name.toLowerCase().includes(lower) || (a.assetTag ?? '').toLowerCase().includes(lower))
+      .filter(
+        (a) =>
+          a.name.toLowerCase().includes(lower) || (a.assetTag ?? '').toLowerCase().includes(lower),
+      )
       .slice(0, 8);
     setAssetSuggestions(filtered);
     setShowAssetDropdown(filtered.length > 0);
@@ -535,9 +538,7 @@ export default function MaintenanceRequestScreen() {
         accessibilityLabel={`Selecionar ativo ${item.name}`}
       >
         <Text style={styles.dropdownItemName}>{item.name}</Text>
-        {item.assetTag ? (
-          <Text style={styles.dropdownItemTag}>{item.assetTag}</Text>
-        ) : null}
+        {item.assetTag ? <Text style={styles.dropdownItemTag}>{item.assetTag}</Text> : null}
       </Pressable>
     ),
     [styles, handleSelectAsset],

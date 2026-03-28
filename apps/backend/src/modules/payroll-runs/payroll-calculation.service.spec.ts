@@ -1,10 +1,7 @@
 // ─── Payroll Calculation Service Tests ────────────────────────────────
 
 import Decimal from 'decimal.js';
-import {
-  calculateEmployeePayroll,
-  calculateThirteenthSalary,
-} from './payroll-calculation.service';
+import { calculateEmployeePayroll, calculateThirteenthSalary } from './payroll-calculation.service';
 import type { EmployeePayrollInput, EngineParams } from './payroll-runs.types';
 
 // ─── Helpers ──────────────────────────────────────────────────────────
@@ -222,7 +219,12 @@ describe('calculateEmployeePayroll', () => {
   describe('absence impact', () => {
     it('INSS absence 10 days generates desconto rubrica with proportional deduction (D-01)', () => {
       const input = makeBaseInput({
-        absenceData: { companyPaidDays: 15, inssPaidDays: 10, suspendedDays: 0, fgtsFullMonth: true },
+        absenceData: {
+          companyPaidDays: 15,
+          inssPaidDays: 10,
+          suspendedDays: 0,
+          fgtsFullMonth: true,
+        },
       });
       const result = calculateEmployeePayroll(input, referenceMonth, params);
       const rubrica = result.lineItems.find((li) => li.code === '0900');
@@ -236,7 +238,12 @@ describe('calculateEmployeePayroll', () => {
 
     it('suspension 3 days generates desconto rubrica with proportional deduction (D-09)', () => {
       const input = makeBaseInput({
-        absenceData: { companyPaidDays: 0, inssPaidDays: 0, suspendedDays: 3, fgtsFullMonth: false },
+        absenceData: {
+          companyPaidDays: 0,
+          inssPaidDays: 0,
+          suspendedDays: 3,
+          fgtsFullMonth: false,
+        },
       });
       const result = calculateEmployeePayroll(input, referenceMonth, params);
       const rubrica = result.lineItems.find((li) => li.code === '0910');
@@ -250,7 +257,12 @@ describe('calculateEmployeePayroll', () => {
 
     it('INSS and IRRF are calculated on salary reduced by absence and suspension deductions (D-04)', () => {
       const input = makeBaseInput({
-        absenceData: { companyPaidDays: 0, inssPaidDays: 10, suspendedDays: 3, fgtsFullMonth: false },
+        absenceData: {
+          companyPaidDays: 0,
+          inssPaidDays: 10,
+          suspendedDays: 3,
+          fgtsFullMonth: false,
+        },
       });
       const result = calculateEmployeePayroll(input, referenceMonth, params);
       // reducedBase = 3000 - 967.74 - 290.32 = 1741.94 — INSS on this should be less than on 3000
@@ -260,7 +272,12 @@ describe('calculateEmployeePayroll', () => {
 
     it('fgtsFullMonth=true uses full baseSalary for FGTS, not adjusted (D-07)', () => {
       const input = makeBaseInput({
-        absenceData: { companyPaidDays: 15, inssPaidDays: 10, suspendedDays: 0, fgtsFullMonth: true },
+        absenceData: {
+          companyPaidDays: 15,
+          inssPaidDays: 10,
+          suspendedDays: 0,
+          fgtsFullMonth: true,
+        },
       });
       const result = calculateEmployeePayroll(input, referenceMonth, params);
       // FGTS base should be 3000 (full baseSalary), not prorated
@@ -282,13 +299,28 @@ describe('calculateEmployeePayroll', () => {
 
     it('suspension reduces DSR proportionally (D-10)', () => {
       const input = makeBaseInput({
-        timesheetData: { totalOvertime50: 600, totalOvertime100: 0, totalNightMinutes: 0, totalAbsences: 0 },
-        absenceData: { companyPaidDays: 0, inssPaidDays: 0, suspendedDays: 2, fgtsFullMonth: false },
+        timesheetData: {
+          totalOvertime50: 600,
+          totalOvertime100: 0,
+          totalNightMinutes: 0,
+          totalAbsences: 0,
+        },
+        absenceData: {
+          companyPaidDays: 0,
+          inssPaidDays: 0,
+          suspendedDays: 2,
+          fgtsFullMonth: false,
+        },
       });
       const result = calculateEmployeePayroll(input, referenceMonth, params);
       const noSuspResult = calculateEmployeePayroll(
         makeBaseInput({
-          timesheetData: { totalOvertime50: 600, totalOvertime100: 0, totalNightMinutes: 0, totalAbsences: 0 },
+          timesheetData: {
+            totalOvertime50: 600,
+            totalOvertime100: 0,
+            totalNightMinutes: 0,
+            totalAbsences: 0,
+          },
         }),
         referenceMonth,
         params,
@@ -306,7 +338,12 @@ describe('calculateEmployeePayroll', () => {
 
     it('absenceData with all zeros produces zero deductions', () => {
       const input = makeBaseInput({
-        absenceData: { companyPaidDays: 0, inssPaidDays: 0, suspendedDays: 0, fgtsFullMonth: false },
+        absenceData: {
+          companyPaidDays: 0,
+          inssPaidDays: 0,
+          suspendedDays: 0,
+          fgtsFullMonth: false,
+        },
       });
       const result = calculateEmployeePayroll(input, referenceMonth, params);
       expect(result.absenceInssDeduction.toFixed(2)).toBe('0.00');
@@ -318,7 +355,12 @@ describe('calculateEmployeePayroll', () => {
     it('net salary floors at zero when deductions exceed gross (Pitfall 5)', () => {
       const input = makeBaseInput({
         baseSalary: new Decimal('1000.00'),
-        absenceData: { companyPaidDays: 0, inssPaidDays: 28, suspendedDays: 0, fgtsFullMonth: false },
+        absenceData: {
+          companyPaidDays: 0,
+          inssPaidDays: 28,
+          suspendedDays: 0,
+          fgtsFullMonth: false,
+        },
         pendingAdvances: new Decimal('500'),
       });
       const result = calculateEmployeePayroll(input, referenceMonth, params);

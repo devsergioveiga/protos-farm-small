@@ -86,13 +86,15 @@ const mockEmployee = {
   birthDate: new Date('1985-06-15'),
   admissionDate: new Date('2024-01-02'),
   organizationId: orgId,
-  contracts: [{
-    salary: 3000,
-    weeklyHours: 44,
-    contractType: 'CLT_INDETERMINATE',
-    isActive: true,
-    position: { id: 'pos-001', name: 'Operador', cbo: '612210' },
-  }],
+  contracts: [
+    {
+      salary: 3000,
+      weeklyHours: 44,
+      contractType: 'CLT_INDETERMINATE',
+      isActive: true,
+      position: { id: 'pos-001', name: 'Operador', cbo: '612210' },
+    },
+  ],
   farms: [{ farmId: 'farm-001', status: 'ATIVO' }],
 };
 
@@ -101,7 +103,13 @@ const mockPayrollRunItem = {
   payrollRunId: 'run-001',
   employeeId: 'emp-001',
   lineItemsJson: JSON.stringify([
-    { code: '0001', description: 'Salário Base', type: 'PROVENTO', value: '3000.00', eSocialCode: '1100' },
+    {
+      code: '0001',
+      description: 'Salário Base',
+      type: 'PROVENTO',
+      value: '3000.00',
+      eSocialCode: '1100',
+    },
   ]),
   employee: mockEmployee,
   payrollRun: {
@@ -122,7 +130,8 @@ const mockEsocialEventPendente = {
   sourceId: 'emp-001',
   status: 'PENDENTE' as EsocialStatus,
   version: 1,
-  xmlContent: '<?xml version="1.0" encoding="UTF-8"?><eSocial xmlns="http://www.esocial.gov.br/schema/evt/evtAdmissao/v02_05_00"><evtAdmissao Id="ID11234567800019520240101000000000001"><ideEvento><indRetif>1</indRetif><procEmi>1</procEmi><verProc>1.0.0</verProc></ideEvento><ideEmpregador><tpInsc>1</tpInsc><nrInsc>12345678</nrInsc></ideEmpregador><trabalhador><cpfTrab>12345678901</cpfTrab><nisTrab>12345678901</nisTrab><nmTrab>José da Silva</nmTrab></trabalhador><vinculo><dtAdm>2024-01-02</dtAdm><codCBO>612210</codCBO><remuneracao><vrSalFx>3000.00</vrSalFx><undSalFixo>5</undSalFixo></remuneracao></vinculo></evtAdmissao></eSocial>',
+  xmlContent:
+    '<?xml version="1.0" encoding="UTF-8"?><eSocial xmlns="http://www.esocial.gov.br/schema/evt/evtAdmissao/v02_05_00"><evtAdmissao Id="ID11234567800019520240101000000000001"><ideEvento><indRetif>1</indRetif><procEmi>1</procEmi><verProc>1.0.0</verProc></ideEvento><ideEmpregador><tpInsc>1</tpInsc><nrInsc>12345678</nrInsc></ideEmpregador><trabalhador><cpfTrab>12345678901</cpfTrab><nisTrab>12345678901</nisTrab><nmTrab>José da Silva</nmTrab></trabalhador><vinculo><dtAdm>2024-01-02</dtAdm><codCBO>612210</codCBO><remuneracao><vrSalFx>3000.00</vrSalFx><undSalFixo>5</undSalFixo></remuneracao></vinculo></evtAdmissao></eSocial>',
   rejectionReason: null,
   exportedAt: null,
   acceptedAt: null,
@@ -210,7 +219,12 @@ describe('EsocialEventsService', () => {
 
       const result = await generateEvent(
         orgId,
-        { eventType: 'S-1200', sourceType: 'PAYROLL_RUN_ITEM', sourceId: 'item-001', referenceMonth: '2024-03' },
+        {
+          eventType: 'S-1200',
+          sourceType: 'PAYROLL_RUN_ITEM',
+          sourceId: 'item-001',
+          referenceMonth: '2024-03',
+        },
         userId,
       );
 
@@ -239,7 +253,8 @@ describe('EsocialEventsService', () => {
       // Event with malformed XML (missing cpfTrab)
       const eventWithInvalidXml = {
         ...mockEsocialEventPendente,
-        xmlContent: '<?xml version="1.0" encoding="UTF-8"?><eSocial xmlns="http://www.esocial.gov.br/schema/evt/evtAdmissao/v02_05_00"><evtAdmissao Id="ID1"><ideEvento><indRetif>1</indRetif><procEmi>1</procEmi><verProc>1.0</verProc></ideEvento></evtAdmissao></eSocial>',
+        xmlContent:
+          '<?xml version="1.0" encoding="UTF-8"?><eSocial xmlns="http://www.esocial.gov.br/schema/evt/evtAdmissao/v02_05_00"><evtAdmissao Id="ID1"><ideEvento><indRetif>1</indRetif><procEmi>1</procEmi><verProc>1.0</verProc></ideEvento></evtAdmissao></eSocial>',
       };
       (mockPrisma.esocialEvent.findFirst as jest.Mock).mockResolvedValue(eventWithInvalidXml);
 
@@ -276,9 +291,7 @@ describe('EsocialEventsService', () => {
     it('fails when transitioning PENDENTE to ACEITO (invalid transition)', async () => {
       (mockPrisma.esocialEvent.findFirst as jest.Mock).mockResolvedValue(mockEsocialEventPendente);
 
-      await expect(
-        updateStatus(orgId, 'event-001', { status: 'ACEITO' }),
-      ).rejects.toThrow();
+      await expect(updateStatus(orgId, 'event-001', { status: 'ACEITO' })).rejects.toThrow();
     });
 
     it('stores rejectionReason when transitioning to REJEITADO', async () => {
@@ -348,7 +361,12 @@ describe('EsocialEventsService', () => {
 
       const result = await generateEvent(
         orgId,
-        { eventType: 'S-1299', sourceType: 'PAYROLL_RUN', sourceId: 'run-001', referenceMonth: '2024-03' },
+        {
+          eventType: 'S-1299',
+          sourceType: 'PAYROLL_RUN',
+          sourceId: 'run-001',
+          referenceMonth: '2024-03',
+        },
         userId,
       );
 

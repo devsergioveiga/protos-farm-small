@@ -23,8 +23,13 @@ export default function OvertimeBankCard({ summary }: OvertimeBankCardProps) {
         <div className="overtime-card__employee">
           <span className="overtime-card__employee-name">{summary.employeeName}</span>
         </div>
-        <div className={`overtime-card__balance ${!hasBalance ? 'overtime-card__balance--zero' : ''}`}>
-          <span className="overtime-card__balance-value" aria-label={`Saldo atual: ${formatMinutesToHours(summary.currentBalance)}`}>
+        <div
+          className={`overtime-card__balance ${!hasBalance ? 'overtime-card__balance--zero' : ''}`}
+        >
+          <span
+            className="overtime-card__balance-value"
+            aria-label={`Saldo atual: ${formatMinutesToHours(summary.currentBalance)}`}
+          >
             {formatMinutesToHours(summary.currentBalance)}
           </span>
           <span className="overtime-card__balance-label">saldo atual</span>
@@ -52,14 +57,26 @@ export default function OvertimeBankCard({ summary }: OvertimeBankCardProps) {
       {/* Stats row */}
       <div className="overtime-card__stats">
         <div className="overtime-card__stat">
-          <Coins size={14} aria-hidden="true" className="overtime-card__stat-icon overtime-card__stat-icon--credit" />
+          <Coins
+            size={14}
+            aria-hidden="true"
+            className="overtime-card__stat-icon overtime-card__stat-icon--credit"
+          />
           <span className="overtime-card__stat-label">Créditos</span>
-          <span className="overtime-card__stat-value">{formatMinutesToHours(summary.totalCredits)}</span>
+          <span className="overtime-card__stat-value">
+            {formatMinutesToHours(summary.totalCredits)}
+          </span>
         </div>
         <div className="overtime-card__stat">
-          <ArrowDownCircle size={14} aria-hidden="true" className="overtime-card__stat-icon overtime-card__stat-icon--comp" />
+          <ArrowDownCircle
+            size={14}
+            aria-hidden="true"
+            className="overtime-card__stat-icon overtime-card__stat-icon--comp"
+          />
           <span className="overtime-card__stat-label">Compensações</span>
-          <span className="overtime-card__stat-value">{formatMinutesToHours(summary.totalCompensations)}</span>
+          <span className="overtime-card__stat-value">
+            {formatMinutesToHours(summary.totalCompensations)}
+          </span>
         </div>
       </div>
 
@@ -67,16 +84,16 @@ export default function OvertimeBankCard({ summary }: OvertimeBankCardProps) {
       {!hasBalance && summary.entries.length === 0 && (
         <div className="overtime-card__empty">
           <p className="overtime-card__empty-title">Sem saldo no banco de horas</p>
-          <p className="overtime-card__empty-body">Nenhuma hora extra acumulada para este período.</p>
+          <p className="overtime-card__empty-body">
+            Nenhuma hora extra acumulada para este período.
+          </p>
         </div>
       )}
 
       {/* Entries list (expiring) */}
       {hasExpiryWarning && summary.entries.length > 0 && (
         <details className="overtime-card__entries">
-          <summary className="overtime-card__entries-toggle">
-            Ver entradas com vencimento
-          </summary>
+          <summary className="overtime-card__entries-toggle">Ver entradas com vencimento</summary>
           <ul className="overtime-card__entries-list">
             {summary.entries
               .filter((e) => e.expiresAt)

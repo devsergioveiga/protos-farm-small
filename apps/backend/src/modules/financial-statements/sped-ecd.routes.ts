@@ -44,7 +44,9 @@ spedEcdRouter.get(
       const fiscalYearId = req.query.fiscalYearId as string | undefined;
 
       if (!fiscalYearId) {
-        res.status(400).json({ error: 'fiscalYearId e obrigatorio', code: 'MISSING_FISCAL_YEAR_ID' });
+        res
+          .status(400)
+          .json({ error: 'fiscalYearId e obrigatorio', code: 'MISSING_FISCAL_YEAR_ID' });
         return;
       }
 
@@ -68,7 +70,9 @@ spedEcdRouter.get(
       const fiscalYearId = req.query.fiscalYearId as string | undefined;
 
       if (!fiscalYearId) {
-        res.status(400).json({ error: 'fiscalYearId e obrigatorio', code: 'MISSING_FISCAL_YEAR_ID' });
+        res
+          .status(400)
+          .json({ error: 'fiscalYearId e obrigatorio', code: 'MISSING_FISCAL_YEAR_ID' });
         return;
       }
 

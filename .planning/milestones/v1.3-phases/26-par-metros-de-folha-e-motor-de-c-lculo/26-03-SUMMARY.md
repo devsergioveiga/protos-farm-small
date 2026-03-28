@@ -1,6 +1,6 @@
 ---
 phase: 26-par-metros-de-folha-e-motor-de-c-lculo
-plan: "03"
+plan: '03'
 subsystem: backend/payroll
 tags: [rest-api, payroll, rubricas, legal-tables, rbac, integration-tests]
 dependency_graph:
@@ -23,11 +23,11 @@ key_files:
     - apps/backend/src/app.ts
 decisions:
   - "Added 'write' action to PermissionAction type for payroll-params module (MANAGER gets read+write, FINANCIAL gets read)"
-  - "Route /effective registered before /:id to avoid Express param route shadowing"
-  - "Auto-seed of system rubricas triggered by hasRubricas check on GET list (avoids seeding on every request)"
+  - 'Route /effective registered before /:id to avoid Express param route shadowing'
+  - 'Auto-seed of system rubricas triggered by hasRubricas check on GET list (avoids seeding on every request)'
 metrics:
   duration: ~5 minutes
-  completed_date: "2026-03-24"
+  completed_date: '2026-03-24'
   tasks_completed: 2
   tasks_total: 2
   files_created: 6
@@ -40,16 +40,17 @@ metrics:
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Payroll rubricas service + routes + tests | 55649d62 | payroll-rubricas.service.ts, payroll-rubricas.routes.ts, payroll-rubricas.routes.spec.ts, permissions.ts |
-| 2 | Payroll tables service + routes + tests + app.ts wiring | efc44d00 | payroll-tables.service.ts, payroll-tables.routes.ts, payroll-tables.routes.spec.ts, app.ts |
+| Task | Name                                                    | Commit   | Files                                                                                                    |
+| ---- | ------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------- |
+| 1    | Payroll rubricas service + routes + tests               | 55649d62 | payroll-rubricas.service.ts, payroll-rubricas.routes.ts, payroll-rubricas.routes.spec.ts, permissions.ts |
+| 2    | Payroll tables service + routes + tests + app.ts wiring | efc44d00 | payroll-tables.service.ts, payroll-tables.routes.ts, payroll-tables.routes.spec.ts, app.ts               |
 
 ## What Was Built
 
 ### Payroll Rubricas Module
 
 **payroll-rubricas.service.ts** — Service object `payrollRubricasService`:
+
 - `list(orgId, query)` — Paginated list with rubricaType/isActive/search filters, system rubricas shown first
 - `getById(orgId, id)` — Single rubrica with org ownership validation
 - `create(orgId, data, userId)` — Create custom rubrica with SYSTEM type block, PERCENTAGE rate validation, FORMULA baseFormula validation, code uniqueness check
@@ -59,6 +60,7 @@ metrics:
 - `hasRubricas(orgId)` — Check for existing rubricas (gates the auto-seed)
 
 **payroll-rubricas.routes.ts** — Router `payrollRubricasRouter` at `/org/:orgId/payroll-rubricas`:
+
 - `GET /` — List with auto-seed on first access, `payroll-params:read`
 - `GET /:id` — Get by ID, `payroll-params:read`
 - `POST /` — Create custom rubrica, `payroll-params:write`
@@ -68,12 +70,14 @@ metrics:
 ### Payroll Legal Tables Module
 
 **payroll-tables.service.ts** — Service object `payrollTablesService`:
+
 - `list(orgId, query)` — Org-specific tables via RLS + global tables (organizationId=null) merged, ordered effectiveFrom DESC
 - `getEffective(orgId, tableType, competenceDate)` — Org-specific first, fallback to global; finds most recent table with `effectiveFrom <= competenceDate`
 - `create(orgId, data, userId)` — Validates day=1, checks org+tableType+effectiveFrom uniqueness, creates with nested brackets and scalarValues
 - `getById(orgId, id)` — Gets org-specific or global table by ID with brackets and scalars
 
 **payroll-tables.routes.ts** — Router `payrollTablesRouter` at `/org/:orgId/payroll-tables`:
+
 - `GET /effective` — Get effective table for competence date (registered before `/:id`)
 - `GET /` — List with optional tableType/effectiveAt filters, `payroll-params:read`
 - `GET /:id` — Get by ID with brackets and scalars, `payroll-params:read`
@@ -82,6 +86,7 @@ metrics:
 ### RBAC Changes
 
 **permissions.ts:**
+
 - Added `'payroll-params'` to `PermissionModule` type and `ALL_MODULES`
 - Added `'write'` to `PermissionAction` type and `ALL_ACTIONS` (needed for payroll-params)
 - MANAGER: `payroll-params:read` + `payroll-params:write`
@@ -90,6 +95,7 @@ metrics:
 ### App Wiring
 
 **app.ts:**
+
 - Import and register `payrollRubricasRouter` and `payrollTablesRouter` at `/api`
 
 ## Decisions Made
@@ -102,18 +108,19 @@ metrics:
 
 ## Test Coverage
 
-| Test Suite | Tests | Status |
-|-----------|-------|--------|
-| payroll-rubricas.routes.spec.ts | 14 | PASS |
-| payroll-tables.routes.spec.ts | 13 | PASS |
-| payroll-engine.spec.ts (Plan 02) | 38 | PASS |
-| **Total payroll** | **65** | **PASS** |
+| Test Suite                       | Tests  | Status   |
+| -------------------------------- | ------ | -------- |
+| payroll-rubricas.routes.spec.ts  | 14     | PASS     |
+| payroll-tables.routes.spec.ts    | 13     | PASS     |
+| payroll-engine.spec.ts (Plan 02) | 38     | PASS     |
+| **Total payroll**                | **65** | **PASS** |
 
 ## Deviations from Plan
 
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] `write` action not in PermissionAction type**
+
 - **Found during:** Task 1 — tests failing with 403 on MANAGER write endpoints
 - **Issue:** `PermissionAction` only had `create|read|update|delete|manage|close` — no `write` action, so `payroll-params:write` was never a valid permission and the `checkPermission` guard always denied it
 - **Fix:** Added `'write'` to `PermissionAction` type and `ALL_ACTIONS` array; updated MANAGER role grant from `modulePermissions('payroll-params')` to `p('payroll-params', 'read', 'write')`

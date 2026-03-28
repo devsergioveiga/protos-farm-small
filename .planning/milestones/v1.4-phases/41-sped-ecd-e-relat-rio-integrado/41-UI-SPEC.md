@@ -18,15 +18,15 @@ created: 2026-03-28
 
 ## Design System
 
-| Property | Value |
-|----------|-------|
-| Tool | none — custom CSS with CSS custom properties |
-| Preset | not applicable |
-| Component library | none — hand-rolled components with BEM-style CSS modules |
-| Icon library | lucide-react |
-| Font (Headlines) | DM Sans — weight 700 (phase-level; weight 500 is system-level only, not used in this phase) |
-| Font (Body/UI) | Source Sans 3 — weight 400 |
-| Font (Monospace/Data) | JetBrains Mono — weight 400 |
+| Property              | Value                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------- |
+| Tool                  | none — custom CSS with CSS custom properties                                                |
+| Preset                | not applicable                                                                              |
+| Component library     | none — hand-rolled components with BEM-style CSS modules                                    |
+| Icon library          | lucide-react                                                                                |
+| Font (Headlines)      | DM Sans — weight 700 (phase-level; weight 500 is system-level only, not used in this phase) |
+| Font (Body/UI)        | Source Sans 3 — weight 400                                                                  |
+| Font (Monospace/Data) | JetBrains Mono — weight 400                                                                 |
 
 Source: CLAUDE.md, `apps/frontend/src/styles/tokens.css`
 
@@ -36,17 +36,18 @@ Source: CLAUDE.md, `apps/frontend/src/styles/tokens.css`
 
 Declared values — all multiples of 4:
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| xs | 4px | Icon gaps, inline badge padding |
-| sm | 8px | Between filter controls, compact alert rows |
-| md | 16px | Default element spacing, card padding horizontal |
-| lg | 24px | Section padding, between filter bar and tab rail |
-| xl | 32px | Between tab content and page header |
-| 2xl | 48px | Major section breaks, empty state vertical center |
-| 3xl | 64px | Not used in this phase |
+| Token | Value | Usage                                             |
+| ----- | ----- | ------------------------------------------------- |
+| xs    | 4px   | Icon gaps, inline badge padding                   |
+| sm    | 8px   | Between filter controls, compact alert rows       |
+| md    | 16px  | Default element spacing, card padding horizontal  |
+| lg    | 24px  | Section padding, between filter bar and tab rail  |
+| xl    | 32px  | Between tab content and page header               |
+| 2xl   | 48px  | Major section breaks, empty state vertical center |
+| 3xl   | 64px  | Not used in this phase                            |
 
 Exceptions:
+
 - Touch targets for buttons: minimum 48x48px per CLAUDE.md (overrides padding where needed)
 - Input padding: minimum 12px vertical, 16px horizontal per CLAUDE.md
 
@@ -56,13 +57,13 @@ Source: CLAUDE.md spacing rules, confirmed against DrePage.css patterns.
 
 ## Typography
 
-| Role | Family | Size | Weight | Line Height |
-|------|--------|------|--------|-------------|
-| Body | Source Sans 3 | 16px | 400 | 1.5 |
-| Label | Source Sans 3 | 14px | 700 | 1.4 |
-| Heading (page title) | DM Sans | 20px | 700 | 1.2 |
-| Display (section title) | DM Sans | 28px | 700 | 1.2 |
-| Monospace data (SPED codes, amounts) | JetBrains Mono | 14px | 400 | 1.5 |
+| Role                                 | Family         | Size | Weight | Line Height |
+| ------------------------------------ | -------------- | ---- | ------ | ----------- |
+| Body                                 | Source Sans 3  | 16px | 400    | 1.5         |
+| Label                                | Source Sans 3  | 14px | 700    | 1.4         |
+| Heading (page title)                 | DM Sans        | 20px | 700    | 1.2         |
+| Display (section title)              | DM Sans        | 28px | 700    | 1.2         |
+| Monospace data (SPED codes, amounts) | JetBrains Mono | 14px | 400    | 1.5         |
 
 Weights used in this phase: **400** (Body, Monospace) and **700** (Label, Heading, Display). Exactly 2 weights.
 
@@ -74,24 +75,25 @@ Source: CLAUDE.md typography rules (minimum 12px, no Inter/Roboto, DM Sans for h
 
 ## Color
 
-| Role | Token | Hex | Usage |
-|------|-------|-----|-------|
-| Dominant (60%) | `--color-neutral-50` | `#FAFAF8` | Page background |
-| Secondary (30%) | `--color-neutral-0` / `--color-neutral-100` | `#FFFFFF` / `#F5F3EF` | Cards, filter bar, validation panel |
-| Accent (10%) | `--color-primary-600` | `#2E7D32` | Primary CTA buttons only |
-| Warning | `--color-warning-500` | `#F57F17` | Validation avisos (AVISO severity) |
-| Destructive/Error | `--color-error-500` | `#C62828` | Validation erros (ERRO severity), error icon |
-| Heading text | `--color-neutral-800` | `#2A2520` | Page titles, section headers |
-| Body text | `--color-neutral-700` | `#3E3833` | Paragraph text, table rows |
-| Muted text | `--color-neutral-500` | `#7A7267` | Helper text, period labels |
-| Border | `--color-neutral-200` | `#E8E4DD` | Card borders, table dividers, tab borders |
-| Tab active indicator | `--color-primary-600` | `#2E7D32` | Active tab underline border only |
-| Icon in validation error | `--color-error-500` | `#C62828` | XCircle icon in ERRO rows |
-| Icon in validation warning | `--color-warning-500` | `#F57F17` | AlertTriangle icon in AVISO rows |
-| Icon in validation success | `--color-success-500` | `#2E7D32` | CheckCircle when all validations pass |
-| Download button disabled state | `--color-neutral-400` | `#A8A196` | "Gerar SPED" button when ERROs exist |
+| Role                           | Token                                       | Hex                   | Usage                                        |
+| ------------------------------ | ------------------------------------------- | --------------------- | -------------------------------------------- |
+| Dominant (60%)                 | `--color-neutral-50`                        | `#FAFAF8`             | Page background                              |
+| Secondary (30%)                | `--color-neutral-0` / `--color-neutral-100` | `#FFFFFF` / `#F5F3EF` | Cards, filter bar, validation panel          |
+| Accent (10%)                   | `--color-primary-600`                       | `#2E7D32`             | Primary CTA buttons only                     |
+| Warning                        | `--color-warning-500`                       | `#F57F17`             | Validation avisos (AVISO severity)           |
+| Destructive/Error              | `--color-error-500`                         | `#C62828`             | Validation erros (ERRO severity), error icon |
+| Heading text                   | `--color-neutral-800`                       | `#2A2520`             | Page titles, section headers                 |
+| Body text                      | `--color-neutral-700`                       | `#3E3833`             | Paragraph text, table rows                   |
+| Muted text                     | `--color-neutral-500`                       | `#7A7267`             | Helper text, period labels                   |
+| Border                         | `--color-neutral-200`                       | `#E8E4DD`             | Card borders, table dividers, tab borders    |
+| Tab active indicator           | `--color-primary-600`                       | `#2E7D32`             | Active tab underline border only             |
+| Icon in validation error       | `--color-error-500`                         | `#C62828`             | XCircle icon in ERRO rows                    |
+| Icon in validation warning     | `--color-warning-500`                       | `#F57F17`             | AlertTriangle icon in AVISO rows             |
+| Icon in validation success     | `--color-success-500`                       | `#2E7D32`             | CheckCircle when all validations pass        |
+| Download button disabled state | `--color-neutral-400`                       | `#A8A196`             | "Gerar SPED" button when ERROs exist         |
 
 Accent (`--color-primary-600`) reserved for:
+
 - "Gerar SPED ECD" button (primary CTA, tab SPED ECD)
 - "Gerar Relatório PDF" button (primary CTA, tab Relatório Integrado)
 - Active tab indicator underline
@@ -137,7 +139,7 @@ Content order (top to bottom):
    - Disabled state if any ERRO items exist (not just greyed color: `aria-disabled="true"` + `disabled` attribute + tooltip "Corrija os erros acima para gerar o arquivo").
    - Loading state during generation: spinner inside button + label "Gerando...".
    - On success: browser triggers file download (Content-Disposition: attachment), no modal needed.
-   - File name displayed in toast: "Arquivo SPED_ECD_{CNPJ}_{ANO}.txt baixado com sucesso."
+   - File name displayed in toast: "Arquivo SPED*ECD*{CNPJ}\_{ANO}.txt baixado com sucesso."
 
 ### Tab: Relatório Integrado
 
@@ -219,44 +221,44 @@ The `<select>` for fiscal year sits above the tab rail and applies to both tabs.
 
 ## Copywriting Contract
 
-| Element | Copy |
-|---------|------|
-| Page breadcrumb | Início / Contabilidade / SPED / Relatórios |
-| Page title | SPED ECD e Relatórios |
-| Tab 1 label | SPED ECD |
-| Tab 2 label | Relatório Integrado |
-| Fiscal year selector label | Exercício Fiscal |
-| Fiscal year selector placeholder | Selecione o exercício |
-| Primary CTA (tab SPED ECD) | Gerar SPED ECD |
-| Primary CTA (tab Relatório) | Gerar Relatório PDF |
-| CTA loading state (SPED) | Gerando arquivo... |
-| CTA loading state (PDF) | Gerando PDF... |
-| CTA disabled tooltip (SPED) | Corrija os erros acima para gerar o arquivo |
-| Validation heading | Pré-validação SPED |
-| Validation all-clear | Pronto para geração. Nenhum problema encontrado. |
-| Validation summary line | {N} erro(s) • {M} aviso(s) — corrija os erros para habilitar a geração |
-| Validation ERRO — unmapped accounts | {N} conta(s) sem mapeamento SPED (código referencial ausente) |
-| Validation ERRO — open period | Período {MM/AAAA} não está fechado |
-| Validation ERRO — unbalanced trial balance | Balancete desequilibrado: débitos ≠ créditos em {MM/AAAA} |
-| Validation ERRO — I050 duplicate | Conta duplicada no I050: {código} |
-| Validation ERRO — I155 inconsistency | Totalização I155 inconsistente em {MM/AAAA}: soma dos lançamentos ≠ saldo apurado |
-| Validation AVISO — accounts without movement | {N} conta(s) sem movimento no período (serão incluídas com saldo zero) |
-| Validation AVISO — inactive accounts | {N} conta(s) inativa(s) encontradas (serão excluídas automaticamente) |
-| Validation correction link (unmapped) | Corrigir no Plano de Contas |
-| Validation correction link (open period) | Ir para Fechamento Mensal |
-| Download success toast | Arquivo SPED_ECD_{CNPJ}_{ANO}.txt baixado com sucesso. |
-| PDF success toast | Relatório integrado {ANO} gerado com sucesso. |
-| Autosave indicator | Notas salvas |
-| Notes textarea label | Notas explicativas adicionais |
-| Notes textarea helper text | O sistema gera automaticamente políticas contábeis, CPC 29 e contexto operacional. Use este campo para notas do contador. |
-| Farm selector label | Fazenda (opcional) |
-| Farm selector placeholder | Consolidado (todas as fazendas) |
-| Empty state (no FY selected) heading | Selecione o exercício fiscal |
-| Empty state (no FY selected) body | Escolha um exercício fiscal para executar a pré-validação e gerar o arquivo SPED ECD. |
-| Error toast (validation failed) | Não foi possível executar a pré-validação. Verifique sua conexão e tente novamente. |
-| Error toast (SPED generation failed) | Não foi possível gerar o arquivo SPED. Tente novamente. |
-| Error toast (PDF generation failed) | Não foi possível gerar o relatório PDF. Tente novamente. |
-| Sidebar label | SPED / Relatórios |
+| Element                                      | Copy                                                                                                                      |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Page breadcrumb                              | Início / Contabilidade / SPED / Relatórios                                                                                |
+| Page title                                   | SPED ECD e Relatórios                                                                                                     |
+| Tab 1 label                                  | SPED ECD                                                                                                                  |
+| Tab 2 label                                  | Relatório Integrado                                                                                                       |
+| Fiscal year selector label                   | Exercício Fiscal                                                                                                          |
+| Fiscal year selector placeholder             | Selecione o exercício                                                                                                     |
+| Primary CTA (tab SPED ECD)                   | Gerar SPED ECD                                                                                                            |
+| Primary CTA (tab Relatório)                  | Gerar Relatório PDF                                                                                                       |
+| CTA loading state (SPED)                     | Gerando arquivo...                                                                                                        |
+| CTA loading state (PDF)                      | Gerando PDF...                                                                                                            |
+| CTA disabled tooltip (SPED)                  | Corrija os erros acima para gerar o arquivo                                                                               |
+| Validation heading                           | Pré-validação SPED                                                                                                        |
+| Validation all-clear                         | Pronto para geração. Nenhum problema encontrado.                                                                          |
+| Validation summary line                      | {N} erro(s) • {M} aviso(s) — corrija os erros para habilitar a geração                                                    |
+| Validation ERRO — unmapped accounts          | {N} conta(s) sem mapeamento SPED (código referencial ausente)                                                             |
+| Validation ERRO — open period                | Período {MM/AAAA} não está fechado                                                                                        |
+| Validation ERRO — unbalanced trial balance   | Balancete desequilibrado: débitos ≠ créditos em {MM/AAAA}                                                                 |
+| Validation ERRO — I050 duplicate             | Conta duplicada no I050: {código}                                                                                         |
+| Validation ERRO — I155 inconsistency         | Totalização I155 inconsistente em {MM/AAAA}: soma dos lançamentos ≠ saldo apurado                                         |
+| Validation AVISO — accounts without movement | {N} conta(s) sem movimento no período (serão incluídas com saldo zero)                                                    |
+| Validation AVISO — inactive accounts         | {N} conta(s) inativa(s) encontradas (serão excluídas automaticamente)                                                     |
+| Validation correction link (unmapped)        | Corrigir no Plano de Contas                                                                                               |
+| Validation correction link (open period)     | Ir para Fechamento Mensal                                                                                                 |
+| Download success toast                       | Arquivo SPED*ECD*{CNPJ}\_{ANO}.txt baixado com sucesso.                                                                   |
+| PDF success toast                            | Relatório integrado {ANO} gerado com sucesso.                                                                             |
+| Autosave indicator                           | Notas salvas                                                                                                              |
+| Notes textarea label                         | Notas explicativas adicionais                                                                                             |
+| Notes textarea helper text                   | O sistema gera automaticamente políticas contábeis, CPC 29 e contexto operacional. Use este campo para notas do contador. |
+| Farm selector label                          | Fazenda (opcional)                                                                                                        |
+| Farm selector placeholder                    | Consolidado (todas as fazendas)                                                                                           |
+| Empty state (no FY selected) heading         | Selecione o exercício fiscal                                                                                              |
+| Empty state (no FY selected) body            | Escolha um exercício fiscal para executar a pré-validação e gerar o arquivo SPED ECD.                                     |
+| Error toast (validation failed)              | Não foi possível executar a pré-validação. Verifique sua conexão e tente novamente.                                       |
+| Error toast (SPED generation failed)         | Não foi possível gerar o arquivo SPED. Tente novamente.                                                                   |
+| Error toast (PDF generation failed)          | Não foi possível gerar o relatório PDF. Tente novamente.                                                                  |
+| Sidebar label                                | SPED / Relatórios                                                                                                         |
 
 Tone: pt-BR coloquial, direct. No "recurso criado", no HTTP status codes exposed.
 
@@ -279,21 +281,22 @@ No CTA button in the empty state — the fiscal year selector above is the actio
 
 ## States Summary
 
-| Component | States |
-|-----------|--------|
-| Fiscal year `<select>` | default / focused / disabled (none) |
-| Validation panel | hidden (no FY) / loading (skeleton) / all-clear / has-errors / has-warnings |
-| "Gerar SPED ECD" button | disabled (no FY or has ERROs) / enabled / loading / success (triggers download) |
-| "Gerar Relatório PDF" button | disabled (no FY) / enabled / loading / success (triggers download) |
-| Notes textarea | idle / focused / autosaving / saved (indicator) |
-| Autosave indicator | hidden / visible ("Notas salvas" + check icon, fades after 3s) |
-| Toast | hidden / success / error (persistent until dismissed) |
+| Component                    | States                                                                          |
+| ---------------------------- | ------------------------------------------------------------------------------- |
+| Fiscal year `<select>`       | default / focused / disabled (none)                                             |
+| Validation panel             | hidden (no FY) / loading (skeleton) / all-clear / has-errors / has-warnings     |
+| "Gerar SPED ECD" button      | disabled (no FY or has ERROs) / enabled / loading / success (triggers download) |
+| "Gerar Relatório PDF" button | disabled (no FY) / enabled / loading / success (triggers download)              |
+| Notes textarea               | idle / focused / autosaving / saved (indicator)                                 |
+| Autosave indicator           | hidden / visible ("Notas salvas" + check icon, fades after 3s)                  |
+| Toast                        | hidden / success / error (persistent until dismissed)                           |
 
 ---
 
 ## Interaction Contracts
 
 ### Validation trigger (D-16)
+
 - Trigger: `onChange` on fiscal year `<select>`.
 - Immediately show skeleton in validation panel.
 - Call `GET /org/{id}/sped-ecd/validate?fiscalYearId={id}`.
@@ -301,23 +304,27 @@ No CTA button in the empty state — the fiscal year selector above is the actio
 - Disable "Gerar SPED ECD" if response contains any item with `severity === 'ERROR'`.
 
 ### SPED download (D-01, D-12)
+
 - Call `GET /org/{id}/sped-ecd/download?fiscalYearId={id}`.
 - Backend responds with `Content-Disposition: attachment; filename="SPED_ECD_{CNPJ}_{ANO}.txt"`.
 - Frontend creates `<a>` with `blob:` URL and clicks it, then revokes. No new tab.
 - On error: show error toast.
 
 ### PDF download (D-18, D-21)
+
 - Call `GET /org/{id}/sped-ecd/report?fiscalYearId={id}&costCenterId={optional}`.
 - Same download pattern as SPED (blob URL).
 - "Gerar Relatório PDF" enters loading state while request is in flight.
 
 ### Autosave notes (D-25)
+
 - `onChange` on textarea → set `autosaveStatus = 'pending'`.
 - Debounce 2000ms → call `PATCH /org/{id}/sped-ecd/notes` with `{ notesText: string }`.
 - On success: set `autosaveStatus = 'saved'` → show "Notas salvas" badge → fade out after 3s.
 - On error: show error toast "Não foi possível salvar as notas. Tente novamente."
 
 ### Tab switching
+
 - State preserved: fiscal year selection and notes textarea content survive tab switches.
 - Validation panel only visible in tab "SPED ECD".
 - No network requests triggered by tab switch.
@@ -368,10 +375,10 @@ Source: CONTEXT.md D-24.
 
 ## Registry Safety
 
-| Registry | Blocks Used | Safety Gate |
-|----------|-------------|-------------|
+| Registry        | Blocks Used                        | Safety Gate    |
+| --------------- | ---------------------------------- | -------------- |
 | shadcn official | none — project does not use shadcn | not applicable |
-| Third-party | none | not applicable |
+| Third-party     | none                               | not applicable |
 
 No third-party component registries. All components are hand-rolled, following the existing pattern (DrePage, TrialBalancePage, FinancialDashboardPage).
 
@@ -381,14 +388,14 @@ No third-party component registries. All components are hand-rolled, following t
 
 Following the established pattern in `apps/frontend/src/pages/`:
 
-| File | Location |
-|------|----------|
-| `SpedEcdPage.tsx` | `apps/frontend/src/pages/SpedEcdPage.tsx` |
-| `SpedEcdPage.css` | `apps/frontend/src/pages/SpedEcdPage.css` |
+| File                  | Location                                                    |
+| --------------------- | ----------------------------------------------------------- |
+| `SpedEcdPage.tsx`     | `apps/frontend/src/pages/SpedEcdPage.tsx`                   |
+| `SpedEcdPage.css`     | `apps/frontend/src/pages/SpedEcdPage.css`                   |
 | `ValidationPanel.tsx` | `apps/frontend/src/components/sped-ecd/ValidationPanel.tsx` |
 | `ValidationPanel.css` | `apps/frontend/src/components/sped-ecd/ValidationPanel.css` |
-| `NotesTextarea.tsx` | `apps/frontend/src/components/sped-ecd/NotesTextarea.tsx` |
-| `useSpedEcd.ts` | `apps/frontend/src/hooks/useSpedEcd.ts` |
+| `NotesTextarea.tsx`   | `apps/frontend/src/components/sped-ecd/NotesTextarea.tsx`   |
+| `useSpedEcd.ts`       | `apps/frontend/src/hooks/useSpedEcd.ts`                     |
 
 BEM class prefix: `sped-ecd-page__*` for page, `validation-panel__*` for panel component.
 

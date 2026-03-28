@@ -145,7 +145,9 @@ describe('Asset Inventory API', () => {
       ...INVENTORY_OUTPUT,
       status: 'COUNTING',
       statusLabel: 'Em contagem',
-      items: [{ ...INVENTORY_ITEM, physicalStatus: 'ENCONTRADO', physicalStatusLabel: 'Encontrado' }],
+      items: [
+        { ...INVENTORY_ITEM, physicalStatus: 'ENCONTRADO', physicalStatusLabel: 'Encontrado' },
+      ],
       countedCount: 1,
     };
     mockedService.countItems.mockResolvedValue(countingOutput);
@@ -157,11 +159,9 @@ describe('Asset Inventory API', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('COUNTING');
-    expect(mockedService.countItems).toHaveBeenCalledWith(
-      { organizationId: ORG_ID },
-      INV_ID,
-      [{ assetId: 'asset-1', physicalStatus: 'ENCONTRADO' }],
-    );
+    expect(mockedService.countItems).toHaveBeenCalledWith({ organizationId: ORG_ID }, INV_ID, [
+      { assetId: 'asset-1', physicalStatus: 'ENCONTRADO' },
+    ]);
   });
 
   // ─── Test 4: Count rejects RECONCILED inventory ───────────────────────
@@ -225,9 +225,7 @@ describe('Asset Inventory API', () => {
     authAs(MANAGER_PAYLOAD);
     mockedService.getInventory.mockResolvedValue(INVENTORY_OUTPUT);
 
-    const res = await request(app)
-      .get(`${BASE}/${INV_ID}`)
-      .set('Authorization', 'Bearer token');
+    const res = await request(app).get(`${BASE}/${INV_ID}`).set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(200);
     expect(res.body.id).toBe(INV_ID);
@@ -258,9 +256,26 @@ describe('Asset Inventory API', () => {
       ...INVENTORY_OUTPUT,
       status: 'COUNTING',
       items: [
-        { ...INVENTORY_ITEM, id: 'item-1', physicalStatus: 'ENCONTRADO', physicalStatusLabel: 'Encontrado' },
-        { ...INVENTORY_ITEM, id: 'item-2', assetId: 'asset-2', physicalStatus: 'NAO_ENCONTRADO', physicalStatusLabel: 'Nao encontrado' },
-        { ...INVENTORY_ITEM, id: 'item-3', assetId: 'asset-3', physicalStatus: 'AVARIADO', physicalStatusLabel: 'Avariado' },
+        {
+          ...INVENTORY_ITEM,
+          id: 'item-1',
+          physicalStatus: 'ENCONTRADO',
+          physicalStatusLabel: 'Encontrado',
+        },
+        {
+          ...INVENTORY_ITEM,
+          id: 'item-2',
+          assetId: 'asset-2',
+          physicalStatus: 'NAO_ENCONTRADO',
+          physicalStatusLabel: 'Nao encontrado',
+        },
+        {
+          ...INVENTORY_ITEM,
+          id: 'item-3',
+          assetId: 'asset-3',
+          physicalStatus: 'AVARIADO',
+          physicalStatusLabel: 'Avariado',
+        },
       ],
       itemCount: 3,
       countedCount: 3,
@@ -268,9 +283,7 @@ describe('Asset Inventory API', () => {
     };
     mockedService.getInventory.mockResolvedValue(outputWithDivergence);
 
-    const res = await request(app)
-      .get(`${BASE}/${INV_ID}`)
-      .set('Authorization', 'Bearer token');
+    const res = await request(app).get(`${BASE}/${INV_ID}`).set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(200);
     expect(res.body.divergenceCount).toBe(2);

@@ -27,8 +27,14 @@ async function main() {
       const exact = await (prisma as any).animal.findMany({
         where: { name },
         select: {
-          id: true, earTag: true, name: true, sex: true, category: true,
-          deletedAt: true, origin: true, birthDate: true,
+          id: true,
+          earTag: true,
+          name: true,
+          sex: true,
+          category: true,
+          deletedAt: true,
+          origin: true,
+          birthDate: true,
         },
       });
       if (exact.length > 0) {
@@ -54,7 +60,11 @@ async function main() {
           ],
         },
         select: {
-          id: true, earTag: true, name: true, sex: true, category: true,
+          id: true,
+          earTag: true,
+          name: true,
+          sex: true,
+          category: true,
           deletedAt: true,
         },
       });
@@ -64,7 +74,9 @@ async function main() {
       if (fuzzyFiltered.length > 0) {
         console.log(`\n  Nomes similares (prefixo "${prefix}"):`);
         for (const a of fuzzyFiltered) {
-          console.log(`    "${a.name}" — Brinco: ${a.earTag}, Cat: ${a.category}, Deletada: ${a.deletedAt ?? 'não'}`);
+          console.log(
+            `    "${a.name}" — Brinco: ${a.earTag}, Cat: ${a.category}, Deletada: ${a.deletedAt ?? 'não'}`,
+          );
         }
       } else {
         console.log(`  Nenhum nome similar encontrado`);

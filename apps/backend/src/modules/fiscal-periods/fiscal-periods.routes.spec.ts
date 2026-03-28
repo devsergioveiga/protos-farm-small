@@ -115,12 +115,8 @@ describe('createFiscalYear', () => {
     mockPrisma.accountingPeriod.createMany.mockResolvedValue({ count: 12 });
 
     const periods = [
-      ...Array.from({ length: 6 }, (_, i) =>
-        makePeriod({ month: i + 7, year: 2025 }),
-      ),
-      ...Array.from({ length: 6 }, (_, i) =>
-        makePeriod({ month: i + 1, year: 2026 }),
-      ),
+      ...Array.from({ length: 6 }, (_, i) => makePeriod({ month: i + 7, year: 2025 })),
+      ...Array.from({ length: 6 }, (_, i) => makePeriod({ month: i + 1, year: 2026 })),
     ];
     mockPrisma.accountingPeriod.findMany.mockResolvedValue(periods);
 
@@ -188,10 +184,17 @@ describe('getFiscalYears', () => {
   it('returns list of fiscal years with periods ordered by startDate desc', async () => {
     const year2026 = {
       ...makeFiscalYear({ name: 'Exercicio 2026', startDate: new Date('2026-01-01') }),
-      accountingPeriods: [makePeriod({ month: 1, year: 2026 }), makePeriod({ month: 2, year: 2026 })],
+      accountingPeriods: [
+        makePeriod({ month: 1, year: 2026 }),
+        makePeriod({ month: 2, year: 2026 }),
+      ],
     };
     const year2025 = {
-      ...makeFiscalYear({ id: 'year-0', name: 'Exercicio 2025', startDate: new Date('2025-01-01') }),
+      ...makeFiscalYear({
+        id: 'year-0',
+        name: 'Exercicio 2025',
+        startDate: new Date('2025-01-01'),
+      }),
       accountingPeriods: [makePeriod({ month: 1, year: 2025 })],
     };
 
@@ -272,7 +275,11 @@ describe('reopenPeriod', () => {
   });
 
   it('transitions CLOSED to OPEN with reason and sets audit trail fields', async () => {
-    const closedPeriod = makePeriod({ status: 'CLOSED' as const, closedAt: new Date(), closedBy: 'user-1' });
+    const closedPeriod = makePeriod({
+      status: 'CLOSED' as const,
+      closedAt: new Date(),
+      closedBy: 'user-1',
+    });
     const reopenedPeriod = makePeriod({
       status: 'OPEN' as const,
       reopenedAt: new Date(),

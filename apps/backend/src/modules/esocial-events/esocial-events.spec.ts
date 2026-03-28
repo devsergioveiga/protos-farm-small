@@ -71,8 +71,20 @@ const mockLineItem = {
   payrollRunId: 'run-001',
   employeeId: 'emp-001',
   lineItemsJson: JSON.stringify([
-    { code: '0001', description: 'Salário Base', type: 'PROVENTO', value: '3000.00', eSocialCode: '1100' },
-    { code: '0002', description: 'Hora Extra 50%', type: 'PROVENTO', value: '150.00', eSocialCode: '1010' },
+    {
+      code: '0001',
+      description: 'Salário Base',
+      type: 'PROVENTO',
+      value: '3000.00',
+      eSocialCode: '1100',
+    },
+    {
+      code: '0002',
+      description: 'Hora Extra 50%',
+      type: 'PROVENTO',
+      value: '150.00',
+      eSocialCode: '1010',
+    },
     { code: '0100', description: 'INSS', type: 'DESCONTO', value: '330.00', eSocialCode: null }, // no eSocialCode — should be skipped
   ]),
   employee: mockEmployee,
@@ -154,33 +166,63 @@ const mockEpiDelivery = {
 describe('eSocial XML Builders', () => {
   describe('buildS2200 (evtAdmissao)', () => {
     it('produces XML with correct S-1.3 namespace', () => {
-      const xml = buildS2200({ employee: mockEmployee, contract: mockContract, position: mockPosition, organization: mockOrg });
+      const xml = buildS2200({
+        employee: mockEmployee,
+        contract: mockContract,
+        position: mockPosition,
+        organization: mockOrg,
+      });
       expect(xml).toContain('xmlns="http://www.esocial.gov.br/schema/evt/evtAdmissao/v02_05_00"');
     });
 
     it('contains cpfTrab with digits-only CPF', () => {
-      const xml = buildS2200({ employee: mockEmployee, contract: mockContract, position: mockPosition, organization: mockOrg });
+      const xml = buildS2200({
+        employee: mockEmployee,
+        contract: mockContract,
+        position: mockPosition,
+        organization: mockOrg,
+      });
       expect(xml).toContain('<cpfTrab>12345678901</cpfTrab>');
     });
 
     it('contains nisTrab with PIS/PASEP', () => {
-      const xml = buildS2200({ employee: mockEmployee, contract: mockContract, position: mockPosition, organization: mockOrg });
+      const xml = buildS2200({
+        employee: mockEmployee,
+        contract: mockContract,
+        position: mockPosition,
+        organization: mockOrg,
+      });
       expect(xml).toContain('<nisTrab>');
     });
 
     it('contains codCBO from Position', () => {
-      const xml = buildS2200({ employee: mockEmployee, contract: mockContract, position: mockPosition, organization: mockOrg });
+      const xml = buildS2200({
+        employee: mockEmployee,
+        contract: mockContract,
+        position: mockPosition,
+        organization: mockOrg,
+      });
       expect(xml).toContain('<codCBO>612210</codCBO>');
     });
 
     it('starts with XML declaration and contains eSocial root', () => {
-      const xml = buildS2200({ employee: mockEmployee, contract: mockContract, position: mockPosition, organization: mockOrg });
+      const xml = buildS2200({
+        employee: mockEmployee,
+        contract: mockContract,
+        position: mockPosition,
+        organization: mockOrg,
+      });
       expect(xml).toMatch(/^<\?xml/);
       expect(xml).toContain('<eSocial');
     });
 
     it('contains evtAdmissao element', () => {
-      const xml = buildS2200({ employee: mockEmployee, contract: mockContract, position: mockPosition, organization: mockOrg });
+      const xml = buildS2200({
+        employee: mockEmployee,
+        contract: mockContract,
+        position: mockPosition,
+        organization: mockOrg,
+      });
       expect(xml).toContain('evtAdmissao');
     });
   });
@@ -233,18 +275,30 @@ describe('eSocial XML Builders', () => {
 
   describe('buildS2220 (evtMonit)', () => {
     it('produces well-formed XML', () => {
-      const xml = buildS2220({ exam: mockMedicalExam, employee: mockEmployee, organization: mockOrg });
+      const xml = buildS2220({
+        exam: mockMedicalExam,
+        employee: mockEmployee,
+        organization: mockOrg,
+      });
       expect(xml).toMatch(/^<\?xml/);
       expect(xml).toContain('<eSocial');
     });
 
     it('contains evtMonit element', () => {
-      const xml = buildS2220({ exam: mockMedicalExam, employee: mockEmployee, organization: mockOrg });
+      const xml = buildS2220({
+        exam: mockMedicalExam,
+        employee: mockEmployee,
+        organization: mockOrg,
+      });
       expect(xml).toContain('evtMonit');
     });
 
     it('contains doctor CRM', () => {
-      const xml = buildS2220({ exam: mockMedicalExam, employee: mockEmployee, organization: mockOrg });
+      const xml = buildS2220({
+        exam: mockMedicalExam,
+        employee: mockEmployee,
+        organization: mockOrg,
+      });
       expect(xml).toContain('<nrCRM>123456</nrCRM>');
     });
   });
@@ -252,59 +306,101 @@ describe('eSocial XML Builders', () => {
   describe('All 15 builders produce well-formed XML', () => {
     const cases = [
       {
-        name: 'S-1000', builder: () => buildS1000({ organization: mockOrg }),
+        name: 'S-1000',
+        builder: () => buildS1000({ organization: mockOrg }),
         ns: 'evtInfoEmpregador',
       },
       {
-        name: 'S-1005', builder: () => buildS1005({ farm: mockFarm, organization: mockOrg }),
+        name: 'S-1005',
+        builder: () => buildS1005({ farm: mockFarm, organization: mockOrg }),
         ns: 'evtTabEstab',
       },
       {
-        name: 'S-1010', builder: () => buildS1010({ rubrica: mockRubrica, organization: mockOrg }),
+        name: 'S-1010',
+        builder: () => buildS1010({ rubrica: mockRubrica, organization: mockOrg }),
         ns: 'evtTabRubrica',
       },
       {
-        name: 'S-1020', builder: () => buildS1020({ position: mockPosition, organization: mockOrg }),
+        name: 'S-1020',
+        builder: () => buildS1020({ position: mockPosition, organization: mockOrg }),
         ns: 'evtTabLotacao',
       },
       {
-        name: 'S-2200', builder: () => buildS2200({ employee: mockEmployee, contract: mockContract, position: mockPosition, organization: mockOrg }),
+        name: 'S-2200',
+        builder: () =>
+          buildS2200({
+            employee: mockEmployee,
+            contract: mockContract,
+            position: mockPosition,
+            organization: mockOrg,
+          }),
         ns: 'evtAdmissao',
       },
       {
-        name: 'S-2206', builder: () => buildS2206({ amendment: mockAmendment, employee: mockEmployee, contract: mockContract, position: mockPosition, organization: mockOrg }),
+        name: 'S-2206',
+        builder: () =>
+          buildS2206({
+            amendment: mockAmendment,
+            employee: mockEmployee,
+            contract: mockContract,
+            position: mockPosition,
+            organization: mockOrg,
+          }),
         ns: 'evtAltContratual',
       },
       {
-        name: 'S-2230', builder: () => buildS2230({ absence: mockAbsence, employee: mockEmployee, organization: mockOrg }),
+        name: 'S-2230',
+        builder: () =>
+          buildS2230({ absence: mockAbsence, employee: mockEmployee, organization: mockOrg }),
         ns: 'evtAfastTemp',
       },
       {
-        name: 'S-2299', builder: () => buildS2299({ termination: mockTermination, employee: mockEmployee, organization: mockOrg }),
+        name: 'S-2299',
+        builder: () =>
+          buildS2299({
+            termination: mockTermination,
+            employee: mockEmployee,
+            organization: mockOrg,
+          }),
         ns: 'evtDeslig',
       },
       {
-        name: 'S-1200', builder: () => buildS1200({ item: mockLineItem, employee: mockEmployee, organization: mockOrg }),
+        name: 'S-1200',
+        builder: () =>
+          buildS1200({ item: mockLineItem, employee: mockEmployee, organization: mockOrg }),
         ns: 'evtRemun',
       },
       {
-        name: 'S-1210', builder: () => buildS1210({ item: mockLineItem, employee: mockEmployee, organization: mockOrg }),
+        name: 'S-1210',
+        builder: () =>
+          buildS1210({ item: mockLineItem, employee: mockEmployee, organization: mockOrg }),
         ns: 'evtPgtos',
       },
       {
-        name: 'S-1299', builder: () => buildS1299({ payrollRun: mockPayrollRun, organization: mockOrg }),
+        name: 'S-1299',
+        builder: () => buildS1299({ payrollRun: mockPayrollRun, organization: mockOrg }),
         ns: 'evtFechaEvPer',
       },
       {
-        name: 'S-2210', builder: () => buildS2210({ absence: mockAbsence, employee: mockEmployee, organization: mockOrg }),
+        name: 'S-2210',
+        builder: () =>
+          buildS2210({ absence: mockAbsence, employee: mockEmployee, organization: mockOrg }),
         ns: 'evtCAT',
       },
       {
-        name: 'S-2220', builder: () => buildS2220({ exam: mockMedicalExam, employee: mockEmployee, organization: mockOrg }),
+        name: 'S-2220',
+        builder: () =>
+          buildS2220({ exam: mockMedicalExam, employee: mockEmployee, organization: mockOrg }),
         ns: 'evtMonit',
       },
       {
-        name: 'S-2240', builder: () => buildS2240({ epiDelivery: mockEpiDelivery, employee: mockEmployee, organization: mockOrg }),
+        name: 'S-2240',
+        builder: () =>
+          buildS2240({
+            epiDelivery: mockEpiDelivery,
+            employee: mockEmployee,
+            organization: mockOrg,
+          }),
         ns: 'evtExpRisco',
       },
     ];
@@ -342,7 +438,11 @@ describe('eSocial Pre-generation Validators', () => {
     });
 
     it('returns error for employee without pisPassep', () => {
-      const errors = validateS2200Input({ ...mockEmployee, pisPassep: null }, mockContract, mockPosition);
+      const errors = validateS2200Input(
+        { ...mockEmployee, pisPassep: null },
+        mockContract,
+        mockPosition,
+      );
       expect(errors.some((e) => e.field === 'nisTrab')).toBe(true);
     });
 
@@ -357,12 +457,20 @@ describe('eSocial Pre-generation Validators', () => {
     });
 
     it('returns error for missing CPF', () => {
-      const errors = validateS2200Input({ ...mockEmployee, cpf: null as unknown as string }, mockContract, mockPosition);
+      const errors = validateS2200Input(
+        { ...mockEmployee, cpf: null as unknown as string },
+        mockContract,
+        mockPosition,
+      );
       expect(errors.some((e) => e.field === 'cpfTrab')).toBe(true);
     });
 
     it('includes employeeName in error objects', () => {
-      const errors = validateS2200Input({ ...mockEmployee, pisPassep: null }, mockContract, mockPosition);
+      const errors = validateS2200Input(
+        { ...mockEmployee, pisPassep: null },
+        mockContract,
+        mockPosition,
+      );
       expect(errors[0]?.employeeName).toBe('José da Silva');
     });
   });
@@ -385,13 +493,23 @@ describe('eSocial Pre-generation Validators', () => {
 describe('XSD Structural Validator (per D-06)', () => {
   describe('validateXmlAgainstXsd', () => {
     it('returns empty errors for valid S-2200 XML', () => {
-      const xml = buildS2200({ employee: mockEmployee, contract: mockContract, position: mockPosition, organization: mockOrg });
+      const xml = buildS2200({
+        employee: mockEmployee,
+        contract: mockContract,
+        position: mockPosition,
+        organization: mockOrg,
+      });
       const errors = validateXmlAgainstXsd('S-2200', xml);
       expect(errors).toHaveLength(0);
     });
 
     it('returns errors with field path for XML missing required cpfTrab', () => {
-      const xml = buildS2200({ employee: mockEmployee, contract: mockContract, position: mockPosition, organization: mockOrg });
+      const xml = buildS2200({
+        employee: mockEmployee,
+        contract: mockContract,
+        position: mockPosition,
+        organization: mockOrg,
+      });
       // Remove cpfTrab to simulate invalid XML
       const brokenXml = xml.replace(/<cpfTrab>.*?<\/cpfTrab>/, '');
       const errors = validateXmlAgainstXsd('S-2200', brokenXml);
@@ -399,7 +517,12 @@ describe('XSD Structural Validator (per D-06)', () => {
     });
 
     it('returns errors with field path for XML missing required nisTrab', () => {
-      const xml = buildS2200({ employee: mockEmployee, contract: mockContract, position: mockPosition, organization: mockOrg });
+      const xml = buildS2200({
+        employee: mockEmployee,
+        contract: mockContract,
+        position: mockPosition,
+        organization: mockOrg,
+      });
       const brokenXml = xml.replace(/<nisTrab>.*?<\/nisTrab>/, '');
       const errors = validateXmlAgainstXsd('S-2200', brokenXml);
       expect(errors.some((e) => e.field.includes('nisTrab'))).toBe(true);
@@ -420,10 +543,20 @@ describe('XSD Structural Validator (per D-06)', () => {
   describe('XSD_CONSTRAINTS', () => {
     it('contains constraint definitions for all 15 event types', () => {
       const expectedTypes = [
-        'S-1000', 'S-1005', 'S-1010', 'S-1020',
-        'S-2200', 'S-2206', 'S-2230', 'S-2299',
-        'S-1200', 'S-1210', 'S-1299',
-        'S-2210', 'S-2220', 'S-2240',
+        'S-1000',
+        'S-1005',
+        'S-1010',
+        'S-1020',
+        'S-2200',
+        'S-2206',
+        'S-2230',
+        'S-2299',
+        'S-1200',
+        'S-1210',
+        'S-1299',
+        'S-2210',
+        'S-2220',
+        'S-2240',
       ];
       expectedTypes.forEach((type) => {
         expect(XSD_CONSTRAINTS[type]).toBeDefined();

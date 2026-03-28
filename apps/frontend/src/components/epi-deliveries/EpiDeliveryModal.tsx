@@ -40,7 +40,12 @@ interface FormErrors {
 
 const REASONS = ['NOVO', 'TROCA', 'DANIFICADO', 'EXTRAVIO'] as const;
 
-export default function EpiDeliveryModal({ isOpen, prefilledEpiProduct, onClose, onSuccess }: Props) {
+export default function EpiDeliveryModal({
+  isOpen,
+  prefilledEpiProduct,
+  onClose,
+  onSuccess,
+}: Props) {
   const { createEpiDelivery } = useEpiDeliveries();
   const { epiProducts, fetchEpiProducts } = useEpiProducts();
   const { employees, isLoading: employeesLoading } = useEmployees({ limit: 200 });
@@ -242,7 +247,11 @@ export default function EpiDeliveryModal({ isOpen, prefilledEpiProduct, onClose,
               ))}
             </select>
             {errors.employeeId && (
-              <span id="delivery-employee-error" className="epi-delivery-modal__field-error" role="alert">
+              <span
+                id="delivery-employee-error"
+                className="epi-delivery-modal__field-error"
+                role="alert"
+              >
                 <AlertCircle size={14} aria-hidden="true" />
                 {errors.employeeId}
               </span>
@@ -271,7 +280,11 @@ export default function EpiDeliveryModal({ isOpen, prefilledEpiProduct, onClose,
               ))}
             </select>
             {errors.epiProductId && (
-              <span id="delivery-epi-error" className="epi-delivery-modal__field-error" role="alert">
+              <span
+                id="delivery-epi-error"
+                className="epi-delivery-modal__field-error"
+                role="alert"
+              >
                 <AlertCircle size={14} aria-hidden="true" />
                 {errors.epiProductId}
               </span>
@@ -296,7 +309,11 @@ export default function EpiDeliveryModal({ isOpen, prefilledEpiProduct, onClose,
                 max={new Date().toISOString().split('T')[0]}
               />
               {errors.date && (
-                <span id="delivery-date-error" className="epi-delivery-modal__field-error" role="alert">
+                <span
+                  id="delivery-date-error"
+                  className="epi-delivery-modal__field-error"
+                  role="alert"
+                >
                   <AlertCircle size={14} aria-hidden="true" />
                   {errors.date}
                 </span>
@@ -319,7 +336,11 @@ export default function EpiDeliveryModal({ isOpen, prefilledEpiProduct, onClose,
                 aria-describedby={errors.quantity ? 'delivery-quantity-error' : undefined}
               />
               {errors.quantity && (
-                <span id="delivery-quantity-error" className="epi-delivery-modal__field-error" role="alert">
+                <span
+                  id="delivery-quantity-error"
+                  className="epi-delivery-modal__field-error"
+                  role="alert"
+                >
                   <AlertCircle size={14} aria-hidden="true" />
                   {errors.quantity}
                 </span>
@@ -342,11 +363,17 @@ export default function EpiDeliveryModal({ isOpen, prefilledEpiProduct, onClose,
               aria-describedby={errors.reason ? 'delivery-reason-error' : undefined}
             >
               {REASONS.map((r) => (
-                <option key={r} value={r}>{DELIVERY_REASON_LABELS[r]}</option>
+                <option key={r} value={r}>
+                  {DELIVERY_REASON_LABELS[r]}
+                </option>
               ))}
             </select>
             {errors.reason && (
-              <span id="delivery-reason-error" className="epi-delivery-modal__field-error" role="alert">
+              <span
+                id="delivery-reason-error"
+                className="epi-delivery-modal__field-error"
+                role="alert"
+              >
                 <AlertCircle size={14} aria-hidden="true" />
                 {errors.reason}
               </span>

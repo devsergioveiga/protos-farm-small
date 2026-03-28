@@ -313,8 +313,13 @@
 }
 
 @keyframes je-skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 /* ─── Row Action Menu ────────────────────────────────────────────────────── */
@@ -366,8 +371,14 @@
 }
 
 @keyframes je-menu-open {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .je-page__menu-item {
@@ -514,13 +525,23 @@
 }
 
 @keyframes je-overlay-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes je-modal-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .je-page__csv-title {
@@ -596,8 +617,14 @@
 }
 
 @keyframes je-toast-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─── sr-only ────────────────────────────────────────────────────────────── */
@@ -687,8 +714,9 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  transition: color var(--duration-instant) var(--ease-out),
-              border-color var(--duration-instant) var(--ease-out);
+  transition:
+    color var(--duration-instant) var(--ease-out),
+    border-color var(--duration-instant) var(--ease-out);
   white-space: nowrap;
 }
 

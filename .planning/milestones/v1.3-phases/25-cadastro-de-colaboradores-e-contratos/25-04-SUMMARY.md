@@ -44,7 +44,7 @@ decisions:
   - HistoryTab consumes useEmployeeTimeline (merged timeline from API) rather than separate status/movement hooks
 metrics:
   duration_minutes: 15
-  completed_date: "2026-03-24"
+  completed_date: '2026-03-24'
   tasks_completed: 3
   tasks_total: 3
   files_created: 13
@@ -57,11 +57,11 @@ CSV/XLSX bulk import with CPF error/PIS warning validation plus complete employe
 
 ## Tasks Completed
 
-| Task | Description | Commit |
-|------|-------------|--------|
-| 1 | Backend bulk import: parser, preview/confirm/template endpoints + 6 new tests | 31723aeb |
-| 2 | Frontend: EmployeeDetailPage (5 tabs), SalaryEvolutionChart, EmployeeBulkImportModal | 99b80392 |
-| 3 | Human verification | APPROVED — user confirmed complete system |
+| Task | Description                                                                          | Commit                                    |
+| ---- | ------------------------------------------------------------------------------------ | ----------------------------------------- |
+| 1    | Backend bulk import: parser, preview/confirm/template endpoints + 6 new tests        | 31723aeb                                  |
+| 2    | Frontend: EmployeeDetailPage (5 tabs), SalaryEvolutionChart, EmployeeBulkImportModal | 99b80392                                  |
+| 3    | Human verification                                                                   | APPROVED — user confirmed complete system |
 
 ## Key Deliverables
 
@@ -109,6 +109,7 @@ None — all data flows are wired to real backend hooks (useEmployee, useEmploye
 ## Self-Check: PASSED
 
 Files exist:
+
 - apps/backend/src/modules/employees/employee-file-parser.ts ✓
 - apps/backend/src/modules/employees/employee-bulk-import.service.ts ✓
 - apps/frontend/src/pages/EmployeeDetailPage.tsx ✓
@@ -116,6 +117,7 @@ Files exist:
 - apps/frontend/src/components/employee-bulk-import/EmployeeBulkImportModal.tsx ✓
 
 Commits exist:
+
 - 31723aeb (feat 25-04: bulk employee import) ✓
 - 99b80392 (feat 25-04: EmployeeDetailPage with 5 tabs) ✓
 

@@ -7,6 +7,7 @@
 ---
 
 <user_constraints>
+
 ## User Constraints (from CONTEXT.md)
 
 ### Locked Decisions
@@ -40,14 +41,16 @@ None — discussion stayed within phase scope.
 ---
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|-----------------|
-| DFC-01 | Contador pode gerar DFC pelo método direto com 3 seções (Atividades Operacionais, Investimento, Financiamento), reaproveitando classificação de fluxo de caixa v1.0, com reconciliação saldo inicial/final | DfcCalculatorService (puro) lê CP/CR liquidados via Prisma; reutiliza PAYABLE_DFC_MAP + RECEIVABLE_DFC_MAP existentes; saldo inicial/final de caixa vem de AccountBalance contas 1.1.01.xx |
-| DFC-02 | Contador pode gerar DFC pelo método indireto partindo do Lucro Líquido (DRE), com ajustes não-caixa (depreciação, provisões, variação valor justo CPC 29), variação capital de giro | Lucro líquido de DreCalculatorService; depreciação de AccountBalance contas 5.2.03.xx; provisões de PayrollProvision; CPC29 via isFairValueAdj=true; deltas de capital de giro de AccountBalance closingBalance mês atual vs mês anterior |
-| DFC-03 | Sistema valida cruzamento DFC↔BP (variação caixa DFC = variação caixa/bancos BP) com alerta automático de divergência | Ativar invariant #2 em cross-validation.calculator.ts; wire DFC netCashFlow + BP cashAccountsDelta; tolerância ±0.01 já estabelecida |
-| DASH-01 | Gerente pode visualizar dashboard contábil executivo com resultado acumulado, evolução mensal receita/despesa, composição custos, indicadores BP, alertas | AccountingDashboardService orquestra getDre + getBalanceSheet; gráfico recharts já disponível; alertas consultam FiscalPeriod + PendingJournalPosting + ChartOfAccount |
+| ID      | Description                                                                                                                                                                                                | Research Support                                                                                                                                                                                                                          |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DFC-01  | Contador pode gerar DFC pelo método direto com 3 seções (Atividades Operacionais, Investimento, Financiamento), reaproveitando classificação de fluxo de caixa v1.0, com reconciliação saldo inicial/final | DfcCalculatorService (puro) lê CP/CR liquidados via Prisma; reutiliza PAYABLE_DFC_MAP + RECEIVABLE_DFC_MAP existentes; saldo inicial/final de caixa vem de AccountBalance contas 1.1.01.xx                                                |
+| DFC-02  | Contador pode gerar DFC pelo método indireto partindo do Lucro Líquido (DRE), com ajustes não-caixa (depreciação, provisões, variação valor justo CPC 29), variação capital de giro                        | Lucro líquido de DreCalculatorService; depreciação de AccountBalance contas 5.2.03.xx; provisões de PayrollProvision; CPC29 via isFairValueAdj=true; deltas de capital de giro de AccountBalance closingBalance mês atual vs mês anterior |
+| DFC-03  | Sistema valida cruzamento DFC↔BP (variação caixa DFC = variação caixa/bancos BP) com alerta automático de divergência                                                                                      | Ativar invariant #2 em cross-validation.calculator.ts; wire DFC netCashFlow + BP cashAccountsDelta; tolerância ±0.01 já estabelecida                                                                                                      |
+| DASH-01 | Gerente pode visualizar dashboard contábil executivo com resultado acumulado, evolução mensal receita/despesa, composição custos, indicadores BP, alertas                                                  | AccountingDashboardService orquestra getDre + getBalanceSheet; gráfico recharts já disponível; alertas consultam FiscalPeriod + PendingJournalPosting + ChartOfAccount                                                                    |
+
 </phase_requirements>
 
 ---
@@ -68,13 +71,13 @@ O `AccountingDashboardPage` segue o padrão visual do `FinancialDashboardPage` e
 
 ### Core (todos já instalados no projeto)
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| decimal.js | in use | Cálculo monetário sem floating-point errors | Padrão do projeto em todo módulo financeiro |
-| Prisma 7 | in use | Queries Payable/Receivable/AccountBalance | ORM do projeto |
-| recharts | in use | Gráficos linha e donut no dashboard | Já usado em CashflowChart e FinancialDashboardPage |
-| lucide-react | in use | Ícones nas páginas | Padrão do design system |
-| react-router-dom | in use | Rotas /dfc e /accounting-dashboard | Roteador do projeto |
+| Library          | Version | Purpose                                     | Why Standard                                       |
+| ---------------- | ------- | ------------------------------------------- | -------------------------------------------------- |
+| decimal.js       | in use  | Cálculo monetário sem floating-point errors | Padrão do projeto em todo módulo financeiro        |
+| Prisma 7         | in use  | Queries Payable/Receivable/AccountBalance   | ORM do projeto                                     |
+| recharts         | in use  | Gráficos linha e donut no dashboard         | Já usado em CashflowChart e FinancialDashboardPage |
+| lucide-react     | in use  | Ícones nas páginas                          | Padrão do design system                            |
+| react-router-dom | in use  | Rotas /dfc e /accounting-dashboard          | Roteador do projeto                                |
 
 ### Sem novas dependências
 
@@ -133,10 +136,7 @@ O serviço carrega dados do Prisma e chama a função pura. Seguir exatamente o 
 
 ```typescript
 // financial-statements.service.ts (adição)
-export async function getDfc(
-  organizationId: string,
-  filters: DfcFilters,
-): Promise<DfcOutput> {
+export async function getDfc(organizationId: string, filters: DfcFilters): Promise<DfcOutput> {
   // 1. Verify fiscal year exists
   // 2. Load liquidated Payables: where paidAt BETWEEN startDate AND endDate
   // 3. Load liquidated Receivables: where receivedAt BETWEEN startDate AND endDate
@@ -153,12 +153,13 @@ export async function getDfc(
 O `cross-validation.calculator.ts` já tem o slot do invariante #2. A ativação requer:
 
 1. Adicionar campos ao `CrossValidationInput`:
+
 ```typescript
 // financial-statements.types.ts
 export interface CrossValidationInput {
   // ... existing fields ...
-  dfcNetCashFlow: string;       // variação líquida total DFC (direto ou indireto)
-  bpCashDelta: string;          // closingBalance 1.1.01.xx atual - closingBalance prior
+  dfcNetCashFlow: string; // variação líquida total DFC (direto ou indireto)
+  bpCashDelta: string; // closingBalance 1.1.01.xx atual - closingBalance prior
 }
 ```
 
@@ -189,6 +190,7 @@ export async function getAccountingDashboard(
 ```
 
 **Alertas — queries concretas:**
+
 - Períodos não fechados: `prisma.fiscalPeriod.count({ where: { organizationId, status: 'OPEN' } })`
 - Lançamentos pendentes: `prisma.pendingJournalPosting.count({ where: { organizationId, status: 'PENDING' } })`
 - Contas sem SPED: `prisma.chartOfAccount.count({ where: { organizationId, isActive: true, isSynthetic: false, spedRefCode: null } })`
@@ -253,14 +255,14 @@ Isso retorna os 12 meses com uma única query — padrão já usado em `computeM
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Aritmética decimal | `Math.round`, `Number.toFixed` | `Decimal.js` | Já em uso; evita erros de ponto flutuante em valores monetários |
-| Classificação DFC por categoria | Nova lógica de mapeamento | `PAYABLE_DFC_MAP` + `RECEIVABLE_DFC_MAP` de `cashflow.types.ts` | Já testado e validado em v1.0; D-02 locked |
-| Indicadores BP | Recalcular LC, EG, ROE | `BpOutput.indicators` de `getBalanceSheet` | Service já retorna todos os 4 indicadores necessários |
-| Resultado líquido para dashboard | Novo cálculo de receita/despesa | `DreOutput.resultadoLiquido` de `getDre` | Já implementado e testado |
-| Gráficos | Construir do zero | recharts `LineChart` + `PieChart` | Já instalado; padrão do `CashflowChart` e `FinancialDashboardPage` |
-| Lazy loading de páginas | Import estático | `React.lazy()` + `Suspense` | Padrão do projeto em App.tsx |
+| Problem                          | Don't Build                     | Use Instead                                                     | Why                                                                |
+| -------------------------------- | ------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Aritmética decimal               | `Math.round`, `Number.toFixed`  | `Decimal.js`                                                    | Já em uso; evita erros de ponto flutuante em valores monetários    |
+| Classificação DFC por categoria  | Nova lógica de mapeamento       | `PAYABLE_DFC_MAP` + `RECEIVABLE_DFC_MAP` de `cashflow.types.ts` | Já testado e validado em v1.0; D-02 locked                         |
+| Indicadores BP                   | Recalcular LC, EG, ROE          | `BpOutput.indicators` de `getBalanceSheet`                      | Service já retorna todos os 4 indicadores necessários              |
+| Resultado líquido para dashboard | Novo cálculo de receita/despesa | `DreOutput.resultadoLiquido` de `getDre`                        | Já implementado e testado                                          |
+| Gráficos                         | Construir do zero               | recharts `LineChart` + `PieChart`                               | Já instalado; padrão do `CashflowChart` e `FinancialDashboardPage` |
+| Lazy loading de páginas          | Import estático                 | `React.lazy()` + `Suspense`                                     | Padrão do projeto em App.tsx                                       |
 
 ---
 
@@ -389,8 +391,8 @@ const bpCashDelta = new Decimal(input.bpCashDelta);
 const invariant2 = buildInvariant(
   'dfc-caixa-bp',
   'Variacao Caixa DFC = Variacao Caixa/Bancos BP',
-  bpCashDelta,       // expected: delta caixa/bancos no BP
-  dfcNetCashFlow,    // found: variação líquida total da DFC
+  bpCashDelta, // expected: delta caixa/bancos no BP
+  dfcNetCashFlow, // found: variação líquida total da DFC
   '/dfc',
 );
 ```
@@ -418,12 +420,13 @@ export function useDfc(orgId: string | undefined, filters: DfcFilters | null) {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| DFC em cashflow.service (projeção futura) | DFC contábil em financial-statements (demonstrativo histórico) | Phase 40 | Separação de responsabilidades; dados fonte diferentes |
-| Invariante #2 PENDING | Invariante #2 ativo com DFC net cash flow | Phase 40 | Cross-validation página mostra 4/4 invariantes |
+| Old Approach                              | Current Approach                                               | When Changed | Impact                                                 |
+| ----------------------------------------- | -------------------------------------------------------------- | ------------ | ------------------------------------------------------ |
+| DFC em cashflow.service (projeção futura) | DFC contábil em financial-statements (demonstrativo histórico) | Phase 40     | Separação de responsabilidades; dados fonte diferentes |
+| Invariante #2 PENDING                     | Invariante #2 ativo com DFC net cash flow                      | Phase 40     | Cross-validation página mostra 4/4 invariantes         |
 
 **Deprecated/outdated:**
+
 - `DfcSummary` de `cashflow.types.ts`: adequado apenas para projeção futura, não para demonstrativo contábil com 3 colunas (mês/YTD/ano anterior). Não reutilizar para o novo DFC contábil.
 
 ---
@@ -457,23 +460,23 @@ Step 2.6: SKIPPED (sem novas dependências externas — fase usa stack 100% exis
 
 ### Test Framework
 
-| Property | Value |
-|----------|-------|
-| Framework | Jest (backend) + Vitest (frontend) |
-| Config file | `apps/backend/jest.config.js` |
-| Quick run command | `cd apps/backend && npx jest src/modules/financial-statements --no-coverage` |
-| Full suite command | `cd apps/backend && npx jest --no-coverage` |
+| Property           | Value                                                                        |
+| ------------------ | ---------------------------------------------------------------------------- |
+| Framework          | Jest (backend) + Vitest (frontend)                                           |
+| Config file        | `apps/backend/jest.config.js`                                                |
+| Quick run command  | `cd apps/backend && npx jest src/modules/financial-statements --no-coverage` |
+| Full suite command | `cd apps/backend && npx jest --no-coverage`                                  |
 
 ### Phase Requirements → Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| DFC-01 | `calculateDfcDireto` classifica CP/CR por seção | unit | `npx jest dfc.calculator --no-coverage` | ❌ Wave 0 |
-| DFC-01 | `getDfc` endpoint retorna direto com 3 seções | integration (routes) | `npx jest financial-statements.routes --no-coverage` | ✅ (extend) |
-| DFC-02 | `calculateDfcIndireto` aplica ajustes CPC 03 R2 | unit | `npx jest dfc.calculator --no-coverage` | ❌ Wave 0 |
-| DFC-03 | invariante #2 PASSED quando valores coincidem | unit | `npx jest cross-validation.calculator --no-coverage` | ❌ Wave 0 (extend existing spec) |
-| DFC-03 | invariante #2 FAILED com `investigateUrl: '/dfc'` | unit | `npx jest cross-validation.calculator --no-coverage` | ❌ Wave 0 |
-| DASH-01 | `getAccountingDashboard` retorna cards + alertas | integration (routes) | `npx jest financial-statements.routes --no-coverage` | ✅ (extend) |
+| Req ID  | Behavior                                          | Test Type            | Automated Command                                    | File Exists?                     |
+| ------- | ------------------------------------------------- | -------------------- | ---------------------------------------------------- | -------------------------------- |
+| DFC-01  | `calculateDfcDireto` classifica CP/CR por seção   | unit                 | `npx jest dfc.calculator --no-coverage`              | ❌ Wave 0                        |
+| DFC-01  | `getDfc` endpoint retorna direto com 3 seções     | integration (routes) | `npx jest financial-statements.routes --no-coverage` | ✅ (extend)                      |
+| DFC-02  | `calculateDfcIndireto` aplica ajustes CPC 03 R2   | unit                 | `npx jest dfc.calculator --no-coverage`              | ❌ Wave 0                        |
+| DFC-03  | invariante #2 PASSED quando valores coincidem     | unit                 | `npx jest cross-validation.calculator --no-coverage` | ❌ Wave 0 (extend existing spec) |
+| DFC-03  | invariante #2 FAILED com `investigateUrl: '/dfc'` | unit                 | `npx jest cross-validation.calculator --no-coverage` | ❌ Wave 0                        |
+| DASH-01 | `getAccountingDashboard` retorna cards + alertas  | integration (routes) | `npx jest financial-statements.routes --no-coverage` | ✅ (extend)                      |
 
 ### Sampling Rate
 
@@ -486,24 +489,24 @@ Step 2.6: SKIPPED (sem novas dependências externas — fase usa stack 100% exis
 - [ ] `apps/backend/src/modules/financial-statements/dfc.calculator.spec.ts` — cobre DFC-01 (direto, 3 seções, saldo inicial/final) e DFC-02 (indireto, ajustes CPC 03 R2)
 - [ ] Estender `cross-validation.calculator.ts` spec (arquivo existe implicitamente) para cobrir DFC-03 (invariante #2 PASSED/FAILED)
 
-*(Os arquivos `financial-statements.routes.spec.ts` e `dre.calculator.ts`/`bp.calculator.ts` já existem — apenas adicionar casos de teste novos)*
+_(Os arquivos `financial-statements.routes.spec.ts` e `dre.calculator.ts`/`bp.calculator.ts` já existem — apenas adicionar casos de teste novos)_
 
 ---
 
 ## Project Constraints (from CLAUDE.md)
 
-| Directive | Impact on Phase 40 |
-|-----------|-------------------|
-| Express 5: `req.params.id as string` | Todos os novos endpoints devem usar `req.params.orgId as string` — nunca desestruturar |
-| Prisma enums: usar `as const` ou importar tipo | Em mocks de teste dos calculators, `category: 'OPERACIONAL' as const` |
-| Decimal.js: `Decimal.max(a,b)` estático — `a.max(b)` não existe | Usar apenas métodos de instância: `.plus()`, `.minus()`, `.div()`, `.times()`, `.abs()` |
-| Frontend: tipos espelham backend | `DfcOutput` e `AccountingDashboardOutput` precisam de tipos correspondentes em `src/types/financial-statements.ts` |
-| Formulários em modal, nunca página dedicada | N/A — DFC e Dashboard são páginas de consulta, não formulários |
-| `ConfirmModal` nunca `window.confirm()` | N/A — sem ações destrutivas nesta fase |
-| Cores: `#C62828` apenas para erros, nunca decorativo | Card do invariante #2 FAILED usa `var(--color-error-500)` — correto |
-| Touch targets mínimo 48x48px | Botões nas páginas DFC e Dashboard devem ter min-height 48px |
-| Tabs pattern — `hidden` attribute para preservar estado | Se DfcPage usar tabs, considerar `hidden` vs conditional render |
-| Módulos colocalizados: `controller+service+routes+types` | DFC pertence ao módulo `financial-statements`, não a um módulo separado |
+| Directive                                                       | Impact on Phase 40                                                                                                 |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Express 5: `req.params.id as string`                            | Todos os novos endpoints devem usar `req.params.orgId as string` — nunca desestruturar                             |
+| Prisma enums: usar `as const` ou importar tipo                  | Em mocks de teste dos calculators, `category: 'OPERACIONAL' as const`                                              |
+| Decimal.js: `Decimal.max(a,b)` estático — `a.max(b)` não existe | Usar apenas métodos de instância: `.plus()`, `.minus()`, `.div()`, `.times()`, `.abs()`                            |
+| Frontend: tipos espelham backend                                | `DfcOutput` e `AccountingDashboardOutput` precisam de tipos correspondentes em `src/types/financial-statements.ts` |
+| Formulários em modal, nunca página dedicada                     | N/A — DFC e Dashboard são páginas de consulta, não formulários                                                     |
+| `ConfirmModal` nunca `window.confirm()`                         | N/A — sem ações destrutivas nesta fase                                                                             |
+| Cores: `#C62828` apenas para erros, nunca decorativo            | Card do invariante #2 FAILED usa `var(--color-error-500)` — correto                                                |
+| Touch targets mínimo 48x48px                                    | Botões nas páginas DFC e Dashboard devem ter min-height 48px                                                       |
+| Tabs pattern — `hidden` attribute para preservar estado         | Se DfcPage usar tabs, considerar `hidden` vs conditional render                                                    |
+| Módulos colocalizados: `controller+service+routes+types`        | DFC pertence ao módulo `financial-statements`, não a um módulo separado                                            |
 
 ---
 
@@ -529,6 +532,7 @@ Step 2.6: SKIPPED (sem novas dependências externas — fase usa stack 100% exis
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH — todo stack já instalado e em uso ativo
 - Architecture: HIGH — padrões idênticos existem em DRE/BP, código lido diretamente
 - Pitfalls: HIGH — identificados a partir de discrepâncias reais entre CONTEXT.md e schema.prisma (settledAt vs receivedAt, ASSET_SALE missing from map)

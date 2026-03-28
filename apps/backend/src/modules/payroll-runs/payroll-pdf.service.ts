@@ -57,9 +57,18 @@ function formatDate(date: Date): string {
 function formatMonthLabel(referenceMonth: string): string {
   const [year, month] = referenceMonth.split('-');
   const monthNames: Record<string, string> = {
-    '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
-    '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
-    '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro',
+    '01': 'Janeiro',
+    '02': 'Fevereiro',
+    '03': 'Março',
+    '04': 'Abril',
+    '05': 'Maio',
+    '06': 'Junho',
+    '07': 'Julho',
+    '08': 'Agosto',
+    '09': 'Setembro',
+    '10': 'Outubro',
+    '11': 'Novembro',
+    '12': 'Dezembro',
   };
   return `${monthNames[month] ?? month}/${year}`;
 }
@@ -125,7 +134,10 @@ export async function generatePayslipPdf(data: PayslipData): Promise<Buffer> {
     }
 
     // Horizontal rule
-    doc.moveTo(margin, y).lineTo(margin + usableWidth, y).stroke();
+    doc
+      .moveTo(margin, y)
+      .lineTo(margin + usableWidth, y)
+      .stroke();
     y += 8;
 
     // Employee info
@@ -156,7 +168,11 @@ export async function generatePayslipPdf(data: PayslipData): Promise<Buffer> {
     doc.font('Helvetica-Bold').fontSize(10);
     doc.text('Competência:', margin, y);
     doc.font('Helvetica').fontSize(10);
-    doc.text(`${formatMonthLabel(data.referenceMonth)} — ${runTypeLabel(data.runType)}`, margin + 80, y);
+    doc.text(
+      `${formatMonthLabel(data.referenceMonth)} — ${runTypeLabel(data.runType)}`,
+      margin + 80,
+      y,
+    );
 
     y += 16;
 
@@ -265,13 +281,12 @@ export async function generatePayslipPdf(data: PayslipData): Promise<Buffer> {
     // Place near bottom of page
     const sigY = 720;
     doc.font('Helvetica').fontSize(9);
-    doc.text(
-      'Declaro ter recebido a importância líquida discriminada neste recibo.',
-      margin,
-      sigY,
-    );
+    doc.text('Declaro ter recebido a importância líquida discriminada neste recibo.', margin, sigY);
 
-    doc.moveTo(margin + 60, sigY + 30).lineTo(margin + 260, sigY + 30).stroke();
+    doc
+      .moveTo(margin + 60, sigY + 30)
+      .lineTo(margin + 260, sigY + 30)
+      .stroke();
     doc.font('Helvetica').fontSize(9);
     doc.text(data.employeeName, margin + 60, sigY + 34, { width: 200, align: 'center' });
 

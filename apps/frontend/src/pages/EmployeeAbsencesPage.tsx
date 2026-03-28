@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import {
-  Stethoscope,
-  AlertTriangle,
-  Info,
-  MinusCircle,
-} from 'lucide-react';
+import { Stethoscope, AlertTriangle, Info, MinusCircle } from 'lucide-react';
 import { useEmployeeAbsences } from '@/hooks/useEmployeeAbsences';
-import type { EmployeeAbsence, AbsenceType, CreateAbsenceInput, RegisterReturnInput } from '@/types/absence';
+import type {
+  EmployeeAbsence,
+  AbsenceType,
+  CreateAbsenceInput,
+  RegisterReturnInput,
+} from '@/types/absence';
 import { ABSENCE_TYPE_LABELS, ABSENCE_TYPE_FIXED_DAYS } from '@/types/absence';
 import './EmployeeAbsencesPage.css';
 
@@ -32,7 +32,10 @@ function PayrollImpactBadge({ impact }: { impact: string | null }) {
   if (!impact) return <span>—</span>;
   if (impact.includes('INSS')) {
     return (
-      <span className="abs-page__impact-badge abs-page__impact-badge--info" aria-label="INSS responsavel pelo pagamento">
+      <span
+        className="abs-page__impact-badge abs-page__impact-badge--info"
+        aria-label="INSS responsavel pelo pagamento"
+      >
         <Info size={12} aria-hidden="true" />
         INSS paga
       </span>
@@ -41,7 +44,10 @@ function PayrollImpactBadge({ impact }: { impact: string | null }) {
   const daysMatch = impact.match(/(\d+)/);
   const days = daysMatch ? daysMatch[1] : '';
   return (
-    <span className="abs-page__impact-badge abs-page__impact-badge--deduction" aria-label={`Desconto de ${days} dias na folha`}>
+    <span
+      className="abs-page__impact-badge abs-page__impact-badge--deduction"
+      aria-label={`Desconto de ${days} dias na folha`}
+    >
       <MinusCircle size={12} aria-hidden="true" />
       {days ? `-${days} dias` : impact}
     </span>
@@ -119,7 +125,10 @@ function EmployeeAbsenceModal({ isOpen, onClose, onSubmit }: EmployeeAbsenceModa
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
+    if (Object.keys(errs).length) {
+      setErrors(errs);
+      return;
+    }
     setSubmitting(true);
     const ok = await onSubmit({
       employeeId,
@@ -143,11 +152,15 @@ function EmployeeAbsenceModal({ isOpen, onClose, onSubmit }: EmployeeAbsenceModa
       role="dialog"
       aria-modal="true"
       aria-labelledby="abs-modal-title"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="abs-page__modal">
         <div className="abs-page__modal-header">
-          <h2 id="abs-modal-title" className="abs-page__modal-title">Registrar Afastamento</h2>
+          <h2 id="abs-modal-title" className="abs-page__modal-title">
+            Registrar Afastamento
+          </h2>
           <button
             type="button"
             className="abs-page__modal-close"
@@ -177,7 +190,12 @@ function EmployeeAbsenceModal({ isOpen, onClose, onSubmit }: EmployeeAbsenceModa
                 aria-describedby={errors.employeeId ? 'abs-emp-error' : undefined}
               />
               {errors.employeeId && (
-                <span id="abs-emp-error" className="abs-page__form-error" role="alert" aria-live="polite">
+                <span
+                  id="abs-emp-error"
+                  className="abs-page__form-error"
+                  role="alert"
+                  aria-live="polite"
+                >
                   {errors.employeeId}
                 </span>
               )}
@@ -195,9 +213,13 @@ function EmployeeAbsenceModal({ isOpen, onClose, onSubmit }: EmployeeAbsenceModa
                 onChange={(e) => setAbsenceType(e.target.value as AbsenceType)}
                 aria-required="true"
               >
-                {(Object.entries(ABSENCE_TYPE_LABELS) as [AbsenceType, string][]).map(([val, label]) => (
-                  <option key={val} value={val}>{label}</option>
-                ))}
+                {(Object.entries(ABSENCE_TYPE_LABELS) as [AbsenceType, string][]).map(
+                  ([val, label]) => (
+                    <option key={val} value={val}>
+                      {label}
+                    </option>
+                  ),
+                )}
               </select>
             </div>
 
@@ -206,7 +228,8 @@ function EmployeeAbsenceModal({ isOpen, onClose, onSubmit }: EmployeeAbsenceModa
               <div className="abs-page__info-banner abs-page__info-banner--warning" role="alert">
                 <AlertTriangle size={16} aria-hidden="true" />
                 <span>
-                  Ao confirmar, o sistema registra estabilidade provisoria de 12 meses apos o retorno.
+                  Ao confirmar, o sistema registra estabilidade provisoria de 12 meses apos o
+                  retorno.
                 </span>
               </div>
             )}
@@ -215,9 +238,7 @@ function EmployeeAbsenceModal({ isOpen, onClose, onSubmit }: EmployeeAbsenceModa
             {isInssLeave && (
               <div className="abs-page__info-banner abs-page__info-banner--info" role="alert">
                 <Info size={16} aria-hidden="true" />
-                <span>
-                  A partir do 16o dia o INSS assume o pagamento. Notifique o colaborador.
-                </span>
+                <span>A partir do 16o dia o INSS assume o pagamento. Notifique o colaborador.</span>
               </div>
             )}
 
@@ -236,7 +257,12 @@ function EmployeeAbsenceModal({ isOpen, onClose, onSubmit }: EmployeeAbsenceModa
                 aria-describedby={errors.startDate ? 'abs-start-error' : undefined}
               />
               {errors.startDate && (
-                <span id="abs-start-error" className="abs-page__form-error" role="alert" aria-live="polite">
+                <span
+                  id="abs-start-error"
+                  className="abs-page__form-error"
+                  role="alert"
+                  aria-live="polite"
+                >
                   {errors.startDate}
                 </span>
               )}
@@ -275,7 +301,12 @@ function EmployeeAbsenceModal({ isOpen, onClose, onSubmit }: EmployeeAbsenceModa
                   aria-describedby={errors.catNumber ? 'abs-cat-error' : undefined}
                 />
                 {errors.catNumber && (
-                  <span id="abs-cat-error" className="abs-page__form-error" role="alert" aria-live="polite">
+                  <span
+                    id="abs-cat-error"
+                    className="abs-page__form-error"
+                    role="alert"
+                    aria-live="polite"
+                  >
                     {errors.catNumber}
                   </span>
                 )}
@@ -357,7 +388,10 @@ function RegisterReturnModal({ isOpen, absence, onClose, onSubmit }: RegisterRet
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!returnDate) { setError('Informe a data de retorno'); return; }
+    if (!returnDate) {
+      setError('Informe a data de retorno');
+      return;
+    }
     setSubmitting(true);
     const ok = await onSubmit(absence!.id, { returnDate });
     setSubmitting(false);
@@ -372,11 +406,15 @@ function RegisterReturnModal({ isOpen, absence, onClose, onSubmit }: RegisterRet
       role="dialog"
       aria-modal="true"
       aria-labelledby="return-modal-title"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="abs-page__modal abs-page__modal--small">
         <div className="abs-page__modal-header">
-          <h2 id="return-modal-title" className="abs-page__modal-title">Registrar Retorno</h2>
+          <h2 id="return-modal-title" className="abs-page__modal-title">
+            Registrar Retorno
+          </h2>
           <button
             type="button"
             className="abs-page__modal-close"
@@ -396,9 +434,7 @@ function RegisterReturnModal({ isOpen, absence, onClose, onSubmit }: RegisterRet
             {isWorkAccident && (
               <div className="abs-page__info-banner abs-page__info-banner--info" role="alert">
                 <Info size={16} aria-hidden="true" />
-                <span>
-                  Estabilidade provisoria de 12 meses sera computada a partir desta data.
-                </span>
+                <span>Estabilidade provisoria de 12 meses sera computada a partir desta data.</span>
               </div>
             )}
 
@@ -417,7 +453,12 @@ function RegisterReturnModal({ isOpen, absence, onClose, onSubmit }: RegisterRet
                 aria-describedby={error ? 'return-date-error' : undefined}
               />
               {error && (
-                <span id="return-date-error" className="abs-page__form-error" role="alert" aria-live="polite">
+                <span
+                  id="return-date-error"
+                  className="abs-page__form-error"
+                  role="alert"
+                  aria-live="polite"
+                >
                   {error}
                 </span>
               )}
@@ -459,15 +500,8 @@ export default function EmployeeAbsencesPage() {
   const ctaButtonRef = useRef<HTMLButtonElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const {
-    absences,
-    loading,
-    error,
-    successMessage,
-    fetchAbsences,
-    createAbsence,
-    registerReturn,
-  } = useEmployeeAbsences();
+  const { absences, loading, error, successMessage, fetchAbsences, createAbsence, registerReturn } =
+    useEmployeeAbsences();
 
   useEffect(() => {
     fetchAbsences();
@@ -482,18 +516,21 @@ export default function EmployeeAbsencesPage() {
     });
   }, [filterType, filterStartDate, filterEndDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchEmployee(value);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      fetchAbsences({
-        employeeSearch: value.length >= 2 ? value : undefined,
-        absenceType: filterType || undefined,
-        startDate: filterStartDate || undefined,
-        endDate: filterEndDate || undefined,
-      });
-    }, 300);
-  }, [filterType, filterStartDate, filterEndDate, fetchAbsences]);
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchEmployee(value);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        fetchAbsences({
+          employeeSearch: value.length >= 2 ? value : undefined,
+          absenceType: filterType || undefined,
+          startDate: filterStartDate || undefined,
+          endDate: filterEndDate || undefined,
+        });
+      }, 300);
+    },
+    [filterType, filterStartDate, filterEndDate, fetchAbsences],
+  );
 
   async function handleCreateAbsence(data: CreateAbsenceInput): Promise<boolean> {
     const result = await createAbsence(data);
@@ -505,7 +542,10 @@ export default function EmployeeAbsencesPage() {
     return false;
   }
 
-  async function handleRegisterReturn(absenceId: string, data: RegisterReturnInput): Promise<boolean> {
+  async function handleRegisterReturn(
+    absenceId: string,
+    data: RegisterReturnInput,
+  ): Promise<boolean> {
     const ok = await registerReturn(absenceId, data);
     if (ok) {
       fetchAbsences();
@@ -518,9 +558,7 @@ export default function EmployeeAbsencesPage() {
   const hasWorkAccidentWithCat = absences.some(
     (a) => a.absenceType === 'WORK_ACCIDENT' && a.catNumber && !a.returnDate,
   );
-  const hasInssLeave = absences.some(
-    (a) => a.absenceType === 'INSS_LEAVE' && !a.returnDate,
-  );
+  const hasInssLeave = absences.some((a) => a.absenceType === 'INSS_LEAVE' && !a.returnDate);
 
   // Count active filters for badge
   const activeFilterCount = [filterType, filterStartDate, filterEndDate].filter(Boolean).length;
@@ -530,8 +568,13 @@ export default function EmployeeAbsencesPage() {
       {/* Breadcrumb */}
       <nav className="abs-page__breadcrumb" aria-label="Navegacao">
         <span className="abs-page__breadcrumb-item">RH</span>
-        <span className="abs-page__breadcrumb-sep" aria-hidden="true">/</span>
-        <span className="abs-page__breadcrumb-item abs-page__breadcrumb-item--current" aria-current="page">
+        <span className="abs-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
+        <span
+          className="abs-page__breadcrumb-item abs-page__breadcrumb-item--current"
+          aria-current="page"
+        >
           Afastamentos
         </span>
       </nav>
@@ -567,16 +610,15 @@ export default function EmployeeAbsencesPage() {
         <div className="abs-page__info-banner abs-page__info-banner--info" role="alert">
           <AlertTriangle size={16} aria-hidden="true" />
           <span>
-            CAT registrada — ha colaboradores com estabilidade provisoria ativa. Verifique as datas de vencimento.
+            CAT registrada — ha colaboradores com estabilidade provisoria ativa. Verifique as datas
+            de vencimento.
           </span>
         </div>
       )}
       {hasInssLeave && (
         <div className="abs-page__info-banner abs-page__info-banner--info" role="alert">
           <Info size={16} aria-hidden="true" />
-          <span>
-            A partir do 16o dia o INSS assume o pagamento. Notifique o colaborador.
-          </span>
+          <span>A partir do 16o dia o INSS assume o pagamento. Notifique o colaborador.</span>
         </div>
       )}
 
@@ -586,7 +628,10 @@ export default function EmployeeAbsencesPage() {
           <span className="abs-page__filter-section-label">
             Filtros
             {activeFilterCount > 0 && (
-              <span className="abs-page__filter-count" aria-label={`${activeFilterCount} filtros ativos`}>
+              <span
+                className="abs-page__filter-count"
+                aria-label={`${activeFilterCount} filtros ativos`}
+              >
                 {activeFilterCount}
               </span>
             )}
@@ -616,13 +661,19 @@ export default function EmployeeAbsencesPage() {
             onChange={(e) => setFilterType(e.target.value)}
           >
             <option value="">Todos os tipos</option>
-            {(Object.entries(ABSENCE_TYPE_LABELS) as [AbsenceType, string][]).map(([val, label]) => (
-              <option key={val} value={val}>{label}</option>
-            ))}
+            {(Object.entries(ABSENCE_TYPE_LABELS) as [AbsenceType, string][]).map(
+              ([val, label]) => (
+                <option key={val} value={val}>
+                  {label}
+                </option>
+              ),
+            )}
           </select>
         </div>
         <div className="abs-page__filter-group">
-          <label htmlFor="abs-filter-start" className="abs-page__filter-label">De</label>
+          <label htmlFor="abs-filter-start" className="abs-page__filter-label">
+            De
+          </label>
           <input
             id="abs-filter-start"
             type="date"
@@ -632,7 +683,9 @@ export default function EmployeeAbsencesPage() {
           />
         </div>
         <div className="abs-page__filter-group">
-          <label htmlFor="abs-filter-end" className="abs-page__filter-label">Ate</label>
+          <label htmlFor="abs-filter-end" className="abs-page__filter-label">
+            Ate
+          </label>
           <input
             id="abs-filter-end"
             type="date"
@@ -649,15 +702,33 @@ export default function EmployeeAbsencesPage() {
           <caption className="sr-only">Lista de afastamentos de colaboradores</caption>
           <thead>
             <tr>
-              <th scope="col" className="abs-page__th">COLABORADOR</th>
-              <th scope="col" className="abs-page__th">TIPO</th>
-              <th scope="col" className="abs-page__th">DATA INICIO</th>
-              <th scope="col" className="abs-page__th">DATA FIM</th>
-              <th scope="col" className="abs-page__th">DIAS</th>
-              <th scope="col" className="abs-page__th">CAT</th>
-              <th scope="col" className="abs-page__th">IMPACTO FOLHA</th>
-              <th scope="col" className="abs-page__th">STATUS RETORNO</th>
-              <th scope="col" className="abs-page__th">ACOES</th>
+              <th scope="col" className="abs-page__th">
+                COLABORADOR
+              </th>
+              <th scope="col" className="abs-page__th">
+                TIPO
+              </th>
+              <th scope="col" className="abs-page__th">
+                DATA INICIO
+              </th>
+              <th scope="col" className="abs-page__th">
+                DATA FIM
+              </th>
+              <th scope="col" className="abs-page__th">
+                DIAS
+              </th>
+              <th scope="col" className="abs-page__th">
+                CAT
+              </th>
+              <th scope="col" className="abs-page__th">
+                IMPACTO FOLHA
+              </th>
+              <th scope="col" className="abs-page__th">
+                STATUS RETORNO
+              </th>
+              <th scope="col" className="abs-page__th">
+                ACOES
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -669,7 +740,8 @@ export default function EmployeeAbsencesPage() {
                     <Stethoscope size={48} aria-hidden="true" className="abs-page__empty-icon" />
                     <p className="abs-page__empty-title">Nenhum afastamento registrado</p>
                     <p className="abs-page__empty-desc">
-                      Registre atestados, afastamentos por INSS ou acidentes de trabalho para que a folha seja ajustada automaticamente.
+                      Registre atestados, afastamentos por INSS ou acidentes de trabalho para que a
+                      folha seja ajustada automaticamente.
                     </p>
                     <button
                       type="button"
@@ -682,63 +754,64 @@ export default function EmployeeAbsencesPage() {
                 </td>
               </tr>
             )}
-            {!loading && absences.map((absence) => (
-              <tr key={absence.id} className="abs-page__row">
-                <td className="abs-page__td">{absence.employeeName}</td>
-                <td className="abs-page__td">{ABSENCE_TYPE_LABELS[absence.absenceType]}</td>
-                <td className="abs-page__td">{formatDate(absence.startDate)}</td>
-                <td className="abs-page__td">{formatDate(absence.endDate)}</td>
-                <td className="abs-page__td">{absence.totalDays ?? '—'}</td>
-                <td className="abs-page__td">{absence.catNumber ?? '—'}</td>
-                <td className="abs-page__td">
-                  <PayrollImpactBadge impact={absence.payrollImpact} />
-                </td>
-                <td className="abs-page__td">
-                  {absence.returnDate ? (
-                    <span>
-                      {formatDate(absence.returnDate)}
-                      {absence.asoRequired && (
-                        <span
-                          className="abs-page__aso-badge"
-                          aria-label="ASO obrigatorio para retorno"
-                        >
-                          ASO Obrigatorio
-                        </span>
-                      )}
-                    </span>
-                  ) : (
-                    <span
-                      className="abs-page__status-badge abs-page__status-badge--warning"
-                      aria-label="Status: Em andamento"
-                    >
-                      AFASTADO
-                    </span>
-                  )}
-                </td>
-                <td className="abs-page__td abs-page__td--actions">
-                  {!absence.returnDate && (
+            {!loading &&
+              absences.map((absence) => (
+                <tr key={absence.id} className="abs-page__row">
+                  <td className="abs-page__td">{absence.employeeName}</td>
+                  <td className="abs-page__td">{ABSENCE_TYPE_LABELS[absence.absenceType]}</td>
+                  <td className="abs-page__td">{formatDate(absence.startDate)}</td>
+                  <td className="abs-page__td">{formatDate(absence.endDate)}</td>
+                  <td className="abs-page__td">{absence.totalDays ?? '—'}</td>
+                  <td className="abs-page__td">{absence.catNumber ?? '—'}</td>
+                  <td className="abs-page__td">
+                    <PayrollImpactBadge impact={absence.payrollImpact} />
+                  </td>
+                  <td className="abs-page__td">
+                    {absence.returnDate ? (
+                      <span>
+                        {formatDate(absence.returnDate)}
+                        {absence.asoRequired && (
+                          <span
+                            className="abs-page__aso-badge"
+                            aria-label="ASO obrigatorio para retorno"
+                          >
+                            ASO Obrigatorio
+                          </span>
+                        )}
+                      </span>
+                    ) : (
+                      <span
+                        className="abs-page__status-badge abs-page__status-badge--warning"
+                        aria-label="Status: Em andamento"
+                      >
+                        AFASTADO
+                      </span>
+                    )}
+                  </td>
+                  <td className="abs-page__td abs-page__td--actions">
+                    {!absence.returnDate && (
+                      <button
+                        type="button"
+                        className="abs-page__action-btn"
+                        onClick={() => setReturnTarget(absence)}
+                        aria-label={`Registrar retorno de ${absence.employeeName}`}
+                        title="Registrar retorno"
+                      >
+                        Registrar Retorno
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="abs-page__action-btn"
-                      onClick={() => setReturnTarget(absence)}
-                      aria-label={`Registrar retorno de ${absence.employeeName}`}
-                      title="Registrar retorno"
+                      onClick={() => setShowModal(true)}
+                      aria-label={`Editar afastamento de ${absence.employeeName}`}
+                      title="Editar"
                     >
-                      Registrar Retorno
+                      Editar
                     </button>
-                  )}
-                  <button
-                    type="button"
-                    className="abs-page__action-btn"
-                    onClick={() => setShowModal(true)}
-                    aria-label={`Editar afastamento de ${absence.employeeName}`}
-                    title="Editar"
-                  >
-                    Editar
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>

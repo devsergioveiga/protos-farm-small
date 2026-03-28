@@ -16,14 +16,14 @@ created: 2026-03-28
 
 ## Design System
 
-| Property | Value |
-|----------|-------|
-| Tool | none — custom CSS with CSS custom properties |
-| Preset | not applicable |
-| Component library | none (hand-rolled components following TrialBalancePage pattern) |
-| Icon library | lucide-react |
-| Chart library | recharts 3.7.0 (already installed) |
-| Font | DM Sans (headings, 500/700), Source Sans 3 (body/UI, 400/600), JetBrains Mono (numbers/codes) |
+| Property          | Value                                                                                         |
+| ----------------- | --------------------------------------------------------------------------------------------- |
+| Tool              | none — custom CSS with CSS custom properties                                                  |
+| Preset            | not applicable                                                                                |
+| Component library | none (hand-rolled components following TrialBalancePage pattern)                              |
+| Icon library      | lucide-react                                                                                  |
+| Chart library     | recharts 3.7.0 (already installed)                                                            |
+| Font              | DM Sans (headings, 500/700), Source Sans 3 (body/UI, 400/600), JetBrains Mono (numbers/codes) |
 
 Source: `apps/frontend/src/styles/tokens.css`, `apps/frontend/CLAUDE.md`, RESEARCH.md Standard Stack.
 
@@ -33,17 +33,18 @@ Source: `apps/frontend/src/styles/tokens.css`, `apps/frontend/CLAUDE.md`, RESEAR
 
 Declared values (4px base scale, from `tokens.css`):
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| xs | 4px (`--space-1`) | Icon gaps, inline label padding, cell internal gaps |
-| sm | 8px (`--space-2`) | Compact element spacing, breadcrumb gaps |
-| md | 16px (`--space-4`) | Default element spacing, filter group gap, table cell padding-x |
-| lg | 24px (`--space-6`) | Page padding, section padding, card padding |
-| xl | 32px (`--space-8`) | Layout gaps between major page sections |
-| 2xl | 48px (`--space-12`) | Major section breaks (indicator cards row to table) |
-| 3xl | 64px (`--space-16`) | Page-level top padding (empty state vertical centering) |
+| Token | Value               | Usage                                                           |
+| ----- | ------------------- | --------------------------------------------------------------- |
+| xs    | 4px (`--space-1`)   | Icon gaps, inline label padding, cell internal gaps             |
+| sm    | 8px (`--space-2`)   | Compact element spacing, breadcrumb gaps                        |
+| md    | 16px (`--space-4`)  | Default element spacing, filter group gap, table cell padding-x |
+| lg    | 24px (`--space-6`)  | Page padding, section padding, card padding                     |
+| xl    | 32px (`--space-8`)  | Layout gaps between major page sections                         |
+| 2xl   | 48px (`--space-12`) | Major section breaks (indicator cards row to table)             |
+| 3xl   | 64px (`--space-16`) | Page-level top padding (empty state vertical centering)         |
 
 Exceptions:
+
 - Table cell padding-y: 12px (`--space-3`) — financial tables require denser rows
 - Input/select padding: 12px vertical, 16px horizontal — CLAUDE.md minimum for touch
 - Touch targets minimum: 48x48px — all filter dropdowns, toggle button, "Investigar" button
@@ -55,12 +56,12 @@ Source: `tokens.css` spacing scale + CLAUDE.md input padding rules.
 
 ## Typography
 
-| Role | Family | Size | Weight | Line Height | Usage |
-|------|--------|------|--------|-------------|-------|
-| Body | Source Sans 3 (`--font-body`) | 14px (`--text-sm`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) | Table cell text, filter labels, breadcrumb, descriptive copy |
-| Label | Source Sans 3 (`--font-body`) | 12px (`--text-xs`) | 600 (`--font-semibold`) | 1.3 (`--leading-snug`) | Column headers, section labels, card subtitles, ALL CAPS status badges |
-| Heading | DM Sans (`--font-display`) | 20px (`--text-lg`) | 700 (`--font-bold`) | 1.2 (`--leading-tight`) | Page `<h1>` (DRE, Balanço Patrimonial, Validação Cruzada) |
-| Data | JetBrains Mono (`--font-mono`) | 14px (`--text-sm`) | 400 (`--font-regular`) | 1.5 (`--leading-normal`) | All currency amounts (R$), account codes, percentages in V/H columns, delta values |
+| Role    | Family                         | Size               | Weight                  | Line Height              | Usage                                                                              |
+| ------- | ------------------------------ | ------------------ | ----------------------- | ------------------------ | ---------------------------------------------------------------------------------- |
+| Body    | Source Sans 3 (`--font-body`)  | 14px (`--text-sm`) | 400 (`--font-regular`)  | 1.5 (`--leading-normal`) | Table cell text, filter labels, breadcrumb, descriptive copy                       |
+| Label   | Source Sans 3 (`--font-body`)  | 12px (`--text-xs`) | 600 (`--font-semibold`) | 1.3 (`--leading-snug`)   | Column headers, section labels, card subtitles, ALL CAPS status badges             |
+| Heading | DM Sans (`--font-display`)     | 20px (`--text-lg`) | 700 (`--font-bold`)     | 1.2 (`--leading-tight`)  | Page `<h1>` (DRE, Balanço Patrimonial, Validação Cruzada)                          |
+| Data    | JetBrains Mono (`--font-mono`) | 14px (`--text-sm`) | 400 (`--font-regular`)  | 1.5 (`--leading-normal`) | All currency amounts (R$), account codes, percentages in V/H columns, delta values |
 
 Additional rule: section subtotals (Receita Líquida, Lucro Bruto, Resultado Líquido) use Source Sans 3 14px weight 600 — visually distinct from analytic rows without adding a new size.
 
@@ -70,20 +71,22 @@ Source: `tokens.css` type scale + existing TrialBalancePage.css pattern + CLAUDE
 
 ## Color
 
-| Role | Token | Hex | Usage |
-|------|-------|-----|-------|
-| Dominant (60%) | `--color-neutral-50` | #FAFAF8 | Page background, filter bar background |
-| Secondary (30%) | `--color-neutral-0` | #FFFFFF | Card surfaces, table background, modal background |
-| Accent (10%) | `--color-primary-600` | #2E7D32 | Primary CTA ("Exportar PDF", "Exportar XLSX"), page header icon, active tab underline |
-| Destructive | `--color-error-500` | #C62828 | Invariant FAILED card background tint (`--color-error-100`), failed card border, "Investigar" button variant |
+| Role            | Token                 | Hex     | Usage                                                                                                        |
+| --------------- | --------------------- | ------- | ------------------------------------------------------------------------------------------------------------ |
+| Dominant (60%)  | `--color-neutral-50`  | #FAFAF8 | Page background, filter bar background                                                                       |
+| Secondary (30%) | `--color-neutral-0`   | #FFFFFF | Card surfaces, table background, modal background                                                            |
+| Accent (10%)    | `--color-primary-600` | #2E7D32 | Primary CTA ("Exportar PDF", "Exportar XLSX"), page header icon, active tab underline                        |
+| Destructive     | `--color-error-500`   | #C62828 | Invariant FAILED card background tint (`--color-error-100`), failed card border, "Investigar" button variant |
 
 Accent reserved for:
+
 - "Exportar PDF" and "Exportar XLSX" primary buttons (1 per page max)
 - Page header icon (BarChart3 / Scale / GitMerge — 24px, `color: var(--color-primary-600)`)
 - Active tab indicator underline
 - Active sidebar link (CONTABILIDADE group, existing pattern)
 
 Additional semantic colors (not destructive, informational only):
+
 - Invariant PASSED: `--color-success-100` (#E8F5E9) background + `--color-success-500` (#2E7D32) icon — CheckCircle
 - Invariant FAILED: `--color-error-100` (#FFEBEE) background + `--color-error-500` (#C62828) icon — XCircle
 - Invariant PENDING (DFC placeholder): `--color-neutral-100` (#F5F3EF) background + `--color-neutral-400` (#A8A196) icon — Clock
@@ -105,6 +108,7 @@ Source: CLAUDE.md color rules + `tokens.css` + existing TrialBalancePage validat
 A `<table>` with hierarchical rows for the 10 DRE sections.
 
 **Structure:**
+
 - `<caption>`: "Demonstração do Resultado do Exercício — {Mês} {Ano}"
 - `<thead>`: columns defined below
 - `<tbody>`: rows with 3 visual levels
@@ -112,27 +116,29 @@ A `<table>` with hierarchical rows for the 10 DRE sections.
 
 **Columns (base — V/H toggle OFF):**
 
-| # | Header | Content | Alignment |
-|---|--------|---------|-----------|
-| 1 | Descrição | Section name / account name | Left |
-| 2 | Mês Atual | R$ amount, JetBrains Mono | Right |
-| 3 | Acumulado | R$ amount, JetBrains Mono | Right |
-| 4 | Mesmo Período Ano Ant. | R$ amount, JetBrains Mono | Right |
+| #   | Header                 | Content                     | Alignment |
+| --- | ---------------------- | --------------------------- | --------- |
+| 1   | Descrição              | Section name / account name | Left      |
+| 2   | Mês Atual              | R$ amount, JetBrains Mono   | Right     |
+| 3   | Acumulado              | R$ amount, JetBrains Mono   | Right     |
+| 4   | Mesmo Período Ano Ant. | R$ amount, JetBrains Mono   | Right     |
 
 **Extra columns when V/H toggle is ON (appended right):**
 
-| # | Header | Content | Alignment |
-|---|--------|---------|-----------|
-| 5 | % AV | Vertical analysis percentage | Right, `--color-neutral-600` |
-| 6 | Δ% AH | Horizontal delta percentage — green positive, red negative | Right |
+| #   | Header | Content                                                    | Alignment                    |
+| --- | ------ | ---------------------------------------------------------- | ---------------------------- |
+| 5   | % AV   | Vertical analysis percentage                               | Right, `--color-neutral-600` |
+| 6   | Δ% AH  | Horizontal delta percentage — green positive, red negative | Right                        |
 
 **Row visual hierarchy:**
+
 - Section header row (e.g., "Receita Operacional Bruta"): Source Sans 3 14px weight 600, `background: var(--color-neutral-50)`, left-padding 16px
 - Sub-account row (analytic accounts): Source Sans 3 14px weight 400, `background: var(--color-neutral-0)`, left-padding 32px (level-based, 16px per level)
 - Subtotal row (Receita Líquida, Lucro Bruto, etc.): Source Sans 3 14px weight 600, `background: var(--color-neutral-100)`, top border `1px solid var(--color-neutral-200)`
 - CPC 29 section row: same as section header but with `--color-sun-100` (#FFF9C4) background tint — signals special accounting treatment
 
 **States:**
+
 - Loading: skeleton with 12 rows (alternating 2 indent depths), pulse animation
 - Empty (no fiscal year selected): empty state — TrendingUp icon 48px + "Selecione o exercício fiscal e o período para gerar a DRE." + no CTA
 - Empty (period has no data): TrendingUp icon 48px + "Nenhum lançamento no período selecionado." + no CTA
@@ -146,6 +152,7 @@ Recharts horizontal `BarChart`. Only rendered when cost center filter = "Consoli
 **Data:** Top cost centers sorted by gross margin descending. Each bar = 1 cost center.
 
 **Bar configuration:**
+
 - X axis: percentage values (0–100%)
 - Y axis: cost center names, Source Sans 3 12px
 - Bar fill: `var(--color-primary-400)` (#66BB6A)
@@ -159,6 +166,7 @@ Recharts horizontal `BarChart`. Only rendered when cost center filter = "Consoli
 Six cards in a responsive grid on the Balance Sheet page. Each card shows one financial ratio.
 
 **Card anatomy:**
+
 - Label row: ALL CAPS label (e.g., "LIQUIDEZ CORRENTE"), Source Sans 3 12px 600, `--color-neutral-500`
 - Value row: ratio value, JetBrains Mono 24px 400, `--color-neutral-800` — large and readable
 - Sparkline row: recharts `LineChart` with `width={120} height={48}`, no axes, no tooltip. Line color `--color-primary-500`. Stroke width 2.
@@ -170,14 +178,14 @@ Six cards in a responsive grid on the Balance Sheet page. Each card shows one fi
 
 **The 6 indicators and their labels:**
 
-| Label | Formula | Unit |
-|-------|---------|------|
-| LIQUIDEZ CORRENTE | AC / PC | ratio (e.g., 1.85) |
-| LIQUIDEZ SECA | (AC − Estoques) / PC | ratio |
-| ENDIVIDAMENTO GERAL | PE / AT | % (e.g., 42%) |
-| COMPOSIÇÃO ENDIVIDAMENTO | PC / PE | % |
-| ROE | RL / PL | % |
-| PL POR HECTARE | PL / área total ha | R$/ha (e.g., R$ 1.240/ha) |
+| Label                    | Formula              | Unit                      |
+| ------------------------ | -------------------- | ------------------------- |
+| LIQUIDEZ CORRENTE        | AC / PC              | ratio (e.g., 1.85)        |
+| LIQUIDEZ SECA            | (AC − Estoques) / PC | ratio                     |
+| ENDIVIDAMENTO GERAL      | PE / AT              | % (e.g., 42%)             |
+| COMPOSIÇÃO ENDIVIDAMENTO | PC / PE              | %                         |
+| ROE                      | RL / PL              | %                         |
+| PL POR HECTARE           | PL / área total ha   | R$/ha (e.g., R$ 1.240/ha) |
 
 Source: CONTEXT.md D-09, REQUIREMENTS.md BP-02.
 
@@ -187,11 +195,11 @@ A `<table>` with rural classification (AC, ANC, PC, PNC, PL).
 
 **Columns:**
 
-| # | Header | Content |
-|---|--------|---------|
-| 1 | Descrição | Group / account name |
-| 2 | Saldo Atual | R$ amount, JetBrains Mono |
-| 3 | Saldo Anterior | R$ amount, JetBrains Mono |
+| #   | Header         | Content                   |
+| --- | -------------- | ------------------------- |
+| 1   | Descrição      | Group / account name      |
+| 2   | Saldo Atual    | R$ amount, JetBrains Mono |
+| 3   | Saldo Anterior | R$ amount, JetBrains Mono |
 
 **Row hierarchy:** Same visual pattern as DRE table — group header rows (`--color-neutral-50` bg, 14px 600), account rows (white bg, indented, 14px 400), subtotal rows (`--color-neutral-100` bg, 14px 600).
 
@@ -202,6 +210,7 @@ A `<table>` with rural classification (AC, ANC, PC, PNC, PL).
 Four cards in a 2×2 grid. Each card represents one cross-validation invariant.
 
 **Card anatomy (PASSED state):**
+
 - Status icon: CheckCircle 24px, `--color-success-500`
 - Title: invariant name, Source Sans 3 14px 600, `--color-neutral-800`
 - Detail row: "Esperado: {value} | Encontrado: {value}" — Source Sans 3 13px 400, `--color-neutral-600`, JetBrains Mono for values
@@ -209,6 +218,7 @@ Four cards in a 2×2 grid. Each card represents one cross-validation invariant.
 - Border: `1px solid var(--color-success-500)` at 30% opacity
 
 **Card anatomy (FAILED state):**
+
 - Status icon: XCircle 24px, `--color-error-500`
 - Title: invariant name, Source Sans 3 14px 600, `--color-neutral-800`
 - Difference row: "Diferença: R$ {X}" — JetBrains Mono 13px, `--color-error-500`, `font-weight: 600`
@@ -217,6 +227,7 @@ Four cards in a 2×2 grid. Each card represents one cross-validation invariant.
 - Border: `1px solid var(--color-error-500)` at 30% opacity
 
 **Card anatomy (PENDING — DFC placeholder):**
+
 - Status icon: Clock 24px, `--color-neutral-400`
 - Title: "Variação Caixa DFC ↔ BP", Source Sans 3 14px 400 (dimmed), `--color-neutral-500`
 - Body text: "Aguardando DFC (Phase 40)" — italic, Source Sans 3 13px, `--color-neutral-400`
@@ -296,72 +307,72 @@ Source: CLAUDE.md UX voice rules (pt-BR coloquial), CONTEXT.md decisions.
 
 ### Primary CTAs
 
-| Page | CTA Label | Icon |
-|------|-----------|------|
-| DRE | "Exportar PDF" | Download 16px |
-| DRE | "Exportar XLSX" | Download 16px |
-| Balance Sheet | "Exportar PDF" | Download 16px |
-| Balance Sheet | "Exportar XLSX" | Download 16px |
-| Cross Validation | none | — |
+| Page             | CTA Label       | Icon          |
+| ---------------- | --------------- | ------------- |
+| DRE              | "Exportar PDF"  | Download 16px |
+| DRE              | "Exportar XLSX" | Download 16px |
+| Balance Sheet    | "Exportar PDF"  | Download 16px |
+| Balance Sheet    | "Exportar XLSX" | Download 16px |
+| Cross Validation | none            | —             |
 
 Note: Export buttons are secondary style (outline), not primary — no single action dominates these read-only report pages. The primary accent color is used on the active sidebar link only.
 
 ### Filter Labels
 
-| Filter | Label |
-|--------|-------|
-| Fiscal year dropdown | "Exercício Fiscal" |
-| Month dropdown | "Mês" |
-| Cost center dropdown | "Centro de Custo" |
+| Filter                     | Label                             |
+| -------------------------- | --------------------------------- |
+| Fiscal year dropdown       | "Exercício Fiscal"                |
+| Month dropdown             | "Mês"                             |
+| Cost center dropdown       | "Centro de Custo"                 |
 | Default cost center option | "Consolidado (todas as fazendas)" |
-| V/H toggle label | "Análise V/H" |
+| V/H toggle label           | "Análise V/H"                     |
 
 ### Empty States
 
-| Context | Icon | Heading | Body | CTA |
-|---------|------|---------|------|-----|
-| DRE — no period selected | TrendingUp 48px | "Selecione o período" | "Escolha o exercício fiscal e o mês para gerar a DRE." | none |
-| DRE — period with no data | TrendingUp 48px | "Nenhum lançamento" | "Não há lançamentos contabilizados no período selecionado." | none |
-| BP — no period selected | Scale 48px | "Selecione o período" | "Escolha o exercício fiscal e o mês para gerar o balanço." | none |
-| Cross-validation — no period | GitMerge 48px | "Selecione o período" | "Escolha o exercício fiscal e o mês para executar as validações." | none |
+| Context                      | Icon            | Heading               | Body                                                              | CTA  |
+| ---------------------------- | --------------- | --------------------- | ----------------------------------------------------------------- | ---- |
+| DRE — no period selected     | TrendingUp 48px | "Selecione o período" | "Escolha o exercício fiscal e o mês para gerar a DRE."            | none |
+| DRE — period with no data    | TrendingUp 48px | "Nenhum lançamento"   | "Não há lançamentos contabilizados no período selecionado."       | none |
+| BP — no period selected      | Scale 48px      | "Selecione o período" | "Escolha o exercício fiscal e o mês para gerar o balanço."        | none |
+| Cross-validation — no period | GitMerge 48px   | "Selecione o período" | "Escolha o exercício fiscal e o mês para executar as validações." | none |
 
 ### Error States (toast, top-right, persistent until dismissed)
 
-| Trigger | Copy |
-|---------|------|
-| DRE fetch failure | "Não foi possível carregar a DRE. Verifique sua conexão e tente novamente." |
-| BP fetch failure | "Não foi possível carregar o Balanço Patrimonial. Tente novamente." |
-| Cross-validation fetch failure | "Não foi possível carregar as validações. Tente novamente." |
-| PDF export failure | "Não foi possível exportar o PDF. Tente novamente." |
-| XLSX export failure | "Não foi possível exportar o XLSX. Tente novamente." |
+| Trigger                        | Copy                                                                        |
+| ------------------------------ | --------------------------------------------------------------------------- |
+| DRE fetch failure              | "Não foi possível carregar a DRE. Verifique sua conexão e tente novamente." |
+| BP fetch failure               | "Não foi possível carregar o Balanço Patrimonial. Tente novamente."         |
+| Cross-validation fetch failure | "Não foi possível carregar as validações. Tente novamente."                 |
+| PDF export failure             | "Não foi possível exportar o PDF. Tente novamente."                         |
+| XLSX export failure            | "Não foi possível exportar o XLSX. Tente novamente."                        |
 
 ### Invariant Card Titles (Cross-Validation)
 
-| Invariant | Card Title |
-|-----------|-----------|
-| 1 | "Resultado Líquido DRE = Variação Lucros Acumulados BP" |
-| 2 | "Variação Caixa DFC = Variação Caixa/Bancos BP" |
-| 3 | "Ativo Total = Passivo Total + Patrimônio Líquido" |
-| 4 | "Total Débitos = Total Créditos (Balancete)" |
+| Invariant | Card Title                                              |
+| --------- | ------------------------------------------------------- |
+| 1         | "Resultado Líquido DRE = Variação Lucros Acumulados BP" |
+| 2         | "Variação Caixa DFC = Variação Caixa/Bancos BP"         |
+| 3         | "Ativo Total = Passivo Total + Patrimônio Líquido"      |
+| 4         | "Total Débitos = Total Créditos (Balancete)"            |
 
 ### Indicator Card Tooltips (title attribute)
 
-| Card | Tooltip |
-|------|---------|
-| LIQUIDEZ CORRENTE | "Ativo Circulante ÷ Passivo Circulante" |
-| LIQUIDEZ SECA | "(Ativo Circulante − Estoques) ÷ Passivo Circulante" |
-| ENDIVIDAMENTO GERAL | "Passivo Exigível ÷ Ativo Total" |
-| COMPOSIÇÃO ENDIVIDAMENTO | "Passivo Circulante ÷ Passivo Exigível" |
-| ROE | "Resultado Líquido ÷ Patrimônio Líquido" |
-| PL POR HECTARE | "Patrimônio Líquido ÷ Área Total (ha) de todas as fazendas" |
+| Card                     | Tooltip                                                     |
+| ------------------------ | ----------------------------------------------------------- |
+| LIQUIDEZ CORRENTE        | "Ativo Circulante ÷ Passivo Circulante"                     |
+| LIQUIDEZ SECA            | "(Ativo Circulante − Estoques) ÷ Passivo Circulante"        |
+| ENDIVIDAMENTO GERAL      | "Passivo Exigível ÷ Ativo Total"                            |
+| COMPOSIÇÃO ENDIVIDAMENTO | "Passivo Circulante ÷ Passivo Exigível"                     |
+| ROE                      | "Resultado Líquido ÷ Patrimônio Líquido"                    |
+| PL POR HECTARE           | "Patrimônio Líquido ÷ Área Total (ha) de todas as fazendas" |
 
 ### Navigation Labels (Sidebar CONTABILIDADE group additions)
 
-| Route | Sidebar Label |
-|-------|--------------|
-| /dre | "DRE" |
-| /balance-sheet | "Balanço Patrimonial" |
-| /cross-validation | "Validação Cruzada" |
+| Route             | Sidebar Label         |
+| ----------------- | --------------------- |
+| /dre              | "DRE"                 |
+| /balance-sheet    | "Balanço Patrimonial" |
+| /cross-validation | "Validação Cruzada"   |
 
 ### Destructive Actions
 
@@ -414,13 +425,13 @@ None in Phase 39 — all pages are read-only reports. No create/edit/delete flow
 
 ### Loading States (skeleton screens, never spinner)
 
-| Page section | Skeleton description |
-|-------------|---------------------|
-| DRE table | 12 skeleton rows, alternating indent levels, pulse animation |
-| BP indicator cards | 6 skeleton cards (same grid), gray rectangle 80px tall each |
-| BP balance sheet table | 10 skeleton rows |
-| Cross-validation cards | 4 skeleton cards in 2×2 grid, gray rectangles |
-| Margin ranking chart | Single gray rectangle 240px tall |
+| Page section           | Skeleton description                                         |
+| ---------------------- | ------------------------------------------------------------ |
+| DRE table              | 12 skeleton rows, alternating indent levels, pulse animation |
+| BP indicator cards     | 6 skeleton cards (same grid), gray rectangle 80px tall each  |
+| BP balance sheet table | 10 skeleton rows                                             |
+| Cross-validation cards | 4 skeleton cards in 2×2 grid, gray rectangles                |
+| Margin ranking chart   | Single gray rectangle 240px tall                             |
 
 ---
 
@@ -442,23 +453,23 @@ None in Phase 39 — all pages are read-only reports. No create/edit/delete flow
 
 ## Animation Contract
 
-| Interaction | Duration | Easing | Property |
-|-------------|----------|--------|----------|
-| V/H columns appear | 200ms | `--ease-out` | `opacity 0→1` |
-| Table row hover | 100ms | `--ease-out` | `background-color` |
-| Invariant card hover | 100ms | `--ease-out` | `box-shadow` (`--shadow-md`) |
-| Indicator card hover | 100ms | `--ease-out` | `transform: translateY(-2px)`, `box-shadow: --shadow-lg` |
-| Filter change → skeleton | 0ms | instant | display swap |
-| Skeleton pulse | 1500ms | `ease-in-out`, infinite | `opacity 0.4 → 0.7` |
+| Interaction              | Duration | Easing                  | Property                                                 |
+| ------------------------ | -------- | ----------------------- | -------------------------------------------------------- |
+| V/H columns appear       | 200ms    | `--ease-out`            | `opacity 0→1`                                            |
+| Table row hover          | 100ms    | `--ease-out`            | `background-color`                                       |
+| Invariant card hover     | 100ms    | `--ease-out`            | `box-shadow` (`--shadow-md`)                             |
+| Indicator card hover     | 100ms    | `--ease-out`            | `transform: translateY(-2px)`, `box-shadow: --shadow-lg` |
+| Filter change → skeleton | 0ms      | instant                 | display swap                                             |
+| Skeleton pulse           | 1500ms   | `ease-in-out`, infinite | `opacity 0.4 → 0.7`                                      |
 
 ---
 
 ## Registry Safety
 
-| Registry | Blocks Used | Safety Gate |
-|----------|-------------|-------------|
+| Registry        | Blocks Used            | Safety Gate    |
+| --------------- | ---------------------- | -------------- |
 | shadcn official | none — not initialized | not applicable |
-| third-party | none | not applicable |
+| third-party     | none                   | not applicable |
 
 No third-party component registries. All components are hand-rolled following TrialBalancePage pattern. Recharts is already installed and vetted as a project dependency.
 

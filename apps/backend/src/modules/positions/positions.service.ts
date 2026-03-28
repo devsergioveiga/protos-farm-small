@@ -122,10 +122,7 @@ export async function listPositions(
   });
 }
 
-export async function getPosition(
-  ctx: RlsContext,
-  id: string,
-): Promise<PositionDetailOutput> {
+export async function getPosition(ctx: RlsContext, id: string): Promise<PositionDetailOutput> {
   return withRlsContext(ctx, async (tx: TxClient) => {
     const position = await tx.position.findFirst({
       where: { id, organizationId: ctx.organizationId },

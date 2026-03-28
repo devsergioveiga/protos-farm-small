@@ -35,11 +35,11 @@ key-files:
     - apps/frontend/src/App.tsx
 
 key-decisions:
-  - "fairValueChange auto-calculated via decimal.js: findFirst previous valuation by org+assetGroup ordered by date desc"
-  - "Routes registered under /org/:orgId/biological-assets with assets:read/create/delete permissions"
+  - 'fairValueChange auto-calculated via decimal.js: findFirst previous valuation by org+assetGroup ordered by date desc'
+  - 'Routes registered under /org/:orgId/biological-assets with assets:read/create/delete permissions'
 
 patterns-established:
-  - "Previous value lookup pattern: findFirst with org+group filter, ordered by date desc"
+  - 'Previous value lookup pattern: findFirst with org+group filter, ordered by date desc'
 
 requirements-completed: [DEPR-03]
 
@@ -59,6 +59,7 @@ completed: 2026-03-23
 - **Files modified:** 4
 
 ## Accomplishments
+
 - BiologicalAssetValuation Prisma model with migration
 - Service auto-calculates fairValueChange against previous period's valuation per assetGroup
 - 14 backend tests passing (CRUD, fairValueChange calc, RBAC guard)
@@ -71,19 +72,24 @@ completed: 2026-03-23
 2. **Task 2: Frontend** - `04209f6c` (feat: biological-assets frontend)
 
 ## Decisions Made
+
 - fairValueChange = totalFairValue - previousValue, using decimal.js for precision
 - Previous value lookup: findFirst by organizationId + assetGroup, ordered by valuationDate desc
 - First valuation for a group has fairValueChange = null
 
 ## Deviations from Plan
+
 None - plan executed as specified.
 
 ## Issues Encountered
+
 - Schema conflict during cherry-pick (parallel execution) — resolved by merging both sides
 
 ## Next Phase Readiness
+
 - Biological asset valuations ready for patrimony dashboard integration
 
 ---
-*Phase: 24-ativos-biol-gicos-leasing-e-features-avan-adas*
-*Completed: 2026-03-23*
+
+_Phase: 24-ativos-biol-gicos-leasing-e-features-avan-adas_
+_Completed: 2026-03-23_

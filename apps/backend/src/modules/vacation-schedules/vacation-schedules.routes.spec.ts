@@ -44,7 +44,6 @@ import {
   listAcquisitivePeriods,
   listSchedules,
   getScheduleById,
-
 } from './vacation-schedules.service';
 import { VacationError } from './vacation-schedules.types';
 import { withRlsContext } from '../../database/rls';

@@ -79,11 +79,7 @@ const ASSET_INCLUDE_FULL = {
 
 // ─── Hierarchy helpers ────────────────────────────────────────────────
 
-async function getDescendantIds(
-  tx: TxClient,
-  assetId: string,
-  orgId: string,
-): Promise<string[]> {
+async function getDescendantIds(tx: TxClient, assetId: string, orgId: string): Promise<string[]> {
   const children = await tx.asset.findMany({
     where: { parentAssetId: assetId, organizationId: orgId, deletedAt: null },
     select: { id: true },

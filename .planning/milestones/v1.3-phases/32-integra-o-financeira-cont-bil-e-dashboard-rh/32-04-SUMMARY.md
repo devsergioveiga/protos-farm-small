@@ -1,6 +1,6 @@
 ---
 phase: 32-integra-o-financeira-cont-bil-e-dashboard-rh
-plan: "04"
+plan: '04'
 subsystem: payroll-frontend-accounting-frontend
 tags: [payroll, accounting-entries, cp-review, frontend, integr-01, integr-02]
 dependency_graph:
@@ -31,13 +31,13 @@ key_files:
     - apps/frontend/src/App.tsx
     - apps/frontend/src/components/layout/Sidebar.tsx
 decisions:
-  - "ConfirmDeleteModal replaced by ConfirmModal variant=danger in PayrollRunDetailModal — estorno is medium criticality (reversible), no name typing required per UI-SPEC"
-  - "Sidebar gets new CONTABILIDADE group (not added to RH group) — accounting is a separate concern from HR operations"
-  - "PayrollCpReviewModal uses details/summary for section collapse — keyboard-native, no custom aria-expanded needed"
-  - "AccountingEntriesPage mobile card list hidden above 768px via CSS; desktop table hidden below 768px — clean separation, no JS needed"
+  - 'ConfirmDeleteModal replaced by ConfirmModal variant=danger in PayrollRunDetailModal — estorno is medium criticality (reversible), no name typing required per UI-SPEC'
+  - 'Sidebar gets new CONTABILIDADE group (not added to RH group) — accounting is a separate concern from HR operations'
+  - 'PayrollCpReviewModal uses details/summary for section collapse — keyboard-native, no custom aria-expanded needed'
+  - 'AccountingEntriesPage mobile card list hidden above 768px via CSS; desktop table hidden below 768px — clean separation, no JS needed'
 metrics:
-  duration: "~20 minutes"
-  completed: "2026-03-26T20:24:25Z"
+  duration: '~20 minutes'
+  completed: '2026-03-26T20:24:25Z'
   tasks_completed: 2
   files_modified: 12
 ---
@@ -48,10 +48,10 @@ Frontend delivery for INTEGR-01 (CP review before payroll close) and INTEGR-02 (
 
 ## Tasks Completed
 
-| # | Task | Commit | Files |
-|---|------|--------|-------|
-| 1 | Types + useCpPreview hook + PayrollCpReviewModal + wire PayrollRunsPage + estorno ConfirmModal | 29264f41 | payroll-integration.ts, useCpPreview.ts, PayrollCpReviewModal.tsx/.css, PayrollRunsPage.tsx, PayrollRunDetailModal.tsx |
-| 2 | AccountingEntriesPage + useAccountingEntries + types + route + sidebar | c34e8888 | accounting-entries.ts, useAccountingEntries.ts, AccountingEntriesPage.tsx/.css, App.tsx, Sidebar.tsx |
+| #   | Task                                                                                           | Commit   | Files                                                                                                                  |
+| --- | ---------------------------------------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| 1   | Types + useCpPreview hook + PayrollCpReviewModal + wire PayrollRunsPage + estorno ConfirmModal | 29264f41 | payroll-integration.ts, useCpPreview.ts, PayrollCpReviewModal.tsx/.css, PayrollRunsPage.tsx, PayrollRunDetailModal.tsx |
+| 2   | AccountingEntriesPage + useAccountingEntries + types + route + sidebar                         | c34e8888 | accounting-entries.ts, useAccountingEntries.ts, AccountingEntriesPage.tsx/.css, App.tsx, Sidebar.tsx                   |
 
 ## What Was Built
 

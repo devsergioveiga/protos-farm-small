@@ -34,12 +34,12 @@ key-files:
     - apps/backend/src/modules/maintenance-plans/maintenance-plans.routes.spec.ts
 
 key-decisions:
-  - "computeNextDue is exported from service so work-orders can reuse it on OS close without duplication"
-  - "processOverduePlans notifies all ADMIN/MANAGER users in the org when plan is overdue"
+  - 'computeNextDue is exported from service so work-orders can reuse it on OS close without duplication'
+  - 'processOverduePlans notifies all ADMIN/MANAGER users in the org when plan is overdue'
 
 patterns-established:
-  - "Maintenance plan routes use /org/:orgId path prefix matching assets.routes.ts convention"
-  - "RLS context uses organizationId from req.user injected by authenticate middleware"
+  - 'Maintenance plan routes use /org/:orgId path prefix matching assets.routes.ts convention'
+  - 'RLS context uses organizationId from req.user injected by authenticate middleware'
 
 requirements-completed:
   - MANU-01
@@ -104,8 +104,9 @@ None - no external service configuration required.
 - `processOverduePlans` ready to be wired into app startup cron registration
 
 ---
-*Phase: 18-manutencao-ordens-servico*
-*Completed: 2026-03-21*
+
+_Phase: 18-manutencao-ordens-servico_
+_Completed: 2026-03-21_
 
 ## Self-Check: PASSED
 

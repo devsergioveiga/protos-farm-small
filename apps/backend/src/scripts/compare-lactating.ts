@@ -99,13 +99,20 @@ async function main() {
     console.log();
 
     const matchCount =
-      csvNames.size - inCsvButDryInProtos.length - inCsvNotInProtos.length - inCsvOtherCategory.length;
+      csvNames.size -
+      inCsvButDryInProtos.length -
+      inCsvNotInProtos.length -
+      inCsvOtherCategory.length;
     console.log(`Coincidentes (ambos lactação): ${matchCount}`);
     console.log();
 
     if (inCsvButDryInProtos.length > 0) {
-      console.log(`\n--- LACTAÇÃO no CSV, mas VACA_SECA no Protos (${inCsvButDryInProtos.length}) ---`);
-      console.log(`(Essas vacas estão como secas no Protos mas o sistema atual diz que estão em lactação)\n`);
+      console.log(
+        `\n--- LACTAÇÃO no CSV, mas VACA_SECA no Protos (${inCsvButDryInProtos.length}) ---`,
+      );
+      console.log(
+        `(Essas vacas estão como secas no Protos mas o sistema atual diz que estão em lactação)\n`,
+      );
       inCsvButDryInProtos.sort().forEach((n) => console.log(`  ${n}`));
     }
 

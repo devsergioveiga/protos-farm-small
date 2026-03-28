@@ -20,11 +20,11 @@ key_files:
     - apps/frontend/src/pages/TrainingRecordsPage.tsx
     - apps/frontend/src/pages/MedicalExamsPage.tsx
 decisions:
-  - "employeeOptions useMemo mapping uses farms[0].position for flat shape — matches existing TrainingRecordModal and MedicalExamModal prop contracts"
-  - "listEmployees position select extended with asoPeriodicityMonths only — getEmployee detail method left unchanged (uses include, already returns all fields)"
+  - 'employeeOptions useMemo mapping uses farms[0].position for flat shape — matches existing TrainingRecordModal and MedicalExamModal prop contracts'
+  - 'listEmployees position select extended with asoPeriodicityMonths only — getEmployee detail method left unchanged (uses include, already returns all fields)'
 metrics:
   duration: 254s
-  completed: "2026-03-26"
+  completed: '2026-03-26'
   tasks: 4
   files_modified: 6
 ---
@@ -39,16 +39,17 @@ Closes SEGUR-02 and SEGUR-03 gaps from the v1.3 audit. Both NR-31 training and A
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 0 | Create Wave 0 test stubs | baba516f | TrainingRecordsPage.spec.tsx, MedicalExamsPage.spec.tsx |
-| 1 | Add asoPeriodicityMonths to backend + frontend type | d164aa8d | employees.service.ts, employee.ts |
-| 2 | Wire real employees into TrainingRecordsPage (SEGUR-02) | fbffb121 | TrainingRecordsPage.tsx |
-| 3 | Wire real employees into MedicalExamsPage (SEGUR-03) | 81c000cb | MedicalExamsPage.tsx |
+| Task | Name                                                    | Commit   | Files                                                   |
+| ---- | ------------------------------------------------------- | -------- | ------------------------------------------------------- |
+| 0    | Create Wave 0 test stubs                                | baba516f | TrainingRecordsPage.spec.tsx, MedicalExamsPage.spec.tsx |
+| 1    | Add asoPeriodicityMonths to backend + frontend type     | d164aa8d | employees.service.ts, employee.ts                       |
+| 2    | Wire real employees into TrainingRecordsPage (SEGUR-02) | fbffb121 | TrainingRecordsPage.tsx                                 |
+| 3    | Wire real employees into MedicalExamsPage (SEGUR-03)    | 81c000cb | MedicalExamsPage.tsx                                    |
 
 ## Verification Results
 
 All 4 spec tests pass GREEN:
+
 - `TrainingRecordsPage — SEGUR-02 employee wiring > calls useEmployees with status ATIVO`
 - `TrainingRecordsPage — SEGUR-02 employee wiring > does not contain MOCK_EMPLOYEES stub`
 - `MedicalExamsPage — SEGUR-03 employee wiring > calls useEmployees with status ATIVO`

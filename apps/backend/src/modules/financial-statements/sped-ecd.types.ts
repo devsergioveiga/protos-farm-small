@@ -4,32 +4,32 @@
 
 export interface SpedOrgData {
   name: string;
-  cnpj: string;            // digits only, 14 chars
-  uf: string;              // state code or blank
-  ie: string;              // state registration or blank
-  codMun: string;          // IBGE code or blank
-  im: string;              // municipal registration or blank
+  cnpj: string; // digits only, 14 chars
+  uf: string; // state code or blank
+  ie: string; // state registration or blank
+  codMun: string; // IBGE code or blank
+  im: string; // municipal registration or blank
   accountantName: string | null;
   accountantCrc: string | null;
   accountantCpf: string | null;
 }
 
 export interface SpedAccountData {
-  code: string;            // COA code
+  code: string; // COA code
   name: string;
   accountType: 'ATIVO' | 'PASSIVO' | 'PL' | 'RECEITA' | 'DESPESA';
   accountNature: 'DEVEDORA' | 'CREDORA';
   isSynthetic: boolean;
   level: number;
-  parentCode: string | null;    // parent COA code
-  spedRefCode: string | null;   // L300R referential code
+  parentCode: string | null; // parent COA code
+  spedRefCode: string | null; // L300R referential code
 }
 
 export interface SpedMonthlyBalance {
   accountCode: string;
-  month: number;           // 1-12
+  month: number; // 1-12
   year: number;
-  openingBalance: string;  // Decimal as string
+  openingBalance: string; // Decimal as string
   totalDebits: string;
   totalCredits: string;
   closingBalance: string;
@@ -37,7 +37,7 @@ export interface SpedMonthlyBalance {
 
 export interface SpedJournalLine {
   accountCode: string;
-  amount: string;          // Decimal as string
+  amount: string; // Decimal as string
   isDebit: boolean;
   description: string;
 }
@@ -45,7 +45,7 @@ export interface SpedJournalLine {
 export interface SpedJournalEntry {
   entryNumber: number;
   entryDate: Date;
-  totalDebit: string;      // Decimal as string
+  totalDebit: string; // Decimal as string
   lines: SpedJournalLine[];
 }
 
@@ -68,7 +68,7 @@ export interface SpedBpRow {
   openingIsDebit: boolean;
   closingAmount: string;
   closingIsDebit: boolean;
-  groupIndicator: 'A' | 'P';  // Ativo or Passivo+PL
+  groupIndicator: 'A' | 'P'; // Ativo or Passivo+PL
 }
 
 export interface SpedDlpaRow {

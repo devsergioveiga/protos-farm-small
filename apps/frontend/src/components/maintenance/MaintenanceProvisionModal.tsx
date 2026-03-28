@@ -171,7 +171,9 @@ export default function MaintenanceProvisionModal({
             <div className="provision-modal__field">
               <label htmlFor="provision-amount" className="provision-modal__label">
                 Valor mensal (R$){' '}
-                <span className="provision-modal__required" aria-hidden="true">*</span>
+                <span className="provision-modal__required" aria-hidden="true">
+                  *
+                </span>
               </label>
               <input
                 id="provision-amount"
@@ -203,7 +205,9 @@ export default function MaintenanceProvisionModal({
 
             {/* Descricao */}
             <div className="provision-modal__field">
-              <label htmlFor="provision-desc" className="provision-modal__label">Descricao</label>
+              <label htmlFor="provision-desc" className="provision-modal__label">
+                Descricao
+              </label>
               <textarea
                 id="provision-desc"
                 className="provision-modal__textarea"
@@ -248,11 +252,7 @@ export default function MaintenanceProvisionModal({
             >
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="provision-modal__btn-submit"
-              disabled={isSubmitting}
-            >
+            <button type="submit" className="provision-modal__btn-submit" disabled={isSubmitting}>
               {isSubmitting ? 'Salvando...' : 'Salvar'}
             </button>
           </footer>

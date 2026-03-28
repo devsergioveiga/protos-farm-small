@@ -31,14 +31,14 @@ key-files:
     - apps/frontend/src/components/cost-centers/CostCenterWizardModal.spec.tsx
 
 key-decisions:
-  - "useFarmContext (not useFarm) — correct export from FarmContext.tsx; useFarm does not exist"
-  - "fetch directly in component (not api service) — simpler for wizard submission with token from localStorage"
-  - "CC_TEMPLATES defined as constant inside component file per plan spec (not separate file)"
+  - 'useFarmContext (not useFarm) — correct export from FarmContext.tsx; useFarm does not exist'
+  - 'fetch directly in component (not api service) — simpler for wizard submission with token from localStorage'
+  - 'CC_TEMPLATES defined as constant inside component file per plan spec (not separate file)'
 
 patterns-established:
-  - "Radio card pattern: label wrapping hidden input, border 2px solid neutral-200 default, primary-600 when selected"
-  - "Wizard stepper dots: neutral-300 inactive, primary-600 active, primary-600 + checkmark completed"
-  - "Error banner with role=alert for API errors; field-level errors with role=alert for validation"
+  - 'Radio card pattern: label wrapping hidden input, border 2px solid neutral-200 default, primary-600 when selected'
+  - 'Wizard stepper dots: neutral-300 inactive, primary-600 active, primary-600 + checkmark completed'
+  - 'Error banner with role=alert for API errors; field-level errors with role=alert for validation'
 
 requirements-completed: [CCPA-04]
 
@@ -102,5 +102,6 @@ None - no external service configuration required.
 - No blockers for Phase 23-03
 
 ---
-*Phase: 23-relatorios-dashboard-patrimonial*
-*Completed: 2026-03-23*
+
+_Phase: 23-relatorios-dashboard-patrimonial_
+_Completed: 2026-03-23_

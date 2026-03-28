@@ -71,7 +71,9 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 200ms ease-out, color 200ms ease-out;
+  transition:
+    background 200ms ease-out,
+    color 200ms ease-out;
 }
 
 .asset-reports__btn-wizard:hover {
@@ -108,7 +110,9 @@
   color: var(--color-neutral-600);
   cursor: pointer;
   white-space: nowrap;
-  transition: color 100ms ease-out, border-bottom-color 100ms ease-out;
+  transition:
+    color 100ms ease-out,
+    border-bottom-color 100ms ease-out;
 }
 
 .asset-reports__tab:hover {
@@ -287,8 +291,13 @@
 
 /* Skeleton animations */
 @keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -348,7 +357,9 @@
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 14px;
   color: var(--color-neutral-700);
-  transition: background 100ms ease-out, color 100ms ease-out;
+  transition:
+    background 100ms ease-out,
+    color 100ms ease-out;
 }
 
 .asset-reports__horizon-btn + .asset-reports__horizon-btn {

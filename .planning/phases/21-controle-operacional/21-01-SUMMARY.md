@@ -1,42 +1,42 @@
 ---
 phase: 21-controle-operacional
-plan: "01"
+plan: '01'
 subsystem: assets
 tags: [operational-cost, tco, asset-documents, alerts, backend, frontend]
 dependency_graph:
   requires: []
   provides:
-    - "GET /org/:orgId/assets/:assetId/operational-cost endpoint"
-    - "AssetDocumentAlertsView component on AssetsPage"
-    - "useAssetDocumentAlerts hook"
+    - 'GET /org/:orgId/assets/:assetId/operational-cost endpoint'
+    - 'AssetDocumentAlertsView component on AssetsPage'
+    - 'useAssetDocumentAlerts hook'
   affects:
-    - "apps/backend/src/app.ts"
-    - "apps/frontend/src/pages/AssetsPage.tsx"
+    - 'apps/backend/src/app.ts'
+    - 'apps/frontend/src/pages/AssetsPage.tsx'
 tech_stack:
   added: []
   patterns:
-    - "Decimal.js for all monetary/numeric aggregation (no native JS arithmetic)"
-    - "4-bucket document alert pattern (expired/urgent/warning/upcoming)"
-    - "button card with aria-expanded for collapsible item list"
+    - 'Decimal.js for all monetary/numeric aggregation (no native JS arithmetic)'
+    - '4-bucket document alert pattern (expired/urgent/warning/upcoming)'
+    - 'button card with aria-expanded for collapsible item list'
 key_files:
   created:
-    - "apps/backend/src/modules/assets/asset-operational-cost.service.ts"
-    - "apps/backend/src/modules/assets/asset-operational-cost.routes.ts"
-    - "apps/backend/src/modules/assets/asset-operational-cost.routes.spec.ts"
-    - "apps/frontend/src/hooks/useAssetDocumentAlerts.ts"
-    - "apps/frontend/src/components/assets/AssetDocumentAlertsView.tsx"
-    - "apps/frontend/src/components/assets/AssetDocumentAlertsView.css"
+    - 'apps/backend/src/modules/assets/asset-operational-cost.service.ts'
+    - 'apps/backend/src/modules/assets/asset-operational-cost.routes.ts'
+    - 'apps/backend/src/modules/assets/asset-operational-cost.routes.spec.ts'
+    - 'apps/frontend/src/hooks/useAssetDocumentAlerts.ts'
+    - 'apps/frontend/src/components/assets/AssetDocumentAlertsView.tsx'
+    - 'apps/frontend/src/components/assets/AssetDocumentAlertsView.css'
   modified:
-    - "apps/backend/src/app.ts"
-    - "apps/frontend/src/pages/AssetsPage.tsx"
+    - 'apps/backend/src/app.ts'
+    - 'apps/frontend/src/pages/AssetsPage.tsx'
 decisions:
-  - "insuranceCost always null — insurance field not modeled in schema, surfaced in notes array"
-  - "Depreciation aggregation is cumulative (not period-filtered) — correct for TCO/book value"
-  - "OnAssetClick opens AssetDrawer on documentos tab for direct navigation to expiring doc"
-  - "AlertsView returns null (not empty state) when all bucket counts are 0 — avoids visual noise"
+  - 'insuranceCost always null — insurance field not modeled in schema, surfaced in notes array'
+  - 'Depreciation aggregation is cumulative (not period-filtered) — correct for TCO/book value'
+  - 'OnAssetClick opens AssetDrawer on documentos tab for direct navigation to expiring doc'
+  - 'AlertsView returns null (not empty state) when all bucket counts are 0 — avoids visual noise'
 metrics:
   duration_seconds: 231
-  completed_date: "2026-03-22"
+  completed_date: '2026-03-22'
   tasks_completed: 2
   files_created: 6
   files_modified: 2
@@ -48,10 +48,10 @@ metrics:
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-| ---- | ---- | ------ | ----- |
-| 1 | Backend operational cost endpoint + spec | 1342a025 | asset-operational-cost.service.ts, routes.ts, spec.ts, app.ts |
-| 2 | Frontend document expiry alerts view | 97dfe648 | AssetDocumentAlertsView.tsx/.css, useAssetDocumentAlerts.ts, AssetsPage.tsx |
+| Task | Name                                     | Commit   | Files                                                                       |
+| ---- | ---------------------------------------- | -------- | --------------------------------------------------------------------------- |
+| 1    | Backend operational cost endpoint + spec | 1342a025 | asset-operational-cost.service.ts, routes.ts, spec.ts, app.ts               |
+| 2    | Frontend document expiry alerts view     | 97dfe648 | AssetDocumentAlertsView.tsx/.css, useAssetDocumentAlerts.ts, AssetsPage.tsx |
 
 ## What Was Built
 

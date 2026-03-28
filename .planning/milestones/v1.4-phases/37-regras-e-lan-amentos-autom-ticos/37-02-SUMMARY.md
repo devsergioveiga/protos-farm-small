@@ -1,15 +1,31 @@
 ---
 phase: 37-regras-e-lan-amentos-autom-ticos
-plan: "02"
+plan: '02'
 subsystem: accounting
-tags: [auto-posting, accounting, payables, receivables, payroll, depreciation, stock, legacy-removal]
+tags:
+  [auto-posting, accounting, payables, receivables, payroll, depreciation, stock, legacy-removal]
 dependency_graph:
-  requires: ["37-01"]
-  provides: ["LANC-01", "LANC-02-partial"]
-  affects: ["payables", "receivables", "payroll-runs", "payroll-provisions", "depreciation-batch", "stock-entries", "stock-outputs", "chart-of-accounts"]
+  requires: ['37-01']
+  provides: ['LANC-01', 'LANC-02-partial']
+  affects:
+    [
+      'payables',
+      'receivables',
+      'payroll-runs',
+      'payroll-provisions',
+      'depreciation-batch',
+      'stock-entries',
+      'stock-outputs',
+      'chart-of-accounts',
+    ]
 tech_stack:
   added: []
-  patterns: ["non-blocking auto-posting hooks via try/catch after main transaction (D-15)", "autoPost alias pattern per D-26", "receivePayment alias as CR settlement hook point per D-33"]
+  patterns:
+    [
+      'non-blocking auto-posting hooks via try/catch after main transaction (D-15)',
+      'autoPost alias pattern per D-26',
+      'receivePayment alias as CR settlement hook point per D-33',
+    ]
 key_files:
   created: []
   modified:
@@ -34,15 +50,15 @@ key_files:
     - apps/frontend/src/pages/AccountingEntriesPage.css
     - apps/frontend/src/types/accounting-entries.ts
 decisions:
-  - "autoPost hooks are always non-blocking (try/catch outside main transaction) per D-15"
-  - "receivePayment exported as alias for settleReceivable — CR settlement hook point per D-33"
-  - "AccountingEntry table was already absent from DB (never migrated) — migrate diff returned empty, prisma generate sufficient"
-  - "payroll-provisions hooks created per-employee with select:{id:true} to capture provision IDs"
-  - "PAYABLE_REVERSAL hook added to reversePayment function (previously had createReversalEntry for payroll-origin only)"
-  - "seedAccountingRules called at end of seedRuralTemplate — idempotent, silently skips if COA not seeded"
+  - 'autoPost hooks are always non-blocking (try/catch outside main transaction) per D-15'
+  - 'receivePayment exported as alias for settleReceivable — CR settlement hook point per D-33'
+  - 'AccountingEntry table was already absent from DB (never migrated) — migrate diff returned empty, prisma generate sufficient'
+  - 'payroll-provisions hooks created per-employee with select:{id:true} to capture provision IDs'
+  - 'PAYABLE_REVERSAL hook added to reversePayment function (previously had createReversalEntry for payroll-origin only)'
+  - 'seedAccountingRules called at end of seedRuralTemplate — idempotent, silently skips if COA not seeded'
 metrics:
-  duration: "~40 minutes"
-  completed_date: "2026-03-27"
+  duration: '~40 minutes'
+  completed_date: '2026-03-27'
   tasks: 3
   files_changed: 16
 ---
@@ -57,15 +73,15 @@ Auto-posting hooks wired into all 6 source modules (CP, CR, payroll, depreciatio
 
 All 7 service files now call `autoPost` after their main business transactions (non-blocking, per D-15):
 
-| Module | Hook point | SourceType(s) |
-|---|---|---|
-| payables.service.ts | settlePayment, reversePayment | PAYABLE_SETTLEMENT, PAYABLE_REVERSAL |
-| receivables.service.ts | settleReceivable, reverseReceivable | RECEIVABLE_SETTLEMENT, RECEIVABLE_REVERSAL |
-| payroll-runs.service.ts | closeRun | PAYROLL_RUN_CLOSE |
-| payroll-provisions.service.ts | calculateMonthlyProvisions (per employee) | PAYROLL_PROVISION_VACATION, PAYROLL_PROVISION_THIRTEENTH |
-| depreciation-batch.service.ts | runDepreciationBatch (after COMPLETED) | DEPRECIATION_RUN |
-| stock-entries.service.ts | createStockEntry | STOCK_ENTRY |
-| stock-outputs.service.ts | createStockOutput | STOCK_OUTPUT_CONSUMPTION / STOCK_OUTPUT_TRANSFER / STOCK_OUTPUT_DISPOSAL |
+| Module                        | Hook point                                | SourceType(s)                                                            |
+| ----------------------------- | ----------------------------------------- | ------------------------------------------------------------------------ |
+| payables.service.ts           | settlePayment, reversePayment             | PAYABLE_SETTLEMENT, PAYABLE_REVERSAL                                     |
+| receivables.service.ts        | settleReceivable, reverseReceivable       | RECEIVABLE_SETTLEMENT, RECEIVABLE_REVERSAL                               |
+| payroll-runs.service.ts       | closeRun                                  | PAYROLL_RUN_CLOSE                                                        |
+| payroll-provisions.service.ts | calculateMonthlyProvisions (per employee) | PAYROLL_PROVISION_VACATION, PAYROLL_PROVISION_THIRTEENTH                 |
+| depreciation-batch.service.ts | runDepreciationBatch (after COMPLETED)    | DEPRECIATION_RUN                                                         |
+| stock-entries.service.ts      | createStockEntry                          | STOCK_ENTRY                                                              |
+| stock-outputs.service.ts      | createStockOutput                         | STOCK_OUTPUT_CONSUMPTION / STOCK_OUTPUT_TRANSFER / STOCK_OUTPUT_DISPOSAL |
 
 - `receivePayment` exported as alias for `settleReceivable` per D-33 (CR settlement hook point)
 - `createPayrollEntries` and `revertPayrollEntries` imports removed from payroll-runs.service.ts
@@ -107,6 +123,7 @@ All 7 service files now call `autoPost` after their main business transactions (
 None — plan executed as written with one notable discovery:
 
 **Observation: AccountingEntry table already absent from DB**
+
 - **Found during:** Task 2 (schema migration step)
 - **Issue:** `prisma migrate dev --name remove-legacy-accounting-entries` failed because shadow DB couldn't apply old migrations (pre-existing issue per STATE.md Phase 35 decision)
 - **Action:** Used `prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script` to verify the diff was empty (table never migrated)
@@ -128,6 +145,7 @@ None — all hooks wire to real auto-posting service. No placeholder data.
 ## Self-Check: PASSED
 
 Files verified to exist:
+
 - apps/backend/src/modules/payables/payables.service.ts — contains `autoPost('PAYABLE_SETTLEMENT'`
 - apps/backend/src/modules/receivables/receivables.service.ts — contains `autoPost('RECEIVABLE_SETTLEMENT'` and `receivePayment` alias
 - apps/backend/src/modules/payroll-runs/payroll-runs.service.ts — contains `autoPost('PAYROLL_RUN_CLOSE'`
@@ -138,11 +156,13 @@ Files verified to exist:
 - apps/backend/src/modules/chart-of-accounts/chart-of-accounts.service.ts — contains `seedAccountingRules(organizationId)`
 
 Files verified to NOT exist:
+
 - apps/backend/src/modules/accounting-entries/ directory — deleted
 - apps/frontend/src/pages/AccountingEntriesPage.tsx — deleted
 - apps/frontend/src/hooks/useAccountingEntries.ts — deleted
 
 Commits:
+
 - 0b05952c feat(37-02): wire auto-posting hooks in 6 source modules
 - fab466ae feat(37-02): remove legacy AccountingEntry module + schema cleanup
 - 41ace54b feat(37-02): seed AccountingRules alongside COA rural template

@@ -264,7 +264,9 @@ async function main() {
     return;
   }
 
-  const fdbPath = resolve(opts['fdb-path'] || resolve(__dirname, '..', '..', '..', '..', 'DADOS988.FDB'));
+  const fdbPath = resolve(
+    opts['fdb-path'] || resolve(__dirname, '..', '..', '..', '..', 'DADOS988.FDB'),
+  );
   const phase = opts['phase'] ? parseInt(opts['phase']) : null;
   const table = opts['table']?.toUpperCase() || null;
   const dryRun = opts['dry-run'] === 'true';

@@ -103,7 +103,8 @@ export default function TimesheetPage() {
   const [selectedTimesheet, setSelectedTimesheet] = useState<Timesheet | null>(null);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [approvalAction, setApprovalAction] = useState<'approve' | 'reject'>('approve');
-  const [correctingInconsistency, setCorrectingInconsistency] = useState<TimesheetInconsistency | null>(null);
+  const [correctingInconsistency, setCorrectingInconsistency] =
+    useState<TimesheetInconsistency | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
 
   const {
@@ -162,7 +163,10 @@ export default function TimesheetPage() {
     }
   }
 
-  async function handleApprovalConfirm(action: 'APPROVE_MANAGER' | 'APPROVE_RH' | 'REJECT', justification?: string) {
+  async function handleApprovalConfirm(
+    action: 'APPROVE_MANAGER' | 'APPROVE_RH' | 'REJECT',
+    justification?: string,
+  ) {
     if (!selectedTimesheet) return false;
     const ok = await approveTimesheet(selectedTimesheet.id, { action, justification });
     if (ok) {
@@ -172,7 +176,11 @@ export default function TimesheetPage() {
     return ok;
   }
 
-  async function handleCorrection(justification: string, beforeJson: Record<string, unknown>, afterJson: Record<string, unknown>) {
+  async function handleCorrection(
+    justification: string,
+    beforeJson: Record<string, unknown>,
+    afterJson: Record<string, unknown>,
+  ) {
     if (!selectedTimesheet || !correctingInconsistency) return false;
     const ok = await addCorrection(selectedTimesheet.id, {
       timeEntryId: correctingInconsistency.timeEntryId,
@@ -320,19 +328,27 @@ export default function TimesheetPage() {
               <div className="timesheet-page__card-summary">
                 <div className="timesheet-page__summary-item">
                   <span className="timesheet-page__summary-label">Total trabalhado</span>
-                  <span className="timesheet-page__summary-value">{formatMinutes(ts.totalWorked)}</span>
+                  <span className="timesheet-page__summary-value">
+                    {formatMinutes(ts.totalWorked)}
+                  </span>
                 </div>
                 <div className="timesheet-page__summary-item">
                   <span className="timesheet-page__summary-label">HE 50%</span>
-                  <span className="timesheet-page__summary-value">{formatMinutes(ts.totalOvertime50)}</span>
+                  <span className="timesheet-page__summary-value">
+                    {formatMinutes(ts.totalOvertime50)}
+                  </span>
                 </div>
                 <div className="timesheet-page__summary-item">
                   <span className="timesheet-page__summary-label">HE 100%</span>
-                  <span className="timesheet-page__summary-value">{formatMinutes(ts.totalOvertime100)}</span>
+                  <span className="timesheet-page__summary-value">
+                    {formatMinutes(ts.totalOvertime100)}
+                  </span>
                 </div>
                 <div className="timesheet-page__summary-item">
                   <span className="timesheet-page__summary-label">Noturno</span>
-                  <span className="timesheet-page__summary-value">{formatMinutes(ts.totalNightMinutes)}</span>
+                  <span className="timesheet-page__summary-value">
+                    {formatMinutes(ts.totalNightMinutes)}
+                  </span>
                 </div>
                 <div className="timesheet-page__summary-item">
                   <span className="timesheet-page__summary-label">Faltas</span>
@@ -395,7 +411,10 @@ export default function TimesheetPage() {
 
       {/* Detail panel for selected timesheet */}
       {selectedTimesheet && (
-        <section className="timesheet-page__detail" aria-label={`Detalhes do espelho de ${selectedTimesheet.employeeName}`}>
+        <section
+          className="timesheet-page__detail"
+          aria-label={`Detalhes do espelho de ${selectedTimesheet.employeeName}`}
+        >
           <div className="timesheet-page__detail-header">
             <h2 className="timesheet-page__detail-title">
               {selectedTimesheet.employeeName} — {getMonthName(selectedTimesheet.referenceMonth)}
@@ -439,23 +458,33 @@ export default function TimesheetPage() {
               <div className="timesheet-page__summary-bar">
                 <div className="timesheet-page__summary-bar-item">
                   <span className="timesheet-page__summary-bar-label">Total Horas</span>
-                  <span className="timesheet-page__summary-bar-value">{formatMinutes(selectedTimesheet.totalWorked)}</span>
+                  <span className="timesheet-page__summary-bar-value">
+                    {formatMinutes(selectedTimesheet.totalWorked)}
+                  </span>
                 </div>
                 <div className="timesheet-page__summary-bar-item">
                   <span className="timesheet-page__summary-bar-label">HE 50%</span>
-                  <span className="timesheet-page__summary-bar-value">{formatMinutes(selectedTimesheet.totalOvertime50)}</span>
+                  <span className="timesheet-page__summary-bar-value">
+                    {formatMinutes(selectedTimesheet.totalOvertime50)}
+                  </span>
                 </div>
                 <div className="timesheet-page__summary-bar-item">
                   <span className="timesheet-page__summary-bar-label">HE 100%</span>
-                  <span className="timesheet-page__summary-bar-value">{formatMinutes(selectedTimesheet.totalOvertime100)}</span>
+                  <span className="timesheet-page__summary-bar-value">
+                    {formatMinutes(selectedTimesheet.totalOvertime100)}
+                  </span>
                 </div>
                 <div className="timesheet-page__summary-bar-item">
                   <span className="timesheet-page__summary-bar-label">Noturno</span>
-                  <span className="timesheet-page__summary-bar-value">{formatMinutes(selectedTimesheet.totalNightMinutes)}</span>
+                  <span className="timesheet-page__summary-bar-value">
+                    {formatMinutes(selectedTimesheet.totalNightMinutes)}
+                  </span>
                 </div>
                 <div className="timesheet-page__summary-bar-item">
                   <span className="timesheet-page__summary-bar-label">Faltas</span>
-                  <span className="timesheet-page__summary-bar-value">{selectedTimesheet.totalAbsences}d</span>
+                  <span className="timesheet-page__summary-bar-value">
+                    {selectedTimesheet.totalAbsences}d
+                  </span>
                 </div>
               </div>
 
@@ -518,7 +547,11 @@ export default function TimesheetPage() {
             <div id="tab-inconsistencias" role="tabpanel" aria-label="Inconsistencias">
               {inconsistencies.length === 0 ? (
                 <div className="timesheet-page__empty timesheet-page__empty--sm">
-                  <CheckCircle2 size={40} className="timesheet-page__empty-icon" aria-hidden="true" />
+                  <CheckCircle2
+                    size={40}
+                    className="timesheet-page__empty-icon"
+                    aria-hidden="true"
+                  />
                   <h3 className="timesheet-page__empty-title">Sem inconsistencias</h3>
                   <p className="timesheet-page__empty-body">
                     Todos os apontamentos estao corretos para este mes.
@@ -554,7 +587,9 @@ export default function TimesheetPage() {
                           </td>
                           <td className="timesheet-page__inc-description">{inc.description}</td>
                           <td>
-                            <span className={`timesheet-page__severity ${SEVERITY_CLASSES[inc.severity] ?? ''}`}>
+                            <span
+                              className={`timesheet-page__severity ${SEVERITY_CLASSES[inc.severity] ?? ''}`}
+                            >
                               {inc.severity === 'ERROR' ? 'Critico' : 'Atencao'}
                             </span>
                           </td>

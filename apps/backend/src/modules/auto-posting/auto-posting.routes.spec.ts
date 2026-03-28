@@ -29,7 +29,11 @@ jest.mock('./auto-posting.service', () => ({
   retry: jest.fn(),
   retryBatch: jest.fn(),
   AutoPostingError: class AutoPostingError extends Error {
-    constructor(message: string, public code: string, public statusCode = 400) {
+    constructor(
+      message: string,
+      public code: string,
+      public statusCode = 400,
+    ) {
       super(message);
       this.name = 'AutoPostingError';
     }
@@ -119,9 +123,7 @@ describe('Auto-Posting Routes', () => {
     const rules = [makeRule()];
     (mockedService.listRules as jest.Mock).mockResolvedValue(rules);
 
-    const res = await request(app)
-      .get(`${BASE}/rules`)
-      .set('Authorization', 'Bearer token');
+    const res = await request(app).get(`${BASE}/rules`).set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
@@ -143,9 +145,7 @@ describe('Auto-Posting Routes', () => {
   it('GET /rules/:ruleId returns single rule with lines', async () => {
     (mockedService.getRule as jest.Mock).mockResolvedValue(makeRule());
 
-    const res = await request(app)
-      .get(`${BASE}/rules/rule-1`)
-      .set('Authorization', 'Bearer token');
+    const res = await request(app).get(`${BASE}/rules/rule-1`).set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(200);
     expect(res.body.id).toBe('rule-1');
@@ -182,7 +182,11 @@ describe('Auto-Posting Routes', () => {
 
   it('PATCH /rules/:ruleId returns 404 when rule not found', async () => {
     // Use the mocked AutoPostingError so instanceof check in handler works
-    const MockedAutoPostingError = service.AutoPostingError as unknown as new (msg: string, code: string, status: number) => Error & { code: string; statusCode: number };
+    const MockedAutoPostingError = service.AutoPostingError as unknown as new (
+      msg: string,
+      code: string,
+      status: number,
+    ) => Error & { code: string; statusCode: number };
     const err = new MockedAutoPostingError('Regra nao encontrada', 'NOT_FOUND', 404);
     (mockedService.updateRule as jest.Mock).mockRejectedValue(err);
 
@@ -201,7 +205,14 @@ describe('Auto-Posting Routes', () => {
       entryDate: '2026-01-01',
       description: 'Folha 2026-01',
       lines: [
-        { lineOrder: 1, side: 'DEBIT', accountCode: '6.1.01', accountName: 'Salarios', amount: '5000.00', description: null },
+        {
+          lineOrder: 1,
+          side: 'DEBIT',
+          accountCode: '6.1.01',
+          accountName: 'Salarios',
+          amount: '5000.00',
+          description: null,
+        },
       ],
       costCenterName: null,
     };
@@ -245,9 +256,7 @@ describe('Auto-Posting Routes', () => {
   it('GET /pending returns empty list when none found', async () => {
     (mockedService.listPending as jest.Mock).mockResolvedValue([]);
 
-    const res = await request(app)
-      .get(`${BASE}/pending`)
-      .set('Authorization', 'Bearer token');
+    const res = await request(app).get(`${BASE}/pending`).set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(0);
@@ -270,7 +279,11 @@ describe('Auto-Posting Routes', () => {
   // ─── POST /pending/:id/retry ──────────────────────────────────────
 
   it('POST /pending/:id/retry retries single ERROR posting', async () => {
-    const result = makePending({ status: 'COMPLETED', journalEntryId: 'entry-1', errorMessage: null });
+    const result = makePending({
+      status: 'COMPLETED',
+      journalEntryId: 'entry-1',
+      errorMessage: null,
+    });
     (mockedService.retry as jest.Mock).mockResolvedValue(result);
 
     const res = await request(app)
@@ -284,8 +297,16 @@ describe('Auto-Posting Routes', () => {
 
   it('POST /pending/:id/retry returns 422 when status is not ERROR', async () => {
     // Use the mocked AutoPostingError so instanceof check in handler works
-    const MockedAutoPostingError = service.AutoPostingError as unknown as new (msg: string, code: string, status: number) => Error & { code: string; statusCode: number };
-    const err = new MockedAutoPostingError('Apenas lancamentos com status ERROR podem ser reprocessados', 'INVALID_STATUS', 422);
+    const MockedAutoPostingError = service.AutoPostingError as unknown as new (
+      msg: string,
+      code: string,
+      status: number,
+    ) => Error & { code: string; statusCode: number };
+    const err = new MockedAutoPostingError(
+      'Apenas lancamentos com status ERROR podem ser reprocessados',
+      'INVALID_STATUS',
+      422,
+    );
     (mockedService.retry as jest.Mock).mockRejectedValue(err);
 
     const res = await request(app)

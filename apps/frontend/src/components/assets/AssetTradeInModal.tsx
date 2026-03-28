@@ -12,7 +12,7 @@ interface AssetTradeInModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  tradedAsset: Asset;          // pre-selected asset to trade in
+  tradedAsset: Asset; // pre-selected asset to trade in
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────
@@ -84,7 +84,9 @@ export default function AssetTradeInModal({
 
   const tradedValueNum = parseFloat(tradedAssetValue) || 0;
   const newValueNum = parseFloat(newAssetValue) || 0;
-  const acquisitionValueNum = tradedAsset.acquisitionValue ? parseFloat(tradedAsset.acquisitionValue) : 0;
+  const acquisitionValueNum = tradedAsset.acquisitionValue
+    ? parseFloat(tradedAsset.acquisitionValue)
+    : 0;
 
   // Estimated NBV (approximate — backend will use actual depreciation)
   const estimatedNbv = acquisitionValueNum;
@@ -144,9 +146,7 @@ export default function AssetTradeInModal({
     } catch (err) {
       setShowConfirm(false);
       setFormError(
-        err instanceof Error
-          ? err.message
-          : 'Nao foi possivel registrar a troca. Tente novamente.',
+        err instanceof Error ? err.message : 'Nao foi possivel registrar a troca. Tente novamente.',
       );
     }
   }
@@ -181,7 +181,6 @@ export default function AssetTradeInModal({
         {/* Form */}
         <form onSubmit={handleSubmitAttempt} noValidate>
           <div className="trade-in-modal__body">
-
             {/* Section 1 — Ativo para Troca */}
             <section className="trade-in-section">
               <h3 className="trade-in-section__title">Ativo para troca (ativo antigo)</h3>
@@ -264,7 +263,9 @@ export default function AssetTradeInModal({
                   {Object.entries(ASSET_TYPE_LABELS)
                     .filter(([key]) => key !== 'TERRA')
                     .map(([value, label]) => (
-                      <option key={value} value={value}>{label}</option>
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
                     ))}
                 </select>
               </div>
@@ -282,7 +283,9 @@ export default function AssetTradeInModal({
                   aria-required="true"
                 >
                   {Object.entries(ASSET_CLASSIFICATION_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>{label}</option>
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -353,7 +356,9 @@ export default function AssetTradeInModal({
                     <div className="trade-in-summary__row trade-in-summary__row--highlight">
                       <dt>Saldo a pagar</dt>
                       <dd>
-                        {hasNetPayable ? currencyFmt.format(netPayable) : 'R$ 0,00 (troca favoravel)'}
+                        {hasNetPayable
+                          ? currencyFmt.format(netPayable)
+                          : 'R$ 0,00 (troca favoravel)'}
                       </dd>
                     </div>
                     {tradedValueNum > 0 && acquisitionValueNum > 0 && (
@@ -378,14 +383,21 @@ export default function AssetTradeInModal({
                     )}
                   </dl>
                   {acquisitionValueNum > 0 && (
-                    <p style={{ fontSize: '0.75rem', color: 'var(--color-neutral-500)', marginTop: '4px' }}>
+                    <p
+                      style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--color-neutral-500)',
+                        marginTop: '4px',
+                      }}
+                    >
                       * O ganho/perda real sera calculado com base na depreciacao acumulada.
                     </p>
                   )}
                   {hasNetPayable && (
                     <div className="trade-in-summary__payable-alert">
                       <Info size={14} aria-hidden="true" />
-                      Uma conta a pagar sera gerada automaticamente para o saldo de {currencyFmt.format(netPayable)}.
+                      Uma conta a pagar sera gerada automaticamente para o saldo de{' '}
+                      {currencyFmt.format(netPayable)}.
                     </div>
                   )}
                 </div>

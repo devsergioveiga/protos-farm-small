@@ -97,15 +97,10 @@ function AnimalExitModal({
             ? parseFloat(salePricePerKg)
             : null,
         saleWeightKg:
-          ['VENDA', 'ABATE'].includes(exitType) && saleWeightKg
-            ? parseFloat(saleWeightKg)
-            : null,
-        gtaNumber:
-          ['VENDA', 'TRANSFERENCIA'].includes(exitType) && gtaNumber ? gtaNumber : null,
+          ['VENDA', 'ABATE'].includes(exitType) && saleWeightKg ? parseFloat(saleWeightKg) : null,
+        gtaNumber: ['VENDA', 'TRANSFERENCIA'].includes(exitType) && gtaNumber ? gtaNumber : null,
         destinationFarm:
-          ['VENDA', 'TRANSFERENCIA'].includes(exitType) && destinationFarm
-            ? destinationFarm
-            : null,
+          ['VENDA', 'TRANSFERENCIA'].includes(exitType) && destinationFarm ? destinationFarm : null,
         notes: notes || null,
       };
 
@@ -121,16 +116,12 @@ function AnimalExitModal({
           );
         }
       } else {
-        await api.post<AnimalExitItem>(
-          `/org/farms/${farmId}/animals/${animalId}/exit`,
-          payload,
-        );
+        await api.post<AnimalExitItem>(`/org/farms/${farmId}/animals/${animalId}/exit`, payload);
       }
 
       onSuccess();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Não foi possível registrar a saída';
+      const message = err instanceof Error ? err.message : 'Não foi possível registrar a saída';
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -144,18 +135,18 @@ function AnimalExitModal({
   const showTransferFields = exitType === 'VENDA' || exitType === 'TRANSFERENCIA';
 
   return (
-    <div className="exit-modal__overlay" role="dialog" aria-modal="true" aria-label="Registrar saída de animal">
+    <div
+      className="exit-modal__overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Registrar saída de animal"
+    >
       <div className="exit-modal__container">
         <header className="exit-modal__header">
           <h2 className="exit-modal__title">
             Registrar saída {isBulk ? `(${count} animais)` : ''}
           </h2>
-          <button
-            type="button"
-            className="exit-modal__close"
-            onClick={onClose}
-            aria-label="Fechar"
-          >
+          <button type="button" className="exit-modal__close" onClick={onClose} aria-label="Fechar">
             <X aria-hidden="true" size={20} />
           </button>
         </header>

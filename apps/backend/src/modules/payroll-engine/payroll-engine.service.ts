@@ -133,7 +133,9 @@ export function calculateIRRF(input: IRRFInput): IRRFResult {
  * @param grossSalary - Employee's gross salary
  */
 export function calculateFGTS(grossSalary: Decimal): FGTSResult {
-  const contribution = grossSalary.mul(new Decimal('0.08')).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+  const contribution = grossSalary
+    .mul(new Decimal('0.08'))
+    .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
   return { base: grossSalary, contribution };
 }
 
@@ -150,9 +152,7 @@ export function calculateSalaryFamily(input: SalaryFamilyInput): SalaryFamilyRes
     return { benefit: new Decimal(0), eligible: false };
   }
 
-  const benefit = valuePerChild
-    .mul(eligibleDependents)
-    .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+  const benefit = valuePerChild.mul(eligibleDependents).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
 
   return { benefit, eligible: true };
 }
@@ -221,7 +221,9 @@ export function evaluateFormula(formula: string, context: RubricaContext): Decim
   try {
     const result = parser.evaluate(formula, context);
     if (typeof result !== 'number' || !isFinite(result)) {
-      throw new Error(`FormulaEvaluationError: formula "${formula}" did not return a finite number`);
+      throw new Error(
+        `FormulaEvaluationError: formula "${formula}" did not return a finite number`,
+      );
     }
     return new Decimal(result.toString()).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
   } catch (err) {

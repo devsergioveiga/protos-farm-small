@@ -165,11 +165,7 @@ export default function TrainingTypesPage() {
           )}
 
           {loading && (
-            <div
-              className="training-types-page__skeleton"
-              aria-busy="true"
-              aria-label="Carregando"
-            >
+            <div className="training-types-page__skeleton" aria-busy="true" aria-label="Carregando">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="training-types-page__skeleton-row" />
               ))}
@@ -217,7 +213,10 @@ export default function TrainingTypesPage() {
                 </thead>
                 <tbody>
                   {[...systemTypes, ...customTypes].map((tt) => (
-                    <tr key={tt.id} className={tt.isSystem ? 'training-types-page__row--system' : ''}>
+                    <tr
+                      key={tt.id}
+                      className={tt.isSystem ? 'training-types-page__row--system' : ''}
+                    >
                       <td>{tt.name}</td>
                       <td>{tt.nrReference ?? '—'}</td>
                       <td>{tt.minHours}h</td>

@@ -43,9 +43,7 @@ export function calculateMonthlyProvision(
   const vacationTotal = vacationProvision.add(vacationCharges);
 
   // 13th: salary / 12
-  const thirteenthProvision = salary
-    .div(12)
-    .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+  const thirteenthProvision = salary.div(12).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
   const thirteenthCharges = thirteenthProvision
     .mul(chargeRate)
     .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
@@ -62,7 +60,6 @@ export function calculateMonthlyProvision(
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────
-
 
 /**
  * Parse "YYYY-MM" into the first day of that month as a Date (UTC).
@@ -296,9 +293,7 @@ export async function calculateMonthlyProvisions(
     processedCount++;
     totalVacation = totalVacation.add(calc.vacationProvision);
     totalThirteenth = totalThirteenth.add(calc.thirteenthProvision);
-    totalCharges = totalCharges
-      .add(calc.vacationCharges)
-      .add(calc.thirteenthCharges);
+    totalCharges = totalCharges.add(calc.vacationCharges).add(calc.thirteenthCharges);
   }
 
   return {
@@ -327,19 +322,11 @@ export async function reverseProvision(
     });
 
     if (!provision) {
-      throw new PayrollProvisionError(
-        'Provisão não encontrada',
-        'NOT_FOUND',
-        404,
-      );
+      throw new PayrollProvisionError('Provisão não encontrada', 'NOT_FOUND', 404);
     }
 
     if (provision.reversedAt) {
-      throw new PayrollProvisionError(
-        'Esta provisão já foi estornada',
-        'ALREADY_REVERSED',
-        400,
-      );
+      throw new PayrollProvisionError('Esta provisão já foi estornada', 'ALREADY_REVERSED', 400);
     }
 
     const updated = await tx.payrollProvision.update({
@@ -411,7 +398,12 @@ export async function getProvisionReport(
     // Aggregate by costCenterId
     const map = new Map<
       string | null,
-      { costCenterName: string; vacationTotal: Decimal; thirteenthTotal: Decimal; chargesTotal: Decimal }
+      {
+        costCenterName: string;
+        vacationTotal: Decimal;
+        thirteenthTotal: Decimal;
+        chargesTotal: Decimal;
+      }
     >();
 
     for (const p of records) {
@@ -441,9 +433,7 @@ export async function getProvisionReport(
 
     const rows: ProvisionReportRow[] = [];
     for (const [costCenterId, data] of map) {
-      const grandTotal = data.vacationTotal
-        .add(data.thirteenthTotal)
-        .add(data.chargesTotal);
+      const grandTotal = data.vacationTotal.add(data.thirteenthTotal).add(data.chargesTotal);
       rows.push({
         costCenterId,
         costCenterName: data.costCenterName,

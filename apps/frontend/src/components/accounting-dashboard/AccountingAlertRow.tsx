@@ -12,16 +12,13 @@ export default function AccountingAlertRow({
 }: AccountingAlertRowProps) {
   return (
     <li className="acc-alert-row">
-      <Link to={navigateTo} className="acc-alert-row__link" aria-label={`${label} — ${count} item(s). Clique para ver detalhes.`}>
-        <span
-          className={`acc-alert-row__icon acc-alert-row__icon--${severity}`}
-          aria-hidden="true"
-        >
-          {severity === 'warning' ? (
-            <AlertTriangle size={20} />
-          ) : (
-            <Info size={20} />
-          )}
+      <Link
+        to={navigateTo}
+        className="acc-alert-row__link"
+        aria-label={`${label} — ${count} item(s). Clique para ver detalhes.`}
+      >
+        <span className={`acc-alert-row__icon acc-alert-row__icon--${severity}`} aria-hidden="true">
+          {severity === 'warning' ? <AlertTriangle size={20} /> : <Info size={20} />}
         </span>
         <span className="acc-alert-row__content">
           <span className="acc-alert-row__label">{label}</span>

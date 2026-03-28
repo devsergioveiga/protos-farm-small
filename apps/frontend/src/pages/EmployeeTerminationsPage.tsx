@@ -14,10 +14,7 @@ import type {
   CreateTerminationInput,
   TerminationType,
 } from '@/types/termination';
-import {
-  TERMINATION_TYPE_LABELS,
-  TERMINATION_STATUS_LABELS,
-} from '@/types/termination';
+import { TERMINATION_TYPE_LABELS, TERMINATION_STATUS_LABELS } from '@/types/termination';
 import './EmployeeTerminationsPage.css';
 
 function formatCurrency(value: number | null | undefined): string {
@@ -85,7 +82,9 @@ function EmployeeTerminationModal({
     terminationDate: '',
     noticePeriodType: '',
   });
-  const [calculatedTermination, setCalculatedTermination] = useState<EmployeeTermination | null>(null);
+  const [calculatedTermination, setCalculatedTermination] = useState<EmployeeTermination | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -96,7 +95,13 @@ function EmployeeTerminationModal({
     if (isOpen) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setStep(1);
-      setFormData({ employeeId: '', employeeName: '', terminationType: '', terminationDate: '', noticePeriodType: '' });
+      setFormData({
+        employeeId: '',
+        employeeName: '',
+        terminationType: '',
+        terminationDate: '',
+        noticePeriodType: '',
+      });
       setCalculatedTermination(null);
       setError(null);
       setShowConfirm(false);
@@ -114,7 +119,12 @@ function EmployeeTerminationModal({
   }, [isOpen, onClose]);
 
   const handleStep1Next = async () => {
-    if (!formData.employeeId || !formData.terminationType || !formData.terminationDate || !formData.noticePeriodType) {
+    if (
+      !formData.employeeId ||
+      !formData.terminationType ||
+      !formData.terminationDate ||
+      !formData.noticePeriodType
+    ) {
       setError('Preencha todos os campos obrigatórios.');
       return;
     }
@@ -162,7 +172,9 @@ function EmployeeTerminationModal({
   return (
     <div
       className="term-modal__overlay"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="term-modal-title"
@@ -172,10 +184,17 @@ function EmployeeTerminationModal({
         <div className="term-modal__header">
           <div className="term-modal__stepper" aria-label="Etapas do processo">
             {([1, 2, 3] as WizardStep[]).map((s) => (
-              <div key={s} className={`term-modal__step ${step >= s ? 'term-modal__step--active' : ''} ${step > s ? 'term-modal__step--done' : ''}`}>
+              <div
+                key={s}
+                className={`term-modal__step ${step >= s ? 'term-modal__step--active' : ''} ${step > s ? 'term-modal__step--done' : ''}`}
+              >
                 <span className="term-modal__step-num">{s}</span>
                 <span className="term-modal__step-label">
-                  {s === 1 ? 'Dados da Rescisao' : s === 2 ? 'Conferir Calculo' : 'Confirmar e Gerar TRCT'}
+                  {s === 1
+                    ? 'Dados da Rescisao'
+                    : s === 2
+                      ? 'Conferir Calculo'
+                      : 'Confirmar e Gerar TRCT'}
                 </span>
               </div>
             ))}
@@ -193,7 +212,11 @@ function EmployeeTerminationModal({
         {/* Body */}
         <div className="term-modal__body">
           <h2 id="term-modal-title" className="term-modal__title">
-            {step === 1 ? 'Dados da Rescisao' : step === 2 ? 'Conferir Calculo' : 'Confirmar e Gerar TRCT'}
+            {step === 1
+              ? 'Dados da Rescisao'
+              : step === 2
+                ? 'Conferir Calculo'
+                : 'Confirmar e Gerar TRCT'}
           </h2>
 
           {error && (
@@ -245,13 +268,22 @@ function EmployeeTerminationModal({
                   id="term-type"
                   className="term-modal__select"
                   value={formData.terminationType}
-                  onChange={(e) => setFormData((p) => ({ ...p, terminationType: e.target.value as TerminationType }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({
+                      ...p,
+                      terminationType: e.target.value as TerminationType,
+                    }))
+                  }
                   aria-required="true"
                 >
                   <option value="">Selecione o tipo</option>
-                  {(Object.entries(TERMINATION_TYPE_LABELS) as [TerminationType, string][]).map(([k, v]) => (
-                    <option key={k} value={k}>{v}</option>
-                  ))}
+                  {(Object.entries(TERMINATION_TYPE_LABELS) as [TerminationType, string][]).map(
+                    ([k, v]) => (
+                      <option key={k} value={k}>
+                        {v}
+                      </option>
+                    ),
+                  )}
                 </select>
               </div>
 
@@ -277,7 +309,12 @@ function EmployeeTerminationModal({
                   id="term-notice-type"
                   className="term-modal__select"
                   value={formData.noticePeriodType}
-                  onChange={(e) => setFormData((p) => ({ ...p, noticePeriodType: e.target.value as NoticePeriodType }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({
+                      ...p,
+                      noticePeriodType: e.target.value as NoticePeriodType,
+                    }))
+                  }
                   aria-required="true"
                 >
                   <option value="">Selecione</option>
@@ -294,65 +331,93 @@ function EmployeeTerminationModal({
             <div className="term-modal__calc">
               <p className="term-modal__calc-intro">
                 Confira os valores calculados antes de confirmar a rescisao de{' '}
-                <strong>{calculatedTermination.employeeName || formData.employeeName || 'colaborador'}</strong>.
+                <strong>
+                  {calculatedTermination.employeeName || formData.employeeName || 'colaborador'}
+                </strong>
+                .
               </p>
               <table className="term-modal__calc-table">
                 <caption className="sr-only">Detalhamento do calculo de rescisao</caption>
                 <thead>
                   <tr>
-                    <th scope="col" className="term-modal__calc-col-rubrica">Rubrica</th>
-                    <th scope="col" className="term-modal__calc-col-valor">Valor</th>
+                    <th scope="col" className="term-modal__calc-col-rubrica">
+                      Rubrica
+                    </th>
+                    <th scope="col" className="term-modal__calc-col-valor">
+                      Valor
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td>Saldo de Salario</td>
-                    <td className="term-modal__calc-value">{formatCurrency(calculatedTermination.balanceSalary)}</td>
+                    <td className="term-modal__calc-value">
+                      {formatCurrency(calculatedTermination.balanceSalary)}
+                    </td>
                   </tr>
                   <tr>
                     <td>Aviso Previo ({calculatedTermination.noticePeriodDays} dias)</td>
-                    <td className="term-modal__calc-value">{formatCurrency(calculatedTermination.noticePay)}</td>
+                    <td className="term-modal__calc-value">
+                      {formatCurrency(calculatedTermination.noticePay)}
+                    </td>
                   </tr>
                   <tr>
                     <td>13o Proporcional</td>
-                    <td className="term-modal__calc-value">{formatCurrency(calculatedTermination.thirteenthProp)}</td>
+                    <td className="term-modal__calc-value">
+                      {formatCurrency(calculatedTermination.thirteenthProp)}
+                    </td>
                   </tr>
                   <tr>
                     <td>Ferias Vencidas + 1/3</td>
-                    <td className="term-modal__calc-value">{formatCurrency(calculatedTermination.vacationVested)}</td>
+                    <td className="term-modal__calc-value">
+                      {formatCurrency(calculatedTermination.vacationVested)}
+                    </td>
                   </tr>
                   <tr>
                     <td>Ferias Proporcionais + 1/3</td>
-                    <td className="term-modal__calc-value">{formatCurrency(calculatedTermination.vacationProp)}</td>
+                    <td className="term-modal__calc-value">
+                      {formatCurrency(calculatedTermination.vacationProp)}
+                    </td>
                   </tr>
                   <tr>
                     <td>{getFgtsPenaltyLabel(calculatedTermination)}</td>
-                    <td className="term-modal__calc-value">{formatCurrency(calculatedTermination.fgtsPenalty)}</td>
+                    <td className="term-modal__calc-value">
+                      {formatCurrency(calculatedTermination.fgtsPenalty)}
+                    </td>
                   </tr>
                   <tr className="term-modal__calc-subtotal">
                     <td>Total Bruto</td>
-                    <td className="term-modal__calc-value">{formatCurrency(calculatedTermination.totalGross)}</td>
+                    <td className="term-modal__calc-value">
+                      {formatCurrency(calculatedTermination.totalGross)}
+                    </td>
                   </tr>
                   <tr>
                     <td>INSS</td>
                     <td className="term-modal__calc-value term-modal__calc-value--deduction">
-                      {calculatedTermination.inssAmount ? `- ${formatCurrency(calculatedTermination.inssAmount)}` : '—'}
+                      {calculatedTermination.inssAmount
+                        ? `- ${formatCurrency(calculatedTermination.inssAmount)}`
+                        : '—'}
                     </td>
                   </tr>
                   <tr>
                     <td>IRRF</td>
                     <td className="term-modal__calc-value term-modal__calc-value--deduction">
-                      {calculatedTermination.irrfAmount ? `- ${formatCurrency(calculatedTermination.irrfAmount)}` : '—'}
+                      {calculatedTermination.irrfAmount
+                        ? `- ${formatCurrency(calculatedTermination.irrfAmount)}`
+                        : '—'}
                     </td>
                   </tr>
                   <tr className="term-modal__calc-total">
                     <td>Total Liquido</td>
-                    <td className="term-modal__calc-value">{formatCurrency(calculatedTermination.totalNet)}</td>
+                    <td className="term-modal__calc-value">
+                      {formatCurrency(calculatedTermination.totalNet)}
+                    </td>
                   </tr>
                 </tbody>
               </table>
               <p className="term-modal__calc-deadline">
-                Prazo de pagamento: <strong>{formatDate(calculatedTermination.paymentDeadline)}</strong>
+                Prazo de pagamento:{' '}
+                <strong>{formatDate(calculatedTermination.paymentDeadline)}</strong>
               </p>
             </div>
           )}
@@ -361,8 +426,8 @@ function EmployeeTerminationModal({
           {step === 3 && (
             <div className="term-modal__confirm-step">
               <p className="term-modal__confirm-text">
-                Revise todas as informações antes de confirmar. Esta ação iniciará o processo de rescisão
-                e bloqueará o contrato do colaborador.
+                Revise todas as informações antes de confirmar. Esta ação iniciará o processo de
+                rescisão e bloqueará o contrato do colaborador.
               </p>
               {showConfirm && (
                 <ConfirmModal
@@ -374,7 +439,10 @@ function EmployeeTerminationModal({
                   variant="danger"
                   isLoading={isLoading}
                   onConfirm={handleConfirm}
-                  onCancel={() => { setShowConfirm(false); setStep(2); }}
+                  onCancel={() => {
+                    setShowConfirm(false);
+                    setStep(2);
+                  }}
                 />
               )}
             </div>
@@ -409,21 +477,13 @@ function EmployeeTerminationModal({
                 <ChevronLeft size={16} aria-hidden="true" />
                 Voltar
               </button>
-              <button
-                type="button"
-                className="term-modal__btn-danger"
-                onClick={handleStep2Next}
-              >
+              <button type="button" className="term-modal__btn-danger" onClick={handleStep2Next}>
                 Confirmar Rescisao
               </button>
             </>
           )}
           {step === 3 && !showConfirm && (
-            <button
-              type="button"
-              className="term-modal__btn-secondary"
-              onClick={() => setStep(2)}
-            >
+            <button type="button" className="term-modal__btn-secondary" onClick={() => setStep(2)}>
               <ChevronLeft size={16} aria-hidden="true" />
               Voltar
             </button>
@@ -509,7 +569,10 @@ const EmployeeTerminationsPage = () => {
     const days = daysUntilDeadline(deadline);
     if (days < 0) {
       return (
-        <span className="term-page__deadline-badge term-page__deadline-badge--overdue" role="status">
+        <span
+          className="term-page__deadline-badge term-page__deadline-badge--overdue"
+          role="status"
+        >
           <TriangleAlert size={12} aria-hidden="true" />
           Prazo vencido em {formatDate(deadline)}
         </span>
@@ -517,7 +580,10 @@ const EmployeeTerminationsPage = () => {
     }
     if (days <= 3) {
       return (
-        <span className="term-page__deadline-badge term-page__deadline-badge--warning" role="status">
+        <span
+          className="term-page__deadline-badge term-page__deadline-badge--warning"
+          role="status"
+        >
           <TriangleAlert size={12} aria-hidden="true" />
           Pagar ate {formatDate(deadline)}
         </span>
@@ -559,18 +625,18 @@ const EmployeeTerminationsPage = () => {
       {/* Breadcrumb */}
       <nav className="term-page__breadcrumb" aria-label="Localização na aplicação">
         <span className="term-page__breadcrumb-item">RH</span>
-        <span className="term-page__breadcrumb-sep" aria-hidden="true">/</span>
-        <span className="term-page__breadcrumb-item term-page__breadcrumb-item--current">Rescisoes</span>
+        <span className="term-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
+        <span className="term-page__breadcrumb-item term-page__breadcrumb-item--current">
+          Rescisoes
+        </span>
       </nav>
 
       {/* Page Header */}
       <header className="term-page__header">
         <h1 className="term-page__title">Rescisoes</h1>
-        <button
-          type="button"
-          className="term-page__cta-btn"
-          onClick={() => setShowModal(true)}
-        >
+        <button type="button" className="term-page__cta-btn" onClick={() => setShowModal(true)}>
           <UserMinus size={20} aria-hidden="true" />
           Iniciar Rescisao
         </button>
@@ -579,7 +645,9 @@ const EmployeeTerminationsPage = () => {
       {/* Filter Bar */}
       <section className="term-page__filters" aria-label="Filtros">
         <div className="term-page__filter-group">
-          <label htmlFor="term-filter-search" className="term-page__filter-label">Colaborador</label>
+          <label htmlFor="term-filter-search" className="term-page__filter-label">
+            Colaborador
+          </label>
           <input
             id="term-filter-search"
             type="search"
@@ -591,7 +659,9 @@ const EmployeeTerminationsPage = () => {
           />
         </div>
         <div className="term-page__filter-group">
-          <label htmlFor="term-filter-type" className="term-page__filter-label">Tipo</label>
+          <label htmlFor="term-filter-type" className="term-page__filter-label">
+            Tipo
+          </label>
           <select
             id="term-filter-type"
             className="term-page__filter-select"
@@ -599,13 +669,19 @@ const EmployeeTerminationsPage = () => {
             onChange={(e) => setFilterType(e.target.value)}
           >
             <option value="">Todos os tipos</option>
-            {(Object.entries(TERMINATION_TYPE_LABELS) as [TerminationType, string][]).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
-            ))}
+            {(Object.entries(TERMINATION_TYPE_LABELS) as [TerminationType, string][]).map(
+              ([k, v]) => (
+                <option key={k} value={k}>
+                  {v}
+                </option>
+              ),
+            )}
           </select>
         </div>
         <div className="term-page__filter-group">
-          <label htmlFor="term-filter-status" className="term-page__filter-label">Status</label>
+          <label htmlFor="term-filter-status" className="term-page__filter-label">
+            Status
+          </label>
           <select
             id="term-filter-status"
             className="term-page__filter-select"
@@ -627,9 +703,21 @@ const EmployeeTerminationsPage = () => {
             <caption className="sr-only">Carregando rescisoes...</caption>
             <thead>
               <tr>
-                {['Colaborador', 'Tipo Rescisao', 'Data Rescisao', 'Aviso Previo', 'Saldo Salario',
-                  'Total Bruto', 'Total Liquido', 'Prazo Pagamento', 'Status', 'Acoes'].map((h) => (
-                  <th key={h} scope="col">{h}</th>
+                {[
+                  'Colaborador',
+                  'Tipo Rescisao',
+                  'Data Rescisao',
+                  'Aviso Previo',
+                  'Saldo Salario',
+                  'Total Bruto',
+                  'Total Liquido',
+                  'Prazo Pagamento',
+                  'Status',
+                  'Acoes',
+                ].map((h) => (
+                  <th key={h} scope="col">
+                    {h}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -644,13 +732,10 @@ const EmployeeTerminationsPage = () => {
             <UserMinus size={48} aria-hidden="true" className="term-page__empty-icon" />
             <h2 className="term-page__empty-title">Nenhuma rescisao registrada</h2>
             <p className="term-page__empty-body">
-              Ao iniciar uma rescisao, o sistema calcula automaticamente todos os direitos trabalhistas e gera o TRCT.
+              Ao iniciar uma rescisao, o sistema calcula automaticamente todos os direitos
+              trabalhistas e gera o TRCT.
             </p>
-            <button
-              type="button"
-              className="term-page__cta-btn"
-              onClick={() => setShowModal(true)}
-            >
+            <button type="button" className="term-page__cta-btn" onClick={() => setShowModal(true)}>
               <UserMinus size={20} aria-hidden="true" />
               Iniciar Rescisao
             </button>
@@ -664,9 +749,15 @@ const EmployeeTerminationsPage = () => {
                 <th scope="col">Tipo Rescisao</th>
                 <th scope="col">Data Rescisao</th>
                 <th scope="col">Aviso Previo</th>
-                <th scope="col" className="term-page__col-numeric">Saldo Salario</th>
-                <th scope="col" className="term-page__col-numeric">Total Bruto</th>
-                <th scope="col" className="term-page__col-numeric">Total Liquido</th>
+                <th scope="col" className="term-page__col-numeric">
+                  Saldo Salario
+                </th>
+                <th scope="col" className="term-page__col-numeric">
+                  Total Bruto
+                </th>
+                <th scope="col" className="term-page__col-numeric">
+                  Total Liquido
+                </th>
                 <th scope="col">Prazo Pagamento</th>
                 <th scope="col">Status</th>
                 <th scope="col">Acoes</th>
@@ -681,7 +772,9 @@ const EmployeeTerminationsPage = () => {
                   <td>{t.noticePeriodDays} dias</td>
                   <td className="term-page__col-numeric">{formatCurrency(t.balanceSalary)}</td>
                   <td className="term-page__col-numeric">{formatCurrency(t.totalGross)}</td>
-                  <td className="term-page__col-numeric term-page__total-net">{formatCurrency(t.totalNet)}</td>
+                  <td className="term-page__col-numeric term-page__total-net">
+                    {formatCurrency(t.totalNet)}
+                  </td>
                   <td>{getDeadlineBadge(t.paymentDeadline)}</td>
                   <td>{getStatusBadge(t.status)}</td>
                   <td className="term-page__actions">

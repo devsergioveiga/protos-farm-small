@@ -134,10 +134,7 @@ export async function createMaintenancePlan(ctx: RlsContext, input: CreateMainte
 
 // ─── listMaintenancePlans ─────────────────────────────────────────────
 
-export async function listMaintenancePlans(
-  ctx: RlsContext,
-  query: ListMaintenancePlansQuery,
-) {
+export async function listMaintenancePlans(ctx: RlsContext, query: ListMaintenancePlansQuery) {
   const page = Number(query.page ?? 1);
   const limit = Math.min(Number(query.limit ?? 20), 100);
   const skip = (page - 1) * limit;
@@ -230,7 +227,8 @@ export async function updateMaintenancePlan(
         lastMeterValue,
       );
       nextDueAt = computed.nextDueAt;
-      nextDueMeter = computed.nextDueMeter != null ? String(computed.nextDueMeter) as never : null;
+      nextDueMeter =
+        computed.nextDueMeter != null ? (String(computed.nextDueMeter) as never) : null;
     }
 
     return tx.maintenancePlan.update({
@@ -284,7 +282,9 @@ export async function processOverduePlans(organizationId?: string): Promise<numb
       nextDueAt: { lte: now },
     },
     include: {
-      asset: { select: { name: true, assetTag: true, currentHourmeter: true, currentOdometer: true } },
+      asset: {
+        select: { name: true, assetTag: true, currentHourmeter: true, currentOdometer: true },
+      },
       organization: { select: { id: true } },
     },
   });
@@ -297,7 +297,9 @@ export async function processOverduePlans(organizationId?: string): Promise<numb
       nextDueMeter: { not: null },
     },
     include: {
-      asset: { select: { name: true, assetTag: true, currentHourmeter: true, currentOdometer: true } },
+      asset: {
+        select: { name: true, assetTag: true, currentHourmeter: true, currentOdometer: true },
+      },
       organization: { select: { id: true } },
     },
   });

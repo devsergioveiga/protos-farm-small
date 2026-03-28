@@ -111,44 +111,34 @@ const docUpload = multer({
 
 // ─── GET /org/:orgId/employees ─────────────────────────────────────
 
-employeesRouter.get(
-  base,
-  authenticate,
-  checkPermission('employees:read'),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const result = await listEmployees(ctx, {
-        status: req.query.status as string | undefined,
-        farmId: req.query.farmId as string | undefined,
-        positionId: req.query.positionId as string | undefined,
-        search: req.query.search as string | undefined,
-        page: req.query.page ? Number(req.query.page) : undefined,
-        limit: req.query.limit ? Number(req.query.limit) : undefined,
-      });
-      res.json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
+employeesRouter.get(base, authenticate, checkPermission('employees:read'), async (req, res) => {
+  try {
+    const ctx = buildRlsContext(req);
+    const result = await listEmployees(ctx, {
+      status: req.query.status as string | undefined,
+      farmId: req.query.farmId as string | undefined,
+      positionId: req.query.positionId as string | undefined,
+      search: req.query.search as string | undefined,
+      page: req.query.page ? Number(req.query.page) : undefined,
+      limit: req.query.limit ? Number(req.query.limit) : undefined,
+    });
+    res.json(result);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
 
 // ─── POST /org/:orgId/employees ────────────────────────────────────
 
-employeesRouter.post(
-  base,
-  authenticate,
-  checkPermission('employees:create'),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const result = await createEmployee(ctx, req.body);
-      res.status(201).json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
+employeesRouter.post(base, authenticate, checkPermission('employees:create'), async (req, res) => {
+  try {
+    const ctx = buildRlsContext(req);
+    const result = await createEmployee(ctx, req.body);
+    res.status(201).json(result);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
 
 // ─── GET /org/:orgId/employees/bulk/template ──────────────────────
 
@@ -377,13 +367,7 @@ employeesRouter.post(
       }
 
       const doc = await uploadDocument(ctx, employeeId, req.file, {
-        documentType: documentType as
-          | 'RG'
-          | 'CPF'
-          | 'CTPS'
-          | 'ASO'
-          | 'CONTRATO'
-          | 'OUTRO',
+        documentType: documentType as 'RG' | 'CPF' | 'CTPS' | 'ASO' | 'CONTRATO' | 'OUTRO',
       });
       res.status(201).json(doc);
     } catch (err) {

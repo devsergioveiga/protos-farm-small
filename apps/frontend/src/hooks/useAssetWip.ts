@@ -96,10 +96,9 @@ export function useAssetWip(assetId: string) {
   const activate = useCallback(
     async (activationDate?: string): Promise<ActivateResult> => {
       if (!orgId) throw new Error('Missing org');
-      const res = await api.post<ActivateResult>(
-        `/org/${orgId}/asset-wip/${assetId}/activate`,
-        { activationDate },
-      );
+      const res = await api.post<ActivateResult>(`/org/${orgId}/asset-wip/${assetId}/activate`, {
+        activationDate,
+      });
       return res;
     },
     [orgId, assetId],

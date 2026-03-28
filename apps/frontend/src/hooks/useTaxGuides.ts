@@ -1,11 +1,7 @@
 import { useState, useCallback } from 'react';
 import { api } from '@/services/api';
 import { useAuth } from '@/stores/AuthContext';
-import type {
-  TaxGuide,
-  TaxGuideType,
-  GenerateTaxGuidesInput,
-} from '@/types/tax-guide';
+import type { TaxGuide, TaxGuideType, GenerateTaxGuidesInput } from '@/types/tax-guide';
 
 interface ListGuidesParams {
   referenceMonth?: string;
@@ -48,7 +44,8 @@ export function useTaxGuides() {
         const items = Array.isArray(result) ? result : (result as PaginatedGuidesResult).data;
         setGuides(items);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Erro ao carregar guias de recolhimento';
+        const message =
+          err instanceof Error ? err.message : 'Erro ao carregar guias de recolhimento';
         setError(message);
         setGuides([]);
       } finally {

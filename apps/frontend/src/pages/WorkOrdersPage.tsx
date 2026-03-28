@@ -37,10 +37,7 @@ function formatBRL(value: number | null): string {
 
 // ─── Status Badge ────────────────────────────────────────────────────────
 
-const STATUS_CONFIG: Record<
-  WorkOrderStatus,
-  { icon: React.ElementType; className: string }
-> = {
+const STATUS_CONFIG: Record<WorkOrderStatus, { icon: React.ElementType; className: string }> = {
   ABERTA: { icon: Circle, className: 'wo-page__badge--aberta' },
   EM_ANDAMENTO: { icon: Loader2, className: 'wo-page__badge--em-andamento' },
   AGUARDANDO_PECA: { icon: PackageX, className: 'wo-page__badge--aguardando' },
@@ -82,7 +79,9 @@ function WorkOrderCard({ wo, onEdit }: WorkOrderCardProps) {
   return (
     <article className="wo-page__card" onClick={() => onEdit(wo)} style={{ cursor: 'pointer' }}>
       <div className="wo-page__card-header">
-        <span className="wo-page__card-number">OS#{wo.sequentialNumber.toString().padStart(4, '0')}</span>
+        <span className="wo-page__card-number">
+          OS#{wo.sequentialNumber.toString().padStart(4, '0')}
+        </span>
         <StatusBadge status={wo.status as WorkOrderStatus} />
       </div>
       <div className="wo-page__card-title">{wo.title}</div>
@@ -103,15 +102,8 @@ function WorkOrderCard({ wo, onEdit }: WorkOrderCardProps) {
 type TabType = 'lista' | 'kanban';
 
 export default function WorkOrdersPage() {
-  const {
-    workOrders,
-    loading,
-    error,
-    total,
-    totalPages,
-    fetchWorkOrders,
-    cancelWorkOrder,
-  } = useWorkOrders();
+  const { workOrders, loading, error, total, totalPages, fetchWorkOrders, cancelWorkOrder } =
+    useWorkOrders();
   const { farms } = useFarms();
 
   // Tab
@@ -208,7 +200,9 @@ export default function WorkOrdersPage() {
       {/* Breadcrumb */}
       <nav className="wo-page__breadcrumb" aria-label="Caminho de navegacao">
         <span className="wo-page__breadcrumb-item">Patrimonio</span>
-        <span className="wo-page__breadcrumb-sep" aria-hidden="true">&gt;</span>
+        <span className="wo-page__breadcrumb-sep" aria-hidden="true">
+          &gt;
+        </span>
         <span
           className="wo-page__breadcrumb-item wo-page__breadcrumb-item--current"
           aria-current="page"
@@ -220,11 +214,7 @@ export default function WorkOrdersPage() {
       {/* Header */}
       <header className="wo-page__header">
         <h1 className="wo-page__title">Ordens de Servico</h1>
-        <button
-          type="button"
-          className="wo-page__btn wo-page__btn--primary"
-          onClick={handleNewWO}
-        >
+        <button type="button" className="wo-page__btn wo-page__btn--primary" onClick={handleNewWO}>
           <Plus size={20} aria-hidden="true" />
           Abrir OS
         </button>
@@ -388,9 +378,7 @@ export default function WorkOrdersPage() {
             {isEmpty && hasFilters && !error && (
               <div className="wo-page__empty">
                 <ClipboardList size={48} aria-hidden="true" className="wo-page__empty-icon" />
-                <p className="wo-page__empty-text">
-                  Nenhuma OS encontrada com esses filtros.
-                </p>
+                <p className="wo-page__empty-text">Nenhuma OS encontrada com esses filtros.</p>
               </div>
             )}
 
@@ -427,14 +415,30 @@ export default function WorkOrdersPage() {
                     <caption className="sr-only">Lista de ordens de servico</caption>
                     <thead>
                       <tr>
-                        <th scope="col" className="wo-page__th">OS #</th>
-                        <th scope="col" className="wo-page__th">Tipo</th>
-                        <th scope="col" className="wo-page__th">Ativo</th>
-                        <th scope="col" className="wo-page__th">Status</th>
-                        <th scope="col" className="wo-page__th">Responsavel</th>
-                        <th scope="col" className="wo-page__th wo-page__th--right">Custo total</th>
-                        <th scope="col" className="wo-page__th">Abertura</th>
-                        <th scope="col" className="wo-page__th wo-page__th--right">Acoes</th>
+                        <th scope="col" className="wo-page__th">
+                          OS #
+                        </th>
+                        <th scope="col" className="wo-page__th">
+                          Tipo
+                        </th>
+                        <th scope="col" className="wo-page__th">
+                          Ativo
+                        </th>
+                        <th scope="col" className="wo-page__th">
+                          Status
+                        </th>
+                        <th scope="col" className="wo-page__th">
+                          Responsavel
+                        </th>
+                        <th scope="col" className="wo-page__th wo-page__th--right">
+                          Custo total
+                        </th>
+                        <th scope="col" className="wo-page__th">
+                          Abertura
+                        </th>
+                        <th scope="col" className="wo-page__th wo-page__th--right">
+                          Acoes
+                        </th>
                       </tr>
                     </thead>
                     <tbody>

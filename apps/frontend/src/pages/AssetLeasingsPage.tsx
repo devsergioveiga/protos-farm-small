@@ -19,7 +19,11 @@ import './AssetLeasingsPage.css';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const currencyFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-const dateFmt = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+const dateFmt = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+});
 
 function formatCurrency(value: number): string {
   return currencyFmt.format(value);
@@ -39,11 +43,7 @@ const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
 function StatusBadge({ status }: { status: LeasingStatus }) {
   const variant = LEASING_STATUS_VARIANTS[status] ?? 'info';
   const label = LEASING_STATUS_LABELS[status] ?? status;
-  return (
-    <span className={`leasing-page__badge leasing-page__badge--${variant}`}>
-      {label}
-    </span>
-  );
+  return <span className={`leasing-page__badge leasing-page__badge--${variant}`}>{label}</span>;
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -76,7 +76,12 @@ interface ConfirmAction {
 
 const CONFIRM_CONFIG: Record<
   ConfirmAction['type'],
-  { title: string; messageFn: (l: LeasingOutput) => string; label: string; variant: 'danger' | 'warning' }
+  {
+    title: string;
+    messageFn: (l: LeasingOutput) => string;
+    label: string;
+    variant: 'danger' | 'warning';
+  }
 > = {
   exercise: {
     title: 'Exercer opcao de compra',
@@ -228,11 +233,7 @@ export default function AssetLeasingsPage() {
           <FileText size={28} aria-hidden="true" className="leasing-page__header-icon" />
           <h1 className="leasing-page__title">Contratos de Leasing</h1>
         </div>
-        <button
-          type="button"
-          className="leasing-page__btn-new"
-          onClick={() => setShowModal(true)}
-        >
+        <button type="button" className="leasing-page__btn-new" onClick={() => setShowModal(true)}>
           <Plus size={20} aria-hidden="true" />
           Novo Contrato
         </button>
@@ -341,16 +342,16 @@ export default function AssetLeasingsPage() {
             <tbody>
               {leasings.map((l) => (
                 <tr key={l.id}>
-                  <td className="leasing-page__cell-contract">
-                    {l.contractNumber || '—'}
-                  </td>
+                  <td className="leasing-page__cell-contract">{l.contractNumber || '—'}</td>
                   <td>{l.lessorName}</td>
                   <td>{l.rouAssetName}</td>
                   <td>{l.farmName}</td>
                   <td className="leasing-page__cell-currency">
                     {formatCurrency(l.totalContractValue)}
                   </td>
-                  <td>{l.installmentCount}x {formatCurrency(l.monthlyInstallment)}</td>
+                  <td>
+                    {l.installmentCount}x {formatCurrency(l.monthlyInstallment)}
+                  </td>
                   <td className="leasing-page__cell-dates">
                     {formatDate(l.startDate)} - {formatDate(l.endDate)}
                   </td>
@@ -372,9 +373,7 @@ export default function AssetLeasingsPage() {
             <article key={l.id} className="leasing-page__card">
               <div className="leasing-page__card-header">
                 <div>
-                  <h3 className="leasing-page__card-title">
-                    {l.contractNumber || l.rouAssetName}
-                  </h3>
+                  <h3 className="leasing-page__card-title">{l.contractNumber || l.rouAssetName}</h3>
                   <p className="leasing-page__card-subtitle">
                     {l.lessorName} — {l.farmName}
                   </p>
@@ -406,9 +405,7 @@ export default function AssetLeasingsPage() {
                 </div>
               </div>
               {l.status === 'ACTIVE' && (
-                <div className="leasing-page__card-actions">
-                  {renderActions(l)}
-                </div>
+                <div className="leasing-page__card-actions">{renderActions(l)}</div>
               )}
             </article>
           ))}

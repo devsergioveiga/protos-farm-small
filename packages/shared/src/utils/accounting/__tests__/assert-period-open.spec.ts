@@ -2,21 +2,19 @@ import { assertPeriodOpen, PeriodNotOpenError } from '../assert-period-open';
 
 describe('assertPeriodOpen', () => {
   it('passes silently when status is OPEN', () => {
-    expect(() =>
-      assertPeriodOpen({ month: 3, year: 2026, status: 'OPEN' }),
-    ).not.toThrow();
+    expect(() => assertPeriodOpen({ month: 3, year: 2026, status: 'OPEN' })).not.toThrow();
   });
 
   it('throws PeriodNotOpenError when status is CLOSED', () => {
-    expect(() =>
-      assertPeriodOpen({ month: 1, year: 2026, status: 'CLOSED' }),
-    ).toThrow(PeriodNotOpenError);
+    expect(() => assertPeriodOpen({ month: 1, year: 2026, status: 'CLOSED' })).toThrow(
+      PeriodNotOpenError,
+    );
   });
 
   it('throws PeriodNotOpenError when status is BLOCKED', () => {
-    expect(() =>
-      assertPeriodOpen({ month: 2, year: 2026, status: 'BLOCKED' }),
-    ).toThrow(PeriodNotOpenError);
+    expect(() => assertPeriodOpen({ month: 2, year: 2026, status: 'BLOCKED' })).toThrow(
+      PeriodNotOpenError,
+    );
   });
 
   it('error message includes month and year for CLOSED period', () => {

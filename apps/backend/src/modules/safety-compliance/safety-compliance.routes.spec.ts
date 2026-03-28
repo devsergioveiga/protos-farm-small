@@ -35,7 +35,7 @@ jest.mock('../auth/auth.service', () => {
 
 const mockedService = jest.mocked(safetyService);
 const mockedAuth = jest.mocked(authService);
- 
+
 const _mockedAudit = jest.mocked(auditService);
 
 const ADMIN_PAYLOAD = {
@@ -129,17 +129,17 @@ describe('Safety Compliance routes', () => {
     });
 
     it('should pass farmId filter to service', async () => {
-      mockedService.getComplianceSummary.mockResolvedValue({ ...SAMPLE_SUMMARY, totalEmployees: 5 });
+      mockedService.getComplianceSummary.mockResolvedValue({
+        ...SAMPLE_SUMMARY,
+        totalEmployees: 5,
+      });
 
       const res = await request(app)
         .get('/api/org/safety-compliance/summary?farmId=farm-1')
         .set('Authorization', 'Bearer tok');
 
       expect(res.status).toBe(200);
-      expect(mockedService.getComplianceSummary).toHaveBeenCalledWith(
-        expect.any(Object),
-        'farm-1',
-      );
+      expect(mockedService.getComplianceSummary).toHaveBeenCalledWith(expect.any(Object), 'farm-1');
     });
   });
 
@@ -224,7 +224,8 @@ describe('Safety Compliance routes', () => {
 
   describe('GET /api/org/safety-compliance/report/csv', () => {
     it('should return CSV with correct content-type', async () => {
-      const csvContent = 'Nome;Cargo;Tipo Pendência;Detalhe;Vencimento\n"João Silva";"Operador";"ASO";"Último resultado: APTO";"2026-04-15"';
+      const csvContent =
+        'Nome;Cargo;Tipo Pendência;Detalhe;Vencimento\n"João Silva";"Operador";"ASO";"Último resultado: APTO";"2026-04-15"';
       mockedService.generateComplianceReportCsv.mockResolvedValue(csvContent);
 
       const res = await request(app)

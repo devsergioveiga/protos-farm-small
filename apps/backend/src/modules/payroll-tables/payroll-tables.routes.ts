@@ -58,7 +58,9 @@ payrollTablesRouter.get(
       const table = await payrollTablesService.getEffective(orgId, tableType, competenceDate);
 
       if (!table) {
-        res.status(404).json({ error: `Nenhuma tabela ${tableType} encontrada para a data ${competenceDateStr}` });
+        res.status(404).json({
+          error: `Nenhuma tabela ${tableType} encontrada para a data ${competenceDateStr}`,
+        });
         return;
       }
 

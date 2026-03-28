@@ -375,7 +375,9 @@
   cursor: pointer;
   padding: 12px 20px;
   min-height: 48px;
-  transition: background-color 150ms var(--ease-out), opacity 150ms var(--ease-out);
+  transition:
+    background-color 150ms var(--ease-out),
+    opacity 150ms var(--ease-out);
   white-space: nowrap;
 }
 

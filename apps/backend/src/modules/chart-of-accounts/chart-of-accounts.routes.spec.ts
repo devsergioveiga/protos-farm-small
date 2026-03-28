@@ -134,7 +134,13 @@ describe('GET /api/org/:orgId/chart-of-accounts', () => {
   it('returns 200 with accounts array ordered by code', async () => {
     const accounts = [
       makeAccount({ code: '1', name: 'ATIVO' }),
-      makeAccount({ id: 'coa-2', code: '2', name: 'PASSIVO', accountType: 'PASSIVO' as const, nature: 'CREDORA' as const }),
+      makeAccount({
+        id: 'coa-2',
+        code: '2',
+        name: 'PASSIVO',
+        accountType: 'PASSIVO' as const,
+        nature: 'CREDORA' as const,
+      }),
     ];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockedService.getAccountTree.mockResolvedValue(accounts as any);

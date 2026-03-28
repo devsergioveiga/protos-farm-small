@@ -97,10 +97,7 @@ import {
   cpPreview,
 } from './payroll-runs.service';
 import { payrollTablesService } from '../payroll-tables/payroll-tables.service';
-import {
-  calculateEmployeePayroll,
-  calculateThirteenthSalary,
-} from './payroll-calculation.service';
+import { calculateEmployeePayroll, calculateThirteenthSalary } from './payroll-calculation.service';
 import { prisma } from '../../database/prisma';
 import { withRlsContext } from '../../database/rls';
 import Decimal from 'decimal.js';
@@ -299,9 +296,27 @@ describe('PayrollRuns Service', () => {
       (mockPrisma.payrollRunItem.create as jest.Mock).mockResolvedValue({ id: 'item-1' });
 
       (mockPrisma.payrollRunItem.findMany as jest.Mock).mockResolvedValue([
-        { grossSalary: new Decimal(3000), netSalary: new Decimal(2670), inssPatronal: new Decimal(690), fgtsAmount: new Decimal(240), status: 'CALCULATED' },
-        { grossSalary: new Decimal(2800), netSalary: new Decimal(2500), inssPatronal: new Decimal(644), fgtsAmount: new Decimal(224), status: 'CALCULATED' },
-        { grossSalary: new Decimal(0), netSalary: new Decimal(0), inssPatronal: new Decimal(0), fgtsAmount: new Decimal(0), status: 'PENDING_TIMESHEET' },
+        {
+          grossSalary: new Decimal(3000),
+          netSalary: new Decimal(2670),
+          inssPatronal: new Decimal(690),
+          fgtsAmount: new Decimal(240),
+          status: 'CALCULATED',
+        },
+        {
+          grossSalary: new Decimal(2800),
+          netSalary: new Decimal(2500),
+          inssPatronal: new Decimal(644),
+          fgtsAmount: new Decimal(224),
+          status: 'CALCULATED',
+        },
+        {
+          grossSalary: new Decimal(0),
+          netSalary: new Decimal(0),
+          inssPatronal: new Decimal(0),
+          fgtsAmount: new Decimal(0),
+          status: 'PENDING_TIMESHEET',
+        },
       ]);
 
       await processRun(rls, 'run-1');
@@ -320,15 +335,29 @@ describe('PayrollRuns Service', () => {
       (mockPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValue(mockRun);
       (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({ ...mockRun });
       (mockPrisma.employee.findMany as jest.Mock).mockResolvedValue([mockEmployees[0]]);
-      (payrollTablesService.getEffective as jest.Mock).mockResolvedValue({ brackets: [], scalarValues: [] });
+      (payrollTablesService.getEffective as jest.Mock).mockResolvedValue({
+        brackets: [],
+        scalarValues: [],
+      });
       (mockPrisma.timesheet.findFirst as jest.Mock).mockResolvedValue({
-        id: 'ts-1', status: 'APPROVED', totalOvertime50: 0, totalOvertime100: 0, totalNightMinutes: 0, totalAbsences: 0,
+        id: 'ts-1',
+        status: 'APPROVED',
+        totalOvertime50: 0,
+        totalOvertime100: 0,
+        totalNightMinutes: 0,
+        totalAbsences: 0,
       });
       (mockPrisma.salaryAdvance.findMany as jest.Mock).mockResolvedValue([]);
       (calculateEmployeePayroll as jest.Mock).mockReturnValue(mockCalcResult);
       (mockPrisma.payrollRunItem.create as jest.Mock).mockResolvedValue({ id: 'item-1' });
       (mockPrisma.payrollRunItem.findMany as jest.Mock).mockResolvedValue([
-        { grossSalary: new Decimal(3000), netSalary: new Decimal(2670), inssPatronal: new Decimal(690), fgtsAmount: new Decimal(240), status: 'CALCULATED' },
+        {
+          grossSalary: new Decimal(3000),
+          netSalary: new Decimal(2670),
+          inssPatronal: new Decimal(690),
+          fgtsAmount: new Decimal(240),
+          status: 'CALCULATED',
+        },
       ]);
 
       await processRun(rls, 'run-1');
@@ -345,13 +374,22 @@ describe('PayrollRuns Service', () => {
       (mockPrisma.payrollRun.findFirst as jest.Mock).mockResolvedValue(thirteenthRun);
       (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue(thirteenthRun);
       (mockPrisma.employee.findMany as jest.Mock).mockResolvedValue([mockEmployees[0]]);
-      (payrollTablesService.getEffective as jest.Mock).mockResolvedValue({ brackets: [], scalarValues: [] });
+      (payrollTablesService.getEffective as jest.Mock).mockResolvedValue({
+        brackets: [],
+        scalarValues: [],
+      });
       (mockPrisma.timesheet.findFirst as jest.Mock).mockResolvedValue(null);
       (mockPrisma.salaryAdvance.findMany as jest.Mock).mockResolvedValue([]);
       (calculateThirteenthSalary as jest.Mock).mockReturnValue(mockCalcResult);
       (mockPrisma.payrollRunItem.create as jest.Mock).mockResolvedValue({ id: 'item-1' });
       (mockPrisma.payrollRunItem.findMany as jest.Mock).mockResolvedValue([
-        { grossSalary: new Decimal(1500), netSalary: new Decimal(1500), inssPatronal: new Decimal(300), fgtsAmount: new Decimal(120), status: 'CALCULATED' },
+        {
+          grossSalary: new Decimal(1500),
+          netSalary: new Decimal(1500),
+          inssPatronal: new Decimal(300),
+          fgtsAmount: new Decimal(120),
+          status: 'CALCULATED',
+        },
       ]);
 
       await processRun(rls, 'run-1');
@@ -385,7 +423,10 @@ describe('PayrollRuns Service', () => {
         salaryHistory: [{ salary: new Decimal(3000), effectiveAt: new Date('2026-01-01') }],
         farms: [{ farmId: 'farm-1' }],
       });
-      (payrollTablesService.getEffective as jest.Mock).mockResolvedValue({ brackets: [], scalarValues: [] });
+      (payrollTablesService.getEffective as jest.Mock).mockResolvedValue({
+        brackets: [],
+        scalarValues: [],
+      });
       (mockPrisma.timesheet.findFirst as jest.Mock).mockResolvedValue({
         id: 'ts-1',
         status: 'APPROVED',
@@ -398,7 +439,13 @@ describe('PayrollRuns Service', () => {
       (calculateEmployeePayroll as jest.Mock).mockReturnValue(mockCalcResult);
       (mockPrisma.payrollRunItem.create as jest.Mock).mockResolvedValue({ id: 'item-new' });
       (mockPrisma.payrollRunItem.findMany as jest.Mock).mockResolvedValue([
-        { grossSalary: new Decimal(3000), netSalary: new Decimal(2670), inssPatronal: new Decimal(690), fgtsAmount: new Decimal(240), status: 'CALCULATED' },
+        {
+          grossSalary: new Decimal(3000),
+          netSalary: new Decimal(2670),
+          inssPatronal: new Decimal(690),
+          fgtsAmount: new Decimal(240),
+          status: 'CALCULATED',
+        },
       ]);
 
       await recalculateEmployee(rls, 'run-1', 'emp-1');
@@ -436,7 +483,10 @@ describe('PayrollRuns Service', () => {
           irrfAmount: new Decimal(0),
           vtDeduction: new Decimal(0),
           alimonyDeduction: null,
-          lineItemsJson: mockCalcResult.lineItems.map(li => ({ ...li, value: li.value.toNumber() })),
+          lineItemsJson: mockCalcResult.lineItems.map((li) => ({
+            ...li,
+            value: li.value.toNumber(),
+          })),
           employee: {
             id: 'emp-1',
             name: 'João Silva',
@@ -478,7 +528,10 @@ describe('PayrollRuns Service', () => {
       (mockPrisma.timesheet.update as jest.Mock).mockResolvedValue({});
       (mockPrisma.salaryAdvance.findMany as jest.Mock).mockResolvedValue([]);
       (mockPrisma.salaryAdvance.updateMany as jest.Mock).mockResolvedValue({ count: 0 });
-      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({ ...mockRun, status: 'COMPLETED' });
+      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({
+        ...mockRun,
+        status: 'COMPLETED',
+      });
       (mockPrisma.payrollRunItem.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
 
       await closeRun(rls, 'run-1');
@@ -529,7 +582,10 @@ describe('PayrollRuns Service', () => {
       (mockPrisma.payable.updateMany as jest.Mock).mockResolvedValue({ count: 3 });
       (mockPrisma.timesheet.updateMany as jest.Mock).mockResolvedValue({ count: 2 });
       (mockPrisma.salaryAdvance.updateMany as jest.Mock).mockResolvedValue({ count: 0 });
-      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({ ...mockRun, status: 'REVERTED' });
+      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({
+        ...mockRun,
+        status: 'REVERTED',
+      });
 
       await revertRun(rls, 'run-1');
 
@@ -558,8 +614,18 @@ describe('PayrollRuns Service', () => {
   describe('listRuns', () => {
     it('returns paginated list with filters (month, type, status)', async () => {
       const mockRuns = [
-        { id: 'run-1', status: 'CALCULATED', runType: 'MONTHLY', referenceMonth: new Date('2026-03-01') },
-        { id: 'run-2', status: 'COMPLETED', runType: 'MONTHLY', referenceMonth: new Date('2026-02-01') },
+        {
+          id: 'run-1',
+          status: 'CALCULATED',
+          runType: 'MONTHLY',
+          referenceMonth: new Date('2026-03-01'),
+        },
+        {
+          id: 'run-2',
+          status: 'COMPLETED',
+          runType: 'MONTHLY',
+          referenceMonth: new Date('2026-02-01'),
+        },
       ];
       (mockPrisma.payrollRun.findMany as jest.Mock).mockResolvedValue(mockRuns);
 
@@ -771,13 +837,18 @@ describe('PayrollRuns Service', () => {
       (mockPrisma.payable.create as jest.Mock).mockResolvedValue({ id: 'payable-x' });
       (mockPrisma.timesheet.findFirst as jest.Mock).mockResolvedValue(null);
       (mockPrisma.salaryAdvance.updateMany as jest.Mock).mockResolvedValue({ count: 0 });
-      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({ ...mockRun, status: 'COMPLETED' });
+      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({
+        ...mockRun,
+        status: 'COMPLETED',
+      });
 
       await closeRun(rls, 'run-1');
 
       const payableCreates = (mockPrisma.payable.create as jest.Mock).mock.calls;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const irrfCall = payableCreates.find((c: any) => c[0]?.data?.originType === 'PAYROLL_EMPLOYEE_IRRF');
+      const irrfCall = payableCreates.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (c: any) => c[0]?.data?.originType === 'PAYROLL_EMPLOYEE_IRRF',
+      );
       expect(irrfCall).toBeDefined();
       expect(irrfCall![0].data.totalAmount.toNumber()).toBe(250);
     });
@@ -820,13 +891,18 @@ describe('PayrollRuns Service', () => {
       (mockPrisma.payable.create as jest.Mock).mockResolvedValue({ id: 'payable-y' });
       (mockPrisma.timesheet.findFirst as jest.Mock).mockResolvedValue(null);
       (mockPrisma.salaryAdvance.updateMany as jest.Mock).mockResolvedValue({ count: 0 });
-      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({ ...mockRun, status: 'COMPLETED' });
+      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({
+        ...mockRun,
+        status: 'COMPLETED',
+      });
 
       await closeRun(rls, 'run-2');
 
       const payableCreates = (mockPrisma.payable.create as jest.Mock).mock.calls;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const vtCall = payableCreates.find((c: any) => c[0]?.data?.originType === 'PAYROLL_EMPLOYEE_VT');
+      const vtCall = payableCreates.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (c: any) => c[0]?.data?.originType === 'PAYROLL_EMPLOYEE_VT',
+      );
       expect(vtCall).toBeDefined();
       expect(vtCall![0].data.totalAmount.toNumber()).toBe(80);
     });
@@ -874,7 +950,10 @@ describe('PayrollRuns Service', () => {
       (mockPrisma.payable.create as jest.Mock).mockResolvedValue({ id: 'payable-z' });
       (mockPrisma.timesheet.findFirst as jest.Mock).mockResolvedValue(null);
       (mockPrisma.salaryAdvance.updateMany as jest.Mock).mockResolvedValue({ count: 0 });
-      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({ ...mockRun, status: 'COMPLETED' });
+      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({
+        ...mockRun,
+        status: 'COMPLETED',
+      });
 
       await closeRun(rls, 'run-3');
 
@@ -901,7 +980,10 @@ describe('PayrollRuns Service', () => {
       (mockPrisma.payable.updateMany as jest.Mock).mockResolvedValue({ count: 7 });
       (mockPrisma.timesheet.updateMany as jest.Mock).mockResolvedValue({ count: 2 });
       (mockPrisma.salaryAdvance.updateMany as jest.Mock).mockResolvedValue({ count: 0 });
-      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({ ...mockRun, status: 'REVERTED' });
+      (mockPrisma.payrollRun.update as jest.Mock).mockResolvedValue({
+        ...mockRun,
+        status: 'REVERTED',
+      });
 
       await revertRun(rls, 'run-1');
 

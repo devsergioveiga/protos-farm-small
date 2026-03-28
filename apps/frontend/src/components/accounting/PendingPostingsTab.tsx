@@ -8,13 +8,21 @@ import {
   XCircle,
   ExternalLink,
 } from 'lucide-react';
-import { usePendingPostings, usePendingCounts, usePendingActions } from '@/hooks/usePendingPostings';
+import {
+  usePendingPostings,
+  usePendingCounts,
+  usePendingActions,
+} from '@/hooks/usePendingPostings';
 import {
   SOURCE_TYPE_LABELS,
   SOURCE_TYPE_ROUTES,
   PENDING_STATUS_LABELS,
 } from '@/types/auto-posting';
-import type { PendingPostingStatus, AutoPostingSourceType, PendingJournalPosting } from '@/types/auto-posting';
+import type {
+  PendingPostingStatus,
+  AutoPostingSourceType,
+  PendingJournalPosting,
+} from '@/types/auto-posting';
 import './PendingPostingsTab.css';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -27,10 +35,7 @@ function formatDate(dateStr: string): string {
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
 function PendingStatusBadge({ status }: { status: PendingPostingStatus }) {
-  const config: Record<
-    PendingPostingStatus,
-    { icon: React.ReactNode; className: string }
-  > = {
+  const config: Record<PendingPostingStatus, { icon: React.ReactNode; className: string }> = {
     COMPLETED: {
       icon: <CheckCircle size={14} aria-hidden="true" />,
       className: 'ppt__badge ppt__badge--completed',
@@ -110,7 +115,11 @@ function ErrorRow({ posting, onRetry }: ErrorRowProps) {
         </td>
         <td className="ppt__td">{SOURCE_TYPE_LABELS[posting.sourceType]}</td>
         <td className="ppt__td">
-          <a href={originUrl} className="ppt__origin-link" aria-label={`Ver ${SOURCE_TYPE_LABELS[posting.sourceType]} de origem`}>
+          <a
+            href={originUrl}
+            className="ppt__origin-link"
+            aria-label={`Ver ${SOURCE_TYPE_LABELS[posting.sourceType]} de origem`}
+          >
             <ExternalLink size={12} aria-hidden="true" />
             Ver origem
           </a>
@@ -160,7 +169,10 @@ function ErrorRow({ posting, onRetry }: ErrorRowProps) {
               <button
                 type="button"
                 className="ppt__btn ppt__btn--secondary"
-                onClick={(e) => { e.stopPropagation(); void handleRetry(); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void handleRetry();
+                }}
                 disabled={retrying}
                 aria-busy={retrying}
               >
@@ -240,11 +252,12 @@ export default function PendingPostingsTab({ onNavigateToEntry }: PendingPosting
 
   return (
     <section className="ppt" aria-label="Pendências de lançamento automático">
-
       {/* Filter bar */}
       <div className="ppt__filters">
         <div className="ppt__filter-group">
-          <label htmlFor="ppt-filter-status" className="ppt__filter-label">Status</label>
+          <label htmlFor="ppt-filter-status" className="ppt__filter-label">
+            Status
+          </label>
           <select
             id="ppt-filter-status"
             className="ppt__filter-select"
@@ -260,7 +273,9 @@ export default function PendingPostingsTab({ onNavigateToEntry }: PendingPosting
         </div>
 
         <div className="ppt__filter-group">
-          <label htmlFor="ppt-filter-type" className="ppt__filter-label">Tipo de operação</label>
+          <label htmlFor="ppt-filter-type" className="ppt__filter-label">
+            Tipo de operação
+          </label>
           <select
             id="ppt-filter-type"
             className="ppt__filter-select"
@@ -270,7 +285,9 @@ export default function PendingPostingsTab({ onNavigateToEntry }: PendingPosting
             <option value="">Todos</option>
             {(Object.entries(SOURCE_TYPE_LABELS) as [AutoPostingSourceType, string][]).map(
               ([key, label]) => (
-                <option key={key} value={key}>{label}</option>
+                <option key={key} value={key}>
+                  {label}
+                </option>
               ),
             )}
           </select>
@@ -280,7 +297,9 @@ export default function PendingPostingsTab({ onNavigateToEntry }: PendingPosting
           <button
             type="button"
             className="ppt__btn ppt__btn--primary"
-            onClick={() => { void handleRetryBatch(); }}
+            onClick={() => {
+              void handleRetryBatch();
+            }}
             disabled={batchRetrying}
             aria-busy={batchRetrying}
           >
@@ -322,11 +341,21 @@ export default function PendingPostingsTab({ onNavigateToEntry }: PendingPosting
           <caption className="sr-only">Lista de pendências de lançamento automático</caption>
           <thead>
             <tr>
-              <th scope="col" className="ppt__th">STATUS</th>
-              <th scope="col" className="ppt__th">TIPO DE OPERAÇÃO</th>
-              <th scope="col" className="ppt__th">ORIGEM</th>
-              <th scope="col" className="ppt__th">DATA</th>
-              <th scope="col" className="ppt__th ppt__th--actions">AÇÕES</th>
+              <th scope="col" className="ppt__th">
+                STATUS
+              </th>
+              <th scope="col" className="ppt__th">
+                TIPO DE OPERAÇÃO
+              </th>
+              <th scope="col" className="ppt__th">
+                ORIGEM
+              </th>
+              <th scope="col" className="ppt__th">
+                DATA
+              </th>
+              <th scope="col" className="ppt__th ppt__th--actions">
+                AÇÕES
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -337,7 +366,11 @@ export default function PendingPostingsTab({ onNavigateToEntry }: PendingPosting
                 <td colSpan={5}>
                   {counts.error === 0 && counts.pending === 0 ? (
                     <div className="ppt__empty">
-                      <CheckCircle size={48} aria-hidden="true" className="ppt__empty-icon ppt__empty-icon--success" />
+                      <CheckCircle
+                        size={48}
+                        aria-hidden="true"
+                        className="ppt__empty-icon ppt__empty-icon--success"
+                      />
                       <h2 className="ppt__empty-title">Tudo em dia</h2>
                       <p className="ppt__empty-desc">
                         Nenhuma operação aguardando lançamento contábil.
@@ -359,13 +392,7 @@ export default function PendingPostingsTab({ onNavigateToEntry }: PendingPosting
             {!isLoading &&
               postings.map((posting) => {
                 if (posting.status === 'ERROR') {
-                  return (
-                    <ErrorRow
-                      key={posting.id}
-                      posting={posting}
-                      onRetry={handleRetryOne}
-                    />
-                  );
+                  return <ErrorRow key={posting.id} posting={posting} onRetry={handleRetryOne} />;
                 }
 
                 const originUrl = `${SOURCE_TYPE_ROUTES[posting.sourceType]}?id=${posting.sourceId}`;

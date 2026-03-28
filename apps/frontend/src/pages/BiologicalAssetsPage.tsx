@@ -5,11 +5,7 @@ import { useFarmContext } from '@/stores/FarmContext';
 import { useBiologicalAssets } from '@/hooks/useBiologicalAssets';
 import BiologicalAssetValuationModal from '@/components/assets/BiologicalAssetValuationModal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
-import {
-  GROUP_TYPE_LABELS,
-  ANIMAL_GROUPS,
-  PERENNIAL_CROP_GROUPS,
-} from '@/types/asset';
+import { GROUP_TYPE_LABELS, ANIMAL_GROUPS, PERENNIAL_CROP_GROUPS } from '@/types/asset';
 import type { BiologicalValuationOutput, BiologicalGroupType } from '@/types/asset';
 import './BiologicalAssetsPage.css';
 
@@ -78,7 +74,10 @@ function PageSkeleton() {
               <tr key={i}>
                 {Array.from({ length: 9 }).map((_, j) => (
                   <td key={j}>
-                    <div className="bio-assets__kpi-skeleton" style={{ height: 16, borderRadius: 4 }} />
+                    <div
+                      className="bio-assets__kpi-skeleton"
+                      style={{ height: 16, borderRadius: 4 }}
+                    />
                   </td>
                 ))}
               </tr>
@@ -155,7 +154,9 @@ export default function BiologicalAssetsPage() {
       {/* Breadcrumb */}
       <nav className="bio-assets__breadcrumb" aria-label="Caminho de navegacao">
         <Link to="/patrimony">Patrimonio</Link>
-        <span className="bio-assets__breadcrumb-sep" aria-hidden="true">&gt;</span>
+        <span className="bio-assets__breadcrumb-sep" aria-hidden="true">
+          &gt;
+        </span>
         <span className="bio-assets__breadcrumb-current" aria-current="page">
           Ativos Biologicos
         </span>
@@ -169,11 +170,7 @@ export default function BiologicalAssetsPage() {
             Avaliacoes de valor justo do rebanho e culturas perenes (CPC 29)
           </p>
         </div>
-        <button
-          type="button"
-          className="bio-assets__btn-new"
-          onClick={() => setModalOpen(true)}
-        >
+        <button type="button" className="bio-assets__btn-new" onClick={() => setModalOpen(true)}>
           <Plus size={20} aria-hidden="true" />
           Nova Avaliacao
         </button>
@@ -206,9 +203,7 @@ export default function BiologicalAssetsPage() {
             return (
               <div key={item.assetGroup} className="bio-assets__kpi">
                 <div className="bio-assets__kpi-label">{groupLabel(item.assetGroup)}</div>
-                <div className="bio-assets__kpi-value">
-                  {formatBRL(item.latestTotalFairValue)}
-                </div>
+                <div className="bio-assets__kpi-value">{formatBRL(item.latestTotalFairValue)}</div>
                 <div className={`bio-assets__kpi-change ${changeClass}`}>
                   {isPositive && <ArrowUp size={14} aria-hidden="true" />}
                   {isNegative && <ArrowDown size={14} aria-hidden="true" />}
@@ -377,13 +372,19 @@ export default function BiologicalAssetsPage() {
                   </div>
                   <div className="bio-assets__card-row">
                     <span className="bio-assets__card-label">PRECO UNITARIO</span>
-                    <span className="bio-assets__card-value" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    <span
+                      className="bio-assets__card-value"
+                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                    >
                       {formatBRL(v.pricePerUnit)}
                     </span>
                   </div>
                   <div className="bio-assets__card-row">
                     <span className="bio-assets__card-label">VALOR JUSTO</span>
-                    <span className="bio-assets__card-value" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    <span
+                      className="bio-assets__card-value"
+                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                    >
                       {formatBRL(v.totalFairValue)}
                     </span>
                   </div>

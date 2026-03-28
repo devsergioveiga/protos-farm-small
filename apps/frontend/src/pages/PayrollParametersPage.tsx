@@ -27,7 +27,13 @@ import './PayrollParametersPage.css';
 
 type Tab = 'rubricas' | 'tabelas';
 
-const ALL_TABLE_TYPES: LegalTableType[] = ['INSS', 'IRRF', 'SALARY_FAMILY', 'MINIMUM_WAGE', 'FUNRURAL'];
+const ALL_TABLE_TYPES: LegalTableType[] = [
+  'INSS',
+  'IRRF',
+  'SALARY_FAMILY',
+  'MINIMUM_WAGE',
+  'FUNRURAL',
+];
 
 function formatMonetary(value: string | null | undefined): string {
   if (!value) return '—';
@@ -47,7 +53,9 @@ function isEffective(effectiveFrom: string): boolean {
   return new Date(effectiveFrom) <= new Date();
 }
 
-function groupTablesByType(tables: PayrollLegalTable[]): Record<LegalTableType, PayrollLegalTable[]> {
+function groupTablesByType(
+  tables: PayrollLegalTable[],
+): Record<LegalTableType, PayrollLegalTable[]> {
   const result: Record<string, PayrollLegalTable[]> = {};
   for (const type of ALL_TABLE_TYPES) {
     result[type] = [];
@@ -74,9 +82,19 @@ export default function PayrollParametersPage() {
   const [isDeactivating, setIsDeactivating] = useState(false);
   const [showTableModal, setShowTableModal] = useState(false);
   const [selectedTableType, setSelectedTableType] = useState<LegalTableType | null>(null);
-  const [expandedHistory, setExpandedHistory] = useState<Record<LegalTableType, boolean>>({} as Record<LegalTableType, boolean>);
+  const [expandedHistory, setExpandedHistory] = useState<Record<LegalTableType, boolean>>(
+    {} as Record<LegalTableType, boolean>,
+  );
 
-  const { rubricas, isLoading: rubricasLoading, error: rubricasError, fetchRubricas, createRubrica, updateRubrica, deactivateRubrica } = usePayrollRubricas();
+  const {
+    rubricas,
+    isLoading: rubricasLoading,
+    error: rubricasError,
+    fetchRubricas,
+    createRubrica,
+    updateRubrica,
+    deactivateRubrica,
+  } = usePayrollRubricas();
   const { tables, isLoading: tablesLoading, fetchTables, createTable } = usePayrollTables();
 
   useEffect(() => {
@@ -97,7 +115,9 @@ export default function PayrollParametersPage() {
     setShowRubricaModal(true);
   };
 
-  const handleSaveRubrica = async (data: CreateRubricaInput | UpdateRubricaInput): Promise<boolean> => {
+  const handleSaveRubrica = async (
+    data: CreateRubricaInput | UpdateRubricaInput,
+  ): Promise<boolean> => {
     if (editingRubrica) {
       return updateRubrica(editingRubrica.id, data as UpdateRubricaInput);
     }
@@ -179,7 +199,9 @@ export default function PayrollParametersPage() {
           {/* Tab header with CTA */}
           <div className="payroll-params__tab-header">
             <span className="payroll-params__tab-count">
-              {!rubricasLoading && rubricas.length > 0 && `${rubricas.length} rubrica${rubricas.length !== 1 ? 's' : ''}`}
+              {!rubricasLoading &&
+                rubricas.length > 0 &&
+                `${rubricas.length} rubrica${rubricas.length !== 1 ? 's' : ''}`}
             </span>
             <button
               type="button"
@@ -214,11 +236,21 @@ export default function PayrollParametersPage() {
                 <tbody>
                   {Array.from({ length: 3 }).map((_, i) => (
                     <tr key={i} className="payroll-params__skeleton-row">
-                      <td><div className="payroll-params__skeleton payroll-params__skeleton--name" /></td>
-                      <td><div className="payroll-params__skeleton payroll-params__skeleton--badge" /></td>
-                      <td><div className="payroll-params__skeleton payroll-params__skeleton--badge" /></td>
-                      <td><div className="payroll-params__skeleton payroll-params__skeleton--text" /></td>
-                      <td><div className="payroll-params__skeleton payroll-params__skeleton--actions" /></td>
+                      <td>
+                        <div className="payroll-params__skeleton payroll-params__skeleton--name" />
+                      </td>
+                      <td>
+                        <div className="payroll-params__skeleton payroll-params__skeleton--badge" />
+                      </td>
+                      <td>
+                        <div className="payroll-params__skeleton payroll-params__skeleton--badge" />
+                      </td>
+                      <td>
+                        <div className="payroll-params__skeleton payroll-params__skeleton--text" />
+                      </td>
+                      <td>
+                        <div className="payroll-params__skeleton payroll-params__skeleton--actions" />
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -232,7 +264,8 @@ export default function PayrollParametersPage() {
               <ListTree size={48} className="payroll-params__empty-icon" aria-hidden="true" />
               <h2 className="payroll-params__empty-title">Nenhuma rubrica configurada</h2>
               <p className="payroll-params__empty-body">
-                As rubricas definem como proventos e descontos são calculados na folha. Comece adicionando uma rubrica.
+                As rubricas definem como proventos e descontos são calculados na folha. Comece
+                adicionando uma rubrica.
               </p>
               <button
                 type="button"
@@ -302,11 +335,15 @@ export default function PayrollParametersPage() {
                         )}
                       </td>
                       <td className="payroll-params__cell-formula">
-                        {rubrica.calculationType === 'PERCENTAGE' && rubrica.rate
-                          ? `${rubrica.rate}%`
-                          : rubrica.calculationType === 'FORMULA' && rubrica.baseFormula
-                          ? <code className="payroll-params__formula-preview">{rubrica.baseFormula}</code>
-                          : <span className="payroll-params__system-formula">—</span>}
+                        {rubrica.calculationType === 'PERCENTAGE' && rubrica.rate ? (
+                          `${rubrica.rate}%`
+                        ) : rubrica.calculationType === 'FORMULA' && rubrica.baseFormula ? (
+                          <code className="payroll-params__formula-preview">
+                            {rubrica.baseFormula}
+                          </code>
+                        ) : (
+                          <span className="payroll-params__system-formula">—</span>
+                        )}
                       </td>
                       <td>
                         <div className="payroll-params__row-actions">
@@ -379,7 +416,10 @@ export default function PayrollParametersPage() {
                   </div>
                   <div className="payroll-params__card-actions">
                     {rubrica.isSystem ? (
-                      <span className="payroll-params__card-locked" aria-label="Rubrica protegida por lei, não editável">
+                      <span
+                        className="payroll-params__card-locked"
+                        aria-label="Rubrica protegida por lei, não editável"
+                      >
                         <Lock size={14} aria-hidden="true" />
                         Protegida por lei
                       </span>
@@ -433,7 +473,8 @@ export default function PayrollParametersPage() {
               <ListTree size={48} className="payroll-params__empty-icon" aria-hidden="true" />
               <h2 className="payroll-params__empty-title">Tabelas legais não configuradas</h2>
               <p className="payroll-params__empty-body">
-                Cadastre as tabelas de INSS, IRRF e salário-família para que o motor de cálculo funcione corretamente.
+                Cadastre as tabelas de INSS, IRRF e salário-família para que o motor de cálculo
+                funcione corretamente.
               </p>
               <button
                 type="button"
@@ -476,7 +517,10 @@ export default function PayrollParametersPage() {
                         <div className="payroll-params__table-meta">
                           <span className="payroll-params__table-effective-label">Vigência:</span>
                           <span className="payroll-params__table-effective-date">
-                            {new Date(currentTable.effectiveFrom).toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' })}
+                            {new Date(currentTable.effectiveFrom).toLocaleDateString('pt-BR', {
+                              month: '2-digit',
+                              year: 'numeric',
+                            })}
                           </span>
                           {isEffective(currentTable.effectiveFrom) ? (
                             <span className="payroll-params__badge payroll-params__badge--vigente">
@@ -492,7 +536,10 @@ export default function PayrollParametersPage() {
                         {/* Bracket table */}
                         {isBracketType && currentTable.brackets.length > 0 && (
                           <div className="payroll-params__bracket-wrapper">
-                            <table className="payroll-params__bracket-table" aria-label={`Tabela ${LEGAL_TABLE_TYPE_LABELS[type]}`}>
+                            <table
+                              className="payroll-params__bracket-table"
+                              aria-label={`Tabela ${LEGAL_TABLE_TYPE_LABELS[type]}`}
+                            >
                               <thead>
                                 <tr>
                                   <th scope="col">De (R$)</th>
@@ -502,22 +549,32 @@ export default function PayrollParametersPage() {
                                 </tr>
                               </thead>
                               <tbody>
-                                {[...currentTable.brackets].sort((a, b) => a.order - b.order).map((bracket, _idx, _arr) => (
-                                  <tr key={bracket.id}>
-                                    <td className="payroll-params__cell-mono">{formatMonetary(bracket.fromValue)}</td>
-                                    <td className="payroll-params__cell-mono">
-                                      {bracket.upTo === null ? (
-                                        <span className="payroll-params__sem-limite">Sem limite</span>
-                                      ) : (
-                                        formatMonetary(bracket.upTo)
+                                {[...currentTable.brackets]
+                                  .sort((a, b) => a.order - b.order)
+                                  .map((bracket, _idx, _arr) => (
+                                    <tr key={bracket.id}>
+                                      <td className="payroll-params__cell-mono">
+                                        {formatMonetary(bracket.fromValue)}
+                                      </td>
+                                      <td className="payroll-params__cell-mono">
+                                        {bracket.upTo === null ? (
+                                          <span className="payroll-params__sem-limite">
+                                            Sem limite
+                                          </span>
+                                        ) : (
+                                          formatMonetary(bracket.upTo)
+                                        )}
+                                      </td>
+                                      <td className="payroll-params__cell-mono">
+                                        {formatRate(bracket.rate)}
+                                      </td>
+                                      {hasDeduction && (
+                                        <td className="payroll-params__cell-mono">
+                                          {formatMonetary(bracket.deduction)}
+                                        </td>
                                       )}
-                                    </td>
-                                    <td className="payroll-params__cell-mono">{formatRate(bracket.rate)}</td>
-                                    {hasDeduction && (
-                                      <td className="payroll-params__cell-mono">{formatMonetary(bracket.deduction)}</td>
-                                    )}
-                                  </tr>
-                                ))}
+                                    </tr>
+                                  ))}
                               </tbody>
                             </table>
                           </div>
@@ -549,7 +606,9 @@ export default function PayrollParametersPage() {
                             >
                               {isHistoryExpanded ? 'Ocultar histórico' : 'Ver histórico'}
                               <span className="payroll-params__history-count">
-                                ({historyTables.length} versã{historyTables.length === 1 ? 'o' : 'ões'} anterior{historyTables.length !== 1 ? 'es' : ''})
+                                ({historyTables.length} versã
+                                {historyTables.length === 1 ? 'o' : 'ões'} anterior
+                                {historyTables.length !== 1 ? 'es' : ''})
                               </span>
                             </button>
 
@@ -561,7 +620,10 @@ export default function PayrollParametersPage() {
                                 <div key={histTable.id} className="payroll-params__history-entry">
                                   <div className="payroll-params__table-meta">
                                     <span className="payroll-params__table-effective-date">
-                                      {new Date(histTable.effectiveFrom).toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' })}
+                                      {new Date(histTable.effectiveFrom).toLocaleDateString(
+                                        'pt-BR',
+                                        { month: '2-digit', year: 'numeric' },
+                                      )}
                                     </span>
                                     <span className="payroll-params__badge payroll-params__badge--historico">
                                       Histórico
@@ -569,7 +631,10 @@ export default function PayrollParametersPage() {
                                   </div>
                                   {isBracketType && histTable.brackets.length > 0 && (
                                     <div className="payroll-params__bracket-wrapper">
-                                      <table className="payroll-params__bracket-table" aria-label={`Tabela ${LEGAL_TABLE_TYPE_LABELS[type]} histórica`}>
+                                      <table
+                                        className="payroll-params__bracket-table"
+                                        aria-label={`Tabela ${LEGAL_TABLE_TYPE_LABELS[type]} histórica`}
+                                      >
                                         <thead>
                                           <tr>
                                             <th scope="col">De (R$)</th>
@@ -579,22 +644,32 @@ export default function PayrollParametersPage() {
                                           </tr>
                                         </thead>
                                         <tbody>
-                                          {[...histTable.brackets].sort((a, b) => a.order - b.order).map((bracket) => (
-                                            <tr key={bracket.id}>
-                                              <td className="payroll-params__cell-mono">{formatMonetary(bracket.fromValue)}</td>
-                                              <td className="payroll-params__cell-mono">
-                                                {bracket.upTo === null ? (
-                                                  <span className="payroll-params__sem-limite">Sem limite</span>
-                                                ) : (
-                                                  formatMonetary(bracket.upTo)
+                                          {[...histTable.brackets]
+                                            .sort((a, b) => a.order - b.order)
+                                            .map((bracket) => (
+                                              <tr key={bracket.id}>
+                                                <td className="payroll-params__cell-mono">
+                                                  {formatMonetary(bracket.fromValue)}
+                                                </td>
+                                                <td className="payroll-params__cell-mono">
+                                                  {bracket.upTo === null ? (
+                                                    <span className="payroll-params__sem-limite">
+                                                      Sem limite
+                                                    </span>
+                                                  ) : (
+                                                    formatMonetary(bracket.upTo)
+                                                  )}
+                                                </td>
+                                                <td className="payroll-params__cell-mono">
+                                                  {formatRate(bracket.rate)}
+                                                </td>
+                                                {hasDeduction && (
+                                                  <td className="payroll-params__cell-mono">
+                                                    {formatMonetary(bracket.deduction)}
+                                                  </td>
                                                 )}
-                                              </td>
-                                              <td className="payroll-params__cell-mono">{formatRate(bracket.rate)}</td>
-                                              {hasDeduction && (
-                                                <td className="payroll-params__cell-mono">{formatMonetary(bracket.deduction)}</td>
-                                              )}
-                                            </tr>
-                                          ))}
+                                              </tr>
+                                            ))}
                                         </tbody>
                                       </table>
                                     </div>
@@ -652,7 +727,9 @@ export default function PayrollParametersPage() {
         confirmLabel="Desativar Rubrica"
         variant="danger"
         isLoading={isDeactivating}
-        onConfirm={() => { void handleDeactivateConfirm(); }}
+        onConfirm={() => {
+          void handleDeactivateConfirm();
+        }}
         onCancel={() => setDeactivatingRubrica(null)}
       />
     </main>

@@ -40,11 +40,7 @@ const STATUS_CHIP_CLASSES: Record<EsocialStatus, string> = {
 };
 
 function StatusChip({ status }: { status: EsocialStatus }) {
-  return (
-    <span className={STATUS_CHIP_CLASSES[status]}>
-      {ESOCIAL_STATUS_LABELS[status]}
-    </span>
-  );
+  return <span className={STATUS_CHIP_CLASSES[status]}>{ESOCIAL_STATUS_LABELS[status]}</span>;
 }
 
 // ─── Skeleton row ───────────────────────────────────────────────────────────
@@ -63,9 +59,10 @@ function SkeletonRow({ cols }: { cols: number }) {
 
 // ─── Generate Modal ─────────────────────────────────────────────────────────
 
-const ALL_EVENT_TYPE_OPTIONS = Object.entries(ESOCIAL_EVENT_TYPE_LABELS).map(
-  ([value, label]) => ({ value, label: `${value} — ${label}` }),
-);
+const ALL_EVENT_TYPE_OPTIONS = Object.entries(ESOCIAL_EVENT_TYPE_LABELS).map(([value, label]) => ({
+  value,
+  label: `${value} — ${label}`,
+}));
 
 interface GenerateModalProps {
   onClose: () => void;
@@ -280,8 +277,8 @@ function XsdErrorModal({ errors, onClose }: XsdErrorModalProps) {
         </header>
         <div className="esocial-events-page__modal-body">
           <p className="esocial-events-page__modal-description">
-            O XML do evento nao passou na validacao do schema XSD. Corrija os campos abaixo antes
-            de tentar novamente.
+            O XML do evento nao passou na validacao do schema XSD. Corrija os campos abaixo antes de
+            tentar novamente.
           </p>
           <table className="esocial-events-page__table" aria-label="Erros de validacao XSD">
             <thead>
@@ -688,11 +685,7 @@ export default function EsocialEventsPage() {
       )}
 
       {/* Group tabs */}
-      <nav
-        className="esocial-events-page__tabs"
-        aria-label="Grupos de eventos"
-        role="tablist"
-      >
+      <nav className="esocial-events-page__tabs" aria-label="Grupos de eventos" role="tablist">
         {GROUP_TABS.map((group) => (
           <button
             key={group}
@@ -727,10 +720,7 @@ export default function EsocialEventsPage() {
 
       {/* Modals */}
       {showGenerateModal && (
-        <GenerateModal
-          onClose={() => setShowGenerateModal(false)}
-          onSubmit={handleGenerateBatch}
-        />
+        <GenerateModal onClose={() => setShowGenerateModal(false)} onSubmit={handleGenerateBatch} />
       )}
 
       {rejectionEventId && (
@@ -741,9 +731,7 @@ export default function EsocialEventsPage() {
         />
       )}
 
-      {xsdErrors && (
-        <XsdErrorModal errors={xsdErrors} onClose={() => setXsdErrors(null)} />
-      )}
+      {xsdErrors && <XsdErrorModal errors={xsdErrors} onClose={() => setXsdErrors(null)} />}
 
       {viewRejectionReason && (
         <ViewRejectionModal

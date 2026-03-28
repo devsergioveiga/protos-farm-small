@@ -50,10 +50,9 @@ export function useStartClosing() {
       if (!orgId) throw new Error('Organização não identificada');
       setLoading(true);
       try {
-        const result = await api.post<MonthlyClosingOutput>(
-          `/org/${orgId}/monthly-closing/start`,
-          { periodId },
-        );
+        const result = await api.post<MonthlyClosingOutput>(`/org/${orgId}/monthly-closing/start`, {
+          periodId,
+        });
         return result;
       } finally {
         setLoading(false);

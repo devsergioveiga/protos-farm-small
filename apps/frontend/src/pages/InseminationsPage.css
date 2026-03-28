@@ -305,8 +305,13 @@
 }
 
 @keyframes insem-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 /* ─── Toast ──────────────────────────────────────────────── */
@@ -337,8 +342,14 @@
 }
 
 @keyframes insem-toast-in {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─── Responsive ─────────────────────────────────────────── */
@@ -405,7 +416,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .inseminations-page__skeleton-row { animation: none; opacity: 0.5; }
-  .inseminations-page__toast { animation: none; }
-  .inseminations-page__btn-primary { transition: none; }
+  .inseminations-page__skeleton-row {
+    animation: none;
+    opacity: 0.5;
+  }
+  .inseminations-page__toast {
+    animation: none;
+  }
+  .inseminations-page__btn-primary {
+    transition: none;
+  }
 }

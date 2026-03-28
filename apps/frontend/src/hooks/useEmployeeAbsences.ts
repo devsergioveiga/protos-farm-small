@@ -36,7 +36,10 @@ export function useEmployeeAbsences() {
         const items = Array.isArray(result) ? result : (result as { data: EmployeeAbsence[] }).data;
         setAbsences(items);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Nao foi possivel carregar os dados. Verifique sua conexao e tente novamente.';
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Nao foi possivel carregar os dados. Verifique sua conexao e tente novamente.';
         setError(message);
         setAbsences([]);
       } finally {
@@ -54,7 +57,9 @@ export function useEmployeeAbsences() {
       setSuccessMessage(null);
       try {
         const result = await api.post<EmployeeAbsence>(`/org/${orgId}/employee-absences`, data);
-        setSuccessMessage('Afastamento registrado. A folha deste mes sera ajustada automaticamente.');
+        setSuccessMessage(
+          'Afastamento registrado. A folha deste mes sera ajustada automaticamente.',
+        );
         return result;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Erro ao registrar afastamento';
@@ -89,7 +94,10 @@ export function useEmployeeAbsences() {
   );
 
   const updateAbsence = useCallback(
-    async (absenceId: string, data: Partial<CreateAbsenceInput>): Promise<EmployeeAbsence | null> => {
+    async (
+      absenceId: string,
+      data: Partial<CreateAbsenceInput>,
+    ): Promise<EmployeeAbsence | null> => {
       if (!orgId) return null;
       setLoading(true);
       setError(null);

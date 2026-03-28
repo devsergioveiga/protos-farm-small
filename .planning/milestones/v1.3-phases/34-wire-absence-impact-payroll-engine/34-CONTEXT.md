@@ -46,47 +46,56 @@ Importar e consumir `getAbsenceImpactForMonth` no motor de cálculo da folha de 
 </decisions>
 
 <canonical_refs>
+
 ## Canonical References
 
 **Downstream agents MUST read these before planning or implementing.**
 
 ### Motor de Cálculo (implementado)
+
 - `apps/backend/src/modules/payroll-runs/payroll-calculation.service.ts` — `calculateEmployeePayroll` com pro-rata por admissão, OT, DSR, INSS, IRRF, FGTS
 - `apps/backend/src/modules/payroll-runs/payroll-runs.types.ts` — `EmployeePayrollInput`, `EmployeePayrollResult`, lineItems
 - `apps/backend/src/modules/payroll-runs/payroll-runs.service.ts` — Orchestration: monta input e chama calculateEmployeePayroll (linhas ~352-376)
 - `apps/backend/src/modules/payroll-runs/payroll-pdf.service.ts` — Geração do holerite PDF com proventos/descontos/bases
 
 ### Afastamentos (implementado)
+
 - `apps/backend/src/modules/employee-absences/employee-absences.service.ts` — `getAbsenceImpactForMonth` (linhas 363-420) e `computePayrollImpact` (linhas 68-140)
 - `apps/backend/src/modules/employee-absences/employee-absences.types.ts` — `AbsencePayrollImpact` (companyPaidDays, inssPaidDays, suspendedDays, fgtsFullMonth)
 
 ### Contexto de Phases Anteriores
+
 - `.planning/phases/28-processamento-da-folha-mensal/28-CONTEXT.md` — Decisões do fluxo de processamento, holerite PDF, adiantamento, 13º
 - `.planning/REQUIREMENTS.md` — FERIAS-02 (afastamentos com impacto automático na folha)
 - `.planning/ROADMAP.md` §Phase 34 — Goal, success criteria, dependencies
 
 ### Testes Existentes
+
 - `apps/backend/src/modules/payroll-runs/payroll-calculation.service.spec.ts` — Testes do calculateEmployeePayroll (pro-rata, OT, INSS, IRRF)
 - `apps/backend/src/modules/employee-absences/employee-absences.routes.spec.ts` — Testes do getAbsenceImpactForMonth
 
 </canonical_refs>
 
 <code_context>
+
 ## Existing Code Insights
 
 ### Reusable Assets
+
 - `getAbsenceImpactForMonth(employeeId, referenceMonth, tx)` — Função pronta que retorna `AbsencePayrollImpact`, não consumida pelo payroll
 - `calculateEmployeePayroll(input, referenceMonth, params)` — Função pura de cálculo, precisa de novos campos no input para absence data
 - `payroll-pdf.service.ts` — Geração PDF via pdfkit com lineItems (proventos/descontos), rodapé com bases INSS/IRRF/FGTS
 - `payroll-runs.service.ts` — Orchestration que monta `EmployeePayrollInput` e chama o cálculo (ponto de integração principal)
 
 ### Established Patterns
+
 - `EmployeePayrollInput` já tem `timesheetData` como campo opcional — absence data pode seguir o mesmo padrão
 - lineItems com `{ code, description, reference, type: 'PROVENTO' | 'DESCONTO', value }` — rubricas de afastamento/suspensão seguem este formato
 - Pro-rata por admissão já implementado com `proRataDays` — serve de referência para pro-rata por afastamento
 - Testes com mock de Decimal e assertivas de valor
 
 ### Integration Points
+
 - `payroll-runs.service.ts` linhas ~352-376: onde `EmployeePayrollInput` é montado — precisa chamar `getAbsenceImpactForMonth` e passar resultado
 - `payroll-calculation.service.ts` Step 1 (pro-rata): onde o prorateio por afastamento deve ser aplicado após admissão
 - `payroll-calculation.service.ts` Step FGTS: onde `fgtsFullMonth` deve alterar a base de cálculo
@@ -113,5 +122,5 @@ None — discussion stayed within phase scope
 
 ---
 
-*Phase: 34-wire-absence-impact-payroll-engine*
-*Context gathered: 2026-03-26*
+_Phase: 34-wire-absence-impact-payroll-engine_
+_Context gathered: 2026-03-26_

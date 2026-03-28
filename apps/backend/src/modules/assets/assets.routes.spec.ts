@@ -632,10 +632,7 @@ describe('Assets API', () => {
 
     it('rejects circular reference on update (parentAssetId is a descendant) -> 400', async () => {
       mockedService.updateAsset.mockRejectedValue(
-        new AssetError(
-          'Referencia circular: o pai selecionado e um descendente deste ativo',
-          400,
-        ),
+        new AssetError('Referencia circular: o pai selecionado e um descendente deste ativo', 400),
       );
 
       const res = await request(app)

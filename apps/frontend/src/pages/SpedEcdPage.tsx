@@ -87,11 +87,15 @@ export default function SpedEcdPage() {
           <li className="sped-ecd-page__breadcrumb-item">
             <Link to="/">Inicio</Link>
           </li>
-          <li className="sped-ecd-page__breadcrumb-sep" aria-hidden="true">/</li>
+          <li className="sped-ecd-page__breadcrumb-sep" aria-hidden="true">
+            /
+          </li>
           <li className="sped-ecd-page__breadcrumb-item">
             <Link to="/chart-of-accounts">Contabilidade</Link>
           </li>
-          <li className="sped-ecd-page__breadcrumb-sep" aria-hidden="true">/</li>
+          <li className="sped-ecd-page__breadcrumb-sep" aria-hidden="true">
+            /
+          </li>
           <li className="sped-ecd-page__breadcrumb-item sped-ecd-page__breadcrumb-item--current">
             SPED / Relatorios
           </li>
@@ -175,8 +179,8 @@ export default function SpedEcdPage() {
               <button
                 type="button"
                 className="sped-ecd-page__btn sped-ecd-page__btn--primary"
-                disabled={!selectedFyId || !!(validationResult?.hasErrors) || spedDownloading}
-                aria-disabled={!selectedFyId || !!(validationResult?.hasErrors)}
+                disabled={!selectedFyId || !!validationResult?.hasErrors || spedDownloading}
+                aria-disabled={!selectedFyId || !!validationResult?.hasErrors}
                 title={
                   validationResult?.hasErrors
                     ? 'Corrija os erros acima para gerar o arquivo'

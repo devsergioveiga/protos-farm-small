@@ -159,7 +159,10 @@ export default function EmployeeStatusModal({
       onSuccess();
       onClose();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Não foi possível salvar. Verifique sua conexão e tente novamente.';
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Não foi possível salvar. Verifique sua conexão e tente novamente.';
       setError(message);
     } finally {
       setIsLoading(false);
@@ -276,7 +279,11 @@ export default function EmployeeStatusModal({
                         value={t.to}
                         checked={selectedTransition?.to === t.to}
                         onChange={() => setSelectedTransition(t)}
-                        ref={t === transitions[0] ? (firstFocusRef as React.RefObject<HTMLInputElement>) : undefined}
+                        ref={
+                          t === transitions[0]
+                            ? (firstFocusRef as React.RefObject<HTMLInputElement>)
+                            : undefined
+                        }
                       />
                       {t.label}
                     </label>
@@ -456,9 +463,10 @@ export default function EmployeeStatusModal({
                     fontSize: '0.9375rem',
                     border: 'none',
                     borderRadius: '8px',
-                    background: selectedTransition?.to === 'DESLIGADO'
-                      ? 'var(--color-error-500)'
-                      : 'var(--color-primary-600)',
+                    background:
+                      selectedTransition?.to === 'DESLIGADO'
+                        ? 'var(--color-error-500)'
+                        : 'var(--color-primary-600)',
                     color: '#fff',
                     cursor: selectedTransition ? 'pointer' : 'not-allowed',
                     opacity: !selectedTransition ? 0.5 : 1,
@@ -478,7 +486,9 @@ export default function EmployeeStatusModal({
           isOpen={showConfirm}
           title={selectedTransition.confirmTitle}
           message={selectedTransition.confirmMessage}
-          confirmLabel={selectedTransition.to === 'DESLIGADO' ? 'Desligar colaborador' : 'Confirmar'}
+          confirmLabel={
+            selectedTransition.to === 'DESLIGADO' ? 'Desligar colaborador' : 'Confirmar'
+          }
           variant={selectedTransition.confirmVariant}
           isLoading={isLoading}
           onConfirm={() => void handleConfirm()}

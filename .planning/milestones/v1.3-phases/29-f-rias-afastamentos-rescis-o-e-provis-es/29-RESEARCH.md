@@ -7,14 +7,16 @@
 ---
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|------------------|
-| FERIAS-01 | Controle de períodos aquisitivos, programação de férias (mín 5 dias, até 3 frações), cálculo (salário + 1/3 + médias – INSS – IRRF), abono pecuniário, alerta 60 dias antes do dobro, recibo PDF, pagamento 2 dias antes, calendário visual | New models: VacationAcquisitivePeriod + VacationSchedule; calculation reuses payroll engine (INSS/IRRF functions); pdfkit for receipt; alert via existing cron pattern |
-| FERIAS-02 | Registro de afastamentos (atestado 15 dias/INSS, acidente CAT, maternidade, paternidade, casamento, falecimento), impacto automático na folha, estabilidade provisória, controle retorno com ASO | New model: EmployeeAbsence; EmployeeStatus transition to AFASTADO; folha pro-rata já implementada via proRataDays |
-| FERIAS-03 | Rescisão por tipo (sem justa causa, justa causa, pedido, fim safra, acordo mútuo) com cálculo automático (saldo salário, aviso prévio proporcional Lei 12.506/2011, 13º prop., férias, multa FGTS), TRCT PDF, guias GRRF, alerta prazo 10 dias | New model: EmployeeTermination; pure calculation function like payroll-engine; pdfkit TRCT |
-| FERIAS-04 | Provisão mensal férias e 13º (1/12 salário + 1/3 + encargos), lançamento contábil despesa/passivo, reversão ao pagar, relatório com rateio por centro de custo | New model: PayrollProvision; accounting integration mirrors Phase 32 pattern (lançamento contábil é prep for INTEGR-02) |
+| ID        | Description                                                                                                                                                                                                                                    | Research Support                                                                                                                                                       |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FERIAS-01 | Controle de períodos aquisitivos, programação de férias (mín 5 dias, até 3 frações), cálculo (salário + 1/3 + médias – INSS – IRRF), abono pecuniário, alerta 60 dias antes do dobro, recibo PDF, pagamento 2 dias antes, calendário visual    | New models: VacationAcquisitivePeriod + VacationSchedule; calculation reuses payroll engine (INSS/IRRF functions); pdfkit for receipt; alert via existing cron pattern |
+| FERIAS-02 | Registro de afastamentos (atestado 15 dias/INSS, acidente CAT, maternidade, paternidade, casamento, falecimento), impacto automático na folha, estabilidade provisória, controle retorno com ASO                                               | New model: EmployeeAbsence; EmployeeStatus transition to AFASTADO; folha pro-rata já implementada via proRataDays                                                      |
+| FERIAS-03 | Rescisão por tipo (sem justa causa, justa causa, pedido, fim safra, acordo mútuo) com cálculo automático (saldo salário, aviso prévio proporcional Lei 12.506/2011, 13º prop., férias, multa FGTS), TRCT PDF, guias GRRF, alerta prazo 10 dias | New model: EmployeeTermination; pure calculation function like payroll-engine; pdfkit TRCT                                                                             |
+| FERIAS-04 | Provisão mensal férias e 13º (1/12 salário + 1/3 + encargos), lançamento contábil despesa/passivo, reversão ao pagar, relatório com rateio por centro de custo                                                                                 | New model: PayrollProvision; accounting integration mirrors Phase 32 pattern (lançamento contábil é prep for INTEGR-02)                                                |
+
 </phase_requirements>
 
 ---
@@ -35,13 +37,13 @@ The highest-complexity area is FERIAS-03 (rescisão), which requires implementin
 
 ### Core (all already installed)
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| decimal.js | 10.6.0 | All monetary arithmetic | Mandatory — all payroll calculations use Decimal per project decisions |
-| pdfkit | 0.17.2 | TRCT, vacation receipt, GRRF cover PDFs | Already in backend; used by payroll-runs, timesheet, and 9+ other modules |
-| date-holidays | 3.26.11 | Holiday lookup for aviso prévio counting | Already installed for payroll-runs DSR calculation |
-| jszip | 3.10.1 | Batch export of TRCT + GRRF as ZIP | Already installed for payslip batch export |
-| nodemailer | 8.0.1 | Email alerts (vacation due, termination deadline) | Already installed; mail.service.ts is the wrapper |
+| Library       | Version | Purpose                                           | Why Standard                                                              |
+| ------------- | ------- | ------------------------------------------------- | ------------------------------------------------------------------------- |
+| decimal.js    | 10.6.0  | All monetary arithmetic                           | Mandatory — all payroll calculations use Decimal per project decisions    |
+| pdfkit        | 0.17.2  | TRCT, vacation receipt, GRRF cover PDFs           | Already in backend; used by payroll-runs, timesheet, and 9+ other modules |
+| date-holidays | 3.26.11 | Holiday lookup for aviso prévio counting          | Already installed for payroll-runs DSR calculation                        |
+| jszip         | 3.10.1  | Batch export of TRCT + GRRF as ZIP                | Already installed for payslip batch export                                |
+| nodemailer    | 8.0.1   | Email alerts (vacation due, termination deadline) | Already installed; mail.service.ts is the wrapper                         |
 
 ### No New Dependencies Required
 
@@ -320,10 +322,19 @@ function calculateVacationPay(input: VacationCalcInput, params: EngineParams): V
   // INSS on grossTaxable (same brackets as monthly payroll)
   const inss = calculateINSS(grossTaxable, params.inssBrackets, params.inssCeiling);
   // IRRF on grossTaxable - INSS - dependentDeductions
-  const irrf = calculateIRRF({ grossSalary: grossTaxable, inssContribution: inss.contribution, ...params });
-  return { grossTaxable, abonoValue, inss: inss.contribution, irrf: irrf.finalTax,
-           net: grossTaxable.sub(inss.contribution).sub(irrf.finalTax).add(abonoValue),
-           fgts: grossTaxable.mul('0.08') }; // FGTS on full gross incl abono (CLT 28 §9)
+  const irrf = calculateIRRF({
+    grossSalary: grossTaxable,
+    inssContribution: inss.contribution,
+    ...params,
+  });
+  return {
+    grossTaxable,
+    abonoValue,
+    inss: inss.contribution,
+    irrf: irrf.finalTax,
+    net: grossTaxable.sub(inss.contribution).sub(irrf.finalTax).add(abonoValue),
+    fgts: grossTaxable.mul('0.08'),
+  }; // FGTS on full gross incl abono (CLT 28 §9)
 }
 ```
 
@@ -336,7 +347,7 @@ function calculateVacationPay(input: VacationCalcInput, params: EngineParams): V
 
 function calcNoticePeriodDays(admissionDate: Date, terminationDate: Date): number {
   const yearsCompleted = Math.floor(
-    (terminationDate.getTime() - admissionDate.getTime()) / (365.25 * 24 * 3600 * 1000)
+    (terminationDate.getTime() - admissionDate.getTime()) / (365.25 * 24 * 3600 * 1000),
   );
   const noticeDays = Math.min(30 + Math.max(0, yearsCompleted - 1) * 3, 90);
   return noticeDays;
@@ -344,11 +355,11 @@ function calcNoticePeriodDays(admissionDate: Date, terminationDate: Date): numbe
 
 // Termination type → FGTS penalty mapping
 const FGTS_PENALTY: Record<TerminationType, Decimal> = {
-  WITHOUT_CAUSE:    new Decimal('0.40'),
+  WITHOUT_CAUSE: new Decimal('0.40'),
   MUTUAL_AGREEMENT: new Decimal('0.20'),
-  WITH_CAUSE:       new Decimal('0.00'),
-  VOLUNTARY:        new Decimal('0.00'),
-  SEASONAL_END:     new Decimal('0.00'),   // Lei 5.889/73 — fim de safra
+  WITH_CAUSE: new Decimal('0.00'),
+  VOLUNTARY: new Decimal('0.00'),
+  SEASONAL_END: new Decimal('0.00'), // Lei 5.889/73 — fim de safra
 };
 
 // Balance salary = salary / 30 × days worked in last month
@@ -402,12 +413,12 @@ BEREAVEMENT         | 2 days      | Yes  | Yes  | No
 
 Each of the 4 requirements maps to one frontend page following the PayrollRunsPage pattern:
 
-| Page | Primary Component | Modal/Drawer | Key Action |
-|------|------------------|--------------|------------|
-| VacationSchedulesPage | Table + calendar view toggle | VacationScheduleModal (schedule new) | "Agendar Férias" |
-| EmployeeAbsencesPage | Table per employee | AbsenceModal (register) | "Registrar Afastamento" |
-| EmployeeTerminationsPage | List with status badge | TerminationWizard (3-step) | "Processar Rescisão" |
-| PayrollProvisionsPage | Monthly grid + cost center breakdown | (read-only) | "Calcular Provisões" (month picker) |
+| Page                     | Primary Component                    | Modal/Drawer                         | Key Action                          |
+| ------------------------ | ------------------------------------ | ------------------------------------ | ----------------------------------- |
+| VacationSchedulesPage    | Table + calendar view toggle         | VacationScheduleModal (schedule new) | "Agendar Férias"                    |
+| EmployeeAbsencesPage     | Table per employee                   | AbsenceModal (register)              | "Registrar Afastamento"             |
+| EmployeeTerminationsPage | List with status badge               | TerminationWizard (3-step)           | "Processar Rescisão"                |
+| PayrollProvisionsPage    | Monthly grid + cost center breakdown | (read-only)                          | "Calcular Provisões" (month picker) |
 
 ### Anti-Patterns to Avoid
 
@@ -421,13 +432,13 @@ Each of the 4 requirements maps to one frontend page following the PayrollRunsPa
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| INSS/IRRF on vacation/termination pay | Custom tax calculator | `calculateINSS` + `calculateIRRF` from `payroll-engine.service` | Already implemented, tested against official 2026 brackets |
-| Holiday counting for aviso prévio | Custom calendar | `date-holidays` (already installed) | Handles national + state holidays used in Phase 27/28 |
-| PDF generation for TRCT, vacation receipt | Custom HTML-to-PDF | `pdfkit` (already installed) | Established pattern in 9+ modules; pdfkit-table for tables |
-| Batch ZIP of documents | Custom archive | `jszip` (already installed) | Already used in payslip batch export |
-| Email alerts (60 days before, 10 day deadline) | Polling loop | Extend existing cron in `schedules/` or use cron.service pattern | Cron for contract expiry already established in Phase 25 |
+| Problem                                        | Don't Build           | Use Instead                                                      | Why                                                        |
+| ---------------------------------------------- | --------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| INSS/IRRF on vacation/termination pay          | Custom tax calculator | `calculateINSS` + `calculateIRRF` from `payroll-engine.service`  | Already implemented, tested against official 2026 brackets |
+| Holiday counting for aviso prévio              | Custom calendar       | `date-holidays` (already installed)                              | Handles national + state holidays used in Phase 27/28      |
+| PDF generation for TRCT, vacation receipt      | Custom HTML-to-PDF    | `pdfkit` (already installed)                                     | Established pattern in 9+ modules; pdfkit-table for tables |
+| Batch ZIP of documents                         | Custom archive        | `jszip` (already installed)                                      | Already used in payslip batch export                       |
+| Email alerts (60 days before, 10 day deadline) | Polling loop          | Extend existing cron in `schedules/` or use cron.service pattern | Cron for contract expiry already established in Phase 25   |
 
 **Key insight:** All computation is pure arithmetic that reuses the payroll engine. The "new" work in Phase 29 is: (1) the CLT-specific rules for each event type, (2) the database models to store them, and (3) frontend pages to expose them.
 
@@ -436,37 +447,44 @@ Each of the 4 requirements maps to one frontend page following the PayrollRunsPa
 ## Common Pitfalls
 
 ### Pitfall 1: Vacation Fractionation Rules (CLT Art. 134 §1)
+
 **What goes wrong:** Allowing schedules that violate the minimum-5-days-per-fraction rule.
 **Why it happens:** Treating vacation as a simple date range without validating each fraction.
 **How to avoid:** Validate in the service: each fraction ≥ 5 days; at most one fraction < 14 days; total fractions ≤ 3; the largest fraction must be ≥ 14 days. One fraction must include DSR (Sunday).
 **Warning signs:** User schedules 3 × 10 days (allowed) but one of them is 4 days (not allowed) → service returns 422.
 
 ### Pitfall 2: Doubling Period Calculation (CLT Art. 137)
+
 **What goes wrong:** Calculating the "dobro" deadline from admission date instead of from the end of the acquisitive period.
 **Why it happens:** Confusing admission anniversary with the end of the concessivo period.
 **How to avoid:** acquisitivePeriod.endDate + 12 months = dobro deadline. Alert at (dobro_deadline - 60 days).
 
 ### Pitfall 3: Proportional Notice for Voluntary Resignation
+
 **What goes wrong:** Applying Lei 12.506/2011 notice to voluntary resignations.
 **Why it happens:** The law reads ambiguously — courts have ruled it applies to WITHOUT_CAUSE only.
 **How to avoid:** Proportional notice (30+3/year) applies only to `WITHOUT_CAUSE`. For `VOLUNTARY`, the notice is 30 days (flat, CLT Art. 487) — or zero if the employer waives it.
 
 ### Pitfall 4: FGTS Penalty for Seasonal Termination (fim de safra)
+
 **What goes wrong:** Applying 40% FGTS penalty to seasonal contract endings.
 **Why it happens:** Treating SEASONAL_END like WITHOUT_CAUSE.
 **How to avoid:** Lei 5.889/73 Art. 14 establishes that the end of a safra contract has no 40% FGTS penalty (the work was always expected to be temporary). Penalty = 0%.
 
 ### Pitfall 5: Decimal Rounding in Monthly Provisions
+
 **What goes wrong:** salary / 12 accumulates floating-point errors across 12 months.
 **Why it happens:** Not using Decimal.js or using `.toFixed()` at intermediate steps.
 **How to avoid:** Use `Decimal.div(12).toDecimalPlaces(2, Decimal.ROUND_HALF_UP)` for every provision record. Test with salaries like R$ 3.333,33 that don't divide evenly.
 
 ### Pitfall 6: VacationSchedule Conflicts with Harvest Calendar
+
 **What goes wrong:** UI allows scheduling vacation during harvest peak without surfacing the conflict.
 **Why it happens:** Harvest dates are in a different module (PlantingSeason / CropPlan) not joined in the vacation query.
 **How to avoid:** The frontend calendar should make a best-effort to overlay known harvest/planting dates from the farm calendar. For Phase 29, a simpler approach is: query `PlantingOperation` or `CropHarvest` dates for the same farm and flag overlaps as warnings (not blocks). The requirement says "calendário visual evitando conflitos com datas de safra" — a visual warning suffices.
 
 ### Pitfall 7: Absence Impact on VacationAcquisitivePeriod
+
 **What goes wrong:** Absences that reduce vacation entitlement (e.g., INSS leave > 6 months) are not reflected in daysEarned.
 **Why it happens:** Absence and vacation modules are developed independently.
 **How to avoid:** CLT Art. 133 I: absence > 30 days (non-legal) causes loss of vacation for that acquisitive period. CLT Art. 133 II: INSS leave > 6 months in the same period also reduces vacation. When creating/updating an EmployeeAbsence, trigger a recomputation of the overlapping VacationAcquisitivePeriod.daysEarned.
@@ -492,18 +510,20 @@ async function initVacationPeriod(employeeId: string, admissionDate: Date, ctx: 
         daysEarned: 30,
         daysTaken: 0,
         status: 'ACCRUING',
-      }
+      },
     });
   });
 }
 
 // When a period completes (status ACCRUING → AVAILABLE), create the next one:
 async function advancePeriod(periodId: string, ctx: RlsContext) {
-  const period = await prisma.vacationAcquisitivePeriod.findUniqueOrThrow({ where: { id: periodId } });
+  const period = await prisma.vacationAcquisitivePeriod.findUniqueOrThrow({
+    where: { id: periodId },
+  });
   await prisma.$transaction(async (tx) => {
     await tx.vacationAcquisitivePeriod.update({
       where: { id: periodId },
-      data: { status: 'AVAILABLE' }
+      data: { status: 'AVAILABLE' },
     });
     await tx.vacationAcquisitivePeriod.create({
       data: {
@@ -512,7 +532,7 @@ async function advancePeriod(periodId: string, ctx: RlsContext) {
         endDate: addYears(period.endDate, 1),
         daysEarned: 30,
         status: 'ACCRUING',
-      }
+      },
     });
   });
 }
@@ -574,17 +594,17 @@ export function calculateTermination(input: TerminationInput, params: EnginePara
 async function getAbsenceImpactForMonth(
   employeeId: string,
   referenceMonth: Date,
-  tx: TxClient
+  tx: TxClient,
 ): Promise<AbsencePayrollImpact> {
   const monthStart = startOfMonth(referenceMonth);
-  const monthEnd   = endOfMonth(referenceMonth);
+  const monthEnd = endOfMonth(referenceMonth);
 
   const absences = await tx.employeeAbsence.findMany({
     where: {
       employeeId,
       startDate: { lte: monthEnd },
       OR: [{ endDate: null }, { endDate: { gte: monthStart } }],
-    }
+    },
   });
 
   let companyPaidDays = 0;
@@ -598,8 +618,14 @@ async function getAbsenceImpactForMonth(
     // WORK_ACCIDENT: days 1-15 = company, rest suspended, FGTS still deposited
   }
 
-  return { companyPaidDays, inssPaidDays, suspendedDays,
-           fgtsFullMonth: absences.some(a => a.absenceType === 'WORK_ACCIDENT' || a.absenceType === 'INSS_LEAVE') };
+  return {
+    companyPaidDays,
+    inssPaidDays,
+    suspendedDays,
+    fgtsFullMonth: absences.some(
+      (a) => a.absenceType === 'WORK_ACCIDENT' || a.absenceType === 'INSS_LEAVE',
+    ),
+  };
 }
 ```
 
@@ -613,15 +639,15 @@ This is a greenfield phase (new models, no rename/refactor). Runtime State Inven
 
 ## Environment Availability
 
-| Dependency | Required By | Available | Version | Fallback |
-|------------|------------|-----------|---------|----------|
-| Node.js | Backend runtime | Yes | v24.12.0 | — |
-| PostgreSQL | Database | Yes | 16 (via Prisma) | — |
-| pdfkit | TRCT + vacation receipt PDF | Yes | 0.17.2 | — |
-| decimal.js | All monetary calculations | Yes | 10.6.0 | — |
-| date-holidays | Aviso prévio business day count | Yes | 3.26.11 | — |
-| jszip | Batch TRCT export | Yes | 3.10.1 | — |
-| nodemailer | Deadline alerts | Yes | 8.0.1 | — |
+| Dependency    | Required By                     | Available | Version         | Fallback |
+| ------------- | ------------------------------- | --------- | --------------- | -------- |
+| Node.js       | Backend runtime                 | Yes       | v24.12.0        | —        |
+| PostgreSQL    | Database                        | Yes       | 16 (via Prisma) | —        |
+| pdfkit        | TRCT + vacation receipt PDF     | Yes       | 0.17.2          | —        |
+| decimal.js    | All monetary calculations       | Yes       | 10.6.0          | —        |
+| date-holidays | Aviso prévio business day count | Yes       | 3.26.11         | —        |
+| jszip         | Batch TRCT export               | Yes       | 3.10.1          | —        |
+| nodemailer    | Deadline alerts                 | Yes       | 8.0.1           | —        |
 
 **Missing dependencies with no fallback:** None.
 
@@ -633,29 +659,29 @@ This is a greenfield phase (new models, no rename/refactor). Runtime State Inven
 
 ### Test Framework
 
-| Property | Value |
-|----------|-------|
-| Framework | Jest (backend) + Vitest (frontend) |
-| Config file | `apps/backend/jest.config.cjs` (backend), `apps/frontend/vite.config.ts` (frontend) |
-| Quick run command | `cd apps/backend && npx jest --testPathPattern="termination-calculation" --no-coverage` |
-| Full suite command | `cd apps/backend && npx jest --no-coverage` |
+| Property           | Value                                                                                   |
+| ------------------ | --------------------------------------------------------------------------------------- |
+| Framework          | Jest (backend) + Vitest (frontend)                                                      |
+| Config file        | `apps/backend/jest.config.cjs` (backend), `apps/frontend/vite.config.ts` (frontend)     |
+| Quick run command  | `cd apps/backend && npx jest --testPathPattern="termination-calculation" --no-coverage` |
+| Full suite command | `cd apps/backend && npx jest --no-coverage`                                             |
 
 ### Phase Requirements → Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| FERIAS-01 | Vacation payment calculation (CLT Art. 142) | unit | `npx jest vacation-schedules` | ❌ Wave 0 |
-| FERIAS-01 | Acquisitive period state machine | unit | `npx jest vacation-schedules` | ❌ Wave 0 |
-| FERIAS-01 | Abono pecuniário exempt from INSS/IRRF (OJ 386) | unit | `npx jest vacation-schedules` | ❌ Wave 0 |
-| FERIAS-02 | Absence payroll impact matrix per type | unit | `npx jest employee-absences` | ❌ Wave 0 |
-| FERIAS-02 | FGTS continues during INSS leave | unit | `npx jest employee-absences` | ❌ Wave 0 |
-| FERIAS-03 | Notice period days per Lei 12.506/2011 | unit | `npx jest termination-calculation` | ❌ Wave 0 |
-| FERIAS-03 | FGTS penalty by termination type (incl. 0% safra) | unit | `npx jest termination-calculation` | ❌ Wave 0 |
-| FERIAS-03 | Total termination net calculation | unit | `npx jest termination-calculation` | ❌ Wave 0 |
-| FERIAS-03 | Routes: PATCH /employee-terminations/:id/process | integration | `npx jest employee-terminations.routes` | ❌ Wave 0 |
-| FERIAS-04 | Monthly provision = salary/12 × 4/3 | unit | `npx jest payroll-provisions` | ❌ Wave 0 |
-| FERIAS-04 | Charges = provisionAmount × (20% + RAT + 8%) | unit | `npx jest payroll-provisions` | ❌ Wave 0 |
-| FERIAS-04 | Unique constraint on (employeeId, referenceMonth, type) | integration | `npx jest payroll-provisions.routes` | ❌ Wave 0 |
+| Req ID    | Behavior                                                | Test Type   | Automated Command                       | File Exists? |
+| --------- | ------------------------------------------------------- | ----------- | --------------------------------------- | ------------ |
+| FERIAS-01 | Vacation payment calculation (CLT Art. 142)             | unit        | `npx jest vacation-schedules`           | ❌ Wave 0    |
+| FERIAS-01 | Acquisitive period state machine                        | unit        | `npx jest vacation-schedules`           | ❌ Wave 0    |
+| FERIAS-01 | Abono pecuniário exempt from INSS/IRRF (OJ 386)         | unit        | `npx jest vacation-schedules`           | ❌ Wave 0    |
+| FERIAS-02 | Absence payroll impact matrix per type                  | unit        | `npx jest employee-absences`            | ❌ Wave 0    |
+| FERIAS-02 | FGTS continues during INSS leave                        | unit        | `npx jest employee-absences`            | ❌ Wave 0    |
+| FERIAS-03 | Notice period days per Lei 12.506/2011                  | unit        | `npx jest termination-calculation`      | ❌ Wave 0    |
+| FERIAS-03 | FGTS penalty by termination type (incl. 0% safra)       | unit        | `npx jest termination-calculation`      | ❌ Wave 0    |
+| FERIAS-03 | Total termination net calculation                       | unit        | `npx jest termination-calculation`      | ❌ Wave 0    |
+| FERIAS-03 | Routes: PATCH /employee-terminations/:id/process        | integration | `npx jest employee-terminations.routes` | ❌ Wave 0    |
+| FERIAS-04 | Monthly provision = salary/12 × 4/3                     | unit        | `npx jest payroll-provisions`           | ❌ Wave 0    |
+| FERIAS-04 | Charges = provisionAmount × (20% + RAT + 8%)            | unit        | `npx jest payroll-provisions`           | ❌ Wave 0    |
+| FERIAS-04 | Unique constraint on (employeeId, referenceMonth, type) | integration | `npx jest payroll-provisions.routes`    | ❌ Wave 0    |
 
 ### Sampling Rate
 
@@ -675,14 +701,15 @@ This is a greenfield phase (new models, no rename/refactor). Runtime State Inven
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| Notice period = flat 30 days | Lei 12.506/2011: 30 + 3/year (max 90) | November 2011 | Proportional notice now standard; system must use the formula |
-| DIRF for IRRF reporting | eSocial S-1200 + EFD-Reinf | 2025 | DIRF abolished — confirmed in REQUIREMENTS.md Out of Scope |
-| Manual GRRF filling at Caixa | Digital GRRF via FGTS Digital (web service) | 2023 | Phase 29 generates PDF guide; eSocial integration (Phase 31) handles transmission |
-| Acordo mútuo unavailable | Lei 13.467/2017 (Reforma Trabalhista): acordo mútuo legal | November 2017 | Must implement MUTUAL_AGREEMENT with 20% FGTS penalty + half notice |
+| Old Approach                 | Current Approach                                          | When Changed  | Impact                                                                            |
+| ---------------------------- | --------------------------------------------------------- | ------------- | --------------------------------------------------------------------------------- |
+| Notice period = flat 30 days | Lei 12.506/2011: 30 + 3/year (max 90)                     | November 2011 | Proportional notice now standard; system must use the formula                     |
+| DIRF for IRRF reporting      | eSocial S-1200 + EFD-Reinf                                | 2025          | DIRF abolished — confirmed in REQUIREMENTS.md Out of Scope                        |
+| Manual GRRF filling at Caixa | Digital GRRF via FGTS Digital (web service)               | 2023          | Phase 29 generates PDF guide; eSocial integration (Phase 31) handles transmission |
+| Acordo mútuo unavailable     | Lei 13.467/2017 (Reforma Trabalhista): acordo mútuo legal | November 2017 | Must implement MUTUAL_AGREEMENT with 20% FGTS penalty + half notice               |
 
 **Deprecated/outdated:**
+
 - Homologação sindical para rescisões: dispensada (Reforma Trabalhista 2017 Art. 477 §1) — confirmed in REQUIREMENTS.md v2 ADV-04
 - DIRF: abolished in 2025, data flows via eSocial — confirmed Out of Scope
 
@@ -709,19 +736,19 @@ This is a greenfield phase (new models, no rename/refactor). Runtime State Inven
 
 ## Project Constraints (from CLAUDE.md)
 
-| Directive | Impact on Phase 29 |
-|-----------|-------------------|
-| Express 5: `req.params.id as string` | All new routes must cast params — never destructure without `as string` |
-| Prisma enums typed, never `string` | TerminationType, AbsenceType, etc. must be imported from `@prisma/client` in services |
-| Use `as const` on enum return values in tests | Mock data for TerminationType etc. needs `'WITHOUT_CAUSE' as const` |
-| Decimal.max is static, not instance method | All monetary max/min use `Decimal.max(a, b)` |
-| Frontend types must mirror backend | `apps/frontend/src/types/vacation.ts`, `termination.ts`, etc. must be created before hooks |
-| `null` vs `undefined`: Prisma uses `null`, inputs use `undefined` | Form state uses `undefined`; DB read responses use `null`; conversion at hook boundary |
-| **ConfirmModal** for destructive actions — never `window.confirm()` | Rescisão (termination) processing: use `ConfirmDeleteModal` (high criticality) |
-| DM Sans headlines, Source Sans 3 body, JetBrains Mono for data | TRCT and vacation receipt PDFs must use these fonts (or system-safe equivalents for pdfkit) |
-| Touch targets 48×48px minimum | All action buttons on mobile-accessible pages |
-| Lucide Icons (lucide-react for web) | Use Calendar, UserX, AlertTriangle, FileText icons for the 4 new pages |
-| Mobile-first CSS | New pages styled mobile-first with Tailwind |
+| Directive                                                           | Impact on Phase 29                                                                          |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Express 5: `req.params.id as string`                                | All new routes must cast params — never destructure without `as string`                     |
+| Prisma enums typed, never `string`                                  | TerminationType, AbsenceType, etc. must be imported from `@prisma/client` in services       |
+| Use `as const` on enum return values in tests                       | Mock data for TerminationType etc. needs `'WITHOUT_CAUSE' as const`                         |
+| Decimal.max is static, not instance method                          | All monetary max/min use `Decimal.max(a, b)`                                                |
+| Frontend types must mirror backend                                  | `apps/frontend/src/types/vacation.ts`, `termination.ts`, etc. must be created before hooks  |
+| `null` vs `undefined`: Prisma uses `null`, inputs use `undefined`   | Form state uses `undefined`; DB read responses use `null`; conversion at hook boundary      |
+| **ConfirmModal** for destructive actions — never `window.confirm()` | Rescisão (termination) processing: use `ConfirmDeleteModal` (high criticality)              |
+| DM Sans headlines, Source Sans 3 body, JetBrains Mono for data      | TRCT and vacation receipt PDFs must use these fonts (or system-safe equivalents for pdfkit) |
+| Touch targets 48×48px minimum                                       | All action buttons on mobile-accessible pages                                               |
+| Lucide Icons (lucide-react for web)                                 | Use Calendar, UserX, AlertTriangle, FileText icons for the 4 new pages                      |
+| Mobile-first CSS                                                    | New pages styled mobile-first with Tailwind                                                 |
 
 ---
 
@@ -751,6 +778,7 @@ This is a greenfield phase (new models, no rename/refactor). Runtime State Inven
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH — all libraries already installed, confirmed in package.json
 - Architecture: HIGH — directly follows Phase 28 patterns (PayrollRun, payroll-engine reuse)
 - Labor law rules: HIGH — CLT articles are well-settled; Lei 12.506/2011 is 15 years old

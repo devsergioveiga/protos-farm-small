@@ -33,38 +33,28 @@ function handleError(err: unknown, res: import('express').Response): void {
 
 // ─── POST / — Create trade-in ─────────────────────────────────────────
 
-assetTradeInsRouter.post(
-  base,
-  authenticate,
-  checkPermission('assets:create'),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const result = await createTradeIn(ctx, req.body);
-      res.status(201).json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
+assetTradeInsRouter.post(base, authenticate, checkPermission('assets:create'), async (req, res) => {
+  try {
+    const ctx = buildRlsContext(req);
+    const result = await createTradeIn(ctx, req.body);
+    res.status(201).json(result);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
 
 // ─── GET / — List trade-ins ───────────────────────────────────────────
 
-assetTradeInsRouter.get(
-  base,
-  authenticate,
-  checkPermission('assets:read'),
-  async (req, res) => {
-    try {
-      const ctx = buildRlsContext(req);
-      const farmId = req.query.farmId as string | undefined;
-      const result = await listTradeIns(ctx, farmId);
-      res.status(200).json(result);
-    } catch (err) {
-      handleError(err, res);
-    }
-  },
-);
+assetTradeInsRouter.get(base, authenticate, checkPermission('assets:read'), async (req, res) => {
+  try {
+    const ctx = buildRlsContext(req);
+    const farmId = req.query.farmId as string | undefined;
+    const result = await listTradeIns(ctx, farmId);
+    res.status(200).json(result);
+  } catch (err) {
+    handleError(err, res);
+  }
+});
 
 // ─── GET /:id — Get single trade-in ──────────────────────────────────
 

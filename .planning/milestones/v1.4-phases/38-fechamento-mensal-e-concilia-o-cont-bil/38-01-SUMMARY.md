@@ -39,7 +39,7 @@ decisions:
   - authorize(ADMIN, SUPER_ADMIN) placed BEFORE checkPermission on reopen route — role check runs first, returns 403 before touching permission DB
 metrics:
   duration_minutes: 36
-  completed_date: "2026-03-28"
+  completed_date: '2026-03-28'
   tasks_completed: 1
   tasks_total: 1
   files_created: 7
@@ -54,6 +54,7 @@ metrics:
 ## What Was Built
 
 Backend module for structured monthly accounting close with:
+
 - **MonthlyClosing Prisma model** with `stepResults` JSON field for storing per-step validation outcomes
 - **6-step validation engine**: timesheets (APPROVED/LOCKED), payroll runs (COMPLETED), depreciation run (COMPLETED String), auto-posting counts (0 PENDING/ERROR), bank statement lines (0 PENDING), trial balance (isBalanced=true)
 - **checkPeriodOpen middleware**: blocks writes on CLOSED/BLOCKED periods using `assertPeriodOpen` from `@protos-farm/shared`
@@ -61,13 +62,14 @@ Backend module for structured monthly accounting close with:
 
 ## Tasks Completed
 
-| Task | Description | Commit | Files |
-|------|-------------|--------|-------|
-| 1 | Prisma migration + MonthlyClosing model + types + service + routes + middleware + tests | 34f8e147 | 9 files |
+| Task | Description                                                                             | Commit   | Files   |
+| ---- | --------------------------------------------------------------------------------------- | -------- | ------- |
+| 1    | Prisma migration + MonthlyClosing model + types + service + routes + middleware + tests | 34f8e147 | 9 files |
 
 ## Tests
 
 22 tests passing:
+
 - 5 middleware tests (`check-period-open.spec.ts`): OPEN pass, CLOSED 422, BLOCKED 422, no date pass, no period found 422
 - 17 route tests (`monthly-closing.routes.spec.ts`): start (3), validate steps 1-6 (9), complete (2), reopen (2), get (1)
 
@@ -102,6 +104,7 @@ None — all 6 step validation functions are fully implemented with real Prisma 
 ## Self-Check: PASSED
 
 All files present:
+
 - FOUND: apps/backend/prisma/migrations/20260603000000_add_monthly_closing/migration.sql
 - FOUND: apps/backend/src/modules/monthly-closing/monthly-closing.types.ts
 - FOUND: apps/backend/src/modules/monthly-closing/monthly-closing.service.ts
@@ -111,6 +114,7 @@ All files present:
 - FOUND: apps/backend/src/middleware/check-period-open.spec.ts
 
 All commits present:
+
 - 5aaaa2b7: test(38-01): add failing tests (RED phase)
 - 34f8e147: feat(38-01): implement monthly-closing module + checkPeriodOpen middleware (GREEN phase)
 

@@ -50,9 +50,9 @@ function _makeAggResult(field: string, value: string) {
 
 function setupAggregate(fgts: string, inss: string, irrf: string, gross: string) {
   mockTx.payrollRunItem.aggregate
-    .mockResolvedValueOnce({ _sum: { fgtsAmount: fgts } })   // FGTS query
-    .mockResolvedValueOnce({ _sum: { inssAmount: inss } })   // INSS query
-    .mockResolvedValueOnce({ _sum: { irrfAmount: irrf } })   // IRRF query
+    .mockResolvedValueOnce({ _sum: { fgtsAmount: fgts } }) // FGTS query
+    .mockResolvedValueOnce({ _sum: { inssAmount: inss } }) // INSS query
+    .mockResolvedValueOnce({ _sum: { irrfAmount: irrf } }) // IRRF query
     .mockResolvedValueOnce({ _sum: { grossSalary: gross } }); // FUNRURAL gross
 }
 
@@ -120,10 +120,12 @@ describe('TaxGuidesService.generateGuides', () => {
       scalarValues: [{ key: 'rate', value: '2.7' }],
     });
     let fgtsAmount: string | undefined;
-    mockTx.taxGuide.upsert.mockImplementation(({ create }: { create: { totalAmount: string; guideType: string } }) => {
-      if (create.guideType === 'FGTS') fgtsAmount = create.totalAmount.toString();
-      return Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING' });
-    });
+    mockTx.taxGuide.upsert.mockImplementation(
+      ({ create }: { create: { totalAmount: string; guideType: string } }) => {
+        if (create.guideType === 'FGTS') fgtsAmount = create.totalAmount.toString();
+        return Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING' });
+      },
+    );
     mockTx.payable.upsert.mockResolvedValue({});
 
     const service = new TaxGuidesService();
@@ -145,10 +147,12 @@ describe('TaxGuidesService.generateGuides', () => {
       scalarValues: [{ key: 'rate', value: '2.7' }],
     });
     let inssAmount: string | undefined;
-    mockTx.taxGuide.upsert.mockImplementation(({ create }: { create: { totalAmount: string; guideType: string } }) => {
-      if (create.guideType === 'INSS') inssAmount = create.totalAmount.toString();
-      return Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING' });
-    });
+    mockTx.taxGuide.upsert.mockImplementation(
+      ({ create }: { create: { totalAmount: string; guideType: string } }) => {
+        if (create.guideType === 'INSS') inssAmount = create.totalAmount.toString();
+        return Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING' });
+      },
+    );
     mockTx.payable.upsert.mockResolvedValue({});
 
     const service = new TaxGuidesService();
@@ -170,10 +174,12 @@ describe('TaxGuidesService.generateGuides', () => {
       scalarValues: [{ key: 'rate', value: '2.7' }],
     });
     let irrfAmount: string | undefined;
-    mockTx.taxGuide.upsert.mockImplementation(({ create }: { create: { totalAmount: string; guideType: string } }) => {
-      if (create.guideType === 'IRRF') irrfAmount = create.totalAmount.toString();
-      return Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING' });
-    });
+    mockTx.taxGuide.upsert.mockImplementation(
+      ({ create }: { create: { totalAmount: string; guideType: string } }) => {
+        if (create.guideType === 'IRRF') irrfAmount = create.totalAmount.toString();
+        return Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING' });
+      },
+    );
     mockTx.payable.upsert.mockResolvedValue({});
 
     const service = new TaxGuidesService();
@@ -197,10 +203,12 @@ describe('TaxGuidesService.generateGuides', () => {
     });
 
     let funruralAmount: string | undefined;
-    mockTx.taxGuide.upsert.mockImplementation(({ create }: { create: { totalAmount: string; guideType: string } }) => {
-      if (create.guideType === 'FUNRURAL') funruralAmount = create.totalAmount.toString();
-      return Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING' });
-    });
+    mockTx.taxGuide.upsert.mockImplementation(
+      ({ create }: { create: { totalAmount: string; guideType: string } }) => {
+        if (create.guideType === 'FUNRURAL') funruralAmount = create.totalAmount.toString();
+        return Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING' });
+      },
+    );
     mockTx.payable.upsert.mockResolvedValue({});
 
     const service = new TaxGuidesService();
@@ -225,7 +233,12 @@ describe('TaxGuidesService.generateGuides', () => {
       scalarValues: [{ key: 'rate', value: '2.7' }],
     });
     mockTx.taxGuide.upsert.mockImplementation(({ create }: { create: { guideType: string } }) =>
-      Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING', totalAmount: { toString: () => '0' } }),
+      Promise.resolve({
+        ...create,
+        id: `guide-${create.guideType}`,
+        status: 'PENDING',
+        totalAmount: { toString: () => '0' },
+      }),
     );
     mockTx.payable.upsert.mockResolvedValue({});
 
@@ -233,7 +246,9 @@ describe('TaxGuidesService.generateGuides', () => {
     await service.generateGuides(ORG_ID, { referenceMonth: REF_MONTH }, USER_ID);
 
     expect(mockTx.payable.upsert).toHaveBeenCalledTimes(4);
-    const calls = mockTx.payable.upsert.mock.calls as Array<[{ create: { originType: string; category: string } }]>;
+    const calls = mockTx.payable.upsert.mock.calls as Array<
+      [{ create: { originType: string; category: string } }]
+    >;
     for (const [args] of calls) {
       expect(args.create.originType).toBe('TAX_GUIDE');
       expect(args.create.category).toBe('TAXES');
@@ -253,10 +268,12 @@ describe('TaxGuidesService.generateGuides', () => {
       scalarValues: [{ key: 'rate', value: '2.7' }],
     });
     let fgtsDueDate: Date | undefined;
-    mockTx.taxGuide.upsert.mockImplementation(({ create }: { create: { guideType: string; dueDate: Date } }) => {
-      if (create.guideType === 'FGTS') fgtsDueDate = create.dueDate;
-      return Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING' });
-    });
+    mockTx.taxGuide.upsert.mockImplementation(
+      ({ create }: { create: { guideType: string; dueDate: Date } }) => {
+        if (create.guideType === 'FGTS') fgtsDueDate = create.dueDate;
+        return Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING' });
+      },
+    );
     mockTx.payable.upsert.mockResolvedValue({});
 
     const service = new TaxGuidesService();
@@ -282,10 +299,12 @@ describe('TaxGuidesService.generateGuides', () => {
       scalarValues: [{ key: 'rate', value: '2.7' }],
     });
     const dueDates: Record<string, Date> = {};
-    mockTx.taxGuide.upsert.mockImplementation(({ create }: { create: { guideType: string; dueDate: Date } }) => {
-      dueDates[create.guideType] = create.dueDate;
-      return Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING' });
-    });
+    mockTx.taxGuide.upsert.mockImplementation(
+      ({ create }: { create: { guideType: string; dueDate: Date } }) => {
+        dueDates[create.guideType] = create.dueDate;
+        return Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING' });
+      },
+    );
     mockTx.payable.upsert.mockResolvedValue({});
 
     const service = new TaxGuidesService();
@@ -315,10 +334,12 @@ describe('TaxGuidesService.generateGuides', () => {
       scalarValues: [{ key: 'rate', value: '2.7' }],
     });
     let fgtsDueDate: Date | undefined;
-    mockTx.taxGuide.upsert.mockImplementation(({ create }: { create: { guideType: string; dueDate: Date } }) => {
-      if (create.guideType === 'FGTS') fgtsDueDate = create.dueDate;
-      return Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING' });
-    });
+    mockTx.taxGuide.upsert.mockImplementation(
+      ({ create }: { create: { guideType: string; dueDate: Date } }) => {
+        if (create.guideType === 'FGTS') fgtsDueDate = create.dueDate;
+        return Promise.resolve({ ...create, id: `guide-${create.guideType}`, status: 'PENDING' });
+      },
+    );
     mockTx.payable.upsert.mockResolvedValue({});
 
     const service = new TaxGuidesService();
@@ -346,7 +367,15 @@ describe('TaxGuidesService.generateGuides', () => {
     });
     // upsert returns existing guide (simulating idempotency)
     mockTx.taxGuide.upsert.mockImplementation(({ create }: { create: any }) =>
-      Promise.resolve({ id: 'existing-guide', status: 'GENERATED', guideType: create.guideType ?? 'FGTS', totalAmount: { toString: () => create.totalAmount ?? '100.00' }, dueDate: create.dueDate ?? new Date(), referenceMonth: create.referenceMonth ?? new Date(), organizationId: ORG_ID }),
+      Promise.resolve({
+        id: 'existing-guide',
+        status: 'GENERATED',
+        guideType: create.guideType ?? 'FGTS',
+        totalAmount: { toString: () => create.totalAmount ?? '100.00' },
+        dueDate: create.dueDate ?? new Date(),
+        referenceMonth: create.referenceMonth ?? new Date(),
+        organizationId: ORG_ID,
+      }),
     );
     mockTx.payable.upsert.mockResolvedValue({});
 
@@ -367,22 +396,82 @@ describe('TaxGuidesService.listGuides', () => {
     const in15Days = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000);
 
     mockTx.taxGuide.findMany.mockResolvedValue([
-      { id: 'g1', guideType: 'FGTS', dueDate: in3Days, totalAmount: { toString: () => '100' }, status: 'PENDING', referenceMonth: new Date(), organizationId: ORG_ID, fileKey: null, payrollRunId: null, generatedBy: null, generatedAt: null, notes: null, createdAt: new Date(), updatedAt: new Date() },
-      { id: 'g2', guideType: 'INSS', dueDate: in8Days, totalAmount: { toString: () => '200' }, status: 'PENDING', referenceMonth: new Date(), organizationId: ORG_ID, fileKey: null, payrollRunId: null, generatedBy: null, generatedAt: null, notes: null, createdAt: new Date(), updatedAt: new Date() },
-      { id: 'g3', guideType: 'IRRF', dueDate: in15Days, totalAmount: { toString: () => '50' }, status: 'PENDING', referenceMonth: new Date(), organizationId: ORG_ID, fileKey: null, payrollRunId: null, generatedBy: null, generatedAt: null, notes: null, createdAt: new Date(), updatedAt: new Date() },
+      {
+        id: 'g1',
+        guideType: 'FGTS',
+        dueDate: in3Days,
+        totalAmount: { toString: () => '100' },
+        status: 'PENDING',
+        referenceMonth: new Date(),
+        organizationId: ORG_ID,
+        fileKey: null,
+        payrollRunId: null,
+        generatedBy: null,
+        generatedAt: null,
+        notes: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'g2',
+        guideType: 'INSS',
+        dueDate: in8Days,
+        totalAmount: { toString: () => '200' },
+        status: 'PENDING',
+        referenceMonth: new Date(),
+        organizationId: ORG_ID,
+        fileKey: null,
+        payrollRunId: null,
+        generatedBy: null,
+        generatedAt: null,
+        notes: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'g3',
+        guideType: 'IRRF',
+        dueDate: in15Days,
+        totalAmount: { toString: () => '50' },
+        status: 'PENDING',
+        referenceMonth: new Date(),
+        organizationId: ORG_ID,
+        fileKey: null,
+        payrollRunId: null,
+        generatedBy: null,
+        generatedAt: null,
+        notes: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ]);
 
     const service = new TaxGuidesService();
     const result = await service.listGuides(ORG_ID, {});
 
-    expect(result.data[0].alertLevel).toBe('danger');  // 3 days <= 5
+    expect(result.data[0].alertLevel).toBe('danger'); // 3 days <= 5
     expect(result.data[1].alertLevel).toBe('warning'); // 8 days is 6-10
-    expect(result.data[2].alertLevel).toBe('none');    // 15 days > 10
+    expect(result.data[2].alertLevel).toBe('none'); // 15 days > 10
   });
 
   it('returns filtered guides by guideType', async () => {
     mockTx.taxGuide.findMany.mockResolvedValue([
-      { id: 'g1', guideType: 'FGTS', dueDate: new Date(), totalAmount: { toString: () => '100' }, status: 'PENDING', referenceMonth: new Date(), organizationId: ORG_ID, fileKey: null, payrollRunId: null, generatedBy: null, generatedAt: null, notes: null, createdAt: new Date(), updatedAt: new Date() },
+      {
+        id: 'g1',
+        guideType: 'FGTS',
+        dueDate: new Date(),
+        totalAmount: { toString: () => '100' },
+        status: 'PENDING',
+        referenceMonth: new Date(),
+        organizationId: ORG_ID,
+        fileKey: null,
+        payrollRunId: null,
+        generatedBy: null,
+        generatedAt: null,
+        notes: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ]);
 
     const service = new TaxGuidesService();
@@ -396,7 +485,22 @@ describe('TaxGuidesService.listGuides', () => {
   it('alertLevel is danger when daysUntilDue <= 5', async () => {
     const in2Days = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
     mockTx.taxGuide.findMany.mockResolvedValue([
-      { id: 'g1', guideType: 'FGTS', dueDate: in2Days, totalAmount: { toString: () => '100' }, status: 'PENDING', referenceMonth: new Date(), organizationId: ORG_ID, fileKey: null, payrollRunId: null, generatedBy: null, generatedAt: null, notes: null, createdAt: new Date(), updatedAt: new Date() },
+      {
+        id: 'g1',
+        guideType: 'FGTS',
+        dueDate: in2Days,
+        totalAmount: { toString: () => '100' },
+        status: 'PENDING',
+        referenceMonth: new Date(),
+        organizationId: ORG_ID,
+        fileKey: null,
+        payrollRunId: null,
+        generatedBy: null,
+        generatedAt: null,
+        notes: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ]);
 
     const service = new TaxGuidesService();
@@ -409,7 +513,22 @@ describe('TaxGuidesService.listGuides', () => {
   it('alertLevel is warning when daysUntilDue is 6-10', async () => {
     const in7Days = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     mockTx.taxGuide.findMany.mockResolvedValue([
-      { id: 'g1', guideType: 'INSS', dueDate: in7Days, totalAmount: { toString: () => '200' }, status: 'PENDING', referenceMonth: new Date(), organizationId: ORG_ID, fileKey: null, payrollRunId: null, generatedBy: null, generatedAt: null, notes: null, createdAt: new Date(), updatedAt: new Date() },
+      {
+        id: 'g1',
+        guideType: 'INSS',
+        dueDate: in7Days,
+        totalAmount: { toString: () => '200' },
+        status: 'PENDING',
+        referenceMonth: new Date(),
+        organizationId: ORG_ID,
+        fileKey: null,
+        payrollRunId: null,
+        generatedBy: null,
+        generatedAt: null,
+        notes: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ]);
 
     const service = new TaxGuidesService();
@@ -421,7 +540,22 @@ describe('TaxGuidesService.listGuides', () => {
   it('alertLevel is none when daysUntilDue > 10', async () => {
     const in20Days = new Date(Date.now() + 20 * 24 * 60 * 60 * 1000);
     mockTx.taxGuide.findMany.mockResolvedValue([
-      { id: 'g1', guideType: 'IRRF', dueDate: in20Days, totalAmount: { toString: () => '50' }, status: 'PENDING', referenceMonth: new Date(), organizationId: ORG_ID, fileKey: null, payrollRunId: null, generatedBy: null, generatedAt: null, notes: null, createdAt: new Date(), updatedAt: new Date() },
+      {
+        id: 'g1',
+        guideType: 'IRRF',
+        dueDate: in20Days,
+        totalAmount: { toString: () => '50' },
+        status: 'PENDING',
+        referenceMonth: new Date(),
+        organizationId: ORG_ID,
+        fileKey: null,
+        payrollRunId: null,
+        generatedBy: null,
+        generatedAt: null,
+        notes: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ]);
 
     const service = new TaxGuidesService();

@@ -138,23 +138,15 @@ interface RaisBannerProps {
   checking: boolean;
 }
 
-function RaisBanner({
-  yearBase,
-  onCheckConsistency,
-  consistency,
-  checking,
-}: RaisBannerProps) {
+function RaisBanner({ yearBase, onCheckConsistency, consistency, checking }: RaisBannerProps) {
   return (
-    <section
-      className="income-statements-page__rais-banner"
-      aria-label="Informacoes sobre a RAIS"
-    >
+    <section className="income-statements-page__rais-banner" aria-label="Informacoes sobre a RAIS">
       <div className="income-statements-page__rais-banner-header">
         <Info size={16} aria-hidden="true" className="income-statements-page__icon--info" />
         <p className="income-statements-page__rais-banner-text">
-          <strong>RAIS substituida pelo eSocial desde 2023.</strong> Use o relatorio de
-          consistencia abaixo para verificar se todos os eventos foram gerados corretamente para o
-          ano-base {yearBase}.
+          <strong>RAIS substituida pelo eSocial desde 2023.</strong> Use o relatorio de consistencia
+          abaixo para verificar se todos os eventos foram gerados corretamente para o ano-base{' '}
+          {yearBase}.
         </p>
         <button
           type="button"
@@ -189,8 +181,8 @@ function RaisBanner({
               <AlertTriangle size={16} aria-hidden="true" />
               <div>
                 <p>
-                  <strong>Inconsistencias encontradas.</strong>{' '}
-                  {consistency.totalEmployees} colaboradores verificados.
+                  <strong>Inconsistencias encontradas.</strong> {consistency.totalEmployees}{' '}
+                  colaboradores verificados.
                 </p>
                 {consistency.missingAdmissionEvents.length > 0 && (
                   <p>
@@ -264,18 +256,19 @@ export default function IncomeStatementsPage() {
     void fetchStatements(yearBase);
   }
 
-  const consistencyForBanner = raisLoaded && raisConsistency
-    ? {
-        loaded: true,
-        isConsistent: raisConsistency.isConsistent,
-        totalEmployees: raisConsistency.totalEmployees,
-        employeesWithAdmission: raisConsistency.employeesWithAdmission,
-        employeesWithRemuneration: raisConsistency.employeesWithRemuneration,
-        employeesWithTermination: raisConsistency.employeesWithTermination,
-        missingAdmissionEvents: raisConsistency.missingAdmissionEvents,
-        missingRemunerationEvents: raisConsistency.missingRemunerationEvents,
-      }
-    : null;
+  const consistencyForBanner =
+    raisLoaded && raisConsistency
+      ? {
+          loaded: true,
+          isConsistent: raisConsistency.isConsistent,
+          totalEmployees: raisConsistency.totalEmployees,
+          employeesWithAdmission: raisConsistency.employeesWithAdmission,
+          employeesWithRemuneration: raisConsistency.employeesWithRemuneration,
+          employeesWithTermination: raisConsistency.employeesWithTermination,
+          missingAdmissionEvents: raisConsistency.missingAdmissionEvents,
+          missingRemunerationEvents: raisConsistency.missingRemunerationEvents,
+        }
+      : null;
 
   return (
     <main className="income-statements-page">
@@ -358,7 +351,10 @@ export default function IncomeStatementsPage() {
       />
 
       {/* Statements Table */}
-      <section className="income-statements-page__table-section" aria-label="Informes de rendimentos">
+      <section
+        className="income-statements-page__table-section"
+        aria-label="Informes de rendimentos"
+      >
         <div className="income-statements-page__table-wrapper">
           <table
             className="income-statements-page__table"
@@ -382,10 +378,10 @@ export default function IncomeStatementsPage() {
                 ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={9} />)
                 : statements.map((stmt) => (
                     <tr key={stmt.id}>
-                      <td className="income-statements-page__employee-name">
-                        {stmt.employeeName}
+                      <td className="income-statements-page__employee-name">{stmt.employeeName}</td>
+                      <td className="income-statements-page__mono">
+                        {formatCpf(stmt.employeeCpf)}
                       </td>
-                      <td className="income-statements-page__mono">{formatCpf(stmt.employeeCpf)}</td>
                       <td>{stmt.yearBase}</td>
                       <td className="income-statements-page__currency">
                         {formatCurrency(stmt.totalTaxable)}
@@ -404,7 +400,9 @@ export default function IncomeStatementsPage() {
                         <button
                           type="button"
                           className="income-statements-page__action-btn"
-                          onClick={() => downloadStatement(stmt.id, stmt.employeeName, stmt.yearBase)}
+                          onClick={() =>
+                            downloadStatement(stmt.id, stmt.employeeName, stmt.yearBase)
+                          }
                           aria-label={`Baixar informe de ${stmt.employeeName}`}
                           title="Baixar PDF"
                         >
@@ -450,10 +448,7 @@ export default function IncomeStatementsPage() {
 
       {/* Generate Modal */}
       {showGenerateModal && (
-        <GenerateModal
-          onClose={() => setShowGenerateModal(false)}
-          onSubmit={handleGenerate}
-        />
+        <GenerateModal onClose={() => setShowGenerateModal(false)} onSubmit={handleGenerate} />
       )}
     </main>
   );

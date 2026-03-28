@@ -5,7 +5,11 @@ import { useFiscalYears } from '@/hooks/useFiscalPeriods';
 import { useJournalEntryActions } from '@/hooks/useJournalEntries';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import JournalEntryTemplateModal from '@/components/accounting/JournalEntryTemplateModal';
-import type { JournalEntry, LedgerSide, CreateJournalEntryLineInput } from '@/types/journal-entries';
+import type {
+  JournalEntry,
+  LedgerSide,
+  CreateJournalEntryLineInput,
+} from '@/types/journal-entries';
 import './JournalEntryModal.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -48,8 +52,6 @@ function parseAmount(str: string): number {
   return isNaN(n) ? 0 : n;
 }
 
-
-
 // ─── Balance Indicator ────────────────────────────────────────────────────────
 
 interface BalanceIndicatorProps {
@@ -57,8 +59,14 @@ interface BalanceIndicatorProps {
 }
 
 function BalanceIndicator({ lines }: BalanceIndicatorProps) {
-  const debitTotal = lines.reduce((s, l) => l.side === 'DEBIT' ? s + parseAmount(l.amount) : s, 0);
-  const creditTotal = lines.reduce((s, l) => l.side === 'CREDIT' ? s + parseAmount(l.amount) : s, 0);
+  const debitTotal = lines.reduce(
+    (s, l) => (l.side === 'DEBIT' ? s + parseAmount(l.amount) : s),
+    0,
+  );
+  const creditTotal = lines.reduce(
+    (s, l) => (l.side === 'CREDIT' ? s + parseAmount(l.amount) : s),
+    0,
+  );
   const diff = Math.abs(debitTotal - creditTotal);
   const balanced = diff < 0.005 && (debitTotal > 0 || creditTotal > 0);
   const hasValues = debitTotal > 0 || creditTotal > 0;
@@ -116,7 +124,14 @@ interface AccountComboboxProps {
   disabled?: boolean;
 }
 
-function AccountCombobox({ value, search, lineIndex, onSearchChange, onSelect, disabled }: AccountComboboxProps) {
+function AccountCombobox({
+  value,
+  search,
+  lineIndex,
+  onSearchChange,
+  onSelect,
+  disabled,
+}: AccountComboboxProps) {
   const { data: accounts } = useChartOfAccounts();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -147,7 +162,8 @@ function AccountCombobox({ value, search, lineIndex, onSearchChange, onSelect, d
   }, [open]);
 
   const selectedAccount = accounts.find((a) => a.id === value);
-  const displayValue = value && selectedAccount ? `${selectedAccount.code} — ${selectedAccount.name}` : search;
+  const displayValue =
+    value && selectedAccount ? `${selectedAccount.code} — ${selectedAccount.name}` : search;
 
   return (
     <div className="je-modal__combobox" ref={wrapperRef}>
@@ -156,7 +172,10 @@ function AccountCombobox({ value, search, lineIndex, onSearchChange, onSelect, d
         type="text"
         className="je-modal__combobox-input"
         value={displayValue}
-        onChange={(e) => { onSearchChange(e.target.value); setOpen(true); }}
+        onChange={(e) => {
+          onSearchChange(e.target.value);
+          setOpen(true);
+        }}
         onFocus={() => setOpen(true)}
         placeholder="Buscar conta por código ou nome..."
         aria-label={`Conta linha ${lineIndex + 1}`}
@@ -226,11 +245,7 @@ function LineRow({
         />
       </td>
       <td className="je-modal__line-td je-modal__line-td--side">
-        <div
-          className="je-modal__side-toggle"
-          role="group"
-          aria-label={`Tipo linha ${index + 1}`}
-        >
+        <div className="je-modal__side-toggle" role="group" aria-label={`Tipo linha ${index + 1}`}>
           <button
             type="button"
             className={`je-modal__side-btn je-modal__side-btn--debit ${line.side === 'DEBIT' ? 'je-modal__side-btn--active-debit' : ''}`}
@@ -365,27 +380,43 @@ export default function JournalEntryModal({
   // Escape closes
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [isOpen, onClose]);
 
   // Balance check
-  const debitTotal = lines.reduce((s, l) => l.side === 'DEBIT' ? s + parseAmount(l.amount) : s, 0);
-  const creditTotal = lines.reduce((s, l) => l.side === 'CREDIT' ? s + parseAmount(l.amount) : s, 0);
+  const debitTotal = lines.reduce(
+    (s, l) => (l.side === 'DEBIT' ? s + parseAmount(l.amount) : s),
+    0,
+  );
+  const creditTotal = lines.reduce(
+    (s, l) => (l.side === 'CREDIT' ? s + parseAmount(l.amount) : s),
+    0,
+  );
   const isBalanced = Math.abs(debitTotal - creditTotal) < 0.005 && debitTotal > 0;
 
-  const buildInput = useCallback(() => ({
-    entryDate,
-    periodId,
-    description,
-    lines: lines.map((l) => ({
-      accountId: l.accountId,
-      side: l.side,
-      amount: parseAmount(l.amount).toFixed(2),
-      description: l.description || undefined,
-    } as CreateJournalEntryLineInput)).filter((l) => l.accountId && parseAmount(l.amount) > 0),
-  }), [entryDate, periodId, description, lines]);
+  const buildInput = useCallback(
+    () => ({
+      entryDate,
+      periodId,
+      description,
+      lines: lines
+        .map(
+          (l) =>
+            ({
+              accountId: l.accountId,
+              side: l.side,
+              amount: parseAmount(l.amount).toFixed(2),
+              description: l.description || undefined,
+            }) as CreateJournalEntryLineInput,
+        )
+        .filter((l) => l.accountId && parseAmount(l.amount) > 0),
+    }),
+    [entryDate, periodId, description, lines],
+  );
 
   const validateForm = () => {
     if (!entryDate) return 'Data é obrigatória';
@@ -399,7 +430,10 @@ export default function JournalEntryModal({
 
   const handleSaveDraft = async () => {
     const err = validateForm();
-    if (err) { setFormError(err); return; }
+    if (err) {
+      setFormError(err);
+      return;
+    }
     setIsSaving(true);
     setFormError(null);
     try {
@@ -421,7 +455,10 @@ export default function JournalEntryModal({
     if (!entry?.id) {
       // Save draft first, then post
       const err = validateForm();
-      if (err) { setFormError(err); return; }
+      if (err) {
+        setFormError(err);
+        return;
+      }
       setIsPosting(true);
       setFormError(null);
       try {
@@ -458,7 +495,11 @@ export default function JournalEntryModal({
         description,
         lines: lines
           .filter((l) => l.accountId)
-          .map((l) => ({ accountId: l.accountId, side: l.side, amount: parseAmount(l.amount).toFixed(2) })),
+          .map((l) => ({
+            accountId: l.accountId,
+            side: l.side,
+            amount: parseAmount(l.amount).toFixed(2),
+          })),
       });
       setShowTemplateModal(false);
     } catch {
@@ -512,7 +553,9 @@ export default function JournalEntryModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={headingId}
-        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
       >
         <div className="je-modal">
           {/* Header */}
@@ -567,7 +610,9 @@ export default function JournalEntryModal({
                   {allPeriods.map((p) => (
                     <option key={p.id} value={p.id} disabled={p.status !== 'OPEN'}>
                       {String(p.month).padStart(2, '0')}/{p.year}
-                      {p.status !== 'OPEN' ? ` (${p.status === 'CLOSED' ? 'fechado' : 'bloqueado'})` : ''}
+                      {p.status !== 'OPEN'
+                        ? ` (${p.status === 'CLOSED' ? 'fechado' : 'bloqueado'})`
+                        : ''}
                     </option>
                   ))}
                 </select>
@@ -590,9 +635,7 @@ export default function JournalEntryModal({
                 aria-required="true"
                 disabled={readOnly}
               />
-              {!readOnly && (
-                <span className="je-modal__char-count">{description.length}/500</span>
-              )}
+              {!readOnly && <span className="je-modal__char-count">{description.length}/500</span>}
             </div>
 
             {/* Line table */}
@@ -616,11 +659,23 @@ export default function JournalEntryModal({
                   <caption className="sr-only">Partidas do lançamento contábil</caption>
                   <thead>
                     <tr>
-                      <th scope="col" className="je-modal__th">CONTA</th>
-                      <th scope="col" className="je-modal__th je-modal__th--side">TIPO</th>
-                      <th scope="col" className="je-modal__th je-modal__th--amount">VALOR</th>
-                      <th scope="col" className="je-modal__th je-modal__th--desc">DESCRIÇÃO</th>
-                      {!readOnly && <th scope="col" className="je-modal__th je-modal__th--remove"><span className="sr-only">Remover</span></th>}
+                      <th scope="col" className="je-modal__th">
+                        CONTA
+                      </th>
+                      <th scope="col" className="je-modal__th je-modal__th--side">
+                        TIPO
+                      </th>
+                      <th scope="col" className="je-modal__th je-modal__th--amount">
+                        VALOR
+                      </th>
+                      <th scope="col" className="je-modal__th je-modal__th--desc">
+                        DESCRIÇÃO
+                      </th>
+                      {!readOnly && (
+                        <th scope="col" className="je-modal__th je-modal__th--remove">
+                          <span className="sr-only">Remover</span>
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -631,7 +686,9 @@ export default function JournalEntryModal({
                         index={index}
                         readOnly={readOnly}
                         onSideChange={(side) => updateLine(index, { side })}
-                        onAccountChange={(accountId, search) => updateLine(index, { accountId, accountSearch: search })}
+                        onAccountChange={(accountId, search) =>
+                          updateLine(index, { accountId, accountSearch: search })
+                        }
                         onAmountChange={(amount) => updateLine(index, { amount })}
                         onDescriptionChange={(desc) => updateLine(index, { description: desc })}
                         onRemove={() => removeLine(index)}
@@ -643,11 +700,7 @@ export default function JournalEntryModal({
               </div>
 
               {!readOnly && (
-                <button
-                  type="button"
-                  className="je-modal__add-line-btn"
-                  onClick={addLine}
-                >
+                <button type="button" className="je-modal__add-line-btn" onClick={addLine}>
                   <Plus size={16} aria-hidden="true" />
                   Adicionar linha
                 </button>
@@ -671,7 +724,9 @@ export default function JournalEntryModal({
                 <button
                   type="button"
                   className="je-modal__btn je-modal__btn--secondary"
-                  onClick={() => { void handleSaveDraft(); }}
+                  onClick={() => {
+                    void handleSaveDraft();
+                  }}
                   disabled={isSaving || isPosting}
                 >
                   {isSaving ? 'Salvando...' : 'Salvar Rascunho'}
@@ -682,7 +737,11 @@ export default function JournalEntryModal({
                     className="je-modal__btn je-modal__btn--primary"
                     onClick={() => setShowPostConfirm(true)}
                     disabled={!isBalanced || isPosting || isSaving}
-                    title={!isBalanced ? 'O lançamento precisa estar balanceado para ser lançado' : undefined}
+                    title={
+                      !isBalanced
+                        ? 'O lançamento precisa estar balanceado para ser lançado'
+                        : undefined
+                    }
                   >
                     {isPosting ? 'Lançando...' : 'Lançar'}
                   </button>
@@ -701,7 +760,9 @@ export default function JournalEntryModal({
         confirmLabel="Confirmar Lançamento"
         variant="warning"
         isLoading={isPosting}
-        onConfirm={() => { void handlePost(); }}
+        onConfirm={() => {
+          void handlePost();
+        }}
         onCancel={() => setShowPostConfirm(false)}
       />
 
@@ -712,12 +773,14 @@ export default function JournalEntryModal({
           onClose={() => setShowTemplateModal(false)}
           onLoad={handleLoadTemplate}
           onSave={handleSaveTemplate}
-          currentLines={lines.filter((l) => l.accountId).map((l) => ({
-            accountId: l.accountId,
-            side: l.side,
-            amount: parseAmount(l.amount).toFixed(2),
-            description: l.description || undefined,
-          }))}
+          currentLines={lines
+            .filter((l) => l.accountId)
+            .map((l) => ({
+              accountId: l.accountId,
+              side: l.side,
+              amount: parseAmount(l.amount).toFixed(2),
+              description: l.description || undefined,
+            }))}
           currentDescription={description}
           orgId={orgId}
         />

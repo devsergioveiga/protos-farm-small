@@ -178,7 +178,10 @@ export async function createTimeEntry(
       throw new TimeEntryError('Colaborador não encontrado nesta organização', 404);
     }
     if (employee.status !== 'ATIVO') {
-      throw new TimeEntryError(`Colaborador com status ${employee.status} não pode registrar ponto`, 422);
+      throw new TimeEntryError(
+        `Colaborador com status ${employee.status} não pode registrar ponto`,
+        422,
+      );
     }
 
     // Check if month is locked (payrollRunId set on timesheet)
@@ -341,7 +344,15 @@ export async function updateTimeEntry(
   return withRlsContext(ctx, async (tx) => {
     const existing = await tx.timeEntry.findUnique({
       where: { id },
-      select: { organizationId: true, employeeId: true, date: true, clockIn: true, clockOut: true, breakStart: true, breakEnd: true },
+      select: {
+        organizationId: true,
+        employeeId: true,
+        date: true,
+        clockIn: true,
+        clockOut: true,
+        breakStart: true,
+        breakEnd: true,
+      },
     });
 
     if (!existing || existing.organizationId !== orgId) {
@@ -349,11 +360,7 @@ export async function updateTimeEntry(
     }
 
     // Check lock
-    const firstDayOfMonth = new Date(
-      existing.date.getFullYear(),
-      existing.date.getMonth(),
-      1,
-    );
+    const firstDayOfMonth = new Date(existing.date.getFullYear(), existing.date.getMonth(), 1);
     const lockedSheet = await tx.timesheet.findUnique({
       where: {
         employeeId_referenceMonth: {
@@ -394,8 +401,7 @@ export async function updateTimeEntry(
     let nightMinutes: number | null = null;
 
     if (clockOut) {
-      const breakDuration =
-        breakStart && breakEnd ? differenceInMinutes(breakEnd, breakStart) : 0;
+      const breakDuration = breakStart && breakEnd ? differenceInMinutes(breakEnd, breakStart) : 0;
       workedMinutes = differenceInMinutes(clockOut, clockIn) - Math.max(0, breakDuration);
       nightMinutes = calcNightMinutes(clockIn, clockOut);
     }
@@ -521,7 +527,11 @@ export async function addTeamActivity(
 ): Promise<{
   created: number;
   skipped: number;
-  details: Array<{ employeeId: string; employeeName: string; status: 'created' | 'skipped_no_entry' }>;
+  details: Array<{
+    employeeId: string;
+    employeeName: string;
+    status: 'created' | 'skipped_no_entry';
+  }>;
 }> {
   return withRlsContext(ctx, async (tx) => {
     const team = await tx.fieldTeam.findUnique({

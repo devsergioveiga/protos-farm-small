@@ -51,10 +51,7 @@ export function useAssetRenovation(assetId: string) {
       try {
         await api.post<Renovation>(`/org/${orgId}/assets/${assetId}/renovations`, input);
       } catch (err) {
-        const msg =
-          err instanceof Error
-            ? err.message
-            : 'Nao foi possivel registrar a reforma.';
+        const msg = err instanceof Error ? err.message : 'Nao foi possivel registrar a reforma.';
         setError(msg);
         throw new Error(msg);
       } finally {

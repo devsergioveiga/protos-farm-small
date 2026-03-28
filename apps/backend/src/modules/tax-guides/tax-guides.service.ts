@@ -104,7 +104,10 @@ function formatDecimalCents(value: Decimal, length: number): string {
 /**
  * Computes daysUntilDue and alertLevel for a guide's dueDate.
  */
-function computeAlertLevel(dueDate: Date): { daysUntilDue: number; alertLevel: 'none' | 'warning' | 'danger' } {
+function computeAlertLevel(dueDate: Date): {
+  daysUntilDue: number;
+  alertLevel: 'none' | 'warning' | 'danger';
+} {
   const now = new Date();
   const msUntilDue = dueDate.getTime() - now.getTime();
   const daysUntilDue = Math.ceil(msUntilDue / (1000 * 60 * 60 * 24));
@@ -128,27 +131,23 @@ function mapGuideOutput(guide: any): TaxGuideOutput {
     id: guide.id,
     organizationId: guide.organizationId,
     guideType: guide.guideType,
-    referenceMonth: guide.referenceMonth instanceof Date
-      ? guide.referenceMonth.toISOString()
-      : guide.referenceMonth,
-    dueDate: guide.dueDate instanceof Date
-      ? guide.dueDate.toISOString()
-      : guide.dueDate,
+    referenceMonth:
+      guide.referenceMonth instanceof Date
+        ? guide.referenceMonth.toISOString()
+        : guide.referenceMonth,
+    dueDate: guide.dueDate instanceof Date ? guide.dueDate.toISOString() : guide.dueDate,
     totalAmount: guide.totalAmount?.toString() ?? '0',
     status: guide.status,
     fileKey: guide.fileKey ?? null,
     payrollRunId: guide.payrollRunId ?? null,
     generatedBy: guide.generatedBy ?? null,
-    generatedAt: guide.generatedAt instanceof Date
-      ? guide.generatedAt.toISOString()
-      : guide.generatedAt ?? null,
+    generatedAt:
+      guide.generatedAt instanceof Date
+        ? guide.generatedAt.toISOString()
+        : (guide.generatedAt ?? null),
     notes: guide.notes ?? null,
-    createdAt: guide.createdAt instanceof Date
-      ? guide.createdAt.toISOString()
-      : guide.createdAt,
-    updatedAt: guide.updatedAt instanceof Date
-      ? guide.updatedAt.toISOString()
-      : guide.updatedAt,
+    createdAt: guide.createdAt instanceof Date ? guide.createdAt.toISOString() : guide.createdAt,
+    updatedAt: guide.updatedAt instanceof Date ? guide.updatedAt.toISOString() : guide.updatedAt,
     daysUntilDue,
     alertLevel,
   };
@@ -170,11 +169,7 @@ const TAX_GUIDE_LABELS: Record<TaxGuideType, string> = {
  * Record types: 10 (header), 20 (empregador, FPAS 604), 50 (totais empregador), 99 (trailer).
  * Encoding: ASCII.
  */
-function buildSefipRE(
-  guide: any,
-  org: { name: string; document: string },
-  items: any[],
-): Buffer {
+function buildSefipRE(guide: any, org: { name: string; document: string }, items: any[]): Buffer {
   const competencia = formatCompetenciaSefip(guide.referenceMonth);
   const cnpj = (org.document ?? '').replace(/\D/g, '');
   const totalFgts = new Decimal(guide.totalAmount?.toString() ?? '0');
@@ -192,26 +187,26 @@ function buildSefipRE(
     padLeft(cnpj, 14) +
     padRight(org.name, 40) +
     padRight('PROTOS FARM', 20) + // software name
-    padRight('1.0', 10) +        // version
-    padRight('', 2) +             // movimento/indicador
-    padRight('', 1);              // tipo de inscricao (1=CNPJ)
+    padRight('1.0', 10) + // version
+    padRight('', 2) + // movimento/indicador
+    padRight('', 1); // tipo de inscricao (1=CNPJ)
   lines.push(rec10);
 
   // Record 20: Empregador
   const rec20 =
     '20' +
     padLeft(cnpj, 14) +
-    padLeft('1', 1) +             // tipo inscricao CNPJ
+    padLeft('1', 1) + // tipo inscricao CNPJ
     padRight(org.name, 40) +
-    padRight('', 40) +            // endereco
-    padRight('', 40) +            // bairro
-    padRight('00000000', 8) +     // CEP
-    padRight('', 30) +            // cidade
-    padRight('SP', 2) +           // UF
-    padRight('', 10) +            // telefone
-    fpas +                        // FPAS 604
-    padRight('', 3) +             // cod terceiros
-    '0000' +                      // FAP (1.00 = 1000 / sem ajuste)
+    padRight('', 40) + // endereco
+    padRight('', 40) + // bairro
+    padRight('00000000', 8) + // CEP
+    padRight('', 30) + // cidade
+    padRight('SP', 2) + // UF
+    padRight('', 10) + // telefone
+    fpas + // FPAS 604
+    padRight('', 3) + // cod terceiros
+    '0000' + // FAP (1.00 = 1000 / sem ajuste)
     formatDecimalCents(totalFgts, 14) + // valor FGTS no mes
     padRight('', 3);
   lines.push(rec20);
@@ -227,9 +222,9 @@ function buildSefipRE(
     const rec30 =
       '30' +
       padLeft(cpf, 11) +
-      padLeft('1', 1) +           // tipo inscricao CPF
+      padLeft('1', 1) + // tipo inscricao CPF
       padRight(name, 70) +
-      padRight('', 2);            // codigo categoria (01=empregado)
+      padRight('', 2); // codigo categoria (01=empregado)
     lines.push(rec30);
 
     // Record 32: Remuneração
@@ -237,7 +232,7 @@ function buildSefipRE(
       '32' +
       padLeft(cpf, 11) +
       formatDecimalCents(grossItem, 14) + // remuneracao
-      formatDecimalCents(fgtsItem, 14);   // FGTS mes
+      formatDecimalCents(fgtsItem, 14); // FGTS mes
     lines.push(rec32);
 
     // Record 40: Totais trabalhador
@@ -254,16 +249,14 @@ function buildSefipRE(
     '50' +
     padLeft(cnpj, 14) +
     formatDecimalCents(totalFgts, 14) + // total FGTS a recolher
-    padRight('', 14) +                  // FGTS rescisorio
-    padRight('', 14) +                  // INSS trabalhador
-    padRight('', 14) +                  // INSS empregador
-    padRight('', 6);                    // qtd trabalhadores
+    padRight('', 14) + // FGTS rescisorio
+    padRight('', 14) + // INSS trabalhador
+    padRight('', 14) + // INSS empregador
+    padRight('', 6); // qtd trabalhadores
   lines.push(rec50);
 
   // Record 99: Trailer
-  const rec99 =
-    '99' +
-    padLeft(String(lines.length + 1), 6); // total de registros incluindo este
+  const rec99 = '99' + padLeft(String(lines.length + 1), 6); // total de registros incluindo este
   lines.push(rec99);
 
   const content = lines.join('\r\n') + '\r\n';
@@ -278,15 +271,20 @@ function buildSefipRE(
 async function buildDarfPdf(guide: any, org: { name: string; document: string }): Promise<Buffer> {
   const PDFDocument = (await import('pdfkit')).default;
   const cnpj = (org.document ?? '').replace(/\D/g, '');
-  const cnpjFormatted = cnpj.length === 14
-    ? `${cnpj.slice(0, 2)}.${cnpj.slice(2, 5)}.${cnpj.slice(5, 8)}/${cnpj.slice(8, 12)}-${cnpj.slice(12)}`
-    : cnpj;
+  const cnpjFormatted =
+    cnpj.length === 14
+      ? `${cnpj.slice(0, 2)}.${cnpj.slice(2, 5)}.${cnpj.slice(5, 8)}/${cnpj.slice(8, 12)}-${cnpj.slice(12)}`
+      : cnpj;
   const competencia = formatCompetencia(guide.referenceMonth);
   const amount = new Decimal(guide.totalAmount?.toString() ?? '0');
-  const amountFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount.toNumber());
-  const dueDateFormatted = guide.dueDate instanceof Date
-    ? new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(guide.dueDate)
-    : guide.dueDate;
+  const amountFormatted = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(amount.toNumber());
+  const dueDateFormatted =
+    guide.dueDate instanceof Date
+      ? new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(guide.dueDate)
+      : guide.dueDate;
   const receitaCode = TAX_GUIDE_RECEITA_CODES[guide.guideType as TaxGuideType];
   const guideLabel = TAX_GUIDE_LABELS[guide.guideType as TaxGuideType];
 
@@ -299,7 +297,10 @@ async function buildDarfPdf(guide: any, org: { name: string; document: string })
     doc.on('error', reject);
 
     // Title
-    doc.fontSize(16).font('Helvetica-Bold').text('DARF — Documento de Arrecadação de Receitas Federais', { align: 'center' });
+    doc
+      .fontSize(16)
+      .font('Helvetica-Bold')
+      .text('DARF — Documento de Arrecadação de Receitas Federais', { align: 'center' });
     doc.moveDown(0.5);
     doc.fontSize(12).font('Helvetica-Bold').text(guideLabel, { align: 'center' });
     doc.moveDown(1);
@@ -312,7 +313,10 @@ async function buildDarfPdf(guide: any, org: { name: string; document: string })
 
     // Fields
     const fieldY = boxY + 10;
-    doc.fontSize(10).font('Helvetica-Bold').text('CNPJ do Contribuinte:', boxX + 10, fieldY);
+    doc
+      .fontSize(10)
+      .font('Helvetica-Bold')
+      .text('CNPJ do Contribuinte:', boxX + 10, fieldY);
     doc.font('Helvetica').text(cnpjFormatted, boxX + 160, fieldY);
 
     doc.font('Helvetica-Bold').text('Razão Social:', boxX + 10, fieldY + 20);
@@ -339,10 +343,12 @@ async function buildDarfPdf(guide: any, org: { name: string; document: string })
     doc.moveDown(10);
 
     // Footer note
-    doc.fontSize(8).font('Helvetica').text(
-      `Gerado automaticamente pelo sistema Protos Farm. Competência: ${competencia}.`,
-      { align: 'center' },
-    );
+    doc
+      .fontSize(8)
+      .font('Helvetica')
+      .text(`Gerado automaticamente pelo sistema Protos Farm. Competência: ${competencia}.`, {
+        align: 'center',
+      });
 
     doc.end();
   });
@@ -357,15 +363,20 @@ async function buildDarfPdf(guide: any, org: { name: string; document: string })
 async function buildGpsPdf(guide: any, org: { name: string; document: string }): Promise<Buffer> {
   const PDFDocument = (await import('pdfkit')).default;
   const cnpj = (org.document ?? '').replace(/\D/g, '');
-  const cnpjFormatted = cnpj.length === 14
-    ? `${cnpj.slice(0, 2)}.${cnpj.slice(2, 5)}.${cnpj.slice(5, 8)}/${cnpj.slice(8, 12)}-${cnpj.slice(12)}`
-    : cnpj;
+  const cnpjFormatted =
+    cnpj.length === 14
+      ? `${cnpj.slice(0, 2)}.${cnpj.slice(2, 5)}.${cnpj.slice(5, 8)}/${cnpj.slice(8, 12)}-${cnpj.slice(12)}`
+      : cnpj;
   const competencia = formatCompetencia(guide.referenceMonth);
   const amount = new Decimal(guide.totalAmount?.toString() ?? '0');
-  const amountFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount.toNumber());
-  const dueDateFormatted = guide.dueDate instanceof Date
-    ? new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(guide.dueDate)
-    : guide.dueDate;
+  const amountFormatted = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(amount.toNumber());
+  const dueDateFormatted =
+    guide.dueDate instanceof Date
+      ? new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(guide.dueDate)
+      : guide.dueDate;
 
   return new Promise<Buffer>((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', margin: 40 });
@@ -376,9 +387,15 @@ async function buildGpsPdf(guide: any, org: { name: string; document: string }):
     doc.on('error', reject);
 
     // Title
-    doc.fontSize(16).font('Helvetica-Bold').text('GPS — Guia da Previdência Social', { align: 'center' });
+    doc
+      .fontSize(16)
+      .font('Helvetica-Bold')
+      .text('GPS — Guia da Previdência Social', { align: 'center' });
     doc.moveDown(0.5);
-    doc.fontSize(12).font('Helvetica-Bold').text('FUNRURAL — Contribuição Rural do Empregador', { align: 'center' });
+    doc
+      .fontSize(12)
+      .font('Helvetica-Bold')
+      .text('FUNRURAL — Contribuição Rural do Empregador', { align: 'center' });
     doc.moveDown(1);
 
     const boxX = 40;
@@ -386,7 +403,10 @@ async function buildGpsPdf(guide: any, org: { name: string; document: string }):
     doc.rect(boxX, boxY, 515, 180).stroke();
 
     const fieldY = boxY + 10;
-    doc.fontSize(10).font('Helvetica-Bold').text('Código de Pagamento:', boxX + 10, fieldY);
+    doc
+      .fontSize(10)
+      .font('Helvetica-Bold')
+      .text('Código de Pagamento:', boxX + 10, fieldY);
     doc.font('Helvetica').text('2100', boxX + 160, fieldY);
 
     doc.font('Helvetica-Bold').text('CNPJ do Contribuinte:', boxX + 10, fieldY + 20);
@@ -412,10 +432,12 @@ async function buildGpsPdf(guide: any, org: { name: string; document: string }):
 
     doc.moveDown(12);
 
-    doc.fontSize(8).font('Helvetica').text(
-      `Gerado automaticamente pelo sistema Protos Farm. Competência: ${competencia}.`,
-      { align: 'center' },
-    );
+    doc
+      .fontSize(8)
+      .font('Helvetica')
+      .text(`Gerado automaticamente pelo sistema Protos Farm. Competência: ${competencia}.`, {
+        align: 'center',
+      });
 
     doc.end();
   });
@@ -438,15 +460,22 @@ export class TaxGuidesService {
       throw new TaxGuideError('referenceMonth inválido — use formato YYYY-MM-DD', 400);
     }
 
-    const guideTypes: TaxGuideType[] = input.guideTypes && input.guideTypes.length > 0
-      ? input.guideTypes
-      : ['FGTS', 'INSS', 'IRRF', 'FUNRURAL'];
+    const guideTypes: TaxGuideType[] =
+      input.guideTypes && input.guideTypes.length > 0
+        ? input.guideTypes
+        : ['FGTS', 'INSS', 'IRRF', 'FUNRURAL'];
 
     return withRlsContext({ organizationId: orgId }, async (tx: TxClient) => {
       // Fetch organization for farmId and funruralBasis
       const org = await tx.organization.findFirst({
         where: { id: orgId },
-        select: { id: true, name: true, document: true, funruralBasis: true, farms: { select: { id: true }, take: 1 } },
+        select: {
+          id: true,
+          name: true,
+          document: true,
+          funruralBasis: true,
+          farms: { select: { id: true }, take: 1 },
+        },
       });
 
       if (!org) {
@@ -638,9 +667,8 @@ export class TaxGuidesService {
       throw new TaxGuideError('Organização não encontrada', 404);
     }
 
-    const refMonthDate = guide.referenceMonth instanceof Date
-      ? guide.referenceMonth
-      : new Date(guide.referenceMonth);
+    const refMonthDate =
+      guide.referenceMonth instanceof Date ? guide.referenceMonth : new Date(guide.referenceMonth);
 
     const mm = String(refMonthDate.getUTCMonth() + 1).padStart(2, '0');
     const yyyy = refMonthDate.getUTCFullYear();

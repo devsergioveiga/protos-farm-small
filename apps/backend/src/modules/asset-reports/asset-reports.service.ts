@@ -21,7 +21,6 @@ function nextPeriod(year: number, month: number): { year: number; month: number 
   return { year, month: month + 1 };
 }
 
-
 // ─── getInventoryReport ────────────────────────────────────────────────
 
 export async function getInventoryReport(
@@ -127,7 +126,15 @@ export async function getInventoryReport(
 
   // Compute totals
   const totals = rows.reduce(
-    (acc: { count: number; grossValue: number; accumulatedDepreciation: number; netBookValue: number }, row: typeof rows[number]) => ({
+    (
+      acc: {
+        count: number;
+        grossValue: number;
+        accumulatedDepreciation: number;
+        netBookValue: number;
+      },
+      row: (typeof rows)[number],
+    ) => ({
       count: acc.count + row.count,
       grossValue: acc.grossValue + row.grossValue,
       accumulatedDepreciation: acc.accumulatedDepreciation + row.accumulatedDepreciation,
@@ -488,7 +495,10 @@ export async function exportInventoryReport(
 
       // Header
       doc.fontSize(16).font('Helvetica-Bold').text('Relatorio Patrimonial', 40, 40);
-      doc.fontSize(10).font('Helvetica').text(`Emitido em: ${formatDate(now)}`, 40, 62);
+      doc
+        .fontSize(10)
+        .font('Helvetica')
+        .text(`Emitido em: ${formatDate(now)}`, 40, 62);
       doc.moveDown(1);
 
       // Table header

@@ -159,7 +159,11 @@ async function runStepValidation(
     if (pending === 0) {
       return { status: 'OK', summary: `Pontos aprovados`, validatedAt };
     }
-    return { status: 'FAILED', summary: `${pending} ponto(s) pendente(s) de aprovacao`, validatedAt };
+    return {
+      status: 'FAILED',
+      summary: `${pending} ponto(s) pendente(s) de aprovacao`,
+      validatedAt,
+    };
   }
 
   if (stepNumber === 2) {
@@ -196,7 +200,11 @@ async function runStepValidation(
         validatedAt,
       };
     }
-    return { status: 'FAILED', summary: 'Nenhum processamento de depreciacao encontrado', validatedAt };
+    return {
+      status: 'FAILED',
+      summary: 'Nenhum processamento de depreciacao encontrado',
+      validatedAt,
+    };
   }
 
   if (stepNumber === 4) {

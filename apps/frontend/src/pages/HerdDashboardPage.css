@@ -284,14 +284,30 @@
 }
 
 /* Category colors */
-.herd-dashboard__bar-fill--bezerro { background: #66bb6a; }
-.herd-dashboard__bar-fill--bezerra { background: #ab47bc; }
-.herd-dashboard__bar-fill--novilha { background: #ec407a; }
-.herd-dashboard__bar-fill--novilho { background: #42a5f5; }
-.herd-dashboard__bar-fill--vaca-lactacao { background: var(--color-primary-600); }
-.herd-dashboard__bar-fill--vaca-seca { background: #ff7043; }
-.herd-dashboard__bar-fill--touro { background: #5c6bc0; }
-.herd-dashboard__bar-fill--descarte { background: var(--color-neutral-400); }
+.herd-dashboard__bar-fill--bezerro {
+  background: #66bb6a;
+}
+.herd-dashboard__bar-fill--bezerra {
+  background: #ab47bc;
+}
+.herd-dashboard__bar-fill--novilha {
+  background: #ec407a;
+}
+.herd-dashboard__bar-fill--novilho {
+  background: #42a5f5;
+}
+.herd-dashboard__bar-fill--vaca-lactacao {
+  background: var(--color-primary-600);
+}
+.herd-dashboard__bar-fill--vaca-seca {
+  background: #ff7043;
+}
+.herd-dashboard__bar-fill--touro {
+  background: #5c6bc0;
+}
+.herd-dashboard__bar-fill--descarte {
+  background: var(--color-neutral-400);
+}
 
 /* Loading skeletons */
 .herd-dashboard__skeletons {

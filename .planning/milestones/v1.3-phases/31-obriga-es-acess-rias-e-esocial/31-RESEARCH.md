@@ -7,6 +7,7 @@
 ---
 
 <user_constraints>
+
 ## User Constraints (from CONTEXT.md)
 
 ### Locked Decisions
@@ -47,18 +48,20 @@
 - DIRF (Declaração de Imposto de Renda Retido na Fonte) — abolida em 2025, dados fluem via eSocial + EFD-Reinf
 - Contribuição sindical patronal e laboral — pode adicionar depois
 - Relatórios gerenciais de custo tributário por fazenda — Phase 32 (dashboard RH)
-</user_constraints>
+  </user_constraints>
 
 ---
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|------------------|
-| ESOCIAL-01 | Contador pode gerar guias de recolhimento (FGTS via GFIP/DCTFWeb, INSS via DARF, IRRF via DARF, FUNRURAL via GPS/DARF com alíquota configurável receita bruta vs folha), com calendário de vencimentos, alertas antecipados, histórico e integração com Contas a Pagar | PayrollRunItem já tem fgtsAmount/inssAmount/irrfAmount; payroll-tables já tem FUNRURAL rows; payables upsert padrão via originType='TAX_GUIDE'; cron pattern for alerts |
-| ESOCIAL-02 | Contador pode gerar eventos eSocial (tabela: S-1000/S-1005/S-1010/S-1020; não periódicos: S-2190/S-2200/S-2206/S-2230/S-2299; periódicos: S-1200/S-1210/S-1299; SST: S-2210/S-2220/S-2240) em XML conforme leiaute S-1.3, com validação, dashboard e reprocessamento | xmlbuilder2 needs install; @xmldom/xmldom already installed for parsing; XSD validation via custom approach; Employee/MedicalExam/EmployeeAbsence/EmployeeTermination/PayrollRunItem all have required source fields |
-| ESOCIAL-03 | Contador pode gerar RAIS (ou verificar substituição por eSocial), informe de rendimentos por colaborador em PDF, envio por email, histórico por ano-base | pdfkit already installed; mail.service exists; PayrollRunItem aggregation across runs by year; RAIS banner + consistency report approach |
+| ID         | Description                                                                                                                                                                                                                                                            | Research Support                                                                                                                                                                                                     |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ESOCIAL-01 | Contador pode gerar guias de recolhimento (FGTS via GFIP/DCTFWeb, INSS via DARF, IRRF via DARF, FUNRURAL via GPS/DARF com alíquota configurável receita bruta vs folha), com calendário de vencimentos, alertas antecipados, histórico e integração com Contas a Pagar | PayrollRunItem já tem fgtsAmount/inssAmount/irrfAmount; payroll-tables já tem FUNRURAL rows; payables upsert padrão via originType='TAX_GUIDE'; cron pattern for alerts                                              |
+| ESOCIAL-02 | Contador pode gerar eventos eSocial (tabela: S-1000/S-1005/S-1010/S-1020; não periódicos: S-2190/S-2200/S-2206/S-2230/S-2299; periódicos: S-1200/S-1210/S-1299; SST: S-2210/S-2220/S-2240) em XML conforme leiaute S-1.3, com validação, dashboard e reprocessamento   | xmlbuilder2 needs install; @xmldom/xmldom already installed for parsing; XSD validation via custom approach; Employee/MedicalExam/EmployeeAbsence/EmployeeTermination/PayrollRunItem all have required source fields |
+| ESOCIAL-03 | Contador pode gerar RAIS (ou verificar substituição por eSocial), informe de rendimentos por colaborador em PDF, envio por email, histórico por ano-base                                                                                                               | pdfkit already installed; mail.service exists; PayrollRunItem aggregation across runs by year; RAIS banner + consistency report approach                                                                             |
+
 </phase_requirements>
 
 ---
@@ -92,34 +95,35 @@ XSD validation presents the main technical challenge. libxmljs2 requires native 
 
 ### Core (all already installed unless noted)
 
-| Library | Version | Purpose | Status |
-|---------|---------|---------|--------|
-| @xmldom/xmldom | ^0.8.11 | XML DOM parsing (already used in NF-e parser, OFX parser, KML parser) | Installed |
-| pdfkit | ^0.17.2 | PDF generation (already used for payslips, EPI cards, TRCT) | Installed |
-| nodemailer | ^8.0.1 | Email distribution (already used for payslip batch send) | Installed |
-| date-fns | ^4.1.0 | Date calculations (due dates, year boundaries) | Installed |
-| decimal.js | ^10.6.0 | Monetary arithmetic (FUNRURAL, totals) | Installed |
-| node-cron | ^4.2.1 | Alert scheduling (already used for contract-expiry, depreciation) | Installed |
-| **xmlbuilder2** | **^4.0.3** | **XML document building for eSocial events** | **NEEDS INSTALL** |
+| Library         | Version    | Purpose                                                               | Status            |
+| --------------- | ---------- | --------------------------------------------------------------------- | ----------------- |
+| @xmldom/xmldom  | ^0.8.11    | XML DOM parsing (already used in NF-e parser, OFX parser, KML parser) | Installed         |
+| pdfkit          | ^0.17.2    | PDF generation (already used for payslips, EPI cards, TRCT)           | Installed         |
+| nodemailer      | ^8.0.1     | Email distribution (already used for payslip batch send)              | Installed         |
+| date-fns        | ^4.1.0     | Date calculations (due dates, year boundaries)                        | Installed         |
+| decimal.js      | ^10.6.0    | Monetary arithmetic (FUNRURAL, totals)                                | Installed         |
+| node-cron       | ^4.2.1     | Alert scheduling (already used for contract-expiry, depreciation)     | Installed         |
+| **xmlbuilder2** | **^4.0.3** | **XML document building for eSocial events**                          | **NEEDS INSTALL** |
 
 ### Supporting
 
-| Library | Version | Purpose | Notes |
-|---------|---------|---------|-------|
-| Prisma 7 | ^7.4.1 | New models: EsocialEvent, TaxGuide, IncomeStatement | Already installed |
-| ioredis | ^5.9.3 | Cron lock (idempotency, already used in other crons) | Installed |
+| Library  | Version | Purpose                                              | Notes             |
+| -------- | ------- | ---------------------------------------------------- | ----------------- |
+| Prisma 7 | ^7.4.1  | New models: EsocialEvent, TaxGuide, IncomeStatement  | Already installed |
+| ioredis  | ^5.9.3  | Cron lock (idempotency, already used in other crons) | Installed         |
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Why Not |
-|------------|-----------|---------|
-| xmlbuilder2 | @xmldom/xmldom + manual createElement | More verbose, error-prone for deeply-nested eSocial structure |
-| xmlbuilder2 | xml2js reverse (object→XML) | Less type-safe, not designed for output |
-| Custom XSD validator | libxmljs2 | Requires native compilation (node-gyp), brittle in CI |
-| Custom XSD validator | xsd-schema-validator | Requires Java runtime on server |
-| Custom XSD validator | Structural JS validation of pre-generation data | No native deps, already know structure — RECOMMENDED |
+| Instead of           | Could Use                                       | Why Not                                                       |
+| -------------------- | ----------------------------------------------- | ------------------------------------------------------------- |
+| xmlbuilder2          | @xmldom/xmldom + manual createElement           | More verbose, error-prone for deeply-nested eSocial structure |
+| xmlbuilder2          | xml2js reverse (object→XML)                     | Less type-safe, not designed for output                       |
+| Custom XSD validator | libxmljs2                                       | Requires native compilation (node-gyp), brittle in CI         |
+| Custom XSD validator | xsd-schema-validator                            | Requires Java runtime on server                               |
+| Custom XSD validator | Structural JS validation of pre-generation data | No native deps, already know structure — RECOMMENDED          |
 
 **Installation:**
+
 ```bash
 cd apps/backend && pnpm add xmlbuilder2@^4.0.3
 ```
@@ -245,7 +249,8 @@ export function buildS2200(data: S2200Input): string {
   const root = doc.ele('eSocial', {
     xmlns: 'http://www.esocial.gov.br/schema/evt/evtAdmissao/v02_05_00',
     'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-    'xsi:schemaLocation': 'http://www.esocial.gov.br/schema/evt/evtAdmissao/v02_05_00 evtAdmissao-v02_05_00.xsd',
+    'xsi:schemaLocation':
+      'http://www.esocial.gov.br/schema/evt/evtAdmissao/v02_05_00 evtAdmissao-v02_05_00.xsd',
   });
   const evtAdmissao = root.ele('evtAdmissao', { Id: `ID_${data.organizationCnpj}_${data.nrInsc}` });
   // ideEvento group
@@ -263,16 +268,20 @@ Since we **generate** (not parse) the XML, validation means checking data comple
 
 ```typescript
 export interface ValidationError {
-  field: string;   // e.g. "evtAdmissao.trabalhador.nmTrab"
+  field: string; // e.g. "evtAdmissao.trabalhador.nmTrab"
   message: string; // e.g. "Campo obrigatório não informado"
 }
 
 export function validateS2200Input(data: S2200Input): ValidationError[] {
   const errors: ValidationError[] = [];
-  if (!data.employee.name) errors.push({ field: 'nmTrab', message: 'Nome do trabalhador obrigatório' });
-  if (!data.employee.cpf) errors.push({ field: 'cpfTrab', message: 'CPF do trabalhador obrigatório' });
-  if (!data.employee.pisPassep) errors.push({ field: 'nisTrab', message: 'NIS/PIS obrigatório para eSocial' });
-  if (!data.contract.salary) errors.push({ field: 'vrSalFx', message: 'Salário contratual obrigatório' });
+  if (!data.employee.name)
+    errors.push({ field: 'nmTrab', message: 'Nome do trabalhador obrigatório' });
+  if (!data.employee.cpf)
+    errors.push({ field: 'cpfTrab', message: 'CPF do trabalhador obrigatório' });
+  if (!data.employee.pisPassep)
+    errors.push({ field: 'nisTrab', message: 'NIS/PIS obrigatório para eSocial' });
+  if (!data.contract.salary)
+    errors.push({ field: 'vrSalFx', message: 'Salário contratual obrigatório' });
   if (!data.position.cbo) errors.push({ field: 'codCBO', message: 'CBO do cargo obrigatório' });
   // ... all required fields per MoS S-1.3
   return errors;
@@ -307,14 +316,14 @@ export function startTaxGuideAlertsCron(): void {
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| XML building | Manual string concat | xmlbuilder2 | Handles escaping, namespaces, encoding declaration, pretty-print |
-| PDF generation | HTML→PDF, jsPDF | pdfkit (already installed) | Already used for payslips, TRCT, EPI cards — consistent output |
-| Email batch send | Custom SMTP client | nodemailer (already installed) | Same pattern as payslip distribution (Phase 28) |
-| Date arithmetic | Manual JS Date math | date-fns (already installed) | Handles month-end, leap years, timezone-safe |
-| FGTS/INSS/IRRF values | Recalculate from scratch | Sum from PayrollRunItem.fgtsAmount/inssAmount/irrfAmount | Values already computed and stored — avoid recalculation drift |
-| FUNRURAL rate lookup | Hardcode aliquots | PayrollLegalTable (type=FUNRURAL) with effective-date | Two-phase 2026 rate change already handled by this table |
+| Problem               | Don't Build              | Use Instead                                              | Why                                                              |
+| --------------------- | ------------------------ | -------------------------------------------------------- | ---------------------------------------------------------------- |
+| XML building          | Manual string concat     | xmlbuilder2                                              | Handles escaping, namespaces, encoding declaration, pretty-print |
+| PDF generation        | HTML→PDF, jsPDF          | pdfkit (already installed)                               | Already used for payslips, TRCT, EPI cards — consistent output   |
+| Email batch send      | Custom SMTP client       | nodemailer (already installed)                           | Same pattern as payslip distribution (Phase 28)                  |
+| Date arithmetic       | Manual JS Date math      | date-fns (already installed)                             | Handles month-end, leap years, timezone-safe                     |
+| FGTS/INSS/IRRF values | Recalculate from scratch | Sum from PayrollRunItem.fgtsAmount/inssAmount/irrfAmount | Values already computed and stored — avoid recalculation drift   |
+| FUNRURAL rate lookup  | Hardcode aliquots        | PayrollLegalTable (type=FUNRURAL) with effective-date    | Two-phase 2026 rate change already handled by this table         |
 
 **Key insight:** The monetary values for all four tax guides are already stored in the database — the entire calculation infrastructure was built in Phases 26-29. Phase 31 is format output and compliance tracking, not new financial calculations.
 
@@ -324,42 +333,42 @@ export function startTaxGuideAlertsCron(): void {
 
 ### Event Groups and Triggers
 
-| Event | Group | XML Root Element | Trigger in System | Data Source |
-|-------|-------|-----------------|-------------------|-------------|
-| S-1000 | Tabela | evtInfoEmpregador | Manual / org setup | Organization (CNPJ, name, address) |
-| S-1005 | Tabela | evtTabEstab | Manual / farm setup | Farm (CNPJ establishment, CNAE) |
-| S-1010 | Tabela | evtTabRubrica | PayrollRubrica change | PayrollRubrica (code, name, eSocialCode, incideINSS/FGTS/IRRF) |
-| S-1020 | Tabela | evtTabLotacao | Position/CostCenter change | Position (CBO, name) + CostCenter |
-| S-2190 | Não Periódico | evtTSVInicio | Not applicable (rural employees) | — |
-| S-2200 | Não Periódico | evtAdmissao | Employee admission (status ATIVO) | Employee + EmployeeContract + Position |
-| S-2206 | Não Periódico | evtAltContratual | ContractAmendment with salary/position change | ContractAmendment.changes JSON |
-| S-2230 | Não Periódico | evtAfastTemp | EmployeeAbsence creation | EmployeeAbsence (type, startDate, catNumber) |
-| S-2299 | Não Periódico | evtDeslig | EmployeeTermination processed | EmployeeTermination (type, date, amounts) |
-| S-1200 | Periódico | evtRemun | PayrollRun close (MONTHLY) | PayrollRunItem per employee (lineItemsJson rubricas) |
-| S-1210 | Periódico | evtPgtos | PayrollRun close (MONTHLY) | PayrollRunItem (netSalary, payment date) |
-| S-1299 | Periódico | evtFechaEvPer | PayrollRun close | PayrollRun (referenceMonth, COMPLETED status) |
-| S-2210 | SST | evtCAT | EmployeeAbsence type=ACCIDENT with catNumber | EmployeeAbsence.catNumber |
-| S-2220 | SST | evtMonit | MedicalExam creation | MedicalExam (type, date, doctor CRM, result) |
-| S-2240 | SST | evtExpRisco | EpiDelivery with risk exposure | EpiDelivery + PositionEpiRequirement |
+| Event  | Group         | XML Root Element  | Trigger in System                             | Data Source                                                    |
+| ------ | ------------- | ----------------- | --------------------------------------------- | -------------------------------------------------------------- |
+| S-1000 | Tabela        | evtInfoEmpregador | Manual / org setup                            | Organization (CNPJ, name, address)                             |
+| S-1005 | Tabela        | evtTabEstab       | Manual / farm setup                           | Farm (CNPJ establishment, CNAE)                                |
+| S-1010 | Tabela        | evtTabRubrica     | PayrollRubrica change                         | PayrollRubrica (code, name, eSocialCode, incideINSS/FGTS/IRRF) |
+| S-1020 | Tabela        | evtTabLotacao     | Position/CostCenter change                    | Position (CBO, name) + CostCenter                              |
+| S-2190 | Não Periódico | evtTSVInicio      | Not applicable (rural employees)              | —                                                              |
+| S-2200 | Não Periódico | evtAdmissao       | Employee admission (status ATIVO)             | Employee + EmployeeContract + Position                         |
+| S-2206 | Não Periódico | evtAltContratual  | ContractAmendment with salary/position change | ContractAmendment.changes JSON                                 |
+| S-2230 | Não Periódico | evtAfastTemp      | EmployeeAbsence creation                      | EmployeeAbsence (type, startDate, catNumber)                   |
+| S-2299 | Não Periódico | evtDeslig         | EmployeeTermination processed                 | EmployeeTermination (type, date, amounts)                      |
+| S-1200 | Periódico     | evtRemun          | PayrollRun close (MONTHLY)                    | PayrollRunItem per employee (lineItemsJson rubricas)           |
+| S-1210 | Periódico     | evtPgtos          | PayrollRun close (MONTHLY)                    | PayrollRunItem (netSalary, payment date)                       |
+| S-1299 | Periódico     | evtFechaEvPer     | PayrollRun close                              | PayrollRun (referenceMonth, COMPLETED status)                  |
+| S-2210 | SST           | evtCAT            | EmployeeAbsence type=ACCIDENT with catNumber  | EmployeeAbsence.catNumber                                      |
+| S-2220 | SST           | evtMonit          | MedicalExam creation                          | MedicalExam (type, date, doctor CRM, result)                   |
+| S-2240 | SST           | evtExpRisco       | EpiDelivery with risk exposure                | EpiDelivery + PositionEpiRequirement                           |
 
 ### Key eSocial S-1.3 Field Mappings
 
 **S-2200 evtAdmissao — critical fields from Employee model:**
 
-| eSocial Field | Prisma Source | Notes |
-|---------------|--------------|-------|
-| cpfTrab | Employee.cpf | Unmask digits only |
-| nisTrab | Employee.pisPassep | REQUIRED — many employees may not have this filled |
-| nmTrab | Employee.name | |
-| dtNascimento | Employee.birthDate | |
-| codCateg | Derived from ContractType | 101=empregado geral, 102=rural por pequeno prazo |
-| dtAdm | Employee.admissionDate | |
-| tpRegPrev | 1 (RGPS) | Fixed for CLT rural |
-| vrSalFx | EmployeeContract.salary | |
-| undSalFixo | 5 (mensário) | Fixed for monthly salary |
-| codCBO | Position.cbo | REQUIRED — many positions may not have CBO filled |
-| qtdHrsSem | EmployeeContract.weeklyHours | |
-| matricula | Auto-generated or Employee.id | |
+| eSocial Field | Prisma Source                 | Notes                                              |
+| ------------- | ----------------------------- | -------------------------------------------------- |
+| cpfTrab       | Employee.cpf                  | Unmask digits only                                 |
+| nisTrab       | Employee.pisPassep            | REQUIRED — many employees may not have this filled |
+| nmTrab        | Employee.name                 |                                                    |
+| dtNascimento  | Employee.birthDate            |                                                    |
+| codCateg      | Derived from ContractType     | 101=empregado geral, 102=rural por pequeno prazo   |
+| dtAdm         | Employee.admissionDate        |                                                    |
+| tpRegPrev     | 1 (RGPS)                      | Fixed for CLT rural                                |
+| vrSalFx       | EmployeeContract.salary       |                                                    |
+| undSalFixo    | 5 (mensário)                  | Fixed for monthly salary                           |
+| codCBO        | Position.cbo                  | REQUIRED — many positions may not have CBO filled  |
+| qtdHrsSem     | EmployeeContract.weeklyHours  |                                                    |
+| matricula     | Auto-generated or Employee.id |                                                    |
 
 **Critical data gaps to validate:** `Employee.pisPassep` and `Position.cbo` are nullable in the schema. S-2200 generation will fail validation for employees missing PIS/PASEP or positions without CBO. The service must return a pre-generation validation error, not silently omit the field.
 
@@ -381,11 +390,11 @@ Source: FarmPlus blog + official SENAR/FUNRURAL regulations (verified March 2026
 
 **Two-phase rate change in 2026 (Lei Complementar nº 224/2025):**
 
-| Period | Basis | PJ Rate | PF Rate | Notes |
-|--------|-------|---------|---------|-------|
-| Jan–Mar 2026 | Gross Revenue | 2.05% (1.80% FUNRURAL + 0.25% SENAR) | 1.50% | Old rate |
-| Apr 2026+ | Gross Revenue | 2.23% (1.98% FUNRURAL + 0.25% SENAR) | 1.63% | New rate (Lei 224/2025) |
-| Any period | Payroll | 2.7% | N/A | Not affected by new law |
+| Period       | Basis         | PJ Rate                              | PF Rate | Notes                   |
+| ------------ | ------------- | ------------------------------------ | ------- | ----------------------- |
+| Jan–Mar 2026 | Gross Revenue | 2.05% (1.80% FUNRURAL + 0.25% SENAR) | 1.50%   | Old rate                |
+| Apr 2026+    | Gross Revenue | 2.23% (1.98% FUNRURAL + 0.25% SENAR) | 1.63%   | New rate (Lei 224/2025) |
+| Any period   | Payroll       | 2.7%                                 | N/A     | Not affected by new law |
 
 **Already implemented:** Phase 26 decision recorded: `FUNRURAL 2026 implemented as two PayrollLegalTable rows (Jan-Mar effectiveFrom 2026-01-01 and Apr-Dec effectiveFrom 2026-04-01)`. Tax guide generation should query PayrollLegalTable type=FUNRURAL with effective-date lookup — no hardcoding.
 
@@ -399,16 +408,16 @@ Source: CAIXA Manual SEFIP 8.4 (March 2024), Caixa Econômica Federal
 
 The SEFIP .RE file is a fixed-width text file with hierarchical record types:
 
-| Record | Type Code | Content |
-|--------|-----------|---------|
-| HEADER | 10 | Identificação do arquivo (versão SEFIP, CNPJ empregador, competência) |
-| EMPREGADOR | 20 | Dados do empregador (CNPJ/CEI, razão social, endereço, FPAS, código terceiros) |
-| TRABALHADOR | 30 | Dados do trabalhador (PIS/PASEP, nome, CPF, data admissão, categoria) |
-| REM. TRABALHADOR | 32 | Remuneração do período (ocorrência, valor) |
-| BASE CALC PREVID | 34 | Base de cálculo previdenciária |
-| TOTAIS TRABALHADOR | 40 | Totais por trabalhador |
-| TOTAIS EMPREGADOR | 50 | Totais por empregador |
-| TRAILER | 99 | Totalizadores do arquivo |
+| Record             | Type Code | Content                                                                        |
+| ------------------ | --------- | ------------------------------------------------------------------------------ |
+| HEADER             | 10        | Identificação do arquivo (versão SEFIP, CNPJ empregador, competência)          |
+| EMPREGADOR         | 20        | Dados do empregador (CNPJ/CEI, razão social, endereço, FPAS, código terceiros) |
+| TRABALHADOR        | 30        | Dados do trabalhador (PIS/PASEP, nome, CPF, data admissão, categoria)          |
+| REM. TRABALHADOR   | 32        | Remuneração do período (ocorrência, valor)                                     |
+| BASE CALC PREVID   | 34        | Base de cálculo previdenciária                                                 |
+| TOTAIS TRABALHADOR | 40        | Totais por trabalhador                                                         |
+| TOTAIS EMPREGADOR  | 50        | Totais por empregador                                                          |
+| TRAILER            | 99        | Totalizadores do arquivo                                                       |
 
 Key fields: competência (AAAAMM), FPAS code (Rural CLT = 604), remuneração values per trabalhador, FGTS deposit values, códigos de ocorrência (00=normal, 05=afastado, 06=rescisão).
 
@@ -418,15 +427,15 @@ Key fields: competência (AAAAMM), FPAS code (Rural CLT = 604), remuneração va
 
 The DARF (Documento de Arrecadação de Receitas Federais) has a fixed set of fields for programmatic generation (not a file format — it is a structured data set for filling the DARF form):
 
-| Field | Content | Notes |
-|-------|---------|-------|
-| CNPJ/CPF | Organization.document | |
-| Código Receita | 2100 (IRRF Trabalho) / 1120 (INSS) | Fixed per guide type |
-| Número de Referência | Competência AAAAMM | |
-| Data de Vencimento | Calculated due date | |
-| Período de Apuração | First day of reference month | |
-| Valor Principal | Total calculated | |
-| Valor Total | Same as principal (no juros if on time) | |
+| Field                | Content                                 | Notes                |
+| -------------------- | --------------------------------------- | -------------------- |
+| CNPJ/CPF             | Organization.document                   |                      |
+| Código Receita       | 2100 (IRRF Trabalho) / 1120 (INSS)      | Fixed per guide type |
+| Número de Referência | Competência AAAAMM                      |                      |
+| Data de Vencimento   | Calculated due date                     |                      |
+| Período de Apuração  | First day of reference month            |                      |
+| Valor Principal      | Total calculated                        |                      |
+| Valor Total          | Same as principal (no juros if on time) |                      |
 
 DARF does not have an import file format like SEFIP — it is a PDF form that the taxpayer fills. For programmatic generation, the recommended approach is generating a pre-filled PDF that exactly matches the DARF layout, which the contador can print and pay. Use pdfkit for this.
 
@@ -515,14 +524,16 @@ const evtAdmissao = esocial.ele('evtAdmissao', {
   Id: `ID_${tpInsc === '1' ? 'E' : 'P'}${nrInsc}_${yyyymm}${seq}`,
 });
 // ideEvento
-evtAdmissao.ele('ideEvento')
-  .ele('indRetificacao').txt('1').up()
-  .ele('percAC').txt('0').up()
-  .up();
+evtAdmissao.ele('ideEvento').ele('indRetificacao').txt('1').up().ele('percAC').txt('0').up().up();
 // ideEmpregador
-evtAdmissao.ele('ideEmpregador')
-  .ele('tpInsc').txt('1').up()  // 1=CNPJ
-  .ele('nrInsc').txt(cnpj14digits).up()
+evtAdmissao
+  .ele('ideEmpregador')
+  .ele('tpInsc')
+  .txt('1')
+  .up() // 1=CNPJ
+  .ele('nrInsc')
+  .txt(cnpj14digits)
+  .up()
   .up();
 const xml: string = doc.end({ prettyPrint: false }); // prettyPrint: false for smaller files
 ```
@@ -538,13 +549,25 @@ export function validateS2200Data(
 ): EsocialValidationError[] {
   const errors: EsocialValidationError[] = [];
   if (!employee.pisPassep) {
-    errors.push({ field: 'nisTrab', employeeName: employee.name, message: 'NIS/PIS não informado' });
+    errors.push({
+      field: 'nisTrab',
+      employeeName: employee.name,
+      message: 'NIS/PIS não informado',
+    });
   }
   if (!position.cbo) {
-    errors.push({ field: 'codCBO', employeeName: employee.name, message: 'CBO do cargo não informado' });
+    errors.push({
+      field: 'codCBO',
+      employeeName: employee.name,
+      message: 'CBO do cargo não informado',
+    });
   }
   if (!contract.salary || contract.salary.lte(0)) {
-    errors.push({ field: 'vrSalFx', employeeName: employee.name, message: 'Salário inválido ou zero' });
+    errors.push({
+      field: 'vrSalFx',
+      employeeName: employee.name,
+      message: 'Salário inválido ou zero',
+    });
   }
   return errors;
 }
@@ -556,7 +579,7 @@ export function validateS2200Data(
 // Source: Pattern from payroll-tables.service.ts (Phase 26 pattern)
 const funruralTable = await prisma.payrollLegalTable.findFirst({
   where: {
-    organizationId: null,  // system-level tables have null orgId
+    organizationId: null, // system-level tables have null orgId
     tableType: 'FUNRURAL',
     effectiveFrom: { lte: referenceMonth },
   },
@@ -712,12 +735,12 @@ enum FunruralBasis {
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| DIRF (declaração IRRF retido) | Abolished — data flows via eSocial + EFD-Reinf | 2025 (REQUIREMENTS.md confirms) | IncomeStatement PDF replaces DIRF for employee delivery |
-| GFIP for INSS | DCTFWeb | ~2019 (progressive rollout) | Deferred to future phase per CONTEXT.md |
-| RAIS annual declaration | Replaced by eSocial ongoing reporting | 2023 (eSocial phase 3 completion) | Show informative banner + consistency report (D-15) |
-| eSocial S-1.0/S-1.1/S-1.2 | S-1.3 (current, with NT 06/2026 amendments) | Dec 2024 (S-1.3 released) | Use S-1.3 namespace URIs in all XML |
+| Old Approach                  | Current Approach                               | When Changed                      | Impact                                                  |
+| ----------------------------- | ---------------------------------------------- | --------------------------------- | ------------------------------------------------------- |
+| DIRF (declaração IRRF retido) | Abolished — data flows via eSocial + EFD-Reinf | 2025 (REQUIREMENTS.md confirms)   | IncomeStatement PDF replaces DIRF for employee delivery |
+| GFIP for INSS                 | DCTFWeb                                        | ~2019 (progressive rollout)       | Deferred to future phase per CONTEXT.md                 |
+| RAIS annual declaration       | Replaced by eSocial ongoing reporting          | 2023 (eSocial phase 3 completion) | Show informative banner + consistency report (D-15)     |
+| eSocial S-1.0/S-1.1/S-1.2     | S-1.3 (current, with NT 06/2026 amendments)    | Dec 2024 (S-1.3 released)         | Use S-1.3 namespace URIs in all XML                     |
 
 **Current eSocial version:** S-1.3 with NT 06/2026 amendments (effective Feb 2026). The official MoS (Manual de Orientação) is available at `https://www.gov.br/esocial/pt-br/documentacao-tecnica/manuais/` — XSD schemas available at official eSocial portal.
 
@@ -749,21 +772,23 @@ enum FunruralBasis {
 
 ## Environment Availability
 
-| Dependency | Required By | Available | Version | Fallback |
-|------------|------------|-----------|---------|----------|
-| Node.js | Backend runtime | ✓ | v24.12.0 | — |
-| pdfkit | Income statement PDF, DARF PDF | ✓ | ^0.17.2 | — |
-| @xmldom/xmldom | XSD parsing, XML DOM validation | ✓ | ^0.8.11 | — |
-| xmlbuilder2 | eSocial XML generation | ✗ | — | Install required: `pnpm add xmlbuilder2@^4.0.3` |
-| node-cron | Alert scheduling | ✓ | ^4.2.1 | — |
-| ioredis | Cron idempotency lock | ✓ | ^5.9.3 | — |
-| nodemailer | Income statement batch email | ✓ | ^8.0.1 | — |
-| PostgreSQL | Database | ✓ | 16 (assumed from project) | — |
+| Dependency     | Required By                     | Available | Version                   | Fallback                                        |
+| -------------- | ------------------------------- | --------- | ------------------------- | ----------------------------------------------- |
+| Node.js        | Backend runtime                 | ✓         | v24.12.0                  | —                                               |
+| pdfkit         | Income statement PDF, DARF PDF  | ✓         | ^0.17.2                   | —                                               |
+| @xmldom/xmldom | XSD parsing, XML DOM validation | ✓         | ^0.8.11                   | —                                               |
+| xmlbuilder2    | eSocial XML generation          | ✗         | —                         | Install required: `pnpm add xmlbuilder2@^4.0.3` |
+| node-cron      | Alert scheduling                | ✓         | ^4.2.1                    | —                                               |
+| ioredis        | Cron idempotency lock           | ✓         | ^5.9.3                    | —                                               |
+| nodemailer     | Income statement batch email    | ✓         | ^8.0.1                    | —                                               |
+| PostgreSQL     | Database                        | ✓         | 16 (assumed from project) | —                                               |
 
 **Missing dependencies with no fallback:**
+
 - `xmlbuilder2@^4.0.3` — required for eSocial XML generation. Must be installed before Plan 02 (eSocial event builders).
 
 **Missing dependencies with fallback:**
+
 - None beyond xmlbuilder2.
 
 ---
@@ -772,28 +797,28 @@ enum FunruralBasis {
 
 ### Test Framework
 
-| Property | Value |
-|----------|-------|
-| Framework | Jest 29 + @swc/jest |
-| Config file | `apps/backend/jest.config.js` |
-| Quick run command | `cd apps/backend && pnpm jest --testPathPattern=esocial-events --no-coverage` |
-| Full suite command | `cd apps/backend && pnpm test` |
+| Property           | Value                                                                         |
+| ------------------ | ----------------------------------------------------------------------------- |
+| Framework          | Jest 29 + @swc/jest                                                           |
+| Config file        | `apps/backend/jest.config.js`                                                 |
+| Quick run command  | `cd apps/backend && pnpm jest --testPathPattern=esocial-events --no-coverage` |
+| Full suite command | `cd apps/backend && pnpm test`                                                |
 
 ### Phase Requirements → Test Map
 
-| Req ID | Behavior | Test Type | Automated Command | File Exists? |
-|--------|----------|-----------|-------------------|-------------|
-| ESOCIAL-01 | TaxGuide generation sums FGTS/INSS/IRRF from PayrollRunItems correctly | unit | `pnpm jest --testPathPattern=tax-guides.spec` | ❌ Wave 0 |
-| ESOCIAL-01 | TaxGuide payable upsert with originType=TAX_GUIDE | unit | `pnpm jest --testPathPattern=tax-guides.spec` | ❌ Wave 0 |
-| ESOCIAL-01 | Due date calculation: FGTS=7th next month, INSS=20th next month, IRRF=20th next month | unit | `pnpm jest --testPathPattern=tax-guides.spec` | ❌ Wave 0 |
-| ESOCIAL-01 | FUNRURAL rate lookup uses effective-date (Jan-Mar vs Apr+ 2026) | unit | `pnpm jest --testPathPattern=tax-guides.spec` | ❌ Wave 0 |
-| ESOCIAL-02 | S-2200 builder produces valid XML with correct namespace | unit | `pnpm jest --testPathPattern=esocial-builders` | ❌ Wave 0 |
-| ESOCIAL-02 | Pre-generation validation catches missing pisPassep | unit | `pnpm jest --testPathPattern=esocial-events.spec` | ❌ Wave 0 |
-| ESOCIAL-02 | Pre-generation validation catches missing CBO | unit | `pnpm jest --testPathPattern=esocial-events.spec` | ❌ Wave 0 |
-| ESOCIAL-02 | S-1200 builder maps lineItemsJson rubricas with eSocialCode | unit | `pnpm jest --testPathPattern=esocial-builders` | ❌ Wave 0 |
-| ESOCIAL-02 | Status transitions: PENDENTE→EXPORTADO→ACEITO/REJEITADO | unit | `pnpm jest --testPathPattern=esocial-events.spec` | ❌ Wave 0 |
-| ESOCIAL-03 | IncomeStatement aggregates all PayrollRunItems for a year-base | unit | `pnpm jest --testPathPattern=income-statements.spec` | ❌ Wave 0 |
-| ESOCIAL-03 | IncomeStatement PDF generates without error for valid data | unit | `pnpm jest --testPathPattern=income-statements.spec` | ❌ Wave 0 |
+| Req ID     | Behavior                                                                              | Test Type | Automated Command                                    | File Exists? |
+| ---------- | ------------------------------------------------------------------------------------- | --------- | ---------------------------------------------------- | ------------ |
+| ESOCIAL-01 | TaxGuide generation sums FGTS/INSS/IRRF from PayrollRunItems correctly                | unit      | `pnpm jest --testPathPattern=tax-guides.spec`        | ❌ Wave 0    |
+| ESOCIAL-01 | TaxGuide payable upsert with originType=TAX_GUIDE                                     | unit      | `pnpm jest --testPathPattern=tax-guides.spec`        | ❌ Wave 0    |
+| ESOCIAL-01 | Due date calculation: FGTS=7th next month, INSS=20th next month, IRRF=20th next month | unit      | `pnpm jest --testPathPattern=tax-guides.spec`        | ❌ Wave 0    |
+| ESOCIAL-01 | FUNRURAL rate lookup uses effective-date (Jan-Mar vs Apr+ 2026)                       | unit      | `pnpm jest --testPathPattern=tax-guides.spec`        | ❌ Wave 0    |
+| ESOCIAL-02 | S-2200 builder produces valid XML with correct namespace                              | unit      | `pnpm jest --testPathPattern=esocial-builders`       | ❌ Wave 0    |
+| ESOCIAL-02 | Pre-generation validation catches missing pisPassep                                   | unit      | `pnpm jest --testPathPattern=esocial-events.spec`    | ❌ Wave 0    |
+| ESOCIAL-02 | Pre-generation validation catches missing CBO                                         | unit      | `pnpm jest --testPathPattern=esocial-events.spec`    | ❌ Wave 0    |
+| ESOCIAL-02 | S-1200 builder maps lineItemsJson rubricas with eSocialCode                           | unit      | `pnpm jest --testPathPattern=esocial-builders`       | ❌ Wave 0    |
+| ESOCIAL-02 | Status transitions: PENDENTE→EXPORTADO→ACEITO/REJEITADO                               | unit      | `pnpm jest --testPathPattern=esocial-events.spec`    | ❌ Wave 0    |
+| ESOCIAL-03 | IncomeStatement aggregates all PayrollRunItems for a year-base                        | unit      | `pnpm jest --testPathPattern=income-statements.spec` | ❌ Wave 0    |
+| ESOCIAL-03 | IncomeStatement PDF generates without error for valid data                            | unit      | `pnpm jest --testPathPattern=income-statements.spec` | ❌ Wave 0    |
 
 ### Sampling Rate
 
@@ -841,6 +866,7 @@ enum FunruralBasis {
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH — all packages verified via `npm view`, codebase confirmed
 - Architecture patterns: HIGH — directly derived from existing patterns in codebase
 - eSocial event structure: MEDIUM — field names verified via Senior Sistemas docs + MoS references; full XSD verification requires downloading official files at plan time

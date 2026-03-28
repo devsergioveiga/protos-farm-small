@@ -176,7 +176,9 @@
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
   min-height: 48px;
-  transition: color 150ms ease-out, border-color 150ms ease-out;
+  transition:
+    color 150ms ease-out,
+    border-color 150ms ease-out;
 }
 
 .prov-page__tab:hover {
@@ -232,7 +234,9 @@
   font-family: var(--font-body);
   cursor: pointer;
   min-height: 40px;
-  transition: background-color 100ms ease-out, border-color 100ms ease-out;
+  transition:
+    background-color 100ms ease-out,
+    border-color 100ms ease-out;
 }
 
 .prov-page__export-btn:hover {
@@ -343,7 +347,9 @@
   background-color: var(--color-neutral-0, #fff);
   cursor: pointer;
   min-height: 32px;
-  transition: background-color 100ms ease-out, border-color 100ms ease-out;
+  transition:
+    background-color 100ms ease-out,
+    border-color 100ms ease-out;
 }
 
 .prov-page__action-btn:hover {
@@ -417,8 +423,13 @@
 }
 
 @keyframes prov-skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

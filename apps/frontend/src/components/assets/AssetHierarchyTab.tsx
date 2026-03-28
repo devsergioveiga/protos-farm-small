@@ -36,9 +36,7 @@ const STATUS_CSS: Record<string, string> = {
 function StatusChip({ status }: { status: AssetStatus }) {
   const label = STATUS_LABELS[status] ?? status;
   const css = STATUS_CSS[status] ?? '';
-  return (
-    <span className={`asset-hierarchy-tab__status ${css}`}>{label}</span>
-  );
+  return <span className={`asset-hierarchy-tab__status ${css}`}>{label}</span>;
 }
 
 // ─── Tree node ─────────────────────────────────────────────────────────────

@@ -13,6 +13,7 @@ Frontend AttendancePage with three tabs: Apontamentos (time entries table), Banc
 ## Key Files
 
 ### Created
+
 - `apps/frontend/src/pages/AttendancePage.tsx` — Main page with 3 tabs
 - `apps/frontend/src/pages/AttendancePage.css` — Styles
 - `apps/frontend/src/components/attendance/ManualPunchModal.tsx` — Manual punch registration
@@ -24,6 +25,7 @@ Frontend AttendancePage with three tabs: Apontamentos (time entries table), Banc
 - `apps/frontend/src/hooks/useTimesheet.ts` — Timesheet hook
 
 ### Modified
+
 - `apps/frontend/src/App.tsx` — Route /attendance
 - `apps/frontend/src/components/layout/Sidebar.tsx` — Controle de Ponto under RH group
 

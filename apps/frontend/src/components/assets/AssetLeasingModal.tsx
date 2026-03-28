@@ -174,9 +174,7 @@ export default function AssetLeasingModal({ isOpen, onClose, onSubmit }: AssetLe
       onClose();
     } catch (err) {
       setFormError(
-        err instanceof Error
-          ? err.message
-          : 'Nao foi possivel criar o contrato. Tente novamente.',
+        err instanceof Error ? err.message : 'Nao foi possivel criar o contrato. Tente novamente.',
       );
     } finally {
       setIsSubmitting(false);

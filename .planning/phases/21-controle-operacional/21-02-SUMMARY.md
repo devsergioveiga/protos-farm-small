@@ -1,15 +1,15 @@
 ---
 phase: 21-controle-operacional
-plan: "02"
+plan: '02'
 subsystem: frontend-assets
 tags: [assets, operational-cost, tco, frontend, react, hooks]
 dependency_graph:
-  requires: ["21-01"]
-  provides: ["OPER-04-frontend"]
-  affects: ["AssetDrawer"]
+  requires: ['21-01']
+  provides: ['OPER-04-frontend']
+  affects: ['AssetDrawer']
 tech_stack:
   added: []
-  patterns: ["hook-per-endpoint", "tab-panel-pattern", "dl-for-cost-breakdown"]
+  patterns: ['hook-per-endpoint', 'tab-panel-pattern', 'dl-for-cost-breakdown']
 key_files:
   created:
     - apps/frontend/src/hooks/useAssetOperationalCost.ts
@@ -18,12 +18,12 @@ key_files:
   modified:
     - apps/frontend/src/components/assets/AssetDrawer.tsx
 decisions:
-  - "AssetCostTab uses <dl> semantic HTML for cost breakdown (dt=label, dd=value) per accessibility spec"
-  - "Insurance (N/D) rendered inline in the breakdown list with muted note — not a separate section"
+  - 'AssetCostTab uses <dl> semantic HTML for cost breakdown (dt=label, dd=value) per accessibility spec'
+  - 'Insurance (N/D) rendered inline in the breakdown list with muted note — not a separate section'
   - "costPerHour card shows 'Sem leitura de horímetro' subtitle when null — avoids blank space"
 metrics:
-  duration: "167s"
-  completed_date: "2026-03-22"
+  duration: '167s'
+  completed_date: '2026-03-22'
   tasks_completed: 2
   files_changed: 4
 ---
@@ -47,10 +47,10 @@ Added the "Custo" tab to the AssetDrawer, enabling managers to view the complete
 
 ## Tasks
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Create useAssetOperationalCost hook + AssetCostTab | 2d1ee024 | useAssetOperationalCost.ts, AssetCostTab.tsx, AssetCostTab.css |
-| 2 | Wire AssetCostTab into AssetDrawer as 'custo' tab | ad37af24 | AssetDrawer.tsx |
+| Task | Name                                               | Commit   | Files                                                          |
+| ---- | -------------------------------------------------- | -------- | -------------------------------------------------------------- |
+| 1    | Create useAssetOperationalCost hook + AssetCostTab | 2d1ee024 | useAssetOperationalCost.ts, AssetCostTab.tsx, AssetCostTab.css |
+| 2    | Wire AssetCostTab into AssetDrawer as 'custo' tab  | ad37af24 | AssetDrawer.tsx                                                |
 
 ## Decisions Made
 

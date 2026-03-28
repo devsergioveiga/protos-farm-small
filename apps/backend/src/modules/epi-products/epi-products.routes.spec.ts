@@ -259,7 +259,10 @@ describe('DELETE /api/epi-products/:id', () => {
   it('should return 409 when EPI has deliveries', async () => {
     authAs(ADMIN_PAYLOAD);
     mockedService.deleteEpiProduct.mockRejectedValue(
-      new EpiProductError('Não é possível excluir um EPI com entregas registradas', 'HAS_DELIVERIES'),
+      new EpiProductError(
+        'Não é possível excluir um EPI com entregas registradas',
+        'HAS_DELIVERIES',
+      ),
     );
 
     const res = await request(app)

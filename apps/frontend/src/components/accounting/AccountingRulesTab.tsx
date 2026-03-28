@@ -82,17 +82,15 @@ function RuleRow({ rule, onEdit, onToggle, togglingId }: RuleRowProps) {
             label={rule.isActive ? 'Desativar regra' : 'Ativar regra'}
             disabled={isToggling}
           />
-          <span className={`art__status-badge${rule.isActive ? ' art__status-badge--active' : ' art__status-badge--inactive'}`}>
+          <span
+            className={`art__status-badge${rule.isActive ? ' art__status-badge--active' : ' art__status-badge--inactive'}`}
+          >
             {rule.isActive ? 'ATIVA' : 'INATIVA'}
           </span>
         </div>
       </td>
       <td className="art__td art__td--actions">
-        <button
-          type="button"
-          className="art__btn art__btn--text"
-          onClick={() => onEdit(rule)}
-        >
+        <button type="button" className="art__btn art__btn--text" onClick={() => onEdit(rule)}>
           Editar
         </button>
       </td>
@@ -136,7 +134,6 @@ export default function AccountingRulesTab() {
 
   return (
     <section className="art" aria-label="Regras de lançamento automático">
-
       {error && (
         <div className="art__error-banner" role="alert">
           {error}
@@ -145,15 +142,33 @@ export default function AccountingRulesTab() {
 
       <div className="art__table-wrapper">
         <table className="art__table">
-          <caption className="sr-only">Regras de lançamento automático por tipo de operação</caption>
+          <caption className="sr-only">
+            Regras de lançamento automático por tipo de operação
+          </caption>
           <thead>
             <tr>
-              <th scope="col" className="art__th">TIPO DE OPERAÇÃO</th>
-              <th scope="col" className="art__th">CONTA DÉBITO</th>
-              <th scope="col" className="art__th">CONTA CRÉDITO</th>
-              <th scope="col" className="art__th art__th--center" title="Centro de Custo Obrigatório">CC</th>
-              <th scope="col" className="art__th">STATUS</th>
-              <th scope="col" className="art__th art__th--actions">AÇÕES</th>
+              <th scope="col" className="art__th">
+                TIPO DE OPERAÇÃO
+              </th>
+              <th scope="col" className="art__th">
+                CONTA DÉBITO
+              </th>
+              <th scope="col" className="art__th">
+                CONTA CRÉDITO
+              </th>
+              <th
+                scope="col"
+                className="art__th art__th--center"
+                title="Centro de Custo Obrigatório"
+              >
+                CC
+              </th>
+              <th scope="col" className="art__th">
+                STATUS
+              </th>
+              <th scope="col" className="art__th art__th--actions">
+                AÇÕES
+              </th>
             </tr>
           </thead>
           <tbody>

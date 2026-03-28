@@ -57,10 +57,7 @@ export default function CrossValidationPage() {
   const hasFilters = !!selectedFiscalYearId && !!selectedMonth;
 
   const cvFilters = useMemo(
-    () =>
-      hasFilters
-        ? { fiscalYearId: selectedFiscalYearId, month: selectedMonth }
-        : null,
+    () => (hasFilters ? { fiscalYearId: selectedFiscalYearId, month: selectedMonth } : null),
     [hasFilters, selectedFiscalYearId, selectedMonth],
   );
 
@@ -81,9 +78,13 @@ export default function CrossValidationPage() {
       {/* Breadcrumb */}
       <nav className="cross-validation-page__breadcrumb" aria-label="Caminho da pagina">
         <span className="cross-validation-page__breadcrumb-item">Inicio</span>
-        <span className="cross-validation-page__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="cross-validation-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="cross-validation-page__breadcrumb-item">Contabilidade</span>
-        <span className="cross-validation-page__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="cross-validation-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="cross-validation-page__breadcrumb-item cross-validation-page__breadcrumb-item--current">
           Validacao Cruzada
         </span>

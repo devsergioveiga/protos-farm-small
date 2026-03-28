@@ -2,11 +2,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { X, AlertCircle, Plus, Trash2, Upload } from 'lucide-react';
 import { useWorkOrders } from '@/hooks/useWorkOrders';
 import { useAssets } from '@/hooks/useAssets';
-import type {
-  WorkOrder,
-  WorkOrderType,
-  WorkOrderPart,
-} from '@/types/maintenance';
+import type { WorkOrder, WorkOrderType, WorkOrderPart } from '@/types/maintenance';
 import './WorkOrderModal.css';
 
 // ─── Props ─────────────────────────────────────────────────────────────
@@ -220,9 +216,7 @@ export default function WorkOrderModal({
   }
 
   function updatePart(id: string, field: keyof PartRow, value: string) {
-    setParts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, [field]: value } : p)),
-    );
+    setParts((prev) => prev.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
   }
 
   function removePart(id: string) {
@@ -339,12 +333,7 @@ export default function WorkOrderModal({
         {/* Header */}
         <header className="wo-modal__header">
           <h2 className="wo-modal__title">{workOrder ? 'Editar OS' : 'Abrir OS'}</h2>
-          <button
-            type="button"
-            className="wo-modal__close"
-            onClick={onClose}
-            aria-label="Fechar"
-          >
+          <button type="button" className="wo-modal__close" onClick={onClose} aria-label="Fechar">
             <X size={20} aria-hidden="true" />
           </button>
         </header>
@@ -388,12 +377,19 @@ export default function WorkOrderModal({
             {/* Tipo */}
             <fieldset className="wo-modal__fieldset">
               <legend className="wo-modal__legend">
-                Tipo <span className="wo-modal__required" aria-hidden="true">*</span>
+                Tipo{' '}
+                <span className="wo-modal__required" aria-hidden="true">
+                  *
+                </span>
               </legend>
               <div className="wo-modal__radio-group">
                 {(['CORRETIVA', 'PREVENTIVA', 'SOLICITACAO'] as WorkOrderType[]).map((type) => {
                   const label =
-                    type === 'CORRETIVA' ? 'Corretiva' : type === 'PREVENTIVA' ? 'Preventiva' : 'Solicitacao';
+                    type === 'CORRETIVA'
+                      ? 'Corretiva'
+                      : type === 'PREVENTIVA'
+                        ? 'Preventiva'
+                        : 'Solicitacao';
                   return (
                     <label key={type} className="wo-modal__radio-label">
                       <input
@@ -472,16 +468,29 @@ export default function WorkOrderModal({
                     <caption className="sr-only">Pecas consumidas na OS</caption>
                     <thead>
                       <tr>
-                        <th scope="col" className="wo-modal__parts-th">Produto</th>
-                        <th scope="col" className="wo-modal__parts-th wo-modal__parts-th--num">Qtd</th>
-                        <th scope="col" className="wo-modal__parts-th wo-modal__parts-th--num">Custo unit. (R$)</th>
-                        <th scope="col" className="wo-modal__parts-th wo-modal__parts-th--num">Total</th>
-                        <th scope="col" className="wo-modal__parts-th wo-modal__parts-th--action" aria-label="Remover"></th>
+                        <th scope="col" className="wo-modal__parts-th">
+                          Produto
+                        </th>
+                        <th scope="col" className="wo-modal__parts-th wo-modal__parts-th--num">
+                          Qtd
+                        </th>
+                        <th scope="col" className="wo-modal__parts-th wo-modal__parts-th--num">
+                          Custo unit. (R$)
+                        </th>
+                        <th scope="col" className="wo-modal__parts-th wo-modal__parts-th--num">
+                          Total
+                        </th>
+                        <th
+                          scope="col"
+                          className="wo-modal__parts-th wo-modal__parts-th--action"
+                          aria-label="Remover"
+                        ></th>
                       </tr>
                     </thead>
                     <tbody>
                       {parts.map((part) => {
-                        const partTotal = (Number(part.quantity) || 0) * (Number(part.unitCost) || 0);
+                        const partTotal =
+                          (Number(part.quantity) || 0) * (Number(part.unitCost) || 0);
                         return (
                           <tr key={part.id} className="wo-modal__parts-tr">
                             <td className="wo-modal__parts-td">
@@ -539,11 +548,7 @@ export default function WorkOrderModal({
                   </table>
                 </div>
               )}
-              <button
-                type="button"
-                className="wo-modal__add-part-btn"
-                onClick={addPart}
-              >
+              <button type="button" className="wo-modal__add-part-btn" onClick={addPart}>
                 <Plus size={16} aria-hidden="true" />
                 Adicionar peca
               </button>
@@ -647,7 +652,11 @@ export default function WorkOrderModal({
                     const objUrl = URL.createObjectURL(file);
                     return (
                       <div key={file.name + i} className="wo-modal__photo-thumb">
-                        <img src={objUrl} alt={`Nova foto ${i + 1}`} className="wo-modal__photo-img" />
+                        <img
+                          src={objUrl}
+                          alt={`Nova foto ${i + 1}`}
+                          className="wo-modal__photo-img"
+                        />
                         <button
                           type="button"
                           className="wo-modal__photo-remove"

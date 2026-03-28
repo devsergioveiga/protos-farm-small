@@ -52,7 +52,8 @@ export default function DrePage() {
   // Fetch cost centers
   useEffect(() => {
     if (!orgId) return;
-    void api.get<CostCenter[]>(`/org/${orgId}/cost-centers`)
+    void api
+      .get<CostCenter[]>(`/org/${orgId}/cost-centers`)
       .then((data) => setCostCenters(data))
       .catch(() => {
         // non-blocking: cost center filter optional
@@ -90,19 +91,22 @@ export default function DrePage() {
     return [month?.label, fy?.name].filter(Boolean).join(' / ');
   }, [selectedFiscalYearId, selectedMonth, fiscalYears]);
 
-  const showMarginRanking = !selectedCostCenterId && data?.marginRanking && data.marginRanking.length > 0;
+  const showMarginRanking =
+    !selectedCostCenterId && data?.marginRanking && data.marginRanking.length > 0;
 
   return (
     <main className="dre-page" id="main-content">
       {/* Breadcrumb */}
       <nav className="dre-page__breadcrumb" aria-label="Caminho da pagina">
         <span className="dre-page__breadcrumb-item">Inicio</span>
-        <span className="dre-page__breadcrumb-sep" aria-hidden="true">/</span>
-        <span className="dre-page__breadcrumb-item">Contabilidade</span>
-        <span className="dre-page__breadcrumb-sep" aria-hidden="true">/</span>
-        <span className="dre-page__breadcrumb-item dre-page__breadcrumb-item--current">
-          DRE
+        <span className="dre-page__breadcrumb-sep" aria-hidden="true">
+          /
         </span>
+        <span className="dre-page__breadcrumb-item">Contabilidade</span>
+        <span className="dre-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
+        <span className="dre-page__breadcrumb-item dre-page__breadcrumb-item--current">DRE</span>
       </nav>
 
       {/* Header */}
@@ -226,19 +230,21 @@ export default function DrePage() {
       {hasFilters && (loading || data) && (
         <DreTable
           sections={data?.dre.sections ?? []}
-          resultadoLiquido={data?.dre.resultadoLiquido ?? {
-            accountId: null,
-            code: '',
-            name: 'Resultado Liquido',
-            currentMonth: '0',
-            ytd: '0',
-            priorYear: '0',
-            avPercent: null,
-            ahPercent: null,
-            isSubtotal: true,
-            isCpc29: false,
-            level: 0,
-          }}
+          resultadoLiquido={
+            data?.dre.resultadoLiquido ?? {
+              accountId: null,
+              code: '',
+              name: 'Resultado Liquido',
+              currentMonth: '0',
+              ytd: '0',
+              priorYear: '0',
+              avPercent: null,
+              ahPercent: null,
+              isSubtotal: true,
+              isCpc29: false,
+              level: 0,
+            }
+          }
           showVH={showVH}
           loading={loading}
           period={periodLabel}
@@ -246,9 +252,7 @@ export default function DrePage() {
       )}
 
       {/* Margin Ranking Chart */}
-      {showMarginRanking && (
-        <MarginRankingChart data={data!.marginRanking!} />
-      )}
+      {showMarginRanking && <MarginRankingChart data={data!.marginRanking!} />}
 
       {/* Toast */}
       {toast && (

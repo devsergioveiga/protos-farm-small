@@ -1,6 +1,14 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Plus, AlertTriangle, Lock, RotateCcw, CheckCircle, ClipboardCheck } from 'lucide-react';
+import {
+  Calendar,
+  Plus,
+  AlertTriangle,
+  Lock,
+  RotateCcw,
+  CheckCircle,
+  ClipboardCheck,
+} from 'lucide-react';
 import {
   useFiscalYears,
   useCreateFiscalYear,
@@ -15,7 +23,20 @@ import './FiscalPeriodsPage.css';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
-const MONTH_ABBR = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+const MONTH_ABBR = [
+  'Jan',
+  'Fev',
+  'Mar',
+  'Abr',
+  'Mai',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Set',
+  'Out',
+  'Nov',
+  'Dez',
+];
 
 function formatDate(iso: string) {
   return new Date(iso + 'T12:00:00').toLocaleDateString('pt-BR');
@@ -113,7 +134,11 @@ function PeriodPanel({ period, onClose, onActionDone }: PeriodPanelProps) {
   };
 
   return (
-    <div className="fp-period-panel" role="region" aria-label={`Ações para ${monthName} ${period.year}`}>
+    <div
+      className="fp-period-panel"
+      role="region"
+      aria-label={`Ações para ${monthName} ${period.year}`}
+    >
       <div className="fp-period-panel__header">
         <span className="fp-period-panel__title">
           {monthName} {period.year}
@@ -133,12 +158,14 @@ function PeriodPanel({ period, onClose, onActionDone }: PeriodPanelProps) {
       {/* Audit info */}
       {period.closedAt && (
         <p className="fp-period-panel__audit">
-          Fechado em {formatDateTime(period.closedAt)}{period.closedBy ? ` por ${period.closedBy}` : ''}
+          Fechado em {formatDateTime(period.closedAt)}
+          {period.closedBy ? ` por ${period.closedBy}` : ''}
         </p>
       )}
       {period.reopenedAt && (
         <p className="fp-period-panel__audit">
-          Reaberto em {formatDateTime(period.reopenedAt)}{period.reopenedBy ? ` por ${period.reopenedBy}` : ''}
+          Reaberto em {formatDateTime(period.reopenedAt)}
+          {period.reopenedBy ? ` por ${period.reopenedBy}` : ''}
           {period.reopenReason ? `: ${period.reopenReason}` : ''}
         </p>
       )}
@@ -158,7 +185,9 @@ function PeriodPanel({ period, onClose, onActionDone }: PeriodPanelProps) {
           <button
             type="button"
             className="fp-period-panel__action fp-period-panel__action--close"
-            onClick={() => { void handleClose(); }}
+            onClick={() => {
+              void handleClose();
+            }}
             disabled={closing}
           >
             <CheckCircle size={16} aria-hidden="true" />
@@ -187,7 +216,10 @@ function PeriodPanel({ period, onClose, onActionDone }: PeriodPanelProps) {
                 id="reopen-reason"
                 className={`fp-period-panel__textarea ${reopenError ? 'fp-period-panel__textarea--error' : ''}`}
                 value={reopenReason}
-                onChange={(e) => { setReopenReason(e.target.value); setReopenError(''); }}
+                onChange={(e) => {
+                  setReopenReason(e.target.value);
+                  setReopenError('');
+                }}
                 rows={3}
                 placeholder="Descreva o motivo da reabertura..."
                 aria-required="true"
@@ -202,14 +234,20 @@ function PeriodPanel({ period, onClose, onActionDone }: PeriodPanelProps) {
                 <button
                   type="button"
                   className="fp-period-panel__action fp-period-panel__action--cancel"
-                  onClick={() => { setShowReopenForm(false); setReopenReason(''); setReopenError(''); }}
+                  onClick={() => {
+                    setShowReopenForm(false);
+                    setReopenReason('');
+                    setReopenError('');
+                  }}
                 >
                   Cancelar
                 </button>
                 <button
                   type="button"
                   className="fp-period-panel__action fp-period-panel__action--reopen"
-                  onClick={() => { void handleReopen(); }}
+                  onClick={() => {
+                    void handleReopen();
+                  }}
                   disabled={reopening}
                 >
                   <RotateCcw size={16} aria-hidden="true" />
@@ -222,7 +260,9 @@ function PeriodPanel({ period, onClose, onActionDone }: PeriodPanelProps) {
           <button
             type="button"
             className="fp-period-panel__action fp-period-panel__action--block"
-            onClick={() => { void handleBlock(); }}
+            onClick={() => {
+              void handleBlock();
+            }}
             disabled={blocking}
           >
             <Lock size={16} aria-hidden="true" />
@@ -265,9 +305,7 @@ function FiscalYearCard({ year, onRefetch }: FiscalYearCardProps) {
       <div className="fp-year-card__header">
         <div className="fp-year-card__title-row">
           <h2 className="fp-year-card__name">{year.name}</h2>
-          {year.isActive && (
-            <span className="fp-year-card__active-badge">Ativo</span>
-          )}
+          {year.isActive && <span className="fp-year-card__active-badge">Ativo</span>}
         </div>
         <p className="fp-year-card__dates">
           {formatDate(year.startDate)} — {formatDate(year.endDate)}
@@ -302,7 +340,11 @@ function FiscalYearCard({ year, onRefetch }: FiscalYearCardProps) {
 
 function FiscalSkeleton() {
   return (
-    <div className="fp-page__skeleton" aria-label="Carregando exercícios fiscais..." aria-busy="true">
+    <div
+      className="fp-page__skeleton"
+      aria-label="Carregando exercícios fiscais..."
+      aria-busy="true"
+    >
       {[1, 2].map((i) => (
         <div key={i} className="fp-page__skeleton-card">
           <div className="fp-page__skeleton-header" />
@@ -346,7 +388,9 @@ export default function FiscalPeriodsPage() {
       {/* Breadcrumb */}
       <nav className="fp-page__breadcrumb" aria-label="Caminho da página">
         <span className="fp-page__breadcrumb-item">Contabilidade</span>
-        <span className="fp-page__breadcrumb-sep" aria-hidden="true">/</span>
+        <span className="fp-page__breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
         <span className="fp-page__breadcrumb-item fp-page__breadcrumb-item--current">
           Períodos Fiscais
         </span>
@@ -401,7 +445,13 @@ export default function FiscalPeriodsPage() {
         {!isLoading && !error && years.length > 0 && (
           <div className="fp-page__years">
             {years.map((year) => (
-              <FiscalYearCard key={year.id} year={year} onRefetch={() => { void refetch(); }} />
+              <FiscalYearCard
+                key={year.id}
+                year={year}
+                onRefetch={() => {
+                  void refetch();
+                }}
+              />
             ))}
           </div>
         )}

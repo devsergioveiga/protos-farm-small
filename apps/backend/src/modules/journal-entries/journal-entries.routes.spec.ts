@@ -149,9 +149,7 @@ describe('Journal Entries Routes', () => {
     const entries = [makeEntry()];
     mockedService.listEntries.mockResolvedValue({ data: entries, total: 1 } as never);
 
-    const res = await request(app)
-      .get(BASE)
-      .set('Authorization', 'Bearer token');
+    const res = await request(app).get(BASE).set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
@@ -172,9 +170,7 @@ describe('Journal Entries Routes', () => {
     const templates = [makeEntry({ templateName: 'Pagamento Mensal', status: 'DRAFT' as const })];
     mockedService.listTemplates.mockResolvedValue(templates as never);
 
-    const res = await request(app)
-      .get(`${BASE}/templates`)
-      .set('Authorization', 'Bearer token');
+    const res = await request(app).get(`${BASE}/templates`).set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
@@ -185,9 +181,7 @@ describe('Journal Entries Routes', () => {
   it('GET /journal-entries/:id returns entry with lines', async () => {
     mockedService.getEntry.mockResolvedValue(makeEntry() as never);
 
-    const res = await request(app)
-      .get(`${BASE}/entry-1`)
-      .set('Authorization', 'Bearer token');
+    const res = await request(app).get(`${BASE}/entry-1`).set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(200);
     expect(res.body.id).toBe('entry-1');
@@ -197,9 +191,7 @@ describe('Journal Entries Routes', () => {
   it('GET /journal-entries/:id returns 404 when not found', async () => {
     mockedService.getEntry.mockResolvedValue(null as never);
 
-    const res = await request(app)
-      .get(`${BASE}/not-found`)
-      .set('Authorization', 'Bearer token');
+    const res = await request(app).get(`${BASE}/not-found`).set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(404);
   });
@@ -434,16 +426,17 @@ describe('Journal Entries Routes', () => {
   it('DELETE /journal-entries/:id deletes draft', async () => {
     mockedService.deleteDraft.mockResolvedValue(undefined as never);
 
-    const res = await request(app)
-      .delete(`${BASE}/entry-1`)
-      .set('Authorization', 'Bearer token');
+    const res = await request(app).delete(`${BASE}/entry-1`).set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(204);
   });
 
   it('DELETE /journal-entries/:id returns 422 for posted entry', async () => {
     mockedService.deleteDraft.mockRejectedValue(
-      new JournalEntryError('Lançamentos contabilizados não podem ser excluídos', 'CANNOT_DELETE_POSTED'),
+      new JournalEntryError(
+        'Lançamentos contabilizados não podem ser excluídos',
+        'CANNOT_DELETE_POSTED',
+      ),
     );
 
     const res = await request(app)
@@ -509,9 +502,7 @@ describe('Journal Entries Routes', () => {
   });
 
   it('POST /journal-entries/import-csv returns 400 when no file sent', async () => {
-    const res = await request(app)
-      .post(`${BASE}/import-csv`)
-      .set('Authorization', 'Bearer token');
+    const res = await request(app).post(`${BASE}/import-csv`).set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(400);
   });
@@ -544,7 +535,12 @@ describe('Journal Entries Routes', () => {
   // ─── Permission checks ─────────────────────────────────────────────
 
   it('POST /journal-entries returns 403 for OPERATOR role', async () => {
-    authAs({ userId: 'op-1', email: 'op@org.com', role: 'OPERATOR' as const, organizationId: ORG_ID });
+    authAs({
+      userId: 'op-1',
+      email: 'op@org.com',
+      role: 'OPERATOR' as const,
+      organizationId: ORG_ID,
+    });
     mockedService.createJournalEntryDraft.mockResolvedValue(makeEntry() as never);
 
     const res = await request(app)
@@ -559,9 +555,7 @@ describe('Journal Entries Routes', () => {
     authAs(FINANCIAL_PAYLOAD);
     mockedService.listEntries.mockResolvedValue({ data: [], total: 0 } as never);
 
-    const res = await request(app)
-      .get(BASE)
-      .set('Authorization', 'Bearer token');
+    const res = await request(app).get(BASE).set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(200);
   });

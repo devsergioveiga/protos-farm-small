@@ -37,9 +37,9 @@ key_files:
     - apps/backend/package.json
     - pnpm-lock.yaml
 decisions:
-  - "xmlbuilder2 chosen over @xmldom/xmldom (already present) — xmlbuilder2 provides fluent builder API suited for generating eSocial XML documents"
-  - "FunruralBasis defaults to PAYROLL on Organization — rural employers who opted for payroll-based FUNRURAL (more common in small farms)"
-  - "EsocialStatus uses Portuguese values (PENDENTE/EXPORTADO/ACEITO/REJEITADO) per eSocial specification naming"
+  - 'xmlbuilder2 chosen over @xmldom/xmldom (already present) — xmlbuilder2 provides fluent builder API suited for generating eSocial XML documents'
+  - 'FunruralBasis defaults to PAYROLL on Organization — rural employers who opted for payroll-based FUNRURAL (more common in small farms)'
+  - 'EsocialStatus uses Portuguese values (PENDENTE/EXPORTADO/ACEITO/REJEITADO) per eSocial specification naming'
 metrics:
   duration: 6min
   completed_date: 2026-03-26
@@ -55,11 +55,11 @@ metrics:
 
 ## Tasks Completed
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Prisma schema models, enums, migration + install xmlbuilder2 | b5483f91 | schema.prisma, package.json, pnpm-lock.yaml |
-| 2 | Backend type definitions for all three modules | 45c7fc22 | tax-guides.types.ts, esocial-events.types.ts, income-statements.types.ts |
-| 3 | Frontend type definitions for all three modules | 1bf85228 | tax-guide.ts, esocial-event.ts, income-statement.ts |
+| Task | Name                                                         | Commit   | Files                                                                    |
+| ---- | ------------------------------------------------------------ | -------- | ------------------------------------------------------------------------ |
+| 1    | Prisma schema models, enums, migration + install xmlbuilder2 | b5483f91 | schema.prisma, package.json, pnpm-lock.yaml                              |
+| 2    | Backend type definitions for all three modules               | 45c7fc22 | tax-guides.types.ts, esocial-events.types.ts, income-statements.types.ts |
+| 3    | Frontend type definitions for all three modules              | 1bf85228 | tax-guide.ts, esocial-event.ts, income-statement.ts                      |
 
 ## What Was Built
 
@@ -68,6 +68,7 @@ metrics:
 Added to `apps/backend/prisma/schema.prisma`:
 
 **5 New Enums:**
+
 - `TaxGuideType` — FGTS, INSS, IRRF, FUNRURAL
 - `TaxGuideStatus` — PENDING, GENERATED, PAID, OVERDUE
 - `EsocialGroup` — TABELA, NAO_PERIODICO, PERIODICO, SST
@@ -75,17 +76,20 @@ Added to `apps/backend/prisma/schema.prisma`:
 - `FunruralBasis` — GROSS_REVENUE, PAYROLL
 
 **3 New Models:**
+
 - `TaxGuide` — stores FGTS/INSS/IRRF/FUNRURAL tax guides; unique on (organizationId, guideType, referenceMonth)
 - `EsocialEvent` — stores eSocial XML events with state machine (PENDENTE→EXPORTADO→ACEITO/REJEITADO→PENDENTE); indexed by group/status, referenceMonth, sourceType/sourceId
 - `IncomeStatement` — annual income statements per employee; unique on (organizationId, employeeId, yearBase)
 
 **Model Updates:**
+
 - `Organization` — added `funruralBasis FunruralBasis @default(PAYROLL)` + 3 new relations
 - `Employee` — added `incomeStatements IncomeStatement[]` relation
 
 ### Backend Type Files
 
 Each module under `apps/backend/src/modules/{domain}/` has a `types.ts` with:
+
 - Output interface (for API responses)
 - Input interfaces (for create/generate operations)
 - Query interface (for list endpoints with filtering)
@@ -93,6 +97,7 @@ Each module under `apps/backend/src/modules/{domain}/` has a `types.ts` with:
 - Constants (due days, receita codes, state machine transitions, event type mappings)
 
 Key exports per module:
+
 - **tax-guides**: `TaxGuideOutput`, `TAX_GUIDE_DUE_DAYS` (FGTS=7, others=20), `TAX_GUIDE_RECEITA_CODES`
 - **esocial-events**: `EsocialEventOutput`, `VALID_ESOCIAL_TRANSITIONS`, `ESOCIAL_EVENT_TYPES`, `EVENT_GROUP_MAP`, `SOURCE_TYPE_MAP`, `EsocialDashboardOutput`
 - **income-statements**: `IncomeStatementOutput`, `RaisConsistencyOutput`, `SendIncomeStatementsInput`
@@ -100,6 +105,7 @@ Key exports per module:
 ### Frontend Type Files
 
 Mirror backend output shapes with pt-BR label constants:
+
 - `apps/frontend/src/types/tax-guide.ts` — `TaxGuide`, `TAX_GUIDE_TYPE_LABELS`, `TAX_GUIDE_STATUS_LABELS`
 - `apps/frontend/src/types/esocial-event.ts` — `EsocialEvent`, `EsocialDashboard`, `ESOCIAL_GROUP_LABELS`, `ESOCIAL_STATUS_LABELS`, `ESOCIAL_EVENT_TYPE_LABELS`
 - `apps/frontend/src/types/income-statement.ts` — `IncomeStatement`, `RaisConsistency`, `GenerateIncomeStatementsInput`
@@ -123,6 +129,7 @@ None — this plan creates pure type/schema definitions. No UI components or dat
 ## Self-Check: PASSED
 
 Files verified:
+
 - apps/backend/prisma/schema.prisma contains `model TaxGuide` — FOUND
 - apps/backend/prisma/schema.prisma contains `model EsocialEvent` — FOUND
 - apps/backend/prisma/schema.prisma contains `model IncomeStatement` — FOUND
@@ -134,6 +141,7 @@ Files verified:
 - apps/frontend/src/types/income-statement.ts — FOUND
 
 Commits verified:
+
 - b5483f91 — FOUND
 - 45c7fc22 — FOUND
 - 1bf85228 — FOUND

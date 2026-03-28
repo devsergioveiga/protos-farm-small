@@ -6,7 +6,7 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
-  maxWorkers: '50%',
+  maxWorkers: process.env.CI ? 2 : '50%',
   transform: {
     '^.+\\.ts$': [
       '@swc/jest',

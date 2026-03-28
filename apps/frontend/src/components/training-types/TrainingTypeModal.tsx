@@ -209,11 +209,7 @@ export default function TrainingTypeModal({ isOpen, trainingType, onClose, onSav
                   aria-describedby={errors.minHours ? 'tt-min-hours-error' : undefined}
                 />
                 {errors.minHours && (
-                  <span
-                    id="tt-min-hours-error"
-                    className="training-type-modal__error"
-                    role="alert"
-                  >
+                  <span id="tt-min-hours-error" className="training-type-modal__error" role="alert">
                     <AlertCircle size={14} aria-hidden="true" />
                     {errors.minHours}
                   </span>
@@ -236,9 +232,7 @@ export default function TrainingTypeModal({ isOpen, trainingType, onClose, onSav
                   onBlur={() => handleBlur('defaultValidityMonths')}
                   aria-required="true"
                   aria-invalid={!!errors.defaultValidityMonths}
-                  aria-describedby={
-                    errors.defaultValidityMonths ? 'tt-validity-error' : undefined
-                  }
+                  aria-describedby={errors.defaultValidityMonths ? 'tt-validity-error' : undefined}
                 />
                 {errors.defaultValidityMonths && (
                   <span id="tt-validity-error" className="training-type-modal__error" role="alert">

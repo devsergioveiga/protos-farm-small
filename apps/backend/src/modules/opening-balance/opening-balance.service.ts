@@ -2,7 +2,7 @@ import { prisma } from '../../database/prisma';
 import type { OpeningBalanceLinePreview, PostOpeningBalanceInput } from './opening-balance.types';
 import { OpeningBalanceError } from './opening-balance.types';
 // postJournalEntry is imported from journal-entries module (created by Plan 01 — parallel build)
- 
+
 import { postJournalEntry } from '../journal-entries/journal-entries.service';
 import Decimal from 'decimal.js';
 
@@ -27,7 +27,7 @@ export async function getOpeningBalancePreview(
 
   // Run all aggregate queries in parallel for performance
   const [bankBalances, payableGroups, receivableGroups, assets, provisionGroups] =
-    await Promise.all([
+    (await Promise.all([
       // 1. Bank account balances
       prisma.bankAccountBalance.findMany({
         where: {
@@ -73,7 +73,7 @@ export async function getOpeningBalancePreview(
       // If any of the parallel queries fail (e.g., model not yet migrated in some envs),
       // return empty arrays gracefully — the wizard will show what's available
       return [[], [], [], [], []] as [unknown[], unknown[], unknown[], unknown[], unknown[]];
-    }) as Awaited<
+    })) as Awaited<
       [
         typeof bankBalances,
         typeof payableGroups,
@@ -149,9 +149,7 @@ export async function getOpeningBalancePreview(
     let netBookValue = new Decimal(0);
     for (const asset of assets) {
       const acquisitionValue = new Decimal((asset.acquisitionValue ?? 0).toString());
-      const accumulatedDepreciation = new Decimal(
-        (depreciationTotals[asset.id] ?? 0).toString(),
-      );
+      const accumulatedDepreciation = new Decimal((depreciationTotals[asset.id] ?? 0).toString());
       const nbv = acquisitionValue.minus(accumulatedDepreciation);
       if (nbv.gt(0)) {
         netBookValue = netBookValue.plus(nbv);
@@ -159,7 +157,10 @@ export async function getOpeningBalancePreview(
     }
 
     if (netBookValue.gt(0)) {
-      const imobilizadoAccount = await findCoaAccount(organizationId, '1.2', ['Imobilizado', 'Ativo Fixo']);
+      const imobilizadoAccount = await findCoaAccount(organizationId, '1.2', [
+        'Imobilizado',
+        'Ativo Fixo',
+      ]);
       if (imobilizadoAccount) {
         lines.push({
           accountId: imobilizadoAccount.id,
@@ -184,7 +185,11 @@ export async function getOpeningBalancePreview(
     const amount = new Decimal((group._sum.totalAmount ?? 0).toString());
     if (amount.gt(0)) {
       const codePrefix = provisionAccountCodes[group.provisionType] ?? '2.2';
-      const provisionAccount = await findCoaAccount(organizationId, codePrefix, ['Provisao', 'Ferias', '13']);
+      const provisionAccount = await findCoaAccount(organizationId, codePrefix, [
+        'Provisao',
+        'Ferias',
+        '13',
+      ]);
       if (provisionAccount) {
         lines.push({
           accountId: provisionAccount.id,
@@ -261,7 +266,12 @@ export async function postOpeningBalance(
   // Add contra-entry to PL "Lucros e Prejuizos Acumulados" if needed
   const diff = totalDebits.minus(totalCredits).abs();
   if (!diff.isZero()) {
-    const plAccount = await findCoaAccount(organizationId, '3.', ['Lucro', 'Prejuizo', 'Acumulado', 'PL']);
+    const plAccount = await findCoaAccount(organizationId, '3.', [
+      'Lucro',
+      'Prejuizo',
+      'Acumulado',
+      'PL',
+    ]);
     if (plAccount) {
       const contraSide: 'DEBIT' | 'CREDIT' = totalDebits.gt(totalCredits) ? 'CREDIT' : 'DEBIT';
       allLines.push({
@@ -313,11 +323,7 @@ export async function postOpeningBalance(
  * Finds a COA account matching a code prefix or name keywords.
  * Returns the first non-synthetic active account found.
  */
-async function findCoaAccount(
-  organizationId: string,
-  codePrefix: string,
-  nameKeywords: string[],
-) {
+async function findCoaAccount(organizationId: string, codePrefix: string, nameKeywords: string[]) {
   // Try code prefix first
   const byCode = await prisma.chartOfAccount.findFirst({
     where: {
@@ -351,9 +357,7 @@ async function findCoaAccount(
  * Returns accumulated depreciation totals per asset from DepreciationRun records.
  * If the depreciation module is not available, returns an empty map.
  */
-async function getAssetDepreciationTotals(
-  assetIds: string[],
-): Promise<Record<string, Decimal>> {
+async function getAssetDepreciationTotals(assetIds: string[]): Promise<Record<string, Decimal>> {
   try {
     const runs = await prisma.depreciationRun.findMany({
       where: { assetId: { in: assetIds } },

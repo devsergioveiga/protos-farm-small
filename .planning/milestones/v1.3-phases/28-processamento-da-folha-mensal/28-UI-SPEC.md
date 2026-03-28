@@ -15,13 +15,13 @@ created: 2026-03-24
 
 ## Design System
 
-| Property | Value |
-|----------|-------|
-| Tool | none — custom CSS modules + CSS custom properties (tokens.css) |
-| Preset | not applicable |
-| Component library | none (hand-rolled components following project patterns) |
-| Icon library | lucide-react |
-| Font | DM Sans (headlines), Source Sans 3 (body/UI), JetBrains Mono (monetary values) |
+| Property          | Value                                                                          |
+| ----------------- | ------------------------------------------------------------------------------ |
+| Tool              | none — custom CSS modules + CSS custom properties (tokens.css)                 |
+| Preset            | not applicable                                                                 |
+| Component library | none (hand-rolled components following project patterns)                       |
+| Icon library      | lucide-react                                                                   |
+| Font              | DM Sans (headlines), Source Sans 3 (body/UI), JetBrains Mono (monetary values) |
 
 Source: `apps/frontend/src/styles/tokens.css`, `apps/frontend/CLAUDE.md`
 
@@ -31,17 +31,18 @@ Source: `apps/frontend/src/styles/tokens.css`, `apps/frontend/CLAUDE.md`
 
 Declared values (must be multiples of 4):
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| xs | 4px | Icon gaps, status chip padding, inline gaps between icon and label |
-| sm | 8px | Compact table cell padding, badge inner padding |
-| md | 16px | Default element spacing, form field gaps, card padding |
-| lg | 24px | Section padding inside panels, wizard step body padding |
-| xl | 32px | Layout column gaps, between header and body |
-| 2xl | 48px | Major section breaks, page top padding |
-| 3xl | 64px | Empty state icon size |
+| Token | Value | Usage                                                              |
+| ----- | ----- | ------------------------------------------------------------------ |
+| xs    | 4px   | Icon gaps, status chip padding, inline gaps between icon and label |
+| sm    | 8px   | Compact table cell padding, badge inner padding                    |
+| md    | 16px  | Default element spacing, form field gaps, card padding             |
+| lg    | 24px  | Section padding inside panels, wizard step body padding            |
+| xl    | 32px  | Layout column gaps, between header and body                        |
+| 2xl   | 48px  | Major section breaks, page top padding                             |
+| 3xl   | 64px  | Empty state icon size                                              |
 
 Exceptions:
+
 - Touch targets minimum 48x48px — applies to all interactive elements (buttons, wizard nav arrows, row action icons).
 - Input padding: 12px vertical × 16px horizontal — minimum for field legibility in field conditions.
 - Wizard step header height: 64px fixed — accommodates stepper dots + step label.
@@ -50,15 +51,16 @@ Exceptions:
 
 ## Typography
 
-| Role | Font | Size | Weight | Line Height | Usage |
-|------|------|------|--------|-------------|-------|
-| Page heading | DM Sans | 20px (--text-lg) | 700 | 1.2 | `PayrollRunsPage` title, wizard modal title |
-| Section heading | DM Sans | 16px (--text-base) | 500 | 1.2 | Table section labels ("Proventos", "Descontos"), wizard step title |
-| Body | Source Sans 3 | 14px (--text-sm) | 400 | 1.5 | Table row text, form labels, description paragraphs |
-| Label / chip | Source Sans 3 | 12px (--text-xs) | 600 | 1.2 | Status chips, column headers (ALL CAPS), wizard step subtitle |
-| Monetary | JetBrains Mono | 14px (--text-sm) | 400 | 1.5 | All currency values (R$ columns in run list, payslip amounts) |
+| Role            | Font           | Size               | Weight | Line Height | Usage                                                              |
+| --------------- | -------------- | ------------------ | ------ | ----------- | ------------------------------------------------------------------ |
+| Page heading    | DM Sans        | 20px (--text-lg)   | 700    | 1.2         | `PayrollRunsPage` title, wizard modal title                        |
+| Section heading | DM Sans        | 16px (--text-base) | 500    | 1.2         | Table section labels ("Proventos", "Descontos"), wizard step title |
+| Body            | Source Sans 3  | 14px (--text-sm)   | 400    | 1.5         | Table row text, form labels, description paragraphs                |
+| Label / chip    | Source Sans 3  | 12px (--text-xs)   | 600    | 1.2         | Status chips, column headers (ALL CAPS), wizard step subtitle      |
+| Monetary        | JetBrains Mono | 14px (--text-sm)   | 400    | 1.5         | All currency values (R$ columns in run list, payslip amounts)      |
 
 Notes:
+
 - All currency display uses JetBrains Mono — never Source Sans 3 for numeric monetary values.
 - Column headers in tables are 12px ALL CAPS weight 600 (e.g. "COLABORADOR", "BRUTO", "LÍQUIDO").
 - Minimum font size is 12px — nothing smaller anywhere in the phase.
@@ -70,20 +72,22 @@ Source: `apps/frontend/CLAUDE.md` typography rules, `tokens.css` scale.
 
 ## Color
 
-| Role | Token | Hex | Usage |
-|------|-------|-----|-------|
-| Dominant (60%) | --color-neutral-50 | #FAFAF8 | Page background, wizard body background |
-| Secondary (30%) | --color-neutral-0 | #FFFFFF | Cards, modal surfaces, table rows, sidebar |
-| Accent (10%) | --color-primary-600 | #2E7D32 | Primary CTA button ("Processar Folha"), wizard "Próximo" button, active tab underline |
-| Destructive | --color-error-500 | #C62828 | Estorno button, ConfirmDeleteModal confirm button, "Pendente Ponto" status chip border |
+| Role            | Token               | Hex     | Usage                                                                                  |
+| --------------- | ------------------- | ------- | -------------------------------------------------------------------------------------- |
+| Dominant (60%)  | --color-neutral-50  | #FAFAF8 | Page background, wizard body background                                                |
+| Secondary (30%) | --color-neutral-0   | #FFFFFF | Cards, modal surfaces, table rows, sidebar                                             |
+| Accent (10%)    | --color-primary-600 | #2E7D32 | Primary CTA button ("Processar Folha"), wizard "Próximo" button, active tab underline  |
+| Destructive     | --color-error-500   | #C62828 | Estorno button, ConfirmDeleteModal confirm button, "Pendente Ponto" status chip border |
 
 Accent reserved for:
+
 - Primary CTA button (one per screen): "Processar Folha", "Fechar Folha", "Registrar Adiantamento"
 - Active wizard step indicator dot
 - Active tab underline on `PayrollRunsPage` tab bar
 - Filled status chip for COMPLETED state
 
 Secondary semantic colors in use:
+
 - --color-warning-500 (#F57F17) — PENDING_TIMESHEET status chip, items awaiting approval
 - --color-success-500 (#2E7D32, same as primary) — COMPLETED / CALCULATED status chip
 - --color-info-500 (#0277BD) — PROCESSING status chip (in-progress spinner)
@@ -99,24 +103,24 @@ Source: `CLAUDE.md` color rules, `tokens.css`, established pattern in `Timesheet
 
 ### New components this phase
 
-| Component | Path | Type | Description |
-|-----------|------|------|-------------|
-| PayrollRunsPage | `pages/PayrollRunsPage.tsx` | Page | Main listing page — tabs: Rodadas / Adiantamentos |
-| PayrollRunWizard | `components/payroll/PayrollRunWizard.tsx` | Modal | 4-step wizard for initiating a run |
-| PayrollRunStatusBadge | `components/payroll/PayrollRunStatusBadge.tsx` | Atom | Status chip for PENDING/PROCESSING/CALCULATED/COMPLETED/ERROR/REVERTED |
+| Component             | Path                                           | Type  | Description                                                                                |
+| --------------------- | ---------------------------------------------- | ----- | ------------------------------------------------------------------------------------------ |
+| PayrollRunsPage       | `pages/PayrollRunsPage.tsx`                    | Page  | Main listing page — tabs: Rodadas / Adiantamentos                                          |
+| PayrollRunWizard      | `components/payroll/PayrollRunWizard.tsx`      | Modal | 4-step wizard for initiating a run                                                         |
+| PayrollRunStatusBadge | `components/payroll/PayrollRunStatusBadge.tsx` | Atom  | Status chip for PENDING/PROCESSING/CALCULATED/COMPLETED/ERROR/REVERTED                     |
 | PayrollRunDetailModal | `components/payroll/PayrollRunDetailModal.tsx` | Modal | Per-run summary with list of PayrollRunItems, recalculate individual, close/revert actions |
-| PayrollRunItemRow | `components/payroll/PayrollRunItemRow.tsx` | Row | Single employee row within detail modal — shows status, bruto, líquido, recalculate button |
-| SalaryAdvanceModal | `components/payroll/SalaryAdvanceModal.tsx` | Modal | Register individual or batch advance |
-| PayslipTab | `components/employees/tabs/PayslipTab.tsx` | Tab | New tab on EmployeeDetailPage — lists last 12 payslips, download PDF, resend email |
+| PayrollRunItemRow     | `components/payroll/PayrollRunItemRow.tsx`     | Row   | Single employee row within detail modal — shows status, bruto, líquido, recalculate button |
+| SalaryAdvanceModal    | `components/payroll/SalaryAdvanceModal.tsx`    | Modal | Register individual or batch advance                                                       |
+| PayslipTab            | `components/employees/tabs/PayslipTab.tsx`     | Tab   | New tab on EmployeeDetailPage — lists last 12 payslips, download PDF, resend email         |
 
 ### Reused components
 
-| Component | Path | Notes |
-|-----------|------|-------|
-| ConfirmModal | `components/ui/ConfirmModal.tsx` | Estorno estorno with variant="danger" — but uses ConfirmDeleteModal pattern (typing) |
-| StatusChip pattern | established in `TimesheetPage.tsx` | Replicate pattern for PayrollRunStatusBadge |
-| Toast pattern | inline useState | Same auto-dismiss 5s success / persistent error pattern |
-| Skeleton | established pattern | Loading state for run list and item table |
+| Component          | Path                               | Notes                                                                                |
+| ------------------ | ---------------------------------- | ------------------------------------------------------------------------------------ |
+| ConfirmModal       | `components/ui/ConfirmModal.tsx`   | Estorno estorno with variant="danger" — but uses ConfirmDeleteModal pattern (typing) |
+| StatusChip pattern | established in `TimesheetPage.tsx` | Replicate pattern for PayrollRunStatusBadge                                          |
+| Toast pattern      | inline useState                    | Same auto-dismiss 5s success / persistent error pattern                              |
+| Skeleton           | established pattern                | Loading state for run list and item table                                            |
 
 ---
 
@@ -126,19 +130,19 @@ The wizard is a modal dialog (`role="dialog"`) with a fixed header (stepper + ti
 
 ### Steps
 
-| Step | Title | Content | Validation to advance |
-|------|-------|---------|----------------------|
-| 1 | Competência | Select mês/ano (native `<select>`s) + runType radio group (Mensal / Adiantamento / 13ª Parcela 1 / 13ª Parcela 2) | mês, ano, and runType selected |
-| 2 | Colaboradores | Read-only list — employee name, status do ponto chip (APPROVED / PENDING), salary. Employees with APPROVED timesheet show green check. Employees with PENDING_TIMESHEET show warning chip. Counter shows "X de Y colaboradores aptos" | at least 1 eligible employee |
-| 3 | Confirmação | Checkbox list — all eligible pre-checked; contador can uncheck to exclude. Ineligible employees shown greyed out with tooltip "Espelho de ponto não aprovado". Shows "X colaboradores serão processados". | at least 1 employee checked |
-| 4 | Processando | Non-interactive. Shows spinner + progress text "Processando X de Y colaboradores...". Auto-advances to success/error state on completion | n/a — wait for API |
+| Step | Title         | Content                                                                                                                                                                                                                               | Validation to advance          |
+| ---- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| 1    | Competência   | Select mês/ano (native `<select>`s) + runType radio group (Mensal / Adiantamento / 13ª Parcela 1 / 13ª Parcela 2)                                                                                                                     | mês, ano, and runType selected |
+| 2    | Colaboradores | Read-only list — employee name, status do ponto chip (APPROVED / PENDING), salary. Employees with APPROVED timesheet show green check. Employees with PENDING_TIMESHEET show warning chip. Counter shows "X de Y colaboradores aptos" | at least 1 eligible employee   |
+| 3    | Confirmação   | Checkbox list — all eligible pre-checked; contador can uncheck to exclude. Ineligible employees shown greyed out with tooltip "Espelho de ponto não aprovado". Shows "X colaboradores serão processados".                             | at least 1 employee checked    |
+| 4    | Processando   | Non-interactive. Shows spinner + progress text "Processando X de Y colaboradores...". Auto-advances to success/error state on completion                                                                                              | n/a — wait for API             |
 
 ### Wizard footer buttons
 
-| Position | Step 1 | Steps 2–3 | Step 4 |
-|----------|--------|-----------|--------|
-| Left | "Cancelar" (text button) | "Voltar" (secondary button) | hidden |
-| Right | "Próximo" (primary, accent) | "Próximo" / "Processar" on step 3 (primary, accent) | hidden (auto-progresses) |
+| Position | Step 1                      | Steps 2–3                                           | Step 4                   |
+| -------- | --------------------------- | --------------------------------------------------- | ------------------------ |
+| Left     | "Cancelar" (text button)    | "Voltar" (secondary button)                         | hidden                   |
+| Right    | "Próximo" (primary, accent) | "Próximo" / "Processar" on step 3 (primary, accent) | hidden (auto-progresses) |
 
 Wizard header: 4 step indicator dots. Active dot: filled accent. Completed dots: filled primary-200. Future dots: neutral-300 outline. Current step label shown below dots.
 
@@ -150,15 +154,15 @@ Source: D-01 from CONTEXT.md, frontend CLAUDE.md wizard pattern.
 
 Status chips pair icon + label. Icon is always 14px, `aria-hidden="true"`. Chip has 4px vertical / 8px horizontal padding, 12px font, weight 600.
 
-| Status | Label | Icon | Background | Text/Border |
-|--------|-------|------|------------|-------------|
-| PENDING | Pendente | `Clock` | --color-neutral-100 | --color-neutral-700 |
-| PROCESSING | Processando | `Loader2` (spinning) | --color-info-100 | --color-info-500 |
-| CALCULATED | Calculado | `Calculator` | --color-sun-100 | --color-sun-500 |
-| COMPLETED | Fechado | `Lock` | --color-success-100 | --color-success-500 |
-| ERROR | Erro | `AlertCircle` | --color-error-100 | --color-error-500 |
-| REVERTED | Estornado | `RotateCcw` | --color-neutral-200 | --color-neutral-600 |
-| PENDING_TIMESHEET | Sem Espelho | `AlertTriangle` | --color-warning-100 | --color-warning-500 |
+| Status            | Label       | Icon                 | Background          | Text/Border         |
+| ----------------- | ----------- | -------------------- | ------------------- | ------------------- |
+| PENDING           | Pendente    | `Clock`              | --color-neutral-100 | --color-neutral-700 |
+| PROCESSING        | Processando | `Loader2` (spinning) | --color-info-100    | --color-info-500    |
+| CALCULATED        | Calculado   | `Calculator`         | --color-sun-100     | --color-sun-500     |
+| COMPLETED         | Fechado     | `Lock`               | --color-success-100 | --color-success-500 |
+| ERROR             | Erro        | `AlertCircle`        | --color-error-100   | --color-error-500   |
+| REVERTED          | Estornado   | `RotateCcw`          | --color-neutral-200 | --color-neutral-600 |
+| PENDING_TIMESHEET | Sem Espelho | `AlertTriangle`      | --color-warning-100 | --color-warning-500 |
 
 Source: TimesheetPage.tsx STATUS_CLASSES pattern extended for payroll run states.
 
@@ -210,32 +214,32 @@ Source: D-03 from CONTEXT.md, CLAUDE.md ConfirmDeleteModal rule.
 
 ## Copywriting Contract
 
-| Element | Copy |
-|---------|------|
-| Primary CTA (runs page) | "Iniciar Folha" |
-| Primary CTA (wizard step 3) | "Processar" |
-| Primary CTA (run detail — close) | "Fechar Folha" |
-| Primary CTA (advances page) | "Registrar Adiantamento" |
-| Empty state heading (no runs) | "Nenhuma folha processada" |
-| Empty state body (no runs) | "Inicie o processamento mensal para gerar os holerites e as Contas a Pagar." |
-| Empty state heading (no payslips on employee ficha) | "Nenhum holerite disponível" |
-| Empty state body (no payslips) | "Os holerites aparecem após o fechamento da folha mensal." |
-| Empty state heading (no advances) | "Nenhum adiantamento registrado" |
-| Empty state body (no advances) | "Registre um adiantamento individual ou processe o lote do dia 15." |
-| Error state — processing failed | "Não foi possível processar a folha. Verifique os logs de erro e tente novamente." |
-| Error state — PDF download failed | "Não foi possível baixar o holerite. Tente novamente ou contate o suporte." |
-| Error state — email resend failed | "Não foi possível reenviar o holerite. Verifique se o colaborador tem e-mail cadastrado." |
-| Toast — run started | "Processamento iniciado para [X] colaboradores." |
-| Toast — run completed | "Folha de [competência] fechada com sucesso. Holerites enviados." |
-| Toast — run reverted | "Folha estornada. Espelhos de ponto liberados." |
-| Toast — advance registered | "Adiantamento registrado. Recibo disponível para download." |
-| Toast — ZIP downloaded | "ZIP com [X] holerites baixado." |
-| Destructive confirmation (estorno) | "Estornar Folha": "Esta ação é irreversível. Todos os holerites serão destruídos, as Contas a Pagar serão canceladas e os espelhos de ponto serão liberados. Digite [referência] para confirmar." |
-| Wizard step 2 — pending counter | "[X] de [Y] colaboradores com espelho aprovado" |
-| Wizard step 3 — excluded note | "Colaboradores sem espelho aprovado não entram no processamento. Você poderá incluí-los via recálculo individual." |
-| Recalculate individual tooltip | "Recalcular este colaborador" |
-| PENDING_TIMESHEET chip tooltip | "Espelho de ponto não aprovado" |
-| Run type labels | Mensal, Adiantamento, 13º - 1ª Parcela, 13º - 2ª Parcela |
+| Element                                             | Copy                                                                                                                                                                                              |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Primary CTA (runs page)                             | "Iniciar Folha"                                                                                                                                                                                   |
+| Primary CTA (wizard step 3)                         | "Processar"                                                                                                                                                                                       |
+| Primary CTA (run detail — close)                    | "Fechar Folha"                                                                                                                                                                                    |
+| Primary CTA (advances page)                         | "Registrar Adiantamento"                                                                                                                                                                          |
+| Empty state heading (no runs)                       | "Nenhuma folha processada"                                                                                                                                                                        |
+| Empty state body (no runs)                          | "Inicie o processamento mensal para gerar os holerites e as Contas a Pagar."                                                                                                                      |
+| Empty state heading (no payslips on employee ficha) | "Nenhum holerite disponível"                                                                                                                                                                      |
+| Empty state body (no payslips)                      | "Os holerites aparecem após o fechamento da folha mensal."                                                                                                                                        |
+| Empty state heading (no advances)                   | "Nenhum adiantamento registrado"                                                                                                                                                                  |
+| Empty state body (no advances)                      | "Registre um adiantamento individual ou processe o lote do dia 15."                                                                                                                               |
+| Error state — processing failed                     | "Não foi possível processar a folha. Verifique os logs de erro e tente novamente."                                                                                                                |
+| Error state — PDF download failed                   | "Não foi possível baixar o holerite. Tente novamente ou contate o suporte."                                                                                                                       |
+| Error state — email resend failed                   | "Não foi possível reenviar o holerite. Verifique se o colaborador tem e-mail cadastrado."                                                                                                         |
+| Toast — run started                                 | "Processamento iniciado para [X] colaboradores."                                                                                                                                                  |
+| Toast — run completed                               | "Folha de [competência] fechada com sucesso. Holerites enviados."                                                                                                                                 |
+| Toast — run reverted                                | "Folha estornada. Espelhos de ponto liberados."                                                                                                                                                   |
+| Toast — advance registered                          | "Adiantamento registrado. Recibo disponível para download."                                                                                                                                       |
+| Toast — ZIP downloaded                              | "ZIP com [X] holerites baixado."                                                                                                                                                                  |
+| Destructive confirmation (estorno)                  | "Estornar Folha": "Esta ação é irreversível. Todos os holerites serão destruídos, as Contas a Pagar serão canceladas e os espelhos de ponto serão liberados. Digite [referência] para confirmar." |
+| Wizard step 2 — pending counter                     | "[X] de [Y] colaboradores com espelho aprovado"                                                                                                                                                   |
+| Wizard step 3 — excluded note                       | "Colaboradores sem espelho aprovado não entram no processamento. Você poderá incluí-los via recálculo individual."                                                                                |
+| Recalculate individual tooltip                      | "Recalcular este colaborador"                                                                                                                                                                     |
+| PENDING_TIMESHEET chip tooltip                      | "Espelho de ponto não aprovado"                                                                                                                                                                   |
+| Run type labels                                     | Mensal, Adiantamento, 13º - 1ª Parcela, 13º - 2ª Parcela                                                                                                                                          |
 
 Tone: pt-BR coloquial direto, never tech jargon, always describes what happened + what to do next on errors.
 
@@ -259,16 +263,16 @@ Source: REQUIREMENTS.md FOLHA-02–FOLHA-05, CLAUDE.md copywriting rules, D-01�
 
 ## Animation Timing
 
-| Interaction | Duration | Curve | Notes |
-|-------------|----------|-------|-------|
-| Wizard step transition | 200ms | ease-out | Slide next step in from right; slide out to left |
-| Modal open | 300ms | ease-out | Opacity 0→1 + translateY(8px→0) |
-| Modal close | 200ms | ease-in | Opacity 1→0 |
-| Status chip update | 200ms | ease-out | Background color transition when status changes |
-| Skeleton pulse | 1.5s infinite | ease-in-out | Opacity 0.4→0.7 |
-| Toast enter | 200ms | ease-out | translateX(100%→0) from right |
-| Toast exit | 200ms | ease-in | translateX(0→100%) |
-| `Loader2` spin | 1s linear infinite | n/a | CSS animation `spin` |
+| Interaction            | Duration           | Curve       | Notes                                            |
+| ---------------------- | ------------------ | ----------- | ------------------------------------------------ |
+| Wizard step transition | 200ms              | ease-out    | Slide next step in from right; slide out to left |
+| Modal open             | 300ms              | ease-out    | Opacity 0→1 + translateY(8px→0)                  |
+| Modal close            | 200ms              | ease-in     | Opacity 1→0                                      |
+| Status chip update     | 200ms              | ease-out    | Background color transition when status changes  |
+| Skeleton pulse         | 1.5s infinite      | ease-in-out | Opacity 0.4→0.7                                  |
+| Toast enter            | 200ms              | ease-out    | translateX(100%→0) from right                    |
+| Toast exit             | 200ms              | ease-in     | translateX(0→100%)                               |
+| `Loader2` spin         | 1s linear infinite | n/a         | CSS animation `spin`                             |
 
 `prefers-reduced-motion: reduce` — all transitions and animations disabled; state changes are instant.
 
@@ -276,10 +280,10 @@ Source: REQUIREMENTS.md FOLHA-02–FOLHA-05, CLAUDE.md copywriting rules, D-01�
 
 ## Registry Safety
 
-| Registry | Blocks Used | Safety Gate |
-|----------|-------------|-------------|
+| Registry        | Blocks Used                        | Safety Gate    |
+| --------------- | ---------------------------------- | -------------- |
 | shadcn official | none — project does not use shadcn | not applicable |
-| third-party | none | not applicable |
+| third-party     | none                               | not applicable |
 
 No third-party registries. All components are hand-rolled following project patterns.
 
@@ -287,22 +291,22 @@ No third-party registries. All components are hand-rolled following project patt
 
 ## Pre-Population Sources
 
-| Decision | Source |
-|----------|--------|
-| Wizard 4-step structure | D-01 CONTEXT.md |
-| Granular employee blocking (not full-run block) | D-02 CONTEXT.md |
-| Estorno via ConfirmDeleteModal with typing | D-03 CONTEXT.md, CLAUDE.md |
-| Payslip PDF tabular layout (not cards) | D-04 CONTEXT.md, SPECIFICS |
-| Email + ficha + mobile distribution | D-05 CONTEXT.md |
-| ZIP download of individual PDFs | D-06 CONTEXT.md |
-| Advance modal — individual and batch | D-07 CONTEXT.md |
-| run types in same wizard/table | D-09 CONTEXT.md |
-| Color tokens | tokens.css |
-| Typography rules | CLAUDE.md, tokens.css |
-| Status chip pattern | TimesheetPage.tsx STATUS_CLASSES |
-| DepreciationPage as run-list reference | DepreciationPage.tsx |
-| ConfirmModal component API | ConfirmModal.tsx |
-| EmployeeDetailPage tab pattern | EmployeeDetailPage.tsx |
+| Decision                                        | Source                           |
+| ----------------------------------------------- | -------------------------------- |
+| Wizard 4-step structure                         | D-01 CONTEXT.md                  |
+| Granular employee blocking (not full-run block) | D-02 CONTEXT.md                  |
+| Estorno via ConfirmDeleteModal with typing      | D-03 CONTEXT.md, CLAUDE.md       |
+| Payslip PDF tabular layout (not cards)          | D-04 CONTEXT.md, SPECIFICS       |
+| Email + ficha + mobile distribution             | D-05 CONTEXT.md                  |
+| ZIP download of individual PDFs                 | D-06 CONTEXT.md                  |
+| Advance modal — individual and batch            | D-07 CONTEXT.md                  |
+| run types in same wizard/table                  | D-09 CONTEXT.md                  |
+| Color tokens                                    | tokens.css                       |
+| Typography rules                                | CLAUDE.md, tokens.css            |
+| Status chip pattern                             | TimesheetPage.tsx STATUS_CLASSES |
+| DepreciationPage as run-list reference          | DepreciationPage.tsx             |
+| ConfirmModal component API                      | ConfirmModal.tsx                 |
+| EmployeeDetailPage tab pattern                  | EmployeeDetailPage.tsx           |
 
 ---
 

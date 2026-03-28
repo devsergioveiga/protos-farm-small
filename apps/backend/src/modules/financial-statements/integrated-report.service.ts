@@ -76,8 +76,14 @@ export async function generateIntegratedReport(
   const endMonth = fiscalYear.endDate.getMonth() + 1; // 1-12
 
   // 5. Fetch DRE, BP, DFC data
-  const dreData = await getDre(organizationId, { fiscalYearId, month: endMonth, costCenterId }).catch(() => null);
-  const bpData = await getBalanceSheet(organizationId, { fiscalYearId, month: endMonth }).catch(() => null);
+  const dreData = await getDre(organizationId, {
+    fiscalYearId,
+    month: endMonth,
+    costCenterId,
+  }).catch(() => null);
+  const bpData = await getBalanceSheet(organizationId, { fiscalYearId, month: endMonth }).catch(
+    () => null,
+  );
   const dfcData = await getDfc(organizationId, { fiscalYearId, month: endMonth }).catch(() => null);
 
   // 6. Build PDF using pdfkit buffer pattern
@@ -96,16 +102,10 @@ export async function generateIntegratedReport(
     // ── Section 1: Capa (Cover page) ─────────────────────────────────────────
 
     doc.moveDown(4);
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(24)
-      .text('DEMONSTRACOES FINANCEIRAS', { align: 'center' });
+    doc.font('Helvetica-Bold').fontSize(24).text('DEMONSTRACOES FINANCEIRAS', { align: 'center' });
 
     doc.moveDown(1);
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(18)
-      .text(org.name, { align: 'center' });
+    doc.font('Helvetica-Bold').fontSize(18).text(org.name, { align: 'center' });
 
     if (org.document) {
       doc.moveDown(0.5);
@@ -117,43 +117,35 @@ export async function generateIntegratedReport(
 
     if (farmName) {
       doc.moveDown(0.5);
-      doc
-        .font('Helvetica')
-        .fontSize(12)
-        .text(farmName, { align: 'center' });
+      doc.font('Helvetica').fontSize(12).text(farmName, { align: 'center' });
     }
 
     doc.moveDown(1);
-    doc
-      .font('Helvetica')
-      .fontSize(14)
-      .text(`Exercicio Fiscal ${year}`, { align: 'center' });
+    doc.font('Helvetica').fontSize(14).text(`Exercicio Fiscal ${year}`, { align: 'center' });
 
     doc.moveDown(0.5);
     doc
       .font('Helvetica')
       .fontSize(11)
-      .text(
-        `Periodo: ${formatDate(fiscalYear.startDate)} a ${formatDate(fiscalYear.endDate)}`,
-        { align: 'center' },
-      );
+      .text(`Periodo: ${formatDate(fiscalYear.startDate)} a ${formatDate(fiscalYear.endDate)}`, {
+        align: 'center',
+      });
 
     if (org.accountantName) {
       doc.moveDown(1.5);
       doc
         .font('Helvetica')
         .fontSize(11)
-        .text(`Contador(a): ${org.accountantName} - CRC ${org.accountantCrc ?? ''}`, { align: 'center' });
+        .text(`Contador(a): ${org.accountantName} - CRC ${org.accountantCrc ?? ''}`, {
+          align: 'center',
+        });
     }
 
     doc.addPage();
 
     // ── Section 2: Indice (Table of contents) ────────────────────────────────
 
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(16)
-      .text('INDICE', { align: 'left' });
+    doc.font('Helvetica-Bold').fontSize(16).text('INDICE', { align: 'left' });
 
     doc.moveDown(1);
     doc.font('Helvetica').fontSize(12);
@@ -183,10 +175,9 @@ export async function generateIntegratedReport(
     doc
       .font('Helvetica')
       .fontSize(10)
-      .text(
-        `Periodo: ${formatDate(fiscalYear.startDate)} a ${formatDate(fiscalYear.endDate)}`,
-        { align: 'center' },
-      );
+      .text(`Periodo: ${formatDate(fiscalYear.startDate)} a ${formatDate(fiscalYear.endDate)}`, {
+        align: 'center',
+      });
 
     doc.moveDown(1);
 
@@ -253,32 +244,26 @@ export async function generateIntegratedReport(
       doc
         .font('Helvetica-Bold')
         .fontSize(10)
-        .text('RESULTADO LIQUIDO DO EXERCICIO', 50, doc.y, { width: pageWidth - 100, continued: true })
+        .text('RESULTADO LIQUIDO DO EXERCICIO', 50, doc.y, {
+          width: pageWidth - 100,
+          continued: true,
+        })
         .text(formatBrl(Number(dreData.resultadoLiquido.ytd)), { width: 100, align: 'right' });
     } else {
-      doc
-        .font('Helvetica')
-        .fontSize(10)
-        .text('Dados nao disponiveis para o periodo selecionado.');
+      doc.font('Helvetica').fontSize(10).text('Dados nao disponiveis para o periodo selecionado.');
     }
 
     doc.addPage();
 
     // ── Section 4: BP ────────────────────────────────────────────────────────
 
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(14)
-      .text('BALANCO PATRIMONIAL', { align: 'center' });
+    doc.font('Helvetica-Bold').fontSize(14).text('BALANCO PATRIMONIAL', { align: 'center' });
 
     doc.moveDown(0.5);
     doc
       .font('Helvetica')
       .fontSize(10)
-      .text(
-        `Data-base: ${formatDate(fiscalYear.endDate)}`,
-        { align: 'center' },
-      );
+      .text(`Data-base: ${formatDate(fiscalYear.endDate)}`, { align: 'center' });
 
     doc.moveDown(1);
 
@@ -303,7 +288,10 @@ export async function generateIntegratedReport(
               doc
                 .font('Helvetica')
                 .fontSize(8)
-                .text(row.name, 50 + indent, doc.y, { width: pageWidth - 100 - indent, continued: true })
+                .text(row.name, 50 + indent, doc.y, {
+                  width: pageWidth - 100 - indent,
+                  continued: true,
+                })
                 .text(formatBrl(Number(row.currentBalance)), { width: 100, align: 'right' });
               doc.moveDown(0.25);
             }
@@ -339,7 +327,10 @@ export async function generateIntegratedReport(
         .font('Helvetica-Bold')
         .fontSize(10)
         .text('TOTAL DO PASSIVO E PL', 50, doc.y, { width: pageWidth - 100, continued: true })
-        .text(formatBrl(Number(bpData.totalPassivo.currentBalance)), { width: 100, align: 'right' });
+        .text(formatBrl(Number(bpData.totalPassivo.currentBalance)), {
+          width: 100,
+          align: 'right',
+        });
 
       // BP Indicators box
       if (doc.y > 650) doc.addPage();
@@ -352,23 +343,20 @@ export async function generateIntegratedReport(
         ['Liquidez Corrente', indicators.liquidezCorrente],
         ['Endividamento Geral', indicators.endividamentoGeral],
         ['ROE (Rentabilidade do PL)', indicators.roe],
-        ['PL por Hectare', indicators.plPorHectare ? formatBrl(Number(indicators.plPorHectare)) : null],
+        [
+          'PL por Hectare',
+          indicators.plPorHectare ? formatBrl(Number(indicators.plPorHectare)) : null,
+        ],
       ];
 
       for (const [label, value] of indicatorItems) {
         if (value !== null && value !== undefined) {
-          doc
-            .font('Helvetica')
-            .fontSize(9)
-            .text(`${label}: ${value}`);
+          doc.font('Helvetica').fontSize(9).text(`${label}: ${value}`);
           doc.moveDown(0.3);
         }
       }
     } else {
-      doc
-        .font('Helvetica')
-        .fontSize(10)
-        .text('Dados nao disponiveis para o periodo selecionado.');
+      doc.font('Helvetica').fontSize(10).text('Dados nao disponiveis para o periodo selecionado.');
     }
 
     doc.addPage();
@@ -384,10 +372,9 @@ export async function generateIntegratedReport(
     doc
       .font('Helvetica')
       .fontSize(10)
-      .text(
-        `Periodo: ${formatDate(fiscalYear.startDate)} a ${formatDate(fiscalYear.endDate)}`,
-        { align: 'center' },
-      );
+      .text(`Periodo: ${formatDate(fiscalYear.startDate)} a ${formatDate(fiscalYear.endDate)}`, {
+        align: 'center',
+      });
 
     doc.moveDown(1);
 
@@ -450,20 +437,14 @@ export async function generateIntegratedReport(
         .text('Saldo Final de Caixa', 50, doc.y, { width: pageWidth - 100, continued: true })
         .text(formatBrl(Number(cash.saldoFinal.ytd)), { width: 100, align: 'right' });
     } else {
-      doc
-        .font('Helvetica')
-        .fontSize(10)
-        .text('Dados nao disponiveis para o periodo selecionado.');
+      doc.font('Helvetica').fontSize(10).text('Dados nao disponiveis para o periodo selecionado.');
     }
 
     doc.addPage();
 
     // ── Section 6: Notas Explicativas ────────────────────────────────────────
 
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(14)
-      .text('NOTAS EXPLICATIVAS', { align: 'center' });
+    doc.font('Helvetica-Bold').fontSize(14).text('NOTAS EXPLICATIVAS', { align: 'center' });
 
     doc.moveDown(1);
 
@@ -485,9 +466,8 @@ export async function generateIntegratedReport(
 
     // Check if org has CPC 29 relevant amounts (biological assets section in DRE)
     const hasBiologicalAssets =
-      dreData?.sections.some(
-        (s) => s.id === 'cpc29' && Math.abs(Number(s.total.ytd)) > 0.01,
-      ) ?? false;
+      dreData?.sections.some((s) => s.id === 'cpc29' && Math.abs(Number(s.total.ytd)) > 0.01) ??
+      false;
 
     if (hasBiologicalAssets) {
       autoNotes.push({
@@ -508,15 +488,9 @@ export async function generateIntegratedReport(
     if (org.integratedReportNotes && org.integratedReportNotes.trim().length > 0) {
       if (doc.y > 650) doc.addPage();
       const nextNoteNum = autoNotes.length + 1;
-      doc
-        .font('Helvetica-Bold')
-        .fontSize(10)
-        .text(`${nextNoteNum}. Informacoes Adicionais`);
+      doc.font('Helvetica-Bold').fontSize(10).text(`${nextNoteNum}. Informacoes Adicionais`);
       doc.moveDown(0.3);
-      doc
-        .font('Helvetica')
-        .fontSize(9)
-        .text(org.integratedReportNotes, { align: 'justify' });
+      doc.font('Helvetica').fontSize(9).text(org.integratedReportNotes, { align: 'justify' });
     }
 
     doc.end();

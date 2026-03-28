@@ -2,7 +2,18 @@
 phase: 29-ferias-afastamentos-rescisao-e-provisoes
 plan: 03
 subsystem: api
-tags: [payroll, provisions, vacation, thirteenth-salary, employer-charges, accounting-entry, express, prisma, decimal.js]
+tags:
+  [
+    payroll,
+    provisions,
+    vacation,
+    thirteenth-salary,
+    employer-charges,
+    accounting-entry,
+    express,
+    prisma,
+    decimal.js,
+  ]
 
 requires:
   - phase: 29-01
@@ -43,16 +54,16 @@ key-files:
     - apps/backend/src/app.ts
 
 key-decisions:
-  - "Route order: /report/export before /report before /:id prevents Express 5 param shadowing (same pattern as Phase 26)"
-  - "Accounting entry stubs stored as JSON now (Phase 32 GL integration will wire them to real GL entries)"
-  - "Reversal sets reversedAt+reversedBy but does NOT delete records (full audit trail)"
-  - "Per-employee transactions, not one big transaction — consistent with Phase 28 payroll isolation decision"
+  - 'Route order: /report/export before /report before /:id prevents Express 5 param shadowing (same pattern as Phase 26)'
+  - 'Accounting entry stubs stored as JSON now (Phase 32 GL integration will wire them to real GL entries)'
+  - 'Reversal sets reversedAt+reversedBy but does NOT delete records (full audit trail)'
+  - 'Per-employee transactions, not one big transaction — consistent with Phase 28 payroll isolation decision'
   - "4/3 factor implemented as Decimal('1.333333') — 6-decimal precision sufficient for 2dp rounding"
 
 patterns-established:
-  - "Provision calculation: pure function with Decimal arithmetic, separate from DB service functions"
-  - "Batch provision: per-employee tx with 409 guard for duplicate month"
-  - "CSV export: inline aggregation then format, no third-party CSV library"
+  - 'Provision calculation: pure function with Decimal arithmetic, separate from DB service functions'
+  - 'Batch provision: per-employee tx with 409 guard for duplicate month'
+  - 'CSV export: inline aggregation then format, no third-party CSV library'
 
 requirements-completed:
   - FERIAS-04
@@ -124,5 +135,6 @@ None — plan executed exactly as written.
 - employeeTerminationsRouter is created (plan 29-02 service file) but not yet registered in app.ts — needs routes file in plan 29-02 completion
 
 ---
-*Phase: 29-ferias-afastamentos-rescisao-e-provisoes*
-*Completed: 2026-03-25*
+
+_Phase: 29-ferias-afastamentos-rescisao-e-provisoes_
+_Completed: 2026-03-25_

@@ -85,7 +85,10 @@ export async function createTrainingRecord(
       },
     });
     if (!trainingType) {
-      throw new TrainingRecordError('Tipo de treinamento não encontrado', 'TRAINING_TYPE_NOT_FOUND');
+      throw new TrainingRecordError(
+        'Tipo de treinamento não encontrado',
+        'TRAINING_TYPE_NOT_FOUND',
+      );
     }
 
     const defaultValidityMonths = trainingType.defaultValidityMonths as number;
@@ -281,7 +284,10 @@ export async function generateCertificatePdf(
     doc.moveDown(0.5);
 
     // Divider
-    doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).stroke();
+    doc
+      .moveTo(50, doc.y)
+      .lineTo(50 + pageWidth, doc.y)
+      .stroke();
     doc.moveDown(0.8);
 
     // ── Body ──
@@ -312,7 +318,10 @@ export async function generateCertificatePdf(
 
     // ── Footer ──
     doc.moveDown(2);
-    doc.moveTo(50, doc.y).lineTo(50 + pageWidth, doc.y).stroke();
+    doc
+      .moveTo(50, doc.y)
+      .lineTo(50 + pageWidth, doc.y)
+      .stroke();
     doc.moveDown(0.5);
 
     // Signature lines
@@ -320,11 +329,17 @@ export async function generateCertificatePdf(
     doc.fontSize(10).font('Helvetica');
 
     // Left: instructor signature
-    doc.moveTo(50, sigY + 30).lineTo(250, sigY + 30).stroke();
+    doc
+      .moveTo(50, sigY + 30)
+      .lineTo(250, sigY + 30)
+      .stroke();
     doc.text('Instrutor: ' + record.instructorName, 50, sigY + 35, { width: 200 });
 
     // Right: employer signature
-    doc.moveTo(310, sigY + 30).lineTo(510, sigY + 30).stroke();
+    doc
+      .moveTo(310, sigY + 30)
+      .lineTo(510, sigY + 30)
+      .stroke();
     doc.text('Responsável pela Empresa', 310, sigY + 35, { width: 200 });
 
     doc.moveDown(3);

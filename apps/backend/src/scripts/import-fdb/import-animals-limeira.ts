@@ -53,7 +53,7 @@ function mapSex(sexo: string | null): 'MALE' | 'FEMALE' {
 }
 
 function mapCategory(sex: 'MALE' | 'FEMALE') {
-  return sex === 'MALE' ? 'NOVILHO' as const : 'NOVILHA' as const;
+  return sex === 'MALE' ? ('NOVILHO' as const) : ('NOVILHA' as const);
 }
 
 // ─── Import Breeds ───────────────────────────────────────────────────
@@ -624,7 +624,9 @@ async function importReproductiveReleases(
     created++;
   }
 
-  console.log(`  ✓ Liberações reprodutivas: ${created} criadas, ${skipped} já existiam ou sem dados`);
+  console.log(
+    `  ✓ Liberações reprodutivas: ${created} criadas, ${skipped} já existiam ou sem dados`,
+  );
 }
 
 // ─── Update Animal Categories ────────────────────────────────────────
@@ -852,10 +854,7 @@ async function importInseminations(
 
 // ─── Import Calvings (Partos) ────────────────────────────────────────
 
-async function importCalvings(
-  prisma: PrismaClient,
-  animalMap: Map<number, string>,
-): Promise<void> {
+async function importCalvings(prisma: PrismaClient, animalMap: Map<number, string>): Promise<void> {
   console.log('\n── Partos ──');
 
   // Check existing count to detect re-runs
@@ -1128,7 +1127,14 @@ async function importPregnancyDiagnoses(
   console.log('  Criando registros na timeline reprodutiva...');
   const dgRecords = await prisma.pregnancyDiagnosis.findMany({
     where: { farmId: FARM_ID },
-    select: { animalId: true, diagnosisDate: true, result: true, veterinaryName: true, notes: true, recordedBy: true },
+    select: {
+      animalId: true,
+      diagnosisDate: true,
+      result: true,
+      veterinaryName: true,
+      notes: true,
+      recordedBy: true,
+    },
   });
 
   const timelineInserts = dgRecords.map((dg) => ({
@@ -1392,7 +1398,9 @@ async function importAnimalExits(
   for (const r of tipoRows) {
     tipoMap.set(r.cdtipobaixa as number, String(r.descricao || '').toLowerCase());
   }
-  console.log(`  Tipos de baixa: ${[...tipoMap.entries()].map(([k, v]) => `${k}=${v}`).join(', ')}`);
+  console.log(
+    `  Tipos de baixa: ${[...tipoMap.entries()].map(([k, v]) => `${k}=${v}`).join(', ')}`,
+  );
 
   // Pre-load MOTIVOBAIXA
   const motivoRows = query('SELECT mb.CDMOTIVOBAIXA, mb.DESCRICAO FROM MOTIVOBAIXA mb');
@@ -1457,7 +1465,7 @@ async function importAnimalExits(
       const notes = notesParts.length > 0 ? notesParts.join('. ') : null;
 
       // For MORTE, use motivo as deathCause
-      const deathCause = exitType === 'MORTE' ? (motivoDesc || null) : null;
+      const deathCause = exitType === 'MORTE' ? motivoDesc || null : null;
 
       try {
         await prisma.animalExit.create({

@@ -1,5 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, AlertCircle, Loader2, Plus, Trash2, Check, ArrowRight, ArrowLeft, Dna, ScrollText } from 'lucide-react';
+import {
+  X,
+  AlertCircle,
+  Loader2,
+  Plus,
+  Trash2,
+  Check,
+  ArrowRight,
+  ArrowLeft,
+  Dna,
+  ScrollText,
+} from 'lucide-react';
 import { api } from '@/services/api';
 import { useBreeds } from '@/hooks/useBreeds';
 import type {
@@ -167,7 +178,9 @@ function CreateAnimalModal({ isOpen, farmId, animal, onClose, onSuccess }: Creat
       setCategory(animal.category);
       setOrigin(animal.origin);
       setEntryWeightKg(animal.entryWeightKg != null ? String(animal.entryWeightKg) : '');
-      setBodyConditionScore(animal.bodyConditionScore != null ? String(animal.bodyConditionScore) : '');
+      setBodyConditionScore(
+        animal.bodyConditionScore != null ? String(animal.bodyConditionScore) : '',
+      );
       setNotes(animal.notes ?? '');
       setIsCompositionEstimated(animal.isCompositionEstimated);
       setCompositions(
@@ -308,11 +321,12 @@ function CreateAnimalModal({ isOpen, farmId, animal, onClose, onSuccess }: Creat
 
       onSuccess();
     } catch (err) {
-      const message = err instanceof Error
-        ? err.message
-        : isEditMode
-          ? 'Não foi possível atualizar o animal.'
-          : 'Não foi possível cadastrar o animal.';
+      const message =
+        err instanceof Error
+          ? err.message
+          : isEditMode
+            ? 'Não foi possível atualizar o animal.'
+            : 'Não foi possível cadastrar o animal.';
       setSubmitError(message);
     } finally {
       setIsSubmitting(false);
@@ -356,7 +370,9 @@ function CreateAnimalModal({ isOpen, farmId, animal, onClose, onSuccess }: Creat
         {/* Header */}
         <header className="create-animal-modal__header">
           <div className="create-animal-modal__header-content">
-            <h2 className="create-animal-modal__title">{isEditMode ? 'Editar animal' : 'Cadastrar animal'}</h2>
+            <h2 className="create-animal-modal__title">
+              {isEditMode ? 'Editar animal' : 'Cadastrar animal'}
+            </h2>
             <nav className="create-animal-modal__stepper" aria-label="Progresso do cadastro">
               {STEPS.map((s, i) => {
                 const isCompleted = step > s.number;
@@ -374,7 +390,11 @@ function CreateAnimalModal({ isOpen, farmId, animal, onClose, onSuccess }: Creat
                         isCurrent ? 'create-animal-modal__step-circle--current' : ''
                       } ${isCompleted ? 'create-animal-modal__step-circle--completed' : ''}`}
                       onClick={() => {
-                        if (s.number === 1 || (s.number === 2 && canGoStep2) || (s.number === 3 && canGoStep2 && compositionValid)) {
+                        if (
+                          s.number === 1 ||
+                          (s.number === 2 && canGoStep2) ||
+                          (s.number === 3 && canGoStep2 && compositionValid)
+                        ) {
                           goToStep(s.number);
                         }
                       }}
@@ -506,7 +526,10 @@ function CreateAnimalModal({ isOpen, farmId, animal, onClose, onSuccess }: Creat
                     />
                   </div>
                   <div className="create-animal-modal__field">
-                    <label htmlFor="animal-registration-number" className="create-animal-modal__label">
+                    <label
+                      htmlFor="animal-registration-number"
+                      className="create-animal-modal__label"
+                    >
                       N. registro (associação)
                     </label>
                     <input
@@ -610,7 +633,9 @@ function CreateAnimalModal({ isOpen, farmId, animal, onClose, onSuccess }: Creat
               </fieldset>
 
               <fieldset className="create-animal-modal__fieldset">
-                <legend className="create-animal-modal__fieldset-legend">Condição e observações</legend>
+                <legend className="create-animal-modal__fieldset-legend">
+                  Condição e observações
+                </legend>
                 <div className="create-animal-modal__row">
                   <div className="create-animal-modal__field">
                     <label htmlFor="animal-bcs" className="create-animal-modal__label">
@@ -658,8 +683,8 @@ function CreateAnimalModal({ isOpen, farmId, animal, onClose, onSuccess }: Creat
                   <Dna size={48} aria-hidden="true" className="create-animal-modal__empty-icon" />
                   <h3 className="create-animal-modal__empty-title">Nenhuma raça adicionada</h3>
                   <p className="create-animal-modal__empty-desc">
-                    Informe a composição racial do animal. A soma dos percentuais deve totalizar 100%.
-                    Este passo é opcional.
+                    Informe a composição racial do animal. A soma dos percentuais deve totalizar
+                    100%. Este passo é opcional.
                   </p>
                   <button
                     type="button"
@@ -785,7 +810,11 @@ function CreateAnimalModal({ isOpen, farmId, animal, onClose, onSuccess }: Creat
             <div className="create-animal-modal__step-content">
               {genealogicalRecords.length === 0 ? (
                 <div className="create-animal-modal__empty-state">
-                  <ScrollText size={48} aria-hidden="true" className="create-animal-modal__empty-icon" />
+                  <ScrollText
+                    size={48}
+                    aria-hidden="true"
+                    className="create-animal-modal__empty-icon"
+                  />
                   <h3 className="create-animal-modal__empty-title">Nenhum registro genealógico</h3>
                   <p className="create-animal-modal__empty-desc">
                     Registros genealógicos são opcionais. Adicione se o animal possui registro em
@@ -824,7 +853,10 @@ function CreateAnimalModal({ isOpen, farmId, animal, onClose, onSuccess }: Creat
                       </div>
                       <div className="create-animal-modal__row">
                         <div className="create-animal-modal__field" style={{ flex: 2 }}>
-                          <label htmlFor={`gen-class-${index}`} className="create-animal-modal__label">
+                          <label
+                            htmlFor={`gen-class-${index}`}
+                            className="create-animal-modal__label"
+                          >
                             Classe
                           </label>
                           <select
@@ -844,7 +876,10 @@ function CreateAnimalModal({ isOpen, farmId, animal, onClose, onSuccess }: Creat
                           </select>
                         </div>
                         <div className="create-animal-modal__field" style={{ flex: 1 }}>
-                          <label htmlFor={`gen-number-${index}`} className="create-animal-modal__label">
+                          <label
+                            htmlFor={`gen-number-${index}`}
+                            className="create-animal-modal__label"
+                          >
                             N. Registro
                           </label>
                           <input
@@ -860,7 +895,10 @@ function CreateAnimalModal({ isOpen, farmId, animal, onClose, onSuccess }: Creat
                       </div>
                       <div className="create-animal-modal__row">
                         <div className="create-animal-modal__field">
-                          <label htmlFor={`gen-assoc-${index}`} className="create-animal-modal__label">
+                          <label
+                            htmlFor={`gen-assoc-${index}`}
+                            className="create-animal-modal__label"
+                          >
                             Associação
                           </label>
                           <input
@@ -875,7 +913,10 @@ function CreateAnimalModal({ isOpen, farmId, animal, onClose, onSuccess }: Creat
                           />
                         </div>
                         <div className="create-animal-modal__field">
-                          <label htmlFor={`gen-date-${index}`} className="create-animal-modal__label">
+                          <label
+                            htmlFor={`gen-date-${index}`}
+                            className="create-animal-modal__label"
+                          >
                             Data do registro
                           </label>
                           <input

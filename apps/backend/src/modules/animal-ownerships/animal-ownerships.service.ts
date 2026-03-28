@@ -18,7 +18,6 @@ const PRODUCER_SELECT = {
   type: true,
 } as const;
 
-
 function toItem(row: Record<string, unknown>): OwnershipItem {
   const r = row as Record<string, unknown> & {
     producer: { id: string; name: string; document: string | null; type: string };
@@ -178,7 +177,10 @@ export async function updateOwnership(
       );
     }
 
-    if (input.participationPct != null && (input.participationPct < 0 || input.participationPct > 100)) {
+    if (
+      input.participationPct != null &&
+      (input.participationPct < 0 || input.participationPct > 100)
+    ) {
       throw new AnimalOwnershipError('Percentual de participação deve estar entre 0 e 100', 400);
     }
 
@@ -240,7 +242,10 @@ export async function endOwnership(
 
     const endDateParsed = new Date(endDate);
     if (endDateParsed < existing.startDate) {
-      throw new AnimalOwnershipError('Data de encerramento deve ser posterior à data de início', 400);
+      throw new AnimalOwnershipError(
+        'Data de encerramento deve ser posterior à data de início',
+        400,
+      );
     }
 
     const updated = await tx.animalOwnership.update({
@@ -353,12 +358,7 @@ export async function listFarmAnimalOwners(ctx: RlsContext, farmId: string) {
 export async function getAnimalCurrentOwners(
   ctx: RlsContext,
   animalIds: string[],
-): Promise<
-  Map<
-    string,
-    { producerId: string; producerName: string; ownershipType: string }[]
-  >
-> {
+): Promise<Map<string, { producerId: string; producerName: string; ownershipType: string }[]>> {
   if (animalIds.length === 0) return new Map();
 
   return withRlsContext(ctx, async (tx) => {

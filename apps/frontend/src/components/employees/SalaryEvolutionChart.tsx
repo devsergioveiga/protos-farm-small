@@ -34,7 +34,9 @@ interface SalaryTooltipPayload {
 
 function SalaryTooltip({ payload }: TooltipProps<number, string> & SalaryTooltipPayload) {
   if (!payload || payload.length === 0) return null;
-  const point = payload[0]?.payload as (SalaryHistoryPoint & { formattedDate?: string }) | undefined;
+  const point = payload[0]?.payload as
+    | (SalaryHistoryPoint & { formattedDate?: string })
+    | undefined;
   if (!point) return null;
 
   return (

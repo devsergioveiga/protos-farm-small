@@ -1,11 +1,15 @@
 ---
 phase: 34-wire-absence-impact-payroll-engine
-plan: "01"
+plan: '01'
 subsystem: payroll-engine
 tags: [payroll, absences, tdd, deductions, inss, fgts, dsr]
 dependency_graph:
   requires: [employee-absences module (AbsencePayrollImpact type)]
-  provides: [absence/suspension deduction logic in calculateEmployeePayroll, extended EmployeePayrollInput/Result types]
+  provides:
+    [
+      absence/suspension deduction logic in calculateEmployeePayroll,
+      extended EmployeePayrollInput/Result types,
+    ]
   affects: [payroll-runs service (consumes calculateEmployeePayroll), payroll PDF output]
 tech_stack:
   added: []
@@ -17,14 +21,14 @@ key_files:
     - apps/backend/src/modules/payroll-runs/payroll-calculation.service.ts
     - apps/backend/src/modules/payroll-runs/payroll-calculation.service.spec.ts
 decisions:
-  - "absenceInssDeduction applied to adjustedSalary (post-prorata) to achieve cumulative effect (D-02)"
-  - "inssIrrfBase computed from reduced salary for INSS/IRRF — not grossSalary (D-04)"
-  - "fgtsBase uses full baseSalary when fgtsFullMonth=true, otherwise grossSalary (D-07)"
-  - "DSR reduced proportionally by suspendedDays/workDays when suspension exists (D-10)"
-  - "netSalary floored at zero via Decimal.max guard (Pitfall 5)"
+  - 'absenceInssDeduction applied to adjustedSalary (post-prorata) to achieve cumulative effect (D-02)'
+  - 'inssIrrfBase computed from reduced salary for INSS/IRRF — not grossSalary (D-04)'
+  - 'fgtsBase uses full baseSalary when fgtsFullMonth=true, otherwise grossSalary (D-07)'
+  - 'DSR reduced proportionally by suspendedDays/workDays when suspension exists (D-10)'
+  - 'netSalary floored at zero via Decimal.max guard (Pitfall 5)'
 metrics:
-  duration: "~10 minutes"
-  completed: "2026-03-26T23:49:22Z"
+  duration: '~10 minutes'
+  completed: '2026-03-26T23:49:22Z'
   tasks_completed: 2
   files_modified: 3
 ---
@@ -48,20 +52,22 @@ TDD implementation of FERIAS-02: absences (INSS leave, suspension) now automatic
 
 Six new computation steps inserted into `calculateEmployeePayroll`:
 
-| Step | Decision | What It Does |
-|------|----------|--------------|
-| 1b | D-01, D-02 | `absenceInssDeduction = inssPaidDays/totalDays * adjustedSalary` |
-| 1c | D-09 | `suspensionDeduction = suspendedDays/totalDays * adjustedSalary` |
-| 1d | D-04 | `salaryForInssBase = adjustedSalary - absenceInssDeduction - suspensionDeduction` |
-| 4b | D-10 | DSR reduced by `suspendedDays/workDays` when suspension exists |
-| 8b | D-04 | `inssIrrfBase` built from `salaryForInssBase + OT + DSR + night + family + provisions` |
-| 14 | D-07 | `fgtsBase = absenceData?.fgtsFullMonth ? baseSalary + variable : grossSalary` |
+| Step | Decision   | What It Does                                                                           |
+| ---- | ---------- | -------------------------------------------------------------------------------------- |
+| 1b   | D-01, D-02 | `absenceInssDeduction = inssPaidDays/totalDays * adjustedSalary`                       |
+| 1c   | D-09       | `suspensionDeduction = suspendedDays/totalDays * adjustedSalary`                       |
+| 1d   | D-04       | `salaryForInssBase = adjustedSalary - absenceInssDeduction - suspensionDeduction`      |
+| 4b   | D-10       | DSR reduced by `suspendedDays/workDays` when suspension exists                         |
+| 8b   | D-04       | `inssIrrfBase` built from `salaryForInssBase + OT + DSR + night + family + provisions` |
+| 14   | D-07       | `fgtsBase = absenceData?.fgtsFullMonth ? baseSalary + variable : grossSalary`          |
 
 Net salary:
+
 - Subtracts `absenceInssDeduction` and `suspensionDeduction`
 - Floored at zero via `Decimal.max(netSalary, new Decimal(0))` (Pitfall 5)
 
 Line items added when deductions > 0:
+
 - Code `0900` "Afastamento INSS" with reference `N/31d`
 - Code `0910` "Suspensão Disciplinar" with reference `N/31d`
 
@@ -71,8 +77,8 @@ Line items added when deductions > 0:
 
 9 new test cases in `describe('absence impact')` inside `describe('calculateEmployeePayroll')`:
 
-1. INSS absence 10 days — code `0900`, value `967.74` (10/31 * 3000) (D-01)
-2. Suspension 3 days — code `0910`, value `290.32` (3/31 * 3000) (D-09)
+1. INSS absence 10 days — code `0900`, value `967.74` (10/31 \* 3000) (D-01)
+2. Suspension 3 days — code `0910`, value `290.32` (3/31 \* 3000) (D-09)
 3. INSS/IRRF base reduction — `inssAmount` less than full-salary result (D-04)
 4. `fgtsFullMonth=true` — `fgtsBase = 3000`, `fgtsAmount = 240.00` (D-07)
 5. Mid-month admission (day 16) + 5 INSS days — `proRataDays=16`, `absenceInssDeduction=249.74` (D-02)
@@ -85,10 +91,10 @@ All 19 tests pass (9 new + 10 pre-existing).
 
 ## Commits
 
-| Hash | Type | Description |
-|------|------|-------------|
+| Hash     | Type | Description                                                              |
+| -------- | ---- | ------------------------------------------------------------------------ |
 | e0c3a180 | test | add failing absence impact tests (RED) — types extended, 9 failing tests |
-| 3e4bd820 | feat | implement absence deduction logic (GREEN) — all 19 tests pass |
+| 3e4bd820 | feat | implement absence deduction logic (GREEN) — all 19 tests pass            |
 
 ## Deviations from Plan
 

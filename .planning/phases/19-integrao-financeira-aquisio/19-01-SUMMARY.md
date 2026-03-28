@@ -1,6 +1,6 @@
 ---
 phase: 19-integrao-financeira-aquisio
-plan: "01"
+plan: '01'
 subsystem: asset-acquisitions
 tags: [backend, assets, payables, nfe-parser, prisma, tdd]
 dependency_graph:
@@ -20,13 +20,13 @@ dependency_graph:
     - apps/backend/prisma/schema.prisma
 tech_stack:
   added:
-    - "@xmldom/xmldom (already installed) — NF-e v4.0 XML parsing"
-    - "decimal.js (already installed) — cent-exact rateio arithmetic"
+    - '@xmldom/xmldom (already installed) — NF-e v4.0 XML parsing'
+    - 'decimal.js (already installed) — cent-exact rateio arithmetic'
   patterns:
-    - "Prisma $transaction for atomic asset+payable creation"
-    - "tx.payable.create direct (NOT payables.service) to avoid nested RLS deadlocks"
-    - "generateInstallments from @protos-farm/shared for AVISTA/FINANCIADO"
-    - "multer memoryStorage for NF-e XML upload"
+    - 'Prisma $transaction for atomic asset+payable creation'
+    - 'tx.payable.create direct (NOT payables.service) to avoid nested RLS deadlocks'
+    - 'generateInstallments from @protos-farm/shared for AVISTA/FINANCIADO'
+    - 'multer memoryStorage for NF-e XML upload'
 key_files:
   created:
     - apps/backend/prisma/migrations/20260426100000_add_payable_category_asset_acquisition/migration.sql
@@ -42,13 +42,13 @@ key_files:
     - apps/backend/src/modules/cashflow/cashflow.types.ts
     - apps/backend/src/app.ts
 decisions:
-  - "tx.payable.create used directly in transactions (NOT payables.service.createPayable) to avoid nested withRlsContext deadlocks — same pattern as rural-credit.service"
-  - "ASSET_ACQUISITION maps to DFC INVESTIMENTO (not OPERACIONAL) for correct cash flow statement classification"
-  - "Cent residual in rateio assigned to first item (consistent with generateInstallments behavior)"
-  - "multer memoryStorage for NF-e XML (max 2MB) — no disk persistence needed"
+  - 'tx.payable.create used directly in transactions (NOT payables.service.createPayable) to avoid nested withRlsContext deadlocks — same pattern as rural-credit.service'
+  - 'ASSET_ACQUISITION maps to DFC INVESTIMENTO (not OPERACIONAL) for correct cash flow statement classification'
+  - 'Cent residual in rateio assigned to first item (consistent with generateInstallments behavior)'
+  - 'multer memoryStorage for NF-e XML (max 2MB) — no disk persistence needed'
 metrics:
-  duration: "334s"
-  completed_date: "2026-03-22"
+  duration: '334s'
+  completed_date: '2026-03-22'
   tasks_completed: 2
   tests_added: 26
   files_created: 7
@@ -77,21 +77,21 @@ Full backend module for asset acquisition financial integration, covering:
 
 ## Tests
 
-| Suite | Tests | Status |
-|-------|-------|--------|
-| nfe-parser.spec.ts | 11 | PASS |
-| asset-acquisitions.routes.spec.ts | 15 | PASS |
-| **Total** | **26** | **All green** |
+| Suite                             | Tests  | Status        |
+| --------------------------------- | ------ | ------------- |
+| nfe-parser.spec.ts                | 11     | PASS          |
+| asset-acquisitions.routes.spec.ts | 15     | PASS          |
+| **Total**                         | **26** | **All green** |
 
 ## Requirements Coverage
 
-| Requirement | Description | Status |
-|-------------|-------------|--------|
-| AQUI-01 | Cash purchase creates Asset + Payable atomically | Covered by Test 1+2 |
-| AQUI-02 | Financed purchase creates N installments summing to acquisitionValue | Covered by Test 3+4 |
-| AQUI-03 | NF-e XML parsing extracts supplier, value, items | Covered by nfe-parser Tests 1-8 |
-| AQUI-04 | Multi-asset NF creates N assets with proportional rateio | Covered by Tests 9-11 |
-| AQUI-07 | Transaction atomicity: failed CP prevents asset creation | Covered by Test 12 |
+| Requirement | Description                                                          | Status                          |
+| ----------- | -------------------------------------------------------------------- | ------------------------------- |
+| AQUI-01     | Cash purchase creates Asset + Payable atomically                     | Covered by Test 1+2             |
+| AQUI-02     | Financed purchase creates N installments summing to acquisitionValue | Covered by Test 3+4             |
+| AQUI-03     | NF-e XML parsing extracts supplier, value, items                     | Covered by nfe-parser Tests 1-8 |
+| AQUI-04     | Multi-asset NF creates N assets with proportional rateio             | Covered by Tests 9-11           |
+| AQUI-07     | Transaction atomicity: failed CP prevents asset creation             | Covered by Test 12              |
 
 ## Deviations from Plan
 

@@ -55,9 +55,7 @@ describe('calculateDfcDireto', () => {
 
   it('classifies GRAIN_SALE inflow into operacional section', () => {
     const input = makeDiretoInput({
-      currentMonthItems: [
-        { category: 'GRAIN_SALE', amount: '5000.00', type: 'inflow' as const },
-      ],
+      currentMonthItems: [{ category: 'GRAIN_SALE', amount: '5000.00', type: 'inflow' as const }],
     });
     const result = calculateDfcDireto(input);
     const operacional = result.sections.find((s) => s.id === 'operacional')!;
@@ -85,9 +83,7 @@ describe('calculateDfcDireto', () => {
 
   it('classifies ASSET_SALE inflow into investimento section', () => {
     const input = makeDiretoInput({
-      currentMonthItems: [
-        { category: 'ASSET_SALE', amount: '8000.00', type: 'inflow' as const },
-      ],
+      currentMonthItems: [{ category: 'ASSET_SALE', amount: '8000.00', type: 'inflow' as const }],
     });
     const result = calculateDfcDireto(input);
     const investimento = result.sections.find((s) => s.id === 'investimento')!;
@@ -99,9 +95,7 @@ describe('calculateDfcDireto', () => {
 
   it('classifies FINANCING outflow into financiamento section', () => {
     const input = makeDiretoInput({
-      currentMonthItems: [
-        { category: 'FINANCING', amount: '3000.00', type: 'outflow' as const },
-      ],
+      currentMonthItems: [{ category: 'FINANCING', amount: '3000.00', type: 'outflow' as const }],
     });
     const result = calculateDfcDireto(input);
     const financiamento = result.sections.find((s) => s.id === 'financiamento')!;
@@ -137,9 +131,7 @@ describe('calculateDfcDireto', () => {
 
   it('computes saldoFinal = saldoInicial + variacaoLiquida', () => {
     const input = makeDiretoInput({
-      currentMonthItems: [
-        { category: 'GRAIN_SALE', amount: '5000.00', type: 'inflow' as const },
-      ],
+      currentMonthItems: [{ category: 'GRAIN_SALE', amount: '5000.00', type: 'inflow' as const }],
       cashBalances: {
         currentMonthOpening: '10000.00',
         currentMonthClosing: '15000.00',
@@ -179,9 +171,7 @@ describe('calculateDfcDireto', () => {
 
   it('classifies PAYROLL outflow into operacional section as salarios-encargos', () => {
     const input = makeDiretoInput({
-      currentMonthItems: [
-        { category: 'PAYROLL', amount: '4500.00', type: 'outflow' as const },
-      ],
+      currentMonthItems: [{ category: 'PAYROLL', amount: '4500.00', type: 'outflow' as const }],
     });
     const result = calculateDfcDireto(input);
     const operacional = result.sections.find((s) => s.id === 'operacional')!;

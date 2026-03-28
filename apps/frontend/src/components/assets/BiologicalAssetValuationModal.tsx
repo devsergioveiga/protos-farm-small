@@ -171,7 +171,13 @@ export default function BiologicalAssetValuationModal({
   const groups = form.groupType === 'ANIMAL' ? ANIMAL_GROUPS : PERENNIAL_CROP_GROUPS;
 
   return (
-    <div className="bio-val-modal__overlay" onClick={(e) => e.target === e.currentTarget && onClose()} role="dialog" aria-modal="true" aria-labelledby="bio-val-modal-title">
+    <div
+      className="bio-val-modal__overlay"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="bio-val-modal-title"
+    >
       <div className="bio-val-modal__dialog">
         {/* Header */}
         <header className="bio-val-modal__header">
@@ -188,12 +194,19 @@ export default function BiologicalAssetValuationModal({
 
         {/* Body */}
         <div className="bio-val-modal__body">
-          <form id="bio-val-form" className="bio-val-modal__form" onSubmit={handleSubmit} noValidate>
-
+          <form
+            id="bio-val-form"
+            className="bio-val-modal__form"
+            onSubmit={handleSubmit}
+            noValidate
+          >
             {/* Fazenda */}
             <div className="bio-val-modal__field">
               <label className="bio-val-modal__label" htmlFor="bav-farmId">
-                Fazenda <span className="required" aria-hidden="true">*</span>
+                Fazenda{' '}
+                <span className="required" aria-hidden="true">
+                  *
+                </span>
               </label>
               <select
                 id="bav-farmId"
@@ -206,7 +219,9 @@ export default function BiologicalAssetValuationModal({
               >
                 <option value="">Selecione a fazenda</option>
                 {farms.map((f) => (
-                  <option key={f.id} value={f.id}>{f.name}</option>
+                  <option key={f.id} value={f.id}>
+                    {f.name}
+                  </option>
                 ))}
               </select>
               {errors.farmId && (
@@ -220,9 +235,16 @@ export default function BiologicalAssetValuationModal({
             {/* Tipo de Grupo */}
             <div className="bio-val-modal__field">
               <span className="bio-val-modal__label" id="bav-groupType-label">
-                Tipo de grupo <span className="required" aria-hidden="true">*</span>
+                Tipo de grupo{' '}
+                <span className="required" aria-hidden="true">
+                  *
+                </span>
               </span>
-              <div className="bio-val-modal__radio-group" role="radiogroup" aria-labelledby="bav-groupType-label">
+              <div
+                className="bio-val-modal__radio-group"
+                role="radiogroup"
+                aria-labelledby="bav-groupType-label"
+              >
                 <label className="bio-val-modal__radio-label">
                   <input
                     type="radio"
@@ -250,7 +272,10 @@ export default function BiologicalAssetValuationModal({
             {/* Grupo */}
             <div className="bio-val-modal__field">
               <label className="bio-val-modal__label" htmlFor="bav-assetGroup">
-                Grupo <span className="required" aria-hidden="true">*</span>
+                Grupo{' '}
+                <span className="required" aria-hidden="true">
+                  *
+                </span>
               </label>
               <select
                 id="bav-assetGroup"
@@ -262,7 +287,9 @@ export default function BiologicalAssetValuationModal({
               >
                 <option value="">Selecione o grupo</option>
                 {groups.map((g) => (
-                  <option key={g.value} value={g.value}>{g.label}</option>
+                  <option key={g.value} value={g.value}>
+                    {g.label}
+                  </option>
                 ))}
               </select>
               {errors.assetGroup && (
@@ -276,7 +303,10 @@ export default function BiologicalAssetValuationModal({
             {/* Data de avaliacao */}
             <div className="bio-val-modal__field">
               <label className="bio-val-modal__label" htmlFor="bav-valuationDate">
-                Data de avaliacao <span className="required" aria-hidden="true">*</span>
+                Data de avaliacao{' '}
+                <span className="required" aria-hidden="true">
+                  *
+                </span>
               </label>
               <input
                 id="bav-valuationDate"
@@ -299,7 +329,10 @@ export default function BiologicalAssetValuationModal({
             {form.groupType === 'ANIMAL' && (
               <div className="bio-val-modal__field">
                 <label className="bio-val-modal__label" htmlFor="bav-headCount">
-                  Quantidade de cabecas <span className="required" aria-hidden="true">*</span>
+                  Quantidade de cabecas{' '}
+                  <span className="required" aria-hidden="true">
+                    *
+                  </span>
                 </label>
                 <input
                   id="bav-headCount"
@@ -326,7 +359,10 @@ export default function BiologicalAssetValuationModal({
             {form.groupType === 'PERENNIAL_CROP' && (
               <div className="bio-val-modal__field">
                 <label className="bio-val-modal__label" htmlFor="bav-areaHa">
-                  Area (ha) <span className="required" aria-hidden="true">*</span>
+                  Area (ha){' '}
+                  <span className="required" aria-hidden="true">
+                    *
+                  </span>
                 </label>
                 <input
                   id="bav-areaHa"
@@ -353,7 +389,10 @@ export default function BiologicalAssetValuationModal({
             <div className="bio-val-modal__row">
               <div className="bio-val-modal__field">
                 <label className="bio-val-modal__label" htmlFor="bav-pricePerUnit">
-                  Preco por unidade (R$) <span className="required" aria-hidden="true">*</span>
+                  Preco por unidade (R$){' '}
+                  <span className="required" aria-hidden="true">
+                    *
+                  </span>
                 </label>
                 <input
                   id="bav-pricePerUnit"
@@ -376,7 +415,10 @@ export default function BiologicalAssetValuationModal({
               </div>
               <div className="bio-val-modal__field">
                 <label className="bio-val-modal__label" htmlFor="bav-totalFairValue">
-                  Valor justo total (R$) <span className="required" aria-hidden="true">*</span>
+                  Valor justo total (R$){' '}
+                  <span className="required" aria-hidden="true">
+                    *
+                  </span>
                 </label>
                 <input
                   id="bav-totalFairValue"

@@ -41,9 +41,7 @@ export async function createFiscalYear(
   const overlapping = await prisma.fiscalYear.findFirst({
     where: {
       organizationId,
-      OR: [
-        { startDate: { lte: endDate }, endDate: { gte: startDate } },
-      ],
+      OR: [{ startDate: { lte: endDate }, endDate: { gte: startDate } }],
     },
   });
 
@@ -134,7 +132,11 @@ export async function closePeriod(
   }
 
   if (period.status === 'BLOCKED') {
-    throw new FiscalPeriodError('Periodo bloqueado — nao e possivel fechar', 'INVALID_TRANSITION', 422);
+    throw new FiscalPeriodError(
+      'Periodo bloqueado — nao e possivel fechar',
+      'INVALID_TRANSITION',
+      422,
+    );
   }
 
   const updated = await prisma.accountingPeriod.update({
@@ -170,7 +172,11 @@ export async function reopenPeriod(
   }
 
   if (period.status === 'BLOCKED') {
-    throw new FiscalPeriodError('Periodo bloqueado — nao e possivel reabrir', 'INVALID_TRANSITION', 422);
+    throw new FiscalPeriodError(
+      'Periodo bloqueado — nao e possivel reabrir',
+      'INVALID_TRANSITION',
+      422,
+    );
   }
 
   if (!input.reopenReason || input.reopenReason.trim() === '') {

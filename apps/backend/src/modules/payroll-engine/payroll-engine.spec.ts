@@ -1,5 +1,10 @@
 import Decimal from 'decimal.js';
-import type { INSSBracket, IRRFBracket, SalaryFamilyInput, RubricaContext } from './payroll-engine.types';
+import type {
+  INSSBracket,
+  IRRFBracket,
+  SalaryFamilyInput,
+  RubricaContext,
+} from './payroll-engine.types';
 import {
   calculateINSS,
   calculateIRRF,
@@ -403,7 +408,9 @@ describe('evaluateFormula', () => {
   });
 
   it('invalid formula throws descriptive error', () => {
-    expect(() => evaluateFormula('SALARIO_BASE + INVALID_VAR_THAT_DOESNT_EXIST', BASE_CONTEXT)).toThrow();
+    expect(() =>
+      evaluateFormula('SALARIO_BASE + INVALID_VAR_THAT_DOESNT_EXIST', BASE_CONTEXT),
+    ).toThrow();
   });
 
   it('simple arithmetic: "100 + 50": result = R$ 150,00', () => {

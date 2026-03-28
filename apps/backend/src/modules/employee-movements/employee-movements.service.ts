@@ -140,10 +140,7 @@ export async function listMovements(
   });
 }
 
-export async function getTimeline(
-  ctx: RlsContext,
-  employeeId: string,
-): Promise<TimelineEntry[]> {
+export async function getTimeline(ctx: RlsContext, employeeId: string): Promise<TimelineEntry[]> {
   return withRlsContext(ctx, async (tx: TxClient) => {
     const employee = await tx.employee.findFirst({
       where: { id: employeeId, organizationId: ctx.organizationId },
@@ -225,8 +222,9 @@ export async function bulkSalaryAdjustment(
   // Get unique employees with active contracts
   const employeesWithContracts = employeeFarms
     .map((ef: TxClient) => ef.employee)
-    .filter((emp: TxClient, idx: number, arr: TxClient[]) =>
-      arr.findIndex((e: TxClient) => e.id === emp.id) === idx,
+    .filter(
+      (emp: TxClient, idx: number, arr: TxClient[]) =>
+        arr.findIndex((e: TxClient) => e.id === emp.id) === idx,
     )
     .filter((emp: TxClient) => emp.contracts.length > 0);
 

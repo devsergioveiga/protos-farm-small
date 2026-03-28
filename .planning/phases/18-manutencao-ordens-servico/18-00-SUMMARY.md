@@ -13,6 +13,7 @@ Foundation for Phase 18: Prisma schema with 7 new models (MaintenancePlan, WorkO
 ## Key Files
 
 ### Created
+
 - `apps/backend/prisma/migrations/20260423100000_add_maintenance_models/migration.sql`
 - `apps/backend/src/modules/maintenance-plans/maintenance-plans.types.ts`
 - `apps/backend/src/modules/work-orders/work-orders.types.ts`
@@ -22,10 +23,12 @@ Foundation for Phase 18: Prisma schema with 7 new models (MaintenancePlan, WorkO
 - `apps/backend/src/modules/maintenance-provisions/maintenance-provisions.routes.spec.ts`
 
 ### Modified
+
 - `apps/backend/prisma/schema.prisma`
 - `apps/backend/src/shared/rbac/permissions.ts`
 
 ## Commits
+
 - `cfe90315` feat(18-00): add 7 maintenance models, 4 enums, migration, RBAC permissions
 - `192884a5` feat(18-00): maintenance schema, RBAC, type definitions, and test stubs
 

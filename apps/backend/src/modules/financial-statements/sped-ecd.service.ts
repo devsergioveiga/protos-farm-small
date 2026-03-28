@@ -205,19 +205,14 @@ export async function validateSpedEcd(
         organizationId,
         fiscalYearId,
         accountId: { in: analyticAccounts.map((a) => a.id) },
-        OR: [
-          { debitTotal: { gt: 0 } },
-          { creditTotal: { gt: 0 } },
-        ],
+        OR: [{ debitTotal: { gt: 0 } }, { creditTotal: { gt: 0 } }],
       },
       select: { accountId: true },
       distinct: ['accountId'],
     });
 
     const movementAccountIds = new Set(accountsWithMovement.map((a) => a.accountId));
-    const noMovementCount = analyticAccounts.filter(
-      (a) => !movementAccountIds.has(a.id),
-    ).length;
+    const noMovementCount = analyticAccounts.filter((a) => !movementAccountIds.has(a.id)).length;
 
     if (noMovementCount > 0) {
       items.push({
@@ -295,10 +290,10 @@ export async function generateSpedEcd(
       code: true,
       name: true,
       accountType: true,
-      nature: true,      // ChartOfAccount field is "nature" (not accountNature)
+      nature: true, // ChartOfAccount field is "nature" (not accountNature)
       isSynthetic: true,
       level: true,
-      parentId: true,    // use parentId for lookup
+      parentId: true, // use parentId for lookup
       spedRefCode: true,
     },
     orderBy: { code: 'asc' },
@@ -418,11 +413,13 @@ export async function generateSpedEcd(
   });
 
   // 6. Load CostCenters (linked to farms belonging to this org)
-  const rawCostCenters = await prisma.costCenter.findMany({
-    where: { farm: { organizationId } },
-    select: { code: true, name: true },
-    orderBy: { code: 'asc' },
-  }).catch(() => []);
+  const rawCostCenters = await prisma.costCenter
+    .findMany({
+      where: { farm: { organizationId } },
+      select: { code: true, name: true },
+      orderBy: { code: 'asc' },
+    })
+    .catch(() => []);
 
   const costCenters: SpedCostCenter[] = rawCostCenters.map((cc) => ({
     code: cc.code,
@@ -468,8 +465,7 @@ export async function generateSpedEcd(
           if (acct?.spedRefCode) {
             const closingAmount = new Decimal(row.currentBalance ?? '0');
             const openingAmount = new Decimal(row.priorBalance ?? '0');
-            const groupInd: 'A' | 'P' =
-              acct.accountType === 'ATIVO' ? 'A' : 'P';
+            const groupInd: 'A' | 'P' = acct.accountType === 'ATIVO' ? 'A' : 'P';
             bpRows.push({
               spedRefCode: acct.spedRefCode,
               name: row.name,

@@ -108,7 +108,9 @@ export default function TimesheetApprovalModal({
     >
       <div className="ts-approval-modal">
         {/* Icon */}
-        <div className={`ts-approval-modal__icon ${isReject ? 'ts-approval-modal__icon--reject' : 'ts-approval-modal__icon--approve'}`}>
+        <div
+          className={`ts-approval-modal__icon ${isReject ? 'ts-approval-modal__icon--reject' : 'ts-approval-modal__icon--approve'}`}
+        >
           {isReject ? (
             <AlertCircle size={28} aria-hidden="true" />
           ) : (
@@ -155,12 +157,19 @@ export default function TimesheetApprovalModal({
                 Minimo de 20 caracteres ({charsLeft} restantes)
               </p>
             ) : (
-              <p id="ts-justification-hint" className="ts-approval-modal__hint ts-approval-modal__hint--ok">
+              <p
+                id="ts-justification-hint"
+                className="ts-approval-modal__hint ts-approval-modal__hint--ok"
+              >
                 {justification.trim().length} caracteres
               </p>
             )}
             {error && (
-              <p id="ts-justification-error" className="ts-approval-modal__field-error" role="alert">
+              <p
+                id="ts-justification-error"
+                className="ts-approval-modal__field-error"
+                role="alert"
+              >
                 <AlertCircle size={14} aria-hidden="true" />
                 {error}
               </p>

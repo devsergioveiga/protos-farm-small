@@ -53,7 +53,7 @@ decisions:
   - EPI foundation files created as Rule 3 deviation since plan 30-05 ran in a different worktree
 metrics:
   duration: ~90min
-  completed: "2026-03-26"
+  completed: '2026-03-26'
   tasks: 2
   files: 30
 requirements: [SEGUR-02, SEGUR-03]
@@ -80,6 +80,7 @@ Treinamentos NR-31 e ASOs (Atestados de Saúde Ocupacional) com rastreamento de 
 **TrainingTypesPage**: tab strip with "Tipos de Treinamento" and "Requisitos por Cargo". Type table shows "Sistema" badge (sky-100/sky-500) for system types (read-only rows), edit/delete only for custom types. Seed button calls `seedNr31Types`. Requisitos tab lists all positions (stub — wired in plan 30-07).
 
 **TrainingRecordModal** (multi-step):
+
 - Step 1: training type select, instructor type radio (INTERNO/EXTERNO/PRESENCIAL/EAD), date, instructor name, hours + warning when `effectiveHours < minHours`
 - Step 2: employee multi-select with checkbox, shows expiresAt preview calculated from trainingDate + defaultValidityMonths
 
@@ -90,6 +91,7 @@ Treinamentos NR-31 e ASOs (Atestados de Saúde Ocupacional) com rastreamento de 
 **useMedicalExams** hook: fetches with query params (employeeId, type, result, expiryStatus, farmId, page, limit), CRUD, `updateMedicalExam`.
 
 **MedicalExamModal**:
+
 - Employee picker: combobox with dropdown (max 8 results), closes on mousedown selection
 - ASO type: select with ASO_TYPE_LABELS (ADMISSIONAL, PERIODICO, RETORNO, MUDANCA_FUNCAO, DEMISSIONAL)
 - Date: max=today, validates no future dates
@@ -101,6 +103,7 @@ Treinamentos NR-31 e ASOs (Atestados de Saúde Ocupacional) com rastreamento de 
 - Validates: next exam date must be after exam date
 
 **MedicalExamsPage**:
+
 - `AsoResultBadge` inline component: APTO (success-100/500), INAPTO (error-100/500), APTO_COM_RESTRICAO (warning-100/500) with CheckCircle/XCircle/AlertTriangle icons
 - Filter bar: employee name search, tipo ASO, resultado, status vencimento
 - Client-side employee name filter; server-side filters for type/result/expiryStatus
@@ -111,6 +114,7 @@ Treinamentos NR-31 e ASOs (Atestados de Saúde Ocupacional) com rastreamento de 
 ### Foundation (Rule 3 Deviation)
 
 Plan 30-05 ran in a different worktree. Created all prerequisite files as Rule 3 auto-fix:
+
 - 4 type files (epi.ts, training.ts, medical-exam.ts, safety.ts)
 - 2 EPI hooks (useEpiProducts, useEpiDeliveries)
 - 3 placeholder pages (EpiProductsPage, EpiDeliveriesPage, SafetyDashboardPage)
@@ -123,6 +127,7 @@ Plan 30-05 ran in a different worktree. Created all prerequisite files as Rule 3
 ### Auto-fixed Issues
 
 **1. [Rule 3 - Blocking] Plan 30-05 prerequisites not in worktree**
+
 - **Found during:** Task 1 start
 - **Issue:** types/training.ts, types/medical-exam.ts, ComplianceStatusBadge, Sidebar safety group, App.tsx routes were all missing — plan 30-05 ran in a parallel worktree that hasn't been merged
 - **Fix:** Created all prerequisite foundation files (30 files total including EPI placeholder pages) to unblock plan 30-06 execution
@@ -132,23 +137,27 @@ Plan 30-05 ran in a different worktree. Created all prerequisite files as Rule 3
 ### Known Stubs
 
 **1. MOCK_EMPLOYEES in MedicalExamsPage and TrainingRecordModal**
+
 - **File:** `apps/frontend/src/pages/MedicalExamsPage.tsx` line 67-72
 - **File:** `apps/frontend/src/components/training-records/TrainingRecordModal.tsx` (employees prop receives empty array from page)
 - **Reason:** useEmployees hook does not yet exist in this worktree. The employee combobox and multi-select render correctly but show no options.
 - **Resolution:** Plan 30-07 (SafetyDashboardPage) or a shared useEmployees hook will wire the employee list.
 
 **2. TrainingTypesPage Requisitos tab position list**
+
 - **File:** `apps/frontend/src/pages/TrainingTypesPage.tsx` (Requisitos tab shows empty position list)
 - **Reason:** usePositions or similar hook not yet available in this worktree.
 - **Resolution:** Plan 30-07 or shared position hook wiring.
 
 **3. SafetyDashboardPage placeholder**
+
 - **File:** `apps/frontend/src/pages/SafetyDashboardPage.tsx`
 - **Reason:** Planned for plan 30-07.
 
 ## Self-Check: PASSED
 
 Files verified:
+
 - apps/frontend/src/hooks/useTrainingTypes.ts — FOUND
 - apps/frontend/src/hooks/useTrainingRecords.ts — FOUND
 - apps/frontend/src/hooks/useMedicalExams.ts — FOUND
@@ -162,6 +171,7 @@ Files verified:
 - apps/frontend/src/components/medical-exams/MedicalExamModal.tsx — FOUND
 
 Commits verified:
+
 - baecca43 — Task 1 (training types & records)
 - b43ffcdc — Task 2 (medical exams)
 
