@@ -186,13 +186,19 @@ Plans:
 - [x] 40-04-PLAN.md — Frontend AccountingDashboardPage, dashboard components, sidebar, routing
 
 ### Phase 41: SPED ECD e Relatório Integrado
-**Goal:** SpedEcdWriter custom (pipe-delimited), blocos 0/I/J/9, pré-validação PVA, geração async via BullMQ; relatório integrado PDF (DRE+BP+DFC+notas) para crédito rural
+**Goal:** SpedEcdWriter custom (pipe-delimited, UTF-8, CRLF), blocos 0/I/J/9, pré-validação PVA com erros bloqueantes e avisos informativos, geração síncrona; relatório integrado PDF profissional (DRE+BP+DFC+notas explicativas) para crédito rural
 **Requirements:** VINC-02, SPED-01, SPED-02
 **Depends on:** Phase 40 (all statements must be correct)
 **Success criteria:**
 1. Arquivo SPED ECD gerado com blocos 0/I/J/9 usando plano referencial L300R rural
 2. Pré-validação verifica contas mapeadas, períodos fechados, balancete equilibrado, I050 sem duplicatas
 3. Relatório integrado PDF profissional com DRE+BP+DFC+notas explicativas para crédito rural
+
+**Plans:** 3 plans
+Plans:
+- [ ] 41-01-PLAN.md — Backend SPED ECD: types, pure SpedEcdWriter class, validation service, routes, migration
+- [ ] 41-02-PLAN.md — Backend Integrated Report: pdfkit PDF generator (capa+DRE+BP+DFC+notas), notes CRUD, routes
+- [ ] 41-03-PLAN.md — Frontend: SpedEcdPage with tabs (SPED ECD + Relatório Integrado), sidebar, routing
 
 ## Progress
 
@@ -202,7 +208,7 @@ Plans:
 | 7-15 | v1.1 | 37/37 | Complete | 2026-03-19 |
 | 16-24 | v1.2 | 41/41 | Complete | 2026-03-23 |
 | 25-34 | v1.3 | 45/45 | Complete | 2026-03-27 |
-| 35-41 | v1.4 | 18/~22 | In Progress | — |
+| 35-41 | v1.4 | 22/25 | In Progress | — |
 
 ---
-*Last updated: 2026-03-28 after Phase 40 plan revision*
+*Last updated: 2026-03-28 after Phase 41 planning*
