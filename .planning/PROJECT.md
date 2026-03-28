@@ -94,10 +94,10 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 - [x] Checklist de fechamento mensal com etapas dependentes e integração entre módulos — Phase 38
 - [x] Conciliação bancária contábil (razão vs extrato) com ajuste automático — Phase 38
 - [x] Fechamento e bloqueio de período com reabertura controlada — Phase 38
-- [ ] DRE configurável com layout rural, comparativos e análise vertical/horizontal
-- [ ] Balanço Patrimonial com indicadores (liquidez, endividamento, PL/ha)
+- [x] DRE configurável com layout rural, comparativos e análise vertical/horizontal — Phase 39
+- [x] Balanço Patrimonial com indicadores (liquidez, endividamento, PL/ha) — Phase 39
 - [ ] DFC método direto e indireto com três seções (operacional, investimento, financiamento)
-- [ ] Painel de vinculação e validação cruzada DRE↔BP↔DFC
+- [x] Painel de vinculação e validação cruzada DRE↔BP↔DFC — Phase 39 (DFC placeholder pending Phase 40)
 - [ ] Relatório integrado de demonstrações financeiras (PDF profissional com notas explicativas)
 - [ ] Exportação SPED Contábil (ECD) no formato da RFB
 - [ ] Dashboard contábil executivo com indicadores e alertas
@@ -120,7 +120,7 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 ### Current State (v1.4 in progress — 2026-03-28)
 
 Shipped 4 milestones across Fase 3: Financeiro (v1.0), Compras (v1.1), Patrimônio (v1.2), RH/Folha (v1.3).
-38 phases, 165 plans shipped. Phase 38 complete — monthly closing checklist (6-step sequential validation), checkPeriodOpen middleware, admin-only reopen with audit.
+39 phases, 168 plans shipped. Phase 39 complete — DRE with rural layout (CPC 29), V/H analysis, CC filter; BP with 6 indicators and sparklines; cross-validation panel with 4 invariants (DFC placeholder for Phase 40).
 Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
 All administrative modules complete with bidirectional financial/accounting integration.
 27 HR requirements delivered: employee management, payroll engine, time tracking, vacations/termination, NR-31 safety, eSocial compliance, and HR dashboard.
