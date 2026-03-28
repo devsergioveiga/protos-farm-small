@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
 status: Ready to execute
-stopped_at: Completed 41-01-PLAN.md
-last_updated: "2026-03-28T16:58:13.040Z"
+stopped_at: Completed 41-02-PLAN.md
+last_updated: "2026-03-28T17:06:02.489Z"
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 25
-  completed_plans: 23
+  completed_plans: 24
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-26)
 ## Current Position
 
 Phase: 41 (sped-ecd-e-relat-rio-integrado) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Accumulated Context
 
@@ -80,6 +80,7 @@ Key decisions carried from v1.3:
 - [Phase 40]: Tabs use hidden attribute (not conditional render) per Phase 37 decision — preserves DFC panel state on method switch
 - [Phase 40-04]: AccountingDashboardPage reuses IndicatorCard from financial-statements for BP indicators
 - [Phase 41-sped-ecd-e-relat-rio-integrado]: SpedEcdWriter pure class (no Prisma) with Blocos 0/I/J/9; ChartOfAccount uses nature not accountNature; AccountBalance uses debitTotal/creditTotal; JournalEntryLine uses side+amount pattern
+- [Phase 41-sped-ecd-e-relat-rio-integrado]: generateIntegratedReport uses await new Promise<Buffer> then returns { buffer, filename } — avoids Promise generic type mismatch
 
 ### Pending Todos
 
@@ -94,7 +95,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T16:58:13.037Z
-Stopped at: Completed 41-01-PLAN.md
+Last session: 2026-03-28T17:06:02.486Z
+Stopped at: Completed 41-02-PLAN.md
 Resume file: None
 Next action: Define requirements and create roadmap for v1.4

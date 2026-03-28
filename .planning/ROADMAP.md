@@ -194,10 +194,10 @@ Plans:
 2. Pré-validação verifica contas mapeadas, períodos fechados, balancete equilibrado, I050 sem duplicatas
 3. Relatório integrado PDF profissional com DRE+BP+DFC+notas explicativas para crédito rural
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 Plans:
 - [x] 41-01-PLAN.md — Backend SPED ECD: types, pure SpedEcdWriter class, validation service, routes, migration
-- [ ] 41-02-PLAN.md — Backend Integrated Report: pdfkit PDF generator (capa+DRE+BP+DFC+notas), notes CRUD, routes
+- [x] 41-02-PLAN.md — Backend Integrated Report: pdfkit PDF generator (capa+DRE+BP+DFC+notas), notes CRUD, routes
 - [ ] 41-03-PLAN.md — Frontend: SpedEcdPage with tabs (SPED ECD + Relatório Integrado), sidebar, routing
 
 ## Progress

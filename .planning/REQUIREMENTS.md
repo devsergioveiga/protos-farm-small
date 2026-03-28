@@ -56,7 +56,7 @@ Requirements for Accounting and Financial Statements module. Each maps to roadma
 ### Vinculação, Relatórios Integrados e SPED
 
 - [x] **VINC-01**: Contador pode visualizar painel de vinculação e validação cruzada DRE↔BP↔DFC com 4 invariantes: (1) resultado líquido DRE = variação lucros acumulados BP, (2) variação caixa DFC = variação caixa/bancos BP, (3) ativo total BP = passivo total + PL BP, (4) total débitos = total créditos no balancete — com indicador visual verde/vermelho por invariante
-- [ ] **VINC-02**: Contador pode gerar relatório integrado de demonstrações financeiras em PDF profissional contendo DRE, BP, DFC e notas explicativas em documento único, com capa, índice, cabeçalho com dados da fazenda/empresa e formatação compatível com exigências de instituições financeiras para crédito rural (PRONAF, Funcafé)
+- [x] **VINC-02**: Contador pode gerar relatório integrado de demonstrações financeiras em PDF profissional contendo DRE, BP, DFC e notas explicativas em documento único, com capa, índice, cabeçalho com dados da fazenda/empresa e formatação compatível com exigências de instituições financeiras para crédito rural (PRONAF, Funcafé)
 - [x] **SPED-01**: Contador pode gerar arquivo SPED Contábil (ECD) no formato pipe-delimited da RFB com Blocos 0 (abertura), I (lançamentos e saldos — registros I050, I100, I150/I155, I200/I250, I350/I355), J (demonstrações — J005, J100, J150, J210), 9 (encerramento), usando plano referencial L300R rural
 - [x] **SPED-02**: Sistema executa pré-validação do arquivo ECD antes do download verificando: contas mapeadas ao referencial, períodos fechados, balancete equilibrado, I050 sem duplicatas, totalização I155 consistente — com relatório de erros/avisos e impedimento de download se houver erros críticos
 - [x] **DASH-01**: Gerente pode visualizar dashboard contábil executivo com: resultado acumulado no exercício (card), evolução mensal receita vs despesa (gráfico linha 12 meses), composição de custos por natureza (gráfico pizza), indicadores BP (liquidez, endividamento), alertas (períodos não fechados, lançamentos pendentes, contas sem mapeamento SPED)
@@ -123,7 +123,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DFC-02 | Phase 40 | Complete |
 | DFC-03 | Phase 40 | Complete |
 | VINC-01 | Phase 39 | Complete |
-| VINC-02 | Phase 41 | Pending |
+| VINC-02 | Phase 41 | Complete |
 | SPED-01 | Phase 41 | Complete |
 | SPED-02 | Phase 41 | Complete |
 | DASH-01 | Phase 40 | Complete |
