@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
-status: Ready to plan
-stopped_at: Phase 41 context gathered
-last_updated: "2026-03-28T15:11:51.421Z"
+status: Ready to execute
+stopped_at: Completed 41-01-PLAN.md
+last_updated: "2026-03-28T16:58:13.040Z"
 progress:
   total_phases: 7
   completed_phases: 6
-  total_plans: 22
-  completed_plans: 22
+  total_plans: 25
+  completed_plans: 23
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai receber — com visão consolidada por fazenda e conta bancária.
-**Current focus:** Phase 40 — dfc-dashboard-executivo
+**Current focus:** Phase 41 — sped-ecd-e-relat-rio-integrado
 
 ## Current Position
 
-Phase: 41
-Plan: Not started
+Phase: 41 (sped-ecd-e-relat-rio-integrado) — EXECUTING
+Plan: 2 of 3
 
 ## Accumulated Context
 
@@ -79,6 +79,7 @@ Key decisions carried from v1.3:
 - [Phase 40-dfc-dashboard-executivo]: Cross-validation invariant #2 uses try/catch around getDfc so invariant stays PENDING if DFC fails
 - [Phase 40]: Tabs use hidden attribute (not conditional render) per Phase 37 decision — preserves DFC panel state on method switch
 - [Phase 40-04]: AccountingDashboardPage reuses IndicatorCard from financial-statements for BP indicators
+- [Phase 41-sped-ecd-e-relat-rio-integrado]: SpedEcdWriter pure class (no Prisma) with Blocos 0/I/J/9; ChartOfAccount uses nature not accountNature; AccountBalance uses debitTotal/creditTotal; JournalEntryLine uses side+amount pattern
 
 ### Pending Todos
 
@@ -93,7 +94,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T15:11:51.412Z
-Stopped at: Phase 41 context gathered
-Resume file: .planning/phases/41-sped-ecd-e-relat-rio-integrado/41-CONTEXT.md
+Last session: 2026-03-28T16:58:13.037Z
+Stopped at: Completed 41-01-PLAN.md
+Resume file: None
 Next action: Define requirements and create roadmap for v1.4
