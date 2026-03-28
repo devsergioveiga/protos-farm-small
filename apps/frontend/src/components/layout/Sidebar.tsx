@@ -299,6 +299,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/accounting-entries', icon: BookOpen, label: 'Lançamentos Contábeis' },
       { to: '/ledger', icon: BookOpen, label: 'Razão Contábil' },
       { to: '/trial-balance', icon: BarChart3, label: 'Balancete' },
+      { to: '/monthly-closing', icon: ClipboardCheck, label: 'Fechamento Mensal' },
     ],
   },
   {

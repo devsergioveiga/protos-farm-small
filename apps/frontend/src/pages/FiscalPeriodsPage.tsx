@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { Calendar, Plus, AlertTriangle, Lock, RotateCcw, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, Plus, AlertTriangle, Lock, RotateCcw, CheckCircle, ClipboardCheck } from 'lucide-react';
 import {
   useFiscalYears,
   useCreateFiscalYear,
@@ -77,6 +78,7 @@ interface PeriodPanelProps {
 
 function PeriodPanel({ period, onClose, onActionDone }: PeriodPanelProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { mutate: closePeriod, isLoading: closing } = useClosePeriod();
   const { mutate: reopenPeriod, isLoading: reopening } = useReopenPeriod();
   const { mutate: blockPeriod, isLoading: blocking } = useBlockPeriod();
@@ -144,15 +146,26 @@ function PeriodPanel({ period, onClose, onActionDone }: PeriodPanelProps) {
 
       {/* Actions */}
       {period.status === 'OPEN' && (
-        <button
-          type="button"
-          className="fp-period-panel__action fp-period-panel__action--close"
-          onClick={() => { void handleClose(); }}
-          disabled={closing}
-        >
-          <CheckCircle size={16} aria-hidden="true" />
-          {closing ? 'Fechando...' : 'Fechar Período'}
-        </button>
+        <>
+          <button
+            type="button"
+            className="fp-period-panel__action fp-period-panel__action--closing"
+            onClick={() => navigate(`/monthly-closing?periodId=${period.id}`)}
+            aria-label={`Iniciar fechamento de ${monthName} ${period.year}`}
+          >
+            <ClipboardCheck size={16} aria-hidden="true" />
+            Fechamento
+          </button>
+          <button
+            type="button"
+            className="fp-period-panel__action fp-period-panel__action--close"
+            onClick={() => { void handleClose(); }}
+            disabled={closing}
+          >
+            <CheckCircle size={16} aria-hidden="true" />
+            {closing ? 'Fechando...' : 'Fechar Período'}
+          </button>
+        </>
       )}
 
       {period.status === 'CLOSED' && (
@@ -238,10 +251,6 @@ interface FiscalYearCardProps {
 
 function FiscalYearCard({ year, onRefetch }: FiscalYearCardProps) {
   const [selectedPeriod, setSelectedPeriod] = useState<AccountingPeriod | null>(null);
-  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
-
-  const { mutate: closePeriod } = useClosePeriod();
-  const { user } = useAuth();
 
   // Sort periods by year+month
   const periods = [...year.periods].sort((a, b) =>
@@ -249,12 +258,7 @@ function FiscalYearCard({ year, onRefetch }: FiscalYearCardProps) {
   );
 
   const handlePeriodSelect = (period: AccountingPeriod) => {
-    if (period.status === 'OPEN') {
-      setShowCloseConfirm(true);
-      setSelectedPeriod(period);
-    } else {
-      setSelectedPeriod((prev) => (prev?.id === period.id ? null : period));
-    }
+    setSelectedPeriod((prev) => (prev?.id === period.id ? null : period));
   };
 
   return (
@@ -284,31 +288,13 @@ function FiscalYearCard({ year, onRefetch }: FiscalYearCardProps) {
       </div>
 
       {/* Period detail panel */}
-      {selectedPeriod && selectedPeriod.status !== 'OPEN' && (
+      {selectedPeriod && (
         <PeriodPanel
           period={selectedPeriod}
           onClose={() => setSelectedPeriod(null)}
           onActionDone={onRefetch}
         />
       )}
-
-      {/* Close period confirm (for OPEN periods) */}
-      <ConfirmModal
-        isOpen={showCloseConfirm && !!selectedPeriod}
-        title="Fechar período"
-        message={`Confirma o fechamento de ${selectedPeriod ? MONTH_ABBR[selectedPeriod.month - 1] : ''} ${selectedPeriod?.year ?? ''}? Após fechado, novos lançamentos neste período exigirão reabertura.`}
-        confirmLabel="Fechar Período"
-        variant="warning"
-        onConfirm={() => {
-          if (!selectedPeriod) return;
-          void closePeriod(selectedPeriod.id, user?.email ?? 'sistema').then(() => {
-            setShowCloseConfirm(false);
-            setSelectedPeriod(null);
-            onRefetch();
-          });
-        }}
-        onCancel={() => { setShowCloseConfirm(false); setSelectedPeriod(null); }}
-      />
     </div>
   );
 }
