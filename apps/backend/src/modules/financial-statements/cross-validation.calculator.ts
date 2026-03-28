@@ -4,7 +4,7 @@
 //
 // Invariants:
 //   1. Resultado Liquido DRE = Variacao Lucros Acumulados BP
-//   2. Variacao Caixa DFC = Variacao Caixa/Bancos BP — PENDING (Phase 40)
+//   2. Variacao Caixa DFC = Variacao Caixa/Bancos BP — activated in Phase 40
 //   3. Ativo Total = Passivo Total + PL
 //   4. Total Debitos = Total Creditos (Balancete)
 
@@ -60,16 +60,29 @@ export function calculateCrossValidation(input: CrossValidationInput): CrossVali
     '/ledger?account=lucros-acumulados',
   );
 
-  // Invariant 2: Variacao Caixa DFC = Variacao Caixa/Bancos BP — PENDING until Phase 40
-  const invariant2: InvariantResult = {
-    id: 'dfc-caixa-bp',
-    title: 'Variacao Caixa DFC = Variacao Caixa/Bancos BP',
-    status: 'PENDING',
-    expected: null,
-    found: null,
-    difference: null,
-    investigateUrl: null,
-  };
+  // Invariant 2: Variacao Caixa DFC = Variacao Caixa/Bancos BP
+  let invariant2: InvariantResult;
+  if (input.dfcNetCashFlow != null && input.bpCashDelta != null) {
+    const dfcNetCashFlow = new Decimal(input.dfcNetCashFlow);
+    const bpCashDelta = new Decimal(input.bpCashDelta);
+    invariant2 = buildInvariant(
+      'dfc-caixa-bp',
+      'Variacao Caixa DFC = Variacao Caixa/Bancos BP',
+      bpCashDelta,
+      dfcNetCashFlow,
+      '/dfc',
+    );
+  } else {
+    invariant2 = {
+      id: 'dfc-caixa-bp',
+      title: 'Variacao Caixa DFC = Variacao Caixa/Bancos BP',
+      status: 'PENDING',
+      expected: null,
+      found: null,
+      difference: null,
+      investigateUrl: null,
+    };
+  }
 
   // Invariant 3: Ativo Total = Passivo Total + PL
   const passivoMaisPl = passivoTotal.plus(plTotal);

@@ -23,6 +23,7 @@ jest.mock('./financial-statements.service', () => ({
   getDre: jest.fn(),
   getBalanceSheet: jest.fn(),
   getCrossValidation: jest.fn(),
+  getDfc: jest.fn(),
 }));
 
 import request from 'supertest';

@@ -183,6 +183,8 @@ export interface CrossValidationInput {
   plTotal: string;
   totalDebitos: string;
   totalCreditos: string;
+  dfcNetCashFlow?: string;  // optional — null/undefined means PENDING
+  bpCashDelta?: string;
 }
 
 export interface CrossValidationOutput {

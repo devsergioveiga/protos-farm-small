@@ -105,6 +105,41 @@ financialStatementsRouter.get(
   },
 );
 
+// ─── GET /org/:orgId/financial-statements/dfc ────────────────────────────────
+
+financialStatementsRouter.get(
+  `${base}/dfc`,
+  authenticate,
+  checkPermission('financial:read'),
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const orgId = req.params.orgId as string;
+      const fiscalYearId = req.query.fiscalYearId as string | undefined;
+      const monthStr = req.query.month as string | undefined;
+
+      if (!fiscalYearId) {
+        res.status(400).json({ error: 'fiscalYearId e obrigatorio', code: 'MISSING_FISCAL_YEAR_ID' });
+        return;
+      }
+      if (!monthStr) {
+        res.status(400).json({ error: 'month e obrigatorio', code: 'MISSING_MONTH' });
+        return;
+      }
+
+      const month = parseInt(monthStr, 10);
+      if (isNaN(month) || month < 1 || month > 12) {
+        res.status(400).json({ error: 'month deve ser entre 1 e 12', code: 'INVALID_MONTH' });
+        return;
+      }
+
+      const result = await service.getDfc(orgId, { fiscalYearId, month });
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
 // ─── GET /org/:orgId/financial-statements/cross-validation ───────────────────
 
 financialStatementsRouter.get(
