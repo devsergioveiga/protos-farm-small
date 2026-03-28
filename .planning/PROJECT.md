@@ -91,9 +91,9 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 - [ ] Estorno e retificação auditável de lançamentos
 - [ ] Razão contábil por conta com saldo progressivo e livro diário
 - [ ] Balancete de verificação com comparativos
-- [ ] Checklist de fechamento mensal com etapas dependentes e integração entre módulos
-- [ ] Conciliação bancária contábil (razão vs extrato) com ajuste automático
-- [ ] Fechamento e bloqueio de período com reabertura controlada
+- [x] Checklist de fechamento mensal com etapas dependentes e integração entre módulos — Phase 38
+- [x] Conciliação bancária contábil (razão vs extrato) com ajuste automático — Phase 38
+- [x] Fechamento e bloqueio de período com reabertura controlada — Phase 38
 - [ ] DRE configurável com layout rural, comparativos e análise vertical/horizontal
 - [ ] Balanço Patrimonial com indicadores (liquidez, endividamento, PL/ha)
 - [ ] DFC método direto e indireto com três seções (operacional, investimento, financiamento)
@@ -120,7 +120,7 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 ### Current State (v1.4 in progress — 2026-03-28)
 
 Shipped 4 milestones across Fase 3: Financeiro (v1.0), Compras (v1.1), Patrimônio (v1.2), RH/Folha (v1.3).
-37 phases, 162 plans shipped. Phase 37 complete — auto-posting engine with GL hooks in all 6 source modules.
+38 phases, 165 plans shipped. Phase 38 complete — monthly closing checklist (6-step sequential validation), checkPeriodOpen middleware, admin-only reopen with audit.
 Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
 All administrative modules complete with bidirectional financial/accounting integration.
 27 HR requirements delivered: employee management, payroll engine, time tracking, vacations/termination, NR-31 safety, eSocial compliance, and HR dashboard.
@@ -191,4 +191,4 @@ All administrative modules complete with bidirectional financial/accounting inte
 
 ---
 
-_Last updated: 2026-03-28 after Phase 37 complete_
+_Last updated: 2026-03-28 after Phase 38 complete_
