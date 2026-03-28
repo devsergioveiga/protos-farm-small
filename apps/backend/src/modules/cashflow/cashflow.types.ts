@@ -18,7 +18,7 @@ export const PAYABLE_DFC_MAP: Record<string, DfcCategory> = {
 };
 
 // Map ReceivableCategory enum values (from schema.prisma) to DFC classification
-// ReceivableCategory: GRAIN_SALE | CATTLE_SALE | MILK_SALE | LEASE | SERVICES | OTHER
+// ReceivableCategory: GRAIN_SALE | CATTLE_SALE | MILK_SALE | LEASE | SERVICES | OTHER | ASSET_SALE
 export const RECEIVABLE_DFC_MAP: Record<string, DfcCategory> = {
   GRAIN_SALE: 'OPERACIONAL',
   CATTLE_SALE: 'OPERACIONAL',
@@ -26,6 +26,7 @@ export const RECEIVABLE_DFC_MAP: Record<string, DfcCategory> = {
   LEASE: 'OPERACIONAL',
   SERVICES: 'OPERACIONAL',
   OTHER: 'OPERACIONAL',
+  ASSET_SALE: 'INVESTIMENTO',
 };
 
 // ─── Projection types ────────────────────────────────────────────────
