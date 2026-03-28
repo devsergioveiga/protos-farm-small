@@ -165,6 +165,7 @@ import { monthlyClosingRouter } from './modules/monthly-closing/monthly-closing.
 import { financialStatementsRouter } from './modules/financial-statements/financial-statements.routes';
 import { accountingDashboardRouter } from './modules/financial-statements/accounting-dashboard.routes';
 import { spedEcdRouter } from './modules/financial-statements/sped-ecd.routes';
+import { integratedReportRouter } from './modules/financial-statements/integrated-report.routes';
 
 const app = express();
 
@@ -343,5 +344,6 @@ app.use('/api', monthlyClosingRouter);
 app.use('/api', financialStatementsRouter);
 app.use('/api', accountingDashboardRouter);
 app.use('/api', spedEcdRouter);
+app.use('/api', integratedReportRouter);
 
 export { app };
