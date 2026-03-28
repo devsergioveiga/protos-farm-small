@@ -298,6 +298,10 @@ model Organization {
   allowMultipleSessions Boolean @default(true)
   allowSocialLogin     Boolean @default(true)
   funruralBasis        FunruralBasis @default(PAYROLL)
+  accountantName          String?
+  accountantCrc           String?   @db.VarChar(20)
+  accountantCpf           String?   @db.VarChar(14)
+  integratedReportNotes   String?   @db.Text
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 
