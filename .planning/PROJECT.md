@@ -120,7 +120,7 @@ O proprietário/gerente sabe exatamente quanto tem, quanto deve e quanto vai rec
 ### Current State (v1.4 in progress — 2026-03-28)
 
 Shipped 4 milestones across Fase 3: Financeiro (v1.0), Compras (v1.1), Patrimônio (v1.2), RH/Folha (v1.3).
-39 phases, 168 plans shipped. Phase 39 complete — DRE with rural layout (CPC 29), V/H analysis, CC filter; BP with 6 indicators and sparklines; cross-validation panel with 4 invariants (DFC placeholder for Phase 40).
+40 phases, 172 plans shipped. Phase 40 complete — DFC direto (3 seções reaproveitando classificação v1.0) e indireto (CPC 03 R2 partindo do lucro líquido DRE), validação cruzada DFC↔BP ativada (invariante #2), dashboard contábil executivo com KPIs, gráfico receita/despesa 12m, composição custos e indicadores BP.
 Tech stack: Express 5, React 19, Prisma 7, PostgreSQL 16 + PostGIS 3.4.
 All administrative modules complete with bidirectional financial/accounting integration.
 27 HR requirements delivered: employee management, payroll engine, time tracking, vacations/termination, NR-31 safety, eSocial compliance, and HR dashboard.
@@ -191,4 +191,4 @@ All administrative modules complete with bidirectional financial/accounting inte
 
 ---
 
-_Last updated: 2026-03-28 after Phase 38 complete_
+_Last updated: 2026-03-28 after Phase 40 complete_
