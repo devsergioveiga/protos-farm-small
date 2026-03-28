@@ -433,6 +433,7 @@ model Organization {
   journalEntries           JournalEntry[]
   accountingRules          AccountingRule[]
   pendingJournalPostings   PendingJournalPosting[]
+  monthlyClosings          MonthlyClosing[]
 
   @@map("organizations")
 }
@@ -8918,6 +8919,7 @@ model AccountingPeriod {
   closedByUser    User?          @relation("PeriodClose", fields: [closedBy], references: [id])
   reopenedByUser  User?          @relation("PeriodReopen", fields: [reopenedBy], references: [id])
   journalEntries  JournalEntry[]
+  monthlyClosings MonthlyClosing[]
 
   @@unique([organizationId, fiscalYearId, month, year])
   @@index([organizationId, status])
@@ -8945,6 +8947,37 @@ model AccountBalance {
   @@unique([organizationId, accountId, fiscalYearId, month])
   @@index([organizationId, fiscalYearId])
   @@map("account_balances")
+}
+
+// ─── Monthly Closing (6-step checklist + period lock) ─────────────────
+
+enum MonthlyClosingStatus {
+  IN_PROGRESS
+  COMPLETED
+  REOPENED
+
+  @@map("monthly_closing_status")
+}
+
+model MonthlyClosing {
+  id             String               @id @default(uuid())
+  organizationId String
+  periodId       String
+  status         MonthlyClosingStatus @default(IN_PROGRESS)
+  stepResults    Json?
+  completedAt    DateTime?
+  completedBy    String?
+  reopenedAt     DateTime?
+  reopenedBy     String?
+  reopenReason   String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  organization Organization     @relation(fields: [organizationId], references: [id])
+  period       AccountingPeriod @relation(fields: [periodId], references: [id])
+
+  @@index([organizationId, periodId])
+  @@map("monthly_closings")
 }
 
 // ─── Journal Entries (double-entry bookkeeping engine) ────────────────

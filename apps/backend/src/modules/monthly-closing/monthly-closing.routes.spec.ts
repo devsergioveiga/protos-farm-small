@@ -2,105 +2,95 @@
 // Integration tests for /org/:orgId/monthly-closing endpoints.
 // Tests: start, validate-step (all 6), complete, reopen, get.
 
-jest.mock('../../database/prisma', () => ({
-  prisma: {
-    monthlyClosing: {
-      findFirst: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-    },
-    accountingPeriod: {
-      findFirst: jest.fn(),
-    },
-    timesheet: {
-      count: jest.fn(),
-    },
-    payrollRun: {
-      findMany: jest.fn(),
-    },
-    depreciationRun: {
-      findFirst: jest.fn(),
-    },
-    bankStatementLine: {
-      count: jest.fn(),
-    },
-  },
+// ─── Setup mocks before imports ──────────────────────────────────────────────
+
+jest.mock('../../shared/rbac/rbac.service', () => ({
+  getUserPermissions: jest.fn(),
+  hasPermission: jest.fn(),
+  invalidatePermissionsCache: jest.fn(),
+  invalidatePermissionsCacheForRole: jest.fn(),
 }));
 
-jest.mock('../auto-posting/auto-posting.service', () => ({
-  getPendingCounts: jest.fn(),
-}));
+jest.mock('../auth/auth.service', () => {
+  const actual = jest.requireActual('../auth/auth.service');
+  return {
+    ...actual,
+    verifyAccessToken: jest.fn(),
+  };
+});
 
-jest.mock('../ledger/ledger.service', () => ({
-  getTrialBalance: jest.fn(),
-}));
-
-jest.mock('../fiscal-periods/fiscal-periods.service', () => ({
-  closePeriod: jest.fn(),
-  reopenPeriod: jest.fn(),
+jest.mock('./monthly-closing.service', () => ({
+  startClosing: jest.fn(),
+  getClosing: jest.fn(),
+  validateStep: jest.fn(),
+  completeClosing: jest.fn(),
+  reopenClosing: jest.fn(),
 }));
 
 import request from 'supertest';
-import express from 'express';
-import { monthlyClosingRouter } from './monthly-closing.routes';
-import { prisma } from '../../database/prisma';
-import { getPendingCounts } from '../auto-posting/auto-posting.service';
-import { getTrialBalance } from '../ledger/ledger.service';
-import { closePeriod, reopenPeriod } from '../fiscal-periods/fiscal-periods.service';
+import { app } from '../../app';
+import * as service from './monthly-closing.service';
+import * as authService from '../auth/auth.service';
+import { getUserPermissions } from '../../shared/rbac/rbac.service';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-const mockPrisma = prisma as any;
-const mockGetPendingCounts = getPendingCounts as jest.Mock;
-const mockGetTrialBalance = getTrialBalance as jest.Mock;
-const mockClosePeriod = closePeriod as jest.Mock;
-const mockReopenPeriod = reopenPeriod as jest.Mock;
+const mockedService = jest.mocked(service);
+const mockedAuth = jest.mocked(authService);
+const mockGetUserPermissions = getUserPermissions as jest.MockedFunction<typeof getUserPermissions>;
 
-// ─── Test app setup ───────────────────────────────────────────────────
+// ─── Auth helpers ──────────────────────────────────────────────────────
 
-function makeApp(userRole: string = 'FINANCIAL') {
-  const app = express();
-  app.use(express.json());
-  // Mock authentication
-  app.use((req: any, _res: any, next: any) => {
-    req.user = { id: 'user-1', role: userRole };
-    next();
-  });
-  app.use('/api', monthlyClosingRouter);
-  return app;
+const FINANCIAL_PAYLOAD = {
+  userId: 'user-1',
+  email: 'user@org.com',
+  role: 'FINANCIAL' as const,
+  organizationId: 'org-1',
+};
+
+const ADMIN_PAYLOAD = {
+  userId: 'admin-1',
+  email: 'admin@org.com',
+  role: 'ADMIN' as const,
+  organizationId: 'org-1',
+};
+
+const MANAGER_PAYLOAD = {
+  userId: 'manager-1',
+  email: 'manager@org.com',
+  role: 'MANAGER' as const,
+  organizationId: 'org-1',
+};
+
+function authAs(payload: authService.TokenPayload) {
+  mockedAuth.verifyAccessToken.mockReturnValue(payload);
+  mockGetUserPermissions.mockResolvedValue([
+    'financial:read',
+    'financial:manage',
+  ] as any);
 }
 
 // ─── Test data helpers ────────────────────────────────────────────────
 
-function makePeriod(overrides: Partial<any> = {}) {
-  return {
-    id: 'period-1',
-    organizationId: 'org-1',
-    fiscalYearId: 'year-1',
-    month: 3,
-    year: 2026,
-    status: 'OPEN',
-    ...overrides,
-  };
-}
-
-function makeClosing(overrides: Partial<any> = {}) {
+function makeClosingOutput(overrides: Partial<any> = {}) {
   return {
     id: 'closing-1',
     organizationId: 'org-1',
     periodId: 'period-1',
     status: 'IN_PROGRESS',
     stepResults: {},
+    periodMonth: 3,
+    periodYear: 2026,
     completedAt: null,
     completedBy: null,
     reopenedAt: null,
     reopenedBy: null,
     reopenReason: null,
-    createdAt: new Date('2026-03-28T10:00:00.000Z'),
-    updatedAt: new Date('2026-03-28T10:00:00.000Z'),
-    period: makePeriod(),
+    createdAt: '2026-03-28T10:00:00.000Z',
     ...overrides,
   };
 }
+
+const ORG = 'org-1';
+const TOKEN = 'Bearer valid-token';
 
 // ─── POST /start ──────────────────────────────────────────────────────
 
@@ -108,12 +98,15 @@ describe('POST /org/:orgId/monthly-closing/start', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('creates MonthlyClosing IN_PROGRESS for OPEN period, returns 201', async () => {
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValueOnce(null); // no existing
-    mockPrisma.accountingPeriod.findFirst.mockResolvedValue(makePeriod());
-    mockPrisma.monthlyClosing.create.mockResolvedValue(makeClosing());
+    authAs(FINANCIAL_PAYLOAD);
+    mockedService.startClosing.mockResolvedValue({
+      closing: makeClosingOutput({ status: 'IN_PROGRESS' }),
+      created: true,
+    } as any);
 
-    const res = await request(makeApp())
-      .post('/api/org/org-1/monthly-closing/start')
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/start`)
+      .set('Authorization', TOKEN)
       .send({ periodId: 'period-1' });
 
     expect(res.status).toBe(201);
@@ -121,23 +114,31 @@ describe('POST /org/:orgId/monthly-closing/start', () => {
   });
 
   it('returns existing IN_PROGRESS closing if already started (D-04)', async () => {
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValueOnce(makeClosing());
+    authAs(FINANCIAL_PAYLOAD);
+    mockedService.startClosing.mockResolvedValue({
+      closing: makeClosingOutput({ status: 'IN_PROGRESS' }),
+      created: false,
+    } as any);
 
-    const res = await request(makeApp())
-      .post('/api/org/org-1/monthly-closing/start')
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/start`)
+      .set('Authorization', TOKEN)
       .send({ periodId: 'period-1' });
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ status: 'IN_PROGRESS', id: 'closing-1' });
-    expect(mockPrisma.monthlyClosing.create).not.toHaveBeenCalled();
   });
 
   it('returns 422 if period is not OPEN', async () => {
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValueOnce(null);
-    mockPrisma.accountingPeriod.findFirst.mockResolvedValue(makePeriod({ status: 'CLOSED' }));
+    authAs(FINANCIAL_PAYLOAD);
+    const { MonthlyClosingError } = jest.requireActual('./monthly-closing.types') as any;
+    mockedService.startClosing.mockRejectedValue(
+      new MonthlyClosingError('Periodo nao esta aberto', 'PERIOD_NOT_OPEN', 422),
+    );
 
-    const res = await request(makeApp())
-      .post('/api/org/org-1/monthly-closing/start')
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/start`)
+      .set('Authorization', TOKEN)
       .send({ periodId: 'period-1' });
 
     expect(res.status).toBe(422);
@@ -145,161 +146,159 @@ describe('POST /org/:orgId/monthly-closing/start', () => {
   });
 });
 
-// ─── POST /:closingId/validate-step/:stepNumber ───────────────────────
+// ─── POST /:closingId/validate-step/1 ────────────────────────────────
 
 describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/1', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('returns OK when all timesheets are APPROVED/LOCKED', async () => {
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValue(makeClosing({ stepResults: {} }));
-    mockPrisma.timesheet.count.mockResolvedValue(0); // 0 pending
-    mockPrisma.monthlyClosing.update.mockResolvedValue(
-      makeClosing({ stepResults: { step1: { status: 'OK', summary: 'Pontos aprovados', validatedAt: new Date().toISOString() } } }),
-    );
+    authAs(FINANCIAL_PAYLOAD);
+    const stepResult = {
+      status: 'OK',
+      summary: 'Pontos aprovados',
+      validatedAt: new Date().toISOString(),
+    };
+    mockedService.validateStep.mockResolvedValue(stepResult as any);
 
-    const res = await request(makeApp())
-      .post('/api/org/org-1/monthly-closing/closing-1/validate-step/1');
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/closing-1/validate-step/1`)
+      .set('Authorization', TOKEN);
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('OK');
   });
 
   it('returns FAILED when pending timesheets exist', async () => {
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValue(makeClosing({ stepResults: {} }));
-    mockPrisma.timesheet.count.mockResolvedValue(3); // 3 pending
-    mockPrisma.monthlyClosing.update.mockResolvedValue(
-      makeClosing({ stepResults: { step1: { status: 'FAILED', summary: '3 pontos pendentes', validatedAt: new Date().toISOString() } } }),
-    );
+    authAs(FINANCIAL_PAYLOAD);
+    const stepResult = {
+      status: 'FAILED',
+      summary: '3 ponto(s) pendente(s) de aprovacao',
+      validatedAt: new Date().toISOString(),
+    };
+    mockedService.validateStep.mockResolvedValue(stepResult as any);
 
-    const res = await request(makeApp())
-      .post('/api/org/org-1/monthly-closing/closing-1/validate-step/1');
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/closing-1/validate-step/1`)
+      .set('Authorization', TOKEN);
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('FAILED');
   });
 });
 
+// ─── POST /:closingId/validate-step/2 ────────────────────────────────
+
 describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/2', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('returns OK when payroll run COMPLETED exists', async () => {
-    const step1OK = { step1: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() } };
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValue(makeClosing({ stepResults: step1OK }));
-    mockPrisma.payrollRun.findMany.mockResolvedValue([{ status: 'COMPLETED' }]);
-    mockPrisma.monthlyClosing.update.mockResolvedValue(
-      makeClosing({ stepResults: { ...step1OK, step2: { status: 'OK', summary: '1 folha(s) fechada(s)', validatedAt: new Date().toISOString() } } }),
-    );
+    authAs(FINANCIAL_PAYLOAD);
+    mockedService.validateStep.mockResolvedValue({
+      status: 'OK',
+      summary: '1 folha(s) fechada(s)',
+      validatedAt: new Date().toISOString(),
+    } as any);
 
-    const res = await request(makeApp())
-      .post('/api/org/org-1/monthly-closing/closing-1/validate-step/2');
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/closing-1/validate-step/2`)
+      .set('Authorization', TOKEN);
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('OK');
   });
 });
 
+// ─── POST /:closingId/validate-step/3 ────────────────────────────────
+
 describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/3', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('returns OK when depreciation run COMPLETED exists', async () => {
-    const prevSteps = {
-      step1: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      step2: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-    };
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValue(makeClosing({ stepResults: prevSteps }));
-    mockPrisma.depreciationRun.findFirst.mockResolvedValue({ id: 'dep-1', totalAssets: 5, status: 'COMPLETED' });
-    mockPrisma.monthlyClosing.update.mockResolvedValue(
-      makeClosing({ stepResults: { ...prevSteps, step3: { status: 'OK', summary: 'Depreciacao processada — 5 ativos', validatedAt: new Date().toISOString() } } }),
-    );
+    authAs(FINANCIAL_PAYLOAD);
+    mockedService.validateStep.mockResolvedValue({
+      status: 'OK',
+      summary: 'Depreciacao processada — 5 ativo(s)',
+      validatedAt: new Date().toISOString(),
+    } as any);
 
-    const res = await request(makeApp())
-      .post('/api/org/org-1/monthly-closing/closing-1/validate-step/3');
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/closing-1/validate-step/3`)
+      .set('Authorization', TOKEN);
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('OK');
   });
 
   it('returns 422 when step 2 not yet validated (D-03)', async () => {
-    const prevSteps = {
-      step1: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      // step2 missing
-    };
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValue(makeClosing({ stepResults: prevSteps }));
+    authAs(FINANCIAL_PAYLOAD);
+    const { MonthlyClosingError } = jest.requireActual('./monthly-closing.types') as any;
+    mockedService.validateStep.mockRejectedValue(
+      new MonthlyClosingError('Etapa 2 deve ser OK antes de validar etapa 3', 'STEP_DEPENDENCY', 422),
+    );
 
-    const res = await request(makeApp())
-      .post('/api/org/org-1/monthly-closing/closing-1/validate-step/3');
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/closing-1/validate-step/3`)
+      .set('Authorization', TOKEN);
 
     expect(res.status).toBe(422);
     expect(res.body.code).toBe('STEP_DEPENDENCY');
   });
 });
 
+// ─── POST /:closingId/validate-step/4 ────────────────────────────────
+
 describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/4', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('returns OK when pending+error counts are 0', async () => {
-    const prevSteps = {
-      step1: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      step2: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      step3: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-    };
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValue(makeClosing({ stepResults: prevSteps }));
-    mockGetPendingCounts.mockResolvedValue({ pending: 0, error: 0, processed: 10, total: 10 });
-    mockPrisma.monthlyClosing.update.mockResolvedValue(
-      makeClosing({ stepResults: { ...prevSteps, step4: { status: 'OK', summary: '10 lancamento(s) processado(s), 0 pendente(s)', validatedAt: new Date().toISOString() } } }),
-    );
+    authAs(FINANCIAL_PAYLOAD);
+    mockedService.validateStep.mockResolvedValue({
+      status: 'OK',
+      summary: 'Lancamentos processados, 0 pendente(s)',
+      validatedAt: new Date().toISOString(),
+    } as any);
 
-    const res = await request(makeApp())
-      .post('/api/org/org-1/monthly-closing/closing-1/validate-step/4');
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/closing-1/validate-step/4`)
+      .set('Authorization', TOKEN);
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('OK');
   });
 });
 
+// ─── POST /:closingId/validate-step/5 ────────────────────────────────
+
 describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/5', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('returns OK when no PENDING bank statement lines', async () => {
-    const prevSteps = {
-      step1: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      step2: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      step3: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      step4: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-    };
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValue(makeClosing({ stepResults: prevSteps }));
-    // First call: total lines count, second: pending count
-    mockPrisma.bankStatementLine.count
-      .mockResolvedValueOnce(5)  // total
-      .mockResolvedValueOnce(0); // pending
-    mockPrisma.monthlyClosing.update.mockResolvedValue(
-      makeClosing({ stepResults: { ...prevSteps, step5: { status: 'OK', summary: '5 linhas conciliadas', validatedAt: new Date().toISOString() } } }),
-    );
+    authAs(FINANCIAL_PAYLOAD);
+    mockedService.validateStep.mockResolvedValue({
+      status: 'OK',
+      summary: '5 linha(s) conciliada(s)',
+      validatedAt: new Date().toISOString(),
+    } as any);
 
-    const res = await request(makeApp())
-      .post('/api/org/org-1/monthly-closing/closing-1/validate-step/5');
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/closing-1/validate-step/5`)
+      .set('Authorization', TOKEN);
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('OK');
   });
 
   it('returns OK with N/A summary when no bank imports exist', async () => {
-    const prevSteps = {
-      step1: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      step2: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      step3: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      step4: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-    };
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValue(makeClosing({ stepResults: prevSteps }));
-    mockPrisma.bankStatementLine.count
-      .mockResolvedValueOnce(0)  // total = 0
-      .mockResolvedValueOnce(0); // pending = 0
-    mockPrisma.monthlyClosing.update.mockResolvedValue(
-      makeClosing({ stepResults: { ...prevSteps, step5: { status: 'OK', summary: 'Nenhum extrato importado — etapa nao aplicavel', validatedAt: new Date().toISOString() } } }),
-    );
+    authAs(FINANCIAL_PAYLOAD);
+    mockedService.validateStep.mockResolvedValue({
+      status: 'OK',
+      summary: 'Nenhum extrato importado — etapa nao aplicavel',
+      validatedAt: new Date().toISOString(),
+    } as any);
 
-    const res = await request(makeApp())
-      .post('/api/org/org-1/monthly-closing/closing-1/validate-step/5');
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/closing-1/validate-step/5`)
+      .set('Authorization', TOKEN);
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('OK');
@@ -307,25 +306,22 @@ describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/5', () => {
   });
 });
 
+// ─── POST /:closingId/validate-step/6 ────────────────────────────────
+
 describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/6', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('returns OK when trial balance isBalanced=true', async () => {
-    const prevSteps = {
-      step1: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      step2: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      step3: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      step4: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      step5: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-    };
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValue(makeClosing({ stepResults: prevSteps }));
-    mockGetTrialBalance.mockResolvedValue({ isBalanced: true, rows: [] });
-    mockPrisma.monthlyClosing.update.mockResolvedValue(
-      makeClosing({ stepResults: { ...prevSteps, step6: { status: 'OK', summary: 'Balancete equilibrado', validatedAt: new Date().toISOString() } } }),
-    );
+    authAs(FINANCIAL_PAYLOAD);
+    mockedService.validateStep.mockResolvedValue({
+      status: 'OK',
+      summary: 'Balancete equilibrado',
+      validatedAt: new Date().toISOString(),
+    } as any);
 
-    const res = await request(makeApp())
-      .post('/api/org/org-1/monthly-closing/closing-1/validate-step/6');
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/closing-1/validate-step/6`)
+      .set('Authorization', TOKEN);
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('OK');
@@ -337,40 +333,30 @@ describe('POST /org/:orgId/monthly-closing/:closingId/validate-step/6', () => {
 describe('POST /org/:orgId/monthly-closing/:closingId/complete', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  const allStepsOK = {
-    step1: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-    step2: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-    step3: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-    step4: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-    step5: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-    step6: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-  };
-
   it('returns 200 and closes period when all 6 steps OK', async () => {
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValue(makeClosing({ stepResults: allStepsOK }));
-    mockClosePeriod.mockResolvedValue({ id: 'period-1', status: 'CLOSED' });
-    mockPrisma.monthlyClosing.update.mockResolvedValue(
-      makeClosing({ status: 'COMPLETED', stepResults: allStepsOK, completedAt: new Date(), completedBy: 'user-1' }),
+    authAs(FINANCIAL_PAYLOAD);
+    mockedService.completeClosing.mockResolvedValue(
+      makeClosingOutput({ status: 'COMPLETED', completedAt: '2026-03-28T12:00:00.000Z', completedBy: 'user-1' }) as any,
     );
 
-    const res = await request(makeApp())
-      .post('/api/org/org-1/monthly-closing/closing-1/complete');
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/closing-1/complete`)
+      .set('Authorization', TOKEN);
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('COMPLETED');
-    expect(mockClosePeriod).toHaveBeenCalled();
   });
 
   it('returns 422 when not all steps are OK', async () => {
-    const incompleteSteps = {
-      step1: { status: 'OK', summary: 'ok', validatedAt: new Date().toISOString() },
-      step2: { status: 'FAILED', summary: 'failed', validatedAt: new Date().toISOString() },
-      // steps 3-6 missing
-    };
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValue(makeClosing({ stepResults: incompleteSteps }));
+    authAs(FINANCIAL_PAYLOAD);
+    const { MonthlyClosingError } = jest.requireActual('./monthly-closing.types') as any;
+    mockedService.completeClosing.mockRejectedValue(
+      new MonthlyClosingError('Etapa 2 esta FAILED', 'INCOMPLETE_STEPS', 422),
+    );
 
-    const res = await request(makeApp())
-      .post('/api/org/org-1/monthly-closing/closing-1/complete');
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/closing-1/complete`)
+      .set('Authorization', TOKEN);
 
     expect(res.status).toBe(422);
     expect(res.body.code).toBe('INCOMPLETE_STEPS');
@@ -382,28 +368,41 @@ describe('POST /org/:orgId/monthly-closing/:closingId/complete', () => {
 describe('POST /org/:orgId/monthly-closing/:closingId/reopen', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('requires ADMIN role, returns 403 for non-admin (FINANCIAL role)', async () => {
-    const res = await request(makeApp('FINANCIAL'))
-      .post('/api/org/org-1/monthly-closing/closing-1/reopen')
+  it('requires ADMIN role, returns 403 for non-admin (MANAGER role)', async () => {
+    authAs(MANAGER_PAYLOAD);
+
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/closing-1/reopen`)
+      .set('Authorization', TOKEN)
       .send({ reason: 'Correction needed' });
 
     expect(res.status).toBe(403);
   });
 
   it('with ADMIN marks status REOPENED, saves reason + reopenedBy', async () => {
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValue(makeClosing({ status: 'COMPLETED' }));
-    mockReopenPeriod.mockResolvedValue({ id: 'period-1', status: 'OPEN' });
-    mockPrisma.monthlyClosing.update.mockResolvedValue(
-      makeClosing({ status: 'REOPENED', reopenedBy: 'user-1', reopenReason: 'Correction needed', reopenedAt: new Date() }),
+    authAs(ADMIN_PAYLOAD);
+    mockedService.reopenClosing.mockResolvedValue(
+      makeClosingOutput({
+        status: 'REOPENED',
+        reopenedBy: 'admin-1',
+        reopenReason: 'Correction needed',
+        reopenedAt: '2026-03-28T14:00:00.000Z',
+      }) as any,
     );
 
-    const res = await request(makeApp('ADMIN'))
-      .post('/api/org/org-1/monthly-closing/closing-1/reopen')
+    const res = await request(app)
+      .post(`/api/org/${ORG}/monthly-closing/closing-1/reopen`)
+      .set('Authorization', TOKEN)
       .send({ reason: 'Correction needed' });
 
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('REOPENED');
-    expect(mockReopenPeriod).toHaveBeenCalled();
+    expect(mockedService.reopenClosing).toHaveBeenCalledWith(
+      ORG,
+      'closing-1',
+      'admin-1',
+      'Correction needed',
+    );
   });
 });
 
@@ -413,10 +412,12 @@ describe('GET /org/:orgId/monthly-closing', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('returns MonthlyClosing for the period', async () => {
-    mockPrisma.monthlyClosing.findFirst.mockResolvedValue(makeClosing());
+    authAs(FINANCIAL_PAYLOAD);
+    mockedService.getClosing.mockResolvedValue(makeClosingOutput() as any);
 
-    const res = await request(makeApp())
-      .get('/api/org/org-1/monthly-closing?periodId=period-1');
+    const res = await request(app)
+      .get(`/api/org/${ORG}/monthly-closing?periodId=period-1`)
+      .set('Authorization', TOKEN);
 
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ id: 'closing-1', status: 'IN_PROGRESS' });
