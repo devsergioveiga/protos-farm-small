@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
-status: Ready to execute
-stopped_at: Completed 41-02-PLAN.md
-last_updated: "2026-03-28T17:06:02.489Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 41-03-PLAN.md (Tasks 1-2; Task 3 awaiting visual verification)
+last_updated: "2026-03-28T17:14:27.106Z"
 progress:
   total_phases: 7
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 25
-  completed_plans: 24
+  completed_plans: 25
 ---
 
 # Project State
@@ -81,6 +81,8 @@ Key decisions carried from v1.3:
 - [Phase 40-04]: AccountingDashboardPage reuses IndicatorCard from financial-statements for BP indicators
 - [Phase 41-sped-ecd-e-relat-rio-integrado]: SpedEcdWriter pure class (no Prisma) with Blocos 0/I/J/9; ChartOfAccount uses nature not accountNature; AccountBalance uses debitTotal/creditTotal; JournalEntryLine uses side+amount pattern
 - [Phase 41-sped-ecd-e-relat-rio-integrado]: generateIntegratedReport uses await new Promise<Buffer> then returns { buffer, filename } — avoids Promise generic type mismatch
+- [Phase 41-sped-ecd-e-relat-rio-integrado]: useSpedEcd exposes toast state to parent page consistent with DrePage pattern (local toast state)
+- [Phase 41-sped-ecd-e-relat-rio-integrado]: Notes textarea CSS co-located in SpedEcdPage.css — NotesTextarea only used in this page
 
 ### Pending Todos
 
@@ -95,7 +97,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T17:06:02.486Z
-Stopped at: Completed 41-02-PLAN.md
+Last session: 2026-03-28T17:14:27.103Z
+Stopped at: Completed 41-03-PLAN.md (Tasks 1-2; Task 3 awaiting visual verification)
 Resume file: None
 Next action: Define requirements and create roadmap for v1.4
