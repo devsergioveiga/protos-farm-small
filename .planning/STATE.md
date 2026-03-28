@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Contabilidade e Demonstrações Financeiras
-status: Ready to execute
-stopped_at: Completed 38-02-PLAN.md — checkPeriodOpen middleware wired into journal-entries and auto-posting routes
-last_updated: "2026-03-28T10:56:39.746Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 38-03-PLAN.md — MonthlyClosingPage frontend + stepper + FiscalPeriodsPage + Sidebar + App route
+last_updated: "2026-03-28T11:02:54.590Z"
 progress:
   total_phases: 7
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 15
 ---
 
 # Project State
@@ -67,6 +67,8 @@ Key decisions carried from v1.3:
 - [Phase 37]: seedAccountingRules called at end of seedRuralTemplate — idempotent, silently skips if COA not seeded
 - [Phase 38]: Routes spec uses service mock pattern (matches auto-posting.routes.spec.ts) for better isolation
 - [Phase 38-fechamento-mensal-e-concilia-o-cont-bil]: checkPeriodOpen() applied to actual HTTP write routes (pending/retry-batch, pending/:id/retry) not the internal process() function which is not an HTTP endpoint
+- [Phase 38]: FiscalYearCard refactored to show PeriodPanel for OPEN periods to accommodate Fechamento button alongside Fechar Periodo action
+- [Phase 38]: Reopen dialog implemented inline (not ConfirmModal) because reason textarea is needed but ConfirmModal props do not support it
 
 ### Pending Todos
 
@@ -81,7 +83,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T10:56:39.743Z
-Stopped at: Completed 38-02-PLAN.md — checkPeriodOpen middleware wired into journal-entries and auto-posting routes
+Last session: 2026-03-28T11:02:54.587Z
+Stopped at: Completed 38-03-PLAN.md — MonthlyClosingPage frontend + stepper + FiscalPeriodsPage + Sidebar + App route
 Resume file: None
 Next action: Define requirements and create roadmap for v1.4
