@@ -3,6 +3,7 @@
 // Accounting entry stubs are stored for Phase 32 GL integration.
 
 import Decimal from 'decimal.js';
+import type { Prisma } from '@prisma/client';
 import { withRlsContext, type RlsContext } from '../../database/rls';
 import { process as autoPost } from '../auto-posting/auto-posting.service';
 import { payrollTablesService } from '../payroll-tables/payroll-tables.service';
@@ -220,15 +221,15 @@ export async function calculateMonthlyProvisions(
     let costCenterId: string | null = null;
 
     if (timesheetId) {
-      // Look up time entries to find the primary cost center allocation
-      const timeEntry = await withRlsContext(ctx, async (tx) => {
-        return tx.timeEntry.findFirst({
-          where: { timesheetId, costCenterId: { not: null } },
+      // Look up cost center from employee's active contract
+      const contract = await withRlsContext(ctx, async (tx) => {
+        return tx.employeeContract.findFirst({
+          where: { employeeId: employee.id, isActive: true, costCenterId: { not: null } },
           select: { costCenterId: true },
-          orderBy: { date: 'asc' },
+          orderBy: { startDate: 'desc' },
         });
       });
-      costCenterId = timeEntry?.costCenterId ?? null;
+      costCenterId = contract?.costCenterId ?? null;
     }
 
     // Create VACATION and THIRTEENTH provision records per employee
@@ -249,7 +250,7 @@ export async function calculateMonthlyProvisions(
             calc.vacationTotal,
             input.referenceMonth,
             employee.id,
-          ),
+          ) as unknown as Prisma.InputJsonValue,
         },
         select: { id: true },
       });
@@ -270,7 +271,7 @@ export async function calculateMonthlyProvisions(
             calc.thirteenthTotal,
             input.referenceMonth,
             employee.id,
-          ),
+          ) as unknown as Prisma.InputJsonValue,
         },
         select: { id: true },
       });

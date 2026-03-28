@@ -3,6 +3,7 @@ import { app } from '../../app';
 import * as openingBalanceService from './opening-balance.service';
 import * as authService from '../auth/auth.service';
 import { OpeningBalanceError } from './opening-balance.types';
+import type { JournalEntryOutput } from '../journal-entries/journal-entries.types';
 
 jest.mock('../../shared/audit/audit.service', () => ({
   logAudit: jest.fn().mockResolvedValue(undefined),
@@ -91,6 +92,13 @@ const POSTED_ENTRY = {
   description: 'Saldo de Abertura — Exercicio 2026',
   entryType: 'OPENING_BALANCE',
   status: 'POSTED',
+  reversedById: null,
+  reversalOf: null,
+  reversalReason: null,
+  templateName: null,
+  costCenterId: null,
+  createdBy: 'user-1',
+  postedAt: '2026-01-01T00:00:00.000Z',
   lines: [],
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
@@ -177,7 +185,9 @@ describe('POST /api/org/:orgId/opening-balance', () => {
 
   it('creates and posts opening balance entry, returns 201', async () => {
     authAs(ADMIN_PAYLOAD);
-    mockedService.postOpeningBalance.mockResolvedValue(POSTED_ENTRY);
+    mockedService.postOpeningBalance.mockResolvedValue(
+      POSTED_ENTRY as unknown as JournalEntryOutput,
+    );
 
     const res = await request(app)
       .post('/api/org/org-1/opening-balance')

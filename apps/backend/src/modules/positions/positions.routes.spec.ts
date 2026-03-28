@@ -119,7 +119,7 @@ describe('POST /org/:orgId/positions', () => {
 
 describe('PUT /org/:orgId/positions/:id/salary-bands', () => {
   it('sets JUNIOR/PLENO/SENIOR salary bands', async () => {
-    const bands = [
+    const bands: import('./positions.types').SalaryBandOutput[] = [
       { id: 'band-1', positionId: 'position-1', level: 'JUNIOR', minSalary: 2000, maxSalary: 3000 },
       { id: 'band-2', positionId: 'position-1', level: 'PLENO', minSalary: 3000, maxSalary: 4500 },
       { id: 'band-3', positionId: 'position-1', level: 'SENIOR', minSalary: 4500, maxSalary: 7000 },

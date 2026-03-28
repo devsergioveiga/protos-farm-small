@@ -407,7 +407,7 @@ export async function generateEpiFichaPdf(ctx: RlsContext, employeeId: string): 
     }
 
     if (deliveries.length === 0) {
-      doc.fontSize(9).text('Nenhuma entrega registrada.', { italic: true });
+      doc.fontSize(9).text('Nenhuma entrega registrada.');
     }
 
     doc.moveDown(1);

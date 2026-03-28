@@ -23,7 +23,7 @@ function buildRlsContext(req: Request): RlsContext {
   if (!organizationId) {
     throw new TimesheetError('Acesso negado: usuário sem organização vinculada', 403);
   }
-  return { organizationId, userId: req.user?.id };
+  return { organizationId, userId: req.user?.userId };
 }
 
 function handleError(err: unknown, res: Response): void {
@@ -127,7 +127,7 @@ timesheetsRouter.patch(
       const orgId = req.params.orgId as string;
       const id = req.params.id as string;
       const ctx = buildRlsContext(req);
-      const userId = req.user?.id ?? 'unknown';
+      const userId = req.user?.userId ?? 'unknown';
       const sheet = await approveTimesheet(ctx, orgId, id, userId, req.body);
       res.json(sheet);
     } catch (err) {

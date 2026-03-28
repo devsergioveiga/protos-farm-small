@@ -89,8 +89,8 @@ const mockRubrica = {
   isSystem: true,
   isActive: true,
   eSocialCode: null,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 const mockCustomRubrica = {

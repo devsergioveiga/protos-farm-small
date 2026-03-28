@@ -197,7 +197,7 @@ export async function listEmployees(
 
     const [data, total] = await Promise.all([
       tx.employee.findMany({
-        where: where as Parameters<typeof tx.employee.findMany>[0]['where'],
+        where: where as NonNullable<Parameters<typeof tx.employee.findMany>[0]>['where'],
         skip,
         take: limit,
         orderBy: { name: 'asc' },
@@ -220,7 +220,7 @@ export async function listEmployees(
         },
       }),
       tx.employee.count({
-        where: where as Parameters<typeof tx.employee.count>[0]['where'],
+        where: where as NonNullable<Parameters<typeof tx.employee.count>[0]>['where'],
       }),
     ]);
 

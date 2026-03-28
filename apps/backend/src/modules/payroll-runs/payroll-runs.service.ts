@@ -21,7 +21,7 @@ import {
   type CpPreviewItem,
   type TaxGuidePreviewItem,
 } from './payroll-runs.types';
-import type { PayrollRunType } from '@prisma/client';
+import type { PayrollRunType, CostCenterAllocMode } from '@prisma/client';
 import { PayableCategory } from '@prisma/client';
 import { generateBatch as esocialGenerateBatch } from '../esocial-events/esocial-events.service';
 import { nthBusinessDay } from './payroll-date-utils';
@@ -76,7 +76,12 @@ async function buildCostCenterItems(
   referenceMonth: Date,
   farmId: string,
 ): Promise<
-  Array<{ costCenterId: string; farmId: string; allocMode: string; percentage: Decimal }>
+  Array<{
+    costCenterId: string;
+    farmId: string;
+    allocMode: CostCenterAllocMode;
+    percentage: Decimal;
+  }>
 > {
   // Compute month range for time entry lookup
   const year = referenceMonth.getUTCFullYear();
@@ -116,7 +121,7 @@ async function buildCostCenterItems(
     const result: Array<{
       costCenterId: string;
       farmId: string;
-      allocMode: string;
+      allocMode: CostCenterAllocMode;
       percentage: Decimal;
     }> = [];
 
@@ -134,7 +139,12 @@ async function buildCostCenterItems(
           .toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
         sumSoFar = sumSoFar.plus(pct);
       }
-      result.push({ costCenterId: ccId, farmId, allocMode: 'PERCENTAGE', percentage: pct });
+      result.push({
+        costCenterId: ccId,
+        farmId,
+        allocMode: 'PERCENTAGE' as CostCenterAllocMode,
+        percentage: pct,
+      });
     }
     return result;
   }
@@ -151,7 +161,7 @@ async function buildCostCenterItems(
       {
         costCenterId: contract.costCenterId,
         farmId,
-        allocMode: 'PERCENTAGE',
+        allocMode: 'PERCENTAGE' as CostCenterAllocMode,
         percentage: new Decimal(100),
       },
     ];

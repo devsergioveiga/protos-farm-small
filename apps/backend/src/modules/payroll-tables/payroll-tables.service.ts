@@ -61,7 +61,7 @@ export const payrollTablesService = {
     // Merge: org-specific first, then global
     const allTables = [...orgTables, ...globalTables];
 
-    return allTables as LegalTableOutput[];
+    return allTables as unknown as LegalTableOutput[];
   },
 
   async getEffective(
@@ -86,7 +86,7 @@ export const payrollTablesService = {
     });
 
     if (orgTable) {
-      return orgTable as LegalTableOutput;
+      return orgTable as unknown as LegalTableOutput;
     }
 
     // Fallback: look for global table (organizationId = null)
@@ -103,7 +103,7 @@ export const payrollTablesService = {
       },
     });
 
-    return (globalTable as LegalTableOutput | null) ?? null;
+    return (globalTable as unknown as LegalTableOutput | null) ?? null;
   },
 
   async create(
@@ -172,7 +172,7 @@ export const payrollTablesService = {
         },
       });
 
-      return table as LegalTableOutput;
+      return table as unknown as LegalTableOutput;
     });
   },
 
@@ -189,7 +189,7 @@ export const payrollTablesService = {
     });
 
     if (orgTable) {
-      return orgTable as LegalTableOutput;
+      return orgTable as unknown as LegalTableOutput;
     }
 
     // Try global table (null org)
@@ -205,6 +205,6 @@ export const payrollTablesService = {
       throw new PayrollTableError('Tabela não encontrada', 404);
     }
 
-    return globalTable as LegalTableOutput;
+    return globalTable as unknown as LegalTableOutput;
   },
 };

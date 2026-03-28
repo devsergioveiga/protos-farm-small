@@ -26,6 +26,18 @@ export async function getOpeningBalancePreview(
   const lines: OpeningBalanceLinePreview[] = [];
 
   // Run all aggregate queries in parallel for performance
+
+  // Define explicit types for each query result to avoid circular reference
+  type BankBalanceItem = {
+    currentBalance: Decimal;
+    bankAccount: { name: string | null; bankName?: string };
+  };
+  type GroupByItem<K extends string> = { [key in K]: string } & {
+    _sum: { totalAmount: Decimal | null };
+  };
+  type AssetItem = { acquisitionValue: Decimal | null; id: string };
+  type ProvisionGroupItem = { provisionType: string; _sum: { totalAmount: Decimal | null } };
+
   const [bankBalances, payableGroups, receivableGroups, assets, provisionGroups] =
     (await Promise.all([
       // 1. Bank account balances
@@ -73,15 +85,13 @@ export async function getOpeningBalancePreview(
       // If any of the parallel queries fail (e.g., model not yet migrated in some envs),
       // return empty arrays gracefully — the wizard will show what's available
       return [[], [], [], [], []] as [unknown[], unknown[], unknown[], unknown[], unknown[]];
-    })) as Awaited<
-      [
-        typeof bankBalances,
-        typeof payableGroups,
-        typeof receivableGroups,
-        typeof assets,
-        typeof provisionGroups,
-      ]
-    >;
+    })) as [
+      BankBalanceItem[],
+      GroupByItem<'category'>[],
+      GroupByItem<'category'>[],
+      AssetItem[],
+      ProvisionGroupItem[],
+    ];
 
   // 1. Bank balances → DEBIT under 1.1.01
   const bankAccount = await findCoaAccount(organizationId, '1.1', ['Caixa', 'Banco']);
@@ -96,7 +106,7 @@ export async function getOpeningBalancePreview(
           side: 'DEBIT',
           amount: amount.toFixed(2),
           source: 'BANK_BALANCE',
-          description: `Saldo bancario — ${bal.bankAccount.name ?? bal.bankAccount.bankName ?? 'Banco'}`,
+          description: `Saldo bancario — ${bal.bankAccount.name ?? 'Banco'}`,
         });
       }
     }
@@ -359,22 +369,22 @@ async function findCoaAccount(organizationId: string, codePrefix: string, nameKe
  */
 async function getAssetDepreciationTotals(assetIds: string[]): Promise<Record<string, Decimal>> {
   try {
-    const runs = await prisma.depreciationRun.findMany({
-      where: { assetId: { in: assetIds } },
-      select: { assetId: true, accumulatedDepreciation: true },
-      orderBy: { runDate: 'desc' },
+    // Sum depreciation amounts per asset from DepreciationEntry records
+    const entries = await prisma.depreciationEntry.groupBy({
+      by: ['assetId'],
+      where: { assetId: { in: assetIds }, reversedAt: null },
+      _sum: { depreciationAmount: true },
     });
 
-    // Take the latest run per asset
     const result: Record<string, Decimal> = {};
-    for (const run of runs) {
-      if (!(run.assetId in result)) {
-        result[run.assetId] = new Decimal(run.accumulatedDepreciation.toString());
+    for (const entry of entries) {
+      if (entry._sum.depreciationAmount) {
+        result[entry.assetId] = new Decimal(entry._sum.depreciationAmount.toString());
       }
     }
     return result;
   } catch {
-    // DepreciationRun table may not exist in older environments
+    // DepreciationEntry table may not exist in older environments
     return {};
   }
 }

@@ -2,6 +2,7 @@ import request from 'supertest';
 import { app } from '../../app';
 import * as payrollTablesService from './payroll-tables.service';
 import * as authService from '../auth/auth.service';
+import type { LegalTableOutput } from './payroll-tables.types';
 
 jest.mock('../../shared/rbac/rbac.service', () => ({
   getUserPermissions: jest.fn(),
@@ -82,13 +83,13 @@ const mockTable = {
   organizationId: null,
   tableType: 'INSS' as const,
   stateCode: null,
-  effectiveFrom: new Date('2026-01-01').toISOString(),
+  effectiveFrom: new Date('2026-01-01'),
   notes: null,
   createdBy: 'seed',
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
   brackets: [mockBracket],
   scalarValues: [mockScalar],
-};
+} as unknown as LegalTableOutput;
 
 // ─── GET /org/:orgId/payroll-tables ──────────────────────────────────
 

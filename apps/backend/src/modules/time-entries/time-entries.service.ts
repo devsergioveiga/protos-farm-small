@@ -112,6 +112,7 @@ function formatEntry(row: {
 
 const ENTRY_SELECT = {
   id: true,
+  organizationId: true,
   employeeId: true,
   employee: { select: { name: true } },
   farmId: true,
@@ -448,17 +449,16 @@ export async function addActivity(
       orderBy: { startDate: 'desc' },
       select: {
         salary: true,
+        weeklyHours: true,
         workScheduleId: true,
-        workSchedule: { select: { scheduledHoursPerDay: true, workDaysPerWeek: true } },
       },
     });
 
     let hourlyRate = new Decimal(0);
     if (contract?.salary) {
-      // Calculate monthly hours: scheduledHoursPerDay * workDaysPerWeek * (52/12)
-      const hoursPerDay = contract.workSchedule?.scheduledHoursPerDay ?? 8;
-      const daysPerWeek = contract.workSchedule?.workDaysPerWeek ?? 6;
-      const monthlyHours = new Decimal(hoursPerDay).mul(daysPerWeek).mul(new Decimal(52).div(12));
+      // Calculate monthly hours from weekly hours: weeklyHours * (52/12)
+      const weeklyHours = contract.weeklyHours ?? 44;
+      const monthlyHours = new Decimal(weeklyHours).mul(new Decimal(52).div(12));
       hourlyRate = new Decimal(contract.salary.toString()).div(monthlyHours);
     }
 
@@ -537,6 +537,7 @@ export async function addTeamActivity(
     const team = await tx.fieldTeam.findUnique({
       where: { id: teamId },
       include: {
+        farm: { select: { organizationId: true } },
         members: {
           where: { leftAt: null },
           include: { employee: { select: { id: true, name: true, organizationId: true } } },
@@ -544,7 +545,7 @@ export async function addTeamActivity(
       },
     });
 
-    if (!team || team.organizationId !== orgId) {
+    if (!team || team.farm.organizationId !== orgId) {
       throw new TimeEntryError('Equipe não encontrada', 404);
     }
 
@@ -558,7 +559,7 @@ export async function addTeamActivity(
     let skipped = 0;
 
     for (const member of team.members) {
-      if (!member.employeeId || member.employee.organizationId !== orgId) {
+      if (!member.employeeId || !member.employee || member.employee.organizationId !== orgId) {
         continue;
       }
 

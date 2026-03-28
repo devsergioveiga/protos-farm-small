@@ -212,7 +212,7 @@ async function extractReceivableSettlement(
     where: { id: sourceId },
     select: {
       amountReceived: true,
-      originalAmount: true,
+      totalAmount: true,
       description: true,
       documentNumber: true,
       receivedAt: true,
@@ -222,7 +222,7 @@ async function extractReceivableSettlement(
   if (!receivable)
     throw new AutoPostingError(`Receivable ${sourceId} nao encontrado`, 'NOT_FOUND', 404);
 
-  const amount = (receivable.amountReceived ?? receivable.originalAmount).toString();
+  const amount = (receivable.amountReceived ?? receivable.totalAmount).toString();
   const entryDate = receivable.receivedAt ?? receivable.dueDate;
 
   return {
@@ -405,7 +405,7 @@ async function _executePosting(
     let costCenterId: string | null = null;
     if (data.farmId) {
       const cc = await prisma.costCenter.findFirst({
-        where: { organizationId, farmId: data.farmId },
+        where: { farm: { organizationId }, farmId: data.farmId },
         select: { id: true },
       });
       if (!cc && rule.requireCostCenter) {
@@ -857,7 +857,7 @@ export async function previewRule(
   let costCenterName: string | null = null;
   if (data.farmId) {
     const cc = await prisma.costCenter.findFirst({
-      where: { organizationId, farmId: data.farmId },
+      where: { farm: { organizationId }, farmId: data.farmId },
       select: { name: true },
     });
     costCenterName = cc?.name ?? null;

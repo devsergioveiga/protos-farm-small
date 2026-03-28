@@ -39,7 +39,7 @@ function buildRlsContext(req: Request): RlsContext {
   if (!organizationId) {
     throw new EmployeeError('Acesso negado: usuário sem organização vinculada', 403);
   }
-  return { organizationId, userId: req.user?.id };
+  return { organizationId, userId: req.user?.userId };
 }
 
 function handleError(err: unknown, res: Response): void {

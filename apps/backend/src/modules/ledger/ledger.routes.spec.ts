@@ -36,7 +36,7 @@ import * as service from './ledger.service';
 import * as authService from '../auth/auth.service';
 import { getUserPermissions } from '../../shared/rbac/rbac.service';
 import { DEFAULT_ROLE_PERMISSIONS } from '../../shared/rbac/permissions';
-import { LedgerError } from './ledger.types';
+import { LedgerError, type LedgerOutput } from './ledger.types';
 
 const mockedService = jest.mocked(service);
 const mockedAuth = jest.mocked(authService);
@@ -70,7 +70,7 @@ const BASE = `/api/org/${ORG_ID}/ledger`;
 
 // ─── Mock data helpers ────────────────────────────────────────────────
 
-function makeLedgerOutput() {
+function makeLedgerOutput(): LedgerOutput {
   return {
     accountId: 'acct-1',
     accountCode: '1.1.01',

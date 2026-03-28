@@ -25,7 +25,11 @@ const holidaysCache = new Map<string, Holidays>();
 function getHolidays(state?: string, city?: string): Holidays {
   const key = `BR-${state ?? ''}-${city ?? ''}`;
   if (!holidaysCache.has(key)) {
-    const hd = new Holidays('BR', state, city);
+    const hd = state
+      ? city
+        ? new Holidays('BR', state, city)
+        : new Holidays('BR', state)
+      : new Holidays('BR');
     holidaysCache.set(key, hd);
   }
   return holidaysCache.get(key)!;

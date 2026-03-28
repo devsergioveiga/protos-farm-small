@@ -276,8 +276,11 @@ describe('GET /api/org/hr-dashboard', () => {
       .set('Authorization', 'Bearer token');
 
     expect(res.status).toBe(200);
-    const expirations: Array<{ days: number; count: number }> =
-      res.body.upcomingContractExpirations;
+    const expirations: Array<{
+      days: number;
+      count: number;
+      employees: Array<{ id: string; name: string; contractType: string }>;
+    }> = res.body.upcomingContractExpirations;
     expect(expirations.map((e) => e.days)).toEqual([30, 60, 90]);
     expect(expirations[0].count).toBe(1);
     expect(expirations[0].employees[0]).toMatchObject({

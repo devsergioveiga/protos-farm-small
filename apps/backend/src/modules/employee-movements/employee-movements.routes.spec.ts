@@ -2,6 +2,7 @@ import request from 'supertest';
 import { app } from '../../app';
 import * as movementsService from './employee-movements.service';
 import * as authService from '../auth/auth.service';
+import type { TimelineEntry } from './employee-movements.types';
 
 jest.mock('../../shared/audit/audit.service', () => ({
   logAudit: jest.fn().mockResolvedValue(undefined),
@@ -138,7 +139,7 @@ describe('GET /org/:orgId/employee-movements/timeline/:employeeId', () => {
         reason: 'Retorno',
       },
     ];
-    mockedService.getTimeline.mockResolvedValue(timeline);
+    mockedService.getTimeline.mockResolvedValue(timeline as unknown as TimelineEntry[]);
 
     const res = await request(app)
       .get('/api/org/org-1/employee-movements/timeline/employee-1')

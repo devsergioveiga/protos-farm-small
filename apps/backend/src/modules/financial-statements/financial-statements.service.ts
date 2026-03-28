@@ -32,7 +32,7 @@ export async function getDre(
   // Verify fiscal year exists
   const fiscalYear = await prisma.fiscalYear.findFirst({
     where: { id: filters.fiscalYearId, organizationId },
-    select: { id: true, startDate: true, endDate: true, year: true },
+    select: { id: true, startDate: true, endDate: true },
   });
 
   if (!fiscalYear) {
@@ -44,8 +44,10 @@ export async function getDre(
   }
 
   // Find prior fiscal year (previous year, same org)
+  const priorYearStart = new Date(fiscalYear.startDate);
+  priorYearStart.setFullYear(priorYearStart.getFullYear() - 1);
   const priorFiscalYear = await prisma.fiscalYear.findFirst({
-    where: { organizationId, year: fiscalYear.year - 1 },
+    where: { organizationId, startDate: priorYearStart },
     select: { id: true },
   });
 
@@ -137,7 +139,15 @@ export async function getDre(
     });
 
     // Compute margin ranking by cost center
-    const marginRanking = await computeMarginRanking(organizationId, fiscalYear, filters.month);
+    const fiscalYearForRanking = {
+      id: fiscalYear.id,
+      year: new Date(fiscalYear.startDate).getFullYear(),
+    };
+    const marginRanking = await computeMarginRanking(
+      organizationId,
+      fiscalYearForRanking,
+      filters.month,
+    );
 
     const result = calculateDre({ accounts: accountDataList });
     return { ...result, marginRanking };
@@ -145,7 +155,7 @@ export async function getDre(
     // ─── CC-filtered path: aggregate from JournalEntryLine ────────────────
 
     // Date ranges
-    const year = fiscalYear.year;
+    const year = new Date(fiscalYear.startDate).getFullYear();
     const monthStart = new Date(year, filters.month - 1, 1);
     const monthEnd = new Date(year, filters.month, 0, 23, 59, 59, 999);
     const ytdStart = new Date(year, 0, 1);
@@ -319,7 +329,7 @@ export async function getBalanceSheet(
 ): Promise<BpOutput> {
   const fiscalYear = await prisma.fiscalYear.findFirst({
     where: { id: filters.fiscalYearId, organizationId },
-    select: { id: true, year: true },
+    select: { id: true, startDate: true },
   });
 
   if (!fiscalYear) {
@@ -357,8 +367,10 @@ export async function getBalanceSheet(
   let priorBalances: Array<{ accountId: string; closingBalance: Decimal }> = [];
   if (filters.month === 1) {
     // Prior year December
+    const priorYearStart = new Date(fiscalYear.startDate);
+    priorYearStart.setFullYear(priorYearStart.getFullYear() - 1);
     const priorFiscalYear = await prisma.fiscalYear.findFirst({
-      where: { organizationId, year: fiscalYear.year - 1 },
+      where: { organizationId, startDate: priorYearStart },
       select: { id: true },
     });
     if (priorFiscalYear) {
@@ -434,7 +446,7 @@ async function computeSparklineMonths(
 ): Promise<BpSparklineMonth[]> {
   const fiscalYear = await prisma.fiscalYear.findFirst({
     where: { id: filters.fiscalYearId, organizationId },
-    select: { id: true, year: true },
+    select: { id: true, startDate: true },
   });
   if (!fiscalYear) return [];
 
@@ -446,8 +458,10 @@ async function computeSparklineMonths(
       months.push({ fiscalYearId: filters.fiscalYearId, month: m, displayMonth: m });
     } else {
       // Previous fiscal year
+      const priorYearStart = new Date(fiscalYear.startDate);
+      priorYearStart.setFullYear(priorYearStart.getFullYear() - 1);
       const priorFY = await prisma.fiscalYear.findFirst({
-        where: { organizationId, year: fiscalYear.year - 1 },
+        where: { organizationId, startDate: priorYearStart },
         select: { id: true },
       });
       if (priorFY) {
@@ -994,13 +1008,15 @@ export async function getCrossValidation(
 
     const fiscalYear = await prisma.fiscalYear.findFirst({
       where: { id: filters.fiscalYearId, organizationId },
-      select: { id: true, year: true },
+      select: { id: true, startDate: true },
     });
 
     if (fiscalYear) {
       if (filters.month === 1) {
+        const priorYearStart = new Date(fiscalYear.startDate);
+        priorYearStart.setFullYear(priorYearStart.getFullYear() - 1);
         const priorFY = await prisma.fiscalYear.findFirst({
-          where: { organizationId, year: fiscalYear.year - 1 },
+          where: { organizationId, startDate: priorYearStart },
           select: { id: true },
         });
         if (priorFY) {

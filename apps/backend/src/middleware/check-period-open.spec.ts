@@ -21,7 +21,7 @@ function makeReq(overrides: Partial<any> = {}): Request {
     params: { orgId: 'org-1' },
     body: {},
     ...overrides,
-  } as Request;
+  } as unknown as Request;
 }
 
 function makeRes(): { res: Response; status: jest.Mock; json: jest.Mock } {

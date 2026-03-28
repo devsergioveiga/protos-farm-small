@@ -10,6 +10,7 @@
 //  5. Conciliacao Bancaria — no PENDING bank statement lines
 //  6. Balancete Equilibrado — trial balance isBalanced = true
 
+import { Prisma } from '@prisma/client';
 import { prisma } from '../../database/prisma';
 import {
   MonthlyClosingError,
@@ -327,7 +328,7 @@ export async function validateStep(
 
   await prisma.monthlyClosing.update({
     where: { id: closingId },
-    data: { stepResults: updatedSteps },
+    data: { stepResults: updatedSteps as unknown as Prisma.InputJsonValue },
   });
 
   return result;

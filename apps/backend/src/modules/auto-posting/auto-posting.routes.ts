@@ -171,10 +171,14 @@ autoPostingRouter.get(
       const sourceType = req.query.sourceType as string | undefined;
       const pending = await service.listPending(orgId, {
         ...(status
-          ? { status: status as Parameters<typeof service.listPending>[1]['status'] }
+          ? { status: status as NonNullable<Parameters<typeof service.listPending>[1]>['status'] }
           : {}),
         ...(sourceType
-          ? { sourceType: sourceType as Parameters<typeof service.listPending>[1]['sourceType'] }
+          ? {
+              sourceType: sourceType as NonNullable<
+                Parameters<typeof service.listPending>[1]
+              >['sourceType'],
+            }
           : {}),
       });
       res.json(pending);
