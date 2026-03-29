@@ -45,6 +45,43 @@
   margin: 4px 0 0;
 }
 
+.lot-detail-modal__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.lot-detail-modal__action-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  border-radius: 8px;
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 100ms;
+}
+
+.lot-detail-modal__action-btn:hover {
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-700);
+}
+
+.lot-detail-modal__action-btn--danger:hover {
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+}
+
+.lot-detail-modal__action-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
 .lot-detail-modal__close {
   background: none;
   border: none;
@@ -68,6 +105,17 @@
 .lot-detail-modal__close:focus-visible {
   outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
+}
+
+.lot-detail-modal__error {
+  margin: 0;
+  padding: 12px 24px;
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Tabs */

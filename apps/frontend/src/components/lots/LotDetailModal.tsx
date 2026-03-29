@@ -1,11 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import { X, BarChart3, Users, Clock, AlertTriangle } from 'lucide-react';
+import { X, BarChart3, Users, Clock, AlertTriangle, Pencil, Trash2 } from 'lucide-react';
+import { api } from '@/services/api';
 import { useLotDashboard } from '@/hooks/useLotDashboard';
 import { useLotHistory } from '@/hooks/useLotHistory';
+import PermissionGate from '@/components/auth/PermissionGate';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import { CATEGORY_LABELS } from '@/types/animal';
 import { LOCATION_TYPE_LABELS } from '@/types/lot';
 import type { LotListItem, LotLocationType } from '@/types/lot';
 import ManageAnimalsModal from './ManageAnimalsModal';
+import EditLotModal from './EditLotModal';
 import './LotDetailModal.css';
 
 interface LotDetailModalProps {
@@ -35,6 +39,10 @@ interface LotDetailModalContentProps {
 function LotDetailModalContent({ farmId, lot, onClose, onUpdate }: LotDetailModalContentProps) {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [showManageAnimals, setShowManageAnimals] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const { dashboard, isLoading: dashLoading } = useLotDashboard({
     farmId,
@@ -60,6 +68,29 @@ function LotDetailModalContent({ farmId, lot, onClose, onUpdate }: LotDetailModa
     onUpdate();
   }, [onUpdate]);
 
+  const handleEditSuccess = useCallback(() => {
+    setShowEditModal(false);
+    onUpdate();
+    onClose();
+  }, [onUpdate, onClose]);
+
+  const handleDelete = useCallback(async () => {
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await api.delete(`/org/farms/${farmId}/lots/${lot.id}`);
+      setShowDeleteConfirm(false);
+      onUpdate();
+      onClose();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao excluir lote';
+      setDeleteError(message);
+      setShowDeleteConfirm(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [farmId, lot.id, onUpdate, onClose]);
+
   return (
     <>
       <div className="lot-detail-overlay" onClick={onClose}>
@@ -79,15 +110,44 @@ function LotDetailModalContent({ farmId, lot, onClose, onUpdate }: LotDetailModa
                 {LOCATION_TYPE_LABELS[lot.locationType as LotLocationType]})
               </p>
             </div>
-            <button
-              type="button"
-              className="lot-detail-modal__close"
-              onClick={onClose}
-              aria-label="Fechar"
-            >
-              <X size={20} aria-hidden="true" />
-            </button>
+            <div className="lot-detail-modal__header-actions">
+              <PermissionGate permission="animals:update">
+                <button
+                  type="button"
+                  className="lot-detail-modal__action-btn"
+                  onClick={() => setShowEditModal(true)}
+                  aria-label="Editar lote"
+                >
+                  <Pencil size={18} aria-hidden="true" />
+                </button>
+              </PermissionGate>
+              <PermissionGate permission="animals:delete">
+                <button
+                  type="button"
+                  className="lot-detail-modal__action-btn lot-detail-modal__action-btn--danger"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  aria-label="Excluir lote"
+                >
+                  <Trash2 size={18} aria-hidden="true" />
+                </button>
+              </PermissionGate>
+              <button
+                type="button"
+                className="lot-detail-modal__close"
+                onClick={onClose}
+                aria-label="Fechar"
+              >
+                <X size={20} aria-hidden="true" />
+              </button>
+            </div>
           </div>
+
+          {deleteError && (
+            <div className="lot-detail-modal__error" role="alert" aria-live="polite">
+              <AlertTriangle size={16} aria-hidden="true" />
+              {deleteError}
+            </div>
+          )}
 
           {/* Tabs */}
           <div className="lot-detail-modal__tabs" role="tablist">
@@ -258,6 +318,25 @@ function LotDetailModalContent({ farmId, lot, onClose, onUpdate }: LotDetailModa
         lotName={lot.name}
         onClose={() => setShowManageAnimals(false)}
         onSuccess={handleManageSuccess}
+      />
+
+      <EditLotModal
+        isOpen={showEditModal}
+        farmId={farmId}
+        lot={lot}
+        onClose={() => setShowEditModal(false)}
+        onSuccess={handleEditSuccess}
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        title="Excluir lote"
+        message={`Tem certeza que deseja excluir o lote "${lot.name}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        variant="danger"
+        isLoading={isDeleting}
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
       />
     </>
   );
