@@ -4,6 +4,8 @@ import {
   type CreateWeighingInput,
   type UpdateWeighingInput,
   type WeighingItem,
+  type FarmWeighingItem,
+  type ListFarmWeighingsQuery,
   type WeighingStats,
 } from './animal-weighing.types';
 
@@ -231,6 +233,115 @@ export async function getWeighingStats(
       minWeightKg: Math.round(minWeightKg * 100) / 100,
       maxWeightKg: Math.round(maxWeightKg * 100) / 100,
       totalWeighings,
+    };
+  });
+}
+
+// ─── Farm-level listing ─────────────────────────────────────────────
+
+export async function listFarmWeighings(
+  ctx: RlsContext,
+  farmId: string,
+  query: ListFarmWeighingsQuery,
+) {
+  const page = Math.max(1, query.page ?? 1);
+  const limit = Math.min(100, Math.max(1, query.limit ?? 30));
+  const skip = (page - 1) * limit;
+
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = { farmId };
+
+    // Date range filter
+    const measuredAtFilter: Record<string, unknown> = {};
+    if (query.dateFrom) {
+      measuredAtFilter.gte = new Date(query.dateFrom);
+    }
+    if (query.dateTo) {
+      const end = new Date(query.dateTo);
+      end.setDate(end.getDate() + 1);
+      measuredAtFilter.lt = end;
+    }
+    if (Object.keys(measuredAtFilter).length > 0) {
+      where.measuredAt = measuredAtFilter;
+    }
+
+    // Animal-level filters (search by earTag/name, filter by lotId)
+    const animalFilter: Record<string, unknown> = { deletedAt: null };
+    if (query.search) {
+      animalFilter.OR = [
+        { earTag: { contains: query.search, mode: 'insensitive' } },
+        { name: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+    if (query.lotId) {
+      animalFilter.lotId = query.lotId;
+    }
+    if (Object.keys(animalFilter).length > 1) {
+      where.animal = animalFilter;
+    }
+
+    // Build orderBy
+    const ALLOWED_SORT_FIELDS = new Set([
+      'measuredAt', 'earTag', 'animalName', 'weightKg', 'bodyConditionScore', 'recorderName',
+    ]);
+    const sortField =
+      query.sortBy && ALLOWED_SORT_FIELDS.has(query.sortBy)
+        ? query.sortBy
+        : 'measuredAt';
+    const sortDir = query.sortOrder === 'asc' ? 'asc' as const : 'desc' as const;
+
+    function buildOrderBy() {
+      switch (sortField) {
+        case 'earTag':
+          return { animal: { earTag: sortDir } };
+        case 'animalName':
+          return { animal: { name: sortDir } };
+        case 'recorderName':
+          return { recorder: { name: sortDir } };
+        case 'weightKg':
+          return { weightKg: sortDir };
+        case 'bodyConditionScore':
+          return { bodyConditionScore: sortDir };
+        case 'measuredAt':
+        default:
+          return { measuredAt: sortDir };
+      }
+    }
+
+    const [rows, total] = await Promise.all([
+      tx.animalWeighing.findMany({
+        where: where as never,
+        skip,
+        take: limit,
+        orderBy: buildOrderBy(),
+        include: {
+          animal: { select: { earTag: true, name: true, lotId: true } },
+          recorder: { select: { name: true } },
+        },
+      }),
+      tx.animalWeighing.count({ where: where as never }),
+    ]);
+
+    const data: FarmWeighingItem[] = rows.map((r) => ({
+      id: r.id,
+      animalId: r.animalId,
+      earTag: r.animal.earTag,
+      animalName: r.animal.name,
+      weightKg: Number(r.weightKg),
+      measuredAt: r.measuredAt.toISOString().slice(0, 10),
+      bodyConditionScore: r.bodyConditionScore,
+      notes: r.notes,
+      recorderName: r.recorder.name,
+    }));
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
     };
   });
 }

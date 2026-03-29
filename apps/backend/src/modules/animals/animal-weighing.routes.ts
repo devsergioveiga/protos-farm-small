@@ -4,9 +4,10 @@ import { checkPermission } from '../../middleware/check-permission';
 import { checkFarmAccess } from '../../middleware/check-farm-access';
 import { logAudit } from '../../shared/audit/audit.service';
 import type { RlsContext } from '../../database/rls';
-import { AnimalWeighingError } from './animal-weighing.types';
+import { AnimalWeighingError, type FarmWeighingSortField } from './animal-weighing.types';
 import {
   listWeighings,
+  listFarmWeighings,
   createWeighing,
   updateWeighing,
   deleteWeighing,
@@ -31,6 +32,39 @@ function buildRlsContext(req: import('express').Request): RlsContext {
   }
   return { organizationId };
 }
+
+// ─── FARM-LEVEL LIST (before animal-specific routes) ────────────────
+
+animalWeighingRouter.get(
+  '/org/farms/:farmId/weighings',
+  authenticate,
+  checkPermission('animals:read'),
+  checkFarmAccess(),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const query = {
+        page: req.query.page ? Number(req.query.page) : undefined,
+        limit: req.query.limit ? Number(req.query.limit) : undefined,
+        dateFrom: req.query.dateFrom as string | undefined,
+        dateTo: req.query.dateTo as string | undefined,
+        search: req.query.search as string | undefined,
+        lotId: req.query.lotId as string | undefined,
+        sortBy: req.query.sortBy as FarmWeighingSortField | undefined,
+        sortOrder: req.query.sortOrder as 'asc' | 'desc' | undefined,
+      };
+      const result = await listFarmWeighings(ctx, req.params.farmId as string, query);
+      res.json(result);
+    } catch (err) {
+      if (err instanceof AnimalWeighingError) {
+        res.status(err.statusCode).json({ error: err.message });
+        return;
+      }
+      console.error('[listFarmWeighings] Erro:', err);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+);
 
 // ─── STATS (before :weighingId to avoid route conflict) ─────────────
 
