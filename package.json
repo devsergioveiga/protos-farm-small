@@ -36,8 +36,12 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "bcrypt",
-      "@swc/core"
+      "@prisma/engines",
+      "esbuild",
+      "prisma"
+    ],
+    "ignoredBuiltDependencies": [
+      "esbuild"
     ]
   },
   "devDependencies": {
