@@ -170,19 +170,33 @@
 
 /* Column widths — must match between header and body tables */
 .weighing__table th:nth-child(1),
-.weighing__table td:nth-child(1) { width: 11%; }  /* Data */
+.weighing__table td:nth-child(1) {
+  width: 11%;
+} /* Data */
 .weighing__table th:nth-child(2),
-.weighing__table td:nth-child(2) { width: 13%; }  /* Brinco */
+.weighing__table td:nth-child(2) {
+  width: 13%;
+} /* Brinco */
 .weighing__table th:nth-child(3),
-.weighing__table td:nth-child(3) { width: 18%; }  /* Nome */
+.weighing__table td:nth-child(3) {
+  width: 18%;
+} /* Nome */
 .weighing__table th:nth-child(4),
-.weighing__table td:nth-child(4) { width: 11%; }  /* Peso */
+.weighing__table td:nth-child(4) {
+  width: 11%;
+} /* Peso */
 .weighing__table th:nth-child(5),
-.weighing__table td:nth-child(5) { width: 7%; }   /* ECC */
+.weighing__table td:nth-child(5) {
+  width: 7%;
+} /* ECC */
 .weighing__table th:nth-child(6),
-.weighing__table td:nth-child(6) { width: 24%; }  /* Registrado por */
+.weighing__table td:nth-child(6) {
+  width: 24%;
+} /* Registrado por */
 .weighing__table th:nth-child(7),
-.weighing__table td:nth-child(7) { width: 16%; }  /* Ações */
+.weighing__table td:nth-child(7) {
+  width: 16%;
+} /* Ações */
 
 .weighing__table th {
   text-align: left;
@@ -1001,7 +1015,9 @@
   background: transparent;
   color: var(--color-neutral-500);
   cursor: pointer;
-  transition: background-color 100ms, color 100ms;
+  transition:
+    background-color 100ms,
+    color 100ms;
 }
 
 .weighing__icon-btn:hover {

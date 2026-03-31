@@ -3,16 +3,19 @@ Verify the current changes are correct before committing.
 Run these steps in order and report the results:
 
 1. **TypeScript check (backend):**
+
    ```
    cd apps/backend && npx tsc --noEmit --pretty
    ```
 
 2. **TypeScript check (frontend):**
+
    ```
    cd apps/frontend && npx tsc -b --pretty
    ```
 
 3. **Lint changed files:**
+
    ```
    pnpm -r lint
    ```

@@ -27,4 +27,5 @@ Given a feature description or module name, verify it is correctly implemented.
    - Check that migrations exist for the model
 
 ## Output
+
 Report a checklist of what was verified, what passed, and what needs attention.

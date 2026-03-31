@@ -53,7 +53,13 @@ export interface FarmWeighingItem {
   recorderName: string;
 }
 
-export type FarmWeighingSortField = 'measuredAt' | 'earTag' | 'animalName' | 'weightKg' | 'bodyConditionScore' | 'recorderName';
+export type FarmWeighingSortField =
+  | 'measuredAt'
+  | 'earTag'
+  | 'animalName'
+  | 'weightKg'
+  | 'bodyConditionScore'
+  | 'recorderName';
 
 export interface ListFarmWeighingsQuery {
   page?: number;

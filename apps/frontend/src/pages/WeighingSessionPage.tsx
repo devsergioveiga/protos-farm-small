@@ -27,7 +27,13 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 import './WeighingSessionPage.css';
 
 type Phase = 'history' | 'start' | 'weighing' | 'summary';
-type SortField = 'measuredAt' | 'earTag' | 'animalName' | 'weightKg' | 'bodyConditionScore' | 'recorderName';
+type SortField =
+  | 'measuredAt'
+  | 'earTag'
+  | 'animalName'
+  | 'weightKg'
+  | 'bodyConditionScore'
+  | 'recorderName';
 
 interface WeighingRecord {
   animal: AnimalListItem;
@@ -150,9 +156,11 @@ function WeighingSessionPage() {
 
   function SortIcon({ field }: { field: SortField }) {
     if (sortBy !== field) return <ArrowUpDown size={14} aria-hidden="true" />;
-    return sortOrder === 'asc'
-      ? <ArrowUp size={14} aria-hidden="true" />
-      : <ArrowDown size={14} aria-hidden="true" />;
+    return sortOrder === 'asc' ? (
+      <ArrowUp size={14} aria-hidden="true" />
+    ) : (
+      <ArrowDown size={14} aria-hidden="true" />
+    );
   }
 
   function resetForm() {
@@ -258,10 +266,7 @@ function WeighingSessionPage() {
         body.notes = notes.trim();
       }
 
-      await api.post(
-        `/org/farms/${selectedFarm.id}/animals/${selectedAnimal.id}/weighings`,
-        body,
-      );
+      await api.post(`/org/farms/${selectedFarm.id}/animals/${selectedAnimal.id}/weighings`, body);
 
       setRecords((prev) => [
         {
@@ -426,7 +431,10 @@ function WeighingSessionPage() {
             <h2 className="weighing__section-title">Animais pesados</h2>
             <ul className="weighing__result-list">
               {records.map((record, i) => (
-                <li key={`${record.animal.id}-${i}`} className="weighing__result-item weighing__result-item--done">
+                <li
+                  key={`${record.animal.id}-${i}`}
+                  className="weighing__result-item weighing__result-item--done"
+                >
                   <Check size={16} aria-hidden="true" className="weighing__result-icon" />
                   <span className="weighing__result-tag">{record.animal.earTag}</span>
                   <span className="weighing__result-name">{record.animal.name ?? ''}</span>
@@ -522,7 +530,11 @@ function WeighingSessionPage() {
               </div>
 
               {!selectedAnimal && earTagInput.trim().length >= 2 && (
-                <div className="weighing__search-results" role="listbox" aria-label="Resultados da busca">
+                <div
+                  className="weighing__search-results"
+                  role="listbox"
+                  aria-label="Resultados da busca"
+                >
                   {isSearching ? (
                     <div className="weighing__search-loading">Buscando...</div>
                   ) : searchResults.length === 0 ? (
@@ -585,8 +597,9 @@ function WeighingSessionPage() {
               <div className="weighing__lot-warning" role="status">
                 <AlertTriangle size={16} aria-hidden="true" />
                 <span>
-                  Este animal pertence ao lote <strong>{selectedAnimal.lotName ?? 'Sem lote'}</strong>.
-                  A sessão está filtrando pelo lote{' '}
+                  Este animal pertence ao lote{' '}
+                  <strong>{selectedAnimal.lotName ?? 'Sem lote'}</strong>. A sessão está filtrando
+                  pelo lote{' '}
                   <strong>{lots.find((l) => l.id === sessionLot)?.name ?? sessionLot}</strong>.
                 </span>
               </div>
@@ -687,15 +700,16 @@ function WeighingSessionPage() {
 
           {/* Side list: weighed animals */}
           <aside className="weighing__side-list" aria-label="Animais pesados na sessão">
-            <h3 className="weighing__side-title">
-              Pesados ({records.length})
-            </h3>
+            <h3 className="weighing__side-title">Pesados ({records.length})</h3>
             {records.length === 0 ? (
               <p className="weighing__side-empty">Nenhum animal pesado ainda.</p>
             ) : (
               <ul className="weighing__queue">
                 {records.map((record, i) => (
-                  <li key={`${record.animal.id}-${i}`} className="weighing__queue-item weighing__queue-item--done">
+                  <li
+                    key={`${record.animal.id}-${i}`}
+                    className="weighing__queue-item weighing__queue-item--done"
+                  >
                     <span className="weighing__queue-status">
                       <Check size={14} aria-label="Pesado" />
                     </span>
@@ -895,32 +909,62 @@ function WeighingSessionPage() {
               <thead>
                 <tr>
                   <th scope="col">
-                    <button type="button" className="weighing__sort-btn" onClick={() => handleSort('measuredAt')} aria-label="Ordenar por data">
+                    <button
+                      type="button"
+                      className="weighing__sort-btn"
+                      onClick={() => handleSort('measuredAt')}
+                      aria-label="Ordenar por data"
+                    >
                       Data <SortIcon field="measuredAt" />
                     </button>
                   </th>
                   <th scope="col">
-                    <button type="button" className="weighing__sort-btn" onClick={() => handleSort('earTag')} aria-label="Ordenar por brinco">
+                    <button
+                      type="button"
+                      className="weighing__sort-btn"
+                      onClick={() => handleSort('earTag')}
+                      aria-label="Ordenar por brinco"
+                    >
                       Brinco <SortIcon field="earTag" />
                     </button>
                   </th>
                   <th scope="col">
-                    <button type="button" className="weighing__sort-btn" onClick={() => handleSort('animalName')} aria-label="Ordenar por nome">
+                    <button
+                      type="button"
+                      className="weighing__sort-btn"
+                      onClick={() => handleSort('animalName')}
+                      aria-label="Ordenar por nome"
+                    >
                       Nome <SortIcon field="animalName" />
                     </button>
                   </th>
                   <th scope="col">
-                    <button type="button" className="weighing__sort-btn" onClick={() => handleSort('weightKg')} aria-label="Ordenar por peso">
+                    <button
+                      type="button"
+                      className="weighing__sort-btn"
+                      onClick={() => handleSort('weightKg')}
+                      aria-label="Ordenar por peso"
+                    >
                       Peso (kg) <SortIcon field="weightKg" />
                     </button>
                   </th>
                   <th scope="col">
-                    <button type="button" className="weighing__sort-btn" onClick={() => handleSort('bodyConditionScore')} aria-label="Ordenar por ECC">
+                    <button
+                      type="button"
+                      className="weighing__sort-btn"
+                      onClick={() => handleSort('bodyConditionScore')}
+                      aria-label="Ordenar por ECC"
+                    >
                       ECC <SortIcon field="bodyConditionScore" />
                     </button>
                   </th>
                   <th scope="col">
-                    <button type="button" className="weighing__sort-btn" onClick={() => handleSort('recorderName')} aria-label="Ordenar por registrado por">
+                    <button
+                      type="button"
+                      className="weighing__sort-btn"
+                      onClick={() => handleSort('recorderName')}
+                      aria-label="Ordenar por registrado por"
+                    >
                       Registrado por <SortIcon field="recorderName" />
                     </button>
                   </th>
@@ -946,7 +990,11 @@ function WeighingSessionPage() {
         {historyLoading && (
           <div className="weighing__skeleton-grid">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="weighing__skeleton" style={{ height: '56px', marginBottom: '4px' }} />
+              <div
+                key={i}
+                className="weighing__skeleton"
+                style={{ height: '56px', marginBottom: '4px' }}
+              />
             ))}
           </div>
         )}
@@ -1109,7 +1157,9 @@ function WeighingSessionPage() {
       {viewWeighing && (
         <div
           className="weighing__modal-overlay"
-          onClick={(e) => { if (e.target === e.currentTarget) setViewWeighing(null); }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setViewWeighing(null);
+          }}
           role="dialog"
           aria-modal="true"
           aria-labelledby="view-weighing-title"
@@ -1131,7 +1181,9 @@ function WeighingSessionPage() {
             <div className="weighing__modal-body">
               <div className="weighing__detail-row">
                 <span className="weighing__detail-label">Brinco</span>
-                <span className="weighing__detail-value weighing__ear-tag">{viewWeighing.earTag}</span>
+                <span className="weighing__detail-value weighing__ear-tag">
+                  {viewWeighing.earTag}
+                </span>
               </div>
               {viewWeighing.animalName && (
                 <div className="weighing__detail-row">
@@ -1141,15 +1193,21 @@ function WeighingSessionPage() {
               )}
               <div className="weighing__detail-row">
                 <span className="weighing__detail-label">Data</span>
-                <span className="weighing__detail-value">{formatDateBR(viewWeighing.measuredAt)}</span>
+                <span className="weighing__detail-value">
+                  {formatDateBR(viewWeighing.measuredAt)}
+                </span>
               </div>
               <div className="weighing__detail-row">
                 <span className="weighing__detail-label">Peso</span>
-                <span className="weighing__detail-value"><strong>{viewWeighing.weightKg.toFixed(1)} kg</strong></span>
+                <span className="weighing__detail-value">
+                  <strong>{viewWeighing.weightKg.toFixed(1)} kg</strong>
+                </span>
               </div>
               <div className="weighing__detail-row">
                 <span className="weighing__detail-label">ECC</span>
-                <span className="weighing__detail-value">{viewWeighing.bodyConditionScore ?? '—'}</span>
+                <span className="weighing__detail-value">
+                  {viewWeighing.bodyConditionScore ?? '—'}
+                </span>
               </div>
               <div className="weighing__detail-row">
                 <span className="weighing__detail-label">Registrado por</span>
@@ -1179,7 +1237,9 @@ function WeighingSessionPage() {
       {editWeighing && (
         <div
           className="weighing__modal-overlay"
-          onClick={(e) => { if (e.target === e.currentTarget) setEditWeighing(null); }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setEditWeighing(null);
+          }}
           role="dialog"
           aria-modal="true"
           aria-labelledby="edit-weighing-title"
@@ -1212,7 +1272,9 @@ function WeighingSessionPage() {
                 </div>
               )}
               <div className="weighing__form-group">
-                <label htmlFor="edit-date" className="weighing__label">Data *</label>
+                <label htmlFor="edit-date" className="weighing__label">
+                  Data *
+                </label>
                 <input
                   id="edit-date"
                   type="date"
@@ -1226,7 +1288,9 @@ function WeighingSessionPage() {
               </div>
               <div className="weighing__form-row">
                 <div className="weighing__form-group">
-                  <label htmlFor="edit-weight" className="weighing__label">Peso (kg) *</label>
+                  <label htmlFor="edit-weight" className="weighing__label">
+                    Peso (kg) *
+                  </label>
                   <input
                     id="edit-weight"
                     type="number"
@@ -1241,7 +1305,9 @@ function WeighingSessionPage() {
                   />
                 </div>
                 <div className="weighing__form-group">
-                  <label htmlFor="edit-ecc" className="weighing__label">ECC (1–5)</label>
+                  <label htmlFor="edit-ecc" className="weighing__label">
+                    ECC (1–5)
+                  </label>
                   <input
                     id="edit-ecc"
                     type="number"
@@ -1255,7 +1321,9 @@ function WeighingSessionPage() {
                 </div>
               </div>
               <div className="weighing__form-group">
-                <label htmlFor="edit-notes" className="weighing__label">Observações</label>
+                <label htmlFor="edit-notes" className="weighing__label">
+                  Observações
+                </label>
                 <textarea
                   id="edit-notes"
                   className="weighing__textarea"

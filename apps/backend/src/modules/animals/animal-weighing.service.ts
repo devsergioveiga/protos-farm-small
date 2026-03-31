@@ -282,13 +282,16 @@ export async function listFarmWeighings(
 
     // Build orderBy
     const ALLOWED_SORT_FIELDS = new Set([
-      'measuredAt', 'earTag', 'animalName', 'weightKg', 'bodyConditionScore', 'recorderName',
+      'measuredAt',
+      'earTag',
+      'animalName',
+      'weightKg',
+      'bodyConditionScore',
+      'recorderName',
     ]);
     const sortField =
-      query.sortBy && ALLOWED_SORT_FIELDS.has(query.sortBy)
-        ? query.sortBy
-        : 'measuredAt';
-    const sortDir = query.sortOrder === 'asc' ? 'asc' as const : 'desc' as const;
+      query.sortBy && ALLOWED_SORT_FIELDS.has(query.sortBy) ? query.sortBy : 'measuredAt';
+    const sortDir = query.sortOrder === 'asc' ? ('asc' as const) : ('desc' as const);
 
     function buildOrderBy() {
       switch (sortField) {
