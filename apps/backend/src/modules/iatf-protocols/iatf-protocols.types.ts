@@ -82,6 +82,8 @@ export interface UpdateProtocolInput {
   status?: string;
   notes?: string | null;
   steps?: StepInput[];
+  /** true = cria nova versão (padrão); false = corrige in-place */
+  createNewVersion?: boolean;
 }
 
 export interface ListProtocolsQuery {
