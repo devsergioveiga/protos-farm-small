@@ -12,23 +12,45 @@ export class ReproductiveReleaseError extends Error {
 
 // ─── Input Types ────────────────────────────────────────────────────
 
+export interface ReleaseVaccinationInput {
+  productId?: string | null;
+  productName: string;
+  dosageMl: number;
+  administrationRoute: string; // IM, SC, IV, ORAL, etc.
+  productBatchNumber?: string | null;
+}
+
+export interface ReleaseIatfInput {
+  protocolId: string;
+  lotName?: string | null;
+}
+
 export interface CreateReleaseInput {
   animalId: string;
   releaseDate: string; // ISO date
   weightKg?: number | null;
   ageMonths?: number | null;
   bodyConditionScore?: number | null; // 1.0 to 5.0
-  responsibleName: string;
   targetLotId?: string | null;
   notes?: string | null;
+  vaccination?: ReleaseVaccinationInput | null;
+  iatf?: ReleaseIatfInput | null;
+}
+
+export interface BulkReleaseAnimalInput {
+  animalId: string;
+  weightKg?: number | null;
 }
 
 export interface BulkReleaseInput {
-  animalIds: string[];
+  animals: BulkReleaseAnimalInput[];
   releaseDate: string; // ISO date
-  responsibleName: string;
   targetLotId?: string | null;
   notes?: string | null;
+  vaccination?: ReleaseVaccinationInput | null;
+  iatf?: ReleaseIatfInput | null;
+  /** @deprecated Use animals[] instead */
+  animalIds?: string[];
 }
 
 export interface SetCriteriaInput {
@@ -42,6 +64,7 @@ export interface ListReleasesQuery {
   animalId?: string;
   dateFrom?: string;
   dateTo?: string;
+  search?: string;
   page?: number;
   limit?: number;
 }
@@ -58,7 +81,6 @@ export interface ReleaseItem {
   weightKg: number | null;
   ageMonths: number | null;
   bodyConditionScore: number | null;
-  responsibleName: string;
   previousCategory: string | null;
   previousLotId: string | null;
   previousLotName: string | null;
@@ -85,16 +107,19 @@ export interface CriteriaItem {
 export interface CandidateItem {
   animalId: string;
   earTag: string;
-  name: string | null;
+  animalName: string | null;
   category: string;
   birthDate: string | null;
   ageMonths: number | null;
-  latestWeightKg: number | null;
-  latestWeighingDate: string | null;
+  lastWeightKg: number | null;
+  lastWeighingDate: string | null;
   bodyConditionScore: number | null;
   lotId: string | null;
   lotName: string | null;
-  meetsCriteria: boolean;
+  meetsWeight: boolean;
+  meetsAge: boolean;
+  meetsScore: boolean;
+  meetsAll: boolean;
 }
 
 export interface BulkReleaseResult {

@@ -79,7 +79,6 @@ const SAMPLE_RELEASE: ReleaseItem = {
   weightKg: 320,
   ageMonths: 24,
   bodyConditionScore: 3.5,
-  responsibleName: 'João Silva',
   previousCategory: 'BEZERRA',
   previousLotId: 'lot-recria',
   previousLotName: 'Recria Fêmeas',
@@ -106,16 +105,19 @@ const SAMPLE_CRITERIA: CriteriaItem = {
 const SAMPLE_CANDIDATE: CandidateItem = {
   animalId: 'animal-2',
   earTag: '002',
-  name: 'Estrela',
+  animalName: 'Estrela',
   category: 'BEZERRA',
   birthDate: '2024-03-14',
   ageMonths: 24,
-  latestWeightKg: 320,
-  latestWeighingDate: '2026-03-10',
+  lastWeightKg: 320,
+  lastWeighingDate: '2026-03-10',
   bodyConditionScore: 3,
   lotId: 'lot-recria',
   lotName: 'Recria Fêmeas',
-  meetsCriteria: true,
+  meetsWeight: true,
+  meetsAge: true,
+  meetsScore: true,
+  meetsAll: true,
 };
 
 const SAMPLE_BULK_RESULT: BulkReleaseResult = {
@@ -239,7 +241,7 @@ describe('Reproductive Releases routes', () => {
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(1);
       expect(res.body[0].animalId).toBe('animal-2');
-      expect(res.body[0].meetsCriteria).toBe(true);
+      expect(res.body[0].meetsAll).toBe(true);
     });
 
     it('should return empty array when no candidates', async () => {
@@ -263,7 +265,6 @@ describe('Reproductive Releases routes', () => {
       weightKg: 320,
       ageMonths: 24,
       bodyConditionScore: 3.5,
-      responsibleName: 'João Silva',
     };
 
     it('should create release and return 201', async () => {
@@ -357,7 +358,6 @@ describe('Reproductive Releases routes', () => {
     const validBulkInput = {
       animalIds: ['animal-1', 'animal-2', 'animal-3'],
       releaseDate: '2026-03-14',
-      responsibleName: 'João Silva',
       targetLotId: 'lot-repro',
     };
 
@@ -384,7 +384,7 @@ describe('Reproductive Releases routes', () => {
       const res = await request(app)
         .post('/api/org/farms/farm-1/reproductive-releases/bulk')
         .set('Authorization', 'Bearer tok')
-        .send({ animalIds: [], releaseDate: '2026-03-14', responsibleName: 'João' });
+        .send({ animalIds: [], releaseDate: '2026-03-14' });
 
       expect(res.status).toBe(400);
     });
