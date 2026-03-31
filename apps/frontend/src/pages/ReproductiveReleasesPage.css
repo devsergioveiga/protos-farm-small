@@ -173,12 +173,35 @@
   gap: 12px;
   margin-bottom: 20px;
   flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.reproductive-releases-page__filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reproductive-releases-page__filter-field--search {
+  flex: 1;
+  min-width: 200px;
+}
+
+.reproductive-releases-page__filter-field > label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.reproductive-releases-page__label-spacer {
+  visibility: hidden;
 }
 
 .reproductive-releases-page__search {
   position: relative;
-  flex: 1;
-  min-width: 200px;
 }
 
 .reproductive-releases-page__search-icon {
@@ -208,9 +231,83 @@
   border-color: var(--color-primary-500);
 }
 
+/* ─── Date Filters ──────────────────────────────────────────────── */
+.reproductive-releases-page__date-input {
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  min-height: 48px;
+  transition: border-color 200ms ease-out;
+}
+
+.reproductive-releases-page__date-input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.reproductive-releases-page__date-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  min-height: 48px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: background 200ms ease-out;
+}
+
+.reproductive-releases-page__date-clear:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+/* ─── Candidates Toolbar ─────────────────────────────────────────── */
+.reproductive-releases-page__candidates-toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.reproductive-releases-page__age-filter-input {
+  padding: 12px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  min-height: 48px;
+  width: 140px;
+  transition: border-color 200ms ease-out;
+}
+
+.reproductive-releases-page__age-filter-input:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-color: var(--color-primary-500);
+}
+
+.reproductive-releases-page__candidates-count {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+  padding-bottom: 14px;
+}
+
 /* ─── Candidates Table ───────────────────────────────────────────── */
 .reproductive-releases-page__table-container {
-  overflow-x: auto;
+  overflow: auto;
+  max-height: calc(100vh - 320px);
   border: 1px solid var(--color-neutral-100);
   border-radius: 12px;
   background: var(--color-neutral-0);
@@ -224,6 +321,9 @@
 }
 
 .reproductive-releases-page__table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   background: var(--color-neutral-50);
 }
 
@@ -382,6 +482,53 @@
   border-color: var(--color-primary-500);
 }
 
+/* ─── View Toggle ────────────────────────────────────────────────── */
+.reproductive-releases-page__view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.reproductive-releases-page__view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  min-height: 48px;
+  border: none;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-400);
+  cursor: pointer;
+  transition:
+    background 200ms ease-out,
+    color 200ms ease-out;
+}
+
+.reproductive-releases-page__view-btn:not(:last-child) {
+  border-right: 1px solid var(--color-neutral-200);
+}
+
+.reproductive-releases-page__view-btn:hover {
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-700);
+}
+
+.reproductive-releases-page__view-btn--active {
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-600);
+}
+
+.reproductive-releases-page__view-btn--active:hover {
+  background: var(--color-primary-50, #f0fdf4);
+  color: var(--color-primary-600);
+}
+
+.reproductive-releases-page__view-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
 /* ─── Release Cards Grid ─────────────────────────────────────────── */
 .reproductive-releases-page__grid {
   display: grid;
@@ -475,7 +622,13 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-top: 24px;
+  position: sticky;
+  bottom: 0;
+  padding: 16px 0;
+  margin-top: 0;
+  background: var(--color-neutral-0);
+  border-top: 1px solid var(--color-neutral-100);
+  z-index: 1;
 }
 
 .reproductive-releases-page__pagination button {
@@ -629,17 +782,23 @@
 }
 
 /* ─── Responsive ──────────────────────────────────────────────────── */
-/* ─── Mobile candidate cards (shown <768px) ─────────────────────── */
-.reproductive-releases-page__mobile-candidates {
+/* ─── Mobile fallback cards (shown <768px) ─────────────────────── */
+.reproductive-releases-page__mobile-candidates,
+.reproductive-releases-page__mobile-releases {
   display: none;
 }
 
 @media (max-width: 768px) {
+  .reproductive-releases-page__view-toggle {
+    display: none;
+  }
+
   .reproductive-releases-page__table-container {
     display: none;
   }
 
-  .reproductive-releases-page__mobile-candidates {
+  .reproductive-releases-page__mobile-candidates,
+  .reproductive-releases-page__mobile-releases {
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -744,6 +903,10 @@
 
   .reproductive-releases-page__toolbar {
     flex-direction: column;
+  }
+
+  .reproductive-releases-page__date-input {
+    width: 100%;
   }
 
   .reproductive-releases-page__grid {

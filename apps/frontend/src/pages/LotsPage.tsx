@@ -1,9 +1,22 @@
 import { useState, useRef, useCallback } from 'react';
-import { Layers, Plus, Search, ChevronLeft, ChevronRight, AlertCircle, MapPin } from 'lucide-react';
+import {
+  Layers,
+  Plus,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  AlertCircle,
+  MapPin,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
+import { api } from '@/services/api';
 import { useFarmContext } from '@/stores/FarmContext';
 import { useLots } from '@/hooks/useLots';
 import PermissionGate from '@/components/auth/PermissionGate';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import CreateLotModal from '@/components/lots/CreateLotModal';
+import EditLotModal from '@/components/lots/EditLotModal';
 import LotDetailModal from '@/components/lots/LotDetailModal';
 import { CATEGORY_LABELS } from '@/types/animal';
 import { LOCATION_TYPE_LABELS, LOCATION_TYPES } from '@/types/lot';
@@ -31,6 +44,10 @@ function LotsPage() {
   const [locationTypeFilter, setLocationTypeFilter] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedLot, setSelectedLot] = useState<LotListItem | null>(null);
+  const [editingLot, setEditingLot] = useState<LotListItem | null>(null);
+  const [deletingLot, setDeletingLot] = useState<LotListItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const prevFarmIdRef = useRef<string | undefined>(undefined);
@@ -68,6 +85,28 @@ function LotsPage() {
     setShowCreateModal(false);
     void refetch();
   }, [refetch]);
+
+  const handleEditSuccess = useCallback(() => {
+    setEditingLot(null);
+    void refetch();
+  }, [refetch]);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deletingLot || !selectedFarm) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await api.delete(`/org/farms/${selectedFarm.id}/lots/${deletingLot.id}`);
+      setDeletingLot(null);
+      void refetch();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao excluir lote';
+      setDeleteError(message);
+      setDeletingLot(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [deletingLot, selectedFarm, refetch]);
 
   const handleLotClick = useCallback((lot: LotListItem) => {
     setSelectedLot(lot);
@@ -168,6 +207,14 @@ function LotsPage() {
         </select>
       </div>
 
+      {/* Delete error */}
+      {deleteError && (
+        <div className="lots__error" role="alert" aria-live="polite">
+          <AlertCircle aria-hidden="true" size={16} />
+          {deleteError}
+        </div>
+      )}
+
       {/* Error */}
       {error && (
         <div className="lots__error" role="alert" aria-live="polite">
@@ -245,6 +292,37 @@ function LotsPage() {
                     </div>
                   </div>
                 )}
+                <div className="lots__card-actions">
+                  <PermissionGate permission="animals:update">
+                    <button
+                      type="button"
+                      className="lots__card-action-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingLot(lot);
+                      }}
+                      aria-label={`Editar lote ${lot.name}`}
+                    >
+                      <Pencil size={16} aria-hidden="true" />
+                      Editar
+                    </button>
+                  </PermissionGate>
+                  <PermissionGate permission="animals:delete">
+                    <button
+                      type="button"
+                      className="lots__card-action-btn lots__card-action-btn--danger"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteError(null);
+                        setDeletingLot(lot);
+                      }}
+                      aria-label={`Excluir lote ${lot.name}`}
+                    >
+                      <Trash2 size={16} aria-hidden="true" />
+                      Excluir
+                    </button>
+                  </PermissionGate>
+                </div>
               </div>
             );
           })}
@@ -292,6 +370,25 @@ function LotsPage() {
         lot={selectedLot}
         onClose={() => setSelectedLot(null)}
         onUpdate={() => void refetch()}
+      />
+
+      <EditLotModal
+        isOpen={!!editingLot}
+        farmId={selectedFarm?.id ?? ''}
+        lot={editingLot}
+        onClose={() => setEditingLot(null)}
+        onSuccess={handleEditSuccess}
+      />
+
+      <ConfirmModal
+        isOpen={!!deletingLot}
+        title="Excluir lote"
+        message={`Tem certeza que deseja excluir o lote "${deletingLot?.name ?? ''}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        variant="danger"
+        isLoading={isDeleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeletingLot(null)}
       />
     </section>
   );

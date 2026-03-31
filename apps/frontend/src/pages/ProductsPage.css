@@ -128,6 +128,76 @@
   cursor: pointer;
 }
 
+/* Bulk action bar */
+.products-page__bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--color-primary-50, #f0fdf4);
+  border: 1px solid var(--color-primary-200, #bbf7d0);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary-700, #15803d);
+}
+
+.products-page__bulk-delete {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: var(--color-error-500, #c62828);
+  color: white;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 36px;
+  transition: background 200ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.products-page__bulk-delete:hover {
+  background: var(--color-error-700, #991b1b);
+}
+
+.products-page__bulk-cancel {
+  padding: 8px 16px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 6px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-600);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 36px;
+  transition: background 200ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.products-page__bulk-cancel:hover {
+  background: var(--color-neutral-100);
+}
+
+/* Checkbox column */
+.products-page__th-check,
+.products-page__td-check {
+  width: 48px;
+  text-align: center;
+}
+
+.products-page__th-check input,
+.products-page__td-check input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--color-primary-600);
+}
+
 /* Error */
 .products-page__error {
   display: flex;
@@ -372,6 +442,22 @@
     color: var(--color-neutral-500);
     text-transform: uppercase;
     display: block;
+  }
+
+  .products-page__td-check {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: auto;
+    padding: 0;
+  }
+
+  .products-page__table tr {
+    position: relative;
+  }
+
+  .products-page__bulk-bar {
+    flex-wrap: wrap;
   }
 }
 

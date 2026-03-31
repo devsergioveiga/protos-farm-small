@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/services/api';
-import type { ReleaseItem, ReleasesResponse } from '@/types/reproductive-release';
+import type { ReleaseItem } from '@/types/reproductive-release';
 import type { PaginationMeta } from '@/types/admin';
 
 interface UseReproductiveReleasesParams {
@@ -8,6 +8,8 @@ interface UseReproductiveReleasesParams {
   page?: number;
   limit?: number;
   search?: string;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 interface UseReproductiveReleasesResult {
@@ -26,7 +28,7 @@ export function useReproductiveReleases(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { farmId, page, limit, search } = params;
+  const { farmId, page, limit, search, dateFrom, dateTo } = params;
 
   const fetchReleases = useCallback(async () => {
     if (!farmId) {
@@ -42,12 +44,20 @@ export function useReproductiveReleases(
       if (page) query.set('page', String(page));
       if (limit) query.set('limit', String(limit));
       if (search) query.set('search', search);
+      if (dateFrom) query.set('dateFrom', dateFrom);
+      if (dateTo) query.set('dateTo', dateTo);
 
       const qs = query.toString();
       const path = `/org/farms/${farmId}/reproductive-releases${qs ? `?${qs}` : ''}`;
-      const result = await api.get<ReleasesResponse>(path);
+      const result = await api.get<{ data: ReleaseItem[]; total: number }>(path);
       setReleases(result.data);
-      setMeta(result.meta);
+      const currentLimit = limit ?? 50;
+      setMeta({
+        page: page ?? 1,
+        limit: currentLimit,
+        total: result.total,
+        totalPages: Math.max(1, Math.ceil(result.total / currentLimit)),
+      });
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Erro ao carregar liberações reprodutivas';
@@ -57,7 +67,7 @@ export function useReproductiveReleases(
     } finally {
       setIsLoading(false);
     }
-  }, [farmId, page, limit, search]);
+  }, [farmId, page, limit, search, dateFrom, dateTo]);
 
   useEffect(() => {
     void fetchReleases();

@@ -118,14 +118,10 @@ function validateInput(input: CreateProtocolInput, isUpdate = false): void {
       if (step.dayNumber == null || step.dayNumber < 0) {
         throw new IatfProtocolError('Dia da etapa deve ser um número não negativo', 400);
       }
-      if (step.products) {
-        for (const prod of step.products) {
-          if (!prod.productName?.trim()) {
-            throw new IatfProtocolError(
-              'Nome do produto é obrigatório em cada produto da etapa',
-              400,
-            );
-          }
+      // Filter out empty product entries (no name = not a real product)
+      const realProducts = (step.products ?? []).filter((p) => p.productName?.trim());
+      if (realProducts.length > 0) {
+        for (const prod of realProducts) {
           if (prod.dose == null || prod.dose <= 0) {
             throw new IatfProtocolError('Dose deve ser um número positivo', 400);
           }
@@ -199,14 +195,16 @@ export async function createProtocol(
             isAiDay: step.isAiDay ?? false,
             sortOrder: step.sortOrder ?? idx,
             products: {
-              create: (step.products ?? []).map((prod) => ({
-                productId: prod.productId || null,
-                productName: prod.productName.trim(),
-                dose: prod.dose,
-                doseUnit: prod.doseUnit,
-                administrationRoute: prod.administrationRoute || null,
-                notes: prod.notes?.trim() || null,
-              })),
+              create: (step.products ?? [])
+                .filter((p) => p.productName?.trim())
+                .map((prod) => ({
+                  productId: prod.productId || null,
+                  productName: prod.productName.trim(),
+                  dose: prod.dose,
+                  doseUnit: prod.doseUnit,
+                  administrationRoute: prod.administrationRoute || null,
+                  notes: prod.notes?.trim() || null,
+                })),
             },
           })),
         },
@@ -332,52 +330,109 @@ export async function updateProtocol(
       }
     }
 
-    // If steps are being updated, create a new version (CA7)
+    // If steps are being updated
     const hasStepsChange = input.steps !== undefined;
     if (hasStepsChange) {
-      const parentId = existing.parentId ?? existing.id;
-      const latestVersion = await tx.iatfProtocol.findFirst({
-        where: {
-          OR: [
-            { id: parentId, organizationId: ctx.organizationId },
-            { parentId, organizationId: ctx.organizationId },
-          ],
-          deletedAt: null,
-        },
-        orderBy: { version: 'desc' },
-      });
-      const newVersion = (latestVersion?.version ?? existing.version) + 1;
-
       const steps = input.steps!;
+      const wantsNewVersion = input.createNewVersion !== false; // default true
 
-      const newRow = await tx.iatfProtocol.create({
-        data: {
-          organizationId: ctx.organizationId,
-          name: newName,
-          description:
-            input.description !== undefined
-              ? input.description?.trim() || null
-              : existing.description,
-          targetCategory:
-            input.targetCategory !== undefined ? input.targetCategory : existing.targetCategory,
-          veterinaryAuthor:
-            input.veterinaryAuthor !== undefined
-              ? input.veterinaryAuthor?.trim() || null
-              : existing.veterinaryAuthor,
-          status:
-            input.status !== undefined ? (input.status as IatfProtocolStatus) : existing.status,
-          notes: input.notes !== undefined ? input.notes?.trim() || null : existing.notes,
-          version: newVersion,
-          parentId,
-          createdBy: userId,
-          steps: {
-            create: steps.map((step, idx) => ({
-              dayNumber: step.dayNumber,
-              description: step.description.trim(),
-              isAiDay: step.isAiDay ?? false,
-              sortOrder: step.sortOrder ?? idx,
-              products: {
-                create: (step.products ?? []).map((prod) => ({
+      if (wantsNewVersion) {
+        // ─── New version (CA7) ────────────────────────────
+        const parentId = existing.parentId ?? existing.id;
+        const latestVersion = await tx.iatfProtocol.findFirst({
+          where: {
+            OR: [
+              { id: parentId, organizationId: ctx.organizationId },
+              { parentId, organizationId: ctx.organizationId },
+            ],
+            deletedAt: null,
+          },
+          orderBy: { version: 'desc' },
+        });
+        const newVersion = (latestVersion?.version ?? existing.version) + 1;
+
+        // Deactivate all previous versions
+        await tx.iatfProtocol.updateMany({
+          where: {
+            OR: [{ id: parentId }, { parentId }],
+            organizationId: ctx.organizationId,
+            status: 'ACTIVE',
+          },
+          data: { status: 'INACTIVE' as IatfProtocolStatus },
+        });
+
+        const newRow = await tx.iatfProtocol.create({
+          data: {
+            organizationId: ctx.organizationId,
+            name: newName,
+            description:
+              input.description !== undefined
+                ? input.description?.trim() || null
+                : existing.description,
+            targetCategory:
+              input.targetCategory !== undefined ? input.targetCategory : existing.targetCategory,
+            veterinaryAuthor:
+              input.veterinaryAuthor !== undefined
+                ? input.veterinaryAuthor?.trim() || null
+                : existing.veterinaryAuthor,
+            status:
+              input.status !== undefined ? (input.status as IatfProtocolStatus) : existing.status,
+            notes: input.notes !== undefined ? input.notes?.trim() || null : existing.notes,
+            version: newVersion,
+            parentId,
+            createdBy: userId,
+            steps: {
+              create: steps.map((step, idx) => ({
+                dayNumber: step.dayNumber,
+                description: step.description.trim(),
+                isAiDay: step.isAiDay ?? false,
+                sortOrder: step.sortOrder ?? idx,
+                products: {
+                  create: (step.products ?? [])
+                    .filter((p) => p.productName?.trim())
+                    .map((prod) => ({
+                      productId: prod.productId || null,
+                      productName: prod.productName.trim(),
+                      dose: prod.dose,
+                      doseUnit: prod.doseUnit,
+                      administrationRoute: prod.administrationRoute || null,
+                      notes: prod.notes?.trim() || null,
+                    })),
+                },
+              })),
+            },
+          },
+          include: INCLUDE_RELATIONS,
+        });
+
+        return toItem(newRow as unknown as Record<string, unknown>);
+      }
+
+      // ─── In-place correction (no new version) ──────────
+      // Delete existing steps (cascade deletes products)
+      const existingSteps = await tx.iatfProtocolStep.findMany({
+        where: { protocolId },
+        select: { id: true },
+      });
+      for (const s of existingSteps) {
+        await tx.iatfProtocolStepProduct.deleteMany({ where: { stepId: s.id } });
+      }
+      await tx.iatfProtocolStep.deleteMany({ where: { protocolId } });
+
+      // Recreate steps with updated data
+      for (let idx = 0; idx < steps.length; idx++) {
+        const step = steps[idx];
+        await tx.iatfProtocolStep.create({
+          data: {
+            protocolId,
+            dayNumber: step.dayNumber,
+            description: step.description.trim(),
+            isAiDay: step.isAiDay ?? false,
+            sortOrder: step.sortOrder ?? idx,
+            products: {
+              create: (step.products ?? [])
+                .filter((p) => p.productName?.trim())
+                .map((prod) => ({
                   productId: prod.productId || null,
                   productName: prod.productName.trim(),
                   dose: prod.dose,
@@ -385,14 +440,34 @@ export async function updateProtocol(
                   administrationRoute: prod.administrationRoute || null,
                   notes: prod.notes?.trim() || null,
                 })),
-              },
-            })),
+            },
           },
-        },
+        });
+      }
+
+      // Update protocol metadata fields if provided
+      const metaData: Record<string, unknown> = {};
+      if (input.name !== undefined) metaData.name = newName;
+      if (input.description !== undefined) metaData.description = input.description?.trim() || null;
+      if (input.targetCategory !== undefined) metaData.targetCategory = input.targetCategory;
+      if (input.veterinaryAuthor !== undefined)
+        metaData.veterinaryAuthor = input.veterinaryAuthor?.trim() || null;
+      if (input.status !== undefined) metaData.status = input.status as IatfProtocolStatus;
+      if (input.notes !== undefined) metaData.notes = input.notes?.trim() || null;
+
+      if (Object.keys(metaData).length > 0) {
+        await tx.iatfProtocol.update({
+          where: { id: protocolId },
+          data: metaData,
+        });
+      }
+
+      const updatedRow = await tx.iatfProtocol.findUniqueOrThrow({
+        where: { id: protocolId },
         include: INCLUDE_RELATIONS,
       });
 
-      return toItem(newRow as unknown as Record<string, unknown>);
+      return toItem(updatedRow as unknown as Record<string, unknown>);
     }
 
     // Simple update (no step change, no new version)
@@ -638,6 +713,7 @@ export async function listVersions(
       where: {
         OR: [{ id: parentId }, { parentId }],
         organizationId: ctx.organizationId,
+        deletedAt: null,
       },
       include: INCLUDE_RELATIONS,
       orderBy: { version: 'desc' },

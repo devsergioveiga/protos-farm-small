@@ -84,6 +84,16 @@ export interface CreateLotPayload {
   notes?: string | null;
 }
 
+export interface UpdateLotPayload {
+  name?: string;
+  predominantCategory?: AnimalCategory;
+  currentLocation?: string;
+  locationType?: LotLocationType;
+  maxCapacity?: number | null;
+  description?: string | null;
+  notes?: string | null;
+}
+
 export interface MoveAnimalsPayload {
   animalIds: string[];
   reason?: string;

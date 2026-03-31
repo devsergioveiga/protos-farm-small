@@ -115,6 +115,8 @@ const PRODUCT_ITEM = {
   typicalFrequency: null,
   requiresScheduling: false,
   linkedActivity: null,
+  productClassId: null,
+  productClassName: null,
   compositions: [
     {
       id: 'comp-1',
@@ -149,6 +151,8 @@ const SERVICE_ITEM = {
   typicalFrequency: 'mensal',
   requiresScheduling: true,
   linkedActivity: 'todas',
+  productClassId: null,
+  productClassName: null,
   compositions: [],
   ...NULL_TYPE_FIELDS,
   createdAt: '2026-01-01T00:00:00.000Z',

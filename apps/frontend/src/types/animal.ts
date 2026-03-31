@@ -219,6 +219,23 @@ export interface WeighingStats {
   totalWeighings: number;
 }
 
+export interface FarmWeighingItem {
+  id: string;
+  animalId: string;
+  earTag: string;
+  animalName: string | null;
+  weightKg: number;
+  measuredAt: string;
+  bodyConditionScore: number | null;
+  notes: string | null;
+  recorderName: string;
+}
+
+export interface FarmWeighingsResponse {
+  data: FarmWeighingItem[];
+  meta: import('./admin').PaginationMeta;
+}
+
 // ─── Health Record Types ──────────────────────────────────────────────
 
 export type HealthEventType = 'VACCINATION' | 'DEWORMING' | 'TREATMENT' | 'EXAM';

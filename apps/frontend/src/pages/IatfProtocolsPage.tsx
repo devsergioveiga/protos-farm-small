@@ -26,10 +26,12 @@ import type {
 } from '@/types/iatf-protocol';
 import { IATF_PROTOCOL_STATUSES, TARGET_CATEGORIES } from '@/types/iatf-protocol';
 import IatfProtocolModal from '@/components/iatf-protocols/IatfProtocolModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import { api } from '@/services/api';
 import './IatfProtocolsPage.css';
 
-function formatCurrency(cents: number): string {
+function formatCurrency(cents: number | null | undefined): string {
+  if (cents == null) return 'R$ 0,00';
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -56,6 +58,7 @@ export default function IatfProtocolsPage() {
   const [editProtocol, setEditProtocol] = useState<IatfProtocolDetail | null>(null);
   const [selectedDetail, setSelectedDetail] = useState<IatfProtocolDetail | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<IatfProtocolItem | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const [versions, setVersions] = useState<VersionHistoryItem[]>([]);
@@ -125,25 +128,28 @@ export default function IatfProtocolsPage() {
     }
   }, []);
 
-  const handleDelete = useCallback(
-    async (p: IatfProtocolItem, e: React.MouseEvent) => {
-      e.stopPropagation();
-      setDeleteError(null);
-      if (!window.confirm(`Excluir "${p.name}"? Esta acao nao pode ser desfeita.`)) return;
-      try {
-        await api.delete(`/org/iatf-protocols/${p.id}`);
-        setSuccessMsg('Protocolo excluido com sucesso');
-        if (selectedDetail?.id === p.id) {
-          setSelectedDetail(null);
-        }
-        void refetch();
-        setTimeout(() => setSuccessMsg(null), 5000);
-      } catch (err: unknown) {
-        setDeleteError(err instanceof Error ? err.message : 'Erro ao excluir protocolo.');
+  const handleDeleteClick = useCallback((p: IatfProtocolItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeleteTarget(p);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deleteTarget) return;
+    setDeleteError(null);
+    try {
+      await api.delete(`/org/iatf-protocols/${deleteTarget.id}`);
+      setSuccessMsg('Protocolo excluído com sucesso');
+      if (selectedDetail?.id === deleteTarget.id) {
+        setSelectedDetail(null);
       }
-    },
-    [refetch, selectedDetail],
-  );
+      setDeleteTarget(null);
+      void refetch();
+      setTimeout(() => setSuccessMsg(null), 5000);
+    } catch (err: unknown) {
+      setDeleteError(err instanceof Error ? err.message : 'Erro ao excluir protocolo.');
+      setDeleteTarget(null);
+    }
+  }, [deleteTarget, refetch, selectedDetail]);
 
   const handleDuplicate = useCallback(
     async (p: IatfProtocolItem, e: React.MouseEvent) => {
@@ -256,7 +262,7 @@ export default function IatfProtocolsPage() {
               <button
                 type="button"
                 className="iatf-protocols-page__detail-btn iatf-protocols-page__detail-btn--delete"
-                onClick={(e) => void handleDelete(detail, e)}
+                onClick={(e) => handleDeleteClick(detail, e)}
                 aria-label="Excluir protocolo"
               >
                 <Trash2 size={16} aria-hidden="true" />
@@ -492,6 +498,7 @@ export default function IatfProtocolsPage() {
         <div className="iatf-protocols-page__search">
           <Search size={16} aria-hidden="true" className="iatf-protocols-page__search-icon" />
           <input
+            id="iatf-search"
             type="text"
             placeholder="Buscar por nome ou veterinario..."
             value={searchInput}
@@ -501,6 +508,7 @@ export default function IatfProtocolsPage() {
         </div>
         <div className="iatf-protocols-page__filter">
           <select
+            id="iatf-status-filter"
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
@@ -518,6 +526,7 @@ export default function IatfProtocolsPage() {
         </div>
         <div className="iatf-protocols-page__filter">
           <select
+            id="iatf-category-filter"
             value={categoryFilter}
             onChange={(e) => {
               setCategoryFilter(e.target.value);
@@ -602,7 +611,7 @@ export default function IatfProtocolsPage() {
                   <button
                     type="button"
                     className="iatf-protocols-page__card-btn iatf-protocols-page__card-btn--delete"
-                    onClick={(e) => void handleDelete(p, e)}
+                    onClick={(e) => handleDeleteClick(p, e)}
                     aria-label={`Excluir ${p.name}`}
                   >
                     <Trash2 size={16} aria-hidden="true" />
@@ -687,6 +696,16 @@ export default function IatfProtocolsPage() {
         }}
         protocol={editProtocol}
         onSuccess={handleSuccess}
+      />
+
+      <ConfirmModal
+        isOpen={!!deleteTarget}
+        title="Excluir protocolo"
+        message={`Deseja excluir o protocolo "${deleteTarget?.name ?? ''}"? Esta ação não pode ser desfeita.`}
+        variant="danger"
+        confirmLabel="Excluir"
+        onConfirm={() => void handleDeleteConfirm()}
+        onCancel={() => setDeleteTarget(null)}
       />
     </section>
   );

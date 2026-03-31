@@ -48,4 +48,7 @@ apps/backend/uploads/
 
 # Playwright MCP
 .playwright-mcp/
-.claude/
+# Claude Code — ignore local/personal, track shared config
+.claude/settings.local.json
+.claude/worktrees/
+.claude/skills/

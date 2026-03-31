@@ -185,16 +185,21 @@ export async function softDeleteLot(ctx: RlsContext, farmId: string, lotId: stri
       throw new AnimalLotError('Lote não encontrado', 404);
     }
 
+    // Block deletion if lot has any movements
+    const movementCount = await tx.animalLotMovement.count({
+      where: { lotId },
+    });
+    if (movementCount > 0) {
+      throw new AnimalLotError(
+        'Não é possível excluir este lote pois existem movimentações vinculadas. Remova os animais antes de excluir.',
+        422,
+      );
+    }
+
     // Remove lotId from all animals in this lot
     await tx.animal.updateMany({
       where: { lotId, deletedAt: null },
       data: { lotId: null },
-    });
-
-    // Close open movements
-    await tx.animalLotMovement.updateMany({
-      where: { lotId, exitedAt: null },
-      data: { exitedAt: new Date() },
     });
 
     return tx.animalLot.update({

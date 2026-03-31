@@ -33,7 +33,6 @@ export interface ReleaseItem {
   weightKg: number | null;
   ageMonths: number | null;
   bodyConditionScore: number | null;
-  responsibleName: string;
   previousCategory: string | null;
   notes: string | null;
   recordedBy: string;
@@ -48,21 +47,40 @@ export interface ReleaseIndicators {
   totalReleased: number;
 }
 
+export interface ReleaseVaccinationInput {
+  productId?: string | null;
+  productName: string;
+  dosageMl: number;
+  administrationRoute: string;
+  productBatchNumber?: string | null;
+}
+
+export interface ReleaseIatfInput {
+  protocolId: string;
+  lotName?: string | null;
+}
+
 export interface CreateReleaseInput {
   animalId: string;
   releaseDate: string;
   weightKg?: number | null;
   ageMonths?: number | null;
   bodyConditionScore?: number | null;
-  responsibleName: string;
   notes?: string | null;
+  vaccination?: ReleaseVaccinationInput | null;
+  iatf?: ReleaseIatfInput | null;
 }
 
 export interface BulkReleaseInput {
-  animalIds: string[];
+  animals: Array<{
+    animalId: string;
+    weightKg?: number | null;
+  }>;
   releaseDate: string;
-  responsibleName: string;
+  targetLotId?: string | null;
   notes?: string | null;
+  vaccination?: ReleaseVaccinationInput | null;
+  iatf?: ReleaseIatfInput | null;
 }
 
 export interface SetCriteriaInput {

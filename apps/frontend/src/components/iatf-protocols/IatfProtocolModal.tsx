@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { X, AlertCircle, Plus, Trash2 } from 'lucide-react';
 import { api } from '@/services/api';
 import type {
@@ -8,6 +8,9 @@ import type {
   StepProductInput,
 } from '@/types/iatf-protocol';
 import { TARGET_CATEGORIES, DOSE_UNITS, ADMINISTRATION_ROUTES_IATF } from '@/types/iatf-protocol';
+import { useProducts, type ProductItem } from '@/hooks/useProducts';
+import { useActiveIngredients } from '@/hooks/useActiveIngredients';
+import ProductModal from '@/components/products/ProductModal';
 import './IatfProtocolModal.css';
 
 interface Props {
@@ -54,10 +57,343 @@ const EMPTY_FORM: FormData = {
   steps: [{ ...EMPTY_STEP, products: [{ ...EMPTY_PRODUCT }] }],
 };
 
+// ─── Ingredient Combobox ────────────────────────────────────────────
+
+interface IngredientComboboxProps {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+  ingredients: { id: string; name: string }[];
+  onAdd: (name: string) => void;
+  adding: boolean;
+}
+
+function IngredientCombobox({
+  id,
+  value,
+  onChange,
+  ingredients,
+  onAdd,
+  adding,
+}: IngredientComboboxProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const filtered = useMemo(() => {
+    if (!value.trim()) return ingredients;
+    const lower = value.toLowerCase();
+    return ingredients.filter((ai) => ai.name.toLowerCase().includes(lower));
+  }, [ingredients, value]);
+
+  const exactMatch =
+    value.trim().length > 0 &&
+    ingredients.some((ai) => ai.name.toLowerCase() === value.trim().toLowerCase());
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div className="iatf-protocol-modal__field" ref={ref}>
+      <label htmlFor={id}>Princípio ativo</label>
+      <div className="iatf-protocol-modal__combobox">
+        <input
+          id={id}
+          type="text"
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          placeholder="Digite para buscar..."
+          autoComplete="off"
+        />
+        {open && (filtered.length > 0 || (value.trim() && !exactMatch)) && (
+          <ul className="iatf-protocol-modal__combobox-list" role="listbox">
+            {value.trim() && (
+              <li
+                className="iatf-protocol-modal__combobox-item iatf-protocol-modal__combobox-item--all"
+                role="option"
+                aria-selected={!value.trim()}
+                onClick={() => {
+                  onChange('');
+                  setOpen(false);
+                }}
+              >
+                Mostrar todos os produtos
+              </li>
+            )}
+            {filtered.map((ai) => (
+              <li
+                key={ai.id}
+                className={`iatf-protocol-modal__combobox-item ${
+                  ai.name.toLowerCase() === value.toLowerCase()
+                    ? 'iatf-protocol-modal__combobox-item--active'
+                    : ''
+                }`}
+                role="option"
+                aria-selected={ai.name.toLowerCase() === value.toLowerCase()}
+                onClick={() => {
+                  onChange(ai.name);
+                  setOpen(false);
+                }}
+              >
+                {ai.name}
+              </li>
+            ))}
+            {value.trim() && !exactMatch && (
+              <li
+                className="iatf-protocol-modal__combobox-item iatf-protocol-modal__combobox-item--add"
+                role="option"
+                aria-selected={false}
+                onClick={() => {
+                  onAdd(value.trim());
+                  setOpen(false);
+                }}
+              >
+                <Plus size={14} aria-hidden="true" />
+                {adding ? 'Salvando...' : `Incluir "${value.trim()}"`}
+              </li>
+            )}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Product Combobox ───────────────────────────────────────────────
+
+interface ProductComboboxProps {
+  id: string;
+  value: string; // productId
+  displayValue: string; // product name for display
+  products: ProductItem[];
+  disabled?: boolean;
+  placeholder?: string;
+  onChange: (productId: string, productName: string) => void;
+  onCreateRequest: (name: string) => void;
+}
+
+function ProductCombobox({
+  id,
+  value,
+  displayValue,
+  products,
+  disabled,
+  placeholder,
+  onChange,
+  onCreateRequest,
+}: ProductComboboxProps) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Sync display when value changes externally
+  useEffect(() => {
+    setSearch(displayValue);
+  }, [displayValue]);
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return products;
+    const lower = search.toLowerCase();
+    return products.filter((p) => p.name.toLowerCase().includes(lower));
+  }, [products, search]);
+
+  const exactMatch =
+    search.trim().length > 0 &&
+    products.some((p) => p.name.toLowerCase() === search.trim().toLowerCase());
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        // Restore display value if user didn't select
+        if (!value) setSearch('');
+        else setSearch(displayValue);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [value, displayValue]);
+
+  return (
+    <div className="iatf-protocol-modal__combobox" ref={ref}>
+      <input
+        id={id}
+        type="text"
+        value={search}
+        disabled={disabled}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setOpen(true);
+          if (!e.target.value.trim()) {
+            onChange('', '');
+          }
+        }}
+        onFocus={() => setOpen(true)}
+        placeholder={placeholder}
+        autoComplete="off"
+      />
+      {open && !disabled && (filtered.length > 0 || (search.trim() && !exactMatch)) && (
+        <ul className="iatf-protocol-modal__combobox-list" role="listbox">
+          {filtered.map((p) => (
+            <li
+              key={p.id}
+              className={`iatf-protocol-modal__combobox-item ${
+                p.id === value ? 'iatf-protocol-modal__combobox-item--active' : ''
+              }`}
+              role="option"
+              aria-selected={p.id === value}
+              onClick={() => {
+                onChange(p.id, p.name);
+                setSearch(p.name);
+                setOpen(false);
+              }}
+            >
+              {p.name}
+            </li>
+          ))}
+          {search.trim() && !exactMatch && (
+            <li
+              className="iatf-protocol-modal__combobox-item iatf-protocol-modal__combobox-item--add"
+              role="option"
+              aria-selected={false}
+              onClick={() => {
+                onCreateRequest(search.trim());
+                setOpen(false);
+              }}
+            >
+              <Plus size={14} aria-hidden="true" />
+              Cadastrar &quot;{search.trim()}&quot;
+            </li>
+          )}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Component ─────────────────────────────────────────────────
+
 export default function IatfProtocolModal({ isOpen, onClose, protocol, onSuccess }: Props) {
   const [formData, setFormData] = useState<FormData>({ ...EMPTY_FORM });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [saveMode, setSaveMode] = useState<'correction' | 'new-version'>('correction');
+  // Map: "stepIdx-prodIdx" → selected active ingredient
+  const [activeIngredientMap, setActiveIngredientMap] = useState<Record<string, string>>({});
+  const [newIngredientName, setNewIngredientName] = useState('');
+  const [addingIngredient, setAddingIngredient] = useState(false);
+  // Product creation modal state
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [productInitialName, setProductInitialName] = useState('');
+  // Track which step/product triggered the creation: "stepIdx-prodIdx"
+  const [_productCreateTarget, setProductCreateTarget] = useState<string | null>(null);
+  const { products, refetch: refetchProducts } = useProducts({ limit: 500 });
+  const { ingredients: activeIngredients, refetch: refetchIngredients } = useActiveIngredients();
+
+  // Filter products by selected active ingredient
+  const getFilteredProducts = useCallback(
+    (ingredientName: string | undefined) => {
+      if (!ingredientName) return products;
+      const lower = ingredientName.toLowerCase();
+      return products.filter((p) =>
+        (p.compositions ?? []).some((c) => c.activeIngredient?.toLowerCase() === lower),
+      );
+    },
+    [products],
+  );
+
+  const handleActiveIngredientChange = useCallback(
+    (stepIdx: number, prodIdx: number, value: string) => {
+      const key = `${stepIdx}-${prodIdx}`;
+      setActiveIngredientMap((prev) => ({ ...prev, [key]: value }));
+      // Clear product selection when changing active ingredient
+      setFormData((prev) => {
+        const steps = [...prev.steps];
+        const prods = [...steps[stepIdx].products];
+        prods[prodIdx] = { ...prods[prodIdx], productId: null, productName: '' };
+        steps[stepIdx] = { ...steps[stepIdx], products: prods };
+        return { ...prev, steps };
+      });
+    },
+    [],
+  );
+
+  const handleAddIngredient = useCallback(
+    async (ingredientName?: string) => {
+      const name = (ingredientName ?? newIngredientName).trim();
+      if (!name) return;
+      setAddingIngredient(true);
+      try {
+        await api.post('/org/active-ingredients', { name, type: 'VETERINARY' });
+        setNewIngredientName('');
+        void refetchIngredients();
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Erro ao cadastrar princípio ativo.');
+      } finally {
+        setAddingIngredient(false);
+      }
+    },
+    [newIngredientName, refetchIngredients],
+  );
+
+  const handleProductSelect = useCallback(
+    (stepIndex: number, productIndex: number, productId: string, productName: string) => {
+      setFormData((prev) => {
+        const steps = [...prev.steps];
+        const prods = [...steps[stepIndex].products];
+        prods[productIndex] = {
+          ...prods[productIndex],
+          productId: productId || null,
+          productName,
+        };
+        steps[stepIndex] = { ...steps[stepIndex], products: prods };
+        return { ...prev, steps };
+      });
+
+      // Auto-fill active ingredient from product composition
+      if (productId) {
+        const selectedProduct = products.find((p) => p.id === productId);
+        const firstComposition = selectedProduct?.compositions?.[0];
+        if (firstComposition?.activeIngredient) {
+          const key = `${stepIndex}-${productIndex}`;
+          setActiveIngredientMap((prev) => ({
+            ...prev,
+            [key]: firstComposition.activeIngredient,
+          }));
+        }
+      }
+    },
+    [products],
+  );
+
+  const handleProductCreateRequest = useCallback(
+    (stepIdx: number, prodIdx: number, name: string) => {
+      setProductInitialName(name);
+      setProductCreateTarget(`${stepIdx}-${prodIdx}`);
+      setShowProductModal(true);
+    },
+    [],
+  );
+
+  const handleProductCreated = useCallback(() => {
+    setShowProductModal(false);
+    void refetchProducts();
+    // The user will need to select the product from the refreshed list
+    setProductCreateTarget(null);
+    setProductInitialName('');
+  }, [refetchProducts]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -91,12 +427,16 @@ export default function IatfProtocolModal({ isOpen, onClose, protocol, onSuccess
       });
     }
     setError(null);
+    setFieldErrors({});
+    setSaveMode('correction');
+    setActiveIngredientMap({});
   }, [protocol, isOpen]);
 
   const updateStep = useCallback((index: number, field: string, value: unknown) => {
     setFormData((prev) => {
       const steps = [...prev.steps];
-      steps[index] = { ...steps[index], [field]: value };
+      const updated = { ...steps[index], [field]: value };
+      steps[index] = updated;
       return { ...prev, steps };
     });
   }, []);
@@ -157,9 +497,52 @@ export default function IatfProtocolModal({ isOpen, onClose, protocol, onSuccess
     });
   }, []);
 
+  const validate = useCallback((): Record<string, string> => {
+    const errors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      errors['name'] = 'Nome do protocolo é obrigatório';
+    }
+
+    if (!formData.targetCategory) {
+      errors['targetCategory'] = 'Categoria alvo é obrigatória';
+    }
+
+    if (formData.steps.length === 0) {
+      errors['steps'] = 'Adicione pelo menos uma etapa';
+    }
+
+    formData.steps.forEach((step, stepIdx) => {
+      if (!step.description.trim()) {
+        errors[`step-${stepIdx}-description`] = 'Descrição da etapa é obrigatória';
+      }
+
+      const realProducts = step.products.filter((p) => p.productName?.trim());
+      realProducts.forEach((prod, prodIdx) => {
+        if (!prod.productId) {
+          errors[`step-${stepIdx}-prod-${prodIdx}-product`] =
+            'Selecione o produto pelo princípio ativo';
+        }
+        if (!prod.dose || prod.dose <= 0) {
+          errors[`step-${stepIdx}-prod-${prodIdx}-dose`] = 'Dose é obrigatória';
+        }
+      });
+    });
+
+    return errors;
+  }, [formData]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const errors = validate();
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setError('Corrija os campos destacados antes de salvar.');
+      return;
+    }
+
     setIsLoading(true);
 
     const payload: CreateIatfProtocolInput = {
@@ -174,20 +557,26 @@ export default function IatfProtocolModal({ isOpen, onClose, protocol, onSuccess
         description: s.description,
         isAiDay: s.isAiDay,
         sortOrder: s.sortOrder,
-        products: s.products.map((p) => ({
-          productId: p.productId || null,
-          productName: p.productName,
-          dose: p.dose,
-          doseUnit: p.doseUnit,
-          administrationRoute: p.administrationRoute || null,
-          notes: p.notes || null,
-        })),
+        products: s.products
+          .filter((p) => p.productName?.trim())
+          .map((p) => ({
+            productId: p.productId || null,
+            productName: p.productName,
+            dose: p.dose,
+            doseUnit: p.doseUnit,
+            administrationRoute: p.administrationRoute || null,
+            notes: p.notes || null,
+          })),
       })),
     };
 
     try {
       if (protocol) {
-        await api.patch(`/org/iatf-protocols/${protocol.id}`, payload);
+        const updatePayload = {
+          ...payload,
+          createNewVersion: saveMode === 'new-version',
+        };
+        await api.patch(`/org/iatf-protocols/${protocol.id}`, updatePayload);
       } else {
         await api.post('/org/iatf-protocols', payload);
       }
@@ -234,26 +623,51 @@ export default function IatfProtocolModal({ isOpen, onClose, protocol, onSuccess
 
           {/* Basic info */}
           <div className="iatf-protocol-modal__row">
-            <div className="iatf-protocol-modal__field">
+            <div
+              className={`iatf-protocol-modal__field${fieldErrors['name'] ? ' iatf-protocol-modal__field--error' : ''}`}
+            >
               <label htmlFor="iatf-name">Nome do protocolo *</label>
               <input
                 id="iatf-name"
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
+                onChange={(e) => {
+                  setFormData({ ...formData, name: e.target.value });
+                  if (fieldErrors['name'])
+                    setFieldErrors((prev) => {
+                      const next = { ...prev };
+                      delete next['name'];
+                      return next;
+                    });
+                }}
                 aria-required="true"
+                aria-invalid={!!fieldErrors['name']}
                 placeholder="Ex: P36 — Novilhas"
               />
+              {fieldErrors['name'] && (
+                <span className="iatf-protocol-modal__field-error" role="alert">
+                  <AlertCircle size={14} aria-hidden="true" /> {fieldErrors['name']}
+                </span>
+              )}
             </div>
-            <div className="iatf-protocol-modal__field">
+            <div
+              className={`iatf-protocol-modal__field${fieldErrors['targetCategory'] ? ' iatf-protocol-modal__field--error' : ''}`}
+            >
               <label htmlFor="iatf-category">Categoria alvo *</label>
               <select
                 id="iatf-category"
                 value={formData.targetCategory}
-                onChange={(e) => setFormData({ ...formData, targetCategory: e.target.value })}
-                required
+                onChange={(e) => {
+                  setFormData({ ...formData, targetCategory: e.target.value });
+                  if (fieldErrors['targetCategory'])
+                    setFieldErrors((prev) => {
+                      const next = { ...prev };
+                      delete next['targetCategory'];
+                      return next;
+                    });
+                }}
                 aria-required="true"
+                aria-invalid={!!fieldErrors['targetCategory']}
               >
                 {TARGET_CATEGORIES.map((c) => (
                   <option key={c.value} value={c.value}>
@@ -340,17 +754,35 @@ export default function IatfProtocolModal({ isOpen, onClose, protocol, onSuccess
                       aria-required="true"
                     />
                   </div>
-                  <div className="iatf-protocol-modal__field" style={{ gridColumn: 'span 2' }}>
+                  <div
+                    className={`iatf-protocol-modal__field${fieldErrors[`step-${stepIdx}-description`] ? ' iatf-protocol-modal__field--error' : ''}`}
+                    style={{ gridColumn: 'span 2' }}
+                  >
                     <label htmlFor={`step-desc-${stepIdx}`}>Descrição *</label>
                     <input
                       id={`step-desc-${stepIdx}`}
                       type="text"
                       value={step.description}
-                      onChange={(e) => updateStep(stepIdx, 'description', e.target.value)}
-                      required
+                      onChange={(e) => {
+                        updateStep(stepIdx, 'description', e.target.value);
+                        const key = `step-${stepIdx}-description`;
+                        if (fieldErrors[key])
+                          setFieldErrors((prev) => {
+                            const next = { ...prev };
+                            delete next[key];
+                            return next;
+                          });
+                      }}
                       aria-required="true"
+                      aria-invalid={!!fieldErrors[`step-${stepIdx}-description`]}
                       placeholder="Ex: Inserção de dispositivo intravaginal + BE"
                     />
+                    {fieldErrors[`step-${stepIdx}-description`] && (
+                      <span className="iatf-protocol-modal__field-error" role="alert">
+                        <AlertCircle size={14} aria-hidden="true" />{' '}
+                        {fieldErrors[`step-${stepIdx}-description`]}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -366,7 +798,9 @@ export default function IatfProtocolModal({ isOpen, onClose, protocol, onSuccess
 
                 {/* Products sub-list */}
                 <div className="iatf-protocol-modal__products-header">
-                  <span className="iatf-protocol-modal__products-label">Produtos</span>
+                  <span className="iatf-protocol-modal__products-label">
+                    Produtos{step.isAiDay ? ' (opcional)' : ''}
+                  </span>
                   <button
                     type="button"
                     className="iatf-protocol-modal__add-btn iatf-protocol-modal__add-btn--small"
@@ -396,20 +830,49 @@ export default function IatfProtocolModal({ isOpen, onClose, protocol, onSuccess
                     </div>
 
                     <div className="iatf-protocol-modal__row">
-                      <div className="iatf-protocol-modal__field">
-                        <label htmlFor={`prod-name-${stepIdx}-${prodIdx}`}>Nome do produto *</label>
-                        <input
-                          id={`prod-name-${stepIdx}-${prodIdx}`}
-                          type="text"
-                          value={product.productName}
-                          onChange={(e) =>
-                            updateProduct(stepIdx, prodIdx, 'productName', e.target.value)
+                      <IngredientCombobox
+                        id={`prod-ai-${stepIdx}-${prodIdx}`}
+                        value={activeIngredientMap[`${stepIdx}-${prodIdx}`] ?? ''}
+                        onChange={(val) => handleActiveIngredientChange(stepIdx, prodIdx, val)}
+                        ingredients={activeIngredients}
+                        onAdd={(name) => void handleAddIngredient(name)}
+                        adding={addingIngredient}
+                      />
+                      <div
+                        className={`iatf-protocol-modal__field${fieldErrors[`step-${stepIdx}-prod-${prodIdx}-product`] ? ' iatf-protocol-modal__field--error' : ''}`}
+                      >
+                        <label htmlFor={`prod-select-${stepIdx}-${prodIdx}`}>Produto *</label>
+                        <ProductCombobox
+                          id={`prod-select-${stepIdx}-${prodIdx}`}
+                          value={product.productId ?? ''}
+                          displayValue={product.productName}
+                          products={getFilteredProducts(
+                            activeIngredientMap[`${stepIdx}-${prodIdx}`] || undefined,
+                          )}
+                          placeholder="Digite para buscar..."
+                          onChange={(pid, pname) => {
+                            handleProductSelect(stepIdx, prodIdx, pid, pname);
+                            const key = `step-${stepIdx}-prod-${prodIdx}-product`;
+                            if (fieldErrors[key])
+                              setFieldErrors((prev) => {
+                                const next = { ...prev };
+                                delete next[key];
+                                return next;
+                              });
+                          }}
+                          onCreateRequest={(name) =>
+                            handleProductCreateRequest(stepIdx, prodIdx, name)
                           }
-                          required
-                          aria-required="true"
-                          placeholder="Ex: Benzoato de estradiol"
                         />
+                        {fieldErrors[`step-${stepIdx}-prod-${prodIdx}-product`] && (
+                          <span className="iatf-protocol-modal__field-error" role="alert">
+                            <AlertCircle size={14} aria-hidden="true" />{' '}
+                            {fieldErrors[`step-${stepIdx}-prod-${prodIdx}-product`]}
+                          </span>
+                        )}
                       </div>
+                    </div>
+                    <div className="iatf-protocol-modal__row iatf-protocol-modal__row--dose">
                       <div className="iatf-protocol-modal__field">
                         <label htmlFor={`prod-route-${stepIdx}-${prodIdx}`}>
                           Via de administração
@@ -434,10 +897,9 @@ export default function IatfProtocolModal({ isOpen, onClose, protocol, onSuccess
                           ))}
                         </select>
                       </div>
-                    </div>
-
-                    <div className="iatf-protocol-modal__row">
-                      <div className="iatf-protocol-modal__field">
+                      <div
+                        className={`iatf-protocol-modal__field${fieldErrors[`step-${stepIdx}-prod-${prodIdx}-dose`] ? ' iatf-protocol-modal__field--error' : ''}`}
+                      >
                         <label htmlFor={`prod-dose-${stepIdx}-${prodIdx}`}>Dose *</label>
                         <input
                           id={`prod-dose-${stepIdx}-${prodIdx}`}
@@ -445,17 +907,30 @@ export default function IatfProtocolModal({ isOpen, onClose, protocol, onSuccess
                           step="0.01"
                           min="0.01"
                           value={product.dose || ''}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             updateProduct(
                               stepIdx,
                               prodIdx,
                               'dose',
                               e.target.value ? Number(e.target.value) : 0,
-                            )
-                          }
-                          required
+                            );
+                            const key = `step-${stepIdx}-prod-${prodIdx}-dose`;
+                            if (fieldErrors[key])
+                              setFieldErrors((prev) => {
+                                const next = { ...prev };
+                                delete next[key];
+                                return next;
+                              });
+                          }}
                           aria-required="true"
+                          aria-invalid={!!fieldErrors[`step-${stepIdx}-prod-${prodIdx}-dose`]}
                         />
+                        {fieldErrors[`step-${stepIdx}-prod-${prodIdx}-dose`] && (
+                          <span className="iatf-protocol-modal__field-error" role="alert">
+                            <AlertCircle size={14} aria-hidden="true" />{' '}
+                            {fieldErrors[`step-${stepIdx}-prod-${prodIdx}-dose`]}
+                          </span>
+                        )}
                       </div>
                       <div className="iatf-protocol-modal__field">
                         <label htmlFor={`prod-unit-${stepIdx}-${prodIdx}`}>Unidade *</label>
@@ -498,6 +973,32 @@ export default function IatfProtocolModal({ isOpen, onClose, protocol, onSuccess
             />
           </div>
 
+          {protocol && (
+            <div className="iatf-protocol-modal__save-mode">
+              <span className="iatf-protocol-modal__save-mode-label">Tipo de alteração:</span>
+              <label className="iatf-protocol-modal__radio">
+                <input
+                  type="radio"
+                  name="save-mode"
+                  value="correction"
+                  checked={saveMode === 'correction'}
+                  onChange={() => setSaveMode('correction')}
+                />
+                Correção (atualiza o protocolo atual)
+              </label>
+              <label className="iatf-protocol-modal__radio">
+                <input
+                  type="radio"
+                  name="save-mode"
+                  value="new-version"
+                  checked={saveMode === 'new-version'}
+                  onChange={() => setSaveMode('new-version')}
+                />
+                Nova versão (mantém histórico da versão anterior)
+              </label>
+            </div>
+          )}
+
           <footer className="iatf-protocol-modal__footer">
             <button
               type="button"
@@ -512,6 +1013,19 @@ export default function IatfProtocolModal({ isOpen, onClose, protocol, onSuccess
             </button>
           </footer>
         </form>
+
+        <ProductModal
+          isOpen={showProductModal}
+          product={null}
+          defaultNature="PRODUCT"
+          initialName={productInitialName}
+          onClose={() => {
+            setShowProductModal(false);
+            setProductCreateTarget(null);
+            setProductInitialName('');
+          }}
+          onSuccess={handleProductCreated}
+        />
       </div>
     </div>
   );

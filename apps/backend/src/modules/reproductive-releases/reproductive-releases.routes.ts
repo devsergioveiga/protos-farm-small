@@ -186,6 +186,7 @@ reproductiveReleasesRouter.get(
         animalId: req.query.animalId as string | undefined,
         dateFrom: req.query.dateFrom as string | undefined,
         dateTo: req.query.dateTo as string | undefined,
+        search: req.query.search as string | undefined,
         page: req.query.page ? Number(req.query.page) : undefined,
         limit: req.query.limit ? Number(req.query.limit) : undefined,
       };

@@ -227,6 +227,8 @@
   padding: 20px;
   cursor: pointer;
   transition: all 200ms cubic-bezier(0.33, 1, 0.68, 1);
+  display: flex;
+  flex-direction: column;
 }
 
 .lots__card:hover {
@@ -245,6 +247,47 @@
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 12px;
+}
+
+.lots__card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-neutral-100);
+}
+
+.lots__card-action-btn {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  border-radius: 8px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: all 100ms;
+}
+
+.lots__card-action-btn:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.lots__card-action-btn--danger:hover {
+  background: var(--color-error-100);
+  color: var(--color-error-500);
+}
+
+.lots__card-action-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
 }
 
 .lots__card-name {

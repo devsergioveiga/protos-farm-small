@@ -41,6 +41,37 @@ export interface WeighingItem {
   createdAt: string;
 }
 
+export interface FarmWeighingItem {
+  id: string;
+  animalId: string;
+  earTag: string;
+  animalName: string | null;
+  weightKg: number;
+  measuredAt: string;
+  bodyConditionScore: number | null;
+  notes: string | null;
+  recorderName: string;
+}
+
+export type FarmWeighingSortField =
+  | 'measuredAt'
+  | 'earTag'
+  | 'animalName'
+  | 'weightKg'
+  | 'bodyConditionScore'
+  | 'recorderName';
+
+export interface ListFarmWeighingsQuery {
+  page?: number;
+  limit?: number;
+  dateFrom?: string;
+  dateTo?: string;
+  search?: string;
+  lotId?: string;
+  sortBy?: FarmWeighingSortField;
+  sortOrder?: 'asc' | 'desc';
+}
+
 export interface WeighingStats {
   currentWeightKg: number | null;
   entryWeightKg: number | null;
