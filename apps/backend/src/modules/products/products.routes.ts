@@ -11,6 +11,9 @@ import {
   updateProduct,
   deleteProduct,
   listManufacturers,
+  createManufacturer,
+  updateManufacturer,
+  deleteManufacturer,
 } from './products.service';
 
 export const productsRouter = Router();
@@ -179,6 +182,63 @@ productsRouter.get(
       const ctx = buildRlsContext(req);
       const result = await listManufacturers(ctx, req.query.search as string | undefined);
       res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+productsRouter.post(
+  '/org/manufacturers',
+  authenticate,
+  checkPermission('farms:write'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const { name, cnpj } = req.body as { name: string; cnpj?: string };
+      if (!name?.trim()) {
+        res.status(400).json({ error: 'Nome do fabricante é obrigatório' });
+        return;
+      }
+      const result = await createManufacturer(ctx, name.trim(), cnpj?.trim() || null);
+      res.status(201).json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+productsRouter.put(
+  '/org/manufacturers/:id',
+  authenticate,
+  checkPermission('farms:write'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const id = req.params.id as string;
+      const { name, cnpj } = req.body as { name: string; cnpj?: string };
+      if (!name?.trim()) {
+        res.status(400).json({ error: 'Nome do fabricante é obrigatório' });
+        return;
+      }
+      const result = await updateManufacturer(ctx, id, name.trim(), cnpj?.trim() || null);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+productsRouter.delete(
+  '/org/manufacturers/:id',
+  authenticate,
+  checkPermission('farms:write'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const id = req.params.id as string;
+      await deleteManufacturer(ctx, id);
+      res.status(204).end();
     } catch (err) {
       handleError(err, res);
     }

@@ -30,6 +30,7 @@ export const PRODUCT_TYPES = [
   'corretivo_gesso',
   'inoculante',
   'biologico',
+  'vacina',
   'medicamento_veterinario',
   'hormonio_reprodutivo',
   'suplemento_mineral_vitaminico',
@@ -123,6 +124,8 @@ export interface CreateProductInput {
   category?: string | null;
   status?: string;
   notes?: string | null;
+  // Classe de Produto
+  productClassId?: string | null;
   // Campos de produto (CA5)
   commercialName?: string | null;
   manufacturerName?: string | null; // cria/vincula fabricante por nome
@@ -221,6 +224,9 @@ export interface ProductItem {
   category: string | null;
   status: string;
   notes: string | null;
+  // Classe de Produto
+  productClassId: string | null;
+  productClassName: string | null;
   // Produto
   commercialName: string | null;
   manufacturer: ManufacturerItem | null;

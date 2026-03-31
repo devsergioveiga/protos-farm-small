@@ -94,6 +94,7 @@ import {
   FileCode,
   BookOpen,
   GitBranch,
+  Factory,
 } from 'lucide-react';
 import { useOverdueCount } from '@/hooks/usePayables';
 import { useCheckAlertCount } from '@/hooks/useCheckAlertCount';
@@ -138,6 +139,8 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/animals', icon: Beef, label: 'Animais' },
       { to: '/lots', icon: Layers, label: 'Lotes' },
       { to: '/weighing-session', icon: Scale, label: 'Pesagem' },
+      { to: '/weaning', icon: CupSoda, label: 'Desmama' },
+      { to: '/reproductive-releases', icon: Baby, label: 'Liberação reprodutiva' },
       { to: '/diseases', icon: HeartPulse, label: 'Doenças' },
       { to: '/treatment-protocols', icon: Syringe, label: 'Protocolos tratamento' },
       { to: '/sanitary-protocols', icon: ShieldPlus, label: 'Protocolos sanitários' },
@@ -145,7 +148,6 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/dewormings', icon: Droplet, label: 'Vermifugações' },
       { to: '/therapeutic-treatments', icon: Stethoscope, label: 'Tratamentos' },
       { to: '/animal-exams', icon: FlaskConical, label: 'Exames' },
-      { to: '/reproductive-releases', icon: Baby, label: 'Liberação reprodutiva' },
       { to: '/bulls', icon: Heart, label: 'Touros e sêmen' },
       { to: '/heat-records', icon: Flame, label: 'Detecção de cio' },
       { to: '/mating-plans', icon: HeartHandshake, label: 'Acasalamento' },
@@ -155,7 +157,6 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/natural-matings', icon: Beef, label: 'Monta natural' },
       { to: '/pregnancy-diagnosis', icon: ScanLine, label: 'Diagnóstico gestação' },
       { to: '/calving-events', icon: Milestone, label: 'Partos e crias' },
-      { to: '/weaning', icon: CupSoda, label: 'Desmama' },
       { to: '/sanitary-dashboard', icon: Activity, label: 'Dashboard sanitário' },
       { to: '/animal-exits', icon: LogOut, label: 'Saídas de animais' },
     ],
@@ -315,6 +316,8 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/roles', icon: Shield, label: 'Papéis' },
       { to: '/measurement-units', icon: Ruler, label: 'Unidades de medida' },
       { to: '/products', icon: Package, label: 'Produtos e serviços' },
+      { to: '/manufacturers', icon: Factory, label: 'Fabricantes' },
+      { to: '/active-ingredients', icon: FlaskConical, label: 'Princípios ativos' },
       {
         to: '/notification-preferences',
         icon: BellRing,

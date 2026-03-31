@@ -235,6 +235,7 @@ function toCompositionItem(row: Record<string, unknown>): CompositionItem {
 
 function toItem(row: Record<string, unknown>): ProductItem {
   const manufacturer = row.manufacturer as Record<string, unknown> | null;
+  const productClass = row.productClass as Record<string, unknown> | null;
   const measurementUnit = row.measurementUnit as Record<string, unknown> | null;
   const cultivar = row.cultivar as Record<string, unknown> | null;
   const compositions = (row.compositions as Record<string, unknown>[]) ?? [];
@@ -248,6 +249,8 @@ function toItem(row: Record<string, unknown>): ProductItem {
     category: (row.category as string) ?? null,
     status: row.status as string,
     notes: (row.notes as string) ?? null,
+    productClassId: (row.productClassId as string) ?? null,
+    productClassName: productClass ? (productClass.name as string) : null,
     commercialName: (row.commercialName as string) ?? null,
     manufacturer: manufacturer
       ? {
@@ -308,6 +311,7 @@ function toItem(row: Record<string, unknown>): ProductItem {
 
 const PRODUCT_INCLUDE = {
   manufacturer: true,
+  productClass: { select: { id: true, name: true } },
   measurementUnit: { select: { id: true, abbreviation: true, name: true } },
   cultivar: { select: { id: true, name: true, crop: true } },
   compositions: true,
@@ -391,6 +395,7 @@ export async function createProduct(
         category: input.category?.trim() || null,
         status: (input.status as any) || 'ACTIVE',
         notes: input.notes?.trim() || null,
+        productClassId: input.productClassId || null,
         commercialName: input.commercialName?.trim() || null,
         manufacturerId,
         measurementUnitId: input.measurementUnitId || null,
@@ -594,6 +599,7 @@ export async function updateProduct(
     if (input.category !== undefined) data.category = input.category?.trim() || null;
     if (input.status !== undefined) data.status = input.status;
     if (input.notes !== undefined) data.notes = input.notes?.trim() || null;
+    if (input.productClassId !== undefined) data.productClassId = input.productClassId || null;
     if (input.commercialName !== undefined)
       data.commercialName = input.commercialName?.trim() || null;
     if (manufacturerId !== undefined) data.manufacturerId = manufacturerId;
@@ -708,6 +714,59 @@ export async function deleteProduct(ctx: RlsContext, id: string): Promise<void> 
 }
 
 // ─── Manufacturers ──────────────────────────────────────────────────
+
+export async function createManufacturer(
+  ctx: RlsContext,
+  name: string,
+  cnpj: string | null,
+): Promise<ManufacturerItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const existing = await (tx as any).manufacturer.findFirst({
+      where: { organizationId: ctx.organizationId, name },
+    });
+    if (existing) {
+      return {
+        id: existing.id as string,
+        name: existing.name as string,
+        cnpj: (existing.cnpj as string) ?? null,
+      };
+    }
+
+    const created = await (tx as any).manufacturer.create({
+      data: { organizationId: ctx.organizationId, name, cnpj },
+    });
+    return {
+      id: created.id as string,
+      name: created.name as string,
+      cnpj: (created.cnpj as string) ?? null,
+    };
+  });
+}
+
+export async function updateManufacturer(
+  ctx: RlsContext,
+  id: string,
+  name: string,
+  cnpj: string | null,
+): Promise<ManufacturerItem> {
+  return withRlsContext(ctx, async (tx) => {
+    const updated = await (tx as any).manufacturer.update({
+      where: { id },
+      data: { name, cnpj },
+    });
+    return {
+      id: updated.id as string,
+      name: updated.name as string,
+      cnpj: (updated.cnpj as string) ?? null,
+    };
+  });
+}
+
+export async function deleteManufacturer(ctx: RlsContext, id: string): Promise<void> {
+  return withRlsContext(ctx, async (tx) => {
+    await (tx as any).manufacturer.delete({ where: { id } });
+  });
+}
 
 export async function listManufacturers(
   ctx: RlsContext,

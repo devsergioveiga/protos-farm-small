@@ -45,6 +45,8 @@ import { productivityMapRouter } from './modules/productivity-map/productivity-m
 import { orangeHarvestsRouter } from './modules/orange-harvests/orange-harvests.routes';
 import { measurementUnitsRouter } from './modules/measurement-units/measurement-units.routes';
 import { productsRouter } from './modules/products/products.routes';
+import { activeIngredientsRouter } from './modules/active-ingredients/active-ingredients.routes';
+import { productClassesRouter } from './modules/product-classes/product-classes.routes';
 import { stockEntriesRouter } from './modules/stock-entries/stock-entries.routes';
 import { stockOutputsRouter } from './modules/stock-outputs/stock-outputs.routes';
 import { stockAlertsRouter } from './modules/stock-alerts/stock-alerts.routes';
@@ -221,6 +223,8 @@ app.use('/api', productivityMapRouter);
 app.use('/api', orangeHarvestsRouter);
 app.use('/api', measurementUnitsRouter);
 app.use('/api', productsRouter);
+app.use('/api', activeIngredientsRouter);
+app.use('/api', productClassesRouter);
 app.use('/api', stockEntriesRouter);
 app.use('/api', stockOutputsRouter);
 app.use('/api', stockAlertsRouter);

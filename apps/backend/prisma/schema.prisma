@@ -398,6 +398,7 @@ model Organization {
   depreciationRuns         DepreciationRun[]
   animalExits              AnimalExit[]
   activeIngredients        ActiveIngredient[]
+  productClasses           ProductClass[]
   storageLocations         StorageLocation[]
   maintenancePlans         MaintenancePlan[]
   workOrders               WorkOrder[]
@@ -2781,6 +2782,9 @@ model Product {
   status           ProductStatus @default(ACTIVE)
   notes            String?       // observações
 
+  // ── Classe do Produto ──
+  productClassId   String?       // FK para ProductClass
+
   // ── Campos adicionais para Produto (CA5) ──
   commercialName   String?       // nome comercial
   manufacturerId   String?       // FK para Manufacturer
@@ -2846,6 +2850,7 @@ model Product {
   deletedAt        DateTime?     // soft delete
 
   organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  productClass     ProductClass?    @relation(fields: [productClassId], references: [id], onDelete: SetNull)
   manufacturer     Manufacturer?    @relation(fields: [manufacturerId], references: [id], onDelete: SetNull)
   measurementUnit  MeasurementUnit? @relation(fields: [measurementUnitId], references: [id], onDelete: SetNull)
   cultivar         Cultivar?        @relation(fields: [cultivarId], references: [id], onDelete: SetNull)
@@ -2881,6 +2886,7 @@ model Product {
   @@index([organizationId, type])
   @@index([organizationId, status])
   @@index([manufacturerId])
+  @@index([productClassId])
   @@map("products")
 }
 
@@ -2898,6 +2904,24 @@ model Manufacturer {
   @@unique([organizationId, name])
   @@index([organizationId])
   @@map("manufacturers")
+}
+
+// ─── Classe de Produto (normalizado) ──────────────────────────────
+
+model ProductClass {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  products     Product[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("product_classes")
 }
 
 // ─── Princípio Ativo (normalizado) ─────────────────────────────────
@@ -4161,7 +4185,7 @@ model ReproductiveRelease {
   weightKg            Float?
   ageMonths           Int?
   bodyConditionScore  Float?
-  responsibleName     String
+  responsibleName     String?
   previousCategory    String?
   previousLotId       String?
   targetLotId         String?
