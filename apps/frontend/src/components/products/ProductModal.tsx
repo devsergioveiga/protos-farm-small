@@ -1,7 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
-import { X, Plus, Trash2 } from 'lucide-react';
+import {
+  X,
+  Plus,
+  Trash2,
+  Loader2,
+  FlaskConical,
+  Beaker,
+  Pill,
+  Sprout,
+  Wrench,
+  Package,
+} from 'lucide-react';
 import { api } from '@/services/api';
 import { useMeasurementUnits } from '@/hooks/useMeasurementUnits';
+import { useProductClasses } from '@/hooks/useProductClasses';
+import { useManufacturers } from '@/hooks/useManufacturers';
+import { useActiveIngredients } from '@/hooks/useActiveIngredients';
+import ActiveIngredientModal from '@/components/active-ingredients/ActiveIngredientModal';
 import type { ProductItem } from '@/hooks/useProducts';
 import './ProductModal.css';
 
@@ -19,6 +34,7 @@ const PRODUCT_TYPES = [
   { value: 'corretivo_gesso', label: 'Gesso' },
   { value: 'inoculante', label: 'Inoculante' },
   { value: 'biologico', label: 'Biológico' },
+  { value: 'vacina', label: 'Vacina' },
   { value: 'medicamento_veterinario', label: 'Medicamento Veterinário' },
   { value: 'hormonio_reprodutivo', label: 'Hormônio Reprodutivo' },
   { value: 'suplemento_mineral_vitaminico', label: 'Suplemento Mineral/Vitamínico' },
@@ -144,6 +160,7 @@ function isSemente(type: string) {
 
 function isMedicamentoVet(type: string) {
   return [
+    'vacina',
     'medicamento_veterinario',
     'hormonio_reprodutivo',
     'suplemento_mineral_vitaminico',
@@ -168,7 +185,8 @@ interface Props {
   product: ProductItem | null;
   defaultNature: 'PRODUCT' | 'SERVICE';
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (created?: { id: string; name: string }) => void;
+  initialName?: string;
 }
 
 // ─── Component ──────────────────────────────────────────────────────
@@ -179,21 +197,29 @@ export default function ProductModal({
   defaultNature,
   onClose,
   onSuccess,
+  initialName,
 }: Props) {
   const isEditing = !!product;
 
   // Basic fields
   const [nature, setNature] = useState<'PRODUCT' | 'SERVICE'>(defaultNature);
-  const [name, setName] = useState('');
+  const [_name, setName] = useState('');
   const [type, setType] = useState('');
-  const [category, setCategory] = useState('');
   const [status, setStatus] = useState('ACTIVE');
   const [notes, setNotes] = useState('');
+
+  // Product class
+  const [productClassId, setProductClassId] = useState('');
+  const [productClassSearch, setProductClassSearch] = useState('');
+  const [showProductClassDropdown, setShowProductClassDropdown] = useState(false);
+  const [isCreatingClass, setIsCreatingClass] = useState(false);
 
   // Product fields
   const [commercialName, setCommercialName] = useState('');
   const [manufacturerName, setManufacturerName] = useState('');
   const [manufacturerCnpj, setManufacturerCnpj] = useState('');
+  const [showManufacturerDropdown, setShowManufacturerDropdown] = useState(false);
+  const [isCreatingManufacturer, setIsCreatingManufacturer] = useState(false);
   const [measurementUnitId, setMeasurementUnitId] = useState('');
   const [barcode, setBarcode] = useState('');
 
@@ -206,6 +232,9 @@ export default function ProductModal({
 
   // Compositions
   const [compositions, setCompositions] = useState<CompositionRow[]>([]);
+  const [activeIngredientDropdown, setActiveIngredientDropdown] = useState<number | null>(null);
+  const [showIngredientModal, setShowIngredientModal] = useState(false);
+  const [ingredientModalIndex, setIngredientModalIndex] = useState<number | null>(null);
 
   // CA8: Defensivos
   const [toxicityClass, setToxicityClass] = useState('');
@@ -241,6 +270,21 @@ export default function ProductModal({
   // Load measurement units for select
   const { units: measurementUnits } = useMeasurementUnits({ limit: 100 });
 
+  // Load product classes for autocomplete
+  const { productClasses, createProductClass } = useProductClasses();
+  const filteredProductClasses = productClasses.filter(
+    (pc) => !productClassSearch || pc.name.toLowerCase().includes(productClassSearch.toLowerCase()),
+  );
+
+  // Load manufacturers for autocomplete
+  const { manufacturers, createManufacturer } = useManufacturers();
+
+  // Load active ingredients for composition autocomplete
+  const { ingredients: activeIngredients, createIngredient } = useActiveIngredients();
+  const filteredManufacturers = manufacturers.filter(
+    (m) => !manufacturerName || m.name.toLowerCase().includes(manufacturerName.toLowerCase()),
+  );
+
   // Reset form on open
   useEffect(() => {
     if (isOpen) {
@@ -248,12 +292,17 @@ export default function ProductModal({
         setNature(product.nature as 'PRODUCT' | 'SERVICE');
         setName(product.name);
         setType(product.type);
-        setCategory(product.category ?? '');
         setStatus(product.status);
         setNotes(product.notes ?? '');
+        setProductClassId(product.productClassId ?? '');
+        setProductClassSearch(product.productClassName ?? '');
+        setShowProductClassDropdown(false);
+        setIsCreatingClass(false);
         setCommercialName(product.commercialName ?? '');
         setManufacturerName(product.manufacturer?.name ?? '');
         setManufacturerCnpj(product.manufacturer?.cnpj ?? '');
+        setShowManufacturerDropdown(false);
+        setIsCreatingManufacturer(false);
         setMeasurementUnitId(product.measurementUnitId ?? '');
         setBarcode(product.barcode ?? '');
         setChargeUnit(product.chargeUnit ?? '');
@@ -301,12 +350,17 @@ export default function ProductModal({
         setNature(defaultNature);
         setName('');
         setType('');
-        setCategory('');
         setStatus('ACTIVE');
         setNotes('');
-        setCommercialName('');
+        setProductClassId('');
+        setProductClassSearch('');
+        setShowProductClassDropdown(false);
+        setIsCreatingClass(false);
+        setCommercialName(initialName ?? '');
         setManufacturerName('');
         setManufacturerCnpj('');
+        setShowManufacturerDropdown(false);
+        setIsCreatingManufacturer(false);
         setMeasurementUnitId('');
         setBarcode('');
         setChargeUnit('');
@@ -356,22 +410,25 @@ export default function ProductModal({
 
   if (!isOpen) return null;
 
-  const canSubmit = name.trim() && type && !isSubmitting;
+  const canSubmit = productClassId && type && !isSubmitting;
 
   const buildPayload = () => {
+    // name é derivado da classe do produto (campo obrigatório no DB)
+    const derivedName = commercialName.trim() || productClassSearch.trim();
     const payload: Record<string, unknown> = {
       nature,
-      name: name.trim(),
+      name: derivedName,
       type,
-      category: category.trim() || null,
       status,
       notes: notes.trim() || null,
     };
 
+    payload.productClassId = productClassId || null;
+
     if (nature === 'PRODUCT') {
       payload.commercialName = commercialName.trim() || null;
       payload.manufacturerName = manufacturerName.trim() || null;
-      payload.manufacturerCnpj = manufacturerCnpj.trim() || null;
+      payload.manufacturerCnpj = manufacturerCnpj || null;
       payload.measurementUnitId = measurementUnitId || null;
       payload.barcode = barcode.trim() || null;
 
@@ -450,10 +507,11 @@ export default function ProductModal({
       const payload = buildPayload();
       if (isEditing) {
         await api.put(`/org/products/${product.id}`, payload);
+        onSuccess();
       } else {
-        await api.post('/org/products', payload);
+        const result = await api.post<{ id: string; name: string }>('/org/products', payload);
+        onSuccess({ id: result.id, name: result.name });
       }
-      onSuccess();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Erro ao salvar.';
       setSubmitError(msg);
@@ -523,7 +581,18 @@ export default function ProductModal({
 
             {/* ─── Dados Básicos ──────────────────────────────── */}
             <div className="product-modal__section">
-              <div className="product-modal__row">
+              <div className="product-modal__field">
+                <label htmlFor="prod-commercial">Nome Comercial</label>
+                <input
+                  id="prod-commercial"
+                  type="text"
+                  value={commercialName}
+                  onChange={(e) => setCommercialName(e.target.value)}
+                  placeholder="Nome comercial do produto"
+                />
+              </div>
+
+              <div className={isEditing ? 'product-modal__row' : ''}>
                 <div className="product-modal__field">
                   <label htmlFor="prod-nature">
                     Natureza <span aria-hidden="true">*</span>
@@ -542,33 +611,21 @@ export default function ProductModal({
                   </select>
                 </div>
 
-                <div className="product-modal__field">
-                  <label htmlFor="prod-status">Status</label>
-                  <select
-                    id="prod-status"
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                  >
-                    <option value="ACTIVE">Ativo</option>
-                    <option value="INACTIVE">Inativo</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="product-modal__field">
-                <label htmlFor="prod-name">
-                  Nome <span aria-hidden="true">*</span>
-                </label>
-                <input
-                  id="prod-name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={
-                    nature === 'PRODUCT' ? 'Ex: Glifosato 480 SL' : 'Ex: Consultoria Agronômica'
-                  }
-                  aria-required="true"
-                />
+                {isEditing && (
+                  <div className="product-modal__toggle-field">
+                    <span className="product-modal__toggle-label">Ativo</span>
+                    <label className="product-modal__toggle" htmlFor="prod-status">
+                      <input
+                        type="checkbox"
+                        id="prod-status"
+                        checked={status === 'ACTIVE'}
+                        onChange={(e) => setStatus(e.target.checked ? 'ACTIVE' : 'INACTIVE')}
+                      />
+                      <span className="product-modal__toggle-track" aria-hidden="true" />
+                      <span className="product-modal__toggle-thumb" aria-hidden="true" />
+                    </label>
+                  </div>
+                )}
               </div>
 
               <div className="product-modal__row">
@@ -591,15 +648,81 @@ export default function ProductModal({
                   </select>
                 </div>
 
-                <div className="product-modal__field">
-                  <label htmlFor="prod-category">Categoria</label>
+                <div className="product-modal__field product-modal__autocomplete">
+                  <label htmlFor="prod-class">
+                    Classe do Produto <span aria-hidden="true">*</span>
+                  </label>
                   <input
-                    id="prod-category"
+                    id="prod-class"
                     type="text"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    placeholder="Categoria livre"
+                    value={productClassSearch}
+                    onChange={(e) => {
+                      setProductClassSearch(e.target.value);
+                      setShowProductClassDropdown(true);
+                      if (!e.target.value.trim()) {
+                        setProductClassId('');
+                      }
+                    }}
+                    onFocus={() => setShowProductClassDropdown(true)}
+                    onBlur={() => {
+                      // Delay to allow click on dropdown items
+                      setTimeout(() => setShowProductClassDropdown(false), 200);
+                    }}
+                    placeholder="Ex: Antibiótico Mastite"
+                    autoComplete="off"
+                    aria-required="true"
                   />
+                  {showProductClassDropdown &&
+                    (filteredProductClasses.length > 0 || productClassSearch.trim()) && (
+                      <ul className="product-modal__dropdown" role="listbox">
+                        {filteredProductClasses.map((pc) => (
+                          <li
+                            key={pc.id}
+                            role="option"
+                            aria-selected={pc.id === productClassId}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setProductClassId(pc.id);
+                              setProductClassSearch(pc.name);
+                              setShowProductClassDropdown(false);
+                            }}
+                          >
+                            {pc.name}
+                          </li>
+                        ))}
+                        {filteredProductClasses.length === 0 &&
+                          productClassSearch.trim() &&
+                          !isCreatingClass && (
+                            <li
+                              className="product-modal__dropdown-create"
+                              role="option"
+                              aria-selected={false}
+                              onMouseDown={async (e) => {
+                                e.preventDefault();
+                                setIsCreatingClass(true);
+                                try {
+                                  const created = await createProductClass(
+                                    productClassSearch.trim(),
+                                  );
+                                  setProductClassId(created.id);
+                                  setProductClassSearch(created.name);
+                                  setShowProductClassDropdown(false);
+                                } catch {
+                                  // Keep dropdown open on error
+                                } finally {
+                                  setIsCreatingClass(false);
+                                }
+                              }}
+                            >
+                              <Plus size={14} aria-hidden="true" /> Criar &quot;
+                              {productClassSearch.trim()}&quot;
+                            </li>
+                          )}
+                        {isCreatingClass && (
+                          <li className="product-modal__dropdown-loading">Criando...</li>
+                        )}
+                      </ul>
+                    )}
                 </div>
               </div>
             </div>
@@ -607,40 +730,80 @@ export default function ProductModal({
             {/* ─── Campos de Produto ─────────────────────────── */}
             {nature === 'PRODUCT' && (
               <div className="product-modal__section">
-                <h3 className="product-modal__section-title">Dados do Produto</h3>
+                <h3 className="product-modal__section-title">
+                  <Package size={16} aria-hidden="true" />
+                  Dados do Produto
+                </h3>
 
-                <div className="product-modal__field">
-                  <label htmlFor="prod-commercial">Nome Comercial</label>
+                <div className="product-modal__field product-modal__autocomplete">
+                  <label htmlFor="prod-manufacturer">Fabricante</label>
                   <input
-                    id="prod-commercial"
+                    id="prod-manufacturer"
                     type="text"
-                    value={commercialName}
-                    onChange={(e) => setCommercialName(e.target.value)}
-                    placeholder="Nome comercial do produto"
+                    value={manufacturerName}
+                    onChange={(e) => {
+                      setManufacturerName(e.target.value);
+                      setShowManufacturerDropdown(true);
+                    }}
+                    onFocus={() => setShowManufacturerDropdown(true)}
+                    onBlur={() => {
+                      setTimeout(() => setShowManufacturerDropdown(false), 200);
+                    }}
+                    placeholder="Nome do fabricante"
+                    autoComplete="off"
                   />
-                </div>
-
-                <div className="product-modal__row">
-                  <div className="product-modal__field">
-                    <label htmlFor="prod-manufacturer">Fabricante</label>
-                    <input
-                      id="prod-manufacturer"
-                      type="text"
-                      value={manufacturerName}
-                      onChange={(e) => setManufacturerName(e.target.value)}
-                      placeholder="Nome do fabricante"
-                    />
-                  </div>
-                  <div className="product-modal__field">
-                    <label htmlFor="prod-cnpj">CNPJ do Fabricante</label>
-                    <input
-                      id="prod-cnpj"
-                      type="text"
-                      value={manufacturerCnpj}
-                      onChange={(e) => setManufacturerCnpj(e.target.value)}
-                      placeholder="00.000.000/0000-00"
-                    />
-                  </div>
+                  {showManufacturerDropdown &&
+                    (filteredManufacturers.length > 0 || manufacturerName.trim()) && (
+                      <ul className="product-modal__dropdown" role="listbox">
+                        {filteredManufacturers.map((m) => (
+                          <li
+                            key={m.id}
+                            role="option"
+                            aria-selected={m.name === manufacturerName}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setManufacturerName(m.name);
+                              setManufacturerCnpj(m.cnpj ?? '');
+                              setShowManufacturerDropdown(false);
+                            }}
+                          >
+                            {m.name}
+                            {m.cnpj && (
+                              <span className="product-modal__dropdown-hint">{m.cnpj}</span>
+                            )}
+                          </li>
+                        ))}
+                        {filteredManufacturers.length === 0 &&
+                          manufacturerName.trim() &&
+                          !isCreatingManufacturer && (
+                            <li
+                              className="product-modal__dropdown-create"
+                              role="option"
+                              aria-selected={false}
+                              onMouseDown={async (e) => {
+                                e.preventDefault();
+                                setIsCreatingManufacturer(true);
+                                try {
+                                  const created = await createManufacturer(manufacturerName.trim());
+                                  setManufacturerName(created.name);
+                                  setManufacturerCnpj(created.cnpj ?? '');
+                                  setShowManufacturerDropdown(false);
+                                } catch {
+                                  // Keep dropdown open on error
+                                } finally {
+                                  setIsCreatingManufacturer(false);
+                                }
+                              }}
+                            >
+                              <Plus size={14} aria-hidden="true" /> Criar &quot;
+                              {manufacturerName.trim()}&quot;
+                            </li>
+                          )}
+                        {isCreatingManufacturer && (
+                          <li className="product-modal__dropdown-loading">Criando...</li>
+                        )}
+                      </ul>
+                    )}
                 </div>
 
                 <div className="product-modal__row">
@@ -675,7 +838,10 @@ export default function ProductModal({
             {/* ─── Campos de Serviço ─────────────────────────── */}
             {nature === 'SERVICE' && (
               <div className="product-modal__section">
-                <h3 className="product-modal__section-title">Dados do Serviço</h3>
+                <h3 className="product-modal__section-title">
+                  <Wrench size={16} aria-hidden="true" />
+                  Dados do Serviço
+                </h3>
 
                 <div className="product-modal__row">
                   <div className="product-modal__field">
@@ -700,6 +866,7 @@ export default function ProductModal({
                       type="number"
                       step="0.01"
                       min="0"
+                      inputMode="decimal"
                       value={unitCost}
                       onChange={(e) => setUnitCost(e.target.value)}
                     />
@@ -749,43 +916,113 @@ export default function ProductModal({
             {/* ─── Composição (CA7) ─────────────────────────── */}
             {nature === 'PRODUCT' && (
               <div className="product-modal__section">
-                <h3 className="product-modal__section-title">Composição</h3>
+                <h3 className="product-modal__section-title">
+                  <Beaker size={16} aria-hidden="true" />
+                  Composição
+                </h3>
                 <div className="product-modal__comp-list">
-                  {compositions.map((comp, i) => (
-                    <div key={i} className="product-modal__comp-item">
-                      <div className="product-modal__field">
-                        <label htmlFor={`comp-ingredient-${i}`}>Ingrediente Ativo</label>
-                        <input
-                          id={`comp-ingredient-${i}`}
-                          type="text"
-                          value={comp.activeIngredient}
-                          onChange={(e) => updateComposition(i, 'activeIngredient', e.target.value)}
-                        />
+                  {compositions.map((comp, i) => {
+                    const searchTerm = comp.activeIngredient.toLowerCase();
+                    const isSelected = activeIngredients.some(
+                      (ing) => ing.name === comp.activeIngredient,
+                    );
+                    const filteredIngredients = activeIngredients.filter(
+                      (ing) => !searchTerm || ing.name.toLowerCase().includes(searchTerm),
+                    );
+                    const hasExactMatch = activeIngredients.some(
+                      (ing) => ing.name.toLowerCase() === searchTerm,
+                    );
+                    return (
+                      <div key={i} className="product-modal__comp-item">
+                        <div className="product-modal__field product-modal__autocomplete">
+                          <label htmlFor={`comp-ingredient-${i}`}>Princípio Ativo</label>
+                          <input
+                            id={`comp-ingredient-${i}`}
+                            type="text"
+                            value={comp.activeIngredient}
+                            onChange={(e) => {
+                              updateComposition(i, 'activeIngredient', e.target.value);
+                              setActiveIngredientDropdown(i);
+                            }}
+                            onFocus={() => setActiveIngredientDropdown(i)}
+                            onBlur={() => {
+                              setTimeout(() => {
+                                setActiveIngredientDropdown(null);
+                                if (!isSelected && comp.activeIngredient.trim()) {
+                                  updateComposition(i, 'activeIngredient', '');
+                                }
+                              }, 200);
+                            }}
+                            placeholder="Buscar princípio ativo..."
+                            autoComplete="off"
+                            className={isSelected ? 'product-modal__input--selected' : ''}
+                          />
+                          {activeIngredientDropdown === i && (
+                            <ul className="product-modal__dropdown" role="listbox">
+                              {filteredIngredients.slice(0, 10).map((ing) => (
+                                <li
+                                  key={ing.id}
+                                  role="option"
+                                  aria-selected={ing.name === comp.activeIngredient}
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    updateComposition(i, 'activeIngredient', ing.name);
+                                    setActiveIngredientDropdown(null);
+                                  }}
+                                >
+                                  {ing.name}
+                                </li>
+                              ))}
+                              {comp.activeIngredient.trim() && !hasExactMatch && (
+                                <li
+                                  className="product-modal__dropdown-create"
+                                  role="option"
+                                  aria-selected={false}
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    setIngredientModalIndex(i);
+                                    setShowIngredientModal(true);
+                                    setActiveIngredientDropdown(null);
+                                  }}
+                                >
+                                  <Plus size={14} aria-hidden="true" /> Cadastrar &quot;
+                                  {comp.activeIngredient.trim()}&quot;
+                                </li>
+                              )}
+                              {filteredIngredients.length === 0 &&
+                                !comp.activeIngredient.trim() && (
+                                  <li className="product-modal__dropdown-loading">
+                                    Nenhum ingrediente cadastrado
+                                  </li>
+                                )}
+                            </ul>
+                          )}
+                        </div>
+                        <div className="product-modal__field">
+                          <label htmlFor={`comp-conc-${i}`}>Concentração</label>
+                          <input
+                            id={`comp-conc-${i}`}
+                            type="text"
+                            value={comp.concentration}
+                            onChange={(e) => updateComposition(i, 'concentration', e.target.value)}
+                            placeholder="Ex: 480 g/L"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="product-modal__comp-remove"
+                          onClick={() => removeComposition(i)}
+                          aria-label={`Remover composição ${i + 1}`}
+                        >
+                          <Trash2 size={16} aria-hidden="true" />
+                        </button>
                       </div>
-                      <div className="product-modal__field">
-                        <label htmlFor={`comp-conc-${i}`}>Concentração</label>
-                        <input
-                          id={`comp-conc-${i}`}
-                          type="text"
-                          value={comp.concentration}
-                          onChange={(e) => updateComposition(i, 'concentration', e.target.value)}
-                          placeholder="Ex: 480 g/L"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        className="product-modal__comp-remove"
-                        onClick={() => removeComposition(i)}
-                        aria-label={`Remover composição ${i + 1}`}
-                      >
-                        <Trash2 size={16} aria-hidden="true" />
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 <button type="button" className="product-modal__btn-add" onClick={addComposition}>
                   <Plus size={16} aria-hidden="true" />
-                  Adicionar ingrediente
+                  Adicionar princípio ativo
                 </button>
               </div>
             )}
@@ -793,7 +1030,10 @@ export default function ProductModal({
             {/* ─── CA8: Defensivos ───────────────────────────── */}
             {nature === 'PRODUCT' && isDefensivo(type) && (
               <div className="product-modal__section">
-                <h3 className="product-modal__section-title">Dados do Defensivo</h3>
+                <h3 className="product-modal__section-title">
+                  <FlaskConical size={16} aria-hidden="true" />
+                  Dados do Defensivo
+                </h3>
 
                 <div className="product-modal__row">
                   <div className="product-modal__field">
@@ -906,7 +1146,10 @@ export default function ProductModal({
             {/* ─── CA9: Fertilizantes ────────────────────────── */}
             {nature === 'PRODUCT' && isFertilizante(type) && (
               <div className="product-modal__section">
-                <h3 className="product-modal__section-title">Dados do Fertilizante</h3>
+                <h3 className="product-modal__section-title">
+                  <Sprout size={16} aria-hidden="true" />
+                  Dados do Fertilizante
+                </h3>
 
                 <div className="product-modal__field">
                   <label htmlFor="prod-npk">Formulação NPK</label>
@@ -957,7 +1200,10 @@ export default function ProductModal({
             {/* ─── CA11: Medicamentos Veterinários ───────────── */}
             {nature === 'PRODUCT' && isMedicamentoVet(type) && (
               <div className="product-modal__section">
-                <h3 className="product-modal__section-title">Dados do Medicamento</h3>
+                <h3 className="product-modal__section-title">
+                  <Pill size={16} aria-hidden="true" />
+                  Dados do Medicamento
+                </h3>
 
                 <div className="product-modal__row">
                   <div className="product-modal__field">
@@ -1026,6 +1272,7 @@ export default function ProductModal({
                       id="prod-milk-withdrawal"
                       type="number"
                       min="0"
+                      inputMode="numeric"
                       value={milkWithdrawalHours}
                       onChange={(e) => setMilkWithdrawalHours(e.target.value)}
                     />
@@ -1036,6 +1283,7 @@ export default function ProductModal({
                       id="prod-slaughter-withdrawal"
                       type="number"
                       min="0"
+                      inputMode="numeric"
                       value={slaughterWithdrawalDays}
                       onChange={(e) => setSlaughterWithdrawalDays(e.target.value)}
                     />
@@ -1057,7 +1305,10 @@ export default function ProductModal({
             {/* ─── CA12: Sementes ────────────────────────────── */}
             {nature === 'PRODUCT' && isSemente(type) && (
               <div className="product-modal__section">
-                <h3 className="product-modal__section-title">Dados da Semente</h3>
+                <h3 className="product-modal__section-title">
+                  <Sprout size={16} aria-hidden="true" />
+                  Dados da Semente
+                </h3>
 
                 <div className="product-modal__row">
                   <div className="product-modal__field">
@@ -1090,6 +1341,7 @@ export default function ProductModal({
                       min="0"
                       max="100"
                       step="0.1"
+                      inputMode="decimal"
                       value={germinationPct}
                       onChange={(e) => setGerminationPct(e.target.value)}
                     />
@@ -1102,6 +1354,7 @@ export default function ProductModal({
                       min="0"
                       max="100"
                       step="0.1"
+                      inputMode="decimal"
                       value={purityPct}
                       onChange={(e) => setPurityPct(e.target.value)}
                     />
@@ -1134,11 +1387,37 @@ export default function ProductModal({
               Cancelar
             </button>
             <button type="submit" className="product-modal__btn--primary" disabled={!canSubmit}>
-              {isSubmitting ? 'Salvando...' : isEditing ? 'Salvar' : 'Criar'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="product-modal__spinner" aria-hidden="true" />
+                  Salvando...
+                </>
+              ) : isEditing ? (
+                'Salvar'
+              ) : (
+                'Criar'
+              )}
             </button>
           </footer>
         </form>
       </div>
+
+      <ActiveIngredientModal
+        isOpen={showIngredientModal}
+        initialName={
+          ingredientModalIndex !== null ? compositions[ingredientModalIndex]?.activeIngredient : ''
+        }
+        onClose={() => {
+          setShowIngredientModal(false);
+          setIngredientModalIndex(null);
+        }}
+        onSave={async (ingredientName, ingredientType) => {
+          const created = await createIngredient(ingredientName, ingredientType);
+          if (ingredientModalIndex !== null) {
+            updateComposition(ingredientModalIndex, 'activeIngredient', created.name);
+          }
+        }}
+      />
     </div>
   );
 }

@@ -54,10 +54,19 @@
   background: var(--color-neutral-50);
 }
 
+.product-modal form {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
 .product-modal__body {
   padding: 24px;
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -75,6 +84,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  animation: product-modal__fade-in 200ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .product-modal__section-title {
@@ -83,6 +93,9 @@
   font-weight: 700;
   color: var(--color-neutral-800);
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--color-neutral-100);
 }
@@ -115,13 +128,72 @@
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 1rem;
   color: var(--color-neutral-700);
-  background: var(--color-neutral-0);
+  background-color: var(--color-neutral-0);
   transition: border-color 200ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .product-modal__field textarea {
   min-height: 80px;
   resize: vertical;
+}
+
+/* ─── Toggle ────────────────────────────────────────────────────────── */
+
+.product-modal__toggle-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  flex: 1;
+}
+
+.product-modal__toggle-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.product-modal__toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.product-modal__toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.product-modal__toggle-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--color-neutral-300);
+  transition: background 200ms;
+}
+
+.product-modal__toggle input:checked + .product-modal__toggle-track {
+  background: var(--color-primary-600);
+}
+
+.product-modal__toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 200ms;
+}
+
+.product-modal__toggle input:checked ~ .product-modal__toggle-thumb {
+  transform: translateX(20px);
 }
 
 .product-modal__field input:focus,
@@ -201,6 +273,135 @@
   color: var(--color-primary-600);
 }
 
+/* Autocomplete dropdown */
+.product-modal__autocomplete {
+  position: relative;
+}
+
+.product-modal__autocomplete input {
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.product-modal__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.product-modal__dropdown li {
+  padding: 12px 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.product-modal__dropdown li:hover {
+  background: var(--color-neutral-50);
+}
+
+.product-modal__dropdown-hint {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--color-neutral-400);
+}
+
+.product-modal__dropdown li[aria-selected='true'] {
+  background: var(--color-primary-50, #e8f5e9);
+  color: var(--color-primary-700);
+  font-weight: 600;
+}
+
+.product-modal__dropdown-create {
+  color: var(--color-primary-600) !important;
+  font-weight: 600;
+  gap: 8px;
+}
+
+.product-modal__dropdown-loading {
+  color: var(--color-neutral-500) !important;
+  font-style: italic;
+  cursor: default !important;
+}
+
+/* CNPJ lookup */
+.product-modal__cnpj-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.product-modal__cnpj-input-wrapper input {
+  width: 100%;
+  padding-right: 40px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.product-modal__cnpj-icon {
+  position: absolute;
+  right: 12px;
+  color: var(--color-neutral-400);
+  pointer-events: none;
+}
+
+.product-modal__cnpj-btn {
+  position: absolute;
+  right: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+  padding: 8px;
+  border-radius: 6px;
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 200ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.product-modal__cnpj-btn:hover {
+  color: var(--color-primary-600);
+}
+
+.product-modal__cnpj-feedback {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+.product-modal__cnpj-feedback--loading {
+  color: var(--color-neutral-500);
+}
+
+.product-modal__cnpj-feedback--success {
+  color: var(--color-primary-700);
+}
+
+.product-modal__cnpj-feedback--error {
+  color: var(--color-error-500);
+}
+
 /* Checkbox */
 .product-modal__checkbox {
   display: flex;
@@ -263,6 +464,10 @@
   font-size: 0.875rem;
   cursor: pointer;
   min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   transition: all 200ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
@@ -287,6 +492,31 @@
   }
 }
 
+/* Spinner */
+.product-modal__spinner {
+  animation: product-modal__spin 800ms linear infinite;
+}
+
+@keyframes product-modal__spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes product-modal__fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .product-modal__field input,
   .product-modal__field select,
@@ -295,5 +525,13 @@
   .product-modal__btn--primary,
   .product-modal__btn-add {
     transition: none;
+  }
+
+  .product-modal__section {
+    animation: none;
+  }
+
+  .product-modal__spinner {
+    animation: none;
   }
 }

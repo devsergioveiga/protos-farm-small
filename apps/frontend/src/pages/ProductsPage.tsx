@@ -15,6 +15,7 @@ import type { ProductItem } from '@/hooks/useProducts';
 import ProductModal from '@/components/products/ProductModal';
 import ProductConversionsModal from '@/components/products/ProductConversionsModal';
 import CompositeProductsTab from '@/components/composite-products/CompositeProductsTab';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import { api } from '@/services/api';
 import './ProductsPage.css';
 
@@ -30,6 +31,7 @@ const PRODUCT_TYPE_LABELS: Record<string, string> = {
   corretivo_gesso: 'Gesso',
   inoculante: 'Inoculante',
   biologico: 'Biológico',
+  vacina: 'Vacina',
   medicamento_veterinario: 'Med. Veterinário',
   hormonio_reprodutivo: 'Hormônio Reprod.',
   suplemento_mineral_vitaminico: 'Supl. Mineral/Vit.',
@@ -72,7 +74,13 @@ export default function ProductsPage() {
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [productToDelete, setProductToDelete] = useState<ProductItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [convProduct, setConvProduct] = useState<ProductItem | null>(null);
+
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -101,25 +109,67 @@ export default function ProductsPage() {
     setShowModal(true);
   }, []);
 
-  const handleDelete = useCallback(
-    async (product: ProductItem, e: React.MouseEvent) => {
-      e.stopPropagation();
-      setDeleteError(null);
-      try {
-        await api.delete(`/org/products/${product.id}`);
-        void refetch();
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Erro ao excluir produto.';
-        setDeleteError(msg);
-      }
-    },
-    [refetch],
-  );
+  const handleDeleteClick = useCallback((product: ProductItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeleteError(null);
+    setProductToDelete(product);
+  }, []);
 
+  const confirmDelete = useCallback(async () => {
+    if (!productToDelete) return;
+    setIsDeleting(true);
+    try {
+      await api.delete(`/org/products/${productToDelete.id}`);
+      setProductToDelete(null);
+      void refetch();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro ao excluir produto.';
+      setDeleteError(msg);
+      setProductToDelete(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [productToDelete, refetch]);
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) =>
+      prev.size === products.length ? new Set() : new Set(products.map((p) => p.id)),
+    );
+  }, [products]);
+
+  const confirmBulkDelete = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await Promise.all([...selectedIds].map((id) => api.delete(`/org/products/${id}`)));
+      setSelectedIds(new Set());
+      setShowBulkDeleteConfirm(false);
+      void refetch();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro ao excluir produtos.';
+      setDeleteError(msg);
+      setShowBulkDeleteConfirm(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [selectedIds, refetch]);
+
+  // Clear selection on tab/page/filter change
   const handleTabChange = useCallback((tab: 'PRODUCT' | 'SERVICE' | 'COMPOSITE') => {
     setActiveTab(tab);
     setTypeFilter('');
     setPage(1);
+    setSelectedIds(new Set());
   }, []);
 
   const typeOptions = activeTab === 'PRODUCT' ? PRODUCT_TYPE_LABELS : SERVICE_TYPE_LABELS;
@@ -218,6 +268,30 @@ export default function ProductsPage() {
             </select>
           </div>
 
+          {selectedIds.size > 0 && (
+            <div className="products-page__bulk-bar">
+              <span>
+                {selectedIds.size}{' '}
+                {selectedIds.size === 1 ? 'item selecionado' : 'itens selecionados'}
+              </span>
+              <button
+                type="button"
+                className="products-page__bulk-delete"
+                onClick={() => setShowBulkDeleteConfirm(true)}
+              >
+                <Trash2 size={16} aria-hidden="true" />
+                Excluir selecionados
+              </button>
+              <button
+                type="button"
+                className="products-page__bulk-cancel"
+                onClick={() => setSelectedIds(new Set())}
+              >
+                Limpar seleção
+              </button>
+            </div>
+          )}
+
           {(error || deleteError) && (
             <div className="products-page__error" role="alert">
               <AlertCircle size={16} aria-hidden="true" />
@@ -253,6 +327,14 @@ export default function ProductsPage() {
                 <table className="products-page__table">
                   <thead>
                     <tr>
+                      <th scope="col" className="products-page__th-check">
+                        <input
+                          type="checkbox"
+                          checked={products.length > 0 && selectedIds.size === products.length}
+                          onChange={toggleSelectAll}
+                          aria-label="Selecionar todos"
+                        />
+                      </th>
                       <th scope="col">Nome</th>
                       <th scope="col">Tipo</th>
                       {activeTab === 'PRODUCT' && <th scope="col">Fabricante</th>}
@@ -266,6 +348,15 @@ export default function ProductsPage() {
                   <tbody>
                     {products.map((product) => (
                       <tr key={product.id} onClick={() => handleEdit(product)}>
+                        <td className="products-page__td-check">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(product.id)}
+                            onChange={() => toggleSelect(product.id)}
+                            onClick={(e) => e.stopPropagation()}
+                            aria-label={`Selecionar ${product.name}`}
+                          />
+                        </td>
                         <td data-label="Nome">
                           <div className="products-page__name-cell">
                             <strong>{product.name}</strong>
@@ -321,7 +412,7 @@ export default function ProductsPage() {
                             </button>
                             <button
                               className="products-page__icon-btn products-page__icon-btn--danger"
-                              onClick={(e) => handleDelete(product, e)}
+                              onClick={(e) => handleDeleteClick(product, e)}
                               aria-label={`Excluir ${product.name}`}
                             >
                               <Trash2 size={16} aria-hidden="true" />
@@ -371,6 +462,28 @@ export default function ProductsPage() {
           onClose={() => setConvProduct(null)}
         />
       )}
+
+      <ConfirmModal
+        isOpen={!!productToDelete}
+        title="Excluir produto"
+        message={`Tem certeza que deseja excluir "${productToDelete?.name ?? ''}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        variant="danger"
+        isLoading={isDeleting}
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => setProductToDelete(null)}
+      />
+
+      <ConfirmModal
+        isOpen={showBulkDeleteConfirm}
+        title="Excluir produtos selecionados"
+        message={`Tem certeza que deseja excluir ${selectedIds.size} ${selectedIds.size === 1 ? 'item' : 'itens'}? Esta ação não pode ser desfeita.`}
+        confirmLabel={`Excluir ${selectedIds.size} ${selectedIds.size === 1 ? 'item' : 'itens'}`}
+        variant="danger"
+        isLoading={isDeleting}
+        onConfirm={() => void confirmBulkDelete()}
+        onCancel={() => setShowBulkDeleteConfirm(false)}
+      />
     </div>
   );
 }

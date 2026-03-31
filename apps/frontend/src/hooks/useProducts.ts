@@ -33,6 +33,8 @@ export interface ProductItem {
   category: string | null;
   status: string;
   notes: string | null;
+  productClassId: string | null;
+  productClassName: string | null;
   commercialName: string | null;
   manufacturer: ManufacturerItem | null;
   measurementUnitId: string | null;
