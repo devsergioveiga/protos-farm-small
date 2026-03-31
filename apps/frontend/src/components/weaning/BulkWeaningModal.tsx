@@ -22,6 +22,8 @@ interface AnimalWeightEntry {
   weightKg: string;
   observations: string;
   minWeight: number | null;
+  lastWeightKg: number | null;
+  lastWeighingDate: string | null;
 }
 
 export default function BulkWeaningModal({
@@ -53,12 +55,14 @@ export default function BulkWeaningModal({
         earTag: a.earTag,
         name: a.name,
         sex: a.sex,
-        weightKg: a.lastWeightKg?.toString() ?? '',
+        weightKg: '',
         observations: '',
         minWeight:
           a.sex === 'MALE'
             ? (config?.minWeightKgMale ?? null)
             : (config?.minWeightKgFemale ?? null),
+        lastWeightKg: a.lastWeightKg,
+        lastWeighingDate: a.lastWeighingDate,
       })),
     );
   }, [isOpen, selectedAnimals, config]);
@@ -279,6 +283,14 @@ export default function BulkWeaningModal({
                           </span>
                         )}
                       </div>
+                      {entry.lastWeightKg !== null && (
+                        <div className="bulk-wean-modal__last-weight-info">
+                          Último peso: <strong>{entry.lastWeightKg} kg</strong>
+                          {entry.lastWeighingDate && (
+                            <> em {new Date(entry.lastWeighingDate).toLocaleDateString('pt-BR')}</>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

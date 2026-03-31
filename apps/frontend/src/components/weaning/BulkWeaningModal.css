@@ -221,6 +221,18 @@
   color: #92400e;
 }
 
+.bulk-wean-modal__last-weight-info {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  color: var(--color-neutral-500);
+  margin-top: 4px;
+}
+
+.bulk-wean-modal__last-weight-info strong {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--color-neutral-600);
+}
+
 .bulk-wean-modal__footer {
   display: flex;
   justify-content: flex-end;

@@ -174,6 +174,21 @@ export default function WeaningPage() {
           <h1>Desmama</h1>
           <p>Gestão de desmama de {selectedFarm.name}</p>
         </div>
+        <button
+          type="button"
+          className="weaning-page__config-toggle"
+          onClick={() => setConfigExpanded(!configExpanded)}
+          aria-expanded={configExpanded}
+        >
+          <Settings size={16} aria-hidden="true" />
+          Configuração
+          {!configIsSet && <span className="weaning-page__config-badge">Não configurado</span>}
+          {configExpanded ? (
+            <ChevronUp size={16} aria-hidden="true" />
+          ) : (
+            <ChevronDown size={16} aria-hidden="true" />
+          )}
+        </button>
       </header>
 
       {successMsg && (
@@ -190,24 +205,8 @@ export default function WeaningPage() {
       )}
 
       {/* ─── Config ────────────────────────────────────────────── */}
-      <div className="weaning-page__config-panel">
-        <button
-          type="button"
-          className="weaning-page__config-toggle"
-          onClick={() => setConfigExpanded(!configExpanded)}
-          aria-expanded={configExpanded}
-        >
-          <Settings size={16} aria-hidden="true" />
-          Configuração de desmama
-          {!configIsSet && <span className="weaning-page__config-badge">Não configurado</span>}
-          {configExpanded ? (
-            <ChevronUp size={16} aria-hidden="true" />
-          ) : (
-            <ChevronDown size={16} aria-hidden="true" />
-          )}
-        </button>
-
-        {configExpanded && (
+      {configExpanded && (
+        <div className="weaning-page__config-panel">
           <div className="weaning-page__config-body">
             <div className="weaning-page__config-grid">
               <div className="weaning-page__config-group">
@@ -293,8 +292,8 @@ export default function WeaningPage() {
               {configSaving ? 'Salvando...' : 'Salvar configuração'}
             </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ─── Tabs ──────────────────────────────────────────────── */}
       <nav className="weaning-page__tabs" aria-label="Abas de desmama">

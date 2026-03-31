@@ -8,10 +8,16 @@
 /* ─── Header ──────────────────────────────────────────────────────── */
 .weaning-page__header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
   gap: 16px;
+  position: sticky;
+  top: 64px;
+  z-index: 10;
+  background: var(--color-neutral-50, #fafaf8);
+  padding: 16px 0 12px;
+  margin-top: -16px;
 }
 .weaning-page__header h1 {
   font-family: 'DM Sans', system-ui, sans-serif;
@@ -54,31 +60,34 @@
   font-size: 0.875rem;
 }
 
-/* ─── Config Panel ───────────────────────────────────────────────── */
-.weaning-page__config-panel {
-  border: 1px solid var(--color-neutral-100);
-  border-radius: 12px;
-  margin-bottom: 20px;
-  background: var(--color-neutral-0);
-}
+/* ─── Config Toggle (inline in header) ───────────────────────────── */
 .weaning-page__config-toggle {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
-  padding: 14px 20px;
-  border: none;
-  background: transparent;
+  padding: 8px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
   font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-neutral-700);
+  color: var(--color-neutral-600);
   cursor: pointer;
-  text-align: left;
+  white-space: nowrap;
+  transition:
+    background 200ms ease-out,
+    border-color 200ms ease-out;
+  flex-shrink: 0;
+  align-self: center;
 }
 .weaning-page__config-toggle:hover {
   background: var(--color-neutral-50);
-  border-radius: 12px;
+  border-color: var(--color-neutral-300);
+}
+.weaning-page__config-toggle:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
 }
 .weaning-page__config-badge {
   font-size: 0.75rem;
@@ -87,12 +96,17 @@
   border-radius: 20px;
   background: #fffbeb;
   color: #92400e;
-  margin-left: auto;
-  margin-right: 4px;
+}
+
+/* ─── Config Panel (expandable body) ─────────────────────────────── */
+.weaning-page__config-panel {
+  border: 1px solid var(--color-neutral-100);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  background: var(--color-neutral-0);
 }
 .weaning-page__config-body {
-  padding: 0 20px 20px;
-  border-top: 1px solid var(--color-neutral-100);
+  padding: 20px;
 }
 .weaning-page__config-grid {
   display: grid;
@@ -575,6 +589,7 @@
   }
   .weaning-page__header {
     flex-direction: column;
+    align-items: flex-start;
     gap: 12px;
   }
   .weaning-page__toolbar {
