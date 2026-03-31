@@ -553,7 +553,7 @@ export async function bulkRelease(
   // Support both animals[] (new) and animalIds[] (legacy) formats
   const animalEntries = input.animals?.length
     ? input.animals
-    : (input.animalIds ?? []).map((id) => ({ animalId: id }));
+    : (input.animalIds ?? []).map((id) => ({ animalId: id, weightKg: null as number | null }));
 
   if (animalEntries.length === 0) {
     throw new ReproductiveReleaseError('Lista de animais é obrigatória', 400);
