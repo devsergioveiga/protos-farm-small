@@ -41,7 +41,6 @@ function toReleaseItem(
     weightKg: row.weightKg != null ? toNumber(row.weightKg) : null,
     ageMonths: row.ageMonths ?? null,
     bodyConditionScore: row.bodyConditionScore != null ? toNumber(row.bodyConditionScore) : null,
-    responsibleName: row.responsibleName,
     previousCategory: row.previousCategory ?? null,
     previousLotId: row.previousLotId ?? null,
     previousLotName: previousLotName ?? null,
@@ -68,9 +67,6 @@ function validateCreateInput(input: CreateReleaseInput): void {
   if (date > new Date()) {
     throw new ReproductiveReleaseError('Data de liberação não pode ser no futuro', 400);
   }
-  if (!input.responsibleName?.trim()) {
-    throw new ReproductiveReleaseError('Nome do responsável é obrigatório', 400);
-  }
   if (input.bodyConditionScore != null) {
     const score = Number(input.bodyConditionScore);
     if (score < 1 || score > 5) {
@@ -84,9 +80,24 @@ function calcAgeMonths(birthDate: Date | null, referenceDate: Date): number | nu
   const years = referenceDate.getFullYear() - birthDate.getFullYear();
   const months = referenceDate.getMonth() - birthDate.getMonth();
   const dayDiff = referenceDate.getDate() - birthDate.getDate();
-  let totalMonths = years * 12 + months;
-  if (dayDiff < 0) totalMonths -= 1;
-  return Math.max(0, totalMonths);
+  let wholeMonths = years * 12 + months;
+  if (dayDiff < 0) wholeMonths -= 1;
+  // Fraction: days elapsed in the current partial month / days in that month
+  const monthStart = new Date(
+    referenceDate.getFullYear(),
+    referenceDate.getMonth(),
+    birthDate.getDate(),
+  );
+  if (monthStart > referenceDate) monthStart.setMonth(monthStart.getMonth() - 1);
+  const monthEnd = new Date(
+    monthStart.getFullYear(),
+    monthStart.getMonth() + 1,
+    birthDate.getDate(),
+  );
+  const totalDaysInPeriod = (monthEnd.getTime() - monthStart.getTime()) / (1000 * 60 * 60 * 24);
+  const elapsedDays = (referenceDate.getTime() - monthStart.getTime()) / (1000 * 60 * 60 * 24);
+  const fraction = totalDaysInPeriod > 0 ? elapsedDays / totalDaysInPeriod : 0;
+  return Math.max(0, Math.round((wholeMonths + fraction) * 10) / 10);
 }
 
 // Female categories eligible for reproductive release
@@ -234,61 +245,113 @@ export async function getCandidates(ctx: RlsContext, farmId: string): Promise<Ca
     const now = new Date();
     const candidates: CandidateItem[] = animals.map((a: any) => {
       const latestWeighing = a.weighings[0] ?? null;
-      const latestWeightKg = latestWeighing ? toNumber(latestWeighing.weightKg) : null;
+      const lastWeightKg = latestWeighing ? toNumber(latestWeighing.weightKg) : null;
       const bodyConditionScore = latestWeighing?.bodyConditionScore ?? null;
-      const latestWeighingDate = latestWeighing
+      const lastWeighingDate = latestWeighing
         ? (latestWeighing.measuredAt as Date).toISOString().slice(0, 10)
         : null;
       const ageMonths = calcAgeMonths(a.birthDate, now);
 
-      let meetsCriteria = true;
-      if (criteria) {
-        if (
-          criteria.minWeightKg != null &&
-          (latestWeightKg == null || latestWeightKg < toNumber(criteria.minWeightKg))
-        ) {
-          meetsCriteria = false;
-        }
-        if (
-          criteria.minAgeMonths != null &&
-          (ageMonths == null || ageMonths < criteria.minAgeMonths)
-        ) {
-          meetsCriteria = false;
-        }
-        if (
-          criteria.minBodyScore != null &&
-          (bodyConditionScore == null || bodyConditionScore < toNumber(criteria.minBodyScore))
-        ) {
-          meetsCriteria = false;
-        }
-      }
+      const meetsWeight =
+        criteria?.minWeightKg == null ||
+        (lastWeightKg != null && lastWeightKg >= toNumber(criteria.minWeightKg));
+      const meetsAge =
+        criteria?.minAgeMonths == null || (ageMonths != null && ageMonths >= criteria.minAgeMonths);
+      const meetsScore =
+        criteria?.minBodyScore == null ||
+        (bodyConditionScore != null && bodyConditionScore >= toNumber(criteria.minBodyScore));
+      const meetsAll = meetsWeight && meetsAge && meetsScore;
 
       return {
         animalId: a.id,
         earTag: a.earTag,
-        name: a.name ?? null,
+        animalName: a.name ?? null,
         category: a.category,
         birthDate: a.birthDate ? (a.birthDate as Date).toISOString().slice(0, 10) : null,
         ageMonths,
-        latestWeightKg,
-        latestWeighingDate,
+        lastWeightKg,
+        lastWeighingDate,
         bodyConditionScore,
         lotId: a.lotId ?? null,
         lotName: a.lot?.name ?? null,
-        meetsCriteria,
+        meetsWeight,
+        meetsAge,
+        meetsScore,
+        meetsAll,
       };
     });
 
-    // Sort: those that meet criteria first, then by weight desc
+    // Sort: those that meet all criteria first, then by weight desc
     candidates.sort((a, b) => {
-      if (a.meetsCriteria !== b.meetsCriteria) return a.meetsCriteria ? -1 : 1;
-      const wa = a.latestWeightKg ?? 0;
-      const wb = b.latestWeightKg ?? 0;
+      if (a.meetsAll !== b.meetsAll) return a.meetsAll ? -1 : 1;
+      const wa = a.lastWeightKg ?? 0;
+      const wb = b.lastWeightKg ?? 0;
       return wb - wa;
     });
 
     return candidates;
   });
+}
+
+// ─── IATF LOT HELPER ───────────────────────────────────────────────
+
+async function createIatfLotForAnimals(
+  tx: TxClient,
+  ctx: RlsContext,
+  farmId: string,
+  userId: string,
+  animalIds: string[],
+  iatfInput: { protocolId: string; lotName?: string | null },
+  releaseDate: string,
+): Promise<void> {
+  const protocol = await (tx as any).iatfProtocol.findFirst({
+    where: { id: iatfInput.protocolId, organizationId: ctx.organizationId, status: 'ACTIVE' },
+    include: { steps: { orderBy: { sortOrder: 'asc' } } },
+  });
+  if (!protocol) {
+    throw new ReproductiveReleaseError('Protocolo IATF não encontrado ou inativo', 404);
+  }
+
+  const d0 = new Date(releaseDate);
+  const lotName =
+    iatfInput.lotName?.trim() || `Liberação ${d0.toLocaleDateString('pt-BR')} — ${protocol.name}`;
+
+  const lot = await (tx as any).reproductiveLot.create({
+    data: {
+      organizationId: ctx.organizationId,
+      farmId,
+      name: lotName,
+      protocolId: protocol.id,
+      d0Date: d0,
+      status: 'ACTIVE',
+      createdBy: userId,
+    },
+  });
+
+  // Enroll animals
+  await (tx as any).reproductiveLotAnimal.createMany({
+    data: animalIds.map((animalId) => ({
+      lotId: lot.id,
+      animalId,
+    })),
+  });
+
+  // Create steps with scheduled dates
+  for (const step of protocol.steps) {
+    const scheduledDate = new Date(d0);
+    scheduledDate.setDate(scheduledDate.getDate() + step.dayNumber);
+    await (tx as any).reproductiveLotStep.create({
+      data: {
+        lotId: lot.id,
+        protocolStepId: step.id,
+        dayNumber: step.dayNumber,
+        scheduledDate,
+        description: step.description,
+        isAiDay: step.isAiDay,
+        status: 'PENDING',
+      },
+    });
+  }
 }
 
 // ─── CREATE RELEASE (CA1, CA3, CA4, CA5) ────────────────────────────
@@ -368,7 +431,6 @@ async function performRelease(
       weightKg: input.weightKg ?? null,
       ageMonths: ageMonths ?? null,
       bodyConditionScore: input.bodyConditionScore ?? null,
-      responsibleName: input.responsibleName,
       previousCategory,
       previousLotId,
       targetLotId,
@@ -414,6 +476,25 @@ async function performRelease(
     data: updateData,
   });
 
+  // Optional: create vaccination record
+  if (input.vaccination) {
+    const vac = input.vaccination;
+    await (tx as any).vaccination.create({
+      data: {
+        organizationId: ctx.organizationId,
+        farmId,
+        animalId: input.animalId,
+        productId: vac.productId ?? null,
+        productName: vac.productName,
+        dosageMl: vac.dosageMl,
+        administrationRoute: vac.administrationRoute,
+        productBatchNumber: vac.productBatchNumber ?? null,
+        vaccinationDate: releaseDate,
+        recordedBy: userId,
+      },
+    });
+  }
+
   // Resolve lot names for response
   let previousLotName: string | null = null;
   let targetLotName: string | null = null;
@@ -442,7 +523,22 @@ export async function createRelease(
   input: CreateReleaseInput,
 ): Promise<ReleaseItem> {
   return withRlsContext(ctx, async (tx) => {
-    return performRelease(tx, ctx, farmId, userId, input);
+    const result = await performRelease(tx, ctx, farmId, userId, input);
+
+    // Optional: create IATF reproductive lot for single animal
+    if (input.iatf) {
+      await createIatfLotForAnimals(
+        tx,
+        ctx,
+        farmId,
+        userId,
+        [input.animalId],
+        input.iatf,
+        input.releaseDate,
+      );
+    }
+
+    return result;
   });
 }
 
@@ -454,36 +550,54 @@ export async function bulkRelease(
   userId: string,
   input: BulkReleaseInput,
 ): Promise<BulkReleaseResult> {
-  if (!input.animalIds || input.animalIds.length === 0) {
+  // Support both animals[] (new) and animalIds[] (legacy) formats
+  const animalEntries = input.animals?.length
+    ? input.animals
+    : (input.animalIds ?? []).map((id) => ({ animalId: id }));
+
+  if (animalEntries.length === 0) {
     throw new ReproductiveReleaseError('Lista de animais é obrigatória', 400);
   }
   if (!input.releaseDate) {
     throw new ReproductiveReleaseError('Data de liberação é obrigatória', 400);
   }
-  if (!input.responsibleName?.trim()) {
-    throw new ReproductiveReleaseError('Nome do responsável é obrigatório', 400);
-  }
-
   return withRlsContext(ctx, async (tx) => {
     let released = 0;
     let failed = 0;
     const errors: Array<{ animalId: string; reason: string }> = [];
 
-    for (const animalId of input.animalIds) {
+    const releasedAnimalIds: string[] = [];
+
+    for (const entry of animalEntries) {
       try {
         await performRelease(tx, ctx, farmId, userId, {
-          animalId,
+          animalId: entry.animalId,
           releaseDate: input.releaseDate,
-          responsibleName: input.responsibleName,
           targetLotId: input.targetLotId,
           notes: input.notes,
+          weightKg: entry.weightKg ?? null,
+          vaccination: input.vaccination,
         });
         released++;
+        releasedAnimalIds.push(entry.animalId);
       } catch (err) {
         failed++;
         const message = err instanceof ReproductiveReleaseError ? err.message : 'Erro inesperado';
-        errors.push({ animalId, reason: message });
+        errors.push({ animalId: entry.animalId, reason: message });
       }
+    }
+
+    // Create single IATF lot for all successfully released animals
+    if (input.iatf && releasedAnimalIds.length > 0) {
+      await createIatfLotForAnimals(
+        tx,
+        ctx,
+        farmId,
+        userId,
+        releasedAnimalIds,
+        input.iatf,
+        input.releaseDate,
+      );
     }
 
     return { released, failed, errors };
@@ -505,6 +619,15 @@ export async function listReleases(
       where.releaseDate = {};
       if (query.dateFrom) where.releaseDate.gte = new Date(query.dateFrom);
       if (query.dateTo) where.releaseDate.lte = new Date(query.dateTo);
+    }
+    if (query.search) {
+      const term = query.search.trim();
+      where.animal = {
+        OR: [
+          { earTag: { contains: term, mode: 'insensitive' } },
+          { name: { contains: term, mode: 'insensitive' } },
+        ],
+      };
     }
 
     const page = query.page ?? 1;

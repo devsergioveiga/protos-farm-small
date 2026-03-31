@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Check,
+  X,
   XCircle,
   Calendar,
   Scale,
@@ -14,6 +15,7 @@ import {
   Users,
   Settings,
   List,
+  LayoutGrid,
   Save,
 } from 'lucide-react';
 import { useFarmContext } from '@/stores/FarmContext';
@@ -27,6 +29,7 @@ import type {
 } from '@/types/reproductive-release';
 import type { LotListItem } from '@/types/lot';
 import ReleaseModal from '@/components/reproductive-releases/ReleaseModal';
+import BulkReleaseModal from '@/components/reproductive-releases/BulkReleaseModal';
 import './ReproductiveReleasesPage.css';
 
 type TabKey = 'candidates' | 'releases' | 'config';
@@ -42,11 +45,15 @@ export default function ReproductiveReleasesPage() {
   const [candidatesLoading, setCandidatesLoading] = useState(false);
   const [candidatesError, setCandidatesError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [minAgeFilter, setMinAgeFilter] = useState<string>('');
 
   // ─── Releases tab ─────────────────────────────────────
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
 
   // ─── Config tab ───────────────────────────────────────
   const [criteria, setCriteria] = useState<CriteriaItem>({
@@ -69,8 +76,7 @@ export default function ReproductiveReleasesPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // ─── Bulk release state ───────────────────────────────
-  const [bulkResponsible, setBulkResponsible] = useState('');
-  const [bulkLoading, setBulkLoading] = useState(false);
+  const [showBulkModal, setShowBulkModal] = useState(false);
 
   // ─── Debounced search ─────────────────────────────────
   useEffect(() => {
@@ -86,6 +92,8 @@ export default function ReproductiveReleasesPage() {
     farmId: selectedFarm?.id ?? null,
     page,
     search: search || undefined,
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
   });
 
   // ─── Fetch candidates ─────────────────────────────────
@@ -216,40 +224,36 @@ export default function ReproductiveReleasesPage() {
   };
 
   const toggleSelectAll = () => {
-    const eligibleIds = candidates.filter((c) => c.meetsAll).map((c) => c.animalId);
-    if (selectedIds.size === eligibleIds.length && eligibleIds.length > 0) {
+    if (selectedIds.size === filteredCandidates.length && filteredCandidates.length > 0) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(eligibleIds));
+      setSelectedIds(new Set(filteredCandidates.map((c) => c.animalId)));
     }
   };
+
+  // ─── Filtered candidates by age ────────────────────────
+  const filteredCandidates = (() => {
+    const minAge = minAgeFilter ? Number(minAgeFilter) : null;
+    if (minAge == null || isNaN(minAge) || minAge <= 0) return candidates;
+    return candidates.filter((c) => c.ageMonths != null && c.ageMonths >= minAge);
+  })();
+
+  const selectedAnimalsData = filteredCandidates.filter((c) => selectedIds.has(c.animalId));
 
   // ─── Bulk release ─────────────────────────────────────
-  const handleBulkRelease = async () => {
-    if (selectedIds.size === 0 || !bulkResponsible.trim()) return;
-    setBulkLoading(true);
-    try {
-      await api.post(`/org/farms/${selectedFarm!.id}/reproductive-releases/bulk`, {
-        animalIds: Array.from(selectedIds),
-        releaseDate: new Date().toISOString().split('T')[0],
-        responsibleName: bulkResponsible.trim(),
-      });
-      setSuccessMsg(`${selectedIds.size} novilha(s) liberada(s) com sucesso`);
-      setSelectedIds(new Set());
-      setBulkResponsible('');
-      void fetchCandidates();
-      void refetch();
-      setTimeout(() => setSuccessMsg(null), 5000);
-    } catch (err) {
-      setCandidatesError(err instanceof Error ? err.message : 'Erro ao liberar novilhas em lote');
-    } finally {
-      setBulkLoading(false);
-    }
-  };
+  const handleBulkSuccess = useCallback(() => {
+    setShowBulkModal(false);
+    setSelectedIds(new Set());
+    setSuccessMsg('Novilhas liberadas com sucesso');
+    void fetchCandidates();
+    void refetch();
+    void fetchIndicators();
+    setTimeout(() => setSuccessMsg(null), 5000);
+  }, [fetchCandidates, refetch, fetchIndicators]);
 
   // ─── Individual release from candidate ─────────────────
-  const handleReleaseCandidate = (animalId: string) => {
-    setPreselectedAnimalId(animalId);
+  const handleReleaseCandidate = (candidate: CandidateItem) => {
+    setPreselectedAnimalId(candidate.animalId);
     setShowModal(true);
   };
 
@@ -402,6 +406,46 @@ export default function ReproductiveReleasesPage() {
           {/* Candidate list */}
           {!candidatesLoading && hasCriteria && candidates.length > 0 && (
             <>
+              {/* Age filter */}
+              <div className="reproductive-releases-page__candidates-toolbar">
+                <div className="reproductive-releases-page__filter-field">
+                  <label htmlFor="min-age-filter">
+                    <Clock size={14} aria-hidden="true" /> Idade mínima (meses)
+                  </label>
+                  <input
+                    id="min-age-filter"
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="Ex: 18"
+                    value={minAgeFilter}
+                    onChange={(e) => {
+                      setMinAgeFilter(e.target.value);
+                      setSelectedIds(new Set());
+                    }}
+                    className="reproductive-releases-page__age-filter-input"
+                  />
+                </div>
+                <span className="reproductive-releases-page__candidates-count">
+                  {filteredCandidates.length} de {candidates.length} candidata
+                  {candidates.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+
+              {filteredCandidates.length === 0 && (
+                <div className="reproductive-releases-page__empty">
+                  <Clock size={48} aria-hidden="true" />
+                  <h2>Nenhuma candidata com essa idade</h2>
+                  <p>
+                    Nenhuma novilha possui {minAgeFilter} meses ou mais. Ajuste o filtro de idade.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+
+          {!candidatesLoading && hasCriteria && filteredCandidates.length > 0 && (
+            <>
               <div className="reproductive-releases-page__table-container">
                 <table className="reproductive-releases-page__table">
                   <caption className="sr-only">
@@ -413,8 +457,8 @@ export default function ReproductiveReleasesPage() {
                         <input
                           type="checkbox"
                           checked={
-                            candidates.filter((c) => c.meetsAll).length > 0 &&
-                            selectedIds.size === candidates.filter((c) => c.meetsAll).length
+                            filteredCandidates.length > 0 &&
+                            selectedIds.size === filteredCandidates.length
                           }
                           onChange={toggleSelectAll}
                           aria-label="Selecionar todas as candidatas aptas"
@@ -444,7 +488,7 @@ export default function ReproductiveReleasesPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {candidates.map((c) => (
+                    {filteredCandidates.map((c) => (
                       <tr
                         key={c.animalId}
                         className={c.meetsAll ? 'reproductive-releases-page__row--eligible' : ''}
@@ -454,14 +498,13 @@ export default function ReproductiveReleasesPage() {
                             type="checkbox"
                             checked={selectedIds.has(c.animalId)}
                             onChange={() => toggleSelect(c.animalId)}
-                            disabled={!c.meetsAll}
                             aria-label={`Selecionar ${c.earTag}`}
                           />
                         </td>
                         <td className="reproductive-releases-page__cell--mono">{c.earTag}</td>
                         <td>{c.animalName || '—'}</td>
                         <td className="reproductive-releases-page__cell--mono">
-                          {c.ageMonths !== null ? `${c.ageMonths} m` : '—'}
+                          {c.ageMonths !== null ? `${c.ageMonths.toFixed(1)} m` : '—'}
                         </td>
                         <td className="reproductive-releases-page__cell--mono">
                           {c.lastWeightKg !== null ? `${c.lastWeightKg} kg` : '—'}
@@ -541,7 +584,7 @@ export default function ReproductiveReleasesPage() {
                           <button
                             type="button"
                             className="reproductive-releases-page__btn-release"
-                            onClick={() => handleReleaseCandidate(c.animalId)}
+                            onClick={() => handleReleaseCandidate(c)}
                             aria-label={`Liberar ${c.earTag}`}
                           >
                             Liberar
@@ -555,7 +598,7 @@ export default function ReproductiveReleasesPage() {
 
               {/* Mobile candidate cards */}
               <div className="reproductive-releases-page__mobile-candidates">
-                {candidates.map((c) => (
+                {filteredCandidates.map((c) => (
                   <div
                     key={c.animalId}
                     className={`reproductive-releases-page__candidate-card ${c.meetsAll ? 'reproductive-releases-page__candidate-card--eligible' : ''}`}
@@ -565,7 +608,6 @@ export default function ReproductiveReleasesPage() {
                         type="checkbox"
                         checked={selectedIds.has(c.animalId)}
                         onChange={() => toggleSelect(c.animalId)}
-                        disabled={!c.meetsAll}
                         aria-label={`Selecionar ${c.earTag}`}
                       />
                       <div className="reproductive-releases-page__candidate-card-info">
@@ -579,7 +621,7 @@ export default function ReproductiveReleasesPage() {
                       </div>
                     </div>
                     <div className="reproductive-releases-page__candidate-card-stats">
-                      {c.ageMonths !== null && <span>{c.ageMonths} meses</span>}
+                      {c.ageMonths !== null && <span>{c.ageMonths.toFixed(1)} meses</span>}
                       {c.lastWeightKg !== null && <span>{c.lastWeightKg} kg</span>}
                       {c.bodyConditionScore !== null && (
                         <span
@@ -643,7 +685,7 @@ export default function ReproductiveReleasesPage() {
                       <button
                         type="button"
                         className="reproductive-releases-page__btn-release"
-                        onClick={() => handleReleaseCandidate(c.animalId)}
+                        onClick={() => handleReleaseCandidate(c)}
                         aria-label={`Liberar ${c.earTag}`}
                       >
                         Liberar
@@ -653,31 +695,19 @@ export default function ReproductiveReleasesPage() {
                 ))}
               </div>
 
-              {/* Floating action bar for bulk release */}
+              {/* Bulk action bar */}
               {selectedIds.size > 0 && (
-                <div
-                  className="reproductive-releases-page__bulk-bar"
-                  role="region"
-                  aria-label="Liberação em lote"
-                >
+                <div className="reproductive-releases-page__bulk-bar">
                   <span className="reproductive-releases-page__bulk-count">
                     {selectedIds.size} selecionada{selectedIds.size > 1 ? 's' : ''}
                   </span>
-                  <input
-                    type="text"
-                    placeholder="Nome do responsável *"
-                    value={bulkResponsible}
-                    onChange={(e) => setBulkResponsible(e.target.value)}
-                    className="reproductive-releases-page__bulk-input"
-                    aria-label="Responsável pela liberação em lote"
-                  />
                   <button
                     type="button"
                     className="reproductive-releases-page__btn-primary"
-                    onClick={() => void handleBulkRelease()}
-                    disabled={bulkLoading || !bulkResponsible.trim()}
+                    onClick={() => setShowBulkModal(true)}
                   >
-                    {bulkLoading ? 'Liberando...' : 'Liberar selecionadas'}
+                    <Baby size={16} aria-hidden="true" />
+                    Liberar selecionadas
                   </button>
                 </div>
               )}
@@ -701,19 +731,92 @@ export default function ReproductiveReleasesPage() {
 
           {/* Toolbar */}
           <div className="reproductive-releases-page__toolbar">
-            <div className="reproductive-releases-page__search">
-              <Search
-                size={16}
-                aria-hidden="true"
-                className="reproductive-releases-page__search-icon"
-              />
+            <div className="reproductive-releases-page__filter-field reproductive-releases-page__filter-field--search">
+              <label htmlFor="release-search">Busca</label>
+              <div className="reproductive-releases-page__search">
+                <Search
+                  size={16}
+                  aria-hidden="true"
+                  className="reproductive-releases-page__search-icon"
+                />
+                <input
+                  id="release-search"
+                  type="text"
+                  placeholder="Brinco ou nome..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="reproductive-releases-page__filter-field">
+              <label htmlFor="release-date-from">De</label>
               <input
-                type="text"
-                placeholder="Buscar por brinco, nome ou responsável..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                aria-label="Buscar liberações"
+                id="release-date-from"
+                type="date"
+                className="reproductive-releases-page__date-input"
+                value={dateFrom}
+                onChange={(e) => {
+                  setDateFrom(e.target.value);
+                  setPage(1);
+                }}
               />
+            </div>
+            <div className="reproductive-releases-page__filter-field">
+              <label htmlFor="release-date-to">Até</label>
+              <input
+                id="release-date-to"
+                type="date"
+                className="reproductive-releases-page__date-input"
+                value={dateTo}
+                onChange={(e) => {
+                  setDateTo(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </div>
+            {(dateFrom || dateTo) && (
+              <div className="reproductive-releases-page__filter-field">
+                <label className="reproductive-releases-page__label-spacer">&nbsp;</label>
+                <button
+                  type="button"
+                  className="reproductive-releases-page__date-clear"
+                  onClick={() => {
+                    setDateFrom('');
+                    setDateTo('');
+                    setPage(1);
+                  }}
+                  aria-label="Limpar filtro de datas"
+                >
+                  <X size={16} aria-hidden="true" />
+                </button>
+              </div>
+            )}
+            <div className="reproductive-releases-page__filter-field">
+              <label className="reproductive-releases-page__label-spacer">&nbsp;</label>
+              <div
+                className="reproductive-releases-page__view-toggle"
+                role="group"
+                aria-label="Modo de visualização"
+              >
+                <button
+                  type="button"
+                  className={`reproductive-releases-page__view-btn${viewMode === 'table' ? ' reproductive-releases-page__view-btn--active' : ''}`}
+                  onClick={() => setViewMode('table')}
+                  aria-label="Visualização em tabela"
+                  aria-pressed={viewMode === 'table'}
+                >
+                  <List size={18} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className={`reproductive-releases-page__view-btn${viewMode === 'cards' ? ' reproductive-releases-page__view-btn--active' : ''}`}
+                  onClick={() => setViewMode('cards')}
+                  aria-label="Visualização em cards"
+                  aria-pressed={viewMode === 'cards'}
+                >
+                  <LayoutGrid size={18} aria-hidden="true" />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -731,8 +834,110 @@ export default function ReproductiveReleasesPage() {
             </div>
           )}
 
-          {/* Cards */}
-          {!isLoading && releases.length > 0 && (
+          {/* Table view */}
+          {!isLoading && releases.length > 0 && viewMode === 'table' && (
+            <div className="reproductive-releases-page__table-container">
+              <table className="reproductive-releases-page__table">
+                <caption className="sr-only">Novilhas liberadas para reprodução</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Brinco</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Data</th>
+                    <th scope="col">Peso (kg)</th>
+                    <th scope="col">Idade (meses)</th>
+                    <th scope="col">ECC</th>
+                    <th scope="col">Cat. anterior</th>
+                    <th scope="col">Registrado por</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {releases.map((r) => (
+                    <tr key={r.id}>
+                      <td className="reproductive-releases-page__cell--mono">{r.animalEarTag}</td>
+                      <td>{r.animalName || '—'}</td>
+                      <td>{new Date(r.releaseDate + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+                      <td className="reproductive-releases-page__cell--mono">
+                        {r.weightKg !== null ? r.weightKg : '—'}
+                      </td>
+                      <td className="reproductive-releases-page__cell--mono">
+                        {r.ageMonths !== null ? r.ageMonths : '—'}
+                      </td>
+                      <td>
+                        {r.bodyConditionScore !== null ? (
+                          <span
+                            className={`reproductive-releases-page__score ${getScoreBadgeClass(r.bodyConditionScore)}`}
+                          >
+                            {r.bodyConditionScore}
+                          </span>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                      <td>{r.previousCategory || '—'}</td>
+                      <td>{r.recorderName}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Mobile cards fallback (shown <768px when table mode is active) */}
+          {!isLoading && releases.length > 0 && viewMode === 'table' && (
+            <div className="reproductive-releases-page__mobile-releases">
+              {releases.map((r) => (
+                <div key={r.id} className="reproductive-releases-page__card">
+                  <div className="reproductive-releases-page__card-header">
+                    <div>
+                      <h3 className="reproductive-releases-page__card-title">
+                        {r.animalEarTag} — {r.animalName || 'Sem nome'}
+                      </h3>
+                      {r.previousCategory && (
+                        <p className="reproductive-releases-page__card-subtitle">
+                          Categoria anterior: {r.previousCategory}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="reproductive-releases-page__card-details">
+                    <span className="reproductive-releases-page__detail">
+                      <Calendar size={14} aria-hidden="true" />
+                      {new Date(r.releaseDate + 'T00:00:00').toLocaleDateString('pt-BR')}
+                    </span>
+                    {r.weightKg !== null && (
+                      <span className="reproductive-releases-page__detail reproductive-releases-page__detail--mono">
+                        <Scale size={14} aria-hidden="true" />
+                        {r.weightKg} kg
+                      </span>
+                    )}
+                    {r.ageMonths !== null && (
+                      <span className="reproductive-releases-page__detail reproductive-releases-page__detail--mono">
+                        <Clock size={14} aria-hidden="true" />
+                        {r.ageMonths} meses
+                      </span>
+                    )}
+                    {r.bodyConditionScore !== null && (
+                      <span
+                        className={`reproductive-releases-page__score ${getScoreBadgeClass(r.bodyConditionScore)}`}
+                      >
+                        ECC {r.bodyConditionScore}
+                      </span>
+                    )}
+                  </div>
+                  <div className="reproductive-releases-page__card-footer">
+                    <span>{r.recorderName}</span>
+                  </div>
+                  {r.notes && (
+                    <div className="reproductive-releases-page__card-notes">{r.notes}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Cards view */}
+          {!isLoading && releases.length > 0 && viewMode === 'cards' && (
             <div className="reproductive-releases-page__grid">
               {releases.map((r) => (
                 <div key={r.id} className="reproductive-releases-page__card">
@@ -752,7 +957,7 @@ export default function ReproductiveReleasesPage() {
                   <div className="reproductive-releases-page__card-details">
                     <span className="reproductive-releases-page__detail">
                       <Calendar size={14} aria-hidden="true" />
-                      {new Date(r.releaseDate).toLocaleDateString('pt-BR')}
+                      {new Date(r.releaseDate + 'T00:00:00').toLocaleDateString('pt-BR')}
                     </span>
                     {r.weightKg !== null && (
                       <span className="reproductive-releases-page__detail reproductive-releases-page__detail--mono">
@@ -776,10 +981,7 @@ export default function ReproductiveReleasesPage() {
                   </div>
 
                   <div className="reproductive-releases-page__card-footer">
-                    <span>{r.responsibleName}</span>
-                    <span className="reproductive-releases-page__card-recorder">
-                      {r.recorderName}
-                    </span>
+                    <span>{r.recorderName}</span>
                   </div>
 
                   {r.notes && (
@@ -791,7 +993,7 @@ export default function ReproductiveReleasesPage() {
           )}
 
           {/* Pagination */}
-          {meta && meta.totalPages > 1 && (
+          {meta && releases.length > 0 && (
             <nav className="reproductive-releases-page__pagination" aria-label="Paginação">
               <button
                 type="button"
@@ -803,7 +1005,8 @@ export default function ReproductiveReleasesPage() {
                 Anterior
               </button>
               <span>
-                {page} de {meta.totalPages}
+                {page} de {meta.totalPages} — {meta.total}{' '}
+                {meta.total === 1 ? 'registro' : 'registros'}
               </span>
               <button
                 type="button"
@@ -989,6 +1192,20 @@ export default function ReproductiveReleasesPage() {
         farmId={selectedFarm.id}
         onSuccess={handleSuccess}
         preselectedAnimalId={preselectedAnimalId}
+        preselectedCandidate={
+          preselectedAnimalId
+            ? (candidates.find((c) => c.animalId === preselectedAnimalId) ?? null)
+            : null
+        }
+      />
+
+      <BulkReleaseModal
+        isOpen={showBulkModal}
+        onClose={() => setShowBulkModal(false)}
+        farmId={selectedFarm.id}
+        selectedAnimals={selectedAnimalsData}
+        criteria={criteria}
+        onSuccess={handleBulkSuccess}
       />
     </section>
   );
