@@ -4,6 +4,9 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 24px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px);
 }
 
 .inseminations-page__header {
@@ -12,6 +15,7 @@
   align-items: flex-start;
   margin-bottom: 24px;
   gap: 16px;
+  flex-shrink: 0;
 }
 
 .inseminations-page__title {
@@ -57,6 +61,50 @@
   outline-offset: 2px;
 }
 
+/* ─── Tabs ──────────────────────────────────────────────── */
+
+.inseminations-page__tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--color-neutral-200);
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.inseminations-page__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition:
+    color 200ms,
+    border-color 200ms;
+  min-height: 48px;
+}
+
+.inseminations-page__tab:hover {
+  color: var(--color-neutral-700);
+}
+
+.inseminations-page__tab--active {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+
+.inseminations-page__tab:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+
 /* ─── Filters ────────────────────────────────────────────── */
 
 .inseminations-page__filters {
@@ -64,6 +112,7 @@
   gap: 12px;
   margin-bottom: 20px;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .inseminations-page__search {
@@ -118,6 +167,14 @@
   cursor: pointer;
 }
 
+.inseminations-page__filter-group select {
+  appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B6560' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
 .inseminations-page__filter-group select:focus,
 .inseminations-page__filter-group input:focus {
   outline: 2px solid var(--color-primary-500);
@@ -128,10 +185,12 @@
 /* ─── Table ──────────────────────────────────────────────── */
 
 .inseminations-page__table-wrapper {
-  overflow-x: auto;
+  overflow: auto;
   border: 1px solid var(--color-neutral-200);
   border-radius: 12px;
   background: var(--color-neutral-0);
+  flex: 1;
+  min-height: 0;
 }
 
 .inseminations-page__table {
@@ -153,6 +212,10 @@
   padding: 12px 16px;
   text-align: left;
   white-space: nowrap;
+  position: sticky;
+  top: 0;
+  background: var(--color-neutral-50);
+  z-index: 1;
 }
 
 .inseminations-page__table td {
@@ -204,6 +267,101 @@
   color: #e65100;
 }
 
+.inseminations-page__badge--repasse {
+  background: #fce4ec;
+  color: #c62828;
+}
+
+.inseminations-page__badge--direct {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.inseminations-page__protocol-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #ede7f6;
+  color: #5e35b1;
+  white-space: nowrap;
+}
+
+.inseminations-page__card-protocol {
+  margin: 0 0 8px;
+}
+
+/* ─── Row expanded & Detail panel ───────────────────────── */
+
+.inseminations-page__row--expanded {
+  background: var(--color-neutral-50);
+}
+
+.inseminations-page__detail-cell {
+  padding: 0 !important;
+  border-top: none !important;
+}
+
+.inseminations-page__detail-panel {
+  padding: 16px 24px;
+  background: var(--color-neutral-50);
+  border-top: 1px solid var(--color-neutral-100);
+}
+
+.inseminations-page__detail-panel strong {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+}
+
+.inseminations-page__detail-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+
+.inseminations-page__detail-list li {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+}
+
+/* ─── Action buttons ────────────────────────────────────── */
+
+.inseminations-page__action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 200ms;
+}
+
+.inseminations-page__action-btn:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.inseminations-page__action-btn--delete:hover {
+  background: #fef2f2;
+  color: var(--color-error-500);
+}
+
+.inseminations-page__action-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
 /* ─── Mobile Cards ───────────────────────────────────────── */
 
 .inseminations-page__cards {
@@ -217,11 +375,11 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-top: 20px;
   padding: 12px 0;
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 0.875rem;
   color: var(--color-neutral-600);
+  flex-shrink: 0;
 }
 
 .inseminations-page__pagination button {
@@ -375,6 +533,9 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
   }
 
   .inseminations-page__card {
@@ -423,7 +584,9 @@
   .inseminations-page__toast {
     animation: none;
   }
-  .inseminations-page__btn-primary {
+  .inseminations-page__btn-primary,
+  .inseminations-page__tab,
+  .inseminations-page__action-btn {
     transition: none;
   }
 }

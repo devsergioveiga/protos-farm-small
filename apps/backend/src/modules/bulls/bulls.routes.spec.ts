@@ -117,6 +117,8 @@ const SAMPLE_SEMEN_BATCH: SemenBatchItem = {
   centralName: 'CRV Lagoa',
   entryType: 'PURCHASE',
   entryTypeLabel: 'Compra',
+  semenType: 'SEXED_FEMALE' as const,
+  semenTypeLabel: 'Sexado fêmea',
   entryDate: '2026-03-01',
   expiryDate: '2028-03-01',
   initialDoses: 50,

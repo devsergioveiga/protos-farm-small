@@ -4,6 +4,7 @@ import { api } from '@/services/api';
 import type { RecordInseminationInput, LotAnimalItem } from '@/types/iatf-execution';
 import { INSEMINATION_TYPES, CERVICAL_MUCUS_OPTIONS } from '@/types/iatf-execution';
 import type { BullItem, SemenBatchItem } from '@/types/bull';
+import InseminatorSelect from '@/components/shared/InseminatorSelect';
 import './InseminationModal.css';
 
 interface Props {
@@ -36,7 +37,7 @@ export default function InseminationModal({
   const [bullId, setBullId] = useState('');
   const [semenBatchId, setSemenBatchId] = useState('');
   const [dosesUsed, setDosesUsed] = useState(1);
-  const [inseminatorName, setInseminatorName] = useState('');
+  const [inseminator, setInseminator] = useState<{ id: string; name: string } | null>(null);
   const [inseminationDate, setInseminationDate] = useState(new Date().toISOString().slice(0, 10));
   const [inseminationTime, setInseminationTime] = useState('');
   const [cervicalMucus, setCervicalMucus] = useState('');
@@ -56,7 +57,7 @@ export default function InseminationModal({
       setBullId('');
       setSemenBatchId('');
       setDosesUsed(1);
-      setInseminatorName('');
+      setInseminator(null);
       setInseminationDate(new Date().toISOString().slice(0, 10));
       setInseminationTime('');
       setCervicalMucus('');
@@ -114,7 +115,7 @@ export default function InseminationModal({
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!animalId || !inseminatorName.trim() || !inseminationDate) return;
+      if (!animalId || !inseminator || !inseminationDate) return;
 
       setIsLoading(true);
       setError(null);
@@ -126,7 +127,8 @@ export default function InseminationModal({
         bullId: bullId || null,
         semenBatchId: semenBatchId || null,
         dosesUsed,
-        inseminatorName: inseminatorName.trim(),
+        inseminatorId: inseminator.id,
+        inseminatorName: inseminator.name,
         inseminationDate,
         inseminationTime: inseminationTime || null,
         cervicalMucus: cervicalMucus || null,
@@ -149,7 +151,7 @@ export default function InseminationModal({
       bullId,
       semenBatchId,
       dosesUsed,
-      inseminatorName,
+      inseminator,
       inseminationDate,
       inseminationTime,
       cervicalMucus,
@@ -349,14 +351,12 @@ export default function InseminationModal({
                 <label htmlFor="insem-inseminator">
                   Inseminador <span aria-hidden="true">*</span>
                 </label>
-                <input
+                <InseminatorSelect
                   id="insem-inseminator"
-                  type="text"
-                  value={inseminatorName}
-                  onChange={(e) => setInseminatorName(e.target.value)}
-                  placeholder="Nome do inseminador"
+                  farmId={farmId}
+                  value={inseminator}
+                  onChange={setInseminator}
                   required
-                  aria-required="true"
                 />
               </div>
 
@@ -396,7 +396,7 @@ export default function InseminationModal({
             <button
               type="submit"
               className="insemination-modal__btn-primary"
-              disabled={isLoading || !animalId || !inseminatorName.trim() || !inseminationDate}
+              disabled={isLoading || !animalId || !inseminator || !inseminationDate}
             >
               {isLoading ? 'Salvando...' : 'Registrar inseminação'}
             </button>

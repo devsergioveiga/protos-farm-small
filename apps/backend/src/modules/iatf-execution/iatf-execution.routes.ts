@@ -15,6 +15,7 @@ import {
   cancelLot,
   getUpcomingSteps,
   listInseminations,
+  getActiveLotsForAnimals,
   listLotStatuses,
   listStepStatuses,
   listInseminationTypes,
@@ -333,6 +334,26 @@ iatfExecutionRouter.post(
       });
 
       res.status(201).json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── ACTIVE LOTS FOR ANIMALS ────────────────────────────────────────
+
+iatfExecutionRouter.get(
+  '/org/farms/:farmId/animals/active-reproductive-lots',
+  authenticate,
+  checkPermission('animals:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const farmId = req.params.farmId as string;
+      const raw = req.query.animalIds as string | undefined;
+      const animalIds = raw ? raw.split(',').filter(Boolean) : [];
+      const result = await getActiveLotsForAnimals(ctx, farmId, animalIds);
+      res.json(result);
     } catch (err) {
       handleError(err, res);
     }

@@ -11,7 +11,10 @@ import type {
   CreateDependentInput,
   AddFarmAssocInput,
   EmployeeDocumentInput,
+  AssignFunctionInput,
+  EmployeeFunctionValue,
 } from './employees.types';
+import { EMPLOYEE_FUNCTIONS } from './employees.types';
 
 // ─── State Machine ───────────────────────────────────────────────────
 
@@ -85,7 +88,10 @@ export async function createEmployee(
         bankCode: input.bankCode,
         bankAgency: input.bankAgency,
         bankAccount: input.bankAccount,
-        bankAccountType: input.bankAccountType as 'CORRENTE' | 'POUPANCA' | undefined,
+        bankAccountType: (input.bankAccountType || undefined) as
+          | 'CORRENTE'
+          | 'POUPANCA'
+          | undefined,
         bankAccountDigit: input.bankAccountDigit,
         initialVacationBalance: input.initialVacationBalance,
         initialHourBankBalance: input.initialHourBankBalance,
@@ -195,6 +201,10 @@ export async function listEmployees(
       where.farms = { some: { positionId: params.positionId, endDate: null } };
     }
 
+    if (params.functionFilter) {
+      where.functions = { some: { function: params.functionFilter } };
+    }
+
     const [data, total] = await Promise.all([
       tx.employee.findMany({
         where: where as NonNullable<Parameters<typeof tx.employee.findMany>[0]>['where'],
@@ -260,6 +270,10 @@ export async function getEmployee(ctx: RlsContext, id: string): Promise<unknown>
         },
         salaryHistory: {
           orderBy: { effectiveAt: 'asc' },
+        },
+        functions: {
+          select: { id: true, function: true, assignedAt: true },
+          orderBy: { assignedAt: 'asc' },
         },
       },
     });
@@ -608,4 +622,107 @@ export async function createSalaryMovement(
       },
     }),
   ]);
+}
+
+// ─── Employee Functions ─────────────────────────────────────────────
+
+export async function assignFunction(
+  ctx: RlsContext,
+  employeeId: string,
+  input: AssignFunctionInput,
+): Promise<unknown> {
+  const fn = input.function as EmployeeFunctionValue;
+  if (!EMPLOYEE_FUNCTIONS.includes(fn)) {
+    throw new EmployeeError(
+      `Função inválida: ${input.function}. Valores aceitos: ${EMPLOYEE_FUNCTIONS.join(', ')}`,
+      400,
+    );
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    const employee = await tx.employee.findFirst({
+      where: { id: employeeId, organizationId: ctx.organizationId },
+      select: { id: true },
+    });
+    if (!employee) {
+      throw new EmployeeError('Colaborador não encontrado', 404);
+    }
+
+    const existing = await tx.employeeFunctionAssignment.findUnique({
+      where: { employeeId_function: { employeeId, function: fn } },
+    });
+    if (existing) {
+      throw new EmployeeError('Colaborador já possui esta função atribuída', 409);
+    }
+
+    return tx.employeeFunctionAssignment.create({
+      data: {
+        employeeId,
+        function: fn,
+        assignedBy: ctx.userId ?? 'system',
+      },
+      select: { id: true, function: true, assignedAt: true },
+    });
+  });
+}
+
+export async function removeFunction(
+  ctx: RlsContext,
+  employeeId: string,
+  functionValue: string,
+): Promise<void> {
+  const fn = functionValue as EmployeeFunctionValue;
+  if (!EMPLOYEE_FUNCTIONS.includes(fn)) {
+    throw new EmployeeError(`Função inválida: ${functionValue}`, 400);
+  }
+
+  await withRlsContext(ctx, async (tx) => {
+    const employee = await tx.employee.findFirst({
+      where: { id: employeeId, organizationId: ctx.organizationId },
+      select: { id: true },
+    });
+    if (!employee) {
+      throw new EmployeeError('Colaborador não encontrado', 404);
+    }
+
+    const assignment = await tx.employeeFunctionAssignment.findUnique({
+      where: { employeeId_function: { employeeId, function: fn } },
+    });
+    if (!assignment) {
+      throw new EmployeeError('Função não encontrada para este colaborador', 404);
+    }
+
+    await tx.employeeFunctionAssignment.delete({
+      where: { id: assignment.id },
+    });
+  });
+}
+
+export async function listEmployeesByFunction(
+  ctx: RlsContext,
+  functionValue: string,
+  farmId?: string,
+): Promise<{ id: string; name: string }[]> {
+  const fn = functionValue as EmployeeFunctionValue;
+  if (!EMPLOYEE_FUNCTIONS.includes(fn)) {
+    throw new EmployeeError(`Função inválida: ${functionValue}`, 400);
+  }
+
+  return withRlsContext(ctx, async (tx) => {
+    const where: Record<string, unknown> = {
+      organizationId: ctx.organizationId,
+      status: 'ATIVO' as const,
+      functions: { some: { function: fn } },
+    };
+
+    if (farmId) {
+      where.farms = { some: { farmId, endDate: null } };
+    }
+
+    return tx.employee.findMany({
+      where: where as NonNullable<Parameters<typeof tx.employee.findMany>[0]>['where'],
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    });
+  });
 }

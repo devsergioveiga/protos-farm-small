@@ -20,6 +20,9 @@ import {
   uploadDocument,
   deleteDocument,
   getSalaryHistory,
+  assignFunction,
+  removeFunction,
+  listEmployeesByFunction,
 } from './employees.service';
 import {
   uploadAndParse,
@@ -118,6 +121,7 @@ employeesRouter.get(base, authenticate, checkPermission('employees:read'), async
       status: req.query.status as string | undefined,
       farmId: req.query.farmId as string | undefined,
       positionId: req.query.positionId as string | undefined,
+      functionFilter: req.query.function as string | undefined,
       search: req.query.search as string | undefined,
       page: req.query.page ? Number(req.query.page) : undefined,
       limit: req.query.limit ? Number(req.query.limit) : undefined,
@@ -210,6 +214,25 @@ employeesRouter.post(
     try {
       const ctx = buildRlsContext(req);
       const result = await confirmBulkImport(ctx, req.body);
+      res.json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── GET /org/:orgId/employees/by-function/:function ──────────────
+
+employeesRouter.get(
+  `${base}/by-function/:function`,
+  authenticate,
+  checkPermission('employees:read'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const fn = req.params.function as string;
+      const farmId = req.query.farmId as string | undefined;
+      const result = await listEmployeesByFunction(ctx, fn, farmId);
       res.json(result);
     } catch (err) {
       handleError(err, res);
@@ -406,6 +429,43 @@ employeesRouter.get(
       const id = req.params.id as string;
       const history = await getSalaryHistory(ctx, id);
       res.json(history);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── POST /org/:orgId/employees/:id/functions ─────────────────────
+
+employeesRouter.post(
+  `${base}/:id/functions`,
+  authenticate,
+  checkPermission('employees:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const employeeId = req.params.id as string;
+      const result = await assignFunction(ctx, employeeId, req.body);
+      res.status(201).json(result);
+    } catch (err) {
+      handleError(err, res);
+    }
+  },
+);
+
+// ─── DELETE /org/:orgId/employees/:id/functions/:function ─────────
+
+employeesRouter.delete(
+  `${base}/:id/functions/:function`,
+  authenticate,
+  checkPermission('employees:update'),
+  async (req, res) => {
+    try {
+      const ctx = buildRlsContext(req);
+      const employeeId = req.params.id as string;
+      const fn = req.params.function as string;
+      await removeFunction(ctx, employeeId, fn);
+      res.status(204).send();
     } catch (err) {
       handleError(err, res);
     }

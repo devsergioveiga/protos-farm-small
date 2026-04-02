@@ -74,11 +74,14 @@ export interface ExecuteStepInput {
 export interface RecordInseminationInput {
   animalId: string;
   lotStepId?: string | null;
+  iatfProtocolId?: string | null;
   inseminationType: InseminationTypeValue;
   bullId?: string | null;
   semenBatchId?: string | null;
+  semenType?: string | null;
   dosesUsed?: number;
   inseminatorName: string;
+  inseminatorId?: string | null;
   inseminationDate: string; // ISO date
   inseminationTime?: string | null; // HH:MM
   cervicalMucus?: CervicalMucusValue | null;
@@ -113,14 +116,21 @@ export interface InseminationItem {
   animalEarTag: string;
   animalName: string | null;
   lotStepId: string | null;
+  lotId: string | null;
+  lotName: string | null;
+  protocolId: string | null;
+  protocolName: string | null;
   inseminationType: string;
   inseminationTypeLabel: string;
   bullId: string | null;
   bullName: string | null;
   semenBatchId: string | null;
   semenBatchNumber: string | null;
+  semenType: string | null;
+  semenTypeLabel: string | null;
   dosesUsed: number;
   inseminatorName: string;
+  inseminatorId: string | null;
   inseminationDate: string;
   inseminationTime: string | null;
   cervicalMucus: string | null;

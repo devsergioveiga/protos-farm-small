@@ -141,6 +141,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/weighing-session', icon: Scale, label: 'Pesagem' },
       { to: '/weaning', icon: CupSoda, label: 'Desmama' },
       { to: '/reproductive-releases', icon: Baby, label: 'Liberação reprodutiva' },
+      { to: '/inseminations', icon: Syringe, label: 'Inseminações/Coberturas' },
       { to: '/diseases', icon: HeartPulse, label: 'Doenças' },
       { to: '/treatment-protocols', icon: Syringe, label: 'Protocolos tratamento' },
       { to: '/sanitary-protocols', icon: ShieldPlus, label: 'Protocolos sanitários' },
@@ -153,8 +154,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/mating-plans', icon: HeartHandshake, label: 'Acasalamento' },
       { to: '/iatf-protocols', icon: CalendarClock, label: 'Protocolos IATF' },
       { to: '/iatf-execution', icon: Zap, label: 'Execução IATF' },
-      { to: '/inseminations', icon: Syringe, label: 'Inseminações' },
-      { to: '/natural-matings', icon: Beef, label: 'Monta natural' },
+
       { to: '/pregnancy-diagnosis', icon: ScanLine, label: 'Diagnóstico gestação' },
       { to: '/calving-events', icon: Milestone, label: 'Partos e crias' },
       { to: '/sanitary-dashboard', icon: Activity, label: 'Dashboard sanitário' },
