@@ -14,16 +14,26 @@ import EvolutionTab from '@/components/employees/tabs/EvolutionTab';
 import DocumentsTab from '@/components/employees/tabs/DocumentsTab';
 import HistoryTab from '@/components/employees/tabs/HistoryTab';
 import PayslipTab from '@/components/employees/tabs/PayslipTab';
+import FunctionsTab from '@/components/employees/tabs/FunctionsTab';
+import EmployeeFarmAssocModal from '@/components/employees/EmployeeFarmAssocModal';
 import type { DocumentType } from '@/types/employee';
 import './EmployeeDetailPage.css';
 
 // ─── Tab definitions ────────────────────────────────────────────────
 
-type TabId = 'personal' | 'contract' | 'evolution' | 'documents' | 'history' | 'payslips';
+type TabId =
+  | 'personal'
+  | 'contract'
+  | 'functions'
+  | 'evolution'
+  | 'documents'
+  | 'history'
+  | 'payslips';
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'personal', label: 'Dados Pessoais' },
   { id: 'contract', label: 'Contrato' },
+  { id: 'functions', label: 'Funções' },
   { id: 'evolution', label: 'Evolução' },
   { id: 'documents', label: 'Documentos' },
   { id: 'history', label: 'Histórico' },
@@ -67,6 +77,7 @@ export default function EmployeeDetailPage() {
 
   const [activeTab, setActiveTab] = useState<TabId>('personal');
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showFarmAssocModal, setShowFarmAssocModal] = useState(false);
 
   const tablistId = useId();
 
@@ -245,7 +256,12 @@ export default function EmployeeDetailPage() {
         >
           {activeTab === tab.id && (
             <>
-              {tab.id === 'personal' && <PersonalDataTab employee={employee} />}
+              {tab.id === 'personal' && (
+                <PersonalDataTab
+                  employee={employee}
+                  onAddFarm={() => setShowFarmAssocModal(true)}
+                />
+              )}
               {tab.id === 'contract' && (
                 <ContractTab
                   employeeId={employee.id}
@@ -260,6 +276,14 @@ export default function EmployeeDetailPage() {
                   onDownloadPdf={(_contractId) => {
                     /* trigger download */
                   }}
+                />
+              )}
+              {tab.id === 'functions' && (
+                <FunctionsTab
+                  employeeId={employee.id}
+                  orgId={orgId}
+                  functions={employee.functions ?? []}
+                  onRefresh={() => void refetch()}
                 />
               )}
               {tab.id === 'evolution' && (
@@ -302,6 +326,13 @@ export default function EmployeeDetailPage() {
           onSuccess={handleStatusChanged}
         />
       )}
+
+      <EmployeeFarmAssocModal
+        isOpen={showFarmAssocModal}
+        employeeId={employee?.id ?? null}
+        onClose={() => setShowFarmAssocModal(false)}
+        onSuccess={() => void refetch()}
+      />
     </main>
   );
 }

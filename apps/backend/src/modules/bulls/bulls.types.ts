@@ -38,6 +38,19 @@ export function isValidSemenEntryType(value: string): value is SemenEntryTypeVal
   return SEMEN_ENTRY_TYPES.includes(value as SemenEntryTypeValue);
 }
 
+export const SEMEN_TYPES = ['CONVENTIONAL', 'SEXED_FEMALE', 'SEXED_MALE'] as const;
+export type SemenTypeValue = (typeof SEMEN_TYPES)[number];
+
+export const SEMEN_TYPE_LABELS: Record<SemenTypeValue, string> = {
+  CONVENTIONAL: 'Convencional',
+  SEXED_FEMALE: 'Sexado fêmea',
+  SEXED_MALE: 'Sexado macho',
+};
+
+export function isValidSemenType(value: string): value is SemenTypeValue {
+  return SEMEN_TYPES.includes(value as SemenTypeValue);
+}
+
 // ─── Breed Composition ─────────────────────────────────────────────
 
 export interface BreedCompositionEntry {
@@ -120,6 +133,7 @@ export interface CreateSemenBatchInput {
   batchNumber: string;
   centralName?: string | null;
   entryType?: SemenEntryTypeValue;
+  semenType?: SemenTypeValue;
   entryDate: string; // ISO date
   expiryDate?: string | null;
   initialDoses: number;
@@ -131,6 +145,7 @@ export interface UpdateSemenBatchInput {
   batchNumber?: string;
   centralName?: string | null;
   entryType?: SemenEntryTypeValue;
+  semenType?: SemenTypeValue;
   entryDate?: string;
   expiryDate?: string | null;
   costPerDose?: number;
@@ -187,6 +202,8 @@ export interface SemenBatchItem {
   centralName: string | null;
   entryType: SemenEntryTypeValue;
   entryTypeLabel: string;
+  semenType: SemenTypeValue;
+  semenTypeLabel: string;
   entryDate: string;
   expiryDate: string | null;
   initialDoses: number;

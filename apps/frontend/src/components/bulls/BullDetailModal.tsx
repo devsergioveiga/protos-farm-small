@@ -290,6 +290,7 @@ export default function BullDetailModal({ isOpen, onClose, bullId, farmId, onSuc
                       <thead>
                         <tr>
                           <th scope="col">Lote</th>
+                          <th scope="col">Tipo</th>
                           <th scope="col">Central</th>
                           <th scope="col">Entrada</th>
                           <th scope="col">Validade</th>
@@ -302,6 +303,7 @@ export default function BullDetailModal({ isOpen, onClose, bullId, farmId, onSuc
                         {bull.semenBatches.map((batch) => (
                           <tr key={batch.id}>
                             <td className="bull-detail__mono">{batch.batchNumber}</td>
+                            <td>{batch.semenTypeLabel || batch.semenType || '—'}</td>
                             <td>{batch.centralName || '—'}</td>
                             <td>
                               <span className="bull-detail__cell-icon">

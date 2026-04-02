@@ -82,6 +82,7 @@ export interface ListEmployeeParams {
   status?: string;
   farmId?: string;
   positionId?: string;
+  functionFilter?: string;
   search?: string;
   page?: number;
   limit?: number;
@@ -95,4 +96,19 @@ export interface AddFarmAssocInput {
 
 export interface EmployeeDocumentInput {
   documentType: 'RG' | 'CPF' | 'CTPS' | 'ASO' | 'CONTRATO' | 'OUTRO';
+}
+
+// ─── Employee Functions ────────────────────────────────────────────
+
+export const EMPLOYEE_FUNCTIONS = [
+  'INSEMINATOR',
+  'TRACTOR_DRIVER',
+  'VETERINARIAN',
+  'MILKING_OPERATOR',
+] as const;
+
+export type EmployeeFunctionValue = (typeof EMPLOYEE_FUNCTIONS)[number];
+
+export interface AssignFunctionInput {
+  function: string;
 }

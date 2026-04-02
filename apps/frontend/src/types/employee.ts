@@ -54,6 +54,7 @@ export interface Employee {
   dependents?: EmployeeDependent[];
   documents?: EmployeeDocument[];
   contracts?: EmployeeContract[];
+  functions?: EmployeeFunctionAssignment[];
 }
 
 export interface EmployeeDependent {
@@ -155,6 +156,34 @@ export interface CreateEmployeeInput {
   }>;
   farmId?: string;
   positionId?: string;
+}
+
+// ─── Employee Functions ────────────────────────────────────────────
+
+export type EmployeeFunctionType =
+  | 'INSEMINATOR'
+  | 'TRACTOR_DRIVER'
+  | 'VETERINARIAN'
+  | 'MILKING_OPERATOR';
+
+export const EMPLOYEE_FUNCTION_LABELS: Record<EmployeeFunctionType, string> = {
+  INSEMINATOR: 'Inseminador',
+  TRACTOR_DRIVER: 'Tratorista',
+  VETERINARIAN: 'Veterinário',
+  MILKING_OPERATOR: 'Ordenhador',
+};
+
+export const EMPLOYEE_FUNCTION_OPTIONS: { value: EmployeeFunctionType; label: string }[] = [
+  { value: 'INSEMINATOR', label: 'Inseminador' },
+  { value: 'TRACTOR_DRIVER', label: 'Tratorista' },
+  { value: 'VETERINARIAN', label: 'Veterinário' },
+  { value: 'MILKING_OPERATOR', label: 'Ordenhador' },
+];
+
+export interface EmployeeFunctionAssignment {
+  id: string;
+  function: EmployeeFunctionType;
+  assignedAt: string;
 }
 
 // Labels

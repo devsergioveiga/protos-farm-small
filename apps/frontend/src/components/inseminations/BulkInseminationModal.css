@@ -21,6 +21,7 @@
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
 }
 
 @keyframes bulk-insem-fade-in {
@@ -37,7 +38,7 @@
 .bulk-insem__header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   padding: 24px 24px 16px;
   border-bottom: 1px solid var(--color-neutral-100);
 }
@@ -48,13 +49,6 @@
   font-size: 1.25rem;
   color: var(--color-neutral-800);
   margin: 0;
-}
-
-.bulk-insem__step-label {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 0.875rem;
-  color: var(--color-neutral-500);
-  margin: 4px 0 0;
 }
 
 .bulk-insem__close {
@@ -76,6 +70,103 @@
   color: var(--color-neutral-700);
 }
 
+/* ─── Mode Tabs ─────────────────────────────────────────── */
+
+.bulk-insem__mode-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.bulk-insem__mode-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition:
+    color 200ms,
+    border-color 200ms;
+  min-height: 48px;
+}
+
+.bulk-insem__mode-tab:hover {
+  color: var(--color-neutral-700);
+}
+
+.bulk-insem__mode-tab--active {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+
+.bulk-insem__mode-tab:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+
+/* ─── Toggle Switch ─────────────────────────────────────── */
+
+.bulk-insem__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.bulk-insem__toggle-label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-neutral-700);
+}
+
+.bulk-insem__toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-neutral-300);
+  cursor: pointer;
+  padding: 0;
+  transition: background 200ms;
+}
+
+.bulk-insem__toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-neutral-0);
+  transition: transform 200ms;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.bulk-insem__toggle-switch--active {
+  background: var(--color-primary-600);
+}
+
+.bulk-insem__toggle-switch--active::after {
+  transform: translateX(20px);
+}
+
+.bulk-insem__toggle-switch:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
 /* ─── Error ──────────────────────────────────────────────── */
 
 .bulk-insem__error {
@@ -91,15 +182,27 @@
 
 /* ─── Body ───────────────────────────────────────────────── */
 
+.bulk-insem > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .bulk-insem__body {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 20px 24px;
 }
 
-/* ─── Animal Search & List (Step 1) ──────────────────────── */
+/* ─── Animal Combobox Selector ─────────────────────────── */
 
-.bulk-insem__animal-search {
+.bulk-insem__animal-combo {
+  position: relative;
+}
+
+.bulk-insem__animal-combo-input {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -108,64 +211,45 @@
   border-radius: 8px;
   background: var(--color-neutral-0);
   min-height: 48px;
-  margin-bottom: 12px;
 }
 
-.bulk-insem__animal-search input {
+.bulk-insem__animal-combo-input input {
   flex: 1;
   border: none;
   outline: none;
   font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   color: var(--color-neutral-700);
   background: transparent;
+  padding: 12px 0;
+  min-height: unset;
+  width: 100%;
 }
 
-.bulk-insem__animal-search:focus-within {
+.bulk-insem__animal-combo-input:focus-within {
   border-color: var(--color-primary-500);
   outline: 2px solid var(--color-primary-500);
   outline-offset: -1px;
 }
 
-.bulk-insem__select-all {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  padding: 0 4px;
-}
-
-.bulk-insem__select-all-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: none;
-  background: transparent;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-primary-600);
-  cursor: pointer;
-  padding: 4px 0;
-}
-
-.bulk-insem__count {
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  font-size: 0.8125rem;
-  color: var(--color-neutral-500);
-}
-
-.bulk-insem__animal-list {
+.bulk-insem__animal-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 400px;
+  max-height: 240px;
   overflow-y: auto;
   border: 1px solid var(--color-neutral-200);
   border-radius: 8px;
+  background: var(--color-neutral-0);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 10;
 }
 
-.bulk-insem__animal-item {
+.bulk-insem__animal-dropdown-item {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -175,38 +259,22 @@
   border-bottom: 1px solid var(--color-neutral-100);
 }
 
-.bulk-insem__animal-item:last-child {
+.bulk-insem__animal-dropdown-item:last-child {
   border-bottom: none;
 }
 
-.bulk-insem__animal-item:hover {
+.bulk-insem__animal-dropdown-item:hover {
   background: var(--color-neutral-50);
 }
 
-.bulk-insem__animal-item--selected {
-  background: rgba(46, 125, 50, 0.06);
-}
-
-.bulk-insem__animal-item--selected:hover {
-  background: rgba(46, 125, 50, 0.1);
-}
-
-.bulk-insem__checkbox {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--color-neutral-400);
-  border-radius: 4px;
-  flex-shrink: 0;
-  transition: all 100ms;
-}
-
-.bulk-insem__checkbox--checked {
-  background: var(--color-primary-600);
-  border-color: var(--color-primary-600);
-  color: var(--color-neutral-0);
+.bulk-insem__animal-dropdown-empty,
+.bulk-insem__animal-dropdown-more {
+  padding: 12px 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  text-align: center;
+  font-style: italic;
 }
 
 .bulk-insem__animal-tag {
@@ -231,14 +299,65 @@
   white-space: nowrap;
 }
 
-.bulk-insem__loading {
-  text-align: center;
-  padding: 48px;
-  font-family: 'Source Sans 3', system-ui, sans-serif;
-  color: var(--color-neutral-500);
+/* ─── Animal Selected Chip ─────────────────────────────── */
+
+.bulk-insem__animal-selected {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(46, 125, 50, 0.06);
+  border: 1px solid rgba(46, 125, 50, 0.25);
+  border-radius: 8px;
+  min-height: 48px;
+  box-sizing: border-box;
 }
 
-/* ─── Form Fields (Step 2) ───────────────────────────────── */
+.bulk-insem__animal-selected-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-neutral-800);
+}
+
+.bulk-insem__animal-selected-name {
+  flex: 1;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+}
+
+.bulk-insem__animal-selected-cat {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  color: var(--color-neutral-400);
+  white-space: nowrap;
+}
+
+.bulk-insem__animal-selected-clear {
+  margin-left: auto;
+  background: none;
+  border: 1px solid rgba(46, 125, 50, 0.3);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary-600);
+  cursor: pointer;
+  transition: all 200ms;
+}
+
+.bulk-insem__animal-selected-clear:hover {
+  background: rgba(46, 125, 50, 0.1);
+}
+
+.bulk-insem__animal-selected-clear:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Form Fields ────────────────────────────────────────── */
 
 .bulk-insem__row {
   display: grid;
@@ -256,6 +375,7 @@
 
 .bulk-insem__row .bulk-insem__field {
   margin-bottom: 0;
+  min-width: 0;
 }
 
 .bulk-insem__field label {
@@ -270,8 +390,8 @@
 }
 
 .bulk-insem__field select,
-.bulk-insem__field input,
-.bulk-insem__field textarea {
+.bulk-insem__field > input,
+.bulk-insem__field > textarea {
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 0.9375rem;
   padding: 12px 16px;
@@ -280,51 +400,118 @@
   background: var(--color-neutral-0);
   color: var(--color-neutral-700);
   min-height: 48px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bulk-insem__field select {
+  appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B6560' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  cursor: pointer;
 }
 
 .bulk-insem__field select:focus,
-.bulk-insem__field input:focus,
-.bulk-insem__field textarea:focus {
+.bulk-insem__field > input:focus,
+.bulk-insem__field > textarea:focus {
   outline: 2px solid var(--color-primary-500);
   outline-offset: -1px;
   border-color: var(--color-primary-500);
 }
 
-.bulk-insem__field textarea {
+.bulk-insem__field > textarea {
   resize: vertical;
   min-height: 64px;
 }
 
-/* ─── Progress ───────────────────────────────────────────── */
-
-.bulk-insem__progress {
+.bulk-insem__hint {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8125rem;
+  color: var(--color-neutral-500);
+  margin: 4px 0 0;
+  font-style: italic;
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 4px;
 }
 
-.bulk-insem__progress-bar {
-  flex: 1;
-  height: 8px;
-  background: var(--color-neutral-200);
-  border-radius: 4px;
-  overflow: hidden;
+/* ─── Auto-detected Protocol ────────────────────────────── */
+
+.bulk-insem__auto-protocol {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #ede7f6;
+  border: 1px solid #b39ddb;
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: #5e35b1;
+  min-height: 48px;
+  box-sizing: border-box;
+  flex-wrap: wrap;
 }
 
-.bulk-insem__progress-fill {
-  height: 100%;
-  background: var(--color-primary-600);
-  border-radius: 4px;
-  transition: width 200ms;
+.bulk-insem__auto-protocol-name {
+  font-weight: 600;
 }
 
-.bulk-insem__progress-text {
-  font-family: 'JetBrains Mono', monospace;
+.bulk-insem__auto-protocol-lot {
+  color: #7e57c2;
   font-size: 0.8125rem;
-  color: var(--color-neutral-600);
-  min-width: 40px;
-  text-align: right;
+}
+
+.bulk-insem__auto-protocol-change {
+  margin-left: auto;
+  background: none;
+  border: 1px solid #b39ddb;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #5e35b1;
+  cursor: pointer;
+  transition: all 200ms;
+}
+
+.bulk-insem__auto-protocol-change:hover {
+  background: #d1c4e9;
+}
+
+.bulk-insem__auto-protocol-change:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ─── Auto-detected Semen Type ──────────────────────────── */
+
+.bulk-insem__auto-semen-type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  color: #1565c0;
+  min-height: 48px;
+  box-sizing: border-box;
+  flex-wrap: wrap;
+}
+
+.bulk-insem__auto-semen-type-label {
+  font-weight: 600;
+}
+
+.bulk-insem__auto-semen-type-source {
+  color: #42a5f5;
+  font-size: 0.8125rem;
 }
 
 /* ─── Footer ─────────────────────────────────────────────── */
@@ -410,8 +597,12 @@
   .bulk-insem__btn-primary,
   .bulk-insem__btn-secondary,
   .bulk-insem__close,
-  .bulk-insem__animal-item,
-  .bulk-insem__checkbox {
+  .bulk-insem__animal-dropdown-item,
+  .bulk-insem__mode-tab,
+  .bulk-insem__toggle-switch,
+  .bulk-insem__toggle-switch::after,
+  .bulk-insem__auto-protocol-change,
+  .bulk-insem__animal-selected-clear {
     transition: none;
   }
 }

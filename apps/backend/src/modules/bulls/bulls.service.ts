@@ -4,8 +4,10 @@ import {
   BullError,
   BULL_STATUS_LABELS,
   SEMEN_ENTRY_TYPE_LABELS,
+  SEMEN_TYPE_LABELS,
   isValidBullStatus,
   isValidSemenEntryType,
+  isValidSemenType,
   type CreateBullInput,
   type UpdateBullInput,
   type ListBullsQuery,
@@ -19,6 +21,7 @@ import {
   type ImportBullsResult,
   type BullStatusValue,
   type SemenEntryTypeValue,
+  type SemenTypeValue,
   type BreedCompositionEntry,
   type GeneticProofEntry,
 } from './bulls.types';
@@ -74,6 +77,7 @@ function toBullItem(row: any): BullItem {
 
 function toSemenBatchItem(row: any): SemenBatchItem {
   const entryType = row.entryType as SemenEntryTypeValue;
+  const semenType = (row.semenType as SemenTypeValue) ?? 'SEXED_FEMALE';
   return {
     id: row.id,
     organizationId: row.organizationId,
@@ -82,6 +86,8 @@ function toSemenBatchItem(row: any): SemenBatchItem {
     centralName: row.centralName ?? null,
     entryType,
     entryTypeLabel: SEMEN_ENTRY_TYPE_LABELS[entryType] ?? entryType,
+    semenType,
+    semenTypeLabel: SEMEN_TYPE_LABELS[semenType] ?? semenType,
     entryDate: (row.entryDate as Date).toISOString().slice(0, 10),
     expiryDate: row.expiryDate ? (row.expiryDate as Date).toISOString().slice(0, 10) : null,
     initialDoses: row.initialDoses,
@@ -408,6 +414,9 @@ export async function createSemenBatch(
   if (input.entryType && !isValidSemenEntryType(input.entryType)) {
     throw new BullError('Tipo de entrada inválido', 400);
   }
+  if (input.semenType && !isValidSemenType(input.semenType)) {
+    throw new BullError('Tipo de sêmen inválido', 400);
+  }
 
   return withRlsContext(ctx, async (tx) => {
     // Validate bull
@@ -427,6 +436,7 @@ export async function createSemenBatch(
         batchNumber: input.batchNumber.trim(),
         centralName: input.centralName ?? null,
         entryType: input.entryType ?? 'PURCHASE',
+        semenType: input.semenType ?? 'SEXED_FEMALE',
         entryDate: new Date(input.entryDate),
         expiryDate: input.expiryDate ? new Date(input.expiryDate) : null,
         initialDoses: input.initialDoses,
@@ -450,6 +460,9 @@ export async function updateSemenBatch(
   if (input.entryType && !isValidSemenEntryType(input.entryType)) {
     throw new BullError('Tipo de entrada inválido', 400);
   }
+  if (input.semenType && !isValidSemenType(input.semenType)) {
+    throw new BullError('Tipo de sêmen inválido', 400);
+  }
 
   return withRlsContext(ctx, async (tx) => {
     const existing = await (tx as any).semenBatch.findFirst({
@@ -463,6 +476,7 @@ export async function updateSemenBatch(
     if (input.batchNumber !== undefined) data.batchNumber = input.batchNumber.trim();
     if (input.centralName !== undefined) data.centralName = input.centralName;
     if (input.entryType !== undefined) data.entryType = input.entryType;
+    if (input.semenType !== undefined) data.semenType = input.semenType;
     if (input.entryDate !== undefined) data.entryDate = new Date(input.entryDate);
     if (input.expiryDate !== undefined) {
       data.expiryDate = input.expiryDate ? new Date(input.expiryDate) : null;

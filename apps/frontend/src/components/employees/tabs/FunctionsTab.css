@@ -1,0 +1,197 @@
+.functions-tab {
+  padding: 24px 0;
+}
+
+.functions-tab__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.functions-tab__title {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-neutral-800);
+  margin: 0 0 4px;
+}
+
+.functions-tab__description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-neutral-500);
+}
+
+.functions-tab__btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--color-primary-600);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-primary-600);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 200ms ease-out,
+    color 200ms ease-out;
+}
+
+.functions-tab__btn-add:hover {
+  background: var(--color-primary-50, #e8f5e9);
+}
+
+.functions-tab__btn-add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.functions-tab__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-700, #b91c1c);
+  font-size: 0.875rem;
+}
+
+.functions-tab__add-panel {
+  padding: 16px;
+  margin-bottom: 24px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-50);
+}
+
+.functions-tab__add-label {
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+}
+
+.functions-tab__add-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.functions-tab__add-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 20px;
+  background: var(--color-neutral-0);
+  color: var(--color-neutral-700);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition:
+    border-color 200ms ease-out,
+    background 200ms ease-out;
+}
+
+.functions-tab__add-option:hover {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-50, #e8f5e9);
+  color: var(--color-primary-700);
+}
+
+.functions-tab__add-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Empty state */
+.functions-tab__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.functions-tab__empty-title {
+  margin: 0;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-neutral-600);
+}
+
+.functions-tab__empty-description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-neutral-400);
+  max-width: 360px;
+}
+
+/* Chip list */
+.functions-tab__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.functions-tab__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 10px 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  background: var(--color-neutral-0);
+}
+
+.functions-tab__chip-label {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-800);
+}
+
+.functions-tab__chip-date {
+  font-size: 0.8125rem;
+  color: var(--color-neutral-400);
+}
+
+.functions-tab__chip-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 4px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-neutral-400);
+  cursor: pointer;
+  transition:
+    background 100ms ease-out,
+    color 100ms ease-out;
+}
+
+.functions-tab__chip-remove:hover {
+  background: var(--color-error-50, #fef2f2);
+  color: var(--color-error-600);
+}
+
+.functions-tab__chip-remove:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

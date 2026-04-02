@@ -1,4 +1,5 @@
 import { withRlsContext, type RlsContext } from '../../database/rls';
+import { SEMEN_TYPE_LABELS, type SemenTypeValue } from '../bulls/bulls.types';
 import {
   IatfExecutionError,
   LOT_STATUSES,
@@ -45,6 +46,9 @@ function toInseminationItem(row: Record<string, unknown>): InseminationItem {
   const animal = row.animal as Record<string, unknown> | undefined;
   const bull = row.bull as Record<string, unknown> | undefined;
   const semenBatch = row.semenBatch as Record<string, unknown> | undefined;
+  const iatfProtocol = row.iatfProtocol as Record<string, unknown> | undefined;
+  const lotStep = row.lotStep as Record<string, unknown> | undefined;
+  const lot = lotStep?.lot as Record<string, unknown> | undefined;
 
   return {
     id: row.id as string,
@@ -54,14 +58,25 @@ function toInseminationItem(row: Record<string, unknown>): InseminationItem {
     animalEarTag: animal ? (animal.earTag as string) : '',
     animalName: animal ? ((animal.name as string) ?? null) : null,
     lotStepId: (row.lotStepId as string) ?? null,
+    lotId: lot ? (lot.id as string) : null,
+    lotName: lot ? (lot.name as string) : null,
+    protocolId: iatfProtocol ? (iatfProtocol.id as string) : null,
+    protocolName: iatfProtocol ? (iatfProtocol.name as string) : null,
     inseminationType: insType,
     inseminationTypeLabel: INSEMINATION_TYPE_LABELS[insType as InseminationTypeValue] ?? insType,
     bullId: (row.bullId as string) ?? null,
     bullName: bull ? (bull.name as string) : null,
     semenBatchId: (row.semenBatchId as string) ?? null,
     semenBatchNumber: semenBatch ? (semenBatch.batchNumber as string) : null,
+    semenType: (row.semenType as string) ?? (semenBatch ? (semenBatch.semenType as string) : null),
+    semenTypeLabel: (() => {
+      const st =
+        (row.semenType as string) ?? (semenBatch ? (semenBatch.semenType as string) : null);
+      return st ? (SEMEN_TYPE_LABELS[st as SemenTypeValue] ?? st) : null;
+    })(),
     dosesUsed: row.dosesUsed as number,
     inseminatorName: row.inseminatorName as string,
+    inseminatorId: (row.inseminatorId as string) ?? null,
     inseminationDate: dateToIso(row.inseminationDate as Date),
     inseminationTime: (row.inseminationTime as string) ?? null,
     cervicalMucus: mucus,
@@ -188,7 +203,20 @@ const LOT_DETAIL_INCLUDE = {
 const INSEMINATION_INCLUDE = {
   animal: { select: { id: true, earTag: true, name: true } },
   bull: { select: { id: true, name: true } },
-  semenBatch: { select: { id: true, batchNumber: true } },
+  semenBatch: { select: { id: true, batchNumber: true, semenType: true } },
+  iatfProtocol: { select: { id: true, name: true } },
+  lotStep: {
+    select: {
+      id: true,
+      lot: {
+        select: {
+          id: true,
+          name: true,
+          protocolId: true,
+        },
+      },
+    },
+  },
 };
 
 // ─── CREATE LOT ─────────────────────────────────────────────────────
@@ -448,9 +476,6 @@ export async function recordInsemination(
       400,
     );
   }
-  if (!input.inseminatorName?.trim()) {
-    throw new IatfExecutionError('Nome do inseminador é obrigatório', 400);
-  }
   if (!input.inseminationDate) {
     throw new IatfExecutionError('Data da inseminação é obrigatória', 400);
   }
@@ -486,10 +511,13 @@ export async function recordInsemination(
     }
 
     // Validate lot step if provided
-    if (input.lotStepId) {
+    let resolvedLotStepId = input.lotStepId || null;
+    let resolvedProtocolId = input.iatfProtocolId || null;
+
+    if (resolvedLotStepId) {
       const step = await tx.reproductiveLotStep.findFirst({
-        where: { id: input.lotStepId },
-        include: { lot: true },
+        where: { id: resolvedLotStepId },
+        include: { lot: { include: { protocol: { select: { id: true } } } } },
       });
       if (!step) {
         throw new IatfExecutionError('Etapa do lote não encontrada', 404);
@@ -497,9 +525,65 @@ export async function recordInsemination(
       if (step.lot.farmId !== farmId) {
         throw new IatfExecutionError('Etapa pertence a outra fazenda', 400);
       }
+      // Auto-fill protocolId from lot if not manually set
+      if (!resolvedProtocolId) {
+        resolvedProtocolId = step.lot.protocol.id;
+      }
+    } else {
+      // Auto-detect: find active reproductive lot for this animal and link to the AI day step
+      const activeLotAnimal = await tx.reproductiveLotAnimal.findFirst({
+        where: {
+          animalId: input.animalId,
+          removedAt: null,
+          lot: {
+            farmId,
+            organizationId: ctx.organizationId,
+            status: 'ACTIVE',
+          },
+        },
+        include: {
+          lot: {
+            include: {
+              protocol: { select: { id: true } },
+              steps: {
+                where: { isAiDay: true },
+                orderBy: { dayNumber: 'asc' as const },
+                take: 1,
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' as const },
+      });
+
+      if (activeLotAnimal) {
+        if (activeLotAnimal.lot.steps.length > 0) {
+          resolvedLotStepId = activeLotAnimal.lot.steps[0].id;
+        }
+        // Auto-fill protocolId from detected lot
+        if (!resolvedProtocolId) {
+          resolvedProtocolId = activeLotAnimal.lot.protocol.id;
+        }
+      }
+    }
+
+    // Validate manually-set protocolId
+    if (resolvedProtocolId && !resolvedLotStepId && !input.lotStepId) {
+      const protocol = await tx.iatfProtocol.findFirst({
+        where: {
+          id: resolvedProtocolId,
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+        },
+      });
+      if (!protocol) {
+        throw new IatfExecutionError('Protocolo IATF não encontrado', 404);
+      }
     }
 
     // Validate semen batch and auto-deduct
+    let resolvedSemenType = input.semenType || null;
+
     if (input.semenBatchId) {
       const batch = await tx.semenBatch.findFirst({
         where: {
@@ -517,11 +601,50 @@ export async function recordInsemination(
         );
       }
 
+      // Auto-fill semenType from batch if not manually set
+      if (!resolvedSemenType) {
+        resolvedSemenType = batch.semenType;
+      }
+
       // Auto-deduct semen doses
       await tx.semenBatch.update({
         where: { id: input.semenBatchId },
         data: { currentDoses: { decrement: dosesUsed } },
       });
+    }
+
+    // Validate inseminator (employee with INSEMINATOR function)
+    let resolvedInseminatorName = input.inseminatorName?.trim() || '';
+    if (input.inseminatorId) {
+      const inseminator = await tx.employee.findFirst({
+        where: {
+          id: input.inseminatorId,
+          organizationId: ctx.organizationId,
+          status: 'ATIVO' as const,
+        },
+        select: {
+          id: true,
+          name: true,
+          functions: { where: { function: 'INSEMINATOR' as const } },
+        },
+      });
+      if (!inseminator) {
+        throw new IatfExecutionError('Inseminador não encontrado ou inativo', 404);
+      }
+      if (inseminator.functions.length === 0) {
+        throw new IatfExecutionError(
+          'Colaborador selecionado não possui a função de inseminador',
+          400,
+        );
+      }
+      // Auto-fill name from employee if not provided
+      if (!resolvedInseminatorName) {
+        resolvedInseminatorName = inseminator.name;
+      }
+    }
+
+    if (!resolvedInseminatorName) {
+      throw new IatfExecutionError('Nome do inseminador é obrigatório', 400);
     }
 
     // Validate bull
@@ -597,12 +720,15 @@ export async function recordInsemination(
         organizationId: ctx.organizationId,
         farmId,
         animalId: input.animalId,
-        lotStepId: input.lotStepId || null,
+        lotStepId: resolvedLotStepId,
+        iatfProtocolId: resolvedProtocolId,
         inseminationType: input.inseminationType,
         bullId: input.bullId || null,
         semenBatchId: input.semenBatchId || null,
+        semenType: resolvedSemenType,
         dosesUsed,
-        inseminatorName: input.inseminatorName.trim(),
+        inseminatorName: resolvedInseminatorName,
+        inseminatorId: input.inseminatorId || null,
         inseminationDate: new Date(input.inseminationDate),
         inseminationTime: input.inseminationTime?.trim() || null,
         cervicalMucus: input.cervicalMucus || null,
@@ -629,7 +755,7 @@ export async function recordInsemination(
         type: 'AI',
         eventDate: new Date(input.inseminationDate),
         sireName: bull?.name || null,
-        technicianName: input.inseminatorName.trim(),
+        technicianName: resolvedInseminatorName,
         semenBatch: input.semenBatchId || null,
         notes: input.observations?.trim() || null,
         recordedBy: userId,
@@ -890,6 +1016,61 @@ export async function listInseminations(
       data: rows.map((r: unknown) => toInseminationItem(r as Record<string, unknown>)),
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
     };
+  });
+}
+
+// ─── ACTIVE LOTS FOR ANIMALS ───────────────────────────────────────
+
+export interface AnimalActiveLotInfo {
+  animalId: string;
+  lotId: string;
+  lotName: string;
+  protocolId: string;
+  protocolName: string;
+  aiStepId: string | null;
+}
+
+export async function getActiveLotsForAnimals(
+  ctx: RlsContext,
+  farmId: string,
+  animalIds: string[],
+): Promise<AnimalActiveLotInfo[]> {
+  if (animalIds.length === 0) return [];
+
+  return withRlsContext(ctx, async (tx) => {
+    const lotAnimals = await tx.reproductiveLotAnimal.findMany({
+      where: {
+        animalId: { in: animalIds },
+        removedAt: null,
+        lot: {
+          farmId,
+          organizationId: ctx.organizationId,
+          status: 'ACTIVE',
+        },
+      },
+      include: {
+        lot: {
+          include: {
+            protocol: { select: { id: true, name: true } },
+            steps: {
+              where: { isAiDay: true },
+              orderBy: { dayNumber: 'asc' as const },
+              take: 1,
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' as const },
+    });
+
+    return lotAnimals.map((la) => ({
+      animalId: la.animalId,
+      lotId: la.lot.id,
+      lotName: la.lot.name,
+      protocolId: la.lot.protocol.id,
+      protocolName: la.lot.protocol.name,
+      aiStepId: la.lot.steps[0]?.id ?? null,
+    }));
   });
 }
 

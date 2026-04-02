@@ -31,6 +31,9 @@ jest.mock('./employees.service', () => ({
   deleteDocument: jest.fn(),
   getSalaryHistory: jest.fn(),
   createSalaryMovement: jest.fn(),
+  assignFunction: jest.fn(),
+  removeFunction: jest.fn(),
+  listEmployeesByFunction: jest.fn(),
 }));
 
 jest.mock('./employee-bulk-import.service', () => ({
@@ -638,5 +641,114 @@ describe('POST /org/:orgId/employees/bulk/confirm', () => {
     expect(res.body.created).toBe(2);
     expect(res.body.errors).toHaveLength(0);
     expect(mockedBulkService.confirmBulkImport).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ─── Employee Functions ──────────────────────────────────────────────
+
+describe('POST /api/org/:orgId/employees/:id/functions', () => {
+  it('should assign a function and return 201', async () => {
+    authAs(ADMIN_PAYLOAD);
+    const assignment = {
+      id: 'fa-1',
+      function: 'INSEMINATOR' as const,
+      assignedAt: '2026-04-01T00:00:00.000Z',
+    };
+    mockedService.assignFunction.mockResolvedValue(assignment);
+
+    const res = await request(app)
+      .post(`/api/org/${ORG_ID}/employees/${EMPLOYEE_ID}/functions`)
+      .set('Authorization', 'Bearer tok')
+      .send({ function: 'INSEMINATOR' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.function).toBe('INSEMINATOR');
+    expect(mockedService.assignFunction).toHaveBeenCalledWith(
+      { organizationId: ORG_ID, userId: 'admin-1' },
+      EMPLOYEE_ID,
+      { function: 'INSEMINATOR' },
+    );
+  });
+
+  it('should return 409 when function already assigned', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.assignFunction.mockRejectedValue(
+      new EmployeeError('Colaborador já possui esta função atribuída', 409),
+    );
+
+    const res = await request(app)
+      .post(`/api/org/${ORG_ID}/employees/${EMPLOYEE_ID}/functions`)
+      .set('Authorization', 'Bearer tok')
+      .send({ function: 'INSEMINATOR' });
+
+    expect(res.status).toBe(409);
+  });
+});
+
+describe('DELETE /api/org/:orgId/employees/:id/functions/:function', () => {
+  it('should remove a function and return 204', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.removeFunction.mockResolvedValue(undefined);
+
+    const res = await request(app)
+      .delete(`/api/org/${ORG_ID}/employees/${EMPLOYEE_ID}/functions/INSEMINATOR`)
+      .set('Authorization', 'Bearer tok');
+
+    expect(res.status).toBe(204);
+    expect(mockedService.removeFunction).toHaveBeenCalledWith(
+      { organizationId: ORG_ID, userId: 'admin-1' },
+      EMPLOYEE_ID,
+      'INSEMINATOR',
+    );
+  });
+
+  it('should return 404 when function not found', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.removeFunction.mockRejectedValue(
+      new EmployeeError('Função não encontrada para este colaborador', 404),
+    );
+
+    const res = await request(app)
+      .delete(`/api/org/${ORG_ID}/employees/${EMPLOYEE_ID}/functions/TRACTOR_DRIVER`)
+      .set('Authorization', 'Bearer tok');
+
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('GET /api/org/:orgId/employees/by-function/:function', () => {
+  it('should list employees by function', async () => {
+    authAs(ADMIN_PAYLOAD);
+    const employees = [
+      { id: 'emp-1', name: 'João Inseminador' },
+      { id: 'emp-2', name: 'Maria Inseminadora' },
+    ];
+    mockedService.listEmployeesByFunction.mockResolvedValue(employees);
+
+    const res = await request(app)
+      .get(`/api/org/${ORG_ID}/employees/by-function/INSEMINATOR?farmId=${FARM_ID}`)
+      .set('Authorization', 'Bearer tok');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(2);
+    expect(res.body[0].name).toBe('João Inseminador');
+    expect(mockedService.listEmployeesByFunction).toHaveBeenCalledWith(
+      { organizationId: ORG_ID, userId: 'admin-1' },
+      'INSEMINATOR',
+      FARM_ID,
+    );
+  });
+
+  it('should return 400 for invalid function', async () => {
+    authAs(ADMIN_PAYLOAD);
+    mockedService.listEmployeesByFunction.mockRejectedValue(
+      new EmployeeError('Função inválida: INVALID', 400),
+    );
+
+    const res = await request(app)
+      .get(`/api/org/${ORG_ID}/employees/by-function/INVALID`)
+      .set('Authorization', 'Bearer tok');
+
+    expect(res.status).toBe(400);
   });
 });

@@ -16,6 +16,8 @@ export interface SemenBatchItem {
   centralName: string | null;
   entryType: string;
   entryTypeLabel: string;
+  semenType: string;
+  semenTypeLabel: string;
   entryDate: string;
   expiryDate: string | null;
   initialDoses: number;
@@ -93,6 +95,7 @@ export interface CreateSemenBatchInput {
   batchNumber: string;
   centralName: string | null;
   entryType: string;
+  semenType: string;
   entryDate: string;
   expiryDate: string | null;
   initialDoses: number;
@@ -110,4 +113,10 @@ export const SEMEN_ENTRY_TYPES = [
   { value: 'PURCHASE', label: 'Compra' },
   { value: 'DONATION', label: 'Doação' },
   { value: 'TRANSFER', label: 'Transferência' },
+] as const;
+
+export const SEMEN_TYPES = [
+  { value: 'CONVENTIONAL', label: 'Convencional' },
+  { value: 'SEXED_FEMALE', label: 'Sexado fêmea' },
+  { value: 'SEXED_MALE', label: 'Sexado macho' },
 ] as const;

@@ -4098,6 +4098,12 @@ enum SemenEntryType {
   TRANSFER
 }
 
+enum SemenType {
+  CONVENTIONAL
+  SEXED_FEMALE
+  SEXED_MALE
+}
+
 model Bull {
   id                  String      @id @default(uuid())
   organizationId      String
@@ -4155,6 +4161,7 @@ model SemenBatch {
   batchNumber       String
   centralName       String?
   entryType         SemenEntryType @default(PURCHASE)
+  semenType         SemenType      @default(SEXED_FEMALE)
   entryDate         DateTime       @db.Date
   expiryDate        DateTime?      @db.Date
   initialDoses      Int
@@ -4376,6 +4383,7 @@ model IatfProtocol {
   versions      IatfProtocol[]  @relation("IatfProtocolVersions")
   steps         IatfProtocolStep[]
   reproductiveLots ReproductiveLot[]
+  inseminations Insemination[]    @relation("InseminationProtocol")
 
   @@index([organizationId])
   @@index([status])
@@ -4505,11 +4513,14 @@ model Insemination {
   farmId                String
   animalId              String
   lotStepId             String?
+  iatfProtocolId        String?
   inseminationType      String    // IATF, NATURAL_HEAT, HEAT_DURING_PROTOCOL
   bullId                String?
   semenBatchId          String?
+  semenType             String?   // CONVENTIONAL, SEXED_FEMALE, SEXED_MALE (auto-filled from batch or manual)
   dosesUsed             Int       @default(1)
   inseminatorName       String
+  inseminatorId         String?
   inseminationDate      DateTime  @db.Date
   inseminationTime      String?   // HH:MM or period
   cervicalMucus         String?   // CRYSTALLINE, CLOUDY, BLOODY, PURULENT, ABSENT
@@ -4528,15 +4539,19 @@ model Insemination {
   farm          Farm             @relation(fields: [farmId], references: [id], onDelete: Cascade)
   animal        Animal           @relation(fields: [animalId], references: [id], onDelete: Cascade)
   lotStep       ReproductiveLotStep? @relation(fields: [lotStepId], references: [id], onDelete: SetNull)
+  iatfProtocol  IatfProtocol?    @relation("InseminationProtocol", fields: [iatfProtocolId], references: [id], onDelete: SetNull)
   bull          Bull?            @relation("InseminationBull", fields: [bullId], references: [id], onDelete: SetNull)
   semenBatch    SemenBatch?      @relation(fields: [semenBatchId], references: [id], onDelete: SetNull)
   recorder      User             @relation("InseminationRecorder", fields: [recordedBy], references: [id])
+  inseminator   Employee?        @relation("InseminationInseminator", fields: [inseminatorId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@index([farmId])
   @@index([animalId])
   @@index([lotStepId])
+  @@index([iatfProtocolId])
   @@index([inseminationDate])
+  @@index([inseminatorId])
   @@map("inseminations")
 }
 
@@ -7654,6 +7669,13 @@ enum EmployeeStatus {
   DESLIGADO
 }
 
+enum EmployeeFunction {
+  INSEMINATOR
+  TRACTOR_DRIVER
+  VETERINARIAN
+  MILKING_OPERATOR
+}
+
 enum ContractType {
   CLT_INDETERMINATE
   CLT_DETERMINATE
@@ -7798,6 +7820,8 @@ model Employee {
   employeeTrainingRecords  EmployeeTrainingRecord[]
   medicalExams             MedicalExam[]
   incomeStatements         IncomeStatement[]
+  functions                EmployeeFunctionAssignment[]
+  inseminationsAsInseminator Insemination[] @relation("InseminationInseminator")
 
   @@unique([organizationId, cpf])
   @@index([organizationId, status])
@@ -7819,6 +7843,20 @@ model EmployeeDependent {
 
   @@index([employeeId])
   @@map("employee_dependents")
+}
+
+model EmployeeFunctionAssignment {
+  id         String           @id @default(uuid())
+  employeeId String
+  function   EmployeeFunction
+  assignedAt DateTime         @default(now())
+  assignedBy String
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, function])
+  @@index([function])
+  @@map("employee_function_assignments")
 }
 
 model Position {

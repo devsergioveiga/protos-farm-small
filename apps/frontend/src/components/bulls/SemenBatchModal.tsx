@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { api } from '@/services/api';
 import type { SemenBatchItem, CreateSemenBatchInput } from '@/types/bull';
-import { SEMEN_ENTRY_TYPES } from '@/types/bull';
+import { SEMEN_ENTRY_TYPES, SEMEN_TYPES } from '@/types/bull';
 import './SemenBatchModal.css';
 
 interface Props {
@@ -18,6 +18,7 @@ const EMPTY_FORM: CreateSemenBatchInput = {
   batchNumber: '',
   centralName: null,
   entryType: 'PURCHASE',
+  semenType: 'SEXED_FEMALE',
   entryDate: new Date().toISOString().split('T')[0],
   expiryDate: null,
   initialDoses: 0,
@@ -45,6 +46,7 @@ export default function SemenBatchModal({
         batchNumber: batch.batchNumber,
         centralName: batch.centralName,
         entryType: batch.entryType,
+        semenType: batch.semenType || 'SEXED_FEMALE',
         entryDate: batch.entryDate.split('T')[0],
         expiryDate: batch.expiryDate ? batch.expiryDate.split('T')[0] : null,
         initialDoses: batch.initialDoses,
@@ -181,6 +183,25 @@ export default function SemenBatchModal({
               </select>
             </div>
             <div className="semen-batch-modal__field">
+              <label htmlFor="sb-semen-type">Tipo de sêmen *</label>
+              <select
+                id="sb-semen-type"
+                value={formData.semenType}
+                onChange={(e) => setFormData({ ...formData, semenType: e.target.value })}
+                required
+                aria-required="true"
+              >
+                {SEMEN_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="semen-batch-modal__row">
+            <div className="semen-batch-modal__field">
               <label htmlFor="sb-entry-date">Data de entrada *</label>
               <input
                 id="sb-entry-date"
@@ -191,9 +212,6 @@ export default function SemenBatchModal({
                 aria-required="true"
               />
             </div>
-          </div>
-
-          <div className="semen-batch-modal__row">
             <div className="semen-batch-modal__field">
               <label htmlFor="sb-expiry">Validade</label>
               <input
@@ -203,6 +221,9 @@ export default function SemenBatchModal({
                 onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value || null })}
               />
             </div>
+          </div>
+
+          <div className="semen-batch-modal__row">
             <div className="semen-batch-modal__field">
               <label htmlFor="sb-doses">Quantidade de doses *</label>
               <input
@@ -222,19 +243,18 @@ export default function SemenBatchModal({
                 className="semen-batch-modal__input--mono"
               />
             </div>
-          </div>
-
-          <div className="semen-batch-modal__field">
-            <label htmlFor="sb-cost">Custo por dose (R$)</label>
-            <input
-              id="sb-cost"
-              type="text"
-              inputMode="decimal"
-              value={costDisplay}
-              onChange={(e) => handleCostChange(e.target.value)}
-              placeholder="0,00"
-              className="semen-batch-modal__input--mono"
-            />
+            <div className="semen-batch-modal__field">
+              <label htmlFor="sb-cost">Custo por dose (R$)</label>
+              <input
+                id="sb-cost"
+                type="text"
+                inputMode="decimal"
+                value={costDisplay}
+                onChange={(e) => handleCostChange(e.target.value)}
+                placeholder="0,00"
+                className="semen-batch-modal__input--mono"
+              />
+            </div>
           </div>
 
           <div className="semen-batch-modal__field">

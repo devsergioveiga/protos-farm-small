@@ -1,0 +1,120 @@
+.inseminator-select {
+  position: relative;
+}
+
+.inseminator-select--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.inseminator-select__input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inseminator-select__icon {
+  position: absolute;
+  left: 12px;
+  color: var(--color-neutral-400);
+  pointer-events: none;
+}
+
+.inseminator-select__input {
+  width: 100%;
+  padding: 12px 36px 12px 36px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  background: var(--color-neutral-0);
+  transition:
+    border-color 200ms ease-out,
+    box-shadow 200ms ease-out;
+}
+
+.inseminator-select__input::placeholder {
+  color: var(--color-neutral-400);
+}
+
+.inseminator-select__input:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+.inseminator-select__clear {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: background 100ms ease-out;
+}
+
+.inseminator-select__clear:hover {
+  background: var(--color-neutral-100);
+}
+
+.inseminator-select__chevron {
+  position: absolute;
+  right: 12px;
+  color: var(--color-neutral-400);
+  pointer-events: none;
+  transition: transform 200ms ease-out;
+}
+
+.inseminator-select__chevron--open {
+  transform: rotate(180deg);
+}
+
+.inseminator-select__dropdown {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--color-neutral-0);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.inseminator-select__option {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9375rem;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  transition: background 100ms ease-out;
+}
+
+.inseminator-select__option:hover {
+  background: var(--color-neutral-50);
+}
+
+.inseminator-select__option--selected {
+  background: var(--color-primary-50, #e8f5e9);
+  color: var(--color-primary-700);
+  font-weight: 600;
+}
+
+.inseminator-select__empty {
+  padding: 12px;
+  text-align: center;
+  color: var(--color-neutral-400);
+  font-size: 0.875rem;
+}
